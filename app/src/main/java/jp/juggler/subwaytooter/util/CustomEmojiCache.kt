@@ -136,7 +136,7 @@ class CustomEmojiCache(internal val context : Context) {
 		override fun run() {
 			while(true) {
 				try {
-					var queue_size : Int = -1
+					var queue_size : Int
 					val request = synchronized(queue) {
 						val x = if(queue.isNotEmpty()) queue.removeFirst() else null
 						queue_size = queue.size

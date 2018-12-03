@@ -351,6 +351,12 @@ object Pref {
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)
+	@Suppress("unused")
+	const val BACK_ASK_ALWAYS = 0
+	const val BACK_CLOSE_COLUMN = 1
+	const val BACK_OPEN_COLUMN_LIST = 2
+	const val BACK_EXIT_APP = 3
+	
 	val ipUiTheme = IntPref("ui_theme", 0)
 	val ipResizeImage = IntPref("resize_image", 4)
 	
@@ -434,5 +440,8 @@ object Pref {
 	val fpTimelineFontSize = FloatPref("timeline_font_size", Float.NaN)
 	val fpAcctFontSize = FloatPref("acct_font_size", Float.NaN)
 	val fpNotificationTlFontSize = FloatPref("notification_tl_font_size", Float.NaN)
+	internal const val default_timeline_font_size = 14f
+	internal const val default_acct_font_size = 12f
+	internal const val default_notification_tl_font_size = 14f
 	
 }

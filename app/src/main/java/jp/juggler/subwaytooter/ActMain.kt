@@ -943,11 +943,11 @@ class ActMain : AppCompatActivity()
 		// カラムが1個以上ある場合は設定に合わせて挙動を変える
 		when(Pref.ipBackButtonAction(pref)) {
 			
-			ActAppSetting.BACK_EXIT_APP -> this@ActMain.finish()
+			Pref.BACK_EXIT_APP -> this@ActMain.finish()
 			
-			ActAppSetting.BACK_OPEN_COLUMN_LIST -> Action_App.columnList(this@ActMain)
+			Pref.BACK_OPEN_COLUMN_LIST -> Action_App.columnList(this@ActMain)
 			
-			ActAppSetting.BACK_CLOSE_COLUMN -> {
+			Pref.BACK_CLOSE_COLUMN -> {
 				
 				val closeableColumnList = getClosableColumnList()
 				when(closeableColumnList.size) {

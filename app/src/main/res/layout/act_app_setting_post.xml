@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/svContent"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+
+    android:fillViewport="true"
+    android:paddingTop="12dp"
+    android:paddingBottom="128dp"
+    android:scrollbarStyle="outsideOverlay"
+
+    tools:ignore="Autofill"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/resize_image"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Spinner
+                android:id="@+id/spResizeImage"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etMediaSizeMax"
+            android:text="@string/media_attachment_max_byte_size"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etMediaSizeMax"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="number"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etMovieSizeMax"
+            android:text="@string/media_attachment_max_byte_size_movie"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etMovieSizeMax"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="number"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/refresh_after_toot"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Spinner
+                android:id="@+id/spRefreshAfterToot"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/show_post_button_bar_top"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swPostButtonBarTop"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/dont_add_duplication_check_header"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontDuplicationCheck"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/show_quick_toot_bar"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swQuickTootBar"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/dont_use_action_button_with_quick_toot_bar"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontUseActionButtonWithQuickTootBar"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etQuoteNameFormat"
+            android:text="@string/format_of_quote_name"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etQuoteNameFormat"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="text"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/append_attachment_url_to_content"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swAppendAttachmentUrlToContent"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <!-- =============================================== -->
+
+    </LinearLayout>
+</ScrollView>

@@ -130,7 +130,7 @@
     <string name="close">閉じる</string>
     <string name="close_all_columns">全てのカラムを閉じる</string>
     <string name="close_column">カラムを閉じる</string>
-    <string name="color">Color</string>
+    <string name="color">色</string>
     <string name="color_and_background">色と背景</string>
     <string name="column">カラム</string>
     <string name="column_background">カラム背景</string>
@@ -812,5 +812,6 @@
     <string name="instance_does_not_support_push_api_pleroma">このインスタンスはプッシュ購読APIに対応していません。多分Pleromaです。</string>
     <string name="quote_renote">引用リノート… (Misskey)</string>
     <string name="blank_cw">(空欄CW)</string>
+    <string name="actions_for_instance">タンスへのアクション</string>
 
 </resources>

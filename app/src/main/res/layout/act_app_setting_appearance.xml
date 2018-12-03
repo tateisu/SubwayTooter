@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:id="@+id/svContent"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+
+    android:fillViewport="true"
+    android:paddingBottom="128dp"
+    android:paddingTop="12dp"
+    android:scrollbarStyle="outsideOverlay"
+
+    tools:ignore="TooManyViews,UseCompoundDrawables,UselessParent,Autofill"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/simple_list"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swSimpleList"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/show_follow_button_in_button_bar"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swShowFollowButtonInButtonBar"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/dont_show_preview_card"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontShowPreviewCard"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/enable_gif_animation"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swEnableGifAnimation"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/short_acct_local_user"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swShortAcctLocalUser"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/mention_full_acct"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swMentionFullAcct"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/relative_timestamp"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swRelativeTimestamp"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/always_show_application"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swShowAppName"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etAutoCWLines"
+            android:text="@string/auto_cw"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etAutoCWLines"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="number"
+
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etCardDescriptionLength"
+            android:text="@string/card_description_length"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etCardDescriptionLength"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="number"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/display_replies_count"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Spinner
+                android:id="@+id/spRepliesCount"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/visibility_style"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Spinner
+                android:id="@+id/spVisibilityStyle"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/timeline_font"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                android:id="@+id/tvTimelineFontUrl"
+                style="@style/setting_horizontal_stretch"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnTimelineFontEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnTimelineFontReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <!-- ################################################################## -->
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/timeline_font_bold"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                android:id="@+id/tvTimelineFontBoldUrl"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnTimelineFontBoldEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnTimelineFontBoldReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            android:id="@+id/tvTimelineFontSize"
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etTimelineFontSize"
+            android:text="@string/timeline_font_size"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etTimelineFontSize"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            android:id="@+id/tvAcctFontSize"
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etAcctFontSize"
+            android:text="@string/acct_font_size"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etAcctFontSize"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            android:id="@+id/tvNotificationTlFontSize"
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etNotificationTlFontSize"
+            android:text="@string/notification_tl_font_size"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etNotificationTlFontSize"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etNotificationTlIconSize"
+            android:text="@string/notification_tl_icon_size"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etNotificationTlIconSize"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etBoostButtonSize"
+            android:text="@string/boost_button_size"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etBoostButtonSize"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/boost_button_alignment"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Spinner
+                android:id="@+id/spBoostButtonJustify"
+                style="@style/setting_horizontal_stretch"
+                />
+        </LinearLayout>
+
+
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etAvatarIconSize"
+            android:text="@string/avatar_icon_size"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etAvatarIconSize"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etRoundRatio"
+            android:text="@string/avatar_icon_round_ratio"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etRoundRatio"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/avatar_icon_dont_round"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontRound"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+    </LinearLayout>
+</ScrollView>

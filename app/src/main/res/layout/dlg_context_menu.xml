@@ -27,10 +27,7 @@
                 android:id="@+id/llStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-
                 android:orientation="vertical"
-
                 >
 
                 <TextView
@@ -39,7 +36,8 @@
                     android:paddingEnd="8dp"
                     android:paddingStart="8dp"
                     android:text="@string/actions_for_status"
-
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorTimeSmall"
                     />
 
                 <Button
@@ -386,10 +384,8 @@
                 android:id="@+id/llNotification"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-
+                android:layout_marginTop="6dp"
                 android:orientation="vertical"
-
                 >
 
                 <TextView
@@ -398,7 +394,8 @@
                     android:paddingEnd="8dp"
                     android:paddingStart="8dp"
                     android:text="@string/actions_for_notification"
-
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorTimeSmall"
                     />
 
                 <Button
@@ -425,12 +422,12 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/llAccount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-
+                android:layout_marginTop="6dp"
                 >
+                <!--android:id="@+id/llAccount"-->
 
                 <TextView
                     android:layout_width="match_parent"
@@ -438,6 +435,8 @@
                     android:paddingEnd="8dp"
                     android:paddingStart="8dp"
                     android:text="@string/actions_for_user"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorTimeSmall"
                     />
 
                 <LinearLayout
@@ -829,6 +828,32 @@
                     android:paddingTop="4dp"
                     android:text="@string/show_favourite_notification_from_user"
                     android:textAllCaps="false"
+                    />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?attr/colorSettingDivider"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="6dp"
+                >
+                <!--android:id="@+id/llInstance"-->
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:text="@string/actions_for_instance"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorTimeSmall"
                     />
 
                 <Button

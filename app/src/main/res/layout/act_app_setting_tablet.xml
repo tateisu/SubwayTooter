@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/svContent"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+
+    android:fillViewport="true"
+    android:paddingBottom="128dp"
+    android:paddingTop="12dp"
+    android:scrollbarStyle="outsideOverlay"
+
+    tools:ignore="Autofill"
+
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/disable_tablet_mode"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDisableTabletMode"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etColumnWidth"
+            android:text="@string/minimum_column_width"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etColumnWidth"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="number"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/toot_button_default_account"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Spinner
+                android:id="@+id/spDefaultAccount"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <!-- =============================================== -->
+
+    </LinearLayout>
+</ScrollView>

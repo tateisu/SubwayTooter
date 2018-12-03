@@ -14,6 +14,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbarStyle="outsideOverlay"
+        android:clipToPadding="false"
+        android:paddingBottom="128dp"
+        android:paddingTop="12dp"
 
         />
 </LinearLayout>

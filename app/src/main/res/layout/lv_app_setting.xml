@@ -3,13 +3,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center_vertical"
     android:minHeight="48dp"
     android:orientation="vertical"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp"
     android:paddingStart="12dp"
+    android:paddingTop="6dp"
     android:paddingEnd="12dp"
-    android:gravity="center_vertical"
+    android:paddingBottom="6dp"
     >
 
     <TextView
@@ -24,9 +24,9 @@
         android:id="@+id/tvDesc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:layout_marginTop="4dp"
         android:textColor="?attr/colorTimeSmall"
         android:textSize="14sp"
         />

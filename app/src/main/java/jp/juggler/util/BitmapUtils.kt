@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.net.Uri
 import it.sephiroth.android.library.exif2.ExifInterface
+import java.io.FileNotFoundException
 
 object BitmapUtils {
 	internal val log = LogCategory("BitmapUtils")
@@ -56,7 +57,7 @@ fun createResizedBitmap(
 		}
 		
 		val resize_to = Math.min(size, resizeToArg)
-
+		
 		// inSampleSizeを計算
 		var bits = 0
 		var x = size
@@ -177,10 +178,12 @@ fun createResizedBitmap(
 		} finally {
 			sourceBitmap.recycle()
 		}
+	} catch(ex : FileNotFoundException) {
+		BitmapUtils.log.w(ex, "not found. $uri")
 	} catch(ex : SecurityException) {
 		BitmapUtils.log.w(ex, "maybe we need pick up image again.")
 	} catch(ex : Throwable) {
-		BitmapUtils.log.trace(ex,"createResizedBitmap")
+		BitmapUtils.log.trace(ex, "createResizedBitmap")
 	}
 	return null
 }

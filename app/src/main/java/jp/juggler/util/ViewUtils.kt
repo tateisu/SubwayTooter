@@ -6,10 +6,8 @@ import android.content.ContextWrapper
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import jp.juggler.subwaytooter.util.Utils
 
-////////////////////////////////////////////////////////////////////
-// View
+private val log = LogCategory("ViewUtils")
 
 fun View?.scan(callback : (view : View) -> Unit) {
 	this ?: return
@@ -37,10 +35,10 @@ fun View.hideKeyboard() {
 		if(imm is InputMethodManager) {
 			imm.hideSoftInputFromWindow(this.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
 		} else {
-			Utils.log.e("hideKeyboard: can't get InputMethodManager")
+			log.e("hideKeyboard: can't get InputMethodManager")
 		}
 	} catch(ex : Throwable) {
-		Utils.log.trace(ex)
+		log.trace(ex)
 	}
 }
 
@@ -50,10 +48,10 @@ fun View.showKeyboard() {
 		if(imm is InputMethodManager) {
 			imm.showSoftInput(this, InputMethodManager.HIDE_NOT_ALWAYS)
 		} else {
-			Utils.log.e("showKeyboard: can't get InputMethodManager")
+			log.e("showKeyboard: can't get InputMethodManager")
 		}
 	} catch(ex : Throwable) {
-		Utils.log.trace(ex)
+		log.trace(ex)
 	}
 }
 

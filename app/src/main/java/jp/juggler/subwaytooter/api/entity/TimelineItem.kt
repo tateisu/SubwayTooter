@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import java.util.concurrent.atomic.AtomicLong
 
 // カラムに表示する要素全てのベースクラス
-open class TimelineItem{
+abstract class TimelineItem{
 
 	companion object {
 		val listViewItemIdSeed = AtomicLong(3) // ヘッダ用にいくつか空けておく

@@ -1532,7 +1532,7 @@ class PollingWorker private constructor(contextArg : Context) {
 				val intent_click = Intent(context, ActCallback::class.java)
 				intent_click.action = ActCallback.ACTION_NOTIFICATION_CLICK
 				intent_click.data =
-					"subwaytooter://notification_click/?db_id=$account.db_id".toUri()
+					"subwaytooter://notification_click/?db_id=${account.db_id}".toUri()
 				// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
 				intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 				val pi_click = PendingIntent.getActivity(

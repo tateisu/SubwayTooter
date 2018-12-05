@@ -5,10 +5,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.Spanned
-import android.text.style.BackgroundColorSpan
-import android.text.style.ForegroundColorSpan
-import android.text.style.RelativeSizeSpan
-import android.text.style.StrikethroughSpan
+import android.text.style.*
 import android.util.SparseArray
 import android.util.SparseBooleanArray
 import jp.juggler.subwaytooter.ActMain
@@ -850,6 +847,19 @@ object MisskeyMarkdownDecoder {
 			fireRenderChildNodes(it)
 			spanList.addLast(start, sb.length, StrikethroughSpan())
 		}),
+		
+		SMALL({
+			val start = this.start
+			fireRenderChildNodes(it)
+			spanList.addLast(start, sb.length, RelativeSizeSpan(0.7f))
+		}),
+		
+		ITALIC({
+			val start = this.start
+			fireRenderChildNodes(it)
+			spanList.addLast(start, sb.length, StyleSpan(Typeface.ITALIC))
+		}),
+		
 		MOTION({
 			val start = this.start
 			fireRenderChildNodes(it)
@@ -987,40 +997,70 @@ object MisskeyMarkdownDecoder {
 				fun <T> hashSetOf(vararg values : T) = HashSet<T>().apply { addAll(values) }
 				
 				infix fun NodeType.wraps(inner : HashSet<NodeType>) = put(this, inner)
-
+				
 				// EMOJI, HASHTAG, MENTION, CODE_BLOCK, QUOTE_INLINE, SEARCH 等はマークダウン要素のネストを許可しない
 				
 				BIG wraps
-					hashSetOf(EMOJI, HASHTAG, MENTION, STRIKE)
+					hashSetOf(
+						EMOJI, HASHTAG, MENTION,
+						STRIKE, SMALL, ITALIC
+					)
 				
 				BOLD wraps
-					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK, STRIKE)
+					hashSetOf(
+						EMOJI, HASHTAG, MENTION, URL, LINK,
+						STRIKE, SMALL, ITALIC
+					)
 				
 				STRIKE wraps
-					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK, BOLD)
+					hashSetOf(
+						EMOJI, HASHTAG, MENTION, URL, LINK,
+						BIG, BOLD, SMALL, ITALIC
+					)
+				
+				SMALL wraps
+					hashSetOf(
+						EMOJI, HASHTAG, MENTION, URL, LINK,
+						BOLD, STRIKE, ITALIC
+					)
+				
+				ITALIC wraps
+					hashSetOf(
+						EMOJI, HASHTAG, MENTION, URL, LINK,
+						BIG, BOLD, STRIKE, SMALL
+					)
 				
 				MOTION wraps
-					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK, BOLD, STRIKE)
+					hashSetOf(
+						EMOJI, HASHTAG, MENTION, URL, LINK,
+						BOLD, STRIKE, SMALL, ITALIC
+					)
 				
 				LINK wraps
-					hashSetOf(EMOJI, MOTION, BIG, BOLD, STRIKE)
+					hashSetOf(
+						EMOJI, MOTION,
+						BIG, BOLD, STRIKE, SMALL, ITALIC
+					)
 				
 				TITLE wraps
 					hashSetOf(
-						EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, STRIKE,
+						EMOJI, HASHTAG, MENTION, URL, LINK,
+						BIG, BOLD, STRIKE, SMALL, ITALIC,
 						MOTION, CODE_INLINE
 					)
 				
 				CENTER wraps
 					hashSetOf(
-						EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, STRIKE,
+						EMOJI, HASHTAG, MENTION, URL, LINK,
+						BIG, BOLD, STRIKE, SMALL, ITALIC,
 						MOTION, CODE_INLINE
 					)
 				
 				// all except ROOT,TEXT
 				val allSet = hashSetOf(
 					CODE_BLOCK, QUOTE_INLINE, SEARCH,
-					EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, STRIKE,
+					EMOJI, HASHTAG, MENTION, URL, LINK,
+					BIG, BOLD, STRIKE, SMALL, ITALIC,
 					MOTION, CODE_INLINE,
 					TITLE, CENTER, QUOTE_BLOCK
 				)
@@ -1298,6 +1338,14 @@ object MisskeyMarkdownDecoder {
 			, simpleParser(
 				Pattern.compile("""\A<center>(.+?)</center>""", Pattern.DOTALL)
 				, NodeType.CENTER
+			)
+			, simpleParser(
+				Pattern.compile("""\A<small>(.+?)</small>""", Pattern.DOTALL)
+				, NodeType.SMALL
+			)
+			, simpleParser(
+				Pattern.compile("""\A<i>(.+?)</i>""", Pattern.DOTALL)
+				, NodeType.ITALIC
 			)
 		)
 		

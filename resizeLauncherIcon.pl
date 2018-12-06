@@ -155,7 +155,6 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "../extra-SubwayTooter/_ArtWork/local-visibility/ic_local_ltl_dark.png"	,$res_dir,"drawable","ic_local_ltl_dark",0,32);
 
 
-resize_scales( "../extra-SubwayTooter/_ArtWork/media_bg_dark.png"	,$res_dir,"drawable","media_bg_dark",0,24);
+# resize_scales( "../extra-SubwayTooter/_ArtWork/media_bg_dark.png"	,$res_dir,"drawable","media_bg_dark",0,24);
 
-
-
+resize_scales( "../extra-SubwayTooter/_ArtWork/nicodic.png"	,$res_dir,"drawable","nicodic",32,60);

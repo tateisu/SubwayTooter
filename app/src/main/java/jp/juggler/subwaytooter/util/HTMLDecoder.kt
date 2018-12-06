@@ -1,6 +1,8 @@
 package jp.juggler.subwaytooter.util
 
+import android.net.Uri
 import android.text.Spannable
+import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import jp.juggler.subwaytooter.App1
@@ -316,9 +318,7 @@ object HTMLDecoder {
 				
 				val start = sb.length
 				
-				sb.append(
-					encodeUrl(options, sb_tmp.toString(), href)
-				)
+				sb.append( encodeUrl(options, sb_tmp.toString(), href) )
 				
 				val end = sb.length
 				
@@ -386,7 +386,8 @@ object HTMLDecoder {
 			}
 		}
 		
-		private val reNormalLink = Pattern.compile("\\A\\w+://")
+		private val reNormalLink = Pattern.compile("""\A\w+://""")
+		private val reNicodic = Pattern.compile("""\Ahttps?://dic.nicovideo.jp/a/([^?#/]+)\z""")
 		
 		private fun encodeUrl(
 			options : DecodeOptions,
@@ -395,39 +396,51 @@ object HTMLDecoder {
 		) : CharSequence {
 			
 			val context = options.context
-			if(context == null || ! options.short) {
+
+			if(context == null || ! options.short){
 				return display_url
+			}
+			
+			// 添付メディアのURLなら絵文字に変換する
+			if( options.isMediaAttachment(href)){
+				return SpannableString(href).apply{
+					setSpan(
+						EmojiImageSpan(context, R.drawable.emj_1f5bc_fe0f),
+						0,
+						length,
+						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+					)
+				}
+			}
+			
+			// ニコニコ大百科のURLを変える
+			val m = reNicodic.matcher(href)
+			if( m.find() ){
+				return SpannableString("${Uri.decode(m.group(1))}:nicodic:").apply{
+					setSpan(
+						EmojiImageSpan(context, R.drawable.nicodic),
+						length -9,
+						length,
+						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+					)
+				}
 			}
 			
 			// 通常リンクはhttp,httpsだけでなく幾つかのスキーマ名が含まれる
 			// スキーマ名の直後には必ず :// が出現する
 			// https://github.com/tootsuite/mastodon/pull/7810
-			if(! reNormalLink.matcher(display_url).find()) {
-				if(display_url.startsWith("@") && href != null && Pref.bpMentionFullAcct(App1.pref)) {
-					// メンションをfull acct にする
-					val acct = TootAccount.getAcctFromUrl(href)
-					if(acct != null) return "@$acct"
-				}
-				// ハッシュタグやメンションはURLの短縮表示の対象外
-				return display_url
+			if( reNormalLink.matcher(display_url).find() ){
+				return shortenUrl(display_url)
 			}
 			
-			if(options.isMediaAttachment(href)) {
-				val sb = SpannableStringBuilder()
-				sb.append(href)
-				val start = 0
-				val end = sb.length
-				sb.setSpan(
-					EmojiImageSpan(context, R.drawable.emj_1f5bc_fe0f),
-					start,
-					end,
-					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				)
-				return sb
+			// メンションをfull acct にする
+			if( display_url.startsWith("@") && href != null && Pref.bpMentionFullAcct(App1.pref) ){
+				val acct = TootAccount.getAcctFromUrl(href)
+				if(acct != null) return "@$acct"
 			}
 			
-			return shortenUrl(display_url)
-			
+			// ハッシュタグやメンションはURLの短縮表示の対象外
+			return display_url
 		}
 	}
 	

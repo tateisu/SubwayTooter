@@ -38,7 +38,6 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
-import uk.co.chrisjenx.calligraphy.CalligraphyConfig
 
 class App1 : Application() {
 	
@@ -109,8 +108,9 @@ class App1 : Application() {
 		// 2018/8/28 v280 32 => 33 NotificationTracking テーブルの作り直し。SavedAccountに通知二種類を追加
 		// 2018/10/31 v296 33 => 34 UserRelationMisskey に blocked_by を追加
 		// 2018/10/31 v296 34 => 35 UserRelationMisskey に requested_by を追加
+		// 2018/12/6 v317 35 => 36 ContentWarningテーブルの作り直し。
 		
-		internal const val DB_VERSION = 35
+		internal const val DB_VERSION = 36
 		
 		private val tableList = arrayOf(
 			LogData,
@@ -239,7 +239,7 @@ class App1 : Application() {
 		
 		lateinit var ok_http_client : OkHttpClient
 		
-		lateinit var ok_http_client2 : OkHttpClient
+		private lateinit var ok_http_client2 : OkHttpClient
 		
 		lateinit var ok_http_client_media_viewer : OkHttpClient
 		
@@ -257,11 +257,7 @@ class App1 : Application() {
 			var state = appStateX
 			if(state != null) return state
 			
-			CalligraphyConfig.initDefault(
-				CalligraphyConfig.Builder()
-					.setFontAttrId(R.attr.fontPath)
-					.build()
-			)
+			initializeFont()
 			
 			pref = Pref.pref(app_context)
 			
@@ -312,7 +308,7 @@ class App1 : Application() {
 			UserRelation.deleteOld(now)
 			UserRelationMisskey.deleteOld(now)
 			ContentWarning.deleteOld(now)
-			ContentWarningMisskey.deleteOld(now)
+			//ContentWarningMisskey.deleteOld(now)
 			MediaShown.deleteOld(now)
 			MediaShownMisskey.deleteOld(now)
 			
@@ -453,22 +449,18 @@ class App1 : Application() {
 		fun setActivityTheme(
 			activity : Activity,
 			bNoActionBar : Boolean,
-			forceDark : Boolean = false
+			forceThemeId : Int? = null
 		) {
 			
 			prepare(activity.applicationContext)
 			
-			var theme_idx = Pref.ipUiTheme(pref)
-			
-			if(forceDark) theme_idx = 1
-			
-			when(theme_idx) {
-				0 -> activity.setTheme(if(bNoActionBar) R.style.AppTheme_Light_NoActionBar else R.style.AppTheme_Light)
-				
-				1 -> activity.setTheme(if(bNoActionBar) R.style.AppTheme_Dark_NoActionBar else R.style.AppTheme_Dark)
-				
-				else -> activity.setTheme(if(bNoActionBar) R.style.AppTheme_Light_NoActionBar else R.style.AppTheme_Light)
-			}
+			val theme_idx = Pref.ipUiTheme(pref)
+			activity.setTheme(
+				forceThemeId ?: when(theme_idx) {
+					1 -> if(bNoActionBar) R.style.AppTheme_Dark_NoActionBar else R.style.AppTheme_Dark
+					else -> if(bNoActionBar) R.style.AppTheme_Light_NoActionBar else R.style.AppTheme_Light
+				}
+			)
 			
 		}
 		
@@ -507,14 +499,17 @@ class App1 : Application() {
 			
 		}
 		
-		fun getHttpCachedString(url : String, builderBlock:(Request.Builder)->Unit = {}) : String? {
+		fun getHttpCachedString(
+			url : String,
+			builderBlock : (Request.Builder) -> Unit = {}
+		) : String? {
 			val response : Response
 			
 			try {
 				val request_builder = okhttp3.Request.Builder()
 					.url(url)
 					.cacheControl(CACHE_5MIN)
-
+				
 				builderBlock(request_builder)
 				
 				val call = App1.ok_http_client2.newCall(request_builder.build())
@@ -541,11 +536,11 @@ class App1 : Application() {
 		// Chrome Custom Tab を開く
 		fun openCustomTab(activity : Activity, url : String) {
 			try {
-				if( Pref.bpDontUseCustomTabs(pref)){
-					val intent = Intent(Intent.ACTION_VIEW,url.toUri())
+				if(Pref.bpDontUseCustomTabs(pref)) {
+					val intent = Intent(Intent.ACTION_VIEW, url.toUri())
 					activity.startActivity(intent)
-				}else{
-
+				} else {
+					
 					if(url.startsWith("http") && Pref.bpPriorChrome(pref)) {
 						try {
 							// 初回はChrome指定で試す
@@ -569,7 +564,7 @@ class App1 : Application() {
 						}
 						
 					}
-
+					
 					// Chromeがないようなのでcomponent指定なしでリトライ
 					CustomTabsIntent.Builder()
 						.setToolbarColor(getAttributeColor(activity, R.attr.colorPrimary))
@@ -581,7 +576,7 @@ class App1 : Application() {
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				val scheme = url.mayUri()?.scheme ?: url
-				showToast(activity,true,"can't open browser app for %s", scheme)
+				showToast(activity, true, "can't open browser app for %s", scheme)
 			}
 			
 		}

@@ -29,7 +29,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	// A Fediverse-unique resource ID
 	// MSP から取得したデータだと uri は提供されずnullになる
-	val uri : String?
+	val uri : String
 	
 	// URL to the status page (can be remote)
 	// ブーストだとnullになる
@@ -347,8 +347,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			deletedAt = null
 			time_deleted_at = 0L
 			
-			this.uri = src.parseString("uri") // MSPだとuriは提供されない
-			this.url = src.parseString("url") // 頻繁にnullになる
+			this.url = src.parseString("url") // ブースト等では頻繁にnullになる
 			this.created_at = src.parseString("created_at")
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
@@ -370,6 +369,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.host_access = parser.linkHelper.host
 					
 					this.id = EntityId.mayDefault(src.parseLong("id") )
+					this.uri = src.parseString("uri") ?: error("missing uri")
 					
 					this.reblogged = src.optBoolean("reblogged")
 					this.favourited = src.optBoolean("favourited")
@@ -392,8 +392,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.host_access = null
 					
 					// 投稿元タンスでのIDを調べる。失敗するかもしれない
+					this.uri = src.parseString("uri") ?: error("missing uri")
 					this.id = findStatusIdFromUri(uri, url) ?: EntityId.defaultLong
-					
+
 					this.time_created_at = TootStatus.parseTime(this.created_at)
 					this.media_attachments =
 						parseListOrNull(
@@ -412,7 +413,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
 					this.id = EntityId.mayDefault(src.parseLong("id") )
-					
+					// MSPだとuriは提供されない。LTL限定なのでURL的なものを作れるはず
+					this.uri = "https://${parser.linkHelper.host}/users/${who.username}/statuses/$id"
+
 					this.time_created_at = parseTimeMSP(created_at)
 					this.media_attachments =
 						TootAttachmentMSP.parseList(src.optJSONArray("media_attachments"))
@@ -495,6 +498,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.card = parseItem(::TootCard, src.optJSONObject("card"))
 		}
 	}
+	
 	
 	///////////////////////////////////////////////////
 	// ユーティリティ
@@ -884,6 +888,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				else -> src
 			}
 		}
+		
+
 		
 		private fun String.cleanCW() =
 			CharacterGroup.reWhitespace.matcher(this).replaceAll(" ").sanitizeBDI()

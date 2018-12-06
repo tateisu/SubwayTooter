@@ -85,6 +85,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			intent.putExtra(EXTRA_SERVICE_TYPE, serviceType.ordinal)
 			intent.putExtra(EXTRA_DATA, encodeMediaList(list))
 			activity.startActivity(intent)
+			activity.overridePendingTransition(R.anim.slide_from_bottom, android.R.anim.fade_out)
 		}
 	}
 	
@@ -179,7 +180,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, true, true)
+		App1.setActivityTheme(this, true, R.style.AppTheme_Dark_NoActionBar)
 		requestWindowFeature(Window.FEATURE_NO_TITLE)
 		
 		val intent = intent
@@ -209,7 +210,12 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		exoPlayer.release()
 		exoPlayer
 	}
-	
+
+	override fun finish(){
+		super.finish()
+		overridePendingTransition(R.anim.fade_in,R.anim.slide_to_bottom)
+	}
+
 	internal fun initUI() {
 		setContentView(R.layout.act_media_viewer)
 		pbvImage = findViewById(R.id.pbvImage)

@@ -5,7 +5,10 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.Spanned
-import android.text.style.*
+import android.text.style.BackgroundColorSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
+import android.text.style.StrikethroughSpan
 import android.util.SparseArray
 import android.util.SparseBooleanArray
 import jp.juggler.subwaytooter.ActMain
@@ -15,21 +18,15 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootMention
-import jp.juggler.subwaytooter.span.EmojiImageSpan
-import jp.juggler.subwaytooter.span.HighlightSpan
-import jp.juggler.subwaytooter.span.MisskeyBigSpan
-import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.LogCategory
 import jp.juggler.util.encodePercent
+import jp.juggler.util.fontSpan
 import jp.juggler.util.shortenUrl
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
-
-// import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
-private fun fontSpan(tf : Typeface) : Any = CalligraphyTypefaceSpan(tf)
 
 // 配列中の要素をラムダ式で変換して、戻り値が非nullならそこで処理を打ち切る
 private inline fun <T, V> Array<out T>.firstNonNull(predicate : (T) -> V?) : V? {
@@ -822,10 +819,10 @@ object MisskeyMarkdownDecoder {
 			start = sb.length // 検索リンクの開始位置
 			
 			appendLink(
-				context.getString(jp.juggler.subwaytooter.R.string.search),
+				context.getString(R.string.search),
 				"https://www.google.co.jp/search?q=${text.encodePercent()}"
 			)
-			spanList.addLast(kw_start, sb.length, android.text.style.RelativeSizeSpan(1.2f))
+			spanList.addLast(kw_start, sb.length, RelativeSizeSpan(1.2f))
 			
 			closeBlock()
 		}),
@@ -857,7 +854,7 @@ object MisskeyMarkdownDecoder {
 		ITALIC({
 			val start = this.start
 			fireRenderChildNodes(it)
-			spanList.addLast(start, sb.length, StyleSpan(Typeface.ITALIC))
+			spanList.addLast(start, sb.length, fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC)))
 		}),
 		
 		MOTION({
@@ -866,7 +863,7 @@ object MisskeyMarkdownDecoder {
 			spanList.addFirst(
 				start,
 				sb.length,
-				jp.juggler.subwaytooter.span.MisskeyMotionSpan(jp.juggler.subwaytooter.ActMain.timeline_font)
+				MisskeyMotionSpan(ActMain.timeline_font)
 			)
 		}),
 		
@@ -1329,25 +1326,34 @@ object MisskeyMarkdownDecoder {
 			)
 		)
 		
-		addParser(
-			"<"
-			, simpleParser(
-				Pattern.compile("""\A<motion>(.+?)</motion>""", Pattern.DOTALL)
-				, NodeType.MOTION
-			)
-			, simpleParser(
-				Pattern.compile("""\A<center>(.+?)</center>""", Pattern.DOTALL)
-				, NodeType.CENTER
-			)
-			, simpleParser(
-				Pattern.compile("""\A<small>(.+?)</small>""", Pattern.DOTALL)
-				, NodeType.SMALL
-			)
-			, simpleParser(
-				Pattern.compile("""\A<i>(.+?)</i>""", Pattern.DOTALL)
-				, NodeType.ITALIC
-			)
-		)
+		val reHtmlTag = Pattern.compile("""\A<([a-z]+)>(.+?)</\1>""", Pattern.DOTALL)
+		
+		addParser("<", {
+			val matcher = remainMatcher(reHtmlTag)
+			when {
+				! matcher.find() -> null
+				
+				else -> {
+					val tagName = matcher.group(1)
+					val textInside = matcher.group(2)
+					
+					fun a(type : NodeType) = makeDetected(
+						type,
+						arrayOf(textInside),
+						matcher.start(), matcher.end(),
+						this.text, matcher.start(2), textInside.length
+					)
+					
+					when(tagName) {
+						"motion" -> a(NodeType.MOTION)
+						"center" -> a(NodeType.CENTER)
+						"small" -> a(NodeType.SMALL)
+						"i" -> a(NodeType.ITALIC)
+						else -> null
+					}
+				}
+			}
+		})
 		
 		// ***big*** **bold**
 		addParser(

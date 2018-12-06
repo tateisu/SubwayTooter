@@ -29,8 +29,10 @@ import jp.juggler.subwaytooter.util.CustomEmojiLister
 import jp.juggler.subwaytooter.util.ProgressResponseBody
 import jp.juggler.util.*
 import okhttp3.*
+import org.conscrypt.Conscrypt
 import java.io.File
 import java.io.InputStream
+import java.security.Security
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadFactory
@@ -219,20 +221,20 @@ class App1 : Application() {
 			timeoutSecondsConnect : Int,
 			timeoutSecondsRead : Int
 		) : OkHttpClient.Builder {
+
 			val spec = ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
-				.cipherSuites(*APPROVED_CIPHER_SUITES)
+				.allEnabledCipherSuites()
+				.allEnabledTlsVersions()
+				.supportsTlsExtensions(true)
 				.build()
-			
-			val spec_list = ArrayList<ConnectionSpec>()
-			spec_list.add(spec)
-			spec_list.add(ConnectionSpec.CLEARTEXT)
 			
 			return OkHttpClient.Builder()
 				.connectTimeout(timeoutSecondsConnect.toLong(), TimeUnit.SECONDS)
 				.readTimeout(timeoutSecondsRead.toLong(), TimeUnit.SECONDS)
 				.writeTimeout(timeoutSecondsRead.toLong(), TimeUnit.SECONDS)
 				.pingInterval(10, TimeUnit.SECONDS)
-				.connectionSpecs(spec_list)
+				.connectionSpecs(Collections.singletonList(spec))
+				.sslSocketFactory(MySslSocketFactory,MySslSocketFactory.trustManager)
 				.addInterceptor(ProgressResponseBody.makeInterceptor())
 				.addInterceptor(user_agent_interceptor)
 		}
@@ -256,6 +258,12 @@ class App1 : Application() {
 		fun prepare(app_context : Context) : AppState {
 			var state = appStateX
 			if(state != null) return state
+			
+			// initialize Conscrypt
+			Security.insertProviderAt(
+				Conscrypt.newProvider(),
+				1 /* 1 means first position */
+			)
 			
 			initializeFont()
 			

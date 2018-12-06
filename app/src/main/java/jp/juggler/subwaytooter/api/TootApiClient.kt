@@ -50,6 +50,7 @@ class TootApiClient(
 	companion object {
 		private val log = LogCategory("TootApiClient")
 		
+		val debugHandshake = true
 		
 		private const val DEFAULT_CLIENT_NAME = "SubwayTooter"
 		internal const val KEY_CLIENT_CREDENTIAL = "SubwayTooterClientCredential"
@@ -266,6 +267,8 @@ class TootApiClient(
 	//////////////////////////////////////////////////////////////////////
 	// ユーティリティ
 	
+	
+	
 	// リクエストをokHttpに渡してレスポンスを取得する
 	internal inline fun sendRequest(
 		result : TootApiResult,
@@ -288,7 +291,15 @@ class TootApiClient(
 				)
 			)
 			
-			result.response = httpClient.getResponse(request, tmpOkhttpClient = tmpOkhttpClient)
+			val response = httpClient.getResponse(request, tmpOkhttpClient = tmpOkhttpClient)
+			result.response = response
+			
+			if(debugHandshake) {
+				val handshake = response.handshake()
+				if(handshake != null) {
+					log.d("handshake ${handshake.tlsVersion()},${handshake.cipherSuite()} ${request.url()}")
+				}
+			}
 			
 			null == result.error
 			

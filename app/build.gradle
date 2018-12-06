@@ -116,6 +116,7 @@ dependencies {
     kapt 'com.github.bumptech.glide:compiler:4.7.1'
     // kotlin では annotationProcessor の代わりに kapt を使う
 
+    implementation "org.conscrypt:conscrypt-android:1.3.0"
 
     implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
 

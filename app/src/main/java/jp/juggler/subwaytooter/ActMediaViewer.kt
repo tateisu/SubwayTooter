@@ -46,6 +46,7 @@ import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.*
+import javax.net.ssl.HttpsURLConnection
 
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
@@ -329,6 +330,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			showError("missing media attachment url.")
 			return
 		}
+		
+		// https://github.com/google/ExoPlayer/issues/1819
+		HttpsURLConnection.setDefaultSSLSocketFactory(MySslSocketFactory)
 		
 		exoView.visibility = View.VISIBLE
 		

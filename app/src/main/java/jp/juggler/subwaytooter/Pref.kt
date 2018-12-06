@@ -328,13 +328,6 @@ object Pref {
 		R.id.swVerticalArrangeThumbnails
 	)
 	
-	
-	val bpSendAccessTokenToAppServer = BooleanPref(
-		"SendAccessTokenToAppServer",
-		false,
-		R.id.swSendAccessTokenToAppServer
-	)
-	
 	val bpDontShowPreviewCard = BooleanPref(
 		"DontShowPreviewCard",
 		false,
@@ -418,9 +411,6 @@ object Pref {
 	val spMovieSizeMax = StringPref("max_movie_size", "40")
 	val spTimelineFont = StringPref("timeline_font", "", skipImport = true)
 	val spTimelineFontBold = StringPref("timeline_font_bold", "", skipImport = true)
-	val spStreamListenerSecret = StringPref("stream_listener_secret", "")
-	val spStreamListenerConfigUrl = StringPref("stream_listener_config_url", "")
-	val spStreamListenerConfigData = StringPref("stream_listener_config_data", "")
 	val spMspUserToken = StringPref("mastodon_search_portal_user_token", "")
 	val spEmojiPickerRecent = StringPref("emoji_picker_recent", "")
 	val spRoundRatio = StringPref("round_ratio", "33")

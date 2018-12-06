@@ -142,7 +142,6 @@
     <string name="column_list">カラム一覧</string>
     <string name="column_list_desc">スワイプで削除します。並べ替えと削除は戻るまたは選択した時に反映されます</string>
     <string name="comment_empty">通報する理由を書いてください</string>
-    <string name="configuration_url">設定情報URL</string>
     <string name="confirm">確認</string>
     <string name="confirm_account_remove">アカウントをこのアプリから除去しますか？関連するカラムはすべて除去されます</string>
     <string name="confirm_before_boost">ブースト前に確認</string>
@@ -181,9 +180,6 @@
     <string name="copy">コピー</string>
     <string name="copy_complete">クリップボードにコピーしました</string>
     <string name="copy_url">URLをクリップボードにコピー</string>
-    <string name="custom_stream_listener">カスタム通知リスナ</string>
-    <string name="custom_stream_listener_desc">この設定は上級者向けです。よく分からない場合は編集しないでください。失敗するとリアルタイム通知が動作しなくなります。</string>
-    <string name="custom_stream_listener_was_reset">カスタム通知リスナを使わないようにしました</string>
     <string name="default_status_visibility">投稿の公開範囲の既定値</string>
     <string name="delete">削除</string>
     <string name="delete_base_status_before_toot">元トゥートを削除して投稿します。お気に入りとブーストは失われます。返信は切断されます。マストドン2.4.1未満の場合は添付メディアは維持されません。よろしいですか?</string>
@@ -355,7 +351,6 @@
     <string name="image_capture">カメラで撮影</string>
     <string name="in_reply_to_id_conversion_failed">アカウント切り替えできません。in_reply_toのID変換に失敗しました。</string>
     <string name="input_access_token">アクセストークンを指定する(上級者向け)</string>
-    <string name="input_url_and_secret_then_test">URLとシークレットを入力してテストボタンを押してください</string>
     <string name="instance">インスタンス</string>
     <string name="instance_does_not_support_push_api">タンスのバージョン %1$s は古くてプッシュ購読を利用できません</string>
     <string name="instance_hint">例: mastodon.social</string>
@@ -608,13 +603,10 @@
     <string name="search_is_not_available_on_pseudo_account">疑似アカウントでは検索APIを利用できなくなりました</string>
     <string name="search_of">検索：%1$s</string>
     <string name="search_web">Web検索</string>
-    <string name="secret">シークレット</string>
     <string name="select_and_copy">選択してコピー…</string>
     <string name="select_draft">どの下書きから復元しますか？</string>
     <string name="select_plugin">プラグインの選択</string>
     <string name="send">共有</string>
-    <string name="send_access_token_to_app_server">アクセストークンをアプリサーバに送信する</string>
-    <string name="send_access_token_to_app_server_desc">通常は\"pull\"通知(すこし遅れる)を利用できます。それは端末上で動作するのでアプリサーバは必要ありません。しかしカスタム通知リスナを使う場合やSTがサポートする限られたインスタンスのユーザである場合は\"push\"通知を利用することができます。ただしアクセストークンをアプリサーバに送信する必要があります(これはマストドンの欠陥です)。</string>
     <string name="send_header_account_acct">Account-Acct</string>
     <string name="send_header_account_created_at">Account-Created-At</string>
     <string name="send_header_account_followers_count">Account-Followers-Count</string>
@@ -672,7 +664,6 @@
     <string name="tablet_mode">タブレットモード</string>
     <string name="tap_to_show">タップで表示</string>
     <string name="target_user">対象ユーザ</string>
-    <string name="test">テスト</string>
     <string name="text_color">文字色</string>
     <string name="text_to_speech_initialize_failed">TextToSpeechの初期化に失敗。status=%1$s</string>
     <string name="text_to_speech_initializing">TextToSpeechの初期化中…</string>

@@ -358,13 +358,6 @@
     <string name="draft_picker_desc">Long tap to delete.</string>
     <string name="draft_deleted">Draft deleted.</string>
     <string name="dont_crop_media_thumbnail">Don\'t crop media thumbnail (app restart required)</string>
-    <string name="custom_stream_listener">Custom notification listener</string>
-    <string name="configuration_url">Configuration URL</string>
-    <string name="secret">Secret</string>
-    <string name="test">Test</string>
-    <string name="custom_stream_listener_desc">This setting is for advanced users. If you are not sure, please don\'t edit.</string>
-    <string name="custom_stream_listener_was_reset">Custom notification listener was reset.</string>
-    <string name="input_url_and_secret_then_test">Input URL and Secret, then tap Test button.</string>
     <string name="tab_indicator_color">Tab\'s indicator color</string>
     <string name="plugin">Plugin</string>
     <string name="select_plugin">Select plugin</string>
@@ -645,10 +638,6 @@
     <string name="changed">changed.</string>
     <string name="thumbnails_arrange_vertically">Vertical arrange thumbnails (app restart required)</string>
     <string name="instance_local">Instance local</string>
-    <string name="send_access_token_to_app_server">Send access token to app server</string>
-    <string name="send_access_token_to_app_server_desc">Normally you can use \"pull\" notification (with delay) without app server, because it works on your device.
-\nBut if you want to use \"custom notification listener\", or if you are the member of very limited instances that is supported by ST\'s app server,
-\nyou can use \"push\" notifications, but you have to allow sending access tokens to the app server. (this is mastodon\'s defect)</string>
     <string name="pull_notification_check_interval">Pull notification check interval (unit: minutes, default:15, min:15)</string>
     <string name="follow_accept">accept</string>
     <string name="follow_deny">deny</string>

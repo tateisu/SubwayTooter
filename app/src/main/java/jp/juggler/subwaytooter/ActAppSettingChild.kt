@@ -311,8 +311,6 @@ class ActAppSettingChild : AppCompatActivity()
 			, R.id.btnTimelineFontReset
 			, R.id.btnTimelineFontBoldEdit
 			, R.id.btnTimelineFontBoldReset
-			, R.id.btnCustomStreamListenerEdit
-			, R.id.btnCustomStreamListenerReset
 			, R.id.btnCcdHeaderBackgroundEdit
 			, R.id.btnCcdHeaderBackgroundReset
 			, R.id.btnCcdHeaderForegroundEdit
@@ -908,19 +906,6 @@ class ActAppSettingChild : AppCompatActivity()
 				startActivityForResult(intent, REQUEST_CODE_TIMELINE_FONT_BOLD)
 			} catch(ex : Throwable) {
 				showToast(this, ex, "could not open picker for font")
-			}
-			
-			R.id.btnCustomStreamListenerEdit -> ActCustomStreamListener.open(this)
-			
-			R.id.btnCustomStreamListenerReset -> {
-				pref.edit()
-					.remove(Pref.spStreamListenerConfigUrl)
-					.remove(Pref.spStreamListenerSecret)
-					.remove(Pref.spStreamListenerConfigData)
-					.apply()
-				SavedAccount.clearRegistrationCache()
-				PollingWorker.queueUpdateListener(this)
-				showToast(this, false, getString(R.string.custom_stream_listener_was_reset))
 			}
 		}
 	}

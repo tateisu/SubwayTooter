@@ -21,7 +21,7 @@ class DuplicateMap {
 			val uri = o.uri
 			val url = o.url
 			when {
-				uri?.isNotEmpty() == true -> {
+				uri.isNotEmpty() -> {
 					if(set_uri.contains(uri)) return true
 					set_uri.add(uri)
 				}

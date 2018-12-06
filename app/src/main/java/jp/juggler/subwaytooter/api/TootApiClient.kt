@@ -1496,7 +1496,7 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootA
 				return result
 			}
 			val uri = obj.uri
-			if(uri?.isNotEmpty() == true) {
+			if(uri.isNotEmpty() ) {
 				url = uri
 			}
 		}

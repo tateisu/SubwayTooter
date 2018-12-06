@@ -293,10 +293,6 @@
     <string name="app_data_import">Importer programdata</string>
     <string name="draft_picker_desc">Trykk lenge for å slette.</string>
     <string name="draft_deleted">Kladd slettet.</string>
-    <string name="configuration_url">Oppsettsnettadresse</string>
-    <string name="secret">Hemmeldighet</string>
-    <string name="test">Test</string>
-    <string name="custom_stream_listener_desc">Denne innstillinger er myntet på avanserte brukere. Hvis du er usikker, la være å endre.</string>
     <string name="plugin">Programtillegg</string>
     <string name="select_plugin">Velg programtillegg</string>
     <string name="plugin_not_installed">Programtillegg ikke installert.</string>
@@ -500,7 +496,6 @@
     <string name="contact">kontaktkonto</string>
     <string name="languages">språk</string>
     <string name="changed">endret.</string>
-    <string name="send_access_token_to_app_server">Send tilgangssymbol til programtjener</string>
     <string name="follow_accept">godta</string>
     <string name="follow_deny">forkast</string>
     <string name="follow_accept_confirm">Godta følgingsforespørselen fra %1$s?</string>
@@ -648,9 +643,6 @@
     <string name="app_data_import_confirm">eksisterende data (før import) vil bli tømt. Er du sikker\?</string>
     <string name="user_id_conversion_failed">Kunne ikke konvertere bruker-ID</string>
     <string name="dont_crop_media_thumbnail">Ikke beskjær mediaminiatyrbilde (programstart kreves)</string>
-    <string name="custom_stream_listener">Egendefinert merknadslytter</string>
-    <string name="custom_stream_listener_was_reset">Egendefinert merknadslytter tilbakestilt.</string>
-    <string name="input_url_and_secret_then_test">Skriv inn nettadresse og hemmelighet, trykk så på \"Test\".</string>
     <string name="notification_on_off_desc">Sjekk også kontoinnstillingen for å skru på/av merknad.</string>
     <string name="in_reply_to_id_conversion_failed">Kunne ikke konvertere \"in_reply_to\"-ID</string>
     <string name="prior_chrome_custom_tabs">Tidligere Google Chrome (hvis egendefinerte faner er påslått)</string>
@@ -711,9 +703,6 @@
     <string name="system_notification_not_related">Ikke valgt når systemmerknad trykkes</string>
     <string name="append_attachment_url_to_content">Legg til vedleggsnettadresse i bindeleddstekst</string>
     <string name="instance_local">Lokal instans</string>
-    <string name="send_access_token_to_app_server_desc">Normalt kan du bruke \"pull\"-merknader (med forsinkelse) uten programtjener, fordi det virker på din enhet.
-\nHvis du ønsker å bruke \"egendefinert merknadslytter\", eller hvis du er medlem av veldig begrensede instanser som støttes av STs programtjener,
-\nkan du bruke \"push\"-merknader, men du må tillate innsending av tilgangssymboler til programtjeneren. (Dette er en begrensning i Mastodon).</string>
     <string name="pull_notification_check_interval">Sjekkintervall for pull-merknad (enhet: minutter, forvalg:15, min:15)</string>
     <string name="token_exported">Som følge av eksport av programdata eller gjenoppretting fra sikkerhetskopi, brukes dette tilgangssymbolet også av andre enheter. Fordi tilgangssymboler som ikke brukes av andre enheter kreves for å bruke push-merknader, anbefales oppdatering av tilgangssymbolet.</string>
     <string name="missing_push_api">Instansen har inget API for push-merknader.</string>

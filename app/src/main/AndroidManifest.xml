@@ -220,11 +220,6 @@
             android:label="@string/nickname_and_color_and_notification_sound"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             />
-        <activity
-            android:name=".ActCustomStreamListener"
-            android:label="@string/custom_stream_listener"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            />
 
         <activity
             android:name=".ActText"

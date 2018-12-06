@@ -357,13 +357,6 @@
     <string name="draft_deleted">Brouillon effacé.</string>
     <string name="draft_picker_desc">Appui long pour effacer.</string>
     <string name="dont_crop_media_thumbnail">Ne pas recadrer les aperçus de pièces jointes\n(redémarrage nécessaire)</string>
-    <string name="custom_stream_listener">Écouteur de notification personnalisé</string>
-    <string name="configuration_url">Configuration URL</string>
-    <string name="secret">Secret</string>
-    <string name="test">Tester</string>
-    <string name="custom_stream_listener_desc">Réglages réservés aux utilisateurs avertis. Si vous ne savez pas de quoi il s\'agit, laissez tel quel.</string>
-    <string name="custom_stream_listener_was_reset">Custom notification listener réinitialisé.</string>
-    <string name="input_url_and_secret_then_test">Entrez les informations d\'URL et de Secret, appuyez ensuite sur le bouton [Tester].</string>
     <string name="tab_indicator_color">Couleur de la ligne d\'indication des colonnes affichées</string>
     <string name="plugin">Plugin</string>
     <string name="select_plugin">Sélection du plugin</string>
@@ -652,10 +645,6 @@
     <string name="changed">a changé.</string>
     <string name="thumbnails_arrange_vertically">Disposition verticale des vignettes (redémarrage de l\'application requis)</string>
     <string name="instance_local">Instance locale</string>
-    <string name="send_access_token_to_app_server">Envoyer le jeton d\'accès au serveur de l’application</string>
-    <string name="send_access_token_to_app_server_desc">Normally you can use \"pull\" notification (with delay) without app server, because it works on your device.
-\nBut if you want to use \"custom notification listener\", or if you are the member of very limited instances that is supported by ST\'s app server, 
-\nyou can use \"push\" notifications, but you have to allow sending access tokens to the app server. (this is mastodon\'s defect)</string>
     <string name="pull_notification_check_interval">Intervalle de vérification des notifications (unité : minutes, par défaut : 15, min:15)</string>
     <string name="follow_accept">accepter</string>
     <string name="follow_deny">refuser</string>

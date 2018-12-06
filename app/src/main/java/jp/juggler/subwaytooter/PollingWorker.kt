@@ -20,38 +20,27 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
-
 import com.google.firebase.iid.FirebaseInstanceId
-import jp.juggler.subwaytooter.api.*
-
-import org.hjson.JsonObject
-import org.hjson.JsonValue
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-
-import java.lang.ref.WeakReference
-import java.util.ArrayList
-import java.util.Collections
-import java.util.Comparator
-import java.util.HashSet
-import java.util.LinkedList
-import java.util.TreeSet
-import java.util.UUID
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
-
-import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.TootApiCallback
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.EntityIdLong
+import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import okhttp3.Call
 import okhttp3.Request
-import okhttp3.RequestBody
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.lang.ref.WeakReference
+import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 class PollingWorker private constructor(contextArg : Context) {
 	
@@ -102,7 +91,6 @@ class PollingWorker private constructor(contextArg : Context) {
 		const val TASK_NOTIFICATION_DELETE = 10
 		const val TASK_NOTIFICATION_CLICK = 11
 		private const val TASK_UPDATE_NOTIFICATION = 12
-		private const val TASK_UPDATE_LISTENER = 13
 		
 		@SuppressLint("StaticFieldLeak")
 		private var sInstance : PollingWorker? = null
@@ -266,10 +254,6 @@ class PollingWorker private constructor(contextArg : Context) {
 			
 		}
 		
-		fun queueUpdateListener(context : Context) {
-			addTask(context, true, TASK_UPDATE_LISTENER, null)
-		}
-		
 		fun queueUpdateNotification(context : Context) {
 			addTask(context, true, TASK_UPDATE_NOTIFICATION, null)
 		}
@@ -420,7 +404,7 @@ class PollingWorker private constructor(contextArg : Context) {
 	private val appState : AppState
 	internal val handler : Handler
 	internal val pref : SharedPreferences
-	internal val connectivityManager : ConnectivityManager
+	private val connectivityManager : ConnectivityManager
 	internal val notification_manager : NotificationManager
 	internal val scheduler : JobScheduler
 	private val power_manager : PowerManager?
@@ -819,10 +803,6 @@ class PollingWorker private constructor(contextArg : Context) {
 	
 	internal inner class TaskRunner {
 		
-		var mCustomStreamListenerSecret : String? = null
-		var mCustomStreamListenerSettingString : String? = null
-		private var mCustomStreamListenerSetting : JsonObject? = null
-		
 		lateinit var job : JobItem
 		private var taskId : Int = 0
 		
@@ -938,8 +918,6 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 				}
 				
-				loadCustomStreamListenerSetting()
-				
 				job_status.set("make install id")
 				
 				// インストールIDを生成する
@@ -1051,22 +1029,6 @@ class PollingWorker private constructor(contextArg : Context) {
 			notification_manager.notify(NOTIFICATION_ID_ERROR, builder.build())
 		}
 		
-		private fun loadCustomStreamListenerSetting() {
-			mCustomStreamListenerSetting = null
-			mCustomStreamListenerSecret = null
-			val jsonString = Pref.spStreamListenerConfigData(pref)
-			mCustomStreamListenerSettingString = jsonString
-			if(jsonString.isNotEmpty()) {
-				try {
-					mCustomStreamListenerSetting = JsonValue.readHjson(jsonString).asObject()
-					mCustomStreamListenerSecret = Pref.spStreamListenerSecret(pref)
-				} catch(ex : Throwable) {
-					log.trace(ex)
-				}
-				
-			}
-		}
-		
 		internal inner class AccountThread(
 			val account : SavedAccount
 		) : Thread(), CurrentCallCallback {
@@ -1123,18 +1085,8 @@ class PollingWorker private constructor(contextArg : Context) {
 					}
 					
 					if(job.isJobCancelled) return
-					if(wps.flags == 0) {
-						if(! account.isMisskey) unregisterDeviceToken()
-						return
-					}
 					
-					if(wps.subscribed) {
-						if(! account.isMisskey) unregisterDeviceToken()
-					} else {
-						if(! account.isMisskey) registerDeviceToken()
-					}
-					
-					if(job.isJobCancelled) return
+					if(wps.flags == 0) return
 					
 					checkAccount()
 					
@@ -1146,155 +1098,6 @@ class PollingWorker private constructor(contextArg : Context) {
 					log.trace(ex)
 				} finally {
 					job.notifyWorkerThread()
-				}
-			}
-			
-			private fun unregisterDeviceToken() {
-				try {
-					if(SavedAccount.REGISTER_KEY_UNREGISTERED == account.register_key) {
-						log.d("unregisterDeviceToken: already unregistered.")
-						return
-					}
-					
-					// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
-					val install_id = job.install_id
-					if(install_id?.isEmpty() != false) {
-						log.d("unregisterDeviceToken: missing install_id")
-						return
-					}
-					
-					val tag = account.notification_tag
-					if(tag?.isEmpty() != false) {
-						log.d("unregisterDeviceToken: missing notification_tag")
-						return
-					}
-					
-					val post_data = ("instance_url=" + ("https://" + account.host).encodePercent()
-						+ "&app_id=" + context.packageName.encodePercent()
-						+ "&tag=" + tag)
-					
-					val request = post_data.toRequestBody().toPost()
-						.url("$APP_SERVER/unregister")
-						.build()
-					
-					val call = App1.ok_http_client.newCall(request)
-					current_call = call
-					
-					val response = call.execute()
-					
-					log.d("unregisterDeviceToken: %s", response)
-					
-					if(response.isSuccessful) {
-						account.register_key = SavedAccount.REGISTER_KEY_UNREGISTERED
-						account.register_time = 0L
-						account.saveRegisterKey()
-					}
-					
-				} catch(ex : Throwable) {
-					log.trace(ex)
-				}
-				
-			}
-			
-			private fun registerDeviceToken() {
-				try {
-					// 設定によってはデバイストークンやアクセストークンを送信しない
-					if(! Pref.bpSendAccessTokenToAppServer(Pref.pref(context))) {
-						log.d("registerDeviceToken: SendAccessTokenToAppServer is not set.")
-						return
-					}
-					
-					// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
-					val install_id = job.install_id
-					if(install_id?.isEmpty() != false) {
-						log.d("registerDeviceToken: missing install id")
-						return
-					}
-					
-					val prefDevice = PrefDevice.prefDevice(context)
-					
-					val device_token = prefDevice.getString(PrefDevice.KEY_DEVICE_TOKEN, null)
-					if(device_token?.isEmpty() != false) {
-						log.d("registerDeviceToken: missing device_token")
-						return
-					}
-					
-					val access_token = account.getAccessToken()
-					if(access_token?.isEmpty() != false) {
-						log.d("registerDeviceToken: missing access_token")
-						return
-					}
-					
-					var tag : String? = account.notification_tag
-					
-					if(SavedAccount.REGISTER_KEY_UNREGISTERED == account.register_key) {
-						tag = null
-					}
-					
-					if(tag?.isEmpty() != false) {
-						account.notification_tag =
-							(job.install_id + account.db_id + account.acct).digestSHA256Hex()
-						tag = account.notification_tag
-						account.saveNotificationTag()
-					}
-					
-					val reg_key = (tag
-						+ access_token
-						+ device_token
-						+ (if(mCustomStreamListenerSecret == null) "" else mCustomStreamListenerSecret)
-						+ if(mCustomStreamListenerSettingString == null) "" else mCustomStreamListenerSettingString
-						).digestSHA256Hex()
-					
-					val now = System.currentTimeMillis()
-					if(reg_key == account.register_key && now - account.register_time < 3600000 * 3) {
-						// タグやトークンが同一なら、前回登録に成功してから一定時間は再登録しない
-						log.d("registerDeviceToken: already registered.")
-						return
-					}
-					
-					val post_data = StringBuilder()
-						.append("instance_url=").append(("https://" + account.host).encodePercent())
-						.append("&app_id=").append(context.packageName.encodePercent())
-						.append("&tag=").append(tag)
-						.append("&access_token=").append(access_token)
-						.append("&device_token=").append(device_token)
-					
-					val jsonString = mCustomStreamListenerSettingString
-					val appSecret = mCustomStreamListenerSecret
-					
-					if(jsonString != null && appSecret != null) {
-						post_data.append("&user_config=").append(jsonString.encodePercent())
-						post_data.append("&app_secret=").append(appSecret.encodePercent())
-					}
-					
-					val request = post_data.toString().toRequestBody().toPost()
-						.url("$APP_SERVER/register")
-						.build()
-					
-					val call = App1.ok_http_client.newCall(request)
-					current_call = call
-					
-					val response = call.execute()
-					
-					var body : String? = null
-					try {
-						body = response.body()?.string()
-					} catch(ignored : Throwable) {
-					}
-					
-					log.d("registerDeviceToken: %s (%s)", response, body ?: "")
-					
-					val code = response.code()
-					
-					if(response.isSuccessful || code >= 400 && code < 500) {
-						// 登録できた時も4xxエラーだった時もDBに記録する
-						account.register_key = reg_key
-						account.register_time = now
-						account.saveRegisterKey()
-					}
-					
-				} catch(ex : Throwable) {
-					log.trace(ex)
 				}
 			}
 			

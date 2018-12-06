@@ -271,9 +271,6 @@
     <string name="app_data_export">Allforio data\'r ap</string>
     <string name="app_data_import">Mewnforio data\'r ap</string>
     <string name="draft_deleted">Drafft wedi\'i ddileu.</string>
-    <string name="secret">Cyfrinachol</string>
-    <string name="test">Profi</string>
-    <string name="custom_stream_listener_desc">Mae\'r gosodiad hwn ar gyfer defnyddwyr profiadol. Os nad ydych chi\'n siŵr, peidiwch a golygu. </string>
     <string name="language_code">en</string>
     <string name="performance">Ymddangosiad</string>
     <string name="behavior">Ymddygiad</string>
@@ -403,7 +400,6 @@
     <string name="locked_account">Cyfrif wedi\'i gloi</string>
     <string name="languages">ieithoedd</string>
     <string name="changed">newidwyd.</string>
-    <string name="send_access_token_to_app_server">Anfon tocyn mynediad i weinydd yr ap</string>
     <string name="follow_accept">derbyn</string>
     <string name="follow_deny">gwrthod</string>
     <string name="follow_accept_confirm">Derbyn y cais dilyn o %1$s\?</string>

@@ -172,7 +172,7 @@
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/thumbnail_1_6_1_later"
+        android:text="@string/thumbnail"
         />
 
     <LinearLayout style="@style/setting_row_form">
@@ -205,6 +205,21 @@
 
     </LinearLayout>
 
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/tls_handshake"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <jp.juggler.subwaytooter.view.MyTextView
+            android:id="@+id/tvHandshake"
+            style="@style/setting_horizontal_stretch"
+            />
+
+    </LinearLayout>
     <View style="@style/setting_divider"/>
 
 </LinearLayout>

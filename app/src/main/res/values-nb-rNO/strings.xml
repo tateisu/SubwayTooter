@@ -29,7 +29,6 @@
     <string name="reply">Svar</string>
     <string name="more">Mer</string>
     <string name="close_column">Lukk kolonnen</string>
-    <string name="thumbnail">Miniatyrbilde</string>
     <string name="reload">Last inn igjen</string>
     <string name="favourites">Favoritter</string>
     <string name="notifications">Merknader</string>
@@ -400,7 +399,7 @@
     <string name="toot_count">Tut-antall</string>
     <string name="domain_count">Tilkoblet domeneantall</string>
     <string name="mime_type_missing">Manglende MIME-type.</string>
-    <string name="thumbnail_1_6_1_later">Miniatyrbilde (Mastodon 1.6.1 eller senere)</string>
+    <string name="thumbnail">Miniatyrbilde</string>
     <string name="dont_show_timeout">Ikke vis \"Tjenertidsavbrudd\"-merknad</string>
     <string name="emoji_category_people">Folk</string>
     <string name="emoji_category_nature">Natur</string>

@@ -50,8 +50,6 @@ class TootApiClient(
 	companion object {
 		private val log = LogCategory("TootApiClient")
 		
-		val debugHandshake = true
-		
 		private const val DEFAULT_CLIENT_NAME = "SubwayTooter"
 		internal const val KEY_CLIENT_CREDENTIAL = "SubwayTooterClientCredential"
 		internal const val KEY_CLIENT_SCOPE = "SubwayTooterClientScope"
@@ -293,13 +291,6 @@ class TootApiClient(
 			
 			val response = httpClient.getResponse(request, tmpOkhttpClient = tmpOkhttpClient)
 			result.response = response
-			
-			if(debugHandshake) {
-				val handshake = response.handshake()
-				if(handshake != null) {
-					log.d("handshake ${handshake.tlsVersion()},${handshake.cipherSuite()} ${request.url()}")
-				}
-			}
 			
 			null == result.error
 			
@@ -577,19 +568,17 @@ class TootApiClient(
 	
 	// インスタンス情報を取得する
 	internal fun parseInstanceInformation(result : TootApiResult?) : TootApiResult? {
-		if(result != null) {
-			val json = result.jsonObject
-			if(json != null) {
-				val parser = TootParser(
-					context,
-					LinkHelper.newLinkHelper(instance, isMisskey = json.optBoolean(KEY_IS_MISSKEY))
-				)
-				val ti = parser.instance(json)
-				if(ti != null) {
-					result.data = ti
-				} else {
-					result.setError("can't parse data in instance information.")
-				}
+		val json = result?.jsonObject
+		if(json != null) {
+			val parser = TootParser(
+				context,
+				LinkHelper.newLinkHelper(instance, isMisskey = json.optBoolean(KEY_IS_MISSKEY))
+			)
+			val ti = parser.instance(json)
+			if(ti != null) {
+				result.data = ti
+			} else {
+				result.setError("can't parse data in instance information.")
 			}
 		}
 		return result

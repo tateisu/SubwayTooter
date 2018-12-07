@@ -37,6 +37,9 @@ internal class ViewHolderHeaderInstance(
 	private val ivThumbnail : MyNetworkImageView
 	private val btnContact : TextView
 	private val tvLanguages : TextView
+	private val tvHandshake : TextView
+	
+	
 	private var instance : TootInstance? = null
 	
 	init {
@@ -60,7 +63,7 @@ internal class ViewHolderHeaderInstance(
 		ivThumbnail = viewRoot.findViewById(R.id.ivThumbnail)
 		btnContact = viewRoot.findViewById(R.id.btnContact)
 		tvLanguages = viewRoot.findViewById(R.id.tvLanguages)
-		
+		tvHandshake= viewRoot.findViewById(R.id.tvHandshake)
 		
 		btnInstance.setOnClickListener(this)
 		btnEmail.setOnClickListener(this)
@@ -77,6 +80,7 @@ internal class ViewHolderHeaderInstance(
 	override fun bindData(column : Column) {
 		super.bindData(column)
 		val instance = column.instance_information
+		val handshake = column.handshake
 		this.instance = instance
 		
 		if(instance == null) {
@@ -102,7 +106,8 @@ internal class ViewHolderHeaderInstance(
 			btnEmail.text = email
 			btnEmail.isEnabled = email.isNotEmpty()
 			
-			val contact_acct = instance.contact_account?.let{ who -> "@"+who.username +"@"+ who.host} ?: ""
+			val contact_acct =
+				instance.contact_account?.let { who -> "@" + who.username + "@" + who.host } ?: ""
 			btnContact.text = contact_acct
 			btnContact.isEnabled = contact_acct.isNotEmpty()
 			
@@ -159,6 +164,12 @@ internal class ViewHolderHeaderInstance(
 				ivThumbnail.setImageUrl(App1.pref, 0f, thumbnail, thumbnail)
 			}
 		}
+		
+		tvHandshake.text = if( handshake == null){
+			""
+		}else{
+			"${handshake.tlsVersion()}, ${handshake.cipherSuite()}"
+		}
 	}
 	
 	override fun onClick(v : View) {
@@ -170,9 +181,9 @@ internal class ViewHolderHeaderInstance(
 			
 			R.id.btnEmail -> instance?.email?.let { email ->
 				try {
-					if(email.contains("://") ) {
-						App1.openCustomTab(activity,email)
-					}else {
+					if(email.contains("://")) {
+						App1.openCustomTab(activity, email)
+					} else {
 						val intent = Intent(Intent.ACTION_SEND)
 						intent.type = "text/plain"
 						intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
@@ -190,16 +201,16 @@ internal class ViewHolderHeaderInstance(
 			R.id.btnContact -> instance?.contact_account?.let { who ->
 				Action_Account.timeline(
 					activity
-					,activity.nextPosition(column)
-					,Column.TYPE_SEARCH
-					,bAllowPseudo = false
-					,args=arrayOf("@"+who.username +"@"+ who.host,true)
+					, activity.nextPosition(column)
+					, Column.TYPE_SEARCH
+					, bAllowPseudo = false
+					, args = arrayOf("@" + who.username + "@" + who.host, true)
 				)
 			}
 			
 			R.id.ivThumbnail -> instance?.thumbnail?.mayUri()?.let { uri ->
 				try {
-					activity.startActivity(Intent(Intent.ACTION_VIEW,uri))
+					activity.startActivity(Intent(Intent.ACTION_VIEW, uri))
 				} catch(ex : Throwable) {
 					log.e(ex, "startActivity failed. $uri")
 					showToast(activity, true, "missing web browser")

@@ -672,7 +672,6 @@
     <string name="theme_dark">暗い</string>
     <string name="theme_light">明るい</string>
     <string name="thumbnail">サムネイル</string>
-    <string name="thumbnail_1_6_1_later">サムネイル(マストドン1.6.1以降)</string>
     <string name="thumbnails_arrange_vertically">サムネイルを縦に並べる (アプリ再起動が必要)</string>
     <string name="time_within_second">たった今</string>
     <string name="timeline_font">タイムラインのフォント(アプリ再起動が必要)</string>

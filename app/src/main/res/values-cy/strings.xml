@@ -44,7 +44,6 @@
     <string name="account_pick">Dewis cyfrif</string>
     <string name="account_confirmed">Cyfrif wedi\'i gadarnhau.</string>
     <string name="close_column">Cau y golofn</string>
-    <string name="thumbnail">Ciplun</string>
     <string name="reload">Ail-lwytho</string>
     <string name="favourites">Ffefrynnau</string>
     <string name="notifications">Hysbysiadau</string>
@@ -325,7 +324,7 @@
     <string name="mastodon_1_6_later">Mastodon 1.6 neu hwyrach</string>
     <string name="user_count">Nifer defnyddwyr</string>
     <string name="not_provided_mastodon_under_1_6">Ni ddarparir gan Mastodon 1.6</string>
-    <string name="thumbnail_1_6_1_later">Ciplun (Mastodon 1.6.1 neu hwyrach)</string>
+    <string name="thumbnail">Ciplun</string>
     <string name="emoji_category_people">Pobl</string>
     <string name="emoji_category_nature">Natur</string>
     <string name="emoji_category_foods">Bwydydd</string>

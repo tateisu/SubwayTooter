@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.subwaytooter.util.WordTrieTree
 import jp.juggler.util.*
+import okhttp3.Handshake
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -617,6 +618,7 @@ class Column(
 	// 「インスタンス情報」カラムに表示するインスタンス情報
 	// (SavedAccount中のインスタンス情報とは異なるので注意)
 	internal var instance_information : TootInstance? = null
+	internal var handshake : Handshake? = null
 	
 	internal var scroll_save : ScrollPosition? = null
 	private var last_viewing_item_id : EntityId? = null
@@ -3222,6 +3224,7 @@ class Column(
 							result = getInstanceInformation(client, instance_uri)
 							if(instance_tmp != null) {
 								instance_information = instance_tmp
+								handshake = result?.response?.handshake()
 							}
 							return result
 						}

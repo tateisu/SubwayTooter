@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.content.Intent
+import android.text.SpannableStringBuilder
 import android.view.View
 import android.widget.TextView
 import jp.juggler.subwaytooter.action.Action_Account
@@ -11,6 +12,7 @@ import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.LogCategory
 import jp.juggler.util.mayUri
 import jp.juggler.util.showToast
+import org.conscrypt.OpenSSLX509Certificate
 import java.util.*
 import java.util.regex.Pattern
 
@@ -39,7 +41,6 @@ internal class ViewHolderHeaderInstance(
 	private val tvLanguages : TextView
 	private val tvHandshake : TextView
 	
-	
 	private var instance : TootInstance? = null
 	
 	init {
@@ -63,7 +64,7 @@ internal class ViewHolderHeaderInstance(
 		ivThumbnail = viewRoot.findViewById(R.id.ivThumbnail)
 		btnContact = viewRoot.findViewById(R.id.btnContact)
 		tvLanguages = viewRoot.findViewById(R.id.tvLanguages)
-		tvHandshake= viewRoot.findViewById(R.id.tvHandshake)
+		tvHandshake = viewRoot.findViewById(R.id.tvHandshake)
 		
 		btnInstance.setOnClickListener(this)
 		btnEmail.setOnClickListener(this)
@@ -165,10 +166,39 @@ internal class ViewHolderHeaderInstance(
 			}
 		}
 		
-		tvHandshake.text = if( handshake == null){
+		tvHandshake.text = if(handshake == null) {
 			""
-		}else{
-			"${handshake.tlsVersion()}, ${handshake.cipherSuite()}"
+		} else {
+			val sb = SpannableStringBuilder("${handshake.tlsVersion()}, ${handshake.cipherSuite()}")
+			val certs = handshake.peerCertificates().joinToString("\n") { cert ->
+				"\n============================\n" +
+					if(cert is OpenSSLX509Certificate) {
+						
+						log.d(cert.toString())
+						
+						"""
+						Certificate : ${cert.type}
+						subject : ${cert.subjectDN}
+						subjectAlternativeNames : ${
+							cert.subjectAlternativeNames
+								?.joinToString(", "){
+									try{ it?.last() }catch(ignored:Throwable){ it }
+										?.toString() ?: "null"
+								}
+						}
+						issuer : ${cert.issuerX500Principal}
+						end : ${cert.notAfter}
+						""".trimIndent()
+						
+					} else {
+						cert.javaClass.name + "\n" + cert.toString()
+					}
+			}
+			if(certs.isNotEmpty()) {
+				sb.append('\n')
+				sb.append(certs)
+			}
+			sb
 		}
 	}
 	

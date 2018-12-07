@@ -737,4 +737,7 @@
     <string name="verified_at">bekreftet den</string>
     <string name="use_old_api">Bruk gammelt API</string>
 
+<string name="conversation_to">Til:</string>
+    <string name="animation">Animasjon</string>
+
 </resources>

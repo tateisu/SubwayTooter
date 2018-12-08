@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api
 
 import android.content.Context
+import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.UserRelation
 

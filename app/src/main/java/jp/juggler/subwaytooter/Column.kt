@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.BucketList
+import jp.juggler.subwaytooter.util.InstanceTicker
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.subwaytooter.util.WordTrieTree
 import jp.juggler.util.*
@@ -221,6 +222,8 @@ class Column(
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
 		internal const val TAB_FOLLOWERS = 2
+		
+		internal var useInstanceTicker = false
 		
 		@Suppress("UNCHECKED_CAST")
 		private inline fun <reified T> getParamAt(params : Array<out Any>, idx : Int) : T {
@@ -1892,7 +1895,9 @@ class Column(
 		stopStreaming()
 		
 		initFilter()
-		
+
+		useInstanceTicker = Pref.bpInstanceTicker( app_state.pref)
+
 		mRefreshLoadingErrorPopupState = 0
 		mRefreshLoadingError = ""
 		mInitialLoadingError = ""
@@ -2579,6 +2584,11 @@ class Column(
 			
 			override fun doInBackground(vararg unused : Void) : TootApiResult? {
 				ctStarted.set(true)
+				
+				if( Pref.bpInstanceTicker(app_state.pref)){
+					InstanceTicker.load()
+				}
+				
 				
 				val client = TootApiClient(context, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean

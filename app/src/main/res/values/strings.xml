@@ -825,5 +825,6 @@
     <string name="profile_directory">Profile directory</string>
     <string name="about_this_instance">About this instance</string>
     <string name="top_page">Top page</string>
+    <string name="show_instance_ticker">Show instance ticker (column reload required)</string>
 
 </resources>

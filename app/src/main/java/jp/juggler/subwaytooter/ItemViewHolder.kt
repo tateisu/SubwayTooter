@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.SystemClock
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewCompat
@@ -11,6 +12,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -137,6 +139,11 @@ internal class ItemViewHolder(
 	private lateinit var tvApplication : TextView
 	
 	private lateinit var tvMessageHolder : TextView
+	
+	private lateinit var llInstanceTicker:View
+	private lateinit var ivInstanceTicker:MyNetworkImageView
+	private lateinit var tvInstanceTicker:TextView
+
 	private lateinit var access_info : SavedAccount
 	
 	private var buttons_for_status : StatusButtons? = null
@@ -378,6 +385,7 @@ internal class ItemViewHolder(
 		this.viewRoot.setBackgroundColor(0)
 		this.boostedAction = defaultBoostedAction
 		
+		llInstanceTicker.visibility = View.GONE
 		llBoosted.visibility = View.GONE
 		llReply.visibility = View.GONE
 		llFollow.visibility = View.GONE
@@ -1034,6 +1042,42 @@ internal class ItemViewHolder(
 			access_info.supplyBaseUrl(who.avatar)
 		)
 		//		}
+		
+		if( Column.useInstanceTicker){
+			try {
+				val item = InstanceTicker.lastList[who.host]
+				if( item != null) {
+					tvInstanceTicker.text = item.name
+					tvInstanceTicker.textColor = item.colorText
+					val density = llInstanceTicker.resources.displayMetrics.density
+					val lp = ivInstanceTicker.layoutParams
+					lp.height = (density*16f+0.5f).toInt()
+					lp.width = (density*item.imageWidth+0.5f).toInt()
+					ivInstanceTicker.layoutParams = lp
+					ivInstanceTicker.setImageUrl(activity.pref, 0f, item.image)
+					val colorBg = item.colorBg
+					when {
+						colorBg.isEmpty() ->{
+							tvInstanceTicker.background = null
+							ivInstanceTicker.background = null
+						}
+						colorBg.size == 1 -> {
+							tvInstanceTicker.setBackgroundColor(colorBg.first())
+							ivInstanceTicker.setBackgroundColor(colorBg.first())
+						}
+						else -> {
+							ivInstanceTicker.setBackgroundColor(colorBg.last())
+							tvInstanceTicker.background = colorBg.getGradation()
+							
+						}
+					}
+					llInstanceTicker.visibility = View.VISIBLE
+					llInstanceTicker.requestLayout()
+				}
+			}catch(ex:Throwable){
+				log.trace(ex)
+			}
+		}
 		
 		var content = status.decoded_content
 		
@@ -1863,13 +1907,7 @@ internal class ItemViewHolder(
 		
 	}
 	
-	private fun ellipsize(src : String, limit : Int) : String {
-		return if(src.codePointCount(0, src.length) <= limit) {
-			src
-		} else {
-			"${src.substring(0, src.offsetByCodePoints(0, limit))}…"
-		}
-	}
+	
 	
 	private fun addLinkAndCaption(
 		sb : StringBuilder,
@@ -2397,6 +2435,24 @@ internal class ItemViewHolder(
 						
 						tvName = textView {
 						}.lparams(matchParent, wrapContent)
+						
+						llInstanceTicker = linearLayout{
+							lparams(matchParent, wrapContent)
+
+							ivInstanceTicker = myNetworkImageView{
+							}.lparams(dip(16), dip(16)){
+								isBaselineAligned = false
+							}
+
+							tvInstanceTicker = textView{
+								setTextSize(TypedValue.COMPLEX_UNIT_DIP,10f)
+								gravity=Gravity.CENTER_VERTICAL
+								setPaddingStartEnd( dip(4f), dip(4f) )
+							}.lparams(0,dip(16) ){
+								isBaselineAligned = false
+								weight=1f
+							}
+						}
 						
 						llReply = linearLayout {
 							lparams(matchParent, wrapContent) {

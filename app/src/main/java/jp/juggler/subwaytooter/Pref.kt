@@ -130,6 +130,7 @@ object Pref {
 		return PreferenceManager.getDefaultSharedPreferences(context)
 	}
 	
+	
 	// キー名と設定項目のマップ。インポートやアプリ設定で使う
 	val map = HashMap<String, BasePref<*>>()
 	
@@ -338,6 +339,12 @@ object Pref {
 		"ScrollTopFromColumnStrip",
 		false,
 		R.id.swScrollTopFromColumnStrip
+	)
+	
+	val bpInstanceTicker = BooleanPref(
+		"InstanceTicker",
+		false,
+		R.id.swInstanceTicker
 	)
 	
 

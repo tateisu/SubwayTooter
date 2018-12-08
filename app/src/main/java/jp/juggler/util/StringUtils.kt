@@ -202,6 +202,13 @@ fun String?.filterNotEmpty() : String? = when {
 //	return sb.toString()
 //}
 
+fun ellipsize(src : String, limit : Int) : String =
+	if(src.codePointCount(0, src.length) <= limit) {
+		src
+	} else {
+		"${src.substring(0, src.offsetByCodePoints(0, limit))}…"
+	}
+
 fun String.sanitizeBDI() : String {
 	
 	// 文字列をスキャンしてBDI制御文字をスタックに入れていく

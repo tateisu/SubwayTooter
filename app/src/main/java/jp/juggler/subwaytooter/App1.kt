@@ -483,7 +483,7 @@ class App1 : Application() {
 			val response : Response
 			
 			try {
-				val request_builder = okhttp3.Request.Builder()
+				val request_builder = Request.Builder()
 				request_builder.url(url)
 				request_builder.cacheControl(CACHE_5MIN)
 				

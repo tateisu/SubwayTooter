@@ -808,5 +808,6 @@
     <string name="profile_directory">プロフィールディレクトリ</string>
     <string name="about_this_instance">このインスタンスについて</string>
     <string name="top_page">トップページ</string>
+    <string name="show_instance_ticker">Instance tickerを表示する(カラムのリロードが必要)</string>
 
 </resources>

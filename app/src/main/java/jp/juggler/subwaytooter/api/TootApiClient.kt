@@ -265,8 +265,6 @@ class TootApiClient(
 	//////////////////////////////////////////////////////////////////////
 	// ユーティリティ
 	
-	
-	
 	// リクエストをokHttpに渡してレスポンスを取得する
 	internal inline fun sendRequest(
 		result : TootApiResult,
@@ -1336,22 +1334,6 @@ class TootApiClient(
 	
 }
 
-private fun parseMisskeyApShow(parser : TootParser, jsonObject : JSONObject?) : Any? {
-	return when(jsonObject?.parseString("type")) {
-		"Note" -> {
-			parser.status(jsonObject.optJSONObject("object"))
-		}
-		
-		"User" -> {
-			parser.status(jsonObject.optJSONObject("object"))
-		}
-		
-		else -> {
-			null
-		}
-	}
-}
-
 fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) : TootApiResult? {
 	
 	// misskey由来のアカウントURLは https://host/@user@instance などがある
@@ -1464,66 +1446,56 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootA
 		val host = m.group(1)
 		val noteId = m.group(2)
 		
-		val result = TootApiClient(context, callback = callback)
+		TootApiClient(context, callback = callback)
+			
 			.apply { instance = host }
+			
 			.request(
 				"/api/notes/show",
 				JSONObject()
 					.put("noteId", noteId)
 					.toPostRequestBuilder()
-			) ?: return null
-		
-		val obj = TootParser(
-			context,
-			LinkHelper.newLinkHelper(host, isMisskey = true),
-			serviceType = ServiceType.MISSKEY
-		).status(result.jsonObject)
-		
-		if(obj != null) {
-			if(host.equals(accessInfo.host, ignoreCase = true)) {
-				result.data = obj
-				return result
+			)
+			
+			?.also { result ->
+				TootParser(
+					context,
+					LinkHelper.newLinkHelper(host, isMisskey = true),
+					serviceType = ServiceType.MISSKEY
+				)
+					.status(result.jsonObject)
+					?.apply {
+						if(host.equals(accessInfo.host, ignoreCase = true)) {
+							result.data = this
+							return result
+						}
+						uri.letNotEmpty { url = it }
+					}
 			}
-			val uri = obj.uri
-			if(uri.isNotEmpty() ) {
-				url = uri
-			}
-		}
+			
+			?: return null // cancelled.
 	}
 	
-	return if(accessInfo.isMisskey) {
-		val params = accessInfo.putMisskeyApiToken().put("uri", url)
-		val result = request("/api/ap/show", params.toPostRequestBuilder())
-		if(result != null) {
-			val obj = parseMisskeyApShow(TootParser(context, accessInfo), result.jsonObject)
-			if(obj != null) result.data = obj
-		}
-		result
-	} else {
-		val path = String.format(
-			Locale.JAPAN,
-			Column.PATH_SEARCH,
-			url.encodePercent()
-		) + "&resolve=1"
+	// 使いたいタンス上の投稿IDを取得する
+	val parser = TootParser(context, accessInfo)
+	return when {
 		
-		val result = request(path)
-		if(result != null) {
-			val tmp = TootParser(context, accessInfo).results(result.jsonObject)
-			if(tmp != null && tmp.statuses.isNotEmpty()) {
-				result.data = tmp.statuses[0]
-			}
+		accessInfo.isMisskey -> request(
+			"/api/ap/show",
+			accessInfo.putMisskeyApiToken()
+				.put("uri", url)
+				.toPostRequestBuilder()
+		)?.apply {
+			data = parser.parseMisskeyApShow(jsonObject)
 		}
-		result
+		
+		else -> request(
+			"/api/v1/search?q=${url.encodePercent()}&resolve=true"
+		)?.apply {
+			data = parser.results(jsonObject)?.statuses?.firstOrNull()
+		}
 	}
-	
 }
-
-private inline fun <Z : Any?> String?.useNotEmpty(block : (String) -> Z?) : Z? =
-	if(this?.isNotEmpty() == true) {
-		block(this)
-	} else {
-		null
-	}
 
 fun TootApiClient.syncStatus(
 	accessInfo : SavedAccount,
@@ -1534,7 +1506,7 @@ fun TootApiClient.syncStatus(
 	
 	val uriList = ArrayList<String>(2)
 	
-	statusRemote.url.useNotEmpty {
+	statusRemote.url.letNotEmpty {
 		if(it.contains("/notes/")) {
 			// Misskeyタンスから読んだマストドンの投稿はurlがmisskeyタンス上のものになる
 			// ActivityPub object id としては不適切なので使わない
@@ -1543,12 +1515,12 @@ fun TootApiClient.syncStatus(
 		}
 	}
 	
-	statusRemote.uri.useNotEmpty {
+	statusRemote.uri.letNotEmpty {
 		// uri の方は↑の問題はない
 		uriList.add(it)
 	}
 	
-	if(accessInfo.isMisskey && uriList.size > 1 && uriList[0].contains("@")) {
+	if(accessInfo.isMisskey && uriList.firstOrNull()?.contains("@") == true) {
 		// https://github.com/syuilo/misskey/pull/2832
 		// @user を含むuri はMisskeyだと少し効率が悪いそうなので順序を入れ替える
 		uriList.reverse()

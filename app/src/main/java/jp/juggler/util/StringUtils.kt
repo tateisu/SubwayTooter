@@ -13,12 +13,11 @@ import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-object StringUtils{
+object StringUtils {
 	val log = LogCategory("StringUtils")
 	
 	val hexLower =
 		charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
-	
 	
 	// BDI制御文字からその制御文字を閉じる文字を得るためのマップ
 	val sanitizeBdiMap = HashMap<Char, Char>().apply {
@@ -134,6 +133,12 @@ fun CharSequence.codePointBefore(index : Int) : Int {
 	}
 }
 
+inline fun <S : CharSequence, Z : Any?> S?.letNotEmpty(block : (S) -> Z?) : Z? =
+	if(this?.isNotEmpty() == true) {
+		block(this)
+	} else {
+		null
+	}
 
 ////////////////////////////////////////////////////////////////////
 // string
@@ -144,7 +149,6 @@ val charsetUTF8 = Charsets.UTF_8
 fun String.encodeUTF8() = this.toByteArray(charsetUTF8)
 
 fun ByteArray.decodeUTF8() = this.toString(charsetUTF8)
-
 
 // 16進ダンプ
 private fun ByteArray.encodeHex() : String {
@@ -239,7 +243,6 @@ fun String.encodePercent(allow : String? = null) : String = Uri.encode(this, all
 //	return sb
 //}
 
-
 // 指定した文字数までの部分文字列を返す
 // 文字列の長さが足りない場合は指定オフセットから終端までの長さを返す
 fun String.safeSubstring(count : Int, offset : Int = 0) = when {
@@ -303,7 +306,6 @@ fun String?.mayUri() : Uri? = try {
 }
 
 fun String.unescapeUri() : String = Uri.decode(this)
-
 
 ////////////////////////////////////////////////////////////////////
 // Throwable

@@ -9,6 +9,7 @@ import org.json.JSONObject
 
 import jp.juggler.subwaytooter.util.WordTrieTree
 import jp.juggler.subwaytooter.util.LinkHelper
+import jp.juggler.util.parseString
 
 class TootParser(
 	val context : Context,
@@ -42,4 +43,14 @@ class TootParser(
 
 	
 	fun getMisskeyUserRelation(whoId:EntityId) = misskeyUserRelationMap[whoId]
+	
+	fun parseMisskeyApShow( jsonObject : JSONObject? ) : Any? {
+		// ap/show の戻り値はActivityPubオブジェクトではなく、Misskeyのエンティティです。
+		return when(jsonObject?.parseString("type")) {
+			"Note" -> status(jsonObject.optJSONObject("object"))
+			"User" -> account(jsonObject.optJSONObject("object"))
+			else -> null
+		}
+	}
+	
 }

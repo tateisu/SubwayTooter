@@ -34,7 +34,7 @@ class VersionString(src : String?) : Comparable<VersionString> {
 	
 	init {
 		this.src = src ?: ""
-		if(src != null && src.isNotEmpty()) {
+		if(src?.isNotEmpty() == true) {
 			val end = src.length
 			var next = 0
 			while(next < end) {

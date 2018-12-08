@@ -88,7 +88,7 @@ class MyNetworkImageView : AppCompatImageView {
 		
 		val gif_url = if(Pref.bpEnableGifAnimation(pref)) gifUrlArg else null
 		
-		if(gif_url != null && gif_url.isNotEmpty()) {
+		if(gif_url?.isNotEmpty() == true) {
 			mUrl = gif_url
 			mMayGif = true
 		} else {

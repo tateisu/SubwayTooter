@@ -308,15 +308,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private var mushroom_end : Int = 0
 	
 	private val link_click_listener : MyClickableSpanClickCallback = { _, span ->
-		// ブラウザで開く
-		span.url.mayUri()?.let {
-			try {
-				val intent = Intent(Intent.ACTION_VIEW, it)
-				startActivity(intent)
-			} catch(ex : Throwable) {
-				log.trace(ex)
-			}
-		}
+		App1.openBrowser(this@ActPost,span.url)
 	}
 	
 	////////////////////////////////////////////////////////////////

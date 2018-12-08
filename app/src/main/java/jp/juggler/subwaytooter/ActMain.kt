@@ -1529,15 +1529,7 @@ class ActMain : AppCompatActivity()
 	}
 	
 	fun startAccessTokenUpdate(data : Intent) {
-		val uri = data.data ?: return
-		// ブラウザで開く
-		try {
-			val intent = Intent(Intent.ACTION_VIEW, uri)
-			startActivity(intent)
-		} catch(ex : Throwable) {
-			log.trace(ex)
-		}
-		
+		App1.openBrowser(this,data.data)
 	}
 	
 	// ActOAuthCallbackで受け取ったUriを処理する

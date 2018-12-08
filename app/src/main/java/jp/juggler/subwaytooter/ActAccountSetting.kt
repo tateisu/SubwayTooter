@@ -36,7 +36,6 @@ import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
 import okhttp3.MediaType
 import okhttp3.MultipartBody
-import okhttp3.Request
 import okhttp3.RequestBody
 import okio.BufferedSink
 import org.json.JSONObject
@@ -508,7 +507,7 @@ class ActAccountSetting
 			
 			R.id.btnAccountRemove -> performAccountRemove()
 			R.id.btnVisibility -> performVisibility()
-			R.id.btnOpenBrowser -> open_browser("https://" + account.host + "/")
+			R.id.btnOpenBrowser -> App1.openBrowser(this@ActAccountSetting,"https://" + account.host + "/")
 			R.id.btnPushSubscription -> startTest()
 			
 			R.id.btnUserCustom -> ActNickname.open(
@@ -543,15 +542,6 @@ class ActAccountSetting
 				startActivity(intent)
 				
 			}
-		}
-	}
-	
-	private fun open_browser(url : String) {
-		try {
-			val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-			startActivity(intent)
-		} catch(ex : Throwable) {
-			log.trace(ex, "open_browser failed.")
 		}
 	}
 	

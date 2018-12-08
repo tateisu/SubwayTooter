@@ -10,7 +10,6 @@ import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.LogCategory
-import jp.juggler.util.mayUri
 import jp.juggler.util.showToast
 import org.conscrypt.OpenSSLX509Certificate
 import java.util.*
@@ -70,6 +69,11 @@ internal class ViewHolderHeaderInstance(
 		btnEmail.setOnClickListener(this)
 		btnContact.setOnClickListener(this)
 		ivThumbnail.setOnClickListener(this)
+		
+		
+		viewRoot.findViewById<View>(R.id.btnAbout)?.setOnClickListener(this)
+		viewRoot.findViewById<View>(R.id.btnAboutMore)?.setOnClickListener(this)
+		viewRoot.findViewById<View>(R.id.btnExplore)?.setOnClickListener(this)
 		
 		tvDescription.movementMethod = MyLinkMovementMethod
 	}
@@ -180,11 +184,15 @@ internal class ViewHolderHeaderInstance(
 						Certificate : ${cert.type}
 						subject : ${cert.subjectDN}
 						subjectAlternativeNames : ${
-							cert.subjectAlternativeNames
-								?.joinToString(", "){
-									try{ it?.last() }catch(ignored:Throwable){ it }
-										?.toString() ?: "null"
+						cert.subjectAlternativeNames
+							?.joinToString(", ") {
+								try {
+									it?.last()
+								} catch(ignored : Throwable) {
+									it
 								}
+									?.toString() ?: "null"
+							}
 						}
 						issuer : ${cert.issuerX500Principal}
 						end : ${cert.notAfter}
@@ -204,10 +212,6 @@ internal class ViewHolderHeaderInstance(
 	
 	override fun onClick(v : View) {
 		when(v.id) {
-			
-			R.id.btnInstance -> instance?.uri?.let { uri ->
-				App1.openCustomTab(activity, "https://$uri/about")
-			}
 			
 			R.id.btnEmail -> instance?.email?.let { email ->
 				try {
@@ -238,14 +242,12 @@ internal class ViewHolderHeaderInstance(
 				)
 			}
 			
-			R.id.ivThumbnail -> instance?.thumbnail?.mayUri()?.let { uri ->
-				try {
-					activity.startActivity(Intent(Intent.ACTION_VIEW, uri))
-				} catch(ex : Throwable) {
-					log.e(ex, "startActivity failed. $uri")
-					showToast(activity, true, "missing web browser")
-				}
-			}
+			R.id.btnInstance -> App1.openBrowser(activity, "https://${column.instance_uri}/about")
+			R.id.ivThumbnail -> App1.openBrowser(activity, instance?.thumbnail)
+			R.id.btnAbout -> App1.openBrowser(activity, "https://${column.instance_uri}/about")
+			R.id.btnAboutMore ->
+				App1.openBrowser(activity, "https://${column.instance_uri}/about/more")
+			R.id.btnExplore -> App1.openBrowser(activity, "https://${column.instance_uri}/explore")
 		}
 	}
 	

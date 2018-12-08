@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/llInstanceInformation"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:descendantFocusability="blocksDescendants"
     android:orientation="vertical"
-    android:paddingBottom="128dp"
-    android:paddingTop="12dp"
-    android:id="@+id/llInstanceInformation"
     android:paddingStart="12dp"
+    android:paddingTop="12dp"
     android:paddingEnd="12dp"
+    android:paddingBottom="128dp"
 
     >
 
@@ -20,17 +21,10 @@
         android:text="@string/instance"
         />
 
-    <LinearLayout style="@style/setting_row_form">
-
-        <Button
-            android:id="@+id/btnInstance"
-            style="@style/setting_horizontal_stretch"
-            android:textAllCaps="false"
-            android:background="@drawable/btn_bg_transparent"
-            android:gravity="start|center_vertical"
-            />
-
-    </LinearLayout>
+    <Button
+        android:id="@+id/btnInstance"
+        style="@style/setting_row_button"
+        />
 
     <View style="@style/setting_divider"/>
 
@@ -71,16 +65,10 @@
         android:text="@string/email"
         />
 
-    <LinearLayout style="@style/setting_row_form">
-
-        <Button
-            android:id="@+id/btnEmail"
-            style="@style/setting_horizontal_stretch"
-            android:textAllCaps="false"
-            android:background="@drawable/btn_bg_transparent"
-            android:gravity="start|center_vertical"
-            />
-    </LinearLayout>
+    <Button
+        android:id="@+id/btnEmail"
+        style="@style/setting_row_button"
+        />
 
     <View style="@style/setting_divider"/>
 
@@ -89,16 +77,10 @@
         android:text="@string/contact"
         />
 
-    <LinearLayout style="@style/setting_row_form">
-
-        <Button
-            android:id="@+id/btnContact"
-            style="@style/setting_horizontal_stretch"
-            android:textAllCaps="false"
-            android:background="@drawable/btn_bg_transparent"
-            android:gravity="start|center_vertical"
-            />
-    </LinearLayout>
+    <Button
+        android:id="@+id/btnContact"
+        style="@style/setting_row_button"
+        />
 
     <View style="@style/setting_divider"/>
 
@@ -112,12 +94,11 @@
         <TextView
             android:id="@+id/tvLanguages"
             style="@style/setting_horizontal_stretch"
-            android:textAllCaps="false"
             android:background="@drawable/btn_bg_transparent"
             android:gravity="start|center_vertical"
+            android:textAllCaps="false"
             />
     </LinearLayout>
-
 
     <View style="@style/setting_divider"/>
 
@@ -158,15 +139,10 @@
         android:text="@string/domain_count"
         />
 
-    <LinearLayout style="@style/setting_row_form">
-
-        <TextView
-            android:id="@+id/tvDomainCount"
-            style="@style/setting_horizontal_stretch"
-            />
-
-    </LinearLayout>
-
+    <TextView
+        android:id="@+id/tvDomainCount"
+        style="@style/setting_row_form"
+        />
 
     <View style="@style/setting_divider"/>
 
@@ -177,7 +153,6 @@
 
     <LinearLayout style="@style/setting_row_form">
 
-
         <jp.juggler.subwaytooter.view.MyNetworkImageView
             android:id="@+id/ivThumbnail"
             android:layout_width="match_parent"
@@ -185,9 +160,7 @@
             android:scaleType="fitCenter"
             />
 
-
     </LinearLayout>
-
 
     <View style="@style/setting_divider"/>
 
@@ -196,14 +169,35 @@
         android:text="@string/description"
         />
 
-    <LinearLayout style="@style/setting_row_form">
+    <jp.juggler.subwaytooter.view.MyTextView
+        android:id="@+id/tvDescription"
+        style="@style/setting_row_form"
+        />
 
-        <jp.juggler.subwaytooter.view.MyTextView
-            android:id="@+id/tvDescription"
-            style="@style/setting_horizontal_stretch"
-            />
+    <View style="@style/setting_divider"/>
 
-    </LinearLayout>
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/links"
+        />
+
+    <Button
+        android:id="@+id/btnAbout"
+        style="@style/setting_row_button"
+        android:text="@string/top_page"
+        />
+
+    <Button
+        android:id="@+id/btnAboutMore"
+        style="@style/setting_row_button"
+        android:text="@string/about_this_instance"
+        />
+
+    <Button
+        android:id="@+id/btnExplore"
+        style="@style/setting_row_button"
+        android:text="@string/profile_directory"
+        />
 
     <View style="@style/setting_divider"/>
 
@@ -212,14 +206,11 @@
         android:text="@string/tls_handshake"
         />
 
-    <LinearLayout style="@style/setting_row_form">
+    <jp.juggler.subwaytooter.view.MyTextView
+        android:id="@+id/tvHandshake"
+        style="@style/setting_row_form"
+        />
 
-        <jp.juggler.subwaytooter.view.MyTextView
-            android:id="@+id/tvHandshake"
-            style="@style/setting_horizontal_stretch"
-            />
-
-    </LinearLayout>
     <View style="@style/setting_divider"/>
 
 </LinearLayout>

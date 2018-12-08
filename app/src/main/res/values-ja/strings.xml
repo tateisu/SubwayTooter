@@ -804,5 +804,9 @@
     <string name="blank_cw">(空欄CW)</string>
     <string name="actions_for_instance">タンスへのアクション</string>
     <string name="animation">アニメーション</string>
+    <string name="links">リンク</string>
+    <string name="profile_directory">プロフィールディレクトリ</string>
+    <string name="about_this_instance">このインスタンスについて</string>
+    <string name="top_page">トップページ</string>
 
 </resources>

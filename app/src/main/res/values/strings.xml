@@ -821,5 +821,9 @@
     <string name="actions_for_instance">Actions for this instance</string>
     <string name="animation">Animation</string>
     <string name="tls_handshake">TLS Handshake</string>
+    <string name="links">Links</string>
+    <string name="profile_directory">Profile directory</string>
+    <string name="about_this_instance">About this instance</string>
+    <string name="top_page">Top page</string>
 
 </resources>

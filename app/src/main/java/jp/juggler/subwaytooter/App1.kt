@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.net.Uri
 import android.os.Build
 import android.support.customtabs.CustomTabsIntent
 import android.util.Log
@@ -541,12 +542,25 @@ class App1 : Application() {
 			
 		}
 		
+		fun openBrowser(context:Context,uri: Uri?){
+			try {
+				uri?:return
+				val intent = Intent(Intent.ACTION_VIEW,uri)
+				context.startActivity(intent)
+			}catch(ex:Throwable){
+				log.trace(ex,"openBrowser")
+				showToast(context, true, "missing web browser")
+			}
+		}
+		
+		fun openBrowser(context:Context,url:String?) =
+			openBrowser(context,url.mayUri())
+
 		// Chrome Custom Tab を開く
 		fun openCustomTab(activity : Activity, url : String) {
 			try {
 				if(Pref.bpDontUseCustomTabs(pref)) {
-					val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-					activity.startActivity(intent)
+					openBrowser(activity,url)
 				} else {
 					
 					if(url.startsWith("http") && Pref.bpPriorChrome(pref)) {

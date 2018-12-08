@@ -687,17 +687,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				R.id.btnPrevious -> loadDelta(- 1)
 				R.id.btnNext -> loadDelta(+ 1)
 				R.id.btnDownload -> download(media_list[idx])
-				
-				//			case R.id.btnBrowser:
-				//				share( Intent.ACTION_VIEW, media_list.get( idx ) );
-				//				break;
-				//			case R.id.btnShare:
-				//				share( Intent.ACTION_SEND, media_list.get( idx ) );
-				//				break;
-				//			case R.id.btnCopy:
-				//				copy( media_list.get( idx ) );
-				//				break;
-				
 				R.id.btnMore -> more(media_list[idx])
 			}
 		} catch(ex : Throwable) {

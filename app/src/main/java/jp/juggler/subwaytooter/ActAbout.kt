@@ -9,7 +9,6 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import jp.juggler.util.LogCategory
-import jp.juggler.util.toUri
 
 class ActAbout : AppCompatActivity() {
 	
@@ -62,15 +61,15 @@ class ActAbout : AppCompatActivity() {
 		
 		b = findViewById(R.id.btnRate)
 		b.text = url_store
-		b.setOnClickListener { open_browser(url_store) }
+		b.setOnClickListener {App1.openBrowser(this@ActAbout,url_store) }
 		
 		b = findViewById(R.id.btnIconDesign)
 		b.text = url_futaba
-		b.setOnClickListener { open_browser(url_futaba) }
+		b.setOnClickListener { App1.openBrowser(this@ActAbout,url_futaba) }
 		
 		b = findViewById(R.id.btnWeblate)
 		b.text = "Please help translation!"
-		b.setOnClickListener { open_browser(url_weblate) }
+		b.setOnClickListener { App1.openBrowser(this@ActAbout,url_weblate) }
 		
 		val ll = findViewById<LinearLayout>(R.id.llContributors)
 		val density = resources.displayMetrics.density
@@ -91,7 +90,7 @@ class ActAbout : AppCompatActivity() {
 			//
 			b.setBackgroundResource(R.drawable.btn_bg_transparent)
 			b.setPadding(padding, padding, padding, padding)
-			b.setAllCaps(false)
+			b.isAllCaps = false
 			//
 			b.text = getString(R.string.search_for, acct) + "\n" + getString(R.string.thanks_for, works)
 			b.setOnClickListener {
@@ -105,16 +104,4 @@ class ActAbout : AppCompatActivity() {
 			i += 2
 		}
 	}
-	
-	private fun open_browser(url : String) {
-		try {
-			val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-			startActivity(intent)
-		} catch(ex : Throwable) {
-			log.trace(ex,"open_browser failed.")
-		}
-		
-	}
-	
-	
 }

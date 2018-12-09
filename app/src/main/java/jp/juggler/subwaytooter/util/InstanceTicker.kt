@@ -53,7 +53,7 @@ object InstanceTicker {
 		val imageUrl : String,
 		val imageWidth : Int,
 		val colorText : Int,
-		val colorBg : IntArray
+		val colorBg : List<Int>
 	) {
 		
 		GnuSocial(
@@ -61,7 +61,7 @@ object InstanceTicker {
 			"https://cdn.weep.me/img/gnus.png",
 			16,
 			color("#fff"),
-			intArrayOf(color("#000"), color("#a23"))
+			listOf(color("#a23"))
 		),
 		
 		MastodonJapan(
@@ -69,7 +69,7 @@ object InstanceTicker {
 			"https://cdn.weep.me/img/mstdn.png",
 			16,
 			color("#fff"),
-			intArrayOf(color("#000"), color("#27c"))
+			listOf(color("#27c"))
 		),
 		
 		MastodonAbroad(
@@ -77,7 +77,7 @@ object InstanceTicker {
 			"https://cdn.weep.me/img/mstdn.png",
 			16,
 			color("#fff"),
-			intArrayOf(color("#000"), color("#49c"))
+			listOf(color("#49c"))
 		),
 		
 		Pleroma(
@@ -85,7 +85,7 @@ object InstanceTicker {
 			"https://cdn.weep.me/img/plrm.png",
 			16,
 			color("#da5"),
-			intArrayOf(color("#000"), color("#123"))
+			listOf(color("#123"))
 		),
 		
 		Misskey(
@@ -93,7 +93,7 @@ object InstanceTicker {
 			"https://cdn.weep.me/img/msky2.png",
 			36,
 			color("#fff"),
-			intArrayOf(color("#000"), color("#29b"))
+			listOf(color("#29b"))
 		),
 		
 		PeerTube(
@@ -101,7 +101,7 @@ object InstanceTicker {
 			"https://cdn.weep.me/img/peertube2.png",
 			16,
 			color("#000"),
-			intArrayOf(color("#000"), color("#fff"), color("#fff"), color("#fff"))
+			listOf(color("#fff"), color("#fff"), color("#fff"))
 		),
 		
 		// ロシアの大手マイクロブログ
@@ -110,7 +110,7 @@ object InstanceTicker {
 			"https://cdn.weep.me/img/juick2.png",
 			16,
 			color("#fff"),
-			intArrayOf(color("#000"), color("#000"))
+			listOf(color("#000"))
 		)
 		;
 		
@@ -123,7 +123,19 @@ object InstanceTicker {
 			val map = HashMap<String, GradientDrawable>()
 		}
 		
-		val key : String = array.joinToString(",") { it.toString() }
+		constructor(src : List<Int>) : this(
+			IntArray(src.size + 1) {
+				if(it == 0) Color.TRANSPARENT else src[it - 1]
+			}
+		)
+		
+		constructor(src : Int) : this(
+			IntArray(2) {
+				if(it == 0) Color.TRANSPARENT else src
+			}
+		)
+		
+		val key = array.joinToString(",") { it.toString() }
 		
 		val size = array.size
 		
@@ -143,7 +155,10 @@ object InstanceTicker {
 		}
 	}
 	
+	private const val colorClosed = Color.BLACK or 0x666666
+	
 	class Item(type : Type, cols : List<String>) {
+		// 0 type
 		val type : Type
 		//[1]インスタンス名（ドメイン） (空文字列かもしれない)
 		val name : String
@@ -180,7 +195,7 @@ object InstanceTicker {
 			if(cols[1] == "閉鎖") {
 				this.name = "閉鎖済み"
 				this.colorText = Color.WHITE
-				this.colorBg = ColorBg(intArrayOf(color("#666")))
+				this.colorBg = ColorBg(colorClosed)
 			} else {
 				this.name = ellipsize(
 					when {
@@ -195,7 +210,6 @@ object InstanceTicker {
 				val ia = cols[4].split(',')
 					.filter { it.isNotBlank() }
 					.map { color(it) }
-					.toIntArray()
 				
 				this.colorBg = ColorBg(
 					when {
@@ -206,9 +220,9 @@ object InstanceTicker {
 			}
 		}
 	}
-
+	
 	var lastList = ConcurrentHashMap<String, Item>()
-
+	
 	private var timeNextLoad = 0L
 	private val reLine = Pattern.compile("""([^\x0d\x0a]+)""")
 	
@@ -227,6 +241,7 @@ object InstanceTicker {
 			while(m.find()) {
 				try {
 					val cols = m.group(1).split('\t')
+					if(cols.size < 7 || cols[0].contains('[')) continue
 					
 					val type = try {
 						findType(cols[0].toInt())
@@ -235,7 +250,6 @@ object InstanceTicker {
 					} ?: Type.MastodonJapan
 					
 					val item = Item(type, cols)
-					
 					
 					if(item.instance.isNotEmpty()) list[item.instance] = item
 				} catch(ex : Throwable) {

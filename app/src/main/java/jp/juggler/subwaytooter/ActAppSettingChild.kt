@@ -321,6 +321,7 @@ class ActAppSettingChild : AppCompatActivity()
 			, R.id.btnCcdContentAcctReset
 			, R.id.btnCcdContentTextEdit
 			, R.id.btnCcdContentTextReset
+		,R.id.btnInstanceTickerCopyright
 		).forEach {
 			findViewById<View>(it)?.setOnClickListener(this)
 		}
@@ -907,6 +908,8 @@ class ActAppSettingChild : AppCompatActivity()
 			} catch(ex : Throwable) {
 				showToast(this, ex, "could not open picker for font")
 			}
+			
+			R.id.btnInstanceTickerCopyright -> App1.openBrowser(this@ActAppSettingChild,"https://cdn.weep.me/mastodon/")
 		}
 	}
 	

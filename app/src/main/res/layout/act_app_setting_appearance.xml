@@ -472,7 +472,11 @@
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <Button
+            style="@style/setting_row_button"
+            android:text="@string/instance_ticker_copyright"
+            android:id="@+id/btnInstanceTickerCopyright"
+            />
 
     </LinearLayout>
 </ScrollView>

@@ -6,6 +6,8 @@ use File::Find;
 use File::Path qw(make_path remove_tree);
 use GD;
 
+my $dry_run = grep{ $_ eq '--dry-run'} @ARGV;
+
 my $resdir = 'app/src/main/res';
 my $dstdir = 'tmp';
 my $tmpfile = 'tmp/tmp.png';
@@ -89,6 +91,8 @@ Loop: for( my $y = 0; $y < $height ;++$y){
 	binmode $fh;
 	print $fh $image->png;
 	close($fh) or die "$dstfile $!";
+
+	return if $dry_run;
 
 	if(1){
 		my $relpath_webp = $relpath;

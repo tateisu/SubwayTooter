@@ -827,5 +827,7 @@
     <string name="top_page">Top page</string>
     <string name="show_instance_ticker">Show #InstanceTicker (column reload required)</string>
     <string name="instance_ticker_copyright">#InstanceTicker\nhttps://cdn.weep.me/mastodon/\nCopyright 2018 weepjp, kyori19.</string>
+    <string name="location">Location</string>
+    <string name="birthday">Birthday</string>
 
 </resources>

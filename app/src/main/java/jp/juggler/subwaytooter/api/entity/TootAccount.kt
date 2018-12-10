@@ -111,7 +111,60 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				dst
 			}
 		}
+		
+		// https://github.com/syuilo/misskey/pull/3499
+		private fun parseMisskeyFields(src : JSONObject) : ArrayList<Field>? {
+			
+			var dst : ArrayList<Field>? = null
+			
+			fun appendField(dstArg : ArrayList<Field>?, name : String, caption : String, url : String) =
+				(dstArg ?: ArrayList()).apply {
+					val value =
+						"""<a href="${HTMLDecoder.encodeEntity(url)}" rel="me nofollow noopener" target="_blank"><span>${HTMLDecoder.encodeEntity(
+							caption
+						)}</span></a>"""
+					add(Field(name, value, 0L))
+				}
+			
+			runCatching {
+				src.optJSONObject("twitter")?.let {
+					dst = appendField(
+						dst,
+						"Twitter",
+						"@${it.parseString("screenName")}",
+						"https://twitter.com/intent/user?user_id=${it.parseString("userId")}"
+					
+					)
+				}
+			}
+			
+			runCatching {
+				src.optJSONObject("github")?.let {
+					dst = appendField(
+						dst,
+						"GitHub",
+						"@${it.parseString("login")}",
+						"https://github.com/${it.parseString("login")}"
+					)
+				}
+				
+			}
+
+			runCatching {
+				src.optJSONObject("discord")?.let {
+					dst = appendField(
+						dst,
+						"Discord",
+						"@${it.parseString("username")}#${it.parseString("discriminator")}",
+						"https://discordapp.com/users/${it.parseString("id")}"
+					)
+				}
+			}
+			
+			return if(dst?.isNotEmpty() == true) dst else null
+		}
 	}
+	
 	
 	//URL of the user's profile page (can be remote)
 	// https://mastodon.juggler.jp/@tateisu
@@ -189,6 +242,10 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	var pinnedNotes : ArrayList<TootStatus>? = null
 	private var pinnedNoteIds : ArrayList<String>? = null
 	
+	// misskey (only /api/users/show)
+	var location : String? = null
+	var birthday : String? = null
+	
 	init {
 		var sv : String?
 		
@@ -216,7 +273,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.movedRef = null
 			this.locked = src.optBoolean("isLocked")
 			
-			this.fields = null
+			
 			
 			this.bot = src.optBoolean("isBot", false)
 			this.isCat = src.optBoolean("isCat", false)
@@ -230,7 +287,10 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.acct = when {
 				
 				// アクセス元から見て内部ユーザなら short acct
-				remoteHost?.equals(parser.linkHelper.host, ignoreCase = true) != false -> username
+				remoteHost?.equals(
+					parser.linkHelper.host,
+					ignoreCase = true
+				) != false -> username
 				
 				// アクセス元から見て外部ユーザならfull acct
 				else -> "${username}@$host"
@@ -254,6 +314,14 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				list.forEach { it.pinned = true }
 				this.pinnedNotes = if(list.isNotEmpty()) list else null
 			}
+			
+			val profile = src.optJSONObject("profile")
+			this.location = profile?.parseString("location")
+			this.birthday = profile?.parseString("birthday")
+			
+			
+			this.fields = parseMisskeyFields(src)
+			
 			
 			UserRelationMisskey.fromAccount(parser, src, id)
 			

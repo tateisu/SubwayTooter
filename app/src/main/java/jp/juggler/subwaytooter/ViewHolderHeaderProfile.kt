@@ -26,6 +26,7 @@ import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.util.getAttributeColor
 import jp.juggler.util.intoStringResource
 import jp.juggler.util.setIconDrawableId
+import jp.juggler.util.vg
 import org.jetbrains.anko.textColor
 
 internal class ViewHolderHeaderProfile(
@@ -42,6 +43,8 @@ internal class ViewHolderHeaderProfile(
 	private val btnFollowers : Button
 	private val btnStatusCount : Button
 	private val tvNote : TextView
+	private val tvMisskeyExtra : TextView
+	
 	private val btnFollow : ImageButton
 	private val ivFollowedBy : ImageView
 	private val llProfile : View
@@ -77,6 +80,7 @@ internal class ViewHolderHeaderProfile(
 		btnFollowers = viewRoot.findViewById(R.id.btnFollowers)
 		btnStatusCount = viewRoot.findViewById(R.id.btnStatusCount)
 		tvNote = viewRoot.findViewById(R.id.tvNote)
+		tvMisskeyExtra= viewRoot.findViewById(R.id.tvMisskeyExtra)
 		btnMore = viewRoot.findViewById(R.id.btnMore)
 		btnFollow = viewRoot.findViewById(R.id.btnFollow)
 		ivFollowedBy = viewRoot.findViewById(R.id.ivFollowedBy)
@@ -199,6 +203,7 @@ internal class ViewHolderHeaderProfile(
 			name_invalidator.register(null)
 			
 			tvNote.text = ""
+			tvMisskeyExtra.text=""
 			note_invalidator.register(null)
 			
 			btnStatusCount.text = activity.getString(R.string.statuses) + "\n" + "?"
@@ -230,43 +235,78 @@ internal class ViewHolderHeaderProfile(
 			tvRemoteProfileWarning.visibility =
 				if(column.access_info.isRemoteUser(who)) View.VISIBLE else View.GONE
 			
-			val sb = SpannableStringBuilder()
-			sb.append("@").append(access_info.getFullAcct(who))
-			if(whoDetail?.locked ?: who.locked) {
-				sb.append(" ")
-				val start = sb.length
-				sb.append("locked")
-				val end = sb.length
-				val info = EmojiMap201709.sShortNameToImageId["lock"]
-				if(info != null) {
-					sb.setSpan(
-						EmojiImageSpan(activity, info.image_id),
-						start,
-						end,
-						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-					)
+			fun SpannableStringBuilder.appendSpan(text:String,span:Any){
+				val start = length
+				append(text)
+				setSpan(
+					span,
+					start,
+					length,
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+			}
+			
+			tvAcct.text = SpannableStringBuilder().apply{
+
+				append("@")
+
+				append(access_info.getFullAcct(who))
+
+				if(whoDetail?.locked ?: who.locked) {
+					append(" ")
+					val info = EmojiMap201709.sShortNameToImageId["lock"]
+					if(info != null) {
+						appendSpan("locked", EmojiImageSpan(activity, info.image_id))
+					}else {
+						append("locked")
+					}
+				}
+
+				if(who.bot) {
+					append(" ")
+					val info = EmojiMap201709.sShortNameToImageId["robot_face"]
+					if(info != null) {
+						appendSpan("bot", EmojiImageSpan(activity, info.image_id))
+					}else {
+						append("bot")
+					}
 				}
 			}
-			if(who.bot) {
-				sb.append(" ")
-				val start = sb.length
-				sb.append("bot")
-				val end = sb.length
-				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
-				if(info != null) {
-					sb.setSpan(
-						EmojiImageSpan(activity, info.image_id),
-						start,
-						end,
-						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-					)
-				}
-			}
-			tvAcct.text = sb
+			
 			
 			val note = whoRef.decoded_note
 			tvNote.text = note
 			note_invalidator.register(note)
+			
+			tvMisskeyExtra.text=SpannableStringBuilder().apply{
+				var s = whoDetail?.location
+				if( s?.isNotEmpty() == true){
+					if(isNotEmpty()) append('\n')
+					appendSpan(
+						activity.getString(R.string.location),
+						EmojiImageSpan(
+						activity,
+						R.drawable.ic_location,
+						useColorShader = true
+					))
+					append(' ')
+					append(s)
+				}
+				s = whoDetail?.birthday
+				if( s?.isNotEmpty() == true){
+					if(isNotEmpty()) append('\n')
+					appendSpan(
+						activity.getString(R.string.birthday),
+						EmojiImageSpan(
+							activity,
+							R.drawable.ic_cake,
+							useColorShader = true
+						))
+					append(' ')
+					append(s)
+				}
+			}
+			vg(tvMisskeyExtra,tvMisskeyExtra.text.isNotEmpty())
 			
 			btnStatusCount.text = activity.getString(R.string.statuses) + "\n" +
 				(whoDetail?.statuses_count ?: who.statuses_count)
@@ -280,7 +320,8 @@ internal class ViewHolderHeaderProfile(
 			
 			showMoved(who, who.movedRef)
 			
-			if(who.fields != null) {
+			val fields = whoDetail?.fields ?: who.fields
+			if(fields != null) {
 				
 				llFields.visibility = View.VISIBLE
 				
@@ -290,7 +331,8 @@ internal class ViewHolderHeaderProfile(
 					linkHelper = access_info,
 					short = true,
 					emojiMapCustom = who.custom_emojis,
-					emojiMapProfile = who.profile_emojis
+					emojiMapProfile = who.profile_emojis,
+					forceHtml = true // misskey用のfieldはアプリ内部でHTMLを生成している
 				)
 				
 				// fieldsのnameにはカスタム絵文字が適用されない
@@ -305,7 +347,7 @@ internal class ViewHolderHeaderProfile(
 				val nameTypeface = ActMain.timeline_font_bold
 				val valueTypeface = ActMain.timeline_font
 				
-				for(item in who.fields) {
+				for(item in fields) {
 					
 					//
 					val nameView = MyTextView(activity)

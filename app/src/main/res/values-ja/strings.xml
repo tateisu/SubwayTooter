@@ -809,5 +809,7 @@
     <string name="about_this_instance">このインスタンスについて</string>
     <string name="top_page">トップページ</string>
     <string name="show_instance_ticker">#InstanceTicker を表示する(カラムのリロードが必要)</string>
+    <string name="location">位置</string>
+    <string name="birthday">誕生日</string>
 
 </resources>

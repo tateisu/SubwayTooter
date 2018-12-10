@@ -1460,20 +1460,35 @@ object MisskeyMarkdownDecoder {
 		addParser("検Ss", searchParser)
 		addParser("?", linkParser)
 		
+		// メールアドレスの@の手前に使える文字なら真
+		val mailChars = SparseBooleanArray().apply{
+			for(it in '0' .. '9'){put(it.toInt(),true) }
+			for(it in 'A' .. 'Z'){put(it.toInt(),true) }
+			for(it in 'a' .. 'z'){put(it.toInt(),true) }
+			"""${'$'}!#%&'`"*+-/=?^_{|}~""".forEach {put(it.toInt(),true) }
+		}
 		
 		addParser("@", {
+			
 			val matcher = remainMatcher(TootAccount.reMention)
+
 			when {
 				! matcher.find() -> null
-				else -> makeDetected(
-					NodeType.MENTION,
-					arrayOf(
-						matcher.group(1),
-						matcher.group(2) ?: "" // username, host
-					),
-					matcher.start(), matcher.end(),
-					"", 0, 0
-				)
+				
+				else -> when {
+					// 直前の文字がメールアドレスの@の手前に使える文字ならメンションではない
+					pos > 0 && mailChars.get(text.codePointBefore(pos)) -> null
+
+					else -> makeDetected(
+						NodeType.MENTION,
+						arrayOf(
+							matcher.group(1),
+							matcher.group(2) ?: "" // username, host
+						),
+						matcher.start(), matcher.end(),
+						"", 0, 0
+					)
+				}
 			}
 		})
 		

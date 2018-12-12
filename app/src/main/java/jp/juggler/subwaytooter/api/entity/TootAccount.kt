@@ -426,17 +426,31 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			}
 		}
 		
-		// https://github.com/syuilo/misskey/pull/3499
-		// https://github.com/syuilo/misskey/pull/3586
 		private fun parseMisskeyFields(src : JSONObject) : ArrayList<Field>? {
 			
 			var dst : ArrayList<Field>? = null
 			
+			// リモートユーザーはAP経由のフィールドが表示される
+			// https://github.com/syuilo/misskey/pull/3590/files
+			src.optJSONArray("fields")?.forEach { o->
+				if(o !is JSONObject ) return@forEach
+				//plain text
+				val n = o.parseString("name") ?: return@forEach
+				// mfm
+				val v = o.parseString("value") ?: ""
+				dst = (dst ?: ArrayList()).apply { add(Field(n, v, 0L)) }
+			}
+			
+			
+			
+			
+
+			// misskeyローカルユーザーはTwitter等の連携をフィールドに表示する
+			// https://github.com/syuilo/misskey/pull/3499
+			// https://github.com/syuilo/misskey/pull/3586
+
 			fun appendField(name : String, caption : String, url : String) {
-				val value =
-					"""<a href="${HTMLDecoder.encodeEntity(url)}" rel="me nofollow noopener" target="_blank"><span>${HTMLDecoder.encodeEntity(
-						caption
-					)}</span></a>"""
+				val value = """[$caption]($url)"""
 				dst = (dst ?: ArrayList()).apply { add(Field(name, value, 0L)) }
 			}
 			

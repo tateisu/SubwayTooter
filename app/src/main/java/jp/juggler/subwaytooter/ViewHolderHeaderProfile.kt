@@ -325,22 +325,22 @@ internal class ViewHolderHeaderProfile(
 				
 				llFields.visibility = View.VISIBLE
 				
-				val decodeOptions = DecodeOptions(
+				// fieldsのnameにはカスタム絵文字が適用されない
+				val nameDecodeOptions = DecodeOptions(
+					context = activity,
+					decodeEmoji = true,
+					linkHelper = access_info,
+					short = true,
+					emojiMapProfile = who.profile_emojis
+				)
+
+				// valueはMisskeyならMFM、MastodonならHTML
+				val valueDecodeOptions = DecodeOptions(
 					context = activity,
 					decodeEmoji = true,
 					linkHelper = access_info,
 					short = true,
 					emojiMapCustom = who.custom_emojis,
-					emojiMapProfile = who.profile_emojis,
-					forceHtml = true // misskey用のfieldはアプリ内部でHTMLを生成している
-				)
-				
-				// fieldsのnameにはカスタム絵文字が適用されない
-				val decodeOptionsNoCustomEmoji = DecodeOptions(
-					context = activity,
-					decodeEmoji = true,
-					linkHelper = access_info,
-					short = true,
 					emojiMapProfile = who.profile_emojis
 				)
 				
@@ -355,7 +355,7 @@ internal class ViewHolderHeaderProfile(
 						LinearLayout.LayoutParams.MATCH_PARENT,
 						LinearLayout.LayoutParams.WRAP_CONTENT
 					)
-					val nameText = decodeOptionsNoCustomEmoji.decodeEmoji(item.name)
+					val nameText = nameDecodeOptions.decodeEmoji(item.name)
 					val nameInvalidator = NetworkEmojiInvalidator(activity.handler, nameView)
 					nameInvalidator.register(nameText)
 					
@@ -374,7 +374,7 @@ internal class ViewHolderHeaderProfile(
 						LinearLayout.LayoutParams.WRAP_CONTENT
 					)
 					
-					val valueText = decodeOptions.decodeHTML(item.value)
+					val valueText = valueDecodeOptions.decodeHTML(item.value)
 					if(item.verified_at > 0L) {
 						valueText.append('\n')
 						

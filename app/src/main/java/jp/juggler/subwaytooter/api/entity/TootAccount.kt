@@ -14,158 +14,6 @@ import java.util.regex.Pattern
 
 open class TootAccount(parser : TootParser, src : JSONObject) {
 	
-	class Field(
-		val name : String,
-		val value : String,
-		val verified_at : Long // 0L if not verified
-	)
-	
-	companion object {
-		private val log = LogCategory("TootAccount")
-		
-		internal val reWhitespace : Pattern = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
-		
-		// メンション @username @username@host
-		internal val reMention = Pattern.compile(
-			"""\A@([a-z0-9_]+(?:[a-z0-9_.-]+[a-z0-9_]+)?)(?:@([A-Za-z0-9][A-Za-z0-9._-]+))?"""
-			, Pattern.CASE_INSENSITIVE
-		)
-		
-		// host, user ,(instance)
-		internal val reAccountUrl : Pattern =
-			Pattern.compile("""\Ahttps://([A-Za-z0-9][A-Za-z0-9._-]+)/@([\w][\w.-]+)(?:@([A-Za-z0-9][A-Za-z0-9._-]+))?(?=\z|[?#])""")
-		
-		fun getAcctFromUrl(url : String) : String? {
-			val m = reAccountUrl.matcher(url)
-			return if(m.find()) {
-				val host = m.group(1)
-				val user = m.group(2).unescapeUri()
-				val instance = m.groupOrNull(3)?.unescapeUri()
-				if(instance?.isNotEmpty() == true) {
-					"$user@$instance"
-				} else {
-					"$user@$host"
-				}
-			} else {
-				null
-			}
-		}
-		
-		private fun parseSource(src : JSONObject?) : Source? {
-			src ?: return null
-			return try {
-				Source(src)
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				log.e("parseSource failed.")
-				null
-			}
-		}
-		
-		// Tootsearch用。URLやUriを使ってアカウントのインスタンス名を調べる
-		fun findHostFromUrl(acct : String?, accessHost : String?, url : String?) : String? {
-			
-			// acctから調べる
-			if(acct != null) {
-				val pos = acct.indexOf('@')
-				if(pos != - 1) {
-					val host = acct.substring(pos + 1)
-					if(host.isNotEmpty()) return host.toLowerCase()
-				}
-			}
-			
-			// accessHostから調べる
-			if(accessHost != null) {
-				return accessHost
-			}
-			
-			// URLから調べる
-			// たぶんどんなURLでもauthorityの部分にホスト名が来るだろう(慢心)
-			url.mayUri()?.authority?.let { host ->
-				if(host.isNotEmpty()) {
-					return host.toLowerCase()
-				}
-			}
-			
-			log.e("findHostFromUrl: can't parse host from URL $url")
-			return null
-		}
-		
-		fun parseFields(src : JSONArray?) : ArrayList<Field>? {
-			src ?: return null
-			val dst = ArrayList<Field>()
-			for(i in 0 until src.length()) {
-				val item = src.optJSONObject(i) ?: continue
-				val name = item.parseString("name") ?: continue
-				val value = item.parseString("value") ?: continue
-				val svVerifiedAt = item.parseString("verified_at")
-				val verifiedAt = when(svVerifiedAt) {
-					null -> 0L
-					else -> TootStatus.parseTime(svVerifiedAt)
-				}
-				dst.add(Field(name, value, verifiedAt))
-			}
-			return if(dst.isEmpty()) {
-				null
-			} else {
-				dst
-			}
-		}
-		
-		// https://github.com/syuilo/misskey/pull/3499
-		private fun parseMisskeyFields(src : JSONObject) : ArrayList<Field>? {
-			
-			var dst : ArrayList<Field>? = null
-			
-			fun appendField(dstArg : ArrayList<Field>?, name : String, caption : String, url : String) =
-				(dstArg ?: ArrayList()).apply {
-					val value =
-						"""<a href="${HTMLDecoder.encodeEntity(url)}" rel="me nofollow noopener" target="_blank"><span>${HTMLDecoder.encodeEntity(
-							caption
-						)}</span></a>"""
-					add(Field(name, value, 0L))
-				}
-			
-			runCatching {
-				src.optJSONObject("twitter")?.let {
-					dst = appendField(
-						dst,
-						"Twitter",
-						"@${it.parseString("screenName")}",
-						"https://twitter.com/intent/user?user_id=${it.parseString("userId")}"
-					
-					)
-				}
-			}
-			
-			runCatching {
-				src.optJSONObject("github")?.let {
-					dst = appendField(
-						dst,
-						"GitHub",
-						"@${it.parseString("login")}",
-						"https://github.com/${it.parseString("login")}"
-					)
-				}
-				
-			}
-
-			runCatching {
-				src.optJSONObject("discord")?.let {
-					dst = appendField(
-						dst,
-						"Discord",
-						"@${it.parseString("username")}#${it.parseString("discriminator")}",
-						"https://discordapp.com/users/${it.parseString("id")}"
-					)
-				}
-			}
-			
-			return if(dst?.isNotEmpty() == true) dst else null
-		}
-	}
-	
-	
 	//URL of the user's profile page (can be remote)
 	// https://mastodon.juggler.jp/@tateisu
 	// 疑似アカウントではnullになります
@@ -226,6 +74,12 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	
 	val moved : TootAccount?
 		get() = movedRef?.get()
+	
+	class Field(
+		val name : String,
+		val value : String,
+		val verified_at : Long // 0L if not verified
+	)
 	
 	val fields : ArrayList<Field>?
 	
@@ -480,4 +334,143 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	
 	fun getOrderId() : EntityId = _orderId ?: id
 	
+	companion object {
+		private val log = LogCategory("TootAccount")
+		
+		internal val reWhitespace : Pattern = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
+		
+		// メンション @username @username@host
+		internal val reMention = Pattern.compile(
+			"""\A@([a-z0-9_]+(?:[a-z0-9_.-]+[a-z0-9_]+)?)(?:@([A-Za-z0-9][A-Za-z0-9._-]+))?"""
+			, Pattern.CASE_INSENSITIVE
+		)
+		
+		// host, user ,(instance)
+		internal val reAccountUrl : Pattern =
+			Pattern.compile("""\Ahttps://([A-Za-z0-9][A-Za-z0-9._-]+)/@([\w][\w.-]+)(?:@([A-Za-z0-9][A-Za-z0-9._-]+))?(?=\z|[?#])""")
+		
+		fun getAcctFromUrl(url : String) : String? {
+			val m = reAccountUrl.matcher(url)
+			return if(m.find()) {
+				val host = m.group(1)
+				val user = m.group(2).unescapeUri()
+				val instance = m.groupOrNull(3)?.unescapeUri()
+				if(instance?.isNotEmpty() == true) {
+					"$user@$instance"
+				} else {
+					"$user@$host"
+				}
+			} else {
+				null
+			}
+		}
+		
+		private fun parseSource(src : JSONObject?) : Source? {
+			src ?: return null
+			return try {
+				Source(src)
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				log.e("parseSource failed.")
+				null
+			}
+		}
+		
+		// Tootsearch用。URLやUriを使ってアカウントのインスタンス名を調べる
+		fun findHostFromUrl(acct : String?, accessHost : String?, url : String?) : String? {
+			
+			// acctから調べる
+			if(acct != null) {
+				val pos = acct.indexOf('@')
+				if(pos != - 1) {
+					val host = acct.substring(pos + 1)
+					if(host.isNotEmpty()) return host.toLowerCase()
+				}
+			}
+			
+			// accessHostから調べる
+			if(accessHost != null) {
+				return accessHost
+			}
+			
+			// URLから調べる
+			// たぶんどんなURLでもauthorityの部分にホスト名が来るだろう(慢心)
+			url.mayUri()?.authority?.let { host ->
+				if(host.isNotEmpty()) {
+					return host.toLowerCase()
+				}
+			}
+			
+			log.e("findHostFromUrl: can't parse host from URL $url")
+			return null
+		}
+		
+		fun parseFields(src : JSONArray?) : ArrayList<Field>? {
+			src ?: return null
+			val dst = ArrayList<Field>()
+			for(i in 0 until src.length()) {
+				val item = src.optJSONObject(i) ?: continue
+				val name = item.parseString("name") ?: continue
+				val value = item.parseString("value") ?: continue
+				val svVerifiedAt = item.parseString("verified_at")
+				val verifiedAt = when(svVerifiedAt) {
+					null -> 0L
+					else -> TootStatus.parseTime(svVerifiedAt)
+				}
+				dst.add(Field(name, value, verifiedAt))
+			}
+			return if(dst.isEmpty()) {
+				null
+			} else {
+				dst
+			}
+		}
+		
+		// https://github.com/syuilo/misskey/pull/3499
+		// https://github.com/syuilo/misskey/pull/3586
+		private fun parseMisskeyFields(src : JSONObject) : ArrayList<Field>? {
+			
+			var dst : ArrayList<Field>? = null
+			
+			fun appendField(name : String, caption : String, url : String) {
+				val value =
+					"""<a href="${HTMLDecoder.encodeEntity(url)}" rel="me nofollow noopener" target="_blank"><span>${HTMLDecoder.encodeEntity(
+						caption
+					)}</span></a>"""
+				dst = (dst ?: ArrayList()).apply { add(Field(name, value, 0L)) }
+			}
+			
+			runCatching {
+				src.optJSONObject("twitter")?.let {
+					appendField(
+						"Twitter",
+						"@${it.parseString("screenName")}",
+						"https://twitter.com/intent/user?user_id=${it.parseString("userId")}"
+					)
+				}
+			}
+			
+			runCatching {
+				src.optJSONObject("github")?.parseString("login")?.let {
+					appendField(
+						"GitHub",
+						it,
+						"https://github.com/$it"
+					)
+				}
+			}
+			
+			runCatching {
+				src.optJSONObject("discord")?.let {
+					appendField(
+						"Discord",
+						"${it.parseString("username")}#${it.parseString("discriminator")}",
+						"https://discordapp.com/users/${it.parseString("id")}"
+					)
+				}
+			}
+			
+			return if(dst?.isNotEmpty() == true) dst else null
+		}
+	}
 }

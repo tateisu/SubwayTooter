@@ -63,16 +63,6 @@ class TootApiClient(
 		const val KEY_API_KEY_MISSKEY = "apiKeyMisskey"
 		const val KEY_USER_ID = "userId"
 		
-		//		// APIからsecretを得られないバグがあるので定数を渡す
-		//		const val appSecretError =
-		//			"This Misskey instance Currently Misskey does not allow client registration from API, please tell me notify instance name that you want login via Subway Tooter."
-		//		val testAppSecretMap = mapOf(
-		//			Pair("misskey.xyz", "NGiWNZFP37WiAee3SGcVe8eSiDyLbbWf")
-		//			, Pair("misskey.jp", "GO45N7JgeEWtlNUS4xRcOFY56JMjUTZk")
-		//			, Pair("msky.cafe", "lvU12i7CXAB5xiqkABwzyJRzdAqhf0k3")
-		//			, Pair("misskey.m544.net", "SLcaqff0Puymh4Fl30JCc09i6uumwJ4t")
-		//		)
-		
 		private const val NO_INFORMATION = "(no information)"
 		
 		private val reStartJsonArray = Pattern.compile("\\A\\s*\\[")

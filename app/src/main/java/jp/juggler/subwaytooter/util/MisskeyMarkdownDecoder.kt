@@ -12,10 +12,7 @@ import android.text.style.StrikethroughSpan
 import android.util.SparseArray
 import android.util.SparseBooleanArray
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.span.*
@@ -717,40 +714,61 @@ object MisskeyMarkdownDecoder {
 				)
 			} else {
 				
-				val shortAcct = when {
-					host.isEmpty()
-						|| host.equals(linkHelper.host, ignoreCase = true) ->
-						username
-					else ->
-						"$username@$host"
-				}
-				
 				val userHost = when {
 					host.isEmpty() -> linkHelper.host
 					else -> host
-				}
-				val userUrl = "https://$userHost/@$username"
+				} ?: "?"
 				
-				val mentions = prepareMentions()
-				
-				if(mentions.find { m -> m.acct == shortAcct } == null) {
-					mentions.add(
-						TootMention(
-							EntityIdLong(- 1L)
-							, userUrl
-							, shortAcct
-							, username
+				when( userHost.toLowerCase() ) {
+					
+					// https://github.com/syuilo/misskey/pull/3603
+					
+					"github.com", "twitter.com" -> {
+						appendLink(
+							"@$username@$userHost",
+							"https://$userHost/$username" // no @
 						)
-					)
-				}
-				
-				appendLink(
-					when {
-						Pref.bpMentionFullAcct(App1.pref) -> "@$username@$userHost"
-						else -> "@$shortAcct"
 					}
-					, userUrl
-				)
+					"gmail.com" ->{
+						appendLink(
+							"@$username@$userHost",
+							"mailto:$username@$userHost"
+						)
+					}
+					
+					else -> {
+						val userUrl = "https://$userHost/@$username"
+						
+						val shortAcct = when {
+							host.isEmpty()
+								|| host.equals(linkHelper.host, ignoreCase = true) ->
+								username
+							else ->
+								"$username@$host"
+						}
+
+						val mentions = prepareMentions()
+						
+						if( mentions.find { m -> m.acct == shortAcct } == null) {
+							mentions.add(
+								jp.juggler.subwaytooter.api.entity.TootMention(
+									jp.juggler.subwaytooter.api.entity.EntityIdLong(- 1L)
+									, userUrl
+									, shortAcct
+									, username
+								)
+							)
+						}
+						
+						appendLink(
+							when {
+								jp.juggler.subwaytooter.Pref.bpMentionFullAcct(jp.juggler.subwaytooter.App1.pref) -> "@$username@$userHost"
+								else -> "@$shortAcct"
+							}
+							, userUrl
+						)
+					}
+				}
 			}
 		}),
 		
@@ -1461,24 +1479,30 @@ object MisskeyMarkdownDecoder {
 		addParser("?", linkParser)
 		
 		// メールアドレスの@の手前に使える文字なら真
-		val mailChars = SparseBooleanArray().apply{
-			for(it in '0' .. '9'){put(it.toInt(),true) }
-			for(it in 'A' .. 'Z'){put(it.toInt(),true) }
-			for(it in 'a' .. 'z'){put(it.toInt(),true) }
-			"""${'$'}!#%&'`"*+-/=?^_{|}~""".forEach {put(it.toInt(),true) }
+		val mailChars = SparseBooleanArray().apply {
+			for(it in '0' .. '9') {
+				put(it.toInt(), true)
+			}
+			for(it in 'A' .. 'Z') {
+				put(it.toInt(), true)
+			}
+			for(it in 'a' .. 'z') {
+				put(it.toInt(), true)
+			}
+			"""${'$'}!#%&'`"*+-/=?^_{|}~""".forEach { put(it.toInt(), true) }
 		}
 		
 		addParser("@", {
 			
 			val matcher = remainMatcher(TootAccount.reMention)
-
+			
 			when {
 				! matcher.find() -> null
 				
 				else -> when {
 					// 直前の文字がメールアドレスの@の手前に使える文字ならメンションではない
 					pos > 0 && mailChars.get(text.codePointBefore(pos)) -> null
-
+					
 					else -> makeDetected(
 						NodeType.MENTION,
 						arrayOf(

@@ -2283,16 +2283,28 @@ class ActMain : AppCompatActivity()
 					val host = m.group(1)
 					val user = m.group(2).unescapeUri()
 					val instance = m.groupOrNull(3)?.unescapeUri()
+					// https://misskey.xyz/@tateisu@github.com
+					// https://misskey.xyz/@tateisu@twitter.com
 					
 					if(instance?.isNotEmpty() == true) {
-						Action_User.profile(
-							this@ActMain,
-							opener.pos,
-							null,
-							"https://$instance/@$user",
-							instance,
-							user
-						)
+						when(instance.toLowerCase()){
+							"github.com","twitter.com"->{
+								App1.openCustomTab(this, "https://$instance/$user")
+							}
+							"gmail.com" ->{
+								App1.openBrowser(this, "mailto:$user@$instance")
+							}
+							else->{
+								Action_User.profile(
+									this@ActMain,
+									opener.pos,
+									null,
+									"https://$instance/@$user",
+									instance,
+									user
+								)
+							}
+						}
 					} else {
 						Action_User.profile(
 							this@ActMain,

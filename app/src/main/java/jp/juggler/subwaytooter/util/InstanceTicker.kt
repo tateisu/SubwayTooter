@@ -48,76 +48,6 @@ object InstanceTicker {
 	private fun color(v : String) : Int =
 		parseColor(v) ?: error("not a color: $v")
 	
-	enum class Type(
-		val num : Int,
-		val imageUrl : String,
-		val imageWidth : Int,
-		val colorText : Int,
-		val colorBg : List<Int>
-	) {
-		
-		GnuSocial(
-			0,
-			"https://cdn.weep.me/img/gnus.png",
-			16,
-			color("#fff"),
-			listOf(color("#a23"))
-		),
-		
-		MastodonJapan(
-			1,
-			"https://cdn.weep.me/img/mstdn.png",
-			16,
-			color("#fff"),
-			listOf(color("#27c"))
-		),
-		
-		MastodonAbroad(
-			2,
-			"https://cdn.weep.me/img/mstdn.png",
-			16,
-			color("#fff"),
-			listOf(color("#49c"))
-		),
-		
-		Pleroma(
-			3,
-			"https://cdn.weep.me/img/plrm.png",
-			16,
-			color("#da5"),
-			listOf(color("#123"))
-		),
-		
-		Misskey(
-			4,
-			"https://cdn.weep.me/img/msky2.png",
-			36,
-			color("#fff"),
-			listOf(color("#29b"))
-		),
-		
-		PeerTube(
-			5,
-			"https://cdn.weep.me/img/peertube2.png",
-			16,
-			color("#000"),
-			listOf(color("#fff"), color("#fff"), color("#fff"))
-		),
-		
-		// ロシアの大手マイクロブログ
-		Juick(
-			6,
-			"https://cdn.weep.me/img/juick2.png",
-			16,
-			color("#fff"),
-			listOf(color("#000"))
-		)
-		;
-		
-	}
-	
-	private fun findType(num : Int) : Type? = Type.values().find { it.num == num }
-	
 	class ColorBg(val array : IntArray) {
 		companion object {
 			val map = HashMap<String, GradientDrawable>()
@@ -155,11 +85,12 @@ object InstanceTicker {
 		}
 	}
 	
-	private const val colorClosed = Color.BLACK or 0x666666
+	private val colorBgClosed = ColorBg(Color.BLACK or 0x666666)
+	private val colorBgDefault = ColorBg(color("#27c"))
 	
-	class Item(type : Type, cols : List<String>) {
+	class Item(cols : List<String>) {
 		// 0 type
-		val type : Type
+		//val type : Type
 		//[1]インスタンス名（ドメイン） (空文字列かもしれない)
 		val name : String
 		// [2]ドメイン
@@ -174,16 +105,15 @@ object InstanceTicker {
 		val imageWidth : Int
 		
 		init {
-			this.type = type
 			this.instance = cols[2]
 			
 			if(cols[5].isEmpty()) {
 				// typeのデフォルト画像
-				this.image = type.imageUrl
-				this.imageWidth = type.imageWidth
+				this.image = "https://wee.jp/i/mstdn.png"
+				this.imageWidth = 16
 			} else {
 				// 独自画像
-				this.image = "https://cdn.weep.me/img/${cols[5]}"
+				this.image = cols[5]
 				// 画像の横幅は省略されてるかもしれない
 				this.imageWidth = try {
 					cols[6].toInt()
@@ -195,7 +125,7 @@ object InstanceTicker {
 			if(cols[1] == "閉鎖") {
 				this.name = "閉鎖済み"
 				this.colorText = Color.WHITE
-				this.colorBg = ColorBg(colorClosed)
+				this.colorBg = colorBgClosed
 			} else {
 				this.name = ellipsize(
 					when {
@@ -205,18 +135,16 @@ object InstanceTicker {
 					}, 36
 				)
 				
-				this.colorText = parseColor(cols[3]) ?: type.colorText
+				this.colorText = parseColor(cols[3]) ?: Color.WHITE
 				
 				val ia = cols[4].split(',')
 					.filter { it.isNotBlank() }
 					.map { color(it) }
 				
-				this.colorBg = ColorBg(
-					when {
-						ia.isNotEmpty() -> ia
-						else -> type.colorBg
-					}
-				)
+				this.colorBg = when {
+					ia.isNotEmpty() -> ColorBg(ia)
+					else -> colorBgDefault
+				}
 			}
 		}
 	}
@@ -233,7 +161,7 @@ object InstanceTicker {
 			if(timeNextLoad - now > 0) return
 			timeNextLoad = now + 301000L
 			
-			val text = App1.getHttpCachedString("https://cdn.weep.me/instance/tsv/")
+			val text = App1.getHttpCachedString("https://wee.jp/tsv/")
 			if(text?.isEmpty() != false) return
 			
 			val list = ConcurrentHashMap<String, Item>()
@@ -243,14 +171,7 @@ object InstanceTicker {
 					val cols = m.group(1).split('\t')
 					if(cols.size < 7 || cols[0].contains('[')) continue
 					
-					val type = try {
-						findType(cols[0].toInt())
-					} catch(ignored : Throwable) {
-						null
-					} ?: Type.MastodonJapan
-					
-					val item = Item(type, cols)
-					
+					val item = Item(cols)
 					if(item.instance.isNotEmpty()) list[item.instance] = item
 				} catch(ex : Throwable) {
 					log.trace(ex)

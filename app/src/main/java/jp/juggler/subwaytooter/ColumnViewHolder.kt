@@ -15,6 +15,7 @@ import android.text.TextWatcher
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.inputmethod.EditorInfo
@@ -394,6 +395,7 @@ class ColumnViewHolder(
 			}
 			false
 		})
+		
 	}
 	
 	private val proc_start_filter = Runnable {
@@ -1227,7 +1229,7 @@ class ColumnViewHolder(
 			)
 			
 			listView.visibility != View.VISIBLE -> {
-				val scroll_save = ScrollPosition(0, 0)
+				val scroll_save = ScrollPosition()
 				column.scroll_save = scroll_save
 				log.d(
 					"saveScrollPosition [%d] %s , listView is not visible, save %s,%s"
@@ -1261,6 +1263,7 @@ class ColumnViewHolder(
 		
 		sp.restore(this)
 		
+		// 復元した後に意図的に少し上下にずらしたい
 		val dy = (deltaDp * activity.density + 0.5f).toInt()
 		if(dy != 0) listView.postDelayed(Runnable {
 			if(column == null || listView.adapter !== last_adapter) return@Runnable
@@ -1297,20 +1300,24 @@ class ColumnViewHolder(
 			}
 		}
 		
+		// この関数はAdapterViewの項目の(marginを含む)高さを返す
 		fun getAdapterItemHeight(adapterIndex : Int) : Int {
 			
-			var childViewHolder = listView.findViewHolderForAdapterPosition(adapterIndex)
-			if(childViewHolder != null) {
-				childViewHolder.itemView.measure(widthSpec, heightSpec)
-				return childViewHolder.itemView.measuredHeight
+			fun View.getTotalHeight():Int{
+				measure(widthSpec, heightSpec)
+				val lp = layoutParams as? ViewGroup.MarginLayoutParams
+				return measuredHeight + (lp?.topMargin?:0)+ (lp?.bottomMargin?:0)
 			}
 			
+			listView.findViewHolderForAdapterPosition(adapterIndex)?.itemView?.let{
+				return it.getTotalHeight()
+			}
 			
 			log.d("getAdapterItemHeight idx=$adapterIndex createView")
 			
 			val viewType = adapter.getItemViewType(adapterIndex)
 			
-			childViewHolder = lastViewHolder
+			var childViewHolder = lastViewHolder
 			if(childViewHolder == null || lastViewType != viewType) {
 				if(childViewHolder != null) {
 					adapter.onViewRecycled(childViewHolder)
@@ -1320,8 +1327,7 @@ class ColumnViewHolder(
 				lastViewType = viewType
 			}
 			adapter.onBindViewHolder(childViewHolder, adapterIndex)
-			childViewHolder.itemView.measure(widthSpec, heightSpec)
-			return childViewHolder.itemView.measuredHeight
+			return childViewHolder.itemView.getTotalHeight()
 		}
 	}
 	
@@ -1348,7 +1354,8 @@ class ColumnViewHolder(
 		listLayoutManager.scrollToPositionWithOffset(adapterIndex, y)
 	}
 	
-	fun getListItemTop(listIndex : Int) : Int {
+	// この関数は scrollToPositionWithOffset 用のオフセットを返す
+	fun getListItemOffset(listIndex : Int) : Int {
 		
 		val adapterIndex = column?.toAdapterIndex(listIndex)
 			?: return 0
@@ -1356,7 +1363,10 @@ class ColumnViewHolder(
 		val childView = listLayoutManager.findViewByPosition(adapterIndex)
 			?: throw IndexOutOfBoundsException("findViewByPosition($adapterIndex) returns null.")
 		
-		return childView.top
+		// スクロールとともにtopは減少する
+		// しかしtopMarginがあるので最大値は4である
+		// この関数は scrollToPositionWithOffset 用のオフセットを返すので top - topMargin を返す
+		return childView.top - ((childView.layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin ?: 0 )
 	}
 	
 	fun findFirstVisibleListItem() : Int {

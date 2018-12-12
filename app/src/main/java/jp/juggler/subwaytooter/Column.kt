@@ -5033,11 +5033,11 @@ class Column(
 							// 投稿後にその投稿にスクロールする
 							if(holder != null) {
 								holder.setScrollPosition(
-									ScrollPosition(toAdapterIndex(status_index), 0),
+									ScrollPosition(toAdapterIndex(status_index)),
 									0f
 								)
 							} else {
-								scroll_save = ScrollPosition(toAdapterIndex(status_index), 0)
+								scroll_save = ScrollPosition(toAdapterIndex(status_index))
 							}
 						} else {
 							//
@@ -5053,7 +5053,7 @@ class Column(
 								scroll_save != null -> scroll_save.adapterIndex += added
 								// 保存中の位置がない場合、保存中の位置を新しく作る
 								else -> this@Column.scroll_save =
-									ScrollPosition(toAdapterIndex(added), 0)
+									ScrollPosition(toAdapterIndex(added))
 							}
 						}
 					}
@@ -5945,11 +5945,11 @@ class Column(
 					val holder = viewHolder
 					if(holder != null) {
 						try {
-							restore_y = holder.getListItemTop(restore_idx)
+							restore_y = holder.getListItemOffset(restore_idx)
 						} catch(ex : IndexOutOfBoundsException) {
 							restore_idx = position
 							try {
-								restore_y = holder.getListItemTop(restore_idx)
+								restore_y = holder.getListItemOffset(restore_idx)
 							} catch(ex2 : IndexOutOfBoundsException) {
 								restore_idx = - 1
 							}
@@ -6519,7 +6519,7 @@ class Column(
 				if(list_data.size > 0) {
 					try {
 						restore_idx = holder.findFirstVisibleListItem()
-						restore_y = holder.getListItemTop(restore_idx)
+						restore_y = holder.getListItemOffset(restore_idx)
 					} catch(ex : IndexOutOfBoundsException) {
 						restore_idx = - 2
 						restore_y = 0
@@ -6579,7 +6579,7 @@ class Column(
 					holder_sp.isHead -> {
 						// スクロール位置が先頭なら先頭にする
 						log.d("mergeStreamingMessage: has VH. keep head. $holder_sp")
-						holder.setScrollPosition(ScrollPosition(0, 0))
+						holder.setScrollPosition(ScrollPosition())
 					}
 					
 					restore_idx < - 1 -> {

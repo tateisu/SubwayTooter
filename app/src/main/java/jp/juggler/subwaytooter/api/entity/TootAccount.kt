@@ -431,7 +431,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			var dst : ArrayList<Field>? = null
 			
 			// リモートユーザーはAP経由のフィールドが表示される
-			// https://github.com/syuilo/misskey/pull/3590/files
+			// https://github.com/syuilo/misskey/pull/3590
+			// https://github.com/syuilo/misskey/pull/3596
 			src.optJSONArray("fields")?.forEach { o->
 				if(o !is JSONObject ) return@forEach
 				//plain text
@@ -440,10 +441,6 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				val v = o.parseString("value") ?: ""
 				dst = (dst ?: ArrayList()).apply { add(Field(n, v, 0L)) }
 			}
-			
-			
-			
-			
 
 			// misskeyローカルユーザーはTwitter等の連携をフィールドに表示する
 			// https://github.com/syuilo/misskey/pull/3499

@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
 import android.os.SystemClock
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewCompat
@@ -21,7 +20,10 @@ import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.action.*
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.TootTask
+import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
@@ -31,8 +33,6 @@ import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
 import jp.juggler.util.*
-import okhttp3.Request
-import okhttp3.RequestBody
 import org.jetbrains.anko.*
 import org.json.JSONObject
 import kotlin.math.max
@@ -47,6 +47,7 @@ internal class ItemViewHolder(
 		var toot_color_follower : Int = 0
 		var toot_color_direct_user : Int = 0
 		var toot_color_direct_me : Int = 0
+		
 	}
 	
 	val viewRoot : View
@@ -1043,41 +1044,8 @@ internal class ItemViewHolder(
 		)
 		//		}
 		
-		if( Column.useInstanceTicker){
-			try {
-				val item = InstanceTicker.lastList[who.host]
-				if( item != null) {
-					tvInstanceTicker.text = item.name
-					tvInstanceTicker.textColor = item.colorText
-					val density = llInstanceTicker.resources.displayMetrics.density
-					val lp = ivInstanceTicker.layoutParams
-					lp.height = (density*16f+0.5f).toInt()
-					lp.width = (density*item.imageWidth+0.5f).toInt()
-					ivInstanceTicker.layoutParams = lp
-					ivInstanceTicker.setImageUrl(activity.pref, 0f, item.image)
-					val colorBg = item.colorBg
-					when {
-						colorBg.isEmpty() ->{
-							tvInstanceTicker.background = null
-							ivInstanceTicker.background = null
-						}
-						colorBg.size == 1 -> {
-							tvInstanceTicker.setBackgroundColor(colorBg.first())
-							ivInstanceTicker.setBackgroundColor(colorBg.first())
-						}
-						else -> {
-							ivInstanceTicker.setBackgroundColor(colorBg.last())
-							tvInstanceTicker.background = colorBg.getGradation()
-							
-						}
-					}
-					llInstanceTicker.visibility = View.VISIBLE
-					llInstanceTicker.requestLayout()
-				}
-			}catch(ex:Throwable){
-				log.trace(ex)
-			}
-		}
+		showInstanceTicker(who)
+		
 		
 		var content = status.decoded_content
 		
@@ -1215,6 +1183,56 @@ internal class ItemViewHolder(
 				activity.getString(R.string.application_is, application.name ?: "")
 		} else {
 			tvApplication.visibility = View.GONE
+		}
+	}
+	
+	private fun showInstanceTicker(who:TootAccount) {
+		try {
+			if( !Column.useInstanceTicker) return
+
+			val host = who.host
+
+			// LTLでホスト名が同じならTickerを表示しない
+			when(column.column_type){
+				Column.TYPE_LOCAL,Column.TYPE_LOCAL_AROUND->{
+					if( host == access_info.host) return
+				}
+			}
+
+			val item = InstanceTicker.lastList[host] ?: return
+
+			tvInstanceTicker.text = item.name
+			tvInstanceTicker.textColor = item.colorText
+
+			val density = activity.density
+
+			val lp = ivInstanceTicker.layoutParams
+			lp.height = (density*16f+0.5f).toInt()
+			lp.width = (density*item.imageWidth+0.5f).toInt()
+
+			ivInstanceTicker.layoutParams = lp
+			ivInstanceTicker.setImageUrl(activity.pref, 0f, item.image)
+			val colorBg = item.colorBg
+			when {
+				colorBg.isEmpty() ->{
+					tvInstanceTicker.background = null
+					ivInstanceTicker.background = null
+				}
+				colorBg.size == 1 -> {
+					tvInstanceTicker.setBackgroundColor(colorBg.first())
+					ivInstanceTicker.setBackgroundColor(colorBg.first())
+				}
+				else -> {
+					ivInstanceTicker.setBackgroundColor(colorBg.last())
+					tvInstanceTicker.background = colorBg.getGradation()
+					
+				}
+			}
+			llInstanceTicker.visibility = View.VISIBLE
+			llInstanceTicker.requestLayout()
+
+		}catch(ex:Throwable){
+			log.trace(ex)
 		}
 	}
 	
@@ -1434,7 +1452,7 @@ internal class ItemViewHolder(
 						LinearLayout.LayoutParams.MATCH_PARENT,
 						LinearLayout.LayoutParams.WRAP_CONTENT
 					)
-					lp.topMargin = (0.5f + llExtra.resources.displayMetrics.density * 3f).toInt()
+					lp.topMargin = (0.5f + activity.density * 3f).toInt()
 					val tv = MyTextView(activity)
 					tv.layoutParams = lp
 					//
@@ -1951,7 +1969,7 @@ internal class ItemViewHolder(
 		//			c != null && c > 0
 		//		} ?: return
 		
-		val density = activity.resources.displayMetrics.density
+		val density = activity.density
 		
 		val buttonHeight = ActMain.boostButtonSize
 		val marginBetween = (ActMain.boostButtonSize.toFloat() * 0.05f + 0.5f).toInt()
@@ -1959,7 +1977,7 @@ internal class ItemViewHolder(
 		val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
 		val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
 		val compoundPaddingDp =
-			0f // ActMain.boostButtonSize.toFloat() * 0f / activity.resources.displayMetrics.density
+			0f // ActMain.boostButtonSize.toFloat() * 0f / activity.density
 		
 		val box = FlexboxLayout(activity)
 		val boxLp = LinearLayout.LayoutParams(
@@ -2143,7 +2161,7 @@ internal class ItemViewHolder(
 			LinearLayout.LayoutParams.WRAP_CONTENT
 		)
 		if(i == 0)
-			lp.topMargin = (0.5f + llExtra.resources.displayMetrics.density * 3f).toInt()
+			lp.topMargin = (0.5f + activity.density * 3f).toInt()
 		val b = Button(activity)
 		b.layoutParams = lp
 		b.isAllCaps = false
@@ -2178,7 +2196,7 @@ internal class ItemViewHolder(
 	}
 	
 	private fun makeEnqueteTimerView(enquete : NicoEnquete) {
-		val density = llExtra.resources.displayMetrics.density
+		val density = activity.density
 		val height = (0.5f + 6 * density).toInt()
 		val view = EnqueteTimerView(activity)
 		view.layoutParams =

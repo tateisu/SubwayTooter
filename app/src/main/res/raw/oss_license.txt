@@ -294,6 +294,6 @@ https://icons8.com/articles/weve-contributed-an-icon-to-imageoptim/
 
 ====================================================
 #InstanceTicker
-https://cdn.weep.me/mastodon/
+https://wee.jp/mastodon/
 
 Copyright 2018 weepjp, kyori19.

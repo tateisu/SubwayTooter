@@ -909,7 +909,7 @@ class ActAppSettingChild : AppCompatActivity()
 				showToast(this, ex, "could not open picker for font")
 			}
 			
-			R.id.btnInstanceTickerCopyright -> App1.openBrowser(this@ActAppSettingChild,"https://cdn.weep.me/mastodon/")
+			R.id.btnInstanceTickerCopyright -> App1.openBrowser(this@ActAppSettingChild,"https://wee.jp/mastodon/")
 		}
 	}
 	

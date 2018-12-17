@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="action_settings">الإعدادات</string>
     <string name="account_add">إضافة حساب</string>
@@ -396,4 +396,10 @@
     <string name="ui_theme">سمة واجهة المستخدم (مطلوب أعادة تشغيل التطبيق)</string>
     <string name="simple_list">قائمة بسيطة (مطلوب أعادة تشغيل التطبيق)</string>
     <string name="unfavourite_succeeded">تم حذف المفضلة</string>
-    </resources>
+    <string name="file_size_too_big">حجم هذا الملف كبير جدا. الحد الأقصى المسموح به هو %1$dMB.</string>
+    <string name="visibility_local_home">الرئيسية (محلي)</string>
+    <string name="visibility_local_followers">للمتابِعين فقط (محلي)</string>
+    <string name="visibility_local_unlisted">غير مدرج (محلي)</string>
+    <string name="cant_remove_boost_while_favourited">لا يمكن تنحية الترقية عند تفضيلها</string>
+    <string name="confirm_unboost_from">إزالة ترقية هذا المنشور مِن %1$s؟</string>
+</resources>

@@ -304,14 +304,15 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			tvDescription.text = description
 		}
 		
-		if(TootAttachmentLike.TYPE_IMAGE == ta.type) {
-			loadBitmap(ta)
-		} else if(TootAttachmentLike.TYPE_VIDEO == ta.type || TootAttachmentLike.TYPE_GIFV == ta.type) {
-			loadVideo(ta)
-		} else {
+		when(ta.type){
+			TootAttachmentLike.TYPE_IMAGE ->loadBitmap(ta)
+			TootAttachmentLike.TYPE_VIDEO,
+			TootAttachmentLike.TYPE_GIFV,
+			TootAttachmentLike.TYPE_AUDIO ->loadVideo(ta)
 			// maybe TYPE_UNKNOWN
-			showError(getString(R.string.media_attachment_type_error, ta.type))
+			else-> showError(getString(R.string.media_attachment_type_error, ta.type))
 		}
+		
 	}
 	
 	private fun showError(message : String) {
@@ -351,11 +352,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		exoPlayer.prepare(mediaSource)
 		exoPlayer.playWhenReady = true
-		if(TootAttachmentLike.TYPE_GIFV == ta.type) {
-			exoPlayer.repeatMode = Player.REPEAT_MODE_ALL
-		} else {
-			exoPlayer.repeatMode = Player.REPEAT_MODE_OFF
-			
+		exoPlayer.repeatMode = when(ta.type){
+			TootAttachmentLike.TYPE_VIDEO -> Player.REPEAT_MODE_OFF
+			// GIFV or AUDIO
+			else -> Player.REPEAT_MODE_ALL
 		}
 	}
 	

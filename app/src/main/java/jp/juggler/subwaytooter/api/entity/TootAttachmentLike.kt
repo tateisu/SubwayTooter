@@ -16,6 +16,7 @@ interface TootAttachmentLike{
 		const val TYPE_VIDEO = "video"
 		const val TYPE_GIFV = "gifv"
 		const val TYPE_UNKNOWN = "unknown"
+		const val TYPE_AUDIO = "audio"
 	}
 }
 

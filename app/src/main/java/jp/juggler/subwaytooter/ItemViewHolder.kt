@@ -1418,63 +1418,89 @@ internal class ItemViewHolder(
 		idx : Int
 	) {
 		val ta = if(idx < media_attachments.size) media_attachments[idx] else null
-		if(ta != null) {
-			val url = ta.urlForThumbnail
-			if(url != null && url.isNotEmpty()) {
-				iv.visibility = View.VISIBLE
-				
-				iv.setFocusPoint(ta.focusX, ta.focusY)
-				
-				if(Pref.bpDontCropMediaThumb(App1.pref)) {
-					iv.scaleType = ImageView.ScaleType.FIT_CENTER
-				} else {
-					iv.setScaleTypeForMedia()
-				}
-				
-				val mediaType = ta.type
-				when(mediaType) {
-					TootAttachmentLike.TYPE_VIDEO -> iv.setMediaType(R.drawable.media_type_video)
-					TootAttachmentLike.TYPE_GIFV -> iv.setMediaType(R.drawable.media_type_gifv)
-					TootAttachmentLike.TYPE_UNKNOWN -> iv.setMediaType(R.drawable.media_type_unknown)
-					else -> iv.setMediaType(0)
-				}
-				
-				iv.setImageUrl(
-					activity.pref,
-					0f,
-					access_info.supplyBaseUrl(url),
-					access_info.supplyBaseUrl(url)
-				)
-				
-				val description = ta.description
-				if(description != null && description.isNotEmpty()) {
-					val lp = LinearLayout.LayoutParams(
-						LinearLayout.LayoutParams.MATCH_PARENT,
-						LinearLayout.LayoutParams.WRAP_CONTENT
-					)
-					lp.topMargin = (0.5f + activity.density * 3f).toInt()
-					val tv = MyTextView(activity)
-					tv.layoutParams = lp
-					//
-					tv.movementMethod = MyLinkMovementMethod
-					if(! activity.timeline_font_size_sp.isNaN()) {
-						tv.textSize = activity.timeline_font_size_sp
+		if(ta == null) {
+			iv.visibility = View.GONE
+			return
+		}
+
+		iv.visibility = View.VISIBLE
+		
+		iv.setFocusPoint(ta.focusX, ta.focusY)
+		
+		if(Pref.bpDontCropMediaThumb(App1.pref)) {
+			iv.scaleType = ImageView.ScaleType.FIT_CENTER
+		} else {
+			iv.setScaleTypeForMedia()
+		}
+		
+		
+		
+		when(ta.type) {
+			TootAttachmentLike.TYPE_AUDIO->{
+				iv.setMediaType(0)
+				iv.setDefaultImageResId(getAttributeResourceId(activity,R.attr.ic_music))
+				iv.setImageUrl(activity.pref,0f,null)
+			}
+			TootAttachmentLike.TYPE_UNKNOWN->{
+				iv.setMediaType(0)
+				iv.setDefaultImageResId(getAttributeResourceId(activity,R.attr.ic_question))
+				iv.setImageUrl(activity.pref,0f,null)
+			}
+			else->{
+				val url =ta.urlForThumbnail
+				when{
+					url?.isEmpty() != false ->{
+						iv.setMediaType(0)
+						iv.setDefaultImageResId(getAttributeResourceId(activity,R.attr.ic_question))
+						iv.setImageUrl(activity.pref,0f,null)
 					}
-					tv.setTextColor(content_color)
 					
-					if(ta.description?.isNotEmpty() == true) {
-						if(sbDesc.isNotEmpty()) sbDesc.append("\n")
-						val desc =
-							activity.getString(R.string.media_description, idx + 1, ta.description)
-						sbDesc.append(desc)
+					else->{
+						when(ta.type) {
+							TootAttachmentLike.TYPE_VIDEO -> {
+								iv.setMediaType(R.drawable.media_type_video)
+							}
+							
+							TootAttachmentLike.TYPE_GIFV -> {
+								iv.setMediaType(R.drawable.media_type_gifv)
+							}
+						}
+						iv.setDefaultImageResId(0)
+						iv.setImageUrl(
+							activity.pref,
+							0f,
+							access_info.supplyBaseUrl(url),
+							access_info.supplyBaseUrl(url)
+						)
 					}
 				}
-				
-				return
 			}
 		}
 		
-		iv.visibility = View.GONE
+		val description = ta.description
+		if(description != null && description.isNotEmpty()) {
+			val lp = LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT
+			)
+			lp.topMargin = (0.5f + activity.density * 3f).toInt()
+			val tv = MyTextView(activity)
+			tv.layoutParams = lp
+			//
+			tv.movementMethod = MyLinkMovementMethod
+			if(! activity.timeline_font_size_sp.isNaN()) {
+				tv.textSize = activity.timeline_font_size_sp
+			}
+			tv.setTextColor(content_color)
+			
+			if(ta.description?.isNotEmpty() == true) {
+				if(sbDesc.isNotEmpty()) sbDesc.append("\n")
+				val desc =
+					activity.getString(R.string.media_description, idx + 1, ta.description)
+				sbDesc.append(desc)
+			}
+		}
+		
 	}
 	
 	private val defaultBoostedAction : () -> Unit = {

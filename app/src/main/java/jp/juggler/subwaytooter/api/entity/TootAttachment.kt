@@ -3,10 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import android.content.SharedPreferences
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.util.clipRange
-import jp.juggler.util.jsonObject
-import jp.juggler.util.parseLong
-import jp.juggler.util.parseString
+import jp.juggler.util.*
 import org.json.JSONObject
 
 class TootAttachment : TootAttachmentLike {
@@ -37,6 +34,19 @@ class TootAttachment : TootAttachmentLike {
 		private const val KEY_Y = "y"
 		
 		fun decodeJson(src : JSONObject) = TootAttachment(src, decode = true)
+		
+		private val ext_audio = arrayOf(".mpga",".mp3",".aac",".ogg")
+		
+		private fun guessMediaTypeByUrl(src : String?) : String? {
+			val uri = src.mayUri() ?: return null
+			
+			if( ext_audio.find { uri.path.endsWith(it) } != null ){
+				return TootAttachmentLike.TYPE_AUDIO
+			}
+			
+			return null
+		}
+		
 	}
 	
 	constructor(parser : TootParser, src : JSONObject) : this(parser.serviceType, src)
@@ -85,10 +95,11 @@ class TootAttachment : TootAttachmentLike {
 				id = EntityId.mayDefault(src.parseString("id"))
 				
 				val mimeType = src.parseString("type") ?: "?"
+
 				this.type = when {
 					mimeType.startsWith("image/") -> TootAttachmentLike.TYPE_IMAGE
 					mimeType.startsWith("video/") -> TootAttachmentLike.TYPE_VIDEO
-					mimeType.startsWith("audio/") -> TootAttachmentLike.TYPE_VIDEO
+					mimeType.startsWith("audio/") -> TootAttachmentLike.TYPE_AUDIO
 					else -> TootAttachmentLike.TYPE_UNKNOWN
 				}
 				
@@ -112,13 +123,18 @@ class TootAttachment : TootAttachmentLike {
 			
 			else -> {
 				id = EntityId.mayDefault(src.parseLong("id"))
-				type = src.parseString("type")
 				url = src.parseString("url")
 				remote_url = src.parseString("remote_url")
 				preview_url = src.parseString("preview_url")
 				text_url = src.parseString("text_url")
 				description = src.parseString("description")
-				isSensitive = false
+				isSensitive = false // Misskey用のパラメータなので、マストドンでは適当な値を使ってOK
+				
+				var t = src.parseString("type")
+				if( t ==null || t == TootAttachmentLike.TYPE_UNKNOWN ){
+					t = guessMediaTypeByUrl( remote_url ?: url)
+				}
+				type = t ?: TootAttachmentLike.TYPE_UNKNOWN
 				
 				val focus = src.optJSONObject("meta")?.optJSONObject("focus")
 				focusX = parseFocusValue(focus, "x")
@@ -127,6 +143,7 @@ class TootAttachment : TootAttachmentLike {
 		}
 		
 	}
+	
 	
 	override val urlForThumbnail : String?
 		get() = when {

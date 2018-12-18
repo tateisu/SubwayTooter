@@ -724,13 +724,9 @@ class ActAccountSetting
 	
 	private fun initializeProfile() {
 		// 初期状態
-		ivProfileAvatar.setErrorImageResId(getAttributeResourceId(this, R.attr.ic_question))
-		ivProfileAvatar.setDefaultImageResId(
-			getAttributeResourceId(
-				this,
-				R.attr.ic_question
-			)
-		)
+		val question_id = getAttributeResourceId(this, R.attr.ic_question)
+		ivProfileAvatar.setErrorImageResId(question_id)
+		ivProfileAvatar.setDefaultImageResId(question_id)
 		
 		val loadingText = when(account.isPseudo) {
 			true -> "(disabled for pseudo account)"

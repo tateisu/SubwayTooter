@@ -31,21 +31,17 @@ internal fun findAccountByName(
 		
 		override fun background(client : TootApiClient) : TootApiResult? {
 			
-			val path = "/api/v1/accounts/search" + "?q=" + user.encodePercent()
-			
-			val result = client.request(path)
+			val result = client.request("/api/v1/accounts/search?q=${user.encodePercent()}")
 			val array = result?.jsonArray
 			if(array != null) {
 				val parser = TootParser(activity, access_info)
 				for(i in 0 until array.length()) {
-					val a = parser.account(array.optJSONObject(i))
-					if(a != null) {
-						if(a.username == user
-							&& access_info.getFullAcct(a).equals("$user@$host", ignoreCase = true)
-						) {
-							who = a
-							break
-						}
+					val a = parser.account(array.optJSONObject(i)) ?: continue
+					if(a.username == user
+						&& access_info.getFullAcct(a).equals("$user@$host", ignoreCase = true)
+					) {
+						who = a
+						break
 					}
 				}
 			}

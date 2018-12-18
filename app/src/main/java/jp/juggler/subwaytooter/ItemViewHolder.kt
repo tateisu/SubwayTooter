@@ -747,7 +747,7 @@ internal class ItemViewHolder(
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
-					R.attr.ic_question,
+					R.attr.ic_question, // not used
 					R.string.display_name_reaction_by
 					, reactionDrawableId = reaction?.btnDrawableId
 				)

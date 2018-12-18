@@ -1337,91 +1337,77 @@ fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) 
 		}
 	}
 	
-	if(accessInfo.isMisskey) {
+	val parser = TootParser(context, accessInfo)
+	
+	return if(accessInfo.isMisskey) {
+		
 		val acct = TootAccount.getAcctFromUrl(who_url)
 			?: return TootApiResult(context.getString(R.string.user_id_conversion_failed))
 		
-		val delm = acct.indexOf('@')
-		val params = accessInfo.putMisskeyApiToken(JSONObject())
-		if(delm != - 1) {
-			params.put("username", acct.substring(0, delm))
-			params.put("host", acct.substring(delm + 1))
-		} else {
-			params.put("username", acct)
-		}
-		
-		val result = this.request("/api/users/show", params.toPostRequestBuilder())
-		val jsonObject = result?.jsonObject
-		
-		if(jsonObject != null) {
-			val tmp = TootParser(this.context, accessInfo).account(jsonObject)
-			if(tmp != null) {
-				result.data = tmp
-			} else {
-				result.setError(context.getString(R.string.user_id_conversion_failed))
+		request(
+			"/api/users/show",
+			accessInfo.putMisskeyApiToken(JSONObject()).apply {
+				when(val delm = acct.indexOf('@')) {
+					- 1 -> put("username", acct)
+					
+					else -> {
+						put("username", acct.substring(0, delm))
+						put("host", acct.substring(delm + 1))
+					}
+				}
+			}.toPostRequestBuilder()
+		)
+			?.apply {
+				data = parser.account(jsonObject)
+				if(data == null && error == null) {
+					setError(context.getString(R.string.user_id_conversion_failed))
+				}
 			}
-		}
-		return result
+		
 	} else {
-		val path = String.format(
-			Locale.JAPAN,
-			Column.PATH_SEARCH,
-			who_url.encodePercent()
-		) + "&resolve=1"
-		val result = this.request(path)
-		val jsonObject = result?.jsonObject
-		if(jsonObject != null) {
-			val tmp = TootParser(this.context, accessInfo).results(jsonObject)
-			if(tmp != null && tmp.accounts.isNotEmpty()) {
-				result.data = tmp.accounts[0].get()
-			} else {
-				result.setError(context.getString(R.string.user_id_conversion_failed))
+		request("/api/v1/search?q=${who_url.encodePercent()}&resolve=true")
+			?.apply {
+				data = parser.results(jsonObject)?.accounts?.firstOrNull()
+				if(data == null && error == null) {
+					setError(context.getString(R.string.user_id_conversion_failed))
+				}
 			}
-		}
-		return result
 	}
 }
 
 fun TootApiClient.syncAccountByAcct(accessInfo : SavedAccount, acct : String) : TootApiResult? {
-	if(accessInfo.isMisskey) {
-		val delm = acct.indexOf('@')
-		val params = accessInfo.putMisskeyApiToken(JSONObject())
-		if(delm != - 1) {
-			params.put("username", acct.substring(0, delm))
-			params.put("host", acct.substring(delm + 1))
-		} else {
-			params.put("username", acct)
-		}
-		
-		val result = this.request("/api/users/show", params.toPostRequestBuilder())
-		val jsonObject = result?.jsonObject
-		
-		if(jsonObject != null) {
-			val tmp = TootParser(this.context, accessInfo).account(jsonObject)
-			if(tmp != null) {
-				result.data = tmp
-			} else {
-				result.setError(context.getString(R.string.user_id_conversion_failed))
+	
+	val parser = TootParser(context, accessInfo)
+	return if(accessInfo.isMisskey) {
+		request(
+			"/api/users/show",
+			accessInfo.putMisskeyApiToken()
+				.apply {
+					when(val delm = acct.indexOf('@')) {
+						- 1 -> put("username", acct)
+						
+						else -> {
+							put("username", acct.substring(0, delm))
+							put("host", acct.substring(delm + 1))
+						}
+					}
+				}
+				.toPostRequestBuilder()
+		)
+			?.apply {
+				data = parser.account(jsonObject)
+				if(data == null && error == null) {
+					setError(context.getString(R.string.user_id_conversion_failed))
+				}
 			}
-		}
-		return result
 	} else {
-		val path = String.format(
-			Locale.JAPAN,
-			Column.PATH_SEARCH,
-			acct.encodePercent()
-		) + "&resolve=1"
-		val result = this.request(path)
-		val jsonObject = result?.jsonObject
-		if(jsonObject != null) {
-			val tmp = TootParser(this.context, accessInfo).results(jsonObject)
-			if(tmp != null && tmp.accounts.isNotEmpty()) {
-				result.data = tmp.accounts[0].get()
-			} else {
-				result.setError(context.getString(R.string.user_id_conversion_failed))
+		request("/api/v1/search?q=${acct.encodePercent()}&resolve=true")
+			?.apply {
+				data = parser.results(jsonObject)?.accounts?.firstOrNull()
+				if(data == null && error == null) {
+					setError(context.getString(R.string.user_id_conversion_failed))
+				}
 			}
-		}
-		return result
 	}
 }
 
@@ -1437,9 +1423,7 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootA
 		val noteId = m.group(2)
 		
 		TootApiClient(context, callback = callback)
-			
 			.apply { instance = host }
-			
 			.request(
 				"/api/notes/show",
 				JSONObject()
@@ -1468,22 +1452,27 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootA
 	
 	// 使いたいタンス上の投稿IDを取得する
 	val parser = TootParser(context, accessInfo)
-	return when {
-		
-		accessInfo.isMisskey -> request(
+	return if(accessInfo.isMisskey) {
+		request(
 			"/api/ap/show",
 			accessInfo.putMisskeyApiToken()
 				.put("uri", url)
 				.toPostRequestBuilder()
-		)?.apply {
-			data = parser.parseMisskeyApShow(jsonObject)
-		}
-		
-		else -> request(
-			"/api/v1/search?q=${url.encodePercent()}&resolve=true"
-		)?.apply {
-			data = parser.results(jsonObject)?.statuses?.firstOrNull()
-		}
+		)
+			?.apply {
+				data = parser.parseMisskeyApShow(jsonObject)
+				if(data == null && error == null) {
+					setError(context.getString(R.string.cant_sync_toot))
+				}
+			}
+	} else {
+		request("/api/v1/search?q=${url.encodePercent()}&resolve=true")
+			?.apply {
+				data = parser.results(jsonObject)?.statuses?.firstOrNull()
+				if(data == null && error == null) {
+					setError(context.getString(R.string.cant_sync_toot))
+				}
+			}
 	}
 }
 

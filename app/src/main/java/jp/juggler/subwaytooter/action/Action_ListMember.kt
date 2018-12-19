@@ -197,7 +197,7 @@ object Action_ListMember {
 					)
 				}else{
 					client.request(
-						"/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + local_who.id,
+						"/api/v1/lists/${list_id}/accounts?account_ids[]=${local_who.id}",
 						Request.Builder().delete()
 					)
 				}

@@ -339,15 +339,13 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		
 		internal val reWhitespace : Pattern = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
 		
-		// メンション @username @username@host
-		internal val reMention = Pattern.compile(
-			"""\A@([a-z0-9_]+(?:[a-z0-9_.-]+[a-z0-9_]+)?)(?:@([a-z0-9][a-z0-9._-]+))?"""
-			, Pattern.CASE_INSENSITIVE
-		)
+		// MFMのメンション @username @username@host
+		// (Mastodonのカラムでは使われていない)
+		internal val reMention = Pattern.compile("""\A@(\w+[\w-]*\w)(?:@(\w[\w.-]*\w))?""")
 		
 		// host, user ,(instance)
 		internal val reAccountUrl : Pattern =
-			Pattern.compile("""\Ahttps://([A-Za-z0-9][A-Za-z0-9._-]+)/@([\w][\w.-]+)(?:@([A-Za-z0-9][A-Za-z0-9._-]+))?(?=\z|[?#])""")
+			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/@(\w+[\w-]*\w)(?:@(\w[\w.-]*\w))?(?=\z|[?#])""")
 		
 		fun getAcctFromUrl(url : String) : String? {
 			val m = reAccountUrl.matcher(url)
@@ -433,19 +431,19 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			// リモートユーザーはAP経由のフィールドが表示される
 			// https://github.com/syuilo/misskey/pull/3590
 			// https://github.com/syuilo/misskey/pull/3596
-			src.optJSONArray("fields")?.forEach { o->
-				if(o !is JSONObject ) return@forEach
+			src.optJSONArray("fields")?.forEach { o ->
+				if(o !is JSONObject) return@forEach
 				//plain text
 				val n = o.parseString("name") ?: return@forEach
 				// mfm
 				val v = o.parseString("value") ?: ""
 				dst = (dst ?: ArrayList()).apply { add(Field(n, v, 0L)) }
 			}
-
+			
 			// misskeyローカルユーザーはTwitter等の連携をフィールドに表示する
 			// https://github.com/syuilo/misskey/pull/3499
 			// https://github.com/syuilo/misskey/pull/3586
-
+			
 			fun appendField(name : String, caption : String, url : String) {
 				val value = """[$caption]($url)"""
 				dst = (dst ?: ArrayList()).apply { add(Field(name, value, 0L)) }

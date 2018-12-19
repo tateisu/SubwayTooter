@@ -185,18 +185,22 @@ object Action_ListMember {
 		local_who : TootAccount,
 		callback : Callback?
 	) {
-		
-		if(access_info.isMisskey) {
-			showToast(activity, false, "Misskey has no API to delete member from the list.")
-			return
-		}
-		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return client.request(
-					"/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + local_who.id,
-					Request.Builder().delete()
-				)
+				return if(access_info.isMisskey) {
+					client.request(
+						"/api/users/lists/pull",
+						access_info.putMisskeyApiToken()
+							.put("listId",list_id.toString())
+							.put("userId",local_who.id.toString())
+							.toPostRequestBuilder()
+					)
+				}else{
+					client.request(
+						"/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + local_who.id,
+						Request.Builder().delete()
+					)
+				}
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

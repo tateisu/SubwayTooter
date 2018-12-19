@@ -341,7 +341,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		
 		// メンション @username @username@host
 		internal val reMention = Pattern.compile(
-			"""\A@([a-z0-9_]+(?:[a-z0-9_.-]+[a-z0-9_]+)?)(?:@([A-Za-z0-9][A-Za-z0-9._-]+))?"""
+			"""\A@([a-z0-9_]+(?:[a-z0-9_.-]+[a-z0-9_]+)?)(?:@([a-z0-9][a-z0-9._-]+))?"""
 			, Pattern.CASE_INSENSITIVE
 		)
 		

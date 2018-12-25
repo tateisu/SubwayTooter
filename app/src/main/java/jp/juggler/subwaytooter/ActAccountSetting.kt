@@ -775,7 +775,11 @@ class ActAccountSetting
 					return result
 					
 				} else {
-					val result = client.request("/api/v1/accounts/verify_credentials")
+					
+					var result = account.checkConfirmed(this@ActAccountSetting,client)
+					if(result == null || result.error!=null) return result
+					
+					result = client.request("/api/v1/accounts/verify_credentials")
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
 						data = TootParser(this@ActAccountSetting, account).account(jsonObject)

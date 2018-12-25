@@ -799,4 +799,5 @@
     <string name="verified_at">vérifié à</string>
 
 <string name="use_old_api">Utiliser l’ancienne API</string>
-    </resources>
+    <string name="username_not_need_atmark">The user name must not contains \"@\" or \"/\".</string>
+</resources>

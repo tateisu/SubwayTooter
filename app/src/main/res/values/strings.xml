@@ -225,7 +225,8 @@
     <string name="follow_request_rejected">You declined %1$s\'s follow request.</string>
     <string name="follow_request_authorized">You accepted %1$s\'s follow request.</string>
     <string name="close">Close</string>
-    <string name="pseudo_account">Pseudo account (non-login, only reads public data)</string>
+    <string name="pseudo_account">Pseudo account</string>
+    <string name="pseudo_account_desc">Read only public data on the instance without log in.</string>
     <string name="server_confirmed">Server confirmed.</string>
     <string name="not_available_for_pseudo_account">Unavailable for pseudo account</string>
     <string name="not_available_for_misskey_account">Unavailable for Misskey account</string>
@@ -423,7 +424,8 @@
     <string name="delete_this_notification">Delete this notification</string>
     <string name="mute_this_conversation">Mute more notifications for this conversation</string>
     <string name="unmute_this_conversation">Unmute more notifications for this conversation</string>
-    <string name="input_access_token">Specify access token (advanced)</string>
+    <string name="input_access_token">Access token</string>
+    <string name="input_access_token_desc">Specify access token instead of normal user authentication. (advanced)</string>
     <string name="access_token_or_api_token">Access token (if using Misskey, please input API token)</string>
     <string name="token_not_specified">Please input access token.</string>
     <string name="quote_name">Quote name…</string>
@@ -830,5 +832,23 @@
     <string name="instance_ticker_copyright">#InstanceTicker\nhttps://wee.jp/mastodon/\nCopyright 2018 weepjp, kyori19.</string>
     <string name="location">Location</string>
     <string name="birthday">Birthday</string>
+    <string name="existing_account">Log in</string>
+    <string name="existing_account_desc">Log in as existing account.</string>
+
+    <string name="create_account">Create account</string>
+    <string name="create_account_desc">Create new account on specified instance.</string>
+
+    <string name="user_name_hint">ex) MonaLisa</string>
+    <string name="user_name">User name</string>
+    <string name="email_hint">ex) monalisa@gmail.com</string>
+    <string name="password">Password</string>
+    <string name="password_hint">Enter the password…</string>
+    <string name="terms">terms</string>
+    <string name="agree_terms">I agree to the terms of service</string>
+    <string name="instance_rules">Instance rules</string>
+    <string name="username_empty">Please specify the user name.</string>
+    <string name="email_empty">Please specift the E-mail address.</string>
+    <string name="password_empty">Please specify the password.</string>
+    <string name="username_not_need_atmark">The user name must not contains \"@\" or \"/\".</string>
 
 </resources>

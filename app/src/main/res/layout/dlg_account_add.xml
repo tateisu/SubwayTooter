@@ -9,10 +9,9 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
         android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
-        android:labelFor="@+id/etInstance"
+        android:layout_marginEnd="12dp"
         android:text="@string/instance"
         />
 
@@ -20,31 +19,27 @@
         android:id="@+id/etInstance"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
         android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
         android:hint="@string/instance_hint"
         android:imeOptions="actionDone"
         android:inputType="textUri"
         />
 
-    <CheckBox
-        android:id="@+id/cbPseudoAccount"
+    <Spinner
+        android:id="@+id/spAction"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
         android:layout_marginStart="12dp"
-        android:text="@string/pseudo_account"
+        android:layout_marginEnd="12dp"
         />
-
-    <CheckBox
-        android:id="@+id/cbInputAccessToken"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
         android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
-        android:text="@string/input_access_token"
+        android:id="@+id/tvActionDesc"
         />
-
     <LinearLayout
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"

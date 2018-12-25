@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
+import android.support.annotation.StringRes
 import android.text.InputType
 import android.view.View
 import android.view.WindowManager
@@ -20,6 +21,18 @@ object LoginForm {
 	
 	private class StringArray : ArrayList<String>()
 	
+	enum class Action(
+		val pos : Int,
+		@StringRes val idName : Int,
+		@StringRes val idDesc : Int
+	) {
+		
+		Existing(0, R.string.existing_account, R.string.existing_account_desc),
+		Pseudo(1, R.string.pseudo_account, R.string.pseudo_account_desc),
+		Create(2, R.string.create_account, R.string.create_account_desc),
+		Token(3, R.string.input_access_token, R.string.input_access_token_desc),
+	}
+	
 	@SuppressLint("InflateParams")
 	fun showLoginForm(
 		activity : Activity,
@@ -27,19 +40,47 @@ object LoginForm {
 		onClickOk : (
 			dialog : Dialog,
 			instance : String,
-			bPseudoAccount : Boolean,
-			bInputAccessToken : Boolean
+			action : Action
 		) -> Unit
 	) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_account_add, null, false)
 		val etInstance : AutoCompleteTextView = view.findViewById(R.id.etInstance)
 		val btnOk : View = view.findViewById(R.id.btnOk)
-		val cbPseudoAccount : CheckBox = view.findViewById(R.id.cbPseudoAccount)
-		val cbInputAccessToken : CheckBox = view.findViewById(R.id.cbInputAccessToken)
 		
-		cbPseudoAccount.setOnCheckedChangeListener { _, _ ->
-			cbInputAccessToken.isEnabled = ! cbPseudoAccount.isChecked
+		val tvActionDesc : TextView = view.findViewById(R.id.tvActionDesc)
+		
+		fun Spinner.getActionDesc() : String =
+			Action.values()
+				.find { it.pos == selectedItemPosition }
+				?.let { activity.getString(it.idDesc) }
+				?: "(null)"
+		
+		val spAction = view.findViewById<Spinner>(R.id.spAction).also { sp ->
+			sp.adapter = ArrayAdapter(
+				activity,
+				android.R.layout.simple_spinner_item,
+				Action.values().map { activity.getString(it.idName) }.toTypedArray()
+			).apply {
+				setDropDownViewResource(R.layout.lv_spinner_dropdown)
+				
+			}
+			sp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+				override fun onNothingSelected(parent : AdapterView<*>?) { // TODO
+					tvActionDesc.text = sp.getActionDesc()
+				}
+				
+				override fun onItemSelected(
+					parent : AdapterView<*>?,
+					view : View?,
+					position : Int,
+					id : Long
+				) {
+					tvActionDesc.text = sp.getActionDesc()
+				}
+			}
 		}
+		
+		tvActionDesc.text = spAction.getActionDesc()
 		
 		if(instanceArg != null && instanceArg.isNotEmpty()) {
 			etInstance.setText(instanceArg)
@@ -57,22 +98,26 @@ object LoginForm {
 		}
 		val dialog = Dialog(activity)
 		dialog.setContentView(view)
-		btnOk.setOnClickListener { _ -> // 警告がでるが、パラメータ名の指定を削ってはいけない
+		// 警告がでるが、パラメータ名の指定を削ってはいけない
+		btnOk.setOnClickListener { v ->
 			val instance = etInstance.text.toString().trim { it <= ' ' }
 			
 			when {
-				instance.isEmpty() -> showToast(activity, true, R.string.instance_not_specified)
-				instance.contains("/") || instance.contains("@") -> showToast(
-					activity,
-					true,
-					R.string.instance_not_need_slash
-				)
-				else -> onClickOk(
-					dialog,
-					instance,
-					cbPseudoAccount.isChecked,
-					cbInputAccessToken.isChecked
-				)
+				
+				instance.isEmpty() ->
+					showToast(activity, true, R.string.instance_not_specified)
+				
+				instance.contains("/") || instance.contains("@") ->
+					showToast(activity, true, R.string.instance_not_need_slash)
+				
+				else -> {
+					val actionPos = spAction.selectedItemPosition
+					when(val action = Action.values().find { it.pos == actionPos }) {
+						null -> {
+						} // will no happened
+						else -> onClickOk(dialog, instance, action)
+					}
+				}
 			}
 		}
 		view.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }

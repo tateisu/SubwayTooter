@@ -7,6 +7,7 @@ import android.support.test.runner.AndroidJUnit4
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.CurrentCallCallback
 import jp.juggler.subwaytooter.util.SimpleHttpClient
+import jp.juggler.util.*
 import okhttp3.*
 import okio.Buffer
 import okio.BufferedSource
@@ -28,11 +29,14 @@ class TestTootApiClient {
 		val webSocketGenerator : (request : Request, ws_listener : WebSocketListener) -> WebSocket
 	) : SimpleHttpClient {
 		
-		override var currentCallCallback : CurrentCallCallback? = null
-		
-		override fun getResponse(request : Request,cached:Boolean) : Response {
+		override fun getResponse(
+			request : Request,
+			tmpOkhttpClient : OkHttpClient?
+		) : Response {
 			return responseGenerator(request)
 		}
+		
+		override var currentCallCallback : CurrentCallCallback? = null
 		
 		override fun getWebSocket(
 			request : Request,
@@ -72,7 +76,7 @@ class TestTootApiClient {
 							.message("status-message")
 							.body(
 								ResponseBody.create(
-									TootApiClient.MEDIA_TYPE_JSON,
+									MEDIA_TYPE_JSON,
 									"""{"id":999,"redirect_uri":"urn:ietf:wg:oauth:2.0:oob","client_id":"DUMMY_ID","client_secret":"DUMMY_SECRET"}"""
 								)
 							)
@@ -86,7 +90,7 @@ class TestTootApiClient {
 						.message("status-message")
 						.body(
 							ResponseBody.create(
-								TootApiClient.MEDIA_TYPE_JSON,
+								MEDIA_TYPE_JSON,
 								"""{"id":999,"redirect_uri":"urn:ietf:wg:oauth:2.0:oob","client_id":"DUMMY_ID","client_secret":"DUMMY_SECRET"}"""
 							)
 						)
@@ -102,7 +106,7 @@ class TestTootApiClient {
 								.message("status-message")
 								.body(
 									ResponseBody.create(
-										TootApiClient.MEDIA_TYPE_JSON,
+										MEDIA_TYPE_JSON,
 										"""{"access_token":"DUMMY_CLIENT_CREDENTIAL"}"""
 									)
 								)
@@ -118,7 +122,7 @@ class TestTootApiClient {
 								.message("status-message")
 								.body(
 									ResponseBody.create(
-										TootApiClient.MEDIA_TYPE_JSON,
+										MEDIA_TYPE_JSON,
 										"""{"access_token":"DUMMY_ACCESS_TOKEN"}"""
 									)
 								)
@@ -147,7 +151,7 @@ class TestTootApiClient {
 							.message("status-message")
 							.body(
 								ResponseBody.create(
-									TootApiClient.MEDIA_TYPE_JSON,
+									MEDIA_TYPE_JSON,
 									account1Json.toString()
 								)
 							)
@@ -171,7 +175,7 @@ class TestTootApiClient {
 							.message("status-message")
 							.body(
 								ResponseBody.create(
-									TootApiClient.MEDIA_TYPE_JSON,
+									MEDIA_TYPE_JSON,
 									json.toString()
 								)
 							)
@@ -210,7 +214,7 @@ class TestTootApiClient {
 							.message("status-message")
 							.body(
 								ResponseBody.create(
-									TootApiClient.MEDIA_TYPE_JSON,
+									MEDIA_TYPE_JSON,
 									array.toString()
 								)
 							)
@@ -298,7 +302,7 @@ class TestTootApiClient {
 		.protocol(Protocol.HTTP_1_1)
 		.code(200)
 		.message("status-message")
-		.body(ResponseBody.create(TootApiClient.MEDIA_TYPE_JSON, strJsonOk))
+		.body(ResponseBody.create(MEDIA_TYPE_JSON, strJsonOk))
 		.build()
 	
 	private fun createResponseOkButJsonError() = Response.Builder()
@@ -306,7 +310,7 @@ class TestTootApiClient {
 		.protocol(Protocol.HTTP_1_1)
 		.code(200)
 		.message("status-message")
-		.body(ResponseBody.create(TootApiClient.MEDIA_TYPE_JSON, strJsonError))
+		.body(ResponseBody.create(MEDIA_TYPE_JSON, strJsonError))
 		.build()
 	
 	private fun createResponseErrorCode() = Response.Builder()
@@ -314,7 +318,7 @@ class TestTootApiClient {
 		.protocol(Protocol.HTTP_1_1)
 		.code(500)
 		.message("status-message")
-		.body(ResponseBody.create(TootApiClient.MEDIA_TYPE_JSON, strJsonError))
+		.body(ResponseBody.create(MEDIA_TYPE_JSON, strJsonError))
 		.build()
 	
 	private fun createResponseEmptyBody() = Response.Builder()
@@ -322,7 +326,7 @@ class TestTootApiClient {
 		.protocol(Protocol.HTTP_1_1)
 		.code(200)
 		.message("status-message")
-		.body(ResponseBody.create(TootApiClient.MEDIA_TYPE_JSON, ""))
+		.body(ResponseBody.create(MEDIA_TYPE_JSON, ""))
 		.build()
 	
 	private fun createResponseWithoutBody() = Response.Builder()
@@ -343,7 +347,7 @@ class TestTootApiClient {
 				override fun contentLength() = 10L
 				
 				override fun contentType() : MediaType? {
-					return TootApiClient.MEDIA_TYPE_JSON
+					return MEDIA_TYPE_JSON
 				}
 				
 				override fun source() : BufferedSource? {
@@ -363,7 +367,7 @@ class TestTootApiClient {
 		.protocol(Protocol.HTTP_1_1)
 		.code(200)
 		.message("status-message")
-		.body(ResponseBody.create(TootApiClient.MEDIA_TYPE_JSON, strJsonArray1))
+		.body(ResponseBody.create(MEDIA_TYPE_JSON, strJsonArray1))
 		.build()
 	
 	private fun createResponseJsonArray2() = Response.Builder()
@@ -371,7 +375,7 @@ class TestTootApiClient {
 		.protocol(Protocol.HTTP_1_1)
 		.code(200)
 		.message("status-message")
-		.body(ResponseBody.create(TootApiClient.MEDIA_TYPE_JSON, strJsonArray2))
+		.body(ResponseBody.create(MEDIA_TYPE_JSON, strJsonArray2))
 		.build()
 	
 	private fun createResponseJsonObject2() = Response.Builder()
@@ -379,7 +383,7 @@ class TestTootApiClient {
 		.protocol(Protocol.HTTP_1_1)
 		.code(200)
 		.message("status-message")
-		.body(ResponseBody.create(TootApiClient.MEDIA_TYPE_JSON, strJsonObject2))
+		.body(ResponseBody.create(MEDIA_TYPE_JSON, strJsonObject2))
 		.build()
 	
 	private val mediaTypeTextPlain = MediaType.parse("text/plain")
@@ -501,7 +505,7 @@ class TestTootApiClient {
 			.message("status-message")
 			.body(
 				ResponseBody.create(
-					TootApiClient.MEDIA_TYPE_JSON,
+					MEDIA_TYPE_JSON,
 					"""{"error":"Error!"}"""
 				)
 			)
@@ -523,7 +527,7 @@ class TestTootApiClient {
 			.message("status-message")
 			.body(
 				ResponseBody.create(
-					TootApiClient.MEDIA_TYPE_JSON,
+					MEDIA_TYPE_JSON,
 					"""{"error":"Error!"}"""
 				)
 			)
@@ -546,7 +550,7 @@ class TestTootApiClient {
 			.message("")
 			.body(
 				ResponseBody.create(
-					TootApiClient.MEDIA_TYPE_JSON,
+					MEDIA_TYPE_JSON,
 					"""{"error":"Error!"}"""
 				)
 			)

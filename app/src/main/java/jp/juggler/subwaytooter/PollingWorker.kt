@@ -1071,6 +1071,9 @@ class PollingWorker private constructor(contextArg : Context) {
 					// 疑似アカウントはチェック対象外
 					if(account.isPseudo) return
 					
+					// 未確認アカウントはチェック対象外
+					if(! account.isConfirmed) return
+					
 					client.account = account
 					
 					val wps = PushSubscriptionHelper(context, account)

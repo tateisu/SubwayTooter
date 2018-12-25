@@ -6,14 +6,17 @@ import android.os.Build
 import android.support.v7.app.AlertDialog
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.AccountPicker
+import jp.juggler.subwaytooter.dialog.DlgCreateAccount
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.dialog.LoginForm
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
 import org.json.JSONObject
 
@@ -28,15 +31,13 @@ object Action_Account {
 		LoginForm.showLoginForm(
 			activity,
 			null
-		) { dialog, instance, bPseudoAccount, bInputAccessToken ->
+		) { dialog, instance, action ->
 			TootTaskRunner(activity).run(instance, object : TootTask {
 				
-				override fun background(client : TootApiClient) : TootApiResult? {
-					return if(bPseudoAccount || bInputAccessToken) {
-						client.getInstanceInformation()
-					} else {
-						client.authentication1(Pref.spClientName(activity))
-					}
+				override fun background(client : TootApiClient) : TootApiResult? = when(action) {
+					LoginForm.Action.Existing -> client.authentication1(Pref.spClientName(activity))
+					LoginForm.Action.Create -> client.createUser1(Pref.spClientName(activity))
+					else -> client.getInstanceInformation()
 				}
 				
 				override fun handleResult(result : TootApiResult?) {
@@ -54,12 +55,9 @@ object Action_Account {
 							// IllegalArgumentException がたまに出る
 						}
 					} else if(data is JSONObject) {
-						
 						// インスタンスを確認できた
-						if(bInputAccessToken) {
-							
-							// アクセストークンの手動入力
-							DlgTextInput.show(
+						when(action) {
+							LoginForm.Action.Token -> DlgTextInput.show(
 								activity,
 								activity.getString(R.string.access_token_or_api_token),
 								null,
@@ -88,9 +86,7 @@ object Action_Account {
 								}
 							)
 							
-						} else {
-							// 疑似アカウントを追加
-							addPseudoAccount(
+							LoginForm.Action.Pseudo -> addPseudoAccount(
 								activity,
 								instance,
 								data.optBoolean("isMisskey", false)
@@ -104,6 +100,17 @@ object Action_Account {
 								} catch(ignored : Throwable) {
 									// IllegalArgumentException がたまに出る
 								}
+							}
+							
+							LoginForm.Action.Create -> createAccount(
+								activity,
+								instance,
+								data,
+								dialog
+							)
+							
+							else -> {
+								// will not happened
 							}
 						}
 					} else {
@@ -127,6 +134,75 @@ object Action_Account {
 			})
 		}
 		
+	}
+	
+	private fun createAccount(
+		activity : ActMain,
+		instance : String,
+		client_info : JSONObject,
+		dialog_host : Dialog
+	) {
+		DlgCreateAccount.showCreateAccountForm(
+			activity,
+			instance
+		) { dialog_create, username, email, password, agreement ->
+			// dialog引数が二つあるのに注意
+			TootTaskRunner(activity).run(instance, object : TootTask {
+				
+				var ta : TootAccount? = null
+				
+				override fun background(client : TootApiClient) : TootApiResult? {
+					val r1 = client.createUser2Mastodon(
+						client_info,
+						username,
+						email,
+						password,
+						agreement
+					)
+					val ti = r1?.jsonObject ?: return r1
+					
+					val isMisskey = ti.optBoolean(TootApiClient.KEY_IS_MISSKEY)
+					val linkHelper = LinkHelper.newLinkHelper(instance, isMisskey = isMisskey)
+					
+					val access_token = ti.parseString("access_token")
+						?: return TootApiResult("can't get user access token")
+					
+					val r2 = client.getUserCredential(access_token, isMisskey = isMisskey)
+					this.ta = TootParser(activity, linkHelper).account(r2?.jsonObject)
+					if( this.ta != null) return r2
+
+					val jsonObject = JSONObject().apply{
+						put("id", EntityId.CONFIRMING_ID_LONG)
+						put("username",username)
+						put("acct",username)
+						put("acct",username)
+						put("url","https://$instance/@$username")
+					}
+					
+					this.ta = TootParser(activity, linkHelper).account(jsonObject)
+					r1.data = jsonObject
+					r1.tokenInfo = ti
+					return r1
+
+				}
+				
+				override fun handleResult(result : TootApiResult?) {
+					val sa : SavedAccount? = null
+					if(activity.afterAccountVerify(result, ta, sa, instance)) {
+						try {
+							dialog_host.dismiss()
+						} catch(ignored : Throwable) {
+							// IllegalArgumentException がたまに出る
+						}
+						try {
+							dialog_create.dismiss()
+						} catch(ignored : Throwable) {
+							// IllegalArgumentException がたまに出る
+						}
+					}
+				}
+			})
+		}
 	}
 	
 	// アカウント設定

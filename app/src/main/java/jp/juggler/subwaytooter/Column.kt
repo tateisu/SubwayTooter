@@ -2605,8 +2605,12 @@ class Column(
 				
 				client.account = access_info
 				
+				
 				try {
-					var result : TootApiResult?
+					var result : TootApiResult? = access_info.checkConfirmed(context,client)
+					if( result == null || result?.error != null ) return result
+					
+					
 					val q : String
 					
 					muted_word2 = encodeFilterTree(loadFilter2(client))

@@ -17,6 +17,8 @@ abstract class EntityId : Comparable<EntityId> {
 		
 		const val INVALID_ID_LONG = - 1L
 		
+		// マストドンのアカウント作成APIで作成した直後は「IDが発行されてない」状態になる
+		const val CONFIRMING_ID_LONG = - 2L
 		
 		val defaultLong = EntityIdLong(INVALID_ID_LONG)
 		val defaultString = EntityIdString("")

@@ -428,17 +428,17 @@ class ActAppSettingChild : AppCompatActivity()
 		
 	}
 	
-	private fun initSpinner(@IdRes viewId : Int, vararg captions : String) : Spinner? {
-		val sp : Spinner = findViewById(viewId) ?: return null
-
-		val caption_list : Array<String> = arrayOf(*captions)
-		val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, caption_list)
-		adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
-		sp.adapter = adapter
-		sp.onItemSelectedListener = this
-
-		return sp
-	}
+	private fun initSpinner(@IdRes viewId : Int, vararg captions : String) : Spinner? =
+		findViewById<Spinner>(viewId)?.apply{
+			adapter = ArrayAdapter(
+				this@ActAppSettingChild,
+				android.R.layout.simple_spinner_item,
+				arrayOf(*captions)
+			).apply{
+				setDropDownViewResource(R.layout.lv_spinner_dropdown)
+			}
+			onItemSelectedListener = this@ActAppSettingChild
+		}
 	
 	private fun loadUIFromData() {
 		load_busy = true

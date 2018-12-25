@@ -6,12 +6,11 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.PollingWorker
 import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import org.json.JSONObject
@@ -922,6 +921,40 @@ class SavedAccount(
 		TootNotification.TYPE_VOTE -> notification_vote
 		
 		else -> false
+	}
+	
+	val isConfirmed :Boolean
+		get(){
+			val myId = this.loginAccount?.id
+			return ! (myId is EntityIdLong && myId.toLong() == EntityId.CONFIRMING_ID_LONG)
+		}
+	
+	fun checkConfirmed(context:Context,client : TootApiClient) : TootApiResult? {
+		try {
+			val myId = this.loginAccount?.id
+			if(db_id != INVALID_DB_ID
+				&& myId is EntityIdLong
+				&& myId.toLong() == EntityId.CONFIRMING_ID_LONG
+			) {
+				val accessToken = getAccessToken()
+				if(accessToken != null) {
+					val result = client.getUserCredential(accessToken, isMisskey = false)
+					if( result ==null || result.error!=null) return result
+					val ta = TootParser(context, this).account(result.jsonObject)
+					if(ta != null) {
+						this.loginAccount = ta
+						val cv = ContentValues()
+						cv.put(COL_ACCOUNT, ta.toString())
+						App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+						PollingWorker.queueUpdateNotification(context)
+					}
+				}
+			}
+			return TootApiResult()
+		}catch(ex:Throwable){
+			log.trace(ex)
+			return TootApiResult(ex.withCaption("account confirmation failed."))
+		}
 	}
 	
 }

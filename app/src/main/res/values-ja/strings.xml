@@ -350,7 +350,8 @@
     <string name="image_alpha">画像の不透明度</string>
     <string name="image_capture">カメラで撮影</string>
     <string name="in_reply_to_id_conversion_failed">アカウント切り替えできません。in_reply_toのID変換に失敗しました。</string>
-    <string name="input_access_token">アクセストークンを指定する(上級者向け)</string>
+    <string name="input_access_token">アクセストークン</string>
+    <string name="input_access_token_desc">通常のユーザ認証の代わりにアクセストークンを指定します。(上級者向け)</string>
     <string name="instance">インスタンス</string>
     <string name="instance_does_not_support_push_api">タンスのバージョン %1$s は古くてプッシュ購読を利用できません</string>
     <string name="instance_hint">例: mastodon.social</string>
@@ -531,7 +532,8 @@
     <string name="profile_pin_progress">固定表示の変更中…</string>
     <string name="profile_unpin">プロフィールの固定表示を解除</string>
     <string name="progress_synchronize_toot">トゥートを同期してます…</string>
-    <string name="pseudo_account">疑似アカウント(ログインなし、公開データを読めるだけ)</string>
+    <string name="pseudo_account">疑似アカウント</string>
+    <string name="pseudo_account_desc">ログインせずにインスタンスの公開データを読みます。</string>
     <string name="pseudo_account_not_supported">疑似アカウントでは通知を利用できません。</string>
     <string name="public_profile">公開プロフィール</string>
     <string name="pull_notification_check_interval">Pull通知の確認間隔 (単位:分, デフォルト:15, 最低: 15)</string>
@@ -811,5 +813,20 @@
     <string name="show_instance_ticker">#InstanceTicker を表示する(カラムのリロードが必要)</string>
     <string name="location">位置</string>
     <string name="birthday">誕生日</string>
+    <string name="existing_account">ログイン</string>
+    <string name="existing_account_desc">既存のアカウントでログインします。</string>
+    <string name="create_account">新規登録</string>
+    <string name="create_account_desc">指定したインスタンスに新しいユーザを登録します</string>
+    <string name="user_name">ユーザ名</string>
+    <string name="user_name_hint">例: MonaLisa</string>
+    <string name="username_empty">ユーザ名を指定してください.</string>
+    <string name="email_hint">例: monalisa\@gmail.com</string>
+    <string name="email_empty">メールアドレスを指定してください.</string>
+    <string name="password">パスワード</string>
+    <string name="password_hint">パスワードを入力…</string>
+    <string name="password_empty">パスワードを指定してください.</string>
+    <string name="instance_rules">インスタンスのルール</string>
+    <string name="terms">プライバシーポリシー</string>
+    <string name="agree_terms">サービスの規約に同意します</string>
 
 </resources>

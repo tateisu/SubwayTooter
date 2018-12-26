@@ -83,7 +83,7 @@
     <string name="edit">تعديل</string>
     <string name="text_color">لون النص</string>
     <string name="background_color">لون الخلفية</string>
-    <string name="nickname_and_color_and_notification_sound">الإسم المستعار،ك واللون والإشعارات الصوتية</string>
+    <string name="nickname_and_color_and_notification_sound">الإسم المستعار واللون والإشعار الصوتي</string>
     <string name="nickname_and_color">الإسم المستعار واللون</string>
     <string name="follow_requested">تم إرسال طلب المتابعة.</string>
     <string name="confirmation">التأكيد</string>
@@ -146,7 +146,7 @@
     <string name="emoji_category_flags">الأعلام</string>
     <string name="emoji_category_custom">مخصص</string>
     <string name="card_header_card">البطاقة</string>
-    <string name="card_header_author">الكاتب</string>
+    <string name="card_header_author">المؤلف</string>
     <string name="card_header_provider">المُزَوّد</string>
     <string name="emoji">الإيموجي</string>
     <string name="attachment_description">وصف الملحقات</string>
@@ -207,7 +207,7 @@
     <string name="follow">إتبع</string>
     <string name="statuses">المنشورات</string>
     <string name="hide">إخفاء</string>
-    <string name="nsfw">تحذير عن المحتوى</string>
+    <string name="nsfw">NSFW</string>
     <string name="tap_to_show">أنقر للعرض</string>
     <string name="please_add_account">يجب عليك إعداد حساب قصد نشر تبويقات.</string>
     <string name="status">تبويق</string>
@@ -243,7 +243,7 @@
     <string name="pseudo_account">شبه حساب</string>
     <string name="input_access_token">رمز المصادقة</string>
     <string name="title">العنوان</string>
-    <string name="instance_information">معلومات عن مثيل الخادوم</string>
+    <string name="instance_information">معلومات مثيل الخادم</string>
 
     <string name="time_within_second">الآن</string>
     <string name="make_enquete">إنشاء استطلاع للرأي</string>
@@ -439,4 +439,18 @@
     <string name="filter_expire_1hour">ساعة واحدة بعد الحفظ</string>
     <string name="filter_expire_6hour">6 ساعات بعد الحفظ</string>
     <string name="filter_expire_12hour">12 ساعة بعد الحفظ</string>
+    <string name="tablet_mode">وضعية الكمبيوتر اللوحي</string>
+    <string name="performance">الأداء</string>
+    <string name="open_local_timeline_for">افتح الخط الزمني لـ \"%1$s\"</string>
+    <string name="quote_name">اقتبِس اسمه…</string>
+    <string name="instance_information_of">معلومات مثيل الخادوم \"%1$s\"</string>
+    <string name="list_member_add_remove">إضافته أو تنحيته من القوائم…</string>
+    <string name="field_value1">القيمة 1</string>
+    <string name="field_value2">القيمة 2</string>
+    <string name="field_value3">القيمة 3</string>
+    <string name="field_value4">القيمة 4</string>
+    <string name="verified_at">تم التحقق منه في</string>
+    <string name="animation">المؤثرات الحركية</string>
+    <string name="existing_account">تسجيل الدخول</string>
+    <string name="existing_account_desc">تسجيل الدخول بواسطة حساب تم انشاؤه.</string>
 </resources>

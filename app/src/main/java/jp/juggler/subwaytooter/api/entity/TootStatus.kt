@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.support.annotation.StringRes
 import android.text.Spannable
 import android.text.SpannableString
 import jp.juggler.subwaytooter.App1
@@ -21,6 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.math.abs
 
 @Suppress("MemberVisibilityCanPrivate")
 class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
@@ -89,7 +91,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	// Pleromaは「空文字列：CWなし」「空じゃない文字列：CWあり」の2種類
 	// Misskeyは「CWなし」「空欄CW」「CWあり」の3通り。空欄CWはパース時に書き換えてしまう
 	// Misskeyで投稿が削除された時に変更されるため、val変数にできない
-	var spoiler_text : String =""
+	var spoiler_text : String = ""
 	var decoded_spoiler_text : Spannable
 	
 	//	Body of the status; this will contain HTML (remote HTML already sanitized)
@@ -281,7 +283,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			if(options.highlight_sound != null && this.highlight_sound == null) {
 				this.highlight_sound = options.highlight_sound
 			}
-
+			
 			// Markdownのデコード結果からmentionsを読むのだった
 			this.mentions =
 				(decoded_content as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
@@ -292,12 +294,12 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			) ?: EMPTY_SPANNABLE
 			
 			val sv = src.parseString("cw")?.cleanCW()
-			this.spoiler_text = when{
+			this.spoiler_text = when {
 				sv == null -> "" // CWなし
 				sv.isBlank() -> parser.context.getString(R.string.blank_cw)
-				else-> sv
+				else -> sv
 			}
-
+			
 			options = DecodeOptions(
 				parser.context,
 				parser.linkHelper,
@@ -368,7 +370,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				ServiceType.MASTODON -> {
 					this.host_access = parser.linkHelper.host
 					
-					this.id = EntityId.mayDefault(src.parseLong("id") )
+					this.id = EntityId.mayDefault(src.parseLong("id"))
 					this.uri = src.parseString("uri") ?: error("missing uri")
 					
 					this.reblogged = src.optBoolean("reblogged")
@@ -394,7 +396,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					// 投稿元タンスでのIDを調べる。失敗するかもしれない
 					this.uri = src.parseString("uri") ?: error("missing uri")
 					this.id = findStatusIdFromUri(uri, url) ?: EntityId.defaultLong
-
+					
 					this.time_created_at = TootStatus.parseTime(this.created_at)
 					this.media_attachments =
 						parseListOrNull(
@@ -412,10 +414,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.host_access = null
 					
 					// MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
-					this.id = EntityId.mayDefault(src.parseLong("id") )
+					this.id = EntityId.mayDefault(src.parseLong("id"))
 					// MSPだとuriは提供されない。LTL限定なのでURL的なものを作れるはず
-					this.uri = "https://${parser.linkHelper.host}/users/${who.username}/statuses/$id"
-
+					this.uri =
+						"https://${parser.linkHelper.host}/users/${who.username}/statuses/$id"
+					
 					this.time_created_at = parseTimeMSP(created_at)
 					this.media_attachments =
 						TootAttachmentMSP.parseList(src.optJSONArray("media_attachments"))
@@ -463,13 +466,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				this.highlight_sound = options.highlight_sound
 			}
 			
-			val sv = (src.parseString("spoiler_text")?:"").cleanCW()
-			this.spoiler_text = when{
-				sv.isEmpty() ->"" // CWなし
-				sv.isBlank() ->parser.context.getString(R.string.blank_cw)
-				else->sv
+			val sv = (src.parseString("spoiler_text") ?: "").cleanCW()
+			this.spoiler_text = when {
+				sv.isEmpty() -> "" // CWなし
+				sv.isBlank() -> parser.context.getString(R.string.blank_cw)
+				else -> sv
 			}
-
+			
 			options = DecodeOptions(
 				parser.context,
 				emojiMapCustom = custom_emojis,
@@ -498,7 +501,6 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.card = parseItem(::TootCard, src.optJSONObject("card"))
 		}
 	}
-	
 	
 	///////////////////////////////////////////////////
 	// ユーティリティ
@@ -600,7 +602,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			|| enquete != null -> true
 		else -> false
 	}
-
+	
 	// return true if updated
 	fun increaseReaction(reaction : String?, byMe : Boolean, caller : String) : Boolean {
 		reaction ?: return false
@@ -682,9 +684,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		
 		// 公開ステータスページのURL Misskey
 		@Suppress("HasPlatformType")
-		val reStatusPageMisskey = Pattern.compile("""\Ahttps://([^/]+)/notes/([0-9a-f]{24})\b""", Pattern.CASE_INSENSITIVE)
+		val reStatusPageMisskey = Pattern.compile(
+			"""\Ahttps://([^/]+)/notes/([0-9a-f]{24})\b""",
+			Pattern.CASE_INSENSITIVE
+		)
 		
-
 		fun parseListTootsearch(
 			parser : TootParser,
 			root : JSONObject
@@ -780,48 +784,52 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			if(bAllowRelative && Pref.bpRelativeTimestamp(App1.pref)) {
 				val now = System.currentTimeMillis()
 				var delta = now - t
-				val sign = context.getString(if(delta > 0) R.string.ago else R.string.later)
-				delta = if(delta >= 0) delta else - delta
+				
+				@StringRes val phraseId = if(delta >= 0)
+					R.string.relative_time_phrase_past
+				else
+					R.string.relative_time_phrase_future
+				
+				delta = abs(delta)
+				
+				fun f(v : Long, unit1 : Int, units : Int) : String {
+					val vi = v.toInt()
+					return context.getString(
+						phraseId,
+						vi,
+						context.getString(if(vi <= 1) unit1 else units)
+					)
+				}
+				
 				when {
 					delta < 1000L -> return context.getString(R.string.time_within_second)
 					
-					delta < 60000L -> {
-						val v = (delta / 1000L).toInt()
-						return context.getString(
-							if(v > 1) R.string.relative_time_second_2 else R.string.relative_time_second_1,
-							v,
-							sign
-						)
-					}
+					delta < 60000L -> return f(
+						delta / 1000L,
+						R.string.relative_time_unit_second1,
+						R.string.relative_time_unit_seconds
+					)
 					
-					delta < 3600000L -> {
-						val v = (delta / 60000L).toInt()
-						return context.getString(
-							if(v > 1) R.string.relative_time_minute_2 else R.string.relative_time_minute_1,
-							v,
-							sign
-						)
-					}
+					delta < 3600000L -> return f(
+						delta / 60000L,
+						R.string.relative_time_unit_minute1,
+						R.string.relative_time_unit_minutes
+					)
 					
-					delta < 86400000L -> {
-						val v = (delta / 3600000L).toInt()
-						return context.getString(
-							if(v > 1) R.string.relative_time_hour_2 else R.string.relative_time_hour_1,
-							v,
-							sign
-						)
-					}
+					delta < 86400000L -> return f(
+						delta / 3600000L,
+						R.string.relative_time_unit_hour1,
+						R.string.relative_time_unit_hours
+					)
 					
-					delta < 40 * 86400000L -> {
-						val v = (delta / 86400000L).toInt()
-						return context.getString(
-							if(v > 1) R.string.relative_time_day_2 else R.string.relative_time_day_1,
-							v,
-							sign
-						)
-					}
+					delta < 40 * 86400000L -> return f(
+						delta / 86400000L,
+						R.string.relative_time_unit_day1,
+						R.string.relative_time_unit_days
+					)
 					
 					else -> {
+						// fall back to absolute time
 					}
 				}
 			}
@@ -874,11 +882,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return if(host != null && host.isNotEmpty() && host != "?") host else null
 		}
 		
-		
 		private fun readMisskeyNoteId(url : String) : EntityId? {
 			// https://misskey.xyz/notes/5b802367744b650030a13640
 			val m = reStatusPageMisskey.matcher(url)
-			return if(!m.find()) null else EntityIdString(m.group(2))
+			return if(! m.find()) null else EntityIdString(m.group(2))
 		}
 		
 		fun validStatusId(src : EntityId?) : EntityId? {
@@ -889,12 +896,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			}
 		}
 		
-
-		
 		private fun String.cleanCW() =
 			CharacterGroup.reWhitespace.matcher(this).replaceAll(" ").sanitizeBDI()
 		/* 空欄かどうかがCW判定条件に影響するので、trimしてはいけない */
-
+		
 		// 投稿元タンスでのステータスIDを調べる
 		fun findStatusIdFromUri(
 			uri : String?,

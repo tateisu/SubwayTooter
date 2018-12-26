@@ -244,17 +244,8 @@
     <string name="input_access_token">تحديد رمز النفاذ (للمستخدمين المتقدمين)</string>
     <string name="title">العنوان</string>
     <string name="instance_information">معلومات عن مثيل الخادوم</string>
-    <string name="later">لاحقًا</string>
-    <string name="time_within_second">الآن</string>
 
-    <string name="relative_time_second_1">%1$d ثانية %2$s</string>
-    <string name="relative_time_second_2">%1$d ثواني %2$s</string>
-    <string name="relative_time_minute_1">%1$d دقيقة %2$s</string>
-    <string name="relative_time_minute_2">%1$d دقائق %2$s</string>
-    <string name="relative_time_hour_1">%1$d ساعة %2$s</string>
-    <string name="relative_time_hour_2">%1$d ساعات %2$s</string>
-    <string name="relative_time_day_1">%1$d يوم %2$s</string>
-    <string name="relative_time_day_2">%1$d أيام %2$s</string>
+    <string name="time_within_second">الآن</string>
     <string name="make_enquete">إنشاء استطلاع للرأي</string>
     <string name="profile_pin">تدبيس على الملف الشخصي</string>
     <string name="profile_unpin">إلغاء التدبيس مِن الملف الشخصي</string>
@@ -396,7 +387,7 @@
     <string name="ui_theme">سمة واجهة المستخدم (مطلوب أعادة تشغيل التطبيق)</string>
     <string name="simple_list">قائمة بسيطة (مطلوب أعادة تشغيل التطبيق)</string>
     <string name="unfavourite_succeeded">تم حذفه من المفضلة</string>
-    <string name="file_size_too_big">"حجم هذا الملف أكبر من الحد الأقصى المسموح به  %1$dMB."</string>
+    <string name="file_size_too_big">حجم هذا الملف أكبر من الحد الأقصى المسموح به  %1$dMB.</string>
     <string name="visibility_local_home">الرئيسية (محلي)</string>
     <string name="visibility_local_followers">للمتابِعين فقط (محلي)</string>
     <string name="visibility_local_unlisted">غير مدرج (محلي)</string>

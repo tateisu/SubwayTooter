@@ -34,7 +34,6 @@
     <string name="actions_for_notification">通知へのアクション</string>
     <string name="actions_for_status">トゥートへのアクション</string>
     <string name="actions_for_user">ユーザへのアクション</string>
-    <string name="ago">前</string>
     <string name="allow_column_duplication">カラムの重複を許容する</string>
     <string name="allow_non_space_before_emoji_code">絵文字コードの手前に空白以外の文字があっても変換する (投稿と表示の両方に影響します。表示の反映にはアプリ再起動とカラムのリロードが必要です。投稿時に変換された絵文字を元のコードに戻すことはできません。)</string>
     <string name="already_boosted">既にブースト済みです</string>
@@ -370,7 +369,6 @@
     <string name="language_code">ja</string>
     <string name="languages">言語</string>
     <string name="last_selection">最後に選択した</string>
-    <string name="later">後</string>
     <string name="launcher_icon_by">ランチャーアイコンはフタバさんがデザインしました</string>
     <string name="led">LED</string>
     <string name="length_warning">\"%1$s\"が長すぎます(%2$d/%3$d文字).\n標準的なタンスではエラーとなりますが、一部のタンスでは通るかも。\nよろしいですか?</string>
@@ -562,14 +560,17 @@
     <string name="regex_filter">正規表現フィルタ(上級者向け)</string>
     <string name="regex_filter_matches_empty_string">正規表現フィルタは空文字列にマッチしてしまいます</string>
     <string name="register_app_to_server">%1$sにこのアプリを登録しています…</string>
-    <string name="relative_time_day_1">%1$d日%2$s</string>
-    <string name="relative_time_day_2">%1$d日%2$s</string>
-    <string name="relative_time_hour_1">%1$d時間%2$s</string>
-    <string name="relative_time_hour_2">%1$d時間%2$s</string>
-    <string name="relative_time_minute_1">%1$d分%2$s</string>
-    <string name="relative_time_minute_2">%1$d分%2$s</string>
-    <string name="relative_time_second_1">%1$d秒%2$s</string>
-    <string name="relative_time_second_2">%1$d秒%2$s</string>
+
+    <string name="relative_time_unit_second1">秒</string>
+    <string name="relative_time_unit_seconds">秒</string>
+    <string name="relative_time_unit_minute1">分</string>
+    <string name="relative_time_unit_minutes">分</string>
+    <string name="relative_time_unit_hour1">時間</string>
+    <string name="relative_time_unit_hours">時間</string>
+    <string name="relative_time_unit_day1">日</string>
+    <string name="relative_time_unit_days">日</string>
+    <string name="relative_time_phrase_past">%1$d %2$s前</string>
+    <string name="relative_time_phrase_future">%1$d %2$s後</string>
     <string name="relative_timestamp">相対時刻を表示</string>
     <string name="reload">再読み込み</string>
     <string name="remote_profile_warning">リモートユーザのプロフィールは情報が不十分な可能性があります。より正確な情報をWebページで確認することができます。</string>

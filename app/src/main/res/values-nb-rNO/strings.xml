@@ -367,18 +367,19 @@
     <string name="instance_information">Instansinfo</string>
     <string name="missing_mail_app">Manglende e-postprogram.</string>
     <string name="relative_timestamp">Vis relative tidsstempel</string>
-    <string name="ago">siden</string>
-    <string name="later">senere</string>
     <string name="time_within_second">akkurat nå</string>
 
-    <string name="relative_time_second_1">%1$d sekund %2$s</string>
-    <string name="relative_time_second_2">%1$d sekunder %2$s</string>
-    <string name="relative_time_minute_1">%1$d minutt %2$s</string>
-    <string name="relative_time_minute_2">%1$d minutter %2$s</string>
-    <string name="relative_time_hour_1">%1$d time %2$s</string>
-    <string name="relative_time_hour_2">%1$d timer %2$s</string>
-    <string name="relative_time_day_1">%1$d dag %2$s</string>
-    <string name="relative_time_day_2">%1$d dager %2$s</string>
+    <string name="relative_time_unit_second1">sekund</string>
+    <string name="relative_time_unit_seconds">sekunder</string>
+    <string name="relative_time_unit_minute1">minutt</string>
+    <string name="relative_time_unit_minutes">minutter</string>
+    <string name="relative_time_unit_hour1">time</string>
+    <string name="relative_time_unit_hours">timer</string>
+    <string name="relative_time_unit_day1">dag</string>
+    <string name="relative_time_unit_days">dager</string>
+    <string name="relative_time_phrase_past">%1$d %2$s siden</string>
+    <string name="relative_time_phrase_future">%1$d %2$s senere</string>
+
     <string name="notification_channel_description">Disse innstillingen brukes for merknad for %1$s</string>
     <string name="notification_sound_before_oreo">Merknadslyd (før Android 8.0)</string>
     <string name="notification_style_after_oreo">Merknadsstil (Android 8.0 eller senere)</string>

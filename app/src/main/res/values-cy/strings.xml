@@ -303,7 +303,6 @@
     <string name="version">Fersiwn</string>
     <string name="instance_information_of">Gwybodaeth achos \"%1$s\"</string>
     <string name="instance_information">Gwybodaeth achos</string>
-    <string name="later">wedyn</string>
     <string name="enquete_voted">Wedi pleidleisio!</string>
     <string name="enquete_vote_failed">Pleidlais wedi methu. %1$s</string>
     <string name="choice1">dewis 1</string>
@@ -418,15 +417,18 @@
     <string name="acct_sample">(sampl)enwdefnyddiwr@achos</string>
     <string name="change_header">Newid delwedd pennawd</string>
     <string name="missing_mail_app">Ap E-bost ar goll.</string>
-    <string name="ago">yn ôl</string>
-    <string name="relative_time_second_1">%1$d eiliad %2$s</string>
-    <string name="relative_time_second_2">%1$d eiliadau %2$s</string>
-    <string name="relative_time_minute_1">%1$d munud %2$s</string>
-    <string name="relative_time_minute_2">%1$d munudau %2$s</string>
-    <string name="relative_time_hour_1">%1$d awr %2$s</string>
-    <string name="relative_time_hour_2">%1$d oriau %2$s</string>
-    <string name="relative_time_day_1">%1$d dydd %2$s</string>
-    <string name="relative_time_day_2">%1$d dyddiau %2$s</string>
+
+    <string name="relative_time_unit_second1">eiliad</string>
+    <string name="relative_time_unit_seconds">eiliadau</string>
+    <string name="relative_time_unit_minute1">munud</string>
+    <string name="relative_time_unit_minutes">munudau</string>
+    <string name="relative_time_unit_hour1">awr</string>
+    <string name="relative_time_unit_hours">oriau</string>
+    <string name="relative_time_unit_day1">dydd</string>
+    <string name="relative_time_unit_days">dyddiau</string>
+    <string name="relative_time_phrase_past">%1$d %2$s yn ôl</string>
+    <string name="relative_time_phrase_future">%1$d %2$s wedyn</string>
+
     <string name="skin_tone_light">lliw croen golau</string>
     <string name="skin_tone_medium_light">lliw croen cymhedrol o olau</string>
     <string name="skin_tone_medium">lliw croen cymhedrol</string>

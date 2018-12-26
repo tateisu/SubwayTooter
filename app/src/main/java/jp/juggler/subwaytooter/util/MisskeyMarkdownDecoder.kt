@@ -25,6 +25,136 @@ import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
+private val brackets = arrayOf(
+	"()",
+	"()",
+	"[]",
+	"{}",
+	"“”",
+	"‘’",
+	"‹›",
+	"«»",
+	"（）",
+	"［］",
+	"｛｝",
+	"｟｠",
+	"⦅⦆",
+	"〚〛",
+	"⦃⦄",
+	"「」",
+	"〈〉",
+	"《》",
+	"【】",
+	"〔〕",
+	"⦗⦘",
+	"『』",
+	"〖〗",
+	"〘〙",
+	"[]",
+	"｢｣",
+	"⟦⟧",
+	"⟨⟩",
+	"⟪⟫",
+	"⟮⟯",
+	"⟬⟭",
+	"⌈⌉",
+	"⌊⌋",
+	"⦇⦈",
+	"⦉⦊",
+	"❛❜",
+	"❝❞",
+	"❨❩",
+	"❪❫",
+	"❴❵",
+	"❬❭",
+	"❮❯",
+	"❰❱",
+	"❲❳",
+	"()",
+	"﴾﴿",
+	"〈〉",
+	"⦑⦒",
+	"⧼⧽",
+	"﹙﹚",
+	"﹛﹜",
+	"﹝﹞",
+	"⁽⁾",
+	"₍₎",
+	"⦋⦌",
+	"⦍⦎",
+	"⦏⦐",
+	"⁅⁆",
+	"⸢⸣",
+	"⸤⸥",
+	"⟅⟆",
+	"⦓⦔",
+	"⦕⦖",
+	"⸦⸧",
+	"⸨⸩",
+	"⧘⧙",
+	"⧚⧛",
+	"⸜⸝",
+	"⸌⸍",
+	"⸂⸃",
+	"⸄⸅",
+	"⸉⸊",
+	"᚛᚜",
+	"༺༻",
+	"༼༽",
+	"⏜⏝",
+	"⎴⎵",
+	"⏞⏟",
+	"⏠⏡",
+	"﹁﹂",
+	"﹃﹄",
+	"︹︺",
+	"︻︼",
+	"︗︘",
+	"︿﹀",
+	"︽︾",
+	"﹇﹈",
+	"︷︸"
+)
+
+private val bracketsMap = HashMap<Char, Int>().apply {
+	brackets.forEach {
+		put(it[0], 1)
+		put(it[1], - 1)
+	}
+}
+private val bracketsMapUrlSafe = HashMap<Char, Int>().apply {
+	brackets.forEach {
+		if( "([".contains(it[0]) ) return@forEach
+		put(it[0], 1)
+		put(it[1], - 1)
+	}
+}
+
+// 末尾の余計な」や（を取り除く。
+// 例えば「#タグ」 とか （#タグ）
+fun String.removeOrphanedBrackets(urlSafe:Boolean =false) : String {
+	var last = 0
+	val nests = when(urlSafe){
+		true->this.map {
+			last += bracketsMapUrlSafe[it] ?: 0
+			last
+		}
+		else->this.map {
+			
+			last += bracketsMap[it] ?: 0
+			last
+		}
+	}
+
+	// first position of unmatched close
+	var pos = nests.indexOfFirst { it < 0 }
+	if(pos != - 1) return substring(0, pos)
+
+	// last position of unmatched open
+	pos = nests.indexOfLast { it == 0 }
+	return substring(0, pos + 1)
+}
+
 // 配列中の要素をラムダ式で変換して、戻り値が非nullならそこで処理を打ち切る
 private inline fun <T, V> Array<out T>.firstNonNull(predicate : (T) -> V?) : V? {
 	for(element in this) return predicate(element) ?: continue
@@ -115,7 +245,12 @@ internal object MatcherCache {
 			override fun initialValue() : HashMap<Pattern, MatcherCacheItem> = HashMap()
 		}
 	
-	internal fun matcher(pattern : Pattern, text : String, start : Int, end : Int) : Matcher {
+	internal fun matcher(
+		pattern : Pattern,
+		text : String,
+		start : Int = 0,
+		end : Int = text.length
+	) : Matcher {
 		val m : Matcher
 		val textHashCode = text.hashCode()
 		val map = matcherCache.get() !!
@@ -719,7 +854,7 @@ object MisskeyMarkdownDecoder {
 					else -> host
 				} ?: "?"
 				
-				when( userHost.toLowerCase() ) {
+				when(userHost.toLowerCase()) {
 					
 					// https://github.com/syuilo/misskey/pull/3603
 					
@@ -729,7 +864,8 @@ object MisskeyMarkdownDecoder {
 							"https://$userHost/$username" // no @
 						)
 					}
-					"gmail.com" ->{
+					
+					"gmail.com" -> {
 						appendLink(
 							"@$username@$userHost",
 							"mailto:$username@$userHost"
@@ -746,10 +882,10 @@ object MisskeyMarkdownDecoder {
 							else ->
 								"$username@$host"
 						}
-
+						
 						val mentions = prepareMentions()
 						
-						if( mentions.find { m -> m.acct == shortAcct } == null) {
+						if(mentions.find { m -> m.acct == shortAcct } == null) {
 							mentions.add(
 								jp.juggler.subwaytooter.api.entity.TootMention(
 									jp.juggler.subwaytooter.api.entity.EntityIdLong(- 1L)
@@ -1388,17 +1524,32 @@ object MisskeyMarkdownDecoder {
 			)
 		)
 		
+		val reAlnum = Pattern.compile("""[A-Z0-9]""", Pattern.CASE_INSENSITIVE)
+		
 		// http(s)://....
-		addParser(
-			"h"
-			, simpleParser(
-				Pattern.compile("""\A(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
-				, NodeType.URL
+		val reUrl = Pattern.compile("""\A(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
+		addParser("h", {
+			
+			// 直前の文字が英数字ならURLの開始とはみなさない
+			if(pos > 0 && MatcherCache.matcher(reAlnum, text, pos - 1, pos).find()) {
+				return@addParser null
+			}
+			
+			val matcher = remainMatcher(reUrl)
+			if(! matcher.find()) {
+				return@addParser null
+			}
+			
+			val url = matcher.group(1).removeOrphanedBrackets(urlSafe = true)
+			makeDetected(
+				NodeType.URL,
+				arrayOf(url),
+				matcher.start(), matcher.start() + url.length,
+				"", 0, 0
 			)
-		)
+		})
 		
 		// 検索
-		
 		val reSearchButton = Pattern.compile(
 			"""\A(検索|\[検索]|Search|\[Search])(\n|\z)"""
 			, Pattern.CASE_INSENSITIVE
@@ -1518,25 +1669,35 @@ object MisskeyMarkdownDecoder {
 		
 		// Hashtag
 		val reHashtag = Pattern.compile("""\A#([^#\s.,!?]+)""")
-		addParser("#"
-			, {
-				val matcher = remainMatcher(reHashtag)
-				when {
-					! matcher.find() -> null
-					else -> when {
-						// 先頭以外では直前に空白が必要らしい
-						pos > 0 && ! CharacterGroup.isWhitespace(text[pos - 1].toInt()) -> null
-						
-						else -> makeDetected(
-							NodeType.HASHTAG,
-							arrayOf(matcher.group(1)), // 先頭の#を含まない
-							matcher.start(), matcher.end(),
-							"", 0, 0
-						)
-					}
-				}
+		val reDigitsOnly = Pattern.compile("""\A\d*\z""")
+		addParser("#", {
+			
+			if(pos > 0 && MatcherCache.matcher(reAlnum, text, pos - 1, pos).find()) {
+				// 直前に英数字があるならタグにしない
+				return@addParser null
 			}
-		)
+			
+			val matcher = remainMatcher(reHashtag)
+			if(! matcher.find()) {
+				// タグにマッチしない
+				return@addParser null
+			}
+			
+			// 先頭の#を含まないタグテキスト
+			val tag = matcher.group(1).removeOrphanedBrackets()
+			
+			if(tag.isEmpty() || tag.length > 50 || reDigitsOnly.matcher(tag).find()) {
+				// 空文字列、50文字超過、数字だけのタグは不許可
+				return@addParser null
+			}
+			
+			makeDetected(
+				NodeType.HASHTAG,
+				arrayOf(tag),
+				matcher.start(), matcher.start() + 1 + tag.length,
+				"", 0, 0
+			)
+		})
 		
 		// code (ブロック、インライン)
 		addParser(

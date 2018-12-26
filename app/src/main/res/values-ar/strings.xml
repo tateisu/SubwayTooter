@@ -118,7 +118,7 @@
     <string name="behavior">السلوك</string>
     <string name="enable_speech">تفعيل الكلام</string>
     <string name="blocked_domains">النطاقات المحجوبة</string>
-    <string name="block_domain_that">حجب النطاق \"%1$s\"</string>
+    <string name="block_domain_that">حجب النطاق \"%1$s\" بأكمله</string>
     <string name="toot_search">البحث عن تبويقات</string>
     <string name="show_avatar_image">عرض الصورة الرمزية</string>
     <string name="actions_for_notification">الإجراءات على الإشعارات</string>
@@ -240,8 +240,8 @@
     <string name="visibility_private">للمتابِعين فقط</string>
     <string name="choose_visibility">إختيار طريقة العرض</string>
     <string name="wait_previous_operation">الرجاء الانتظار حتى تنتهي العملية الأخيرة.</string>
-    <string name="pseudo_account">حساب افتراضي (دون تسجيل، يقوم بقراءة البيانات العامة فقط)</string>
-    <string name="input_access_token">تحديد رمز النفاذ (للمستخدمين المتقدمين)</string>
+    <string name="pseudo_account">شبه حساب</string>
+    <string name="input_access_token">رمز المصادقة</string>
     <string name="title">العنوان</string>
     <string name="instance_information">معلومات عن مثيل الخادوم</string>
     <string name="later">لاحقًا</string>
@@ -318,17 +318,17 @@
     <string name="toot_search_of">البحث عن تبويق \"%1$s\"</string>
     <string name="public_profile">الملف العمومي</string>
     <string name="uri">الرابط</string>
-    <string name="enquete_voted">صوّت!</string>
+    <string name="enquete_voted">صوّت.</string>
     <string name="parsing_response">جارٍ نشر الردّ…</string>
     <string name="video_capture">إلتقاط فيديو</string>
-    <string name="user_count">عدد المستخدِمين</string>
-    <string name="toot_count">عدد التبويقات</string>
+    <string name="user_count">المستخدِمون</string>
+    <string name="toot_count">التبويقات</string>
     <string name="emoji_category_recent">الحديثة</string>
     <string name="open_picker_emoji">إختيار إيموجي…</string>
     <string name="open_picker_tag">إختيار وسم…</string>
     <string name="media_description">(المُرفَق %1$d) %2$s</string>
     <string name="description_empty">ليس هناك وصف.</string>
-    <string name="operation_succeeded">تمت العملية بنجاح.</string>
+    <string name="operation_succeeded">تمت العملية.</string>
 
     <string name="list_create_hint">اسم القائمة الجديدة</string>
     <string name="list_created">تم إنشاء القائمة الجديدة.</string>
@@ -341,7 +341,7 @@
     <string name="share_url">مشاركة الرابط</string>
     <string name="share_url_more">شارك الرابط…</string>
     <string name="copy_url">نسخ رابط العنوان إلى الحافظة</string>
-    <string name="boost_private_toot_not_allowed">ليس بمقدورك ترقيته تبويق خاص نَشَرَه شخص آخَر.</string>
+    <string name="boost_private_toot_not_allowed">ليس بمقدورك ترقيته تبويقات خاصة نَشَرَها شخص آخَر.</string>
     <string name="post_error_contents_warning_empty">تبويقك بحاجة إلى نص تحذيري.</string>
     <string name="display_name_boosted_by">قام بترقيته %1$s</string>
     <string name="display_name_follow_request_by">أرسَل %1$s طلبًا للمتابَعة</string>
@@ -367,7 +367,7 @@
     <string name="open_browser_of">إفتح \"%1$s\" في المتصفّح</string>
     <string name="open_in_browser">إفتحه في المتصفّح</string>
     <string name="new_item">عنصر جديد…</string>
-    <string name="check_sound">فحص الصوت</string>
+    <string name="check_sound">تشغيل رنة الإشعار</string>
     <string name="keyword">الكلمة المفتاحية</string>
     <string name="rename">إعادة التسمية…</string>
     <string name="allow_column_duplication">السماح بازدواجية العمود</string>

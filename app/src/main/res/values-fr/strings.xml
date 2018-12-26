@@ -808,4 +808,6 @@
     <string name="account_picker_reaction">Compte pour réagir \?</string>
     <string name="mute_application_confirm">Silencer l’app « %1$s » \?</string>
     <string name="about_this_instance">À propos de cette instance</string>
+    <string name="existing_account">Se connecter</string>
+    <string name="existing_account_desc">Se connecter avec un compte existant.</string>
 </resources>

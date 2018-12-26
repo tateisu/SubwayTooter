@@ -466,15 +466,6 @@
     <string name="relative_time_unit_days">days</string>
     <string name="relative_time_phrase_past">%1$d %2$s</string>
     <string name="relative_time_phrase_future">%1$d %2$s future</string>
-
-    <!--<string name="relative_time_second_1">%1$d second %2$s</string>-->
-    <!--<string name="relative_time_second_2">%1$d seconds %2$s</string>-->
-    <!--<string name="relative_time_minute_1">%1$d minute %2$s</string>-->
-    <!--<string name="relative_time_minute_2">%1$d minutes %2$s</string>-->
-    <!--<string name="relative_time_hour_1">%1$d hour %2$s</string>-->
-    <!--<string name="relative_time_hour_2">%1$d hours %2$s</string>-->
-    <!--<string name="relative_time_day_1">%1$d day %2$s</string>-->
-    <!--<string name="relative_time_day_2">%1$d days %2$s</string>-->
     <string name="notification_channel_description">This setting is used to adjust notification for %1$s</string>
     <string name="notification_sound_before_oreo">Notification sound (pre Android 8.0)</string>
     <string name="notification_style_after_oreo">Notification style (Android 8.0+)</string>

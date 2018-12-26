@@ -569,8 +569,8 @@
     <string name="relative_time_unit_hours">時間</string>
     <string name="relative_time_unit_day1">日</string>
     <string name="relative_time_unit_days">日</string>
-    <string name="relative_time_phrase_past">%1$d %2$s前</string>
-    <string name="relative_time_phrase_future">%1$d %2$s後</string>
+    <string name="relative_time_phrase_past">%1$d%2$s</string>
+    <string name="relative_time_phrase_future">%1$d%2$s後</string>
     <string name="relative_timestamp">相対時刻を表示</string>
     <string name="reload">再読み込み</string>
     <string name="remote_profile_warning">リモートユーザのプロフィールは情報が不十分な可能性があります。より正確な情報をWebページで確認することができます。</string>

@@ -451,10 +451,10 @@
     <string name="relative_time_unit_minutes">minutes</string>
     <string name="relative_time_unit_hour1">heure</string>
     <string name="relative_time_unit_hours">heures</string>
-    <string name="relative_time_unit_day1">day</string>
+    <string name="relative_time_unit_day1">jour</string>
     <string name="relative_time_unit_days">jours</string>
-    <string name="relative_time_phrase_past">%1$d %2$s ago</string>
-    <string name="relative_time_phrase_future">%1$d %2$s plus tard</string>
+    <string name="relative_time_phrase_past">Il y a %1$d %2$s</string>
+    <string name="relative_time_phrase_future">Dans %1$d %2$s</string>
 
     <string name="notification_sound_before_oreo">Son de notification (avant Android 8.0)</string>
     <string name="notification_style_after_oreo">Style de notification (Android 8.0 ou version ultérieure)</string>

@@ -465,7 +465,7 @@
     <string name="relative_time_unit_day1">day</string>
     <string name="relative_time_unit_days">days</string>
     <string name="relative_time_phrase_past">%1$d %2$s</string>
-    <string name="relative_time_phrase_future">%1$d %2$s future</string>
+    <string name="relative_time_phrase_future">%1$d %2$s later</string>
     <string name="notification_channel_description">This setting is used to adjust notification for %1$s</string>
     <string name="notification_sound_before_oreo">Notification sound (pre Android 8.0)</string>
     <string name="notification_style_after_oreo">Notification style (Android 8.0+)</string>

@@ -2668,16 +2668,7 @@ class Column(
 							when(profile_tab) {
 								
 								TAB_FOLLOWING -> return when {
-									access_info.isPseudo -> {
-										idRecent = null
-										idOld = null
-										list_tmp = addOne(
-											list_tmp,
-											TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
-										)
-										TootApiResult()
-									}
-									
+
 									isMisskey -> {
 										pagingType = PagingType.Cursor
 										parseAccountList(
@@ -2688,6 +2679,17 @@ class Column(
 											misskeyArrayFinder = misskeyArrayFinderUsers
 										)
 									}
+
+									access_info.isPseudo -> {
+										idRecent = null
+										idOld = null
+										list_tmp = addOne(
+											list_tmp,
+											TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
+										)
+										TootApiResult()
+									}
+									
 									
 									else -> {
 										parseAccountList(
@@ -2703,15 +2705,6 @@ class Column(
 								}
 								
 								TAB_FOLLOWERS -> return when {
-									access_info.isPseudo -> {
-										idRecent = null
-										idOld = null
-										list_tmp = addOne(
-											list_tmp,
-											TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
-										)
-										TootApiResult()
-									}
 									
 									isMisskey -> {
 										pagingType = PagingType.Cursor
@@ -2724,6 +2717,16 @@ class Column(
 										)
 									}
 									
+									access_info.isPseudo -> {
+										idRecent = null
+										idOld = null
+										list_tmp = addOne(
+											list_tmp,
+											TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
+										)
+										TootApiResult()
+									}
+
 									else -> {
 										parseAccountList(
 											client,

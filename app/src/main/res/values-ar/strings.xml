@@ -425,4 +425,14 @@
     <string name="select_and_copy">اختر وانسخ</string>
     <string name="copy_complete">تم تحديث الحافظة.</string>
     <string name="draft_picker_desc">الضغط مطولا للحذف.</string>
+    <string name="relative_time_unit_second1">ثانية</string>
+    <string name="relative_time_unit_seconds">ثوان</string>
+    <string name="relative_time_unit_minute1">دقيقة</string>
+    <string name="relative_time_unit_minutes">دقائق</string>
+    <string name="relative_time_unit_hour1">ساعة</string>
+    <string name="relative_time_unit_hours">ساعات</string>
+    <string name="relative_time_unit_day1">يوم</string>
+    <string name="relative_time_unit_days">أيام</string>
+    <string name="relative_time_phrase_past">%1$d %2$s</string>
+    <string name="relative_time_phrase_future">بعد %1$d %2$s</string>
 </resources>

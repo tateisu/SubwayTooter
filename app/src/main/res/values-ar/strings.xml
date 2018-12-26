@@ -435,4 +435,8 @@
     <string name="relative_time_unit_days">أيام</string>
     <string name="relative_time_phrase_past">%1$d %2$s</string>
     <string name="relative_time_phrase_future">بعد %1$d %2$s</string>
+    <string name="relative_timestamp">عرض التوقيت النسبي</string>
+    <string name="filter_expire_1hour">ساعة واحدة بعد الحفظ</string>
+    <string name="filter_expire_6hour">6 ساعات بعد الحفظ</string>
+    <string name="filter_expire_12hour">12 ساعة بعد الحفظ</string>
 </resources>

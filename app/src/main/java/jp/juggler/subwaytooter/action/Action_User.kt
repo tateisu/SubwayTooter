@@ -69,7 +69,7 @@ object Action_User {
 							! bMute -> "".toRequestBody()
 							else ->
 								JSONObject()
-									.put("notifications" ,bMuteNotification)
+									.put("notifications", bMuteNotification)
 									.toRequestBody()
 						}.toPost()
 					)
@@ -290,24 +290,7 @@ object Action_User {
 		
 	}
 	
-	// 今のアカウントでユーザプロフを開く
-	fun profileLocal(
-		activity : ActMain,
-		pos : Int,
-		access_info : SavedAccount,
-		who : TootAccount
-	) {
-		when {
-			access_info.isMisskey -> activity.addColumn(
-				pos,
-				access_info,
-				Column.TYPE_PROFILE,
-				who.id
-			)
-			access_info.isPseudo -> profileFromAnotherAccount(activity, pos, access_info, who)
-			else -> activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
-		}
-	}
+	//////////////////////////////////////////////////////////////////////////////////////
 	
 	// URLからユーザを検索してプロフを開く
 	private fun profileFromUrl(
@@ -318,29 +301,30 @@ object Action_User {
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
-			var who_local : TootAccount? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
-				val result = client.syncAccountByUrl(access_info, who_url)
-				who_local = result?.data as? TootAccount
-				return result
-			}
+			var who : TootAccount? = null
+			
+			override fun background(client : TootApiClient) : TootApiResult? =
+				client.syncAccountByUrl(access_info, who_url)?.also { result ->
+					who = result.data as? TootAccount
+				}
 			
 			override fun handleResult(result : TootApiResult?) {
 				result ?: return // cancelled.
 				
-				val wl = who_local
-				if(wl != null) {
-					activity.addColumn(pos, access_info, Column.TYPE_PROFILE, wl.id)
-				} else {
-					showToast(activity, true, result.error)
+				when(val who = this.who) {
+					null -> {
+						showToast(activity, true, result.error)
+						// 仕方ないのでchrome tab で開く
+						App1.openCustomTab(activity, who_url)
+					}
 					
-					// 仕方ないのでchrome tab で開く
-					App1.openCustomTab(activity, who_url)
+					else -> activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
 				}
 			}
 		})
-		
 	}
+	
+	
 	
 	// アカウントを選んでユーザプロフを開く
 	fun profileFromAnotherAccount(
@@ -370,8 +354,21 @@ object Action_User {
 		}
 	}
 	
-	// Intent-FilterからUser URL で指定されたユーザのプロフを開く
-	// openChromeTabからUser URL で指定されたユーザのプロフを開く
+	// 今のアカウントでユーザプロフを開く
+	fun profileLocal(
+		activity : ActMain,
+		pos : Int,
+		access_info : SavedAccount,
+		who : TootAccount
+	) {
+		when {
+			access_info.isNA -> profileFromAnotherAccount(activity, pos, access_info, who)
+			else -> activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
+		}
+	}
+	
+	// User URL で指定されたユーザのプロフを開く
+	// Intent-Filter や openChromeTabから 呼ばれる
 	fun profile(
 		activity : ActMain,
 		pos : Int,
@@ -380,35 +377,51 @@ object Action_User {
 		host : String,
 		user : String
 	) {
-		// リンクタップした文脈のアカウントが疑似でないなら
-		if(access_info != null && ! access_info.isPseudo) {
+		if(access_info?.isPseudo == false) {
+			// 文脈のアカウントがあり、疑似アカウントではない
+			
 			if(access_info.host.equals(host, ignoreCase = true)) {
+				
 				// 文脈のアカウントと同じインスタンスなら、アカウントIDを探して開いてしまう
-				findAccountByName(activity, access_info, host, user) { who : TootAccount? ->
-					if(who != null) {
-						profileLocal(activity, pos, access_info, who)
-					} else {
-						// ダメならchromeで開く
-						App1.openCustomTab(activity, url)
+				
+				val acct = "$user@$host"
+				TootTaskRunner(activity).run(access_info, object : TootTask {
+					
+					var who : TootAccount? = null
+					
+					override fun background(client : TootApiClient) : TootApiResult? =
+						client.syncAccountByAcct(access_info, acct)?.also {
+							this.who = it.data as? TootAccount
+						}
+					
+					override fun handleResult(result : TootApiResult?) {
+						result ?: return // cancelled
+						when(val who = this.who) {
+							null -> {
+								// ダメならchromeで開く
+								App1.openCustomTab(activity, url)
+							}
+							
+							else -> profileLocal(activity, pos, access_info, who)
+						}
 					}
-				}
+				})
 			} else {
-				// 文脈のアカウント異なるインスタンスなら、別アカウントで開く
+				// 文脈のアカウントと異なるインスタンスなら、別アカウントで開く
 				profileFromUrl(activity, pos, access_info, url)
 			}
 			return
 		}
 		
 		// 文脈がない、もしくは疑似アカウントだった
-		
-		// 疑似ではないアカウントの一覧
+		// 疑似アカウントでは検索APIを使えないため、IDが分からない
 		
 		if(! SavedAccount.hasRealAccount()) {
-			// 疑似アカウントではユーザ情報APIを呼べないし検索APIも使えない
-			// chrome tab で開くしかない
+			// 疑似アカウントしか登録されていない
+			// chrome tab で開く
 			App1.openCustomTab(activity, url)
 		} else {
-			// アカウントを選択して開く
+			// 疑似ではないアカウントの一覧から選択して開く
 			AccountPicker.pick(
 				activity,
 				bAllowPseudo = false,
@@ -418,16 +431,11 @@ object Action_User {
 					AcctColor.getNickname("$user@$host")
 				),
 				accountListArg = makeAccountListNonPseudo(activity, host)
-			) { ai ->
-				profileFromUrl(
-					activity,
-					pos,
-					ai,
-					url
-				)
-			}
+			) { profileFromUrl(activity, pos, it, url) }
 		}
 	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////
 	
 	// 通報フォームを開く
 	fun reportForm(

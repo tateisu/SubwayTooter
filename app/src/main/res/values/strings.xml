@@ -850,5 +850,6 @@
     <string name="email_empty">Please specift the E-mail address.</string>
     <string name="password_empty">Please specify the password.</string>
     <string name="username_not_need_atmark">The user name must not contains \"@\" or \"/\".</string>
+    <string name="pseudo_account_cant_get_follow_list">Can\'t read follow list from pseudo account.</string>
 
 </resources>

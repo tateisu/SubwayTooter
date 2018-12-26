@@ -1895,9 +1895,9 @@ class Column(
 		stopStreaming()
 		
 		initFilter()
-
-		useInstanceTicker = Pref.bpInstanceTicker( app_state.pref)
-
+		
+		useInstanceTicker = Pref.bpInstanceTicker(app_state.pref)
+		
 		mRefreshLoadingErrorPopupState = 0
 		mRefreshLoadingError = ""
 		mInitialLoadingError = ""
@@ -2585,10 +2585,9 @@ class Column(
 			override fun doInBackground(vararg unused : Void) : TootApiResult? {
 				ctStarted.set(true)
 				
-				if( Pref.bpInstanceTicker(app_state.pref)){
+				if(Pref.bpInstanceTicker(app_state.pref)) {
 					InstanceTicker.load()
 				}
-				
 				
 				val client = TootApiClient(context, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean
@@ -2607,9 +2606,8 @@ class Column(
 				
 				
 				try {
-					var result : TootApiResult? = access_info.checkConfirmed(context,client)
-					if( result == null || result?.error != null ) return result
-					
+					var result : TootApiResult? = access_info.checkConfirmed(context, client)
+					if(result == null || result?.error != null) return result
 					
 					val q : String
 					
@@ -2669,66 +2667,105 @@ class Column(
 							
 							when(profile_tab) {
 								
-								TAB_FOLLOWING -> return if(isMisskey) {
-									pagingType = PagingType.Cursor
-									parseAccountList(
-										client
-										,
-										PATH_MISSKEY_PROFILE_FOLLOWING
-										,
-										emptyMessage = context.getString(R.string.none_or_hidden_following)
-										,
-										misskeyParams = makeMisskeyParamsUserId(parser)
-										,
-										misskeyArrayFinder = misskeyArrayFinderUsers
-									)
-								} else {
-									parseAccountList(
-										client,
-										String.format(
-											Locale.JAPAN,
-											PATH_ACCOUNT_FOLLOWING,
-											profile_id
-										),
-										emptyMessage = context.getString(R.string.none_or_hidden_following)
-									)
+								TAB_FOLLOWING -> return when {
+									access_info.isPseudo -> {
+										idRecent = null
+										idOld = null
+										list_tmp = addOne(
+											list_tmp,
+											TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
+										)
+										TootApiResult()
+									}
+									
+									isMisskey -> {
+										pagingType = PagingType.Cursor
+										parseAccountList(
+											client,
+											PATH_MISSKEY_PROFILE_FOLLOWING,
+											emptyMessage = context.getString(R.string.none_or_hidden_following),
+											misskeyParams = makeMisskeyParamsUserId(parser),
+											misskeyArrayFinder = misskeyArrayFinderUsers
+										)
+									}
+									
+									else -> {
+										parseAccountList(
+											client,
+											String.format(
+												Locale.JAPAN,
+												PATH_ACCOUNT_FOLLOWING,
+												profile_id
+											),
+											emptyMessage = context.getString(R.string.none_or_hidden_following)
+										)
+									}
 								}
 								
-								TAB_FOLLOWERS -> return if(isMisskey) {
-									pagingType = PagingType.Cursor
-									parseAccountList(
-										client,
-										PATH_MISSKEY_PROFILE_FOLLOWERS,
-										emptyMessage = context.getString(R.string.none_or_hidden_followers),
-										misskeyParams = makeMisskeyParamsUserId(parser),
-										misskeyArrayFinder = misskeyArrayFinderUsers
-									)
-								} else {
-									parseAccountList(
-										client,
-										String.format(
-											Locale.JAPAN,
-											PATH_ACCOUNT_FOLLOWERS,
-											profile_id
-										),
-										emptyMessage = context.getString(R.string.none_or_hidden_followers)
-									)
+								TAB_FOLLOWERS -> return when {
+									access_info.isPseudo -> {
+										idRecent = null
+										idOld = null
+										list_tmp = addOne(
+											list_tmp,
+											TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
+										)
+										TootApiResult()
+									}
+									
+									isMisskey -> {
+										pagingType = PagingType.Cursor
+										parseAccountList(
+											client,
+											PATH_MISSKEY_PROFILE_FOLLOWERS,
+											emptyMessage = context.getString(R.string.none_or_hidden_followers),
+											misskeyParams = makeMisskeyParamsUserId(parser),
+											misskeyArrayFinder = misskeyArrayFinderUsers
+										)
+									}
+									
+									else -> {
+										parseAccountList(
+											client,
+											String.format(
+												Locale.JAPAN,
+												PATH_ACCOUNT_FOLLOWERS,
+												profile_id
+											),
+											emptyMessage = context.getString(R.string.none_or_hidden_followers)
+										)
+									}
 								}
 								
 								else -> {
 									
 									var instance = access_info.instance
 									
-									return if(! isMisskey) {
+									return if(isMisskey) {
+										// 固定トゥートの取得
+										val pinnedNotes = who_account?.get()?.pinnedNotes
+										if(pinnedNotes != null) {
+											this.list_pinned =
+												addWithFilterStatus(null, pinnedNotes)
+										}
+										
+										// 通常トゥートの取得
+										getStatuses(
+											client,
+											PATH_MISSKEY_PROFILE_STATUSES,
+											misskeyParams = makeMisskeyParamsProfileStatuses(parser),
+											initialUntilDate = true
+										)
+									} else {
+										
 										// まだ取得してない
 										// 疑似アカウントの場合は過去のデータが別タンスかもしれない?
 										if(instance == null || access_info.isPseudo) {
-											val r2 = getInstanceInformation(client, null)
+											getInstanceInformation(client, null)
 											if(instance_tmp != null) {
 												instance = instance_tmp
 												access_info.instance = instance
 											}
-											if(access_info.isPseudo) return r2
 										}
 										
 										var path = String.format(
@@ -2744,22 +2781,8 @@ class Column(
 										) {
 											getStatusesPinned(client, "$path&pinned=true")
 										}
-										getStatuses(client, path)
-									} else {
-										// 固定トゥートの取得
-										val pinnedNotes = who_account?.get()?.pinnedNotes
-										if(pinnedNotes != null) {
-											this.list_pinned =
-												addWithFilterStatus(null, pinnedNotes)
-										}
 										
-										// 通常トゥートの取得
-										getStatuses(
-											client,
-											PATH_MISSKEY_PROFILE_STATUSES,
-											misskeyParams = makeMisskeyParamsProfileStatuses(parser),
-											initialUntilDate = true
-										)
+										getStatuses(client, path)
 									}
 								}
 							}
@@ -5822,8 +5845,7 @@ class Column(
 						
 						TYPE_ENDORSEMENT -> getAccountList(client, PATH_ENDORSEMENT)
 						
-						TYPE_PROFILE
-						-> when(profile_tab) {
+						TYPE_PROFILE -> when(profile_tab) {
 							
 							TAB_FOLLOWING -> if(isMisskey) {
 								getAccountList(

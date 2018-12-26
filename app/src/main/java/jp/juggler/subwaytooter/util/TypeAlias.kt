@@ -13,7 +13,6 @@ typealias EmptyCallback = ()->Unit
 
 typealias TootApiResultCallback = (result : TootApiResult) -> Unit
 
-typealias TootAccountOrNullCallback = (who : TootAccount?) -> Unit
 
 typealias SavedAccountCallback = (ai : SavedAccount) -> Unit
 

@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.action
 
 import android.content.Context
-import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootAccount
@@ -10,50 +9,10 @@ import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.table.UserRelationMisskey
-import jp.juggler.subwaytooter.util.TootAccountOrNullCallback
 import jp.juggler.util.LogCategory
-import jp.juggler.util.encodePercent
 import jp.juggler.util.showToast
 import org.json.JSONObject
 import java.util.*
-
-// ユーザ名からアカウントIDを取得する
-internal fun findAccountByName(
-	activity : ActMain,
-	access_info : SavedAccount,
-	host : String,
-	user : String,
-	callback : TootAccountOrNullCallback // 失敗するとnullがコールバックされる
-) {
-	TootTaskRunner(activity).run(access_info, object : TootTask {
-		
-		var who : TootAccount? = null
-		
-		override fun background(client : TootApiClient) : TootApiResult? {
-			
-			val result = client.request("/api/v1/accounts/search?q=${user.encodePercent()}")
-			val array = result?.jsonArray
-			if(array != null) {
-				val parser = TootParser(activity, access_info)
-				for(i in 0 until array.length()) {
-					val a = parser.account(array.optJSONObject(i)) ?: continue
-					if(a.username == user
-						&& access_info.getFullAcct(a).equals("$user@$host", ignoreCase = true)
-					) {
-						who = a
-						break
-					}
-				}
-			}
-			return result
-		}
-		
-		override fun handleResult(result : TootApiResult?) {
-			callback(who)
-		}
-	})
-	
-}
 
 // 疑似アカウントを作成する
 // 既に存在する場合は再利用する

@@ -141,10 +141,10 @@ internal class ItemViewHolder(
 	
 	private lateinit var tvMessageHolder : TextView
 	
-	private lateinit var llInstanceTicker:View
-	private lateinit var ivInstanceTicker:MyNetworkImageView
-	private lateinit var tvInstanceTicker:TextView
-
+	private lateinit var llInstanceTicker : View
+	private lateinit var ivInstanceTicker : MyNetworkImageView
+	private lateinit var tvInstanceTicker : TextView
+	
 	private lateinit var access_info : SavedAccount
 	
 	private var buttons_for_status : StatusButtons? = null
@@ -1046,7 +1046,6 @@ internal class ItemViewHolder(
 		
 		showInstanceTicker(who)
 		
-		
 		var content = status.decoded_content
 		
 		// ニコフレのアンケートの表示
@@ -1186,42 +1185,44 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun showInstanceTicker(who:TootAccount) {
+	private fun showInstanceTicker(who : TootAccount) {
 		try {
-			if( !Column.useInstanceTicker) return
-
+			if(! Column.useInstanceTicker) return
+			
 			val host = who.host
-
+			
 			// LTLでホスト名が同じならTickerを表示しない
-			when(column.column_type){
-				Column.TYPE_LOCAL,Column.TYPE_LOCAL_AROUND->{
-					if( host == access_info.host) return
+			when(column.column_type) {
+				Column.TYPE_LOCAL, Column.TYPE_LOCAL_AROUND -> {
+					if(host == access_info.host) return
 				}
 			}
-
+			
 			val item = InstanceTicker.lastList[host] ?: return
-
+			
 			tvInstanceTicker.text = item.name
 			tvInstanceTicker.textColor = item.colorText
-
+			
 			val density = activity.density
-
+			
 			val lp = ivInstanceTicker.layoutParams
-			lp.height = (density*16f+0.5f).toInt()
-			lp.width = (density*item.imageWidth+0.5f).toInt()
-
+			lp.height = (density * 16f + 0.5f).toInt()
+			lp.width = (density * item.imageWidth + 0.5f).toInt()
+			
 			ivInstanceTicker.layoutParams = lp
 			ivInstanceTicker.setImageUrl(activity.pref, 0f, item.image)
 			val colorBg = item.colorBg
 			when {
-				colorBg.isEmpty() ->{
+				colorBg.isEmpty() -> {
 					tvInstanceTicker.background = null
 					ivInstanceTicker.background = null
 				}
+				
 				colorBg.size == 1 -> {
 					tvInstanceTicker.setBackgroundColor(colorBg.first())
 					ivInstanceTicker.setBackgroundColor(colorBg.first())
 				}
+				
 				else -> {
 					ivInstanceTicker.setBackgroundColor(colorBg.last())
 					tvInstanceTicker.background = colorBg.getGradation()
@@ -1230,8 +1231,8 @@ internal class ItemViewHolder(
 			}
 			llInstanceTicker.visibility = View.VISIBLE
 			llInstanceTicker.requestLayout()
-
-		}catch(ex:Throwable){
+			
+		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
 	}
@@ -1422,7 +1423,7 @@ internal class ItemViewHolder(
 			iv.visibility = View.GONE
 			return
 		}
-
+		
 		iv.visibility = View.VISIBLE
 		
 		iv.setFocusPoint(ta.focusX, ta.focusY)
@@ -1436,26 +1437,33 @@ internal class ItemViewHolder(
 		
 		
 		when(ta.type) {
-			TootAttachmentLike.TYPE_AUDIO->{
+			TootAttachmentLike.TYPE_AUDIO -> {
 				iv.setMediaType(0)
-				iv.setDefaultImageResId(getAttributeResourceId(activity,R.attr.ic_music))
-				iv.setImageUrl(activity.pref,0f,null)
+				iv.setDefaultImageResId(getAttributeResourceId(activity, R.attr.ic_music))
+				iv.setImageUrl(activity.pref, 0f, null)
 			}
-			TootAttachmentLike.TYPE_UNKNOWN->{
+			
+			TootAttachmentLike.TYPE_UNKNOWN -> {
 				iv.setMediaType(0)
-				iv.setDefaultImageResId(getAttributeResourceId(activity,R.attr.ic_question))
-				iv.setImageUrl(activity.pref,0f,null)
+				iv.setDefaultImageResId(getAttributeResourceId(activity, R.attr.ic_question))
+				iv.setImageUrl(activity.pref, 0f, null)
 			}
-			else->{
-				val url =ta.urlForThumbnail
-				when{
-					url?.isEmpty() != false ->{
+			
+			else -> {
+				val url = ta.urlForThumbnail
+				when {
+					url?.isEmpty() != false -> {
 						iv.setMediaType(0)
-						iv.setDefaultImageResId(getAttributeResourceId(activity,R.attr.ic_question))
-						iv.setImageUrl(activity.pref,0f,null)
+						iv.setDefaultImageResId(
+							getAttributeResourceId(
+								activity,
+								R.attr.ic_question
+							)
+						)
+						iv.setImageUrl(activity.pref, 0f, null)
 					}
 					
-					else->{
+					else -> {
 						when(ta.type) {
 							TootAttachmentLike.TYPE_VIDEO -> {
 								iv.setMediaType(R.drawable.media_type_video)
@@ -1551,20 +1559,22 @@ internal class ItemViewHolder(
 			
 			ivThumbnail -> status_account?.let { whoRef ->
 				when {
-					access_info.isMisskey -> Action_User.profileLocal(
-						activity,
-						pos,
-						access_info,
-						whoRef.get()
-					)
-					access_info.isPseudo -> DlgContextMenu(
+					access_info.isNA ->DlgContextMenu(
 						activity,
 						column,
 						whoRef,
 						null,
 						notification
 					).show()
-					else -> Action_User.profileLocal(activity, pos, access_info, whoRef.get())
+					
+					// 2018/12/26 疑似アカウントでもプロフカラムを表示する https://github.com/tootsuite/mastodon/commit/108b2139cd87321f6c0aec63ef93db85ce30bfec
+					
+					else -> Action_User.profileLocal(
+						activity,
+						pos,
+						access_info,
+						whoRef.get()
+					)
 				}
 			}
 			
@@ -1951,8 +1961,6 @@ internal class ItemViewHolder(
 		
 	}
 	
-	
-	
 	private fun addLinkAndCaption(
 		sb : StringBuilder,
 		header : String,
@@ -2262,7 +2270,7 @@ internal class ItemViewHolder(
 					)
 				} else {
 					client.request(
-						"/api/v1/votes/${enquete.status_id}" ,
+						"/api/v1/votes/${enquete.status_id}",
 						JSONObject()
 							.put("item_index", idx.toString())
 							.toPostRequestBuilder()
@@ -2480,21 +2488,21 @@ internal class ItemViewHolder(
 						tvName = textView {
 						}.lparams(matchParent, wrapContent)
 						
-						llInstanceTicker = linearLayout{
+						llInstanceTicker = linearLayout {
 							lparams(matchParent, wrapContent)
-
-							ivInstanceTicker = myNetworkImageView{
-							}.lparams(dip(16), dip(16)){
+							
+							ivInstanceTicker = myNetworkImageView {
+							}.lparams(dip(16), dip(16)) {
 								isBaselineAligned = false
 							}
-
-							tvInstanceTicker = textView{
-								setTextSize(TypedValue.COMPLEX_UNIT_DIP,10f)
-								gravity=Gravity.CENTER_VERTICAL
-								setPaddingStartEnd( dip(4f), dip(4f) )
-							}.lparams(0,dip(16) ){
+							
+							tvInstanceTicker = textView {
+								setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10f)
+								gravity = Gravity.CENTER_VERTICAL
+								setPaddingStartEnd(dip(4f), dip(4f))
+							}.lparams(0, dip(16)) {
 								isBaselineAligned = false
-								weight=1f
+								weight = 1f
 							}
 						}
 						

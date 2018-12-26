@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="access_token_updated_for">Le jeton d’accès à %1$s a été mis à jour.</string>
     <string name="account">Comptes</string>
@@ -18,11 +18,11 @@
     <string name="account_select_please">Veuillez sélectionner un compte</string>
     <string name="account_setting">Paramètres du compte</string>
     <string name="acct">Compte</string>
-    <string name="act_post">Publication d\'un toot</string>
+    <string name="act_post">Publication d’un pouet</string>
     <string name="action_settings">Paramètres</string>
     <string name="actions">Actions</string>
-    <string name="actions_for_status">Actions pour ce toot</string>
-    <string name="actions_for_user">Actions pour cet utilisateur</string>
+    <string name="actions_for_status">Actions pour ce pouet</string>
+    <string name="actions_for_user">Actions pour cet·te utilisateur·rice</string>
     <string name="already_boosted">Déjà partagé.</string>
     <string name="already_favourited">Déjà dans les favoris.</string>
     <string name="api_error">Erreur API %1$s</string>
@@ -30,28 +30,28 @@
     <string name="app_exit">Fermer l’application</string>
     <string name="app_name">Subway Tooter</string>
     <string name="app_setting">Paramètres de Subway Tooter</string>
-    <string name="app_was_muted">Application non autorisée.</string>
-    <string name="application_is">Application: %1$s</string>
+    <string name="app_was_muted">L’application a étée silenciée.</string>
+    <string name="application_is">App : %1$s</string>
     <string name="ask_always">Toujours demander</string>
     <string name="attachment_too_many">Max. 4 fichiers autorisés.</string>
     <string name="attachment_uploaded">Pièce jointe envoyée avec succès.</string>
-    <string name="attachment_uploading">Pièce jointe en cours d\'envoi…</string>
-    <string name="back_button_action">Action du bouton retour</string>
-    <string name="back_to_column_list">Afficher la liste des colonnes lorsque le bouton est pressé</string>
+    <string name="attachment_uploading">Pièce jointe en cours d’envoi …</string>
+    <string name="back_button_action">Action du bouton «Retour»</string>
+    <string name="back_to_column_list">Aller à la liste des colonnes lorsque le bouton «Retour» est pressé</string>
     <string name="background_color">Couleur d\'arrière plan</string>
     <string name="block">Bloquer</string>
-    <string name="block_succeeded">Blocage effectué</string>
+    <string name="block_succeeded">Bloqué</string>
     <string name="blocked_users">Utilisateurs bloqués</string>
     <string name="boost">boost</string>
     <string name="boost_from_another_account">Partager à partir d\'un autre compte</string>
-    <string name="boost_succeeded">Partagé avec succès</string>
+    <string name="boost_succeeded">Boosté</string>
     <string name="unboost_succeeded">boost supprimé</string>
     <string name="boosted_by">Partagé par …</string>
     <string name="button_background_color">Couleur d\'arrière plan des onglets</string>
     <string name="button_foreground_color">Couleur des onglets</string>
     <string name="cancel">Annuler</string>
     <string name="cancelled">Annulé</string>
-    <string name="cant_change_account_when_attachment_specified">Impossible de changer de compte quand la pièce jointe est spécifiée.</string>
+    <string name="cant_change_account_when_attachment_specified">Vous ne pouvez pas changer de compte tant qu’il y a une pièce jointe dans les médias.</string>
     <string name="cant_close_column_by_back_button_when_multiple_column_shown">Le bouton retour ne peut fermer la colonne quand plusieurs d\'entre elles sont visibles.</string>
     <string name="cant_follow_locked_user">Impossible de suivre l’utilisateur non public</string>
     <string name="cant_remove_boost_while_favourited">Impossible de supprimer le partage s\'il est dans les favoris</string>
@@ -73,41 +73,41 @@
     <string name="column_is_busy">Colonne occupée</string>
     <string name="column_list">Liste des colonnes</string>
     <string name="column_list_desc">Faites glisser pour supprimer. Le tri et la suppression sont appliqués au retour ou à la sélection.</string>
-    <string name="comment_empty">Veuillez décrire les raisons du signalement</string>
+    <string name="comment_empty">Vous devez décrire les raisons du signalement</string>
     <string name="confirm">Confirmer</string>
     <string name="confirm_account_remove">Le compte sera supprimé. Toutes les colonnes seront également supprimées.\nÊtes-vous sûr de vouloir continuer ?</string>
-    <string name="confirm_before_boost">Confirmer avant de partager</string>
-    <string name="confirm_block_user">L\'utilisateur \'%1$s\' sera bloqué. Êtes-vous sur ?</string>
+    <string name="confirm_before_boost">Confirmer avant de booster</string>
+    <string name="confirm_block_user">Bloquer « %1$s » \?</string>
     <string name="confirm_boost_from">%1$s voulez-vous partager ce toot ?,\nil sera affiché chez vos abonnés et sur votre profil.</string>
-    <string name="confirm_unboost_from">Unboost this status from %1$s ?</string>
+    <string name="confirm_unboost_from">Unboost this status from %1$s \?</string>
     <string name="confirm_favourite_from">Favourite this status from %1$s ? Notification will be sent to the author.</string>
     <string name="confirm_unfavourite_from">Voulez-vous retirer ce statut des favoris de %1$s \?</string>
 
     <string name="confirm_close_column">Fermer cette colonne ?</string>
     <string name="confirm_delete_attachment">Retirer cette pièce jointe ?</string>
     <string name="confirm_delete_notification">Toutes vos notifications sur votre instance seront effacées.\nÊtes-vous sur ?</string>
-    <string name="confirm_delete_status">Ce toot va être supprimé. Êtes-vous sur ?</string>
+    <string name="confirm_delete_status">Supprimer ce pouet \?</string>
     <string name="confirm_follow_request_who_from">Envoyer une demande de suivi de %2$s vers l’utilisateur verrouillé %1$s ?</string>
     <string name="confirm_follow_who_from">Suivre %1$s depuis %2$s ?</string>
     <string name="confirm_mute_user">L\'utilisateur \'%1$s\' sera muet. Êtes-vous sur ?</string>
-    <string name="confirm_post_from">Envoyer un toot du compte %1$s. Êtes-vous sur ?</string>
+    <string name="confirm_post_from">Publier le pouet via %1$s \?</string>
     <string name="confirm_unfollow_who_from">Ne plus suivre %1$s depuis %2$s ?</string>
     <string name="confirmation">Confirmation</string>
     <string name="content_hint">Veuillez saisir votre statut</string>
     <string name="content_warning">Avertissement de contenu</string>
     <string name="content_warning_hint">Saisissez ici votre texte d’avertissement</string>
-    <string name="contributor">Contributeur(s)</string>
+    <string name="contributor">Contributeur·rice·s</string>
     <string name="conversation">conversation</string>
     <string name="conversation_around">Conversation du statut: %1$s</string>
     <string name="conversation_view">Visualiser la conversation</string>
     <string name="copy">Copier</string>
     <string name="copy_complete">Presse-papiers mis à jour.</string>
-    <string name="default_status_visibility">Visibilité par défaut du statut</string>
+    <string name="default_status_visibility">Visibilité par défaut du pouet</string>
     <string name="delete">Supprimer</string>
-    <string name="delete_succeeded">Effacé avec succès</string>
+    <string name="delete_succeeded">Supprimé</string>
     <string name="developer">Développeur</string>
-    <string name="disable_fast_scroller">Désactiver la glissière de défilement rapide des colonnes\n(redémarrage nécessaire)</string>
-    <string name="disable_tablet_mode">Désactiver le mode tablette \n(redémarrage nécessaire)</string>
+    <string name="disable_fast_scroller">Désactiver le défilement rapide (redémarrage nécessaire)</string>
+    <string name="disable_tablet_mode">Désactiver le mode tablette (redémarrage nécessaire)</string>
     <string name="discard">Annuler</string>
     <string name="display_name_boosted_by">Partagé par %1$s</string>
     <string name="display_name_favourited_by">Aimé par %1$s</string>
@@ -115,29 +115,29 @@
     <string name="display_name_unfollowed_by">%1$s a cessé de vous suivre</string>
     <string name="display_name_replied_by">Répondu par %1$s</string>
     <string name="display_name_voted_by">%1$s ont voté</string>
-    <string name="display_name_quoted_by">%1$s quoted</string>
-    <string name="display_name_follow_request_by">%1$s sent follow request</string>
+    <string name="display_name_quoted_by">%1$s cité</string>
+    <string name="display_name_follow_request_by">%1$s a envoyé une demande d’abonnement</string>
 
     <string name="display_name_reaction_by">%1$s a réagi</string>
     <string name="dont_close_column">Ne pas fermer la colonne</string>
     <string name="dont_confirm_again">Ne plus demander de confirmation</string>
     <string name="dont_confirm_before_close_column">Ne pas confirmer à la fermeture d\'une colonne</string>
     <string name="dont_refresh">Ne pas actualiser</string>
-    <string name="dont_refresh_on_activity_resume">Désactiver la réactualisation lors du retour vers l’application.</string>
+    <string name="dont_refresh_on_activity_resume">Désactiver la réactualisation lors du retour vers l’app.</string>
     <string name="dont_resize">Conserver les dimensions</string>
 
-    <string name="dont_screen_off">Garder l’écran allumé lors de l’utilisation de l’application.</string>
+    <string name="dont_screen_off">Garder l’écran allumé lors de l’utilisation de l’app.</string>
     <string name="dont_show_boost">Masquer les partages</string>
     <string name="dont_show_reply">Masquer les réponses</string>
-    <string name="dont_use_streaming_api">Ne pas auto-actualiser</string>
+    <string name="dont_use_streaming_api">Actualiser manuellement les flux</string>
     <string name="drag_handle">Faites glisser la poignée</string>
     <string name="edit">Éditer</string>
     <string name="end_of_list">Fin de la liste</string>
     <string name="exit_app_when_close_protected_column">Quitter l’application sans confirmation après avoir essayé de fermer une colonne protégée</string>
     <string name="favourite">Favori</string>
     <string name="favourite_from_another_account">Placer dans les favoris à partir d\'un autre compte</string>
-    <string name="favourite_succeeded">Mis en favori avec succès</string>
-    <string name="unfavourite_succeeded">Mis en unfavori avec succès</string>
+    <string name="favourite_succeeded">Mis en favoris</string>
+    <string name="unfavourite_succeeded">Ôté des favoris</string>
     <string name="favourited_by">Mis en favori par …</string>
     <string name="favourites">Favoris</string>
     <string name="federate_timeline">Fil fédéré</string>
@@ -146,13 +146,13 @@
     <string name="follow_from_another_account">Suivre (sélection du compte)</string>
     <string name="follow_locked_user">Suivre un utilisateur verrouillé</string>
     <string name="follow_request_authorized">Demande de suivi de %1$s acceptée.</string>
-    <string name="follow_request_cant_remove_by_sender">Il semble que la demande de suivit ne puisse pas être supprimé par l’expéditeur…</string>
+    <string name="follow_request_cant_remove_by_sender">Il semble que la demande de suivi ne puisse pas être supprimée par son expéditeur …</string>
     <string name="follow_request_ng">Demande de suivi rejeté</string>
     <string name="follow_request_ok">Autoriser demande de suivi</string>
     <string name="follow_request_rejected">Demande de suivi de %1$s rejeté.</string>
     <string name="follow_requested">Vous avez demandé à suivre un utilisateur verrouillé.</string>
     <string name="follow_requests">Demandes de suivi</string>
-    <string name="follow_succeeded">Abonnement réussi</string>
+    <string name="follow_succeeded">Suivi</string>
     <string name="followers">Abonnés</string>
     <string name="following">Suivis</string>
     <string name="footer_color">Personalisation de la barre d\'onglets (bas)</string>
@@ -161,7 +161,7 @@
     <string name="hashtag">Hashtag</string>
     <string name="hashtag_and_visibility_not_match">Ce message contient des hashtags, mais sa visibilité n\'est pas publique. \nNormalement les hashtags peuvent être recherchés uniquement dans les messages publiques.\nÊtes-vous sur ?</string>
     <string name="hashtag_of">Hashtag: #%1$s</string>
-    <string name="help_translation">Aide à la traduction</string>
+    <string name="help_translation">Aider à améliorer la traduction</string>
     <string name="hide">Masquer</string>
     <string name="hide_media_default">Ne pas afficher les pièces jointes</string>
     <string name="home">Fil principal</string>
@@ -180,26 +180,25 @@
     <string name="led">Diode</string>
     <string name="list_empty">Aucun élément dans la liste</string>
     <string name="local_timeline">Fil local</string>
-    <string name="login_failed">Échec de la connexion</string>
+    <string name="login_failed">Connexion impossible.</string>
     <string name="login_required">Veuillez mettre à jour votre connexion à partir des paramètres du compte.</string>
     <string name="long_side_pixel">Côté le plus long mis à %1$d pixels</string>
-    <string name="mail_address_not_contains_at_mark">veuillez entrer l’adresse e-mail de l’utilisateur contenant « @ » et « . »</string>
+    <string name="mail_address_not_contains_at_mark">Veuillez entrer une adresse e-mail contenant « @ » et « . »</string>
     <string name="mail_hint">Ex) votre\@e-mail.address</string>
     <string name="mail_not_specified">E-mail non spécifié</string>
     <string name="media_attachment">Ajouter une pièce jointe</string>
-    <string name="media_thumbnail_height">Hauteur des pièces jointes dans l’interface
-\n(défaut=64(dp), redémarrage nécessaire)</string>
+    <string name="media_thumbnail_height">Hauteur des miniatures dans l’interface (défaut=64dp, redémarrage nécessaire)</string>
     <string name="mention">mention</string>
     <string name="mention2">Mentionner</string>
     <string name="menu">Menu</string>
-    <string name="minimum_column_width">Largeur minimum des colonnes \n(défaut=300(dp), redémarrage nécessaire)</string>
+    <string name="minimum_column_width">Largeur minimale des colonnes (défaut=300dp, redémarrage nécessaire)</string>
     <string name="missing_permission_to_access_media">Missing app permission to access media.</string>
 
     <string name="more">Plus</string>
     <string name="mute">Désactiver le son</string>
     <string name="mute_app_desc">Faire glisser pour supprimer. Vous devez rafraîchir pour voir les changements effectués.</string>
-    <string name="mute_app_of">Interdire l’application \"%1$s\"</string>
-    <string name="mute_succeeded">Désactivation du son réussie</string>
+    <string name="mute_app_of">silencer l’application « %1$s »</string>
+    <string name="mute_succeeded">En sourdine</string>
     <string name="mute_word">Interdire le(s) mot(s)</string>
     <string name="muted_app">Applications non autorisées</string>
     <string name="muted_users">Utilisateurs muets</string>
@@ -211,9 +210,9 @@
     <string name="nickname_and_color">Pseudo et Couleur</string>
     <string name="nickname_applied_after_reload">Le changement de pseudo/couleur sera appliqué après actualisation.</string>
     <string name="nickname_label">Pseudo et couleur. (s\'il est spécifié, il remplacera le nom du compte affiché)</string>
-    <string name="not_available_for_pseudo_account">Non disponible pour les personnes non connectés</string>
-    <string name="not_available_for_misskey_account">Non disponible pour le compte Misskey</string>
-    <string name="not_available_for_mastodon_account">Non disponible pour le compte Mastodon</string>
+    <string name="not_available_for_pseudo_account">Non disponible pour les pseudo comptes</string>
+    <string name="not_available_for_misskey_account">Non disponible pour les comptes Misskey</string>
+    <string name="not_available_for_mastodon_account">Non disponible pour les comptes Mastodon</string>
 
     <string name="not_selected">(Aucune sélection)</string>
     <string name="notification_count">%1$d notifications</string>
@@ -234,23 +233,23 @@
     <string name="oss_license">Licence OSS</string>
     <string name="password_not_specified">Mot de passe non spécifié</string>
     <string name="please_add_account">Compte manquant. Veuillez ajouter un compte avant de poster.</string>
-    <string name="please_donate">Merci de soutenir cette application !</string>
-    <string name="please_rate">Merci de prendre un peu de temps pour\nnoter cette application et donner votre avis !</string>
-    <string name="post_error_contents_empty">Veuillez saisir votre statut.</string>
+    <string name="please_donate">Merci de soutenir cette application.</string>
+    <string name="please_rate">Veuillez prendre le temps de noter l’application.</string>
+    <string name="post_error_contents_empty">Veuillez saisir quelque chose dans votre pouet.</string>
     <string name="post_error_contents_warning_empty">Votre pouet a besoin d’un avertissement de contenu.</string>
     <string name="post_from">Publier par</string>
     <string name="preview">Aperçu</string>
     <string name="prior_local_url_when_open_attachment">Priorité à l’URL locale lors de l’ouverture de pièce(s) jointe(s)</string>
     <string name="profile">Profil</string>
     <string name="profile_of">Profil de %1$s</string>
-    <string name="pseudo_account">Voir les données publiques sans se connecter</string>
+    <string name="pseudo_account">Pseudo compte</string>
     <string name="qr_code">Code QR</string>
     <string name="question">\?</string>
     <string name="rate_on_store">Noter sur la boutique</string>
     <string name="read_gap">Chargement des messages manquants</string>
-    <string name="refresh_after_toot">Action après un toot</string>
-    <string name="refresh_no_scroll">Ne pas faire défiler</string>
-    <string name="refresh_scroll_to_toot">Faire défiler</string>
+    <string name="refresh_after_toot">Rafraîchir après avoir publié un pouet</string>
+    <string name="refresh_no_scroll">Actualiser et ne pas faire défiler</string>
+    <string name="refresh_scroll_to_toot">Actualiser et faire défiler jusqu’au pouet</string>
     <string name="regex_error">Erreur Regex</string>
     <string name="regex_filter">Filtre Regex</string>
     <string name="register_app_to_server">Enregistrement de cette application sur %1$s…</string>
@@ -259,12 +258,12 @@
     <string name="reply_from_another_account">Répondre avec un autre compte</string>
     <string name="reply_to_this_status">Répondre à ce statut :</string>
     <string name="report">Signaler</string>
-    <string name="report_completed">Signalement terminé.</string>
-    <string name="report_reason">Décrire la raison du signalement</string>
+    <string name="report_completed">Signalé</string>
+    <string name="report_reason">Raison du signalement</string>
     <string name="reports">Signalements</string>
     <string name="request_access_token">Demander l’autorisation d\'accès à l’instance…</string>
     <string name="request_api">Acquisition : %1$s %2$s</string>
-    <string name="reading_api">Reading: %1$s %2$s</string>
+    <string name="reading_api">Lecture de : %1$s %2$s</string>
 
     <string name="reset">Reset</string>
     <string name="resize_image">Changer la taille des images jointes (JPEG,PNG)</string>
@@ -289,8 +288,8 @@
     <string name="server_confirmed">Confirmation du serveur.</string>
     <string name="setting">Paramètres</string>
     <string name="show">Afficher</string>
-    <string name="show_follow_button_in_button_bar">Voir le bouton suivre dans la barre d\'actions \n(redémarrage nécessaire)</string>
-    <string name="simple_list">Cacher la barre d\'actions, elle apparaîtra en appuyant sur le toot\n(redémarrage nécessaire)</string>
+    <string name="show_follow_button_in_button_bar">Afficher le bouton \"Suivre\" dans la barre de boutons (redémarrage requis)</string>
+    <string name="simple_list">Liste simple (redémarrage nécessaire)</string>
     <string name="sound">Émettre un son</string>
     <string name="spoil_visibility_for_account">Mauvaise visibilité pour ce compte.</string>
     <string name="status">Statut</string>
@@ -306,17 +305,16 @@
     <string name="theme_light">Clair</string>
     <string name="thumbnail">vignette</string>
     <string name="toot">Pouet</string>
-    <string name="ui_theme">Thème de l’interface utilisateur
-\n(redémarrage nécessaire)</string>
+    <string name="ui_theme">Thème de l’interface utilisateur (redémarrage nécessaire)</string>
     <string name="unblock">Débloquer</string>
-    <string name="unblock_succeeded">Déblocage réussi</string>
+    <string name="unblock_succeeded">Débloqué</string>
     <string name="unfollow">Se désabonner</string>
     <string name="unfollow_succeeded">Désabonnement réussi</string>
     <string name="unmute">Activer le son</string>
     <string name="unmute_succeeded">Activation du son réussie</string>
     <string name="update_access_token">Mettre à jour le jeton d’accès</string>
     <string name="user">Utilisateur</string>
-    <string name="user_mail_address">Adresse e-mail de l’utilisateur</string>
+    <string name="user_mail_address">Adresse e-mail</string>
     <string name="user_name_not_match">Le nom d\'utilisateur ne correspond pas</string>
     <string name="user_password">Mot de passe de l’utilisateur</string>
     <string name="version_is">Version: %1$s</string>
@@ -326,7 +324,7 @@
     <string name="visibility_private">Abonnés</string>
     <string name="visibility_public">Public</string>
     <string name="visibility_unlisted">Non listé</string>
-    <string name="visibility_web_setting">Selon les paramètres de l\'application Web</string>
+    <string name="visibility_web_setting">Selon les paramètres de l’application Web</string>
 
     <string name="wait_previous_operation">Veuillez attendre la fin de la dernière opération.</string>
     <string name="with_attachment">Avec pièce(s) jointe(s)</string>
@@ -338,11 +336,9 @@
 \nL\'instance à laquelle vous voulez vous connecter semble ne pas les gérer. 
 \nVous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1 ou demander à l’administrateur de votre instance de prendre en charge les courbes elliptiques « prime256v1 ». 
 \nPlus de détails ici : https://code.google.com/p/android/issues/detail\?id=224438</string>
-    <string name="timeline_font">Changer la police de caractères de l’interface
-\n(redémarrage nécessaire)</string>
-    <string name="timeline_font_bold">Changer la police de caractères de l’interface (bold)
-\n(redémarrage nécessaire)</string>
-    <string name="account_in_draft_is_lost">Le compte utilisé pour ce brouillon a été supprimé de Subway Tooter. Le lien avec le toot d\'origine ne peut être restauré.</string>
+    <string name="timeline_font">Police de caractères des fils (redémarrage nécessaire)</string>
+    <string name="timeline_font_bold">Police de caractères des fils (grasse) (redémarrage nécessaire)</string>
+    <string name="account_in_draft_is_lost">Le compte utilisé pour la création de ce brouillon a été supprimé de Subway Tooter. Le lien avec le toot d\'origine ne peut être restauré.</string>
     <string name="attachment_in_draft_is_lost">Une ou plusieurs pièces jointes de ce brouillon sont introuvables.</string>
     <string name="reply_to_in_draft_is_lost">Le toot auquel ce brouillon fait référence n\'existe plus, vous ne pouvez plus y répondre a un contexte supprimé. in_reply_to</string>
     <string name="restore_draft">Restaurer un brouillon</string>
@@ -356,7 +352,7 @@
     <string name="user_id_conversion_failed">Conversion de l’identification utilisateur échouée.</string>
     <string name="draft_deleted">Brouillon effacé.</string>
     <string name="draft_picker_desc">Appui long pour effacer.</string>
-    <string name="dont_crop_media_thumbnail">Ne pas recadrer les aperçus de pièces jointes\n(redémarrage nécessaire)</string>
+    <string name="dont_crop_media_thumbnail">Ne pas recadrer les aperçus des médias joints (redémarrage nécessaire)</string>
     <string name="tab_indicator_color">Couleur de la ligne d\'indication des colonnes affichées</string>
     <string name="plugin">Plugin</string>
     <string name="select_plugin">Sélection du plugin</string>
@@ -404,7 +400,7 @@
     <string name="open_local_timeline_for">Ouvrir le fil de \"%1$s\"</string>
     <string name="send_header_account_url">Account-Url</string>
     <string name="notification_sound">Notification Sound</string>
-    <string name="timeline_font_size">Timeline font size (unit:sp. leave empty to default. app restart required)</string>
+    <string name="timeline_font_size">Timeline font size (Unit:sp. leave empty to default. app restart required)</string>
     <string name="acct_font_size">Acct font size (unit:sp. leave empty to default. app restart required)</string>
     <string name="dont_add_duplication_check_header">Don\'t add duplication check header</string>
     <string name="show_quick_toot_bar">Afficher la barre \"Pouet rapide\" (redémarrage de l’app. requis.)</string>
@@ -413,7 +409,7 @@
     <string name="conversation_from_another_account">Consulter la conversation à partir d’un autre compte</string>
     <string name="show_avatar_image">Afficher l’avatar</string>
     <string name="quote_url">Citer l’URL …</string>
-    <string name="actions_for_notification">Actions for notification</string>
+    <string name="actions_for_notification">Actions sur les notifications</string>
     <string name="delete_this_notification">Supprimer cette notification</string>
     <string name="mute_this_conversation">Mettre en sourdine plus de notifications pour cette conversation</string>
     <string name="unmute_this_conversation">Unmute more notifications for this conversation</string>
@@ -473,7 +469,7 @@
     <string name="make_enquete">Effectuer un sondage</string>
     <string name="dont_use_action_button_with_quick_toot_bar">Désactive le bouton d’action IME lors de l-utilisation de la barre « Pouet rapide » (redémarrage de l\'application requis)</string>
 
-    <string name="auto_cw">Masquer automatiquement les longs textes (définir un nombre de lignes supérieur à 0 pour activer cette option. Redémarrage de l\'application requis)</string>
+    <string name="auto_cw">Masquer automatiquement les longs textes (définir un nombre de lignes supérieur à 0. Redémarrage requis)</string>
     <string name="auto_cw_prefix">(CW automatique)</string>
 
     <string name="enquete_item_is_empty">Le choix du sondage %1$d est vide.</string>
@@ -486,7 +482,7 @@
 \nIl n’est pas acceptable sur une instance standard, mais peut être permit dans certains cas. 
 \nVous êtes sûr ?</string>
 
-    <string name="short_acct_local_user">Compte court pour l\'utilisateur local (redémarrage de l\'application requis)</string>
+    <string name="short_acct_local_user">Compte court pour l’utilisateur·rice local·e (redémarrage requis)</string>
     <string name="loading_notification_title">Chargement de la notification…</string>
     <string name="error_notification_title">Délai d\'attente du serveur</string>
     <string name="error_notification_summary">Si l\'instance est détruite, veuillez supprimer le compte sur ce serveur.</string>
@@ -497,7 +493,7 @@
     <string name="video_pick">Choisir une vidéo</string>
     <string name="video_capture">Capturer une vidéo</string>
     <string name="already_followed">Déjà suivi·e.</string>
-    <string name="cant_get_web_setting_visibility">Impossible d\'obtenir les paramètres de visibilité depuis l\'application web.</string>
+    <string name="cant_get_web_setting_visibility">Impossible d\'obtenir les paramètres de visibilité depuis l’application web.</string>
     <string name="mastodon_1_6_later">Mastodon 1.6 ou ultérieur</string>
     <string name="user_count">Nombre d\'utilisateurs</string>
     <string name="toot_count">Nombre de pouets</string>
@@ -526,7 +522,7 @@
     <string name="skin_tone_medium">teint moyen</string>
     <string name="skin_tone_medium_dark">teint moyennement foncé</string>
     <string name="skin_tone_dark">teint foncé</string>
-    <string name="disable_custom_emoji_animation">Désactiver les émojis animés personnalisés (redémarrage de l\'application et rechargement de la colonne requis)</string>
+    <string name="disable_custom_emoji_animation">Désactiver les émojis animés personnalisés (redémarrage de l’app et rechargement de la colonne requis)</string>
     <string name="card_header_card">Carte</string>
     <string name="card_header_author">Author</string>
     <string name="card_header_provider">Provider</string>
@@ -614,16 +610,16 @@
     <string name="always_show_application">Afficher (via) le nom de l\'application si possible</string>
     <string name="force_gap_when_refresh">Force put gap when refreshing top</string>
 
-    <string name="avatar_icon_size">Taille de l\'icône de l’avatar (unité:dp. par défaut:48. redémarrage de l\'application requis)</string>
+    <string name="avatar_icon_size">Taille de l’icône de l’avatar (Unité:dp. par défaut:48. Redémarrage de l’app requis)</string>
     <string name="avatar_icon_round_ratio">Avatar icon round ratio (unit:%. default:33. app restart required)</string>
-    <string name="avatar_icon_dont_round">Ne pas arrondir les coins de l\'avatar (redémarrage de l\'application requis)</string>
+    <string name="avatar_icon_dont_round">Ne pas arrondir les coins de l’avatar (redémarrage requis)</string>
     <string name="share_view_pool">Share view pool between columns</string>
     <string name="rename">Renommer …</string>
     <string name="allow_column_duplication">Autoriser la duplication de colonnes</string>
     <string name="system_notification_not_related">Not chosen when tapping system notification</string>
     <string name="notification_type_mention">mention</string>
-    <string name="notification_type_follow">follow</string>
-    <string name="notification_type_boost">boost</string>
+    <string name="notification_type_follow">suivre</string>
+    <string name="notification_type_boost">booster</string>
     <string name="notification_type_favourite">fav.</string>
     <string name="notification_type_reaction">réaction</string>
     <string name="notification_type_vote">vote</string>
@@ -642,7 +638,7 @@
     <string name="fav_muted_user_long">Fav/Boost notification disabled users</string>
 
     <string name="changed">a changé.</string>
-    <string name="thumbnails_arrange_vertically">Disposition verticale des vignettes (redémarrage de l\'application requis)</string>
+    <string name="thumbnails_arrange_vertically">Réarranger les vignettes verticalement (redémarrage requis)</string>
     <string name="instance_local">Instance locale</string>
     <string name="pull_notification_check_interval">Intervalle de vérification des notifications (unité : minutes, par défaut : 15, min:15)</string>
     <string name="follow_accept">accepter</string>
@@ -723,7 +719,7 @@
     <string name="filter_public">public</string>
     <string name="filter_thread">conversation</string>
 
-    <string name="dont_change">Don\'t change</string>
+    <string name="dont_change">Ne pas changer</string>
     <string name="filter_expire_unlimited">Illimité</string>
     <string name="filter_expire_30min">30 minutes après l\'enregistrement</string>
     <string name="filter_expire_1hour">1 heure après l\'enregistrement</string>
@@ -745,29 +741,29 @@
     <string name="misskey_account_not_supported">Le compte Misskey n\'est pas supporté.</string>
     <string name="misskey_cant_show_all_descendants">In Misskey, only direct replies to target note are enumerated. Not all descendants can be displayed.</string>
     <string name="cant_get_misskey_app_secret">This misskey instance does not provide app secret in the response of /api/app/create API. please consider update misskey service version to instance owner.</string>
-    <string name="visibility_style"><![CDATA[Visibility name & icon]]></string>
+    <string name="visibility_style">Visibilité du nom et de l’icône</string>
     <string name="visibility_style_by_account">Fit to column account</string>
     <string name="mastodon">Mastodon</string>
     <string name="misskey">Misskey</string>
     <string name="visibility_home">Fil principal</string>
-    <string name="visibility_followers">Followers</string>
+    <string name="visibility_followers">Abonné·e·s</string>
     <string name="vote_count_text">%1$d votes</string>
-    <string name="reaction_add">Add reaction</string>
-    <string name="unknown_notification_from">unknown notification from %1$s</string>
-    <string name="dont_show_reaction">Don\'t show reaction</string>
+    <string name="reaction_add">Ajouter une réaction</string>
+    <string name="unknown_notification_from">notification inconnue venant de %1$s</string>
+    <string name="dont_show_reaction">Masquer les réactions</string>
     <string name="dont_show_vote">Don\'t show enquête</string>
-    <string name="boost_button_size">Boost button size( unit:dp, default=40, app restart required)</string>
-    <string name="boost_button_alignment">Boost button alignment (app restart required)</string>
+    <string name="boost_button_size">Taille du bouton Boost (Unité:dp, par défaut=40, redémarrage requis)</string>
+    <string name="boost_button_alignment">Alignement du bouton Boost (redémarrage requis)</string>
     <string name="start">Start</string>
-    <string name="center">Center</string>
+    <string name="center">Centrer</string>
     <string name="end">End</string>
-    <string name="misskey_hybrid_timeline">Social timeline</string>
+    <string name="misskey_hybrid_timeline">Fil social</string>
     <string name="misskey_hybrid_timeline_long">Social TL (Misskey)</string>
     <string name="renote_to">Renote to %1$s</string>
     <string name="reply_to">Reply to %1$s</string>
     <string name="deleted_at">deleted at %1$s</string>
     <string name="already_reactioned">already reactioned.</string>
-    <string name="already_voted">Already voted.</string>
+    <string name="already_voted">Vous avez déjà voté.</string>
 
     <string name="endorse_set">Endorse in your profile</string>
     <string name="endorse_unset">Remove endorsement in your profile</string>
@@ -775,12 +771,12 @@
     <string name="remove_endorse_succeeded">Endorsement removed.</string>
     <string name="follow_request_cancelled">Follow request was cancelled.</string>
     <string name="confirm_cancel_follow_request_who_from">La demande de suivi de %2$s à %1$s sera rejetée. Vous êtes sûr ?</string>
-    <string name="reaction">Reaction (Misskey)</string>
+    <string name="reaction">Réaction (Misskey)</string>
     <string name="vote">Vote (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">Timeout for embed media viewer (unit:seconds, app restart(delete from app history) required)</string>
 
     <string name="media_attachment_max_byte_size_movie">Taille maximale en octets des médias vidéo (unité : méga octets. par défaut : 40)</string>
-    <string name="link_color">Couleur des liens (redémarrage de l\'application requis)</string>
+    <string name="link_color">Couleur des liens (redémarrage requis)</string>
 
     <string name="dont_use_custom_tabs">Ne pas utiliser d\'onglets personnalisés (Chrome/Firefox) lorsque vous ouvrez des liens</string>
 
@@ -799,5 +795,15 @@
     <string name="verified_at">vérifié à</string>
 
 <string name="use_old_api">Utiliser l’ancienne API</string>
-    <string name="username_not_need_atmark">The user name must not contains \"@\" or \"/\".</string>
+    <string name="username_not_need_atmark">Le nom d’utilisateur ne devrait pas contenir «@» ou «/».</string>
+    <string name="visibility_local_public">Public (local)</string>
+    <string name="visibility_local_home">Accueil (local)</string>
+    <string name="visibility_local_followers">Abonné·e·s uniquement (local)</string>
+    <string name="visibility_local_unlisted">Non listé (local)</string>
+    <string name="display_name_mentioned_by">%1$s mentionné</string>
+    <string name="reaction_from_another_account">Réagir à partir d’un autre compte</string>
+    <string name="reaction_succeeded">a réagi</string>
+    <string name="account_picker_reaction">Compte pour réagir \?</string>
+    <string name="mute_application_confirm">Silencer l’app « %1$s » \?</string>
+    <string name="about_this_instance">À propos de cette instance</string>
 </resources>

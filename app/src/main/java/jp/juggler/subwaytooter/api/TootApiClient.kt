@@ -1412,6 +1412,7 @@ class TootApiClient(
 	
 }
 
+// result.data に TootAccountRefを格納して返す。もしくはエラーかキャンセル
 fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) : TootApiResult? {
 	
 	// misskey由来のアカウントURLは https://host/@user@instance などがある

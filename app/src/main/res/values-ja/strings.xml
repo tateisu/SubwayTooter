@@ -41,6 +41,7 @@
     <string name="already_favourited">既にお気に入り済みです</string>
     <string name="already_followed">既にフォローしてます</string>
     <string name="already_reactioned">リアクション済みです</string>
+    <string name="not_reactioned">まだリアクションしてません</string>
     <string name="already_voted">投票済です</string>
     <string name="always_show_application">アプリ名(via)を可能なら表示する</string>
     <string name="api_error">APIエラー %1$s</string>
@@ -549,6 +550,7 @@
     <string name="rate_on_store">ストアで評価</string>
     <string name="reaction">リアクション (Misskey)</string>
     <string name="reaction_add">リアクションの追加</string>
+    <string name="reaction_remove">リアクションの削除</string>
     <string name="read_gap">ギャップを読む</string>
     <string name="reading_api">読込中: %1$s %2$s</string>
     <string name="recommended_plugin">おすすめプラグイン</string>
@@ -830,5 +832,6 @@
     <string name="terms">プライバシーポリシー</string>
     <string name="agree_terms">サービスの規約に同意します</string>
     <string name="pseudo_account_cant_get_follow_list">疑似アカウントではフォローリストを読めません</string>
+    <string name="reaction_remove_confirm">あなたのリアクション \"%1$s\"を削除しますか?</string>
 
 </resources>

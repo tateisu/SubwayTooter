@@ -632,6 +632,35 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		}
 	}
 	
+	fun decreaseReaction(reaction:String?,byMe:Boolean, caller : String) : Boolean {
+		reaction ?: return false
+		
+		MisskeyReaction.shortcodeMap[reaction] ?: return false
+
+		synchronized(this) {
+			
+			if(byMe){
+				if( this.myReaction != reaction ){
+					// 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
+					return false
+				}
+				myReaction = null
+			}
+			
+			log.d("decreaseReaction noteId=$id byMe=$byMe caller=$caller")
+
+			// カウントを減らす
+			var map = this.reactionCounts
+			if(map == null) {
+				map = HashMap()
+				this.reactionCounts = map
+			}
+			map[reaction] = (map[reaction] ?: 1) - 1
+			
+			return true
+		}
+	}
+	
 	fun markDeleted(context : Context, deletedAt : Long?) : Boolean? {
 		
 		var sv = if(deletedAt != null) {

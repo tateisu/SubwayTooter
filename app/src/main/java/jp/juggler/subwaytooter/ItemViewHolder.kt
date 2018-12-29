@@ -1169,7 +1169,7 @@ internal class ItemViewHolder(
 			)
 		}
 		
-		makeReactionsView(status.reactionCounts)
+		makeReactionsView(status)
 		
 		buttons_for_status?.bind(status, (item as? TootNotification))
 		
@@ -1993,15 +1993,10 @@ internal class ItemViewHolder(
 		
 	}
 	
-	private fun makeReactionsView(reactionsCount : HashMap<String, Int>?) {
-		
+	private fun makeReactionsView(status:TootStatus ) {
 		if(! access_info.isMisskey) return
-		
-		//		reactionsCount?:return
-		//		MisskeyReaction.values().find {
-		//			val c = reactionsCount[it.shortcode]
-		//			c != null && c > 0
-		//		} ?: return
+
+		val reactionsCount = status.reactionCounts
 		
 		val density = activity.density
 		
@@ -2036,10 +2031,18 @@ internal class ItemViewHolder(
 				activity,
 				R.drawable.btn_bg_transparent
 			)
-			b.contentDescription = activity.getString(R.string.reaction_add)
+			
+			val hasMyReaction = status.myReaction?.isNotEmpty() == true
+			b.contentDescription = activity.getString(if(hasMyReaction) R.string.reaction_remove else  R.string.reaction_add )
 			b.scaleType = ImageView.ScaleType.FIT_CENTER
 			b.padding = paddingV
-			b.setOnClickListener { addReaction(status_showing, null) }
+			b.setOnClickListener {
+				if( hasMyReaction ){
+					removeReaction(status, false)
+				}else{
+					addReaction(status, null)
+				}
+			}
 			
 			b.setOnLongClickListener {
 				Action_Toot.reactionFromAnotherAccount(
@@ -2053,7 +2056,7 @@ internal class ItemViewHolder(
 			setIconDrawableId(
 				activity,
 				b,
-				R.drawable.ic_add,
+				if(hasMyReaction) R.drawable.ic_remove else R.drawable.ic_add,
 				color = content_color,
 				alphaMultiplier = Styler.boost_alpha
 			)
@@ -2088,7 +2091,7 @@ internal class ItemViewHolder(
 				, compoundPaddingDp
 			)
 			b.tag = mr.shortcode
-			b.setOnClickListener { addReaction(status_showing, it.tag as? String) }
+			b.setOnClickListener { addReaction(status, it.tag as? String) }
 			
 			b.setOnLongClickListener {
 				Action_Toot.reactionFromAnotherAccount(
@@ -2114,8 +2117,7 @@ internal class ItemViewHolder(
 		llExtra.addView(box)
 	}
 	
-	private fun addReaction(status : TootStatus?, code : String?) {
-		status ?: return
+	private fun addReaction(status : TootStatus, code : String?) {
 		
 		if(status.myReaction?.isNotEmpty() == true) {
 			showToast(activity, false, R.string.already_reactioned)
@@ -2177,6 +2179,58 @@ internal class ItemViewHolder(
 			})
 	}
 	
+	private fun removeReaction(status : TootStatus, confirmed : Boolean = false) {
+		
+		val reaction = status.myReaction
+		
+		if(reaction?.isNotEmpty() != true) {
+			showToast(activity, false, R.string.not_reactioned)
+			return
+		}
+		
+		if(access_info.isPseudo || ! access_info.isMisskey) return
+		
+		if(!confirmed) {
+			AlertDialog.Builder(activity)
+				.setMessage(activity.getString(R.string.reaction_remove_confirm,reaction))
+				.setNegativeButton(R.string.cancel, null)
+				.setPositiveButton(R.string.ok) { _, _ ->
+					removeReaction(status, confirmed = true)
+				}
+				.show()
+			return
+		}
+		
+		TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
+			object : TootTask {
+				override fun background(client : TootApiClient) : TootApiResult? =
+				// 成功すると204 no content
+					client.request(
+						"/api/notes/reactions/delete",
+						access_info.putMisskeyApiToken(JSONObject())
+							.put("noteId", status.id.toString())
+							.toPostRequestBuilder()
+					)
+					
+				
+				override fun handleResult(result : TootApiResult?) {
+					result ?: return
+					
+					val error = result.error
+					if(error != null) {
+						showToast(activity, false, error)
+						return
+					}
+					
+					if((result.response?.code() ?: - 1) in 200 until 300) {
+						if(status.decreaseReaction(reaction,true,"removeReaction" )) {
+							// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
+							list_adapter.notifyChange(reason = "removeReaction complete", reset = true)
+						}
+					}
+				}
+			})
+	}
 	private fun makeEnqueteChoiceView(
 		enquete : NicoEnquete,
 		now : Long,

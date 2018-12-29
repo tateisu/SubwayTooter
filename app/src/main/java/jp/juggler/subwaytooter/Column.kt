@@ -2668,7 +2668,7 @@ class Column(
 							when(profile_tab) {
 								
 								TAB_FOLLOWING -> return when {
-
+									
 									isMisskey -> {
 										pagingType = PagingType.Cursor
 										parseAccountList(
@@ -2679,7 +2679,7 @@ class Column(
 											misskeyArrayFinder = misskeyArrayFinderUsers
 										)
 									}
-
+									
 									access_info.isPseudo -> {
 										idRecent = null
 										idOld = null
@@ -2689,7 +2689,6 @@ class Column(
 										)
 										TootApiResult()
 									}
-									
 									
 									else -> {
 										parseAccountList(
@@ -2726,7 +2725,7 @@ class Column(
 										)
 										TootApiResult()
 									}
-
+									
 									else -> {
 										parseAccountList(
 											client,
@@ -6360,7 +6359,11 @@ class Column(
 							s.increaseReaction(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
 						}
 					}
-					
+					MisskeyNoteUpdate.Type.UNREACTION -> {
+						scanStatusAll { s ->
+							s.decreaseReaction(ev.reaction, byMe ,"onNoteUpdated ${ev.userId}")
+						}
+					}
 					MisskeyNoteUpdate.Type.VOTED -> {
 						scanStatusAll { s ->
 							s.enquete?.increaseVote(context, ev.choice, byMe) ?: false
@@ -6371,6 +6374,10 @@ class Column(
 						scanStatusAll { s ->
 							s.markDeleted(context, ev.deletedAt) ?: false
 						}
+					}
+					
+					else ->{
+						log.d("onNoteUpdated: unknown type: ${ev.type}")
 					}
 				}
 				
@@ -6730,9 +6737,11 @@ class Column(
 		makeMisskeyBaseParameter(parser).putMisskeyParamsTimeline()
 	
 	private fun makeMisskeyParamsProfileStatuses(parser : TootParser) =
-		makeMisskeyParamsUserId(parser)
-			.putMisskeyParamsTimeline()
-			.put("includeReplies", true)
+		makeMisskeyParamsUserId(parser).apply {
+			putMisskeyParamsTimeline()
+			if(! dont_show_reply) put("includeReplies", true)
+			if(! dont_show_boost) put("includeMyRenotes", true)
+		}
 	
 	private fun makePublicLocalUrl() : String {
 		return when {

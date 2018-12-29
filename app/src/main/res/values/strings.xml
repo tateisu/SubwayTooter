@@ -748,6 +748,7 @@
     <string name="visibility_followers">Followers</string>
     <string name="vote_count_text">%1$d votes</string>
     <string name="reaction_add">Add reaction</string>
+    <string name="reaction_remove">Remove reaction</string>
     <string name="unknown_notification_from">unknown notification from %1$s</string>
     <string name="dont_show_reaction">Don\'t show reaction</string>
     <string name="dont_show_vote">Don\'t show enquete</string>
@@ -762,6 +763,7 @@
     <string name="reply_to">Reply to %1$s</string>
     <string name="deleted_at">deleted at %1$s</string>
     <string name="already_reactioned">already reacted to.</string>
+    <string name="not_reactioned">not yet reacted to.</string>
     <string name="unlisted_visibility">\'Unlisted\' visibility</string>
     <string name="followers_visibility">\'Followers\' visibility</string>
     <string name="direct_with_user_visibility">\'Direct to users\' visibility</string>
@@ -850,5 +852,6 @@
     <string name="password_empty">Please specify the password.</string>
     <string name="username_not_need_atmark">The user name must not contains \"@\" or \"/\".</string>
     <string name="pseudo_account_cant_get_follow_list">Can\'t read follow list from pseudo account.</string>
+    <string name="reaction_remove_confirm">Remove your reaction \"%1$s\"?</string>
 
 </resources>

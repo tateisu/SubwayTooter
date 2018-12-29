@@ -3,10 +3,7 @@ package jp.juggler.subwaytooter.action
 import android.app.AlertDialog
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootRelationShip
-import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.api.entity.parseItem
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ReportForm
 import jp.juggler.subwaytooter.table.AcctColor
@@ -305,7 +302,7 @@ object Action_User {
 			
 			override fun background(client : TootApiClient) : TootApiResult? =
 				client.syncAccountByUrl(access_info, who_url)?.also { result ->
-					who = result.data as? TootAccount
+					who = (result.data as? TootAccountRef)?.get()
 				}
 			
 			override fun handleResult(result : TootApiResult?) {

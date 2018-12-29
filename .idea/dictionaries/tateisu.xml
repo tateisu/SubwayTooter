@@ -63,6 +63,7 @@
       <w>reblog</w>
       <w>reblogged</w>
       <w>reblogs</w>
+      <w>renotes</w>
       <w>repeatly</w>
       <w>sephiroth</w>
       <w>sharedpref</w>
@@ -88,6 +89,7 @@
       <w>unfollowed</w>
       <w>unmute</w>
       <w>unmuted</w>
+      <w>unreacted</w>
       <w>unreblog</w>
       <w>userkey</w>
       <w>utoken</w>

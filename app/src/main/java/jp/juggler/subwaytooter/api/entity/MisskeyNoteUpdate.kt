@@ -8,6 +8,7 @@ class MisskeyNoteUpdate(src:JSONObject){
 	
 	enum class Type {
 		REACTION,
+		UNREACTION,
 		DELETED,
 		VOTED
 	}
@@ -32,7 +33,11 @@ class MisskeyNoteUpdate(src:JSONObject){
 				reaction = src2.parseString("reaction")
 				userId = EntityId.mayDefault(src2.parseString("userId"))
 			}
-			
+			"unreacted" -> {
+				type = Type.UNREACTION
+				reaction = src2.parseString("reaction")
+				userId = EntityId.mayDefault(src2.parseString("userId"))
+			}
 			"deleted" -> {
 				type = Type.DELETED
 				deletedAt = TootStatus.parseTime(src2.optString("deletedAt"))

@@ -59,7 +59,7 @@
     <string name="response_not_json">API response is not JSON.</string>
     <string name="attachment_too_many">up to 4 files is allowed.</string>
     <string name="account_select_please">Select the account</string>
-    <string name="login_failed">Clould not log in</string>
+    <string name="login_failed">Could not log in</string>
     <string name="file_size_too_big">The file is bigger than the limit of %1$dMB.</string>
     <string name="visibility_public">Public</string>
     <string name="visibility_unlisted">Unlisted</string>
@@ -353,7 +353,7 @@
     <string name="attachment_in_draft_is_lost">Some of the media attachments in the draft have been lost.</string>
     <string name="app_data_export">Export app data</string>
     <string name="app_data_import">Import app data</string>
-    <string name="app_data_import_desc">You can export data to any app that can receive data, but maybe you can import data only from device\'s storage or a cloud service.\nColumn background image may be not exported/imported over device.\nTimeline font is not exported/imported.\nCustom notification sound may be not exported/imported over device.</string>
+    <string name="app_data_import_desc">You can export data to any app that can receive data, but maybe you can import data only from device storage or from a cloud service.\nThe column background image can not be exported/imported from device to device.\nThe timeline font is not exported/imported.\nCustom notification sounds can not be exported/imported from device to device.</string>
     <string name="app_data_import_confirm">Clear existing data (before import)?</string>
     <string name="user_id_conversion_failed">Could not convert user ID.</string>
     <string name="draft_picker_desc">Long tap to delete.</string>

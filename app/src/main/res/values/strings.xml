@@ -201,7 +201,7 @@
     <string name="notification_delete">Empty notifications</string>
     <string name="confirm_delete_notification">Empty all notifications on instance?</string>
     <string name="search_for">Search %1$s</string>
-    <string name="spoil_visibility_for_account">The account is visible.</string>
+    <string name="spoil_visibility_for_account">Visibility is spoiled for account.</string>
     <string name="contributor">contributor</string>
     <string name="thanks_for">Thanks for %1$s</string>
     <string name="simple_list">Simple list (app restart required)</string>
@@ -338,7 +338,7 @@
     <string name="disable_tablet_mode">Turn off tablet mode (app restart required)</string>
     <!-- Density-independent pixels, written as dp (pronounced “dips”), are flexible units that scale to have uniform dimensions on any screen. https://material.io/design/layout/understanding-layout.html#pixel-density -->
     <string name="minimum_column_width">Minimum column width (default=300 dp), (app restart required)</string>
-    <string name="media_thumbnail_height">Minimum column width (default=300 dp), (app restart required)</string>
+    <string name="media_thumbnail_height">Media thumbnail height (default=64 dp), (app restart required)</string>
     <string name="account_picker_reply">Reply from?</string>
     <string name="account_picker_quoted_renote">Which account do you quoted renote from?</string>
     <string name="reply_from_another_account">Reply from different account</string>
@@ -578,7 +578,7 @@
     <string name="media_attachment_max_byte_size">Media attachment (image) size limit. Unit: MB. The default is 8)</string>
     <string name="media_attachment_max_byte_size_movie">Media attachment (movie) size limit. Unit: MB. The default is 40)</string>
     <string name="tootsearch">tootsearch (JP)</string>
-    <string name="cant_handle_uri_of">Cannot open the \"%1$s\" media attachment. Try to open it in a web browser.</string>
+    <string name="cant_handle_uri_of">Cannot open \"%1$s\". Try to open it in a web browser.</string>
     <string name="use_internal_media_viewer">Use built-in media viewer</string>
     <string name="previous">Previous</string>
     <string name="next">Next</string>

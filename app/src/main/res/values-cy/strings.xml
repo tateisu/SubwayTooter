@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <string name="column_empty">Use the left-bottom menu button to add a column</string>
@@ -67,7 +67,7 @@
     <string name="response_not_json">Nid yw\'r ymateb API yn JSON.</string>
     <string name="attachment_too_many">caniateir mwyafrif o 4 dogfen.</string>
     <string name="account_select_please">Dewiswch y cyfrif</string>
-    <string name="login_failed">Methwyd i fewngofnodi</string>
+    <string name="login_failed">Methwyd i fewngofnodi.</string>
     <string name="file_size_too_big">Mae\'r ddogfen yn rhy fawr. Y maint mwyaf posib yw %1$dMB.</string>
     <string name="visibility_public">Cyhoeddus</string>
     <string name="visibility_unlisted">Heb ei restru</string>
@@ -126,7 +126,7 @@
     <string name="mute_succeeded">Tawelwyd yn llwyddiannus</string>
     <string name="report_reason">Rheswm ar gyfer y cwyn</string>
     <string name="comment_empty">Rhaid i chi nodi rheswm ar gyfer y cwyn</string>
-    <string name="report_completed">cwyn wedi\'i gwblhau.</string>
+    <string name="report_completed">Cwyn wedi\'i gwblhau</string>
     <string name="mention">Crybwyll</string>
     <string name="hashtag_of">Hashnod :#%1$s</string>
     <string name="open_in_account">Agor gyda %1$s</string>
@@ -188,7 +188,7 @@
     <string name="follow_request_ok">Derbyn y cais dilyn</string>
     <string name="follow_request_ng">Gwrthod y cais dilyn</string>
     <string name="follow_request_authorized">Derbynioch chi gais dilyn %1$s.</string>
-    <string name="pseudo_account">Crach-gyfrif (heb fewngofnodi, ond yn darllen gwybodaeth gyhoeddus)</string>
+    <string name="pseudo_account">Crach-gyfrif</string>
     <string name="server_confirmed">Gweinydd wedi\'i gadarnhau.</string>
     <string name="not_available_for_mastodon_account">Ddim ar gael ar gyfer cyfrif Mastodon</string>
     <string name="resize_image">Newid maint y ddelwedd atodwyd (JPEG,PNG)</string>
@@ -440,4 +440,13 @@
     <string name="target_user">Defnyddiwr targed</string>
     <string name="media_attachment_empty">Atodiadau cyfryngau ar goll.</string>
     <string name="media_attachment_still_uploading">Nid yw uwchlwytho\'r cyfryngau wedi\'i gwblhau eto.</string>
-    </resources>
+    <string name="app_name">Subway Tooter</string>
+    <string name="statuses">Tŵtiau</string>
+    <string name="display_name_boosted_by">%1$s hybu</string>
+    <string name="column_index">%1$d/%2$d</string>
+    <string name="instance_not_need_slash">Enw parth (toot.wales)</string>
+    <string name="instance_hint">e.g. toot.wales</string>
+    <string name="follow_succeeded">Dilynaist</string>
+    <string name="unfollow_succeeded">Dad-ddilyn</string>
+    <string name="boost">Hybu</string>
+</resources>

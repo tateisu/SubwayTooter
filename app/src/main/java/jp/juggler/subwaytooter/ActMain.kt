@@ -240,7 +240,7 @@ class ActMain : AppCompatActivity()
 					val m = reUrlHashTag.matcher(s.url)
 					if(m.find()) {
 						val s_tag =
-							if(s.text.startsWith("#")) s.text else "#" + m.group(2).unescapeUri()
+							if(s.text.startsWith("#")) s.text else "#" + m.group(2).decodePercent()
 						if(tag_list == null) tag_list = ArrayList()
 						tag_list.add(s_tag)
 					}
@@ -1595,8 +1595,8 @@ class ActMain : AppCompatActivity()
 		m = TootAccount.reAccountUrl.matcher(url)
 		if(m.find()) {
 			val host = m.group(1)
-			val user = m.group(2).unescapeUri()
-			val instance = m.groupOrNull(3)?.unescapeUri()
+			val user = m.group(2).decodePercent()
+			val instance = m.groupOrNull(3)?.decodePercent()
 			
 			if(instance?.isNotEmpty() == true) {
 				Action_User.profile(
@@ -2202,7 +2202,7 @@ class ActMain : AppCompatActivity()
 				if(m.find()) {
 					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
 					val host = m.group(1)
-					val tag_without_sharp = m.group(2).unescapeUri()
+					val tag_without_sharp = m.group(2).decodePercent()
 					Action_HashTag.dialog(
 						this@ActMain,
 						opener.pos,
@@ -2281,8 +2281,8 @@ class ActMain : AppCompatActivity()
 				m = TootAccount.reAccountUrl.matcher(opener.url)
 				if(m.find()) {
 					val host = m.group(1)
-					val user = m.group(2).unescapeUri()
-					val instance = m.groupOrNull(3)?.unescapeUri()
+					val user = m.group(2).decodePercent()
+					val instance = m.groupOrNull(3)?.decodePercent()
 					// https://misskey.xyz/@tateisu@github.com
 					// https://misskey.xyz/@tateisu@twitter.com
 					

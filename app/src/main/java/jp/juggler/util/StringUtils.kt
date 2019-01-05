@@ -235,9 +235,6 @@ fun String.sanitizeBDI() : String {
 	return this
 }
 
-// Uri.encode(s:Nullable) だと nullチェックができないので、簡単なラッパーを用意する
-fun String.encodePercent(allow : String? = null) : String = Uri.encode(this, allow)
-
 //fun String.dumpCodePoints() : CharSequence {
 //	val sb = StringBuilder()
 //	val length = this.length
@@ -312,7 +309,12 @@ fun String?.mayUri() : Uri? = try {
 	null
 }
 
-fun String.unescapeUri() : String = Uri.decode(this)
+// Uri.encode(s:Nullable) だと nullチェックができないので、簡単なラッパーを用意する
+fun String.encodePercent(allow : String? = null) : String = Uri.encode(this, allow)
+
+// replace + to %20, then decode it.
+fun String.decodePercent() : String =
+	Uri.decode(replace("+", "%20"))
 
 ////////////////////////////////////////////////////////////////////
 // Throwable

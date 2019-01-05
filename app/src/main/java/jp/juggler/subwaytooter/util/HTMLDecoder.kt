@@ -14,10 +14,7 @@ import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.util.LogCategory
-import jp.juggler.util.replaceAll
-import jp.juggler.util.replaceFirst
-import jp.juggler.util.shortenUrl
+import jp.juggler.util.*
 import java.util.*
 import java.util.regex.Pattern
 
@@ -387,7 +384,7 @@ object HTMLDecoder {
 		}
 		
 		private val reNormalLink = Pattern.compile("""\A\w+://""")
-		private val reNicodic = Pattern.compile("""\Ahttps?://dic.nicovideo.jp/a/([^?#/]+)\z""")
+		private val reNicodic = Pattern.compile("""\Ahttps?://dic.nicovideo.jp/a/([^?#/]+)""")
 		
 		private fun encodeUrl(
 			options : DecodeOptions,
@@ -416,7 +413,7 @@ object HTMLDecoder {
 			// ニコニコ大百科のURLを変える
 			val m = reNicodic.matcher(href)
 			if( m.find() ){
-				return SpannableString("${Uri.decode(m.group(1))}:nicodic:").apply{
+				return SpannableString("${m.group(1).decodePercent() }:nicodic:").apply{
 					setSpan(
 						EmojiImageSpan(context, R.drawable.nicodic),
 						length -9,

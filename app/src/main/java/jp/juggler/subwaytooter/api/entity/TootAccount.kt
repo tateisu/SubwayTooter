@@ -351,8 +351,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			val m = reAccountUrl.matcher(url)
 			return if(m.find()) {
 				val host = m.group(1)
-				val user = m.group(2).unescapeUri()
-				val instance = m.groupOrNull(3)?.unescapeUri()
+				val user = m.group(2).decodePercent()
+				val instance = m.groupOrNull(3)?.decodePercent()
 				if(instance?.isNotEmpty() == true) {
 					"$user@$instance"
 				} else {

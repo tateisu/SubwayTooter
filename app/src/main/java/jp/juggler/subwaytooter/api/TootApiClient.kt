@@ -1419,8 +1419,8 @@ fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) 
 	val m = TootAccount.reAccountUrl.matcher(who_url)
 	if(m.find()) {
 		// val host = m.group(1)
-		val user = m.group(2).unescapeUri()
-		val instance = m.groupOrNull(3)?.unescapeUri()
+		val user = m.group(2).decodePercent()
+		val instance = m.groupOrNull(3)?.decodePercent()
 		if(instance?.isNotEmpty() == true) {
 			return this.syncAccountByUrl(accessInfo, "https://$instance/@$user")
 		}

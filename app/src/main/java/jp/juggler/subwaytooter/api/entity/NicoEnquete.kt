@@ -184,13 +184,14 @@ class NicoEnquete(
 				val options = DecodeOptions(
 					context,
 					emojiMapCustom = status.custom_emojis,
-					emojiMapProfile = status.profile_emojis
+					emojiMapProfile = status.profile_emojis,
+					decodeEmoji = true
 				)
 				for(i in 0 until size) {
 					val text = reWhitespace
 						.matcher(stringArray[i].sanitizeBDI())
 						.replaceAll(" ")
-					val decoded_text = options.decodeEmoji(text)
+					val decoded_text = options.decodeHTML(text)
 					
 					items.add(Choice(text, decoded_text))
 				}

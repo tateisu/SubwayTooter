@@ -20,10 +20,7 @@ import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.action.*
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
@@ -508,8 +505,109 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showScheduled(item : TootScheduled) {
+		try {
+			
+			llStatus.visibility = View.VISIBLE
+			
+			this.viewRoot.setBackgroundColor(0)
+			
+			showStatusTimeScheduled(activity, tvTime, item)
+			
+			val who = access_info.loginAccount!!
+			val whoRef = TootAccountRef(TootParser(activity, access_info), who)
+			this.status_account =whoRef
+			
+			setAcct(tvAcct, access_info.getFullAcct(who), who.acct)
+			
+			tvName.text = whoRef.decoded_display_name
+			name_invalidator.register(whoRef.decoded_display_name)
+			ivThumbnail.setImageUrl(
+				activity.pref,
+				Styler.calcIconRound(ivThumbnail.layoutParams),
+				access_info.supplyBaseUrl(who.avatar_static),
+				access_info.supplyBaseUrl(who.avatar)
+			)
+			
+			val content = SpannableString(item.text?:"")
+			
+			tvMentions.visibility = View.GONE
+			
+			tvContent.text = content
+			content_invalidator.register(content)
+			
+			tvContent.minLines = -1
+			
+			
+			
+			
+			val decoded_spoiler_text = SpannableString(item.spoiler_text?:"")
+			when {
+				decoded_spoiler_text.isNotEmpty() -> {
+					// 元データに含まれるContent Warning を使う
+					llContentWarning.visibility = View.VISIBLE
+					tvContentWarning.text = decoded_spoiler_text
+					spoiler_invalidator.register(decoded_spoiler_text)
+					val cw_shown = ContentWarning.isShown(item.uri,false)
+					showContent(cw_shown)
+				}
+				
+				else -> {
+					// CWしない
+					llContentWarning.visibility = View.GONE
+					llContents.visibility = View.VISIBLE
+				}
+			}
+			
+			val media_attachments = item.media_attachments
+			if(media_attachments?.isEmpty() != false ) {
+				flMedia.visibility = View.GONE
+				llMedia.visibility = View.GONE
+				btnShowMedia.visibility = View.GONE
+			} else {
+				flMedia.visibility = View.VISIBLE
+				
+				// hide sensitive media
+				val default_shown = when {
+					column.hide_media_default -> false
+					access_info.dont_hide_nsfw -> true
+					else -> ! item.sensitive
+				}
+				val is_shown =  MediaShown.isShown(item.uri, default_shown)
+				
+				btnShowMedia.visibility = if(! is_shown) View.VISIBLE else View.GONE
+				llMedia.visibility = if(! is_shown) View.GONE else View.VISIBLE
+				val sb = StringBuilder()
+				setMedia(media_attachments, sb, ivMedia1, 0)
+				setMedia(media_attachments, sb, ivMedia2, 1)
+				setMedia(media_attachments, sb, ivMedia3, 2)
+				setMedia(media_attachments, sb, ivMedia4, 3)
+				if(sb.isNotEmpty()) {
+					tvMediaDescription.visibility = View.VISIBLE
+					tvMediaDescription.text = sb
+				}
+				
+				setIconAttr(
+					activity,
+					btnHideMedia,
+					R.attr.btn_close,
+					color = content_color,
+					alphaMultiplier = Styler.boost_alpha
+				)
+			}
+			
+			buttons_for_status?.hide()
+			
+			tvApplication.visibility = View.GONE
+
+		}catch(ex:Throwable){
+		
+		}
 		llSearchTag.visibility = View.VISIBLE
-		btnSearchTag.text = TootStatus.formatTime(activity,item.timeScheduledAt,Pref.bpRelativeTimestamp(activity.pref))
+		btnSearchTag.text = activity.getString(R.string.scheduled_status) + " "+ TootStatus.formatTime(
+			activity,
+			item.timeScheduledAt,
+			true
+		)
 	}
 	
 	private fun removeExtraView() {
@@ -1376,6 +1474,47 @@ internal class ItemViewHolder(
 		tv.text = sb
 	}
 	
+	private fun showStatusTimeScheduled(
+		activity : ActMain,
+		tv : TextView,
+		item : TootScheduled
+	) {
+		val sb = SpannableStringBuilder()
+		
+			// NSFWマーク
+			if(item.hasMedia() && item.sensitive) {
+				if(sb.isNotEmpty()) sb.append('\u200B')
+				sb.appendColorShadeIcon(activity, R.drawable.ic_eye_off, "NSFW")
+			}
+			
+			// visibility
+			val visIconAttrId =
+				Styler.getVisibilityIconAttr(access_info.isMisskey, item.visibility )
+			if(R.attr.ic_public != visIconAttrId) {
+				if(sb.isNotEmpty()) sb.append('\u200B')
+				sb.appendColorShadeIcon(
+					activity,
+					getAttributeResourceId(activity, visIconAttrId),
+					Styler.getVisibilityString(
+						activity,
+						access_info.isMisskey,
+						item.visibility
+					)
+				)
+			}
+			
+		
+		if(sb.isNotEmpty()) sb.append(' ')
+		sb.append(
+			TootStatus.formatTime(
+				activity,
+				item.timeScheduledAt,
+				column.column_type != Column.TYPE_CONVERSATION
+			)
+		)
+		
+		tv.text = sb
+	}
 	//	fun updateRelativeTime() {
 	//		val boost_time = this.boost_time
 	//		if(boost_time != 0L) {
@@ -1537,16 +1676,31 @@ internal class ItemViewHolder(
 		val notification = (item as? TootNotification)
 		when(v) {
 			
-			btnHideMedia -> status_showing?.let { status ->
-				MediaShown.save(status, false)
-				btnShowMedia.visibility = View.VISIBLE
-				llMedia.visibility = View.GONE
+			btnHideMedia -> {
+				status_showing?.let { status ->
+					MediaShown.save(status, false)
+					btnShowMedia.visibility = View.VISIBLE
+					llMedia.visibility = View.GONE
+				}
+				(item as? TootScheduled)?.let{ item ->
+					MediaShown.save(item.uri, false)
+					btnShowMedia.visibility = View.VISIBLE
+					llMedia.visibility = View.GONE
+				}
 			}
 			
-			btnShowMedia -> status_showing?.let { status ->
-				MediaShown.save(status, true)
-				btnShowMedia.visibility = View.GONE
-				llMedia.visibility = View.VISIBLE
+			btnShowMedia ->{
+				
+				status_showing?.let { status ->
+					MediaShown.save(status, true)
+					btnShowMedia.visibility = View.GONE
+					llMedia.visibility = View.VISIBLE
+				}
+				(item as? TootScheduled)?.let{ item ->
+					MediaShown.save(item.uri, true)
+					btnShowMedia.visibility = View.GONE
+					llMedia.visibility = View.VISIBLE
+				}
 			}
 			
 			ivMedia1 -> clickMedia(0)
@@ -1554,13 +1708,22 @@ internal class ItemViewHolder(
 			ivMedia3 -> clickMedia(2)
 			ivMedia4 -> clickMedia(3)
 			
-			btnContentWarning -> status_showing?.let { status ->
-				val new_shown = llContents.visibility == View.GONE
-				ContentWarning.save(status, new_shown)
-				
-				// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
-				list_adapter.notifyChange(reason = "ContentWarning onClick", reset = true)
-				
+			btnContentWarning ->{
+				status_showing?.let { status ->
+					val new_shown = llContents.visibility == View.GONE
+					ContentWarning.save(status, new_shown)
+					
+					// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
+					list_adapter.notifyChange(reason = "ContentWarning onClick", reset = true)
+					
+				}
+				(item as? TootScheduled)?.let{ item ->
+					val new_shown = llContents.visibility == View.GONE
+					ContentWarning.save(item.uri, new_shown)
+					
+					// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
+					list_adapter.notifyChange(reason = "ContentWarning onClick", reset = true)
+				}
 			}
 			
 			ivThumbnail -> status_account?.let { whoRef ->
@@ -1648,6 +1811,9 @@ internal class ItemViewHolder(
 								column.onScheduleDeleted(item)
 								showToast(activity,false,R.string.scheduled_post_deleted)
 							}
+						}
+						.addAction(activity.getString(R.string.edit)){
+							Action_Toot.editScheduledPost(activity,access_info,item)
 						}
 						.show(activity)
 				}
@@ -1859,9 +2025,8 @@ internal class ItemViewHolder(
 	}
 	
 	private fun clickMedia(i : Int) {
-		val status = status_showing ?: return
 		try {
-			val media_attachments = status.media_attachments ?: return
+			val media_attachments = status_showing?.media_attachments ?: (item as? TootScheduled)?.media_attachments ?: return
 			val item = if(i < media_attachments.size) media_attachments[i] else return
 			when(item) {
 				is TootAttachmentMSP -> {

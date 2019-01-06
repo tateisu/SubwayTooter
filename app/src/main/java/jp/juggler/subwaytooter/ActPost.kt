@@ -30,7 +30,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.*
-import jp.juggler.subwaytooter.R.string.status
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.*
@@ -76,6 +75,7 @@ class ActPost : AppCompatActivity(),
 		internal const val KEY_INITIAL_TEXT = "initial_text"
 		internal const val KEY_SENT_INTENT = "sent_intent"
 		internal const val KEY_QUOTED_RENOTE = "quoted_renote"
+		internal const val KEY_SCHEDULED_STATUS = "scheduled_status"
 		
 		internal const val KEY_ATTACHMENT_LIST = "attachment_list"
 		internal const val KEY_VISIBILITY = "visibility"
@@ -170,6 +170,7 @@ class ActPost : AppCompatActivity(),
 		private const val STATE_REDRAFT_STATUS_ID = "redraft_status_id"
 		private const val STATE_URI_CAMERA_IMAGE = "uri_camera_image"
 		private const val STATE_TIME_SCHEDULE = "time_schedule"
+		private const val STATE_SCHEDULED_STATUS = "scheduled_status"
 		
 		fun open(
 			activity : Activity,
@@ -189,7 +190,11 @@ class ActPost : AppCompatActivity(),
 			sent_intent : Intent? = null,
 			
 			// (Misskey) 返信を引用リノートにする
-			quotedRenote : Boolean = false
+			quotedRenote : Boolean = false,
+		
+			//(Mastodon) 予約投稿の編集
+			scheduledStatus: TootScheduled? = null
+		
 		) {
 			val intent = Intent(activity, ActPost::class.java)
 			intent.putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
@@ -210,7 +215,9 @@ class ActPost : AppCompatActivity(),
 			if(sent_intent != null) {
 				intent.putExtra(KEY_SENT_INTENT, sent_intent)
 			}
-			
+			if( scheduledStatus != null ){
+				intent.putExtra(KEY_SCHEDULED_STATUS, scheduledStatus.src.toString())
+			}
 			activity.startActivityForResult(intent, request_code)
 		}
 		
@@ -277,6 +284,8 @@ class ActPost : AppCompatActivity(),
 	private var redraft_status_id : EntityId? = null
 	
 	private var timeSchedule = 0L
+	
+	private var scheduledStatus : TootScheduled? = null
 	
 	private val text_watcher : TextWatcher = object : TextWatcher {
 		override fun beforeTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) {
@@ -429,6 +438,7 @@ class ActPost : AppCompatActivity(),
 			redraft_status_id = EntityId.from(savedInstanceState, STATE_REDRAFT_STATUS_ID)
 			timeSchedule = savedInstanceState.getLong(STATE_TIME_SCHEDULE, 0L)
 			
+			
 			savedInstanceState.getString(STATE_URI_CAMERA_IMAGE).mayUri()?.let {
 				uriCameraImage = it
 			}
@@ -449,6 +459,14 @@ class ActPost : AppCompatActivity(),
 			}
 			
 			this.visibility = TootVisibility.fromId(savedInstanceState.getInt(KEY_VISIBILITY, - 1))
+			
+			val a = account
+			if( a != null) {
+				savedInstanceState.getString(STATE_SCHEDULED_STATUS)?.let {
+					scheduledStatus =
+						parseItem(::TootScheduled, TootParser(this@ActPost, a), JSONObject(it),log)
+				}
+			}
 			
 			if(app_state.attachment_list != null) {
 				
@@ -716,6 +734,51 @@ class ActPost : AppCompatActivity(),
 				}
 				
 			}
+			
+			// 予約編集の再編集
+			sv = intent.getStringExtra(KEY_SCHEDULED_STATUS)
+			if(sv != null && account != null) {
+				try{
+					val item = parseItem(::TootScheduled, TootParser(this@ActPost, account), JSONObject(sv),log)
+					if( item != null){
+						scheduledStatus = item
+						
+						timeSchedule = item.timeScheduledAt
+						
+						val text = item.text
+						etContent.setText(text)
+						
+						val cw = item.spoiler_text
+						if( cw?.isNotEmpty() == true ){
+							etContentWarning.setText(cw)
+							cbContentWarning.isChecked = true
+						}else{
+							cbContentWarning.isChecked = false
+						}
+						cbNSFW.isChecked = item.sensitive
+						visibility = item.visibility
+						val src_attachments = item.media_attachments
+						if(src_attachments?.isNotEmpty() == true) {
+							app_state.attachment_list = this.attachment_list
+							this.attachment_list.clear()
+							try {
+								for(src in src_attachments) {
+									if(src is TootAttachment) {
+										src.redraft = true
+										val pa = PostAttachment(src)
+										pa.status = PostAttachment.STATUS_UPLOADED
+										this.attachment_list.add(pa)
+									}
+								}
+							} catch(ex : Throwable) {
+								log.trace(ex)
+							}
+						}
+					}
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+			}
 		}
 		
 		visibility = visibility
@@ -728,8 +791,7 @@ class ActPost : AppCompatActivity(),
 			// 表示を未選択に更新
 			selectAccount(null)
 		}
-		
-		
+
 		updateContentWarning()
 		showMediaAttachment()
 		showVisibility()
@@ -1122,6 +1184,12 @@ class ActPost : AppCompatActivity(),
 	}
 	
 	private fun performAccountChooser() {
+		
+		if( scheduledStatus!= null ) {
+			// 予約投稿の再編集ではアカウントを切り替えられない
+			showToast(this, false, R.string.cant_change_account_when_editing_scheduled_status)
+			return
+		}
 		
 		if(! attachment_list.isEmpty()) {
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
@@ -2117,6 +2185,8 @@ class ActPost : AppCompatActivity(),
 		
 		post_helper.scheduledAt = timeSchedule
 		
+		post_helper.scheduledId = scheduledStatus?.id
+		
 		post_helper.post(account,callback=object:PostHelper.PostCompleteCallback{
 			override fun onPostComplete(
 				target_account : SavedAccount,
@@ -2594,7 +2664,7 @@ class ActPost : AppCompatActivity(),
 	private fun showSchedule() {
 		tvSchedule.text = when(timeSchedule) {
 			0L -> getString(R.string.unspecified)
-			else -> TootStatus.formatTime(this, timeSchedule, Pref.bpRelativeTimestamp(pref))
+			else -> TootStatus.formatTime(this, timeSchedule, true)
 		}
 	}
 	

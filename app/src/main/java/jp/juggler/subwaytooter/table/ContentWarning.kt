@@ -47,14 +47,13 @@ object ContentWarning : TableCompanion {
 		}
 	}
 	
-	fun isShown(status : TootStatus, default_value : Boolean) : Boolean {
-		
+	fun isShown(uri:String, default_value : Boolean) : Boolean {
 		try {
 			App1.database.query(
 				table,
 				projection_shown,
 				"$COL_STATUS_URI=?",
-				arrayOf(status.uri),
+				arrayOf(uri),
 				null,
 				null,
 				null
@@ -70,6 +69,27 @@ object ContentWarning : TableCompanion {
 		
 		return default_value
 	}
+	
+	fun isShown(status : TootStatus, default_value : Boolean) : Boolean {
+		return isShown(status.uri,default_value)
+	}
+	
+	fun save(uri : String, is_shown : Boolean) {
+		
+		try {
+			val now = System.currentTimeMillis()
+			
+			val cv = ContentValues()
+			cv.put(COL_STATUS_URI, uri)
+			cv.put(COL_SHOWN, is_shown.b2i())
+			cv.put(COL_TIME_SAVE, now)
+			App1.database.replace(table, null, cv)
+		} catch(ex : Throwable) {
+			log.e(ex, "save failed.")
+		}
+		
+	}
+	
 	
 	fun save(status : TootStatus, is_shown : Boolean) {
 

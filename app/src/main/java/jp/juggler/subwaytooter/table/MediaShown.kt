@@ -49,9 +49,14 @@ object MediaShown : TableCompanion {
 		}
 	}
 	
+	fun isShown(uri : String, default_value : Boolean) : Boolean {
+		return MediaShownMisskey.isShown(uri, default_value)
+	}
+
 	fun isShown(status : TootStatus, default_value : Boolean) : Boolean {
 		val id = status.id
 		if(id is EntityIdString) return MediaShownMisskey.isShown(status, default_value)
+
 		try {
 			App1.database.query(
 				table,
@@ -75,7 +80,9 @@ object MediaShown : TableCompanion {
 		
 		return default_value
 	}
-	
+	fun save( uri:String,is_shown : Boolean) {
+		return MediaShownMisskey.save(uri, is_shown)
+	}
 	fun save(status : TootStatus, is_shown : Boolean) {
 		val id = status.id
 		if(id is EntityIdString) return MediaShownMisskey.save(status, is_shown)

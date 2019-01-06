@@ -44,6 +44,29 @@ object MediaShownMisskey : TableCompanion {
 		}
 	}
 	
+	fun isShown(uri:String, default_value : Boolean) : Boolean {
+		try {
+			App1.database.query(
+				table,
+				projection_shown,
+				"h=? and si=?",
+				arrayOf(uri,uri),
+				null,
+				null,
+				null
+			).use { cursor ->
+				if(cursor.moveToFirst()) {
+					return 0 != cursor.getInt(COL_SHOWN)
+				}
+				
+			}
+		} catch(ex : Throwable) {
+			log.e(ex, "load failed.")
+		}
+		
+		return default_value
+	}
+	
 	fun isShown(status : TootStatus, default_value : Boolean) : Boolean {
 		try {
 			App1.database.query(
@@ -68,6 +91,20 @@ object MediaShownMisskey : TableCompanion {
 		}
 		
 		return default_value
+	}
+	
+	fun save(uri : String, is_shown : Boolean) {
+		try {
+			val now = System.currentTimeMillis()
+			val cv = ContentValues()
+			cv.put(COL_HOST, uri)
+			cv.put(COL_STATUS_ID, uri)
+			cv.put(COL_SHOWN, is_shown.b2i())
+			cv.put(COL_TIME_SAVE, now)
+			App1.database.replace(table, null, cv)
+		} catch(ex : Throwable) {
+			log.e(ex, "save failed.")
+		}
 	}
 	
 	fun save(status : TootStatus, is_shown : Boolean) {

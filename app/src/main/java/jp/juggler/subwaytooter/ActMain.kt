@@ -839,12 +839,12 @@ class ActMain : AppCompatActivity()
 				REQUEST_CODE_POST -> if(data != null) {
 					etQuickToot.setText("")
 					posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)
-					if(! data.extras.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) ){
-						posted_status_id = null
-					}else {
+					if( data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true ){
 						posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
 						posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
 						posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
+					}else {
+						posted_status_id = null
 					}
 				}
 				

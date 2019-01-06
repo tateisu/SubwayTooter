@@ -75,6 +75,7 @@ class PostHelper(
 	var redraft_status_id : EntityId? = null
 	var useQuotedRenote = false
 	var scheduledAt = 0L
+	var scheduledId : EntityId? = null
 	
 	private var last_post_tapped : Long = 0L
 	
@@ -200,7 +201,23 @@ class PostHelper(
 				.show()
 			return
 		}
-		
+		if(! bConfirmRedraft && scheduledId != null) {
+			AlertDialog.Builder(activity)
+				.setCancelable(true)
+				.setMessage(R.string.delete_scheduled_status_before_update)
+				.setNegativeButton(R.string.cancel, null)
+				.setPositiveButton(R.string.ok) { _, _ ->
+					post(
+						account,
+						bConfirmTag,
+						bConfirmAccount,
+						true,
+						callback
+					)
+				}
+				.show()
+			return
+		}
 		// 確認を終えたらボタン連打判定
 		
 		if(last_post_task?.get()?.isActive == true) {
@@ -274,6 +291,13 @@ class PostHelper(
 						
 					}
 					log.d("delete redraft. result=$result")
+					Thread.sleep(2000L)
+				}else if(scheduledId != null) {
+					val r1 = client.request(
+						"/api/v1/scheduled_statuses/$scheduledId",
+						Request.Builder().delete()
+					)
+					log.d("delete old scheduled status. result=$r1")
 					Thread.sleep(2000L)
 				}
 				
@@ -504,14 +528,14 @@ class PostHelper(
 				}
 				
 				result = if(isMisskey) {
-					log.d("misskey json %s", body_string)
+					// log.d("misskey json %s", body_string)
 					client.request("/api/notes/create", request_builder)
 				} else {
 					client.request("/api/v1/statuses", request_builder)
 				}
 				
 				val jsonObject = result?.jsonObject
-
+				
 				if(scheduledAt != 0L && jsonObject != null) {
 					// {"id":"3","scheduled_at":"2019-01-06T07:08:00.000Z","media_attachments":[]}
 					scheduledStatusSucceeded = true

@@ -859,5 +859,7 @@
     <string name="scheduled_status_delete_confirm">Delete this scheduled status?</string>
     <string name="scheduled_post_deleted">Deleted.</string>
     <string name="scheduled_status_list">Scheduled status list</string>
+    <string name="cant_change_account_when_editing_scheduled_status">Can\'t change account when editing scheduled status.</string>
+    <string name="delete_scheduled_status_before_update">Delete scheduled status before posting. Are you sure?</string>
 
 </resources>

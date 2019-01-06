@@ -839,5 +839,7 @@
     <string name="scheduled_status_delete_confirm">この予約投稿を削除しますか?</string>
     <string name="scheduled_post_deleted">削除しました</string>
     <string name="unspecified">指定なし</string>
+    <string name="cant_change_account_when_editing_scheduled_status">予約した投稿の再編集ではアカウントを変更できません</string>
+    <string name="delete_scheduled_status_before_update">投稿する前に編集前の古い予約投稿を削除します。よろしいですか?</string>
 
 </resources>

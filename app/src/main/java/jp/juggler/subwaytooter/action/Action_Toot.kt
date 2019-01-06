@@ -1192,15 +1192,24 @@ object Action_Toot {
 	}
 	
 	fun deleteScheduledPost(
-		activity:ActMain,
+		activity : ActMain,
 		access_info : SavedAccount,
 		item : TootScheduled,
 		bConfirmed : Boolean = false,
 		callback : () -> Unit
 	) {
-		if(! bConfirmed ) {
-			DlgConfirm.openSimple(activity,activity.getString(R.string.scheduled_status_delete_confirm)){
-				deleteScheduledPost(activity,access_info,item,bConfirmed=true,callback=callback)
+		if(! bConfirmed) {
+			DlgConfirm.openSimple(
+				activity,
+				activity.getString(R.string.scheduled_status_delete_confirm)
+			) {
+				deleteScheduledPost(
+					activity,
+					access_info,
+					item,
+					bConfirmed = true,
+					callback = callback
+				)
 			}
 			return
 		}
@@ -1229,4 +1238,41 @@ object Action_Toot {
 		})
 	}
 	
+	fun editScheduledPost(
+		activity : ActMain,
+		access_info : SavedAccount,
+		item : TootScheduled
+	) {
+		TootTaskRunner(activity).run(access_info, object : TootTask {
+			
+			var reply_status : TootStatus? = null
+			override fun background(client : TootApiClient) : TootApiResult? {
+				val reply_status_id = item.in_reply_to_id
+					?: return TootApiResult()
+				
+				return client.request("/api/v1/statuses/$reply_status_id")?.also { result ->
+					reply_status = TootParser(activity, access_info).status(result.jsonObject)
+				}
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				result ?: return
+				
+				val error = result.error
+				if(error != null) {
+					showToast(activity, false, error)
+					return
+				}
+				
+				ActPost.open(
+					activity,
+					ActMain.REQUEST_CODE_POST,
+					access_info.db_id,
+					scheduledStatus = item,
+					reply_status = reply_status
+				)
+				
+			}
+		})
+	}
 }

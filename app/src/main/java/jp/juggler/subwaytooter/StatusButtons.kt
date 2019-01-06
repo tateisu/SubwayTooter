@@ -75,7 +75,13 @@ internal class StatusButtons(
 		btnReply.setOnLongClickListener(this)
 	}
 	
+
+	fun hide() {
+		holder.viewRoot.visibility = View.GONE
+	}
+	
 	fun bind(status : TootStatus, notification : TootNotification?) {
+		holder.viewRoot.visibility = View.VISIBLE
 		this.status = status
 		this.notification = notification
 		
@@ -410,6 +416,7 @@ internal class StatusButtons(
 		}
 		return true
 	}
+	
 	
 }
 

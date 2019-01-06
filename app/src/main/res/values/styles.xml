@@ -117,6 +117,7 @@
         <item name="ic_local_lock_open">@drawable/ic_local_lock_open</item>
         <item name="ic_local_ltl">@drawable/ic_local_ltl</item>
         <item name="ic_music">@drawable/ic_music</item>
+        <item name="ic_timer">@drawable/ic_timer</item>
 
     </style>
 
@@ -244,6 +245,7 @@
         <item name="ic_local_lock_open">@drawable/ic_local_lock_open_dark</item>
         <item name="ic_local_ltl">@drawable/ic_local_ltl_dark</item>
         <item name="ic_music">@drawable/ic_music_dark</item>
+        <item name="ic_timer">@drawable/ic_timer_dark</item>
 
     </style>
 

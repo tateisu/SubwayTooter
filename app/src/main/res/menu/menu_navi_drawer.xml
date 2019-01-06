@@ -117,6 +117,10 @@
                     android:icon="?attr/ic_domain_block"
                     android:title="@string/blocked_domains"/>
 
+                <item
+                    android:id="@+id/nav_scheduled_statuses_list"
+                    android:icon="?attr/ic_timer"
+                    android:title="@string/scheduled_status"/>
                 <!--<item-->
                 <!--android:id="@+id/nav_add_reports"-->
                 <!--android:icon="?attr/btn_report"-->

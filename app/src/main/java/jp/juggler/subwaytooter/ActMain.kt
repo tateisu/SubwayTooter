@@ -725,16 +725,22 @@ class ActMain : AppCompatActivity()
 		
 		etQuickToot.hideKeyboard()
 		
-		post_helper.post(
-			account
-		) { target_account, status ->
-			etQuickToot.setText("")
-			posted_acct = target_account.acct
-			posted_status_id = status.id
-			posted_reply_id = status.in_reply_to_id
-			posted_redraft_id = null
-			refreshAfterPost()
-		}
+		post_helper.post(account,callback=object:PostHelper.PostCompleteCallback{
+			override fun onPostComplete(
+				target_account : SavedAccount,
+				status : TootStatus
+			) {
+				etQuickToot.setText("")
+				posted_acct = target_account.acct
+				posted_status_id = status.id
+				posted_reply_id = status.in_reply_to_id
+				posted_redraft_id = null
+				refreshAfterPost()
+			}
+			
+			override fun onScheduledPostComplete(target_account : SavedAccount) { // TODO
+			}
+		})
 	}
 	
 	override fun onPageScrolled(
@@ -1099,6 +1105,13 @@ class ActMain : AppCompatActivity()
 				this
 				, defaultInsertPosition
 				, Column.TYPE_DOMAIN_BLOCKS
+				, bAllowPseudo = false
+				, bAllowMisskey = false
+			)
+			R.id.nav_scheduled_statuses_list-> Action_Account.timeline(
+				this
+				, defaultInsertPosition
+				, Column.TYPE_SCHEDULED_STATUS
 				, bAllowPseudo = false
 				, bAllowMisskey = false
 			)

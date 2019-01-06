@@ -56,19 +56,25 @@ class PostHelper(
 		
 	}
 	
+	interface PostCompleteCallback {
+		fun onPostComplete(target_account : SavedAccount, status : TootStatus)
+		fun onScheduledPostComplete(target_account : SavedAccount)
+	}
+	
 	///////////////////////////////////////////////////////////////////////////////////
 	// 投稿機能
 	
 	var content : String? = null
 	var spoiler_text : String? = null
 	var visibility : TootVisibility = TootVisibility.Public
-	var bNSFW : Boolean = false
+	var bNSFW = false
 	var in_reply_to_id : EntityId? = null
 	var attachment_list : ArrayList<PostAttachment>? = null
 	var enquete_items : ArrayList<String>? = null
 	var emojiMapCustom : HashMap<String, CustomEmoji>? = null
 	var redraft_status_id : EntityId? = null
-	var useQuotedRenote : Boolean = false
+	var useQuotedRenote = false
+	var scheduledAt = 0L
 	
 	private var last_post_tapped : Long = 0L
 	
@@ -88,6 +94,7 @@ class PostHelper(
 		val attachment_list = this.attachment_list
 		val enquete_items = this.enquete_items
 		val visibility = this.visibility
+		val scheduledAt = this.scheduledAt
 		
 		val hasAttachment = attachment_list?.isNotEmpty() ?: false
 		
@@ -223,6 +230,8 @@ class PostHelper(
 			var credential_tmp : TootAccount? = null
 			
 			val parser = TootParser(activity, account)
+			
+			var scheduledStatusSucceeded = false
 			
 			fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
 				val result = if(account.isMisskey) {
@@ -408,6 +417,10 @@ class PostHelper(
 							}
 						}
 						
+						if(scheduledAt != 0L) {
+							return TootApiResult("misskey has no scheduled status API")
+						}
+						
 					} else {
 						json.put(
 							"status",
@@ -456,6 +469,25 @@ class PostHelper(
 							json.put("enquete_items", array)
 						}
 						
+						if(scheduledAt != 0L) {
+							if(! instance.versionGE(TootInstance.VERSION_2_7_0_rc1)) {
+								return TootApiResult("Mastodon pre-2.7.0 has no scheduled status API")
+							}
+							// UTCの日時を渡す
+							val c = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"))
+							c.timeInMillis = scheduledAt
+							val sv = String.format(
+								"%d-%02d-%02d %02d:%02d:%02d",
+								c.get(Calendar.YEAR),
+								c.get(Calendar.MONTH) + 1,
+								c.get(Calendar.DAY_OF_MONTH),
+								c.get(Calendar.HOUR_OF_DAY),
+								c.get(Calendar.MINUTE),
+								c.get(Calendar.SECOND)
+							)
+							json.put("scheduled_at", sv)
+						}
+						
 					}
 				} catch(ex : JSONException) {
 					log.trace(ex)
@@ -476,6 +508,14 @@ class PostHelper(
 					client.request("/api/notes/create", request_builder)
 				} else {
 					client.request("/api/v1/statuses", request_builder)
+				}
+				
+				val jsonObject = result?.jsonObject
+
+				if(scheduledAt != 0L && jsonObject != null) {
+					// {"id":"3","scheduled_at":"2019-01-06T07:08:00.000Z","media_attachments":[]}
+					scheduledStatusSucceeded = true
+					return result
 				}
 				
 				val status = parser.status(
@@ -513,16 +553,23 @@ class PostHelper(
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
-				result ?: return // cancelled.
-				
+				result ?: return
 				val status = this.status
-				if(status != null) {
-					// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
-					callback(account, status)
-				} else {
-					showToast(activity, true, result.error)
+				when {
+					status != null -> {
+						// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
+						callback.onPostComplete(account, status)
+						return
+					}
+					
+					scheduledStatusSucceeded -> {
+						callback.onScheduledPostComplete(account)
+						return
+						
+					}
+					
+					else -> showToast(activity, true, result.error)
 				}
-				
 			}
 		})
 		)
@@ -711,13 +758,13 @@ class PostHelper(
 			val dst = ArrayList<CharSequence>()
 			
 			if(instance?.isNotEmpty() == true) {
-
+				
 				val custom_list = App1.custom_emoji_lister.getListWithAliases(
 					instance,
 					isMisskey,
 					onEmojiListLoad
 				)
-
+				
 				if(custom_list != null) {
 					
 					for(item in custom_list) {

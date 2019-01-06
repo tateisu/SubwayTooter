@@ -853,5 +853,8 @@
     <string name="username_not_need_atmark">The user name must not contains \"@\" or \"/\".</string>
     <string name="pseudo_account_cant_get_follow_list">Can\'t read follow list from pseudo account.</string>
     <string name="reaction_remove_confirm">Remove your reaction \"%1$s\"?</string>
+    <string name="scheduled_status">Scheduled post</string>
+    <string name="unspecified">Unspecified</string>
+    <string name="scheduled_status_sent">Scheduled status was sent.</string>
 
 </resources>

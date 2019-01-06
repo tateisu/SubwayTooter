@@ -202,7 +202,7 @@ object EmojiDecoder {
 	
 	private interface ShortCodeSplitterCallback {
 		fun onString(part : String) // shortcode以外の文字列
-		fun onShortCode(part : String, name : String) // part : ":shortcode:", name : "shortcode"
+		fun onShortCode(prevCodePoint:Int,part : String, name : String) // part : ":shortcode:", name : "shortcode"
 	}
 	
 	private fun splitShortCode(
@@ -256,9 +256,16 @@ object EmojiDecoder {
 				continue
 			}
 			
+			val prevCodePoint = if(start >0){
+				s.codePointBefore(start)
+			}else{
+				0x20
+			}
+			
 			callback.onShortCode(
-				s.substring(start, posEndColon + 1) // ":shortcode:"
-				, s.substring(start + 1, posEndColon) // "shortcode"
+				prevCodePoint,
+				s.substring(start, posEndColon + 1), // ":shortcode:"
+				s.substring(start + 1, posEndColon) // "shortcode"
 			)
 			
 			i = posEndColon + 1 // コロンの次の位置
@@ -280,7 +287,7 @@ object EmojiDecoder {
 				builder.addUnicodeString(part)
 			}
 			
-			override fun onShortCode(part : String, name : String) {
+			override fun onShortCode(prevCodePoint:Int,part : String, name : String) {
 				
 				// フレニコのプロフ絵文字
 				if(emojiMapProfile != null && name.length >= 2 && name[0] == '@') {
@@ -346,7 +353,7 @@ object EmojiDecoder {
 				sb.append(part)
 			}
 			
-			override fun onShortCode(part : String, name : String) {
+			override fun onShortCode(prevCodePoint:Int,part : String, name : String) {
 				
 				// カスタム絵文字にマッチするなら変換しない
 				val emojiCustom = emojiMapCustom?.get(name)

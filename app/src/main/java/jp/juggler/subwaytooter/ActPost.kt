@@ -30,6 +30,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.*
+import jp.juggler.subwaytooter.R.string.status
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.*
@@ -57,7 +58,9 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
-class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callback {
+class ActPost : AppCompatActivity(),
+	View.OnClickListener,
+	PostAttachment.Callback {
 	
 	companion object {
 		internal val log = LogCategory("ActPost")
@@ -166,6 +169,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		private const val STATE_MUSHROOM_END = "mushroom_end"
 		private const val STATE_REDRAFT_STATUS_ID = "redraft_status_id"
 		private const val STATE_URI_CAMERA_IMAGE = "uri_camera_image"
+		private const val STATE_TIME_SCHEDULE = "time_schedule"
 		
 		fun open(
 			activity : Activity,
@@ -256,6 +260,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private lateinit var ivReply : MyNetworkImageView
 	private lateinit var scrollView : ScrollView
 	
+	private lateinit var tvSchedule : TextView
+	private lateinit var ibSchedule : ImageButton
+	private lateinit var ibScheduleReset : ImageButton
+	
 	internal lateinit var pref : SharedPreferences
 	internal lateinit var app_state : AppState
 	private lateinit var post_helper : PostHelper
@@ -267,6 +275,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private lateinit var account_list : ArrayList<SavedAccount>
 	
 	private var redraft_status_id : EntityId? = null
+	
+	private var timeSchedule = 0L
 	
 	private val text_watcher : TextWatcher = object : TextWatcher {
 		override fun beforeTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) {
@@ -308,7 +318,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private var mushroom_end : Int = 0
 	
 	private val link_click_listener : MyClickableSpanClickCallback = { _, span ->
-		App1.openBrowser(this@ActPost,span.url)
+		App1.openBrowser(this@ActPost, span.url)
 	}
 	
 	////////////////////////////////////////////////////////////////
@@ -327,6 +337,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			R.id.btnMore -> performMore()
 			R.id.btnPlugin -> openMushroom()
 			R.id.btnEmojiPicker -> post_helper.openEmojiPickerFromMore()
+			R.id.ibSchedule -> performSchedule()
+			R.id.ibScheduleReset -> resetSchedule()
 		}
 	}
 	
@@ -415,6 +427,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			mushroom_start = savedInstanceState.getInt(STATE_MUSHROOM_START, 0)
 			mushroom_end = savedInstanceState.getInt(STATE_MUSHROOM_END, 0)
 			redraft_status_id = EntityId.from(savedInstanceState, STATE_REDRAFT_STATUS_ID)
+			timeSchedule = savedInstanceState.getLong(STATE_TIME_SCHEDULE, 0L)
 			
 			savedInstanceState.getString(STATE_URI_CAMERA_IMAGE).mayUri()?.let {
 				uriCameraImage = it
@@ -724,6 +737,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		showReplyTo()
 		showEnquete()
 		showQuotedRenote()
+		showSchedule()
 	}
 	
 	override fun onDestroy() {
@@ -741,6 +755,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		outState.putInt(STATE_MUSHROOM_START, mushroom_start)
 		outState.putInt(STATE_MUSHROOM_END, mushroom_end)
 		redraft_status_id?.putTo(outState, STATE_REDRAFT_STATUS_ID)
+		
+		outState.putLong(STATE_TIME_SCHEDULE, timeSchedule)
+		
 		if(uriCameraImage != null) {
 			outState.putString(STATE_URI_CAMERA_IMAGE, uriCameraImage.toString())
 		}
@@ -894,6 +911,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		btnRemoveReply = findViewById(R.id.btnRemoveReply)
 		ivReply = findViewById(R.id.ivReply)
 		
+		tvSchedule = findViewById(R.id.tvSchedule)
+		ibSchedule = findViewById(R.id.ibSchedule)
+		ibScheduleReset= findViewById(R.id.ibScheduleReset)
+		
+		ibSchedule.setOnClickListener(this)
+		ibScheduleReset.setOnClickListener(this)
+		
 		account_list = SavedAccount.loadAccountList(this@ActPost)
 		SavedAccount.sort(account_list)
 		
@@ -969,18 +993,19 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private var lastInstanceTask : TootTaskRunner? = null
 	
 	private fun getMaxCharCount() : Int {
-
+		
 		val account = account
-
-		when{
-			account == null || account.isPseudo -> {}
-
-			else->{
+		
+		when {
+			account == null || account.isPseudo -> {
+			}
+			
+			else -> {
 				val info = account.instance
-
+				
 				// 情報がないか古いなら再取得
 				if(info == null || System.currentTimeMillis() - info.time_parse >= 300000L) {
-
+					
 					// 同時に実行するタスクは1つまで
 					var lastTask = lastInstanceTask
 					if(lastTask?.isActive != true) {
@@ -990,15 +1015,16 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 							var newInfo : TootInstance? = null
 							
 							override fun background(client : TootApiClient) : TootApiResult? {
-								val result = if( account.isMisskey){
+								val result = if(account.isMisskey) {
 									client.request(
 										"/api/meta",
 										account.putMisskeyApiToken().toPostRequestBuilder()
 									)
-								}else{
+								} else {
 									client.request("/api/v1/instance")
 								}
-								newInfo = TootParser(this@ActPost, account).instance(result?.jsonObject)
+								newInfo =
+									TootParser(this@ActPost, account).instance(result?.jsonObject)
 								return result
 							}
 							
@@ -1299,7 +1325,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								override fun background(client : TootApiClient) : TootApiResult? {
 									try {
 										val result = client.request(
-											"/api/v1/media/${attachment.id}" ,
+											"/api/v1/media/${attachment.id}",
 											JSONObject()
 												.put("focus", "%.2f,%.2f".format(x, y))
 												.toPutRequestBuilder()
@@ -1809,7 +1835,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								}
 							}
 						)
-						
 					
 					val result = client.request(
 						"/api/v1/media",
@@ -2090,16 +2115,30 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		post_helper.useQuotedRenote = cbQuoteRenote.isChecked
 		
-		post_helper.post(account) { target_account, status ->
-			val data = Intent()
-			data.putExtra(EXTRA_POSTED_ACCT, target_account.acct)
-			status.id.putTo(data, EXTRA_POSTED_STATUS_ID)
-			redraft_status_id?.putTo(data, EXTRA_POSTED_REDRAFT_ID)
-			status.in_reply_to_id?.putTo(data, EXTRA_POSTED_REPLY_ID)
-			setResult(RESULT_OK, data)
-			isPostComplete = true
-			this@ActPost.finish()
-		}
+		post_helper.scheduledAt = timeSchedule
+		
+		post_helper.post(account,callback=object:PostHelper.PostCompleteCallback{
+			override fun onPostComplete(
+				target_account : SavedAccount,
+				status : TootStatus
+			) {
+				val data = Intent()
+				data.putExtra(EXTRA_POSTED_ACCT, target_account.acct)
+				status.id.putTo(data, EXTRA_POSTED_STATUS_ID)
+				redraft_status_id?.putTo(data, EXTRA_POSTED_REDRAFT_ID)
+				status.in_reply_to_id?.putTo(data, EXTRA_POSTED_REPLY_ID)
+				setResult(RESULT_OK, data)
+				isPostComplete = true
+				this@ActPost.finish()
+			}
+			
+			override fun onScheduledPostComplete(target_account : SavedAccount) {
+				showToast(this@ActPost,false,getString(R.string.scheduled_status_sent))
+				setResult(Activity.RESULT_CANCELED)
+				isPostComplete = true
+				this@ActPost.finish()
+			}
+		})
 	}
 	
 	private fun showQuotedRenote() {
@@ -2549,4 +2588,23 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			
 			true
 		}
+	
+	private fun showSchedule() {
+		tvSchedule.text = when(timeSchedule) {
+			0L -> getString(R.string.unspecified)
+			else -> TootStatus.formatTime(this, timeSchedule, Pref.bpRelativeTimestamp(pref))
+		}
+	}
+	
+	private fun performSchedule() {
+		DlgDateTime(this).open(timeSchedule) { t ->
+			timeSchedule = t
+			showSchedule()
+		}
+	}
+
+	private fun resetSchedule(){
+		timeSchedule = 0L
+		showSchedule()
+	}
 }

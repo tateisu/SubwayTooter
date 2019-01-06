@@ -218,6 +218,7 @@ class Column(
 		internal const val TYPE_LOCAL_AROUND = 29
 		internal const val TYPE_FEDERATED_AROUND = 30
 		internal const val TYPE_ACCOUNT_AROUND = 31
+		internal const val TYPE_SCHEDULED_STATUS = 33
 		
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
@@ -279,6 +280,7 @@ class Column(
 				TYPE_LIST_TL -> context.getString(R.string.list_timeline)
 				TYPE_DIRECT_MESSAGES -> context.getString(R.string.direct_messages)
 				TYPE_TREND_TAG -> context.getString(R.string.trend_tag)
+				TYPE_SCHEDULED_STATUS ->context.getString(R.string.scheduled_status)
 				else -> "?"
 			}
 		}
@@ -317,6 +319,7 @@ class Column(
 				TYPE_LIST_TL -> R.attr.ic_list_tl
 				TYPE_DIRECT_MESSAGES -> R.attr.ic_mail
 				TYPE_TREND_TAG -> R.attr.ic_hashtag
+				TYPE_SCHEDULED_STATUS -> R.attr.ic_timer
 				else -> R.attr.ic_info
 			}
 		}
@@ -803,8 +806,8 @@ class Column(
 		
 		when(column_type) {
 			
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND -> status_id =
-				when(isMisskey) {
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND ->
+				status_id = when(isMisskey) {
 					true -> EntityId.mayNull(src.parseString(KEY_STATUS_ID))
 					else -> EntityId.mayNull(src.parseLong(KEY_STATUS_ID))
 				}
@@ -2582,6 +2585,18 @@ class Column(
 				
 			}
 			
+			private fun getScheduledStatuses(client:TootApiClient):TootApiResult?{
+				val result = client.request("/api/v1/scheduled_statuses")
+				val src = parser.statusList(result?.jsonArray)
+				list_tmp = addWithFilterStatus(list_tmp,src)
+				
+				// TODO: paging?
+				idOld = null
+				idRecent = null
+				
+				return result
+			}
+			
 			override fun doInBackground(vararg unused : Void) : TootApiResult? {
 				ctStarted.set(true)
 				
@@ -3267,6 +3282,8 @@ class Column(
 							}
 							return result
 						}
+						
+						TYPE_SCHEDULED_STATUS -> return getScheduledStatuses(client)
 						
 						else -> return getStatuses(client, makeHomeTlUrl())
 					}
@@ -6199,6 +6216,7 @@ class Column(
 			TYPE_CONVERSATION,
 			TYPE_LIST_LIST,
 			TYPE_TREND_TAG,
+			TYPE_SCHEDULED_STATUS,
 			TYPE_FOLLOW_SUGGESTION -> true
 			
 			TYPE_LIST_MEMBER,

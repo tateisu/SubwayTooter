@@ -40,6 +40,7 @@ import okhttp3.RequestBody
 import okio.BufferedSink
 import org.json.JSONObject
 import java.io.*
+import java.util.regex.Pattern
 
 class ActAccountSetting
 	: AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
@@ -1157,7 +1158,8 @@ class ActAccountSetting
 	private fun sendNote(bConfirmed : Boolean = false) {
 		val sv = etNote.text.toString()
 		if(! bConfirmed) {
-			val length = sv.codePointCount(0, sv.length)
+			
+			val length = countNoteText(sv)
 			if(length > max_length_note) {
 				AlertDialog.Builder(this)
 					.setMessage(
@@ -1176,6 +1178,18 @@ class ActAccountSetting
 			}
 		}
 		updateCredential("note", EmojiDecoder.decodeShortCode(sv))
+	}
+	
+	// Mastodon 2.7 でnoteの文字数計算が変わる
+	// https://github.com/tootsuite/mastodon/commit/45899cfa691b1e4f43da98c456ae8faa584eb437
+	private val reLinkUrl = Pattern.compile("""(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
+	private val reMention =Pattern.compile("""(?<=^|[^/\w\p{Pc}])@((\w+([\w.-]+\w+)?)(?:@[a-z0-9.\-]+[a-z0-9]+)?)""",Pattern.CASE_INSENSITIVE)
+	private val strUrlReplacement = (0 until 23).map{ ' '}.joinToString()
+	private fun countNoteText(s:String):Int{
+		val s2 = s
+			.replaceAll(reLinkUrl,strUrlReplacement)
+			.replaceAll(reMention,"@\\2")
+		return s2.codePointCount(0,s2.length)
 	}
 	
 	private fun sendLocked(willLocked : Boolean) {

@@ -833,5 +833,8 @@
     <string name="agree_terms">サービスの規約に同意します</string>
     <string name="pseudo_account_cant_get_follow_list">疑似アカウントではフォローリストを読めません</string>
     <string name="reaction_remove_confirm">あなたのリアクション \"%1$s\"を削除しますか?</string>
+    <string name="scheduled_status">予約投稿</string>
+    <string name="unspecified">指定なし</string>
+    <string name="scheduled_status_sent">予約投稿を送信しました。</string>
 
 </resources>

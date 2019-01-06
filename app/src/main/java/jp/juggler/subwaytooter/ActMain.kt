@@ -610,7 +610,16 @@ class ActMain : AppCompatActivity()
 	private fun refreshAfterPost() {
 		val posted_acct = this.posted_acct
 		val posted_status_id = this.posted_status_id
-		if(posted_acct?.isNotEmpty() == true && posted_status_id != null) {
+		
+		if( posted_acct?.isNotEmpty() == true && posted_status_id == null) {
+			// 予約投稿なら予約投稿リストをリロードする
+			for(column in app_state.column_list) {
+				if( column.column_type == Column.TYPE_SCHEDULED_STATUS && column.access_info.acct == posted_acct){
+					column.startLoading()
+				}
+			}
+			
+		}else if(posted_acct?.isNotEmpty() == true && posted_status_id != null) {
 			
 			val posted_redraft_id = this.posted_redraft_id
 			if(posted_redraft_id != null) {
@@ -830,10 +839,13 @@ class ActMain : AppCompatActivity()
 				REQUEST_CODE_POST -> if(data != null) {
 					etQuickToot.setText("")
 					posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)
-					posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
-					posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
-					posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
-					
+					if(! data.extras.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) ){
+						posted_status_id = null
+					}else {
+						posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
+						posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
+						posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
+					}
 				}
 				
 				REQUEST_CODE_COLUMN_COLOR -> if(data != null) {

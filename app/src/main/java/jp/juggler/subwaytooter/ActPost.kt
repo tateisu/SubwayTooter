@@ -2134,7 +2134,9 @@ class ActPost : AppCompatActivity(),
 			
 			override fun onScheduledPostComplete(target_account : SavedAccount) {
 				showToast(this@ActPost,false,getString(R.string.scheduled_status_sent))
-				setResult(Activity.RESULT_CANCELED)
+				val data = Intent()
+				data.putExtra(EXTRA_POSTED_ACCT, target_account.acct)
+				setResult(RESULT_OK, data)
 				isPostComplete = true
 				this@ActPost.finish()
 			}

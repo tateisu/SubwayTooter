@@ -498,10 +498,18 @@ internal class ItemViewHolder(
 				showConversationIcons(item)
 			}
 			
+			is TootScheduled ->{
+				showScheduled(item)
+			}
 			else -> {
 			}
 		}
 		b.report()
+	}
+	
+	private fun showScheduled(item : TootScheduled) {
+		llSearchTag.visibility = View.VISIBLE
+		btnSearchTag.text = TootStatus.formatTime(activity,item.timeScheduledAt,Pref.bpRelativeTimestamp(activity.pref))
 	}
 	
 	private fun removeExtraView() {
@@ -1631,6 +1639,17 @@ internal class ItemViewHolder(
 						access_info,
 						item.name // #を含まない
 					)
+				}
+				
+				is TootScheduled ->{
+					ActionsDialog()
+						.addAction(activity.getString(R.string.delete)){
+							Action_Toot.deleteScheduledPost(activity,access_info,item){
+								column.onScheduleDeleted(item)
+								showToast(activity,false,R.string.scheduled_post_deleted)
+							}
+						}
+						.show(activity)
 				}
 			}
 			

@@ -120,7 +120,8 @@
                 <item
                     android:id="@+id/nav_scheduled_statuses_list"
                     android:icon="?attr/ic_timer"
-                    android:title="@string/scheduled_status"/>
+                    android:title="@string/scheduled_status_list"/>
+
                 <!--<item-->
                 <!--android:id="@+id/nav_add_reports"-->
                 <!--android:icon="?attr/btn_report"-->

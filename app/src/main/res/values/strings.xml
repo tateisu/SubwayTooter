@@ -856,5 +856,8 @@
     <string name="scheduled_status">Scheduled post</string>
     <string name="unspecified">Unspecified</string>
     <string name="scheduled_status_sent">Scheduled status was sent.</string>
+    <string name="scheduled_status_delete_confirm">Delete this scheduled status?</string>
+    <string name="scheduled_post_deleted">Deleted.</string>
+    <string name="scheduled_status_list">Scheduled status list</string>
 
 </resources>

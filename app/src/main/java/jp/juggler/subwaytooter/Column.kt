@@ -2587,10 +2587,10 @@ class Column(
 			
 			private fun getScheduledStatuses(client:TootApiClient):TootApiResult?{
 				val result = client.request("/api/v1/scheduled_statuses")
-				val src = parser.statusList(result?.jsonArray)
-				list_tmp = addWithFilterStatus(list_tmp,src)
+				val src = parseList(::TootScheduled,parser,result?.jsonArray)
+				list_tmp = addAll(list_tmp,src)
 				
-				// TODO: paging?
+				// ページングはないっぽい
 				idOld = null
 				idRecent = null
 				
@@ -6919,6 +6919,19 @@ class Column(
 		}
 	}
 	
+	fun onScheduleDeleted(item : TootScheduled) {
+		val tmp_list = ArrayList<TimelineItem>(list_data.size)
+		for(o in list_data) {
+			if(o === item ) continue
+			tmp_list.add(o)
+		}
+		if(tmp_list.size != list_data.size) {
+			list_data.clear()
+			list_data.addAll(tmp_list)
+			fireShowContent(reason = "onScheduleDeleted")
+		}
+	}
+	
 	val isMisskey : Boolean = access_info.isMisskey
 	
 	fun saveScrollPosition() {
@@ -6974,6 +6987,7 @@ class Column(
 			)
 		)
 	}
+	
 	
 	//	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
 	//		list_data.forEachIndexed { i, v ->

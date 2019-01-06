@@ -1191,4 +1191,42 @@ object Action_Toot {
 		}
 	}
 	
+	fun deleteScheduledPost(
+		activity:ActMain,
+		access_info : SavedAccount,
+		item : TootScheduled,
+		bConfirmed : Boolean = false,
+		callback : () -> Unit
+	) {
+		if(! bConfirmed ) {
+			DlgConfirm.openSimple(activity,activity.getString(R.string.scheduled_status_delete_confirm)){
+				deleteScheduledPost(activity,access_info,item,bConfirmed=true,callback=callback)
+			}
+			return
+		}
+		
+		TootTaskRunner(activity).run(access_info, object : TootTask {
+			override fun background(client : TootApiClient) : TootApiResult? {
+				
+				return client.request(
+					"/api/v1/scheduled_statuses/${item.id}",
+					Request.Builder().delete()
+				)
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				
+				result ?: return
+				
+				val error = result.error
+				if(error != null) {
+					showToast(activity, false, error)
+					return
+				}
+				
+				callback()
+			}
+		})
+	}
+	
 }

@@ -1464,15 +1464,13 @@ internal class ItemViewHolder(
 					}
 					
 					else -> {
-						when(ta.type) {
-							TootAttachmentLike.TYPE_VIDEO -> {
-								iv.setMediaType(R.drawable.media_type_video)
+						iv.setMediaType(
+							when(ta.type) {
+								TootAttachmentLike.TYPE_VIDEO -> R.drawable.media_type_video
+								TootAttachmentLike.TYPE_GIFV -> R.drawable.media_type_gifv
+								else -> 0
 							}
-							
-							TootAttachmentLike.TYPE_GIFV -> {
-								iv.setMediaType(R.drawable.media_type_gifv)
-							}
-						}
+						)
 						iv.setDefaultImageResId(0)
 						iv.setImageUrl(
 							activity.pref,
@@ -1559,7 +1557,7 @@ internal class ItemViewHolder(
 			
 			ivThumbnail -> status_account?.let { whoRef ->
 				when {
-					access_info.isNA ->DlgContextMenu(
+					access_info.isNA -> DlgContextMenu(
 						activity,
 						column,
 						whoRef,
@@ -1993,9 +1991,9 @@ internal class ItemViewHolder(
 		
 	}
 	
-	private fun makeReactionsView(status:TootStatus ) {
+	private fun makeReactionsView(status : TootStatus) {
 		if(! access_info.isMisskey) return
-
+		
 		val reactionsCount = status.reactionCounts
 		
 		val density = activity.density
@@ -2033,13 +2031,14 @@ internal class ItemViewHolder(
 			)
 			
 			val hasMyReaction = status.myReaction?.isNotEmpty() == true
-			b.contentDescription = activity.getString(if(hasMyReaction) R.string.reaction_remove else  R.string.reaction_add )
+			b.contentDescription =
+				activity.getString(if(hasMyReaction) R.string.reaction_remove else R.string.reaction_add)
 			b.scaleType = ImageView.ScaleType.FIT_CENTER
 			b.padding = paddingV
 			b.setOnClickListener {
-				if( hasMyReaction ){
+				if(hasMyReaction) {
 					removeReaction(status, false)
-				}else{
+				} else {
 					addReaction(status, null)
 				}
 			}
@@ -2190,9 +2189,9 @@ internal class ItemViewHolder(
 		
 		if(access_info.isPseudo || ! access_info.isMisskey) return
 		
-		if(!confirmed) {
+		if(! confirmed) {
 			AlertDialog.Builder(activity)
-				.setMessage(activity.getString(R.string.reaction_remove_confirm,reaction))
+				.setMessage(activity.getString(R.string.reaction_remove_confirm, reaction))
 				.setNegativeButton(R.string.cancel, null)
 				.setPositiveButton(R.string.ok) { _, _ ->
 					removeReaction(status, confirmed = true)
@@ -2211,7 +2210,6 @@ internal class ItemViewHolder(
 							.put("noteId", status.id.toString())
 							.toPostRequestBuilder()
 					)
-					
 				
 				override fun handleResult(result : TootApiResult?) {
 					result ?: return
@@ -2223,14 +2221,18 @@ internal class ItemViewHolder(
 					}
 					
 					if((result.response?.code() ?: - 1) in 200 until 300) {
-						if(status.decreaseReaction(reaction,true,"removeReaction" )) {
+						if(status.decreaseReaction(reaction, true, "removeReaction")) {
 							// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
-							list_adapter.notifyChange(reason = "removeReaction complete", reset = true)
+							list_adapter.notifyChange(
+								reason = "removeReaction complete",
+								reset = true
+							)
 						}
 					}
 				}
 			})
 	}
+	
 	private fun makeEnqueteChoiceView(
 		enquete : NicoEnquete,
 		now : Long,

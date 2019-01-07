@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Subway Tooter</string>
 
@@ -205,7 +206,7 @@
     <string name="contributor">contributor</string>
     <string name="thanks_for">Thanks for %1$s</string>
     <string name="simple_list">Simple list(app restart required)</string>
-    <string name="mute_app_desc">>Swipe leftwards to delete. Reload columns to show statuses published by unmuted apps.</string>
+    <string name="mute_app_desc">&gt;Swipe leftwards to delete. Reload columns to show statuses published by unmuted apps.</string>
     <string name="muted_app">Muted apps</string>
     <string name="application_is">app: %1$s</string>
     <string name="mute_app_of">mute app \"%1$s\"</string>
@@ -848,7 +849,7 @@
     <string name="agree_terms">I agree to the terms of service</string>
     <string name="instance_rules">Instance rules</string>
     <string name="username_empty">Please specify the user name.</string>
-    <string name="email_empty">Please specift the E-mail address.</string>
+    <string name="email_empty">Please specify the e-mail address.</string>
     <string name="password_empty">Please specify the password.</string>
     <string name="username_not_need_atmark">The user name must not contains \"@\" or \"/\".</string>
     <string name="pseudo_account_cant_get_follow_list">Can\'t read follow list from pseudo account.</string>

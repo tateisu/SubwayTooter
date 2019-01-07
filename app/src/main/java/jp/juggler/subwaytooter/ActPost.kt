@@ -757,23 +757,26 @@ class ActPost : AppCompatActivity(),
 						}
 						cbNSFW.isChecked = item.sensitive
 						visibility = item.visibility
-						val src_attachments = item.media_attachments
-						if(src_attachments?.isNotEmpty() == true) {
-							app_state.attachment_list = this.attachment_list
-							this.attachment_list.clear()
-							try {
-								for(src in src_attachments) {
-									if(src is TootAttachment) {
-										src.redraft = true
-										val pa = PostAttachment(src)
-										pa.status = PostAttachment.STATUS_UPLOADED
-										this.attachment_list.add(pa)
-									}
-								}
-							} catch(ex : Throwable) {
-								log.trace(ex)
-							}
-						}
+
+						// 2019/1/7 どうも添付データを古い投稿から引き継げないようだ…。
+						// バグ臭い
+//						val src_attachments = item.media_attachments
+//						if(src_attachments?.isNotEmpty() == true) {
+//							app_state.attachment_list = this.attachment_list
+//							this.attachment_list.clear()
+//							try {
+//								for(src in src_attachments) {
+//									if(src is TootAttachment) {
+//										src.redraft = true
+//										val pa = PostAttachment(src)
+//										pa.status = PostAttachment.STATUS_UPLOADED
+//										this.attachment_list.add(pa)
+//									}
+//								}
+//							} catch(ex : Throwable) {
+//								log.trace(ex)
+//							}
+//						}
 					}
 				} catch(ex : Throwable) {
 					log.trace(ex)

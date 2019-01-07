@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Undergrunnstuter</string>
 
@@ -739,5 +739,32 @@
 
 <string name="conversation_to">Til:</string>
     <string name="animation">Animasjon</string>
-
+    <string name="visibility_local_public">Offentlig (lokal)</string>
+    <string name="visibility_local_home">Hjemme (lokal)</string>
+    <string name="visibility_local_followers">Kun følgere (lokal)</string>
+    <string name="visibility_local_unlisted">Ulistet (lokal)</string>
+    <string name="display_name_mentioned_by">%1$s nevnte</string>
+    <string name="reaction_from_another_account">Reaksjon fra en annen konto</string>
+    <string name="reaction_succeeded">Reagerte</string>
+    <string name="conversation_without_reply">(inget svar)</string>
+    <string name="show_conversation">Vis samtale</string>
+    <string name="participants">Deltagere:</string>
+    <string name="participants_and_more">… og flere</string>
+    <string name="actions_for_instance">Handlinger for denne instansen</string>
+    <string name="tls_handshake">TLS-håndtrykk</string>
+    <string name="links">Lenker</string>
+    <string name="profile_directory">Profilmappe</string>
+    <string name="about_this_instance">Om denne instansen</string>
+    <string name="top_page">Toppside</string>
+    <string name="birthday">Geburtsdag</string>
+    <string name="existing_account">Logg inn</string>
+    <string name="create_account">Opprett konto</string>
+    <string name="user_name">Brukernavn</string>
+    <string name="password_hint">Skriv inn passordet…</string>
+    <string name="terms">vilkår</string>
+    <string name="agree_terms">Jeg samtykker til tjenestevilkårene</string>
+    <string name="instance_rules">Instansregler</string>
+    <string name="username_empty">Angi brukernavnet.</string>
+    <string name="email_empty">Angi e-postadressen.</string>
+    <string name="password_empty">Angi passordet</string>
 </resources>

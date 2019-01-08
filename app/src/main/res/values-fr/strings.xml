@@ -413,9 +413,9 @@
     <string name="delete_this_notification">Supprimer cette notification</string>
     <string name="mute_this_conversation">Mettre en sourdine plus de notifications pour cette conversation</string>
     <string name="unmute_this_conversation">Unmute more notifications for this conversation</string>
-    <string name="input_access_token">Spécifier un jeton d\'accès (pour les utilisateurs·trices avancé·e·s)</string>
-    <string name="access_token_or_api_token">Jeton d\'accès (si vous utilisez Misskey, veuillez entrer le jeton de l\'API)</string>
-    <string name="token_not_specified">Veuillez saisir le jeton d\'accès.</string>
+    <string name="input_access_token">Jeton d’accès</string>
+    <string name="access_token_or_api_token">Jeton d’accès (si vous utilisez Misskey, veuillez entrer le jeton de l’API)</string>
+    <string name="token_not_specified">Veuillez saisir le jeton d’accès.</string>
     <string name="quote_name">Citer le nom …</string>
     <string name="format_of_quote_name">Format du \"nom cité\" (texte contenant %1$s)</string>
     <string name="dont_show_favourite">Masquer les favourite</string>
@@ -767,7 +767,7 @@
     <string name="already_reactioned">already reactioned.</string>
     <string name="already_voted">Vous avez déjà voté.</string>
 
-    <string name="endorse_set">Endorse in your profile</string>
+    <string name="endorse_set">Recommander via votre page</string>
     <string name="endorse_unset">Remove endorsement in your profile</string>
     <string name="endorse_succeeded">Endorsement added.</string>
     <string name="remove_endorse_succeeded">Endorsement removed.</string>
@@ -851,4 +851,5 @@
     <string name="username_empty">Veuillez spécifier le nom d’utilisateur.</string>
     <string name="email_empty">Veuillez spécifier le courriel.</string>
     <string name="password_empty">Veuillez spécifier le mot de passe.</string>
+    <string name="scheduled_status">Publications planifiées</string>
 </resources>

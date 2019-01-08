@@ -33,6 +33,7 @@ import jp.juggler.util.*
 import org.jetbrains.anko.*
 import org.json.JSONObject
 import kotlin.math.max
+import kotlin.math.min
 
 internal class ItemViewHolder(
 	val activity : ActMain
@@ -264,6 +265,10 @@ internal class ItemViewHolder(
 		ivThumbnail.layoutParams.width = s
 		ivFollow.layoutParams.width = s
 		ivBoosted.layoutParams.width = s
+		
+		s = ActMain.replyIconSize
+		ivReply.layoutParams.width = s
+		ivReply.layoutParams.height = s
 		
 		s = activity.notificationTlIconSize
 		ivBoosted.layoutParams.height = s
@@ -2761,6 +2766,7 @@ internal class ItemViewHolder(
 							ivReply = imageView {
 								scaleType = ImageView.ScaleType.FIT_END
 								importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+								padding=dip(4)
 							}.lparams(dip(32), dip(32)) {
 								endMargin = dip(4)
 							}

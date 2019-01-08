@@ -88,7 +88,8 @@ class ActMain : AppCompatActivity()
 		internal val reUrlHashTag =
 			Pattern.compile("""\Ahttps://([^/]+)/tags/([^?#・\s\-+.,:;/]+)(?:\z|[?#])""")
 		
-		var boostButtonSize = 0
+		var boostButtonSize = 1
+		var replyIconSize = 1
 		var timeline_font : Typeface = Typeface.DEFAULT
 		var timeline_font_bold : Typeface = Typeface.DEFAULT_BOLD
 	}
@@ -1244,6 +1245,7 @@ class ActMain : AppCompatActivity()
 		avatarIconSize = parseIconSize(Pref.spAvatarIconSize)
 		notificationTlIconSize = parseIconSize(Pref.spNotificationTlIconSize)
 		boostButtonSize = parseIconSize(Pref.spBoostButtonSize)
+		replyIconSize = parseIconSize(Pref.spReplyIconSize)
 		
 		run {
 			var round_ratio = 33f

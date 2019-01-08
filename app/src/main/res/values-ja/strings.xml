@@ -26,7 +26,7 @@
     <string name="account_sync_failed">アカウントを同期できません</string>
     <string name="acct">Acct</string>
     <string name="acct_color">Acctの文字色</string>
-    <string name="acct_font_size">Acctのフォントサイズ(単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
+    <string name="acct_font_size">Acctのフォントの大きさ(単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
     <string name="acct_sample">(見本)username@instance</string>
     <string name="act_post">Tootの送信</string>
     <string name="action_settings">設定</string>
@@ -70,7 +70,7 @@
     <string name="available_mastodon_2_4_later">(マストドン2.4以降で利用可能)</string>
     <string name="avatar_icon_dont_round">ユーザ画像を角丸にしない(アプリ再起動が必要)</string>
     <string name="avatar_icon_round_ratio">ユーザ画像の角丸率(単位:%。デフォルト:33。アプリ再起動が必要)</string>
-    <string name="avatar_icon_size">ユーザ画像のサイズ(単位:dp。デフォルト:48。アプリ再起動が必要)</string>
+    <string name="avatar_icon_size">ユーザ画像の大きさ(単位:dp。デフォルト:48。アプリ再起動が必要)</string>
     <string name="back_button_action">戻るボタンの動作</string>
     <string name="back_to_column_list">戻るボタンでカラム一覧を開く</string>
     <string name="background_color">背景色</string>
@@ -84,7 +84,7 @@
     <string name="blocked_users">ブロックしたユーザ</string>
     <string name="boost">ブースト</string>
     <string name="boost_button_alignment">ブーストボタン列の左右の配置 (アプリ再起動が必要)</string>
-    <string name="boost_button_size">ブーストボタンのサイズ(単位:dp。デフォルト:40。アプリ再起動が必要)</string>
+    <string name="boost_button_size">ブーストボタンの大きさ(単位:dp。デフォルト:40。アプリ再起動が必要)</string>
     <string name="boost_from_another_account">別アカウントでブースト</string>
     <string name="reaction_from_another_account">別アカウントでリアクション</string>
     <string name="boost_private_toot_not_allowed">非公開トゥートをブーストできるのは本人だけです</string>
@@ -473,8 +473,8 @@
     <string name="notification_sound_before_oreo">通知音 (Android 7.x 以下)</string>
     <string name="notification_style_after_oreo">通知スタイル(Android 8.x 以降)</string>
     <string name="notification_style_before_oreo">通知スタイル(Android 7.x以下。もしお使いのデバイスが8.x以降の場合、アカウント設定から通知スタイルを変更できます)</string>
-    <string name="notification_tl_font_size">通知TLのフォントサイズ (単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
-    <string name="notification_tl_icon_size">通知TLのアイコンサイズ (単位:dp。デフォルト:32。アプリ再起動が必要)</string>
+    <string name="notification_tl_font_size">通知TLのフォントの大きさ (単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
+    <string name="notification_tl_icon_size">通知TLのアイコンの大きさ (単位:dp。デフォルト:32。アプリ再起動が必要)</string>
     <string name="notification_type_boost">ブースト</string>
     <string name="notification_type_favourite">お気に入り</string>
     <string name="notification_type_follow">フォロー</string>
@@ -681,7 +681,7 @@
     <string name="time_within_second">たった今</string>
     <string name="timeline_font">タイムラインのフォント(アプリ再起動が必要)</string>
     <string name="timeline_font_bold">タイムラインのフォント(太字)(アプリ再起動が必要)</string>
-    <string name="timeline_font_size">タイムラインのフォントサイズ(単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
+    <string name="timeline_font_size">タイムラインのフォントの大きさ(単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
     <string name="timeout_for_embed_media_viewer">内蔵メディアビューアのタイムアウト (単位:秒 アプリ再起動(アプリ履歴からの消去)が必要)</string>
     <string name="title">名前</string>
     <string name="token_exported">アプリデータのエクスポート、インポート、バックアップからの復元などでアクセストークンが他のデバイスでも使われている可能性があります。アクセストークンの更新をおすすめします。</string>
@@ -841,5 +841,6 @@
     <string name="unspecified">指定なし</string>
     <string name="cant_change_account_when_editing_scheduled_status">予約した投稿の再編集ではアカウントを変更できません</string>
     <string name="delete_scheduled_status_before_update">投稿する前に編集前の古い予約投稿を削除します。よろしいですか?</string>
+    <string name="reply_icon_size">返信アイコンの大きさ(単位:dp。デフォルト:32)</string>
 
 </resources>

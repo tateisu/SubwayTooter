@@ -132,6 +132,7 @@ class ActAppSettingChild : AppCompatActivity()
 	private var etRoundRatio : EditText? = null
 	private var etBoostAlpha : EditText? = null
 	private var etMediaReadTimeout : EditText? = null
+
 	
 	private var tvTimelineFontUrl : TextView? = null
 	private var timeline_font : String? = null
@@ -151,6 +152,7 @@ class ActAppSettingChild : AppCompatActivity()
 	private var etNotificationTlIconSize : EditText? = null
 	
 	private var etBoostButtonSize : EditText? = null
+	private var etReplyIconSize : EditText? = null
 	
 	private var tvUserAgentError : TextView? = null
 	
@@ -412,7 +414,7 @@ class ActAppSettingChild : AppCompatActivity()
 		etPullNotificationCheckInterval = findViewById(R.id.etPullNotificationCheckInterval)
 		
 		etBoostButtonSize = findViewById(R.id.etBoostButtonSize)
-		
+		etReplyIconSize= findViewById(R.id.etReplyIconSize)
 		tvTimelineFontUrl = findViewById(R.id.tvTimelineFontUrl)
 		tvTimelineFontBoldUrl = findViewById(R.id.tvTimelineFontBoldUrl)
 		
@@ -490,6 +492,7 @@ class ActAppSettingChild : AppCompatActivity()
 		etAvatarIconSize?.setText(Pref.spAvatarIconSize(pref))
 		etNotificationTlIconSize?.setText(Pref.spNotificationTlIconSize(pref))
 		etBoostButtonSize?.setText(Pref.spBoostButtonSize(pref))
+		etReplyIconSize?.setText(Pref.spReplyIconSize(pref))
 		etPullNotificationCheckInterval?.setText(Pref.spPullNotificationCheckInterval(pref))
 		
 		etMediaSizeMax?.setText(Pref.spMediaSizeMax(pref))
@@ -566,6 +569,7 @@ class ActAppSettingChild : AppCompatActivity()
 		putText(Pref.spAvatarIconSize, etAvatarIconSize)
 		putText(Pref.spNotificationTlIconSize, etNotificationTlIconSize)
 		putText(Pref.spBoostButtonSize, etBoostButtonSize)
+		putText(Pref.spReplyIconSize, etReplyIconSize)
 		putText(Pref.spPullNotificationCheckInterval, etPullNotificationCheckInterval)
 		putText(Pref.spMediaSizeMax, etMediaSizeMax)
 		putText(Pref.spMovieSizeMax, etMovieSizeMax)

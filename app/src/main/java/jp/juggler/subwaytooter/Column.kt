@@ -483,7 +483,7 @@ class Column(
 		private var defaultColorHeaderBg = 0
 		private var defaultColorHeaderName = 0
 		private var defaultColorHeaderPageNumber = 0
-		private var defaultColorContentBg = 0
+		var defaultColorContentBg = 0
 		private var defaultColorContentAcct = 0
 		private var defaultColorContentText = 0
 		

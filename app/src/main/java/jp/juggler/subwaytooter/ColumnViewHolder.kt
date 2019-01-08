@@ -702,6 +702,7 @@ class ColumnViewHolder(
 		
 		// カラム内部の背景色
 		c = column.column_bg_color
+		if(c == 0) c = Column.defaultColorContentBg
 		if(c == 0) {
 			ViewCompat.setBackground(flColumnBackground, null)
 		} else {
@@ -1303,13 +1304,13 @@ class ColumnViewHolder(
 		// この関数はAdapterViewの項目の(marginを含む)高さを返す
 		fun getAdapterItemHeight(adapterIndex : Int) : Int {
 			
-			fun View.getTotalHeight():Int{
+			fun View.getTotalHeight() : Int {
 				measure(widthSpec, heightSpec)
 				val lp = layoutParams as? ViewGroup.MarginLayoutParams
-				return measuredHeight + (lp?.topMargin?:0)+ (lp?.bottomMargin?:0)
+				return measuredHeight + (lp?.topMargin ?: 0) + (lp?.bottomMargin ?: 0)
 			}
 			
-			listView.findViewHolderForAdapterPosition(adapterIndex)?.itemView?.let{
+			listView.findViewHolderForAdapterPosition(adapterIndex)?.itemView?.let {
 				return it.getTotalHeight()
 			}
 			
@@ -1366,7 +1367,8 @@ class ColumnViewHolder(
 		// スクロールとともにtopは減少する
 		// しかしtopMarginがあるので最大値は4である
 		// この関数は scrollToPositionWithOffset 用のオフセットを返すので top - topMargin を返す
-		return childView.top - ((childView.layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin ?: 0 )
+		return childView.top - ((childView.layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin
+			?: 0)
 	}
 	
 	fun findFirstVisibleListItem() : Int {

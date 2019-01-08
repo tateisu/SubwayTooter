@@ -266,7 +266,7 @@ internal class ItemViewHolder(
 		ivFollow.layoutParams.width = s
 		ivBoosted.layoutParams.width = s
 		
-		s = ActMain.replyIconSize
+		s = ActMain.replyIconSize + (activity.density*8).toInt()
 		ivReply.layoutParams.width = s
 		ivReply.layoutParams.height = s
 		

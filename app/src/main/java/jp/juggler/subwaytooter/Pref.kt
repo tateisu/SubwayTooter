@@ -414,7 +414,7 @@ object Pref {
 	val spAvatarIconSize = StringPref("avatar_icon_size", "48")
 	val spNotificationTlIconSize = StringPref("notification_tl_icon_size", "32")
 	val spBoostButtonSize = StringPref("BoostButtonSize", "35")
-	val spReplyIconSize = StringPref("ReplyIconSize", "32")
+	val spReplyIconSize = StringPref("ReplyIconSize", "24")
 	val spMediaSizeMax = StringPref("max_media_size", "8")
 	val spMovieSizeMax = StringPref("max_movie_size", "40")
 	val spTimelineFont = StringPref("timeline_font", "", skipImport = true)

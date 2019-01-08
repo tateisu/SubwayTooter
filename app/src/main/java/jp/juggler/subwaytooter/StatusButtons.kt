@@ -380,7 +380,8 @@ internal class StatusButtons(
 				column,
 				status.accountRef,
 				status,
-				notification
+				notification,
+				itemViewHolder.tvContent
 			).show()
 		}
 	}

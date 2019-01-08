@@ -843,5 +843,6 @@
     <string name="delete_scheduled_status_before_update">投稿する前に編集前の古い予約投稿を削除します。よろしいですか?</string>
     <string name="reply_icon_size">返信アイコンの大きさ(単位:dp。デフォルト:24。アプリ再起動が必要)</string>
     <string name="all">All</string>
+    <string name="show_links_in_context_menu">本文中のリンクをコンテキストメニューに表示する</string>
 
 </resources>

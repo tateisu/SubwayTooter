@@ -487,20 +487,20 @@ internal class ViewHolderHeaderProfile(
 			}
 			
 			R.id.btnMore -> whoRef?.let { whoRef ->
-				DlgContextMenu(activity, column, whoRef, null, null).show()
+				DlgContextMenu(activity, column, whoRef, null, null,null).show()
 			}
 			
 			R.id.btnFollow -> whoRef?.let { whoRef ->
-				DlgContextMenu(activity, column, whoRef, null, null).show()
+				DlgContextMenu(activity, column, whoRef, null, null,null).show()
 			}
 			
 			R.id.btnMoved -> movedRef?.let { movedRef ->
-				DlgContextMenu(activity, column, movedRef, null, null).show()
+				DlgContextMenu(activity, column, movedRef, null, null,null).show()
 			}
 			
 			R.id.llMoved -> movedRef?.let { movedRef ->
 				if(access_info.isPseudo) {
-					DlgContextMenu(activity, column, movedRef, null, null).show()
+					DlgContextMenu(activity, column, movedRef, null, null,null).show()
 				} else {
 					Action_User.profileLocal(
 						activity,

@@ -85,7 +85,7 @@ internal class ItemViewHolder(
 	
 	private lateinit var llContents : View
 	private lateinit var tvMentions : MyTextView
-	private lateinit var tvContent : MyTextView
+	internal lateinit var tvContent : MyTextView
 	
 	private lateinit var flMedia : View
 	private lateinit var llMedia : View
@@ -1666,7 +1666,7 @@ internal class ItemViewHolder(
 		val notification = (item as? TootNotification)
 		boost_account?.let { whoRef ->
 			if(access_info.isPseudo) {
-				DlgContextMenu(activity, column, whoRef, null, notification).show()
+				DlgContextMenu(activity, column, whoRef, null, notification,tvContent).show()
 			} else {
 				Action_User.profileLocal(activity, pos, access_info, whoRef.get())
 			}
@@ -1738,7 +1738,8 @@ internal class ItemViewHolder(
 						column,
 						whoRef,
 						null,
-						notification
+						notification,
+						tvContent
 					).show()
 					
 					// 2018/12/26 疑似アカウントでもプロフカラムを表示する https://github.com/tootsuite/mastodon/commit/108b2139cd87321f6c0aec63ef93db85ce30bfec
@@ -1768,14 +1769,14 @@ internal class ItemViewHolder(
 			
 			llFollow -> follow_account?.let { whoRef ->
 				if(access_info.isPseudo) {
-					DlgContextMenu(activity, column, whoRef, null, notification).show()
+					DlgContextMenu(activity, column, whoRef, null, notification,tvContent).show()
 				} else {
 					Action_User.profileLocal(activity, pos, access_info, whoRef.get())
 				}
 			}
 			
 			btnFollow -> follow_account?.let { who ->
-				DlgContextMenu(activity, column, who, null, notification).show()
+				DlgContextMenu(activity, column, who, null, notification,tvContent).show()
 			}
 			
 			btnSearchTag, llTrendTag -> when(item) {
@@ -1920,7 +1921,8 @@ internal class ItemViewHolder(
 						column,
 						who,
 						null,
-						notification
+						notification,
+						tvContent
 					).show()
 				}
 				return true
@@ -1933,7 +1935,8 @@ internal class ItemViewHolder(
 						column,
 						who,
 						null,
-						notification
+						notification,
+						tvContent
 					).show()
 				}
 				return true
@@ -1947,7 +1950,8 @@ internal class ItemViewHolder(
 						column,
 						s.accountRef,
 						s,
-						notification
+						notification,
+						tvContent
 					).show()
 				} else {
 					val id = status_showing?.in_reply_to_id

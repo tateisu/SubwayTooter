@@ -3,23 +3,26 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.support.v4.app.ShareCompat
+import android.support.v4.content.ContextCompat
+import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.DlgListMember
 import jp.juggler.subwaytooter.dialog.DlgQRCode
+import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.FavMute
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.*
+import org.jetbrains.anko.allCaps
 import java.util.*
 
 @SuppressLint("InflateParams")
@@ -28,7 +31,8 @@ internal class DlgContextMenu(
 	private val column : Column,
 	private val whoRef : TootAccountRef?,
 	private val status : TootStatus?,
-	private val notification : TootNotification? = null
+	private val notification : TootNotification? = null,
+	private val contentTextView : TextView? = null
 ) : View.OnClickListener, View.OnLongClickListener {
 	
 	companion object {
@@ -113,6 +117,8 @@ internal class DlgContextMenu(
 		val btnAroundLTL = viewRoot.findViewById<View>(R.id.btnAroundLTL)
 		val btnAroundFTL = viewRoot.findViewById<View>(R.id.btnAroundFTL)
 		
+		val llLinks : LinearLayout = viewRoot.findViewById(R.id.llLinks)
+		
 		btnAroundAccountTL.setOnClickListener(this)
 		btnAroundLTL.setOnClickListener(this)
 		btnAroundFTL.setOnClickListener(this)
@@ -176,8 +182,52 @@ internal class DlgContextMenu(
 		
 		if(status == null) {
 			llStatus.visibility = View.GONE
+			llLinks.visibility = View.GONE
 		} else {
 			val status_by_me = access_info.isMe(status.account)
+			
+			if(Pref.bpLinksInContextMenu(activity.pref) && contentTextView != null){
+
+				var insPos = 0
+
+				fun addLinkButton(span : MyClickableSpan,caption : String){
+					val b = Button(activity)
+					val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT)
+					b.layoutParams = lp
+					ViewCompat.setBackground(b, ContextCompat.getDrawable(activity,R.drawable.btn_bg_transparent))
+					b.gravity = Gravity.START or Gravity.CENTER_VERTICAL
+					b.minHeight = (activity.density *32f + 0.5f).toInt()
+					b.minimumHeight = (activity.density *32f + 0.5f).toInt()
+					val pad_lr = (activity.density *8f + 0.5f).toInt()
+					val pad_tb = (activity.density *4f + 0.5f).toInt()
+					b.setPaddingRelative(pad_lr,pad_tb,pad_lr,pad_tb)
+					b.text = caption
+					b.allCaps = false
+					b.setOnClickListener{
+						try {
+							dialog.dismiss()
+						} catch(ignored : Throwable) {
+							// IllegalArgumentException がたまに出る
+						}
+						span.onClick(contentTextView)
+					}
+					llLinks.addView(b,insPos++)
+				}
+
+				val dc = status.decoded_content
+				for( tag in dc.getSpans(0,dc.length,MyClickableSpan::class.java) ){
+					val start = dc.getSpanStart(tag)
+					val end = dc.getSpanEnd(tag)
+					val href = tag ?.url ?:continue
+					val caption = dc.substring(start,end)
+					val head = caption[0]
+					if(head=='@' || head == '#')
+						addLinkButton(tag, caption)
+					else
+						addLinkButton(tag, href)
+				}
+			}
+			vg(llLinks,llLinks.childCount > 1)
 			
 			btnDelete.visibility = if(status_by_me) View.VISIBLE else View.GONE
 			btnRedraft.visibility = if(status_by_me) View.VISIBLE else View.GONE

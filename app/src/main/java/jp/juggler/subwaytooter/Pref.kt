@@ -346,8 +346,12 @@ object Pref {
 		false,
 		R.id.swInstanceTicker
 	)
+	val bpLinksInContextMenu = BooleanPref(
+		"LinksInContextMenu",
+		false,
+		R.id.swLinksInContextMenu
+	)
 	
-
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

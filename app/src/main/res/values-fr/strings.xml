@@ -413,9 +413,9 @@
     <string name="delete_this_notification">Supprimer cette notification</string>
     <string name="mute_this_conversation">Mettre en sourdine plus de notifications pour cette conversation</string>
     <string name="unmute_this_conversation">Unmute more notifications for this conversation</string>
-    <string name="input_access_token">Spécifier un jeton d\'accès (pour les utilisateurs·trices avancé·e·s)</string>
-    <string name="access_token_or_api_token">Jeton d\'accès (si vous utilisez Misskey, veuillez entrer le jeton de l\'API)</string>
-    <string name="token_not_specified">Veuillez saisir le jeton d\'accès.</string>
+    <string name="input_access_token">Jeton d’accès</string>
+    <string name="access_token_or_api_token">Jeton d’accès (si vous utilisez Misskey, veuillez entrer le jeton de l’API)</string>
+    <string name="token_not_specified">Veuillez saisir le jeton d’accès.</string>
     <string name="quote_name">Citer le nom …</string>
     <string name="format_of_quote_name">Format du \"nom cité\" (texte contenant %1$s)</string>
     <string name="dont_show_favourite">Masquer les favourite</string>
@@ -767,7 +767,7 @@
     <string name="already_reactioned">already reactioned.</string>
     <string name="already_voted">Vous avez déjà voté.</string>
 
-    <string name="endorse_set">Endorse in your profile</string>
+    <string name="endorse_set">Recommander via votre page</string>
     <string name="endorse_unset">Remove endorsement in your profile</string>
     <string name="endorse_succeeded">Endorsement added.</string>
     <string name="remove_endorse_succeeded">Endorsement removed.</string>
@@ -810,4 +810,46 @@
     <string name="about_this_instance">À propos de cette instance</string>
     <string name="existing_account">Se connecter</string>
     <string name="existing_account_desc">Se connecter avec un compte existant.</string>
+    <string name="reaction_remove">Enlever la réaction</string>
+    <string name="unlisted_visibility">Visibilité « Non listé »</string>
+    <string name="status_deleted_at">Cette note a été supprimée à %1$s</string>
+    <string name="status_deleted">Cette note a été supprimée</string>
+    <string name="conversation_without_reply">(aucune réponse)</string>
+    <string name="show_conversation">Afficher la conversation</string>
+    <string name="participants">Participants :</string>
+    <string name="participants_and_more">… et plus encore</string>
+    <string name="conversation_to">À :</string>
+    <string name="toot_background_color">Couleur d’arrière plan du pouet</string>
+    <string name="column_color_default">Couleur par défaut de la colonne</string>
+    <string name="header_background_color">Couleur d\'arrière-plan de l\'en-tête</string>
+    <string name="header_foreground_color">Couleur d\'avant-plan de l\'en-tête</string>
+    <string name="content_background_color">Couleur d\'arrière-plan du contenu</string>
+    <string name="content_text_color">Couleur du texte du contenu</string>
+    <string name="dont_show_preview_card">Ne pas montrer la carte de prévisualisation</string>
+    <string name="blank_cw">(CW vide)</string>
+    <string name="actions_for_instance">Actions pour cette instance</string>
+    <string name="animation">Animation</string>
+    <string name="tls_handshake">Négociation TLS</string>
+    <string name="links">Liens</string>
+    <string name="profile_directory">Annuaire des utilisateur·rice·s</string>
+    <string name="top_page">Haut de page</string>
+    <string name="instance_ticker_copyright">#InstanceTicker
+\nhttps://wee.jp/mastodon/
+\nCopyright 2018 weepjp, kyori19.</string>
+    <string name="location">Localisation</string>
+    <string name="birthday">Anniversaire</string>
+    <string name="create_account">Créer un compte</string>
+    <string name="create_account_desc">Créer un nouveau compte sur l’instance spécifiée.</string>
+    <string name="user_name_hint">exemple : MonaLisa</string>
+    <string name="user_name">Nom d’utilisateur</string>
+    <string name="email_hint">Exemple : monalisa@gmail.com</string>
+    <string name="password">Mot de passe</string>
+    <string name="password_hint">Entrez le mot de passe …</string>
+    <string name="terms">Conditions</string>
+    <string name="agree_terms">J’accepte les conditions du service</string>
+    <string name="instance_rules">Règles de l’instance</string>
+    <string name="username_empty">Veuillez spécifier le nom d’utilisateur.</string>
+    <string name="email_empty">Veuillez spécifier le courriel.</string>
+    <string name="password_empty">Veuillez spécifier le mot de passe.</string>
+    <string name="scheduled_status">Publications planifiées</string>
 </resources>

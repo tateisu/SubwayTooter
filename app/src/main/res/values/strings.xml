@@ -862,5 +862,6 @@
     <string name="cant_change_account_when_editing_scheduled_status">Can\'t change account when editing scheduled status.</string>
     <string name="delete_scheduled_status_before_update">Delete scheduled status before posting. Are you sure?</string>
     <string name="reply_icon_size">Reply icon size(Unit:dp. default:24. app restart required)</string>
+    <string name="all">All</string>
 
 </resources>

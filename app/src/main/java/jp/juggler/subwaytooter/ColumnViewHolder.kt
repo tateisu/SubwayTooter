@@ -113,6 +113,15 @@ class ColumnViewHolder(
 	private val llRegexFilter : View
 	private val btnDeleteNotification : Button
 	
+	private val svQuickFilter : HorizontalScrollView
+	private val btnQuickFilterAll : Button
+	private val btnQuickFilterMention : ImageButton
+	private val btnQuickFilterFavourite : ImageButton
+	private val btnQuickFilterBoost : ImageButton
+	private val btnQuickFilterFollow : ImageButton
+	private val btnQuickFilterReaction : ImageButton
+	private val btnQuickFilterVote : ImageButton
+	
 	private val llRefreshError : FrameLayout
 	private val ivRefreshError : ImageView
 	private val tvRefreshError : TextView
@@ -323,6 +332,25 @@ class ColumnViewHolder(
 		tvRegexFilterError = viewRoot.findViewById(R.id.tvRegexFilterError)
 		
 		btnDeleteNotification = viewRoot.findViewById(R.id.btnDeleteNotification)
+		
+		svQuickFilter = viewRoot.findViewById(R.id.svQuickFilter)
+		btnQuickFilterAll = viewRoot.findViewById(R.id.btnQuickFilterAll)
+		btnQuickFilterMention = viewRoot.findViewById(R.id.btnQuickFilterMention)
+		btnQuickFilterFavourite = viewRoot.findViewById(R.id.btnQuickFilterFavourite)
+		btnQuickFilterBoost = viewRoot.findViewById(R.id.btnQuickFilterBoost)
+		btnQuickFilterFollow = viewRoot.findViewById(R.id.btnQuickFilterFollow)
+		btnQuickFilterReaction = viewRoot.findViewById(R.id.btnQuickFilterReaction)
+		btnQuickFilterVote = viewRoot.findViewById(R.id.btnQuickFilterVote)
+		
+		
+		btnQuickFilterAll.setOnClickListener(this)
+		btnQuickFilterMention.setOnClickListener(this)
+		btnQuickFilterFavourite.setOnClickListener(this)
+		btnQuickFilterBoost.setOnClickListener(this)
+		btnQuickFilterFollow.setOnClickListener(this)
+		btnQuickFilterReaction.setOnClickListener(this)
+		btnQuickFilterVote.setOnClickListener(this)
+		
 		
 		llColumnHeader.setOnClickListener(this)
 		btnColumnSetting.setOnClickListener(this)
@@ -565,7 +593,7 @@ class ColumnViewHolder(
 			vg(cbDontShowNormalToot, column.canFilterNormalToot())
 			vg(cbDontShowReaction, isNotificationColumn && column.isMisskey)
 			vg(cbDontShowVote, isNotificationColumn && column.isMisskey)
-			vg(cbDontShowFavourite, isNotificationColumn)
+			vg(cbDontShowFavourite, isNotificationColumn && ! column.isMisskey)
 			vg(cbDontShowFollow, isNotificationColumn)
 			
 			vg(cbInstanceLocal, column.column_type == Column.TYPE_HASHTAG)
@@ -614,6 +642,8 @@ class ColumnViewHolder(
 			// listView.isFastScrollEnabled = ! Pref.bpDisableFastScroller(Pref.pref(activity))
 			
 			column.addColumnViewHolder(this)
+			
+			showQuickFilter()
 			
 			showColumnColor()
 			
@@ -1005,6 +1035,15 @@ class ColumnViewHolder(
 				column.mRefreshLoadingErrorPopupState = 1 - column.mRefreshLoadingErrorPopupState
 				showRefreshError()
 			}
+			
+			R.id.btnQuickFilterAll -> clickQuickFilter(Column.QUICK_FILTER_ALL)
+			R.id.btnQuickFilterMention -> clickQuickFilter(Column.QUICK_FILTER_MENTION)
+			R.id.btnQuickFilterFavourite -> clickQuickFilter(Column.QUICK_FILTER_FAVOURITE)
+			R.id.btnQuickFilterBoost -> clickQuickFilter(Column.QUICK_FILTER_BOOST)
+			R.id.btnQuickFilterFollow -> clickQuickFilter(Column.QUICK_FILTER_FOLLOW)
+			R.id.btnQuickFilterReaction -> clickQuickFilter(Column.QUICK_FILTER_REACTION)
+			R.id.btnQuickFilterVote -> clickQuickFilter(Column.QUICK_FILTER_VOTE)
+			
 		}
 		
 	}
@@ -1397,4 +1436,91 @@ class ColumnViewHolder(
 			scrollToTop()
 		}
 	}
+	
+	private fun clickQuickFilter(filter : Int) {
+		column?.quick_filter = filter
+		showQuickFilter()
+		activity.app_state.saveColumnList()
+		column?.startLoading()
+	}
+	
+	private fun showQuickFilter() {
+		val column = this.column ?: return
+		
+		val isNotificationColumn = column.column_type == Column.TYPE_NOTIFICATIONS
+		vg(svQuickFilter, isNotificationColumn)
+		if(! isNotificationColumn) return
+		
+		vg(btnQuickFilterReaction, column.isMisskey)
+		vg(btnQuickFilterVote, column.isMisskey)
+
+		vg(btnQuickFilterFavourite, !column.isMisskey)
+
+		val colorBg = column.getHeaderBackgroundColor()
+		val colorFg = column.getHeaderNameColor()
+		val colorBgSelected = Color.rgb(
+			(Color.red(colorBg) *3 + Color.red(colorFg)) / 4,
+			(Color.green(colorBg)*3 + Color.green(colorFg)) / 4,
+			(Color.blue(colorBg)*3 + Color.blue(colorFg)) / 4
+		)
+		svQuickFilter.setBackgroundColor(colorBg)
+		
+		fun showQuickFilterButton(btn : View, iconId : Int, selected : Boolean) {
+			
+			ViewCompat.setBackground(
+				btn,
+				getAdaptiveRippleDrawable(
+					if(selected) colorBgSelected else colorBg,
+					colorFg
+				)
+			)
+			when(btn){
+				is ImageButton ->setIconDrawableId(activity,btn,iconId,colorFg)
+				is TextView -> btn.textColor = colorFg
+			}
+		}
+		
+		showQuickFilterButton(
+			btnQuickFilterAll,
+			0,
+			column.quick_filter == Column.QUICK_FILTER_ALL
+		)
+		
+		showQuickFilterButton(
+			btnQuickFilterMention,
+			R.drawable.btn_reply,
+			column.quick_filter == Column.QUICK_FILTER_MENTION
+		)
+		
+		showQuickFilterButton(
+			btnQuickFilterFavourite,
+			R.drawable.btn_favourite,
+			column.quick_filter == Column.QUICK_FILTER_FAVOURITE
+		)
+		
+		showQuickFilterButton(
+			btnQuickFilterBoost,
+			R.drawable.btn_boost,
+			column.quick_filter == Column.QUICK_FILTER_BOOST
+		)
+		
+		showQuickFilterButton(
+			btnQuickFilterFollow,
+			R.drawable.ic_follow_plus,
+			column.quick_filter == Column.QUICK_FILTER_FOLLOW
+		)
+		
+		showQuickFilterButton(
+			btnQuickFilterReaction,
+			R.drawable.ic_add,
+			column.quick_filter == Column.QUICK_FILTER_REACTION
+		)
+		
+		showQuickFilterButton(
+			btnQuickFilterVote,
+			R.drawable.ic_vote,
+			column.quick_filter == Column.QUICK_FILTER_VOTE
+		)
+	}
+	
 }

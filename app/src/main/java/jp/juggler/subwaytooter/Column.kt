@@ -162,6 +162,7 @@ class Column(
 		private const val KEY_ENABLE_SPEECH = "enable_speech"
 		private const val KEY_USE_OLD_API = "use_old_api"
 		private const val KEY_LAST_VIEWING_ITEM = "lastViewingItem"
+		private const val KEY_QUICK_FILTER = "quickFilter"
 		
 		private const val KEY_REGEX_TEXT = "regex_text"
 		
@@ -226,6 +227,14 @@ class Column(
 		
 		internal var useInstanceTicker = false
 		
+		internal const val QUICK_FILTER_ALL = 0
+		internal const val QUICK_FILTER_MENTION = 1
+		internal const val QUICK_FILTER_FAVOURITE = 2
+		internal const val QUICK_FILTER_BOOST = 3
+		internal const val QUICK_FILTER_FOLLOW = 4
+		internal const val QUICK_FILTER_REACTION = 5
+		internal const val QUICK_FILTER_VOTE = 6
+		
 		@Suppress("UNCHECKED_CAST")
 		private inline fun <reified T> getParamAt(params : Array<out Any>, idx : Int) : T {
 			return params[idx] as T
@@ -280,7 +289,7 @@ class Column(
 				TYPE_LIST_TL -> context.getString(R.string.list_timeline)
 				TYPE_DIRECT_MESSAGES -> context.getString(R.string.direct_messages)
 				TYPE_TREND_TAG -> context.getString(R.string.trend_tag)
-				TYPE_SCHEDULED_STATUS ->context.getString(R.string.scheduled_status)
+				TYPE_SCHEDULED_STATUS -> context.getString(R.string.scheduled_status)
 				else -> "?"
 			}
 		}
@@ -576,12 +585,16 @@ class Column(
 	internal var with_highlight : Boolean = false
 	internal var dont_show_boost : Boolean = false
 	internal var dont_show_reply : Boolean = false
-	internal var dont_show_reaction : Boolean = false
-	internal var dont_show_vote : Boolean = false
 	
 	internal var dont_show_normal_toot : Boolean = false
+	
 	internal var dont_show_favourite : Boolean = false // 通知カラムのみ
 	internal var dont_show_follow : Boolean = false // 通知カラムのみ
+	internal var dont_show_reaction : Boolean = false // 通知カラムのみ
+	internal var dont_show_vote : Boolean = false // 通知カラムのみ
+	
+	internal var quick_filter = QUICK_FILTER_ALL
+	
 	internal var dont_streaming : Boolean = false
 	internal var dont_auto_refresh : Boolean = false
 	internal var hide_media_default : Boolean = false
@@ -669,14 +682,15 @@ class Column(
 	private val isFilterEnabled : Boolean
 		get() = (with_attachment
 			|| with_highlight
+			|| regex_text.isNotEmpty()
+			|| dont_show_normal_toot
+			|| quick_filter != QUICK_FILTER_ALL
 			|| dont_show_boost
 			|| dont_show_favourite
 			|| dont_show_follow
 			|| dont_show_reply
 			|| dont_show_reaction
 			|| dont_show_vote
-			|| dont_show_normal_toot
-			|| regex_text.isNotEmpty()
 			)
 	
 	@Volatile
@@ -789,6 +803,7 @@ class Column(
 		hide_media_default = src.optBoolean(KEY_HIDE_MEDIA_DEFAULT)
 		system_notification_not_related = src.optBoolean(KEY_SYSTEM_NOTIFICATION_NOT_RELATED)
 		instance_local = src.optBoolean(KEY_INSTANCE_LOCAL)
+		quick_filter = src.optInt(KEY_QUICK_FILTER, 0)
 		
 		enable_speech = src.optBoolean(KEY_ENABLE_SPEECH)
 		use_old_api = src.optBoolean(KEY_USE_OLD_API)
@@ -867,6 +882,7 @@ class Column(
 		dst.putIfTrue(KEY_INSTANCE_LOCAL, instance_local)
 		dst.putIfTrue(KEY_ENABLE_SPEECH, enable_speech)
 		dst.putIfTrue(KEY_USE_OLD_API, use_old_api)
+		dst.put(KEY_QUICK_FILTER, quick_filter)
 		
 		last_viewing_item_id?.putTo(dst, KEY_LAST_VIEWING_ITEM)
 		
@@ -1022,37 +1038,49 @@ class Column(
 		val sb = StringBuilder()
 		sb.append("(")
 		
-		var n = 0
-		if(! dont_show_reply) {
-			if(n ++ > 0) sb.append(", ")
-			sb.append(context.getString(R.string.notification_type_mention))
+		when(quick_filter) {
+			QUICK_FILTER_ALL -> {
+				var n = 0
+				if(! dont_show_reply) {
+					if(n ++ > 0) sb.append(", ")
+					sb.append(context.getString(R.string.notification_type_mention))
+				}
+				if(! dont_show_follow) {
+					if(n ++ > 0) sb.append(", ")
+					sb.append(context.getString(R.string.notification_type_follow))
+				}
+				if(! dont_show_boost) {
+					if(n ++ > 0) sb.append(", ")
+					sb.append(context.getString(R.string.notification_type_boost))
+				}
+				if(! dont_show_favourite) {
+					if(n ++ > 0) sb.append(", ")
+					sb.append(context.getString(R.string.notification_type_favourite))
+				}
+				if(isMisskey && ! dont_show_reaction) {
+					if(n ++ > 0) sb.append(", ")
+					sb.append(context.getString(R.string.notification_type_reaction))
+				}
+				if(isMisskey && ! dont_show_vote) {
+					if(n ++ > 0) sb.append(", ")
+					sb.append(context.getString(R.string.notification_type_vote))
+				}
+				val n_max = if(isMisskey) {
+					6
+				} else {
+					4
+				}
+				if(n == 0 || n == n_max) return "" // 全部か皆無なら部分表記は要らない
+			}
+			
+			QUICK_FILTER_MENTION -> sb.append(context.getString(R.string.notification_type_mention))
+			QUICK_FILTER_FAVOURITE -> sb.append(context.getString(R.string.notification_type_favourite))
+			QUICK_FILTER_BOOST -> sb.append(context.getString(R.string.notification_type_boost))
+			QUICK_FILTER_FOLLOW -> sb.append(context.getString(R.string.notification_type_follow))
+			QUICK_FILTER_REACTION -> sb.append(context.getString(R.string.notification_type_reaction))
+			QUICK_FILTER_VOTE -> sb.append(context.getString(R.string.notification_type_vote))
 		}
-		if(! dont_show_follow) {
-			if(n ++ > 0) sb.append(", ")
-			sb.append(context.getString(R.string.notification_type_follow))
-		}
-		if(! dont_show_boost) {
-			if(n ++ > 0) sb.append(", ")
-			sb.append(context.getString(R.string.notification_type_boost))
-		}
-		if(! dont_show_favourite) {
-			if(n ++ > 0) sb.append(", ")
-			sb.append(context.getString(R.string.notification_type_favourite))
-		}
-		if(isMisskey && ! dont_show_reaction) {
-			if(n ++ > 0) sb.append(", ")
-			sb.append(context.getString(R.string.notification_type_reaction))
-		}
-		if(isMisskey && ! dont_show_vote) {
-			if(n ++ > 0) sb.append(", ")
-			sb.append(context.getString(R.string.notification_type_vote))
-		}
-		val n_max = if(isMisskey) {
-			6
-		} else {
-			4
-		}
-		if(n == 0 || n == n_max) return "" // 全部か皆無なら部分表記は要らない
+		
 		sb.append(")")
 		return sb.toString()
 	}
@@ -1570,33 +1598,78 @@ class Column(
 	
 	private fun isFiltered(item : TootNotification) : Boolean {
 		
-		when(item.type) {
-			TootNotification.TYPE_FAVOURITE -> if(dont_show_favourite) {
-				log.d("isFiltered: favourite notification filtered.")
-				return true
+		when(quick_filter) {
+			QUICK_FILTER_ALL -> {
+				when(item.type) {
+					TootNotification.TYPE_FAVOURITE -> if(dont_show_favourite) {
+						log.d("isFiltered: favourite notification filtered.")
+						return true
+					}
+					TootNotification.TYPE_REBLOG,
+					TootNotification.TYPE_RENOTE,
+					TootNotification.TYPE_QUOTE -> if(dont_show_boost) {
+						log.d("isFiltered: reblog notification filtered.")
+						return true
+					}
+					
+					TootNotification.TYPE_FOLLOW_REQUEST,
+					TootNotification.TYPE_FOLLOW -> if(dont_show_follow) {
+						log.d("isFiltered: follow notification filtered.")
+						return true
+					}
+					
+					TootNotification.TYPE_MENTION,
+					TootNotification.TYPE_REPLY -> if(dont_show_reply) {
+						log.d("isFiltered: mention notification filtered.")
+						return true
+					}
+					TootNotification.TYPE_REACTION -> if(dont_show_reaction) {
+						log.d("isFiltered: reaction notification filtered.")
+						return true
+					}
+					TootNotification.TYPE_VOTE -> if(dont_show_vote) {
+						log.d("isFiltered: vote notification filtered.")
+						return true
+					}
+				}
 			}
-			TootNotification.TYPE_REBLOG,
-			TootNotification.TYPE_RENOTE,
-			TootNotification.TYPE_QUOTE -> if(dont_show_boost) {
-				log.d("isFiltered: reblog notification filtered.")
-				return true
-			}
-			TootNotification.TYPE_FOLLOW -> if(dont_show_follow) {
-				log.d("isFiltered: follow notification filtered.")
-				return true
-			}
-			TootNotification.TYPE_MENTION,
-			TootNotification.TYPE_REPLY -> if(dont_show_reply) {
-				log.d("isFiltered: mention notification filtered.")
-				return true
-			}
-			TootNotification.TYPE_REACTION -> if(dont_show_reaction) {
-				log.d("isFiltered: reaction notification filtered.")
-				return true
-			}
-			TootNotification.TYPE_VOTE -> if(dont_show_vote) {
-				log.d("isFiltered: vote notification filtered.")
-				return true
+			
+			else -> {
+				when(item.type) {
+					TootNotification.TYPE_FAVOURITE -> if(quick_filter != QUICK_FILTER_FAVOURITE) {
+						log.d("isFiltered: ${item.type} notification filtered.")
+						return true
+					}
+					TootNotification.TYPE_REBLOG,
+					TootNotification.TYPE_RENOTE,
+					TootNotification.TYPE_QUOTE -> if(quick_filter != QUICK_FILTER_BOOST) {
+						log.d("isFiltered: ${item.type} notification filtered.")
+						return true
+					}
+					TootNotification.TYPE_FOLLOW_REQUEST,
+					TootNotification.TYPE_FOLLOW -> if(quick_filter != QUICK_FILTER_FOLLOW) {
+						log.d("isFiltered: ${item.type} notification filtered.")
+						return true
+					}
+					TootNotification.TYPE_MENTION,
+					TootNotification.TYPE_REPLY -> if(quick_filter != QUICK_FILTER_MENTION) {
+						log.d("isFiltered: ${item.type} notification filtered.")
+						return true
+					}
+					TootNotification.TYPE_REACTION -> if(quick_filter != QUICK_FILTER_REACTION) {
+						log.d("isFiltered: ${item.type} notification filtered.")
+						return true
+					}
+					TootNotification.TYPE_VOTE -> if(quick_filter != QUICK_FILTER_VOTE) {
+						log.d("isFiltered: ${item.type} notification filtered.")
+						return true
+					}
+					
+					else -> {
+						log.d("isFiltered: ${item.type} notification filtered.")
+						return true
+					}
+				}
 			}
 		}
 		
@@ -2403,7 +2476,7 @@ class Column(
 			
 			fun parseNotifications(client : TootApiClient) : TootApiResult? {
 				
-				val params = makeMisskeyBaseParameter(parser)
+				val params = makeMisskeyBaseParameter(parser).addMisskeyNotificationFilter()
 				
 				val path_base = makeNotificationUrl()
 				
@@ -2585,10 +2658,10 @@ class Column(
 				
 			}
 			
-			private fun getScheduledStatuses(client:TootApiClient):TootApiResult?{
+			private fun getScheduledStatuses(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/scheduled_statuses")
-				val src = parseList(::TootScheduled,parser,result?.jsonArray)
-				list_tmp = addAll(list_tmp,src)
+				val src = parseList(::TootScheduled, parser, result?.jsonArray)
+				list_tmp = addAll(list_tmp, src)
 				
 				// ページングはないっぽい
 				idOld = null
@@ -3940,7 +4013,7 @@ class Column(
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				val last_since_id = idRecent
 				
-				val params = makeMisskeyBaseParameter(parser)
+				val params = makeMisskeyBaseParameter(parser).addMisskeyNotificationFilter()
 				
 				val time_start = SystemClock.elapsedRealtime()
 				
@@ -5375,7 +5448,7 @@ class Column(
 			
 			fun getNotificationList(client : TootApiClient) : TootApiResult? {
 				val path_base = makeNotificationUrl()
-				val params = makeMisskeyBaseParameter(parser)
+				val params = makeMisskeyBaseParameter(parser).addMisskeyNotificationFilter()
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				
@@ -6377,11 +6450,13 @@ class Column(
 							s.increaseReaction(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
 						}
 					}
+					
 					MisskeyNoteUpdate.Type.UNREACTION -> {
 						scanStatusAll { s ->
-							s.decreaseReaction(ev.reaction, byMe ,"onNoteUpdated ${ev.userId}")
+							s.decreaseReaction(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
 						}
 					}
+					
 					MisskeyNoteUpdate.Type.VOTED -> {
 						scanStatusAll { s ->
 							s.enquete?.increaseVote(context, ev.choice, byMe) ?: false
@@ -6394,7 +6469,7 @@ class Column(
 						}
 					}
 					
-					else ->{
+					else -> {
 						log.d("onNoteUpdated: unknown type: ${ev.type}")
 					}
 				}
@@ -6799,14 +6874,66 @@ class Column(
 			
 			else -> {
 				val sb = StringBuilder(PATH_NOTIFICATIONS) // always contain "?limit=XX"
-				if(dont_show_favourite) sb.append("&exclude_types[]=favourite")
-				if(dont_show_boost) sb.append("&exclude_types[]=reblog")
-				if(dont_show_follow) sb.append("&exclude_types[]=follow")
-				if(dont_show_reply) sb.append("&exclude_types[]=mention")
+				when(quick_filter) {
+					QUICK_FILTER_ALL -> {
+						if(dont_show_favourite) sb.append("&exclude_types[]=favourite")
+						if(dont_show_boost) sb.append("&exclude_types[]=reblog")
+						if(dont_show_follow) sb.append("&exclude_types[]=follow")
+						if(dont_show_reply) sb.append("&exclude_types[]=mention")
+					}
+					
+					else -> {
+						if(quick_filter != QUICK_FILTER_FAVOURITE) sb.append("&exclude_types[]=favourite")
+						if(quick_filter != QUICK_FILTER_BOOST) sb.append("&exclude_types[]=reblog")
+						if(quick_filter != QUICK_FILTER_FOLLOW) sb.append("&exclude_types[]=follow")
+						if(quick_filter != QUICK_FILTER_MENTION) sb.append("&exclude_types[]=mention")
+					}
+				}
+				
 				// reaction,voteはmastodonにはない
 				sb.toString()
 			}
 		}
+	}
+	
+	private fun JSONObject.addMisskeyNotificationFilter() : JSONObject {
+		when(quick_filter) {
+			QUICK_FILTER_ALL -> {
+				val excludeList = JSONArray()
+				
+				// Misskeyのお気に入りは通知されない
+				// if(dont_show_favourite) ...
+				
+				if(dont_show_boost) {
+					excludeList.put("renote")
+					excludeList.put("quote")
+				}
+				if(dont_show_follow) {
+					excludeList.put("follow")
+					excludeList.put("receiveFollowRequest")
+				}
+				if(dont_show_reply) {
+					excludeList.put("mention")
+					excludeList.put("reply")
+				}
+				if(dont_show_reaction) {
+					excludeList.put("reaction")
+				}
+				if(dont_show_vote) {
+					excludeList.put("poll_vote")
+				}
+				if(excludeList.length() > 0) put("excludeTypes", excludeList)
+			}
+			
+			// QUICK_FILTER_FAVOURITE // misskeyはお気に入りの通知はない
+			QUICK_FILTER_BOOST -> put("includeTypes", jsonArray("renote", "quote"))
+			QUICK_FILTER_FOLLOW -> put("includeTypes", jsonArray("follow", "receiveFollowRequest"))
+			QUICK_FILTER_MENTION -> put("includeTypes", jsonArray("mention", "reply"))
+			QUICK_FILTER_REACTION -> put("includeTypes", jsonArray("reaction"))
+			QUICK_FILTER_VOTE -> put("includeTypes", jsonArray("poll_vote"))
+		}
+
+		return this
 	}
 	
 	private fun makeListTlUrl() : String {
@@ -6922,7 +7049,7 @@ class Column(
 	fun onScheduleDeleted(item : TootScheduled) {
 		val tmp_list = ArrayList<TimelineItem>(list_data.size)
 		for(o in list_data) {
-			if(o === item ) continue
+			if(o === item) continue
 			tmp_list.add(o)
 		}
 		if(tmp_list.size != list_data.size) {
@@ -6988,7 +7115,6 @@ class Column(
 		)
 	}
 	
-	
 	//	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
 	//		list_data.forEachIndexed { i, v ->
 	//			if(v.getOrderId() == orderId) return i
@@ -7001,3 +7127,4 @@ class Column(
 	}
 	
 }
+

@@ -14,10 +14,10 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_column_header"
         android:orientation="vertical"
-        android:paddingBottom="3dp"
-        android:paddingEnd="12dp"
         android:paddingStart="12dp"
         android:paddingTop="3dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="3dp"
         >
 
         <LinearLayout
@@ -33,8 +33,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="end"
-                android:paddingEnd="4dp"
                 android:paddingStart="4dp"
+                android:paddingEnd="4dp"
                 android:textColor="?attr/colorColumnHeaderAcct"
                 android:textSize="12sp"
                 tools:text="tvColumnContext"
@@ -138,10 +138,10 @@
             android:layout_height="wrap_content"
             android:background="?attr/colorColumnSettingBackground"
             android:orientation="vertical"
-            android:paddingBottom="3dp"
-            android:paddingEnd="12dp"
             android:paddingStart="12dp"
             android:paddingTop="3dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="3dp"
             >
 
             <CheckBox
@@ -322,10 +322,10 @@
         android:layout_height="wrap_content"
         android:background="?attr/colorSearchFormBackground"
         android:orientation="vertical"
-        android:paddingBottom="3dp"
-        android:paddingEnd="12dp"
         android:paddingStart="12dp"
         android:paddingTop="3dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="3dp"
         >
 
         <LinearLayout
@@ -375,10 +375,10 @@
         android:baselineAligned="false"
         android:gravity="center"
         android:orientation="horizontal"
-        android:paddingBottom="3dp"
-        android:paddingEnd="12dp"
         android:paddingStart="12dp"
         android:paddingTop="3dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="3dp"
         >
 
         <EditText
@@ -403,6 +403,89 @@
             />
 
     </LinearLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/svQuickFilter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:orientation="horizontal"
+            >
+
+            <Button
+                android:id="@+id/btnQuickFilterAll"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_margin="0dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:minWidth="40dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="@string/all"
+                android:textAllCaps="false"
+                android:stateListAnimator="@null"
+                />
+
+            <ImageButton
+                android:id="@+id/btnQuickFilterMention"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_margin="0dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/mention2"
+                />
+
+            <ImageButton
+                android:id="@+id/btnQuickFilterFavourite"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_margin="0dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/favourite"
+                />
+
+            <ImageButton
+                android:id="@+id/btnQuickFilterBoost"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_margin="0dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/boost"
+                />
+
+            <ImageButton
+                android:id="@+id/btnQuickFilterFollow"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_margin="0dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/follow"
+                />
+
+            <ImageButton
+                android:id="@+id/btnQuickFilterReaction"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_margin="0dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/reaction"
+                />
+
+            <ImageButton
+                android:id="@+id/btnQuickFilterVote"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_margin="0dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/vote"
+                />
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <FrameLayout
         android:id="@+id/flColumnBackground"

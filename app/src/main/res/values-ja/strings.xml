@@ -842,5 +842,6 @@
     <string name="cant_change_account_when_editing_scheduled_status">予約した投稿の再編集ではアカウントを変更できません</string>
     <string name="delete_scheduled_status_before_update">投稿する前に編集前の古い予約投稿を削除します。よろしいですか?</string>
     <string name="reply_icon_size">返信アイコンの大きさ(単位:dp。デフォルト:24。アプリ再起動が必要)</string>
+    <string name="all">All</string>
 
 </resources>

@@ -193,3 +193,15 @@ fun jsonObject(initializer : JSONObject.() -> Unit) : JSONObject {
 	dst.initializer()
 	return dst
 }
+
+fun Array<String>.toJsonArray() : JSONArray = JSONArray().also{
+	for(s in this){
+		it.put(s)
+	}
+}
+
+fun jsonArray(vararg args:String) = JSONArray().also{
+	for(s in args){
+		it.put(s)
+	}
+}

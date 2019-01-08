@@ -494,8 +494,8 @@ class PostHelper(
 						}
 						
 						if(scheduledAt != 0L) {
-							if(! instance.versionGE(TootInstance.VERSION_2_7_0_rc1)) {
-								return TootApiResult("Mastodon pre-2.7.0 has no scheduled status API")
+							if( ! instance.versionGE(TootInstance.VERSION_2_7_0_rc1) ) {
+								return TootApiResult(activity.getString(R.string.scheduled_status_requires_mastodon_2_7_0))
 							}
 							// UTCの日時を渡す
 							val c = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"))

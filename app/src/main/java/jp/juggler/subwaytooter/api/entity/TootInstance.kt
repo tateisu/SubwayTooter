@@ -15,14 +15,13 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		private val rePleroma = Pattern.compile("\\bpleroma\\b", Pattern.CASE_INSENSITIVE)
 		
 		val VERSION_1_6 = VersionString("1.6")
-		val VERSION_2_7_0_rc1 = VersionString("2.6.5") // FIXME: 2.7rcが出たら変更する
 		val VERSION_2_4_0_rc1 = VersionString("2.4.0rc1")
 		val VERSION_2_4_0_rc2 = VersionString("2.4.0rc2")
 		val VERSION_2_4_0 = VersionString("2.4.0")
 		val VERSION_2_4_1_rc1 = VersionString("2.4.1rc1")
 		val VERSION_2_4_1 = VersionString("2.4.1")
 		val VERSION_2_6_0 = VersionString("2.6.0")
-		
+		val VERSION_2_7_0_rc1 = VersionString("2.7.0rc1")
 	}
 	
 	// いつ取得したか(内部利用)

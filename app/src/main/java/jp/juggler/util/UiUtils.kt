@@ -1,5 +1,7 @@
 package jp.juggler.util
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -13,7 +15,12 @@ import android.os.SystemClock
 import android.support.v4.content.ContextCompat
 import android.util.SparseArray
 import android.widget.ImageView
+import jp.juggler.subwaytooter.R
 import java.util.*
+
+object UiUtils{
+	val log = LogCategory("UiUtils")
+}
 
 // colorARGB.applyAlphaMultiplier(0.5f) でalpha値が半分になったARGB値を得る
 fun Int.applyAlphaMultiplier(alphaMultiplier : Float? = null) : Int {
@@ -240,4 +247,25 @@ fun setIconAttr(
 		color,
 		alphaMultiplier
 	)
+}
+
+fun CharSequence.copyToClipboard(context:Context) {
+	try {
+		// Gets a handle to the clipboard service.
+		val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+			?: throw NotImplementedError("missing ClipboardManager system service")
+		
+		// Creates a new text clip to put on the clipboard
+		val clip = ClipData.newPlainText("text", this)
+		
+		// Set the clipboard's primary clip.
+		
+		clipboard.primaryClip = clip
+		
+		showToast(context, false, R.string.copy_complete)
+	} catch(ex : Throwable) {
+		UiUtils.log.trace(ex)
+		showToast(context, ex, "copy failed.")
+	}
+	
 }

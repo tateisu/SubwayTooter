@@ -62,60 +62,61 @@ internal class DlgContextMenu(
 		dialog.setCancelable(true)
 		dialog.setCanceledOnTouchOutside(true)
 		
-		val llStatus = viewRoot.findViewById<View>(R.id.llStatus)
-		val btnStatusWebPage = viewRoot.findViewById<View>(R.id.btnStatusWebPage)
-		val btnText = viewRoot.findViewById<View>(R.id.btnText)
-		val btnFavouriteAnotherAccount =
-			viewRoot.findViewById<View>(R.id.btnFavouriteAnotherAccount)
-		val btnBoostAnotherAccount = viewRoot.findViewById<View>(R.id.btnBoostAnotherAccount)
-		val btnReactionAnotherAccount = viewRoot.findViewById<View>(R.id.btnReactionAnotherAccount)
-		val btnReplyAnotherAccount = viewRoot.findViewById<View>(R.id.btnReplyAnotherAccount)
-		val btnQuotedRenote = viewRoot.findViewById<View>(R.id.btnQuotedRenote)
-		val btnDelete = viewRoot.findViewById<View>(R.id.btnDelete)
-		val btnRedraft = viewRoot.findViewById<View>(R.id.btnRedraft)
+		val llStatus : View = viewRoot.findViewById(R.id.llStatus)
+		val btnStatusWebPage : View = viewRoot.findViewById(R.id.btnStatusWebPage)
+		val btnText : View = viewRoot.findViewById(R.id.btnText)
+		val btnFavouriteAnotherAccount : View =
+			viewRoot.findViewById(R.id.btnFavouriteAnotherAccount)
+		val btnBoostAnotherAccount : View = viewRoot.findViewById(R.id.btnBoostAnotherAccount)
+		val btnReactionAnotherAccount : View = viewRoot.findViewById(R.id.btnReactionAnotherAccount)
+		val btnReplyAnotherAccount : View = viewRoot.findViewById(R.id.btnReplyAnotherAccount)
+		val btnQuotedRenote : View = viewRoot.findViewById(R.id.btnQuotedRenote)
+		val btnDelete : View = viewRoot.findViewById(R.id.btnDelete)
+		val btnRedraft : View = viewRoot.findViewById(R.id.btnRedraft)
 		
-		val btnReport = viewRoot.findViewById<View>(R.id.btnReport)
-		val btnMuteApp = viewRoot.findViewById<Button>(R.id.btnMuteApp)
-		val llAccountActionBar = viewRoot.findViewById<View>(R.id.llAccountActionBar)
-		val btnFollow = viewRoot.findViewById<ImageView>(R.id.btnFollow)
+		val btnReport : View = viewRoot.findViewById(R.id.btnReport)
+		val btnMuteApp : Button = viewRoot.findViewById(R.id.btnMuteApp)
+		val llAccountActionBar : View = viewRoot.findViewById(R.id.llAccountActionBar)
+		val btnFollow : ImageView = viewRoot.findViewById(R.id.btnFollow)
 		
-		val btnMute = viewRoot.findViewById<ImageView>(R.id.btnMute)
-		val btnBlock = viewRoot.findViewById<ImageView>(R.id.btnBlock)
-		val btnProfile = viewRoot.findViewById<View>(R.id.btnProfile)
-		val btnSendMessage = viewRoot.findViewById<View>(R.id.btnSendMessage)
-		val btnAccountWebPage = viewRoot.findViewById<View>(R.id.btnAccountWebPage)
-		val btnFollowRequestOK = viewRoot.findViewById<View>(R.id.btnFollowRequestOK)
-		val btnFollowRequestNG = viewRoot.findViewById<View>(R.id.btnFollowRequestNG)
-		val btnDeleteSuggestion = viewRoot.findViewById<View>(R.id.btnDeleteSuggestion)
-		val btnFollowFromAnotherAccount =
-			viewRoot.findViewById<View>(R.id.btnFollowFromAnotherAccount)
-		val btnSendMessageFromAnotherAccount =
-			viewRoot.findViewById<View>(R.id.btnSendMessageFromAnotherAccount)
-		val btnOpenProfileFromAnotherAccount =
-			viewRoot.findViewById<View>(R.id.btnOpenProfileFromAnotherAccount)
-		val btnDomainBlock = viewRoot.findViewById<Button>(R.id.btnDomainBlock)
-		val btnInstanceInformation = viewRoot.findViewById<Button>(R.id.btnInstanceInformation)
-		val ivFollowedBy = viewRoot.findViewById<ImageView>(R.id.ivFollowedBy)
-		val btnOpenTimeline = viewRoot.findViewById<Button>(R.id.btnOpenTimeline)
-		val btnConversationAnotherAccount =
-			viewRoot.findViewById<View>(R.id.btnConversationAnotherAccount)
-		val btnAvatarImage = viewRoot.findViewById<View>(R.id.btnAvatarImage)
+		val btnMute : ImageView = viewRoot.findViewById(R.id.btnMute)
+		val btnBlock : ImageView = viewRoot.findViewById(R.id.btnBlock)
+		val btnProfile : View = viewRoot.findViewById(R.id.btnProfile)
+		val btnSendMessage : View = viewRoot.findViewById(R.id.btnSendMessage)
+		val btnAccountWebPage : View = viewRoot.findViewById(R.id.btnAccountWebPage)
+		val btnFollowRequestOK : View = viewRoot.findViewById(R.id.btnFollowRequestOK)
+		val btnFollowRequestNG : View = viewRoot.findViewById(R.id.btnFollowRequestNG)
+		val btnDeleteSuggestion : View = viewRoot.findViewById(R.id.btnDeleteSuggestion)
+		val btnFollowFromAnotherAccount : View =
+			viewRoot.findViewById(R.id.btnFollowFromAnotherAccount)
+		val btnSendMessageFromAnotherAccount : View =
+			viewRoot.findViewById(R.id.btnSendMessageFromAnotherAccount)
+		val btnOpenProfileFromAnotherAccount : View =
+			viewRoot.findViewById(R.id.btnOpenProfileFromAnotherAccount)
+		val btnDomainBlock : Button = viewRoot.findViewById(R.id.btnDomainBlock)
+		val btnInstanceInformation : Button = viewRoot.findViewById(R.id.btnInstanceInformation)
+		val ivFollowedBy : ImageView = viewRoot.findViewById(R.id.ivFollowedBy)
+		val btnOpenTimeline : Button = viewRoot.findViewById(R.id.btnOpenTimeline)
+		val btnConversationAnotherAccount : View =
+			viewRoot.findViewById(R.id.btnConversationAnotherAccount)
+		val btnAvatarImage : View = viewRoot.findViewById(R.id.btnAvatarImage)
 		
-		val llNotification = viewRoot.findViewById<View>(R.id.llNotification)
-		val btnNotificationDelete = viewRoot.findViewById<View>(R.id.btnNotificationDelete)
-		val btnConversationMute = viewRoot.findViewById<Button>(R.id.btnConversationMute)
+		val llNotification : View = viewRoot.findViewById(R.id.llNotification)
+		val btnNotificationDelete : View = viewRoot.findViewById(R.id.btnNotificationDelete)
+		val btnConversationMute : Button = viewRoot.findViewById(R.id.btnConversationMute)
 		
-		val btnHideBoost = viewRoot.findViewById<View>(R.id.btnHideBoost)
-		val btnShowBoost = viewRoot.findViewById<View>(R.id.btnShowBoost)
-		val btnHideFavourite = viewRoot.findViewById<View>(R.id.btnHideFavourite)
-		val btnShowFavourite = viewRoot.findViewById<View>(R.id.btnShowFavourite)
+		val btnHideBoost : View = viewRoot.findViewById(R.id.btnHideBoost)
+		val btnShowBoost : View = viewRoot.findViewById(R.id.btnShowBoost)
+		val btnHideFavourite : View = viewRoot.findViewById(R.id.btnHideFavourite)
+		val btnShowFavourite : View = viewRoot.findViewById(R.id.btnShowFavourite)
 		
-		val btnListMemberAddRemove = viewRoot.findViewById<View>(R.id.btnListMemberAddRemove)
+		val btnListMemberAddRemove : View = viewRoot.findViewById(R.id.btnListMemberAddRemove)
 		val btnEndorse : Button = viewRoot.findViewById(R.id.btnEndorse)
 		
-		val btnAroundAccountTL = viewRoot.findViewById<View>(R.id.btnAroundAccountTL)
-		val btnAroundLTL = viewRoot.findViewById<View>(R.id.btnAroundLTL)
-		val btnAroundFTL = viewRoot.findViewById<View>(R.id.btnAroundFTL)
+		val btnAroundAccountTL : View = viewRoot.findViewById(R.id.btnAroundAccountTL)
+		val btnAroundLTL : View = viewRoot.findViewById(R.id.btnAroundLTL)
+		val btnAroundFTL : View = viewRoot.findViewById(R.id.btnAroundFTL)
+		val btnCopyAccountId : Button = viewRoot.findViewById(R.id.btnCopyAccountId)
 		
 		val llLinks : LinearLayout = viewRoot.findViewById(R.id.llLinks)
 		
@@ -160,6 +161,7 @@ internal class DlgContextMenu(
 		btnInstanceInformation.setOnClickListener(this)
 		btnDomainBlock.setOnClickListener(this)
 		btnEndorse.setOnClickListener(this)
+		btnCopyAccountId.setOnClickListener(this)
 		
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus).setOnClickListener(this)
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlAccount).setOnClickListener(this)
@@ -186,24 +188,30 @@ internal class DlgContextMenu(
 		} else {
 			val status_by_me = access_info.isMe(status.account)
 			
-			if(Pref.bpLinksInContextMenu(activity.pref) && contentTextView != null){
-
+			if(Pref.bpLinksInContextMenu(activity.pref) && contentTextView != null) {
+				
 				var insPos = 0
-
-				fun addLinkButton(span : MyClickableSpan,caption : String){
+				
+				fun addLinkButton(span : MyClickableSpan, caption : String) {
 					val b = Button(activity)
-					val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT)
+					val lp = LinearLayout.LayoutParams(
+						ViewGroup.LayoutParams.MATCH_PARENT,
+						ViewGroup.LayoutParams.WRAP_CONTENT
+					)
 					b.layoutParams = lp
-					ViewCompat.setBackground(b, ContextCompat.getDrawable(activity,R.drawable.btn_bg_transparent))
+					ViewCompat.setBackground(
+						b,
+						ContextCompat.getDrawable(activity, R.drawable.btn_bg_transparent)
+					)
 					b.gravity = Gravity.START or Gravity.CENTER_VERTICAL
-					b.minHeight = (activity.density *32f + 0.5f).toInt()
-					b.minimumHeight = (activity.density *32f + 0.5f).toInt()
-					val pad_lr = (activity.density *8f + 0.5f).toInt()
-					val pad_tb = (activity.density *4f + 0.5f).toInt()
-					b.setPaddingRelative(pad_lr,pad_tb,pad_lr,pad_tb)
+					b.minHeight = (activity.density * 32f + 0.5f).toInt()
+					b.minimumHeight = (activity.density * 32f + 0.5f).toInt()
+					val pad_lr = (activity.density * 8f + 0.5f).toInt()
+					val pad_tb = (activity.density * 4f + 0.5f).toInt()
+					b.setPaddingRelative(pad_lr, pad_tb, pad_lr, pad_tb)
 					b.text = caption
 					b.allCaps = false
-					b.setOnClickListener{
+					b.setOnClickListener {
 						try {
 							dialog.dismiss()
 						} catch(ignored : Throwable) {
@@ -211,23 +219,23 @@ internal class DlgContextMenu(
 						}
 						span.onClick(contentTextView)
 					}
-					llLinks.addView(b,insPos++)
+					llLinks.addView(b, insPos ++)
 				}
-
+				
 				val dc = status.decoded_content
-				for( tag in dc.getSpans(0,dc.length,MyClickableSpan::class.java) ){
+				for(tag in dc.getSpans(0, dc.length, MyClickableSpan::class.java)) {
 					val start = dc.getSpanStart(tag)
 					val end = dc.getSpanEnd(tag)
-					val href = tag ?.url ?:continue
-					val caption = dc.substring(start,end)
+					val href = tag?.url ?: continue
+					val caption = dc.substring(start, end)
 					val head = caption[0]
-					if(head=='@' || head == '#')
+					if(head == '@' || head == '#')
 						addLinkButton(tag, caption)
 					else
 						addLinkButton(tag, href)
 				}
 			}
-			vg(llLinks,llLinks.childCount > 1)
+			vg(llLinks, llLinks.childCount > 1)
 			
 			btnDelete.visibility = if(status_by_me) View.VISIBLE else View.GONE
 			btnRedraft.visibility = if(status_by_me) View.VISIBLE else View.GONE
@@ -346,6 +354,7 @@ internal class DlgContextMenu(
 		if(who == null) {
 			btnInstanceInformation.visibility = View.GONE
 			btnDomainBlock.visibility = View.GONE
+			btnCopyAccountId.visibility = View.GONE
 		} else {
 			val who_host = who.host
 			btnInstanceInformation.visibility = View.VISIBLE
@@ -359,6 +368,9 @@ internal class DlgContextMenu(
 				btnDomainBlock.visibility = View.VISIBLE
 				btnDomainBlock.text = activity.getString(R.string.block_domain_that, who_host)
 			}
+			
+			btnCopyAccountId.visibility = View.VISIBLE
+			btnCopyAccountId.text = activity.getString(R.string.copy_account_id, who.id.toString() )
 		}
 		
 		viewRoot.findViewById<View>(R.id.btnAccountText).setOnClickListener(this)
@@ -742,6 +754,7 @@ internal class DlgContextMenu(
 					Column.TYPE_FEDERATED_AROUND
 				)
 				
+				R.id.btnCopyAccountId -> who.id.toString().copyToClipboard(activity)
 			}
 		}
 		

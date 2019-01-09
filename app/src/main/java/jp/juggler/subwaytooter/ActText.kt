@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.app.SearchManager
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -14,6 +12,7 @@ import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.LogCategory
+import jp.juggler.util.copyToClipboard
 import jp.juggler.util.showToast
 import java.util.*
 
@@ -278,7 +277,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	override fun onClick(v : View) {
 		when(v.id) {
 			
-			R.id.btnCopy -> copy()
+			R.id.btnCopy -> selection.copyToClipboard(this)
 			
 			R.id.btnSearch -> search()
 			
@@ -292,27 +291,6 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			
 			R.id.btnKeywordFilter -> keywordFilter()
 		}
-	}
-	
-	private fun copy() {
-		try {
-			// Gets a handle to the clipboard service.
-			val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-				?: throw NotImplementedError("missing ClipboardManager system service")
-			
-			// Creates a new text clip to put on the clipboard
-			val clip = ClipData.newPlainText("text", selection)
-			
-			// Set the clipboard's primary clip.
-			
-			clipboard.primaryClip = clip
-			
-			showToast(this, false, R.string.copy_complete)
-		} catch(ex : Throwable) {
-			log.trace(ex)
-			showToast(this, ex, "copy failed.")
-		}
-		
 	}
 	
 	private fun send() {

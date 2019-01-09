@@ -797,7 +797,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	internal fun copy(url : String) {
-		
 		val cm = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager
 			?: throw NotImplementedError("missing ClipboardManager system service")
 		

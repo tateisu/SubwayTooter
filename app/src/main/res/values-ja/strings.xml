@@ -846,5 +846,6 @@
     <string name="show_links_in_context_menu">本文中のリンクをコンテキストメニューに表示する</string>
     <string name="scheduled_status_requires_mastodon_2_7_0">予約投稿はマストドン2.7.0以降で使えます</string>
     <string name="move_notifications_quick_filter_to_column_setting">通知カラムのクイックフィルタをカラム設定内部に表示する(アプリ再起動が必要)</string>
+    <string name="copy_account_id">アカウントID %1$s をコピー</string>
 
 </resources>

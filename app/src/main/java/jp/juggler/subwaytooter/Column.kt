@@ -84,8 +84,7 @@ class Column(
 		private const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=true"
 		private const val PATH_TL_FEDERATE = "/api/v1/timelines/public?limit=$READ_LIMIT"
 		private const val PATH_FAVOURITES = "/api/v1/favourites?limit=$READ_LIMIT"
-		private const val PATH_ACCOUNT_STATUSES =
-			"/api/v1/accounts/%s/statuses?limit=$READ_LIMIT" // 1:account_id
+		
 		private const val PATH_LIST_TL = "/api/v1/timelines/list/%s?limit=$READ_LIMIT"
 		
 		// アカウントのリストを返すAPI
@@ -2622,13 +2621,7 @@ class Column(
 				// ↑のトゥートのアカウントのID
 				profile_id = target_status.account.id
 				
-				var path = String.format(
-					Locale.JAPAN,
-					PATH_ACCOUNT_STATUSES,
-					profile_id
-				)
-				if(with_attachment && ! with_highlight) path += "&only_media=1"
-				
+				val path = makeProfileStatusesUrl(profile_id)
 				idOld = null
 				idRecent = null
 				
@@ -2858,12 +2851,7 @@ class Column(
 											}
 										}
 										
-										var path = String.format(
-											Locale.JAPAN,
-											PATH_ACCOUNT_STATUSES,
-											profile_id
-										)
-										if(with_attachment && ! with_highlight) path += "&only_media=1"
+										val path = makeProfileStatusesUrl(profile_id)
 										
 										if(instance?.versionGE(TootInstance.VERSION_1_6) == true
 										// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
@@ -3415,6 +3403,15 @@ class Column(
 		}
 		this.lastTask = task
 		task.executeOnExecutor(App1.task_executor)
+	}
+	
+	// mastodon用
+	private fun makeProfileStatusesUrl(profile_id : EntityId?) : String {
+		var path ="/api/v1/accounts/$profile_id/statuses?limit=$READ_LIMIT"
+		if(with_attachment && ! with_highlight) path += "&only_media=1"
+		if(dont_show_boost) path += "&exclude_reblogs=1"
+		if(dont_show_reply) path += "&exclude_replies=1"
+		return path
 	}
 	
 	private var bMinIdMatched : Boolean = false
@@ -4784,19 +4781,11 @@ class Column(
 						}
 						
 						TYPE_ACCOUNT_AROUND -> {
-							var s = String.format(
-								Locale.JAPAN,
-								PATH_ACCOUNT_STATUSES,
-								profile_id
-							)
-							if(with_attachment && ! with_highlight) s += "&only_media=1"
-							getStatusList(client, s)
-							
+							val path = makeProfileStatusesUrl(profile_id)
 							if(bBottom) {
-								getStatusList(client, s)
+								getStatusList(client, path)
 							} else {
-								val rv =
-									getStatusList(client, s, aroundMin = true)
+								val rv = getStatusList(client, path, aroundMin = true)
 								list_tmp?.sortBy { it.getOrderId() }
 								list_tmp?.reverse()
 								rv
@@ -4884,13 +4873,7 @@ class Column(
 										misskeyParams = makeMisskeyParamsProfileStatuses(parser)
 									)
 								} else {
-									var s = String.format(
-										Locale.JAPAN,
-										PATH_ACCOUNT_STATUSES,
-										profile_id
-									)
-									if(with_attachment && ! with_highlight) s += "&only_media=1"
-									getStatusList(client, s)
+									getStatusList(client, makeProfileStatusesUrl(profile_id))
 								}
 							}
 						}
@@ -5976,14 +5959,7 @@ class Column(
 								if(access_info.isPseudo) {
 									client.request(PATH_INSTANCE)
 								} else {
-									var s =
-										String.format(
-											Locale.JAPAN,
-											PATH_ACCOUNT_STATUSES,
-											profile_id
-										)
-									if(with_attachment && ! with_highlight) s += "&only_media=1"
-									getStatusList(client, s)
+									getStatusList(client, makeProfileStatusesUrl(profile_id))
 								}
 							}
 						}

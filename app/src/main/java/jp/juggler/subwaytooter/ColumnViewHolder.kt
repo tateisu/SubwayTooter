@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.AsyncTask
+import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -34,6 +35,7 @@ import java.util.regex.Pattern
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
 
+@SuppressLint("ClickableViewAccessibility")
 class ColumnViewHolder(
 	val activity : ActMain,
 	val viewRoot : View
@@ -341,7 +343,7 @@ class ColumnViewHolder(
 		btnQuickFilterFollow = viewRoot.findViewById(R.id.btnQuickFilterFollow)
 		btnQuickFilterReaction = viewRoot.findViewById(R.id.btnQuickFilterReaction)
 		btnQuickFilterVote = viewRoot.findViewById(R.id.btnQuickFilterVote)
-		
+		val llColumnSettingInside : LinearLayout = viewRoot.findViewById(R.id.llColumnSettingInside)
 		
 		btnQuickFilterAll.setOnClickListener(this)
 		btnQuickFilterMention.setOnClickListener(this)
@@ -389,6 +391,22 @@ class ColumnViewHolder(
 		cbSystemNotificationNotRelated.setOnCheckedChangeListener(this)
 		cbEnableSpeech.setOnCheckedChangeListener(this)
 		cbOldApi.setOnCheckedChangeListener(this)
+		
+		if(Pref.bpMoveNotificationsQuickFilter(activity.pref)){
+			(svQuickFilter.parent as? ViewGroup)?.removeView(svQuickFilter)
+			llColumnSettingInside.addView(svQuickFilter,0)
+			
+			svQuickFilter.setOnTouchListener  { v, event ->
+				val action = event.action
+                if(action == MotionEvent.ACTION_DOWN){
+                   val sv = v as? HorizontalScrollView
+                    if(sv != null && sv.getChildAt(0).width > sv.width ){
+                        sv.requestDisallowInterceptTouchEvent(true)
+                    }
+                }
+                v.onTouchEvent(event)
+			}
+		}
 		
 		initLoadingTextView()
 		
@@ -1456,27 +1474,56 @@ class ColumnViewHolder(
 
 		vg(btnQuickFilterFavourite, !column.isMisskey)
 
-		val colorBg = column.getHeaderBackgroundColor()
-		val colorFg = column.getHeaderNameColor()
-		val colorBgSelected = Color.rgb(
-			(Color.red(colorBg) *3 + Color.red(colorFg)) / 4,
-			(Color.green(colorBg)*3 + Color.green(colorFg)) / 4,
-			(Color.blue(colorBg)*3 + Color.blue(colorFg)) / 4
-		)
-		svQuickFilter.setBackgroundColor(colorBg)
+		val insideColumnSetting = Pref.bpMoveNotificationsQuickFilter(activity.pref)
 		
-		fun showQuickFilterButton(btn : View, iconId : Int, selected : Boolean) {
+		val showQuickFilterButton:(btn : View, iconId : Int, selected : Boolean)->Unit
+
+		if(insideColumnSetting){
+			svQuickFilter.setBackgroundColor(0)
+
+			val colorFg = getAttributeColor(activity,R.attr.colorContentText)
+			val colorBgSelected = colorFg.applyAlphaMultiplier(0.25f)
 			
-			ViewCompat.setBackground(
-				btn,
-				getAdaptiveRippleDrawable(
-					if(selected) colorBgSelected else colorBg,
-					colorFg
+			showQuickFilterButton = { btn , iconId , selected  ->
+				ViewCompat.setBackground(
+					btn,
+					if(selected) {
+						getAdaptiveRippleDrawable(
+							colorBgSelected,
+							colorFg
+						)
+					}else {
+						ContextCompat.getDrawable(activity,R.drawable.btn_bg_transparent)
+					}
 				)
+				when(btn) {
+					is ImageButton -> setIconDrawableId(activity, btn, iconId, colorFg)
+					is TextView -> btn.textColor = colorFg
+				}
+			}
+		}else {
+			val colorBg = column.getHeaderBackgroundColor()
+			val colorFg = column.getHeaderNameColor()
+			val colorBgSelected = Color.rgb(
+				(Color.red(colorBg) * 3 + Color.red(colorFg)) / 4,
+				(Color.green(colorBg) * 3 + Color.green(colorFg)) / 4,
+				(Color.blue(colorBg) * 3 + Color.blue(colorFg)) / 4
 			)
-			when(btn){
-				is ImageButton ->setIconDrawableId(activity,btn,iconId,colorFg)
-				is TextView -> btn.textColor = colorFg
+			svQuickFilter.setBackgroundColor(colorBg)
+			
+			showQuickFilterButton = { btn , iconId , selected  ->
+				
+				ViewCompat.setBackground(
+					btn,
+					getAdaptiveRippleDrawable(
+						if(selected) colorBgSelected else colorBg,
+						colorFg
+					)
+				)
+				when(btn) {
+					is ImageButton -> setIconDrawableId(activity, btn, iconId, colorFg)
+					is TextView -> btn.textColor = colorFg
+				}
 			}
 		}
 		

@@ -142,6 +142,7 @@
             android:paddingTop="3dp"
             android:paddingEnd="12dp"
             android:paddingBottom="3dp"
+            android:id="@+id/llColumnSettingInside"
             >
 
             <CheckBox

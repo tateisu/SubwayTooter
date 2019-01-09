@@ -351,6 +351,11 @@ object Pref {
 		false,
 		R.id.swLinksInContextMenu
 	)
+	val bpMoveNotificationsQuickFilter = BooleanPref(
+		"MoveNotificationsQuickFilter",
+		false,
+		R.id.swMoveNotificationsQuickFilter
+	)
 	
 	// int
 	

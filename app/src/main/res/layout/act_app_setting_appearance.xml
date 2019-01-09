@@ -513,5 +513,23 @@
 
         </LinearLayout>
 
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/move_notifications_quick_filter_to_column_setting"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swMoveNotificationsQuickFilter"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
     </LinearLayout>
 </ScrollView>

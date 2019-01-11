@@ -392,23 +392,50 @@ class ColumnViewHolder(
 		cbEnableSpeech.setOnCheckedChangeListener(this)
 		cbOldApi.setOnCheckedChangeListener(this)
 		
-		if(Pref.bpMoveNotificationsQuickFilter(activity.pref)){
+		if(Pref.bpMoveNotificationsQuickFilter(activity.pref)) {
 			(svQuickFilter.parent as? ViewGroup)?.removeView(svQuickFilter)
-			llColumnSettingInside.addView(svQuickFilter,0)
+			llColumnSettingInside.addView(svQuickFilter, 0)
 			
-			svQuickFilter.setOnTouchListener  { v, event ->
+			svQuickFilter.setOnTouchListener { v, event ->
 				val action = event.action
-                if(action == MotionEvent.ACTION_DOWN){
-                   val sv = v as? HorizontalScrollView
-                    if(sv != null && sv.getChildAt(0).width > sv.width ){
-                        sv.requestDisallowInterceptTouchEvent(true)
-                    }
-                }
-                v.onTouchEvent(event)
+				if(action == MotionEvent.ACTION_DOWN) {
+					val sv = v as? HorizontalScrollView
+					if(sv != null && sv.getChildAt(0).width > sv.width) {
+						sv.requestDisallowInterceptTouchEvent(true)
+					}
+				}
+				v.onTouchEvent(event)
 			}
 		}
 		
+		if(! activity.header_text_size_sp.isNaN()) {
+			tvColumnName.textSize = activity.header_text_size_sp
+			
+			val acctSize = activity.header_text_size_sp * 0.857f
+			tvColumnContext.textSize = acctSize
+			tvColumnStatus.textSize = acctSize
+			tvColumnIndex.textSize = acctSize
+		}
+		
 		initLoadingTextView()
+		
+		var pad = 0
+		var wh = ActMain.headerIconSize + pad * 2
+		ivColumnIcon.layoutParams.width = wh
+		ivColumnIcon.layoutParams.height = wh
+		ivColumnIcon.setPaddingRelative(pad, pad, pad, pad)
+		
+		pad = (ActMain.headerIconSize * 0.125f + 0.5f).toInt()
+		wh = ActMain.headerIconSize + pad * 2
+		btnColumnSetting.layoutParams.width = wh
+		btnColumnSetting.layoutParams.height = wh
+		btnColumnSetting.setPaddingRelative(pad, pad, pad, pad)
+		btnColumnReload.layoutParams.width = wh
+		btnColumnReload.layoutParams.height = wh
+		btnColumnReload.setPaddingRelative(pad, pad, pad, pad)
+		btnColumnClose.layoutParams.width = wh
+		btnColumnClose.layoutParams.height = wh
+		btnColumnClose.setPaddingRelative(pad, pad, pad, pad)
 		
 		// 入力の追跡
 		etRegexFilter.addTextChangedListener(object : TextWatcher {
@@ -1471,20 +1498,20 @@ class ColumnViewHolder(
 		
 		vg(btnQuickFilterReaction, column.isMisskey)
 		vg(btnQuickFilterVote, column.isMisskey)
-
-		vg(btnQuickFilterFavourite, !column.isMisskey)
-
+		
+		vg(btnQuickFilterFavourite, ! column.isMisskey)
+		
 		val insideColumnSetting = Pref.bpMoveNotificationsQuickFilter(activity.pref)
 		
-		val showQuickFilterButton:(btn : View, iconId : Int, selected : Boolean)->Unit
-
-		if(insideColumnSetting){
+		val showQuickFilterButton : (btn : View, iconId : Int, selected : Boolean) -> Unit
+		
+		if(insideColumnSetting) {
 			svQuickFilter.setBackgroundColor(0)
-
-			val colorFg = getAttributeColor(activity,R.attr.colorContentText)
+			
+			val colorFg = getAttributeColor(activity, R.attr.colorContentText)
 			val colorBgSelected = colorFg.applyAlphaMultiplier(0.25f)
 			
-			showQuickFilterButton = { btn , iconId , selected  ->
+			showQuickFilterButton = { btn, iconId, selected ->
 				ViewCompat.setBackground(
 					btn,
 					if(selected) {
@@ -1492,8 +1519,8 @@ class ColumnViewHolder(
 							colorBgSelected,
 							colorFg
 						)
-					}else {
-						ContextCompat.getDrawable(activity,R.drawable.btn_bg_transparent)
+					} else {
+						ContextCompat.getDrawable(activity, R.drawable.btn_bg_transparent)
 					}
 				)
 				when(btn) {
@@ -1501,7 +1528,7 @@ class ColumnViewHolder(
 					is TextView -> btn.textColor = colorFg
 				}
 			}
-		}else {
+		} else {
 			val colorBg = column.getHeaderBackgroundColor()
 			val colorFg = column.getHeaderNameColor()
 			val colorBgSelected = Color.rgb(
@@ -1511,7 +1538,7 @@ class ColumnViewHolder(
 			)
 			svQuickFilter.setBackgroundColor(colorBg)
 			
-			showQuickFilterButton = { btn , iconId , selected  ->
+			showQuickFilterButton = { btn, iconId, selected ->
 				
 				ViewCompat.setBackground(
 					btn,

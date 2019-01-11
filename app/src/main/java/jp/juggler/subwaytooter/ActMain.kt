@@ -90,6 +90,7 @@ class ActMain : AppCompatActivity()
 		
 		var boostButtonSize = 1
 		var replyIconSize = 1
+		var headerIconSize = 1
 		var timeline_font : Typeface = Typeface.DEFAULT
 		var timeline_font_bold : Typeface = Typeface.DEFAULT_BOLD
 	}
@@ -116,6 +117,7 @@ class ActMain : AppCompatActivity()
 	var timeline_font_size_sp = Float.NaN
 	var acct_font_size_sp = Float.NaN
 	var notification_tl_font_size_sp = Float.NaN
+	var header_text_size_sp = Float.NaN
 	
 	internal var bStart : Boolean = false
 	
@@ -397,6 +399,7 @@ class ActMain : AppCompatActivity()
 		timeline_font_size_sp = validateFloat(Pref.fpTimelineFontSize(pref))
 		acct_font_size_sp = validateFloat(Pref.fpAcctFontSize(pref))
 		notification_tl_font_size_sp = validateFloat(Pref.fpNotificationTlFontSize(pref))
+		header_text_size_sp = validateFloat(Pref.fpHeaderTextSize(pref))
 		
 		initUI()
 		
@@ -1246,6 +1249,7 @@ class ActMain : AppCompatActivity()
 		notificationTlIconSize = parseIconSize(Pref.spNotificationTlIconSize)
 		boostButtonSize = parseIconSize(Pref.spBoostButtonSize)
 		replyIconSize = parseIconSize(Pref.spReplyIconSize)
+		headerIconSize = parseIconSize(Pref.spHeaderIconSize)
 		
 		run {
 			var round_ratio = 33f
@@ -2820,7 +2824,7 @@ class ActMain : AppCompatActivity()
 		val lp = LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
 		val tv = TextView(this)
 		tv.layoutParams = lp
-		if(timeline_font_size_sp.isNaN()) {
+		if(!timeline_font_size_sp.isNaN()) {
 			tv.textSize = timeline_font_size_sp
 		}
 		tv.typeface = timeline_font

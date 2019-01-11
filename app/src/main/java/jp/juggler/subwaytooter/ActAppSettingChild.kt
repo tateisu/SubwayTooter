@@ -73,7 +73,6 @@ class ActAppSettingChild : AppCompatActivity()
 		internal const val REQUEST_CODE_TIMELINE_FONT = 1
 		internal const val REQUEST_CODE_TIMELINE_FONT_BOLD = 2
 		
-		
 		private val reLinefeed = Regex("[\\x0d\\x0a]+")
 		
 	}
@@ -132,7 +131,6 @@ class ActAppSettingChild : AppCompatActivity()
 	private var etRoundRatio : EditText? = null
 	private var etBoostAlpha : EditText? = null
 	private var etMediaReadTimeout : EditText? = null
-
 	
 	private var tvTimelineFontUrl : TextView? = null
 	private var timeline_font : String? = null
@@ -143,6 +141,10 @@ class ActAppSettingChild : AppCompatActivity()
 	private var etAcctFontSize : EditText? = null
 	private var tvTimelineFontSize : TextView? = null
 	private var tvAcctFontSize : TextView? = null
+	
+	private var etHeaderTextSize : EditText? = null
+	private var tvHeaderTextSize : TextView? = null
+	
 	private var etAvatarIconSize : EditText? = null
 	
 	private var etPullNotificationCheckInterval : EditText? = null
@@ -153,6 +155,7 @@ class ActAppSettingChild : AppCompatActivity()
 	
 	private var etBoostButtonSize : EditText? = null
 	private var etReplyIconSize : EditText? = null
+	private var etHeaderIconSize : EditText? = null
 	
 	private var tvUserAgentError : TextView? = null
 	
@@ -188,19 +191,19 @@ class ActAppSettingChild : AppCompatActivity()
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-
+		
 		App1.setActivityTheme(this, false)
-
+		
 		pref = Pref.pref(this)
 		
 		val intent = this.intent
-		val layoutId = intent.getIntExtra(EXTRA_LAYOUT_ID,0)
-		val titleId = intent.getIntExtra(EXTRA_TITLE_ID,0)
-
+		val layoutId = intent.getIntExtra(EXTRA_LAYOUT_ID, 0)
+		val titleId = intent.getIntExtra(EXTRA_TITLE_ID, 0)
+		
 		this.title = getString(titleId)
-
+		
 		setContentView(layoutId)
-
+		
 		initUI()
 		
 		loadUIFromData()
@@ -323,7 +326,7 @@ class ActAppSettingChild : AppCompatActivity()
 			, R.id.btnCcdContentAcctReset
 			, R.id.btnCcdContentTextEdit
 			, R.id.btnCcdContentTextReset
-		,R.id.btnInstanceTickerCopyright
+			, R.id.btnInstanceTickerCopyright
 		).forEach {
 			findViewById<View>(it)?.setOnClickListener(this)
 		}
@@ -400,6 +403,17 @@ class ActAppSettingChild : AppCompatActivity()
 			)
 		)
 		
+		tvHeaderTextSize = findViewById(R.id.tvHeaderTextSize)
+		etHeaderTextSize = findViewById(R.id.etHeaderTextSize)
+		etHeaderTextSize?.addTextChangedListener(
+			SizeCheckTextWatcher(
+				tvHeaderTextSize !!,
+				etHeaderTextSize !!,
+				Pref.default_header_font_size
+			)
+		)
+		
+		
 		etNotificationTlFontSize = findViewById(R.id.etNotificationTlFontSize)
 		etNotificationTlFontSize?.addTextChangedListener(
 			SizeCheckTextWatcher(
@@ -414,7 +428,9 @@ class ActAppSettingChild : AppCompatActivity()
 		etPullNotificationCheckInterval = findViewById(R.id.etPullNotificationCheckInterval)
 		
 		etBoostButtonSize = findViewById(R.id.etBoostButtonSize)
-		etReplyIconSize= findViewById(R.id.etReplyIconSize)
+		etReplyIconSize = findViewById(R.id.etReplyIconSize)
+		etHeaderIconSize = findViewById(R.id.etHeaderIconSize)
+		
 		tvTimelineFontUrl = findViewById(R.id.tvTimelineFontUrl)
 		tvTimelineFontBoldUrl = findViewById(R.id.tvTimelineFontBoldUrl)
 		
@@ -431,12 +447,12 @@ class ActAppSettingChild : AppCompatActivity()
 	}
 	
 	private fun initSpinner(@IdRes viewId : Int, vararg captions : String) : Spinner? =
-		findViewById<Spinner>(viewId)?.apply{
+		findViewById<Spinner>(viewId)?.apply {
 			adapter = ArrayAdapter(
 				this@ActAppSettingChild,
 				android.R.layout.simple_spinner_item,
 				arrayOf(*captions)
-			).apply{
+			).apply {
 				setDropDownViewResource(R.layout.lv_spinner_dropdown)
 			}
 			onItemSelectedListener = this@ActAppSettingChild
@@ -493,6 +509,7 @@ class ActAppSettingChild : AppCompatActivity()
 		etNotificationTlIconSize?.setText(Pref.spNotificationTlIconSize(pref))
 		etBoostButtonSize?.setText(Pref.spBoostButtonSize(pref))
 		etReplyIconSize?.setText(Pref.spReplyIconSize(pref))
+		etHeaderIconSize?.setText(Pref.spHeaderIconSize(pref))
 		etPullNotificationCheckInterval?.setText(Pref.spPullNotificationCheckInterval(pref))
 		
 		etMediaSizeMax?.setText(Pref.spMediaSizeMax(pref))
@@ -508,6 +525,7 @@ class ActAppSettingChild : AppCompatActivity()
 		etTimelineFontSize?.setText(formatFontSize(Pref.fpTimelineFontSize(pref)))
 		etAcctFontSize?.setText(formatFontSize(Pref.fpAcctFontSize(pref)))
 		etNotificationTlFontSize?.setText(formatFontSize(Pref.fpNotificationTlFontSize(pref)))
+		etHeaderTextSize?.setText(formatFontSize(Pref.fpHeaderTextSize(pref)))
 		
 		etUserAgent?.hint = App1.userAgentDefault
 		
@@ -524,6 +542,7 @@ class ActAppSettingChild : AppCompatActivity()
 			etNotificationTlFontSize,
 			Pref.default_notification_tl_font_size
 		)
+		showFontSize(tvHeaderTextSize, etHeaderTextSize, Pref.default_header_font_size)
 		
 		showUserAgentError()
 		showColumnSample()
@@ -554,6 +573,7 @@ class ActAppSettingChild : AppCompatActivity()
 		putFontSize(Pref.fpAcctFontSize, etAcctFontSize)
 		putFontSize(Pref.fpNotificationTlFontSize, etNotificationTlFontSize)
 		putFontSize(Pref.fpNotificationTlFontSize, etNotificationTlFontSize)
+		putFontSize(Pref.fpHeaderTextSize, etHeaderTextSize)
 		
 		fun putText(sp : StringPref, et : EditText?, filter : (String) -> String = { it.trim() }) {
 			et ?: return
@@ -570,6 +590,7 @@ class ActAppSettingChild : AppCompatActivity()
 		putText(Pref.spNotificationTlIconSize, etNotificationTlIconSize)
 		putText(Pref.spBoostButtonSize, etBoostButtonSize)
 		putText(Pref.spReplyIconSize, etReplyIconSize)
+		putText(Pref.spHeaderIconSize, etHeaderIconSize)
 		putText(Pref.spPullNotificationCheckInterval, etPullNotificationCheckInterval)
 		putText(Pref.spMediaSizeMax, etMediaSizeMax)
 		putText(Pref.spMovieSizeMax, etMovieSizeMax)
@@ -913,7 +934,10 @@ class ActAppSettingChild : AppCompatActivity()
 				showToast(this, ex, "could not open picker for font")
 			}
 			
-			R.id.btnInstanceTickerCopyright -> App1.openBrowser(this@ActAppSettingChild,"https://wee.jp/mastodon/")
+			R.id.btnInstanceTickerCopyright -> App1.openBrowser(
+				this@ActAppSettingChild,
+				"https://wee.jp/mastodon/"
+			)
 		}
 	}
 	

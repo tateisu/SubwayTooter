@@ -863,6 +863,8 @@
     <string name="cant_change_account_when_editing_scheduled_status">Can\'t change account when editing scheduled status.</string>
     <string name="delete_scheduled_status_before_update">Delete scheduled status before posting. Are you sure?</string>
     <string name="reply_icon_size">Reply icon size(Unit:dp. default:24. app restart required)</string>
+    <string name="header_icon_size">Header icon size(Unit:dp. default:32. app restart required)</string>
+    <string name="header_text_size">Header text size(Unit:sp. default:14. app restart required)</string>
     <string name="all">All</string>
     <string name="show_links_in_context_menu">Show links in context menu</string>
     <string name="scheduled_status_requires_mastodon_2_7_0">Scheduled status requires Mastodon 2.7.0 or later.</string>

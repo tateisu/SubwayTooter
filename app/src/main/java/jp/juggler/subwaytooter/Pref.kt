@@ -424,6 +424,7 @@ object Pref {
 	val spNotificationTlIconSize = StringPref("notification_tl_icon_size", "32")
 	val spBoostButtonSize = StringPref("BoostButtonSize", "35")
 	val spReplyIconSize = StringPref("ReplyIconSize", "24")
+	val spHeaderIconSize = StringPref("HeaderIconSize", "32")
 	val spMediaSizeMax = StringPref("max_media_size", "8")
 	val spMovieSizeMax = StringPref("max_movie_size", "40")
 	val spTimelineFont = StringPref("timeline_font", "", skipImport = true)
@@ -447,8 +448,10 @@ object Pref {
 	val fpTimelineFontSize = FloatPref("timeline_font_size", Float.NaN)
 	val fpAcctFontSize = FloatPref("acct_font_size", Float.NaN)
 	val fpNotificationTlFontSize = FloatPref("notification_tl_font_size", Float.NaN)
+	val fpHeaderTextSize = FloatPref("HeaderTextSize", Float.NaN)
 	internal const val default_timeline_font_size = 14f
 	internal const val default_acct_font_size = 12f
 	internal const val default_notification_tl_font_size = 14f
+	internal const val default_header_font_size = 14f
 	
 }

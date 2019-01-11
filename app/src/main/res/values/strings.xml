@@ -868,5 +868,6 @@
     <string name="scheduled_status_requires_mastodon_2_7_0">Scheduled status requires Mastodon 2.7.0 or later.</string>
     <string name="move_notifications_quick_filter_to_column_setting">Show notifications quick filter in column setting (app restart required)</string>
     <string name="copy_account_id">Copy account ID %1$s</string>
+    <string name="open_in_admin_ui">Open in admin web UI</string>
 
 </resources>

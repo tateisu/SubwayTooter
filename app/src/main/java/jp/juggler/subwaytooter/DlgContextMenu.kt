@@ -117,7 +117,7 @@ internal class DlgContextMenu(
 		val btnAroundLTL : View = viewRoot.findViewById(R.id.btnAroundLTL)
 		val btnAroundFTL : View = viewRoot.findViewById(R.id.btnAroundFTL)
 		val btnCopyAccountId : Button = viewRoot.findViewById(R.id.btnCopyAccountId)
-		
+		val btnOpenAccountInAdminWebUi :Button = viewRoot.findViewById(R.id.btnOpenAccountInAdminWebUi)
 		val llLinks : LinearLayout = viewRoot.findViewById(R.id.llLinks)
 		
 		btnAroundAccountTL.setOnClickListener(this)
@@ -162,6 +162,7 @@ internal class DlgContextMenu(
 		btnDomainBlock.setOnClickListener(this)
 		btnEndorse.setOnClickListener(this)
 		btnCopyAccountId.setOnClickListener(this)
+		btnOpenAccountInAdminWebUi.setOnClickListener(this)
 		
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus).setOnClickListener(this)
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlAccount).setOnClickListener(this)
@@ -355,6 +356,7 @@ internal class DlgContextMenu(
 			btnInstanceInformation.visibility = View.GONE
 			btnDomainBlock.visibility = View.GONE
 			btnCopyAccountId.visibility = View.GONE
+			btnOpenAccountInAdminWebUi.visibility = View.GONE
 		} else {
 			val who_host = who.host
 			btnInstanceInformation.visibility = View.VISIBLE
@@ -371,6 +373,9 @@ internal class DlgContextMenu(
 			
 			btnCopyAccountId.visibility = View.VISIBLE
 			btnCopyAccountId.text = activity.getString(R.string.copy_account_id, who.id.toString() )
+			
+			vg( btnOpenAccountInAdminWebUi , ! access_info.isPseudo)
+			
 		}
 		
 		viewRoot.findViewById<View>(R.id.btnAccountText).setOnClickListener(this)
@@ -755,6 +760,8 @@ internal class DlgContextMenu(
 				)
 				
 				R.id.btnCopyAccountId -> who.id.toString().copyToClipboard(activity)
+				
+				R.id.btnOpenAccountInAdminWebUi -> App1.openBrowser(activity,"https://${access_info.host}/admin/accounts/${who.id}")
 			}
 		}
 		

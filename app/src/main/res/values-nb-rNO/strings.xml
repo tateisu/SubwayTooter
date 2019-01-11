@@ -767,4 +767,7 @@
     <string name="username_empty">Angi brukernavnet.</string>
     <string name="email_empty">Angi e-postadressen.</string>
     <string name="password_empty">Angi passordet</string>
+    <string name="location">Plassering</string>
+    <string name="password">Passord</string>
+    <string name="scheduled_post_deleted">Slettet.</string>
 </resources>

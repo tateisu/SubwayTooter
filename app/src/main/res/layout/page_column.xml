@@ -70,6 +70,7 @@
             android:layout_marginTop="0dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
+            android:baselineAligned="false"
             >
 
             <ImageView

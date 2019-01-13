@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-    <string name="access_token_or_api_token">アクセストークン (Misskeyタンスの場合はAPIトークン)</string>
+    <string name="access_token_or_api_token">アクセストークン (Misskeyサーバーの場合はAPIトークン)</string>
     <string name="access_token_updated_for">%1$sのアクセストークンを更新しました</string>
     <string name="account">アカウント</string>
     <string name="account_add">アカウントの追加</string>
-    <string name="account_change_failed_old_draft_has_no_in_reply_to_url">アカウント切り替えできません。古い下書きデータにはin_reply_to_urlがなくて、別タンスへの切り替えができません。</string>
+    <string name="account_change_failed_old_draft_has_no_in_reply_to_url">アカウント切り替えできません。古い下書きデータにはin_reply_to_urlがなくて、別サーバーへの切り替えができません。</string>
     <string name="account_confirmed">アカウントを確認できました</string>
     <string name="account_empty">先にアカウントの追加を行ってください</string>
     <string name="account_in_draft_is_lost">下書きで使われているアカウント情報がありません。以下の文脈は失われます。in_reply_to, 添付メディア</string>
@@ -104,8 +104,8 @@
     <string name="cant_change_account_when_redraft">再編集中は投稿先アカウントを変更できません</string>
     <string name="cant_close_column_by_back_button_when_multiple_column_shown">複数カラムが表示されてると戻るボタンではカラムを閉じられません</string>
     <string name="cant_follow_locked_user">鍵つきユーザをフォローできません</string>
-    <string name="cant_get_misskey_app_secret">このMisskeyタンスのアプリ登録APIは応答にapp secretが含まれません。タンス所有者にMisskeyをアップデートするよう相談してください。</string>
-    <string name="cant_get_web_setting_visibility">Webアプリの公開範囲の設定を取得できません。インスタンスのマストドンバージョンが古いです。</string>
+    <string name="cant_get_misskey_app_secret">このMisskeyサーバーのアプリ登録APIは応答にapp secretが含まれません。Misskeyをアップデートするようサーバー運営に相談してください。</string>
+    <string name="cant_get_web_setting_visibility">Webアプリの公開範囲の設定を取得できません。Mastodonサーバーのバージョンが古いです。</string>
     <string name="cant_handle_uri_of">Subway Tooter は URI \"%1$s\"を扱えません。別のアプリを選んでください。</string>
     <string name="cant_remove_boost_while_favourited">お気に入りを外さないとブーストを外せません？</string>
     <string name="cant_sync_toot">トゥートを同期できません</string>
@@ -153,7 +153,7 @@
     <string name="confirm_close_column">このカラムを閉じますか？</string>
     <string name="confirm_close_column_all">(保護されていない)全てのカラムが閉じられます。よろしいですか?</string>
     <string name="confirm_delete_attachment">この添付データを除去しますか？</string>
-    <string name="confirm_delete_notification">ユーザへの通知データがタンスのサーバから削除されます。よろしいですか？</string>
+    <string name="confirm_delete_notification">対象ユーザへの通知データがサーバから削除されます。よろしいですか？</string>
     <string name="confirm_delete_status">このトゥートを削除します。よろしいですか?</string>
     <string name="confirm_favourite_from">このトゥートを %1$s からお気に入りしますか? トゥートした人に通知が送られます</string>
     <string name="confirm_follow_request_who_from">%2$s から鍵付きユーザ %1$s にフォローリクエストを送りますか？</string>
@@ -208,9 +208,9 @@
     <string name="display_name_unfollowed_by">%1$sにフォロー解除されました</string>
     <string name="display_name_voted_by">%1$sが投票しました</string>
     <string name="display_replies_count">返信の数の表示</string>
-    <string name="domain_block_from_local">自分のタンスにはドメインブロックできません</string>
+    <string name="domain_block_from_local">自分のサーバーはドメインブロックできません</string>
     <string name="domain_block_from_pseudo">疑似アカウントではドメインブロックできません</string>
-    <string name="domain_count">接続中のインスタンス数</string>
+    <string name="domain_count">接続中のサーバー数</string>
     <string name="dont_add_duplication_check_header">重複チェックヘッダを付与しない</string>
     <string name="dont_change">変更しない</string>
     <string name="dont_close_column">保護(カラムを閉じない)</string>
@@ -266,7 +266,7 @@
     <string name="enquete_vote_failed">投票に失敗。%1$s</string>
     <string name="enquete_voted">投票しました</string>
     <string name="enquete_was_end">投票は終わってる</string>
-    <string name="error_notification_summary">もし破棄されたインスタンスなら、そのサーバのアカウントを除去してください</string>
+    <string name="error_notification_summary">もし破棄されたサーバーなら、アプリからアカウントを除去してください</string>
     <string name="error_notification_title">サーバータイムアウト</string>
     <string name="error_response">エラー応答。</string>
     <string name="exit_app_when_close_protected_column">保護されたカラムを戻るボタンで確認なしで閉じようとしたらアプリを終了する</string>
@@ -314,7 +314,7 @@
     <string name="follow_accept_confirm">%1$sからのフォローリクエストを承認しますか?</string>
     <string name="follow_deny">却下</string>
     <string name="follow_deny_confirm">%1$sからのフォローリクエストを却下しますか?</string>
-    <string name="follow_follower_list_may_restrict">もしリモートのユーザがソーシャルグラフを隠す選択をした場合、表示されるのはこのタンスのユーザだけです。</string>
+    <string name="follow_follower_list_may_restrict">もしリモートのユーザがソーシャルグラフを隠す選択をした場合、表示されるのはこのサーバーのユーザだけです。</string>
     <string name="follow_from_another_account">別アカウントでフォロー</string>
     <string name="follow_locked_user">鍵つきユーザのフォロー</string>
     <string name="follow_request_authorized">%1$s からのフォローリクエストを許可しました</string>
@@ -352,14 +352,14 @@
     <string name="in_reply_to_id_conversion_failed">アカウント切り替えできません。in_reply_toのID変換に失敗しました。</string>
     <string name="input_access_token">アクセストークン</string>
     <string name="input_access_token_desc">通常のユーザ認証の代わりにアクセストークンを指定します。(上級者向け)</string>
-    <string name="instance">インスタンス</string>
-    <string name="instance_does_not_support_push_api">タンスのバージョン %1$s は古くてプッシュ購読を利用できません</string>
+    <string name="instance">サーバー</string>
+    <string name="instance_does_not_support_push_api">サーバーのバージョン %1$s は古くてプッシュ購読を利用できません</string>
     <string name="instance_hint">例: mastodon.social</string>
-    <string name="instance_information">インスタンス情報</string>
-    <string name="instance_information_of">\"%1$s\"のインスタンス情報</string>
-    <string name="instance_local">インスタンス内のみ</string>
-    <string name="instance_not_need_slash">インスタンスには\'/\',\'\@\'を含めずに、ホスト名だけを指定してください</string>
-    <string name="instance_not_specified">インスタンスを指定してください</string>
+    <string name="instance_information">サーバー情報</string>
+    <string name="instance_information_of">\"%1$s\"のサーバー情報</string>
+    <string name="instance_local">サーバー内のみ</string>
+    <string name="instance_not_need_slash">サーバー名には\'/\',\'\@\'を含めずに、ホスト名だけを指定してください</string>
+    <string name="instance_not_specified">サーバー名を指定してください</string>
     <string name="it_is_you">あなたです</string>
     <string name="jump_moved_user">%1$s は引っ越しました。%2$s を確認しますか?</string>
     <string name="keyword">キーワード</string>
@@ -372,7 +372,7 @@
     <string name="last_selection">最後に選択した</string>
     <string name="launcher_icon_by">ランチャーアイコンはフタバさんがデザインしました</string>
     <string name="led">LED</string>
-    <string name="length_warning">\"%1$s\"が長すぎます(%2$d/%3$d文字).\n標準的なタンスではエラーとなりますが、一部のタンスでは通るかも。\nよろしいですか?</string>
+    <string name="length_warning">\"%1$s\"が長すぎます(%2$d/%3$d文字).\n標準的なサーバーではエラーとなりますが、一部のサーバーでは通るかも。\nよろしいですか?</string>
     <string name="list">リスト</string>
     <string name="list_create">(リストを作る…)</string>
     <string name="list_create_hint">新しいリストの名前</string>
@@ -387,7 +387,7 @@
     <string name="list_member_of">\"%1$s\"リストのユーザ</string>
     <string name="list_name_empty">新しいリストの名前を入力してください</string>
     <string name="list_not_created">(リストが作成されていません)</string>
-    <string name="list_not_supported">このタンスはリスト機能をサポートしていません</string>
+    <string name="list_not_supported">このサーバーはリスト機能をサポートしていません</string>
     <string name="list_owner">リスト所有者</string>
     <string name="list_retry_with_follow">あなたは %1$s をまだフォローしていません。フォローしてからリストに追加しますか?</string>
     <string name="list_show_member">リストのユーザ</string>
@@ -404,7 +404,7 @@
     <string name="mail_address_not_contains_at_mark">メールアドレスが不十分です。\'@\'や\'.\'がありません</string>
     <string name="mail_hint">例: your@e-mail.address</string>
     <string name="mail_not_specified">メールを指定してください</string>
-    <string name="make_enquete">アンケートを作成する(一部タンスのみ有効)</string>
+    <string name="make_enquete">アンケートを作成する(一部サーバーのみ有効)</string>
     <string name="mastodon">Mastodon</string>
     <string name="mastodon_1_6_later">マストドン1.6以降</string>
     <string name="mastodon_search_portal">マストドン検索ポータル</string>
@@ -417,7 +417,7 @@
     <string name="media_description">(添付 %1$d) %2$s</string>
     <string name="media_thumbnail_height">添付メディアのサムネイルの高さ(デフォルト=64(dp)、アプリ再起動が必要)</string>
     <string name="mention">この人へのメンション</string>
-    <string name="mention_full_acct">メンションのインスタンス名部分を省略しない(カラムのリロードが必要)</string>
+    <string name="mention_full_acct">メンションのサーバー名部分を省略しない(カラムのリロードが必要)</string>
     <string name="mention2">返信</string>
     <string name="menu">メニュー</string>
     <string name="mime_type_missing">MIMEタイプが不明です</string>
@@ -428,7 +428,7 @@
     <string name="missing_install_id">インストールIDを準備できません。しばらく後に試してください。</string>
     <string name="missing_mail_app">メールアドレスを共有できるアプリがありません</string>
     <string name="missing_permission_to_access_media">メディアアクセスに必要なアプリ権限がありません</string>
-    <string name="missing_push_api">このタンスにはプッシュ購読APIがありません。</string>
+    <string name="missing_push_api">このサーバーにはプッシュ購読APIがありません。</string>
     <string name="missing_push_scope">このアクセストークンは古いのでプッシュ購読の権限がありません。アクセストークンの更新をおすすめします。</string>
     <string name="misskey">Misskey</string>
     <string name="misskey_account_not_supported">この操作はMisskeyアカウントに対応してません。</string>
@@ -523,7 +523,7 @@
     <string name="preview">プレビュー</string>
     <string name="previous">前</string>
     <string name="prior_chrome_custom_tabs">(Custom Tabsを使う際に)Google Chromeを優先的に選択する</string>
-    <string name="prior_local_url_when_open_attachment">添付メディアを開く時に自タンスURLを重視</string>
+    <string name="prior_local_url_when_open_attachment">添付メディアを開く時に自サーバーのURLを重視</string>
     <string name="profile">プロフィール</string>
     <string name="profile_metadata">プロフィール補足情報</string>
     <string name="profile_of">%1$s のプロフィール</string>
@@ -532,7 +532,7 @@
     <string name="profile_unpin">プロフィールの固定表示を解除</string>
     <string name="progress_synchronize_toot">トゥートを同期してます…</string>
     <string name="pseudo_account">疑似アカウント</string>
-    <string name="pseudo_account_desc">ログインせずにインスタンスの公開データを読みます。</string>
+    <string name="pseudo_account_desc">ログインせずにサーバーの公開データを読みます。</string>
     <string name="pseudo_account_not_supported">疑似アカウントでは通知を利用できません。</string>
     <string name="public_profile">公開プロフィール</string>
     <string name="pull_notification_check_interval">Pull通知の確認間隔 (単位:分, デフォルト:15, 最低: 15)</string>
@@ -589,7 +589,7 @@
     <string name="reply_to_this_status">このトゥートへの返信：</string>
     <string name="report">通報</string>
     <string name="report_completed">通報できました</string>
-    <string name="report_forward_desc">対象ユーザは別のインスタンスに所属しています。通報内容を投稿元タンスに匿名で転送しますか?</string>
+    <string name="report_forward_desc">対象ユーザは別のサーバーに所属しています。通報内容を投稿元サーバーに匿名で転送しますか?</string>
     <string name="report_forward_to">%1$s に転送する</string>
     <string name="report_reason">通報する理由を書いてください</string>
     <string name="reports">通報</string>
@@ -597,7 +597,7 @@
     <string name="request_api">取得中: %1$s %2$s</string>
     <string name="reset">リセット</string>
     <string name="resize_image">添付画像のリサイズ(JPEG,PNG)</string>
-    <string name="resolve_non_local_account">他タンスのアカウントも探す</string>
+    <string name="resolve_non_local_account">他サーバーのアカウントも探す</string>
     <string name="response_not_json">APIの応答がJSONではありません</string>
     <string name="restore_draft">下書きから復元</string>
     <string name="save">保存</string>
@@ -656,7 +656,7 @@
     <string name="skin_tone_medium_light">少し明るい肌色</string>
     <string name="sound">音</string>
     <string name="spoil_visibility_for_account">公開範囲をアカウントの既定値に狭めました</string>
-    <string name="ssl_bug_7_0">Android 7.0 には利用できる elliptic curve が \"prime256v1\" だけというバグがあります。\nしかし対象のインスタンスはこの elliptic curve に対応していないようです。\n可能ならOSバージョン 7.1.1以降にアップデートするとバグは修正されます。\nもしくは elliptic curve \"prime256v1\" に対応してもらうよう、あなたからインスタンスのオーナーに要望を出すことができます。\n関連情報 https://code.google.com/p/android/issues/detail?id=224438</string>
+    <string name="ssl_bug_7_0">Android 7.0 には利用できる elliptic curve が \"prime256v1\" だけというバグがあります。\nしかし対象サーバーはこの elliptic curve に対応していないようです。\n可能ならOSバージョン 7.1.1以降にアップデートするとバグは修正されます。\nもしくは elliptic curve \"prime256v1\" に対応してもらうよう、あなたからサーバーのオーナーに要望を出すことができます。\n関連情報 https://code.google.com/p/android/issues/detail?id=224438</string>
     <string name="start">始端</string>
     <string name="status">ステータス</string>
     <string name="status_id_conversion_failed">ステータスIDを変換できませんでした</string>
@@ -778,7 +778,7 @@
     <string name="account_tl_around_of">%1$s周辺のアカウントTL</string>
     <string name="verified_at">検証時刻</string>
     <string name="use_old_api">古いAPIを使う</string>
-    <string name="around_toot_limitation_warning">バージョン2.6.0より古いインスタンスでは「指定時刻の周辺のTL」機能に制限があります。指定時間から新しい側のTLを取得することができません。</string>
+    <string name="around_toot_limitation_warning">サーバーのバージョンが2.6.0より古いと「指定時刻の周辺のTL」機能に制限があります。指定時間から新しい側のTLを取得することができません。</string>
     <string name="card_description_length">プレビューカード説明文の最大文字数</string>
     <string name="status_deleted_at">この投稿は %1$s に削除されました</string>
     <string name="status_deleted">この投稿は削除されました</string>
@@ -804,14 +804,14 @@
     <string name="content_text_color">内容の本文の文字色</string>
     <string name="quick_toot_bar_background_color">簡易投稿入力の背景色</string>
     <string name="dont_show_preview_card">プレビューカードを表示しない</string>
-    <string name="instance_does_not_support_push_api_pleroma">このインスタンスはプッシュ購読APIに対応していません。多分Pleromaです。</string>
+    <string name="instance_does_not_support_push_api_pleroma">このサーバーはプッシュ購読APIに対応していません。多分Pleromaです。</string>
     <string name="quote_renote">引用リノート… (Misskey)</string>
     <string name="blank_cw">(空欄CW)</string>
-    <string name="actions_for_instance">タンスへのアクション</string>
+    <string name="actions_for_instance">サーバーへのアクション</string>
     <string name="animation">アニメーション</string>
     <string name="links">リンク</string>
     <string name="profile_directory">プロフィールディレクトリ</string>
-    <string name="about_this_instance">このインスタンスについて</string>
+    <string name="about_this_instance">このサーバーについて</string>
     <string name="top_page">トップページ</string>
     <string name="show_instance_ticker">#InstanceTicker を表示する(カラムのリロードが必要)</string>
     <string name="location">位置</string>
@@ -819,7 +819,7 @@
     <string name="existing_account">ログイン</string>
     <string name="existing_account_desc">既存のアカウントでログインします。</string>
     <string name="create_account">新規登録</string>
-    <string name="create_account_desc">指定したインスタンスに新しいユーザを登録します</string>
+    <string name="create_account_desc">指定したサーバーに新しいユーザを登録します</string>
     <string name="user_name">ユーザ名</string>
     <string name="user_name_hint">例: MonaLisa</string>
     <string name="username_empty">ユーザ名を指定してください.</string>
@@ -828,7 +828,7 @@
     <string name="password">パスワード</string>
     <string name="password_hint">パスワードを入力…</string>
     <string name="password_empty">パスワードを指定してください.</string>
-    <string name="instance_rules">インスタンスのルール</string>
+    <string name="instance_rules">サーバーのルール</string>
     <string name="terms">プライバシーポリシー</string>
     <string name="agree_terms">サービスの規約に同意します</string>
     <string name="pseudo_account_cant_get_follow_list">疑似アカウントではフォローリストを読めません</string>

@@ -517,6 +517,25 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:labelFor="@+id/etStripIconSize"
+            android:text="@string/strip_icon_size"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etStripIconSize"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:text="@string/show_instance_ticker"
             />
 

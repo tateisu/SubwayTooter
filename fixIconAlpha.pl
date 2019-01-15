@@ -10,7 +10,31 @@ my $dry_run = grep{ $_ eq '--dry-run'} @ARGV;
 
 my $resdir = 'app/src/main/res';
 my $dstdir = 'tmp';
+my $trimdir = 'trim24';
+
 my $tmpfile = 'tmp/tmp.png';
+
+my %density = (
+	mdpi => 1,
+	hdpi => 1.5,
+	xhdpi=> 2,
+	xxhdpi => 3,
+	xxxhdpi => 4,
+);
+
+sub savePng($$){
+	my($image,$path)=@_;
+
+	my $dir = $path;
+	$dir =~ s|/[^/]+\z||;
+	make_path($dir);
+
+	$image->saveAlpha(1);
+	open(my $fh,">",$path) or die "$path $!";
+	binmode $fh;
+	print $fh $image->png;
+	close($fh) or die "$path $!";
+}
 
 sub fix($){
 	my($relpath) = @_;
@@ -57,12 +81,39 @@ Loop: for( my $y = 0; $y < $height ;++$y){
 			}
 		}
 	}
-	
+
+	$relpath=~ /drawable-(\w+)/;
+	my $density = $density{ $1 };
+
+#	if( $density and !$isColor){
+#		my $dp_w = int(0.5 + $width/$density);
+#		my $dp_h = int(0.5 + $height/$density);
+#		if( $dp_w == 32 && $dp_h == 32 ){
+#			say "${dp_w}x${dp_h}dp, alphaMax=$alphaMax, isColor=${isColor}, $relpath";
+#
+#			# create trimmed
+#			my $trim_w = int(0.5 + $width * 24/32);
+#			my $trim_h = int(0.5 + $height * 24/32);
+#			my $offsetX = int($width-$trim_w)/2;
+#			my $offsetY = int($width-$trim_w)/2;
+#
+#			my $i2 = GD::Image->newTrueColor($trim_w,$trim_h);
+#			$i2->alphaBlending(0);
+#			$i2->filledRectangle(0,0,$trim_w,$trim_h, $image->colorAllocateAlpha(0,0,0,127));
+#			$i2->alphaBlending(1);
+#			$i2->copy($image,0,0,$offsetX,$offsetY,$trim_w,$trim_h);
+#
+#			my $dstfile = "$trimdir/$relpath";
+#			return if not $dstfile =~ s/(png|webp)\z/png/i;
+#			savePng($i2,$dstfile);
+#		}
+#	}
+
 	return if $isColor;
 	return if $alphaMax == 0;
 	return if $alphaMax >= 126;
 
-	say "$width x $height ,alphaMax=$alphaMax $relpath";
+	say "${width}x${height}, alphaMax=$alphaMax, isColor=${isColor}, $relpath";
 
 	my $scale = 127.0/$alphaMax;
 
@@ -82,16 +133,7 @@ Loop: for( my $y = 0; $y < $height ;++$y){
 		}
 	}
 	
-	my $dstdir = $dstfile;
-	$dstdir =~ s|/[^/]+\z||;
-	make_path($dstdir);
-
-	$image->saveAlpha(1);
-	open(my $fh,">",$dstfile) or die "$dstfile $!";
-	binmode $fh;
-	print $fh $image->png;
-	close($fh) or die "$dstfile $!";
-
+	savePng($image,$dstfile);
 	return if $dry_run;
 
 	if(1){

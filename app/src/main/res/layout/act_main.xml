@@ -57,7 +57,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             >
 
@@ -68,6 +68,7 @@
                 android:background="@drawable/bg_button_cw"
                 android:contentDescription="@string/menu"
                 app:srcCompat="?attr/ic_hamburger"
+                android:scaleType="fitCenter"
                 />
 
             <View
@@ -112,6 +113,7 @@
                 android:background="@drawable/bg_button_cw"
                 android:contentDescription="@string/toot"
                 app:srcCompat="?attr/ic_edit"
+                android:scaleType="fitCenter"
                 />
         </LinearLayout>
 

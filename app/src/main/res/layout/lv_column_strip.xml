@@ -12,11 +12,12 @@
 
     <ImageView
         android:id="@+id/ivIcon"
-        android:layout_marginTop="4dp"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        tools:ignore="ContentDescription"
+        android:layout_marginTop="4dp"
         android:importantForAccessibility="no"
+        tools:ignore="ContentDescription"
+        android:scaleType="fitCenter"
         />
 
     <View

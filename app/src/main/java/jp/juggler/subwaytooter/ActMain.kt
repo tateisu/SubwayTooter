@@ -91,6 +91,7 @@ class ActMain : AppCompatActivity()
 		var boostButtonSize = 1
 		var replyIconSize = 1
 		var headerIconSize = 1
+		var stripIconSize = 1
 		var timeline_font : Typeface = Typeface.DEFAULT
 		var timeline_font_bold : Typeface = Typeface.DEFAULT_BOLD
 	}
@@ -1250,7 +1251,7 @@ class ActMain : AppCompatActivity()
 		boostButtonSize = parseIconSize(Pref.spBoostButtonSize)
 		replyIconSize = parseIconSize(Pref.spReplyIconSize)
 		headerIconSize = parseIconSize(Pref.spHeaderIconSize)
-		
+		stripIconSize = parseIconSize(Pref.spStripIconSize)
 		run {
 			var round_ratio = 33f
 			try {
@@ -1462,7 +1463,23 @@ class ActMain : AppCompatActivity()
 	})
 	
 	internal fun updateColumnStrip() {
-		llEmpty.visibility = if(app_state.column_list.isEmpty()) View.VISIBLE else View.GONE
+		vg(llEmpty, app_state.column_list.isEmpty())
+		
+		val iconSize = stripIconSize
+		val rootW = (iconSize * 1.25f + 0.5f).toInt()
+		val rootH = (iconSize * 1.5f + 0.5f).toInt()
+		val iconTopMargin = (iconSize * 0.125f + 0.5f).toInt()
+		val barHeight = (iconSize * 0.094f + 0.5f).toInt()
+		val barTopMargin = (iconSize * 0.094f + 0.5f).toInt()
+		
+		// 両端のメニューと投稿ボタンの大きさ
+		val pad = (rootH - iconSize ) shr 1
+		btnToot.layoutParams.width = rootH // not W
+		btnToot.layoutParams.height = rootH
+		btnToot.setPaddingRelative(pad,pad,pad,pad)
+		btnMenu.layoutParams.width = rootH // not W
+		btnMenu.layoutParams.height = rootH
+		btnMenu.setPaddingRelative(pad,pad,pad,pad)
 		
 		llColumnStrip.removeAllViews()
 		for(i in 0 until app_state.column_list.size) {
@@ -1471,6 +1488,21 @@ class ActMain : AppCompatActivity()
 			
 			val viewRoot = layoutInflater.inflate(R.layout.lv_column_strip, llColumnStrip, false)
 			val ivIcon = viewRoot.findViewById<ImageView>(R.id.ivIcon)
+			val vAcctColor = viewRoot.findViewById<View>(R.id.vAcctColor)
+
+			// root: 48x48dp LinearLayout(vertical), gravity=center
+			viewRoot.layoutParams.width = rootW
+			viewRoot.layoutParams.height = rootH
+
+			// ivIcon: 32x32dp marginTop="4dp" 図柄が32x32dp、パディングなし
+			ivIcon.layoutParams.width = iconSize
+			ivIcon.layoutParams.height = iconSize
+			(ivIcon.layoutParams as? LinearLayout.LayoutParams)?.topMargin = iconTopMargin
+
+			// vAcctColor: 32x3dp marginTop="3dp"
+			vAcctColor.layoutParams.width = iconSize
+			vAcctColor.layoutParams.height = barHeight
+			(vAcctColor.layoutParams as? LinearLayout.LayoutParams)?.topMargin = barTopMargin
 			
 			viewRoot.tag = i
 			viewRoot.setOnClickListener { v ->
@@ -1496,9 +1528,11 @@ class ActMain : AppCompatActivity()
 			//
 			val ac = AcctColor.load(column.access_info.acct)
 			if(AcctColor.hasColorForeground(ac)) {
-				val vAcctColor = viewRoot.findViewById<View>(R.id.vAcctColor)
 				vAcctColor.setBackgroundColor(ac.color_fg)
+			}else{
+				vAcctColor.visibility = View.INVISIBLE
 			}
+
 			//
 			llColumnStrip.addView(viewRoot)
 		}

@@ -156,7 +156,7 @@ class ActAppSettingChild : AppCompatActivity()
 	private var etBoostButtonSize : EditText? = null
 	private var etReplyIconSize : EditText? = null
 	private var etHeaderIconSize : EditText? = null
-	
+	private var etStripIconSize : EditText? = null
 	private var tvUserAgentError : TextView? = null
 	
 	private var llColumnHeader : View? = null
@@ -430,7 +430,7 @@ class ActAppSettingChild : AppCompatActivity()
 		etBoostButtonSize = findViewById(R.id.etBoostButtonSize)
 		etReplyIconSize = findViewById(R.id.etReplyIconSize)
 		etHeaderIconSize = findViewById(R.id.etHeaderIconSize)
-		
+		etStripIconSize= findViewById(R.id.etStripIconSize)
 		tvTimelineFontUrl = findViewById(R.id.tvTimelineFontUrl)
 		tvTimelineFontBoldUrl = findViewById(R.id.tvTimelineFontBoldUrl)
 		
@@ -510,6 +510,7 @@ class ActAppSettingChild : AppCompatActivity()
 		etBoostButtonSize?.setText(Pref.spBoostButtonSize(pref))
 		etReplyIconSize?.setText(Pref.spReplyIconSize(pref))
 		etHeaderIconSize?.setText(Pref.spHeaderIconSize(pref))
+		etStripIconSize?.setText(Pref.spStripIconSize(pref))
 		etPullNotificationCheckInterval?.setText(Pref.spPullNotificationCheckInterval(pref))
 		
 		etMediaSizeMax?.setText(Pref.spMediaSizeMax(pref))
@@ -591,6 +592,7 @@ class ActAppSettingChild : AppCompatActivity()
 		putText(Pref.spBoostButtonSize, etBoostButtonSize)
 		putText(Pref.spReplyIconSize, etReplyIconSize)
 		putText(Pref.spHeaderIconSize, etHeaderIconSize)
+		putText(Pref.spStripIconSize, etStripIconSize)
 		putText(Pref.spPullNotificationCheckInterval, etPullNotificationCheckInterval)
 		putText(Pref.spMediaSizeMax, etMediaSizeMax)
 		putText(Pref.spMovieSizeMax, etMovieSizeMax)

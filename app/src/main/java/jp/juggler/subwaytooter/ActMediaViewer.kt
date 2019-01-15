@@ -617,7 +617,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				
 				val request = Request.Builder()
 					.url(url)
-					.cacheControl(App1.CACHE_5MIN)
+					.cacheControl(App1.CACHE_CONTROL)
 					.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
 					.build()
 				

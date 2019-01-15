@@ -41,6 +41,7 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
+import kotlin.math.max
 
 class App1 : Application() {
 	
@@ -222,7 +223,7 @@ class App1 : Application() {
 			timeoutSecondsConnect : Int,
 			timeoutSecondsRead : Int
 		) : OkHttpClient.Builder {
-
+			
 			val spec = ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
 				.allEnabledCipherSuites()
 				.allEnabledTlsVersions()
@@ -235,7 +236,7 @@ class App1 : Application() {
 				.writeTimeout(timeoutSecondsRead.toLong(), TimeUnit.SECONDS)
 				.pingInterval(10, TimeUnit.SECONDS)
 				.connectionSpecs(Collections.singletonList(spec))
-				.sslSocketFactory(MySslSocketFactory,MySslSocketFactory.trustManager)
+				.sslSocketFactory(MySslSocketFactory, MySslSocketFactory.trustManager)
 				.addInterceptor(ProgressResponseBody.makeInterceptor())
 				.addInterceptor(user_agent_interceptor)
 		}
@@ -336,26 +337,23 @@ class App1 : Application() {
 			
 			run {
 				// API用のHTTP設定はキャッシュを使わない
-				var builder = prepareOkHttp(30, 60)
-				ok_http_client = builder.build()
+				ok_http_client = prepareOkHttp(30, 60)
+					.build()
 				
 				// ディスクキャッシュ
 				val cacheDir = File(app_context.cacheDir, "http2")
 				val cache = Cache(cacheDir, 30000000L)
 				
 				// カスタム絵文字用のHTTP設定はキャッシュを使う
-				builder = prepareOkHttp(30, 60)
-				builder.cache(cache)
+				ok_http_client2 = prepareOkHttp(30, 60)
+					.cache(cache)
+					.build()
 				
-				ok_http_client2 = builder.build()
-				
-				// 内蔵メディアビューア用のHTTP設定は同じキャッシュを使うが、タイムアウトは別の値を指定する
-				var mediaReadTimeout = Pref.spMediaReadTimeout.toInt(pref)
-				if(mediaReadTimeout < 3) mediaReadTimeout = 3
-				
-				builder = prepareOkHttp(mediaReadTimeout, mediaReadTimeout)
-				builder.cache(cache)
-				ok_http_client_media_viewer = builder.build()
+				// 内蔵メディアビューア用のHTTP設定はタイムアウトを調整可能
+				val mediaReadTimeout = max(3, Pref.spMediaReadTimeout.toInt(pref))
+				ok_http_client_media_viewer = prepareOkHttp(mediaReadTimeout, mediaReadTimeout)
+					.cache(cache)
+					.build()
 			}
 			
 			custom_emoji_cache = CustomEmojiCache(app_context)
@@ -473,10 +471,8 @@ class App1 : Application() {
 			
 		}
 		
-		internal val CACHE_5MIN = CacheControl.Builder()
-			.maxStale(Integer.MAX_VALUE, TimeUnit.SECONDS) // キャッシュをいつまで保持するか
-			//s	.minFresh( 1, TimeUnit.HOURS ) // キャッシュが新鮮であると考えられる時間
-			.maxAge(1, TimeUnit.HOURS) // キャッシュが新鮮であると考えられる時間
+		internal val CACHE_CONTROL = CacheControl.Builder()
+			.maxAge(5, TimeUnit.MINUTES) // キャッシュが新鮮であると考えられる時間
 			.build()
 		
 		fun getHttpCached(url : String) : ByteArray? {
@@ -484,8 +480,8 @@ class App1 : Application() {
 			
 			try {
 				val request_builder = Request.Builder()
-				request_builder.url(url)
-				request_builder.cacheControl(CACHE_5MIN)
+					.cacheControl(CACHE_CONTROL)
+					.url(url)
 				
 				val call = App1.ok_http_client2.newCall(request_builder.build())
 				response = call.execute()
@@ -517,7 +513,7 @@ class App1 : Application() {
 			try {
 				val request_builder = okhttp3.Request.Builder()
 					.url(url)
-					.cacheControl(CACHE_5MIN)
+					.cacheControl(CACHE_CONTROL)
 				
 				builderBlock(request_builder)
 				
@@ -542,25 +538,25 @@ class App1 : Application() {
 			
 		}
 		
-		fun openBrowser(context:Context,uri: Uri?){
+		fun openBrowser(context : Context, uri : Uri?) {
 			try {
-				uri?:return
-				val intent = Intent(Intent.ACTION_VIEW,uri)
+				uri ?: return
+				val intent = Intent(Intent.ACTION_VIEW, uri)
 				context.startActivity(intent)
-			}catch(ex:Throwable){
-				log.trace(ex,"openBrowser")
+			} catch(ex : Throwable) {
+				log.trace(ex, "openBrowser")
 				showToast(context, true, "missing web browser")
 			}
 		}
 		
-		fun openBrowser(context:Context,url:String?) =
-			openBrowser(context,url.mayUri())
-
+		fun openBrowser(context : Context, url : String?) =
+			openBrowser(context, url.mayUri())
+		
 		// Chrome Custom Tab を開く
 		fun openCustomTab(activity : Activity, url : String) {
 			try {
 				if(Pref.bpDontUseCustomTabs(pref)) {
-					openBrowser(activity,url)
+					openBrowser(activity, url)
 				} else {
 					
 					if(url.startsWith("http") && Pref.bpPriorChrome(pref)) {

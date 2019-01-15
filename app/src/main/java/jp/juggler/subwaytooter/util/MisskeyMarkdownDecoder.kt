@@ -1668,7 +1668,7 @@ object MisskeyMarkdownDecoder {
 		})
 		
 		// Hashtag
-		val reHashtag = Pattern.compile("""\A#([^#\s.,!?]+)""")
+		val reHashtag = Pattern.compile("""\A#([^\s.,!?#:]+)""")
 		val reDigitsOnly = Pattern.compile("""\A\d*\z""")
 		addParser("#", {
 			

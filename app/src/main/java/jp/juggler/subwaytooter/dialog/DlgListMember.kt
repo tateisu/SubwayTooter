@@ -15,10 +15,7 @@ import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_ListMember
 import jp.juggler.subwaytooter.action.makeAccountListNonPseudo
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootList
-import jp.juggler.subwaytooter.api.entity.parseList
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
@@ -179,10 +176,10 @@ class DlgListMember(
 
 				// リストに追加したいアカウントの自タンスでのアカウントIDを取得する
 				var result = client.syncAccountByAcct(list_owner,target_user_full_acct)
-				local_who = result?.data as? TootAccount
-				
-				val local_who = this@DlgListMember.local_who
+				val local_who = (result?.data as? TootAccountRef)?.get()
 					?: return TootApiResult(activity.getString(R.string.account_sync_failed))
+				
+				this@DlgListMember.local_who = local_who
 				
 				if(list_owner.isMisskey){
 					// 今のmisskeyではリスト全スキャンしないとユーザの登録状況が分からない

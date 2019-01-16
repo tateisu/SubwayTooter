@@ -64,6 +64,7 @@
             android:contentDescription="@string/drag_handle"
             android:scaleType="center"
             android:src="@drawable/ic_order"
+            android:tint="?attr/colorVectorDrawable"
             />
 
         <LinearLayout
@@ -109,6 +110,7 @@
                     android:contentDescription="@string/last_selection"
                     android:scaleType="center"
                     android:src="@drawable/ic_bookmark"
+                    android:tint="?attr/colorVectorDrawable"
                     />
             </LinearLayout>
         </LinearLayout>

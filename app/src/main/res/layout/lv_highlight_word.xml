@@ -53,6 +53,7 @@
             android:scaleType="center"
             android:src="@drawable/ic_order"
             android:visibility="gone"
+            android:tint="?attr/colorVectorDrawable"
             />
 
         <TextView
@@ -72,6 +73,7 @@
             android:id="@+id/btnSound"
             android:src="@drawable/ic_volume_up"
             android:contentDescription="@string/check_sound"
+            android:tint="?attr/colorVectorDrawable"
             />
     </LinearLayout>
 

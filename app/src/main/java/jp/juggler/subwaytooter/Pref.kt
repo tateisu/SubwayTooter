@@ -356,7 +356,11 @@ object Pref {
 		false,
 		R.id.swMoveNotificationsQuickFilter
 	)
-	
+	val bpShowAcctInSystemNotification = BooleanPref(
+		"ShowAcctInSystemNotification",
+		false,
+		R.id.swShowAcctInSystemNotification
+	)
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

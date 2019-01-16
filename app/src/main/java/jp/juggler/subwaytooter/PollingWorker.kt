@@ -1262,42 +1262,56 @@ class PollingWorker private constructor(contextArg : Context) {
 				dstListJson.add(src)
 			}
 			
-			private fun getNotificationLine(type : String, display_name : CharSequence) =
-				when(type) {
+			private fun getNotificationLine(item:Data):String{
+				val name = when(Pref.bpShowAcctInSystemNotification(pref)) {
+					false -> item.notification.accountRef?.decoded_display_name
+					
+					true -> {
+						val acct = item.notification.accountRef?.get()?.acct
+						if(acct?.isNotEmpty() == true) {
+							"@$acct"
+						} else {
+							null
+						}
+					}
+				} ?: "?"
+				return when(item.notification.type) {
 					TootNotification.TYPE_MENTION,
 					TootNotification.TYPE_REPLY ->
-						"- " + context.getString(R.string.display_name_replied_by, display_name)
+						"- " + context.getString(R.string.display_name_replied_by, name)
 					
 					TootNotification.TYPE_RENOTE,
 					TootNotification.TYPE_REBLOG ->
-						"- " + context.getString(R.string.display_name_boosted_by, display_name)
+						"- " + context.getString(R.string.display_name_boosted_by, name)
 					
 					TootNotification.TYPE_QUOTE ->
-						"- " + context.getString(R.string.display_name_quoted_by, display_name)
+						"- " + context.getString(R.string.display_name_quoted_by, name)
 					
 					TootNotification.TYPE_FOLLOW ->
-						"- " + context.getString(R.string.display_name_followed_by, display_name)
+						"- " + context.getString(R.string.display_name_followed_by, name)
 					
 					TootNotification.TYPE_UNFOLLOW ->
-						"- " + context.getString(R.string.display_name_unfollowed_by, display_name)
+						"- " + context.getString(R.string.display_name_unfollowed_by, name)
 					
 					TootNotification.TYPE_FAVOURITE ->
-						"- " + context.getString(R.string.display_name_favourited_by, display_name)
+						"- " + context.getString(R.string.display_name_favourited_by, name)
 					
 					TootNotification.TYPE_REACTION ->
-						"- " + context.getString(R.string.display_name_reaction_by, display_name)
+						"- " + context.getString(R.string.display_name_reaction_by, name)
 					
 					TootNotification.TYPE_VOTE ->
-						"- " + context.getString(R.string.display_name_voted_by, display_name)
+						"- " + context.getString(R.string.display_name_voted_by, name)
 					
 					TootNotification.TYPE_FOLLOW_REQUEST ->
 						"- " + context.getString(
 							R.string.display_name_follow_request_by,
-							display_name
+							name
 						)
 					
 					else -> "- " + "?"
 				}
+			}
+			
 			
 			private fun showNotification(data_list : ArrayList<Data>) {
 				
@@ -1443,11 +1457,11 @@ class PollingWorker private constructor(contextArg : Context) {
 				
 				log.d("showNotification[${account.acct}] creating notification(7)")
 				
-				var a = getNotificationLine(
-					item.notification.type,
-					item.notification.accountRef?.decoded_display_name ?: "?"
-				)
+			
+				var a = getNotificationLine(item)
+
 				val acct = item.access_info.acct
+				
 				if(data_list.size == 1) {
 					builder.setContentTitle(a)
 					builder.setContentText(acct)
@@ -1462,10 +1476,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					for(i in 0 .. 4) {
 						if(i >= data_list.size) break
 						item = data_list[i]
-						a = getNotificationLine(
-							item.notification.type,
-							item.notification.accountRef?.decoded_display_name ?: "?"
-						)
+						a = getNotificationLine(item)
 						style.addLine(a)
 					}
 					builder.setStyle(style)

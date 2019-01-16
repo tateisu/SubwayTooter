@@ -873,5 +873,6 @@
     <string name="move_notifications_quick_filter_to_column_setting">Show notifications quick filter in column setting (app restart required)</string>
     <string name="copy_account_id">Copy account ID %1$s</string>
     <string name="open_in_admin_ui">Open in admin web UI</string>
+    <string name="show_acct_in_system_notification">Show acct (instead of user name) in system notification</string>
 
 </resources>

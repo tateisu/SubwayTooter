@@ -63,7 +63,7 @@
             android:background="?attr/colorColumnListDragHandleBackground"
             android:contentDescription="@string/drag_handle"
             android:scaleType="center"
-            android:src="?attr/ic_knob"
+            android:src="@drawable/ic_order"
             />
 
         <LinearLayout
@@ -108,7 +108,7 @@
                     android:layout_marginStart="6dp"
                     android:contentDescription="@string/last_selection"
                     android:scaleType="center"
-                    android:src="?attr/ic_bookmark"
+                    android:src="@drawable/ic_bookmark"
                     />
             </LinearLayout>
         </LinearLayout>

@@ -85,29 +85,34 @@ Loop: for( my $y = 0; $y < $height ;++$y){
 	$relpath=~ /drawable-(\w+)/;
 	my $density = $density{ $1 };
 
-#	if( $density and !$isColor){
-#		my $dp_w = int(0.5 + $width/$density);
-#		my $dp_h = int(0.5 + $height/$density);
-#		if( $dp_w == 32 && $dp_h == 32 ){
-#			say "${dp_w}x${dp_h}dp, alphaMax=$alphaMax, isColor=${isColor}, $relpath";
-#
-#			# create trimmed
-#			my $trim_w = int(0.5 + $width * 24/32);
-#			my $trim_h = int(0.5 + $height * 24/32);
-#			my $offsetX = int($width-$trim_w)/2;
-#			my $offsetY = int($width-$trim_w)/2;
-#
-#			my $i2 = GD::Image->newTrueColor($trim_w,$trim_h);
-#			$i2->alphaBlending(0);
-#			$i2->filledRectangle(0,0,$trim_w,$trim_h, $image->colorAllocateAlpha(0,0,0,127));
-#			$i2->alphaBlending(1);
-#			$i2->copy($image,0,0,$offsetX,$offsetY,$trim_w,$trim_h);
-#
-#			my $dstfile = "$trimdir/$relpath";
-#			return if not $dstfile =~ s/(png|webp)\z/png/i;
-#			savePng($i2,$dstfile);
-#		}
-#	}
+	if( $density and !$isColor){
+		my $dp_w = int(0.5 + $width/$density);
+		my $dp_h = int(0.5 + $height/$density);
+		if( $dp_w == 32 && $dp_h == 32 && 0 ){
+			say "${dp_w}x${dp_h}dp, alphaMax=$alphaMax, isColor=${isColor}, $relpath";
+
+			my $dstfile = "$trimdir/$relpath";
+			if( $dstfile =~ s/(png|webp)\z/png/i ){
+				if(0){
+					# create trimmed
+					my $trim_w = int(0.5 + $width * 24/32);
+					my $trim_h = int(0.5 + $height * 24/32);
+					my $offsetX = int($width-$trim_w)/2;
+					my $offsetY = int($width-$trim_w)/2;
+
+					my $i2 = GD::Image->newTrueColor($trim_w,$trim_h);
+					$i2->alphaBlending(0);
+					$i2->filledRectangle(0,0,$trim_w,$trim_h, $image->colorAllocateAlpha(0,0,0,127));
+					$i2->alphaBlending(1);
+					$i2->copy($image,0,0,$offsetX,$offsetY,$trim_w,$trim_h);
+
+					savePng($i2,$dstfile);
+				}else{
+					savePng($image,$dstfile);
+				}
+			}
+		}
+	}
 
 	return if $isColor;
 	return if $alphaMax == 0;

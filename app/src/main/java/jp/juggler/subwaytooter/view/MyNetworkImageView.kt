@@ -36,10 +36,10 @@ class MyNetworkImageView : AppCompatImageView {
 	}
 	
 	// ロード中などに表示するDrawableのリソースID
-	private var mDefaultImageId = 0
+	private var mDefaultImage :Drawable? = null
 	
 	// エラー時に表示するDrawableのリソースID
-	private var mErrorImageId = 0
+	private var mErrorImage :Drawable? = null
 	
 	// 角丸の半径。元画像の短辺に対する割合を指定するらしい
 	internal var mCornerRadius = 0f
@@ -67,13 +67,13 @@ class MyNetworkImageView : AppCompatImageView {
 	constructor(context : Context, attrs : AttributeSet, defStyleAttr : Int)
 		: super(context, attrs, defStyleAttr)
 	
-	fun setDefaultImageResId(defaultImage : Int) {
-		mDefaultImageId = defaultImage
+	fun setDefaultImage(defaultImage : Drawable?) {
+		mDefaultImage = defaultImage
 		loadImageIfNecessary()
 	}
 	
-	fun setErrorImageResId(errorImage : Int) {
-		mErrorImageId = errorImage
+	fun setErrorImage(errorImage : Drawable?) {
+		mErrorImage = errorImage
 		loadImageIfNecessary()
 	}
 	
@@ -138,14 +138,7 @@ class MyNetworkImageView : AppCompatImageView {
 		
 	}
 	
-	// デフォルト画像かnull
-	private fun getDefaultDrawable(context : Context?) : Drawable? {
-		return if(context != null && mDefaultImageId != 0) {
-			ContextCompat.getDrawable(context, mDefaultImageId)
-		} else {
-			null
-		}
-	}
+	
 	
 	// 必要なら非同期処理を開始する
 	private fun loadImageIfNecessary() {
@@ -154,7 +147,7 @@ class MyNetworkImageView : AppCompatImageView {
 			if(url?.isEmpty() != false) {
 				// if the URL to be loaded in this view is empty,
 				// cancel any old requests and clear the currently loaded image.
-				cancelLoading(getDefaultDrawable(context))
+				cancelLoading(mDefaultImage)
 				return
 			}
 			
@@ -162,7 +155,7 @@ class MyNetworkImageView : AppCompatImageView {
 			if((mTarget as? UrlTarget)?.urlLoading == url) return
 			
 			// if there is a pre-existing request, cancel it if it's fetching a different URL.
-			cancelLoading(getDefaultDrawable(context))
+			cancelLoading(mDefaultImage)
 			
 			// 非表示状態ならロードを延期する
 			if(! isShown) return
@@ -239,9 +232,9 @@ class MyNetworkImageView : AppCompatImageView {
 			// 別の画像を表示するよう指定が変化していたなら何もしない
 			if(urlLoading != mUrl) return
 			
-			if(mErrorImageId != 0) {
+			if(mErrorImage != null) {
 				// エラー表示用の画像リソースが指定されていたら使う
-				setImageResource(mErrorImageId)
+				setImageDrawable(mErrorImage)
 			} else {
 				// このタイミングでImageViewのDrawableを変更するとチラつきの元になるので何もしない
 			}

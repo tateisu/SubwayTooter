@@ -236,7 +236,7 @@
                     android:layout_height="32dp"
                     android:layout_marginEnd="4dp"
                     android:importantForAccessibility="no"
-                    tools:src="?attr/btn_federate_tl"
+                    tools:src="@drawable/ic_bike"
                     />
                 <TextView
                     android:id="@+id/tvColumnName"
@@ -468,7 +468,7 @@
                         android:layout_height="48dp"
                         android:background="@drawable/bg_button_cw"
                         android:importantForAccessibility="no"
-                        app:srcCompat="?attr/ic_hamburger"
+                        app:srcCompat="@drawable/ic_hamburger"
                         />
 
                     <View
@@ -526,7 +526,7 @@
                         android:layout_height="48dp"
                         android:background="@drawable/bg_button_cw"
                         android:contentDescription="@string/toot"
-                        app:srcCompat="?attr/ic_edit"
+                        app:srcCompat="@drawable/ic_edit"
                         />
                 </LinearLayout>
 

@@ -2,9 +2,12 @@
 <resources>
     <color name="Light_colorThumbnailBackground">#20000000</color>
     <color name="Light_colorColumnListItemText">#80000000</color>
+
+
     <color name="Light_colorTimeSmall">#ff666666</color>
     <color name="Light_colorContentText">#ff333333</color>
     <color name="Light_colorColumnHeaderName">#616161</color>
+    <color name="Light_colorVectorDrawable">#616161</color>
 
     <color name="Light_colorColumnHeaderAcct">#80000000</color>
     <color name="Light_colorColumnHeaderPageNumber">#80000000</color>
@@ -62,6 +65,7 @@
     <color name="Dark_colorColumnHeaderPageNumber">#66FFFFFF</color>
     <color name="Dark_colorSettingDivider">#66FFFFFF</color><!-- ダイアログ背景が#424242なので、それより明るくないといけない -->
     <color name="Dark_colorColumnHeaderName">#e4e4e4</color>
+    <color name="Dark_colorVectorDrawable">#e4e4e4</color>
 
     <color name="Dark_colorImageButton">#ccFFFFFF</color>
 

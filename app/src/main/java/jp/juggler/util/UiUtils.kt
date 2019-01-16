@@ -42,23 +42,25 @@ fun getAttributeColor(context : Context, attrId : Int) : Int {
 	return color
 }
 
-fun getAttributeResourceId(context : Context, attrId : Int) : Int {
-	val theme = context.theme
-	val a = theme.obtainStyledAttributes(intArrayOf(attrId))
-	val resourceId = a.getResourceId(0, 0)
-	a.recycle()
-	if(resourceId == 0)
-		throw RuntimeException(
-			String.format(
-				Locale.JAPAN,
-				"attr not defined.attr_id=0x%x",
-				attrId
-			)
-		)
-	return resourceId
-}
 
 fun getAttributeDrawable(context : Context, attrId : Int) : Drawable {
+	
+	fun getAttributeResourceId(context : Context, attrId : Int) : Int {
+		val theme = context.theme
+		val a = theme.obtainStyledAttributes(intArrayOf(attrId))
+		val resourceId = a.getResourceId(0, 0)
+		a.recycle()
+		if(resourceId == 0)
+			throw RuntimeException(
+				String.format(
+					Locale.JAPAN,
+					"attr not defined.attr_id=0x%x",
+					attrId
+				)
+			)
+		return resourceId
+	}
+	
 	val drawableId = getAttributeResourceId(context, attrId)
 	val d = ContextCompat.getDrawable(context, drawableId)
 	return d ?: throw RuntimeException(
@@ -233,21 +235,21 @@ fun setIconDrawableId(
 	}
 }
 
-fun setIconAttr(
-	context : Context,
-	imageView : ImageView,
-	iconAttrId : Int,
-	color : Int? = null,
-	alphaMultiplier : Float? = null
-) {
-	setIconDrawableId(
-		context,
-		imageView,
-		getAttributeResourceId(context, iconAttrId),
-		color,
-		alphaMultiplier
-	)
-}
+//fun setIconAttr(
+//	context : Context,
+//	imageView : ImageView,
+//	iconAttrId : Int,
+//	color : Int? = null,
+//	alphaMultiplier : Float? = null
+//) {
+//	setIconDrawableId(
+//		context,
+//		imageView,
+//		getAttributeResourceId(context, iconAttrId),
+//		color,
+//		alphaMultiplier
+//	)
+//}
 
 fun CharSequence.copyToClipboard(context:Context) {
 	try {

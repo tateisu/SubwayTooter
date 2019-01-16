@@ -679,10 +679,10 @@ class ActAppSettingChild : AppCompatActivity()
 		)
 		
 		tvColumnName !!.textColor = header_fg
-		setIconAttr(
+		setIconDrawableId(
 			this,
 			ivColumnHeader !!,
-			R.attr.btn_federate_tl,
+			R.drawable.ic_bike,
 			color = header_fg
 		)
 	}
@@ -1092,13 +1092,9 @@ class ActAppSettingChild : AppCompatActivity()
 		}
 		
 		c = footer_button_fg_color
-		if(c == 0) {
-			setIconAttr(this, ivFooterToot !!, R.attr.ic_edit)
-			setIconAttr(this, ivFooterMenu !!, R.attr.ic_hamburger)
-		} else {
-			setIconAttr(this, ivFooterToot !!, R.attr.ic_edit, color = c)
-			setIconAttr(this, ivFooterMenu !!, R.attr.ic_hamburger, color = c)
-		}
+		if(c == 0)  c= getAttributeColor(this,R.attr.colorVectorDrawable)
+		setIconDrawableId(this, ivFooterToot !!, R.drawable.ic_edit, color = c)
+		setIconDrawableId(this, ivFooterMenu !!, R.drawable.ic_hamburger, color = c)
 		
 		c = footer_tab_bg_color
 		if(c == 0) {

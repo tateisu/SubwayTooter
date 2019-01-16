@@ -75,7 +75,6 @@ internal class StatusButtons(
 		btnReply.setOnLongClickListener(this)
 	}
 	
-
 	fun hide() {
 		holder.viewRoot.visibility = View.GONE
 	}
@@ -86,8 +85,8 @@ internal class StatusButtons(
 		this.notification = notification
 		
 		val fav_icon_drawable = when {
-			access_info.isNicoru(status.account) -> R.drawable.ic_nicoru_dark
-			else -> R.drawable.btn_favourite_dark
+			access_info.isNicoru(status.account) -> R.drawable.ic_nicoru
+			else -> R.drawable.ic_star
 		}
 		
 		val replies_count = status.replies_count
@@ -95,35 +94,35 @@ internal class StatusButtons(
 		setIconDrawableId(
 			activity,
 			btnConversation,
-			R.drawable.ic_conversation_dark,
+			R.drawable.ic_forum,
 			color = color_normal,
 			alphaMultiplier = Styler.boost_alpha
 		)
 		setIconDrawableId(
 			activity,
 			btnMore,
-			R.drawable.btn_more_dark,
+			R.drawable.ic_more,
 			color = color_normal,
 			alphaMultiplier = Styler.boost_alpha
 		)
 		
-//		val a = (((color_normal ushr 24)/255f) * 0.7f)
-
+		//		val a = (((color_normal ushr 24)/255f) * 0.7f)
+		
 		// setIconDrawableId で色を指定するとアルファ値も反映されるらしい
-//		btnConversation.alpha = a
-//		btnMore.alpha = a
-//
-//		btnReply.alpha = a
-//		btnBoost.alpha = a
-//		btnFavourite.alpha = a
-//		btnFollow2.alpha = a
-//		ivFollowedBy2.alpha = a
+		//		btnConversation.alpha = a
+		//		btnMore.alpha = a
+		//
+		//		btnReply.alpha = a
+		//		btnBoost.alpha = a
+		//		btnFavourite.alpha = a
+		//		btnFollow2.alpha = a
+		//		ivFollowedBy2.alpha = a
 		
 		setButton(
 			btnReply,
 			true,
 			color_normal,
-			R.drawable.btn_reply_dark,
+			R.drawable.ic_reply,
 			when(replies_count) {
 				null -> ""
 				else -> when(Pref.ipRepliesCount(activity.pref)) {
@@ -146,7 +145,7 @@ internal class StatusButtons(
 				btnBoost,
 				false,
 				color_accent,
-				R.drawable.ic_mail_dark,
+				R.drawable.ic_repeat,
 				"",
 				activity.getString(R.string.boost)
 			)
@@ -155,7 +154,7 @@ internal class StatusButtons(
 				btnBoost,
 				false,
 				color_normal,
-				R.drawable.btn_refresh_dark,
+				R.drawable.ic_refresh,
 				"?",
 				activity.getString(R.string.boost)
 			)
@@ -164,7 +163,7 @@ internal class StatusButtons(
 				btnBoost,
 				true,
 				if(status.reblogged) color_accent else color_normal,
-				R.drawable.btn_boost_dark,
+				R.drawable.ic_repeat,
 				status.reblogs_count?.toString() ?: "",
 				activity.getString(R.string.boost)
 			)
@@ -175,7 +174,7 @@ internal class StatusButtons(
 				btnFavourite,
 				false,
 				color_normal,
-				R.drawable.btn_refresh_dark,
+				R.drawable.ic_refresh,
 				"?",
 				activity.getString(R.string.favourite)
 			)
@@ -220,7 +219,8 @@ internal class StatusButtons(
 		count : String,
 		contentDescription : String
 	) {
-		val d = createColoredDrawable(activity,drawableId,color,alphaMultiplier = Styler.boost_alpha)
+		val d =
+			createColoredDrawable(activity, drawableId, color, alphaMultiplier = Styler.boost_alpha)
 		b.setImageDrawable(d)
 		b.setPaddingAndText(holder.paddingH, holder.paddingV, count, 14f, holder.compoundPaddingDp)
 		b.setTextColor(color.applyAlphaMultiplier(Styler.boost_alpha))
@@ -418,7 +418,6 @@ internal class StatusButtons(
 		return true
 	}
 	
-	
 }
 
 open class _FlexboxLayout(ctx : Context) : FlexboxLayout(ctx) {
@@ -481,8 +480,7 @@ class StatusButtonsViewHolder(
 					
 					setPadding(paddingH, paddingV, paddingH, paddingV)
 					scaleType = ImageView.ScaleType.FIT_CENTER
-					imageResource =
-						getAttributeResourceId(context, R.attr.ic_conversation)
+					imageResource = R.drawable.ic_forum
 				}.lparams(buttonHeight, buttonHeight)
 				
 				btnReply = customView<CountImageButton> {
@@ -560,8 +558,7 @@ class StatusButtonsViewHolder(
 					scaleType = ImageView.ScaleType.FIT_CENTER
 					
 					contentDescription = context.getString(R.string.more)
-					imageResource =
-						getAttributeResourceId(context, R.attr.btn_more)
+					imageResource = R.drawable.ic_more
 				}.lparams(buttonHeight, buttonHeight) {
 					startMargin = marginBetween
 				}

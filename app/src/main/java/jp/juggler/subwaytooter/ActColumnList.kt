@@ -3,7 +3,9 @@ package jp.juggler.subwaytooter
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.PorterDuff
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
@@ -265,10 +267,11 @@ class ActColumnList : AppCompatActivity() {
 			tvAccess.setBackgroundColor(item.acct_color_bg)
 			tvAccess.setPaddingRelative(acct_pad_lr, 0, acct_pad_lr, 0)
 			tvName.text = item.name
-			ivColumnIcon.setImageResource(
-				getAttributeResourceId(
-					this@ActColumnList, Column.getIconAttrId(item.acct, item.type)
-				)
+			ivColumnIcon.setImageDrawable(
+				ContextCompat.getDrawable(this@ActColumnList,Column.getIconId(item.acct, item.type))?.also{
+					it.setTint(getAttributeColor(this@ActColumnList,R.attr.colorVectorDrawable))
+					it.setTintMode(PorterDuff.Mode.SRC_IN)
+				}
 			)
 		}
 		
@@ -299,10 +302,11 @@ class ActColumnList : AppCompatActivity() {
 			tv.text = item.name
 			
 			val ivColumnIcon = dragView.findViewById<ImageView>(R.id.ivColumnIcon)
-			ivColumnIcon.setImageResource(
-				getAttributeResourceId(
-					this@ActColumnList, Column.getIconAttrId(item.acct, item.type)
-				)
+			ivColumnIcon.setImageDrawable(
+				ContextCompat.getDrawable(this@ActColumnList,Column.getIconId(item.acct, item.type))?.also{
+					it.setTint( getAttributeColor(this@ActColumnList,R.attr.colorVectorDrawable))
+					it.setTintMode(PorterDuff.Mode.SRC_IN)
+				}
 			)
 			
 			dragView.findViewById<View>(R.id.ivBookmark).visibility =

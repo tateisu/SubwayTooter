@@ -84,7 +84,7 @@
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/follow"
                 android:scaleType="center"
-                tools:src="?attr/ic_follow_plus"
+                tools:src="@drawable/ic_follow_plus"
                 />
 
             <ImageView
@@ -92,7 +92,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="center"
-                android:src="?attr/ic_followed_by"
+                android:src="@drawable/ic_followed_by"
                 tools:ignore="ContentDescription"
                 />
         </FrameLayout>
@@ -188,7 +188,7 @@
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/follow"
                 android:scaleType="center"
-                tools:src="?attr/ic_follow_plus"
+                tools:src="@drawable/ic_follow_plus"
                 />
 
             <ImageView
@@ -196,7 +196,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="center"
-                android:src="?attr/ic_followed_by"
+                android:src="@drawable/ic_followed_by"
                 tools:ignore="ContentDescription"
                 />
         </FrameLayout>
@@ -263,7 +263,7 @@
             android:minWidth="48dp"
             android:paddingEnd="4dp"
             android:paddingStart="4dp"
-            android:src="?attr/btn_more"
+            android:src="@drawable/ic_more"
             />
 
     </LinearLayout>

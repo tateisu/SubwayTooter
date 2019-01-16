@@ -30,6 +30,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.*
+import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.*
@@ -191,9 +192,9 @@ class ActPost : AppCompatActivity(),
 			
 			// (Misskey) 返信を引用リノートにする
 			quotedRenote : Boolean = false,
-		
+			
 			//(Mastodon) 予約投稿の編集
-			scheduledStatus: TootScheduled? = null
+			scheduledStatus : TootScheduled? = null
 		
 		) {
 			val intent = Intent(activity, ActPost::class.java)
@@ -215,7 +216,7 @@ class ActPost : AppCompatActivity(),
 			if(sent_intent != null) {
 				intent.putExtra(KEY_SENT_INTENT, sent_intent)
 			}
-			if( scheduledStatus != null ){
+			if(scheduledStatus != null) {
 				intent.putExtra(KEY_SCHEDULED_STATUS, scheduledStatus.src.toString())
 			}
 			activity.startActivityForResult(intent, request_code)
@@ -263,7 +264,7 @@ class ActPost : AppCompatActivity(),
 	
 	private lateinit var llReply : View
 	private lateinit var tvReplyTo : TextView
-	private lateinit var btnRemoveReply : View
+	private lateinit var btnRemoveReply : ImageButton
 	private lateinit var ivReply : MyNetworkImageView
 	private lateinit var scrollView : ScrollView
 	
@@ -461,10 +462,10 @@ class ActPost : AppCompatActivity(),
 			this.visibility = TootVisibility.fromId(savedInstanceState.getInt(KEY_VISIBILITY, - 1))
 			
 			val a = account
-			if( a != null) {
+			if(a != null) {
 				savedInstanceState.getString(STATE_SCHEDULED_STATUS)?.let {
 					scheduledStatus =
-						parseItem(::TootScheduled, TootParser(this@ActPost, a), JSONObject(it),log)
+						parseItem(::TootScheduled, TootParser(this@ActPost, a), JSONObject(it), log)
 				}
 			}
 			
@@ -493,8 +494,7 @@ class ActPost : AppCompatActivity(),
 						sv.toJsonArray().forEach {
 							if(it !is JSONObject) return@forEach
 							try {
-								val a = TootAttachment.decodeJson(it)
-								attachment_list.add(PostAttachment(a))
+								attachment_list.add(PostAttachment(TootAttachment.decodeJson(it)))
 							} catch(ex : Throwable) {
 								log.trace(ex)
 							}
@@ -738,9 +738,14 @@ class ActPost : AppCompatActivity(),
 			// 予約編集の再編集
 			sv = intent.getStringExtra(KEY_SCHEDULED_STATUS)
 			if(sv != null && account != null) {
-				try{
-					val item = parseItem(::TootScheduled, TootParser(this@ActPost, account), JSONObject(sv),log)
-					if( item != null){
+				try {
+					val item = parseItem(
+						::TootScheduled,
+						TootParser(this@ActPost, account),
+						JSONObject(sv),
+						log
+					)
+					if(item != null) {
 						scheduledStatus = item
 						
 						timeSchedule = item.timeScheduledAt
@@ -749,34 +754,34 @@ class ActPost : AppCompatActivity(),
 						etContent.setText(text)
 						
 						val cw = item.spoiler_text
-						if( cw?.isNotEmpty() == true ){
+						if(cw?.isNotEmpty() == true) {
 							etContentWarning.setText(cw)
 							cbContentWarning.isChecked = true
-						}else{
+						} else {
 							cbContentWarning.isChecked = false
 						}
 						cbNSFW.isChecked = item.sensitive
 						visibility = item.visibility
-
+						
 						// 2019/1/7 どうも添付データを古い投稿から引き継げないようだ…。
 						// バグ臭い
-//						val src_attachments = item.media_attachments
-//						if(src_attachments?.isNotEmpty() == true) {
-//							app_state.attachment_list = this.attachment_list
-//							this.attachment_list.clear()
-//							try {
-//								for(src in src_attachments) {
-//									if(src is TootAttachment) {
-//										src.redraft = true
-//										val pa = PostAttachment(src)
-//										pa.status = PostAttachment.STATUS_UPLOADED
-//										this.attachment_list.add(pa)
-//									}
-//								}
-//							} catch(ex : Throwable) {
-//								log.trace(ex)
-//							}
-//						}
+						//						val src_attachments = item.media_attachments
+						//						if(src_attachments?.isNotEmpty() == true) {
+						//							app_state.attachment_list = this.attachment_list
+						//							this.attachment_list.clear()
+						//							try {
+						//								for(src in src_attachments) {
+						//									if(src is TootAttachment) {
+						//										src.redraft = true
+						//										val pa = PostAttachment(src)
+						//										pa.status = PostAttachment.STATUS_UPLOADED
+						//										this.attachment_list.add(pa)
+						//									}
+						//								}
+						//							} catch(ex : Throwable) {
+						//								log.trace(ex)
+						//							}
+						//						}
 					}
 				} catch(ex : Throwable) {
 					log.trace(ex)
@@ -794,7 +799,7 @@ class ActPost : AppCompatActivity(),
 			// 表示を未選択に更新
 			selectAccount(null)
 		}
-
+		
 		updateContentWarning()
 		showMediaAttachment()
 		showVisibility()
@@ -978,7 +983,7 @@ class ActPost : AppCompatActivity(),
 		
 		tvSchedule = findViewById(R.id.tvSchedule)
 		ibSchedule = findViewById(R.id.ibSchedule)
-		ibScheduleReset= findViewById(R.id.ibScheduleReset)
+		ibScheduleReset = findViewById(R.id.ibScheduleReset)
 		
 		ibSchedule.setOnClickListener(this)
 		ibScheduleReset.setOnClickListener(this)
@@ -1002,15 +1007,18 @@ class ActPost : AppCompatActivity(),
 		
 		for(iv in ivMedia) {
 			iv.setOnClickListener(this)
-			iv.setDefaultImageResId(getAttributeResourceId(this, R.attr.ic_loading))
-			iv.setErrorImageResId(getAttributeResourceId(this, R.attr.ic_unknown))
+			iv.setDefaultImage(defaultColorIcon(this, R.drawable.ic_upload))
+			iv.setErrorImage(defaultColorIcon(this, R.drawable.ic_unknown))
 		}
 		
-		setIcon(btnPost, R.drawable.btn_post)
-		setIcon(btnMore, R.drawable.btn_more)
-		setIcon(btnPlugin, R.drawable.ic_plugin)
-		setIcon(btnEmojiPicker, R.drawable.ic_face)
-		setIcon(btnAttachment, R.drawable.btn_attachment)
+		//		setIcon(btnPost, R.drawable.ic_send)
+		//		setIcon(btnMore, R.drawable.ic_more)
+		//		setIcon(btnPlugin, R.drawable.ic_extension)
+		//		setIcon(btnEmojiPicker, R.drawable.ic_face)
+		//		setIcon(btnAttachment, R.drawable.ic_attachment)
+		//		setIcon(ibSchedule, R.drawable.ic_edit)
+		//		setIcon(ibScheduleReset, R.drawable.ic_close)
+		//		setIcon(btnRemoveReply, R.drawable.ic_close)
 		
 		cbContentWarning.setOnCheckedChangeListener { _, _ ->
 			updateContentWarning()
@@ -1044,15 +1052,6 @@ class ActPost : AppCompatActivity(),
 			acceptable_mime_types.toArray(arrayOfNulls<String>(ActPost.acceptable_mime_types.size))
 		etContent.commitContentListener = commitContentListener
 		
-	}
-	
-	private fun setIcon(iv : ImageView, drawableId : Int) {
-		setIconDrawableId(
-			this,
-			iv,
-			drawableId,
-			getAttributeColor(this, R.attr.colorColumnHeaderName)
-		)
 	}
 	
 	private var lastInstanceTask : TootTaskRunner? = null
@@ -1188,7 +1187,7 @@ class ActPost : AppCompatActivity(),
 	
 	private fun performAccountChooser() {
 		
-		if( scheduledStatus!= null ) {
+		if(scheduledStatus != null) {
 			// 予約投稿の再編集ではアカウントを切り替えられない
 			showToast(this, false, R.string.cant_change_account_when_editing_scheduled_status)
 			return
@@ -2059,15 +2058,15 @@ class ActPost : AppCompatActivity(),
 		}
 	}
 	
-	private fun showVisibility() {
-		setIcon(
-			btnVisibility, Styler.getVisibilityIcon(
-				this
-				, account?.isMisskey == true
-				, visibility ?: TootVisibility.Public
-			)
-		)
-	}
+	private fun showVisibility() = setIconDrawableId(
+		this,
+		btnVisibility,
+		Styler.getVisibilityIconId(
+			account?.isMisskey == true
+			, visibility ?: TootVisibility.Public
+		),
+		getAttributeColor(this, R.attr.colorVectorDrawable)
+	)
 	
 	private fun performVisibility() {
 		val list = if(account?.isMisskey == true) {
@@ -2190,7 +2189,7 @@ class ActPost : AppCompatActivity(),
 		
 		post_helper.scheduledId = scheduledStatus?.id
 		
-		post_helper.post(account,callback=object:PostHelper.PostCompleteCallback{
+		post_helper.post(account, callback = object : PostHelper.PostCompleteCallback {
 			override fun onPostComplete(
 				target_account : SavedAccount,
 				status : TootStatus
@@ -2206,7 +2205,7 @@ class ActPost : AppCompatActivity(),
 			}
 			
 			override fun onScheduledPostComplete(target_account : SavedAccount) {
-				showToast(this@ActPost,false,getString(R.string.scheduled_status_sent))
+				showToast(this@ActPost, false, getString(R.string.scheduled_status_sent))
 				val data = Intent()
 				data.putExtra(EXTRA_POSTED_ACCT, target_account.acct)
 				setResult(RESULT_OK, data)
@@ -2677,8 +2676,8 @@ class ActPost : AppCompatActivity(),
 			showSchedule()
 		}
 	}
-
-	private fun resetSchedule(){
+	
+	private fun resetSchedule() {
 		timeSchedule = 0L
 		showSchedule()
 	}

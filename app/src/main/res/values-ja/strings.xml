@@ -474,7 +474,7 @@
     <string name="notification_style_after_oreo">通知スタイル(Android 8.x 以降)</string>
     <string name="notification_style_before_oreo">通知スタイル(Android 7.x以下。もしお使いのデバイスが8.x以降の場合、アカウント設定から通知スタイルを変更できます)</string>
     <string name="notification_tl_font_size">通知TLのフォントの大きさ (単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
-    <string name="notification_tl_icon_size">通知TLのアイコンの大きさ (単位:dp。デフォルト:32。アプリ再起動が必要)</string>
+    <string name="notification_tl_icon_size">通知TLのアイコンの大きさ (単位:dp。デフォルト:24。アプリ再起動が必要)</string>
     <string name="notification_type_boost">ブースト</string>
     <string name="notification_type_favourite">お気に入り</string>
     <string name="notification_type_follow">フォロー</string>
@@ -842,9 +842,9 @@
     <string name="cant_change_account_when_editing_scheduled_status">予約した投稿の再編集ではアカウントを変更できません</string>
     <string name="delete_scheduled_status_before_update">投稿する前に編集前の古い予約投稿を削除します。よろしいですか?</string>
     <string name="reply_icon_size">返信アイコンの大きさ(単位:dp。デフォルト:24。アプリ再起動が必要)</string>
-    <string name="header_icon_size">ヘッダ部アイコンの大きさ(単位:dp。デフォルト:32。アプリ再起動が必要)</string>
+    <string name="header_icon_size">ヘッダ部アイコンの大きさ(単位:dp。デフォルト:24。アプリ再起動が必要)</string>
     <string name="header_text_size">ヘッダ部テキストの大きさ(単位:sp。デフォルト:14。アプリ再起動が必要)</string>
-    <string name="strip_icon_size">カラムストリップのアイコンの大きさ(単位:dp。デフォルト:32。アプリ再起動が必要)</string>
+    <string name="strip_icon_size">カラムストリップのアイコンの大きさ(単位:dp。デフォルト:24。アプリ再起動が必要)</string>
     <string name="all">All</string>
     <string name="show_links_in_context_menu">本文中のリンクをコンテキストメニューに表示する</string>
     <string name="scheduled_status_requires_mastodon_2_7_0">予約投稿はマストドン2.7.0以降で使えます</string>

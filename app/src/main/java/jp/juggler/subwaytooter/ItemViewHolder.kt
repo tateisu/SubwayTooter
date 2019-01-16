@@ -19,6 +19,7 @@ import android.widget.*
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
+import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -33,7 +34,6 @@ import jp.juggler.util.*
 import org.jetbrains.anko.*
 import org.json.JSONObject
 import kotlin.math.max
-import kotlin.math.min
 
 internal class ItemViewHolder(
 	val activity : ActMain
@@ -266,7 +266,7 @@ internal class ItemViewHolder(
 		ivFollow.layoutParams.width = s
 		ivBoosted.layoutParams.width = s
 		
-		s = ActMain.replyIconSize + (activity.density*8).toInt()
+		s = ActMain.replyIconSize + (activity.density * 8).toInt()
 		ivReply.layoutParams.width = s
 		ivReply.layoutParams.height = s
 		
@@ -459,7 +459,7 @@ internal class ItemViewHolder(
 					item.hasAnyContent() -> {
 						// 引用Renote
 						showReply(
-							R.attr.btn_boost,
+							R.drawable.ic_repeat,
 							R.string.renote_to,
 							reblog
 						)
@@ -471,7 +471,7 @@ internal class ItemViewHolder(
 						showBoost(
 							item.accountRef,
 							item.time_created_at,
-							R.attr.btn_boost,
+							R.drawable.ic_repeat,
 							R.string.display_name_boosted_by
 						)
 						showStatusOrReply(item.reblog)
@@ -500,9 +500,10 @@ internal class ItemViewHolder(
 				showConversationIcons(item)
 			}
 			
-			is TootScheduled ->{
+			is TootScheduled -> {
 				showScheduled(item)
 			}
+			
 			else -> {
 			}
 		}
@@ -518,9 +519,9 @@ internal class ItemViewHolder(
 			
 			showStatusTimeScheduled(activity, tvTime, item)
 			
-			val who = access_info.loginAccount!!
+			val who = access_info.loginAccount !!
 			val whoRef = TootAccountRef(TootParser(activity, access_info), who)
-			this.status_account =whoRef
+			this.status_account = whoRef
 			
 			setAcct(tvAcct, access_info.getFullAcct(who), who.acct)
 			
@@ -533,26 +534,23 @@ internal class ItemViewHolder(
 				access_info.supplyBaseUrl(who.avatar)
 			)
 			
-			val content = SpannableString(item.text?:"")
+			val content = SpannableString(item.text ?: "")
 			
 			tvMentions.visibility = View.GONE
 			
 			tvContent.text = content
 			content_invalidator.register(content)
 			
-			tvContent.minLines = -1
+			tvContent.minLines = - 1
 			
-			
-			
-			
-			val decoded_spoiler_text = SpannableString(item.spoiler_text?:"")
+			val decoded_spoiler_text = SpannableString(item.spoiler_text ?: "")
 			when {
 				decoded_spoiler_text.isNotEmpty() -> {
 					// 元データに含まれるContent Warning を使う
 					llContentWarning.visibility = View.VISIBLE
 					tvContentWarning.text = decoded_spoiler_text
 					spoiler_invalidator.register(decoded_spoiler_text)
-					val cw_shown = ContentWarning.isShown(item.uri,false)
+					val cw_shown = ContentWarning.isShown(item.uri, false)
 					showContent(cw_shown)
 				}
 				
@@ -564,7 +562,7 @@ internal class ItemViewHolder(
 			}
 			
 			val media_attachments = item.media_attachments
-			if(media_attachments?.isEmpty() != false ) {
+			if(media_attachments?.isEmpty() != false) {
 				flMedia.visibility = View.GONE
 				llMedia.visibility = View.GONE
 				btnShowMedia.visibility = View.GONE
@@ -577,7 +575,7 @@ internal class ItemViewHolder(
 					access_info.dont_hide_nsfw -> true
 					else -> ! item.sensitive
 				}
-				val is_shown =  MediaShown.isShown(item.uri, default_shown)
+				val is_shown = MediaShown.isShown(item.uri, default_shown)
 				
 				btnShowMedia.visibility = if(! is_shown) View.VISIBLE else View.GONE
 				llMedia.visibility = if(! is_shown) View.GONE else View.VISIBLE
@@ -591,10 +589,10 @@ internal class ItemViewHolder(
 					tvMediaDescription.text = sb
 				}
 				
-				setIconAttr(
+				setIconDrawableId(
 					activity,
 					btnHideMedia,
-					R.attr.btn_close,
+					R.drawable.ic_close,
 					color = content_color,
 					alphaMultiplier = Styler.boost_alpha
 				)
@@ -603,16 +601,17 @@ internal class ItemViewHolder(
 			buttons_for_status?.hide()
 			
 			tvApplication.visibility = View.GONE
-
-		}catch(ex:Throwable){
+			
+		} catch(ex : Throwable) {
 		
 		}
 		llSearchTag.visibility = View.VISIBLE
-		btnSearchTag.text = activity.getString(R.string.scheduled_status) + " "+ TootStatus.formatTime(
-			activity,
-			item.timeScheduledAt,
-			true
-		)
+		btnSearchTag.text = activity.getString(R.string.scheduled_status) + " " +
+			TootStatus.formatTime(
+				activity,
+				item.timeScheduledAt,
+				true
+			)
 	}
 	
 	private fun removeExtraView() {
@@ -705,14 +704,14 @@ internal class ItemViewHolder(
 		when {
 			reply != null ->
 				showReply(
-					R.attr.btn_reply,
+					R.drawable.ic_reply,
 					R.string.reply_to,
 					reply
 				)
 			
 			in_reply_to_id != null && in_reply_to_account_id != null -> {
 				showReply(
-					R.attr.btn_reply,
+					R.drawable.ic_reply,
 					in_reply_to_account_id,
 					item
 				)
@@ -755,7 +754,7 @@ internal class ItemViewHolder(
 				else -> {
 					// 引用Renote
 					showReply(
-						R.attr.btn_boost,
+						R.drawable.ic_repeat,
 						R.string.renote_to,
 						reblog
 					)
@@ -770,7 +769,7 @@ internal class ItemViewHolder(
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
-					if(access_info.isNicoru(n_account)) R.attr.ic_nicoru else R.attr.btn_favourite,
+					if(access_info.isNicoru(n_account)) R.drawable.ic_nicoru else R.drawable.ic_star,
 					R.string.display_name_favourited_by
 				)
 				if(n_status != null) {
@@ -782,7 +781,7 @@ internal class ItemViewHolder(
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
-					R.attr.btn_boost,
+					R.drawable.ic_repeat,
 					R.string.display_name_boosted_by
 				)
 				if(n_status != null) {
@@ -796,7 +795,7 @@ internal class ItemViewHolder(
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
-					R.attr.btn_boost,
+					R.drawable.ic_repeat,
 					R.string.display_name_boosted_by
 				)
 				if(n_status != null) {
@@ -809,7 +808,7 @@ internal class ItemViewHolder(
 					showBoost(
 						n_accountRef,
 						n.time_created_at,
-						R.attr.ic_follow_plus,
+						R.drawable.ic_follow_plus,
 						R.string.display_name_followed_by
 					)
 					showAccount(n_accountRef)
@@ -821,7 +820,7 @@ internal class ItemViewHolder(
 					showBoost(
 						n_accountRef,
 						n.time_created_at,
-						R.attr.ic_follow_cross,
+						R.drawable.ic_follow_cross,
 						R.string.display_name_unfollowed_by
 					)
 					showAccount(n_accountRef)
@@ -842,7 +841,7 @@ internal class ItemViewHolder(
 							showBoost(
 								n_accountRef,
 								n.time_created_at,
-								R.attr.btn_reply,
+								R.drawable.ic_reply,
 								R.string.display_name_mentioned_by
 							)
 						}
@@ -858,7 +857,7 @@ internal class ItemViewHolder(
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
-					R.attr.ic_question, // not used
+					R.drawable.ic_question, // not used
 					R.string.display_name_reaction_by
 					, reactionDrawableId = reaction?.btnDrawableId
 				)
@@ -871,7 +870,7 @@ internal class ItemViewHolder(
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
-					R.attr.btn_boost,
+					R.drawable.ic_repeat,
 					R.string.display_name_quoted_by
 				)
 				if(n_status != null) {
@@ -883,7 +882,7 @@ internal class ItemViewHolder(
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
-					R.attr.ic_vote,
+					R.drawable.ic_vote,
 					R.string.display_name_voted_by
 				)
 				if(n_status != null) {
@@ -895,7 +894,7 @@ internal class ItemViewHolder(
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
-					R.attr.ic_follow_wait,
+					R.drawable.ic_follow_wait,
 					R.string.display_name_follow_request_by
 				)
 				boostedAction = {
@@ -911,7 +910,7 @@ internal class ItemViewHolder(
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
-					R.attr.ic_question,
+					R.drawable.ic_question,
 					R.string.unknown_notification_from
 				)
 				if(n_status != null) {
@@ -973,15 +972,15 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showReply(
-		iconAttrId : Int,
+		iconId : Int,
 		text : Spannable
 	) {
 		llReply.visibility = View.VISIBLE
 		
-		setIconAttr(
+		setIconDrawableId(
 			activity,
 			ivReply,
-			iconAttrId,
+			iconId,
 			color = content_color,
 			alphaMultiplier = Styler.boost_alpha
 		)
@@ -991,7 +990,7 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showReply(
-		iconAttrId : Int,
+		iconId : Int,
 		stringId : Int,
 		reply : TootStatus
 	) {
@@ -1002,11 +1001,11 @@ internal class ItemViewHolder(
 		// setAcct(tvReplyAcct, access_info.getFullAcct(who), who.acct)
 		
 		val text = reply.accountRef.decoded_display_name.intoStringResource(activity, stringId)
-		showReply(iconAttrId, text)
+		showReply(iconId, text)
 	}
 	
 	private fun showReply(
-		iconAttrId : Int,
+		iconId : Int,
 		accountId : EntityId,
 		replyStatus : TootStatus
 	) {
@@ -1029,13 +1028,13 @@ internal class ItemViewHolder(
 		// showStatusTime(activity, tvReplyTime, who, time = reply.time_created_at)
 		// setAcct(tvReplyAcct, access_info.getFullAcct(who), who.acct)
 		
-		showReply(iconAttrId, text)
+		showReply(iconId, text)
 	}
 	
 	private fun showBoost(
 		whoRef : TootAccountRef,
 		time : Long,
-		icon_attr_id : Int,
+		iconId : Int,
 		string_id : Int,
 		reactionDrawableId : Int? = null
 	) {
@@ -1053,10 +1052,10 @@ internal class ItemViewHolder(
 		if(reactionDrawableId != null) {
 			setIconDrawableId(activity, ivBoosted, reactionDrawableId)
 		} else {
-			setIconAttr(
+			setIconDrawableId(
 				activity,
 				ivBoosted,
-				icon_attr_id,
+				iconId,
 				color = content_color,
 				alphaMultiplier = Styler.boost_alpha
 			)
@@ -1271,10 +1270,10 @@ internal class ItemViewHolder(
 				tvMediaDescription.text = sb
 			}
 			
-			setIconAttr(
+			setIconDrawableId(
 				activity,
 				btnHideMedia,
-				R.attr.btn_close,
+				R.drawable.ic_close,
 				color = content_color,
 				alphaMultiplier = Styler.boost_alpha
 			)
@@ -1408,13 +1407,13 @@ internal class ItemViewHolder(
 			}
 			
 			// visibility
-			val visIconAttrId =
-				Styler.getVisibilityIconAttr(access_info.isMisskey, status.visibility)
-			if(R.attr.ic_public != visIconAttrId) {
+			val visIconId =
+				Styler.getVisibilityIconId(access_info.isMisskey, status.visibility)
+			if(R.drawable.ic_public != visIconId) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				sb.appendColorShadeIcon(
 					activity,
-					getAttributeResourceId(activity, visIconAttrId),
+					visIconId,
 					Styler.getVisibilityString(
 						activity,
 						access_info.isMisskey,
@@ -1486,28 +1485,28 @@ internal class ItemViewHolder(
 	) {
 		val sb = SpannableStringBuilder()
 		
-			// NSFWマーク
-			if(item.hasMedia() && item.sensitive) {
-				if(sb.isNotEmpty()) sb.append('\u200B')
-				sb.appendColorShadeIcon(activity, R.drawable.ic_eye_off, "NSFW")
-			}
-			
-			// visibility
-			val visIconAttrId =
-				Styler.getVisibilityIconAttr(access_info.isMisskey, item.visibility )
-			if(R.attr.ic_public != visIconAttrId) {
-				if(sb.isNotEmpty()) sb.append('\u200B')
-				sb.appendColorShadeIcon(
+		// NSFWマーク
+		if(item.hasMedia() && item.sensitive) {
+			if(sb.isNotEmpty()) sb.append('\u200B')
+			sb.appendColorShadeIcon(activity, R.drawable.ic_eye_off, "NSFW")
+		}
+		
+		// visibility
+		val visIconId =
+			Styler.getVisibilityIconId(access_info.isMisskey, item.visibility)
+		if(R.drawable.ic_public != visIconId) {
+			if(sb.isNotEmpty()) sb.append('\u200B')
+			sb.appendColorShadeIcon(
+				activity,
+				visIconId,
+				Styler.getVisibilityString(
 					activity,
-					getAttributeResourceId(activity, visIconAttrId),
-					Styler.getVisibilityString(
-						activity,
-						access_info.isMisskey,
-						item.visibility
-					)
+					access_info.isMisskey,
+					item.visibility
 				)
-			}
-			
+			)
+		}
+		
 		
 		if(sb.isNotEmpty()) sb.append(' ')
 		sb.append(
@@ -1591,13 +1590,13 @@ internal class ItemViewHolder(
 		when(ta.type) {
 			TootAttachmentLike.TYPE_AUDIO -> {
 				iv.setMediaType(0)
-				iv.setDefaultImageResId(getAttributeResourceId(activity, R.attr.ic_music))
+				iv.setDefaultImage(defaultColorIcon(activity,R.drawable.wide_music))
 				iv.setImageUrl(activity.pref, 0f, null)
 			}
 			
 			TootAttachmentLike.TYPE_UNKNOWN -> {
 				iv.setMediaType(0)
-				iv.setDefaultImageResId(getAttributeResourceId(activity, R.attr.ic_question))
+				iv.setDefaultImage(defaultColorIcon(activity,R.drawable.wide_question))
 				iv.setImageUrl(activity.pref, 0f, null)
 			}
 			
@@ -1606,12 +1605,7 @@ internal class ItemViewHolder(
 				when {
 					url?.isEmpty() != false -> {
 						iv.setMediaType(0)
-						iv.setDefaultImageResId(
-							getAttributeResourceId(
-								activity,
-								R.attr.ic_question
-							)
-						)
+						iv.setDefaultImage(defaultColorIcon(activity,R.drawable.wide_question))
 						iv.setImageUrl(activity.pref, 0f, null)
 					}
 					
@@ -1623,7 +1617,7 @@ internal class ItemViewHolder(
 								else -> 0
 							}
 						)
-						iv.setDefaultImageResId(0)
+						iv.setDefaultImage(null)
 						iv.setImageUrl(
 							activity.pref,
 							0f,
@@ -1666,7 +1660,7 @@ internal class ItemViewHolder(
 		val notification = (item as? TootNotification)
 		boost_account?.let { whoRef ->
 			if(access_info.isPseudo) {
-				DlgContextMenu(activity, column, whoRef, null, notification,tvContent).show()
+				DlgContextMenu(activity, column, whoRef, null, notification, tvContent).show()
 			} else {
 				Action_User.profileLocal(activity, pos, access_info, whoRef.get())
 			}
@@ -1687,21 +1681,21 @@ internal class ItemViewHolder(
 					btnShowMedia.visibility = View.VISIBLE
 					llMedia.visibility = View.GONE
 				}
-				(item as? TootScheduled)?.let{ item ->
+				if( item is TootScheduled){
 					MediaShown.save(item.uri, false)
 					btnShowMedia.visibility = View.VISIBLE
 					llMedia.visibility = View.GONE
 				}
 			}
 			
-			btnShowMedia ->{
+			btnShowMedia -> {
 				
 				status_showing?.let { status ->
 					MediaShown.save(status, true)
 					btnShowMedia.visibility = View.GONE
 					llMedia.visibility = View.VISIBLE
 				}
-				(item as? TootScheduled)?.let{ item ->
+				if( item is TootScheduled){
 					MediaShown.save(item.uri, true)
 					btnShowMedia.visibility = View.GONE
 					llMedia.visibility = View.VISIBLE
@@ -1713,7 +1707,7 @@ internal class ItemViewHolder(
 			ivMedia3 -> clickMedia(2)
 			ivMedia4 -> clickMedia(3)
 			
-			btnContentWarning ->{
+			btnContentWarning -> {
 				status_showing?.let { status ->
 					val new_shown = llContents.visibility == View.GONE
 					ContentWarning.save(status, new_shown)
@@ -1722,7 +1716,7 @@ internal class ItemViewHolder(
 					list_adapter.notifyChange(reason = "ContentWarning onClick", reset = true)
 					
 				}
-				(item as? TootScheduled)?.let{ item ->
+				if(item is TootScheduled){
 					val new_shown = llContents.visibility == View.GONE
 					ContentWarning.save(item.uri, new_shown)
 					
@@ -1769,14 +1763,14 @@ internal class ItemViewHolder(
 			
 			llFollow -> follow_account?.let { whoRef ->
 				if(access_info.isPseudo) {
-					DlgContextMenu(activity, column, whoRef, null, notification,tvContent).show()
+					DlgContextMenu(activity, column, whoRef, null, notification, tvContent).show()
 				} else {
 					Action_User.profileLocal(activity, pos, access_info, whoRef.get())
 				}
 			}
 			
 			btnFollow -> follow_account?.let { who ->
-				DlgContextMenu(activity, column, who, null, notification,tvContent).show()
+				DlgContextMenu(activity, column, who, null, notification, tvContent).show()
 			}
 			
 			btnSearchTag, llTrendTag -> when(item) {
@@ -1810,16 +1804,16 @@ internal class ItemViewHolder(
 					)
 				}
 				
-				is TootScheduled ->{
+				is TootScheduled -> {
 					ActionsDialog()
-						.addAction(activity.getString(R.string.delete)){
-							Action_Toot.deleteScheduledPost(activity,access_info,item){
+						.addAction(activity.getString(R.string.delete)) {
+							Action_Toot.deleteScheduledPost(activity, access_info, item) {
 								column.onScheduleDeleted(item)
-								showToast(activity,false,R.string.scheduled_post_deleted)
+								showToast(activity, false, R.string.scheduled_post_deleted)
 							}
 						}
-						.addAction(activity.getString(R.string.edit)){
-							Action_Toot.editScheduledPost(activity,access_info,item)
+						.addAction(activity.getString(R.string.edit)) {
+							Action_Toot.editScheduledPost(activity, access_info, item)
 						}
 						.show(activity)
 				}
@@ -2035,7 +2029,9 @@ internal class ItemViewHolder(
 	
 	private fun clickMedia(i : Int) {
 		try {
-			val media_attachments = status_showing?.media_attachments ?: (item as? TootScheduled)?.media_attachments ?: return
+			val media_attachments =
+				status_showing?.media_attachments ?: (item as? TootScheduled)?.media_attachments
+				?: return
 			val item = if(i < media_attachments.size) media_attachments[i] else return
 			when(item) {
 				is TootAttachmentMSP -> {
@@ -2770,7 +2766,7 @@ internal class ItemViewHolder(
 							ivReply = imageView {
 								scaleType = ImageView.ScaleType.FIT_END
 								importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-								padding=dip(4)
+								padding = dip(4)
 							}.lparams(dip(32), dip(32)) {
 								endMargin = dip(4)
 							}
@@ -2848,11 +2844,7 @@ internal class ItemViewHolder(
 												R.drawable.btn_bg_transparent
 											)
 											contentDescription = "@string/hide"
-											imageResource =
-												getAttributeResourceId(
-													context,
-													R.attr.btn_close
-												)
+											imageResource = R.drawable.ic_close
 										}.lparams(dip(32), dip(32)) {
 											gravity = Gravity.END
 										}
@@ -3005,11 +2997,7 @@ internal class ItemViewHolder(
 												R.drawable.btn_bg_transparent
 											)
 											contentDescription = "@string/hide"
-											imageResource =
-												getAttributeResourceId(
-													context,
-													R.attr.btn_close
-												)
+											imageResource = R.drawable.ic_close
 										}.lparams(dip(32), matchParent) {
 											startMargin = dip(8)
 										}
@@ -3023,11 +3011,10 @@ internal class ItemViewHolder(
 										)
 										gravity = Gravity.CENTER
 										text = context.getString(R.string.tap_to_show)
-										textColor =
-											getAttributeColor(
-												context,
-												R.attr.colorShowMediaText
-											)
+										textColor = getAttributeColor(
+											context,
+											R.attr.colorShowMediaText
+										)
 										
 									}.lparams(matchParent, matchParent)
 								}
@@ -3188,7 +3175,7 @@ internal class ItemViewHolder(
 					
 					background =
 						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
-					imageResource = getAttributeResourceId(context, R.attr.btn_more)
+					imageResource = R.drawable.ic_more
 					contentDescription = context.getString(R.string.more)
 				}.lparams(dip(40), dip(40)) {
 					startMargin = dip(4)
@@ -3209,7 +3196,7 @@ internal class ItemViewHolder(
 					background =
 						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					contentDescription = context.getString(R.string.follow_accept)
-					imageResource = getAttributeResourceId(context, R.attr.ic_check)
+					imageResource = R.drawable.ic_check
 					setPadding(0, 0, 0, 0)
 				}.lparams(dip(48f), dip(32f))
 				
@@ -3217,7 +3204,7 @@ internal class ItemViewHolder(
 					background =
 						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					contentDescription = context.getString(R.string.follow_deny)
-					imageResource = getAttributeResourceId(context, R.attr.btn_close)
+					imageResource = R.drawable.ic_close
 					setPadding(0, 0, 0, 0)
 				}.lparams(dip(48f), dip(32f)) {
 					startMargin = dip(4)

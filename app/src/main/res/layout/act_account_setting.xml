@@ -11,7 +11,7 @@
     android:paddingBottom="128dp"
     android:paddingTop="12dp"
     android:scrollbarStyle="outsideOverlay"
-    tools:ignore="TooManyViews"
+    tools:ignore="TooManyViews,Autofill"
     >
 
     <LinearLayout
@@ -76,7 +76,8 @@
                 android:layout_marginStart="4dp"
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/edit"
-                android:src="?attr/ic_edit"
+                android:src="@drawable/ic_edit"
+                android:tint="?attr/colorVectorDrawable"
                 />
         </LinearLayout>
 
@@ -166,6 +167,7 @@
                 android:id="@+id/etDisplayName"
                 style="@style/setting_horizontal_stretch"
                 android:inputType="text"
+
                 />
 
             <ImageButton
@@ -175,7 +177,8 @@
                 android:layout_marginStart="4dp"
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/post"
-                android:src="?attr/btn_post"
+                android:src="@drawable/ic_send"
+                android:tint="?attr/colorVectorDrawable"
                 />
         </LinearLayout>
 
@@ -203,7 +206,8 @@
                 android:layout_marginStart="4dp"
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/post"
-                android:src="?attr/btn_post"
+                android:src="@drawable/ic_send"
+                android:tint="?attr/colorVectorDrawable"
                 />
         </LinearLayout>
 
@@ -346,7 +350,8 @@
                 android:layout_marginStart="4dp"
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/post"
-                android:src="?attr/btn_post"
+                android:src="@drawable/ic_send"
+                android:tint="?attr/colorVectorDrawable"
                 />
         </LinearLayout>
 

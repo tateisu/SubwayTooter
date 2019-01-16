@@ -146,10 +146,6 @@ class TootApiClient(
 			bodyString : String? = null,
 			jsonErrorParser : (json : JSONObject) -> String? = DEFAULT_JSON_ERROR_PARSER
 		) : String {
-			val url = response.request()?.url()
-			if(url?.toString()?.contains("misskey") == true) {
-				log.d("Misskey response error: url=$url")
-			}
 			val sb = StringBuilder()
 			try {
 				// body は既に読み終わっているか、そうでなければこれから読む
@@ -171,9 +167,7 @@ class TootApiClient(
 				sb.append("(HTTP ").append(Integer.toString(response.code()))
 				
 				val message = response.message()
-				if(message != null && message.isNotEmpty()) {
-					sb.append(' ').append(message)
-				}
+				if(message.isNotEmpty()) sb.append(' ').append(message)
 				sb.append(")")
 				
 				if(caption.isNotEmpty()) {
@@ -308,15 +302,13 @@ class TootApiClient(
 		val response = result.response !!
 		
 		val request = response.request()
-		if(request != null) {
-			publishApiProgress(
-				context.getString(
-					R.string.reading_api,
-					request.method(),
-					progressPath ?: result.caption
-				)
+		publishApiProgress(
+			context.getString(
+				R.string.reading_api,
+				request.method(),
+				progressPath ?: result.caption
 			)
-		}
+		)
 		
 		val bodyString = response.body()?.string()
 		if(isApiCancelled) return null
@@ -359,7 +351,6 @@ class TootApiClient(
 		val response = result.response !!
 		
 		val request = response.request()
-		if(request != null) {
 			publishApiProgress(
 				context.getString(
 					R.string.reading_api,
@@ -367,7 +358,6 @@ class TootApiClient(
 					progressPath ?: result.caption
 				)
 			)
-		}
 		
 		val bodyBytes = response.body()?.bytes()
 		if(isApiCancelled) return null
@@ -479,15 +469,12 @@ class TootApiClient(
 				sb.append("(HTTP ").append(Integer.toString(response.code()))
 				
 				val message = response.message()
-				if(message != null && message.isNotEmpty()) {
-					sb.append(' ').append(message)
-				}
+				if(message.isNotEmpty()) sb.append(' ').append(message)
+
 				sb.append(")")
 				
-				val url = response.request()?.url()?.toString()
-				if(url?.isNotEmpty() == true) {
-					sb.append(' ').append(url)
-				}
+				val url = response.request().url().toString()
+				if(url.isNotEmpty()) sb.append(' ').append(url)
 				
 				result.error = sb.toString()
 			}

@@ -760,15 +760,15 @@ class ColumnViewHolder(
 		// カラムヘッダ文字色(A)
 		var c = column.getHeaderNameColor()
 		tvColumnName.textColor = c
-		setIconAttr(
+		setIconDrawableId(
 			activity,
 			ivColumnIcon,
-			column.getIconAttrId(column.column_type),
+			column.getIconId(column.column_type),
 			c
 		)
-		setIconAttr(activity, btnColumnSetting, R.attr.ic_tune, c)
-		setIconAttr(activity, btnColumnReload, R.attr.btn_refresh, c)
-		setIconAttr(activity, btnColumnClose, R.attr.btn_close, c)
+		setIconDrawableId(activity, btnColumnSetting, R.drawable.ic_tune, c)
+		setIconDrawableId(activity, btnColumnReload, R.drawable.ic_refresh, c)
+		setIconDrawableId(activity, btnColumnClose, R.drawable.ic_close, c)
 		
 		// カラムヘッダ文字色(B)
 		c = column.getHeaderPageNumberColor()
@@ -1562,19 +1562,19 @@ class ColumnViewHolder(
 		
 		showQuickFilterButton(
 			btnQuickFilterMention,
-			R.drawable.btn_reply,
+			R.drawable.ic_reply,
 			column.quick_filter == Column.QUICK_FILTER_MENTION
 		)
 		
 		showQuickFilterButton(
 			btnQuickFilterFavourite,
-			R.drawable.btn_favourite,
+			R.drawable.ic_star,
 			column.quick_filter == Column.QUICK_FILTER_FAVOURITE
 		)
 		
 		showQuickFilterButton(
 			btnQuickFilterBoost,
-			R.drawable.btn_boost,
+			R.drawable.ic_repeat,
 			column.quick_filter == Column.QUICK_FILTER_BOOST
 		)
 		

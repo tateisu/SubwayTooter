@@ -25,6 +25,7 @@ import android.text.SpannableString
 import android.text.TextWatcher
 import android.view.View
 import android.widget.*
+import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
@@ -725,9 +726,9 @@ class ActAccountSetting
 	
 	private fun initializeProfile() {
 		// 初期状態
-		val question_id = getAttributeResourceId(this, R.attr.ic_question)
-		ivProfileAvatar.setErrorImageResId(question_id)
-		ivProfileAvatar.setDefaultImageResId(question_id)
+		val question_id = R.drawable.wide_question
+		ivProfileAvatar.setErrorImage( defaultColorIcon(this,question_id))
+		ivProfileAvatar.setDefaultImage( defaultColorIcon(this,question_id))
 		
 		val loadingText = when(account.isPseudo) {
 			true -> "(disabled for pseudo account)"

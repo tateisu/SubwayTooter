@@ -293,42 +293,42 @@ class Column(
 			}
 		}
 		
-		internal fun getIconAttrId(acct : String, type : Int) : Int {
+		internal fun getIconId(acct : String, type : Int) : Int {
 			return when(type) {
-				TYPE_REPORTS -> R.attr.ic_info
-				TYPE_HOME -> R.attr.btn_home
+				TYPE_REPORTS -> R.drawable.ic_info
+				TYPE_HOME -> R.drawable.ic_home
 				
-				TYPE_LOCAL_AROUND -> R.attr.btn_local_tl
-				TYPE_FEDERATED_AROUND -> R.attr.btn_federate_tl
-				TYPE_ACCOUNT_AROUND -> R.attr.btn_statuses
+				TYPE_LOCAL_AROUND -> R.drawable.ic_run
+				TYPE_FEDERATED_AROUND -> R.drawable.ic_bike
+				TYPE_ACCOUNT_AROUND -> R.drawable.ic_account_box
 				
-				TYPE_LOCAL -> R.attr.btn_local_tl
-				TYPE_FEDERATE -> R.attr.btn_federate_tl
-				TYPE_MISSKEY_HYBRID -> R.attr.ic_share
+				TYPE_LOCAL -> R.drawable.ic_run
+				TYPE_FEDERATE -> R.drawable.ic_bike
+				TYPE_MISSKEY_HYBRID -> R.drawable.ic_share
 				
-				TYPE_PROFILE -> R.attr.btn_statuses
-				TYPE_FAVOURITES -> if(SavedAccount.isNicoru(acct)) R.attr.ic_nicoru else R.attr.btn_favourite
-				TYPE_NOTIFICATIONS -> R.attr.btn_notification
-				TYPE_CONVERSATION -> R.attr.ic_conversation
-				TYPE_BOOSTED_BY -> R.attr.btn_boost
-				TYPE_FAVOURITED_BY -> if(SavedAccount.isNicoru(acct)) R.attr.ic_nicoru else R.attr.btn_favourite
-				TYPE_HASHTAG -> R.attr.ic_hashtag
-				TYPE_MUTES -> R.attr.ic_mute
-				TYPE_KEYWORD_FILTER -> R.attr.ic_mute
-				TYPE_BLOCKS -> R.attr.ic_block
-				TYPE_DOMAIN_BLOCKS -> R.attr.ic_domain_block
-				TYPE_SEARCH, TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> R.attr.ic_search
-				TYPE_INSTANCE_INFORMATION -> R.attr.ic_info
-				TYPE_FOLLOW_REQUESTS -> R.attr.ic_follow_wait
-				TYPE_FOLLOW_SUGGESTION -> R.attr.ic_follow_plus
-				TYPE_ENDORSEMENT -> R.attr.ic_follow_plus
-				TYPE_LIST_LIST -> R.attr.ic_list_list
-				TYPE_LIST_MEMBER -> R.attr.ic_list_member
-				TYPE_LIST_TL -> R.attr.ic_list_tl
-				TYPE_DIRECT_MESSAGES -> R.attr.ic_mail
-				TYPE_TREND_TAG -> R.attr.ic_hashtag
-				TYPE_SCHEDULED_STATUS -> R.attr.ic_timer
-				else -> R.attr.ic_info
+				TYPE_PROFILE -> R.drawable.ic_account_box
+				TYPE_FAVOURITES -> if(SavedAccount.isNicoru(acct)) R.drawable.ic_nicoru else R.drawable.ic_star
+				TYPE_NOTIFICATIONS -> R.drawable.ic_announcement
+				TYPE_CONVERSATION -> R.drawable.ic_forum
+				TYPE_BOOSTED_BY -> R.drawable.ic_repeat
+				TYPE_FAVOURITED_BY -> if(SavedAccount.isNicoru(acct)) R.drawable.ic_nicoru else R.drawable.ic_star
+				TYPE_HASHTAG -> R.drawable.ic_hashtag
+				TYPE_MUTES -> R.drawable.ic_volume_off
+				TYPE_KEYWORD_FILTER -> R.drawable.ic_volume_off
+				TYPE_BLOCKS -> R.drawable.ic_block
+				TYPE_DOMAIN_BLOCKS -> R.drawable.ic_cloud_off
+				TYPE_SEARCH, TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> R.drawable.ic_search
+				TYPE_INSTANCE_INFORMATION -> R.drawable.ic_info
+				TYPE_FOLLOW_REQUESTS -> R.drawable.ic_follow_wait
+				TYPE_FOLLOW_SUGGESTION -> R.drawable.ic_follow_plus
+				TYPE_ENDORSEMENT -> R.drawable.ic_follow_plus
+				TYPE_LIST_LIST -> R.drawable.ic_list_list
+				TYPE_LIST_MEMBER -> R.drawable.ic_list_member
+				TYPE_LIST_TL -> R.drawable.ic_list_tl
+				TYPE_DIRECT_MESSAGES -> R.drawable.ic_mail
+				TYPE_TREND_TAG -> R.drawable.ic_hashtag
+				TYPE_SCHEDULED_STATUS -> R.drawable.ic_timer
+				else -> R.drawable.ic_info
 			}
 		}
 		
@@ -1096,8 +1096,8 @@ class Column(
 		}
 	}
 	
-	internal fun getIconAttrId(type : Int) : Int {
-		return getIconAttrId(access_info.acct, type)
+	internal fun getIconId(type : Int) : Int {
+		return getIconId(access_info.acct, type)
 	}
 	
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
@@ -6443,10 +6443,6 @@ class Column(
 						scanStatusAll { s ->
 							s.markDeleted(context, ev.deletedAt) ?: false
 						}
-					}
-					
-					else -> {
-						log.d("onNoteUpdated: unknown type: ${ev.type}")
 					}
 				}
 				

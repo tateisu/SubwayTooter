@@ -78,7 +78,6 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "_ArtWork/ic_notification_20150513.png"	,$res_dir,"drawable","ic_notification",0,24);
 #
 #
-#resize_scales( "_ArtWork/ic_hourglass.png"			,$res_dir,"drawable","ic_hourglass",0,32);
 #resize_scales( "_ArtWork/ic_hourglass_dark.png"		,$res_dir,"drawable","ic_hourglass_dark",0,32);
 #
 #
@@ -103,15 +102,7 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "_ArtWork/ic_pin.png"	,$res_dir,"drawable","ic_pin",0,32);
 #resize_scales( "_ArtWork/ic_pin_dark.png"	,$res_dir,"drawable","ic_pin_dark",0,32);
 
-#resize_scales( "_ArtWork/ic_follow_wait.png"	,$res_dir,"drawable","ic_follow_wait",0,32);
-#resize_scales( "_ArtWork/ic_follow_wait_dark.png"	,$res_dir,"drawable","ic_follow_wait_dark",0,32);
 
-#resize_scales( "_ArtWork/ic_list_list.png"	,$res_dir,"drawable","ic_list_list",0,32);
-#resize_scales( "_ArtWork/ic_list_tl.png"	,$res_dir,"drawable","ic_list_tl",0,32);
-#resize_scales( "_ArtWork/ic_list_member.png"	,$res_dir,"drawable","ic_list_member",0,32);
-#resize_scales( "_ArtWork/ic_list_list_dark.png"	,$res_dir,"drawable","ic_list_list_dark",0,32);
-#resize_scales( "_ArtWork/ic_list_tl_dark.png"	,$res_dir,"drawable","ic_list_tl_dark",0,32);
-#resize_scales( "_ArtWork/ic_list_member_dark.png"	,$res_dir,"drawable","ic_list_member_dark",0,32);
 
 #resize_scales( "_ArtWork/v0.5.1/ic_launcher_foreground.png"		,$res_dir,"mipmap","ic_launcher_foreground",0,108);
 #resize_scales( "_ArtWork/v0.5.1/ic_launcher_background.png"		,$res_dir,"mipmap","ic_launcher_background",0,108);
@@ -141,7 +132,6 @@ my $res_dir = "app/src/main/res";
 
 #resize_scales( "../extra-SubwayTooter/_ArtWork/ic_unread.png"	,$res_dir,"drawable","ic_unread",0,24);
 
-#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_blocked_by.png"	,$res_dir,"drawable","ic_blocked_by",0,32);
 #resize_scales( "../extra-SubwayTooter/_ArtWork/ic_requested_by.png"	,$res_dir,"drawable","ic_requested_by",0,32);
 
 
@@ -157,4 +147,31 @@ my $res_dir = "app/src/main/res";
 
 # resize_scales( "../extra-SubwayTooter/_ArtWork/media_bg_dark.png"	,$res_dir,"drawable","media_bg_dark",0,24);
 
-resize_scales( "../extra-SubwayTooter/_ArtWork/nicodic.png"	,$res_dir,"drawable","nicodic",32,60);
+# resize_scales( "../extra-SubwayTooter/_ArtWork/nicodic.png"	,$res_dir,"drawable","nicodic",32,60);
+
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_blocked_by.png"	,$res_dir,"drawable","ic_blocked_by",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_follow_wait.png"	,$res_dir,"drawable","ic_follow_wait",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_follow_cross.png"		,$res_dir,"drawable","ic_follow_cross",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_follow_plus.png"		,$res_dir,"drawable","ic_follow_plus",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_followed_by.png"		,$res_dir,"drawable","ic_followed_by",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_followed_by_dark.png"	,$res_dir,"drawable","ic_followed_by_dark",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_list_list.png"	,$res_dir,"drawable","ic_list_list",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_list_tl.png"	,$res_dir,"drawable","ic_list_tl",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_list_member.png"	,$res_dir,"drawable","ic_list_member",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_hashtag.png"	,$res_dir,"drawable","ic_hashtag",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_hourglass.png"			,$res_dir,"drawable","ic_hourglass",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/local-visibility/ic_local_home.png"	,$res_dir,"drawable","ic_local_home",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/local-visibility/ic_local_home_dark.png"	,$res_dir,"drawable","ic_local_home_dark",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/local-visibility/ic_local_lock.png"	,$res_dir,"drawable","ic_local_lock",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/local-visibility/ic_local_lock_dark.png"	,$res_dir,"drawable","ic_local_lock_dark",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/local-visibility/ic_local_lock_open.png"	,$res_dir,"drawable","ic_local_lock_open",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/local-visibility/ic_local_lock_open_dark.png"	,$res_dir,"drawable","ic_local_lock_open_dark",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/local-visibility/ic_local_ltl.png"	,$res_dir,"drawable","ic_local_ltl",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/local-visibility/ic_local_ltl_dark.png"	,$res_dir,"drawable","ic_local_ltl_dark",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_nicoru.png"			,$res_dir,"drawable","ic_nicoru",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_pulse.png"	,$res_dir,"drawable","ic_pulse",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_requested_by.png"	,$res_dir,"drawable","ic_requested_by",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_vote.png"	,$res_dir,"drawable","ic_vote",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_hashtag.png"	,$res_dir,"drawable","ic_hashtag",0,24);
+
+resize_scales( "../extra-SubwayTooter/_ArtWork/ic_followed_by.png"		,$res_dir,"drawable","ic_followed_by",0,24);

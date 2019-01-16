@@ -165,7 +165,7 @@ internal class ViewHolderHeaderProfile(
 		setIconDrawableId(
 			activity,
 			btnMore,
-			R.drawable.btn_more,
+			R.drawable.ic_more,
 			color = contentColor,
 			alphaMultiplier = Styler.boost_alpha
 		)

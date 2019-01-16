@@ -690,7 +690,7 @@
     <string name="cant_change_account_when_redraft">Impossible de changer de compte lors de la reformulation.</string>
     <string name="delete_base_status_before_toot">Supprimer le statut de base avant l\'affichage. Tous les favoris, les boosts seront perdus. Les réponses seront déconnectées. Les pièces jointes des médias ne seront pas conservées sur Mastodon avant la version 2.4.1. Vous êtes sûr ?</string>
     <string name="notification_tl_font_size">Notification TL font size (unit:sp. leave empty to default. app restart required)</string>
-    <string name="notification_tl_icon_size">Notification TL icon size (unit:dp. default:32. app restart required)</string>
+    <string name="notification_tl_icon_size">Notification TL icon size (Unit:dp. default:24. app restart required)</string>
     <string name="post_button_tapped_repeatly">Le bouton Post a été tapé à plusieurs reprises</string>
     <string name="regex_filter_matches_empty_string">le filtre regex correspond à une chaîne vide.</string>
     <string name="follow_suggestion">Suggestion d’abonnement</string>

@@ -99,7 +99,7 @@ object LoginForm {
 		val dialog = Dialog(activity)
 		dialog.setContentView(view)
 		// 警告がでるが、パラメータ名の指定を削ってはいけない
-		btnOk.setOnClickListener { v ->
+		btnOk.setOnClickListener { _ ->
 			val instance = etInstance.text.toString().trim { it <= ' ' }
 			
 			when {

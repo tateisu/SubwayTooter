@@ -8,11 +8,11 @@
 
                 <item
                     android:id="@+id/nav_account_add"
-                    android:icon="?attr/ic_account_add"
+                    android:icon="@drawable/ic_account_add"
                     android:title="@string/account_add"/>
                 <item
                     android:id="@+id/nav_account_setting"
-                    android:icon="?attr/ic_setting"
+                    android:icon="@drawable/ic_settings"
                     android:title="@string/account_setting"/>
             </menu>
         </item>
@@ -20,120 +20,120 @@
             <menu>
                 <item
                     android:id="@+id/nav_column_list"
-                    android:icon="?attr/ic_list"
+                    android:icon="@drawable/ic_list_numbered"
                     android:title="@string/column_list"/>
 
                 <item
                     android:id="@+id/nav_close_all_columns"
-                    android:icon="?attr/btn_close"
+                    android:icon="@drawable/ic_close"
                     android:title="@string/close_all_columns"/>
 
                 <item
                     android:id="@+id/nav_add_tl_home"
-                    android:icon="?attr/btn_home"
+                    android:icon="@drawable/ic_home"
                     android:title="@string/home"/>
                 <item
                     android:id="@+id/nav_add_notifications"
-                    android:icon="?attr/btn_notification"
+                    android:icon="@drawable/ic_announcement"
                     android:title="@string/notifications"/>
 
                 <item
                     android:id="@+id/nav_add_direct_message"
-                    android:icon="?attr/ic_mail"
+                    android:icon="@drawable/ic_mail"
                     android:title="@string/direct_messages"/>
 
                 <item
                     android:id="@+id/nav_add_tl_misskey_hybrid"
-                    android:icon="?attr/ic_share"
+                    android:icon="@drawable/ic_share"
                     android:title="@string/misskey_hybrid_timeline_long"/>
 
                 <item
                     android:id="@+id/nav_add_tl_local"
-                    android:icon="?attr/btn_local_tl"
+                    android:icon="@drawable/ic_run"
                     android:title="@string/local_timeline"/>
 
                 <item
                     android:id="@+id/nav_add_tl_federate"
-                    android:icon="?attr/btn_federate_tl"
+                    android:icon="@drawable/ic_bike"
                     android:title="@string/federate_timeline"/>
 
                 <item
                     android:id="@+id/nav_add_list"
-                    android:icon="?attr/ic_list_list"
+                    android:icon="@drawable/ic_list_list"
                     android:title="@string/lists"/>
 
                 <item
                     android:id="@+id/nav_add_tl_search"
-                    android:icon="?attr/ic_search"
+                    android:icon="@drawable/ic_search"
                     android:title="@string/search"/>
 
                 <!--トレンドタグは2.4.1リリース時にAPIごと削除された-->
                 <!--<item-->
                     <!--android:id="@+id/nav_add_trend_tag"-->
-                    <!--android:icon="?attr/ic_hashtag"-->
+                    <!--android:icon="@drawable/ic_hashtag"-->
                     <!--android:title="@string/trend_tag"/>-->
 
                 <item
                     android:id="@+id/nav_add_favourites"
-                    android:icon="?attr/btn_favourite"
+                    android:icon="@drawable/ic_star"
                     android:title="@string/favourites"/>
 
                 <item
                     android:id="@+id/nav_add_statuses"
-                    android:icon="?attr/btn_statuses"
+                    android:icon="@drawable/ic_account_box"
                     android:title="@string/profile"/>
 
                 <item
                     android:id="@+id/nav_follow_requests"
-                    android:icon="?attr/ic_follow_wait"
+                    android:icon="@drawable/ic_follow_wait"
                     android:title="@string/follow_requests"/>
 
                 <item
                     android:id="@+id/nav_follow_suggestion"
-                    android:icon="?attr/ic_follow_plus"
+                    android:icon="@drawable/ic_follow_plus"
                     android:title="@string/follow_suggestion"/>
                 <item
                     android:id="@+id/nav_endorsement"
-                    android:icon="?attr/ic_follow_plus"
+                    android:icon="@drawable/ic_follow_plus"
                     android:title="@string/endorse_set"/>
                 <item
                     android:id="@+id/nav_add_mutes"
-                    android:icon="?attr/ic_mute"
+                    android:icon="@drawable/ic_volume_off"
                     android:title="@string/muted_users"/>
 
                 <item
                     android:id="@+id/nav_add_blocks"
-                    android:icon="?attr/ic_block"
+                    android:icon="@drawable/ic_block"
                     android:title="@string/blocked_users"/>
 
                 <item
                     android:id="@+id/nav_keyword_filter"
-                    android:icon="?attr/ic_mute"
+                    android:icon="@drawable/ic_volume_off"
                     android:title="@string/keyword_filters"/>
 
 
                 <item
                     android:id="@+id/nav_add_domain_blocks"
-                    android:icon="?attr/ic_domain_block"
+                    android:icon="@drawable/ic_cloud_off"
                     android:title="@string/blocked_domains"/>
 
                 <item
                     android:id="@+id/nav_scheduled_statuses_list"
-                    android:icon="?attr/ic_timer"
+                    android:icon="@drawable/ic_timer"
                     android:title="@string/scheduled_status_list"/>
 
                 <!--<item-->
                 <!--android:id="@+id/nav_add_reports"-->
-                <!--android:icon="?attr/btn_report"-->
+                <!--android:icon="@drawable/ic_report"-->
                 <!--android:title="@string/your_reports"/>-->
 
                 <!--<item-->
                 <!--android:id="@+id/nav_slideshow"-->
-                <!--android:icon="?attr/ic_menu_slideshow"-->
+                <!--android:icon="@drawable/ic_menu_slideshow"-->
                 <!--android:title="Slideshow"/>-->
                 <!--<item-->
                 <!--android:id="@+id/nav_manage"-->
-                <!--android:icon="?attr/ic_menu_manage"-->
+                <!--android:icon="@drawable/ic_menu_manage"-->
                 <!--android:title="Tools"/>-->
             </menu>
         </item>
@@ -141,11 +141,11 @@
             <menu>
                 <item
                     android:id="@+id/tootsearch"
-                    android:icon="?attr/ic_search"
+                    android:icon="@drawable/ic_search"
                     android:title="@string/tootsearch"/>
                 <item
                     android:id="@+id/mastodon_search_portal"
-                    android:icon="?attr/ic_search"
+                    android:icon="@drawable/ic_search"
                     android:title="@string/mastodon_search_portal"/>
             </menu>
         </item>
@@ -155,45 +155,45 @@
 
                 <item
                     android:id="@+id/nav_app_setting"
-                    android:icon="?attr/ic_setting"
+                    android:icon="@drawable/ic_settings"
                     android:title="@string/app_setting"/>
 
                 <item
                     android:id="@+id/nav_highlight_word"
-                    android:icon="?attr/ic_setting"
+                    android:icon="@drawable/ic_settings"
                     android:title="@string/highlight_word"/>
 
                 <item
                     android:id="@+id/nav_muted_app"
-                    android:icon="?attr/ic_mute"
+                    android:icon="@drawable/ic_volume_off"
                     android:title="@string/muted_app"/>
                 <item
                     android:id="@+id/nav_muted_word"
-                    android:icon="?attr/ic_mute"
+                    android:icon="@drawable/ic_volume_off"
                     android:title="@string/muted_word"/>
                 <item
                     android:id="@+id/nav_fav_mute"
-                    android:icon="?attr/ic_mute"
+                    android:icon="@drawable/ic_volume_off"
                     android:title="@string/fav_muted_user"/>
 
                 <item
                     android:id="@+id/nav_app_about"
-                    android:icon="?attr/ic_info"
+                    android:icon="@drawable/ic_info"
                     android:title="@string/app_about"/>
 
                 <!--<item-->
                 <!--android:id="@+id/nav_translation"-->
-                <!--android:icon="?attr/ic_info"-->
+                <!--android:icon="@drawable/ic_info"-->
                 <!--android:title="@string/help_translation"/>-->
 
                 <item
                     android:id="@+id/nav_oss_license"
-                    android:icon="?attr/ic_info"
+                    android:icon="@drawable/ic_info"
                     android:title="@string/oss_license"/>
 
                 <item
                     android:id="@+id/nav_app_exit"
-                    android:icon="?attr/ic_hot_tub"
+                    android:icon="@drawable/ic_hot_tub"
                     android:title="@string/app_exit"/>
             </menu>
         </item>
@@ -203,11 +203,11 @@
     <!--<menu>-->
     <!--<item-->
     <!--android:id="@+id/nav_share"-->
-    <!--android:icon="?attr/ic_menu_share"-->
+    <!--android:icon="@drawable/ic_menu_share"-->
     <!--android:title="Share"/>-->
     <!--<item-->
     <!--android:id="@+id/nav_send"-->
-    <!--android:icon="?attr/ic_menu_send"-->
+    <!--android:icon="@drawable/ic_menu_send"-->
     <!--android:title="Send"/>-->
     <!--</menu>-->
     <!--</item>-->

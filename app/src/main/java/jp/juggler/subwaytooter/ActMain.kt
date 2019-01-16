@@ -1518,10 +1518,10 @@ class ActMain : AppCompatActivity()
 			
 			column.setHeaderBackground(viewRoot)
 			
-			setIconAttr(
+			setIconDrawableId(
 				this,
 				ivIcon,
-				column.getIconAttrId(column.column_type),
+				column.getIconId(column.column_type),
 				column.getHeaderNameColor()
 			)
 			
@@ -2427,15 +2427,10 @@ class ActMain : AppCompatActivity()
 		}
 		
 		c = footer_button_fg_color
-		if(c == 0) {
-			setIconAttr(this, btnToot, R.attr.ic_edit)
-			setIconAttr(this, btnMenu, R.attr.ic_hamburger)
-			setIconAttr(this, btnQuickToot, R.attr.btn_post)
-		} else {
-			setIconAttr(this, btnToot, R.attr.ic_edit, c)
-			setIconAttr(this, btnMenu, R.attr.ic_hamburger, c)
-			setIconAttr(this, btnQuickToot, R.attr.btn_post, c)
-		}
+		if(c == 0) c= getAttributeColor(this,R.attr.colorVectorDrawable)
+		setIconDrawableId(this, btnToot, R.drawable.ic_edit, c)
+		setIconDrawableId(this, btnMenu, R.drawable.ic_hamburger, c)
+		setIconDrawableId(this, btnQuickToot, R.drawable.ic_send, c)
 		
 		c = footer_tab_bg_color
 		if(c == 0) c = getAttributeColor(this, R.attr.colorColumnStripBackground)

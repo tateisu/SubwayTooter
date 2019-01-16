@@ -1,10 +1,9 @@
 package jp.juggler.subwaytooter
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.drawable.*
-import android.graphics.drawable.shapes.RectShape
-import android.os.Build
+import android.graphics.PorterDuff
+import android.graphics.drawable.Drawable
+import android.support.v4.content.ContextCompat
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.view.View
@@ -19,7 +18,13 @@ import jp.juggler.util.*
 
 object Styler {
 	
-	fun getVisibilityIconAttr(isMisskeyData : Boolean, visibility : TootVisibility) : Int {
+	fun defaultColorIcon(context : Context, iconId : Int) : Drawable? =
+		ContextCompat.getDrawable(context, iconId)?.also {
+			it.setTint(getAttributeColor(context, R.attr.colorVectorDrawable))
+			it.setTintMode(PorterDuff.Mode.SRC_IN)
+		}
+	
+	fun getVisibilityIconId(isMisskeyData : Boolean, visibility : TootVisibility) : Int {
 		val isMisskey = when(Pref.ipVisibilityStyle(App1.pref)) {
 			Pref.VS_MASTODON -> false
 			Pref.VS_MISSKEY -> true
@@ -27,40 +32,32 @@ object Styler {
 		}
 		return when {
 			isMisskey -> when(visibility) {
-				TootVisibility.Public -> R.attr.ic_public
-				TootVisibility.UnlistedHome -> R.attr.btn_home
-				TootVisibility.PrivateFollowers -> R.attr.ic_lock_open
-				TootVisibility.DirectSpecified -> R.attr.ic_mail
-				TootVisibility.DirectPrivate -> R.attr.ic_lock
-				TootVisibility.WebSetting -> R.attr.ic_question
+				TootVisibility.Public -> R.drawable.ic_public
+				TootVisibility.UnlistedHome -> R.drawable.ic_home
+				TootVisibility.PrivateFollowers -> R.drawable.ic_lock_open
+				TootVisibility.DirectSpecified -> R.drawable.ic_mail
+				TootVisibility.DirectPrivate -> R.drawable.ic_lock
+				TootVisibility.WebSetting -> R.drawable.ic_question
 				
-				TootVisibility.LocalPublic -> R.attr.ic_local_ltl
-				TootVisibility.LocalHome -> R.attr.ic_local_home
-				TootVisibility.LocalFollowers -> R.attr.ic_local_lock_open
+				TootVisibility.LocalPublic -> R.drawable.ic_local_ltl
+				TootVisibility.LocalHome -> R.drawable.ic_local_home
+				TootVisibility.LocalFollowers -> R.drawable.ic_local_lock_open
 				
 			}
 			else -> when(visibility) {
-				TootVisibility.Public -> R.attr.ic_public
-				TootVisibility.UnlistedHome -> R.attr.ic_lock_open
-				TootVisibility.PrivateFollowers -> R.attr.ic_lock
-				TootVisibility.DirectSpecified -> R.attr.ic_mail
-				TootVisibility.DirectPrivate -> R.attr.ic_mail
-				TootVisibility.WebSetting -> R.attr.ic_question
+				TootVisibility.Public -> R.drawable.ic_public
+				TootVisibility.UnlistedHome -> R.drawable.ic_lock_open
+				TootVisibility.PrivateFollowers -> R.drawable.ic_lock
+				TootVisibility.DirectSpecified -> R.drawable.ic_mail
+				TootVisibility.DirectPrivate -> R.drawable.ic_mail
+				TootVisibility.WebSetting -> R.drawable.ic_question
 				
-				TootVisibility.LocalPublic -> R.attr.ic_local_ltl
-				TootVisibility.LocalHome -> R.attr.ic_local_lock_open
-				TootVisibility.LocalFollowers -> R.attr.ic_local_lock
+				TootVisibility.LocalPublic -> R.drawable.ic_local_ltl
+				TootVisibility.LocalHome -> R.drawable.ic_local_lock_open
+				TootVisibility.LocalFollowers -> R.drawable.ic_local_lock
 				
 			}
 		}
-	}
-	
-	fun getVisibilityIcon(
-		context : Context,
-		isMisskeyData : Boolean,
-		visibility : TootVisibility
-	) : Int {
-		return getAttributeResourceId(context, getVisibilityIconAttr(isMisskeyData, visibility))
 	}
 	
 	fun getVisibilityString(
@@ -110,16 +107,26 @@ object Styler {
 		visibility : TootVisibility
 	) : CharSequence {
 		
-		val icon_id = getVisibilityIcon(context, isMisskeyData, visibility)
+		val icon_id = getVisibilityIconId(isMisskeyData, visibility)
 		val sv = getVisibilityString(context, isMisskeyData, visibility)
-		
+		val color = getAttributeColor(context, R.attr.colorVectorDrawable)
 		val sb = SpannableStringBuilder()
 		
 		// アイコン部分
 		val start = sb.length
 		sb.append(" ")
 		val end = sb.length
-		sb.setSpan(EmojiImageSpan(context, icon_id), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+		sb.setSpan(
+			EmojiImageSpan(
+				context,
+				icon_id,
+				useColorShader = true,
+				color = color
+			),
+			start,
+			end,
+			Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+		)
 		
 		// 文字列部分
 		sb.append(' ')
@@ -168,10 +175,10 @@ object Styler {
 			
 			relation.followed_by -> {
 				ivDot.visibility = View.VISIBLE
-				setIconAttr(
+				setIconDrawableId(
 					context,
 					ivDot,
-					R.attr.ic_followed_by,
+					R.drawable.ic_followed_by,
 					color = colorAccent(),
 					alphaMultiplier = alphaMultiplier
 				)
@@ -188,46 +195,51 @@ object Styler {
 		// フォローボタン
 		// follow button
 		val color : Int
-		val icon_attr : Int
+		val iconId : Int
 		val contentDescription : String
 		
 		when {
 			relation.blocking -> {
-				icon_attr = R.attr.ic_block
+				iconId = R.drawable.ic_block
 				color = defaultColor
 				contentDescription = context.getString(R.string.follow)
 			}
 			
 			relation.muting -> {
-				icon_attr = R.attr.ic_mute
+				iconId = R.drawable.ic_volume_off
 				color = defaultColor
 				contentDescription = context.getString(R.string.follow)
 			}
 			
 			relation.getFollowing(who) -> {
-				icon_attr = R.attr.ic_follow_cross
+				iconId = R.drawable.ic_follow_cross
 				color = colorAccent()
 				contentDescription = context.getString(R.string.unfollow)
 			}
 			
 			relation.getRequested(who) -> {
-				icon_attr = R.attr.ic_follow_wait
+				iconId = R.drawable.ic_follow_wait
 				color = colorError()
 				contentDescription = context.getString(R.string.unfollow)
 			}
 			
 			else -> {
-				icon_attr = R.attr.ic_follow_plus
+				iconId = R.drawable.ic_follow_plus
 				color = defaultColor
 				contentDescription = context.getString(R.string.follow)
 			}
 		}
 		
-		setIconAttr(context, ibFollow, icon_attr, color = color, alphaMultiplier = alphaMultiplier)
+		setIconDrawableId(
+			context,
+			ibFollow,
+			iconId,
+			color = color,
+			alphaMultiplier = alphaMultiplier
+		)
 		ibFollow.contentDescription = contentDescription
 	}
 	
-
 	private fun getHorizontalPadding(v : View, delta_dp : Float) : Int {
 		val form_width_max = 420f
 		val dm = v.resources.displayMetrics

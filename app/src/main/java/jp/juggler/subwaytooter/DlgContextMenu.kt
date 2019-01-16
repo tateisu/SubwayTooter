@@ -298,21 +298,16 @@ internal class DlgContextMenu(
 				ivFollowedBy.visibility = View.GONE
 			} else {
 				ivFollowedBy.visibility = View.VISIBLE
-				ivFollowedBy.setImageResource(
-					getAttributeResourceId(
-						activity,
-						R.attr.ic_followed_by
-					)
-				)
+				ivFollowedBy.setImageResource(R.drawable.ic_followed_by)
 			}
 			
 			btnFollow.setImageDrawable(
 				createColoredDrawable(
 					activity,
 					when {
-						relation.getRequested(who) -> R.drawable.ic_follow_wait_dark
-						relation.getFollowing(who) -> R.drawable.ic_follow_cross_dark
-						else -> R.drawable.ic_follow_plus_dark
+						relation.getRequested(who) -> R.drawable.ic_follow_wait
+						relation.getFollowing(who) -> R.drawable.ic_follow_cross
+						else -> R.drawable.ic_follow_plus
 					},
 					getAttributeColor(
 						activity,
@@ -328,7 +323,7 @@ internal class DlgContextMenu(
 			btnMute.setImageDrawable(
 				createColoredDrawable(
 					activity,
-					R.drawable.ic_mute_dark,
+					R.drawable.ic_volume_off,
 					getAttributeColor(
 						activity,
 						when(relation.muting) {
@@ -342,7 +337,7 @@ internal class DlgContextMenu(
 			btnBlock.setImageDrawable(
 				createColoredDrawable(
 					activity,
-					R.drawable.ic_block_dark,
+					R.drawable.ic_block,
 					getAttributeColor(
 						activity,
 						when(relation.blocking) {

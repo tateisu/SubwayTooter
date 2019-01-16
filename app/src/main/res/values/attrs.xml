@@ -86,77 +86,7 @@
     <!-- サムネイルの背景色 -->
     <attr name="colorThumbnailBackground" format="color"/>
 
-    <attr name="btn_attachment" format="reference" />
-    <attr name="btn_boost" format="reference" />
-    <attr name="btn_close" format="reference" />
-    <attr name="btn_favourite" format="reference" />
-    <attr name="btn_federate_tl" format="reference" />
-    <attr name="btn_home" format="reference" />
-    <attr name="btn_local_tl" format="reference" />
-    <attr name="btn_more" format="reference" />
-    <attr name="btn_notification" format="reference" />
-    <attr name="btn_post" format="reference" />
-    <attr name="btn_refresh" format="reference" />
-    <attr name="btn_reply" format="reference" />
-    <attr name="btn_statuses" format="reference" />
-    <attr name="ic_account_add" format="reference" />
-    <attr name="ic_block" format="reference" />
-    <attr name="ic_bookmark" format="reference" />
-    <attr name="ic_conversation" format="reference" />
-    <attr name="ic_hot_tub" format="reference" />
-    <attr name="ic_info" format="reference" />
-    <attr name="ic_knob" format="reference" />
-    <attr name="ic_list" format="reference" />
-    <attr name="ic_loading" format="reference" />
-    <attr name="ic_lock" format="reference" />
-    <attr name="ic_lock_open" format="reference" />
-    <attr name="ic_mail" format="reference" />
-    <attr name="ic_menu" format="reference" />
-    <attr name="ic_mute" format="reference" />
-    <attr name="ic_public" format="reference" />
-    <attr name="ic_search" format="reference" />
-    <attr name="ic_setting" format="reference" />
-    <attr name="ic_toot" format="reference" />
-    <attr name="ic_tune" format="reference" />
-    <attr name="ic_unknown" format="reference" />
-    <attr name="ic_hourglass" format="reference" />
-    <attr name="ic_edit" format="reference" />
-    <attr name="ic_hashtag" format="reference" />
-
-    <attr name="ic_follow_plus" format="reference" />
-    <attr name="ic_follow_cross" format="reference" />
-    <attr name="ic_followed_by" format="reference" />
-
-    <attr name="ic_hamburger" format="reference" />
-    <attr name="ic_delete" format="reference" />
-    <attr name="ic_plugin" format="reference" />
-    <attr name="ic_domain_block" format="reference" />
-
-    <attr name="ic_nicoru" format="reference" />
-    <attr name="ic_question" format="reference" />
-    <attr name="ic_eye_off" format="reference" />
-    <attr name="ic_follow_wait" format="reference" />
-    <attr name="ic_list2" format="reference" />
-    <attr name="ic_add" format="reference" />
-    <attr name="ic_list_list" format="reference" />
-    <attr name="ic_list_tl" format="reference" />
-    <attr name="ic_list_member" format="reference" />
-
-    <attr name="ic_download" format="reference" />
-    <attr name="ic_browser" format="reference" />
-    <attr name="ic_share" format="reference" />
-    <attr name="ic_copy" format="reference" />
-    <attr name="ic_left" format="reference" />
-    <attr name="ic_right" format="reference" />
-    <attr name="ic_volume_up" format="reference" />
-    <attr name="ic_face" format="reference" />
-    <attr name="ic_check" format="reference" />
-    <attr name="ic_vote" format="reference" />
-    <attr name="ic_local_home" format="reference" />
-    <attr name="ic_local_lock" format="reference" />
-    <attr name="ic_local_lock_open" format="reference" />
-    <attr name="ic_local_ltl" format="reference" />
-    <attr name="ic_music" format="reference" />
-    <attr name="ic_timer" format="reference" />
+    <!-- VectorDrawableのXMLに指定するfillColor -->
+    <attr name="colorVectorDrawable" format="color"/>
 
 </resources>

@@ -51,7 +51,7 @@
             android:background="?attr/colorColumnListDragHandleBackground"
             android:contentDescription="@string/drag_handle"
             android:scaleType="center"
-            android:src="?attr/ic_knob"
+            android:src="@drawable/ic_order"
             android:visibility="gone"
             />
 

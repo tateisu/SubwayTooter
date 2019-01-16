@@ -67,7 +67,7 @@
                 android:layout_height="48dp"
                 android:background="@drawable/bg_button_cw"
                 android:contentDescription="@string/menu"
-                app:srcCompat="?attr/ic_hamburger"
+                app:srcCompat="@drawable/ic_hamburger"
                 android:scaleType="fitCenter"
                 />
 
@@ -112,7 +112,7 @@
                 android:layout_height="48dp"
                 android:background="@drawable/bg_button_cw"
                 android:contentDescription="@string/toot"
-                app:srcCompat="?attr/ic_edit"
+                app:srcCompat="@drawable/ic_edit"
                 android:scaleType="fitCenter"
                 />
         </LinearLayout>
@@ -144,7 +144,7 @@
                 android:layout_height="48dp"
                 android:background="@drawable/bg_button_cw"
                 android:contentDescription="@string/post"
-                app:srcCompat="?attr/btn_post"
+                app:srcCompat="@drawable/ic_send"
                 />
         </LinearLayout>
     </LinearLayout>

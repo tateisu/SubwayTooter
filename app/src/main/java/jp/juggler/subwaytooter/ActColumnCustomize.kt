@@ -392,10 +392,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			
 			val c = column.getHeaderNameColor()
 			tvColumnName.textColor = c
-			setIconAttr(
+			setIconDrawableId(
 				this,
 				ivColumnHeader,
-				column.getIconAttrId(column.column_type),
+				column.getIconId(column.column_type),
 				color = c
 			)
 			

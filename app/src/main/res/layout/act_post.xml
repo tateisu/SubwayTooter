@@ -80,7 +80,8 @@
                         android:background="@drawable/btn_bg_transparent"
                         android:contentDescription="@string/delete"
                         android:gravity="center_vertical"
-                        android:src="?attr/btn_close"
+                        android:src="@drawable/ic_close"
+                        android:tint="?attr/colorVectorDrawable"
                         />
                 </LinearLayout>
 
@@ -217,7 +218,10 @@
                     android:layout_height="40dp"
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/open_picker_emoji"
-                    android:src="?attr/ic_face"
+                    android:src="@drawable/ic_face"
+                    android:tint="?attr/colorVectorDrawable"
+
+
                     />
             </LinearLayout>
 
@@ -265,16 +269,22 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:contentDescription="@string/edit"
-                    android:src="?attr/ic_edit"
+                    android:src="@drawable/ic_edit"
                     android:background="@drawable/btn_bg_transparent"
+                    android:tint="?attr/colorVectorDrawable"
+
+
                     />
                 <ImageButton
                     android:id="@+id/ibScheduleReset"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:contentDescription="@string/reset"
-                    android:src="?attr/btn_close"
+                    android:src="@drawable/ic_close"
                     android:background="@drawable/btn_bg_transparent"
+                    android:tint="?attr/colorVectorDrawable"
+
+
                     />
 
             </LinearLayout>
@@ -408,7 +418,11 @@
             android:layout_height="48dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/media_attachment"
-            android:src="?attr/btn_attachment"
+            android:scaleType="fitCenter"
+            android:padding="8dp"
+            android:tint="?attr/colorVectorDrawable"
+            android:src="@drawable/ic_attachment"
+
             />
 
         <ImageButton
@@ -420,7 +434,10 @@
             android:contentDescription="@string/visibility"
             android:minHeight="48dp"
             android:minWidth="48dp"
-            tools:src="?attr/ic_public"
+            tools:src="@drawable/ic_public"
+            android:tint="?attr/colorVectorDrawable"
+
+
             />
 
         <ImageButton
@@ -430,7 +447,10 @@
             android:layout_marginStart="4dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/plugin"
-            android:src="?attr/ic_plugin"
+            android:src="@drawable/ic_extension"
+            android:tint="?attr/colorVectorDrawable"
+
+
             />
 
         <ImageButton
@@ -440,7 +460,10 @@
             android:layout_marginStart="4dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/more"
-            android:src="?attr/btn_more"
+            android:src="@drawable/ic_more"
+            android:tint="?attr/colorVectorDrawable"
+
+
             />
 
         <View
@@ -467,7 +490,8 @@
             android:layout_height="48dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/toot"
-            android:src="?attr/btn_post"
+            android:src="@drawable/ic_send"
+            android:tint="?attr/colorVectorDrawable"
 
             />
     </LinearLayout>

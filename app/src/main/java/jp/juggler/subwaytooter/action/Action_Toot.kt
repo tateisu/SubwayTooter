@@ -118,59 +118,52 @@ object Action_Toot {
 			var new_status : TootStatus? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				var result : TootApiResult?
 				
-				val target_status : TootStatus
-				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
+				val target_status = if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					
-					result = client.syncStatus(access_info, arg_status)
-					if(result?.data == null) return result
-					target_status = result.data as? TootStatus
-						?:
-						return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
-					if(target_status.favourited) {
+					val(result,status) = client.syncStatus(access_info, arg_status)
+					status ?: return result
+					if(status.favourited) {
 						return TootApiResult(activity.getString(R.string.already_favourited))
 					}
-					
+					status
 				} else {
-					target_status = arg_status
+					arg_status
 				}
 				
-				if(access_info.isMisskey) {
-					val params = access_info.putMisskeyApiToken(JSONObject())
-						.put("noteId", target_status.id.toString())
-					
-					result = client.request(
+				
+				return if(access_info.isMisskey) {
+					client.request(
 						if(bSet) {
 							"/api/notes/favorites/create"
 						} else {
 							"/api/notes/favorites/delete"
+						},
+						access_info
+							.putMisskeyApiToken(JSONObject())
+							.put("noteId", target_status.id.toString())
+							.toPostRequestBuilder()
+					)?.also{ result->
+						// 正常レスポンスは 204 no content
+						// 既にお気に入り済みならエラー文字列に'already favorited' が返る
+						if(result.response?.code() == 204
+							|| result.error?.contains("already favorited") == true
+							|| result.error?.contains("already not favorited") == true
+						) {
+							// 成功した
+							new_status = target_status.apply{
+								favourited = bSet
+							}
 						}
-						, params.toPostRequestBuilder()
-					)
-					
-					// 正常レスポンスは 204 no content
-					// 既にお気に入り済みならエラー文字列に'already favorited' が返る
-					if(result?.response?.code() == 204
-						|| result?.error?.contains("already favorited") == true
-						|| result?.error?.contains("already not favorited") == true
-					) {
-						// 成功した
-						target_status.favourited = bSet
-						new_status = target_status
 					}
-					
 				} else {
-					result = client.request(
+					client.request(
 						"/api/v1/statuses/${target_status.id}/${if(bSet) "favourite" else "unfavourite"}",
 						"".toRequestBody().toPost()
-					)
-					val jsonObject = result?.jsonObject
-					new_status = TootParser(activity, access_info).status(jsonObject)
-					
+					)?.also{ result->
+						new_status = TootParser(activity, access_info).status(result.jsonObject)
+					}
 				}
-				return result
-				
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -364,34 +357,29 @@ object Action_Toot {
 				
 				val parser = TootParser(activity, access_info)
 				
-				var result : TootApiResult?
 				
-				val target_status : TootStatus
-				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
-					
-					result = client.syncStatus(access_info, arg_status)
-					if(result?.data == null) return result
-					target_status = result.data as? TootStatus
-						?:
-						return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
-					if(target_status.reblogged) {
+				
+				val target_status = if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
+					val(result,status) = client.syncStatus(access_info, arg_status)
+					if(status == null) return result
+					if(status.reblogged) {
 						return TootApiResult(activity.getString(R.string.already_boosted))
 					}
+					status
 				} else {
 					// 既に自タンスのステータスがある
-					target_status = arg_status
+					arg_status
 				}
 				
 				if(access_info.isMisskey) {
 					if(! bSet) {
-						
 						return TootApiResult("Misskey has no 'unrenote' API.")
 					} else {
 						
 						val params = access_info.putMisskeyApiToken(JSONObject())
 							.put("renoteId", target_status.id.toString())
 						
-						result = client.request("/api/notes/create", params.toPostRequestBuilder())
+						val result = client.request("/api/notes/create", params.toPostRequestBuilder())
 						val jsonObject = result?.jsonObject
 						if(jsonObject != null) {
 							val new_status = parser.status(
@@ -405,8 +393,7 @@ object Action_Toot {
 					}
 					
 				} else {
-					
-					result = client.request(
+					val result = client.request(
 						"/api/v1/statuses/${target_status.id}/${if(bSet) "reblog" else "unreblog"}",
 						"".toRequestBody().toPost()
 					)
@@ -749,11 +736,10 @@ object Action_Toot {
 			.run(access_info, object : TootTask {
 				
 				var local_status_id : EntityId? = null
-				override fun background(client : TootApiClient) : TootApiResult? {
-					var result : TootApiResult?
+				override fun background(client : TootApiClient) : TootApiResult? =
 					if(access_info.isPseudo) {
 						// 疑似アカウントではURLからIDを取得するのにHTMLと正規表現を使う
-						result = client.getHttp(remote_status_url)
+						val result = client.getHttp(remote_status_url)
 						val string = result?.string
 						if(string != null) {
 							try {
@@ -765,22 +751,19 @@ object Action_Toot {
 								log.e(ex, "openStatusRemote: can't parse status id from HTML data.")
 							}
 							
-							if(local_status_id == null) {
-								result = TootApiResult(
-									activity.getString(R.string.status_id_conversion_failed)
-								)
+							if(result.error == null && local_status_id == null) {
+								result.setError(activity.getString(R.string.status_id_conversion_failed))
 							}
 						}
+						result
 					} else {
-						result = client.syncStatus(access_info, remote_status_url)
-						if(result?.data == null) return result
-						val status = result.data as? TootStatus
-							?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
-						local_status_id = status.id
-						log.d("status id conversion %s => %s", remote_status_url, status.id)
+						val(result,status) = client.syncStatus(access_info, remote_status_url)
+						if(status != null){
+							local_status_id = status.id
+							log.d("status id conversion %s => %s", remote_status_url, status.id)
+						}
+						result
 					}
-					return result
-				}
 				
 				override fun handleResult(result : TootApiResult?) {
 					if(result == null) return // cancelled.
@@ -888,11 +871,8 @@ object Action_Toot {
 				
 				var local_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val result = client.syncStatus(access_info, remote_status_url)
-					if(result?.data == null) return result
-					local_status = result.data as? TootStatus
-						?:
-						return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
+					val (result,status) = client.syncStatus(access_info, remote_status_url)
+					local_status = status
 					return result
 				}
 				
@@ -1108,21 +1088,21 @@ object Action_Toot {
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				val target_status : TootStatus
-				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
+				val target_status = if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					
-					val result = client.syncStatus(access_info, arg_status)
-					if(result?.data == null) return result
-					target_status = result.data as? TootStatus
-						?: return TootApiResult(
-						activity.getString(R.string.status_id_conversion_failed)
-					)
-					if(target_status.myReaction != null) {
+					val(result,status) = client.syncStatus(access_info, arg_status)
+
+					status?:  return result
+
+					if(status.myReaction != null) {
 						return TootApiResult(activity.getString(R.string.already_reactioned))
 					}
+
+					status
+					
 				} else {
 					// 既に自タンスのステータスがある
-					target_status = arg_status
+					arg_status
 				}
 				
 				

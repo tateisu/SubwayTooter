@@ -2008,8 +2008,8 @@ class Column(
 				} else {
 					// カラムに紐付けられたアカウントのタンスのインスタンス情報
 				}
-				val result = client.parseInstanceInformation(client.getInstanceInformation())
-				instance_tmp = result?.data as? TootInstance
+				val(result,ti) = client.parseInstanceInformation(client.getInstanceInformation())
+				instance_tmp = ti
 				return result
 			}
 			

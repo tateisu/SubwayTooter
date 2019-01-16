@@ -90,18 +90,15 @@ class DlgFocusPoint(val activity : Activity, val attachment : TootAttachment) :
 			var bitmap : Bitmap? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				
-				val result = client.getHttpBytes(url)
-				
 				try {
-					val data = result?.data as? ByteArray ?: return result
+					val(result,data) = client.getHttpBytes(url)
+					data ?: return result
 					bitmap = decodeBitmap(data, 1024)
 					if(bitmap == null) return TootApiResult("image decode failed.")
+					return result
 				} catch(ex : Throwable) {
 					return TootApiResult(ex.withCaption("preview loading failed."))
 				}
-				
-				return result
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

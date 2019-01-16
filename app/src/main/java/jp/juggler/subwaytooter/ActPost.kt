@@ -1294,14 +1294,8 @@ class ActPost : AppCompatActivity(),
 				
 				var target_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
-					
-					val result = client.syncStatus(access_info, in_reply_to_url)
-					if(result?.data != null) {
-						target_status = result.data as? TootStatus
-						if(target_status == null) {
-							return TootApiResult(getString(R.string.status_id_conversion_failed))
-						}
-					}
+					val (result, localStatus) = client.syncStatus(access_info, in_reply_to_url)
+					target_status = localStatus
 					return result
 				}
 				

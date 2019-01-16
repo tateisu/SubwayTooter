@@ -343,18 +343,15 @@ internal class StreamReader(
 			
 			TootTaskRunner(context).run(access_info, object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val result = client.webSocket(end_point, this@Reader)
+					val( result ,ws) = client.webSocket(end_point, this@Reader)
 					
-					if(result == null) {
-						log.d("startRead: cancelled.")
-						bListening.set(false)
-						fireListeningChanged()
-					} else {
-						val ws = result.data as? WebSocket
-						if(ws != null) {
-							socket.set(ws)
+					when {
+						result == null -> {
+							log.d("startRead: cancelled.")
+							bListening.set(false)
 							fireListeningChanged()
-						} else {
+						}
+						ws == null -> {
 							val error = result.error
 							log.d("startRead: error. $error")
 							bListening.set(false)
@@ -362,6 +359,10 @@ internal class StreamReader(
 							// this may network error.
 							handler.removeCallbacks(proc_reconnect)
 							handler.postDelayed(proc_reconnect, 5000L)
+						}
+						else->{
+							socket.set(ws)
+							fireListeningChanged()
 						}
 					}
 					return result

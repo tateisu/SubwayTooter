@@ -544,21 +544,18 @@ class TootApiClient(
 	}
 	
 	// インスタンス情報を取得する
-	internal fun parseInstanceInformation(result : TootApiResult?) : TootApiResult? {
+	internal fun parseInstanceInformation(result : TootApiResult?)  : Pair<TootApiResult?,TootInstance?> {
+		var ti: TootInstance? = null
 		val json = result?.jsonObject
 		if(json != null) {
 			val parser = TootParser(
 				context,
 				LinkHelper.newLinkHelper(instance, isMisskey = json.optBoolean(KEY_IS_MISSKEY))
 			)
-			val ti = parser.instance(json)
-			if(ti != null) {
-				result.data = ti
-			} else {
-				result.setError("can't parse data in instance information.")
-			}
+			ti = parser.instance(json)
+			if(ti == null) result.setError("can't parse data in instance information.")
 		}
-		return result
+		return Pair(result,ti)
 	}
 	
 	private fun getAppInfoMisskey(appId : String?) : TootApiResult? {
@@ -1054,21 +1051,26 @@ class TootApiClient(
 	// クライアントを登録してブラウザで開くURLを生成する
 	fun authentication1(clientNameArg : String) : TootApiResult? {
 		
+		var lastRi : TootApiResult? = null
 		// misskeyのインスタンス情報
-		var ri = parseInstanceInformation(getInstanceInformationMisskey())
-		var ti = ri?.data as? TootInstance
-		if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
-			return authentication1Misskey(clientNameArg, ti)
+		run{
+			val (ri ,ti) = parseInstanceInformation(getInstanceInformationMisskey())
+			lastRi = ri
+			if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
+				return authentication1Misskey(clientNameArg, ti)
+			}
 		}
 		
 		// マストドンのインスタンス情報
-		ri = parseInstanceInformation(getInstanceInformationMastodon())
-		ti = ri?.data as? TootInstance
-		if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
-			return authentication1Mastodon(clientNameArg, ti)
+		run{
+			val (ri,ti) = parseInstanceInformation(getInstanceInformationMastodon())
+			lastRi = ri
+			if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
+				return authentication1Mastodon(clientNameArg, ti)
+			}
 		}
 		
-		return ri
+		return lastRi
 	}
 	
 	// oAuth2認証の続きを行う
@@ -1172,25 +1174,30 @@ class TootApiClient(
 	}
 	
 	fun createUser1(clientNameArg : String) : TootApiResult? {
+		var lastRi : TootApiResult? = null
 		// misskeyのインスタンス情報
-		var ri = parseInstanceInformation(getInstanceInformationMisskey())
-		var ti = ri?.data as? TootInstance
-		if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
-			return TootApiResult("Misskey has no API to create new account")
+		run {
+			val (ri, ti) = parseInstanceInformation(getInstanceInformationMisskey())
+			lastRi = ri
+			if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
+				return TootApiResult("Misskey has no API to create new account")
+			}
+			
 		}
 		
 		// マストドンのインスタンス情報
-		ri = parseInstanceInformation(getInstanceInformationMastodon())
-		ti = ri?.data as? TootInstance
-		if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
-			if(ti.version?.matches("""\bPleroma\b""".toRegex()) == true) {
-				return TootApiResult("Pleroma has no API to create new account")
+		run {
+			val (ri, ti) = parseInstanceInformation(getInstanceInformationMastodon())
+			lastRi = ri
+			if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
+				if(ti.version?.matches("""\bPleroma\b""".toRegex()) == true) {
+					return TootApiResult("Pleroma has no API to create new account")
+				}
+				// result.jsonObject に credentialつきのclient_info を格納して返す
+				return prepareClientMastodon(clientNameArg, ti)
 			}
-			// result.jsonObject に credentialつきのclient_info を格納して返す
-			return prepareClientMastodon(clientNameArg, ti)
 		}
-		
-		return ri
+		return lastRi
 	}
 	
 	// ユーザ名入力の後に呼ばれる
@@ -1354,21 +1361,24 @@ class TootApiClient(
 		return result
 	}
 	
-	fun getHttpBytes(url : String) : TootApiResult? {
+	fun getHttpBytes(url : String) :Pair<TootApiResult?,ByteArray?> {
 		val result = TootApiResult.makeWithCaption(url)
-		if(result.error != null) return result
+		if(result.error != null) return Pair(result,null)
 		
-		if(! sendRequest(result, progressPath = url) {
+		if( !sendRequest(result, progressPath = url) {
 				Request.Builder().url(url).build()
-			}) return result
-		return parseBytes(result)
-		
+			}) {
+			return Pair(result, null)
+		}
+		val r2 = parseBytes(result)
+		return Pair(r2,r2?.data as? ByteArray)
 	}
 	
-	fun webSocket(path : String, ws_listener : WebSocketListener) : TootApiResult? {
+	fun webSocket(path : String, ws_listener : WebSocketListener) : Pair<TootApiResult?,WebSocket?> {
+		var ws:WebSocket? = null
 		val result = TootApiResult.makeWithCaption(instance)
-		if(result.error != null) return result
-		val account = this.account ?: return TootApiResult("account is null")
+		if(result.error != null) return Pair(result,null)
+		val account = this.account ?: return Pair(TootApiResult("account is null"),null)
 		try {
 			var url = "wss://$instance$path"
 			
@@ -1382,18 +1392,16 @@ class TootApiClient(
 			
 			val request = request_builder.url(url).build()
 			publishApiProgress(context.getString(R.string.request_api, request.method(), path))
-			val ws = httpClient.getWebSocket(request, ws_listener)
+			ws = httpClient.getWebSocket(request, ws_listener)
 			if(isApiCancelled) {
 				ws.cancel()
-				return null
+				return Pair(null,null)
 			}
-			result.data = ws
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			result.error =
-				"${result.caption}: ${ex.withCaption(context.resources, R.string.network_error)}"
+			result.error = "${result.caption}: ${ex.withCaption(context.resources, R.string.network_error)}"
 		}
-		return result
+		return Pair(result,ws)
 		
 	}
 	
@@ -1497,7 +1505,7 @@ fun TootApiClient.syncAccountByAcct(
 	return Pair(result, ar)
 }
 
-fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootApiResult? {
+fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : Pair<TootApiResult?,TootStatus?> {
 	
 	var url = urlArg
 	
@@ -1516,7 +1524,6 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootA
 					.put("noteId", noteId)
 					.toPostRequestBuilder()
 			)
-			
 			?.also { result ->
 				TootParser(
 					context,
@@ -1526,19 +1533,19 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootA
 					.status(result.jsonObject)
 					?.apply {
 						if(host.equals(accessInfo.host, ignoreCase = true)) {
-							result.data = this
-							return result
+							return Pair(result,this)
 						}
 						uri.letNotEmpty { url = it }
 					}
+				
 			}
-			
-			?: return null // cancelled.
+			?: return Pair(null,null) // cancelled.
 	}
 	
 	// 使いたいタンス上の投稿IDを取得する
 	val parser = TootParser(context, accessInfo)
-	return if(accessInfo.isMisskey) {
+	var targetStatus :TootStatus? = null
+	val result = if(accessInfo.isMisskey) {
 		request(
 			"/api/ap/show",
 			accessInfo.putMisskeyApiToken()
@@ -1546,26 +1553,27 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootA
 				.toPostRequestBuilder()
 		)
 			?.apply {
-				data = parser.parseMisskeyApShow(jsonObject)
-				if(data == null && error == null) {
+				targetStatus = parser.parseMisskeyApShow(jsonObject) as? TootStatus
+				if(targetStatus == null && error == null) {
 					setError(context.getString(R.string.cant_sync_toot))
 				}
 			}
 	} else {
 		request("/api/v1/search?q=${url.encodePercent()}&resolve=true")
 			?.apply {
-				data = parser.results(jsonObject)?.statuses?.firstOrNull()
-				if(data == null && error == null) {
+				targetStatus = parser.results(jsonObject)?.statuses?.firstOrNull()
+				if(targetStatus == null && error == null) {
 					setError(context.getString(R.string.cant_sync_toot))
 				}
 			}
 	}
+	return Pair(result,targetStatus)
 }
 
 fun TootApiClient.syncStatus(
 	accessInfo : SavedAccount,
 	statusRemote : TootStatus
-) : TootApiResult? {
+) : Pair<TootApiResult?,TootStatus?> {
 	
 	// URL->URIの順に試す
 	
@@ -1592,11 +1600,11 @@ fun TootApiClient.syncStatus(
 	}
 	
 	for(uri in uriList) {
-		val result = syncStatus(accessInfo, uri)
-		if(result == null || result.data is TootStatus) {
-			return result
+		val pair = syncStatus(accessInfo, uri)
+		if( pair.second != null || pair.first == null ) {
+			return pair
 		}
 	}
 	
-	return TootApiResult("can't resolve status URL/URI.")
+	return Pair(TootApiResult("can't resolve status URL/URI."),null)
 }

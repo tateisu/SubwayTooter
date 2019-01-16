@@ -232,6 +232,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	
 	private fun updateBackground(uriArg : Uri) {
 		TootTaskRunner(this).run(object : TootTask {
+			var bgUri : String? = null
+			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				try {
 					val backgroundDir = Column.getBackgroundImageDir(this@ActColumnCustomize)
@@ -271,9 +273,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 						}
 					}
 					
-					val result = TootApiResult()
-					result.data = fileUri.toString()
-					return result
+					bgUri = fileUri.toString()
+					return TootApiResult()
 				} catch(ex : Throwable) {
 					log.trace(ex)
 					return TootApiResult(ex.withCaption("can't update background image."))
@@ -281,14 +282,16 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
+				val bgUri = this.bgUri
 				when {
 					result == null -> return
-					result.error != null -> showToast(this@ActColumnCustomize, true, result.error)
 					
-					else -> {
-						column.column_bg_image = result.data as String
+					bgUri != null -> {
+						column.column_bg_image = bgUri
 						show()
 					}
+					
+					else -> showToast(this@ActColumnCustomize, true, result.error ?: "?")
 				}
 			}
 		})
@@ -448,17 +451,17 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	
 	private fun loadImage(ivColumnBackground : ImageView, url : String) {
 		try {
-			if( url.isEmpty() ){
+			if(url.isEmpty()) {
 				closeBitmaps()
 				return
-			}else if(url == last_image_uri) {
+			} else if(url == last_image_uri) {
 				// 今表示してるのと同じ
 				return
 			}
 			
 			// 直前のBitmapを掃除する
 			closeBitmaps()
-
+			
 			val uri = url.mayUri() ?: return
 			
 			// 画像をロードして、成功したら表示してURLを覚える

@@ -509,7 +509,10 @@ class ActAccountSetting
 			
 			R.id.btnAccountRemove -> performAccountRemove()
 			R.id.btnVisibility -> performVisibility()
-			R.id.btnOpenBrowser -> App1.openBrowser(this@ActAccountSetting,"https://" + account.host + "/")
+			R.id.btnOpenBrowser -> App1.openBrowser(
+				this@ActAccountSetting,
+				"https://" + account.host + "/"
+			)
 			R.id.btnPushSubscription -> startTest()
 			
 			R.id.btnUserCustom -> ActNickname.open(
@@ -727,8 +730,8 @@ class ActAccountSetting
 	private fun initializeProfile() {
 		// 初期状態
 		val question_id = R.drawable.wide_question
-		ivProfileAvatar.setErrorImage( defaultColorIcon(this,question_id))
-		ivProfileAvatar.setDefaultImage( defaultColorIcon(this,question_id))
+		ivProfileAvatar.setErrorImage(defaultColorIcon(this, question_id))
+		ivProfileAvatar.setDefaultImage(defaultColorIcon(this, question_id))
 		
 		val loadingText = when(account.isPseudo) {
 			true -> "(disabled for pseudo account)"
@@ -778,8 +781,8 @@ class ActAccountSetting
 					
 				} else {
 					
-					var result = account.checkConfirmed(this@ActAccountSetting,client)
-					if(result == null || result.error!=null) return result
+					var result = account.checkConfirmed(this@ActAccountSetting, client)
+					if(result == null || result.error != null) return result
 					
 					result = client.request("/api/v1/accounts/verify_credentials")
 					val jsonObject = result?.jsonObject
@@ -942,7 +945,7 @@ class ActAccountSetting
 			private fun uploadImageMisskey(
 				client : TootApiClient,
 				opener : InputStreamOpener
-			) : TootApiResult? {
+			) : Pair<TootApiResult?, TootAttachment?> {
 				
 				val size = getStreamSize(true, opener.open())
 				
@@ -982,21 +985,19 @@ class ActAccountSetting
 					}
 				)
 				
+				var ta : TootAttachment? = null
 				val result = client.request(
 					"/api/drive/files/create",
 					multipart_builder.build().toPost()
-				)
-				
-				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
-					val a = parseItem(::TootAttachment, ServiceType.MISSKEY, jsonObject)
-					if(a == null) {
-						result.error = "TootAttachment.parse failed"
-					} else {
-						result.data = a
+				)?.also { result ->
+					val jsonObject = result.jsonObject
+					if(jsonObject != null) {
+						ta = parseItem(::TootAttachment, ServiceType.MISSKEY, jsonObject)
+						if(ta == null) result.error = "TootAttachment.parse failed"
 					}
 				}
-				return result
+				
+				return Pair(result, ta)
 			}
 			
 			var data : TootAccount? = null
@@ -1024,8 +1025,8 @@ class ActAccountSetting
 								is Boolean -> params.put(misskeyKey, value)
 								
 								is InputStreamOpener -> {
-									val result = uploadImageMisskey(client, value)
-									val ta = result?.data as? TootAttachment ?: return result
+									val (result, ta) = uploadImageMisskey(client, value)
+									ta ?: return result
 									params.put(misskeyKey, ta.id)
 								}
 							}
@@ -1083,8 +1084,6 @@ class ActAccountSetting
 									})
 							}
 						}
-						
-						
 						
 						val result = client.request(
 							"/api/v1/accounts/update_credentials",
@@ -1184,13 +1183,16 @@ class ActAccountSetting
 	// Mastodon 2.7 でnoteの文字数計算が変わる
 	// https://github.com/tootsuite/mastodon/commit/45899cfa691b1e4f43da98c456ae8faa584eb437
 	private val reLinkUrl = Pattern.compile("""(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
-	private val reMention =Pattern.compile("""(?<=^|[^/\w\p{Pc}])@((\w+([\w.-]+\w+)?)(?:@[a-z0-9.\-]+[a-z0-9]+)?)""",Pattern.CASE_INSENSITIVE)
-	private val strUrlReplacement = (0 until 23).map{ ' '}.joinToString()
-	private fun countNoteText(s:String):Int{
+	private val reMention = Pattern.compile(
+		"""(?<=^|[^/\w\p{Pc}])@((\w+([\w.-]+\w+)?)(?:@[a-z0-9.\-]+[a-z0-9]+)?)""",
+		Pattern.CASE_INSENSITIVE
+	)
+	private val strUrlReplacement = (0 until 23).map { ' ' }.joinToString()
+	private fun countNoteText(s : String) : Int {
 		val s2 = s
-			.replaceAll(reLinkUrl,strUrlReplacement)
-			.replaceAll(reMention,"@\\2")
-		return s2.codePointCount(0,s2.length)
+			.replaceAll(reLinkUrl, strUrlReplacement)
+			.replaceAll(reMention, "@\\2")
+		return s2.codePointCount(0, s2.length)
 	}
 	
 	private fun sendLocked(willLocked : Boolean) {

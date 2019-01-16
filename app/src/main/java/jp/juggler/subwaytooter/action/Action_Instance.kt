@@ -120,13 +120,16 @@ object Action_Instance {
 		columnType : Int
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
+			var localStatus: TootStatus? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return client.syncStatus(access_info, status)
+				val(result,localStatus) = client.syncStatus(access_info, status)
+				this.localStatus = localStatus
+				return result
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
 				result ?: return
-				val localStatus = result.data as? TootStatus
+				val localStatus = this.localStatus
 				if(localStatus != null) {
 					timelinePublicAround2(activity, access_info, pos, localStatus.id, columnType)
 				} else {

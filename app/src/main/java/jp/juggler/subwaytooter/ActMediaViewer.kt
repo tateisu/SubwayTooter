@@ -612,7 +612,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				return bitmap2
 			}
 			
-			fun getHttpCached(client : TootApiClient, url : String) : TootApiResult? {
+			fun getHttpCached(client : TootApiClient, url : String) : Pair<TootApiResult?,ByteArray?> {
 				val result = TootApiResult.makeWithCaption(url)
 				
 				val request = Request.Builder()
@@ -626,46 +626,49 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 						tmpOkhttpClient = App1.ok_http_client_media_viewer
 					) {
 						request
-					}) return result
+					}
+				) return Pair(result,null)
 				
-				if(client.isApiCancelled) return null
+				if(client.isApiCancelled) return Pair(null,null)
+				
 				val response = requireNotNull(result.response)
 				if(! response.isSuccessful) {
-					return result.setError(TootApiClient.formatResponse(response, result.caption))
+					result.setError(TootApiClient.formatResponse(response, result.caption))
+					return Pair(result,null)
 				}
-				//				log.d("cached=${ response.cacheResponse() != null }")
 				
 				try {
-					result.data = ProgressResponseBody.bytes(response) { bytesRead, bytesTotal ->
+					val ba = ProgressResponseBody.bytes(response) { bytesRead, bytesTotal ->
 						// 50MB以上のデータはキャンセルする
 						if(Math.max(bytesRead, bytesTotal) >= 50000000) {
 							throw RuntimeException("media attachment is larger than 50000000")
 						}
 						client.publishApiProgressRatio(bytesRead.toInt(), bytesTotal.toInt())
 					}
-					if(client.isApiCancelled) return null
+					if(client.isApiCancelled) return Pair(null,null)
+					return Pair(result,ba)
 				} catch(ex : Throwable) {
 					result.setError(TootApiClient.formatResponse(response, result.caption, "?"))
+					return Pair(result,null)
 				}
-				return result
 			}
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				if(urlList.isEmpty()) return TootApiResult("missing url")
-				var result : TootApiResult? = null
+				var lastResult : TootApiResult? = null
 				for(url in urlList) {
-					result = getHttpCached(client, url)
-					val data = result?.data as? ByteArray
-					if(data != null) {
+					val(result,ba) = getHttpCached(client, url)
+					lastResult = result
+					if( ba != null){
 						client.publishApiProgress("decoding image…")
-						val bitmap = decodeBitmap(data, 2048)
+						val bitmap = decodeBitmap(ba, 2048)
 						if(bitmap != null) {
 							this.bitmap = bitmap
 							break
 						}
 					}
 				}
-				return result
+				return lastResult
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

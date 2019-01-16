@@ -351,13 +351,13 @@ class TootApiClient(
 		val response = result.response !!
 		
 		val request = response.request()
-			publishApiProgress(
-				context.getString(
-					R.string.reading_api,
-					request.method(),
-					progressPath ?: result.caption
-				)
+		publishApiProgress(
+			context.getString(
+				R.string.reading_api,
+				request.method(),
+				progressPath ?: result.caption
 			)
+		)
 		
 		val bodyBytes = response.body()?.bytes()
 		if(isApiCancelled) return null
@@ -470,7 +470,7 @@ class TootApiClient(
 				
 				val message = response.message()
 				if(message.isNotEmpty()) sb.append(' ').append(message)
-
+				
 				sb.append(")")
 				
 				val url = response.request().url().toString()
@@ -1400,7 +1400,10 @@ class TootApiClient(
 }
 
 // result.data に TootAccountRefを格納して返す。もしくはエラーかキャンセル
-fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) : TootApiResult? {
+fun TootApiClient.syncAccountByUrl(
+	accessInfo : SavedAccount,
+	who_url : String
+) : Pair<TootApiResult?, TootAccountRef?> {
 	
 	// misskey由来のアカウントURLは https://host/@user@instance などがある
 	val m = TootAccount.reAccountUrl.matcher(who_url)
@@ -1415,10 +1418,11 @@ fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) 
 	
 	val parser = TootParser(context, accessInfo)
 	
-	return if(accessInfo.isMisskey) {
+	var ar : TootAccountRef? = null
+	val result = if(accessInfo.isMisskey) {
 		
 		val acct = TootAccount.getAcctFromUrl(who_url)
-			?: return TootApiResult(context.getString(R.string.user_id_conversion_failed))
+			?: return Pair(TootApiResult(context.getString(R.string.user_id_conversion_failed)), ar)
 		
 		request(
 			"/api/users/show",
@@ -1434,8 +1438,8 @@ fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) 
 			}.toPostRequestBuilder()
 		)
 			?.apply {
-				data = parser.account(jsonObject)
-				if(data == null && error == null) {
+				ar = TootAccountRef.mayNull(parser, parser.account(jsonObject))
+				if(ar == null && error == null) {
 					setError(context.getString(R.string.user_id_conversion_failed))
 				}
 			}
@@ -1443,18 +1447,23 @@ fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) 
 	} else {
 		request("/api/v1/search?q=${who_url.encodePercent()}&resolve=true")
 			?.apply {
-				data = parser.results(jsonObject)?.accounts?.firstOrNull()
-				if(data == null && error == null) {
+				ar = parser.results(jsonObject)?.accounts?.firstOrNull()
+				if(ar == null && error == null) {
 					setError(context.getString(R.string.user_id_conversion_failed))
 				}
 			}
 	}
+	return Pair(result, ar)
 }
 
-fun TootApiClient.syncAccountByAcct(accessInfo : SavedAccount, acct : String) : TootApiResult? {
+fun TootApiClient.syncAccountByAcct(
+	accessInfo : SavedAccount,
+	acct : String
+) : Pair<TootApiResult?, TootAccountRef?> {
 	
 	val parser = TootParser(context, accessInfo)
-	return if(accessInfo.isMisskey) {
+	var ar : TootAccountRef? = null
+	val result = if(accessInfo.isMisskey) {
 		request(
 			"/api/users/show",
 			accessInfo.putMisskeyApiToken()
@@ -1471,20 +1480,21 @@ fun TootApiClient.syncAccountByAcct(accessInfo : SavedAccount, acct : String) : 
 				.toPostRequestBuilder()
 		)
 			?.apply {
-				data = parser.account(jsonObject)
-				if(data == null && error == null) {
+				ar = TootAccountRef.mayNull(parser, parser.account(jsonObject))
+				if(ar == null && error == null) {
 					setError(context.getString(R.string.user_id_conversion_failed))
 				}
 			}
 	} else {
 		request("/api/v1/search?q=${acct.encodePercent()}&resolve=true")
 			?.apply {
-				data = parser.results(jsonObject)?.accounts?.firstOrNull()
-				if(data == null && error == null) {
+				ar = parser.results(jsonObject)?.accounts?.firstOrNull()
+				if(ar == null && error == null) {
 					setError(context.getString(R.string.user_id_conversion_failed))
 				}
 			}
 	}
+	return Pair(result, ar)
 }
 
 fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootApiResult? {

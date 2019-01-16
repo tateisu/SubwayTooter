@@ -300,10 +300,11 @@ object Action_User {
 			
 			var who : TootAccount? = null
 			
-			override fun background(client : TootApiClient) : TootApiResult? =
-				client.syncAccountByUrl(access_info, who_url)?.also { result ->
-					who = (result.data as? TootAccountRef)?.get()
-				}
+			override fun background(client : TootApiClient) : TootApiResult? {
+				val(result,ar) = client.syncAccountByUrl(access_info, who_url)
+				who = ar?.get()
+				return result
+			}
 			
 			override fun handleResult(result : TootApiResult?) {
 				result ?: return // cancelled.
@@ -386,10 +387,11 @@ object Action_User {
 					
 					var who : TootAccount? = null
 					
-					override fun background(client : TootApiClient) : TootApiResult? =
-						client.syncAccountByAcct(access_info, acct)?.also {
-							this.who = it.data as? TootAccount
-						}
+					override fun background(client : TootApiClient) : TootApiResult? {
+						val(result,ar) = client.syncAccountByAcct(access_info, acct)
+						who = ar?.get()
+						return result
+					}
 					
 					override fun handleResult(result : TootApiResult?) {
 						result ?: return // cancelled

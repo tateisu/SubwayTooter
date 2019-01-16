@@ -186,8 +186,8 @@ object Action_Follow {
 					
 					// リモートユーザの同期
 					if(who.acct.contains("@")) {
-						result = client.syncAccountByAcct(access_info, who.acct)
-						val user = result?.data as? TootAccount
+						val(result,ar) = client.syncAccountByAcct(access_info, who.acct)
+						val user = ar?.get()
 						if(user != null) {
 							userId = user.id
 						} else {
@@ -365,8 +365,8 @@ object Action_Follow {
 					
 					// リモートユーザの同期
 					if(who.acct.contains("@")) {
-						result = client.syncAccountByAcct(access_info, who.acct)
-						val user = result?.data as? TootAccount
+						val(result,ar) = client.syncAccountByAcct(access_info, who.acct)
+						val user = ar?.get()
 						if(user != null) {
 							userId = user.id
 						} else {

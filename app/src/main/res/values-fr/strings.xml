@@ -852,4 +852,21 @@
     <string name="email_empty">Veuillez spécifier le courriel.</string>
     <string name="password_empty">Veuillez spécifier le mot de passe.</string>
     <string name="scheduled_status">Publications planifiées</string>
+    <string name="input_access_token_desc">Spécifiez un jeton d\'accès au lieu de l’authentification usuelle. (avancé)</string>
+    <string name="not_reactioned">pas de réaction.</string>
+    <string name="quick_toot_bar_background_color">Couleur d’arrière-plan de la barre de pouet rapide</string>
+    <string name="pseudo_account_cant_get_follow_list">Impossible de lire la liste des abonné·e·s à partir d’un pseudo compte.</string>
+    <string name="reaction_remove_confirm">Supprimer votre réaction \"%1$s\" \?</string>
+    <string name="unspecified">Non spécifié</string>
+    <string name="scheduled_status_sent">Le statut programmé a été envoyé.</string>
+    <string name="scheduled_status_delete_confirm">Supprimer ce statut planifié \?</string>
+    <string name="scheduled_post_deleted">Supprimé.</string>
+    <string name="scheduled_status_list">Liste des statuts planifiés</string>
+    <string name="cant_change_account_when_editing_scheduled_status">Impossible de changer de compte lors de la modification d’un statut programmé.</string>
+    <string name="delete_scheduled_status_before_update">Supprimer le statut planifié avant son envoi. Confirmez-vous l’action \?</string>
+    <string name="all">Tous</string>
+    <string name="show_links_in_context_menu">Afficher les liens dans le menu contextuel</string>
+    <string name="scheduled_status_requires_mastodon_2_7_0">La planification des statuts nécessite Mastodon 2.7.0 ou une version ultérieure.</string>
+    <string name="copy_account_id">Copie de l’ID du compte %1$s</string>
+    <string name="open_in_admin_ui">Ouvrir dans l’interface d’administration web</string>
 </resources>

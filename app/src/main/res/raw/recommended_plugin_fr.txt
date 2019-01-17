@@ -1,5 +1,4 @@
-<html lang="fr"><ul><li
->EmojionePicker <a href="https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker">https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker</a></li
+<html lang="fr"><ul
 ><li>SupportText Free <a href="https://play.google.com/store/apps/details?id=com.z589.supporttext">https://play.google.com/store/apps/details?id=com.z589.supporttext</a></li
 ><li>ANdClip Free <a href="https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree">https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree</a></li
 ><li>Contact Picker <a href="https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker">https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker</a></li

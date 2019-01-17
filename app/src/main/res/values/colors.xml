@@ -8,12 +8,12 @@
     <color name="Light_colorContentText">#ff333333</color>
     <color name="Light_colorColumnHeaderName">#616161</color>
     <color name="Light_colorVectorDrawable">#616161</color>
+    <color name="Light_colorImageButton">#99343434</color>
 
     <color name="Light_colorColumnHeaderAcct">#80000000</color>
     <color name="Light_colorColumnHeaderPageNumber">#80000000</color>
     <color name="Light_colorSettingDivider">#80000000</color>
 
-    <color name="Light_colorImageButton">#99343434</color>
 
     <color name="Light_colorAccent">#5a5a5a</color>
 

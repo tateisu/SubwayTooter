@@ -142,7 +142,7 @@ object Styler {
 		, relation : UserRelation
 		, who : TootAccount
 		, defaultColor : Int
-		, alphaMultiplier : Float? = null
+		, alphaMultiplier : Float
 	) {
 		
 		fun colorError() = getAttributeColor(context, R.attr.colorRegexFilterError)
@@ -274,7 +274,7 @@ object Styler {
 	
 	// ActMainの初期化時に更新される
 	var round_ratio : Float = 0.33f * 0.5f
-	var boost_alpha : Float? = null
+	var boost_alpha : Float = 1f
 	
 	fun calcIconRound(wh : Int) = wh.toFloat() * round_ratio
 	

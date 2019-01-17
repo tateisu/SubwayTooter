@@ -364,6 +364,7 @@
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/search"
                 android:src="@drawable/ic_search"
+                android:tint="?attr/colorVectorDrawable"
                 />
 
         </LinearLayout>
@@ -410,6 +411,7 @@
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/search"
             android:src="@drawable/ic_add"
+            android:tint="?attr/colorVectorDrawable"
             />
 
     </LinearLayout>
@@ -559,6 +561,8 @@
                 android:layout_marginStart="4dp"
                 android:scaleType="fitCenter"
                 android:importantForAccessibility="no"
+                android:src="@drawable/ic_error"
+                android:tint="#ff0000"
                 />
 
             <TextView

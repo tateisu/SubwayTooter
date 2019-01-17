@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -395,12 +396,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			
 			val c = column.getHeaderNameColor()
 			tvColumnName.textColor = c
-			setIconDrawableId(
-				this,
-				ivColumnHeader,
-				column.getIconId(column.column_type),
-				color = c
-			)
+			ivColumnHeader.setImageResource(column.getIconId(column.column_type))
+			ivColumnHeader.imageTintList = ColorStateList.valueOf(c)
 			
 			tvColumnName.text = column.getColumnName(false)
 			

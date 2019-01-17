@@ -9,6 +9,7 @@ import android.content.ContentValues
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.AsyncTask
@@ -2052,15 +2053,12 @@ class ActPost : AppCompatActivity(),
 		}
 	}
 	
-	private fun showVisibility() = setIconDrawableId(
-		this,
-		btnVisibility,
-		Styler.getVisibilityIconId(
+	private fun showVisibility(){
+		btnVisibility.setImageResource(Styler.getVisibilityIconId(
 			account?.isMisskey == true
 			, visibility ?: TootVisibility.Public
-		),
-		getAttributeColor(this, R.attr.colorVectorDrawable)
-	)
+		))
+	}
 	
 	private fun performVisibility() {
 		val list = if(account?.isMisskey == true) {

@@ -316,7 +316,7 @@ internal class ViewHolderHeaderProfile(
 				(whoDetail?.followers_count ?: who.followers_count)
 			
 			val relation = UserRelation.load(access_info.db_id, who.id)
-			Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who, contentColor)
+			Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who, contentColor ,alphaMultiplier = Styler.boost_alpha)
 			
 			showMoved(who, who.movedRef)
 			
@@ -438,7 +438,7 @@ internal class ViewHolderHeaderProfile(
 		setAcct(tvMovedAcct, access_info.getFullAcct(moved), moved.acct)
 		
 		val relation = UserRelation.load(access_info.db_id, moved.id)
-		Styler.setFollowIcon(activity, btnMoved, ivMovedBy, relation, moved, contentColor)
+		Styler.setFollowIcon(activity, btnMoved, ivMovedBy, relation, moved, contentColor,alphaMultiplier = Styler.boost_alpha)
 	}
 	
 	private fun setAcct(tv : TextView, acctLong : String, acctShort : String) {

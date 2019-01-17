@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
@@ -678,13 +679,9 @@ class ActAppSettingChild : AppCompatActivity()
 			getAdaptiveRippleDrawable(header_bg, header_fg)
 		)
 		
-		tvColumnName !!.textColor = header_fg
-		setIconDrawableId(
-			this,
-			ivColumnHeader !!,
-			R.drawable.ic_bike,
-			color = header_fg
-		)
+		tvColumnName?.textColor = header_fg
+		ivColumnHeader?.setImageResource(R.drawable.ic_bike)
+		ivColumnHeader?.imageTintList = ColorStateList.valueOf(header_fg)
 	}
 	
 	private fun showColumnSample() {
@@ -1093,8 +1090,10 @@ class ActAppSettingChild : AppCompatActivity()
 		
 		c = footer_button_fg_color
 		if(c == 0)  c= getAttributeColor(this,R.attr.colorVectorDrawable)
-		setIconDrawableId(this, ivFooterToot !!, R.drawable.ic_edit, color = c)
-		setIconDrawableId(this, ivFooterMenu !!, R.drawable.ic_hamburger, color = c)
+		ivFooterToot?.setImageResource(R.drawable.ic_edit)
+		ivFooterToot?.imageTintList = ColorStateList.valueOf(c)
+		ivFooterMenu?.setImageResource(R.drawable.ic_hamburger)
+		ivFooterMenu?.imageTintList = ColorStateList.valueOf(c)
 		
 		c = footer_tab_bg_color
 		if(c == 0) {

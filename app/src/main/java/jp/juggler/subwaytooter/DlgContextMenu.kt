@@ -2,10 +2,12 @@ package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.res.ColorStateList
 import android.support.v4.app.ShareCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
+import android.support.v7.widget.AppCompatImageButton
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -77,7 +79,7 @@ internal class DlgContextMenu(
 		val btnReport : View = viewRoot.findViewById(R.id.btnReport)
 		val btnMuteApp : Button = viewRoot.findViewById(R.id.btnMuteApp)
 		val llAccountActionBar : View = viewRoot.findViewById(R.id.llAccountActionBar)
-		val btnFollow : ImageView = viewRoot.findViewById(R.id.btnFollow)
+		val btnFollow : ImageButton = viewRoot.findViewById(R.id.btnFollow)
 		
 		val btnMute : ImageView = viewRoot.findViewById(R.id.btnMute)
 		val btnBlock : ImageView = viewRoot.findViewById(R.id.btnBlock)
@@ -294,60 +296,42 @@ internal class DlgContextMenu(
 		} else {
 			
 			// 被フォロー状態
-			if(! relation.followed_by) {
-				ivFollowedBy.visibility = View.GONE
-			} else {
-				ivFollowedBy.visibility = View.VISIBLE
-				ivFollowedBy.setImageResource(R.drawable.ic_followed_by)
-			}
+			// Styler.setFollowIconとは異なり細かい状態を表示しない
+			vg(ivFollowedBy, relation.followed_by)
+
+			// フォロー状態
+			// Styler.setFollowIconとは異なりミュートやブロックを表示しない
+			btnFollow.setImageResource(when {
+				relation.getRequested(who) -> R.drawable.ic_follow_wait
+				relation.getFollowing(who) -> R.drawable.ic_follow_cross
+				else -> R.drawable.ic_follow_plus
+			})
+			btnFollow.imageTintList = ColorStateList.valueOf(getAttributeColor(
+				activity,
+				when {
+					relation.getRequested(who) -> R.attr.colorRegexFilterError
+					relation.getFollowing(who) -> R.attr.colorImageButtonAccent
+					else -> R.attr.colorImageButton
+				}
+			))
 			
-			btnFollow.setImageDrawable(
-				createColoredDrawable(
-					activity,
-					when {
-						relation.getRequested(who) -> R.drawable.ic_follow_wait
-						relation.getFollowing(who) -> R.drawable.ic_follow_cross
-						else -> R.drawable.ic_follow_plus
-					},
-					getAttributeColor(
-						activity,
-						when {
-							relation.getRequested(who) -> R.attr.colorRegexFilterError
-							relation.getFollowing(who) -> R.attr.colorImageButtonAccent
-							else -> R.attr.colorImageButton
-						}
-					)
-				)
-			)
+			// ミュート状態
+			btnMute.imageTintList = ColorStateList.valueOf(getAttributeColor(
+				activity,
+				when(relation.muting) {
+					true -> R.attr.colorImageButtonAccent
+					else -> R.attr.colorImageButton
+				}
+			))
 			
-			btnMute.setImageDrawable(
-				createColoredDrawable(
-					activity,
-					R.drawable.ic_volume_off,
-					getAttributeColor(
-						activity,
-						when(relation.muting) {
-							true -> R.attr.colorImageButtonAccent
-							else -> R.attr.colorImageButton
-						}
-					)
-				)
-			)
-			
-			btnBlock.setImageDrawable(
-				createColoredDrawable(
-					activity,
-					R.drawable.ic_block,
-					getAttributeColor(
-						activity,
-						when(relation.blocking) {
-							true -> R.attr.colorImageButtonAccent
-							else -> R.attr.colorImageButton
-						}
-					)
-				)
-			)
-			
+			// ブロック状態
+			btnBlock.imageTintList = ColorStateList.valueOf(getAttributeColor(
+				activity,
+				when(relation.blocking) {
+					true -> R.attr.colorImageButtonAccent
+					else -> R.attr.colorImageButton
+				}
+			))
 		}
 		
 		if(who == null) {

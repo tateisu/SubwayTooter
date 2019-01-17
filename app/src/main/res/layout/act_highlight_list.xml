@@ -41,6 +41,7 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/new_item"
             android:src="@drawable/ic_add"
+            android:tint="?attr/colorVectorDrawable"
             />
 
     </LinearLayout>

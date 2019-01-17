@@ -173,10 +173,10 @@ fun createColoredDrawable(
 	context : Context,
 	drawableId : Int,
 	color : Int,
-	alphaMultiplier : Float? = null
+	alphaMultiplier : Float
 ) : Drawable {
 	val rgb = (color and 0xffffff) or Color.BLACK
-	val alpha = if(alphaMultiplier == null) {
+	val alpha = if(alphaMultiplier >= 1f ) {
 		(color ushr 24)
 	} else {
 		clipRange(0, 255, ((color ushr 24).toFloat() * alphaMultiplier + 0.5f).toInt())
@@ -218,7 +218,7 @@ fun setIconDrawableId(
 	imageView : ImageView,
 	drawableId : Int,
 	color : Int? = null,
-	alphaMultiplier : Float? = null
+	alphaMultiplier : Float
 ) {
 	if(color == null) {
 		// ImageViewにアイコンを設定する。デフォルトの色
@@ -271,3 +271,4 @@ fun CharSequence.copyToClipboard(context:Context) {
 	}
 	
 }
+

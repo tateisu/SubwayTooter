@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.AsyncTask
@@ -371,7 +372,6 @@ class ColumnViewHolder(
 		ivRefreshError = viewRoot.findViewById(R.id.ivRefreshError)
 		tvRefreshError = viewRoot.findViewById(R.id.tvRefreshError)
 		llRefreshError.setOnClickListener(this)
-		setIconDrawableId(activity, ivRefreshError, R.drawable.ic_error, Color.RED)
 		
 		
 		cbDontCloseColumn.setOnCheckedChangeListener(this)
@@ -590,6 +590,7 @@ class ColumnViewHolder(
 			
 			tvColumnIndex.text = activity.getString(R.string.column_index, page_idx + 1, page_count)
 			tvColumnStatus.text = "?"
+			ivColumnIcon.setImageResource(column.getIconId(column.column_type))
 			
 			listView.adapter = null
 			if(listView.itemDecorationCount == 0) {
@@ -759,16 +760,12 @@ class ColumnViewHolder(
 		
 		// カラムヘッダ文字色(A)
 		var c = column.getHeaderNameColor()
+		val csl = ColorStateList.valueOf(c)
 		tvColumnName.textColor = c
-		setIconDrawableId(
-			activity,
-			ivColumnIcon,
-			column.getIconId(column.column_type),
-			c
-		)
-		setIconDrawableId(activity, btnColumnSetting, R.drawable.ic_tune, c)
-		setIconDrawableId(activity, btnColumnReload, R.drawable.ic_refresh, c)
-		setIconDrawableId(activity, btnColumnClose, R.drawable.ic_close, c)
+		ivColumnIcon.imageTintList = csl
+		btnColumnSetting.imageTintList = csl
+		btnColumnReload.imageTintList = csl
+		btnColumnClose.imageTintList = csl
 		
 		// カラムヘッダ文字色(B)
 		c = column.getHeaderPageNumberColor()
@@ -1510,7 +1507,7 @@ class ColumnViewHolder(
 			
 			val colorFg = getAttributeColor(activity, R.attr.colorContentText)
 			val colorBgSelected = colorFg.applyAlphaMultiplier(0.25f)
-			
+			val colorFgList =  ColorStateList.valueOf(colorFg)
 			showQuickFilterButton = { btn, iconId, selected ->
 				ViewCompat.setBackground(
 					btn,
@@ -1524,13 +1521,17 @@ class ColumnViewHolder(
 					}
 				)
 				when(btn) {
-					is ImageButton -> setIconDrawableId(activity, btn, iconId, colorFg)
 					is TextView -> btn.textColor = colorFg
+					is ImageButton -> {
+						btn.setImageResource(iconId)
+						btn.imageTintList = colorFgList
+					}
 				}
 			}
 		} else {
 			val colorBg = column.getHeaderBackgroundColor()
 			val colorFg = column.getHeaderNameColor()
+			val colorFgList =  ColorStateList.valueOf(colorFg)
 			val colorBgSelected = Color.rgb(
 				(Color.red(colorBg) * 3 + Color.red(colorFg)) / 4,
 				(Color.green(colorBg) * 3 + Color.green(colorFg)) / 4,
@@ -1548,8 +1549,11 @@ class ColumnViewHolder(
 					)
 				)
 				when(btn) {
-					is ImageButton -> setIconDrawableId(activity, btn, iconId, colorFg)
 					is TextView -> btn.textColor = colorFg
+					is ImageButton ->{
+						btn.setImageResource(iconId)
+						btn.imageTintList = colorFgList
+					}
 				}
 			}
 		}

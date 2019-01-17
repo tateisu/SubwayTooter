@@ -1050,7 +1050,7 @@ internal class ItemViewHolder(
 		}.intoStringResource(activity, string_id)
 		
 		if(reactionDrawableId != null) {
-			setIconDrawableId(activity, ivBoosted, reactionDrawableId)
+			ivBoosted.setImageResource(reactionDrawableId)
 		} else {
 			setIconDrawableId(
 				activity,

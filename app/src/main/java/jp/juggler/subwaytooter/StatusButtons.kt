@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.support.v4.content.ContextCompat
 import android.view.View
 import android.widget.ImageButton
@@ -219,11 +220,16 @@ internal class StatusButtons(
 		count : String,
 		contentDescription : String
 	) {
-		val d =
-			createColoredDrawable(activity, drawableId, color, alphaMultiplier = Styler.boost_alpha)
+		val alpha = Styler.boost_alpha
+		val d = createColoredDrawable(
+			activity,
+			drawableId,
+			color,
+			alpha
+		)
 		b.setImageDrawable(d)
 		b.setPaddingAndText(holder.paddingH, holder.paddingV, count, 14f, holder.compoundPaddingDp)
-		b.setTextColor(color.applyAlphaMultiplier(Styler.boost_alpha))
+		b.setTextColor(color.applyAlphaMultiplier(alpha))
 		b.contentDescription = contentDescription + count
 		b.isEnabled = enabled
 	}

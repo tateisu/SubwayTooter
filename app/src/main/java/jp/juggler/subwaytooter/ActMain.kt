@@ -6,6 +6,7 @@ import android.app.Dialog
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.AsyncTask
@@ -1273,11 +1274,11 @@ class ActMain : AppCompatActivity()
 		}
 		
 		run {
-			var boost_alpha : Float? = 0.8f
+			var boost_alpha = 0.8f
 			try {
 				val f = (Pref.spBoostAlpha.toInt(pref).toFloat() + 0.5f) / 100f
 				boost_alpha = when {
-					f >= 1f -> null
+					f >= 1f -> 1f
 					f < 0f -> 0.66f
 					else -> f
 				}
@@ -1518,12 +1519,8 @@ class ActMain : AppCompatActivity()
 			
 			column.setHeaderBackground(viewRoot)
 			
-			setIconDrawableId(
-				this,
-				ivIcon,
-				column.getIconId(column.column_type),
-				column.getHeaderNameColor()
-			)
+			ivIcon.setImageResource(column.getIconId(column.column_type))
+			ivIcon.imageTintList = ColorStateList.valueOf(column.getHeaderNameColor())
 			
 			//
 			val ac = AcctColor.load(column.access_info.acct)
@@ -2428,9 +2425,13 @@ class ActMain : AppCompatActivity()
 		
 		c = footer_button_fg_color
 		if(c == 0) c= getAttributeColor(this,R.attr.colorVectorDrawable)
-		setIconDrawableId(this, btnToot, R.drawable.ic_edit, c)
-		setIconDrawableId(this, btnMenu, R.drawable.ic_hamburger, c)
-		setIconDrawableId(this, btnQuickToot, R.drawable.ic_send, c)
+		var csl = ColorStateList.valueOf(c)
+		btnToot.imageTintList = csl
+		btnMenu.imageTintList = csl
+		btnQuickToot.imageTintList = csl
+//		setIconDrawableId(this, btnToot, R.drawable.ic_edit, c)
+//		setIconDrawableId(this, btnMenu, R.drawable.ic_hamburger, c)
+//		setIconDrawableId(this, btnQuickToot, R.drawable.ic_send, c)
 		
 		c = footer_tab_bg_color
 		if(c == 0) c = getAttributeColor(this, R.attr.colorColumnStripBackground)

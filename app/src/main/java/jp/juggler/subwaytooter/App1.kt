@@ -473,6 +473,7 @@ class App1 : Application() {
 		
 		internal val CACHE_CONTROL = CacheControl.Builder()
 			.maxAge(5, TimeUnit.MINUTES) // キャッシュが新鮮であると考えられる時間
+			.maxStale( Integer.MAX_VALUE, TimeUnit.SECONDS)
 			.build()
 		
 		fun getHttpCached(url : String) : ByteArray? {

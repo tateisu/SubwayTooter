@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.PorterDuff
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
@@ -267,12 +268,9 @@ class ActColumnList : AppCompatActivity() {
 			tvAccess.setBackgroundColor(item.acct_color_bg)
 			tvAccess.setPaddingRelative(acct_pad_lr, 0, acct_pad_lr, 0)
 			tvName.text = item.name
-			ivColumnIcon.setImageDrawable(
-				ContextCompat.getDrawable(this@ActColumnList,Column.getIconId(item.acct, item.type))?.also{
-					it.setTint(getAttributeColor(this@ActColumnList,R.attr.colorVectorDrawable))
-					it.setTintMode(PorterDuff.Mode.SRC_IN)
-				}
-			)
+			ivColumnIcon.setImageResource(Column.getIconId(item.acct, item.type))
+			// 背景色がテーマ次第なので、カラム設定の色を反映するとアイコンが見えなくなる可能性がある
+			// よってアイコンやテキストにカラム設定の色を反映しない
 		}
 		
 		//		@Override
@@ -293,7 +291,7 @@ class ActColumnList : AppCompatActivity() {
 		override fun onBindDragView(clickedView : View, dragView : View) {
 			val item = clickedView.tag as MyItem
 			
-			var tv = dragView.findViewById<TextView>(R.id.tvAccess)
+			var tv :TextView = dragView.findViewById(R.id.tvAccess)
 			tv.text = item.acct
 			tv.setTextColor(item.acct_color_fg)
 			tv.setBackgroundColor(item.acct_color_bg)
@@ -301,13 +299,8 @@ class ActColumnList : AppCompatActivity() {
 			tv = dragView.findViewById(R.id.tvName)
 			tv.text = item.name
 			
-			val ivColumnIcon = dragView.findViewById<ImageView>(R.id.ivColumnIcon)
-			ivColumnIcon.setImageDrawable(
-				ContextCompat.getDrawable(this@ActColumnList,Column.getIconId(item.acct, item.type))?.also{
-					it.setTint( getAttributeColor(this@ActColumnList,R.attr.colorVectorDrawable))
-					it.setTintMode(PorterDuff.Mode.SRC_IN)
-				}
-			)
+			val ivColumnIcon:ImageView = dragView.findViewById(R.id.ivColumnIcon)
+			ivColumnIcon.setImageResource(Column.getIconId(item.acct, item.type))
 			
 			dragView.findViewById<View>(R.id.ivBookmark).visibility =
 				clickedView.findViewById<View>(R.id.ivBookmark).visibility

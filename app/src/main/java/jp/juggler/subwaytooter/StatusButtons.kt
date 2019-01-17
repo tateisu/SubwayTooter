@@ -146,7 +146,7 @@ internal class StatusButtons(
 				btnBoost,
 				false,
 				color_accent,
-				R.drawable.ic_repeat,
+				R.drawable.ic_mail,
 				"",
 				activity.getString(R.string.boost)
 			)

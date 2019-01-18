@@ -2052,20 +2052,26 @@ internal class ItemViewHolder(
 					)
 				}
 				
-				is TootAttachment -> {
-					if(Pref.bpUseInternalMediaViewer(App1.pref)) {
-						// 内蔵メディアビューア
-						val serviceType = when(access_info.isMisskey) {
-							true -> ServiceType.MISSKEY
-							else -> ServiceType.MASTODON
-						}
-						ActMediaViewer.open(activity, serviceType, media_attachments, i)
-						
-					} else {
-						// ブラウザで開く
+				is TootAttachment -> when {
+					
+					// unknownが1枚だけなら内蔵ビューアを使わずにインテントを投げる
+					item.type == TootAttachmentLike.TYPE_UNKNOWN && media_attachments.size == 1 ->
 						App1.openCustomTab(activity, item)
-						
-					}
+					
+					// 内蔵メディアビューアを使う
+					Pref.bpUseInternalMediaViewer(App1.pref) ->
+						ActMediaViewer.open(
+							activity,
+							when(access_info.isMisskey) {
+								true -> ServiceType.MISSKEY
+								else -> ServiceType.MASTODON
+							},
+							media_attachments,
+							i
+						)
+					
+					// ブラウザで開く
+					else -> App1.openCustomTab(activity, item)
 				}
 			}
 		} catch(ex : Throwable) {

@@ -146,6 +146,8 @@ fun String.encodeUTF8() = this.toByteArray(charsetUTF8)
 
 fun ByteArray.decodeUTF8() = this.toString(charsetUTF8)
 
+fun String.codePointCount(beginIndex:Int = 0): Int = this.codePointCount(beginIndex, this.length)
+
 // 16進ダンプ
 fun ByteArray.encodeHex() : String {
 	val sb = StringBuilder()

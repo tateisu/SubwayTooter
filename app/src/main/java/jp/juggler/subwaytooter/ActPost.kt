@@ -1116,32 +1116,40 @@ class ActPost : AppCompatActivity(),
 	private fun updateTextCount() {
 		var length = 0
 		
-		var s = EmojiDecoder.decodeShortCode(etContent.text.toString())
-		length += s.codePointCount(0, s.length)
+		length += TootStatus.countText(
+			EmojiDecoder.decodeShortCode(etContent.text.toString())
+		)
 		
-		s = if(cbContentWarning.isChecked)
-			EmojiDecoder.decodeShortCode(etContentWarning.text.toString())
-		else
-			""
-		length += s.codePointCount(0, s.length)
+		length += TootStatus.countText(
+			if(cbContentWarning.isChecked)
+				EmojiDecoder.decodeShortCode(etContentWarning.text.toString())
+			else
+				""
+		)
 		
 		var max = getMaxCharCount()
 		
 		if(cbEnquete.isChecked) {
 			max -= 150 // フレニコ固有。500-150で350になる
 			for(et in list_etChoice) {
-				s = EmojiDecoder.decodeShortCode(et.text.toString())
-				length += s.codePointCount(0, s.length)
+				length += TootStatus.countText(
+					EmojiDecoder.decodeShortCode(et.text.toString())
+				)
 			}
 		}
 		
 		val remain = max - length
+
 		tvCharCount.text = Integer.toString(remain)
-		val color = getAttributeColor(
-			this,
-			if(remain < 0) R.attr.colorRegexFilterError else android.R.attr.textColorPrimary
+		tvCharCount.setTextColor(
+			getAttributeColor(
+				this,
+				if(remain < 0)
+					R.attr.colorRegexFilterError
+				else
+					android.R.attr.textColorPrimary
+			)
 		)
-		tvCharCount.setTextColor(color)
 	}
 	
 	private fun updateContentWarning() {
@@ -1826,12 +1834,12 @@ class ActPost : AppCompatActivity(),
 					val sb = StringBuilder(s_length)
 					var lastEnd = 0
 					while(m.find()) {
-						sb.append(s.substring(lastEnd,m.start()))
+						sb.append(s.substring(lastEnd, m.start()))
 						val escaped = m.group(1).encodeUTF8().encodeHex()
 						sb.append(escaped)
 						lastEnd = m.end()
 					}
-					if(lastEnd < s_length) sb.append(s.substring(lastEnd,s_length))
+					if(lastEnd < s_length) sb.append(s.substring(lastEnd, s_length))
 					return sb.toString()
 				}
 				

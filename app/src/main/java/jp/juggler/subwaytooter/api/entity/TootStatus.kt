@@ -632,15 +632,15 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		}
 	}
 	
-	fun decreaseReaction(reaction:String?,byMe:Boolean, caller : String) : Boolean {
+	fun decreaseReaction(reaction : String?, byMe : Boolean, caller : String) : Boolean {
 		reaction ?: return false
 		
 		MisskeyReaction.shortcodeMap[reaction] ?: return false
-
+		
 		synchronized(this) {
 			
-			if(byMe){
-				if( this.myReaction != reaction ){
+			if(byMe) {
+				if(this.myReaction != reaction) {
 					// 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
 					return false
 				}
@@ -648,7 +648,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			}
 			
 			log.d("decreaseReaction noteId=$id byMe=$byMe caller=$caller")
-
+			
 			// カウントを減らす
 			var map = this.reactionCounts
 			if(map == null) {
@@ -987,6 +987,19 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return null
 		}
 		
+		private val reLinkUrl = Pattern.compile("""(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
+		private val reMention = Pattern.compile(
+			"""(?<=^|[^/\w\p{Pc}])@((\w+([\w.-]+\w+)?)(?:@[a-z0-9.\-]+[a-z0-9]+)?)""",
+			Pattern.CASE_INSENSITIVE
+		)
+		private val strUrlReplacement = (0 until 23).map { ' ' }.joinToString()
+		
+		fun countText(s : String) : Int {
+			return s
+				.replaceAll(reLinkUrl, strUrlReplacement)
+				.replaceAll(reMention, "@$2")
+				.codePointCount()
+		}
 	}
 	
 }

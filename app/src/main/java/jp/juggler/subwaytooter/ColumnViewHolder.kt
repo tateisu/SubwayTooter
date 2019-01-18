@@ -789,6 +789,9 @@ class ColumnViewHolder(
 		tvLoading.textColor = column.getContentColor()
 		
 		status_adapter?.findHeaderViewHolder(listView)?.showColor()
+		
+		// カラム色を変更したらクイックフィルタの色も変わる場合がある
+		showQuickFilter()
 	}
 	
 	private fun closeBitmaps() {

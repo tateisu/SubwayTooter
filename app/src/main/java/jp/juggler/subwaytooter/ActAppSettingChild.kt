@@ -1108,24 +1108,13 @@ class ActAppSettingChild : AppCompatActivity()
 		}
 		
 		c = footer_tab_divider_color
-		if(c == 0) {
-			vFooterDivider1 !!.setBackgroundColor(
-				getAttributeColor(this, R.attr.colorImageButton)
-			)
-			vFooterDivider2 !!.setBackgroundColor(
-				getAttributeColor(this, R.attr.colorImageButton)
-			)
-		} else {
-			vFooterDivider1 !!.setBackgroundColor(c)
-			vFooterDivider2 !!.setBackgroundColor(c)
-		}
+		if(c == 0) c= getAttributeColor(this, R.attr.colorImageButton)
+		vFooterDivider1 ?.setBackgroundColor(c)
+		vFooterDivider2 ?.setBackgroundColor(c)
 		
 		c = footer_tab_indicator_color
-		if(c == 0) {
-			vIndicator !!.setBackgroundColor(getAttributeColor(this, R.attr.colorAccent))
-		} else {
-			vIndicator !!.setBackgroundColor(c)
-		}
+		if(c == 0) c = getAttributeColor(this, R.attr.colorAccent)
+		vIndicator ?.setBackgroundColor(c)
 	}
 	
 	override fun beforeTextChanged(s : CharSequence, start : Int, count : Int, after : Int) {

@@ -75,6 +75,7 @@
                 android:contentDescription="@string/previous"
                 android:minWidth="48dp"
                 android:src="@drawable/ic_left"
+                android:tint="?attr/colorVectorDrawable"
                 />
 
             <ImageButton
@@ -84,6 +85,7 @@
                 android:contentDescription="@string/next"
                 android:minWidth="48dp"
                 android:src="@drawable/ic_right"
+                android:tint="?attr/colorVectorDrawable"
                 />
 
             <ImageButton
@@ -93,6 +95,7 @@
                 android:contentDescription="@string/download"
                 android:minWidth="48dp"
                 android:src="@drawable/ic_download"
+                android:tint="?attr/colorVectorDrawable"
                 />
 
             <ImageButton
@@ -102,6 +105,7 @@
                 android:contentDescription="@string/more"
                 android:minWidth="48dp"
                 android:src="@drawable/ic_more"
+                android:tint="?attr/colorVectorDrawable"
                 />
 
         </com.google.android.flexbox.FlexboxLayout>

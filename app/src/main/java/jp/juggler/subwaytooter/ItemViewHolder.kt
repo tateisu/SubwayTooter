@@ -1585,74 +1585,82 @@ internal class ItemViewHolder(
 			iv.setScaleTypeForMedia()
 		}
 		
-		
+		val showUrl : Boolean
 		
 		when(ta.type) {
 			TootAttachmentLike.TYPE_AUDIO -> {
 				iv.setMediaType(0)
-				iv.setDefaultImage(defaultColorIcon(activity,R.drawable.wide_music))
+				iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_music))
 				iv.setImageUrl(activity.pref, 0f, null)
+				showUrl = true
 			}
 			
 			TootAttachmentLike.TYPE_UNKNOWN -> {
 				iv.setMediaType(0)
-				iv.setDefaultImage(defaultColorIcon(activity,R.drawable.wide_question))
+				iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_question))
 				iv.setImageUrl(activity.pref, 0f, null)
+				showUrl = true
 			}
 			
-			else -> {
-				val url = ta.urlForThumbnail
-				when {
-					url?.isEmpty() != false -> {
-						iv.setMediaType(0)
-						iv.setDefaultImage(defaultColorIcon(activity,R.drawable.wide_question))
-						iv.setImageUrl(activity.pref, 0f, null)
-					}
-					
-					else -> {
-						iv.setMediaType(
-							when(ta.type) {
-								TootAttachmentLike.TYPE_VIDEO -> R.drawable.media_type_video
-								TootAttachmentLike.TYPE_GIFV -> R.drawable.media_type_gifv
-								else -> 0
-							}
-						)
-						iv.setDefaultImage(null)
-						iv.setImageUrl(
-							activity.pref,
-							0f,
-							access_info.supplyBaseUrl(url),
-							access_info.supplyBaseUrl(url)
-						)
-					}
+			else -> when(val urlThumbnail = ta.urlForThumbnail) {
+				null, "" -> {
+					iv.setMediaType(0)
+					iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_question))
+					iv.setImageUrl(activity.pref, 0f, null)
+					showUrl = true
+				}
+				
+				else -> {
+					iv.setMediaType(
+						when(ta.type) {
+							TootAttachmentLike.TYPE_VIDEO -> R.drawable.media_type_video
+							TootAttachmentLike.TYPE_GIFV -> R.drawable.media_type_gifv
+							else -> 0
+						}
+					)
+					iv.setDefaultImage(null)
+					iv.setImageUrl(
+						activity.pref,
+						0f,
+						access_info.supplyBaseUrl(urlThumbnail),
+						access_info.supplyBaseUrl(urlThumbnail)
+					)
+					showUrl = false
 				}
 			}
+			
+		}
+		
+		fun appendDescription(s : String) {
+			//			val lp = LinearLayout.LayoutParams(
+			//				LinearLayout.LayoutParams.MATCH_PARENT,
+			//				LinearLayout.LayoutParams.WRAP_CONTENT
+			//			)
+			//			lp.topMargin = (0.5f + activity.density * 3f).toInt()
+			//
+			//			val tv = MyTextView(activity)
+			//			tv.layoutParams = lp
+			//			//
+			//			tv.movementMethod = MyLinkMovementMethod
+			//			if(! activity.timeline_font_size_sp.isNaN()) {
+			//				tv.textSize = activity.timeline_font_size_sp
+			//			}
+			//			tv.setTextColor(content_color)
+			
+			if(sbDesc.isNotEmpty()) sbDesc.append("\n")
+			val desc = activity.getString(R.string.media_description, idx + 1, s)
+			sbDesc.append(desc)
 		}
 		
 		val description = ta.description
-		if(description != null && description.isNotEmpty()) {
-			val lp = LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT,
-				LinearLayout.LayoutParams.WRAP_CONTENT
-			)
-			lp.topMargin = (0.5f + activity.density * 3f).toInt()
-			val tv = MyTextView(activity)
-			tv.layoutParams = lp
-			//
-			tv.movementMethod = MyLinkMovementMethod
-			if(! activity.timeline_font_size_sp.isNaN()) {
-				tv.textSize = activity.timeline_font_size_sp
-			}
-			tv.setTextColor(content_color)
-			
-			if(ta.description?.isNotEmpty() == true) {
-				if(sbDesc.isNotEmpty()) sbDesc.append("\n")
-				val desc =
-					activity.getString(R.string.media_description, idx + 1, ta.description)
-				sbDesc.append(desc)
+		if(description?.isNotEmpty() == true) {
+			appendDescription(description)
+		} else {
+			val urlString = ta.getUrlString()
+			if(showUrl && urlString?.isNotEmpty() == true) {
+				appendDescription(urlString)
 			}
 		}
-		
 	}
 	
 	private val defaultBoostedAction : () -> Unit = {
@@ -1681,7 +1689,7 @@ internal class ItemViewHolder(
 					btnShowMedia.visibility = View.VISIBLE
 					llMedia.visibility = View.GONE
 				}
-				if( item is TootScheduled){
+				if(item is TootScheduled) {
 					MediaShown.save(item.uri, false)
 					btnShowMedia.visibility = View.VISIBLE
 					llMedia.visibility = View.GONE
@@ -1695,7 +1703,7 @@ internal class ItemViewHolder(
 					btnShowMedia.visibility = View.GONE
 					llMedia.visibility = View.VISIBLE
 				}
-				if( item is TootScheduled){
+				if(item is TootScheduled) {
 					MediaShown.save(item.uri, true)
 					btnShowMedia.visibility = View.GONE
 					llMedia.visibility = View.VISIBLE
@@ -1716,7 +1724,7 @@ internal class ItemViewHolder(
 					list_adapter.notifyChange(reason = "ContentWarning onClick", reset = true)
 					
 				}
-				if(item is TootScheduled){
+				if(item is TootScheduled) {
 					val new_shown = llContents.visibility == View.GONE
 					ContentWarning.save(item.uri, new_shown)
 					

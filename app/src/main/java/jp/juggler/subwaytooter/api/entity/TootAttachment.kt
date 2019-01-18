@@ -88,6 +88,13 @@ class TootAttachment : TootAttachmentLike {
 		else -> false
 	}
 	
+	override fun getUrlString() :String? =
+		if( remote_url?.isNotEmpty()==true){
+			remote_url
+		}else{
+			url
+		}
+	
 	constructor(serviceType : ServiceType, src : JSONObject) {
 		
 		when(serviceType) {

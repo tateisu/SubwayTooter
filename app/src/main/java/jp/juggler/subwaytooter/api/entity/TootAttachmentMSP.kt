@@ -25,6 +25,9 @@ class TootAttachmentMSP(
 	
 	override fun hasUrl(url:String):Boolean = (url == this.preview_url)
 	
+	override fun getUrlString() :String? = preview_url
+	
+	
 	companion object {
 		fun parseList(array : JSONArray?) : ArrayList<TootAttachmentLike>? {
 			if(array != null) {

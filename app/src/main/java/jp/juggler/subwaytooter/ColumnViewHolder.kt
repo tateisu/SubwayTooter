@@ -689,8 +689,6 @@ class ColumnViewHolder(
 			
 			column.addColumnViewHolder(this)
 			
-			showQuickFilter()
-			
 			showColumnColor()
 			
 			showContent(reason = "onPageCreate", reset = true)
@@ -775,11 +773,7 @@ class ColumnViewHolder(
 		// カラム内部の背景色
 		c = column.column_bg_color
 		if(c == 0) c = Column.defaultColorContentBg
-		if(c == 0) {
-			ViewCompat.setBackground(flColumnBackground, null)
-		} else {
-			flColumnBackground.setBackgroundColor(c)
-		}
+		flColumnBackground.setBackgroundColor(c)
 		
 		// カラム内部の背景画像
 		ivColumnBackgroundImage.alpha = column.column_bg_image_alpha

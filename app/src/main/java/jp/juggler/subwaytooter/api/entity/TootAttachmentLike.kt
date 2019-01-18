@@ -11,6 +11,8 @@ interface TootAttachmentLike{
 	
 	fun hasUrl(url:String):Boolean
 	
+	fun getUrlString() :String?
+	
 	companion object {
 		const val TYPE_IMAGE = "image"
 		const val TYPE_VIDEO = "video"

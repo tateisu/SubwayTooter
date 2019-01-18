@@ -58,6 +58,7 @@ import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.regex.Pattern
 
 class ActPost : AppCompatActivity(),
 	View.OnClickListener,
@@ -1818,8 +1819,25 @@ class ActPost : AppCompatActivity(),
 					)
 				}
 				
+				fun fixDocumentName(s : String) : String {
+					val s_length = s.length
+					val m = Pattern.compile("""([^\x20-\x7f])""").matcher(s)
+					m.reset()
+					val sb = StringBuilder(s_length)
+					var lastEnd = 0
+					while(m.find()) {
+						sb.append(s.substring(lastEnd,m.start()))
+						val escaped = m.group(1).encodeUTF8().encodeHex()
+						sb.append(escaped)
+						lastEnd = m.end()
+					}
+					if(lastEnd < s_length) sb.append(s.substring(lastEnd,s_length))
+					return sb.toString()
+				}
 				
-				if(account.isMisskey) {
+				val fileName = fixDocumentName(getDocumentName(contentResolver, uri))
+				
+				return if(account.isMisskey) {
 					val multipart_builder = MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
 					
@@ -1829,7 +1847,9 @@ class ActPost : AppCompatActivity(),
 					}
 					
 					multipart_builder.addFormDataPart(
-						"file", getDocumentName(contentResolver, uri), object : RequestBody() {
+						"file",
+						fileName,
+						object : RequestBody() {
 							override fun contentType() : MediaType? {
 								return MediaType.parse(opener.mimeType)
 							}
@@ -1870,13 +1890,14 @@ class ActPost : AppCompatActivity(),
 							pa.attachment = a
 						}
 					}
-					return result
+					result
 				} else {
+					
 					val multipart_body = MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
 						.addFormDataPart(
 							"file",
-							getDocumentName(contentResolver, uri),
+							fileName,
 							object : RequestBody() {
 								override fun contentType() : MediaType? {
 									return MediaType.parse(opener.mimeType)
@@ -1918,7 +1939,7 @@ class ActPost : AppCompatActivity(),
 							pa.attachment = a
 						}
 					}
-					return result
+					result
 				}
 				
 			} catch(ex : Throwable) {
@@ -2053,11 +2074,13 @@ class ActPost : AppCompatActivity(),
 		}
 	}
 	
-	private fun showVisibility(){
-		btnVisibility.setImageResource(Styler.getVisibilityIconId(
-			account?.isMisskey == true
-			, visibility ?: TootVisibility.Public
-		))
+	private fun showVisibility() {
+		btnVisibility.setImageResource(
+			Styler.getVisibilityIconId(
+				account?.isMisskey == true
+				, visibility ?: TootVisibility.Public
+			)
+		)
 	}
 	
 	private fun performVisibility() {

@@ -88,15 +88,11 @@ fun CharArray.toByteArray() : ByteArray {
 ////////////////////////////////////////////////////////////////////
 // CharSequence
 
-fun CharSequence.replaceFirst(pattern : Pattern, replacement : String) : String {
-	return pattern.matcher(this).replaceFirst(replacement)
-	// replaceFirstの戻り値がplatform type なので expression body 形式にすると警告がでる
-}
+fun CharSequence.replaceFirst(pattern : Pattern, replacement : String) : String =
+	pattern.matcher(this).replaceFirst(replacement)
 
-fun CharSequence.replaceAll(pattern : Pattern, replacement : String) : String {
-	return pattern.matcher(this).replaceAll(replacement)
-	// replaceAllの戻り値がplatform type なので expression body 形式にすると警告がでる
-}
+fun CharSequence.replaceAll(pattern : Pattern, replacement : String) : String =
+	pattern.matcher(this).replaceAll(replacement)
 
 // %1$s を含む文字列リソースを利用して装飾テキストの前後に文字列を追加する
 fun CharSequence?.intoStringResource(context : Context, string_id : Int) : Spannable {
@@ -151,7 +147,7 @@ fun String.encodeUTF8() = this.toByteArray(charsetUTF8)
 fun ByteArray.decodeUTF8() = this.toString(charsetUTF8)
 
 // 16進ダンプ
-private fun ByteArray.encodeHex() : String {
+fun ByteArray.encodeHex() : String {
 	val sb = StringBuilder()
 	for(b in this) {
 		sb.appendHex2(b.toInt())

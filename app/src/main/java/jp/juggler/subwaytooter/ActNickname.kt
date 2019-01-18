@@ -20,6 +20,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.util.getAttributeColor
 import jp.juggler.util.hideKeyboard
 import jp.juggler.util.mayUri
+import jp.juggler.util.notZero
 
 class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
 	
@@ -173,14 +174,8 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	private fun show() {
 		val s = etNickname.text.toString().trim { it <= ' ' }
 		tvPreview.text = if(s.isNotEmpty()) s else acct
-		var c : Int
-		
-		c = color_fg
-		if(c == 0) c = getAttributeColor(this, R.attr.colorTimeSmall)
-		tvPreview.setTextColor(c)
-		
-		c = color_bg
-		tvPreview.setBackgroundColor(c)
+		tvPreview.setTextColor(color_fg.notZero() ?: getAttributeColor(this, R.attr.colorTimeSmall))
+		tvPreview.setBackgroundColor(color_bg)
 	}
 	
 	override fun onClick(v : View) {
@@ -251,7 +246,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.notification_sound)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
-		notification_sound_uri.mayUri()?.let{
+		notification_sound_uri.mayUri()?.let {
 			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, it)
 		}
 		

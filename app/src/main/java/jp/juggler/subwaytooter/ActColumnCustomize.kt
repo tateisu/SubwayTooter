@@ -212,11 +212,11 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 				colorSelected
 			
 			COLOR_DIALOG_ID_ACCT_TEXT -> {
-				column.acct_color = if(colorSelected == 0) 1 else colorSelected
+				column.acct_color = colorSelected.notZero() ?: 1
 			}
 			
 			COLOR_DIALOG_ID_CONTENT_TEXT -> {
-				column.content_color = if(colorSelected == 0) 1 else colorSelected
+				column.content_color = colorSelected.notZero() ?: 1
 			}
 		}
 		show()

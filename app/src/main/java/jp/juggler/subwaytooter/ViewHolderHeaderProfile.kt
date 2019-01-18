@@ -23,10 +23,7 @@ import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.subwaytooter.view.MyTextView
-import jp.juggler.util.getAttributeColor
-import jp.juggler.util.intoStringResource
-import jp.juggler.util.setIconDrawableId
-import jp.juggler.util.vg
+import jp.juggler.util.*
 import org.jetbrains.anko.textColor
 
 internal class ViewHolderHeaderProfile(
@@ -80,7 +77,7 @@ internal class ViewHolderHeaderProfile(
 		btnFollowers = viewRoot.findViewById(R.id.btnFollowers)
 		btnStatusCount = viewRoot.findViewById(R.id.btnStatusCount)
 		tvNote = viewRoot.findViewById(R.id.tvNote)
-		tvMisskeyExtra= viewRoot.findViewById(R.id.tvMisskeyExtra)
+		tvMisskeyExtra = viewRoot.findViewById(R.id.tvMisskeyExtra)
 		btnMore = viewRoot.findViewById(R.id.btnMore)
 		btnFollow = viewRoot.findViewById(R.id.btnFollow)
 		ivFollowedBy = viewRoot.findViewById(R.id.ivFollowedBy)
@@ -122,13 +119,12 @@ internal class ViewHolderHeaderProfile(
 	}
 	
 	override fun showColor() {
-		var c = column.column_bg_color
-		c = if(c == 0) {
-			getAttributeColor(activity, R.attr.colorProfileBackgroundMask)
-		} else {
-			- 0x40000000 or (0x00ffffff and c)
-		}
-		llProfile.setBackgroundColor(c)
+		llProfile.setBackgroundColor(
+			when(val c = column.column_bg_color) {
+				0 -> getAttributeColor(activity, R.attr.colorProfileBackgroundMask)
+				else -> - 0x40000000 or (0x00ffffff and c)
+			}
+		)
 	}
 	
 	private var contentColor = 0
@@ -203,7 +199,7 @@ internal class ViewHolderHeaderProfile(
 			name_invalidator.register(null)
 			
 			tvNote.text = ""
-			tvMisskeyExtra.text=""
+			tvMisskeyExtra.text = ""
 			note_invalidator.register(null)
 			
 			btnStatusCount.text = activity.getString(R.string.statuses) + "\n" + "?"
@@ -235,7 +231,7 @@ internal class ViewHolderHeaderProfile(
 			tvRemoteProfileWarning.visibility =
 				if(column.access_info.isRemoteUser(who)) View.VISIBLE else View.GONE
 			
-			fun SpannableStringBuilder.appendSpan(text:String,span:Any){
+			fun SpannableStringBuilder.appendSpan(text : String, span : Any) {
 				val start = length
 				append(text)
 				setSpan(
@@ -246,54 +242,54 @@ internal class ViewHolderHeaderProfile(
 				)
 			}
 			
-			tvAcct.text = SpannableStringBuilder().apply{
-
+			tvAcct.text = SpannableStringBuilder().apply {
+				
 				append("@")
-
+				
 				append(access_info.getFullAcct(who))
-
+				
 				if(whoDetail?.locked ?: who.locked) {
 					append(" ")
 					val info = EmojiMap201709.sShortNameToImageId["lock"]
 					if(info != null) {
 						appendSpan("locked", EmojiImageSpan(activity, info.image_id))
-					}else {
+					} else {
 						append("locked")
 					}
 				}
-
+				
 				if(who.bot) {
 					append(" ")
 					val info = EmojiMap201709.sShortNameToImageId["robot_face"]
 					if(info != null) {
 						appendSpan("bot", EmojiImageSpan(activity, info.image_id))
-					}else {
+					} else {
 						append("bot")
 					}
 				}
 			}
 			
-			
 			val note = whoRef.decoded_note
 			tvNote.text = note
 			note_invalidator.register(note)
 			
-			tvMisskeyExtra.text=SpannableStringBuilder().apply{
+			tvMisskeyExtra.text = SpannableStringBuilder().apply {
 				var s = whoDetail?.location
-				if( s?.isNotEmpty() == true){
+				if(s?.isNotEmpty() == true) {
 					if(isNotEmpty()) append('\n')
 					appendSpan(
 						activity.getString(R.string.location),
 						EmojiImageSpan(
-						activity,
-						R.drawable.ic_location,
-						useColorShader = true
-					))
+							activity,
+							R.drawable.ic_location,
+							useColorShader = true
+						)
+					)
 					append(' ')
 					append(s)
 				}
 				s = whoDetail?.birthday
-				if( s?.isNotEmpty() == true){
+				if(s?.isNotEmpty() == true) {
 					if(isNotEmpty()) append('\n')
 					appendSpan(
 						activity.getString(R.string.birthday),
@@ -301,12 +297,13 @@ internal class ViewHolderHeaderProfile(
 							activity,
 							R.drawable.ic_cake,
 							useColorShader = true
-						))
+						)
+					)
 					append(' ')
 					append(s)
 				}
 			}
-			vg(tvMisskeyExtra,tvMisskeyExtra.text.isNotEmpty())
+			vg(tvMisskeyExtra, tvMisskeyExtra.text.isNotEmpty())
 			
 			btnStatusCount.text = activity.getString(R.string.statuses) + "\n" +
 				(whoDetail?.statuses_count ?: who.statuses_count)
@@ -316,7 +313,15 @@ internal class ViewHolderHeaderProfile(
 				(whoDetail?.followers_count ?: who.followers_count)
 			
 			val relation = UserRelation.load(access_info.db_id, who.id)
-			Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who, contentColor ,alphaMultiplier = Styler.boost_alpha)
+			Styler.setFollowIcon(
+				activity,
+				btnFollow,
+				ivFollowedBy,
+				relation,
+				who,
+				contentColor,
+				alphaMultiplier = Styler.boost_alpha
+			)
 			
 			showMoved(who, who.movedRef)
 			
@@ -333,7 +338,7 @@ internal class ViewHolderHeaderProfile(
 					short = true,
 					emojiMapProfile = who.profile_emojis
 				)
-
+				
 				// valueはMisskeyならMFM、MastodonならHTML
 				val valueDecodeOptions = DecodeOptions(
 					context = activity,
@@ -438,7 +443,15 @@ internal class ViewHolderHeaderProfile(
 		setAcct(tvMovedAcct, access_info.getFullAcct(moved), moved.acct)
 		
 		val relation = UserRelation.load(access_info.db_id, moved.id)
-		Styler.setFollowIcon(activity, btnMoved, ivMovedBy, relation, moved, contentColor,alphaMultiplier = Styler.boost_alpha)
+		Styler.setFollowIcon(
+			activity,
+			btnMoved,
+			ivMovedBy,
+			relation,
+			moved,
+			contentColor,
+			alphaMultiplier = Styler.boost_alpha
+		)
 	}
 	
 	private fun setAcct(tv : TextView, acctLong : String, acctShort : String) {
@@ -487,20 +500,20 @@ internal class ViewHolderHeaderProfile(
 			}
 			
 			R.id.btnMore -> whoRef?.let { whoRef ->
-				DlgContextMenu(activity, column, whoRef, null, null,null).show()
+				DlgContextMenu(activity, column, whoRef, null, null, null).show()
 			}
 			
 			R.id.btnFollow -> whoRef?.let { whoRef ->
-				DlgContextMenu(activity, column, whoRef, null, null,null).show()
+				DlgContextMenu(activity, column, whoRef, null, null, null).show()
 			}
 			
 			R.id.btnMoved -> movedRef?.let { movedRef ->
-				DlgContextMenu(activity, column, movedRef, null, null,null).show()
+				DlgContextMenu(activity, column, movedRef, null, null, null).show()
 			}
 			
 			R.id.llMoved -> movedRef?.let { movedRef ->
 				if(access_info.isPseudo) {
-					DlgContextMenu(activity, column, movedRef, null, null,null).show()
+					DlgContextMenu(activity, column, movedRef, null, null, null).show()
 				} else {
 					Action_User.profileLocal(
 						activity,

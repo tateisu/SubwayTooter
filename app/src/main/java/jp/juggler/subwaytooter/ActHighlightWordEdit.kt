@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Bundle
@@ -13,10 +14,8 @@ import android.widget.TextView
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.util.LogCategory
-import jp.juggler.util.getAttributeColor
-import jp.juggler.util.mayUri
-import jp.juggler.util.toJsonObject
+import jp.juggler.util.*
+import org.jetbrains.anko.textColor
 import org.json.JSONException
 
 class ActHighlightWordEdit
@@ -125,20 +124,10 @@ class ActHighlightWordEdit
 			swSound.isChecked = item.sound_type != HighlightWord.SOUND_TYPE_NONE
 			
 			tvName.text = item.name
+			tvName.setBackgroundColor(item.color_bg) // may 0
+			tvName.textColor = item.color_fg.notZero()
+				?: getAttributeColor(this, android.R.attr.textColorPrimary)
 			
-			var c = item.color_bg
-			if(c == 0) {
-				tvName.setBackgroundColor(0)
-			} else {
-				tvName.setBackgroundColor(c)
-			}
-			
-			c = item.color_fg
-			if(c == 0) {
-				tvName.setTextColor(getAttributeColor(this, android.R.attr.textColorPrimary))
-			} else {
-				tvName.setTextColor(c)
-			}
 		} finally {
 			bBusy = false
 		}
@@ -205,8 +194,8 @@ class ActHighlightWordEdit
 	
 	override fun onColorSelected(dialogId : Int, color : Int) {
 		when(dialogId) {
-			COLOR_DIALOG_ID_TEXT -> item.color_fg = - 0x1000000 or color
-			COLOR_DIALOG_ID_BACKGROUND -> item.color_bg = if(color == 0) 0x01000000 else color
+			COLOR_DIALOG_ID_TEXT -> item.color_fg = color or Color.BLACK
+			COLOR_DIALOG_ID_BACKGROUND -> item.color_bg = color.notZero() ?: 0x01000000
 		}
 		showSampleText()
 	}

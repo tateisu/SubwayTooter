@@ -6,7 +6,10 @@ package jp.juggler.util
 fun <T : Comparable<T>> clipRange(min : T, max : T, src : T) =
 	if(src < min) min else if(src > max) max else src
 
+////////////////////////////////////////////////////////////////////
+// zero to null
 
+fun Int.notZero() :Int? = if(this!=0) this else null
 
 ////////////////////////////////////////////////////////////////////
 // long

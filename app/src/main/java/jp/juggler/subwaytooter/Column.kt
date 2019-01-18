@@ -496,31 +496,24 @@ class Column(
 		private var defaultColorContentText = 0
 		
 		fun reloadDefaultColor(activity : AppCompatActivity, pref : SharedPreferences) {
-			var c : Int
-			
-			//
-			c = Pref.ipCcdHeaderBg(pref)
-			if(c == 0) c = getAttributeColor(activity, R.attr.color_column_header)
-			defaultColorHeaderBg = c
-			//
-			c = Pref.ipCcdHeaderFg(pref)
-			if(c == 0) c = getAttributeColor(activity, R.attr.colorColumnHeaderName)
-			defaultColorHeaderName = c
-			//
-			c = Pref.ipCcdHeaderFg(pref)
-			if(c == 0) c = getAttributeColor(activity, R.attr.colorColumnHeaderPageNumber)
-			defaultColorHeaderPageNumber = c
-			//
-			c = Pref.ipCcdContentBg(pref)
-			defaultColorContentBg = c
-			//
-			c = Pref.ipCcdContentAcct(pref)
-			if(c == 0) c = getAttributeColor(activity, R.attr.colorTimeSmall)
-			defaultColorContentAcct = c
-			//
-			c = Pref.ipCcdContentText(pref)
-			if(c == 0) c = getAttributeColor(activity, R.attr.colorContentText)
-			defaultColorContentText = c
+
+			defaultColorHeaderBg =  Pref.ipCcdHeaderBg(pref)?.notZero()
+				?: getAttributeColor(activity, R.attr.color_column_header)
+
+			defaultColorHeaderName = Pref.ipCcdHeaderFg(pref).notZero()
+				?: getAttributeColor(activity, R.attr.colorColumnHeaderName)
+
+			defaultColorHeaderPageNumber = Pref.ipCcdHeaderFg(pref).notZero()
+				?: getAttributeColor(activity, R.attr.colorColumnHeaderPageNumber)
+
+			defaultColorContentBg = Pref.ipCcdContentBg(pref)
+				// may zero
+
+			defaultColorContentAcct = Pref.ipCcdContentAcct(pref).notZero()
+				?: getAttributeColor(activity, R.attr.colorTimeSmall)
+
+			defaultColorContentText = Pref.ipCcdContentText(pref).notZero()
+				?: getAttributeColor(activity, R.attr.colorContentText)
 			
 		}
 	}

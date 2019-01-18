@@ -2423,23 +2423,21 @@ class ActMain : AppCompatActivity()
 			ViewCompat.setBackground(btnQuickToot, getAdaptiveRippleDrawable(c, fg))
 		}
 		
-		c = footer_button_fg_color
-		if(c == 0) c= getAttributeColor(this,R.attr.colorVectorDrawable)
-		var csl = ColorStateList.valueOf(c)
+		val csl = ColorStateList.valueOf(
+			footer_button_fg_color.notZero()
+				?: getAttributeColor(this,R.attr.colorVectorDrawable)
+		)
 		btnToot.imageTintList = csl
 		btnMenu.imageTintList = csl
 		btnQuickToot.imageTintList = csl
-//		setIconDrawableId(this, btnToot, R.drawable.ic_edit, c)
-//		setIconDrawableId(this, btnMenu, R.drawable.ic_hamburger, c)
-//		setIconDrawableId(this, btnQuickToot, R.drawable.ic_send, c)
 		
-		c = footer_tab_bg_color
-		if(c == 0) c = getAttributeColor(this, R.attr.colorColumnStripBackground)
+		c = footer_tab_bg_color.notZero()
+			?: getAttributeColor(this, R.attr.colorColumnStripBackground)
 		svColumnStrip.setBackgroundColor(c)
 		llQuickTootBar.setBackgroundColor(c)
 		
-		c = footer_tab_divider_color
-		if(c == 0) c = getAttributeColor(this, R.attr.colorImageButton)
+		c = footer_tab_divider_color.notZero()
+			?: getAttributeColor(this, R.attr.colorImageButton)
 		vFooterDivider1.setBackgroundColor(c)
 		vFooterDivider2.setBackgroundColor(c)
 		

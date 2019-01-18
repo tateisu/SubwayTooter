@@ -431,7 +431,7 @@ class ActAppSettingChild : AppCompatActivity()
 		etBoostButtonSize = findViewById(R.id.etBoostButtonSize)
 		etReplyIconSize = findViewById(R.id.etReplyIconSize)
 		etHeaderIconSize = findViewById(R.id.etHeaderIconSize)
-		etStripIconSize= findViewById(R.id.etStripIconSize)
+		etStripIconSize = findViewById(R.id.etStripIconSize)
 		tvTimelineFontUrl = findViewById(R.id.tvTimelineFontUrl)
 		tvTimelineFontBoldUrl = findViewById(R.id.tvTimelineFontBoldUrl)
 		
@@ -974,8 +974,11 @@ class ActAppSettingChild : AppCompatActivity()
 	}
 	
 	override fun onColorSelected(dialogId : Int, @ColorInt colorSelected : Int) {
+
 		val colorOpaque = colorSelected or Color.BLACK
-		val colorAlpha = if(colorSelected == 0) 0x01000000 else colorSelected
+
+		val colorAlpha = colorSelected.notZero() ?: 0x01000000
+
 		when(dialogId) {
 			
 			COLOR_DIALOG_ID_FOOTER_BUTTON_BG -> {
@@ -1077,8 +1080,8 @@ class ActAppSettingChild : AppCompatActivity()
 		
 		var c = footer_button_bg_color
 		if(c == 0) {
-			ivFooterToot !!.setBackgroundResource(R.drawable.bg_button_cw)
-			ivFooterMenu !!.setBackgroundResource(R.drawable.bg_button_cw)
+			ivFooterToot?.setBackgroundResource(R.drawable.bg_button_cw)
+			ivFooterMenu?.setBackgroundResource(R.drawable.bg_button_cw)
 		} else {
 			val fg = if(footer_button_fg_color != 0)
 				footer_button_fg_color
@@ -1088,33 +1091,29 @@ class ActAppSettingChild : AppCompatActivity()
 			ViewCompat.setBackground(ivFooterMenu !!, getAdaptiveRippleDrawable(c, fg))
 		}
 		
-		c = footer_button_fg_color
-		if(c == 0)  c= getAttributeColor(this,R.attr.colorVectorDrawable)
 		ivFooterToot?.setImageResource(R.drawable.ic_edit)
-		ivFooterToot?.imageTintList = ColorStateList.valueOf(c)
 		ivFooterMenu?.setImageResource(R.drawable.ic_hamburger)
-		ivFooterMenu?.imageTintList = ColorStateList.valueOf(c)
 		
-		c = footer_tab_bg_color
-		if(c == 0) {
-			llFooterBG !!.setBackgroundColor(
-				getAttributeColor(
-					this,
-					R.attr.colorColumnStripBackground
-				)
-			)
-		} else {
-			llFooterBG !!.setBackgroundColor(c)
-		}
+		val csl = ColorStateList.valueOf(
+			footer_button_fg_color.notZero()
+				?: getAttributeColor(this, R.attr.colorVectorDrawable)
+		)
+		ivFooterToot?.imageTintList = csl
+		ivFooterMenu?.imageTintList = csl
 		
-		c = footer_tab_divider_color
-		if(c == 0) c= getAttributeColor(this, R.attr.colorImageButton)
-		vFooterDivider1 ?.setBackgroundColor(c)
-		vFooterDivider2 ?.setBackgroundColor(c)
+		llFooterBG?.setBackgroundColor(
+			footer_tab_bg_color.notZero()
+				?: getAttributeColor(this, R.attr.colorColumnStripBackground)
+		)
 		
-		c = footer_tab_indicator_color
-		if(c == 0) c = getAttributeColor(this, R.attr.colorAccent)
-		vIndicator ?.setBackgroundColor(c)
+		c = footer_tab_divider_color.notZero() ?: getAttributeColor(this, R.attr.colorImageButton)
+		vFooterDivider1?.setBackgroundColor(c)
+		vFooterDivider2?.setBackgroundColor(c)
+		
+		vIndicator?.setBackgroundColor(
+			footer_tab_indicator_color.notZero()
+				?: getAttributeColor(this, R.attr.colorAccent)
+		)
 	}
 	
 	override fun beforeTextChanged(s : CharSequence, start : Int, count : Int, after : Int) {

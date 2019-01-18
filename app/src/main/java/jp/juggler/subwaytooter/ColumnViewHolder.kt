@@ -771,9 +771,10 @@ class ColumnViewHolder(
 		tvColumnStatus.textColor = c
 		
 		// カラム内部の背景色
-		c = column.column_bg_color
-		if(c == 0) c = Column.defaultColorContentBg
-		flColumnBackground.setBackgroundColor(c)
+		flColumnBackground.setBackgroundColor(
+			column.column_bg_color.notZero()
+				?: Column.defaultColorContentBg
+		)
 		
 		// カラム内部の背景画像
 		ivColumnBackgroundImage.alpha = column.column_bg_image_alpha
@@ -1140,23 +1141,13 @@ class ColumnViewHolder(
 		else
 			acct
 		
-		var c : Int
 		
-		c = ac.color_fg
 		tvColumnContext.setTextColor(
-			when {
-				c != 0 -> c
-				//	column.header_fg_color != 0 -> column.header_fg_color
-				else -> getAttributeColor(activity, R.attr.colorTimeSmall)
-			}
+			ac.color_fg.notZero()
+				?: getAttributeColor(activity, R.attr.colorTimeSmall)
 		)
 		
-		c = ac.color_bg
-		if(c == 0) {
-			ViewCompat.setBackground(tvColumnContext, null)
-		} else {
-			tvColumnContext.setBackgroundColor(c)
-		}
+		tvColumnContext.setBackgroundColor(ac.color_bg)
 		tvColumnContext.setPaddingRelative(activity.acct_pad_lr, 0, activity.acct_pad_lr, 0)
 		
 		tvColumnName.text = column.getColumnName(false)
@@ -1504,7 +1495,7 @@ class ColumnViewHolder(
 			
 			val colorFg = getAttributeColor(activity, R.attr.colorContentText)
 			val colorBgSelected = colorFg.applyAlphaMultiplier(0.25f)
-			val colorFgList =  ColorStateList.valueOf(colorFg)
+			val colorFgList = ColorStateList.valueOf(colorFg)
 			showQuickFilterButton = { btn, iconId, selected ->
 				ViewCompat.setBackground(
 					btn,
@@ -1519,6 +1510,7 @@ class ColumnViewHolder(
 				)
 				when(btn) {
 					is TextView -> btn.textColor = colorFg
+					
 					is ImageButton -> {
 						btn.setImageResource(iconId)
 						btn.imageTintList = colorFgList
@@ -1528,7 +1520,7 @@ class ColumnViewHolder(
 		} else {
 			val colorBg = column.getHeaderBackgroundColor()
 			val colorFg = column.getHeaderNameColor()
-			val colorFgList =  ColorStateList.valueOf(colorFg)
+			val colorFgList = ColorStateList.valueOf(colorFg)
 			val colorBgSelected = Color.rgb(
 				(Color.red(colorBg) * 3 + Color.red(colorFg)) / 4,
 				(Color.green(colorBg) * 3 + Color.green(colorFg)) / 4,
@@ -1547,7 +1539,8 @@ class ColumnViewHolder(
 				)
 				when(btn) {
 					is TextView -> btn.textColor = colorFg
-					is ImageButton ->{
+					
+					is ImageButton -> {
 						btn.setImageResource(iconId)
 						btn.imageTintList = colorFgList
 					}

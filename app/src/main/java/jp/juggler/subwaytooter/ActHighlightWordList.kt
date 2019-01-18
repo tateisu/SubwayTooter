@@ -153,27 +153,13 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 			itemView.tag = item // itemView は親クラスのメンバ変数
 			tvName.text = item.name
 			
-			var c = item.color_bg
-			if(c == 0) {
-				tvName.setBackgroundColor(0)
-			} else {
-				tvName.setBackgroundColor(c)
-			}
+			tvName.setBackgroundColor(item.color_bg)
+			tvName.setTextColor(
+				item.color_fg.notZero()
+					?:getAttributeColor(this@ActHighlightWordList,android.R.attr.textColorPrimary)
+			)
 			
-			c = item.color_fg
-			if(c == 0) {
-				tvName.setTextColor(
-					getAttributeColor(
-						this@ActHighlightWordList,
-						android.R.attr.textColorPrimary
-					)
-				)
-			} else {
-				tvName.setTextColor(c)
-			}
-			
-			btnSound.visibility =
-				if(item.sound_type == HighlightWord.SOUND_TYPE_NONE) View.GONE else View.VISIBLE
+			vg(btnSound,item.sound_type != HighlightWord.SOUND_TYPE_NONE)
 			btnSound.setOnClickListener(this)
 			btnSound.tag = item
 		}

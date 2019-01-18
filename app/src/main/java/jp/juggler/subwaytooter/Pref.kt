@@ -429,7 +429,7 @@ object Pref {
 	val spBoostButtonSize = StringPref("BoostButtonSize", "35")
 	val spReplyIconSize = StringPref("ReplyIconSize", "24")
 	val spHeaderIconSize = StringPref("HeaderIconSize", "24")
-	val spStripIconSize = StringPref("StripIconSize", "24")
+	val spStripIconSize = StringPref("StripIconSize", "28")
 	val spMediaSizeMax = StringPref("max_media_size", "8")
 	val spMovieSizeMax = StringPref("max_movie_size", "40")
 	val spTimelineFont = StringPref("timeline_font", "", skipImport = true)

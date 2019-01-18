@@ -844,7 +844,7 @@
     <string name="reply_icon_size">返信アイコンの大きさ(単位:dp。デフォルト:24。アプリ再起動が必要)</string>
     <string name="header_icon_size">ヘッダ部アイコンの大きさ(単位:dp。デフォルト:24。アプリ再起動が必要)</string>
     <string name="header_text_size">ヘッダ部テキストの大きさ(単位:sp。デフォルト:14。アプリ再起動が必要)</string>
-    <string name="strip_icon_size">カラムストリップのアイコンの大きさ(単位:dp。デフォルト:24。アプリ再起動が必要)</string>
+    <string name="strip_icon_size">カラムストリップのアイコンの大きさ(単位:dp。デフォルト:28。アプリ再起動が必要)</string>
     <string name="all">All</string>
     <string name="show_links_in_context_menu">本文中のリンクをコンテキストメニューに表示する</string>
     <string name="scheduled_status_requires_mastodon_2_7_0">予約投稿はマストドン2.7.0以降で使えます</string>

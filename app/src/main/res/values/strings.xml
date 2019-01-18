@@ -865,7 +865,7 @@
     <string name="reply_icon_size">Reply icon size(Unit:dp. default:24. app restart required)</string>
     <string name="header_icon_size">Header icon size(Unit:dp. default:24. app restart required)</string>
     <string name="header_text_size">Header text size(Unit:sp. default:14. app restart required)</string>
-    <string name="strip_icon_size">Column strip icon size(Unit:dp. default:28. app restart required)</string>
+    <string name="strip_icon_size">Column strip icon size(Unit:dp. default:30. app restart required)</string>
 
     <string name="all">All</string>
     <string name="show_links_in_context_menu">Show links in context menu</string>

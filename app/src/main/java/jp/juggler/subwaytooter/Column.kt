@@ -497,7 +497,7 @@ class Column(
 		
 		fun reloadDefaultColor(activity : AppCompatActivity, pref : SharedPreferences) {
 
-			defaultColorHeaderBg =  Pref.ipCcdHeaderBg(pref)?.notZero()
+			defaultColorHeaderBg =  Pref.ipCcdHeaderBg(pref).notZero()
 				?: getAttributeColor(activity, R.attr.color_column_header)
 
 			defaultColorHeaderName = Pref.ipCcdHeaderFg(pref).notZero()

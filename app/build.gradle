@@ -6,19 +6,14 @@ apply plugin: 'kotlin-android'
 
 android {
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
-    }
-
     compileSdkVersion target_sdk_version
 
     defaultConfig {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
 
-        versionCode 331
-        versionName "3.3.1"
+        versionCode 332
+        versionName "3.3.2"
         applicationId "jp.juggler.subwaytooter"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 

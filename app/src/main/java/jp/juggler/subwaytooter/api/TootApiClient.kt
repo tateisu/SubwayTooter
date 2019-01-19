@@ -1051,7 +1051,8 @@ class TootApiClient(
 	// クライアントを登録してブラウザで開くURLを生成する
 	fun authentication1(clientNameArg : String) : TootApiResult? {
 		
-		var lastRi : TootApiResult? = null
+		var lastRi : TootApiResult?
+
 		// misskeyのインスタンス情報
 		run{
 			val (ri ,ti) = parseInstanceInformation(getInstanceInformationMisskey())
@@ -1174,7 +1175,9 @@ class TootApiClient(
 	}
 	
 	fun createUser1(clientNameArg : String) : TootApiResult? {
-		var lastRi : TootApiResult? = null
+
+		var lastRi : TootApiResult?
+
 		// misskeyのインスタンス情報
 		run {
 			val (ri, ti) = parseInstanceInformation(getInstanceInformationMisskey())
@@ -1197,6 +1200,7 @@ class TootApiClient(
 				return prepareClientMastodon(clientNameArg, ti)
 			}
 		}
+
 		return lastRi
 	}
 	

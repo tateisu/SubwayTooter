@@ -176,8 +176,7 @@ class DlgListMember(
 
 				// リストに追加したいアカウントの自タンスでのアカウントIDを取得する
 				var (result,ar) = client.syncAccountByAcct(list_owner,target_user_full_acct)
-				val local_who = ar?.get()
-					?: return TootApiResult(activity.getString(R.string.account_sync_failed))
+				val local_who = ar?.get() ?: return result
 				
 				this@DlgListMember.local_who = local_who
 				

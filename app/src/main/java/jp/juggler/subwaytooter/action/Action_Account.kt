@@ -91,11 +91,6 @@ object Action_Account {
 								val pos = App1.getAppState(activity).column_list.size
 								activity.addColumn(pos, a, Column.TYPE_LOCAL)
 								dialog.dismissSafe()
-								
-								try {
-								} catch(ignored : Throwable) {
-									// IllegalArgumentException がたまに出る
-								}
 							}
 							
 							LoginForm.Action.Create -> createAccount(

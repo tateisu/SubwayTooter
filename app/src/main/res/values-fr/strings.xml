@@ -877,6 +877,6 @@
     <string name="reply_icon_size">Taille de l’icône de réponse (Unité:dp. défault:24. redémarrage nécessaire)</string>
     <string name="header_icon_size">Taille de l\'icône d’en-tête (Unité:dp. défaut:24. redémarrage de l’application requis)</string>
     <string name="header_text_size">Taille du texte de l’en-tête (Unité:sp. défaut:14. redémarrage de l’application requis)</string>
-    <string name="strip_icon_size">Taille de l’icône de la barre de colonne (Unité:dp. défaut:24. redémarrage de l’application requis)</string>
+    <string name="strip_icon_size">Taille de l’icône de la barre de colonne (Unité:dp. défaut:30. redémarrage de l’application requis)</string>
     <string name="show_acct_in_system_notification">Afficher le compte (au lieu du nom d’utilisateur) dans les notifications système</string>
 </resources>

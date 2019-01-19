@@ -218,11 +218,7 @@ internal class DlgContextMenu(
 					b.text = caption
 					b.allCaps = false
 					b.setOnClickListener {
-						try {
-							dialog.dismiss()
-						} catch(ignored : Throwable) {
-							// IllegalArgumentException がたまに出る
-						}
+						dialog.dismissSafe()
 						span.onClick(contentTextView)
 					}
 					llLinks.addView(b, insPos ++)
@@ -445,12 +441,7 @@ internal class DlgContextMenu(
 	}
 	
 	override fun onClick(v : View) {
-		
-		try {
-			dialog.dismiss()
-		} catch(ignored : Throwable) {
-			// IllegalArgumentException がたまに出る
-		}
+		dialog.dismissSafe()
 		
 		val pos = activity.nextPosition(column)
 		
@@ -870,11 +861,7 @@ internal class DlgContextMenu(
 		
 		when(v.id) {
 			R.id.btnFollow -> {
-				try {
-					dialog.dismiss()
-				} catch(ignored : Throwable) {
-					// IllegalArgumentException がたまに出る
-				}
+				dialog.dismissSafe()
 				Action_Follow.followFromAnotherAccount(
 					activity,
 					activity.nextPosition(column),

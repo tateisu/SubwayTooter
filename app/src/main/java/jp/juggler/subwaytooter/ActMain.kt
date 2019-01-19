@@ -2052,18 +2052,8 @@ class ActMain : AppCompatActivity()
 			override fun handleResult(result : TootApiResult?) {
 				
 				if(afterAccountVerify(result, ta, sa, host)) {
-					try {
-						dialog_host?.dismiss()
-					} catch(ignored : Throwable) {
-						// IllegalArgumentException がたまに出る
-					}
-					
-					try {
-						dialog_token?.dismiss()
-					} catch(ignored : Throwable) {
-						// IllegalArgumentException がたまに出る
-					}
-					
+					dialog_host?.dismissSafe()
+					dialog_token?.dismissSafe()
 				}
 			}
 		})
@@ -2750,7 +2740,7 @@ class ActMain : AppCompatActivity()
 			
 			override fun onPostExecute(result : ArrayList<Column>?) {
 				
-				progress.dismiss()
+				progress.dismissSafe()
 				
 				try {
 					window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

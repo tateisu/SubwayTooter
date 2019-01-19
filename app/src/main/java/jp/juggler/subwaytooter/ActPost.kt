@@ -1500,10 +1500,7 @@ class ActPost : AppCompatActivity(),
 					pa.attachment = new_attachment
 					showMediaAttachment()
 					
-					try {
-						dialog.dismiss()
-					} catch(ignored : Throwable) {
-					}
+					dialog.dismissSafe()
 					
 				} else {
 					showToast(this@ActPost, true, result.error)
@@ -2439,7 +2436,7 @@ class ActPost : AppCompatActivity(),
 			}
 			
 			override fun onPostExecute(result : String?) {
-				progress.dismiss()
+				progress.dismissSafe()
 				
 				if(isCancelled || result == null) {
 					// cancelled.

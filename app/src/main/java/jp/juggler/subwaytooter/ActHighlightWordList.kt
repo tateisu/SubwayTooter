@@ -242,12 +242,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 				}
 				edit(item)
 				
-				try {
-					dialog.dismiss()
-				} catch(ignored : Throwable) {
-				
-				}
-				
+				dialog.dismissSafe()
 			}
 		})
 	}

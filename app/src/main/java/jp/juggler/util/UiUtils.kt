@@ -1,8 +1,10 @@
 package jp.juggler.util
 
+import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.DialogInterface
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.ColorFilter
@@ -272,3 +274,11 @@ fun CharSequence.copyToClipboard(context:Context) {
 	
 }
 
+
+fun DialogInterface.dismissSafe(){
+	try {
+		dismiss()
+	} catch(ignored : Throwable) {
+		// 非同期処理の後などではDialogがWindowTokenを失っている場合があり、IllegalArgumentException がたまに出る
+	}
+}

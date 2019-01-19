@@ -13,6 +13,7 @@ import android.widget.TimePicker
 import jp.juggler.subwaytooter.R
 import java.util.*
 import android.provider.Settings.System.TIME_12_24
+import jp.juggler.util.dismissSafe
 
 class DlgDateTime(
 	val activity : Activity
@@ -84,7 +85,7 @@ class DlgDateTime(
 			R.id.btnCancel -> dialog.cancel()
 			
 			R.id.btnOk -> {
-				dialog.dismiss()
+				dialog.dismissSafe()
 				callback(getTime())
 			}
 		}

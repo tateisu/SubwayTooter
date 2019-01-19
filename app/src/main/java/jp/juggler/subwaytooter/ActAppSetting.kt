@@ -230,7 +230,7 @@ class ActAppSetting : AppCompatActivity() {
 			}
 			
 			override fun onPostExecute(result : File?) {
-				progress.dismiss()
+				progress.dismissSafe()
 				
 				if(isCancelled || result == null) {
 					// cancelled.

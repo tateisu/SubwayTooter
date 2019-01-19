@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.util.LogCategory
+import jp.juggler.util.dismissSafe
 import jp.juggler.util.showToast
 import net.glxn.qrgen.android.QRCode
 
@@ -48,7 +49,7 @@ object DlgQRCode {
 			}
 			
 			override fun onPostExecute(result : Bitmap?) {
-				progress.dismiss()
+				progress.dismissSafe()
 				if(result != null) {
 					callback.onQrCode(result)
 				}

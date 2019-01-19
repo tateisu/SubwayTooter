@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.dismissSafe
 import jp.juggler.util.showToast
 import jp.juggler.util.toPostRequestBuilder
 import jp.juggler.util.toPutRequestBuilder
@@ -176,11 +177,7 @@ object Action_List {
 								for(column in activity.app_state.column_list) {
 									column.onListNameUpdated(access_info, list)
 								}
-								try {
-									dialog.dismiss()
-								} catch(ignored : Throwable) {
-								
-								}
+								dialog.dismissSafe()
 							} else {
 								showToast(activity, false, result.error)
 							}

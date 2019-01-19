@@ -13,6 +13,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DialogInterfaceCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
+import jp.juggler.util.dismissSafe
 import jp.juggler.util.showToast
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -144,7 +145,7 @@ object AccountPicker {
 			b.setOnClickListener {
 				isDialogClosed.set(true)
 				callback(a)
-				dialog.dismiss()
+				dialog.dismissSafe()
 			}
 			llAccounts.addView(b)
 		}

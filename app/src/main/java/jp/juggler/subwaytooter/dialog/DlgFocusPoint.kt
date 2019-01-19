@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.view.FocusPointView
 import jp.juggler.util.LogCategory
+import jp.juggler.util.dismissSafe
 import jp.juggler.util.showToast
 import jp.juggler.util.withCaption
 
@@ -44,7 +45,7 @@ class DlgFocusPoint(val activity : Activity, val attachment : TootAttachment) :
 	
 	override fun onClick(v : View) {
 		when(v.id) {
-			R.id.btnClose -> dialog.dismiss()
+			R.id.btnClose -> dialog.dismissSafe()
 		}
 	}
 	
@@ -105,21 +106,13 @@ class DlgFocusPoint(val activity : Activity, val attachment : TootAttachment) :
 				val bitmap = this.bitmap
 				if(bitmap == null) {
 					showToast(activity, true, result?.error ?: "?")
-					try {
-						dialog.dismiss()
-					} catch(ignored : Throwable) {
-					
-					}
+					dialog.dismissSafe()
 					return
 				}
 				
 				if(activity.isFinishing) {
 					bitmap.recycle()
-					try {
-						dialog.dismiss()
-					} catch(ignored : Throwable) {
-					
-					}
+					dialog.dismissSafe()
 					return
 				}
 				

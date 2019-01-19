@@ -1444,7 +1444,7 @@ class ActAccountSetting
 			}
 			
 			override fun onPostExecute(opener : InputStreamOpener?) {
-				progress.dismiss()
+				progress.dismissSafe()
 				if(opener != null) {
 					updateCredential(
 						when(request_code) {

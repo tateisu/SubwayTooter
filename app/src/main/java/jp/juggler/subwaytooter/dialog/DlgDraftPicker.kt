@@ -16,6 +16,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.PostDraft
+import jp.juggler.util.dismissSafe
 import jp.juggler.util.showToast
 import org.json.JSONObject
 
@@ -36,7 +37,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 		val json = getPostDraft(position)?.json
 		if(json != null) {
 			callback(json)
-			dialog.dismiss()
+			dialog.dismissSafe()
 		}
 	}
 	

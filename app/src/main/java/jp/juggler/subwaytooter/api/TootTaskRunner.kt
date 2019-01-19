@@ -12,6 +12,7 @@ import java.text.NumberFormat
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.dismissSafe
 
 /*
 	非同期タスク(TootTask)を実行します。
@@ -180,7 +181,7 @@ class TootTaskRunner(
 	
 	// ダイアログを閉じる
 	private fun dismissProgress() {
-		progress?.dismiss()
+		progress?.dismissSafe()
 		progress = null
 	}
 	

@@ -443,11 +443,7 @@ object Action_User {
 		ReportForm.showReportForm(activity, access_info, who, status) { dialog, comment, forward ->
 			report(activity, access_info, who, status, comment, forward) {
 				// 成功したらダイアログを閉じる
-				try {
-					dialog.dismiss()
-				} catch(ignored : Throwable) {
-					// IllegalArgumentException がたまに出る
-				}
+				dialog.dismissSafe()
 			}
 		}
 	}

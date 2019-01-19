@@ -46,14 +46,10 @@ object Action_Account {
 					val data = result.data
 					if(data is String) {
 						// ブラウザ用URLが生成された
-						try {
-							val intent = Intent()
-							intent.data = data.toUri()
-							activity.startAccessTokenUpdate(intent)
-							dialog.dismiss()
-						} catch(ignored : Throwable) {
-							// IllegalArgumentException がたまに出る
-						}
+						val intent = Intent()
+						intent.data = data.toUri()
+						activity.startAccessTokenUpdate(intent)
+						dialog.dismissSafe()
 					} else if(data is JSONObject) {
 						// インスタンスを確認できた
 						when(action) {
@@ -94,9 +90,9 @@ object Action_Account {
 								showToast(activity, false, R.string.server_confirmed)
 								val pos = App1.getAppState(activity).column_list.size
 								activity.addColumn(pos, a, Column.TYPE_LOCAL)
+								dialog.dismissSafe()
 								
 								try {
-									dialog.dismiss()
 								} catch(ignored : Throwable) {
 									// IllegalArgumentException がたまに出る
 								}
@@ -189,16 +185,8 @@ object Action_Account {
 				override fun handleResult(result : TootApiResult?) {
 					val sa : SavedAccount? = null
 					if(activity.afterAccountVerify(result, ta, sa, instance)) {
-						try {
-							dialog_host.dismiss()
-						} catch(ignored : Throwable) {
-							// IllegalArgumentException がたまに出る
-						}
-						try {
-							dialog_create.dismiss()
-						} catch(ignored : Throwable) {
-							// IllegalArgumentException がたまに出る
-						}
+						dialog_host.dismissSafe()
+						dialog_create.dismissSafe()
 					}
 				}
 			})

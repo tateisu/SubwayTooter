@@ -11,16 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
-
 import com.astuetz.PagerSlidingTabStrip
 import jp.juggler.emoji.EmojiMap201709
-
-import org.json.JSONArray
-import org.json.JSONObject
-
-import java.util.ArrayList
-import java.util.HashMap
-
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
@@ -28,9 +20,9 @@ import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.put
 import jp.juggler.subwaytooter.view.MyViewPager
 import jp.juggler.subwaytooter.view.NetworkEmojiView
-import jp.juggler.util.LogCategory
-import jp.juggler.util.parseString
-import jp.juggler.util.toJsonArray
+import jp.juggler.util.*
+import org.json.JSONObject
+import java.util.*
 
 @SuppressLint("InflateParams")
 class EmojiPicker(
@@ -201,9 +193,9 @@ class EmojiPicker(
 		onPageSelected(0)
 		
 		// カスタム絵文字をロードする
-		if( instance != null && instance.isNotEmpty()) {
+		if(instance != null && instance.isNotEmpty()) {
 			setCustomEmojiList(
-				App1.custom_emoji_lister.getList(instance,isMisskey=isMisskey) {
+				App1.custom_emoji_lister.getList(instance, isMisskey = isMisskey) {
 					setCustomEmojiList(it) // ロード完了時に呼ばれる
 				}
 			)
@@ -246,11 +238,11 @@ class EmojiPicker(
 	}
 	
 	override fun onPageSelected(position : Int) {
-		try{
-			val hasSkinTone =page_list[position].hasSkinTone
+		try {
+			val hasSkinTone = page_list[position].hasSkinTone
 			val visibility = if(hasSkinTone) View.VISIBLE else View.INVISIBLE
 			ibSkinTone.forEach { it.visibility = visibility }
-		}catch(ex:Throwable){
+		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
 	}
@@ -339,7 +331,7 @@ class EmojiPicker(
 	inner class EmojiPickerPageViewHolder(activity : Activity, root : View) : BaseAdapter(),
 		AdapterView.OnItemClickListener {
 		
-		val gridView : GridView
+		private val gridView : GridView
 		private val wh : Int
 		
 		private var page : EmojiPickerPage? = null
@@ -398,9 +390,9 @@ class EmojiPicker(
 				}
 				view.tag = item
 				if(view is ImageView) {
-					val name = if( page.hasSkinTone ){
+					val name = if(page.hasSkinTone) {
 						applySkinTone(item.name)
-					}else{
+					} else {
 						item.name
 					}
 					
@@ -438,14 +430,14 @@ class EmojiPicker(
 			} else {
 				// 普通の絵文字
 				EmojiMap201709.sShortNameToImageId[name] ?: return
-
-				if( page.hasSkinTone ){
+				
+				if(page.hasSkinTone) {
 					val sv = applySkinTone(name)
-					if(EmojiMap201709.sShortNameToImageId[sv]!=null){
-						name=sv
+					if(EmojiMap201709.sShortNameToImageId[sv] != null) {
+						name = sv
 					}
 				}
-
+				
 				selected(name, null)
 			}
 		}
@@ -455,32 +447,22 @@ class EmojiPicker(
 	// name はスキントーン適用済みであること
 	internal fun selected(name : String, instance : String?) {
 		
-		dialog.dismiss()
+		dialog.dismissSafe()
+		
+		val pref = App1.pref
 		
 		// Recentをロード(他インスタンスの絵文字を含む)
-		val pref = App1.pref
-		val list = ArrayList<JSONObject>()
-		val sv = Pref.spEmojiPickerRecent(pref)
-		if(sv.isNotEmpty()) {
-			try {
-				val array = sv.toJsonArray()
-				var i = 0
-				val ie = array.length()
-				while(i < ie) {
-					val item = array.optJSONObject(i)
-					if(item != null) list.add(item)
-					++ i
-				}
-			} catch(ex : Throwable) {
-				log.trace(ex)
-			}
+		val list = try {
+			Pref.spEmojiPickerRecent(pref).toJsonArray().toObjectList()
+		} catch(ignored : Throwable) {
+			ArrayList<JSONObject>()
 		}
 		
 		// 選択された絵文字と同じ項目を除去
 		// 項目が増えすぎたら減らす
 		run {
-			val it = list.iterator()
 			var nCount = 0
+			val it = list.iterator()
 			while(it.hasNext()) {
 				val item = it.next()
 				if(name == item.parseString("name")
@@ -494,21 +476,15 @@ class EmojiPicker(
 		}
 		
 		// 先頭に項目を追加
-		try {
-			val item = JSONObject()
-			item.put("name", name)
-			if(instance != null) item.put("instance", instance)
-			list.add(0, item)
-		} catch(ignored : Throwable) {
-		}
+		list.add(0, JSONObject().apply {
+			put("name", name)
+			if(instance != null) put("instance", instance)
+		})
 		
 		// 保存する
 		try {
-			val array = JSONArray()
-			for(item in list) {
-				array.put(item)
-			}
-			App1.pref.edit().put(Pref.spEmojiPickerRecent, array.toString()).apply()
+			val sv = list.toJsonArray().toString()
+			App1.pref.edit().put(Pref.spEmojiPickerRecent, sv).apply()
 		} catch(ignored : Throwable) {
 		
 		}
@@ -532,15 +508,15 @@ class EmojiPicker(
 		private fun Int.validPage() = this >= 0 && this < page_list.size
 		
 		private fun getPage(idx : Int) : EmojiPickerPage? {
-			return if(idx.validPage() ) page_list[idx] else null
+			return if(idx.validPage()) page_list[idx] else null
 		}
 		
 		fun getPageViewHolder(idx : Int) : EmojiPickerPageViewHolder? {
-			return if(idx.validPage() ) holder_list.get(idx) else null
+			return if(idx.validPage()) holder_list.get(idx) else null
 		}
 		
 		inline fun eachViewHolder(block : (Int, EmojiPickerPageViewHolder) -> Unit) {
-			for(i in 0 until page_list.size ){
+			for(i in 0 until page_list.size) {
 				val vh = holder_list.get(i) ?: continue
 				block(i, vh)
 			}

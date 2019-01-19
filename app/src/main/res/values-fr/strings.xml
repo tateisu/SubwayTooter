@@ -869,4 +869,14 @@
     <string name="scheduled_status_requires_mastodon_2_7_0">La planification des statuts nécessite Mastodon 2.7.0 ou une version ultérieure.</string>
     <string name="copy_account_id">Copie de l’ID du compte %1$s</string>
     <string name="open_in_admin_ui">Ouvrir dans l’interface d’administration web</string>
+    <string name="pseudo_account_desc">Pour consulter uniquement des données publiques sur le serveur sans connexion.</string>
+    <string name="account_tl_around_toot">Fil public du compte autour de ce pouet</string>
+    <string name="account_tl_around_of">Fil public du compte autour de %1$s</string>
+    <string name="card_description_length">Limite des caractères dans la description de la carte de prévisualisation</string>
+    <string name="content_acct_color">Couleur du contenu du compte</string>
+    <string name="reply_icon_size">Taille de l’icône de réponse (Unité:dp. défault:24. redémarrage nécessaire)</string>
+    <string name="header_icon_size">Taille de l\'icône d’en-tête (Unité:dp. défaut:24. redémarrage de l’application requis)</string>
+    <string name="header_text_size">Taille du texte de l’en-tête (Unité:sp. défaut:14. redémarrage de l’application requis)</string>
+    <string name="strip_icon_size">Taille de l’icône de la barre de colonne (Unité:dp. défaut:24. redémarrage de l’application requis)</string>
+    <string name="show_acct_in_system_notification">Afficher le compte (au lieu du nom d’utilisateur) dans les notifications système</string>
 </resources>

@@ -39,6 +39,8 @@ import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okio.BufferedSink
+import org.jetbrains.anko.backgroundColor
+import org.jetbrains.anko.textColor
 import org.json.JSONObject
 import java.io.*
 
@@ -208,10 +210,7 @@ class ActAccountSetting
 						addAttachment(
 							requestCode,
 							it.uri,
-							if(it.mimeType?.isNotEmpty() == true)
-								it.mimeType
-							else
-								contentResolver.getType(it.uri)
+							it.mimeType?.notEmpty() ?: contentResolver.getType(it.uri)
 						)
 					}
 				}
@@ -451,15 +450,10 @@ class ActAccountSetting
 	
 	private fun showAcctColor() {
 		val ac = AcctColor.load(full_acct)
-		val nickname = ac.nickname
-		tvUserCustom.text = if(nickname?.isNotEmpty() == true) nickname else full_acct
-		tvUserCustom.setTextColor(
-			if(ac.color_fg != 0) ac.color_fg else getAttributeColor(
-				this,
-				R.attr.colorTimeSmall
-			)
-		)
-		tvUserCustom.setBackgroundColor(ac.color_bg)
+		tvUserCustom.backgroundColor = ac.color_bg
+		tvUserCustom.text = ac.nickname?.notEmpty() ?: full_acct
+		tvUserCustom.textColor = ac.color_fg.notZero()
+			?: getAttributeColor(this, R.attr.colorTimeSmall)
 	}
 	
 	private fun saveUIToData() {
@@ -1178,8 +1172,6 @@ class ActAccountSetting
 		}
 		updateCredential("note", EmojiDecoder.decodeShortCode(sv))
 	}
-	
-
 	
 	private fun sendLocked(willLocked : Boolean) {
 		updateCredential("locked", willLocked)

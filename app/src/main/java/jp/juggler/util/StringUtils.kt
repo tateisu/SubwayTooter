@@ -136,6 +136,10 @@ inline fun <S : CharSequence, Z : Any?> S?.letNotEmpty(block : (S) -> Z?) : Z? =
 		null
 	}
 
+// usage: str.notEmpty() ?: fallback
+// equivalent: if(this.isNotEmpty() ) this else null
+fun <S : CharSequence> S.notEmpty() :S? = if( this.isNotEmpty() ) this else null
+
 ////////////////////////////////////////////////////////////////////
 // string
 

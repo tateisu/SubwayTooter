@@ -7,9 +7,14 @@ fun <T : Comparable<T>> clipRange(min : T, max : T, src : T) =
 	if(src < min) min else if(src > max) max else src
 
 ////////////////////////////////////////////////////////////////////
-// zero to null
 
-fun Int.notZero() :Int? = if(this!=0) this else null
+// usage: number.notZero() ?: fallback
+// equivalent: if(this != 0 ) this else null
+fun Int.notZero() : Int? = if(this != 0) this else null
+fun Long.notZero() : Long? = if(this != 0L) this else null
+fun Float.notZero() : Float? = if(this != 0f) this else null
+fun Double.notZero() : Double? = if(this != .0) this else null
+
 
 ////////////////////////////////////////////////////////////////////
 // long

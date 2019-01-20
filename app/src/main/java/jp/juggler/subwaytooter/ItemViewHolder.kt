@@ -1450,17 +1450,11 @@ internal class ItemViewHolder(
 			if(status.conversationSummary?.unread == true) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				
-				val color = if(MyClickableSpan.defaultLinkColor != 0) {
-					MyClickableSpan.defaultLinkColor
-				} else {
-					getAttributeColor(activity, R.attr.colorLink)
-				}
-				
 				sb.appendColorShadeIcon(
 					activity,
 					R.drawable.ic_unread,
 					"unread",
-					color = color
+					color = MyClickableSpan.defaultLinkColor
 				)
 			}
 		}

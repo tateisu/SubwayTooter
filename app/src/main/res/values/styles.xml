@@ -74,8 +74,7 @@
         <item name="colorRippleEffect">@color/Dark_colorRippleEffect</item>
         <item name="colorButtonSelected">@color/Dark_colorButtonSelected</item>
         <item name="colorReplyBackground">@color/Dark_colorReplyBackground</item>
-        <item name="colorColumnListDeleteBackground">@color/Dark_colorColumnListDeleteBackground
-        </item>
+        <item name="colorColumnListDeleteBackground">@color/Dark_colorColumnListDeleteBackground</item>
         <item name="colorColumnListDeleteText">@color/Dark_colorColumnListDeleteText</item>
         <item name="colorColumnListDragHandleBackground">
             @color/Dark_colorColumnListDragHandleBackground

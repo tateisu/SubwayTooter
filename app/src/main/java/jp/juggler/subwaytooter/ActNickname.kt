@@ -17,10 +17,9 @@ import android.widget.TextView
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.util.getAttributeColor
-import jp.juggler.util.hideKeyboard
-import jp.juggler.util.mayUri
-import jp.juggler.util.notZero
+import jp.juggler.util.*
+import org.jetbrains.anko.backgroundColor
+import org.jetbrains.anko.textColor
 
 class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
 	
@@ -173,9 +172,9 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	
 	private fun show() {
 		val s = etNickname.text.toString().trim { it <= ' ' }
-		tvPreview.text = if(s.isNotEmpty()) s else acct
-		tvPreview.setTextColor(color_fg.notZero() ?: getAttributeColor(this, R.attr.colorTimeSmall))
-		tvPreview.setBackgroundColor(color_bg)
+		tvPreview.text = s.notEmpty() ?: acct
+		tvPreview.textColor = color_fg.notZero() ?: getAttributeColor(this, R.attr.colorTimeSmall)
+		tvPreview.backgroundColor = color_bg
 	}
 	
 	override fun onClick(v : View) {

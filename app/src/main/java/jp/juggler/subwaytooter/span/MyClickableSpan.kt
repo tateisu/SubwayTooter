@@ -7,6 +7,7 @@ import android.view.View
 import java.lang.ref.WeakReference
 
 import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.util.notZero
 
 typealias MyClickableSpanClickCallback = (widget : View, span : MyClickableSpan)->Unit
 
@@ -43,12 +44,8 @@ class MyClickableSpan(
 	override fun updateDrawState(ds : TextPaint) {
 		super.updateDrawState(ds)
 		if(color_bg != 0) ds.bgColor = color_bg
-
-		if(color_fg != 0){
-			ds.color = color_fg
-		}else if( defaultLinkColor != 0){
-			ds.color = defaultLinkColor
-		}
+		
+		ds.color = color_fg.notZero() ?: defaultLinkColor
 	}
 	
 }

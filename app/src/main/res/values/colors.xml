@@ -60,12 +60,12 @@
 
     <color name="Dark_colorThumbnailBackground">#20ffffff</color>
     <color name="Dark_colorColumnListItemText">#66FFFFFF</color>
-    <color name="Dark_colorTimeSmall">#ff888888</color>
-    <color name="Dark_colorContentText">#ffdddddd</color>
+    <color name="Dark_colorTimeSmall">#BBBBBB</color>
+    <color name="Dark_colorContentText">#dddddd</color>
     <color name="Dark_colorRefreshErrorBg">#8333</color>
 
-    <color name="Dark_colorColumnHeaderAcct">#66FFFFFF</color>
-    <color name="Dark_colorColumnHeaderPageNumber">#66FFFFFF</color>
+    <color name="Dark_colorColumnHeaderAcct">#e4e4e4</color>
+    <color name="Dark_colorColumnHeaderPageNumber">#e4e4e4</color>
     <color name="Dark_colorSettingDivider">#66FFFFFF</color><!-- ダイアログ背景が#424242なので、それより明るくないといけない -->
     <color name="Dark_colorColumnHeaderName">#e4e4e4</color>
     <color name="Dark_colorVectorDrawable">#e4e4e4</color>
@@ -74,8 +74,7 @@
 
     <color name="Dark_colorAccent">#ccFFFFFF</color>
 
-    <color name="Dark_colorRippleEffect">#999</color>
-
+    <color name="Dark_colorRippleEffect">#777</color>
 
     <color name="Dark_colorColumnListDragHandleBackground">#80444444</color>
     <color name="Dark_list_item_bg_pressed_dragged">#AA444444</color>
@@ -86,8 +85,8 @@
     <color name="Dark_colorPrimary">#333</color>
     <color name="Dark_color_column_header">#333</color>
 
-    <color name="Dark_colorStatusButtonsPopupBg">#333</color>
-    <color name="Dark_colorButtonBgCw">#666</color>
+    <color name="Dark_colorStatusButtonsPopupBg">#424242</color>
+    <color name="Dark_colorButtonBgCw">#5b5b5b</color>
 
     <color name="Dark_colorReplyBackground">#333</color>
 
@@ -105,7 +104,7 @@
     <!-- 以下は白テーマでも黒テーマでもだいたい同じ -->
     <color name="Dark_colorButtonSelected">#ff000080</color>
     <color name="Dark_colorLink">#00a2ff</color>
-    <color name="Dark_colorImageButtonAccent">#ff0088ff</color>
+    <color name="Dark_colorImageButtonAccent">#00a2ff</color>
     <color name="Dark_colorShowMediaBackground">#222</color>
     <color name="Dark_colorShowMediaText">#ccFFFFFF</color>
     <color name="Dark_colorColumnListDeleteBackground">#FF0000</color>

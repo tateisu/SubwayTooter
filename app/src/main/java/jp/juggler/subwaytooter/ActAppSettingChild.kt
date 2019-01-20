@@ -23,6 +23,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
+import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.textColor
 import java.io.File
@@ -685,23 +686,13 @@ class ActAppSettingChild : AppCompatActivity()
 	private fun showColumnSample() {
 		flColumnBackground ?: return
 		
-		var c = when {
-			color_column_bg != 0 -> color_column_bg
-			else -> 0
-		}
-		flColumnBackground !!.setBackgroundColor(c)
+		flColumnBackground?.backgroundColor = color_column_bg // may 0
 		
-		c = when {
-			color_column_acct != 0 -> color_column_acct
-			else -> getAttributeColor(this, R.attr.colorTimeSmall)
-		}
-		tvSampleAcct !!.setTextColor(c)
+		tvSampleAcct?.textColor = color_column_acct.notZero()
+			?: getAttributeColor(this, R.attr.colorTimeSmall)
 		
-		c = when {
-			color_column_text != 0 -> color_column_text
-			else -> getAttributeColor(this, R.attr.colorContentText)
-		}
-		tvSampleContent !!.setTextColor(c)
+		tvSampleContent?.textColor = color_column_text.notZero()
+			?: getAttributeColor(this, R.attr.colorContentText)
 		
 	}
 	
@@ -972,11 +963,11 @@ class ActAppSettingChild : AppCompatActivity()
 	}
 	
 	override fun onColorSelected(dialogId : Int, @ColorInt colorSelected : Int) {
-
+		
 		val colorOpaque = colorSelected or Color.BLACK
-
+		
 		val colorAlpha = colorSelected.notZero() ?: 0x01000000
-
+		
 		when(dialogId) {
 			
 			COLOR_DIALOG_ID_FOOTER_BUTTON_BG -> {
@@ -1076,8 +1067,12 @@ class ActAppSettingChild : AppCompatActivity()
 	private fun showFooterColor() {
 		ivFooterToot ?: return
 		
-		val colorBg = footer_button_bg_color.notZero() ?: getAttributeColor(this, R.attr.colorStatusButtonsPopupBg)
-		val colorRipple = footer_button_fg_color.notZero() ?: getAttributeColor(this, R.attr.colorRippleEffect)
+		val colorBg = footer_button_bg_color.notZero() ?: getAttributeColor(
+			this,
+			R.attr.colorStatusButtonsPopupBg
+		)
+		val colorRipple =
+			footer_button_fg_color.notZero() ?: getAttributeColor(this, R.attr.colorRippleEffect)
 		ivFooterToot?.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
 		ivFooterMenu?.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
 		
@@ -1093,7 +1088,8 @@ class ActAppSettingChild : AppCompatActivity()
 				?: getAttributeColor(this, R.attr.colorColumnStripBackground)
 		)
 		
-		val c = footer_tab_divider_color.notZero() ?: getAttributeColor(this, R.attr.colorImageButton)
+		val c =
+			footer_tab_divider_color.notZero() ?: getAttributeColor(this, R.attr.colorImageButton)
 		vFooterDivider1?.setBackgroundColor(c)
 		vFooterDivider2?.setBackgroundColor(c)
 		

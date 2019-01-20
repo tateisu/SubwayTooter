@@ -43,7 +43,7 @@
     <!-- 日時の表記 #888888 -->
     <attr name="colorTimeSmall" format="color"/>
 
-    <!-- 日時の表記 #888888 -->
+    <!-- 本文テキスト -->
     <attr name="colorContentText" format="color"/>
 
     <attr name="colorRefreshErrorBg" format="color"/>

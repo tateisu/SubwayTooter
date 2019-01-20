@@ -1205,7 +1205,8 @@ class ActMain : AppCompatActivity()
 	internal fun initUI() {
 		setContentView(R.layout.act_main)
 		
-		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref)
+		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
+			?: getAttributeColor(this, R.attr.colorLink)
 		
 		Column.reloadDefaultColor(this, pref)
 		

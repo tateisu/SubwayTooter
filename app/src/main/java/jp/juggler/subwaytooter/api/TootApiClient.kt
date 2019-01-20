@@ -666,7 +666,7 @@ class TootApiClient(
 		val instance = result.caption // same to instance
 		
 		// クライアントIDがアプリ上に保存されているか？
-		val client_name = if(clientNameArg.isNotEmpty()) clientNameArg else DEFAULT_CLIENT_NAME
+		val client_name = clientNameArg.notEmpty() ?: DEFAULT_CLIENT_NAME
 		val client_info = ClientInfo.load(instance, client_name)
 		
 		// スコープ一覧を取得する
@@ -743,7 +743,7 @@ class TootApiClient(
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
 		val instance = result.caption // same to instance
-		val client_name = if(clientNameArg.isNotEmpty()) clientNameArg else DEFAULT_CLIENT_NAME
+		val client_name = clientNameArg.notEmpty() ?: DEFAULT_CLIENT_NAME
 		
 		@Suppress("UNUSED_VARIABLE")
 		val client_info = ClientInfo.load(instance, client_name)
@@ -938,7 +938,7 @@ class TootApiClient(
 		val instance = result.caption // same to instance
 		
 		// クライアントIDがアプリ上に保存されているか？
-		val client_name = if(clientNameArg.isNotEmpty()) clientNameArg else DEFAULT_CLIENT_NAME
+		val client_name = clientNameArg.notEmpty() ?: DEFAULT_CLIENT_NAME
 		var client_info = ClientInfo.load(instance, client_name)
 		
 		// スコープ一覧を取得する

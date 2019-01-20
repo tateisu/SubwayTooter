@@ -100,11 +100,10 @@ class ActKeywordFilter
 			if(filter_id != null ) {
 				startLoading()
 			} else {
-				val sv = intent.getStringExtra(EXTRA_INITIAL_PHRASE)
-				if(sv?.isNotEmpty() == true) {
-					etPhrase.setText(sv)
-				}
-				tvExpire.setText(R.string.filter_expire_unlimited)
+				etPhrase.setText(
+					intent.getStringExtra(EXTRA_INITIAL_PHRASE).notEmpty()
+						?: getString(R.string.filter_expire_unlimited)
+				)
 			}
 		} else {
 			val iv = savedInstanceState.getInt(STATE_EXPIRE_SPINNER, - 1)

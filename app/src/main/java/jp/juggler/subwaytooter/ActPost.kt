@@ -9,7 +9,6 @@ import android.content.ContentValues
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.AsyncTask
@@ -588,37 +587,38 @@ class ActPost : AppCompatActivity(),
 								etContentWarning.setText(reply_status.spoiler_text)
 							}
 							
+							// 新しいメンションリスト
 							val mention_list = ArrayList<String>()
 							
-							val old_mentions = reply_status.mentions
-							if(old_mentions != null) {
-								for(mention in old_mentions) {
-									val who_acct = mention.acct
-									if(who_acct.isNotEmpty()) {
-										if(account.isMe(who_acct)) continue
-										sv = "@" + account.getFullAcct(who_acct)
-										if(! mention_list.contains(sv)) {
-											mention_list.add(sv)
+							// 自己レス以外なら元レスへのメンションを追加
+							// 最初に追加する https://github.com/tateisu/SubwayTooter/issues/94
+							if(! account.isMe(reply_status.account)) {
+								mention_list.add( "@${account.getFullAcct(reply_status.account)}")
+							}
+							
+							// 元レスに含まれていたメンションを複製
+							reply_status.mentions?.forEach { mention ->
+								val who_acct = mention.acct
+								// 空データなら追加しない
+								if(who_acct.isEmpty()) return@forEach
+								// 自分なら追加しない
+								if(account.isMe(who_acct)) return@forEach
+								val strMention = "@${account.getFullAcct(who_acct)}"
+								// 既出なら追加しない
+								if(mention_list.contains(strMention)) return@forEach
+								mention_list.add(strMention)
+							}
+							
+							if(mention_list.isNotEmpty()){
+								appendContentText(
+									StringBuilder().apply {
+										for(acct in mention_list) {
+											if(isNotEmpty()) append(' ')
+											append(acct)
 										}
-									}
-								}
-							}
-							
-							// 元レスのacctを追加する
-							val who_acct = account.getFullAcct(reply_status.account)
-							if(! account.isMe(reply_status.account) // 自己レスにはメンションを追加しない
-								&& ! mention_list.contains("@$who_acct") // 既に含まれているならメンションを追加しない
-							) {
-								mention_list.add("@$who_acct")
-							}
-							
-							val sb = StringBuilder()
-							for(acct in mention_list) {
-								if(sb.isNotEmpty()) sb.append(' ')
-								sb.append(acct)
-							}
-							if(sb.isNotEmpty()) {
-								appendContentText(sb.append(' ').toString())
+										append(' ')
+									}.toString()
+								)
 							}
 						}
 						
@@ -1139,7 +1139,7 @@ class ActPost : AppCompatActivity(),
 		}
 		
 		val remain = max - length
-
+		
 		tvCharCount.text = Integer.toString(remain)
 		tvCharCount.setTextColor(
 			getAttributeColor(

@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.os.SystemClock
 import android.support.v4.content.ContextCompat
@@ -112,8 +113,8 @@ internal class ItemViewHolder(
 	private lateinit var btnListMore : ImageButton
 	
 	private lateinit var llFollowRequest : View
-	private lateinit var btnFollowRequestAccept : View
-	private lateinit var btnFollowRequestDeny : View
+	private lateinit var btnFollowRequestAccept : ImageButton
+	private lateinit var btnFollowRequestDeny : ImageButton
 	
 	private lateinit var llFilter : View
 	private lateinit var tvFilterPhrase : TextView
@@ -159,6 +160,7 @@ internal class ItemViewHolder(
 	
 	private var content_color : Int = 0
 	private var acct_color : Int = 0
+	private var content_color_csl : ColorStateList = ColorStateList.valueOf(0)
 	
 	private val boost_invalidator : NetworkEmojiInvalidator
 	private val reply_invalidator : NetworkEmojiInvalidator
@@ -220,6 +222,8 @@ internal class ItemViewHolder(
 		llTrendTag.setOnClickListener(this)
 		llTrendTag.setOnLongClickListener(this)
 		llFilter.setOnClickListener(this)
+		
+		
 		
 		var f : Float
 		
@@ -410,6 +414,7 @@ internal class ItemViewHolder(
 		var c : Int
 		c = column.getContentColor()
 		this.content_color = c
+		this.content_color_csl = ColorStateList.valueOf(c)
 		
 		tvBoosted.setTextColor(c)
 		tvReply.setTextColor(c)
@@ -926,6 +931,8 @@ internal class ItemViewHolder(
 	private fun showList(list : TootList) {
 		llList.visibility = View.VISIBLE
 		btnListTL.text = list.title
+		btnListTL.textColor = content_color
+		btnListMore.imageTintList = content_color_csl
 	}
 	
 	private fun showDomainBlock(domain_block : TootDomainBlock) {
@@ -1098,6 +1105,8 @@ internal class ItemViewHolder(
 		
 		if(column.column_type == Column.TYPE_FOLLOW_REQUESTS) {
 			llFollowRequest.visibility = View.VISIBLE
+			btnFollowRequestAccept.imageTintList=content_color_csl
+			btnFollowRequestDeny.imageTintList=content_color_csl
 		}
 	}
 	
@@ -3177,6 +3186,10 @@ internal class ItemViewHolder(
 			llList = linearLayout {
 				lparams(matchParent, wrapContent)
 				
+				gravity = Gravity.CENTER_VERTICAL
+				isBaselineAligned = false
+				minimumHeight = dip(40)
+
 				btnListTL = button {
 					background =
 						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
@@ -3191,7 +3204,7 @@ internal class ItemViewHolder(
 						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					imageResource = R.drawable.ic_more
 					contentDescription = context.getString(R.string.more)
-				}.lparams(dip(40), dip(40)) {
+				}.lparams(dip(40), matchParent) {
 					startMargin = dip(4)
 				}
 			}

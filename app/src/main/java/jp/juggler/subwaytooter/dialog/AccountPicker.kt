@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.util.DialogInterfaceCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
 import jp.juggler.util.dismissSafe
 import jp.juggler.util.showToast
+import org.jetbrains.anko.textColor
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -132,7 +133,7 @@ object AccountPicker {
 				b.setBackgroundResource(R.drawable.btn_bg_transparent)
 			}
 			if(AcctColor.hasColorForeground(ac)) {
-				b.setTextColor(ac.color_fg)
+				b.textColor = ac.color_fg
 			}
 			
 			b.setPaddingRelative(pad_se, pad_tb, pad_se, pad_tb)

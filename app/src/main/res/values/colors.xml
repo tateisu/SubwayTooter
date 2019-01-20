@@ -28,7 +28,10 @@
 
     <color name="Light_colorPrimary">#cccccc</color>
     <color name="Light_color_column_header">#fff</color>
-    <color name="Light_colorButtonBg">#cccccc</color>
+
+    <color name="Light_colorStatusButtonsPopupBg">#cccccc</color>
+    <color name="Light_colorButtonBgCw">#cccccc</color>
+
     <color name="Light_colorReplyBackground">#cccccc</color>
 
     <color name="Light_colorRefreshErrorBg">#8333</color>
@@ -71,7 +74,7 @@
 
     <color name="Dark_colorAccent">#ccFFFFFF</color>
 
-    <color name="Dark_colorRippleEffect">#FF666666</color>
+    <color name="Dark_colorRippleEffect">#999</color>
 
 
     <color name="Dark_colorColumnListDragHandleBackground">#80444444</color>
@@ -82,7 +85,10 @@
 
     <color name="Dark_colorPrimary">#333</color>
     <color name="Dark_color_column_header">#333</color>
-    <color name="Dark_colorButtonBg">#333</color>
+
+    <color name="Dark_colorStatusButtonsPopupBg">#333</color>
+    <color name="Dark_colorButtonBgCw">#666</color>
+
     <color name="Dark_colorReplyBackground">#333</color>
 
     <color name="Dark_colorPostFormBackground">#222</color>

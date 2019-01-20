@@ -462,13 +462,9 @@ internal class ViewHolderHeaderProfile(
 			else -> acctLong
 		}
 		
-		tv.setTextColor(if(AcctColor.hasColorForeground(ac)) ac.color_fg else column.getAcctColor())
+		tv.textColor = ac.color_fg.notZero() ?: column.getAcctColor()
 		
-		if(AcctColor.hasColorBackground(ac)) {
-			tv.setBackgroundColor(ac.color_bg)
-		} else {
-			ViewCompat.setBackground(tv, null)
-		}
+		tv.setBackgroundColor(ac.color_bg) // may 0
 		tv.setPaddingRelative(activity.acct_pad_lr, 0, activity.acct_pad_lr, 0)
 		
 	}

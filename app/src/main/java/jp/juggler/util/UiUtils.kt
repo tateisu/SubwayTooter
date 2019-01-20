@@ -16,8 +16,10 @@ import android.os.Build
 import android.os.SystemClock
 import android.support.v4.content.ContextCompat
 import android.util.SparseArray
+import android.view.View
 import android.widget.ImageView
 import jp.juggler.subwaytooter.R
+import org.jetbrains.anko.backgroundDrawable
 import java.util.*
 
 object UiUtils{
@@ -282,3 +284,4 @@ fun DialogInterface.dismissSafe(){
 		// 非同期処理の後などではDialogがWindowTokenを失っている場合があり、IllegalArgumentException がたまに出る
 	}
 }
+

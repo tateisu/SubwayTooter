@@ -35,6 +35,7 @@ import java.lang.reflect.Field
 import java.util.regex.Pattern
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
+import org.jetbrains.anko.backgroundDrawable
 
 @SuppressLint("ClickableViewAccessibility")
 class ColumnViewHolder(
@@ -1497,17 +1498,15 @@ class ColumnViewHolder(
 			val colorBgSelected = colorFg.applyAlphaMultiplier(0.25f)
 			val colorFgList = ColorStateList.valueOf(colorFg)
 			showQuickFilterButton = { btn, iconId, selected ->
-				ViewCompat.setBackground(
-					btn,
-					if(selected) {
-						getAdaptiveRippleDrawable(
-							colorBgSelected,
-							colorFg
-						)
-					} else {
-						ContextCompat.getDrawable(activity, R.drawable.btn_bg_transparent)
-					}
-				)
+				btn.backgroundDrawable = if(selected) {
+					getAdaptiveRippleDrawable(
+						colorBgSelected,
+						colorFg
+					)
+				} else {
+					ContextCompat.getDrawable(activity, R.drawable.btn_bg_transparent)
+				}
+				
 				when(btn) {
 					is TextView -> btn.textColor = colorFg
 					
@@ -1529,14 +1528,12 @@ class ColumnViewHolder(
 			svQuickFilter.setBackgroundColor(colorBg)
 			
 			showQuickFilterButton = { btn, iconId, selected ->
-				
-				ViewCompat.setBackground(
-					btn,
-					getAdaptiveRippleDrawable(
-						if(selected) colorBgSelected else colorBg,
-						colorFg
-					)
+
+				btn.backgroundDrawable=getAdaptiveRippleDrawable(
+					if(selected) colorBgSelected else colorBg,
+					colorFg
 				)
+
 				when(btn) {
 					is TextView -> btn.textColor = colorFg
 					

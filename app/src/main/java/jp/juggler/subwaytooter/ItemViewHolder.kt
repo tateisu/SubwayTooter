@@ -223,8 +223,6 @@ internal class ItemViewHolder(
 		llTrendTag.setOnLongClickListener(this)
 		llFilter.setOnClickListener(this)
 		
-		
-		
 		var f : Float
 		
 		f = activity.timeline_font_size_sp
@@ -1105,8 +1103,8 @@ internal class ItemViewHolder(
 		
 		if(column.column_type == Column.TYPE_FOLLOW_REQUESTS) {
 			llFollowRequest.visibility = View.VISIBLE
-			btnFollowRequestAccept.imageTintList=content_color_csl
-			btnFollowRequestDeny.imageTintList=content_color_csl
+			btnFollowRequestAccept.imageTintList = content_color_csl
+			btnFollowRequestDeny.imageTintList = content_color_csl
 		}
 	}
 	
@@ -1547,13 +1545,9 @@ internal class ItemViewHolder(
 			Pref.bpShortAcctLocalUser(App1.pref) -> "@" + (acctShort ?: "?")
 			else -> acctLong
 		}
-		tv.setTextColor(if(AcctColor.hasColorForeground(ac)) ac.color_fg else this.acct_color)
+		tv.textColor =  ac.color_fg.notZero() ?: this.acct_color
 		
-		if(AcctColor.hasColorBackground(ac)) {
-			tv.setBackgroundColor(ac.color_bg)
-		} else {
-			ViewCompat.setBackground(tv, null)
-		}
+		tv.setBackgroundColor(ac.color_bg) // may 0
 		tv.setPaddingRelative(activity.acct_pad_lr, 0, activity.acct_pad_lr, 0)
 		
 	}
@@ -2809,7 +2803,7 @@ internal class ItemViewHolder(
 							
 							btnContentWarning = button {
 								
-								background =
+								backgroundDrawable =
 									ContextCompat.getDrawable(context, R.drawable.bg_button_cw)
 								minWidthCompat = dip(40)
 								padding = dip(4)
@@ -3189,7 +3183,7 @@ internal class ItemViewHolder(
 				gravity = Gravity.CENTER_VERTICAL
 				isBaselineAligned = false
 				minimumHeight = dip(40)
-
+				
 				btnListTL = button {
 					background =
 						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)

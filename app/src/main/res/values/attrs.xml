@@ -7,9 +7,11 @@
     <!-- カラムヘッダ背景色、および一部ボタンの背景色 -->
     <attr name="color_column_header" format="color"/>
 
-    <!-- CWボタンなどの背景色 -->
-    <attr name="colorButtonBg" format="color"/>
+    <!-- 簡略表示のステータスボタンポップアップの背景色、投稿画面のフッタ/ヘッダの背景色 CWボタンなどの背景色 -->
+    <attr name="colorStatusButtonsPopupBg" format="color"/>
 
+    <!-- CWボタンの背景色 -->
+    <attr name="colorButtonBgCw" format="color"/>
 
     <!-- イメージボタンの図柄の色 0xff000000 -->
     <attr name="colorImageButton" format="color"/>

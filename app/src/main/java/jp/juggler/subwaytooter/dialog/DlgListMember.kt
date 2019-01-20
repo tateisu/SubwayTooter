@@ -24,10 +24,8 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.view.MyListView
 import jp.juggler.subwaytooter.view.MyNetworkImageView
-import jp.juggler.util.dismissSafe
-import jp.juggler.util.getAttributeColor
-import jp.juggler.util.showToast
-import jp.juggler.util.toPostRequestBuilder
+import jp.juggler.util.*
+import org.jetbrains.anko.textColor
 import java.util.*
 
 @SuppressLint("InflateParams")
@@ -90,8 +88,8 @@ class DlgListMember(
 		
 		setListOwner(list_owner)
 		
-		dialog = Dialog(activity).apply{
-			window?.apply{
+		dialog = Dialog(activity).apply {
+			window?.apply {
 				setFlags(0, Window.FEATURE_NO_TITLE)
 				setLayout(
 					WindowManager.LayoutParams.MATCH_PARENT,
@@ -104,7 +102,7 @@ class DlgListMember(
 		
 	}
 	
-	fun show() = dialog.apply{
+	fun show() = dialog.apply {
 		window?.setLayout(
 			WindowManager.LayoutParams.MATCH_PARENT,
 			WindowManager.LayoutParams.MATCH_PARENT
@@ -154,16 +152,8 @@ class DlgListMember(
 			} else {
 				btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent)
 			}
-			if(AcctColor.hasColorForeground(ac)) {
-				btnListOwner.setTextColor(ac.color_fg)
-			} else {
-				btnListOwner.setTextColor(
-					getAttributeColor(
-						activity,
-						android.R.attr.textColorPrimary
-					)
-				)
-			}
+			btnListOwner.textColor = ac.color_fg.notZero()
+				?: getAttributeColor(activity, android.R.attr.textColorPrimary)
 		}
 		
 		loadLists()

@@ -407,7 +407,7 @@
         android:id="@+id/llFooterBar"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="?attr/colorButtonBg"
+        android:background="?attr/colorStatusButtonsPopupBg"
         android:baselineAligned="false"
         android:orientation="horizontal"
         >

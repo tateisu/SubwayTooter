@@ -44,6 +44,7 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
+import org.jetbrains.anko.backgroundDrawable
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -2398,20 +2399,12 @@ class ActMain : AppCompatActivity()
 		val footer_tab_divider_color = Pref.ipFooterTabDividerColor(pref)
 		val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
 		
-		var c = footer_button_bg_color
-		if(c == 0) {
-			btnMenu.setBackgroundResource(R.drawable.bg_button_cw)
-			btnToot.setBackgroundResource(R.drawable.bg_button_cw)
-			btnQuickToot.setBackgroundResource(R.drawable.bg_button_cw)
-		} else {
-			val fg = when {
-				footer_button_fg_color != 0 -> footer_button_fg_color
-				else -> getAttributeColor(this, R.attr.colorRippleEffect)
-			}
-			ViewCompat.setBackground(btnToot, getAdaptiveRippleDrawable(c, fg))
-			ViewCompat.setBackground(btnMenu, getAdaptiveRippleDrawable(c, fg))
-			ViewCompat.setBackground(btnQuickToot, getAdaptiveRippleDrawable(c, fg))
-		}
+		
+		val colorBg = footer_button_bg_color.notZero() ?: getAttributeColor(this, R.attr.colorStatusButtonsPopupBg)
+		val colorRipple = footer_button_fg_color.notZero() ?: getAttributeColor(this, R.attr.colorRippleEffect)
+		btnMenu.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
+		btnToot.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
+		btnQuickToot.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
 		
 		val csl = ColorStateList.valueOf(
 			footer_button_fg_color.notZero()
@@ -2421,7 +2414,7 @@ class ActMain : AppCompatActivity()
 		btnMenu.imageTintList = csl
 		btnQuickToot.imageTintList = csl
 		
-		c = footer_tab_bg_color.notZero()
+		var c = footer_tab_bg_color.notZero()
 			?: getAttributeColor(this, R.attr.colorColumnStripBackground)
 		svColumnStrip.setBackgroundColor(c)
 		llQuickTootBar.setBackgroundColor(c)

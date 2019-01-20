@@ -41,7 +41,8 @@
         <item name="colorPostFormBackground">@color/Light_colorPostFormBackground</item>
         <item name="colorColumnStripBackground">@color/Light_colorColumnStripBackground</item>
         <item name="colorColumnHeaderName">@color/Light_colorColumnHeaderName</item>
-        <item name="colorButtonBg">@color/Light_colorButtonBg</item>
+        <item name="colorStatusButtonsPopupBg">@color/Light_colorStatusButtonsPopupBg</item>
+        <item name="colorButtonBgCw">@color/Light_colorButtonBgCw</item>
         <item name="colorRefreshErrorBg">@color/Light_colorRefreshErrorBg</item>
         <item name="colorVectorDrawable">@color/Light_colorVectorDrawable</item>
 
@@ -97,7 +98,8 @@
         <item name="colorPostFormBackground">@color/Dark_colorPostFormBackground</item>
         <item name="colorColumnStripBackground">@color/Dark_colorColumnStripBackground</item>
         <item name="colorColumnHeaderName">@color/Dark_colorColumnHeaderName</item>
-        <item name="colorButtonBg">@color/Dark_colorButtonBg</item>
+        <item name="colorStatusButtonsPopupBg">@color/Dark_colorStatusButtonsPopupBg</item>
+        <item name="colorButtonBgCw">@color/Dark_colorButtonBgCw</item>
         <item name="colorRefreshErrorBg">@color/Dark_colorRefreshErrorBg</item>
 
         <item name="colorVectorDrawable">@color/Dark_colorVectorDrawable</item>

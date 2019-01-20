@@ -65,9 +65,8 @@
                 android:id="@+id/btnMenu"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="@drawable/bg_button_cw"
                 android:contentDescription="@string/menu"
-                app:srcCompat="@drawable/ic_hamburger"
+                android:src="@drawable/ic_hamburger"
                 android:scaleType="fitCenter"
                 />
 
@@ -110,9 +109,8 @@
                 android:id="@+id/btnToot"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="@drawable/bg_button_cw"
                 android:contentDescription="@string/toot"
-                app:srcCompat="@drawable/ic_edit"
+                android:src="@drawable/ic_edit"
                 android:scaleType="fitCenter"
                 />
         </LinearLayout>
@@ -142,7 +140,6 @@
                 android:id="@+id/btnQuickToot"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="@drawable/bg_button_cw"
                 android:contentDescription="@string/post"
                 app:srcCompat="@drawable/ic_send"
                 />

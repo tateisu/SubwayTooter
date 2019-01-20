@@ -23,6 +23,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
+import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
@@ -674,10 +675,7 @@ class ActAppSettingChild : AppCompatActivity()
 			else -> getAttributeColor(this, R.attr.colorColumnHeaderName)
 		}
 		
-		ViewCompat.setBackground(
-			llColumnHeader !!,
-			getAdaptiveRippleDrawable(header_bg, header_fg)
-		)
+		llColumnHeader?.backgroundDrawable = getAdaptiveRippleDrawable(header_bg, header_fg)
 		
 		tvColumnName?.textColor = header_fg
 		ivColumnHeader?.setImageResource(R.drawable.ic_bike)
@@ -1078,21 +1076,10 @@ class ActAppSettingChild : AppCompatActivity()
 	private fun showFooterColor() {
 		ivFooterToot ?: return
 		
-		var c = footer_button_bg_color
-		if(c == 0) {
-			ivFooterToot?.setBackgroundResource(R.drawable.bg_button_cw)
-			ivFooterMenu?.setBackgroundResource(R.drawable.bg_button_cw)
-		} else {
-			val fg = if(footer_button_fg_color != 0)
-				footer_button_fg_color
-			else
-				getAttributeColor(this, R.attr.colorRippleEffect)
-			ViewCompat.setBackground(ivFooterToot !!, getAdaptiveRippleDrawable(c, fg))
-			ViewCompat.setBackground(ivFooterMenu !!, getAdaptiveRippleDrawable(c, fg))
-		}
-		
-		ivFooterToot?.setImageResource(R.drawable.ic_edit)
-		ivFooterMenu?.setImageResource(R.drawable.ic_hamburger)
+		val colorBg = footer_button_bg_color.notZero() ?: getAttributeColor(this, R.attr.colorStatusButtonsPopupBg)
+		val colorRipple = footer_button_fg_color.notZero() ?: getAttributeColor(this, R.attr.colorRippleEffect)
+		ivFooterToot?.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
+		ivFooterMenu?.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
 		
 		val csl = ColorStateList.valueOf(
 			footer_button_fg_color.notZero()
@@ -1106,7 +1093,7 @@ class ActAppSettingChild : AppCompatActivity()
 				?: getAttributeColor(this, R.attr.colorColumnStripBackground)
 		)
 		
-		c = footer_tab_divider_color.notZero() ?: getAttributeColor(this, R.attr.colorImageButton)
+		val c = footer_tab_divider_color.notZero() ?: getAttributeColor(this, R.attr.colorImageButton)
 		vFooterDivider1?.setBackgroundColor(c)
 		vFooterDivider2?.setBackgroundColor(c)
 		

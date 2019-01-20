@@ -209,13 +209,9 @@ class AcctColor {
 			return nickname != null && nickname.isNotEmpty()
 		}
 		
-		fun hasColorForeground(ac : AcctColor?) : Boolean {
-			return ac != null && ac.color_fg != 0
-		}
+		fun hasColorForeground(ac : AcctColor?) = (ac?.color_fg ?: 0) != 0
 		
-		fun hasColorBackground(ac : AcctColor?) : Boolean {
-			return ac != null && ac.color_bg != 0
-		}
+		fun hasColorBackground(ac : AcctColor?) = (ac?.color_bg ?: 0) != 0
 		
 		fun clearMemoryCache() {
 			mMemoryCache.evictAll()

@@ -9,7 +9,7 @@
     <group android:name="group1">
         <path
             android:name="triangle"
-            android:fillColor="?attr/colorButtonBg"
+            android:fillColor="?attr/colorStatusButtonsPopupBg"
             android:pathData="M0,0L16,24L32,0H0z"
             />
     </group>

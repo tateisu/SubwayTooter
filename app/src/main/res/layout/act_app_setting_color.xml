@@ -466,9 +466,8 @@
                         android:id="@+id/ivFooterMenu"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/bg_button_cw"
                         android:importantForAccessibility="no"
-                        app:srcCompat="@drawable/ic_hamburger"
+                        android:src="@drawable/ic_hamburger"
                         />
 
                     <View
@@ -524,9 +523,8 @@
                         android:id="@+id/ivFooterToot"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/bg_button_cw"
                         android:contentDescription="@string/toot"
-                        app:srcCompat="@drawable/ic_edit"
+                        android:src="@drawable/ic_edit"
                         />
                 </LinearLayout>
 

@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle"
     >
-    <solid android:color="?attr/colorButtonBg"/>
+    <solid android:color="?attr/colorStatusButtonsPopupBg"/>
     <corners android:radius="16dp" />
     <padding android:top="8dp"
              android:bottom="8dp"

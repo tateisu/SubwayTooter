@@ -20,6 +20,7 @@ import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.subwaytooter.util.WordTrieTree
 import jp.juggler.util.*
 import okhttp3.Handshake
+import org.jetbrains.anko.backgroundDrawable
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -914,8 +915,8 @@ class Column(
 		// 以下は保存には必要ないが、カラムリスト画面で使う
 		val ac = AcctColor.load(access_info.acct)
 		dst.put(KEY_COLUMN_ACCESS, if(AcctColor.hasNickname(ac)) ac.nickname else access_info.acct)
-		dst.put(KEY_COLUMN_ACCESS_COLOR, if(AcctColor.hasColorForeground(ac)) ac.color_fg else 0)
-		dst.put(KEY_COLUMN_ACCESS_COLOR_BG, if(AcctColor.hasColorBackground(ac)) ac.color_bg else 0)
+		dst.put(KEY_COLUMN_ACCESS_COLOR, ac.color_fg )
+		dst.put(KEY_COLUMN_ACCESS_COLOR_BG, ac.color_bg )
 		dst.put(KEY_COLUMN_NAME, getColumnName(true))
 		dst.put(KEY_OLD_INDEX, old_index)
 	}
@@ -7071,12 +7072,9 @@ class Column(
 	}
 	
 	fun setHeaderBackground(view : View) {
-		ViewCompat.setBackground(
-			view,
-			getAdaptiveRippleDrawable(
-				getHeaderBackgroundColor(),
-				getHeaderNameColor()
-			)
+		view.backgroundDrawable = getAdaptiveRippleDrawable(
+			getHeaderBackgroundColor(),
+			getHeaderNameColor()
 		)
 	}
 	

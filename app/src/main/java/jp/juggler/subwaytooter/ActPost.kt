@@ -49,6 +49,7 @@ import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody
 import okio.BufferedSink
+import org.jetbrains.anko.textColor
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -1181,16 +1182,9 @@ class ActPost : AppCompatActivity(),
 			} else {
 				btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent)
 			}
-			if(AcctColor.hasColorForeground(ac)) {
-				btnAccount.setTextColor(ac.color_fg)
-			} else {
-				btnAccount.setTextColor(
-					getAttributeColor(
-						this,
-						android.R.attr.textColorPrimary
-					)
-				)
-			}
+
+			btnAccount.textColor = ac.color_fg .notZero()
+					?: getAttributeColor(this,android.R.attr.textColorPrimary)
 		}
 		updateTextCount()
 	}

@@ -25,6 +25,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.*
 import org.jetbrains.anko.allCaps
+import org.jetbrains.anko.backgroundDrawable
 import java.util.*
 
 @SuppressLint("InflateParams")
@@ -205,10 +206,8 @@ internal class DlgContextMenu(
 						ViewGroup.LayoutParams.WRAP_CONTENT
 					)
 					b.layoutParams = lp
-					ViewCompat.setBackground(
-						b,
+					b.backgroundDrawable =
 						ContextCompat.getDrawable(activity, R.drawable.btn_bg_transparent)
-					)
 					b.gravity = Gravity.START or Gravity.CENTER_VERTICAL
 					b.minHeight = (activity.density * 32f + 0.5f).toInt()
 					b.minimumHeight = (activity.density * 32f + 0.5f).toInt()

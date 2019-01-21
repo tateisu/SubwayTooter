@@ -1014,15 +1014,6 @@ class ActPost : AppCompatActivity(),
 			iv.setErrorImage(defaultColorIcon(this, R.drawable.ic_unknown))
 		}
 		
-		//		setIcon(btnPost, R.drawable.ic_send)
-		//		setIcon(btnMore, R.drawable.ic_more)
-		//		setIcon(btnPlugin, R.drawable.ic_extension)
-		//		setIcon(btnEmojiPicker, R.drawable.ic_face)
-		//		setIcon(btnAttachment, R.drawable.ic_attachment)
-		//		setIcon(ibSchedule, R.drawable.ic_edit)
-		//		setIcon(ibScheduleReset, R.drawable.ic_close)
-		//		setIcon(btnRemoveReply, R.drawable.ic_close)
-		
 		cbContentWarning.setOnCheckedChangeListener { _, _ ->
 			updateContentWarning()
 		}

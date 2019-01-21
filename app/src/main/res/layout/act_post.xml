@@ -26,10 +26,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="320dp"
-            android:paddingEnd="12dp"
             android:paddingStart="12dp"
             android:paddingTop="12dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="320dp"
             >
 
             <LinearLayout
@@ -114,8 +114,8 @@
                     android:layout_weight="1"
                     android:background="@drawable/btn_bg_transparent"
                     android:gravity="center_vertical"
-                    android:paddingEnd="8dp"
                     android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
                     android:textAllCaps="false"
                     />
             </LinearLayout>
@@ -204,14 +204,16 @@
                 android:baselineAligned="false"
                 android:orientation="horizontal"
                 >
+
                 <TextView
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/status"
                     android:layout_gravity="bottom"
+                    android:layout_marginTop="8dp"
+                    android:layout_weight="1"
+                    android:text="@string/status"
                     />
+
                 <ImageButton
                     android:id="@+id/btnEmojiPicker"
                     android:layout_width="40dp"
@@ -220,7 +222,6 @@
                     android:contentDescription="@string/open_picker_emoji"
                     android:src="@drawable/ic_face"
                     android:tint="?attr/colorVectorDrawable"
-
 
                     />
             </LinearLayout>
@@ -256,46 +257,46 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 >
+
                 <TextView
+                    android:id="@+id/tvSchedule"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:id="@+id/tvSchedule"
-                    android:gravity="center"
                     android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:gravity="center"
                     />
+
                 <ImageButton
                     android:id="@+id/ibSchedule"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/edit"
                     android:src="@drawable/ic_edit"
-                    android:background="@drawable/btn_bg_transparent"
                     android:tint="?attr/colorVectorDrawable"
 
-
                     />
+
                 <ImageButton
                     android:id="@+id/ibScheduleReset"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/reset"
                     android:src="@drawable/ic_close"
-                    android:background="@drawable/btn_bg_transparent"
                     android:tint="?attr/colorVectorDrawable"
-
 
                     />
 
             </LinearLayout>
 
-
             <CheckBox
                 android:id="@+id/cbEnquete"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/make_enquete"
                 android:layout_marginTop="32dp"
+                android:text="@string/make_enquete"
                 />
 
             <LinearLayout
@@ -418,11 +419,8 @@
             android:layout_height="48dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/media_attachment"
-            android:scaleType="fitCenter"
-            android:padding="8dp"
             android:tint="?attr/colorVectorDrawable"
             android:src="@drawable/ic_attachment"
-
             />
 
         <ImageButton
@@ -436,8 +434,6 @@
             android:minWidth="48dp"
             tools:src="@drawable/ic_public"
             android:tint="?attr/colorVectorDrawable"
-
-
             />
 
         <ImageButton
@@ -449,8 +445,6 @@
             android:contentDescription="@string/plugin"
             android:src="@drawable/ic_extension"
             android:tint="?attr/colorVectorDrawable"
-
-
             />
 
         <ImageButton

@@ -594,7 +594,7 @@ class ActPost : AppCompatActivity(),
 							// 自己レス以外なら元レスへのメンションを追加
 							// 最初に追加する https://github.com/tateisu/SubwayTooter/issues/94
 							if(! account.isMe(reply_status.account)) {
-								mention_list.add( "@${account.getFullAcct(reply_status.account)}")
+								mention_list.add("@${account.getFullAcct(reply_status.account)}")
 							}
 							
 							// 元レスに含まれていたメンションを複製
@@ -610,7 +610,7 @@ class ActPost : AppCompatActivity(),
 								mention_list.add(strMention)
 							}
 							
-							if(mention_list.isNotEmpty()){
+							if(mention_list.isNotEmpty()) {
 								appendContentText(
 									StringBuilder().apply {
 										for(acct in mention_list) {
@@ -767,24 +767,24 @@ class ActPost : AppCompatActivity(),
 						visibility = item.visibility
 						
 						// 2019/1/7 どうも添付データを古い投稿から引き継げないようだ…。
-						// バグ臭い
-						//						val src_attachments = item.media_attachments
-						//						if(src_attachments?.isNotEmpty() == true) {
-						//							app_state.attachment_list = this.attachment_list
-						//							this.attachment_list.clear()
-						//							try {
-						//								for(src in src_attachments) {
-						//									if(src is TootAttachment) {
-						//										src.redraft = true
-						//										val pa = PostAttachment(src)
-						//										pa.status = PostAttachment.STATUS_UPLOADED
-						//										this.attachment_list.add(pa)
-						//									}
-						//								}
-						//							} catch(ex : Throwable) {
-						//								log.trace(ex)
-						//							}
-						//						}
+						// 2019/1/22 https://github.com/tootsuite/mastodon/pull/9894 で直った。
+						val src_attachments = item.media_attachments
+						if(src_attachments?.isNotEmpty() == true) {
+							app_state.attachment_list = this.attachment_list
+							this.attachment_list.clear()
+							try {
+								for(src in src_attachments) {
+									if(src is TootAttachment) {
+										src.redraft = true
+										val pa = PostAttachment(src)
+										pa.status = PostAttachment.STATUS_UPLOADED
+										this.attachment_list.add(pa)
+									}
+								}
+							} catch(ex : Throwable) {
+								log.trace(ex)
+							}
+						}
 					}
 				} catch(ex : Throwable) {
 					log.trace(ex)
@@ -1173,9 +1173,9 @@ class ActPost : AppCompatActivity(),
 			} else {
 				btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent)
 			}
-
-			btnAccount.textColor = ac.color_fg .notZero()
-					?: getAttributeColor(this,android.R.attr.textColorPrimary)
+			
+			btnAccount.textColor = ac.color_fg.notZero()
+				?: getAttributeColor(this, android.R.attr.textColorPrimary)
 		}
 		updateTextCount()
 	}

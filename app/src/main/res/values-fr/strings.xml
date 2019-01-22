@@ -206,7 +206,7 @@
     <string name="network_error">Erreur réseau.</string>
     <string name="error_response">Erreur response.</string>
     <string name="nickname">Pseudonyme</string>
-    <string name="nickname_and_color_and_notification_sound">Pseudo, Couleur, Notification sound</string>
+    <string name="nickname_and_color_and_notification_sound">Pseudo, couleur, notification sonore</string>
     <string name="nickname_and_color">Pseudo et Couleur</string>
     <string name="nickname_applied_after_reload">Le changement de pseudo/couleur sera appliqué après actualisation.</string>
     <string name="nickname_label">Pseudo et couleur. (s\'il est spécifié, il remplacera le nom du compte affiché)</string>
@@ -265,7 +265,7 @@
     <string name="request_api">Acquisition : %1$s %2$s</string>
     <string name="reading_api">Lecture de : %1$s %2$s</string>
 
-    <string name="reset">Reset</string>
+    <string name="reset">Réinitialiser</string>
     <string name="resize_image">Changer la taille des images jointes (JPEG,PNG)</string>
     <string name="resolve_non_local_account">Résoudre le compte non local</string>
     <string name="response_not_json">La réponse de l’API n\'est pas JSON.</string>
@@ -347,7 +347,10 @@
     <string name="app_data_import">Importer les données dans Subway Tooter</string>
     <string name="app_data_import_confirm">Toutes les données actuelles seront remplacées lors de l’importation.
 \nÊtes-vous sur ?</string>
-    <string name="app_data_import_desc">Vous pouvez exporter les données vers toute application qui pourra les recevoir. L\'importation ne peut s\'effectuer que depuis le stockage de votre appareil ou Google Drive !\nColumn background image may be not exported/imported over device.\nTimeline font is not exported/imported.\nCustom notification sound may be not exported/imported over device.</string>
+    <string name="app_data_import_desc">Vous pouvez exporter les données vers n’importe quelle application qui peut recevoir des données, mais vous ne pouvez importer des données qu\'à partir du stockage de l’appareil ou du Google Drive.
+\nL’image d’arrière-plan d’une colonne ne peut être exportée/importée sur l’appareil.
+\nLa police de caractères des fils n’est pas exportée/importée.
+\nLa sonnerie de notification personnalisée ne peut être exportée/importée sur l’appareil.</string>
 
     <string name="user_id_conversion_failed">Conversion de l’identification utilisateur échouée.</string>
     <string name="draft_deleted">Brouillon effacé.</string>
@@ -399,7 +402,7 @@
     <string name="send_header_account_image_header_static">Account-Image-Header-Static</string>
     <string name="open_local_timeline_for">Ouvrir le fil de \"%1$s\"</string>
     <string name="send_header_account_url">Account-Url</string>
-    <string name="notification_sound">Notification Sound</string>
+    <string name="notification_sound">Notification sonore</string>
     <string name="timeline_font_size">Timeline font size (Unit:sp. leave empty to default. app restart required)</string>
     <string name="acct_font_size">Acct font size (unit:sp. leave empty to default. app restart required)</string>
     <string name="dont_add_duplication_check_header">Don\'t add duplication check header</string>
@@ -456,7 +459,7 @@
     <string name="relative_time_phrase_past">Il y a %1$d %2$s</string>
     <string name="relative_time_phrase_future">Dans %1$d %2$s</string>
 
-    <string name="notification_sound_before_oreo">Son de notification (avant Android 8.0)</string>
+    <string name="notification_sound_before_oreo">Notification sonore (avant Android 8.0)</string>
     <string name="notification_style_after_oreo">Style de notification (Android 8.0 ou version ultérieure)</string>
     <string name="notification_for">Notification for %1$s</string>
     <string name="notification_channel_description">Ces paramètres sont utilisés pour les notifications sur %1$s</string>
@@ -605,7 +608,7 @@
     <string name="word_empty">Veuillez entrer un mot-clé.</string>
     <string name="already_exist">déjà existant.</string>
     <string name="highlight_desc">Glissez pour supprimer. Il se peut que vous ayez besoin de recharger la colonne afin de vérifier le paramètre.</string>
-    <string name="check_sound">Contrôle du son</string>
+    <string name="check_sound">Jouer une notification sonore</string>
     <string name="keyword">Mot-clé</string>
     <string name="domain_block_from_pseudo">Impossible d\'utiliser le blocage de domaines à partir d\'un pseudo compte.</string>
     <string name="domain_block_from_local">Ne pouvez pas utiliser le blocage de domaines pour l\'instance locale.</string>
@@ -879,4 +882,7 @@
     <string name="header_text_size">Taille du texte de l’en-tête (Unité:sp. défaut:14. redémarrage de l’application requis)</string>
     <string name="strip_icon_size">Taille de l’icône de la barre de colonne (Unité:dp. défaut:30. redémarrage de l’application requis)</string>
     <string name="show_acct_in_system_notification">Afficher le compte (au lieu du nom d’utilisateur) dans les notifications système</string>
+    <string name="account_tl_around">Fil public autour …</string>
+    <string name="boost_button_alpha">Transparence du bouton Boost (Unité:%. redémarrage de l’app nécessaire. Affecte également la transparence du contenu texte.)</string>
+    <string name="move_notifications_quick_filter_to_column_setting">Afficher le filtre rapide des notifications dans la configuration de la colonne (redémarrage de l’application requis)</string>
 </resources>

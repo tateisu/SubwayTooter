@@ -110,6 +110,7 @@ class Column(
 		private const val PATH_NOTIFICATIONS = "/api/v1/notifications?limit=$READ_LIMIT"
 		private const val PATH_DOMAIN_BLOCK = "/api/v1/domain_blocks?limit=$READ_LIMIT"
 		private const val PATH_LIST_LIST = "/api/v1/lists?limit=$READ_LIMIT"
+		private const val PATH_SCHEDULED_STATUSES = "/api/v1/scheduled_statuses?limit=$READ_LIMIT"
 		
 		// リストではなくオブジェクトを返すAPI
 		private const val PATH_ACCOUNT = "/api/v1/accounts/%s" // 1:account_id
@@ -2644,15 +2645,12 @@ class Column(
 				return result
 				
 			}
-			
 			private fun getScheduledStatuses(client : TootApiClient) : TootApiResult? {
-				val result = client.request("/api/v1/scheduled_statuses")
+				val result = client.request(PATH_SCHEDULED_STATUSES)
 				val src = parseList(::TootScheduled, parser, result?.jsonArray)
 				list_tmp = addAll(list_tmp, src)
 				
-				// ページングはないっぽい
-				idOld = null
-				idRecent = null
+				saveRange(true, true, result, src)
 				
 				return result
 			}
@@ -4453,6 +4451,14 @@ class Column(
 				return firstResult
 			}
 			
+			private fun getScheduledStatuses(client : TootApiClient) : TootApiResult? {
+				val result = client.request(addRange(bBottom, PATH_SCHEDULED_STATUSES))
+				val src = parseList(::TootScheduled, parser, result?.jsonArray)
+				list_tmp = addAll(list_tmp, src)
+				saveRange(bBottom, ! bBottom, result, src)
+				return result
+			}
+			
 			fun getStatusList(
 				client : TootApiClient,
 				path_base : String,
@@ -5013,6 +5019,8 @@ class Column(
 							}
 							result
 						}
+						
+						TYPE_SCHEDULED_STATUS -> getScheduledStatuses(client)
 						
 						else -> getStatusList(client, makeHomeTlUrl())
 					}
@@ -5966,6 +5974,9 @@ class Column(
 							getStatusList(client, PATH_DIRECT_MESSAGES)
 						}
 						
+						// TYPE_SCHEDULED_STATUS -> getScheduledStatuses(client)
+						
+						
 						else -> getStatusList(client, makeHomeTlUrl())
 					}
 				} finally {
@@ -6259,7 +6270,6 @@ class Column(
 			TYPE_CONVERSATION,
 			TYPE_LIST_LIST,
 			TYPE_TREND_TAG,
-			TYPE_SCHEDULED_STATUS,
 			TYPE_FOLLOW_SUGGESTION -> true
 			
 			TYPE_LIST_MEMBER,

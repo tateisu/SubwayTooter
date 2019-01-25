@@ -499,6 +499,9 @@ class ActMain : AppCompatActivity()
 		ItemViewHolder.toot_color_follower = Pref.ipTootColorFollower(pref)
 		ItemViewHolder.toot_color_direct_user = Pref.ipTootColorDirectUser(pref)
 		ItemViewHolder.toot_color_direct_me = Pref.ipTootColorDirectMe(pref)
+		MyClickableSpan.showLinkUnderline = Pref.bpShowLinkUnderline(pref)
+		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
+			?: getAttributeColor(this, R.attr.colorLink)
 		
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
 		run {
@@ -1205,8 +1208,7 @@ class ActMain : AppCompatActivity()
 	internal fun initUI() {
 		setContentView(R.layout.act_main)
 		
-		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
-			?: getAttributeColor(this, R.attr.colorLink)
+	
 		
 		Column.reloadDefaultColor(this, pref)
 		

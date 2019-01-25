@@ -852,5 +852,6 @@
     <string name="copy_account_id">アカウントID %1$s をコピー</string>
     <string name="open_in_admin_ui">管理者WebUIで開く</string>
     <string name="show_acct_in_system_notification">システム通知に(ユーザ名ではなく)acctを使用する</string>
+    <string name="show_link_underline">リンクの下線を表示する</string>
 
 </resources>

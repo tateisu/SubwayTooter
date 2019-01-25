@@ -361,6 +361,13 @@ object Pref {
 		false,
 		R.id.swShowAcctInSystemNotification
 	)
+	val bpShowLinkUnderline = BooleanPref(
+		"ShowLinkUnderline",
+		true,
+		R.id.swShowLinkUnderline
+	)
+
+
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

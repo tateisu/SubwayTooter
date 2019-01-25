@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.span
 
+import android.graphics.Paint
 import android.text.TextPaint
 import android.text.style.ClickableSpan
 import android.view.View
@@ -22,6 +23,7 @@ class MyClickableSpan(
 	companion object {
 		var link_callback : WeakReference<MyClickableSpanClickCallback>? = null
 		var defaultLinkColor : Int =0
+		var showLinkUnderline = true
 	}
 
 	val color_fg : Int
@@ -46,6 +48,7 @@ class MyClickableSpan(
 		if(color_bg != 0) ds.bgColor = color_bg
 		
 		ds.color = color_fg.notZero() ?: defaultLinkColor
+		ds.isUnderlineText = showLinkUnderline
 	}
 	
 }

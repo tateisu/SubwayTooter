@@ -1320,12 +1320,8 @@ class ActPost : AppCompatActivity(),
 		
 		if(isFinishing) return
 		
-		if(attachment_list.isEmpty()) {
-			llAttachment.visibility = View.GONE
-		} else {
-			llAttachment.visibility = View.VISIBLE
-			ivMedia.forEachIndexed { i, v -> showAttachment_sub(v, i) }
-		}
+		vg(llAttachment,attachment_list.isNotEmpty())
+		ivMedia.forEachIndexed { i, v -> showAttachment_sub(v, i) }
 	}
 	
 	private fun showAttachment_sub(iv : MyNetworkImageView, idx : Int) {

@@ -55,6 +55,7 @@ fun View.showKeyboard() {
 	}
 }
 
-fun vg(v : View, visible : Boolean) {
+fun vg(v : View, visible : Boolean) : Boolean {
 	v.visibility = if(visible) View.VISIBLE else View.GONE
+	return visible
 }

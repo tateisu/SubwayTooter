@@ -363,7 +363,7 @@ object Pref {
 	)
 	val bpShowLinkUnderline = BooleanPref(
 		"ShowLinkUnderline",
-		true,
+		false,
 		R.id.swShowLinkUnderline
 	)
 

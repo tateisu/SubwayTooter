@@ -861,4 +861,5 @@
     <string name="copy_account_id">계정 ID %1$s 복사</string>
     <string name="open_in_admin_ui">관리자 웹 UI에서 열기</string>
     <string name="show_acct_in_system_notification">시스템 알림에 계정 (사용자 이름 대신) 보이기</string>
+    <string name="network_error">통신 오류</string>
 </resources>

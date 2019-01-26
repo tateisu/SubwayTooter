@@ -6,7 +6,7 @@
     <string name="instance">서버</string>
     <string name="user_mail_address">이메일</string>
     <string name="user_password">비밀번호</string>
-    <string name="ok">OK</string>
+    <string name="ok">그래요</string>
     <string name="cancel">취소</string>
     <string name="account_pick">계정 선택</string>
     <string name="reload">새로고침</string>
@@ -16,7 +16,7 @@
     <string name="account_select_please">계정을 선택하십시오</string>
     <string name="file_size_too_big">파일이 한도 %1$dMB보다 큽니다.</string>
     <string name="choose_visibility">공개 범위 선택</string>
-    <string name="confirm_delete_attachment">첨부된 파일을 삭제하시겠습니까\?</string>
+    <string name="confirm_delete_attachment">이 첨부파일을 삭제할까요\?</string>
     <string name="post_error_contents_empty">내용을 입력하세요.</string>
     <string name="confirm">확인</string>
     <string name="app_name">서브웨이 투터</string>
@@ -25,14 +25,14 @@
     <string name="password_not_specified">비밀번호 지정 안 됨</string>
     <string name="error_response">오류 응답.</string>
     <string name="api_error">API 오류. %1$s</string>
-    <string name="register_app_to_server">이 앱을 %1$s에 등록…</string>
-    <string name="request_access_token">접근 토큰 요청…</string>
+    <string name="register_app_to_server">이 앱을 %1$s에 등록 중…</string>
+    <string name="request_access_token">접근 토큰 요청 중…</string>
     <string name="request_api">취득: %1$s %2$s</string>
     <string name="reading_api">해독: %1$s %2$s</string>
     <string name="column_empty">좌하단의 메뉴 버튼을 사용하여 세로란 추가</string>
     <string name="home">우리집</string>
-    <string name="local_timeline">지방 탐라</string>
-    <string name="federate_timeline">연방 탐라</string>
+    <string name="local_timeline">지방 타임라인</string>
+    <string name="federate_timeline">연방 타임라인</string>
     <string name="login_required">당신의 접근 토큰을 계정 설정에서 설정하세요.</string>
     <string name="cancelled">취소됨</string>
     <string name="account_confirmed">계정 확인됨.</string>
@@ -41,8 +41,8 @@
     <string name="close_column">세로란 닫기</string>
     <string name="thumbnail">썸네일</string>
     <string name="favourites">즐겨찾기</string>
-    <string name="reports">보고서</string>
-    <string name="your_statuses">당신의 프로파일</string>
+    <string name="reports">신고</string>
+    <string name="your_statuses">내 프로파일</string>
     <string name="statuses_of">%1$s의 프로파일</string>
     <string name="following">팔로우함</string>
     <string name="followers">팔로워</string>
@@ -55,24 +55,24 @@
     <string name="content_warning">내용 경고</string>
     <string name="please_add_account">퉅을 게시하려면 계정을 설정해야 합니다.</string>
     <string name="not_selected">(선택 안 함)</string>
-    <string name="content_warning_hint">경고문을 여기에 작성</string>
+    <string name="content_warning_hint">경고문을 여기에 작성하세요</string>
     <string name="content_hint">퉅 내용</string>
     <string name="status">퉅</string>
     <string name="list_empty">목록 빔</string>
-    <string name="post_from">게시 출처</string>
-    <string name="choose_account">당신의 계정 선택</string>
+    <string name="post_from">게시자</string>
+    <string name="choose_account">당신의 계정을 선택하세요</string>
     <string name="response_not_json">API 응답이 JSON이 아닙니다.</string>
     <string name="login_failed">로그인할 수 없었음.</string>
-    <string name="visibility_public">공개</string>
-    <string name="visibility_unlisted">목록 무등재</string>
+    <string name="visibility_public">전체 공개</string>
+    <string name="visibility_unlisted">목록 미등재</string>
     <string name="visibility_private">팔로워만</string>
-    <string name="visibility_direct">직접</string>
+    <string name="visibility_direct">직통</string>
     <string name="visibility_web_setting">웹앱 설정을 따름</string>
-    <string name="visibility_local_public">공개 (지방)</string>
+    <string name="visibility_local_public">전체 공개 (지방)</string>
     <string name="visibility_local_home">우리집 (지방)</string>
     <string name="visibility_local_followers">팔로워만 (지방)</string>
-    <string name="visibility_local_unlisted">목록 무등재 (지방)</string>
-    <string name="post_error_contents_warning_empty">당신의 퉅은 경고가 필요합니다.</string>
+    <string name="visibility_local_unlisted">목록 미등재 (지방)</string>
+    <string name="post_error_contents_warning_empty">퉅이 경고가 필요합니다.</string>
     <string name="wait_previous_operation">마지막 작업이 끝날 때까지 대기해 주세요.</string>
     <string name="cant_remove_boost_while_favourited">즐겨찾기가 되면 부스트를 지울 수 없음</string>
     <string name="confirm_boost_from">이 퉅을 %1$s에서 부스트하시겠습니까\? 모든 팔로워와 프로파일 페이지에 공개됩니다.</string>
@@ -88,20 +88,20 @@
     <string name="display_name_quoted_by">%1$s가 인용함</string>
     <string name="display_name_reaction_by">%1$s가 반응함</string>
     <string name="display_name_followed_by">%1$s가 당신을 팔로우함</string>
-    <string name="display_name_unfollowed_by">%1$s가 당신을 언팔로우함</string>
+    <string name="display_name_unfollowed_by">%1$s가 당신을 팔로우 해제함</string>
     <string name="account_setting">계정 설정</string>
     <string name="setting">설정</string>
     <string name="app_setting">앱 설정</string>
     <string name="column_list">세로란 목록</string>
     <string name="update_access_token">접근 토큰을 갱신하기</string>
     <string name="account_remove">이 계정 삭제하기</string>
-    <string name="actions">활동</string>
+    <string name="actions">동작들</string>
     <string name="default_status_visibility">기본 퉅 공개 범위</string>
     <string name="confirm_before_boost">부스트 전에 확인</string>
     <string name="sensitive_content_default_open">항상 민감한 내용 열기</string>
     <string name="user">사용자</string>
     <string name="confirm_account_remove">이 계정은 이 앱에서 삭제되고 모든 세로란은 제거될 것입니다.
-\n계속 하시겠습니까\?</string>
+\n계속하시겠습니까\?</string>
     <string name="user_name_not_match">사용자이름이 일치하지 않음</string>
     <string name="access_token_updated_for">%1$s의 접근 토큰이 갱신되었습니다.</string>
     <string name="back_to_column_list">뒤로 가기를 누르면 세로란 목록으로 가기</string>
@@ -113,7 +113,7 @@
     <string name="last_selection">마지막 선택</string>
     <string name="column_index">%1$d/%2$d</string>
     <string name="reply_to_this_status">이 퉅에 답글:</string>
-    <string name="cant_change_account_when_attachment_specified">미디어 첨부가 있을 때는 계정을 바꿀 수 없습니다.</string>
+    <string name="cant_change_account_when_attachment_specified">미디어 첨부가 있을 때는 계정을 전환할 수 없습니다.</string>
     <string name="column">세로란</string>
     <string name="conversation_view">대화 보기</string>
     <string name="conversation_around">퉅 주변의 대화:%1$s</string>
@@ -121,9 +121,9 @@
     <string name="mail_address_not_contains_at_mark">\'@\'와 \'.\'를 포함한 이메일 주소를 사용하세요</string>
     <string name="instance_hint">예) mastodon.social</string>
     <string name="mail_hint">예) your@e-mail.address</string>
-    <string name="unfollow">언팔로우</string>
+    <string name="unfollow">팔로우 해제</string>
     <string name="follow_succeeded">팔로우함</string>
-    <string name="unfollow_succeeded">언팔로우함</string>
+    <string name="unfollow_succeeded">팔로우 해제함</string>
     <string name="mute">음소거</string>
     <string name="unmute">음소거 해제</string>
     <string name="block">차단</string>
@@ -166,11 +166,11 @@
     <string name="ask_always">항상 물어보기</string>
     <string name="open_column_list">세로란 목록 열기</string>
     <string name="back_button_action">뒤로가기 버튼의 동작</string>
-    <string name="prior_local_url_when_open_attachment">첨부 미디어를 열 때 현 서버의 URL을 우선함</string>
+    <string name="prior_local_url_when_open_attachment">첨부파일을 열 때 현 서버의 URL을 우선함</string>
     <string name="disable_fast_scroller">빠른 스크롤러 비활성화 (앱 재시작 필요)</string>
     <string name="delete_succeeded">삭제됨</string>
     <string name="developer">개발자</string>
-    <string name="with_attachment">첨부 파일 있음</string>
+    <string name="with_attachment">첨부파일 있음</string>
     <string name="with_highlight">강조 표시 있음</string>
     <string name="column_is_busy">세로란 다른 처리 중</string>
     <string name="read_gap">놓친 메시지 보기</string>
@@ -194,7 +194,7 @@
     <string name="regex_error">정규표현식 오류</string>
     <string name="notification_delete">알림 비우기</string>
     <string name="confirm_delete_notification">당신의 알림 데이터가 서버에서 삭제될 것입니다.
-\n계속 하시겠습니까\?</string>
+\n계속하시겠습니까\?</string>
     <string name="search_for">%1$s 검색</string>
     <string name="spoil_visibility_for_account">공개 범위가 계정 기본값으로 돌아갔습니다.</string>
     <string name="contributor">기여자</string>
@@ -232,8 +232,8 @@
     <string name="long_side_pixel">%1$d 화소로 변경</string>
     <string name="image_capture">사진 찍기</string>
     <string name="missing_permission_to_access_media">미디어 파일 접근에 필요한 앱 권한 없습니다.</string>
-    <string name="attachment_uploading">미디어 첨부파일 올리는 중…</string>
-    <string name="attachment_uploaded">미디어 첨부파일이 업로드되었습니다.</string>
+    <string name="attachment_uploading">첨부 미디어 올리는 중…</string>
+    <string name="attachment_uploaded">첨부 미디어가 올려졌습니다.</string>
     <string name="actions_for_status">이 퉅에 대한 동작</string>
     <string name="actions_for_user">이 사용자에 대한 동작</string>
     <string name="open_profile">프로파일 열기</string>
@@ -264,7 +264,7 @@
     <string name="dont_confirm_again">다시 확인하지 않기</string>
     <string name="confirm_post_from">%1$s에서 퉅을 게시할까요\?</string>
     <string name="confirm_follow_who_from">%2$s에서 %1$s를 팔로우할까요\?</string>
-    <string name="confirm_unfollow_who_from">%2$s에서 %1$s를 언팔로우할까요\?</string>
+    <string name="confirm_unfollow_who_from">%2$s에서 %1$s를 팔로우 해제할까요\?</string>
     <string name="confirm_follow_request_who_from">팔로우 요청을 %2$s에서 잠겨진 사용자 %1$s에게 보낼까요\?</string>
     <string name="follow_request_cant_remove_by_sender">팔로우 요청을 송신자가 삭제할 수 없는 것 같습니다…</string>
     <string name="profile">프로파일</string>
@@ -274,8 +274,8 @@
     <string name="refresh_scroll_to_toot">새로고침하고 퉅으로 스크롤</string>
     <string name="refresh_no_scroll">새로고침하고 스크롤하지 않음</string>
     <string name="dont_refresh">새로고침 안 함</string>
-    <string name="boosted_by">부스트한 자…</string>
-    <string name="favourited_by">즐겨찾기한 자…</string>
+    <string name="boosted_by">부스트한 이…</string>
+    <string name="favourited_by">즐겨찾기한 이…</string>
     <string name="hashtag">해시태그</string>
     <string name="conversation">대화</string>
     <string name="account_picker_open_user_who">어떤 계정에서 사용자 %1$s를 열까요\?</string>
@@ -344,7 +344,7 @@
     <string name="timeline_font_bold">굵은 타임라인 글꼴 (앱 재시작 필요)</string>
     <string name="restore_draft">초안으로부터 복원</string>
     <string name="select_draft">어떤 초안을 복원할까요\?</string>
-    <string name="account_in_draft_is_lost">이 초안을 만든 계정은 이 앱에서 삭제되었습니다. 다음의 문맥은 복구될 수 없습니다. in_reply_to, 미디어 첨부파일</string>
+    <string name="account_in_draft_is_lost">이 초안을 만든 계정이 앱에서 삭제되었습니다. 다음의 문맥은 복구될 수 없습니다: in_reply_to, 미디어 첨부파일</string>
     <string name="reply_to_in_draft_is_lost">초안에서 참조한 답글 원본 게시물이 손실되었습니다. 다음 문맥은 삭제합니다. in_reply_to</string>
     <string name="attachment_in_draft_is_lost">초안의 미디어 첨부파일의 일부가 손실되었습니다.</string>
     <string name="app_data_export">앱 데이터 내보내기</string>
@@ -411,8 +411,8 @@
     <string name="timeline_font_size">타임라인 글꼴 크기 (단위:sp. 비워 두면 기본값. 앱 재시작 필요)</string>
     <string name="acct_font_size">계정 글꼴 크기 (단위:sp. 비워 두면 기본값. 앱 재시작 필요)</string>
     <string name="dont_add_duplication_check_header">중복 검사 헤더를 추가하지 않기</string>
-    <string name="show_quick_toot_bar">\"빠른 퉅\" 바를 보여 주기 (앱 재시작 필요)</string>
-    <string name="quick_toot_hint">빠른 퉅</string>
+    <string name="show_quick_toot_bar">\"즉석 퉅\" 바를 보이기 (앱 재시작 필요)</string>
+    <string name="quick_toot_hint">즉석 퉅</string>
     <string name="search_is_not_available_on_pseudo_account">검색 기능은 의사 계정에서는 이용할 수 없습니다.</string>
     <string name="conversation_from_another_account">다른 계정에서 대화 보기</string>
     <string name="show_avatar_image">아바타 이미지 보이기</string>
@@ -476,7 +476,7 @@
     <string name="choice3">항목 3 (선택사항)</string>
     <string name="choice4">항목 4 (선택사항)</string>
     <string name="make_enquete">설문조사 만들기</string>
-    <string name="dont_use_action_button_with_quick_toot_bar">\"빠른 퉅\" 바를 사용할 때는 IME 액션 버튼 비활성화 (앱 재시작 필요)</string>
+    <string name="dont_use_action_button_with_quick_toot_bar">\"즉석 퉅\" 바를 사용할 때는 IME 동작 버튼 비활성화 (앱 재시작 필요)</string>
     <string name="auto_cw">장문 자동 숨기기 (\"줄 수\"를 0보다 크게 설정하면 활성. 앱 재시작 필요)</string>
     <string name="auto_cw_prefix">(자동 CW)</string>
     <string name="enquete_item_is_empty">설문조사 항목 %1$d가 비어있습니다.</string>
@@ -489,7 +489,7 @@
 \n표준 서버에서는 받아 들여지지 않지만 일부 서버에서는 받아 들여질 수 있습니다.
 \n계속하시겠습니까\?</string>
     <string name="short_acct_local_user">지방 사용자의 계정 표시를 짧게 (앱 재시작 필요)</string>
-    <string name="loading_notification_title">알림 로드 중…</string>
+    <string name="loading_notification_title">알림 불러오는 중…</string>
     <string name="error_notification_title">서버 시간제한 초과</string>
     <string name="error_notification_summary">파괴된 서버가 있으면 그 계정을 앱에서 삭제해 주세요.</string>
     <string name="open_hashtag_column">해시태그 세로란 열기</string>
@@ -541,8 +541,8 @@
     <string name="attachment_description">첨부파일 설명</string>
     <string name="description_empty">설명이 지정되지 않았습니다.</string>
     <string name="attachment_description_sending">첨부파일 설명 보내는 중…</string>
-    <string name="hide_boost_in_home">당신의 탐라에서 이 사용자의 부스트를 숨기기</string>
-    <string name="show_boost_in_home">당신의 탐라에서 이 사용자의 부스트를 보이기</string>
+    <string name="hide_boost_in_home">우리집 탐라에서 이 사용자의 부스트를 숨기기</string>
+    <string name="show_boost_in_home">우리집 탐라에서 이 사용자의 부스트를 보이기</string>
     <string name="operation_succeeded">완료.</string>
     <string name="list_member_add_remove">목록에 추가/삭제…</string>
     <string name="lists">목록들</string>
@@ -575,11 +575,11 @@
     <string name="jump_moved_user">%1$s가 이전했습니다. %2$s를 검사하시겠습니까\?</string>
     <string name="ignore_suggestion">제안 무시</string>
     <string name="list_not_created">(목록이 생성되지 않음)</string>
-    <string name="your_lists">당신의 목록</string>
-    <string name="media_attachment_max_byte_size">미디어 첨부 (이미지) 최대 바이트 수 (단위:MB. 기본값은 8)</string>
-    <string name="media_attachment_max_byte_size_movie">미디어 첨부 (동영상) 최대 바이트 수 (단위:MB. 기본값은 40)</string>
+    <string name="your_lists">당신의 목록들</string>
+    <string name="media_attachment_max_byte_size">첨부 미디어 (이미지) 최대 바이트 수 (단위:MB. 기본값은 8)</string>
+    <string name="media_attachment_max_byte_size_movie">첨부 미디어 (동영상) 최대 바이트 수 (단위:MB. 기본값은 40)</string>
     <string name="tootsearch">퉅검색 (JP)</string>
-    <string name="cant_handle_uri_of">Subway Tooter는 URI \"%1$s\"를 다룰 수 없습니다. 다른 앱을 선택하세요.</string>
+    <string name="cant_handle_uri_of">서브웨이 투터는 URI \"%1$s\"를 다룰 수 없습니다. 다른 앱을 선택하세요.</string>
     <string name="use_internal_media_viewer">내장 미디어 뷰어를 사용</string>
     <string name="previous">이전</string>
     <string name="next">다음</string>
@@ -626,7 +626,7 @@
     <string name="notification_type_vote">투표</string>
     <string name="dont_show_normal_toot">보통 퉅은 보이지 않기</string>
     <string name="set_focus_point">초점 지정 (마스토돈 2.3 이상)</string>
-    <string name="report_forward_desc">해당 계정이 다른 서버에 있습니다. 신고를 익명 복사본으로 전송할까요\?</string>
+    <string name="report_forward_desc">해당 계정이 다른 서버에 있습니다. 신고서를 익명 복사본으로 전송할까요\?</string>
     <string name="report_forward_to">%1$s로 전달</string>
     <string name="locked_account">잠긴 계정</string>
     <string name="contact">계정에 연락</string>
@@ -644,7 +644,7 @@
     <string name="follow_deny">거부</string>
     <string name="follow_accept_confirm">%1$s의 팔로우 요청을 승인하겠습니까\?</string>
     <string name="follow_deny_confirm">%1$s의 팔로우 요청을 거절하겠습니까\?</string>
-    <string name="direct_messages">직접 메시지</string>
+    <string name="direct_messages">직통 메시지</string>
     <string name="unfavourite">즐겨찾기 해제</string>
     <string name="unboost">부스트 해제</string>
     <string name="dont_retrieve_preview_card">미리보기 카드를 가져오지 않기</string>
@@ -667,7 +667,7 @@
     <string name="missing_install_id">설치 ID를 마련할 수 없음. 나중에 다시 시도하세요.</string>
     <string name="token_exported">앱 데이터를 내보내거나 백업에서 복원할 수 있어서 이 접근 토큰은 다른 기기에서 사용될 수도 있습니다. 푸시 알림을 사용하기 위해서는 다른 기기에서 사용되지 않은 접근 토큰이 필요하기 때문에 접근 토큰을 갱신할 것을 권고합니다.</string>
     <string name="missing_push_api">이 서버는 푸시 구독 API가 없습니다.</string>
-    <string name="missing_push_scope">당신의 접근 토큰이 푸시 여지를 포함하고 있지 않습니다. 접근 토큰 갱신을 권고합니다.</string>
+    <string name="missing_push_scope">당신의 접근 토큰이 푸시 범위를 포함하고 있지 않습니다. 접근 토큰 갱신을 권고합니다.</string>
     <string name="push_subscription_deleted">푸시 구독이 삭제됨.</string>
     <string name="push_subscription_updated">푸시 구독 갱신됨.</string>
     <string name="push_subscription_not_exists">푸시 구독이 필요하지 않음.</string>
@@ -684,7 +684,7 @@
     <string name="redraft_and_delete">삭제하고 다시 편집</string>
     <string name="cant_sync_toot">퉅을 동기화할 수 없음.</string>
     <string name="cant_change_account_when_redraft">재편집 중에는 계정을 변경할 수 없음.</string>
-    <string name="delete_base_status_before_toot">"게시하기 전에 원래 퉅을 삭제하기.  모든 즐겨찾기/부스트를 잃어 버립니다. 답글은 연결이 끊어집니다. 미디어 첨부는 마스토돈 2.4.1 이전 버전에서는 유지되지 않습니다. 계속하시겠습니까\?"</string>
+    <string name="delete_base_status_before_toot">"게시하기 전에 원래 퉅을 삭제하기.  모든 즐겨찾기/부스트를 잃어 버립니다. 답글은 연결이 끊어집니다. 첨부 미디어는 마스토돈 2.4.1 이전 버전에서는 유지되지 않습니다. 계속하시겠습니까\?"</string>
     <string name="notification_tl_font_size">알림 탐라 글꼴 크기 (단위:sp. 비워두면 기본값. 앱 재시작 필요)</string>
     <string name="notification_tl_icon_size">알림 탐라 아이콘 크기 (단위:dp. 기본값:24. 앱 재시작 필요)</string>
     <string name="post_button_tapped_repeatly">게시 버튼이 반복적으로 두드려졌습니다</string>
@@ -723,7 +723,7 @@
     <string name="delete_suggestion">팔로우 제안에서 삭제…</string>
     <string name="delete_succeeded_confirm">팔로우 제안에서 사용자 \"%1$s\"를 삭제하겠습니까\?</string>
     <string name="toot_context_parse_failed">대화 데이터를 해석할 수 없었음.</string>
-    <string name="toot_default_text">퉅을 작성할 때의 기본 본문. (빠른 퉅 바나, 퉅 작성 화면에서 계정 전환에 영향을 주지 않음)</string>
+    <string name="toot_default_text">퉅을 작성할 때의 기본 본문. (즉석 퉅 바에나, 퉅 작성 화면에서의 계정 전환에 영향을 주지 않음)</string>
     <string name="list_divider_color">목록 구분선 색</string>
     <string name="display_replies_count">답글 수 보이기</string>
     <string name="replies_count_simple">0/1/1+</string>
@@ -757,10 +757,10 @@
     <string name="deleted_at">%1$s에 삭제됨</string>
     <string name="already_reactioned">이미 반응함.</string>
     <string name="not_reactioned">아직 반응하지 않음.</string>
-    <string name="unlisted_visibility">\'미등재\' 공개범위</string>
+    <string name="unlisted_visibility">\'목록 미등재\' 공개범위</string>
     <string name="followers_visibility">\'팔로워만\' 공개범위</string>
-    <string name="direct_with_user_visibility">\'사용자에게 직접\' 공개범위</string>
-    <string name="direct_only_me_visibility">\'나에게만 직접\' 공개범위</string>
+    <string name="direct_with_user_visibility">\'사용자들에게 직통\' 공개범위</string>
+    <string name="direct_only_me_visibility">\'나에게만 직통\' 공개범위</string>
     <string name="already_voted">이미 투표함.</string>
     <string name="endorse_set">내 프로파일에 소개</string>
     <string name="endorse_unset">\'내 프로파일에 소개\'를 취소</string>
@@ -777,13 +777,13 @@
     <string name="privacy_policy">개인 정보 정책</string>
     <string name="agree">동의합니다</string>
     <string name="ltl_around_toot">이 퉅 주변의 지방 탐라</string>
-    <string name="ltl_around">… 주변의 지방 탐라</string>
+    <string name="ltl_around">주변의 지방 탐라…</string>
     <string name="ltl_around_of">%1$s 주변의 지방 타임라인</string>
     <string name="ftl_around_toot">이 퉅 주변의 연방 탐라</string>
-    <string name="ftl_around">… 주변의 연방 타임라인</string>
+    <string name="ftl_around">주변의 연방 타임라인…</string>
     <string name="ftl_around_of">%1$s 주변의 연방 타임라인</string>
     <string name="account_tl_around_toot">이 퉅 주변의 계정 탐라</string>
-    <string name="account_tl_around">… 주변의 계정 타임라인</string>
+    <string name="account_tl_around">주변의 계정 타임라인…</string>
     <string name="account_tl_around_of">%1$s 주변의 계정 타임라인</string>
     <string name="verified_at">검증 시각</string>
     <string name="use_old_api">이전 API를 사용</string>
@@ -806,7 +806,7 @@
     <string name="content_background_color">내용 배경색</string>
     <string name="content_acct_color">내용 계정 색</string>
     <string name="content_text_color">내용 본문 색</string>
-    <string name="quick_toot_bar_background_color">빠른 퉅 바 배경색</string>
+    <string name="quick_toot_bar_background_color">즉석 퉅 바 배경색</string>
     <string name="dont_show_preview_card">미리보기 카드를 보이지 않기</string>
     <string name="instance_does_not_support_push_api_pleroma">푸시 구독 API는 이 서버(아마도 Pleroma)에서 지원하지 않습니다.</string>
     <string name="quote_renote">인용 리노트… (Misskey)</string>
@@ -842,7 +842,7 @@
     <string name="username_not_need_atmark">사용자 이름은 \"@\" 또는 \"/\"를 포함하지 않아야 합니다.</string>
     <string name="pseudo_account_cant_get_follow_list">의사 계정에서는 팔로우 목록을 읽을 수 없음.</string>
     <string name="reaction_remove_confirm">당신의 반응 \"%1$s\"를 삭제할까요\?</string>
-    <string name="scheduled_status">예약된 게시</string>
+    <string name="scheduled_status">예약 게시</string>
     <string name="unspecified">지정하지 않음</string>
     <string name="scheduled_status_sent">예약 게시가 보내졌습니다.</string>
     <string name="scheduled_status_delete_confirm">이 예약 게시를 삭제할까요\?</string>
@@ -861,5 +861,5 @@
     <string name="copy_account_id">계정 ID %1$s 복사</string>
     <string name="open_in_admin_ui">관리자 웹 UI에서 열기</string>
     <string name="show_acct_in_system_notification">시스템 알림에 계정 (사용자 이름 대신) 보이기</string>
-    <string name="network_error">통신 오류</string>
+    <string name="network_error">통신 오류.</string>
 </resources>

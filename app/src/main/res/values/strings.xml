@@ -875,5 +875,7 @@
     <string name="open_in_admin_ui">Open in admin web UI</string>
     <string name="show_acct_in_system_notification">Show acct (instead of user name) in system notification</string>
     <string name="show_link_underline">Show link underline</string>
+    <string name="official_account">Official account</string>
+    <string name="releases">Releases</string>
 
 </resources>

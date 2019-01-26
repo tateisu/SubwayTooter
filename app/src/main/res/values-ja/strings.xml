@@ -370,7 +370,7 @@
     <string name="language_code">ja</string>
     <string name="languages">言語</string>
     <string name="last_selection">最後に選択した</string>
-    <string name="launcher_icon_by">ランチャーアイコンはフタバさんがデザインしました</string>
+    <string name="launcher_icon_by">ランチャーアイコンのデザイン：フタバさん</string>
     <string name="led">LED</string>
     <string name="length_warning">\"%1$s\"が長すぎます(%2$d/%3$d文字).\n標準的なサーバーではエラーとなりますが、一部のサーバーでは通るかも。\nよろしいですか?</string>
     <string name="list">リスト</string>
@@ -853,5 +853,7 @@
     <string name="open_in_admin_ui">管理者WebUIで開く</string>
     <string name="show_acct_in_system_notification">システム通知に(ユーザ名ではなく)acctを使用する</string>
     <string name="show_link_underline">リンクの下線を表示する</string>
+    <string name="official_account">公式アカウント</string>
+    <string name="releases">更新履歴</string>
 
 </resources>

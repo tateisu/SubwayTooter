@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.view.Gravity
+import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -17,18 +19,22 @@ class ActAbout : AppCompatActivity() {
 		
 		const val EXTRA_SEARCH = "search"
 		
-		const val url_store = "https://play.google.com/store/apps/details?id=jp.juggler.subwaytooter"
-
+		const val url_store =
+			"https://play.google.com/store/apps/details?id=jp.juggler.subwaytooter"
+		
 		const val developer_acct = "tateisu@mastodon.juggler.jp"
+		const val official_acct = "SubwayTooter@mastodon.juggler.jp"
+		
+		const val url_release = "https://github.com/tateisu/SubwayTooter/releases"
 		
 		const val url_futaba = "https://www.instagram.com/hinomoto_hutaba/"
-
+		
 		const val url_weblate = "https://hosted.weblate.org/projects/subway-tooter/"
 		
 		val contributors = arrayOf(
-			"@Balor@freeradical.zone", "update english language",
-			"@Luattic@oc.todon.fr", "update french language",
-			"@BoF@mstdn.fr", "update arabic language"
+			Pair("@Balor@freeradical.zone", "update english language"),
+			Pair("@Luattic@oc.todon.fr", "update french language"),
+			Pair("@BoF@mstdn.fr", "update arabic language")
 		)
 	}
 	
@@ -43,65 +49,76 @@ class ActAbout : AppCompatActivity() {
 		try {
 			val pInfo = packageManager.getPackageInfo(packageName, 0)
 			val tv = findViewById<TextView>(R.id.tvVersion)
-				tv.text = getString(R.string.version_is, pInfo.versionName)
+			tv.text = getString(R.string.version_is, pInfo.versionName)
 		} catch(ex : PackageManager.NameNotFoundException) {
-			log.trace(ex,"getPackageInfo failed.")
+			log.trace(ex, "getPackageInfo failed.")
 		}
 		
-		var b : Button
+		fun setButton(btnId : Int, caption : String, onClick : () -> Unit) {
+			val b : Button = findViewById(btnId)
+			b.text = caption
+			b.setOnClickListener { onClick() }
+		}
 		
-		b = findViewById(R.id.btnDeveloper)
-		b.text = getString(R.string.search_for, developer_acct)
-		b.setOnClickListener {
-			val data = Intent()
-			data.putExtra(EXTRA_SEARCH, developer_acct)
-			setResult(Activity.RESULT_OK, data)
+		fun searchAcct(acct : String) {
+			setResult(Activity.RESULT_OK, Intent().apply { putExtra(EXTRA_SEARCH, acct) })
 			finish()
 		}
 		
-		b = findViewById(R.id.btnRate)
-		b.text = url_store
-		b.setOnClickListener {App1.openBrowser(this@ActAbout,url_store) }
+		fun openUrl(url : String) {
+			App1.openBrowser(this@ActAbout, url)
+		}
 		
-		b = findViewById(R.id.btnIconDesign)
-		b.text = url_futaba
-		b.setOnClickListener { App1.openBrowser(this@ActAbout,url_futaba) }
+		setButton(
+			R.id.btnDeveloper,
+			getString(R.string.search_for, developer_acct)
+		) { searchAcct(developer_acct) }
 		
-		b = findViewById(R.id.btnWeblate)
-		b.text = "Please help translation!"
-		b.setOnClickListener { App1.openBrowser(this@ActAbout,url_weblate) }
+		setButton(
+			R.id.btnOfficialAccount,
+			getString(R.string.search_for, official_acct)
+		) { searchAcct(official_acct) }
+		
+		
+		setButton(R.id.btnRate, url_store) { openUrl(url_store) }
+		setButton(R.id.btnReleaseNote, url_release) { openUrl(url_release) }
+		setButton(R.id.btnIconDesign, url_futaba) { openUrl(url_futaba) }
+		setButton(R.id.btnWeblate, "Please help translation!") { openUrl(url_weblate) }
 		
 		val ll = findViewById<LinearLayout>(R.id.llContributors)
 		val density = resources.displayMetrics.density
 		val margin_top = (0.5f + density * 8).toInt()
 		val padding = (0.5f + density * 8).toInt()
 		
-		var i = 0
-		val ie = contributors.size
-		while(i < ie) {
-			val acct = contributors[i]
-			val works = contributors[i + 1]
-			
-			b = Button(this)
-			//
-			val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-			if(i < 0) lp.topMargin = margin_top
-			b.layoutParams = lp
-			//
-			b.setBackgroundResource(R.drawable.btn_bg_transparent)
-			b.setPadding(padding, padding, padding, padding)
-			b.isAllCaps = false
-			//
-			b.text = getString(R.string.search_for, acct) + "\n" + getString(R.string.thanks_for, works)
-			b.setOnClickListener {
-				val data = Intent()
-				data.putExtra(EXTRA_SEARCH, acct)
-				setResult(Activity.RESULT_OK, data)
-				finish()
-			}
-			//
-			ll.addView(b)
-			i += 2
+		for( pair in contributors){
+			ll.addView(Button(this).apply{
+				val acct = pair.first
+				val works = pair.second
+
+				//
+				layoutParams = LinearLayout.LayoutParams(
+					LinearLayout.LayoutParams.WRAP_CONTENT,
+					LinearLayout.LayoutParams.WRAP_CONTENT
+				).apply{
+					if( ll.childCount != 0 ) topMargin = margin_top
+				}
+				//
+				setBackgroundResource(R.drawable.btn_bg_transparent)
+				setPadding(padding, padding, padding, padding)
+				isAllCaps = false
+				//
+				text = getString(R.string.search_for, acct) + "\n" +
+					getString(R.string.thanks_for, works)
+				
+				gravity = Gravity.START or Gravity.CENTER_VERTICAL
+				
+				setOnClickListener {
+					val data = Intent()
+					data.putExtra(EXTRA_SEARCH, acct)
+					setResult(Activity.RESULT_OK, data)
+					finish()
+				}
+			})
 		}
 	}
 }

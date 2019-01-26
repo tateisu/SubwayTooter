@@ -373,7 +373,7 @@
     <string name="toot_button_default_account">퉅 버튼이 눌러졌을 때의 기본 계정</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">계정을 전환하지 못함. 구 초안 데이터는 in_reply_to_url이 없어 선택된 서버에 대해 in_reply_to를 변환할 수 없습니다.</string>
     <string name="in_reply_to_id_conversion_failed">in_reply_to ID 변환 실패.</string>
-    <string name="prior_chrome_custom_tabs">"구글 크롬을 우선적으로 선택  (맞춤 탭이 켜져 있으면)"</string>
+    <string name="prior_chrome_custom_tabs">구글 크롬을 우선적으로 선택  (맞춤 탭이 켜져 있으면)</string>
     <string name="enable_speech">음성을 사용</string>
     <string name="url_omitted">(URL 생략됨)</string>
     <string name="blocked_domains">차단된 도메인들</string>
@@ -684,7 +684,7 @@
     <string name="redraft_and_delete">삭제하고 다시 편집</string>
     <string name="cant_sync_toot">퉅을 동기화할 수 없음.</string>
     <string name="cant_change_account_when_redraft">재편집 중에는 계정을 변경할 수 없음.</string>
-    <string name="delete_base_status_before_toot">"게시하기 전에 원래 퉅을 삭제하기.  모든 즐겨찾기/부스트를 잃어 버립니다. 답글은 연결이 끊어집니다. 미디어 첨부는 마스토돈 2.4.1 이전 버전에서는 유지되지 않습니다. 계속하시겠습니까\?"</string>
+    <string name="delete_base_status_before_toot">게시하기 전에 원래 퉅을 삭제하기.  모든 즐겨찾기/부스트를 잃어 버립니다. 답글은 연결이 끊어집니다. 미디어 첨부는 마스토돈 2.4.1 이전 버전에서는 유지되지 않습니다. 계속하시겠습니까\?</string>
     <string name="notification_tl_font_size">알림 탐라 글꼴 크기 (단위:sp. 비워두면 기본값. 앱 재시작 필요)</string>
     <string name="notification_tl_icon_size">알림 탐라 아이콘 크기 (단위:dp. 기본값:24. 앱 재시작 필요)</string>
     <string name="post_button_tapped_repeatly">게시 버튼이 반복적으로 두드려졌습니다</string>

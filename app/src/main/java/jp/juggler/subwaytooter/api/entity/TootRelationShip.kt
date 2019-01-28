@@ -4,7 +4,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import org.json.JSONObject
 
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.util.parseLong
+import jp.juggler.util.parseString
 
 class TootRelationShip(parser:TootParser,src : JSONObject) {
 	
@@ -59,7 +59,7 @@ class TootRelationShip(parser:TootParser,src : JSONObject) {
 			showing_reblogs = UserRelation.REBLOG_UNKNOWN
 			
 		}else{
-			this.id = EntityId.mayDefault( src.parseLong("id") )
+			this.id = EntityId.mayDefault( src.parseString("id") )
 			
 			var ov = src.opt("following")
 			if(ov is JSONObject) {

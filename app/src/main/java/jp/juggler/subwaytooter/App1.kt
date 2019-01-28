@@ -121,13 +121,10 @@ class App1 : Application() {
 			SavedAccount,
 			ClientInfo,
 			MediaShown,
-			MediaShownMisskey,
 			ContentWarning,
-			ContentWarningMisskey,
 			NotificationTracking,
 			MutedApp,
 			UserRelation,
-			UserRelationMisskey,
 			AcctSet,
 			AcctColor,
 			MutedWord,
@@ -316,11 +313,8 @@ class App1 : Application() {
 			val now = System.currentTimeMillis()
 			AcctSet.deleteOld(now)
 			UserRelation.deleteOld(now)
-			UserRelationMisskey.deleteOld(now)
 			ContentWarning.deleteOld(now)
-			//ContentWarningMisskey.deleteOld(now)
 			MediaShown.deleteOld(now)
-			MediaShownMisskey.deleteOld(now)
 			
 			//		if( USE_OLD_EMOJIONE ){
 			//			if( typeface_emoji == null ){

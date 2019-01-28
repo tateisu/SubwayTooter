@@ -129,7 +129,7 @@ class TootAttachment : TootAttachmentLike {
 			}
 			
 			else -> {
-				id = EntityId.mayDefault(src.parseLong("id"))
+				id = EntityId.mayDefault(src.parseString("id"))
 				url = src.parseString("url")
 				remote_url = src.parseString("remote_url")
 				preview_url = src.parseString("preview_url")
@@ -207,11 +207,7 @@ class TootAttachment : TootAttachmentLike {
 		@Suppress("UNUSED_PARAMETER") decode : Boolean // dummy parameter for choosing this ctor.
 	) {
 		
-		id = if(src.optBoolean(KEY_IS_STRING_ID)) {
-			EntityId.mayDefault(src.parseString(KEY_ID))
-		} else {
-			EntityId.mayDefault(src.parseLong(KEY_ID))
-		}
+		id = EntityId.mayDefault(src.parseString(KEY_ID))
 		
 		type = src.parseString(KEY_TYPE)
 		url = src.parseString(KEY_URL)

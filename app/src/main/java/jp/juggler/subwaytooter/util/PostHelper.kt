@@ -466,7 +466,7 @@ class PostHelper(
 						)
 						
 						if(in_reply_to_id != null) {
-							json.put("in_reply_to_id", in_reply_to_id.toLong())
+							json.put("in_reply_to_id", in_reply_to_id.toString())
 						}
 						
 						if(attachment_list != null) {

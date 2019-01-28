@@ -13,6 +13,6 @@ abstract class TimelineItem{
 	val listViewItemId :Long = listViewItemIdSeed.incrementAndGet()
 	
 	// 大小比較のためのIDを取得する
-	// 比較が不要な場合は0Lを返す
-	open fun getOrderId() :EntityId = EntityId.defaultLong
+	// 比較が不要な場合は defaultString を返す
+	open fun getOrderId() :EntityId = EntityId.defaultString
 }

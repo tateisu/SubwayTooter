@@ -2,9 +2,7 @@ package jp.juggler.subwaytooter.table
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
-
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getInt
@@ -12,7 +10,7 @@ import jp.juggler.util.getInt
 object MediaShown : TableCompanion {
 	private val log = LogCategory("MediaShown")
 	
-	private const val table = "media_shown"
+	private const val table = "media_shown_misskey"
 	private const val COL_HOST = "h"
 	private const val COL_STATUS_ID = "si"
 	private const val COL_SHOWN = "sh"
@@ -27,7 +25,7 @@ object MediaShown : TableCompanion {
 			create table if not exists $table
 			(_id INTEGER PRIMARY KEY
 			,$COL_HOST text not null
-			,$COL_STATUS_ID integer not null
+			,$COL_STATUS_ID text not null
 			,$COL_SHOWN integer not null
 			,$COL_TIME_SAVE integer default 0
 			)
@@ -39,64 +37,9 @@ object MediaShown : TableCompanion {
 	}
 	
 	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
-		if(oldVersion < 5 && newVersion >= 5) {
+		if(oldVersion < 30 && newVersion >= 30) {
 			db.execSQL("drop table if exists $table")
 			onDBCreate(db)
-		}
-		if(oldVersion < 31 && newVersion >= 31) {
-			db.execSQL("drop table if exists $table")
-			onDBCreate(db)
-		}
-	}
-	
-	fun isShown(uri : String, default_value : Boolean) : Boolean {
-		return MediaShownMisskey.isShown(uri, default_value)
-	}
-
-	fun isShown(status : TootStatus, default_value : Boolean) : Boolean {
-		val id = status.id
-		if(id is EntityIdString) return MediaShownMisskey.isShown(status, default_value)
-
-		try {
-			App1.database.query(
-				table,
-				projection_shown,
-				"h=? and si=?",
-				arrayOf(
-					status.hostAccessOrOriginal,
-					id.toString()
-				),
-				null,
-				null,
-				null
-			).use { cursor ->
-				if(cursor.moveToFirst()) {
-					return 0 != cursor.getInt(COL_SHOWN)
-				}
-			}
-		} catch(ex : Throwable) {
-			log.e(ex, "load failed.")
-		}
-		
-		return default_value
-	}
-	fun save( uri:String,is_shown : Boolean) {
-		return MediaShownMisskey.save(uri, is_shown)
-	}
-	fun save(status : TootStatus, is_shown : Boolean) {
-		val id = status.id
-		if(id is EntityIdString) return MediaShownMisskey.save(status, is_shown)
-		try {
-			val now = System.currentTimeMillis()
-			
-			val cv = ContentValues()
-			cv.put(COL_HOST, status.hostAccessOrOriginal)
-			cv.put(COL_STATUS_ID, id.toLong())
-			cv.put(COL_SHOWN, is_shown.b2i())
-			cv.put(COL_TIME_SAVE, now)
-			App1.database.replace(table, null, cv)
-		} catch(ex : Throwable) {
-			log.e(ex, "save failed.")
 		}
 	}
 	
@@ -107,5 +50,92 @@ object MediaShown : TableCompanion {
 		} catch(ex : Throwable) {
 			log.e(ex, "deleteOld failed.")
 		}
+		
+		// 旧型式のテーブルも古い項目の削除だけ行う
+		try {
+			val table = "media_shown"
+			val COL_TIME_SAVE = "time_save"
+			val expire = now - 86400000L * 365
+			App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+		} catch(ignored : Throwable) {
+		}
 	}
+	
+	fun isShown(uri : String, default_value : Boolean) : Boolean {
+		try {
+			App1.database.query(
+				table,
+				projection_shown,
+				"h=? and si=?",
+				arrayOf(uri, uri),
+				null,
+				null,
+				null
+			).use { cursor ->
+				if(cursor.moveToFirst()) {
+					return 0 != cursor.getInt(COL_SHOWN)
+				}
+				
+			}
+		} catch(ex : Throwable) {
+			log.e(ex, "load failed.")
+		}
+		
+		return default_value
+	}
+	
+	fun isShown(status : TootStatus, default_value : Boolean) : Boolean {
+		try {
+			App1.database.query(
+				table,
+				projection_shown,
+				"h=? and si=?",
+				arrayOf(
+					status.hostAccessOrOriginal,
+					status.id.toString()
+				),
+				null,
+				null,
+				null
+			).use { cursor ->
+				if(cursor.moveToFirst()) {
+					return 0 != cursor.getInt(COL_SHOWN)
+				}
+				
+			}
+		} catch(ex : Throwable) {
+			log.e(ex, "load failed.")
+		}
+		
+		return default_value
+	}
+	
+	fun save(uri : String, is_shown : Boolean) {
+		try {
+			val now = System.currentTimeMillis()
+			val cv = ContentValues()
+			cv.put(COL_HOST, uri)
+			cv.put(COL_STATUS_ID, uri)
+			cv.put(COL_SHOWN, is_shown.b2i())
+			cv.put(COL_TIME_SAVE, now)
+			App1.database.replace(table, null, cv)
+		} catch(ex : Throwable) {
+			log.e(ex, "save failed.")
+		}
+	}
+	
+	fun save(status : TootStatus, is_shown : Boolean) {
+		try {
+			val now = System.currentTimeMillis()
+			val cv = ContentValues()
+			cv.put(COL_HOST, status.hostAccessOrOriginal)
+			cv.put(COL_STATUS_ID, status.id.toString())
+			cv.put(COL_SHOWN, is_shown.b2i())
+			cv.put(COL_TIME_SAVE, now)
+			App1.database.replace(table, null, cv)
+		} catch(ex : Throwable) {
+			log.e(ex, "save failed.")
+		}
+	}
+	
 }

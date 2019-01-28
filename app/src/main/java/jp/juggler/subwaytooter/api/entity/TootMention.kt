@@ -1,8 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.util.notEmptyOrThrow
-import jp.juggler.util.parseLong
-
+import jp.juggler.util.parseString
 import org.json.JSONObject
 
 class TootMention(
@@ -13,7 +12,7 @@ class TootMention(
 ) {
 	
 	constructor(src : JSONObject) : this(
-		id = EntityIdLong(src.parseLong("id") ?: - 1L),
+		id = EntityId.mayDefault(src.parseString("id") ),
 		url = src.notEmptyOrThrow("url"),
 		acct = src.notEmptyOrThrow("acct"),
 		username = src.notEmptyOrThrow("username")

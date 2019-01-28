@@ -12,7 +12,6 @@ import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.table.UserRelationMisskey
 import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.util.*
 import org.json.JSONObject
@@ -203,7 +202,7 @@ object Action_Follow {
 						fun saveFollow(f : Boolean) {
 							val ur = UserRelation.load(access_info.db_id, userId)
 							ur.following = f
-							UserRelationMisskey.save1(
+							UserRelation.save1Misskey(
 								System.currentTimeMillis(),
 								access_info.db_id,
 								userId.toString(),

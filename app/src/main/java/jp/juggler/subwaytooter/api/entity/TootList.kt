@@ -39,7 +39,7 @@ class TootList(parser:TootParser,src : JSONObject): TimelineItem(), Comparable<T
 				if(id != null ) user_list.add(id )
 			}
 		}else {
-			id = EntityId.mayDefault(src.parseLong("id") )
+			id = EntityId.mayDefault(src.parseString("id") )
 			title = src.parseString("title")
 			this.title_for_sort = makeTitleForSort(this.title)
 		}

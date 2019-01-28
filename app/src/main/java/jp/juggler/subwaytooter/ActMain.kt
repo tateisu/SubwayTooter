@@ -621,15 +621,15 @@ class ActMain : AppCompatActivity()
 		val posted_acct = this.posted_acct
 		val posted_status_id = this.posted_status_id
 		
-		if( posted_acct?.isNotEmpty() == true && posted_status_id == null) {
+		if(posted_acct?.isNotEmpty() == true && posted_status_id == null) {
 			// 予約投稿なら予約投稿リストをリロードする
 			for(column in app_state.column_list) {
-				if( column.column_type == Column.TYPE_SCHEDULED_STATUS && column.access_info.acct == posted_acct){
+				if(column.column_type == Column.TYPE_SCHEDULED_STATUS && column.access_info.acct == posted_acct) {
 					column.startLoading()
 				}
 			}
 			
-		}else if(posted_acct?.isNotEmpty() == true && posted_status_id != null) {
+		} else if(posted_acct?.isNotEmpty() == true && posted_status_id != null) {
 			
 			val posted_redraft_id = this.posted_redraft_id
 			if(posted_redraft_id != null) {
@@ -744,7 +744,7 @@ class ActMain : AppCompatActivity()
 		
 		etQuickToot.hideKeyboard()
 		
-		post_helper.post(account,callback=object:PostHelper.PostCompleteCallback{
+		post_helper.post(account, callback = object : PostHelper.PostCompleteCallback {
 			override fun onPostComplete(
 				target_account : SavedAccount,
 				status : TootStatus
@@ -849,11 +849,11 @@ class ActMain : AppCompatActivity()
 				REQUEST_CODE_POST -> if(data != null) {
 					etQuickToot.setText("")
 					posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)
-					if( data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true ){
+					if(data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
 						posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
 						posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
 						posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
-					}else {
+					} else {
 						posted_status_id = null
 					}
 				}
@@ -1130,7 +1130,7 @@ class ActMain : AppCompatActivity()
 				, bAllowPseudo = false
 				, bAllowMisskey = false
 			)
-			R.id.nav_scheduled_statuses_list-> Action_Account.timeline(
+			R.id.nav_scheduled_statuses_list -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
 				, Column.TYPE_SCHEDULED_STATUS
@@ -1208,7 +1208,7 @@ class ActMain : AppCompatActivity()
 	internal fun initUI() {
 		setContentView(R.layout.act_main)
 		
-	
+		
 		
 		Column.reloadDefaultColor(this, pref)
 		
@@ -1478,13 +1478,13 @@ class ActMain : AppCompatActivity()
 		val barTopMargin = (iconSize * 0.094f + 0.5f).toInt()
 		
 		// 両端のメニューと投稿ボタンの大きさ
-		val pad = (rootH - iconSize ) shr 1
+		val pad = (rootH - iconSize) shr 1
 		btnToot.layoutParams.width = rootH // not W
 		btnToot.layoutParams.height = rootH
-		btnToot.setPaddingRelative(pad,pad,pad,pad)
+		btnToot.setPaddingRelative(pad, pad, pad, pad)
 		btnMenu.layoutParams.width = rootH // not W
 		btnMenu.layoutParams.height = rootH
-		btnMenu.setPaddingRelative(pad,pad,pad,pad)
+		btnMenu.setPaddingRelative(pad, pad, pad, pad)
 		
 		llColumnStrip.removeAllViews()
 		for(i in 0 until app_state.column_list.size) {
@@ -1494,16 +1494,16 @@ class ActMain : AppCompatActivity()
 			val viewRoot = layoutInflater.inflate(R.layout.lv_column_strip, llColumnStrip, false)
 			val ivIcon = viewRoot.findViewById<ImageView>(R.id.ivIcon)
 			val vAcctColor = viewRoot.findViewById<View>(R.id.vAcctColor)
-
+			
 			// root: 48x48dp LinearLayout(vertical), gravity=center
 			viewRoot.layoutParams.width = rootW
 			viewRoot.layoutParams.height = rootH
-
+			
 			// ivIcon: 32x32dp marginTop="4dp" 図柄が32x32dp、パディングなし
 			ivIcon.layoutParams.width = iconSize
 			ivIcon.layoutParams.height = iconSize
 			(ivIcon.layoutParams as? LinearLayout.LayoutParams)?.topMargin = iconTopMargin
-
+			
 			// vAcctColor: 32x3dp marginTop="3dp"
 			vAcctColor.layoutParams.width = iconSize
 			vAcctColor.layoutParams.height = barHeight
@@ -1530,10 +1530,10 @@ class ActMain : AppCompatActivity()
 			val ac = AcctColor.load(column.access_info.acct)
 			if(AcctColor.hasColorForeground(ac)) {
 				vAcctColor.setBackgroundColor(ac.color_fg)
-			}else{
+			} else {
 				vAcctColor.visibility = View.INVISIBLE
 			}
-
+			
 			//
 			llColumnStrip.addView(viewRoot)
 		}
@@ -1595,7 +1595,7 @@ class ActMain : AppCompatActivity()
 	}
 	
 	fun startAccessTokenUpdate(data : Intent) {
-		App1.openBrowser(this,data.data)
+		App1.openBrowser(this, data.data)
 	}
 	
 	// ActOAuthCallbackで受け取ったUriを処理する
@@ -1618,7 +1618,8 @@ class ActMain : AppCompatActivity()
 		if(m.find()) {
 			try {
 				val host = m.group(1)
-				val status_id = EntityIdLong(m.group(3).toLong(10))
+				val status_id = EntityIdString(m.group(3))
+				
 				// ステータスをアプリ内で開く
 				Action_Toot.conversationOtherInstance(
 					this@ActMain,
@@ -1628,6 +1629,7 @@ class ActMain : AppCompatActivity()
 					host,
 					status_id
 				)
+				
 			} catch(ex : Throwable) {
 				showToast(this, ex, "can't parse status id.")
 			}
@@ -1683,6 +1685,23 @@ class ActMain : AppCompatActivity()
 					user
 				)
 			}
+			return
+		}
+		
+		// intentFilterの都合でこの形式のURLが飛んでくることはないのだが…。
+		m = TootAccount.reAccountUrl2.matcher(url)
+		if(m.find()) {
+			val host = m.group(1)
+			val user = m.group(2).decodePercent()
+			
+			Action_User.profile(
+				this@ActMain,
+				defaultInsertPosition,
+				null,
+				url,
+				host,
+				user
+			)
 			return
 		}
 		
@@ -2277,7 +2296,7 @@ class ActMain : AppCompatActivity()
 					try {
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 						val host = m.group(1)
-						val status_id = EntityIdLong(m.group(3).toLong(10))
+						val status_id = EntityIdString(m.group(3))
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(
 								this@ActMain,
@@ -2333,6 +2352,60 @@ class ActMain : AppCompatActivity()
 					return
 				}
 				
+				
+				m = TootStatus.reStatusPageObjects.matcher(opener.url)
+				if(m.find()) {
+					try {
+						// https://misskey.xyz/objects/(id)
+						val host = m.group(1)
+						// ステータスIDではないのでどのタンスで開くにせよ検索APIを通すことになるval object_id = EntityIdString(m.group(2))
+						Action_Toot.conversationOtherInstance(
+							this@ActMain,
+							opener.pos,
+							opener.url,
+							null,
+							host,
+							null
+						)
+					} catch(ex : Throwable) {
+						showToast(this, ex, "can't parse status id.")
+					}
+					
+					return
+				}
+				
+				// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
+				m = TootStatus.reStatusPageNotice.matcher(opener.url)
+				if(m.find()){
+					try {
+						// https://misskey.xyz/notes/(id)
+						val host = m.group(1)
+						val status_id = EntityIdString(m.group(2))
+						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
+							Action_Toot.conversationOtherInstance(
+								this@ActMain,
+								opener.pos,
+								opener.url,
+								status_id,
+								host,
+								status_id
+							)
+						} else {
+							Action_Toot.conversationLocal(
+								this@ActMain,
+								opener.pos,
+								accessInto,
+								status_id
+							)
+						}
+					} catch(ex : Throwable) {
+						showToast(this, ex, "can't parse status id.")
+					}
+					
+					return
+				}
+				
+				
 				// ユーザページをアプリ内で開く
 				m = TootAccount.reAccountUrl.matcher(opener.url)
 				if(m.find()) {
@@ -2343,14 +2416,16 @@ class ActMain : AppCompatActivity()
 					// https://misskey.xyz/@tateisu@twitter.com
 					
 					if(instance?.isNotEmpty() == true) {
-						when(instance.toLowerCase()){
-							"github.com","twitter.com"->{
+						when(instance.toLowerCase()) {
+							"github.com", "twitter.com" -> {
 								App1.openCustomTab(this, "https://$instance/$user")
 							}
-							"gmail.com" ->{
+							
+							"gmail.com" -> {
 								App1.openBrowser(this, "mailto:$user@$instance")
 							}
-							else->{
+							
+							else -> {
 								Action_User.profile(
 									this@ActMain,
 									opener.pos,
@@ -2374,6 +2449,21 @@ class ActMain : AppCompatActivity()
 					return
 				}
 				
+				m = TootAccount.reAccountUrl2.matcher(opener.url)
+				if(m.find()) {
+					val host = m.group(1)
+					val user = m.group(2).decodePercent()
+					
+					Action_User.profile(
+						this@ActMain,
+						opener.pos,
+						accessInto,
+						opener.url,
+						host,
+						user
+					)
+					return
+				}
 			}
 			
 			App1.openCustomTab(this, opener.url)
@@ -2402,16 +2492,19 @@ class ActMain : AppCompatActivity()
 		val footer_tab_divider_color = Pref.ipFooterTabDividerColor(pref)
 		val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
 		
-		
-		val colorBg = footer_button_bg_color.notZero() ?: getAttributeColor(this, R.attr.colorStatusButtonsPopupBg)
-		val colorRipple = footer_button_fg_color.notZero() ?: getAttributeColor(this, R.attr.colorRippleEffect)
+		val colorBg = footer_button_bg_color.notZero() ?: getAttributeColor(
+			this,
+			R.attr.colorStatusButtonsPopupBg
+		)
+		val colorRipple =
+			footer_button_fg_color.notZero() ?: getAttributeColor(this, R.attr.colorRippleEffect)
 		btnMenu.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
 		btnToot.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
 		btnQuickToot.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
 		
 		val csl = ColorStateList.valueOf(
 			footer_button_fg_color.notZero()
-				?: getAttributeColor(this,R.attr.colorVectorDrawable)
+				?: getAttributeColor(this, R.attr.colorVectorDrawable)
 		)
 		btnToot.imageTintList = csl
 		btnMenu.imageTintList = csl
@@ -2838,7 +2931,7 @@ class ActMain : AppCompatActivity()
 		val lp = LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
 		val tv = TextView(this)
 		tv.layoutParams = lp
-		if(!timeline_font_size_sp.isNaN()) {
+		if(! timeline_font_size_sp.isNaN()) {
 			tv.textSize = timeline_font_size_sp
 		}
 		tv.typeface = timeline_font
@@ -2852,7 +2945,7 @@ class ActMain : AppCompatActivity()
 			auto_cw.originalLineCount = l.lineCount
 			val line_count = auto_cw.originalLineCount
 			
-			if( (nAutoCwLines > 0 && line_count > nAutoCwLines)
+			if((nAutoCwLines > 0 && line_count > nAutoCwLines)
 				&& status.spoiler_text.isEmpty()
 				&& (status.mentions?.size ?: 0) <= nAutoCwLines
 			) {

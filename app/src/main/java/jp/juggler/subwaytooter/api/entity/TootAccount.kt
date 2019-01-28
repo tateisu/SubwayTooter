@@ -4,7 +4,7 @@ import android.content.Context
 import android.text.Spannable
 import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.table.UserRelationMisskey
+import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import org.json.JSONArray
@@ -177,7 +177,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.fields = parseMisskeyFields(src)
 			
 			
-			UserRelationMisskey.fromAccount(parser, src, id)
+			UserRelation.fromAccount(parser, src, id)
 			
 			@Suppress("LeakingThis")
 			MisskeyAccountDetailMap.fromAccount(parser, this, id)
@@ -222,7 +222,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 					
 					val hostAccess = parser.linkHelper.host
 					
-					this.id = EntityId.mayDefault(src.parseLong("id"))
+					this.id = EntityId.mayDefault(src.parseString("id"))
 					
 					this.acct = src.notEmptyOrThrow("acct")
 					this.host = findHostFromUrl(acct, hostAccess, url)
@@ -244,7 +244,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				
 				ServiceType.TOOTSEARCH -> {
 					// tootsearch のアカウントのIDはどのタンス上のものか分からないので役に立たない
-					this.id = EntityId.defaultLong
+					this.id = EntityId.defaultString
 					
 					sv = src.notEmptyOrThrow("acct")
 					this.host = findHostFromUrl(sv, null, url)
@@ -265,7 +265,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				}
 				
 				ServiceType.MSP -> {
-					this.id = EntityId.mayDefault(src.parseLong("id"))
+					this.id = EntityId.mayDefault(src.parseString("id"))
 					
 					// MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
 					this.host = findHostFromUrl(null, null, url)
@@ -330,10 +330,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		).decodeEmoji(sv)
 	}
 	
-	var _orderId : EntityId? = null
-	
-	fun getOrderId() : EntityId = _orderId ?: id
-	
+
 	companion object {
 		private val log = LogCategory("TootAccount")
 		
@@ -341,11 +338,11 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		
 		// MFMのメンション @username @username@host
 		// (Mastodonのカラムでは使われていない)
-		internal val reMention = Pattern.compile("""\A@(\w+[\w-]*\w)(?:@(\w[\w.-]*\w))?""")
+		internal val reMention = Pattern.compile("""\A@(\w|\w+[\w-]*\w)(?:@(\w[\w.-]*\w))?""")
 		
 		// host, user ,(instance)
 		internal val reAccountUrl : Pattern =
-			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/@(\w+[\w-]*\w)(?:@(\w[\w.-]*\w))?(?=\z|[?#])""")
+			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/@(\w|\w+[\w-]*\w)(?:@(\w[\w.-]*\w))?(?=\z|[?#])""")
 		
 		fun getAcctFromUrl(url : String) : String? {
 			val m = reAccountUrl.matcher(url)
@@ -362,6 +359,10 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				null
 			}
 		}
+		
+		// host,user
+		internal val reAccountUrl2 : Pattern =
+			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/users/(\w|\w+[\w-]*\w)(?=\z|[?#])""")
 		
 		private fun parseSource(src : JSONObject?) : Source? {
 			src ?: return null

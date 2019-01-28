@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Environment
 import android.os.SystemClock
-import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.view.View
@@ -334,12 +333,17 @@ class Column(
 			}
 		}
 		
-		internal val reMaxId = Pattern.compile("[&?]max_id=(\\d+)") // より古いデータの取得に使う
+		// より古いデータの取得に使う
+		internal val reMaxId =
+			Pattern.compile("""[&?]max_id=([^&?;\s]+)""")
 		
-		private val reMinId = Pattern.compile("[&?]min_id=(\\d+)") // より新しいデータの取得に使う (マストドン2.6.0以降)
+		// より新しいデータの取得に使う (マストドン2.6.0以降)
+		private val reMinId =
+			Pattern.compile("""[&?]min_id=([^&?;\s]+)""")
 		
+		// より新しいデータの取得に使う(マストドン2.6.0未満)
 		private val reSinceId =
-			Pattern.compile("[&?]since_id=(\\d+)") // より新しいデータの取得に使う(マストドン2.6.0未満)
+			Pattern.compile("""[&?]since_id=([^&?;\s]+)""")
 		
 		val COLUMN_REGEX_FILTER_DEFAULT : (CharSequence?) -> Boolean = { false }
 		
@@ -396,7 +400,7 @@ class Column(
 					
 					val requestId = EntityId.mayNull(src.parseString("id")) ?: continue
 					
-					accountRef.get()._orderId = requestId
+					accountRef._orderId = requestId
 					
 					dst.add(accountRef)
 				}
@@ -416,7 +420,7 @@ class Column(
 					
 					val requestId = EntityId.mayNull(src.parseString("id")) ?: continue
 					
-					accountRef.get()._orderId = requestId
+					accountRef._orderId = requestId
 					
 					dst.add(accountRef)
 				}
@@ -433,6 +437,7 @@ class Column(
 					note._orderId = favId
 					dst.add(note)
 				}
+				
 				dst
 			}
 		
@@ -498,22 +503,22 @@ class Column(
 		private var defaultColorContentText = 0
 		
 		fun reloadDefaultColor(activity : AppCompatActivity, pref : SharedPreferences) {
-
-			defaultColorHeaderBg =  Pref.ipCcdHeaderBg(pref).notZero()
+			
+			defaultColorHeaderBg = Pref.ipCcdHeaderBg(pref).notZero()
 				?: getAttributeColor(activity, R.attr.color_column_header)
-
+			
 			defaultColorHeaderName = Pref.ipCcdHeaderFg(pref).notZero()
 				?: getAttributeColor(activity, R.attr.colorColumnHeaderName)
-
+			
 			defaultColorHeaderPageNumber = Pref.ipCcdHeaderFg(pref).notZero()
 				?: getAttributeColor(activity, R.attr.colorColumnHeaderPageNumber)
-
+			
 			defaultColorContentBg = Pref.ipCcdContentBg(pref)
-				// may zero
-
+			// may zero
+			
 			defaultColorContentAcct = Pref.ipCcdContentAcct(pref).notZero()
 				?: getAttributeColor(activity, R.attr.colorTimeSmall)
-
+			
 			defaultColorContentText = Pref.ipCcdContentText(pref).notZero()
 				?: getAttributeColor(activity, R.attr.colorContentText)
 			
@@ -715,6 +720,8 @@ class Column(
 	
 	private var bPutGap : Boolean = false
 	
+	private var useDate : Boolean = false
+	
 	@Suppress("unused")
 	val listTitle : String
 		get() {
@@ -816,24 +823,15 @@ class Column(
 		when(column_type) {
 			
 			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND ->
-				status_id = when(isMisskey) {
-					true -> EntityId.mayNull(src.parseString(KEY_STATUS_ID))
-					else -> EntityId.mayNull(src.parseLong(KEY_STATUS_ID))
-				}
+				status_id = EntityId.mayNull(src.parseString(KEY_STATUS_ID))
 			
 			TYPE_PROFILE -> {
-				profile_id = when(isMisskey) {
-					true -> EntityId.mayNull(src.parseString(KEY_PROFILE_ID))
-					else -> EntityId.mayNull(src.parseLong(KEY_PROFILE_ID))
-				}
+				profile_id = EntityId.mayNull(src.parseString(KEY_PROFILE_ID))
 				profile_tab = src.optInt(KEY_PROFILE_TAB)
 			}
 			
 			TYPE_LIST_MEMBER, TYPE_LIST_TL -> {
-				profile_id = when(isMisskey) {
-					true -> EntityId.mayNull(src.parseString(KEY_PROFILE_ID))
-					else -> EntityId.mayNull(src.parseLong(KEY_PROFILE_ID))
-				}
+				profile_id = EntityId.mayNull(src.parseString(KEY_PROFILE_ID))
 			}
 			
 			TYPE_HASHTAG -> hashtag = src.optString(KEY_HASHTAG)
@@ -916,8 +914,8 @@ class Column(
 		// 以下は保存には必要ないが、カラムリスト画面で使う
 		val ac = AcctColor.load(access_info.acct)
 		dst.put(KEY_COLUMN_ACCESS, if(AcctColor.hasNickname(ac)) ac.nickname else access_info.acct)
-		dst.put(KEY_COLUMN_ACCESS_COLOR, ac.color_fg )
-		dst.put(KEY_COLUMN_ACCESS_COLOR_BG, ac.color_bg )
+		dst.put(KEY_COLUMN_ACCESS_COLOR, ac.color_fg)
+		dst.put(KEY_COLUMN_ACCESS_COLOR_BG, ac.color_bg)
 		dst.put(KEY_COLUMN_NAME, getColumnName(true))
 		dst.put(KEY_OLD_INDEX, old_index)
 	}
@@ -929,16 +927,10 @@ class Column(
 			when(type) {
 				
 				TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER ->
-					profile_id == when(isMisskey) {
-						true -> EntityIdString(getParamAt(params, 0))
-						else -> EntityIdLong(getParamAt(params, 0))
-					}
+					profile_id == EntityIdString(getParamAt(params, 0))
 				
 				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND ->
-					status_id == when(isMisskey) {
-						true -> EntityIdString(getParamAt(params, 0))
-						else -> EntityIdLong(getParamAt(params, 0))
-					}
+					status_id == EntityIdString(getParamAt(params, 0))
 				
 				TYPE_HASHTAG -> getParamAt<String>(params, 0) == hashtag
 				
@@ -1812,7 +1804,7 @@ class Column(
 					while(start < end) {
 						var step = end - start
 						if(step > RELATIONSHIP_LOAD_STEP) step = RELATIONSHIP_LOAD_STEP
-						UserRelationMisskey.saveList(now, access_info.db_id, who_list, start, step)
+						UserRelation.saveListMisskey(now, access_info.db_id, who_list, start, step)
 						start += step
 					}
 					log.d("updateRelation: update %d relations.", end)
@@ -1855,7 +1847,7 @@ class Column(
 							for(i in 0 until list.size) {
 								list[i].id = userIdList[i]
 							}
-							UserRelationMisskey.saveList2(now, access_info.db_id, list)
+							UserRelation.saveList2(now, access_info.db_id, list)
 						}
 					}
 					log.d("updateRelation: update %d relations.", n)
@@ -1883,7 +1875,11 @@ class Column(
 						}
 						val result = client.request(sb.toString()) ?: break // cancelled.
 						val list = parseList(::TootRelationShip, parser, result.jsonArray)
-						if(list.size > 0) UserRelation.saveList(now, access_info.db_id, list)
+						if(list.size > 0) UserRelation.saveListMastodon(
+							now,
+							access_info.db_id,
+							list
+						)
 					}
 					log.d("updateRelation: update %d relations.", n)
 				}
@@ -2003,7 +1999,7 @@ class Column(
 				} else {
 					// カラムに紐付けられたアカウントのタンスのインスタンス情報
 				}
-				val(result,ti) = client.parseInstanceInformation(client.getInstanceInformation())
+				val (result, ti) = client.parseInstanceInformation(client.getInstanceInformation())
 				instance_tmp = ti
 				return result
 			}
@@ -2038,6 +2034,9 @@ class Column(
 					{ parser, jsonArray -> parser.statusList(jsonArray) },
 				initialUntilDate : Boolean = false
 			) : TootApiResult? {
+				
+				this@Column.useDate = isMisskey
+				// お気に入り一覧などでは変更される
 				
 				val params = misskeyParams ?: makeMisskeyTimelineParameter(parser)
 				
@@ -2105,11 +2104,14 @@ class Column(
 							
 							// フィルタなどが有効な場合は2回目以降の取得
 							val result2 = if(isMisskey) {
-								idOld?.putMisskeyUntil(params)
-								client.request(path_base, params.toPostRequestBuilder())
+								client.request(
+									path_base,
+									params
+										.putMisskeyUntil(idOld)
+										.toPostRequestBuilder()
+								)
 							} else {
-								val path = "$path_base${delimiter}min_id=${idRecent}"
-								client.request(path)
+								client.request("$path_base${delimiter}min_id=${idRecent}")
 							}
 							
 							jsonArray = result2?.jsonArray
@@ -2164,11 +2166,14 @@ class Column(
 							
 							// フィルタなどが有効な場合は2回目以降の取得
 							val result2 = if(isMisskey) {
-								idOld?.putMisskeyUntil(params)
-								client.request(path_base, params.toPostRequestBuilder())
+								client.request(
+									path_base,
+									params
+										.putMisskeyUntil(idOld)
+										.toPostRequestBuilder()
+								)
 							} else {
-								val path = "$path_base${delimiter}max_id=${idOld}"
-								client.request(path)
+								client.request("$path_base${delimiter}max_id=${idOld}")
 							}
 							
 							jsonArray = result2?.jsonArray
@@ -2262,11 +2267,14 @@ class Column(
 							
 							// フィルタなどが有効な場合は2回目以降の取得
 							val result2 = if(isMisskey) {
-								idOld?.putMisskeyUntil(params)
-								client.request(path_base, params.toPostRequestBuilder())
+								client.request(
+									path_base,
+									params
+										.putMisskeyUntil(idOld)
+										.toPostRequestBuilder()
+								)
 							} else {
-								val path = "$path_base${delimiter}min_id=${idRecent}"
-								client.request(path)
+								client.request("$path_base${delimiter}min_id=${idRecent}")
 							}
 							
 							jsonArray = result2?.jsonArray
@@ -2321,8 +2329,12 @@ class Column(
 							
 							// フィルタなどが有効な場合は2回目以降の取得
 							val result2 = if(isMisskey) {
-								idOld?.putMisskeyUntil(params)
-								client.request(path_base, params.toPostRequestBuilder())
+								client.request(
+									path_base,
+									params
+										.putMisskeyUntil(idOld)
+										.toPostRequestBuilder()
+								)
 							} else {
 								val path = "$path_base${delimiter}max_id=${idOld}"
 								client.request(path)
@@ -2518,11 +2530,14 @@ class Column(
 						}
 						
 						val result2 = if(isMisskey) {
-							idOld?.putMisskeyUntil(params)
-							client.request(path_base, params.toPostRequestBuilder())
+							client.request(
+								path_base,
+								params
+									.putMisskeyUntil(idOld)
+									.toPostRequestBuilder()
+							)
 						} else {
-							val path = "$path_base${delimiter}max_id=$idOld"
-							client.request(path)
+							client.request("$path_base${delimiter}max_id=$idOld")
 						}
 						
 						jsonArray = result2?.jsonArray
@@ -2645,6 +2660,7 @@ class Column(
 				return result
 				
 			}
+			
 			private fun getScheduledStatuses(client : TootApiClient) : TootApiResult? {
 				val result = client.request(PATH_SCHEDULED_STATUSES)
 				val src = parseList(::TootScheduled, parser, result?.jsonArray)
@@ -2968,6 +2984,7 @@ class Column(
 						)
 						
 						TYPE_FAVOURITES -> return if(isMisskey) {
+							this@Column.useDate = false
 							getStatuses(
 								client
 								, PATH_MISSKEY_FAVORITES
@@ -3312,7 +3329,7 @@ class Column(
 										TootApiClient.getTootsearchMaxId(
 											jsonObject,
 											idOld?.toLong()
-										)
+										)?.toString()
 									)
 									
 									// リストデータの用意
@@ -3399,7 +3416,7 @@ class Column(
 	
 	// mastodon用
 	private fun makeProfileStatusesUrl(profile_id : EntityId?) : String {
-		var path ="/api/v1/accounts/$profile_id/statuses?limit=$READ_LIMIT"
+		var path = "/api/v1/accounts/$profile_id/statuses?limit=$READ_LIMIT"
 		if(with_attachment && ! with_highlight) path += "&only_media=1"
 		if(dont_show_boost) path += "&exclude_reblogs=1"
 		if(dont_show_reply) path += "&exclude_replies=1"
@@ -3429,7 +3446,7 @@ class Column(
 			} else {
 				val m = reMaxId.matcher(result.link_older)
 				if(m.find()) {
-					EntityIdLong(m.group(1).toLong())
+					EntityIdString(m.group(1))
 				} else {
 					null
 				}
@@ -3441,12 +3458,12 @@ class Column(
 				var m = reMinId.matcher(result.link_newer)
 				if(m.find()) {
 					bMinIdMatched = true
-					EntityIdLong(m.group(1).toLong())
+					EntityIdString(m.group(1))
 				} else {
 					m = reSinceId.matcher(result.link_newer)
 					if(m.find()) {
 						bMinIdMatched = false
-						EntityIdLong(m.group(1).toLong())
+						EntityIdString(m.group(1))
 					} else {
 						null
 					}
@@ -3469,38 +3486,26 @@ class Column(
 		
 		var hasBottomRemain = false
 		
-		if(bBottom) {
-			when {
-				idMin == null -> idOld = null // リストの終端
-				idMin is EntityIdString && ! isMisskey -> {
-					log.e("EntityId should be Long for non-misskey column! columnType=$column_type")
-				}
-				
-				else -> {
-					val i = idOld?.compareTo(idMin)
-					if(i == null || i > 0) {
-						idOld = idMin
-						hasBottomRemain = true
-					}
+		if(bBottom) when(idMin) {
+			null -> idOld = null // リストの終端
+			else -> {
+				val i = idOld?.compareTo(idMin)
+				if(i == null || i > 0) {
+					idOld = idMin
+					hasBottomRemain = true
 				}
 			}
 		}
 		
-		if(bTop) {
-			when {
+		if(bTop) when(idMax) {
+			null -> {
 				// リロードを許容するため、取得内容がカラでもidRecentを変更しない
-				idMax == null -> {
-				}
-				
-				idMax is EntityIdString && ! isMisskey -> {
-					log.e("EntityId should be Long for non-misskey column! columnType=$column_type")
-				}
-				
-				else -> {
-					val i = idRecent?.compareTo(idMax)
-					if(i == null || i < 0) {
-						idRecent = idMax
-					}
+			}
+			
+			else -> {
+				val i = idRecent?.compareTo(idMax)
+				if(i == null || i < 0) {
+					idRecent = idMax
 				}
 			}
 		}
@@ -3532,13 +3537,35 @@ class Column(
 		return path
 	}
 	
-	private fun addRangeMisskey(bBottom : Boolean, params : JSONObject) : JSONObject {
-		if(bBottom) {
-			idOld?.putMisskeyUntil(params)
-		} else {
-			idRecent?.putMisskeySince(params)
+	private fun JSONObject.putMisskeyUntil(id : EntityId?) : JSONObject {
+		if(id != null){
+			if(useDate){
+				put("untilDate" ,id.toString().toLong() )
+			}else{
+				put("untilId", id.toString())
+			}
 		}
-		return params
+		return this
+	}
+	
+	private fun JSONObject.putMisskeySince(id : EntityId?) : JSONObject {
+		if(id != null){
+			if(useDate){
+				put("sinceDate" ,id.toString().toLong() )
+			}else{
+				put("sinceId", id.toString())
+			}
+		}
+		return this
+	}
+	
+	private fun JSONObject.addRangeMisskey(bBottom : Boolean) : JSONObject {
+		if(bBottom) {
+			putMisskeyUntil(idOld)
+		} else {
+			putMisskeySince(idRecent)
+		}
+		return this
 	}
 	
 	internal fun startRefreshForPost(
@@ -3677,13 +3704,16 @@ class Column(
 				val time_start = SystemClock.elapsedRealtime()
 				
 				var result = if(isMisskey) {
-					@Suppress("NON_EXHAUSTIVE_WHEN")
-					when(pagingType) {
-						PagingType.Default -> addRangeMisskey(bBottom, params)
-						PagingType.Offset -> params.put("offset", offsetNext)
-						PagingType.Cursor -> params.put("cursor", idOld)
-					}
-					client.request(path_base, params.toPostRequestBuilder())
+					client.request(
+						path_base,
+						when(pagingType) {
+							PagingType.Default -> params.addRangeMisskey(bBottom)
+							PagingType.Offset -> params.put("offset", offsetNext)
+							PagingType.Cursor -> params.put("cursor", idOld)
+							else -> params
+						}
+							.toPostRequestBuilder()
+					)
 				} else {
 					client.request(addRange(bBottom, path_base))
 				}
@@ -3740,9 +3770,12 @@ class Column(
 									break
 								}
 								
-								idRecent?.putMisskeySince(params)
-								
-								result = client.request(path_base, params.toPostRequestBuilder())
+								result = client.request(
+									path_base,
+									params
+										.putMisskeySince(idRecent)
+										.toPostRequestBuilder()
+								)
 								
 								jsonObject = result?.jsonObject
 								if(jsonObject != null) {
@@ -4007,8 +4040,12 @@ class Column(
 				val time_start = SystemClock.elapsedRealtime()
 				
 				var result = if(isMisskey) {
-					addRangeMisskey(bBottom, params)
-					client.request(path_base, params.toPostRequestBuilder())
+					client.request(
+						path_base,
+						params
+							.addRangeMisskey(bBottom)
+							.toPostRequestBuilder()
+					)
 				} else {
 					client.request(addRange(bBottom, path_base))
 				}
@@ -4053,8 +4090,13 @@ class Column(
 									break
 								}
 								
-								idRecent?.putMisskeySince(params)
-								result = client.request(path_base, params.toPostRequestBuilder())
+								result = client.request(
+									path_base,
+									params
+										.putMisskeySince(idRecent)
+										.toPostRequestBuilder()
+								)
+								
 								jsonArray = result?.jsonArray
 								if(jsonArray == null) {
 									log.d("refresh-notification-top: error or cancelled. make gap.")
@@ -4169,13 +4211,16 @@ class Column(
 							}
 							
 							result = if(isMisskey) {
-								idOld?.putMisskeyUntil(params)
-								client.request(path_base)
+								client.request(
+									path_base,
+									params
+										.putMisskeyUntil(idOld)
+										.toPostRequestBuilder()
+								)
 							} else {
-								val path = path_base + delimiter + "max_id=" + idOld
-								client.request(path)
-								
+								client.request("${path_base}${delimiter}max_id=${idOld}")
 							}
+							
 							jsonArray = result?.jsonArray
 							if(jsonArray == null) {
 								log.d("refresh-notification-bottom: error or cancelled.")
@@ -4215,10 +4260,12 @@ class Column(
 				val last_since_id = idRecent
 				
 				var result = when {
-					isMisskey -> {
-						addRangeMisskey(bBottom, params)
-						client.request(path_base, params.toPostRequestBuilder())
-					}
+					isMisskey -> client.request(
+						path_base,
+						params
+							.addRangeMisskey(bBottom)
+							.toPostRequestBuilder()
+					)
 					
 					aroundMin -> client.request(addRangeMin(path_base))
 					else -> client.request(addRange(bBottom, path_base))
@@ -4262,9 +4309,12 @@ class Column(
 									break
 								}
 								
-								idRecent?.putMisskeySince(params)
-								result =
-									client.request(path_base, params.toPostRequestBuilder())
+								result = client.request(
+									path_base,
+									params
+										.putMisskeySince(idRecent)
+										.toPostRequestBuilder()
+								)
 								
 								val jsonArray2 = result?.jsonArray
 								if(jsonArray2 == null) {
@@ -4425,11 +4475,14 @@ class Column(
 							}
 							
 							result = if(isMisskey) {
-								idOld?.putMisskeyUntil(params)
-								client.request(path_base, params.toPostRequestBuilder())
+								client.request(
+									path_base,
+									params
+										.putMisskeyUntil(idOld)
+										.toPostRequestBuilder()
+								)
 							} else {
-								val path = "$path_base${delimiter}max_id=$idOld"
-								client.request(path)
+								client.request("$path_base${delimiter}max_id=$idOld")
 							}
 							
 							val jsonArray2 = result?.jsonArray
@@ -4478,10 +4531,12 @@ class Column(
 				val last_since_id = idRecent
 				
 				var result = when {
-					isMisskey -> {
-						addRangeMisskey(bBottom, params)
-						client.request(path_base, params.toPostRequestBuilder())
-					}
+					isMisskey -> client.request(
+						path_base,
+						params
+							.addRangeMisskey(bBottom)
+							.toPostRequestBuilder()
+					)
 					
 					aroundMin -> client.request(addRangeMin(path_base))
 					else -> client.request(addRange(bBottom, path_base))
@@ -4525,9 +4580,12 @@ class Column(
 									break
 								}
 								
-								idRecent?.putMisskeySince(params)
-								result =
-									client.request(path_base, params.toPostRequestBuilder())
+								result = client.request(
+									path_base,
+									params
+										.putMisskeySince(idRecent)
+										.toPostRequestBuilder()
+								)
 								
 								val jsonArray2 = result?.jsonArray
 								if(jsonArray2 == null) {
@@ -4688,11 +4746,14 @@ class Column(
 							}
 							
 							result = if(isMisskey) {
-								idOld?.putMisskeyUntil(params)
-								client.request(path_base, params.toPostRequestBuilder())
+								client.request(
+									path_base,
+									params
+										.putMisskeyUntil(idOld)
+										.toPostRequestBuilder()
+								)
 							} else {
-								val path = "$path_base${delimiter}max_id=$idOld"
-								client.request(path)
+								client.request("$path_base${delimiter}max_id=$idOld")
 							}
 							
 							val jsonArray2 = result?.jsonArray
@@ -4797,6 +4858,7 @@ class Column(
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
 						TYPE_FAVOURITES -> if(isMisskey) {
+							this@Column.useDate = false
 							getStatusList(
 								client
 								, PATH_MISSKEY_FAVORITES
@@ -5001,15 +5063,18 @@ class Column(
 								list_tmp = ArrayList()
 								result = TootApiResult(context.getString(R.string.end_of_list))
 							} else {
-								result = client.searchTootsearch(search_query, idOld?.toLong())
+								result = client.searchTootsearch(
+									search_query,
+									idOld?.toString()?.toLong()
+								)
 								val jsonObject = result?.jsonObject
 								if(jsonObject != null) {
 									// max_id の更新
 									idOld = EntityId.mayNull(
 										TootApiClient.getTootsearchMaxId(
 											jsonObject,
-											idOld?.toLong()
-										)
+											idOld?.toString()?.toLong()
+										)?.toString()
 									)
 									// リストデータの用意
 									val search_result =
@@ -5251,8 +5316,12 @@ class Column(
 							break
 						}
 						
-						since_id?.putMisskeySince(params)
-						val r2 = client.request(path_base, params.toPostRequestBuilder())
+						val r2 = client.request(
+							path_base,
+							params
+								.putMisskeySince(since_id)
+								.toPostRequestBuilder()
+						)
 						
 						val jsonObject = r2?.jsonObject
 						if(jsonObject != null) {
@@ -5354,8 +5423,13 @@ class Column(
 							break
 						}
 						
-						since_id?.putMisskeySince(params)
-						val r2 = client.request(path_base, params.toPostRequestBuilder())
+						val r2 = client.request(
+							path_base,
+							params
+								.putMisskeySince(since_id)
+								.toPostRequestBuilder()
+						)
+						
 						val jsonArray = r2?.jsonArray
 						if(jsonArray == null) {
 							log.d("gap-report: error or cancelled. make gap.")
@@ -5455,8 +5529,13 @@ class Column(
 							break
 						}
 						
-						since_id?.putMisskeySince(params)
-						val r2 = client.request(path_base, params.toPostRequestBuilder())
+						val r2 = client.request(
+							path_base,
+							params
+								.putMisskeySince(since_id)
+								.toPostRequestBuilder()
+						)
+						
 						val jsonArray = r2?.jsonArray
 						if(jsonArray == null) {
 							// エラー
@@ -5575,8 +5654,12 @@ class Column(
 							break
 						}
 						
-						since_id?.putMisskeySince(params)
-						val r2 = client.request(path_base, params.toPostRequestBuilder())
+						val r2 = client.request(
+							path_base,
+							params
+								.putMisskeySince(since_id)
+								.toPostRequestBuilder()
+						)
 						
 						val jsonArray = r2?.jsonArray
 						if(jsonArray == null) {
@@ -5703,8 +5786,12 @@ class Column(
 							break
 						}
 						
-						since_id?.putMisskeySince(params)
-						val r2 = client.request(path_base, params.toPostRequestBuilder())
+						val r2 = client.request(
+							path_base,
+							params
+								.putMisskeySince(since_id)
+								.toPostRequestBuilder()
+						)
 						
 						val jsonArray = r2?.jsonArray
 						if(jsonArray == null) {
@@ -5832,6 +5919,7 @@ class Column(
 						}
 						
 						TYPE_FAVOURITES -> if(isMisskey) {
+							this@Column.useDate = false
 							getStatusList(
 								client,
 								PATH_MISSKEY_FAVORITES
@@ -5975,7 +6063,6 @@ class Column(
 						}
 						
 						// TYPE_SCHEDULED_STATUS -> getScheduledStatuses(client)
-						
 						
 						else -> getStatusList(client, makeHomeTlUrl())
 					}
@@ -6600,13 +6687,7 @@ class Column(
 			val tmpRecent = idRecent
 			val tmpNewMax = new_id_max
 			
-			if(tmpNewMax is EntityIdString && ! isMisskey) {
-				log.e("EntityId should be Long for non-misskey column! columnType=$column_type")
-			} else if(tmpRecent is EntityIdString && tmpNewMax is EntityIdLong) {
-				log.e("EntityId type mismatch! recent=String,newMax=Long,columnType=$column_type")
-			} else if(tmpRecent is EntityIdLong && tmpNewMax is EntityIdString) {
-				log.e("EntityId type mismatch! recent=Long,newMax=String,columnType=$column_type")
-			} else if(tmpNewMax != null && (tmpRecent?.compareTo(tmpNewMax) ?: - 1) == - 1) {
+			if(tmpNewMax != null && (tmpRecent?.compareTo(tmpNewMax) ?: - 1) == - 1) {
 				idRecent = tmpNewMax
 				// XXX: コレはリフレッシュ時に取得漏れを引き起こすのでは…？
 				// しかしコレなしだとリフレッシュ時に大量に読むことになる…
@@ -6908,7 +6989,7 @@ class Column(
 			QUICK_FILTER_REACTION -> put("includeTypes", jsonArray("reaction"))
 			QUICK_FILTER_VOTE -> put("includeTypes", jsonArray("poll_vote"))
 		}
-
+		
 		return this
 	}
 	

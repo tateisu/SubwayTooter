@@ -199,6 +199,7 @@ class TootApiClient(
 				put("reaction-read")
 				put("reaction-write")
 				
+				put("reaction-write")
 				put("following-read") // フォロリク申請一覧で使われていた
 				put("following-write")
 				

@@ -17,7 +17,7 @@ class NicoProfileEmoji(
 		url = src.notEmptyOrThrow("url"),
 		shortcode = src.notEmptyOrThrow("shortcode"),
 		account_url = src.parseString("account_url"),
-		account_id = EntityId.mayDefault( src.parseLong("account_id") )
+		account_id = EntityId.mayDefault( src.parseString("account_id") )
 	)
 	
 	override val mapKey : String

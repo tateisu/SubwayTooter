@@ -887,8 +887,8 @@ object MisskeyMarkdownDecoder {
 						
 						if(mentions.find { m -> m.acct == shortAcct } == null) {
 							mentions.add(
-								jp.juggler.subwaytooter.api.entity.TootMention(
-									jp.juggler.subwaytooter.api.entity.EntityIdLong(- 1L)
+								TootMention(
+									jp.juggler.subwaytooter.api.entity.EntityId.Companion.defaultString
 									, userUrl
 									, shortAcct
 									, username

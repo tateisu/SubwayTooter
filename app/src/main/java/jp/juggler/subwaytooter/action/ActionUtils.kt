@@ -8,7 +8,6 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.table.UserRelationMisskey
 import jp.juggler.util.LogCategory
 import jp.juggler.util.showToast
 import org.json.JSONObject
@@ -103,7 +102,7 @@ fun makeAccountListNonPseudo(
 internal fun saveUserRelation(access_info : SavedAccount, src : TootRelationShip?) : UserRelation? {
 	src ?: return null
 	val now = System.currentTimeMillis()
-	return UserRelation.save1(now, access_info.db_id, src)
+	return UserRelation.save1Mastodon(now, access_info.db_id, src)
 }
 
 internal fun saveUserRelationMisskey(
@@ -113,7 +112,7 @@ internal fun saveUserRelationMisskey(
 ) : UserRelation? {
 	val now = System.currentTimeMillis()
 	val relation = parser.getMisskeyUserRelation(whoId)
-	UserRelationMisskey.save1(now, access_info.db_id, whoId.toString(), relation)
+	UserRelation.save1Misskey(now, access_info.db_id, whoId.toString(), relation)
 	return relation
 }
 

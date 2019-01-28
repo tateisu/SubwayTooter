@@ -24,7 +24,7 @@ class TootScheduled(parser:TootParser,val src:JSONObject): TimelineItem(){
 	val uri : String
 	
 	init{
-		id = EntityId.mayDefault( src.parseLong("id"))
+		id = EntityId.mayDefault( src.parseString("id"))
 		uri = "scheduled://${parser.linkHelper.host}/$id"
 		
 		scheduled_at = src.parseString("scheduled_at")

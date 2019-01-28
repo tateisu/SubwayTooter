@@ -206,7 +206,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.id = EntityId.mayDefault(misskeyId)
 			
 			// ページネーションには日時を使う
-			this._orderId = EntityIdLong(time_created_at)
+			this._orderId = EntityIdString(time_created_at.toString())
+
 			// お気に入りカラムなどではパース直後に変更することがある
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
@@ -370,7 +371,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				ServiceType.MASTODON -> {
 					this.host_access = parser.linkHelper.host
 					
-					this.id = EntityId.mayDefault(src.parseLong("id"))
+					this.id = EntityId.mayDefault(src.parseString("id"))
 					this.uri = src.parseString("uri") ?: error("missing uri")
 					
 					this.reblogged = src.optBoolean("reblogged")
@@ -394,17 +395,17 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.host_access = null
 					
 					// 投稿元タンスでのIDを調べる。失敗するかもしれない
+					// FIXME: Pleromaだとダメそうな印象
 					this.uri = src.parseString("uri") ?: error("missing uri")
-					this.id = findStatusIdFromUri(uri, url) ?: EntityId.defaultLong
+					this.id = findStatusIdFromUri(uri, url) ?: EntityId.defaultString
 					
 					this.time_created_at = TootStatus.parseTime(this.created_at)
-					this.media_attachments =
-						parseListOrNull(
-							::TootAttachment,
-							parser,
-							src.optJSONArray("media_attachments"),
-							log
-						)
+					this.media_attachments = parseListOrNull(
+						::TootAttachment,
+						parser,
+						src.optJSONArray("media_attachments"),
+						log
+					)
 					this.visibility = TootVisibility.Public
 					this.sensitive = src.optBoolean("sensitive")
 					
@@ -414,7 +415,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.host_access = null
 					
 					// MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
-					this.id = EntityId.mayDefault(src.parseLong("id"))
+					this.id = EntityId.mayDefault(src.parseString("id"))
 					// MSPだとuriは提供されない。LTL限定なのでURL的なものを作れるはず
 					this.uri =
 						"https://${parser.linkHelper.host}/users/${who.username}/statuses/$id"
@@ -430,8 +431,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			}
 			
 			this._orderId = this.id
-			this.in_reply_to_id = EntityId.mayNull(src.parseLong("in_reply_to_id"))
-			this.in_reply_to_account_id = EntityId.mayNull(src.parseLong("in_reply_to_account_id"))
+			this.in_reply_to_id = EntityId.mayNull(src.parseString("in_reply_to_id"))
+			this.in_reply_to_account_id = EntityId.mayNull(src.parseString("in_reply_to_account_id"))
 			this.mentions = parseListOrNull(::TootMention, src.optJSONArray("mentions"), log)
 			this.tags = parseListOrNull(::TootTag, src.optJSONArray("tags"))
 			this.application =
@@ -691,25 +692,22 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		val EMPTY_SPANNABLE = SpannableString("")
 		
 		// OStatus
-		@Suppress("HasPlatformType")
 		private val reTootUriOS = Pattern.compile(
-			"tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status",
+			"tag:([^,]*),[^:]*:objectId=([^:?#/\\s]+):objectType=Status",
 			Pattern.CASE_INSENSITIVE
 		)
 		
 		// ActivityPub 1
-		@Suppress("HasPlatformType")
 		private val reTootUriAP1 =
-			Pattern.compile("https?://([^/]+)/users/[A-Za-z0-9_]+/statuses/(\\d+)")
+			Pattern.compile("https?://([^/]+)/users/[A-Za-z0-9_]+/statuses/([^?#/\\s]+)")
 		
 		// ActivityPub 2
-		@Suppress("HasPlatformType")
-		private val reTootUriAP2 = Pattern.compile("https?://([^/]+)/@[A-Za-z0-9_]+/(\\d+)")
+		private val reTootUriAP2 =
+			Pattern.compile("https?://([^/]+)/@[A-Za-z0-9_]+/([^?#/\\s]+)")
 		
 		// 公開ステータスページのURL マストドン
-		@Suppress("HasPlatformType")
-		val reStatusPage =
-			Pattern.compile("""\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/(\d+)(?:\z|[?#])""")
+		internal val reStatusPage =
+			Pattern.compile("""\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/([^?#/\s]+)(?:\z|[?#])""")
 		
 		// 公開ステータスページのURL Misskey
 		@Suppress("HasPlatformType")
@@ -717,6 +715,14 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			"""\Ahttps://([^/]+)/notes/([0-9a-f]{24})\b""",
 			Pattern.CASE_INSENSITIVE
 		)
+
+		// PleromaのStatusのUri
+		internal val reStatusPageObjects =
+			Pattern.compile("""\Ahttps://([^/]+)/objects/([^?#/\s]+)(?:\z|[?#])""")
+		
+		// PleromaのStatusの公開ページ
+		internal val reStatusPageNotice =
+			Pattern.compile("""\Ahttps://([^/]+)/notice/([^?#/\s]+)(?:\z|[?#])""")
 		
 		fun parseListTootsearch(
 			parser : TootParser,
@@ -911,19 +917,15 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return if(host != null && host.isNotEmpty() && host != "?") host else null
 		}
 		
-		private fun readMisskeyNoteId(url : String) : EntityId? {
-			// https://misskey.xyz/notes/5b802367744b650030a13640
-			val m = reStatusPageMisskey.matcher(url)
-			return if(! m.find()) null else EntityIdString(m.group(2))
-		}
 		
-		fun validStatusId(src : EntityId?) : EntityId? {
-			return when(src) {
-				null -> null
-				EntityId.defaultLong -> null
+		
+		fun validStatusId(src : EntityId?) : EntityId? =
+			when{
+				src == null -> null
+				src == EntityId.defaultString -> null
+				src.toString().startsWith("-") -> null
 				else -> src
 			}
-		}
 		
 		private fun String.cleanCW() =
 			CharacterGroup.reWhitespace.matcher(this).replaceAll(" ").sanitizeBDI()
@@ -932,32 +934,36 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		// 投稿元タンスでのステータスIDを調べる
 		fun findStatusIdFromUri(
 			uri : String?,
-			url : String?,
-			bAllowStringId : Boolean = false
+			url : String?
 		) : EntityId? {
-			
-			// pleromaのuriやURL からはステータスIDは取れません
-			// uri https://pleroma.miniwa.moe/objects/d6e83d3c-cf9e-46ac-8245-f91716088e17
-			// url https://pleroma.miniwa.moe/objects/d6e83d3c-cf9e-46ac-8245-f91716088e17
 			
 			try {
 				if(uri?.isNotEmpty() == true) {
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(uri)
-					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
+					if(m.find()) return EntityIdString(m.group(2))
+					
+					// https://server/@user/(status_id)
+					m = reTootUriAP2.matcher(uri)
+					if(m.find()) return EntityIdString(m.group(2))
+					
+					// https://misskey.xyz/notes/5b802367744b650030a13640
+					m = reStatusPageMisskey.matcher(uri)
+					if( m.find()) return EntityIdString(m.group(2))
+					
+					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
+					// tootsearch中の投稿からIDを読めるようにしたい
+					// しかしこのURL中のuuidはステータスIDではないので、無意味
+					// m = reObjects.matcher(uri)
+					// if(m.find()) return EntityIdString(m.group(2))
+					
+					// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
+					m = reStatusPageNotice.matcher(uri)
+					if(m.find()) return EntityIdString(m.group(2))
 					
 					// tag:mstdn.osaka,2017-12-19:objectId=5672321:objectType=Status
 					m = reTootUriOS.matcher(uri)
-					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
-					
-					//
-					m = reTootUriAP2.matcher(uri)
-					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
-					
-					if(bAllowStringId) {
-						val id = readMisskeyNoteId(uri)
-						if(id != null) return id
-					}
+					if(m.find()) return EntityIdString(m.group(2))
 					
 					log.w("can't parse status uri: $uri")
 				}
@@ -966,16 +972,26 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(url)
-					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
+					if(m.find()) return EntityIdString(m.group(2))
 					
 					// https://friends.nico/@(who)/(status_id)
 					m = reTootUriAP2.matcher(url)
-					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
+					if(m.find()) return EntityIdString(m.group(2))
 					
-					if(bAllowStringId) {
-						val id = readMisskeyNoteId(url)
-						if(id != null) return id
-					}
+					// https://misskey.xyz/notes/5b802367744b650030a13640
+					m = reStatusPageMisskey.matcher(url)
+					if( m.find()) return EntityIdString(m.group(2))
+
+					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
+					// tootsearch中の投稿からIDを読めるようにしたい
+					// しかしこのURL中のuuidはステータスIDではないので、無意味
+					// m = reObjects.matcher(url)
+					// if(m.find()) return EntityIdString(m.group(2))
+					
+					// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
+					m = reStatusPageNotice.matcher(url)
+					if(m.find()) return EntityIdString(m.group(2))
+					
 					
 					log.w("can't parse status URL: $url")
 				}

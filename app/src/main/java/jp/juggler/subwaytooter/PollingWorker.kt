@@ -25,7 +25,7 @@ import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.EntityIdLong
+import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.*
@@ -385,19 +385,15 @@ class PollingWorker private constructor(contextArg : Context) {
 			else -> this > previous
 		}
 		
-		private fun getEntityOrderId(account : SavedAccount, src : JSONObject) : EntityId {
-			return when {
-				! account.isMisskey -> EntityId.mayDefault(src.parseLong("id"))
-				
-				else -> {
-					val created_at = src.parseString("createdAt")
-					when(created_at) {
-						null -> EntityId.defaultLong
-						else -> EntityIdLong(TootStatus.parseTime(created_at))
-					}
+		private fun getEntityOrderId(account : SavedAccount, src : JSONObject) : EntityId =
+			if( account.isMisskey){
+				when(val created_at = src.parseString("createdAt")) {
+					null -> EntityId.defaultString
+					else -> EntityIdString(TootStatus.parseTime(created_at).toString())
 				}
+			}else{
+				EntityId.mayDefault(src.parseString("id"))
 			}
-		}
 	}
 	
 	internal val context : Context

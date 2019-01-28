@@ -69,7 +69,7 @@ class TootFilter( src: JSONObject) :TimelineItem() {
 	val whole_word : Boolean
 	
 	init{
-		id = EntityId.mayDefault(src.parseLong("id") )
+		id = EntityId.mayDefault(src.parseString("id") )
 		phrase = src.parseString("phrase")?: error("missing phrase")
 		context = parseFilterContext(src.optJSONArray("context"))
 		expires_at = src.parseString("expires_at") // may null

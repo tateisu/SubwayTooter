@@ -4,10 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.MisskeyNoteUpdate
-import jp.juggler.subwaytooter.api.entity.TimelineItem
-import jp.juggler.subwaytooter.api.entity.TootPayload
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.WordTrieTree
 import jp.juggler.util.LogCategory
@@ -52,7 +49,7 @@ internal class StreamReader(
 		highlight_trie : WordTrieTree?
 	) : WebSocketListener() {
 		
-		internal val bDisposed = AtomicBoolean()
+		private val bDisposed = AtomicBoolean()
 		internal val bListening = AtomicBoolean()
 		internal val socket = AtomicReference<WebSocket>(null)
 		internal val callback_list = LinkedList<StreamCallback>()
@@ -240,21 +237,15 @@ internal class StreamReader(
 					
 					when(event) {
 						
-						"delete" -> {
-							if(payload is Long) {
-								fireDeleteId(EntityId.mayDefault(payload))
-								
-							} else {
-								log.d("payload is not long. $payload")
-							}
+						"delete" -> when(payload){
+							is Long -> fireDeleteId(EntityIdString(payload.toString()))
+							is String ->fireDeleteId(EntityIdString(payload.toString()))
+							else -> log.d("unsupported payload type. $payload")
 						}
 						
-						else -> {
-							if(payload is TimelineItem) {
-								fireTimelineItem(payload)
-							} else {
-								log.d("payload is not TimelineItem. $payload")
-							}
+						else ->  when(payload){
+							is TimelineItem -> fireTimelineItem(payload)
+							else -> log.d("unsupported payload type. $payload")
 						}
 					}
 					

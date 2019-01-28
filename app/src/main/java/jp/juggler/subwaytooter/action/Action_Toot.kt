@@ -22,7 +22,7 @@ object Action_Toot {
 	private val log = LogCategory("Action_Toot")
 	
 	private val reDetailedStatusTime =
-		Pattern.compile("<a\\b[^>]*?\\bdetailed-status__datetime\\b[^>]*href=\"https://[^/]+/@[^/]+/(\\d+)\"")
+		Pattern.compile("""<a\b[^>]*?\bdetailed-status__datetime\b[^>]*href="https://[^/]+/@[^/]+/([^\s?#/"]+)""")
 	
 	// アカウントを選んでお気に入り
 	fun favouriteFromAnotherAccount(
@@ -572,8 +572,7 @@ object Action_Toot {
 					, TootStatus.validStatusId(status.id)
 						?: TootStatus.findStatusIdFromUri(
 							status.uri,
-							status.url,
-							bAllowStringId = true
+							status.url
 						)
 				)
 			
@@ -586,8 +585,7 @@ object Action_Toot {
 					, TootStatus.validStatusId(status.id)
 						?: TootStatus.findStatusIdFromUri(
 							status.uri,
-							status.url,
-							bAllowStringId = true
+							status.url
 						)
 				)
 			
@@ -602,8 +600,7 @@ object Action_Toot {
 					, url
 					, TootStatus.findStatusIdFromUri(
 						status.uri,
-						status.url,
-						bAllowStringId = true
+						status.url
 					)
 					, status.host_access
 					, TootStatus.validStatusId(status.id)
@@ -745,7 +742,7 @@ object Action_Toot {
 							try {
 								val m = reDetailedStatusTime.matcher(string)
 								if(m.find()) {
-									local_status_id = EntityIdLong(m.group(1).toLong(10))
+									local_status_id = EntityIdString(m.group(1))
 								}
 							} catch(ex : Throwable) {
 								log.e(ex, "openStatusRemote: can't parse status id from HTML data.")

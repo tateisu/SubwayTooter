@@ -9,7 +9,6 @@ import jp.juggler.subwaytooter.dialog.ReportForm
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.table.UserRelationMisskey
 import jp.juggler.subwaytooter.util.TootApiResultCallback
 import jp.juggler.util.*
 import okhttp3.Request
@@ -170,7 +169,7 @@ object Action_User {
 					fun saveBlock(v : Boolean) {
 						val ur = UserRelation.load(access_info.db_id, who.id)
 						ur.blocking = v
-						UserRelationMisskey.save1(
+						UserRelation.save1Misskey(
 							System.currentTimeMillis(),
 							access_info.db_id,
 							who.id.toString(),

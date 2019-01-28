@@ -81,7 +81,7 @@
     <string name="confirm_unfavourite_from">이 툿을 %1$s에서 즐겨찾기 해제하시겠습니까\?</string>
     <string name="display_name_favourited_by">%1$s가 즐겨찾기함</string>
     <string name="display_name_boosted_by">%1$s가 부스트함</string>
-    <string name="display_name_replied_by">%1$s가 답장함</string>
+    <string name="display_name_replied_by">%1$s가 답글함</string>
     <string name="display_name_mentioned_by">%1$s가 언급함</string>
     <string name="display_name_voted_by">%1$s가 투표함</string>
     <string name="display_name_follow_request_by">%1$s가 팔로우 승인 요청함</string>
@@ -148,9 +148,9 @@
     <string name="resolve_non_local_account">타 서버 계정도 찾기</string>
     <string name="question">\?</string>
     <string name="confirm_close_column">이 세로란을 닫을까요\?</string>
-    <string name="favourite_from_another_account">다른 계정에서 즐겨찾기</string>
-    <string name="boost_from_another_account">다른 계정에서 부스트</string>
-    <string name="reaction_from_another_account">다른 계정에서 반응</string>
+    <string name="favourite_from_another_account">다른 계정으로 즐겨찾기</string>
+    <string name="boost_from_another_account">다른 계정으로 부스트하기</string>
+    <string name="reaction_from_another_account">다른 계정으로 반응하기</string>
     <string name="app_about">이 앱에 대해서</string>
     <string name="oss_license">OSS 라이선스</string>
     <string name="please_rate">시간을 내어 이 앱을 리뷰해 주세요.</string>
@@ -189,7 +189,7 @@
     <string name="theme_light">밝음</string>
     <string name="theme_dark">어두움</string>
     <string name="dont_show_boost">부스트들 보지 않기</string>
-    <string name="dont_show_reply">답장 보지 않기</string>
+    <string name="dont_show_reply">답글 보지 않기</string>
     <string name="regex_filter">정규표현식 필터</string>
     <string name="regex_error">정규표현식 오류</string>
     <string name="notification_delete">알림 비우기</string>
@@ -321,7 +321,7 @@
     <string name="open_status_from">상태를 다음 계정에서 엶</string>
     <string name="help_translation">번역 개선을 돕기</string>
     <string name="dont_use_streaming_api">수동으로 피드 새로고침</string>
-    <string name="dont_refresh_on_activity_resume">앱으로 돌아왔을 때 자동 새로고침 비활성화.</string>
+    <string name="dont_refresh_on_activity_resume">앱으로 돌아왔을 때 자동 새로고침 비활성화</string>
     <string name="status_id_conversion_failed">상태 ID를 변환할 수 없습니다.</string>
     <string name="already_favourited">이미 즐겨찾기됨.</string>
     <string name="already_boosted">이미 부스트됨.</string>

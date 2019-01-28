@@ -29,7 +29,7 @@
     <string name="request_access_token">접근 토큰 요청 중…</string>
     <string name="request_api">취득: %1$s %2$s</string>
     <string name="reading_api">해독: %1$s %2$s</string>
-    <string name="column_empty">좌하단의 메뉴 버튼을 사용하여 세로란 추가</string>
+    <string name="column_empty">좌하단의 메뉴 버튼을 사용하여 칼럼 추가</string>
     <string name="home">홈</string>
     <string name="local_timeline">로컬 타임라인</string>
     <string name="federate_timeline">연합 타임라인</string>
@@ -92,7 +92,7 @@
     <string name="account_setting">계정 설정</string>
     <string name="setting">설정</string>
     <string name="app_setting">앱 설정</string>
-    <string name="column_list">세로란 목록</string>
+    <string name="column_list">칼럼 목록</string>
     <string name="update_access_token">접근 토큰을 갱신하기</string>
     <string name="account_remove">이 계정 삭제하기</string>
     <string name="actions">동작들</string>
@@ -100,13 +100,13 @@
     <string name="confirm_before_boost">부스트 전에 확인</string>
     <string name="sensitive_content_default_open">항상 민감한 내용 열기</string>
     <string name="user">사용자</string>
-    <string name="confirm_account_remove">이 계정은 이 앱에서 삭제되고 모든 세로란은 제거될 것입니다.
+    <string name="confirm_account_remove">이 계정이 이 앱에서 삭제되고 모든 칼럼은 제거될 것입니다. 
 \n계속하시겠습니까\?</string>
     <string name="user_name_not_match">사용자이름이 일치하지 않음</string>
     <string name="access_token_updated_for">%1$s의 접근 토큰이 갱신되었습니다.</string>
-    <string name="back_to_column_list">뒤로 가기를 누르면 세로란 목록으로 가기</string>
+    <string name="back_to_column_list">뒤로 가기를 누르면 칼럼 목록으로 가기</string>
     <string name="account_empty">계정이 설정되지 않았습니다. 계정을 추가해 주세요.</string>
-    <string name="dont_confirm_before_close_column">확인 없이 세로란 닫기</string>
+    <string name="dont_confirm_before_close_column">확인 없이 칼럼 닫기</string>
     <string name="drag_handle">손잡이 끌기</string>
     <string name="delete">삭제하기</string>
     <string name="column_list_desc">삭제는 스와이프, 정렬은 길게 누르기를 하세요. 보기를 다시 로드할 때 변경사항이 반영됩니다.</string>
@@ -114,7 +114,7 @@
     <string name="column_index">%1$d/%2$d</string>
     <string name="reply_to_this_status">이 툿에 답글:</string>
     <string name="cant_change_account_when_attachment_specified">미디어 첨부가 있을 때는 계정을 전환할 수 없습니다.</string>
-    <string name="column">세로란</string>
+    <string name="column">칼럼</string>
     <string name="conversation_view">대화 보기</string>
     <string name="conversation_around">툿 주변의 대화:%1$s</string>
     <string name="instance_not_need_slash">서버 호스트 이름을 \'/\', \'@\' 없이 넣으세요.</string>
@@ -147,7 +147,7 @@
     <string name="search">검색</string>
     <string name="resolve_non_local_account">타 서버 계정도 찾기</string>
     <string name="question">\?</string>
-    <string name="confirm_close_column">이 세로란을 닫을까요\?</string>
+    <string name="confirm_close_column">이 칼럼을 닫을까요\?</string>
     <string name="favourite_from_another_account">다른 계정으로 즐겨찾기</string>
     <string name="boost_from_another_account">다른 계정으로 부스트하기</string>
     <string name="reaction_from_another_account">다른 계정으로 반응하기</string>
@@ -164,7 +164,7 @@
     <string name="notification_count">%1$d 개의 알림</string>
     <string name="app_exit">앱 닫기</string>
     <string name="ask_always">항상 물어보기</string>
-    <string name="open_column_list">세로란 목록 열기</string>
+    <string name="open_column_list">칼럼 목록 열기</string>
     <string name="back_button_action">뒤로가기 버튼의 동작</string>
     <string name="prior_local_url_when_open_attachment">첨부파일을 열 때 현 서버의 URL을 우선함</string>
     <string name="disable_fast_scroller">빠른 스크롤러 비활성화 (앱 재시작 필요)</string>
@@ -172,7 +172,7 @@
     <string name="developer">개발자</string>
     <string name="with_attachment">첨부파일 있음</string>
     <string name="with_highlight">강조 표시 있음</string>
-    <string name="column_is_busy">세로란 다른 처리 중</string>
+    <string name="column_is_busy">칼럼 다른 처리 중</string>
     <string name="read_gap">놓친 메시지 보기</string>
     <string name="muted_users">음소거된 사용자들</string>
     <string name="blocked_users">차단된 사용자들</string>
@@ -183,8 +183,8 @@
     <string name="send_header_from_name">From-Name</string>
     <string name="send_header_content_warning">Content-Warning</string>
     <string name="send_header_url">Status-URL</string>
-    <string name="dont_close_column">세로란 닫지 않기</string>
-    <string name="column_has_dont_close_option">이 세로란을 닫을 수 없습니다(세로란 설정을 보세요).</string>
+    <string name="dont_close_column">칼럼 닫지 않기</string>
+    <string name="column_has_dont_close_option">이 칼럼을 닫을 수 없습니다(칼럼 설정을 보세요).</string>
     <string name="ui_theme">UI 테마 (앱 재시작 필요)</string>
     <string name="theme_light">밝음</string>
     <string name="theme_dark">어두움</string>
@@ -200,7 +200,7 @@
     <string name="contributor">기여자</string>
     <string name="thanks_for">%1$s에 대해 감사합니다</string>
     <string name="simple_list">간략한 목록 (앱 재시작 필요)</string>
-    <string name="mute_app_desc">삭제하려면 왼쪽으로 스와이프. 세로란을 새로 고침하면 음소거 안 된 앱으로 발행된 게시물이 보입니다.</string>
+    <string name="mute_app_desc">삭제하려면 왼쪽으로 스와이프. 칼럼을 새로 고침하면 음소거 안 된 앱으로 발행된 게시물이 보입니다.</string>
     <string name="muted_app">음소거된 앱들</string>
     <string name="application_is">앱: %1$s</string>
     <string name="mute_app_of">앱 \"%1$s\" 음소거</string>
@@ -226,7 +226,7 @@
     <string name="not_available_for_pseudo_account">의사 계정에서는 이용할 수 없습니다</string>
     <string name="not_available_for_misskey_account">Misskey 계정에는 이용할 수 없습니다</string>
     <string name="not_available_for_mastodon_account">마스토돈 계정에는 이용할 수 없습니다</string>
-    <string name="exit_app_when_close_protected_column">뒤로 가기 버튼으로 보호된 세로란을 확인 없이 닫으려고 하면 앱을 종료하기</string>
+    <string name="exit_app_when_close_protected_column">뒤로 가기 버튼으로 보호된 칼럼을 확인 없이 닫으려고 하면 앱을 종료하기</string>
     <string name="resize_image">첨부 이미지 (JPEG, PNG) 크기 변경</string>
     <string name="dont_resize">크기 변경 하지 않기</string>
     <string name="long_side_pixel">%1$d 화소로 변경</string>
@@ -256,7 +256,7 @@
     <string name="discard">버리기</string>
     <string name="nickname_and_color_and_notification_sound">별명, 색, 알림 소리</string>
     <string name="nickname_and_color">별명과 색</string>
-    <string name="nickname_applied_after_reload">별명과 색의 변경사항은 세로란을 새로고침한 후에 반영됩니다.</string>
+    <string name="nickname_applied_after_reload">별명과 색의 변경사항은 칼럼을 새로고침한 후에 반영됩니다.</string>
     <string name="show_follow_button_in_button_bar">팔로우 버튼을 버튼 막대에 보이기 (앱 재시작 필요)</string>
     <string name="follow_requested">팔로우 요청이 보내졌습니다.</string>
     <string name="confirmation">확인</string>
@@ -297,12 +297,12 @@
     <string name="menu">메뉴</string>
     <string name="open_in_pseudo_account">의사 계정으로 %1$s에서 열기</string>
     <string name="color_and_background">색과 배경…</string>
-    <string name="column_background">세로란 배경</string>
+    <string name="column_background">칼럼 배경</string>
     <string name="pick_image">이미지 고르기</string>
     <string name="pick_images">이미지 고르기…</string>
     <string name="image_alpha">이미지 알파값</string>
     <string name="image">이미지</string>
-    <string name="column_header">세로란 헤더</string>
+    <string name="column_header">칼럼 헤더</string>
     <string name="foreground_color">전면색</string>
     <string name="hashtag_and_visibility_not_match">이 메시지는 해시태그를 포함하고 있지만 공개 범위가 전체 공개가 아닙니다. 보통 해시태그는 공개 메시지에서만 검색 가능합니다. 계속하시겠습니까\?</string>
     <string name="copy">복사</string>
@@ -327,9 +327,9 @@
     <string name="already_boosted">이미 부스트됨.</string>
     <string name="dont_screen_off">앱 사용 중에 화면 켜짐 유지.</string>
     <string name="hide_media_default">모든 미디어 숨기기</string>
-    <string name="cant_close_column_by_back_button_when_multiple_column_shown">다수의 세로란이 표시될 때는 뒤로 가기 버튼으로 세로란을 닫을 수 없습니다.</string>
+    <string name="cant_close_column_by_back_button_when_multiple_column_shown">다수의 칼럼이 표시될 때는 뒤로 가기 버튼으로 칼럼을 닫을 수 없습니다.</string>
     <string name="disable_tablet_mode">태블릿 모드 비활성화 (앱 재시작 필요)</string>
-    <string name="minimum_column_width">최소 세로란 폭 (기본값=300dp, 앱 재시작 필요)</string>
+    <string name="minimum_column_width">최소 칼럼 폭 (기본값=300dp, 앱 재시작 필요)</string>
     <string name="media_thumbnail_height">미디어 썸네일 높이 (기본값=64dp, 앱 재시작 필요)</string>
     <string name="account_picker_reply">어떤 계정으로 답글할까요\?</string>
     <string name="account_picker_quoted_renote">어떤 계정으로 인용 리노트할까요\?</string>
@@ -349,9 +349,9 @@
     <string name="attachment_in_draft_is_lost">초안의 미디어 첨부파일의 일부가 손실되었습니다.</string>
     <string name="app_data_export">앱 데이터 내보내기</string>
     <string name="app_data_import">앱 데이터 들여오기</string>
-    <string name="app_data_import_desc">데이터를 받을 수 있는 어떤 앱으로도 데이터를 내보낼 수 있습니다. 그러나 기기 저장소와 구글 드라이브에서만 데이터를 불러들일 수 있을 겁니다.
-\n세로란 배경 이미지는 기기 간에 내보내거나 불러들일 수 없을 것입니다.
-\n타임라인 글꼴은 내보내거나 불러들일 수 없습니다.
+    <string name="app_data_import_desc">데이터를 받을 수 있는 어떤 앱으로도 데이터를 내보낼 수 있습니다. 그러나 기기 저장소와 구글 드라이브에서만 데이터를 불러들일 수 있을 겁니다. 
+\n칼럼 배경 이미지는 기기 간에 내보내거나 불러들일 수 없을 것입니다. 
+\n타임라인 글꼴은 내보내거나 불러들일 수 없습니다. 
 \n맞춤 알림 소리는 기기 간에 내보내거나 불러들일 수 없습니다.</string>
     <string name="app_data_import_confirm">들여오기 전의 기존 데이터는 지워질 것입니다. 계속하시겠습니까\?</string>
     <string name="user_id_conversion_failed">사용자 ID를 변환할 수 없었습니다.</string>
@@ -436,7 +436,7 @@
     <string name="content_sample">(견본)다람쥐 헌 쳇바퀴에 타고파.</string>
     <string name="enable_gif_animation">GIF 애니메이션 활성화 (배터리 소모 심함)</string>
     <string name="acct_sample">(견본)username@server</string>
-    <string name="mention_full_acct">전체 acct으로 언급 보이기 (세로란 다시 로드 필요)</string>
+    <string name="mention_full_acct">전체 acct으로 언급 보이기 (칼럼 다시 로드 필요)</string>
     <string name="remote_profile_warning">원격 프로파일 페이지 상의 정보가 정확하지 않을 수 있습니다. 웹브라우저에서 프로파일을 보려면 여기를 누르세요.</string>
     <string name="public_profile">공개 프로파일</string>
     <string name="change_avatar">아바타 아이콘 변경</string>
@@ -492,7 +492,7 @@
     <string name="loading_notification_title">알림 불러오는 중…</string>
     <string name="error_notification_title">서버 시간제한 초과</string>
     <string name="error_notification_summary">파괴된 서버가 있으면 그 계정을 앱에서 삭제해 주세요.</string>
-    <string name="open_hashtag_column">해시태그 세로란 열기</string>
+    <string name="open_hashtag_column">해시태그 칼럼 열기</string>
     <string name="quote_hashtag_of">해시태그 \"%1$s\" 인용</string>
     <string name="quote_all_hashtag_of">모든 해시태그 \"%1$s\" 인용</string>
     <string name="parsing_response">응답 해석 중…</string>
@@ -527,11 +527,11 @@
     <string name="skin_tone_medium">중간 피부색</string>
     <string name="skin_tone_medium_dark">조금 어두운 피부색</string>
     <string name="skin_tone_dark">어두운 피부색</string>
-    <string name="disable_custom_emoji_animation">맞춤 이모지 애니메이션 비활성화 (앱 재시작과 세로란 다시 로드 필요)</string>
+    <string name="disable_custom_emoji_animation">맞춤 이모지 애니메이션 비활성화 (앱 재시작과 칼럼 다시 로드 필요)</string>
     <string name="card_header_card">카드</string>
     <string name="card_header_author">작성자</string>
     <string name="card_header_provider">제공자</string>
-    <string name="allow_non_space_before_emoji_code">이모지 단코드 앞에 공백 아닌 문자를 허용하기 (표시와 게시하기에 영향을 줌. 표시에 반영되려면 앱을 재시작하고 세로란을 다시 로드해야 함. 게시할 때 변환된 이모지는 단코드로 복원될 수 없음.)</string>
+    <string name="allow_non_space_before_emoji_code">이모지 단코드 앞에 공백 아닌 문자를 허용하기 (표시와 게시하기에 영향을 줌. 표시에 반영되려면 앱을 재시작하고 칼럼을 다시 로드해야 함. 게시할 때 변환된 이모지는 단코드로 복원될 수 없음.)</string>
     <string name="emoji">이모지</string>
     <string name="not_blocked">차단 안 됨.</string>
     <string name="not_muted">음소거 안 됨.</string>
@@ -614,9 +614,9 @@
     <string name="avatar_icon_size">아바타 아이콘 크기 (단위:dp. 기본값:48. 앱 재시작 필요)</string>
     <string name="avatar_icon_round_ratio">아바타 아이콘 곡률 (Unit:%. 기본값:33. 앱 재시작 필요)</string>
     <string name="avatar_icon_dont_round">아바타 아이콘의 모서리를 둥글게 하지 않기 (앱 재시작 필요)</string>
-    <string name="share_view_pool">세로란 사이에 뷰 풀을 공유</string>
+    <string name="share_view_pool">칼럼 사이에 뷰 풀을 공유</string>
     <string name="rename">이름 변경…</string>
-    <string name="allow_column_duplication">세로란 중복 허용하기</string>
+    <string name="allow_column_duplication">칼럼 중복 허용하기</string>
     <string name="system_notification_not_related">시스템 알림을 두드렸을 때 선택되지 않기</string>
     <string name="notification_type_mention">언급</string>
     <string name="notification_type_follow">팔로우</string>
@@ -690,8 +690,8 @@
     <string name="post_button_tapped_repeatly">게시 버튼이 반복적으로 두드려졌습니다</string>
     <string name="regex_filter_matches_empty_string">정규표현식 필터가 빈 문자열과 맞춰졌습니다.</string>
     <string name="follow_suggestion">팔로우 제안</string>
-    <string name="close_all_columns">모든 세로란 닫기</string>
-    <string name="confirm_close_column_all">정말 모든 세로란(보호된 것 제외)을 닫겠습니까\?</string>
+    <string name="close_all_columns">모든 칼럼 닫기</string>
+    <string name="confirm_close_column_all">정말 모든 칼럼(보호된 것 제외)을 닫겠습니까\?</string>
     <string name="keyword_filters">키워드 필터들</string>
     <string name="keyword_filter">키워드 필터</string>
     <string name="keyword_filter_new">새 필터</string>
@@ -719,7 +719,7 @@
     <string name="filter_expire_12hour">저장 후 12 시간</string>
     <string name="filter_expire_1day">저장 후 1 일</string>
     <string name="filter_expire_1week">저장 후 1 주</string>
-    <string name="scroll_top_from_column_strip">세로란 띠 안의 초점 세로란 버튼을 두드리면 맨 위로 스크롤</string>
+    <string name="scroll_top_from_column_strip">칼럼 띠 안의 초점 칼럼 버튼을 두드리면 맨 위로 스크롤</string>
     <string name="delete_suggestion">팔로우 제안에서 삭제…</string>
     <string name="delete_succeeded_confirm">팔로우 제안에서 사용자 \"%1$s\"를 삭제하겠습니까\?</string>
     <string name="toot_context_parse_failed">대화 데이터를 해석할 수 없었음.</string>
@@ -734,7 +734,7 @@
     <string name="misskey_cant_show_all_descendants">Misskey에서는 대상 노트에 대한 직접 답글만 열거됩니다. 자손 모두가 표시될 수는 없습니다.</string>
     <string name="cant_get_misskey_app_secret">이 Misskey 서버는 /api/app/create API의 응답에서 app secret을 제공하지 않습니다. Misskey 서비스 버전을 업데이트하도록 서버 운영자와 상담하세요.</string>
     <string name="visibility_style">공개범위 명칭과 아이콘</string>
-    <string name="visibility_style_by_account">세로란 계정에 맞춤</string>
+    <string name="visibility_style_by_account">칼럼 계정에 맞춤</string>
     <string name="mastodon">마스토돈</string>
     <string name="misskey">Misskey</string>
     <string name="visibility_home">우리집</string>
@@ -772,7 +772,7 @@
     <string name="vote">투표 (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">내장 미디어 뷰어 시간제한 (단위:초, 앱 재시작(앱 사용이력에서 삭제) 필요)</string>
     <string name="link_color">링크 색 (앱 재시작 필요)</string>
-    <string name="missing_closeable_column">닫을 세로란이 표시 범위에 없음.</string>
+    <string name="missing_closeable_column">닫을 칼럼이 표시 범위에 없음.</string>
     <string name="dont_use_custom_tabs">링크를 열 때 (크롬/파이어폭스) \"맞춤 탭\"을 사용하지 않기</string>
     <string name="privacy_policy">개인 정보 정책</string>
     <string name="agree">동의합니다</string>
@@ -800,7 +800,7 @@
     <string name="mute_application_confirm">앱 \"%1$s\"를 음소거할까요\?</string>
     <string name="boost_button_alpha">부스트 버튼 알파 불투명도 (단위:%. 앱 재시작 필요. 본문의 알파에 영향을 미침.)</string>
     <string name="toot_background_color">툿 배경색</string>
-    <string name="column_color_default">세로란 색 기본값</string>
+    <string name="column_color_default">칼럼 색 기본값</string>
     <string name="header_background_color">헤더 배경색</string>
     <string name="header_foreground_color">헤더 전면색</string>
     <string name="content_background_color">내용 배경색</string>
@@ -818,7 +818,7 @@
     <string name="profile_directory">프로파일 디렉토리</string>
     <string name="about_this_instance">이 서버에 대해서</string>
     <string name="top_page">맨 위 페이지</string>
-    <string name="show_instance_ticker">#InstanceTicker 보이기 (세로란 새로고침 필요)</string>
+    <string name="show_instance_ticker">#InstanceTicker 보이기 (칼럼 새로고침 필요)</string>
     <string name="instance_ticker_copyright">#InstanceTicker
 \nhttps://wee.jp/mastodon/
 \nCopyright 2018 weepjp, kyori19.</string>
@@ -853,11 +853,11 @@
     <string name="reply_icon_size">답글 아이콘 크기 (단위:dp. 기본값:24. 앱 재시작 필요)</string>
     <string name="header_icon_size">헤더 아이콘 크기 (단위:dp. 기본값:24. 앱 재시작 필요)</string>
     <string name="header_text_size">헤더 글자 크기 (단위:sp. 기본값:14. 앱 재시작 필요)</string>
-    <string name="strip_icon_size">세로란 띠 아이콘 크기 (단위:dp. 기본값:30. 앱 재시작 필요)</string>
+    <string name="strip_icon_size">칼럼 띠 아이콘 크기 (단위:dp. 기본값:30. 앱 재시작 필요)</string>
     <string name="all">모두</string>
     <string name="show_links_in_context_menu">문맥 메뉴에 링크들 보이기</string>
     <string name="scheduled_status_requires_mastodon_2_7_0">예약 게시는 마스토돈 2.7.0 또는 이후 버전이 필요합니다.</string>
-    <string name="move_notifications_quick_filter_to_column_setting">세로란 설정에 알림 즉석 필터 보이기 (앱 재시작 필요)</string>
+    <string name="move_notifications_quick_filter_to_column_setting">칼럼 설정에 알림 즉석 필터 보이기 (앱 재시작 필요)</string>
     <string name="copy_account_id">계정 ID %1$s 복사</string>
     <string name="open_in_admin_ui">관리자 웹 UI에서 열기</string>
     <string name="show_acct_in_system_notification">시스템 알림에 acct (사용자 이름 대신) 보이기</string>

@@ -11,7 +11,7 @@ import android.provider.BaseColumns
 import android.util.JsonReader
 import android.util.JsonToken
 import android.util.JsonWriter
-import jp.juggler.subwaytooter.api.entity.EntityIdString
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
@@ -73,7 +73,7 @@ object AppDataExporter {
 						
 					}
 					
-					is EntityIdString -> {
+					is EntityId -> {
 						writer.name(k)
 						writer.value(o.toString())
 					}

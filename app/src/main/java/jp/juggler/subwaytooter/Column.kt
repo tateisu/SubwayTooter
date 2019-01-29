@@ -927,10 +927,10 @@ class Column(
 			when(type) {
 				
 				TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER ->
-					profile_id == EntityIdString(getParamAt(params, 0))
+					profile_id == EntityId(getParamAt(params, 0))
 				
 				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND ->
-					status_id == EntityIdString(getParamAt(params, 0))
+					status_id == EntityId(getParamAt(params, 0))
 				
 				TYPE_HASHTAG -> getParamAt<String>(params, 0) == hashtag
 				
@@ -3446,7 +3446,7 @@ class Column(
 			} else {
 				val m = reMaxId.matcher(result.link_older)
 				if(m.find()) {
-					EntityIdString(m.group(1))
+					EntityId(m.group(1))
 				} else {
 					null
 				}
@@ -3458,12 +3458,12 @@ class Column(
 				var m = reMinId.matcher(result.link_newer)
 				if(m.find()) {
 					bMinIdMatched = true
-					EntityIdString(m.group(1))
+					EntityId(m.group(1))
 				} else {
 					m = reSinceId.matcher(result.link_newer)
 					if(m.find()) {
 						bMinIdMatched = false
-						EntityIdString(m.group(1))
+						EntityId(m.group(1))
 					} else {
 						null
 					}

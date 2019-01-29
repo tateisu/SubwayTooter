@@ -181,7 +181,7 @@ class TootAttachment : TootAttachmentLike {
 	}
 	
 	fun encodeJson() = jsonObject {
-		put(KEY_IS_STRING_ID, id is EntityIdString)
+		put(KEY_IS_STRING_ID, true)
 		put(KEY_ID, id.toString())
 		put(KEY_TYPE, type)
 		put(KEY_URL, url)

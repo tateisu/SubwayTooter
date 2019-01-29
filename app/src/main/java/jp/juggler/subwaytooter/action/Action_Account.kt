@@ -163,7 +163,7 @@ object Action_Account {
 					if( this.ta != null) return r2
 
 					val jsonObject = JSONObject().apply{
-						put("id", EntityId.CONFIRMING_ID_LONG)
+						put("id", EntityId.CONFIRMING.toString() )
 						put("username",username)
 						put("acct",username)
 						put("acct",username)

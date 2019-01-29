@@ -25,7 +25,6 @@ import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.*
@@ -388,8 +387,8 @@ class PollingWorker private constructor(contextArg : Context) {
 		private fun getEntityOrderId(account : SavedAccount, src : JSONObject) : EntityId =
 			if( account.isMisskey){
 				when(val created_at = src.parseString("createdAt")) {
-					null -> EntityId.defaultString
-					else -> EntityIdString(TootStatus.parseTime(created_at).toString())
+					null -> EntityId.DEFAULT
+					else -> EntityId(TootStatus.parseTime(created_at).toString())
 				}
 			}else{
 				EntityId.mayDefault(src.parseString("id"))

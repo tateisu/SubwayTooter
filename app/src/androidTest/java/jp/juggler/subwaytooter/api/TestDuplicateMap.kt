@@ -29,7 +29,7 @@ class TestDuplicateMap {
 	private fun genStatus(
 		parser : TootParser,
 		accountJson : JSONObject,
-		statusId : Long,
+		statusId : String,
 		uri : String?,
 		url : String?
 	):TootStatus{
@@ -49,7 +49,7 @@ class TestDuplicateMap {
 		map : DuplicateMap,
 		parser : TootParser,
 		accountJson : JSONObject,
-		statusId : Long,
+		statusId : String,
 		uri : String?,
 		url : String?
 	) {
@@ -80,7 +80,7 @@ class TestDuplicateMap {
 			map,
 			parser,
 			account1Json,
-			1L,
+			"1",
 			"http://${parser.linkHelper.host}/@${account1.username}/1",
 			"http://${parser.linkHelper.host}/@${account1.username}/1"
 		)
@@ -89,7 +89,7 @@ class TestDuplicateMap {
 			map,
 			parser,
 			account1Json,
-			2L,
+			"2",
 			"http://${parser.linkHelper.host}/@${account1.username}/2",
 			"http://${parser.linkHelper.host}/@${account1.username}/2"
 		)
@@ -98,7 +98,7 @@ class TestDuplicateMap {
 			map,
 			parser,
 			account1Json,
-			3L,
+			"3",
 			null, // "http://${parser.linkHelper.host}/@${account1.username}/3",
 			"http://${parser.linkHelper.host}/@${account1.username}/3"
 		)
@@ -107,7 +107,7 @@ class TestDuplicateMap {
 			map,
 			parser,
 			account1Json,
-			4L,
+			"4",
 			null, // "http://${parser.linkHelper.host}/@${account1.username}/4",
 			null //"http://${parser.linkHelper.host}/@${account1.username}/4"
 		)
@@ -116,7 +116,7 @@ class TestDuplicateMap {
 			map,
 			parser,
 			account1Json,
-			EntityId.INVALID_ID_LONG,
+			"",
 			null, // "http://${parser.linkHelper.host}/@${account1.username}/4",
 			null //"http://${parser.linkHelper.host}/@${account1.username}/4"
 		)

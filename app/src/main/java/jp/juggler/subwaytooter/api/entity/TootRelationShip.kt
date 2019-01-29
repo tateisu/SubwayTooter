@@ -45,7 +45,7 @@ class TootRelationShip(parser:TootParser,src : JSONObject) {
 	init {
 		
 		if( parser.serviceType == ServiceType.MISSKEY){
-			this.id = EntityId.defaultString
+			this.id = EntityId.DEFAULT
 			
 			following = src.optBoolean("isFollowing")
 			followed_by = src.optBoolean("isFollowed")

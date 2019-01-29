@@ -926,13 +926,13 @@ class SavedAccount(
 	val isConfirmed :Boolean
 		get(){
 			val myId = this.loginAccount?.id
-			return myId != EntityId.confirmingId
+			return myId != EntityId.CONFIRMING
 		}
 	
 	fun checkConfirmed(context:Context,client : TootApiClient) : TootApiResult? {
 		try {
 			val myId = this.loginAccount?.id
-			if(db_id != INVALID_DB_ID && myId == EntityId.confirmingId ) {
+			if(db_id != INVALID_DB_ID && myId == EntityId.CONFIRMING ) {
 				val accessToken = getAccessToken()
 				if(accessToken != null) {
 					val result = client.getUserCredential(accessToken, isMisskey = false)

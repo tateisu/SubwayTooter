@@ -1618,7 +1618,7 @@ class ActMain : AppCompatActivity()
 		if(m.find()) {
 			try {
 				val host = m.group(1)
-				val status_id = EntityIdString(m.group(3))
+				val status_id = EntityId(m.group(3))
 				
 				// ステータスをアプリ内で開く
 				Action_Toot.conversationOtherInstance(
@@ -1642,7 +1642,7 @@ class ActMain : AppCompatActivity()
 		if(m.find()) {
 			try {
 				val host = m.group(1)
-				val status_id = EntityIdString(m.group(2))
+				val status_id = EntityId(m.group(2))
 				// ステータスをアプリ内で開く
 				Action_Toot.conversationOtherInstance(
 					this@ActMain,
@@ -2296,7 +2296,7 @@ class ActMain : AppCompatActivity()
 					try {
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 						val host = m.group(1)
-						val status_id = EntityIdString(m.group(3))
+						val status_id = EntityId(m.group(3))
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(
 								this@ActMain,
@@ -2327,7 +2327,7 @@ class ActMain : AppCompatActivity()
 					try {
 						// https://misskey.xyz/notes/(id)
 						val host = m.group(1)
-						val status_id = EntityIdString(m.group(2))
+						val status_id = EntityId(m.group(2))
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(
 								this@ActMain,
@@ -2358,7 +2358,7 @@ class ActMain : AppCompatActivity()
 					try {
 						// https://misskey.xyz/objects/(id)
 						val host = m.group(1)
-						// ステータスIDではないのでどのタンスで開くにせよ検索APIを通すことになるval object_id = EntityIdString(m.group(2))
+						// ステータスIDではないのでどのタンスで開くにせよ検索APIを通すことになるval object_id = EntityId(m.group(2))
 						Action_Toot.conversationOtherInstance(
 							this@ActMain,
 							opener.pos,
@@ -2380,7 +2380,7 @@ class ActMain : AppCompatActivity()
 					try {
 						// https://misskey.xyz/notes/(id)
 						val host = m.group(1)
-						val status_id = EntityIdString(m.group(2))
+						val status_id = EntityId(m.group(2))
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(
 								this@ActMain,

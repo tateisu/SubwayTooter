@@ -14,5 +14,5 @@ abstract class TimelineItem{
 	
 	// 大小比較のためのIDを取得する
 	// 比較が不要な場合は defaultString を返す
-	open fun getOrderId() :EntityId = EntityId.defaultString
+	open fun getOrderId() :EntityId = EntityId.DEFAULT
 }

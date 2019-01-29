@@ -206,7 +206,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.id = EntityId.mayDefault(misskeyId)
 			
 			// ページネーションには日時を使う
-			this._orderId = EntityIdString(time_created_at.toString())
+			this._orderId = EntityId(time_created_at.toString())
 
 			// お気に入りカラムなどではパース直後に変更することがある
 			
@@ -397,7 +397,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					// 投稿元タンスでのIDを調べる。失敗するかもしれない
 					// FIXME: Pleromaだとダメそうな印象
 					this.uri = src.parseString("uri") ?: error("missing uri")
-					this.id = findStatusIdFromUri(uri, url) ?: EntityId.defaultString
+					this.id = findStatusIdFromUri(uri, url) ?: EntityId.DEFAULT
 					
 					this.time_created_at = TootStatus.parseTime(this.created_at)
 					this.media_attachments = parseListOrNull(
@@ -922,7 +922,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		fun validStatusId(src : EntityId?) : EntityId? =
 			when{
 				src == null -> null
-				src == EntityId.defaultString -> null
+				src == EntityId.DEFAULT -> null
 				src.toString().startsWith("-") -> null
 				else -> src
 			}
@@ -941,29 +941,29 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				if(uri?.isNotEmpty() == true) {
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(uri)
-					if(m.find()) return EntityIdString(m.group(2))
+					if(m.find()) return EntityId(m.group(2))
 					
 					// https://server/@user/(status_id)
 					m = reTootUriAP2.matcher(uri)
-					if(m.find()) return EntityIdString(m.group(2))
+					if(m.find()) return EntityId(m.group(2))
 					
 					// https://misskey.xyz/notes/5b802367744b650030a13640
 					m = reStatusPageMisskey.matcher(uri)
-					if( m.find()) return EntityIdString(m.group(2))
+					if( m.find()) return EntityId(m.group(2))
 					
 					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
 					// tootsearch中の投稿からIDを読めるようにしたい
 					// しかしこのURL中のuuidはステータスIDではないので、無意味
 					// m = reObjects.matcher(uri)
-					// if(m.find()) return EntityIdString(m.group(2))
+					// if(m.find()) return EntityId(m.group(2))
 					
 					// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
 					m = reStatusPageNotice.matcher(uri)
-					if(m.find()) return EntityIdString(m.group(2))
+					if(m.find()) return EntityId(m.group(2))
 					
 					// tag:mstdn.osaka,2017-12-19:objectId=5672321:objectType=Status
 					m = reTootUriOS.matcher(uri)
-					if(m.find()) return EntityIdString(m.group(2))
+					if(m.find()) return EntityId(m.group(2))
 					
 					log.w("can't parse status uri: $uri")
 				}
@@ -972,25 +972,25 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(url)
-					if(m.find()) return EntityIdString(m.group(2))
+					if(m.find()) return EntityId(m.group(2))
 					
 					// https://friends.nico/@(who)/(status_id)
 					m = reTootUriAP2.matcher(url)
-					if(m.find()) return EntityIdString(m.group(2))
+					if(m.find()) return EntityId(m.group(2))
 					
 					// https://misskey.xyz/notes/5b802367744b650030a13640
 					m = reStatusPageMisskey.matcher(url)
-					if( m.find()) return EntityIdString(m.group(2))
+					if( m.find()) return EntityId(m.group(2))
 
 					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
 					// tootsearch中の投稿からIDを読めるようにしたい
 					// しかしこのURL中のuuidはステータスIDではないので、無意味
 					// m = reObjects.matcher(url)
-					// if(m.find()) return EntityIdString(m.group(2))
+					// if(m.find()) return EntityId(m.group(2))
 					
 					// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
 					m = reStatusPageNotice.matcher(url)
-					if(m.find()) return EntityIdString(m.group(2))
+					if(m.find()) return EntityId(m.group(2))
 					
 					
 					log.w("can't parse status URL: $url")

@@ -244,7 +244,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				
 				ServiceType.TOOTSEARCH -> {
 					// tootsearch のアカウントのIDはどのタンス上のものか分からないので役に立たない
-					this.id = EntityId.defaultString
+					this.id = EntityId.DEFAULT
 					
 					sv = src.notEmptyOrThrow("acct")
 					this.host = findHostFromUrl(sv, null, url)

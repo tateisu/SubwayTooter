@@ -238,8 +238,8 @@ internal class StreamReader(
 					when(event) {
 						
 						"delete" -> when(payload){
-							is Long -> fireDeleteId(EntityIdString(payload.toString()))
-							is String ->fireDeleteId(EntityIdString(payload.toString()))
+							is Long -> fireDeleteId(EntityId(payload.toString()))
+							is String ->fireDeleteId(EntityId(payload.toString()))
 							else -> log.d("unsupported payload type. $payload")
 						}
 						

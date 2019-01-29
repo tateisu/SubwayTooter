@@ -765,7 +765,7 @@
     <string name="misskey_hybrid_timeline">Fil social</string>
     <string name="misskey_hybrid_timeline_long">Fil Social (Misskey)</string>
     <string name="renote_to">Renote to %1$s</string>
-    <string name="reply_to">Reply to %1$s</string>
+    <string name="reply_to">Réponse à %1$s</string>
     <string name="deleted_at">deleted at %1$s</string>
     <string name="already_reactioned">already reactioned.</string>
     <string name="already_voted">Vous avez déjà voté.</string>

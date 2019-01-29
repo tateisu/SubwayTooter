@@ -161,7 +161,7 @@ object InstanceTicker {
 			if(timeNextLoad - now > 0) return
 			timeNextLoad = now + 301000L
 			
-			val text = App1.getHttpCachedString("https://wee.jp/tsv/")
+			val text = App1.getHttpCachedString("https://wee.jp/tsv/1")
 			if(text?.isEmpty() != false) return
 			
 			val list = ConcurrentHashMap<String, Item>()

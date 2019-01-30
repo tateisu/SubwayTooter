@@ -338,11 +338,12 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		
 		// MFMのメンション @username @username@host
 		// (Mastodonのカラムでは使われていない)
-		internal val reMention = Pattern.compile("""\A@(\w|\w+[\w-]*\w)(?:@(\w[\w.-]*\w))?""")
+		internal val reMention = Pattern.compile("""\A@(\w+(?:[\w-]*\w)?)(?:@(\w[\w.-]*\w))?""")
 		
 		// host, user ,(instance)
+		// Misskeyだけではないのでusernameの定義が違う
 		internal val reAccountUrl : Pattern =
-			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/@(\w|\w+[\w-]*\w)(?:@(\w[\w.-]*\w))?(?=\z|[?#])""")
+			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/@(\w+[\w-]*)(?:@(\w[\w.-]*\w))?(?=\z|[?#])""")
 		
 		fun getAcctFromUrl(url : String) : String? {
 			val m = reAccountUrl.matcher(url)

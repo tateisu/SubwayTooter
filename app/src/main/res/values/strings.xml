@@ -877,5 +877,7 @@
     <string name="show_link_underline">Show link underline</string>
     <string name="official_account">Official account</string>
     <string name="releases">Releases</string>
+    <string name="timezone">Time zone (app restart required)</string>
+    <string name="device_timezone">Device time zone</string>
 
 </resources>

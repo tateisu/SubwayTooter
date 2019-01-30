@@ -216,6 +216,22 @@
 
         <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/timezone"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Spinner
+                android:id="@+id/spTimeZone"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
         <!-- =============================================== -->
 
 

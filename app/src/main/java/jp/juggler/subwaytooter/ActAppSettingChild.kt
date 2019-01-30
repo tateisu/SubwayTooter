@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.support.annotation.ColorInt
 import android.support.annotation.IdRes
-import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
@@ -30,6 +29,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.NumberFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class ActAppSettingChild : AppCompatActivity()
 	, CompoundButton.OnCheckedChangeListener
@@ -97,6 +98,8 @@ class ActAppSettingChild : AppCompatActivity()
 	private var spRepliesCount : Spinner? = null
 	private var spVisibilityStyle : Spinner? = null
 	private var spBoostButtonJustify : Spinner? = null
+	private var spTimeZone : Spinner? = null
+	
 	private var footer_button_bg_color : Int = 0
 	private var footer_button_fg_color : Int = 0
 	private var footer_tab_bg_color : Int = 0
@@ -291,6 +294,13 @@ class ActAppSettingChild : AppCompatActivity()
 			it.onItemSelectedListener = this@ActAppSettingChild
 		}
 		
+		spTimeZone = findViewById<Spinner>(R.id.spTimeZone)?.also {
+			it.adapter = TimeZoneAdapter()
+			it.onItemSelectedListener = this@ActAppSettingChild
+		}
+		
+		
+		
 		
 		intArrayOf(
 			R.id.btnFooterBackgroundEdit
@@ -483,6 +493,13 @@ class ActAppSettingChild : AppCompatActivity()
 				?: 0
 		)
 		
+		spTimeZone?.setSelection(
+			(spTimeZone?.adapter as? TimeZoneAdapter)
+				?.getIndexFromId(Pref.spTimeZone(pref))
+				?: 0
+		
+		)
+		
 		footer_button_bg_color = Pref.ipFooterButtonBgColor(pref)
 		footer_button_fg_color = Pref.ipFooterButtonFgColor(pref)
 		footer_tab_bg_color = Pref.ipFooterTabBgColor(pref)
@@ -566,6 +583,13 @@ class ActAppSettingChild : AppCompatActivity()
 			e.put(
 				Pref.lpTabletTootDefaultAccount,
 				(it.adapter as AccountAdapter).getIdFromIndex(it.selectedItemPosition)
+			)
+		}
+		
+		spTimeZone?.let {
+			e.put(
+				Pref.spTimeZone,
+				(it.adapter as TimeZoneAdapter).getIdFromIndex(it.selectedItemPosition)
 			)
 		}
 		
@@ -1309,4 +1333,103 @@ class ActAppSettingChild : AppCompatActivity()
 		}
 	}
 	
+	private class Item(
+		val id : String,
+		val caption : String,
+		val offset : Int
+	)
+	
+	private inner class TimeZoneAdapter internal constructor() : BaseAdapter() {
+		
+		internal val list = ArrayList<Item>()
+		
+		init {
+			
+			for(id in TimeZone.getAvailableIDs()) {
+				val tz = TimeZone.getTimeZone(id)
+				
+				// GMT数字を指定するタイプのタイムゾーンは無視する。ただしGMT-12:00の１項目だけは残す
+				// 3文字のIDは曖昧な場合があるので非推奨
+				// '/' を含まないIDは列挙しない
+				if(! when{
+					! tz.id.contains('/') -> false
+					tz.id == "Etc/GMT+12" -> true
+					tz.id.startsWith("Etc/") -> false
+					else-> true
+				}) continue
+				
+				var offset = tz.rawOffset.toLong()
+				val caption = when(offset) {
+					0L -> String.format("(UTC\u00B100:00) %s %s",tz.id, tz.displayName)
+					
+					else -> {
+						
+						val format = if(offset > 0)
+							"(UTC+%02d:%02d) %s %s"
+						else
+							"(UTC-%02d:%02d) %s %s"
+						
+						offset = abs(offset)
+						
+						val hours = TimeUnit.MILLISECONDS.toHours(offset)
+						val minutes =
+							TimeUnit.MILLISECONDS.toMinutes(offset) - TimeUnit.HOURS.toMinutes(hours)
+						
+						
+						
+						String.format(format, hours, minutes,tz.id, tz.displayName)
+					}
+				}
+				if( null == list.find{ it.caption == caption } ){
+					list.add(Item(id, caption, tz.rawOffset))
+				}
+			}
+
+			list.sortWith(Comparator { a, b ->
+				(a.offset - b.offset).notZero() ?: a.caption.compareTo( b.caption)
+			})
+
+			list.add(0, Item("", getString(R.string.device_timezone), 0))
+		}
+		
+		override fun getCount() : Int {
+			return list.size
+		}
+		
+		override fun getItem(position : Int) : Any? {
+			return list[position]
+		}
+		
+		override fun getItemId(position : Int) : Long {
+			return 0
+		}
+		
+		override fun getView(position : Int, viewOld : View?, parent : ViewGroup) : View {
+			val view = viewOld ?: layoutInflater.inflate(
+				android.R.layout.simple_spinner_item,
+				parent,
+				false
+			)
+			val item = list[position]
+			view.findViewById<TextView>(android.R.id.text1).text = item.caption
+			return view
+		}
+		
+		override fun getDropDownView(position : Int, viewOld : View?, parent : ViewGroup) : View {
+			val view =
+				viewOld ?: layoutInflater.inflate(R.layout.lv_spinner_dropdown, parent, false)
+			val item = list[position]
+			view.findViewById<TextView>(android.R.id.text1).text = item.caption
+			return view
+		}
+		
+		internal fun getIndexFromId(tz_id : String) : Int {
+			val index = list.indexOfFirst { it.id == tz_id }
+			return if(index == - 1) 0 else index
+		}
+		
+		internal fun getIdFromIndex(position : Int) : String {
+			return list[position].id
+		}
+	}
 }

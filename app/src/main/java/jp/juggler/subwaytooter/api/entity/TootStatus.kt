@@ -813,7 +813,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		}
 		
 		@SuppressLint("SimpleDateFormat")
-		private val date_format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+		internal val date_format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 		
 		fun formatTime(context : Context, t : Long, bAllowRelative : Boolean) : String {
 			if(bAllowRelative && Pref.bpRelativeTimestamp(App1.pref)) {
@@ -868,7 +868,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					}
 				}
 			}
-			date_format.timeZone = TimeZone.getDefault()
+			
 			return date_format.format(Date(t))
 		}
 		

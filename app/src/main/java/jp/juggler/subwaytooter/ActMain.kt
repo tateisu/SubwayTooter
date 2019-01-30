@@ -15,7 +15,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
-import android.support.v4.view.ViewCompat
 import android.support.v4.view.ViewPager
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.AlertDialog
@@ -31,7 +30,10 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgTextInput
@@ -40,7 +42,10 @@ import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.ChromeTabOpener
+import jp.juggler.subwaytooter.util.EmptyCallback
+import jp.juggler.subwaytooter.util.LinkHelper
+import jp.juggler.subwaytooter.util.PostHelper
 import jp.juggler.subwaytooter.view.*
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
@@ -404,6 +409,8 @@ class ActMain : AppCompatActivity()
 		notification_tl_font_size_sp = validateFloat(Pref.fpNotificationTlFontSize(pref))
 		header_text_size_sp = validateFloat(Pref.fpHeaderTextSize(pref))
 		
+	
+		
 		initUI()
 		
 		updateColumnStrip()
@@ -502,6 +509,17 @@ class ActMain : AppCompatActivity()
 		MyClickableSpan.showLinkUnderline = Pref.bpShowLinkUnderline(pref)
 		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
 			?: getAttributeColor(this, R.attr.colorLink)
+		
+		var tz = TimeZone.getDefault()
+		try{
+			val tz_id = Pref.spTimeZone(pref)
+			if(tz_id.isNotEmpty()){
+				tz = TimeZone.getTimeZone(tz_id)
+			}
+		}catch(ex:Throwable){
+			log.e(ex,"getTimeZone failed.")
+		}
+		TootStatus.date_format.timeZone = tz
 		
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
 		run {

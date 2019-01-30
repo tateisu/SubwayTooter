@@ -452,6 +452,8 @@ object Pref {
 	val spMediaReadTimeout = StringPref("spMediaReadTimeout", "60")
 	val spAgreedPrivacyPolicyDigest= StringPref("spAgreedPrivacyPolicyDigest", "")
 	
+	val spTimeZone = StringPref("TimeZone","")
+	
 	// long
 	val lpTabletTootDefaultAccount = LongPref("tablet_toot_default_account", - 1L)
 	

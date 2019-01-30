@@ -855,5 +855,7 @@
     <string name="show_link_underline">リンクの下線を表示する</string>
     <string name="official_account">公式アカウント</string>
     <string name="releases">更新履歴</string>
+    <string name="timezone">タイムゾーン (アプリ再起動が必要)</string>
+    <string name="device_timezone">端末のタイムゾーン</string>
 
 </resources>

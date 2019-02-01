@@ -174,4 +174,8 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "../extra-SubwayTooter/_ArtWork/ic_vote.png"	,$res_dir,"drawable","ic_vote",0,24);
 #resize_scales( "../extra-SubwayTooter/_ArtWork/ic_hashtag.png"	,$res_dir,"drawable","ic_hashtag",0,24);
 
-resize_scales( "../extra-SubwayTooter/_ArtWork/ic_followed_by.png"		,$res_dir,"drawable","ic_followed_by",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_followed_by.png"		,$res_dir,"drawable","ic_followed_by",0,24);
+
+
+resize_scales( "../extra-SubwayTooter/_ArtWork/local-visibility/ic_local_lock_open.png"	,$res_dir,"drawable","ic_local_lock_open",0,24);
+resize_scales( "../extra-SubwayTooter/_ArtWork/ic_lock_open.png"	,$res_dir,"drawable","ic_lock_open",0,24);

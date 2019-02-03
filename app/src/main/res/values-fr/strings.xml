@@ -42,7 +42,7 @@
     <string name="block">Bloquer</string>
     <string name="block_succeeded">Bloqué</string>
     <string name="blocked_users">Utilisateurs bloqués</string>
-    <string name="boost">boost</string>
+    <string name="boost">Booster</string>
     <string name="boost_from_another_account">Partager à partir d\'un autre compte</string>
     <string name="boost_succeeded">Boosté</string>
     <string name="unboost_succeeded">boost supprimé</string>
@@ -142,7 +142,7 @@
     <string name="favourites">Favoris</string>
     <string name="federate_timeline">Fil fédéré</string>
     <string name="file_size_too_big">Taille du fichier est trop grande. La limite maximale est de %1$d Mo.</string>
-    <string name="follow">follow</string>
+    <string name="follow">S’abonner</string>
     <string name="follow_from_another_account">Suivre (sélection du compte)</string>
     <string name="follow_locked_user">Suivre un utilisateur verrouillé</string>
     <string name="follow_request_authorized">Demande de suivi de %1$s acceptée.</string>
@@ -367,7 +367,7 @@
     <string name="notification_on_off_desc">Voir aussi les paramètres du compte pour activer/désactiver les notifications.</string>
     <string name="performance">Performance</string>
     <string name="tablet_mode">Mode tablette</string>
-    <string name="post">Post</string>
+    <string name="post">Publication</string>
     <string name="toot_button_default_account">Compte par défaut lorsque le bouton \"Pouet\" est appuyé</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">Account change failed. Old draft data has no in_reply_to_url, can\'t convert in_repley_to for selected instance.</string>
     <string name="in_reply_to_id_conversion_failed">\"in_reply_to\" ID conversion failed.</string>
@@ -650,14 +650,14 @@
     <string name="follow_deny">refuser</string>
     <string name="follow_accept_confirm">Désirez-vous approuver la demande de suivi de %1$s ?</string>
     <string name="follow_deny_confirm">Rejeter la demande d’abonnement provenant de %1$s ?</string>
-    <string name="direct_messages">Messages privés</string>
+    <string name="direct_messages">Messages directs</string>
     <string name="unfavourite">Ôter des favoris</string>
     <string name="unboost">Ôter le boost</string>
     <string name="dont_retrieve_preview_card">Ne pas récupérer les cartes de prévisualisation</string>
-    <string name="field_name1">label1</string>
-    <string name="field_name2">label2</string>
-    <string name="field_name3">label3</string>
-    <string name="field_name4">label4</string>
+    <string name="field_name1">Étiquette 1</string>
+    <string name="field_name2">Étiquette 2</string>
+    <string name="field_name3">Étiquette 3</string>
+    <string name="field_name4">Étiquette 4</string>
     <string name="field_value1">Valeur 1</string>
     <string name="field_value2">Valeur 2</string>
     <string name="field_value3">Valeur 3</string>
@@ -686,7 +686,7 @@
     <string name="yourself_can_see_your_network">Même si vous choisissez de cacher les graphiques sociaux, vous pouvez les voir.</string>
     <string name="follow_follower_list_may_restrict">Si l\'utilisateur distant choisit de masquer le graphique social, seuls les abonnés/suivants sur cette instance seront affichés.</string>
     <string name="trend_tag">Les tendances des tags</string>
-    <string name="people_talking">%1$d(%2$d) personnes discutent</string>
+    <string name="people_talking">%1$d (%2$d) personnes en parlent</string>
     <string name="trend_tag_desc">The numbers indicate \'daily(weekly)\'. Daily numbers are reset at %1$s.</string>
     <string name="redraft_and_delete">Supprimer et reformuler</string>
     <string name="cant_sync_toot">Impossible de synchroniser le pouet.</string>

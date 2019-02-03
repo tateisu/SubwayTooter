@@ -420,6 +420,16 @@ object Pref {
 	val ipTootColorDirectUser = IntPref("ipTootColorDirectUser", 0)
 	val ipTootColorDirectMe = IntPref("ipTootColorDirectMe", 0)
 	
+	val ipEventBgColorBoost = IntPref("EventBgColorBoost", 0)
+	val ipEventBgColorFavourite = IntPref("EventBgColorFavourite", 0)
+	val ipEventBgColorFollow = IntPref("EventBgColorFollow", 0)
+	val ipEventBgColorMention = IntPref("EventBgColorMention", 0)
+	val ipEventBgColorUnfollow = IntPref("EventBgColorUnfollow", 0)
+	val ipEventBgColorReaction = IntPref("EventBgColorReaction", 0)
+	val ipEventBgColorQuote = IntPref("EventBgColorQuote", 0)
+	val ipEventBgColorVote = IntPref("EventBgColorVote", 0)
+	val ipEventBgColorFollowRequest = IntPref("EventBgColorFollowRequest", 0)
+	
 	val ipCcdHeaderBg = IntPref("ipCcdHeaderBg", 0)
 	val ipCcdHeaderFg = IntPref("ipCcdHeaderFg", 0)
 	val ipCcdContentBg = IntPref("ipCcdContentBg", 0)

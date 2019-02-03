@@ -809,7 +809,7 @@
     <string name="quick_toot_bar_background_color">즉석 툿 막대 배경색</string>
     <string name="dont_show_preview_card">미리보기 카드를 보이지 않기</string>
     <string name="instance_does_not_support_push_api_pleroma">푸시 구독 API는 이 서버(아마도 Pleroma)에서 지원하지 않습니다.</string>
-    <string name="quote_renote">인용 리노트… (Misskey)</string>
+    <string name="quote_renote">인용 리노트 (Misskey)</string>
     <string name="blank_cw">(빈 CW)</string>
     <string name="actions_for_instance">이 서버에 대한 동작</string>
     <string name="animation">애니메이션</string>

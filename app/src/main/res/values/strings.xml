@@ -821,7 +821,7 @@
     <string name="quick_toot_bar_background_color">Quick toot bar background color</string>
     <string name="dont_show_preview_card">Don\'t show preview card</string>
     <string name="instance_does_not_support_push_api_pleroma">Push subscription API is not supported on this server (maybe Pleroma).</string>
-    <string name="quote_renote">Quoted renote… (Misskey)</string>
+    <string name="quote_renote">Quoted renote (Misskey)</string>
     <string name="blank_cw">(blank CW)</string>
     <string name="actions_for_instance">Actions for this server</string>
     <string name="animation">Animation</string>
@@ -887,5 +887,9 @@
     <string name="hashtag_title_none">without %1$s</string>
     <string name="add">Add</string>
     <string name="show_clear_button_in_search_bar">Show clear button on search bar (app restart required)</string>
+    <string name="event_background_color">Event background color</string>
+    <string name="mention_not_reply">Mention (not reply)</string>
+    <string name="unfollow_misskey">Unfollow (Misskey)</string>
+    <string name="follow_request_misskey">Follow request (Misskey)</string>
 
 </resources>

@@ -5,7 +5,6 @@ import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.os.SystemClock
 import android.support.v4.content.ContextCompat
-import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
 import android.text.Spannable
@@ -475,7 +474,8 @@ internal class ItemViewHolder(
 							item.accountRef,
 							item.time_created_at,
 							R.drawable.ic_repeat,
-							R.string.display_name_boosted_by
+							R.string.display_name_boosted_by,
+							colorBg = Pref.ipEventBgColorBoost(activity.pref)
 						)
 						showStatusOrReply(item.reblog)
 					}
@@ -773,7 +773,8 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					if(access_info.isNicoru(n_account)) R.drawable.ic_nicoru else R.drawable.ic_star,
-					R.string.display_name_favourited_by
+					R.string.display_name_favourited_by,
+					colorBg = Pref.ipEventBgColorFavourite(activity.pref)
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status)
@@ -785,7 +786,8 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_repeat,
-					R.string.display_name_boosted_by
+					R.string.display_name_boosted_by,
+					colorBg = Pref.ipEventBgColorBoost(activity.pref)
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status)
@@ -799,7 +801,8 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_repeat,
-					R.string.display_name_boosted_by
+					R.string.display_name_boosted_by,
+					colorBg = Pref.ipEventBgColorBoost(activity.pref)
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status)
@@ -812,7 +815,8 @@ internal class ItemViewHolder(
 						n_accountRef,
 						n.time_created_at,
 						R.drawable.ic_follow_plus,
-						R.string.display_name_followed_by
+						R.string.display_name_followed_by,
+						colorBg = Pref.ipEventBgColorFollow(activity.pref)
 					)
 					showAccount(n_accountRef)
 				}
@@ -824,7 +828,8 @@ internal class ItemViewHolder(
 						n_accountRef,
 						n.time_created_at,
 						R.drawable.ic_follow_cross,
-						R.string.display_name_unfollowed_by
+						R.string.display_name_unfollowed_by,
+						colorBg = Pref.ipEventBgColorUnfollow(activity.pref)
 					)
 					showAccount(n_accountRef)
 				}
@@ -845,7 +850,8 @@ internal class ItemViewHolder(
 								n_accountRef,
 								n.time_created_at,
 								R.drawable.ic_reply,
-								R.string.display_name_mentioned_by
+								R.string.display_name_mentioned_by,
+								colorBg = Pref.ipEventBgColorMention(activity.pref)
 							)
 						}
 					}
@@ -861,8 +867,9 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_question, // not used
-					R.string.display_name_reaction_by
-					, reactionDrawableId = reaction?.btnDrawableId
+					R.string.display_name_reaction_by,
+					colorBg = Pref.ipEventBgColorReaction(activity.pref),
+					reactionDrawableId = reaction?.btnDrawableId
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status)
@@ -874,7 +881,8 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_repeat,
-					R.string.display_name_quoted_by
+					R.string.display_name_quoted_by,
+					colorBg = Pref.ipEventBgColorQuote(activity.pref)
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status)
@@ -886,7 +894,8 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_vote,
-					R.string.display_name_voted_by
+					R.string.display_name_voted_by,
+					colorBg = Pref.ipEventBgColorVote(activity.pref)
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status)
@@ -898,7 +907,8 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_follow_wait,
-					R.string.display_name_follow_request_by
+					R.string.display_name_follow_request_by,
+					colorBg = Pref.ipEventBgColorFollowRequest(activity.pref)
 				)
 				boostedAction = {
 					activity.addColumn(
@@ -914,7 +924,8 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_question,
-					R.string.unknown_notification_from
+					R.string.unknown_notification_from,
+					colorBg = 0
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status)
@@ -1041,6 +1052,7 @@ internal class ItemViewHolder(
 		time : Long,
 		iconId : Int,
 		string_id : Int,
+		colorBg : Int,
 		reactionDrawableId : Int? = null
 	) {
 		boost_account = whoRef
@@ -1064,6 +1076,12 @@ internal class ItemViewHolder(
 				color = content_color,
 				alphaMultiplier = Styler.boost_alpha
 			)
+		}
+		
+		if( colorBg == 0) {
+			llBoosted.backgroundResource = R.drawable.btn_bg_transparent
+		}else{
+			llBoosted.backgroundDrawable = getAdaptiveRippleDrawable(normalColor = colorBg, pressedColor = content_color)
 		}
 		
 		boost_time = time
@@ -2597,8 +2615,7 @@ internal class ItemViewHolder(
 				lparams(matchParent, wrapContent) {
 					bottomMargin = dip(6)
 				}
-				
-				background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+				backgroundResource = R.drawable.btn_bg_transparent
 				gravity = Gravity.CENTER_VERTICAL
 				
 				ivBoosted = imageView {

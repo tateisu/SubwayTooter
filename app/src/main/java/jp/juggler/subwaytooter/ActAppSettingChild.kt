@@ -74,6 +74,16 @@ class ActAppSettingChild : AppCompatActivity()
 		internal const val COLOR_DIALOG_ID_COLUMN_ACCT = 15
 		internal const val COLOR_DIALOG_ID_COLUMN_TEXT = 16
 		
+		internal const val COLOR_DIALOG_ID_EVENT_BG_BOOST = 17
+		internal const val COLOR_DIALOG_ID_EVENT_BG_FAVOURITE = 18
+		internal const val COLOR_DIALOG_ID_EVENT_BG_FOLLOW = 19
+		internal const val COLOR_DIALOG_ID_EVENT_BG_MENTION = 20
+		internal const val COLOR_DIALOG_ID_EVENT_BG_UNFOLLOW = 21
+		internal const val COLOR_DIALOG_ID_EVENT_BG_REACTION = 22
+		internal const val COLOR_DIALOG_ID_EVENT_BG_QUOTE = 23
+		internal const val COLOR_DIALOG_ID_EVENT_BG_VOTE = 24
+		internal const val COLOR_DIALOG_ID_EVENT_BG_FOLLOWREQUEST = 25
+		
 		internal const val REQUEST_CODE_TIMELINE_FONT = 1
 		internal const val REQUEST_CODE_TIMELINE_FONT_BOLD = 2
 		
@@ -111,6 +121,16 @@ class ActAppSettingChild : AppCompatActivity()
 	private var toot_color_direct_user : Int = 0
 	private var toot_color_direct_me : Int = 0
 	private var link_color : Int = 0
+	
+	private var event_bg_color_boost : Int = 0
+	private var event_bg_color_favourite : Int = 0
+	private var event_bg_color_follow : Int = 0
+	private var event_bg_color_mention : Int = 0
+	private var event_bg_color_unfollow : Int = 0
+	private var event_bg_color_reaction : Int = 0
+	private var event_bg_color_quote : Int = 0
+	private var event_bg_color_vote : Int = 0
+	private var event_bg_color_follow_request : Int = 0
 	
 	private var color_column_header_bg : Int = 0
 	private var color_column_header_fg : Int = 0
@@ -340,6 +360,24 @@ class ActAppSettingChild : AppCompatActivity()
 			, R.id.btnCcdContentTextEdit
 			, R.id.btnCcdContentTextReset
 			, R.id.btnInstanceTickerCopyright
+			, R.id.btnBackgroundColorBoostEdit
+			, R.id.btnBackgroundColorBoostReset
+			, R.id.btnBackgroundColorFavouritesEdit
+			, R.id.btnBackgroundColorFavouritesReset
+			, R.id.btnBackgroundColorFollowEdit
+			, R.id.btnBackgroundColorFollowReset
+			, R.id.btnBackgroundColorMentionEdit
+			, R.id.btnBackgroundColorMentionReset
+			, R.id.btnBackgroundColorUnfollowEdit
+			, R.id.btnBackgroundColorUnfollowReset
+			, R.id.btnBackgroundColorReactionEdit
+			, R.id.btnBackgroundColorReactionReset
+			, R.id.btnBackgroundColorQuotedEdit
+			, R.id.btnBackgroundColorQuotedReset
+			, R.id.btnBackgroundColorVotedEdit
+			, R.id.btnBackgroundColorVotedReset
+			, R.id.btnBackgroundColorFollowRequestedEdit
+			, R.id.btnBackgroundColorFollowRequestedReset
 		).forEach {
 			findViewById<View>(it)?.setOnClickListener(this)
 		}
@@ -512,6 +550,16 @@ class ActAppSettingChild : AppCompatActivity()
 		toot_color_direct_me = Pref.ipTootColorDirectMe(pref)
 		link_color = Pref.ipLinkColor(pref)
 		
+		event_bg_color_boost = Pref.ipEventBgColorBoost(pref)
+		event_bg_color_favourite = Pref.ipEventBgColorFavourite(pref)
+		event_bg_color_follow = Pref.ipEventBgColorFollow(pref)
+		event_bg_color_mention = Pref.ipEventBgColorMention(pref)
+		event_bg_color_unfollow = Pref.ipEventBgColorUnfollow(pref)
+		event_bg_color_reaction = Pref.ipEventBgColorReaction(pref)
+		event_bg_color_quote = Pref.ipEventBgColorQuote(pref)
+		event_bg_color_vote = Pref.ipEventBgColorVote(pref)
+		event_bg_color_follow_request = Pref.ipEventBgColorFollowRequest(pref)
+		
 		color_column_header_bg = Pref.ipCcdHeaderBg(pref)
 		color_column_header_fg = Pref.ipCcdHeaderFg(pref)
 		color_column_bg = Pref.ipCcdContentBg(pref)
@@ -652,6 +700,8 @@ class ActAppSettingChild : AppCompatActivity()
 			e.put(sp, value)
 		}
 		
+		fun put(sp : IntPref, value : Int) = e.put(sp, value)
+		
 		putIf(hasFooterColorUi, Pref.ipFooterButtonBgColor, footer_button_bg_color)
 		putIf(hasFooterColorUi, Pref.ipFooterButtonFgColor, footer_button_fg_color)
 		putIf(hasFooterColorUi, Pref.ipFooterTabBgColor, footer_tab_bg_color)
@@ -660,10 +710,24 @@ class ActAppSettingChild : AppCompatActivity()
 		
 		putIf(hasListDividerColorUi, Pref.ipListDividerColor, list_divider_color)
 		
-		putIf(hasTootBackgroundColorUi, Pref.ipTootColorUnlisted, toot_color_unlisted)
-		putIf(hasTootBackgroundColorUi, Pref.ipTootColorFollower, toot_color_follower)
-		putIf(hasTootBackgroundColorUi, Pref.ipTootColorDirectUser, toot_color_direct_user)
-		putIf(hasTootBackgroundColorUi, Pref.ipTootColorDirectMe, toot_color_direct_me)
+		if(hasTootBackgroundColorUi) {
+			put(Pref.ipTootColorUnlisted, toot_color_unlisted)
+			put(Pref.ipTootColorFollower, toot_color_follower)
+			put(Pref.ipTootColorDirectUser, toot_color_direct_user)
+			put(Pref.ipTootColorDirectMe, toot_color_direct_me)
+			
+			put(Pref.ipEventBgColorBoost, event_bg_color_boost)
+			put(Pref.ipEventBgColorFavourite, event_bg_color_favourite)
+			put(Pref.ipEventBgColorFollow, event_bg_color_follow)
+			put(Pref.ipEventBgColorMention, event_bg_color_mention)
+			put(Pref.ipEventBgColorUnfollow, event_bg_color_unfollow)
+			put(Pref.ipEventBgColorReaction, event_bg_color_reaction)
+			put(Pref.ipEventBgColorQuote, event_bg_color_quote)
+			put(Pref.ipEventBgColorVote, event_bg_color_vote)
+			put(Pref.ipEventBgColorFollowRequest, event_bg_color_follow_request)
+		}
+		
+		
 		
 		putIf(hasLinkColorUi, Pref.ipLinkColor, link_color)
 		
@@ -950,6 +1014,106 @@ class ActAppSettingChild : AppCompatActivity()
 				this@ActAppSettingChild,
 				"https://wee.jp/mastodon/"
 			)
+			
+			R.id.btnBackgroundColorBoostEdit -> openColorPicker(
+				COLOR_DIALOG_ID_EVENT_BG_BOOST,
+				event_bg_color_boost,
+				true
+			)
+			
+			R.id.btnBackgroundColorBoostReset -> {
+				event_bg_color_boost = 0
+				saveUIToData()
+			}
+			
+			R.id.btnBackgroundColorFavouritesEdit -> openColorPicker(
+				COLOR_DIALOG_ID_EVENT_BG_FAVOURITE,
+				event_bg_color_favourite,
+				true
+			)
+			
+			R.id.btnBackgroundColorFavouritesReset -> {
+				event_bg_color_favourite = 0
+				saveUIToData()
+			}
+			
+			R.id.btnBackgroundColorFollowEdit -> openColorPicker(
+				COLOR_DIALOG_ID_EVENT_BG_FOLLOW,
+				event_bg_color_follow,
+				true
+			)
+			
+			R.id.btnBackgroundColorFollowReset -> {
+				event_bg_color_follow = 0
+				saveUIToData()
+			}
+			
+			R.id.btnBackgroundColorMentionEdit -> openColorPicker(
+				COLOR_DIALOG_ID_EVENT_BG_MENTION,
+				event_bg_color_mention,
+				true
+			)
+			
+			R.id.btnBackgroundColorMentionReset -> {
+				event_bg_color_mention = 0
+				saveUIToData()
+			}
+			
+			R.id.btnBackgroundColorUnfollowEdit -> openColorPicker(
+				COLOR_DIALOG_ID_EVENT_BG_UNFOLLOW,
+				event_bg_color_unfollow,
+				true
+			)
+			
+			R.id.btnBackgroundColorUnfollowReset -> {
+				event_bg_color_unfollow = 0
+				saveUIToData()
+			}
+			
+			R.id.btnBackgroundColorReactionEdit -> openColorPicker(
+				COLOR_DIALOG_ID_EVENT_BG_REACTION,
+				event_bg_color_reaction,
+				true
+			)
+			
+			R.id.btnBackgroundColorReactionReset -> {
+				event_bg_color_reaction = 0
+				saveUIToData()
+			}
+			
+			R.id.btnBackgroundColorQuotedEdit -> openColorPicker(
+				COLOR_DIALOG_ID_EVENT_BG_QUOTE,
+				event_bg_color_quote,
+				true
+			)
+			
+			R.id.btnBackgroundColorQuotedReset -> {
+				event_bg_color_quote = 0
+				saveUIToData()
+			}
+			
+			R.id.btnBackgroundColorVotedEdit -> openColorPicker(
+				COLOR_DIALOG_ID_EVENT_BG_VOTE,
+				event_bg_color_vote,
+				true
+			)
+			
+			R.id.btnBackgroundColorVotedReset -> {
+				event_bg_color_vote = 0
+				saveUIToData()
+			}
+			
+			R.id.btnBackgroundColorFollowRequestedEdit -> openColorPicker(
+				COLOR_DIALOG_ID_EVENT_BG_FOLLOWREQUEST,
+				event_bg_color_follow_request,
+				true
+			)
+			
+			R.id.btnBackgroundColorFollowRequestedReset -> {
+				event_bg_color_follow_request = 0
+				saveUIToData()
+			}
+			
 		}
 	}
 	
@@ -1083,6 +1247,52 @@ class ActAppSettingChild : AppCompatActivity()
 				saveUIToData()
 				showColumnSample()
 			}
+			
+			COLOR_DIALOG_ID_EVENT_BG_BOOST -> {
+				event_bg_color_boost = colorAlpha
+				saveUIToData()
+			}
+			
+			COLOR_DIALOG_ID_EVENT_BG_FAVOURITE -> {
+				event_bg_color_favourite = colorAlpha
+				saveUIToData()
+			}
+			
+			COLOR_DIALOG_ID_EVENT_BG_FOLLOW -> {
+				event_bg_color_follow = colorAlpha
+				saveUIToData()
+			}
+			
+			COLOR_DIALOG_ID_EVENT_BG_MENTION -> {
+				event_bg_color_mention = colorAlpha
+				saveUIToData()
+			}
+			
+			COLOR_DIALOG_ID_EVENT_BG_UNFOLLOW -> {
+				event_bg_color_unfollow = colorAlpha
+				saveUIToData()
+			}
+			
+			COLOR_DIALOG_ID_EVENT_BG_REACTION -> {
+				event_bg_color_reaction = colorAlpha
+				saveUIToData()
+			}
+			
+			COLOR_DIALOG_ID_EVENT_BG_QUOTE -> {
+				event_bg_color_quote = colorAlpha
+				saveUIToData()
+			}
+			
+			COLOR_DIALOG_ID_EVENT_BG_VOTE -> {
+				event_bg_color_vote = colorAlpha
+				saveUIToData()
+			}
+			
+			COLOR_DIALOG_ID_EVENT_BG_FOLLOWREQUEST -> {
+				event_bg_color_follow_request = colorAlpha
+				saveUIToData()
+			}
+			
 		}
 	}
 	
@@ -1351,16 +1561,16 @@ class ActAppSettingChild : AppCompatActivity()
 				// GMT数字を指定するタイプのタイムゾーンは無視する。ただしGMT-12:00の１項目だけは残す
 				// 3文字のIDは曖昧な場合があるので非推奨
 				// '/' を含まないIDは列挙しない
-				if(! when{
-					! tz.id.contains('/') -> false
-					tz.id == "Etc/GMT+12" -> true
-					tz.id.startsWith("Etc/") -> false
-					else-> true
-				}) continue
+				if(! when {
+						! tz.id.contains('/') -> false
+						tz.id == "Etc/GMT+12" -> true
+						tz.id.startsWith("Etc/") -> false
+						else -> true
+					}) continue
 				
 				var offset = tz.rawOffset.toLong()
 				val caption = when(offset) {
-					0L -> String.format("(UTC\u00B100:00) %s %s",tz.id, tz.displayName)
+					0L -> String.format("(UTC\u00B100:00) %s %s", tz.id, tz.displayName)
 					
 					else -> {
 						
@@ -1377,18 +1587,18 @@ class ActAppSettingChild : AppCompatActivity()
 						
 						
 						
-						String.format(format, hours, minutes,tz.id, tz.displayName)
+						String.format(format, hours, minutes, tz.id, tz.displayName)
 					}
 				}
-				if( null == list.find{ it.caption == caption } ){
+				if(null == list.find { it.caption == caption }) {
 					list.add(Item(id, caption, tz.rawOffset))
 				}
 			}
-
+			
 			list.sortWith(Comparator { a, b ->
-				(a.offset - b.offset).notZero() ?: a.caption.compareTo( b.caption)
+				(a.offset - b.offset).notZero() ?: a.caption.compareTo(b.caption)
 			})
-
+			
 			list.add(0, Item("", getString(R.string.device_timezone), 0))
 		}
 		

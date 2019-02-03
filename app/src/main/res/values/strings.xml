@@ -879,5 +879,11 @@
     <string name="releases">Releases</string>
     <string name="timezone">Time zone (app restart required)</string>
     <string name="device_timezone">Device time zone</string>
+    <string name="hashtag_extra_any">Additional tags: any (tags without #)</string>
+    <string name="hashtag_extra_all">Additional tags: all (tags without #)</string>
+    <string name="hashtag_extra_none">Additional tags: none (tags without #)</string>
+    <string name="hashtag_title_any">or %1$s</string>
+    <string name="hashtag_title_all">and %1$s</string>
+    <string name="hashtag_title_none">without %1$s</string>
 
 </resources>

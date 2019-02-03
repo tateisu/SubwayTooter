@@ -134,6 +134,12 @@ class ColumnViewHolder(
 	private val etListName : EditText
 	private val btnListAdd : View
 	
+	private val llHashtagExtra :LinearLayout
+	private val etHashtagExtraAny:EditText
+	private val etHashtagExtraAll:EditText
+	private val etHashtagExtraNone :EditText
+	
+	
 	private val isPageDestroyed : Boolean
 		get() = column == null || activity.isFinishing
 	
@@ -347,6 +353,13 @@ class ColumnViewHolder(
 		btnQuickFilterVote = viewRoot.findViewById(R.id.btnQuickFilterVote)
 		val llColumnSettingInside : LinearLayout = viewRoot.findViewById(R.id.llColumnSettingInside)
 		
+		llHashtagExtra= viewRoot.findViewById(R.id.llHashtagExtra)
+		etHashtagExtraAny= viewRoot.findViewById(R.id.etHashtagExtraAny)
+		etHashtagExtraAll= viewRoot.findViewById(R.id.etHashtagExtraAll)
+		etHashtagExtraNone= viewRoot.findViewById(R.id.etHashtagExtraNone)
+		
+		
+		
 		btnQuickFilterAll.setOnClickListener(this)
 		btnQuickFilterMention.setOnClickListener(this)
 		btnQuickFilterFavourite.setOnClickListener(this)
@@ -438,27 +451,6 @@ class ColumnViewHolder(
 		btnColumnClose.layoutParams.height = wh
 		btnColumnClose.setPaddingRelative(pad, pad, pad, pad)
 		
-		// 入力の追跡
-		etRegexFilter.addTextChangedListener(object : TextWatcher {
-			override fun beforeTextChanged(
-				s : CharSequence,
-				start : Int,
-				count : Int,
-				after : Int
-			) {
-			}
-			
-			override fun onTextChanged(s : CharSequence, start : Int, before : Int, count : Int) {}
-			
-			override fun afterTextChanged(s : Editable) {
-				if(loading_busy) return
-				activity.handler.removeCallbacks(proc_start_filter)
-				if(isRegexValid()) {
-					activity.handler.postDelayed(proc_start_filter, 666L)
-				}
-			}
-		})
-		
 		btnSearch.setOnClickListener(this)
 		etSearch.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
 			if(! loading_busy) {
@@ -470,14 +462,48 @@ class ColumnViewHolder(
 			false
 		})
 		
-	}
-	
-	private val proc_start_filter = Runnable {
-		if(! isPageDestroyed && isRegexValid()) {
-			val column = this.column ?: return@Runnable
-			column.regex_text = etRegexFilter.text.toString()
+		// 入力の追跡
+		etRegexFilter.addTextChangedListener(CustomTextWatcher{
+			if(!isRegexValid()) return@CustomTextWatcher
+			column?.regex_text = etRegexFilter.text.toString()
 			activity.app_state.saveColumnList()
-			column.startLoading()
+			activity.handler.removeCallbacks(proc_start_filter)
+			activity.handler.postDelayed(proc_start_filter, 666L)
+		})
+		
+		etHashtagExtraAny.addTextChangedListener(CustomTextWatcher{
+			column?.hashtag_any = etHashtagExtraAny.text.toString()
+			activity.app_state.saveColumnList()
+			activity.handler.removeCallbacks(proc_start_filter)
+			activity.handler.postDelayed(proc_start_filter, 666L)
+		})
+		
+		etHashtagExtraAll.addTextChangedListener(CustomTextWatcher{
+			column?.hashtag_all = etHashtagExtraAll.text.toString()
+			activity.app_state.saveColumnList()
+			activity.handler.removeCallbacks(proc_start_filter)
+			activity.handler.postDelayed(proc_start_filter, 666L)
+		})
+		
+		etHashtagExtraNone.addTextChangedListener(CustomTextWatcher{
+			column?.hashtag_none = etHashtagExtraNone.text.toString()
+			activity.app_state.saveColumnList()
+			activity.handler.removeCallbacks(proc_start_filter)
+			activity.handler.postDelayed(proc_start_filter, 666L)
+		})
+	}
+
+	private val proc_start_filter :Runnable  = object: Runnable {
+		override fun run() {
+			if( isPageDestroyed ) return
+			val column = this@ColumnViewHolder.column ?: return
+			
+			if( loading_busy){
+				activity.handler.removeCallbacks(this)
+				activity.handler.postDelayed(this, 666L)
+			}else {
+				column.startLoading()
+			}
 		}
 	}
 	
@@ -658,6 +684,12 @@ class ColumnViewHolder(
 			vg(llSearch, column.isSearchColumn)
 			vg(llListList, column.column_type == Column.TYPE_LIST_LIST)
 			vg(cbResolve, column.column_type == Column.TYPE_SEARCH)
+			
+			vg(llHashtagExtra,column.column_type == Column.TYPE_HASHTAG && !column.isMisskey)
+			etHashtagExtraAny.setText(column.hashtag_any)
+			etHashtagExtraAll.setText(column.hashtag_all)
+			etHashtagExtraNone.setText(column.hashtag_none)
+			
 			
 			// tvRegexFilterErrorの表示を更新
 			if(bAllowFilter) {

@@ -154,6 +154,66 @@
             android:id="@+id/llColumnSettingInside"
             >
 
+            <LinearLayout
+                android:id="@+id/llHashtagExtra"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@+id/etHashtagExtraAny"
+                    android:text="@string/hashtag_extra_any"
+                    android:textColor="?attr/colorColumnHeaderPageNumber"
+                    />
+
+                <EditText
+                    android:id="@+id/etHashtagExtraAny"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:scrollHorizontally="true"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@+id/etHashtagExtraAll"
+                    android:text="@string/hashtag_extra_all"
+                    android:textColor="?attr/colorColumnHeaderPageNumber"
+                    />
+
+                <EditText
+                    android:id="@+id/etHashtagExtraAll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:scrollHorizontally="true"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@+id/etHashtagExtraNone"
+                    android:text="@string/hashtag_extra_none"
+                    android:textColor="?attr/colorColumnHeaderPageNumber"
+                    />
+
+                <EditText
+                    android:id="@+id/etHashtagExtraNone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:scrollHorizontally="true"
+                    />
+
+            </LinearLayout>
+
             <CheckBox
                 android:id="@+id/cbDontCloseColumn"
                 android:layout_width="match_parent"

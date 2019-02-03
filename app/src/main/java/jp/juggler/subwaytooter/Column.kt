@@ -178,6 +178,9 @@ class Column(
 		private const val KEY_PROFILE_TAB = "tab"
 		private const val KEY_STATUS_ID = "status_id"
 		private const val KEY_HASHTAG = "hashtag"
+		private const val KEY_HASHTAG_ANY = "hashtag_any"
+		private const val KEY_HASHTAG_ALL = "hashtag_all"
+		private const val KEY_HASHTAG_NONE = "hashtag_none"
 		private const val KEY_SEARCH_QUERY = "search_query"
 		private const val KEY_SEARCH_RESOLVE = "search_resolve"
 		private const val KEY_INSTANCE_URI = "instance_uri"
@@ -237,6 +240,12 @@ class Column(
 		
 		@Suppress("UNCHECKED_CAST")
 		private inline fun <reified T> getParamAt(params : Array<out Any>, idx : Int) : T {
+			return params[idx] as T
+		}
+		
+		@Suppress("UNCHECKED_CAST")
+		private inline fun <reified T> getParamAtNullable(params : Array<out Any>, idx : Int) : T? {
+			if(idx >= params.size) return null
 			return params[idx] as T
 		}
 		
@@ -561,8 +570,13 @@ class Column(
 				TYPE_DIRECT_MESSAGES -> "/api/v1/streaming/?stream=direct"
 				
 				TYPE_HASHTAG -> when(instance_local) {
-					true -> "/api/v1/streaming/?stream=" + Uri.encode("hashtag:local") + "&tag=" + hashtag.encodePercent()
-					else -> "/api/v1/streaming/?stream=hashtag&tag=" + hashtag.encodePercent()
+					true -> {
+						"/api/v1/streaming/?stream=" + Uri.encode("hashtag:local") +
+							"&tag=" + hashtag.encodePercent() + makeHashtagExtraQuery()
+					}
+					
+					else -> "/api/v1/streaming/?stream=hashtag&tag=" + hashtag.encodePercent() +
+						makeHashtagExtraQuery()
 					// タグ先頭の#を含まない
 				}
 				else -> null
@@ -622,8 +636,11 @@ class Column(
 	
 	internal var search_query : String = ""
 	internal var search_resolve : Boolean = false
-	private var hashtag : String = ""
 	internal var instance_uri : String = ""
+	private var hashtag : String = ""
+	internal var hashtag_any : String = ""
+	internal var hashtag_all : String = ""
+	internal var hashtag_none : String = ""
 	
 	// プロフカラムでのアカウント情報
 	@Volatile
@@ -834,7 +851,12 @@ class Column(
 				profile_id = EntityId.mayNull(src.parseString(KEY_PROFILE_ID))
 			}
 			
-			TYPE_HASHTAG -> hashtag = src.optString(KEY_HASHTAG)
+			TYPE_HASHTAG -> {
+				hashtag = src.optString(KEY_HASHTAG)
+				hashtag_any = src.optString(KEY_HASHTAG_ANY)
+				hashtag_all = src.optString(KEY_HASHTAG_ALL)
+				hashtag_none = src.optString(KEY_HASHTAG_NONE)
+			}
 			
 			TYPE_SEARCH -> {
 				search_query = src.optString(KEY_SEARCH_QUERY)
@@ -899,7 +921,12 @@ class Column(
 			TYPE_LIST_MEMBER, TYPE_LIST_TL ->
 				dst.put(KEY_PROFILE_ID, profile_id.toString())
 			
-			TYPE_HASHTAG -> dst.put(KEY_HASHTAG, hashtag)
+			TYPE_HASHTAG -> {
+				dst.put(KEY_HASHTAG, hashtag)
+				dst.put(KEY_HASHTAG_ANY, hashtag_any)
+				dst.put(KEY_HASHTAG_ALL, hashtag_all)
+				dst.put(KEY_HASHTAG_NONE, hashtag_none)
+			}
 			
 			TYPE_SEARCH -> dst.put(KEY_SEARCH_QUERY, search_query).put(
 				KEY_SEARCH_RESOLVE,
@@ -932,7 +959,12 @@ class Column(
 				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND ->
 					status_id == EntityId(getParamAt(params, 0))
 				
-				TYPE_HASHTAG -> getParamAt<String>(params, 0) == hashtag
+				TYPE_HASHTAG -> {
+					(getParamAt<String>(params, 0) == hashtag)
+						&& ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_any)
+						&& ((getParamAtNullable<String>(params, 2) ?: "") == hashtag_all)
+						&& ((getParamAtNullable<String>(params, 3) ?: "") == hashtag_none)
+				}
 				
 				TYPE_SEARCH -> getParamAt<String>(params, 0) == search_query && getParamAt<Boolean>(
 					params,
@@ -995,7 +1027,29 @@ class Column(
 				(status_id?.toString() ?: "null")
 			)
 			
-			TYPE_HASHTAG -> context.getString(R.string.hashtag_of, hashtag)
+			TYPE_HASHTAG -> {
+				val sb = StringBuilder(context.getString(R.string.hashtag_of, hashtag))
+				
+				if(hashtag_any.isNotBlank()) sb.append(' ').append(
+					context.getString(
+						R.string.hashtag_title_any,
+						hashtag_any
+					)
+				)
+				if(hashtag_all.isNotBlank()) sb.append(' ').append(
+					context.getString(
+						R.string.hashtag_title_all,
+						hashtag_all
+					)
+				)
+				if(hashtag_none.isNotBlank()) sb.append(' ').append(
+					context.getString(
+						R.string.hashtag_title_none,
+						hashtag_none
+					)
+				)
+				sb.toString()
+			}
 			
 			TYPE_SEARCH ->
 				if(bLong) context.getString(R.string.search_of, search_query)
@@ -2998,14 +3052,12 @@ class Column(
 						TYPE_HASHTAG -> return if(isMisskey) {
 							getStatuses(
 								client
-								, makeHashtagUrl(hashtag)
-								, misskeyParams = makeMisskeyTimelineParameter(parser)
-									.put("tag", hashtag)
-									.put("limit", MISSKEY_HASHTAG_LIMIT)
+								, makeHashtagUrl()
+								, misskeyParams = makeHashtagParams(parser)
 							
 							)
 						} else {
-							getStatuses(client, makeHashtagUrl(hashtag))
+							getStatuses(client, makeHashtagUrl())
 						}
 						
 						TYPE_REPORTS -> return parseReports(client, PATH_REPORTS)
@@ -3538,10 +3590,10 @@ class Column(
 	}
 	
 	private fun JSONObject.putMisskeyUntil(id : EntityId?) : JSONObject {
-		if(id != null){
-			if(useDate){
-				put("untilDate" ,id.toString().toLong() )
-			}else{
+		if(id != null) {
+			if(useDate) {
+				put("untilDate", id.toString().toLong())
+			} else {
 				put("untilId", id.toString())
 			}
 		}
@@ -3549,10 +3601,10 @@ class Column(
 	}
 	
 	private fun JSONObject.putMisskeySince(id : EntityId?) : JSONObject {
-		if(id != null){
-			if(useDate){
-				put("sinceDate" ,id.toString().toLong() )
-			}else{
+		if(id != null) {
+			if(useDate) {
+				put("sinceDate", id.toString().toLong())
+			} else {
 				put("sinceId", id.toString())
 			}
 		}
@@ -5014,13 +5066,11 @@ class Column(
 						TYPE_HASHTAG -> if(isMisskey) {
 							getStatusList(
 								client
-								, makeHashtagUrl(hashtag)
-								, misskeyParams = makeMisskeyTimelineParameter(parser)
-									.put("tag", hashtag)
-									.put("limit", MISSKEY_HASHTAG_LIMIT)
+								, makeHashtagUrl()
+								, misskeyParams = makeHashtagParams(parser)
 							)
 						} else {
-							getStatusList(client, makeHashtagUrl(hashtag))
+							getStatusList(client, makeHashtagUrl())
 						}
 						
 						TYPE_SEARCH_MSP ->
@@ -5938,13 +5988,11 @@ class Column(
 						TYPE_HASHTAG -> if(isMisskey) {
 							getStatusList(
 								client
-								, makeHashtagUrl(hashtag)
-								, misskeyParams = makeMisskeyTimelineParameter(parser)
-									.put("tag", hashtag)
-									.put("limit", MISSKEY_HASHTAG_LIMIT)
+								, makeHashtagUrl()
+								, misskeyParams = makeHashtagParams(parser)
 							)
 						} else {
-							getStatusList(client, makeHashtagUrl(hashtag))
+							getStatusList(client, makeHashtagUrl())
 						}
 						
 						TYPE_BOOSTED_BY -> getAccountList(
@@ -7001,20 +7049,44 @@ class Column(
 		}
 	}
 	
-	private fun makeHashtagUrl(
-		hashtag : String // 先頭の#を含まない
-	) : String {
+	private fun makeHashtagExtraQuery() : String {
+		val sb = StringBuilder()
+		hashtag_any.split(" ").filter { it.isNotEmpty() }.forEach {
+			sb.append("&any[]=").append(it.encodePercent())
+		}
+		
+		hashtag_all.split(" ").filter { it.isNotEmpty() }.forEach {
+			sb.append("&all[]=").append(it.encodePercent())
+		}
+		
+		hashtag_none.split(" ").filter { it.isNotEmpty() }.forEach {
+			sb.append("&none[]=").append(it.encodePercent())
+		}
+		return sb.toString()
+	}
+	
+	private fun makeHashtagUrl() : String {
 		return if(isMisskey) {
 			"/api/notes/search_by_tag"
 		} else {
+			// hashtag : String // 先頭の#を含まない
 			val sb = StringBuilder("/api/v1/timelines/tag/")
 				.append(hashtag.encodePercent())
-				.append("?limit=")
-				.append(READ_LIMIT)
+				.append("?limit=").append(READ_LIMIT)
+			
 			if(with_attachment) sb.append("&only_media=true")
 			if(instance_local) sb.append("&local=true")
-			sb.toString()
+			
+			sb
+				.append(makeHashtagExtraQuery())
+				.toString()
 		}
+	}
+	
+	private fun makeHashtagParams(parser : TootParser) : JSONObject {
+		return makeMisskeyTimelineParameter(parser)
+			.put("tag", hashtag)
+			.put("limit", MISSKEY_HASHTAG_LIMIT)
 	}
 	
 	private fun loadFilter2(client : TootApiClient) : ArrayList<TootFilter>? {

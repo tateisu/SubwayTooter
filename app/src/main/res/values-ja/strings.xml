@@ -857,5 +857,11 @@
     <string name="releases">更新履歴</string>
     <string name="timezone">タイムゾーン (アプリ再起動が必要)</string>
     <string name="device_timezone">端末のタイムゾーン</string>
+    <string name="hashtag_extra_any">追加のタグ：いずれかを含む (タグ指定に#をつけない)</string>
+    <string name="hashtag_extra_all">追加のタグ：全てを含む (タグ指定に#をつけない)</string>
+    <string name="hashtag_extra_none">追加のタグ：これらを除く (タグ指定に#をつけない)</string>
+    <string name="hashtag_title_any">か %1$s</string>
+    <string name="hashtag_title_all">と %1$s</string>
+    <string name="hashtag_title_none">(%1$s を除く)</string>
 
 </resources>

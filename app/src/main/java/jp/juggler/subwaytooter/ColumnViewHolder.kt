@@ -7,13 +7,10 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.AsyncTask
 import android.support.v4.content.ContextCompat
-import android.support.v4.view.ViewCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
-import android.text.TextWatcher
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -134,16 +131,15 @@ class ColumnViewHolder(
 	private val etListName : EditText
 	private val btnListAdd : View
 	
-	private val llHashtagExtra :LinearLayout
-	private val etHashtagExtraAny:EditText
-	private val etHashtagExtraAll:EditText
-	private val etHashtagExtraNone :EditText
-	
+	private val llHashtagExtra : LinearLayout
+	private val etHashtagExtraAny : EditText
+	private val etHashtagExtraAll : EditText
+	private val etHashtagExtraNone : EditText
 	
 	private val isPageDestroyed : Boolean
 		get() = column == null || activity.isFinishing
 	
-	private var loading_busy : Boolean = false
+	private var binding_busy : Boolean = false
 	
 	private var last_image_uri : String? = null
 	private var last_image_bitmap : Bitmap? = null
@@ -353,10 +349,10 @@ class ColumnViewHolder(
 		btnQuickFilterVote = viewRoot.findViewById(R.id.btnQuickFilterVote)
 		val llColumnSettingInside : LinearLayout = viewRoot.findViewById(R.id.llColumnSettingInside)
 		
-		llHashtagExtra= viewRoot.findViewById(R.id.llHashtagExtra)
-		etHashtagExtraAny= viewRoot.findViewById(R.id.etHashtagExtraAny)
-		etHashtagExtraAll= viewRoot.findViewById(R.id.etHashtagExtraAll)
-		etHashtagExtraNone= viewRoot.findViewById(R.id.etHashtagExtraNone)
+		llHashtagExtra = viewRoot.findViewById(R.id.llHashtagExtra)
+		etHashtagExtraAny = viewRoot.findViewById(R.id.etHashtagExtraAny)
+		etHashtagExtraAll = viewRoot.findViewById(R.id.etHashtagExtraAll)
+		etHashtagExtraNone = viewRoot.findViewById(R.id.etHashtagExtraNone)
 		
 		
 		
@@ -453,7 +449,7 @@ class ColumnViewHolder(
 		
 		btnSearch.setOnClickListener(this)
 		etSearch.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
-			if(! loading_busy) {
+			if(! binding_busy) {
 				if(actionId == EditorInfo.IME_ACTION_SEARCH) {
 					btnSearch.performClick()
 					return@OnEditorActionListener true
@@ -463,48 +459,43 @@ class ColumnViewHolder(
 		})
 		
 		// 入力の追跡
-		etRegexFilter.addTextChangedListener(CustomTextWatcher{
-			if(!isRegexValid()) return@CustomTextWatcher
+		etRegexFilter.addTextChangedListener(CustomTextWatcher {
+			if(binding_busy || isPageDestroyed) return@CustomTextWatcher
+			if(! isRegexValid()) return@CustomTextWatcher
 			column?.regex_text = etRegexFilter.text.toString()
 			activity.app_state.saveColumnList()
 			activity.handler.removeCallbacks(proc_start_filter)
 			activity.handler.postDelayed(proc_start_filter, 666L)
 		})
 		
-		etHashtagExtraAny.addTextChangedListener(CustomTextWatcher{
+		etHashtagExtraAny.addTextChangedListener(CustomTextWatcher {
+			if(binding_busy || isPageDestroyed) return@CustomTextWatcher
 			column?.hashtag_any = etHashtagExtraAny.text.toString()
 			activity.app_state.saveColumnList()
 			activity.handler.removeCallbacks(proc_start_filter)
 			activity.handler.postDelayed(proc_start_filter, 666L)
 		})
 		
-		etHashtagExtraAll.addTextChangedListener(CustomTextWatcher{
+		etHashtagExtraAll.addTextChangedListener(CustomTextWatcher {
+			if(binding_busy || isPageDestroyed) return@CustomTextWatcher
 			column?.hashtag_all = etHashtagExtraAll.text.toString()
 			activity.app_state.saveColumnList()
 			activity.handler.removeCallbacks(proc_start_filter)
 			activity.handler.postDelayed(proc_start_filter, 666L)
 		})
 		
-		etHashtagExtraNone.addTextChangedListener(CustomTextWatcher{
+		etHashtagExtraNone.addTextChangedListener(CustomTextWatcher {
+			if(binding_busy || isPageDestroyed) return@CustomTextWatcher
 			column?.hashtag_none = etHashtagExtraNone.text.toString()
 			activity.app_state.saveColumnList()
 			activity.handler.removeCallbacks(proc_start_filter)
 			activity.handler.postDelayed(proc_start_filter, 666L)
 		})
 	}
-
-	private val proc_start_filter :Runnable  = object: Runnable {
-		override fun run() {
-			if( isPageDestroyed ) return
-			val column = this@ColumnViewHolder.column ?: return
-			
-			if( loading_busy){
-				activity.handler.removeCallbacks(this)
-				activity.handler.postDelayed(this, 666L)
-			}else {
-				column.startLoading()
-			}
-		}
+	
+	private val proc_start_filter : Runnable = Runnable {
+		if(binding_busy || isPageDestroyed) return@Runnable
+		column?.startLoading()
 	}
 	
 	private val proc_restoreScrollPosition = object : Runnable {
@@ -605,7 +596,7 @@ class ColumnViewHolder(
 	}
 	
 	fun onPageCreate(column : Column, page_idx : Int, page_count : Int) {
-		loading_busy = true
+		binding_busy = true
 		try {
 			this.column = column
 			this.page_idx = page_idx
@@ -685,11 +676,10 @@ class ColumnViewHolder(
 			vg(llListList, column.column_type == Column.TYPE_LIST_LIST)
 			vg(cbResolve, column.column_type == Column.TYPE_SEARCH)
 			
-			vg(llHashtagExtra,column.column_type == Column.TYPE_HASHTAG && !column.isMisskey)
+			vg(llHashtagExtra, column.column_type == Column.TYPE_HASHTAG && ! column.isMisskey)
 			etHashtagExtraAny.setText(column.hashtag_any)
 			etHashtagExtraAll.setText(column.hashtag_all)
 			etHashtagExtraNone.setText(column.hashtag_none)
-			
 			
 			// tvRegexFilterErrorの表示を更新
 			if(bAllowFilter) {
@@ -726,7 +716,7 @@ class ColumnViewHolder(
 			
 			showContent(reason = "onPageCreate", reset = true)
 		} finally {
-			loading_busy = false
+			binding_busy = false
 		}
 	}
 	
@@ -934,7 +924,7 @@ class ColumnViewHolder(
 	override fun onCheckedChanged(view : CompoundButton, isChecked : Boolean) {
 		val column = this@ColumnViewHolder.column
 		
-		if(loading_busy || column == null || status_adapter == null) return
+		if(binding_busy || column == null || status_adapter == null) return
 		
 		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
 		// リロードやリフレッシュ操作で直るようにする
@@ -1050,7 +1040,7 @@ class ColumnViewHolder(
 	override fun onClick(v : View) {
 		val column = this.column
 		val status_adapter = this.status_adapter
-		if(loading_busy || column == null || status_adapter == null) return
+		if(binding_busy || column == null || status_adapter == null) return
 		
 		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
 		// リロードやリフレッシュ操作で直るようにする
@@ -1494,7 +1484,7 @@ class ColumnViewHolder(
 	
 	fun scrollToTop2() {
 		val status_adapter = this.status_adapter
-		if(loading_busy || status_adapter == null) return
+		if(binding_busy || status_adapter == null) return
 		if(status_adapter.itemCount > 0) {
 			scrollToTop()
 		}
@@ -1560,12 +1550,12 @@ class ColumnViewHolder(
 			svQuickFilter.setBackgroundColor(colorBg)
 			
 			showQuickFilterButton = { btn, iconId, selected ->
-
-				btn.backgroundDrawable=getAdaptiveRippleDrawable(
+				
+				btn.backgroundDrawable = getAdaptiveRippleDrawable(
 					if(selected) colorBgSelected else colorBg,
 					colorFg
 				)
-
+				
 				when(btn) {
 					is TextView -> btn.textColor = colorFg
 					

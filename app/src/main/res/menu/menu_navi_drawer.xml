@@ -143,10 +143,10 @@
                     android:id="@+id/tootsearch"
                     android:icon="@drawable/ic_search"
                     android:title="@string/tootsearch"/>
-                <item
-                    android:id="@+id/mastodon_search_portal"
-                    android:icon="@drawable/ic_search"
-                    android:title="@string/mastodon_search_portal"/>
+                <!--<item-->
+                    <!--android:id="@+id/mastodon_search_portal"-->
+                    <!--android:icon="@drawable/ic_search"-->
+                    <!--android:title="@string/mastodon_search_portal"/>-->
             </menu>
         </item>
 

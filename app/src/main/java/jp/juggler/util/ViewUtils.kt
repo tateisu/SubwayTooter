@@ -55,6 +55,8 @@ fun View.showKeyboard() {
 	}
 }
 
+// set visibility VISIBLE or GONE
+// return true if visible
 fun vg(v : View, visible : Boolean) : Boolean {
 	v.visibility = if(visible) View.VISIBLE else View.GONE
 	return visible

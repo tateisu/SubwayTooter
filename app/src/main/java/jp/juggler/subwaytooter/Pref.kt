@@ -366,7 +366,13 @@ object Pref {
 		false,
 		R.id.swShowLinkUnderline
 	)
-
+	
+	val bpShowSearchClear = BooleanPref(
+		"ShowSearchClear",
+		false,
+		R.id.swShowSearchClear
+	)
+	
 
 	// int
 	

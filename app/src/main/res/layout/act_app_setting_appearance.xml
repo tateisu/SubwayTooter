@@ -10,8 +10,8 @@
     android:clipToPadding="false"
 
     android:fillViewport="true"
-    android:paddingBottom="128dp"
     android:paddingTop="12dp"
+    android:paddingBottom="128dp"
     android:scrollbarStyle="outsideOverlay"
 
     tools:ignore="TooManyViews,UseCompoundDrawables,UselessParent,Autofill"
@@ -73,8 +73,6 @@
                 />
 
         </LinearLayout>
-
-
 
         <View style="@style/setting_divider"/>
 
@@ -415,8 +413,6 @@
                 />
         </LinearLayout>
 
-
-
         <View style="@style/setting_divider"/>
 
         <TextView
@@ -512,10 +508,10 @@
         <View style="@style/setting_divider"/>
 
         <TextView
+            android:id="@+id/tvHeaderTextSize"
             style="@style/setting_row_label"
             android:labelFor="@+id/etHeaderTextSize"
             android:text="@string/header_text_size"
-            android:id="@+id/tvHeaderTextSize"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -566,9 +562,9 @@
         </LinearLayout>
 
         <Button
+            android:id="@+id/btnInstanceTickerCopyright"
             style="@style/setting_row_button"
             android:text="@string/instance_ticker_copyright"
-            android:id="@+id/btnInstanceTickerCopyright"
             />
 
         <View style="@style/setting_divider"/>
@@ -614,6 +610,22 @@
 
             <Switch
                 android:id="@+id/swMoveNotificationsQuickFilter"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/show_clear_button_in_search_bar"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swShowSearchClear"
                 style="@style/setting_horizontal_stretch"
                 />
 

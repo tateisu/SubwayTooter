@@ -81,7 +81,8 @@ class ColumnViewHolder(
 	
 	private val llColumnSetting : View
 	
-	private val btnSearch : View
+	private val btnSearch : ImageButton
+	private val btnSearchClear : ImageButton
 	private val etSearch : EditText
 	private val cbResolve : CheckBox
 	private val etRegexFilter : EditText
@@ -295,6 +296,7 @@ class ColumnViewHolder(
 		//		}
 		
 		btnSearch = viewRoot.findViewById(R.id.btnSearch)
+		btnSearchClear = viewRoot.findViewById(R.id.btnSearchClear)
 		etSearch = viewRoot.findViewById(R.id.etSearch)
 		cbResolve = viewRoot.findViewById(R.id.cbResolve)
 		
@@ -448,6 +450,7 @@ class ColumnViewHolder(
 		btnColumnClose.setPaddingRelative(pad, pad, pad, pad)
 		
 		btnSearch.setOnClickListener(this)
+		btnSearchClear.setOnClickListener(this)
 		etSearch.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
 			if(! binding_busy) {
 				if(actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -672,7 +675,11 @@ class ColumnViewHolder(
 			
 			
 			vg(btnDeleteNotification, column.column_type == Column.TYPE_NOTIFICATIONS)
-			vg(llSearch, column.isSearchColumn)
+			
+			if( vg(llSearch, column.isSearchColumn) ){
+				vg(btnSearchClear,Pref.bpShowSearchClear(activity.pref))
+			}
+
 			vg(llListList, column.column_type == Column.TYPE_LIST_LIST)
 			vg(cbResolve, column.column_type == Column.TYPE_SEARCH)
 			
@@ -1064,6 +1071,14 @@ class ColumnViewHolder(
 			R.id.btnSearch -> {
 				etSearch.hideKeyboard()
 				column.search_query = etSearch.text.toString().trim { it <= ' ' }
+				column.search_resolve = cbResolve.isChecked
+				activity.app_state.saveColumnList()
+				column.startLoading()
+			}
+			
+			R.id.btnSearchClear -> {
+				etSearch.setText("")
+				column.search_query = ""
 				column.search_resolve = cbResolve.isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()

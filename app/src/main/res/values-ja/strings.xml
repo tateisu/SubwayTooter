@@ -863,5 +863,7 @@
     <string name="hashtag_title_any">か %1$s</string>
     <string name="hashtag_title_all">と %1$s</string>
     <string name="hashtag_title_none">(%1$s を除く)</string>
+    <string name="add">追加</string>
+    <string name="show_clear_button_in_search_bar">検索バーに消去ボタンを表示する (アプリ再起動が必要)</string>
 
 </resources>

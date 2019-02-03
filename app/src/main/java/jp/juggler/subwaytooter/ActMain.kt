@@ -409,7 +409,7 @@ class ActMain : AppCompatActivity()
 		notification_tl_font_size_sp = validateFloat(Pref.fpNotificationTlFontSize(pref))
 		header_text_size_sp = validateFloat(Pref.fpHeaderTextSize(pref))
 		
-	
+		
 		
 		initUI()
 		
@@ -511,13 +511,13 @@ class ActMain : AppCompatActivity()
 			?: getAttributeColor(this, R.attr.colorLink)
 		
 		var tz = TimeZone.getDefault()
-		try{
+		try {
 			val tz_id = Pref.spTimeZone(pref)
-			if(tz_id.isNotEmpty()){
+			if(tz_id.isNotEmpty()) {
 				tz = TimeZone.getTimeZone(tz_id)
 			}
-		}catch(ex:Throwable){
-			log.e(ex,"getTimeZone failed.")
+		} catch(ex : Throwable) {
+			log.e(ex, "getTimeZone failed.")
 		}
 		TootStatus.date_format.timeZone = tz
 		
@@ -1191,18 +1191,20 @@ class ActMain : AppCompatActivity()
 			//			)
 			
 			// トゥート検索
-			R.id.mastodon_search_portal -> addColumn(
-				defaultInsertPosition
-				, SavedAccount.na
-				, Column.TYPE_SEARCH_MSP
-				, ""
-			)
+			
 			R.id.tootsearch -> addColumn(
 				defaultInsertPosition
 				, SavedAccount.na
 				, Column.TYPE_SEARCH_TS
 				, ""
 			)
+			
+			//			R.id.mastodon_search_portal -> addColumn(
+			//				defaultInsertPosition
+			//				, SavedAccount.na
+			//				, Column.TYPE_SEARCH_MSP
+			//				, ""
+			//			)
 			
 			// 設定
 			R.id.nav_app_setting -> ActAppSetting.open(this, REQUEST_CODE_APP_SETTING)
@@ -2394,7 +2396,7 @@ class ActMain : AppCompatActivity()
 				
 				// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
 				m = TootStatus.reStatusPageNotice.matcher(opener.url)
-				if(m.find()){
+				if(m.find()) {
 					try {
 						// https://misskey.xyz/notes/(id)
 						val host = m.group(1)
@@ -2422,7 +2424,6 @@ class ActMain : AppCompatActivity()
 					
 					return
 				}
-				
 				
 				// ユーザページをアプリ内で開く
 				m = TootAccount.reAccountUrl.matcher(opener.url)

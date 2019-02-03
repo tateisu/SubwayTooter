@@ -417,6 +417,17 @@
                 />
 
             <ImageButton
+                android:id="@+id/btnSearchClear"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/clear"
+                android:src="@drawable/ic_close"
+                android:tint="?attr/colorVectorDrawable"
+                />
+
+            <ImageButton
                 android:id="@+id/btnSearch"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -469,7 +480,7 @@
             android:layout_height="40dp"
             android:layout_marginStart="4dp"
             android:background="@drawable/btn_bg_transparent"
-            android:contentDescription="@string/search"
+            android:contentDescription="@string/add"
             android:src="@drawable/ic_add"
             android:tint="?attr/colorVectorDrawable"
             />

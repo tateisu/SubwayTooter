@@ -866,7 +866,6 @@
     <string name="add">追加</string>
     <string name="show_clear_button_in_search_bar">検索バーに消去ボタンを表示する (アプリ再起動が必要)</string>
     <string name="event_background_color">イベント背景色</string>
-    <string name="mention_not_reply">メンション(返信ではない)</string>
     <string name="unfollow_misskey">フォロー解除 (Misskey)</string>
     <string name="follow_request_misskey">フォローリクエスト (Misskey)</string>
 

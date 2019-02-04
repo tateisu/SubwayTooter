@@ -265,7 +265,7 @@
 
         <TextView
             style="@style/setting_row_label_indent1"
-            android:text="@string/mention_not_reply"
+            android:text="@string/reply"
             />
 
         <LinearLayout style="@style/setting_row_form">

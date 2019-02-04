@@ -888,7 +888,6 @@
     <string name="add">Add</string>
     <string name="show_clear_button_in_search_bar">Show clear button on search bar (app restart required)</string>
     <string name="event_background_color">Event background color</string>
-    <string name="mention_not_reply">Mention (not reply)</string>
     <string name="unfollow_misskey">Unfollow (Misskey)</string>
     <string name="follow_request_misskey">Follow request (Misskey)</string>
 

@@ -460,24 +460,25 @@ internal class ItemViewHolder(
 					
 					item.hasAnyContent() -> {
 						// 引用Renote
+						val colorBg = Pref.ipEventBgColorBoost(activity.pref)
 						showReply(
 							R.drawable.ic_repeat,
 							R.string.renote_to,
 							reblog
 						)
-						showStatus(item)
+						showStatus(item, colorBg)
 					}
 					
 					else -> {
 						// 引用なしブースト
+						val colorBg = Pref.ipEventBgColorBoost(activity.pref)
 						showBoost(
 							item.accountRef,
 							item.time_created_at,
 							R.drawable.ic_repeat,
-							R.string.display_name_boosted_by,
-							colorBg = Pref.ipEventBgColorBoost(activity.pref)
+							R.string.display_name_boosted_by
 						)
-						showStatusOrReply(item.reblog)
+						showStatusOrReply(item.reblog, colorBg)
 					}
 				}
 			}
@@ -700,7 +701,7 @@ internal class ItemViewHolder(
 		)
 	}
 	
-	private fun showStatusOrReply(item : TootStatus) {
+	private fun showStatusOrReply(item : TootStatus, colorBg : Int = 0) {
 		val reply = item.reply
 		val in_reply_to_id = item.in_reply_to_id
 		val in_reply_to_account_id = item.in_reply_to_account_id
@@ -720,7 +721,7 @@ internal class ItemViewHolder(
 				)
 			}
 		}
-		showStatus(item)
+		showStatus(item, colorBg)
 	}
 	
 	private fun showTrendTag(item : TootTrendTag) {
@@ -743,15 +744,15 @@ internal class ItemViewHolder(
 		val n_accountRef = n.accountRef
 		val n_account = n_accountRef?.get()
 		
-		fun showNotificationStatus(item : TootStatus) {
+		fun showNotificationStatus(item : TootStatus, colorBgDefault : Int) {
 			val reblog = item.reblog
 			when {
-				reblog == null -> showStatusOrReply(item)
+				reblog == null -> showStatusOrReply(item, colorBgDefault)
 				
 				! item.hasAnyContent() -> {
 					// 通常のブースト。引用なしブースト。
 					// ブースト表示は通知イベントと被るのでしない
-					showStatusOrReply(reblog)
+					showStatusOrReply(reblog, Pref.ipEventBgColorBoost(activity.pref))
 				}
 				
 				else -> {
@@ -761,7 +762,7 @@ internal class ItemViewHolder(
 						R.string.renote_to,
 						reblog
 					)
-					showStatus(item)
+					showStatus(item, Pref.ipEventBgColorQuote(activity.pref))
 				}
 			}
 		}
@@ -769,74 +770,77 @@ internal class ItemViewHolder(
 		when(n.type) {
 			
 			TootNotification.TYPE_FAVOURITE -> {
+				val colorBg = Pref.ipEventBgColorFavourite(activity.pref)
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
 					if(access_info.isNicoru(n_account)) R.drawable.ic_nicoru else R.drawable.ic_star,
-					R.string.display_name_favourited_by,
-					colorBg = Pref.ipEventBgColorFavourite(activity.pref)
+					R.string.display_name_favourited_by
 				)
 				if(n_status != null) {
-					showNotificationStatus(n_status)
+					showNotificationStatus(n_status, colorBg)
 				}
 			}
 			
 			TootNotification.TYPE_REBLOG -> {
+				val colorBg = Pref.ipEventBgColorBoost(activity.pref)
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_repeat,
-					R.string.display_name_boosted_by,
-					colorBg = Pref.ipEventBgColorBoost(activity.pref)
+					R.string.display_name_boosted_by
 				)
 				if(n_status != null) {
-					showNotificationStatus(n_status)
+					showNotificationStatus(n_status, colorBg)
 				}
 				
 			}
 			
 			TootNotification.TYPE_RENOTE -> {
 				// 引用のないreblog
+				val colorBg = Pref.ipEventBgColorBoost(activity.pref)
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_repeat,
-					R.string.display_name_boosted_by,
-					colorBg = Pref.ipEventBgColorBoost(activity.pref)
+					R.string.display_name_boosted_by
 				)
 				if(n_status != null) {
-					showNotificationStatus(n_status)
+					showNotificationStatus(n_status, colorBg)
 				}
 			}
 			
 			TootNotification.TYPE_FOLLOW -> {
+				val colorBg = Pref.ipEventBgColorFollow(activity.pref)
 				if(n_account != null) {
 					showBoost(
 						n_accountRef,
 						n.time_created_at,
 						R.drawable.ic_follow_plus,
-						R.string.display_name_followed_by,
-						colorBg = Pref.ipEventBgColorFollow(activity.pref)
+						R.string.display_name_followed_by
 					)
 					showAccount(n_accountRef)
+					if(colorBg != 0) this.viewRoot.backgroundColor = colorBg
 				}
 			}
 			
 			TootNotification.TYPE_UNFOLLOW -> {
+				val colorBg = Pref.ipEventBgColorUnfollow(activity.pref)
 				if(n_account != null) {
 					showBoost(
 						n_accountRef,
 						n.time_created_at,
 						R.drawable.ic_follow_cross,
-						R.string.display_name_unfollowed_by,
-						colorBg = Pref.ipEventBgColorUnfollow(activity.pref)
+						R.string.display_name_unfollowed_by
 					)
 					showAccount(n_accountRef)
+					if(colorBg != 0) this.viewRoot.backgroundColor = colorBg
 				}
 			}
 			
 			TootNotification.TYPE_MENTION,
 			TootNotification.TYPE_REPLY -> {
+				val colorBg = Pref.ipEventBgColorMention(activity.pref)
 				if(! bSimpleList && ! access_info.isMisskey) {
 					if(n_account != null) {
 						if(n_status?.in_reply_to_id != null
@@ -850,66 +854,66 @@ internal class ItemViewHolder(
 								n_accountRef,
 								n.time_created_at,
 								R.drawable.ic_reply,
-								R.string.display_name_mentioned_by,
-								colorBg = Pref.ipEventBgColorMention(activity.pref)
+								R.string.display_name_mentioned_by
 							)
 						}
 					}
 				}
 				if(n_status != null) {
-					showNotificationStatus(n_status)
+					showNotificationStatus(n_status, colorBg)
 				}
 			}
 			
 			TootNotification.TYPE_REACTION -> {
+				val colorBg = Pref.ipEventBgColorReaction(activity.pref)
 				val reaction = MisskeyReaction.shortcodeMap[n.reaction ?: ""]
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_question, // not used
 					R.string.display_name_reaction_by,
-					colorBg = Pref.ipEventBgColorReaction(activity.pref),
 					reactionDrawableId = reaction?.btnDrawableId
 				)
 				if(n_status != null) {
-					showNotificationStatus(n_status)
+					showNotificationStatus(n_status, colorBg)
 				}
 			}
 			
 			TootNotification.TYPE_QUOTE -> {
+				val colorBg = Pref.ipEventBgColorQuote(activity.pref)
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_repeat,
-					R.string.display_name_quoted_by,
-					colorBg = Pref.ipEventBgColorQuote(activity.pref)
+					R.string.display_name_quoted_by
 				)
 				if(n_status != null) {
-					showNotificationStatus(n_status)
+					showNotificationStatus(n_status, colorBg)
 				}
 			}
 			
 			TootNotification.TYPE_VOTE -> {
+				val colorBg = Pref.ipEventBgColorVote(activity.pref)
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_vote,
-					R.string.display_name_voted_by,
-					colorBg = Pref.ipEventBgColorVote(activity.pref)
+					R.string.display_name_voted_by
 				)
 				if(n_status != null) {
-					showNotificationStatus(n_status)
+					showNotificationStatus(n_status, colorBg)
 				}
 			}
 			
 			TootNotification.TYPE_FOLLOW_REQUEST -> {
+				val colorBg = Pref.ipEventBgColorFollowRequest(activity.pref)
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_follow_wait,
-					R.string.display_name_follow_request_by,
-					colorBg = Pref.ipEventBgColorFollowRequest(activity.pref)
+					R.string.display_name_follow_request_by
 				)
+				viewRoot.backgroundColor = colorBg
 				boostedAction = {
 					activity.addColumn(
 						activity.nextPosition(column)
@@ -920,15 +924,15 @@ internal class ItemViewHolder(
 			}
 			
 			else -> {
+				val colorBg = 0
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_question,
-					R.string.unknown_notification_from,
-					colorBg = 0
+					R.string.unknown_notification_from
 				)
 				if(n_status != null) {
-					showNotificationStatus(n_status)
+					showNotificationStatus(n_status, colorBg)
 				}
 				tvMessageHolder.visibility = View.VISIBLE
 				tvMessageHolder.text = "notification type is ${n.type}"
@@ -1052,7 +1056,6 @@ internal class ItemViewHolder(
 		time : Long,
 		iconId : Int,
 		string_id : Int,
-		colorBg : Int,
 		reactionDrawableId : Int? = null
 	) {
 		boost_account = whoRef
@@ -1078,12 +1081,6 @@ internal class ItemViewHolder(
 			)
 		}
 		
-		if( colorBg == 0) {
-			llBoosted.backgroundResource = R.drawable.btn_bg_transparent
-		}else{
-			llBoosted.backgroundDrawable = getAdaptiveRippleDrawable(normalColor = colorBg, pressedColor = content_color)
-		}
-		
 		boost_time = time
 		llBoosted.visibility = View.VISIBLE
 		showStatusTime(activity, tvBoostedTime, who, time = time)
@@ -1093,6 +1090,7 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showAccount(whoRef : TootAccountRef) {
+		
 		follow_account = whoRef
 		val who = whoRef.get()
 		llFollow.visibility = View.VISIBLE
@@ -1126,7 +1124,7 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun showStatus(status : TootStatus) {
+	private fun showStatus(status : TootStatus, colorBg : Int = 0) {
 		
 		if(status.filtered) {
 			showMessageHolder(TootMessageHolder(activity.getString(R.string.filtered)))
@@ -1144,15 +1142,17 @@ internal class ItemViewHolder(
 				) and 0xffffff) or 0x20000000
 			)
 		} else {
-			val c = when(status.getBackgroundColorType(access_info)) {
-				TootVisibility.UnlistedHome -> toot_color_unlisted
-				TootVisibility.PrivateFollowers -> toot_color_follower
-				TootVisibility.DirectSpecified -> toot_color_direct_user
-				TootVisibility.DirectPrivate -> toot_color_direct_me
-				else -> 0
-			}
+			val c = colorBg.notZero()
+				?: when(status.getBackgroundColorType(access_info)) {
+					TootVisibility.UnlistedHome -> toot_color_unlisted
+					TootVisibility.PrivateFollowers -> toot_color_follower
+					TootVisibility.DirectSpecified -> toot_color_direct_user
+					TootVisibility.DirectPrivate -> toot_color_direct_me
+					else -> 0
+				}
+			
 			if(c != 0) {
-				this.viewRoot.setBackgroundColor(c)
+				this.viewRoot.backgroundColor = c
 			}
 		}
 		
@@ -1557,7 +1557,7 @@ internal class ItemViewHolder(
 			Pref.bpShortAcctLocalUser(App1.pref) -> "@" + (acctShort ?: "?")
 			else -> acctLong
 		}
-		tv.textColor =  ac.color_fg.notZero() ?: this.acct_color
+		tv.textColor = ac.color_fg.notZero() ?: this.acct_color
 		
 		tv.setBackgroundColor(ac.color_bg) // may 0
 		tv.setPaddingRelative(activity.acct_pad_lr, 0, activity.acct_pad_lr, 0)

@@ -701,17 +701,20 @@ internal class ItemViewHolder(
 		)
 	}
 	
-	private fun showStatusOrReply(item : TootStatus, colorBg : Int = 0) {
+	private fun showStatusOrReply(item : TootStatus, colorBgArg : Int = 0) {
+		var colorBg = colorBgArg
 		val reply = item.reply
 		val in_reply_to_id = item.in_reply_to_id
 		val in_reply_to_account_id = item.in_reply_to_account_id
 		when {
-			reply != null ->
+			reply != null ->{
 				showReply(
 					R.drawable.ic_reply,
 					R.string.reply_to,
 					reply
 				)
+				if( colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
+			}
 			
 			in_reply_to_id != null && in_reply_to_account_id != null -> {
 				showReply(
@@ -719,6 +722,7 @@ internal class ItemViewHolder(
 					in_reply_to_account_id,
 					item
 				)
+				if( colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
 			}
 		}
 		showStatus(item, colorBg)

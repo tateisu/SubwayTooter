@@ -32,9 +32,7 @@ class ActAbout : AppCompatActivity() {
 		const val url_weblate = "https://hosted.weblate.org/projects/subway-tooter/"
 		
 		val contributors = arrayOf(
-			Pair("@Balor@freeradical.zone", "update english language"),
-			Pair("@Luattic@oc.todon.fr", "update french language"),
-			Pair("@BoF@mstdn.fr", "update arabic language")
+			Pair("@ButterflyOfFire@mstdn.fr", "update arabic & french language")
 		)
 	}
 	

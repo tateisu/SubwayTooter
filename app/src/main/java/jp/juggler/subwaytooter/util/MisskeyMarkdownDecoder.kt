@@ -822,7 +822,7 @@ object MisskeyMarkdownDecoder {
 	)
 	
 	// ノード種別とレンダリング関数
-	enum class NodeType(val render : SpanOutputEnv.(Node) -> Unit) {
+	internal enum class NodeType(val render : SpanOutputEnv.(Node) -> Unit) {
 		
 		TEXT({
 			appendText(it.args[0], decodeEmoji = true)

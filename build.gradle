@@ -4,7 +4,7 @@ buildscript {
     ext.target_sdk_version = 28
     ext.asl_version='28.0.0'
 
-    ext.kotlin_version = '1.3.11'
+    ext.kotlin_version = '1.3.21'
     ext.kotlinx_coroutines_version = '1.0.1'
     ext.anko_version='0.10.8'
 
@@ -15,8 +15,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.0'
-        classpath 'com.google.gms:google-services:4.1.0'
+        classpath 'com.android.tools.build:gradle:3.3.1'
+        classpath 'com.google.gms:google-services:4.2.0'
         // https://android-developers.googleblog.com/2018/05/announcing-new-sdk-versioning.html では
         // com.google.gms:google-services:3.3.0 以降を使うように書いてあるんだけど、3.3.0にするとGradle sync に失敗する。
         // エラーメッセージに特徴的な部分がなく原因はよく分からなかった。

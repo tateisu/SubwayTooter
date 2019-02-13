@@ -1,9 +1,15 @@
 package jp.juggler.subwaytooter.action
 
 import android.app.AlertDialog
+import android.view.Gravity
+import android.widget.Button
+import android.widget.LinearLayout
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootRelationShip
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ReportForm
 import jp.juggler.subwaytooter.table.AcctColor
@@ -300,7 +306,7 @@ object Action_User {
 			var who : TootAccount? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val(result,ar) = client.syncAccountByUrl(access_info, who_url)
+				val (result, ar) = client.syncAccountByUrl(access_info, who_url)
 				who = ar?.get()
 				return result
 			}
@@ -320,8 +326,6 @@ object Action_User {
 			}
 		})
 	}
-	
-	
 	
 	// アカウントを選んでユーザプロフを開く
 	fun profileFromAnotherAccount(
@@ -372,7 +376,8 @@ object Action_User {
 		access_info : SavedAccount?,
 		url : String,
 		host : String,
-		user : String
+		user : String,
+		original_url :String = url
 	) {
 		if(access_info?.isPseudo == false) {
 			// 文脈のアカウントがあり、疑似アカウントではない
@@ -387,7 +392,7 @@ object Action_User {
 					var who : TootAccount? = null
 					
 					override fun background(client : TootApiClient) : TootApiResult? {
-						val(result,ar) = client.syncAccountByAcct(access_info, acct)
+						val (result, ar) = client.syncAccountByAcct(access_info, acct)
 						who = ar?.get()
 						return result
 					}
@@ -417,9 +422,8 @@ object Action_User {
 		if(! SavedAccount.hasRealAccount()) {
 			// 疑似アカウントしか登録されていない
 			// chrome tab で開く
-			App1.openCustomTab(activity, url)
+			App1.openCustomTab(activity, original_url)
 		} else {
-			// 疑似ではないアカウントの一覧から選択して開く
 			AccountPicker.pick(
 				activity,
 				bAllowPseudo = false,
@@ -428,8 +432,32 @@ object Action_User {
 					R.string.account_picker_open_user_who,
 					AcctColor.getNickname("$user@$host")
 				),
-				accountListArg = makeAccountListNonPseudo(activity, host)
-			) { profileFromUrl(activity, pos, it, url) }
+				accountListArg = makeAccountListNonPseudo(activity, host),
+				extra_callback = { ll, pad_se, pad_tb ->
+					
+					// chrome tab で開くアクションを追加
+					
+					val lp = LinearLayout.LayoutParams(
+						LinearLayout.LayoutParams.MATCH_PARENT,
+						LinearLayout.LayoutParams.WRAP_CONTENT
+					)
+					val b = Button(activity)
+					b.setPaddingRelative(pad_se, pad_tb, pad_se, pad_tb)
+					b.gravity = Gravity.START or Gravity.CENTER_VERTICAL
+					b.isAllCaps = false
+					b.layoutParams = lp
+					b.minHeight = (0.5f + 32f * activity.density).toInt()
+					b.text = activity.getString(R.string.open_in_browser)
+					b.setBackgroundResource(R.drawable.btn_bg_transparent)
+					
+					b.setOnClickListener {
+						App1.openCustomTab(activity, original_url)
+					}
+					ll.addView(b, 0)
+				}
+			) {
+				profileFromUrl(activity, pos, it, url)
+			}
 		}
 	}
 	

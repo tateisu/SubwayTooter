@@ -31,6 +31,7 @@ object AccountPicker {
 		message : String? = null,
 		accountListArg : ArrayList<SavedAccount>? = null,
 		dismiss_callback : DialogInterfaceCallback? = null,
+		extra_callback : (LinearLayout,Int,Int)->Unit = {_,_,_->},
 		callback : SavedAccountCallback
 	) {
 		var removedMisskey =0
@@ -150,6 +151,8 @@ object AccountPicker {
 			}
 			llAccounts.addView(b)
 		}
+		
+		extra_callback(llAccounts,pad_se, pad_tb)
 		
 		dialog.show()
 	}

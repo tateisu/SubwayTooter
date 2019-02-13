@@ -1693,7 +1693,8 @@ class ActMain : AppCompatActivity()
 					null,
 					"https://$instance/@$user",
 					instance,
-					user
+					user,
+					original_url = url
 				)
 			} else {
 				Action_User.profile(
@@ -2451,7 +2452,8 @@ class ActMain : AppCompatActivity()
 									null,
 									"https://$instance/@$user",
 									instance,
-									user
+									user,
+									original_url = opener.url
 								)
 							}
 						}

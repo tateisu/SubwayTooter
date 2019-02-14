@@ -1,6 +1,7 @@
-package jp.juggler.subwaytooter.util
+package jp.juggler.util
 
 import android.support.v4.util.SparseArrayCompat
+import jp.juggler.subwaytooter.util.CharacterGroup
 
 import java.util.ArrayList
 

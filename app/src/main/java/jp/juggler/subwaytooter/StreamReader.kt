@@ -6,7 +6,7 @@ import android.os.Handler
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.WordTrieTree
+import jp.juggler.util.WordTrieTree
 import jp.juggler.util.LogCategory
 import jp.juggler.util.runOnMainLooper
 import jp.juggler.util.toJsonObject

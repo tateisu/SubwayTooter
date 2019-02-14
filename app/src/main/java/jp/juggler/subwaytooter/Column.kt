@@ -16,7 +16,7 @@ import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.InstanceTicker
 import jp.juggler.subwaytooter.util.ScrollPosition
-import jp.juggler.subwaytooter.util.WordTrieTree
+import jp.juggler.util.WordTrieTree
 import jp.juggler.util.*
 import okhttp3.Handshake
 import org.jetbrains.anko.backgroundDrawable
@@ -7103,10 +7103,13 @@ class Column(
 		val column_context = getFilterContext()
 		if(column_context == 0 || filterList == null) return null
 		val tree = WordTrieTree()
+		val now = System.currentTimeMillis()
 		for(filter in filterList) {
+			if(filter.time_expires_at > 0L && now >= filter.time_expires_at) continue
 			if((filter.context and column_context) != 0) {
 				tree.add(
-					filter.phrase, validator = when(filter.whole_word) {
+					filter.phrase,
+					validator = when(filter.whole_word) {
 						true -> WordTrieTree.WORD_VALIDATOR
 						else -> WordTrieTree.EMPTY_VALIDATOR
 					}

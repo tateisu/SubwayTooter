@@ -1,14 +1,13 @@
 package jp.juggler.subwaytooter.api
 
 import android.content.Context
-import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.UserRelation
 
 import org.json.JSONArray
 import org.json.JSONObject
 
-import jp.juggler.subwaytooter.util.WordTrieTree
+import jp.juggler.util.WordTrieTree
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.parseString
 

@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.LogCategory
-import jp.juggler.subwaytooter.util.WordTrieTree
+import jp.juggler.util.WordTrieTree
 
 object MutedWord :TableCompanion{
 	

@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji
 import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.util.WordTrieTree
 import java.util.HashMap
 
 class DecodeOptions(

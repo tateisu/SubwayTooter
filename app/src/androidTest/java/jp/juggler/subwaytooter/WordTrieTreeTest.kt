@@ -6,7 +6,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import jp.juggler.subwaytooter.util.CharacterGroup
-import jp.juggler.subwaytooter.util.WordTrieTree
+import jp.juggler.util.WordTrieTree
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull

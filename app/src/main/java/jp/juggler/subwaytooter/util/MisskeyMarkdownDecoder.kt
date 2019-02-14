@@ -888,7 +888,7 @@ object MisskeyMarkdownDecoder {
 						if(mentions.find { m -> m.acct == shortAcct } == null) {
 							mentions.add(
 								TootMention(
-									jp.juggler.subwaytooter.api.entity.EntityId.Companion.DEFAULT
+									jp.juggler.subwaytooter.api.entity.EntityId.DEFAULT
 									, userUrl
 									, shortAcct
 									, username
@@ -1225,7 +1225,7 @@ object MisskeyMarkdownDecoder {
 	}
 	
 	// マークダウン要素
-	class Node(
+	internal class Node(
 		val type : NodeType, // ノード種別
 		val args : Array<String> = emptyArray(), // 引数
 		parentNode : Node?
@@ -1240,7 +1240,7 @@ object MisskeyMarkdownDecoder {
 	}
 	
 	// マークダウン要素の出現位置
-	class NodeDetected(
+	internal class NodeDetected(
 		val node : Node,
 		val start : Int, // テキスト中の開始位置
 		val end : Int, // テキスト中の終了位置
@@ -1253,7 +1253,7 @@ object MisskeyMarkdownDecoder {
 			get() = startInside + lengthInside
 	}
 	
-	class NodeParseEnv(
+	internal class NodeParseEnv(
 		private val parentNode : Node,
 		val text : String,
 		start : Int,
@@ -1337,7 +1337,7 @@ object MisskeyMarkdownDecoder {
 			closeText(end)
 		}
 		
-		fun makeDetected(
+		internal fun makeDetected(
 			type : NodeType,
 			args : Array<String>,
 			start : Int,

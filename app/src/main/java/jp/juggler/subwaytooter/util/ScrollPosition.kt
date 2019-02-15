@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.util
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import jp.juggler.subwaytooter.ColumnViewHolder
 
@@ -25,7 +25,7 @@ class ScrollPosition {
 	constructor(holder : ColumnViewHolder) {
 		val layoutManager = holder.listLayoutManager
 		val findPosition = layoutManager.findFirstVisibleItemPosition()
-		if(findPosition == RecyclerView.NO_POSITION) {
+		if(findPosition == androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
 			adapterIndex = 0
 			offset = 0
 		} else {

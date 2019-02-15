@@ -3,8 +3,8 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
-import android.support.v4.view.PagerAdapter
-import android.support.v4.view.ViewPager
+import androidx.viewpager.widget.PagerAdapter
+import androidx.viewpager.widget.ViewPager
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
@@ -31,7 +31,7 @@ class EmojiPicker(
 	@Suppress("CanBeParameter") private val isMisskey : Boolean,
 	private val onEmojiPicked : (name : String, instance : String?, bInstanceHasCustomEmoji : Boolean) -> Unit
 	// onEmojiPickedのinstance引数は通常の絵文字ならnull、カスタム絵文字なら非null、
-) : View.OnClickListener, ViewPager.OnPageChangeListener {
+) : View.OnClickListener, androidx.viewpager.widget.ViewPager.OnPageChangeListener {
 	
 	companion object {
 		
@@ -492,7 +492,7 @@ class EmojiPicker(
 		onEmojiPicked(name, instance, bInstanceHasCustomEmoji)
 	}
 	
-	internal inner class EmojiPickerPagerAdapter : PagerAdapter() {
+	internal inner class EmojiPickerPagerAdapter : androidx.viewpager.widget.PagerAdapter() {
 		
 		private val inflater : LayoutInflater
 		private val holder_list = SparseArray<EmojiPickerPageViewHolder>()

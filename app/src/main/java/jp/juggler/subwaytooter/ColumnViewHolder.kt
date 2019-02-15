@@ -6,9 +6,9 @@ import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.AsyncTask
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
 import android.view.GestureDetector
@@ -46,13 +46,13 @@ class ColumnViewHolder(
 		private val log = LogCategory("ColumnViewHolder")
 		
 		val fieldRecycler : Field by lazy {
-			val field = RecyclerView::class.java.getDeclaredField("mRecycler")
+			val field = androidx.recyclerview.widget.RecyclerView::class.java.getDeclaredField("mRecycler")
 			field.isAccessible = true
 			field
 		}
 		
 		val fieldState : Field by lazy {
-			val field = RecyclerView::class.java.getDeclaredField("mState")
+			val field = androidx.recyclerview.widget.RecyclerView::class.java.getDeclaredField("mState")
 			field.isAccessible = true
 			field
 		}
@@ -68,9 +68,9 @@ class ColumnViewHolder(
 	private var page_idx : Int = 0
 	
 	private val tvLoading : TextView
-	val listView : RecyclerView
+	val listView : androidx.recyclerview.widget.RecyclerView
 	val refreshLayout : SwipyRefreshLayout
-	lateinit var listLayoutManager : LinearLayoutManager
+	lateinit var listLayoutManager : androidx.recyclerview.widget.LinearLayoutManager
 	
 	private val llColumnHeader : View
 	private val tvColumnIndex : TextView
@@ -710,7 +710,7 @@ class ColumnViewHolder(
 			llRefreshError.visibility = View.GONE
 			
 			//
-			listLayoutManager = LinearLayoutManager(activity)
+			listLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(activity)
 			listView.layoutManager = listLayoutManager
 			listView.adapter = status_adapter
 			
@@ -1160,7 +1160,7 @@ class ColumnViewHolder(
 	fun rebindAdapterItems() {
 		for(childIndex in 0 until listView.childCount) {
 			val adapterIndex = listView.getChildAdapterPosition(listView.getChildAt(childIndex))
-			if(adapterIndex == RecyclerView.NO_POSITION) continue
+			if(adapterIndex == androidx.recyclerview.widget.RecyclerView.NO_POSITION) continue
 			status_adapter?.notifyItemChanged(adapterIndex)
 		}
 	}
@@ -1377,23 +1377,23 @@ class ColumnViewHolder(
 			if(column == null || listView.adapter !== last_adapter) return@Runnable
 			
 			try {
-				val recycler = fieldRecycler.get(listView) as RecyclerView.Recycler
-				val state = fieldState.get(listView) as RecyclerView.State
+				val recycler = fieldRecycler.get(listView) as androidx.recyclerview.widget.RecyclerView.Recycler
+				val state = fieldState.get(listView) as androidx.recyclerview.widget.RecyclerView.State
 				listLayoutManager.scrollVerticallyBy(dy, recycler, state)
 			} catch(ex : Throwable) {
 				log.trace(ex)
-				log.e("can't access field in class %s", RecyclerView::class.java.simpleName)
+				log.e("can't access field in class %s", androidx.recyclerview.widget.RecyclerView::class.java.simpleName)
 			}
 		}, 20L)
 	}
 	
-	inner class AdapterItemHeightWorkarea internal constructor(val adapter : ItemListAdapter) :
+	internal inner class AdapterItemHeightWorkarea internal constructor(val adapter : ItemListAdapter) :
 		Closeable {
 		
 		private val item_width : Int
 		private val widthSpec : Int
 		private var lastViewType : Int = - 1
-		private var lastViewHolder : RecyclerView.ViewHolder? = null
+		private var lastViewHolder : androidx.recyclerview.widget.RecyclerView.ViewHolder? = null
 		
 		init {
 			this.item_width = listView.width - listView.paddingLeft - listView.paddingRight
@@ -1482,7 +1482,7 @@ class ColumnViewHolder(
 		
 		val adapterIndex = listLayoutManager.findFirstVisibleItemPosition()
 		
-		if(adapterIndex == RecyclerView.NO_POSITION)
+		if(adapterIndex == androidx.recyclerview.widget.RecyclerView.NO_POSITION)
 			throw IndexOutOfBoundsException()
 		
 		return column?.toListIndex(adapterIndex)

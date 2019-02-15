@@ -3,11 +3,11 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.res.ColorStateList
-import android.support.v4.app.ShareCompat
-import android.support.v4.content.ContextCompat
-import android.support.v4.view.ViewCompat
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.AppCompatImageButton
+import androidx.core.app.ShareCompat
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.AppCompatImageButton
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup

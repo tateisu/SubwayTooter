@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 
 import jp.juggler.util.LogCategory
@@ -8,7 +8,7 @@ import jp.juggler.util.LogCategory
 internal class TabletColumnViewHolder(
 	activity : ActMain,
 	viewRoot : View
-) : RecyclerView.ViewHolder(viewRoot) {
+) : androidx.recyclerview.widget.RecyclerView.ViewHolder(viewRoot) {
 	
 	companion object {
 		val log = LogCategory("TabletColumnViewHolder")

@@ -2,11 +2,11 @@ package jp.juggler.subwaytooter.view
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.support.v4.view.ViewPager
+import androidx.viewpager.widget.ViewPager
 import android.util.AttributeSet
 import android.view.MotionEvent
 
-class MyViewPager : ViewPager {
+class MyViewPager : androidx.viewpager.widget.ViewPager {
 	constructor(context : Context) : super(context)
 	constructor(context : Context, attrs : AttributeSet?) : super(context, attrs)
 	

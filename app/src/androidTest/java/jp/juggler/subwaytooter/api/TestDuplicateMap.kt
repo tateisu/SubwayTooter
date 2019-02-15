@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.api
 
-import android.support.test.runner.AndroidJUnit4
+import androidx.test.runner.AndroidJUnit4
 import android.test.mock.MockContext
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount

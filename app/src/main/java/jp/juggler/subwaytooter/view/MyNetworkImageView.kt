@@ -8,13 +8,13 @@ import android.graphics.Matrix
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.support.v4.content.ContextCompat
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
-import android.support.v7.widget.AppCompatImageView
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.model.GlideUrl
@@ -22,7 +22,6 @@ import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.load.resource.gif.MyGifDrawable
 import com.bumptech.glide.request.target.ImageViewTarget
-import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import jp.juggler.subwaytooter.Pref
@@ -36,10 +35,10 @@ class MyNetworkImageView : AppCompatImageView {
 	}
 	
 	// ロード中などに表示するDrawableのリソースID
-	private var mDefaultImage :Drawable? = null
+	private var mDefaultImage : Drawable? = null
 	
 	// エラー時に表示するDrawableのリソースID
-	private var mErrorImage :Drawable? = null
+	private var mErrorImage : Drawable? = null
 	
 	// 角丸の半径。元画像の短辺に対する割合を指定するらしい
 	internal var mCornerRadius = 0f
@@ -138,8 +137,6 @@ class MyNetworkImageView : AppCompatImageView {
 		
 	}
 	
-	
-	
 	// 必要なら非同期処理を開始する
 	private fun loadImageIfNecessary() {
 		try {
@@ -180,20 +177,20 @@ class MyNetworkImageView : AppCompatImageView {
 				return
 			}
 			
+			val glideHeaders = LazyHeaders.Builder()
+				.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
+				.build()
+			
+			val glideUrl = GlideUrl(url, glideHeaders)
 			
 			mTarget = if(mMayGif) {
 				getGlide()
-					?.load(url)
+					?.load(glideUrl)
 					?.into(MyTargetGif(url))
 			} else {
-				val glideHeaders = LazyHeaders.Builder()
-					.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
-					.build()
-				
-				val glideUrl = GlideUrl(url, glideHeaders)
-				
-				getGlide()?.asBitmap()?.load(glideUrl)
-					?.into(MyTarget(url, desiredWidth, desiredHeight))
+				getGlide()
+					?.load(glideUrl)
+					?.into(MyTarget(url))
 			}
 		} catch(ex : Throwable) {
 			log.trace(ex)
@@ -249,31 +246,28 @@ class MyNetworkImageView : AppCompatImageView {
 	
 	// 静止画用のターゲット
 	private inner class MyTarget internal constructor(
-		override val urlLoading : String,
-		desiredWidth : Int,
-		desiredHeight : Int
-	) : SimpleTarget<Bitmap>(desiredWidth, desiredHeight), UrlTarget {
+		override val urlLoading : String
+	) : ImageViewTarget<Drawable>(this@MyNetworkImageView), UrlTarget {
 		
 		// errorDrawable The error drawable to optionally show, or null.
 		override fun onLoadFailed(errorDrawable : Drawable?) = onLoadFailed(urlLoading)
 		
-		override fun onResourceReady(
-			bitmap : Bitmap,
-			transition : Transition<in Bitmap>?
-		) {
+		override fun setResource(resource : Drawable?) {
 			try {
 				// 別の画像を表示するよう指定が変化していたなら何もしない
 				if(urlLoading != mUrl) return
+				if(resource !is BitmapDrawable) return
 				
 				if(mCornerRadius <= 0f) {
-					setImageBitmap(bitmap)
+					setImageDrawable(resource)
 				} else {
-					setImageDrawable(replaceBitmapDrawable(bitmap))
+					setImageDrawable(replaceBitmapDrawable(resource.bitmap))
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
 		}
+		
 	}
 	
 	private inner class MyTargetGif internal constructor(
@@ -315,7 +309,6 @@ class MyNetworkImageView : AppCompatImageView {
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
-			
 		}
 		
 		private fun afterResourceReady(transition : Transition<in Drawable>?, drawable : Drawable) {
@@ -566,4 +559,5 @@ class MyNetworkImageView : AppCompatImageView {
 			}
 		}
 	}
+	
 }

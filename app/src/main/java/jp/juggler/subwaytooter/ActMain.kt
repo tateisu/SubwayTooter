@@ -13,14 +13,14 @@ import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.support.design.widget.NavigationView
-import android.support.v4.view.GravityCompat
-import android.support.v4.view.ViewPager
-import android.support.v4.widget.DrawerLayout
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import com.google.android.material.navigation.NavigationView
+import androidx.core.view.GravityCompat
+import androidx.viewpager.widget.ViewPager
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -64,9 +64,9 @@ import kotlin.math.min
 class ActMain : AppCompatActivity()
 	, NavigationView.OnNavigationItemSelectedListener
 	, View.OnClickListener
-	, ViewPager.OnPageChangeListener
+	, androidx.viewpager.widget.ViewPager.OnPageChangeListener
 	, Column.Callback
-	, DrawerLayout.DrawerListener {
+	, androidx.drawerlayout.widget.DrawerLayout.DrawerListener {
 	
 	companion object {
 		
@@ -135,7 +135,7 @@ class ActMain : AppCompatActivity()
 	internal var listItemPopup : StatusButtonsPopup? = null
 	
 	private lateinit var llEmpty : View
-	internal lateinit var drawer : DrawerLayout
+	internal lateinit var drawer : androidx.drawerlayout.widget.DrawerLayout
 	private lateinit var llColumnStrip : ColumnStripLinearLayout
 	private lateinit var svColumnStrip : HorizontalScrollView
 	private lateinit var btnMenu : ImageButton
@@ -143,7 +143,7 @@ class ActMain : AppCompatActivity()
 	private lateinit var vFooterDivider1 : View
 	private lateinit var vFooterDivider2 : View
 	
-	val viewPool = RecyclerView.RecycledViewPool()
+	val viewPool = androidx.recyclerview.widget.RecyclerView.RecycledViewPool()
 	
 	var avatarIconSize : Int = 0
 	var notificationTlIconSize : Int = 0
@@ -159,9 +159,9 @@ class ActMain : AppCompatActivity()
 	}
 	
 	class TabletEnv {
-		internal lateinit var tablet_pager : RecyclerView
+		internal lateinit var tablet_pager : androidx.recyclerview.widget.RecyclerView
 		internal lateinit var tablet_pager_adapter : TabletColumnPagerAdapter
-		internal lateinit var tablet_layout_manager : LinearLayoutManager
+		internal lateinit var tablet_layout_manager : androidx.recyclerview.widget.LinearLayoutManager
 		internal lateinit var tablet_snap_helper : GravitySnapHelper
 		
 	}
@@ -170,7 +170,7 @@ class ActMain : AppCompatActivity()
 		get() {
 			val vs = tablet_layout_manager.findFirstVisibleItemPosition()
 			val ve = tablet_layout_manager.findLastVisibleItemPosition()
-			return if(vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
+			return if(vs == androidx.recyclerview.widget.RecyclerView.NO_POSITION || ve == androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
 				IntRange(- 1, - 2) // empty and less than zero
 			} else {
 				IntRange(vs, min(ve, vs + nScreenColumn - 1))
@@ -464,7 +464,7 @@ class ActMain : AppCompatActivity()
 			{ env -> outState.putInt(STATE_CURRENT_PAGE, env.pager.currentItem) },
 			{ env ->
 				val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
-				if(ve != RecyclerView.NO_POSITION) {
+				if(ve != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
 					outState.putInt(STATE_CURRENT_PAGE, ve)
 				}
 			})
@@ -949,7 +949,7 @@ class ActMain : AppCompatActivity()
 	override fun onBackPressed() {
 		
 		// メニューが開いていたら閉じる
-		val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
+		val drawer = findViewById<androidx.drawerlayout.widget.DrawerLayout>(R.id.drawer_layout)
 		if(drawer.isDrawerOpen(GravityCompat.START)) {
 			drawer.closeDrawer(GravityCompat.START)
 			return
@@ -1220,7 +1220,7 @@ class ActMain : AppCompatActivity()
 			R.id.nav_app_exit -> finish()
 		}
 		
-		val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
+		val drawer = findViewById<androidx.drawerlayout.widget.DrawerLayout>(R.id.drawer_layout)
 		drawer.closeDrawer(GravityCompat.START)
 		return true
 	}
@@ -1421,7 +1421,11 @@ class ActMain : AppCompatActivity()
 			env.tablet_pager = findViewById(R.id.rvPager)
 			env.tablet_pager_adapter = TabletColumnPagerAdapter(this)
 			env.tablet_layout_manager =
-				LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+				androidx.recyclerview.widget.LinearLayoutManager(
+					this,
+					androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL,
+					false
+				)
 			
 			if(env.tablet_pager.itemDecorationCount == 0) {
 				env.tablet_pager.addItemDecoration(TabletColumnDivider(this@ActMain))
@@ -1430,9 +1434,9 @@ class ActMain : AppCompatActivity()
 			
 			env.tablet_pager.adapter = env.tablet_pager_adapter
 			env.tablet_pager.layoutManager = env.tablet_layout_manager
-			env.tablet_pager.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+			env.tablet_pager.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
 				
-				override fun onScrollStateChanged(recyclerView : RecyclerView, newState : Int) {
+				override fun onScrollStateChanged(recyclerView : androidx.recyclerview.widget.RecyclerView, newState : Int) {
 					super.onScrollStateChanged(recyclerView, newState)
 					
 					val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
@@ -1447,7 +1451,7 @@ class ActMain : AppCompatActivity()
 					}
 				}
 				
-				override fun onScrolled(recyclerView : RecyclerView, dx : Int, dy : Int) {
+				override fun onScrolled(recyclerView : androidx.recyclerview.widget.RecyclerView, dx : Int, dy : Int) {
 					super.onScrolled(recyclerView, dx, dy)
 					updateColumnStripSelection(- 1, - 1f)
 				}

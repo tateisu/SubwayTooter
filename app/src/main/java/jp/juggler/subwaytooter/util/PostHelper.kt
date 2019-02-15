@@ -3,8 +3,8 @@ package jp.juggler.subwaytooter.util
 import android.content.SharedPreferences
 import android.os.Handler
 import android.os.SystemClock
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import android.text.*
 import android.text.style.ForegroundColorSpan
 import android.view.View

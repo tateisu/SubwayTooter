@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.graphics.drawable.ColorDrawable
 import android.os.SystemClock
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -63,7 +63,7 @@ internal class StatusButtonsPopup(
 	
 	@SuppressLint("RtlHardcoded")
 	fun show(
-		listView : RecyclerView
+		listView : androidx.recyclerview.widget.RecyclerView
 		, anchor : View
 		, status : TootStatus
 		, notification : TootNotification?

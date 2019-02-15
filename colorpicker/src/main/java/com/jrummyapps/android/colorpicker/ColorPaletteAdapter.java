@@ -19,7 +19,7 @@ package com.jrummyapps.android.colorpicker;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.support.v4.graphics.ColorUtils;
+import androidx.core.graphics.ColorUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;

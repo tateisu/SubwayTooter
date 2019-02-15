@@ -2,8 +2,8 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -49,7 +49,7 @@ class ActMutedWord : AppCompatActivity() {
 		
 		// ハンドル部分をドラッグで並べ替えできるRecyclerView
 		listView = findViewById(R.id.drag_list_view)
-		listView.setLayoutManager(LinearLayoutManager(this))
+		listView.setLayoutManager(androidx.recyclerview.widget.LinearLayoutManager(this))
 		listView.setAdapter(listAdapter, false)
 		
 		listView.setCanDragHorizontally(true)

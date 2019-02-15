@@ -4,13 +4,13 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import jp.juggler.subwaytooter.R
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getAttributeDrawable
 
-class TabletColumnDivider(context : Context) : RecyclerView.ItemDecoration() {
+class TabletColumnDivider(context : Context) : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
 	
 	companion object {
 		private val log = LogCategory("TabletColumnDivider")
@@ -34,13 +34,13 @@ class TabletColumnDivider(context : Context) : RecyclerView.ItemDecoration() {
 	override fun getItemOffsets(
 		outRect : Rect,
 		view : View,
-		parent : RecyclerView,
-		state : RecyclerView.State
+		parent : androidx.recyclerview.widget.RecyclerView,
+		state : androidx.recyclerview.widget.RecyclerView.State
 	) {
 		outRect.set(0, 0, barWidth, 0)
 	}
 	
-	override fun onDraw(canvas : Canvas, parent : RecyclerView, state : RecyclerView.State) {
+	override fun onDraw(canvas : Canvas, parent : androidx.recyclerview.widget.RecyclerView, state : androidx.recyclerview.widget.RecyclerView.State) {
 		val clip = canvas.clipBounds
 		
 		val top = clip.top
@@ -52,7 +52,7 @@ class TabletColumnDivider(context : Context) : RecyclerView.ItemDecoration() {
 		
 		for(i in 0 until parent.childCount) {
 			val child = parent.getChildAt(i)
-			val params = child.layoutParams as RecyclerView.LayoutParams
+			val params = child.layoutParams as androidx.recyclerview.widget.RecyclerView.LayoutParams
 			
 			if( child.left >= clip.right ) break
 			

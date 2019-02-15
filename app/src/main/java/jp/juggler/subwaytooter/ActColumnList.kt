@@ -6,9 +6,9 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.PorterDuff
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
+import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -92,7 +92,7 @@ class ActColumnList : AppCompatActivity() {
 		
 		// ハンドル部分をドラッグで並べ替えできるRecyclerView
 		listView = findViewById(R.id.drag_list_view)
-		listView.setLayoutManager(LinearLayoutManager(this))
+		listView.setLayoutManager(androidx.recyclerview.widget.LinearLayoutManager(this))
 		listView.setAdapter(listAdapter, true)
 		listView.setCanDragHorizontally(false)
 		listView.setCustomDragItem(MyDragItem(this, R.layout.lv_column_list))

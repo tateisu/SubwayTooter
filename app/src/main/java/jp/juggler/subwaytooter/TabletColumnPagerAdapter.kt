@@ -1,12 +1,12 @@
 package jp.juggler.subwaytooter
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 
 internal class TabletColumnPagerAdapter(
 	private val activity : ActMain
-) : RecyclerView.Adapter<TabletColumnViewHolder>() {
+) : androidx.recyclerview.widget.RecyclerView.Adapter<TabletColumnViewHolder>() {
 	
 	private val inflater : LayoutInflater
 	private val columnList : List<Column>

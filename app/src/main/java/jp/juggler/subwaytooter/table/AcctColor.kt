@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import android.support.v4.util.LruCache
+import androidx.collection.LruCache
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
@@ -87,7 +87,7 @@ class AcctColor {
 			}
 		}
 		
-		private val mMemoryCache = LruCache<String, AcctColor>(2048)
+		private val mMemoryCache = androidx.collection.LruCache<String, AcctColor>(2048)
 		
 		override fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")

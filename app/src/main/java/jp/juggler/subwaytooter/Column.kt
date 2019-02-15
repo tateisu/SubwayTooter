@@ -7,7 +7,7 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Environment
 import android.os.SystemClock
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.view.Gravity
 import android.view.View
 import jp.juggler.subwaytooter.api.*

@@ -2,9 +2,9 @@ package jp.juggler.subwaytooter
 
 import android.os.Handler
 import android.os.SystemClock
-import android.support.v7.util.DiffUtil
-import android.support.v7.util.ListUpdateCallback
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListUpdateCallback
+import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.util.LogCategory
@@ -14,7 +14,7 @@ internal class ItemListAdapter(
 	private val column : Column,
 	internal val columnVh : ColumnViewHolder,
 	private val bSimpleList : Boolean
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+) : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
 	
 	companion object {
 		private val log = LogCategory("ItemListAdapter")
@@ -81,7 +81,7 @@ internal class ItemListAdapter(
 		return headerType.viewType
 	}
 	
-	override fun onCreateViewHolder(parent : ViewGroup, viewType : Int) : RecyclerView.ViewHolder {
+	override fun onCreateViewHolder(parent : ViewGroup, viewType : Int) : androidx.recyclerview.widget.RecyclerView.ViewHolder {
 		when(viewType) {
 			0 -> {
 				val holder = ItemViewHolder(activity)
@@ -125,14 +125,14 @@ internal class ItemListAdapter(
 		}
 	}
 	
-	fun findHeaderViewHolder(listView : RecyclerView) : ViewHolderHeaderBase? {
+	fun findHeaderViewHolder(listView : androidx.recyclerview.widget.RecyclerView) : ViewHolderHeaderBase? {
 		return when(column.headerType) {
 			null -> null
 			else -> listView.findViewHolderForAdapterPosition(0) as? ViewHolderHeaderBase
 		}
 	}
 	
-	override fun onBindViewHolder(holder : RecyclerView.ViewHolder, adapterIndex : Int) {
+	override fun onBindViewHolder(holder : androidx.recyclerview.widget.RecyclerView.ViewHolder, adapterIndex : Int) {
 		if(holder is ViewHolderItem) {
 			val listIndex = column.toListIndex(adapterIndex)
 			holder.ivh.bind(this, column, bSimpleList, list[listIndex])
@@ -141,7 +141,7 @@ internal class ItemListAdapter(
 		}
 	}
 	
-	override fun onViewRecycled(holder : RecyclerView.ViewHolder) {
+	override fun onViewRecycled(holder : androidx.recyclerview.widget.RecyclerView.ViewHolder) {
 		if(holder is ViewHolderItem) {
 			holder.ivh.onViewRecycled()
 		} else if(holder is ViewHolderHeaderBase) {

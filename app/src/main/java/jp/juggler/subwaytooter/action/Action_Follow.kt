@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.action
 
-import android.support.v7.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Column

@@ -4,7 +4,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
-import android.support.annotation.IntRange
+import androidx.annotation.IntRange
 import android.text.style.ReplacementSpan
 import jp.juggler.apng.ApngFrames
 

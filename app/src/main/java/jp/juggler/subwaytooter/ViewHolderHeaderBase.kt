@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -9,7 +9,7 @@ import jp.juggler.util.LogCategory
 import jp.juggler.util.scan
 
 internal abstract class ViewHolderHeaderBase(val activity : ActMain, val viewRoot : View) :
-	RecyclerView.ViewHolder(viewRoot) {
+	androidx.recyclerview.widget.RecyclerView.ViewHolder(viewRoot) {
 	
 	companion object {
 		private val log = LogCategory("HeaderViewHolderBase")

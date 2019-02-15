@@ -1,12 +1,12 @@
 package jp.juggler.subwaytooter.view
 
 import android.content.Context
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 
-class TabletModeRecyclerView : RecyclerView {
+class TabletModeRecyclerView : androidx.recyclerview.widget.RecyclerView {
 	
 	
 	private var mForbidStartDragging : Boolean = false

@@ -1,6 +1,6 @@
 package jp.juggler.util
 
-import android.support.v4.util.SparseArrayCompat
+import androidx.collection.SparseArrayCompat
 import jp.juggler.subwaytooter.util.CharacterGroup
 
 import java.util.ArrayList
@@ -49,7 +49,7 @@ class WordTrieTree {
 	private class Node {
 		
 		// 続くノード
-		internal val child_nodes = SparseArrayCompat<Node>()
+		internal val child_nodes = androidx.collection.SparseArrayCompat<Node>()
 		
 		// このノードが終端なら、マッチした単語の元の表記がある
 		internal var match_word : String? = null

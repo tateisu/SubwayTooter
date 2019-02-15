@@ -17,9 +17,9 @@ android {
 }
 
 dependencies {
-  implementation "com.android.support:appcompat-v7:$asl_version"
+  implementation "androidx.appcompat:appcompat:$appcompat_version"
 
-  implementation 'com.google.android:flexbox:0.3.2'
+  implementation 'com.google.android:flexbox:1.1.0'
 
 }
 

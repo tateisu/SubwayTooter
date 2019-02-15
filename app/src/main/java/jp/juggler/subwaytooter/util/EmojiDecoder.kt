@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
-import android.support.annotation.DrawableRes
+import androidx.annotation.DrawableRes
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned

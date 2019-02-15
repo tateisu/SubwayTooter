@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter
 
-import android.support.v4.view.PagerAdapter
+import androidx.viewpager.widget.PagerAdapter
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +9,7 @@ import jp.juggler.subwaytooter.util.Benchmark
 import jp.juggler.util.LogCategory
 import java.util.*
 
-internal class ColumnPagerAdapter(private val activity : ActMain) : PagerAdapter() {
+internal class ColumnPagerAdapter(private val activity : ActMain) : androidx.viewpager.widget.PagerAdapter() {
 	
 	companion object {
 		val log = LogCategory("ColumnPagerAdapter")

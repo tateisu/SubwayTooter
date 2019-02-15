@@ -2,8 +2,8 @@
 
 package jp.juggler.subwaytooter.api
 
-import android.support.test.InstrumentationRegistry
-import android.support.test.runner.AndroidJUnit4
+import androidx.test.InstrumentationRegistry
+import androidx.test.runner.AndroidJUnit4
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.CurrentCallCallback
 import jp.juggler.subwaytooter.util.SimpleHttpClient

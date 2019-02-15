@@ -4,9 +4,9 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.os.SystemClock
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.RecyclerView
+import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -2604,7 +2604,7 @@ internal class ItemViewHolder(
 		val b = Benchmark(log, "Item-Inflate", 40L)
 		val rv = verticalLayout {
 			// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
-			layoutParams = RecyclerView.LayoutParams(matchParent, wrapContent).apply {
+			layoutParams = androidx.recyclerview.widget.RecyclerView.LayoutParams(matchParent, wrapContent).apply {
 				marginStart = dip(8)
 				marginEnd = dip(8)
 				topMargin = dip(2f)

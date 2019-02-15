@@ -18,8 +18,8 @@ import android.os.Build
 import android.os.Handler
 import android.os.PowerManager
 import android.os.SystemClock
-import android.support.v4.app.NotificationCompat
-import android.support.v4.content.ContextCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.google.firebase.iid.FirebaseInstanceId
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient

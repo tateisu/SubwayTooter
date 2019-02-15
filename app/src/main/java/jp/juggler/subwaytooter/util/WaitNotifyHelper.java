@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.util;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 // このクラスをkotlinに変換しないこと
 // Kotlin は wait/notify をサポートしてない

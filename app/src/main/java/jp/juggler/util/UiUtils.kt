@@ -14,7 +14,7 @@ import android.graphics.drawable.*
 import android.graphics.drawable.shapes.RectShape
 import android.os.Build
 import android.os.SystemClock
-import android.support.v4.content.ContextCompat
+import androidx.core.content.ContextCompat
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.SparseArray

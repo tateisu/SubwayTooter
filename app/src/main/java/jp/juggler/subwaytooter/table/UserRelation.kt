@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.table
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
-import android.support.v4.util.LruCache
+import androidx.collection.LruCache
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
@@ -42,7 +42,7 @@ class UserRelation {
 			1 // show the boosts from target account will be shown on authorized user's home TL.
 		const val REBLOG_UNKNOWN = 2 // not following, or instance don't support hide reblog.
 		
-		private val mMemoryCache = LruCache<String, UserRelation>(2048)
+		private val mMemoryCache = androidx.collection.LruCache<String, UserRelation>(2048)
 		
 		private val log = LogCategory("UserRelationMisskey")
 		

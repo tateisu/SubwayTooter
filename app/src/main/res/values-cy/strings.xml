@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="column_empty">Use the left-bottom menu button to add a column</string>
     <string name="instance">Achos</string>
     <string name="user_mail_address">E-bost</string>
@@ -21,18 +20,15 @@
     <string name="filter_home">hafan</string>
     <string name="visibility_home">Hafan</string>
     <string name="reply_to">Ateb i %1$s</string>
-
-<string name="action_settings">Gosodiadau</string>
+    <string name="action_settings">Gosodiadau</string>
     <string name="account_add">ychwanegu cyfrif</string>
     <string name="ok">Iawn</string>
     <string name="cancel">Canslo</string>
     <string name="instance_not_specified">Achos heb ei bennu</string>
     <string name="mail_not_specified">E-bost heb ei bennu</string>
     <string name="password_not_specified">Cyfrinair heb ei bennu</string>
-
     <string name="network_error">Gwall rhwydwaith.</string>
     <string name="api_error">Gwall API. %1$s</string>
-
     <string name="register_app_to_server">Cofrestru\'r ap hwn i %1$s…</string>
     <string name="request_access_token">Ceisio am docyn mynediad…</string>
     <string name="request_api">Caffael: %1$s %2$s</string>
@@ -77,7 +73,6 @@
     <string name="visibility_local_home">Cartref (lleol)</string>
     <string name="visibility_local_followers">Dilynwyr yn unig (lleol)</string>
     <string name="visibility_local_unlisted">Heb ei restru (lleol)</string>
-
     <string name="choose_visibility">Dewis gwelededd</string>
     <string name="confirm_delete_attachment">Dileu\'r atodiad yma\?</string>
     <string name="post_error_contents_empty">Nid oes modd cyhoeddi tŵt gwag.</string>
@@ -89,7 +84,6 @@
     <string name="display_name_replied_by">atebodd %1$s</string>
     <string name="display_name_voted_by">pleidleisiodd %1$s</string>
     <string name="display_name_follow_request_by">andonodd %1$s gais dilyn newydd</string>
-
     <string name="display_name_quoted_by">dyfynodd %1$s</string>
     <string name="display_name_followed_by">mae %1$s yn eich dilyn</string>
     <string name="account">Cyfrif</string>
@@ -108,7 +102,7 @@
     <string name="user_name_not_match">Nid yw\'r enw defnyddiwr yn cyfateb</string>
     <string name="access_token_updated_for">Diweddarwyd tocyn mynediad %1$s.</string>
     <string name="account_empty">Nid yw\'r cyfrif wedi ei sefydlu. Ychwanegwch gyfrif os gwelwch yn dda.</string>
-    <string name="dont_confirm_before_close_column">Cau\'r golofn heb gadarnhad.</string>
+    <string name="dont_confirm_before_close_column">Cau\'r golofn heb gadarnhad</string>
     <string name="drag_handle">Llusgo\'r enw defnyddiwr</string>
     <string name="delete">Dileu</string>
     <string name="last_selection">Dewis olaf</string>
@@ -140,11 +134,10 @@
     <string name="confirm_close_column">Cau y golofn yma\?</string>
     <string name="favourite_from_another_account">Ffefryn o gyfrif arall</string>
     <string name="reaction_from_another_account">Ymateb o gyfrif arall</string>
-
     <string name="app_about">Gwybodaeth am yr ap hwn</string>
     <string name="oss_license">Trwydded OSS</string>
-    <string name="please_rate">Cymerwch yr amser i adolygu\'r ap hwn os gwelwch yn dda!</string>
-    <string name="please_donate">Cefnogwch yr ap os gwelwch yn dda!</string>
+    <string name="please_rate">Cymerwch yr amser i adolygu\'r ap hwn os gwelwch yn dda.</string>
+    <string name="please_donate">Cefnogwch yr ap os gwelwch yn dda.</string>
     <string name="version_is">Fersiwn %1$s</string>
     <string name="open_instance_website">Agor https://%1$s/</string>
     <string name="mention2">Crybwyll</string>
@@ -191,7 +184,7 @@
     <string name="pseudo_account">Crach-gyfrif</string>
     <string name="server_confirmed">Gweinydd wedi\'i gadarnhau.</string>
     <string name="not_available_for_mastodon_account">Ddim ar gael ar gyfer cyfrif Mastodon</string>
-    <string name="resize_image">Newid maint y ddelwedd atodwyd (JPEG,PNG)</string>
+    <string name="resize_image">Newid maint y ddelwedd atodwyd (JPEG, PNG)</string>
     <string name="dont_resize">Peidio newid maint</string>
     <string name="long_side_pixel">Newid maint i %1$d picsel</string>
     <string name="image_capture">Cymerwch lun</string>
@@ -217,14 +210,14 @@
     <string name="nickname_and_color_and_notification_sound">Llysenw, Lliw, Sŵn hysbysiad</string>
     <string name="nickname_and_color">Llysenw a Lliw</string>
     <string name="nickname_applied_after_reload">Mi fydd y newid mewn llysenw/lliw yn cael ei osod ar ôl ail-lwytho\'r golofn.</string>
-    <string name="show_follow_button_in_button_bar">Dangos y bwtwm dilyn yn y bar bwtymau (rhaid ailddechrau\'r ap)</string>
+    <string name="show_follow_button_in_button_bar">Dangos y bwtwm \"Dilyn\" yn y bar bwtymau (rhaid ailddechrau\'r ap)</string>
     <string name="follow_requested">Anfonwyd gais dilyn.</string>
     <string name="confirmation">Cadarnhad</string>
     <string name="dont_confirm_again">Peidio cadarnhau eto</string>
-    <string name="confirm_post_from">Cyhoeddi tŵt o %1$s. Ydych chi\'n siŵr\?</string>
-    <string name="confirm_follow_who_from">Dilyn %1$s o %2$s \?</string>
-    <string name="confirm_unfollow_who_from">Dad-ddilyn %1$s o %2$s \?</string>
-    <string name="confirm_follow_request_who_from">Anfon cais dilyn o %2$s i\'r defnyddiwr dan glo %1$s \?</string>
+    <string name="confirm_post_from">Cyhoeddi tŵt o %1$s\?</string>
+    <string name="confirm_follow_who_from">Dilyn %1$s o %2$s\?</string>
+    <string name="confirm_unfollow_who_from">Dad-ddilyn %1$s o %2$s\?</string>
+    <string name="confirm_follow_request_who_from">Anfon cais dilyn o %2$s i\'r defnyddiwr dan glo %1$s\?</string>
     <string name="follow_request_cant_remove_by_sender">ymddengys ni all yr anfonwr gael gwared ar gais dilyn…</string>
     <string name="profile">Proffil</string>
     <string name="profile_of">Proffil %1$s</string>
@@ -240,13 +233,11 @@
     <string name="clear">Clirio</string>
     <string name="clear_text">Clirio\'r testun</string>
     <string name="clear_text_and_media">Clirio\'r testun a\'r cyfryngau</string>
-
     <string name="menu">Dewislen</string>
     <string name="color_and_background">Lliw a Chefndir…</string>
     <string name="column_background">Cefndir y golofn</string>
     <string name="pick_image">Dewiswch ddelwedd</string>
     <string name="pick_images">Dewiswch ddelwedd(au)…</string>
-
     <string name="image_alpha">Delwedd alffa</string>
     <string name="image">Delwedd</string>
     <string name="column_header">Pennawd y golofn</string>
@@ -417,7 +408,6 @@
     <string name="acct_sample">(sampl)enwdefnyddiwr@achos</string>
     <string name="change_header">Newid delwedd pennawd</string>
     <string name="missing_mail_app">Ap E-bost ar goll.</string>
-
     <string name="relative_time_unit_second1">eiliad</string>
     <string name="relative_time_unit_seconds">eiliadau</string>
     <string name="relative_time_unit_minute1">munud</string>
@@ -428,14 +418,12 @@
     <string name="relative_time_unit_days">dyddiau</string>
     <string name="relative_time_phrase_past">%1$d %2$s yn ôl</string>
     <string name="relative_time_phrase_future">%1$d %2$s wedyn</string>
-
     <string name="skin_tone_light">lliw croen golau</string>
     <string name="skin_tone_medium_light">lliw croen cymhedrol o olau</string>
     <string name="skin_tone_medium">lliw croen cymhedrol</string>
     <string name="skin_tone_medium_dark">lliw croen cymhedrol o dywyll</string>
     <string name="skin_tone_dark">lliw croen tywyll</string>
     <string name="operation_succeeded">Gweithrediad llwyddiannus.</string>
-
     <string name="list_member_add_remove">Ychwanegu/Cael gwared o\'r rhestrau…</string>
     <string name="target_user">Defnyddiwr targed</string>
     <string name="media_attachment_empty">Atodiadau cyfryngau ar goll.</string>
@@ -444,7 +432,7 @@
     <string name="statuses">Tŵtiau</string>
     <string name="display_name_boosted_by">%1$s hybu</string>
     <string name="column_index">%1$d/%2$d</string>
-    <string name="instance_not_need_slash">Enw parth (toot.wales)</string>
+    <string name="instance_not_need_slash">Enw parth, heb \'/\', \'@\'.</string>
     <string name="instance_hint">e.g. toot.wales</string>
     <string name="follow_succeeded">Dilynaist</string>
     <string name="unfollow_succeeded">Dad-ddilyn</string>

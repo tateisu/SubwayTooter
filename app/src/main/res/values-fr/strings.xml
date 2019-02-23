@@ -82,7 +82,6 @@
     <string name="confirm_unboost_from">Unboost this status from %1$s \?</string>
     <string name="confirm_favourite_from">Favourite this status from %1$s ? Notification will be sent to the author.</string>
     <string name="confirm_unfavourite_from">Voulez-vous retirer ce statut des favoris de %1$s \?</string>
-
     <string name="confirm_close_column">Fermer cette colonne ?</string>
     <string name="confirm_delete_attachment">Retirer cette pièce jointe ?</string>
     <string name="confirm_delete_notification">Toutes vos notifications sur votre instance seront effacées.\nÊtes-vous sur ?</string>
@@ -117,7 +116,6 @@
     <string name="display_name_voted_by">%1$s ont voté</string>
     <string name="display_name_quoted_by">%1$s cité</string>
     <string name="display_name_follow_request_by">%1$s a envoyé une demande d’abonnement</string>
-
     <string name="display_name_reaction_by">%1$s a réagi</string>
     <string name="dont_close_column">Ne pas fermer la colonne</string>
     <string name="dont_confirm_again">Ne plus demander de confirmation</string>
@@ -125,7 +123,6 @@
     <string name="dont_refresh">Ne pas actualiser</string>
     <string name="dont_refresh_on_activity_resume">Désactiver la réactualisation lors du retour vers l’app.</string>
     <string name="dont_resize">Conserver les dimensions</string>
-
     <string name="dont_screen_off">Garder l’écran allumé lors de l’utilisation de l’app.</string>
     <string name="dont_show_boost">Masquer les partages</string>
     <string name="dont_show_reply">Masquer les réponses</string>
@@ -170,7 +167,6 @@
     <string name="image_capture">Utiliser l’appareil photo</string>
     <string name="pick_image">Choisir une image</string>
     <string name="pick_images">Choisir une image…</string>
-
     <string name="instance">Instance</string>
     <string name="instance_hint">Ex) mastodon.social</string>
     <string name="instance_not_need_slash">Nom de l’hôte de l’instance, sans « / » ni « @ ».</string>
@@ -193,7 +189,6 @@
     <string name="menu">Menu</string>
     <string name="minimum_column_width">Largeur minimale des colonnes (défaut=300dp, redémarrage nécessaire)</string>
     <string name="missing_permission_to_access_media">Missing app permission to access media.</string>
-
     <string name="more">Plus</string>
     <string name="mute">Désactiver le son</string>
     <string name="mute_app_desc">Faire glisser pour supprimer. Vous devez rafraîchir pour voir les changements effectués.</string>
@@ -213,7 +208,6 @@
     <string name="not_available_for_pseudo_account">Non disponible pour les pseudo comptes</string>
     <string name="not_available_for_misskey_account">Non disponible pour les comptes Misskey</string>
     <string name="not_available_for_mastodon_account">Non disponible pour les comptes Mastodon</string>
-
     <string name="not_selected">(Aucune sélection)</string>
     <string name="notification_count">%1$d notifications</string>
     <string name="notification_delete">Effacer les notifications</string>
@@ -264,7 +258,6 @@
     <string name="request_access_token">Demander l’autorisation d\'accès à l’instance…</string>
     <string name="request_api">Acquisition : %1$s %2$s</string>
     <string name="reading_api">Lecture de : %1$s %2$s</string>
-
     <string name="reset">Réinitialiser</string>
     <string name="resize_image">Changer la taille des images jointes (JPEG,PNG)</string>
     <string name="resolve_non_local_account">Résoudre le compte non local</string>
@@ -325,7 +318,6 @@
     <string name="visibility_public">Public</string>
     <string name="visibility_unlisted">Non listé</string>
     <string name="visibility_web_setting">Selon les paramètres de l’application Web</string>
-
     <string name="wait_previous_operation">Veuillez attendre la fin de la dernière opération.</string>
     <string name="with_attachment">Avec pièce(s) jointe(s)</string>
     <string name="with_highlight">avec surbrillance</string>
@@ -351,7 +343,6 @@
 \nL’image d’arrière-plan d’une colonne ne peut être exportée/importée sur l’appareil.
 \nLa police de caractères des fils n’est pas exportée/importée.
 \nLa sonnerie de notification personnalisée ne peut être exportée/importée sur l’appareil.</string>
-
     <string name="user_id_conversion_failed">Conversion de l’identification utilisateur échouée.</string>
     <string name="draft_deleted">Brouillon effacé.</string>
     <string name="draft_picker_desc">Appui long pour effacer.</string>
@@ -378,7 +369,6 @@
     <string name="block_domain_that">Bloquer l\'ensemble du domaine \"%1$s\"</string>
     <string name="confirm_block_domain">L\'ensemble du domaine \"%1$s\" sera bloqué. Êtes-vous sûr ?</string>
     <string name="confirm_unblock_domain">Débloquer le domaine \"%1$s\" ?</string>
-
     <string name="text_to_speech_initializing">Initialisation de la lecture vocale…</string>
     <string name="text_to_speech_initialize_failed">Échec d’initialisation de la synthèse vocale. status=%1$s</string>
     <string name="text_to_speech_shutdown">Arrêt de la lecture vocale…</string>
@@ -447,7 +437,6 @@
     <string name="missing_mail_app">App de courriel manquante.</string>
     <string name="relative_timestamp">Afficher les horodatages relatifs</string>
     <string name="time_within_second">à l\'instant</string>
-
     <string name="relative_time_unit_second1">seconde</string>
     <string name="relative_time_unit_seconds">secondes</string>
     <string name="relative_time_unit_minute1">minute</string>
@@ -458,7 +447,6 @@
     <string name="relative_time_unit_days">jours</string>
     <string name="relative_time_phrase_past">Il y a %1$d %2$s</string>
     <string name="relative_time_phrase_future">Dans %1$d %2$s</string>
-
     <string name="notification_sound_before_oreo">Notification sonore (avant Android 8.0)</string>
     <string name="notification_style_after_oreo">Style de notification (Android 8.0 ou version ultérieure)</string>
     <string name="notification_for">Notification for %1$s</string>
@@ -473,10 +461,8 @@
     <string name="choice4">choix 4 (facultatif)</string>
     <string name="make_enquete">Effectuer un sondage</string>
     <string name="dont_use_action_button_with_quick_toot_bar">Désactive le bouton d’action IME lors de l-utilisation de la barre « Pouet rapide » (redémarrage de l\'application requis)</string>
-
     <string name="auto_cw">Masquer automatiquement les longs textes (définir un nombre de lignes supérieur à 0. Redémarrage requis)</string>
     <string name="auto_cw_prefix">(CW automatique)</string>
-
     <string name="enquete_item_is_empty">Le choix du sondage %1$d est vide.</string>
     <string name="enquete_item_too_long">Le choix du sondage %1$d est trop long. Veuillez diminuer de %2$d caractères.</string>
     <string name="enquete_item_duplicate">Choix de la file d\'attente %1$d est un duplicata d\'un autre choix.</string>
@@ -486,11 +472,10 @@
     <string name="length_warning">\"%1$s\" est trop long (%2$d/%3$d caractères). 
 \nIl n’est pas acceptable sur une instance standard, mais peut être permit dans certains cas. 
 \nVous êtes sûr ?</string>
-
     <string name="short_acct_local_user">Compte court pour l’utilisateur·rice local·e (redémarrage requis)</string>
     <string name="loading_notification_title">Chargement de la notification…</string>
     <string name="error_notification_title">Délai d\'attente du serveur</string>
-    <string name="error_notification_summary">Si l\'instance est détruite, veuillez supprimer le compte sur ce serveur.</string>
+    <string name="error_notification_summary">Si vous êtes sur un serveur détruit, veuillez enlever votre compte de l’application.</string>
     <string name="open_hashtag_column">Ouvrir la colonne de hashtags</string>
     <string name="quote_hashtag_of">Citer le hashtag « %1$s »</string>
     <string name="quote_all_hashtag_of">Citer tous les hashtags « %1$s »</string>
@@ -504,7 +489,6 @@
     <string name="toot_count">Nombre de pouets</string>
     <string name="domain_count">Nombre de domaines connectés</string>
     <string name="not_provided_mastodon_under_1_6">Non fourni sous Mastodon 1.6</string>
-
     <string name="mime_type_missing">Type MIME manquant.</string>
     <string name="mime_type_not_acceptable">Type MIME %1$s n\'est pas acceptable.
 \nTypes MIME pris en charge sont les suivants : image/jpeg, image/png, image/gif,/video/webm, video/mp4.</string>
@@ -544,7 +528,6 @@
     <string name="hide_boost_in_home">Masquer les boosts de cet utilisateur vers votre fil principal</string>
     <string name="show_boost_in_home">Afficher les boosts de cet utilisateur sur votre fil principal</string>
     <string name="operation_succeeded">Opération réussie.</string>
-
     <string name="list_member_add_remove">Ajouter/Supprimer des listes …</string>
     <string name="lists">Listes</string>
     <string name="list_show_member">Afficher les utilisateurs de la liste</string>
@@ -562,7 +545,7 @@
     <string name="list_owner">Propriétaire de la liste</string>
     <string name="list_create">Création d’une nouvelle liste…</string>
     <string name="list">List</string>
-    <string name="list_not_supported">cette instance ne supporte pas les listes.</string>
+    <string name="list_not_supported">Les listes ne sont pas supportées sur ce serveur.</string>
     <string name="cant_access_list">Impossible d’accéder aux listes</string>
     <string name="account_sync_failed">échec de la synchronisation du compte.</string>
     <string name="list_retry_with_follow">Vous ne suivez pas encore %1$s. Souhaitez-vous le suivre et l’ajouter à la liste ?</string>
@@ -576,7 +559,7 @@
     <string name="ignore_suggestion">ignore suggestion</string>
     <string name="list_not_created">(la liste n\'est pas créé)</string>
     <string name="your_lists">Vos listes</string>
-    <string name="media_attachment_max_byte_size">Media attachment (image) maximum bytes size (unit:Mega bytes. default is 8)</string>
+    <string name="media_attachment_max_byte_size">Taille limite en octets des pièces jointes (image) (Unité:MB. La valeur par défaut est 8)</string>
     <string name="toot_search_msp">Recherche de pouets (MSP)</string>
     <string name="toot_search_msp_of">Recherche de pouets (MSP) \"%1$s\"</string>
     <string name="toot_search_ts">Recherche de pouets (ts)</string>
@@ -584,7 +567,6 @@
     <string name="tootsearch">tootsearch(JP)</string>
     <string name="cant_handle_uri_of">Subway Tooter ne peut pas gérer les URI \"%1$s\". Veuillez sélectionner une autre application.</string>
     <string name="use_internal_media_viewer">Utiliser la visionneuse de médias intégrée</string>
-
     <string name="previous">Précédent</string>
     <string name="next">Suivant</string>
     <string name="download">Download</string>
@@ -613,8 +595,7 @@
     <string name="domain_block_from_pseudo">Impossible d\'utiliser le blocage de domaines à partir d\'un pseudo compte.</string>
     <string name="domain_block_from_local">Ne pouvez pas utiliser le blocage de domaines pour l\'instance locale.</string>
     <string name="always_show_application">Afficher (via) le nom de l\'application si possible</string>
-    <string name="force_gap_when_refresh">Force put gap when refreshing top</string>
-
+    <string name="force_gap_when_refresh">Forcer l\'ajout d\'espace lors du rafraîchissement du dessus</string>
     <string name="avatar_icon_size">Taille de l’icône de l’avatar (Unité:dp. par défaut:48. Redémarrage de l’app requis)</string>
     <string name="avatar_icon_round_ratio">Avatar icon round ratio (unit:%. default:33. app restart required)</string>
     <string name="avatar_icon_dont_round">Ne pas arrondir les coins de l’avatar (redémarrage requis)</string>
@@ -636,12 +617,10 @@
     <string name="contact">contact account</string>
     <string name="languages">langues</string>
     <string name="append_attachment_url_to_content">Ajouter l\'URL de la pièce jointe au texte du pouet</string>
-
     <string name="hide_favourite_notification_from_user">Désactiver les notifications Fav/BT de cet utilisateur</string>
     <string name="show_favourite_notification_from_user">Activer les notifications Fav/BT depuis cet utilisateur</string>
     <string name="fav_muted_user">FBN disabled users</string>
     <string name="fav_muted_user_long">Fav/Boost notification disabled users</string>
-
     <string name="changed">a changé.</string>
     <string name="thumbnails_arrange_vertically">Réarranger les vignettes verticalement (redémarrage requis)</string>
     <string name="instance_local">Instance locale</string>
@@ -666,12 +645,11 @@
     <string name="available_mastodon_2_4_later">(disponible dans Mastodon 2.4 ou plus récent)</string>
     <string name="confirm_boost_private_from">Boost private status from %1$s ? It\'s shown to all followers.</string>
     <string name="boost_private_toot_not_allowed">Vous ne pouvez pas booster un toot privé publié par une autre personne.</string>
-
     <string name="update_push_subscription">Mise à jour de l\'abonnement push (Mastodon 2.4 ou plus récent)</string>
     <string name="pseudo_account_not_supported">Le pseudo compte ne peut pas utiliser les notifications.</string>
-    <string name="instance_does_not_support_push_api">La version de l\'Instance %1$s est trop ancienne et ne prend pas en charge l\'abonnement push.</string>
-    <string name="missing_fcm_device_id">Can\'t prepare FCM device ID. please retry later.</string>
-    <string name="missing_install_id">Can\'t prepare install ID. please retry later.</string>
+    <string name="instance_does_not_support_push_api">L’aonnement push n’est pas supporté sur ce serveur (version %1$s).</string>
+    <string name="missing_fcm_device_id">Impossible de préparer l’ID FCM du périphérique. Veuillez réessayer plus tard.</string>
+    <string name="missing_install_id">Impossible de préparer l’ID d’installation. Veuillez réessayer plus tard.</string>
     <string name="token_exported">En raison de l\'exportation des données de l\'application ou de la restauration à partir de la sauvegarde, ce jeton d\'accès peut également être utilisé par d\'autres appareils. Parce que les jetons d\'accès qui ne sont pas utilisés par d\'autres appareils sont nécessaires pour utiliser les notifications de push, nous recommandons de mettre à jour le jeton d\'accès.</string>
     <string name="missing_push_api">L\'instance n\'a pas d\'abonnement par l\'API.</string>
     <string name="missing_push_scope">Votre token d\'accès ne contient pas de push scope. La mise à jour du token d\'accès est recommandée.</string>
@@ -681,10 +659,10 @@
     <string name="push_subscription_already_exists">L\'abonnement push est à jour.</string>
     <string name="user_agent">En-tête HTTP du User-Agent</string>
     <string name="user_agent_error">User-Agent ne peut pas contenir de caractères NON-ASCII. [%1$s]</string>
-    <string name="none_or_hidden_following">Il n\'y a pas d’abonnés, ou cachés par les paramètres.</string>
+    <string name="none_or_hidden_following">Pas d’abonné·e·s ou caché·e·s selon ses paramètres.</string>
     <string name="none_or_hidden_followers">There is no followers, or hidden by setting.</string>
     <string name="yourself_can_see_your_network">Même si vous choisissez de cacher les graphiques sociaux, vous pouvez les voir.</string>
-    <string name="follow_follower_list_may_restrict">Si l\'utilisateur distant choisit de masquer le graphique social, seuls les abonnés/suivants sur cette instance seront affichés.</string>
+    <string name="follow_follower_list_may_restrict">Si l’utilisateur distant choisit de masquer le graph social, seul·e·s les abonné·e·s/abonnements sur cette instance seront affichés.</string>
     <string name="trend_tag">Les tendances des tags</string>
     <string name="people_talking">%1$d (%2$d) personnes en parlent</string>
     <string name="trend_tag_desc">The numbers indicate \'daily(weekly)\'. Daily numbers are reset at %1$s.</string>
@@ -692,14 +670,13 @@
     <string name="cant_sync_toot">Impossible de synchroniser le pouet.</string>
     <string name="cant_change_account_when_redraft">Impossible de changer de compte lors de la reformulation.</string>
     <string name="delete_base_status_before_toot">Supprimer le statut de base avant l\'affichage. Tous les favoris, les boosts seront perdus. Les réponses seront déconnectées. Les pièces jointes des médias ne seront pas conservées sur Mastodon avant la version 2.4.1. Vous êtes sûr ?</string>
-    <string name="notification_tl_font_size">Notification TL font size (unit:sp. leave empty to default. app restart required)</string>
+    <string name="notification_tl_font_size">Taille de police du fil de notifications (Unité:sp. laisser vide par défaut. Redémarrage requis)</string>
     <string name="notification_tl_icon_size">Notification TL icon size (Unit:dp. default:24. app restart required)</string>
     <string name="post_button_tapped_repeatly">Le bouton Post a été tapé à plusieurs reprises</string>
     <string name="regex_filter_matches_empty_string">le filtre regex correspond à une chaîne vide.</string>
     <string name="follow_suggestion">Suggestion d’abonnement</string>
     <string name="close_all_columns">Fermer toutes les colonnes</string>
     <string name="confirm_close_column_all">Toutes les colonnes (à l\'exclusion des colonnes protégées) seront fermées. Vous en êtes sûr ?</string>
-
     <string name="keyword_filters">Filtres de mots-clés</string>
     <string name="keyword_filter">Filtre de mots-clés</string>
     <string name="keyword_filter_new">New filter</string>
@@ -707,23 +684,18 @@
     <string name="filter_delete_confirm">Le filtre\'%1$s\' sera supprimé. Vous êtes sûr ?</string>
     <string name="filter_of">Filter \'%1$s\'</string>
     <string name="filtered">filtré</string>
-
     <string name="filter_phrase">Expression</string>
     <string name="filter_context">Contextes de filtrage</string>
-
     <string name="filter_options">Options</string>
     <string name="filter_irreversible">Irréversible</string>
     <string name="filter_irreversible_long">Irreversible. Drop instead of hide. Filtered toots will disappear irreversibly, even if filter is later removed.</string>
     <string name="filter_word_match">Mot entier</string>
     <string name="filter_word_match_long">Whole word. Recommended to enable only phrases consisting of alphanumeric characters.</string>
-
     <string name="filter_expires_at">Expire</string>
-
     <string name="filter_home">Fil principal</string>
     <string name="filter_notification">notification</string>
     <string name="filter_public">public</string>
     <string name="filter_thread">conversation</string>
-
     <string name="dont_change">Ne pas changer</string>
     <string name="filter_expire_unlimited">Illimité</string>
     <string name="filter_expire_30min">30 minutes après l\'enregistrement</string>
@@ -769,7 +741,6 @@
     <string name="deleted_at">deleted at %1$s</string>
     <string name="already_reactioned">already reactioned.</string>
     <string name="already_voted">Vous avez déjà voté.</string>
-
     <string name="endorse_set">Recommander via votre page</string>
     <string name="endorse_unset">Remove endorsement in your profile</string>
     <string name="endorse_succeeded">Endorsement added.</string>
@@ -779,27 +750,20 @@
     <string name="reaction">Réaction (Misskey)</string>
     <string name="vote">Vote (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">Timeout for embed media viewer (unit:seconds, app restart(delete from app history) required)</string>
-
     <string name="media_attachment_max_byte_size_movie">Taille maximale en octets des médias vidéo (unité : méga octets. par défaut : 40)</string>
     <string name="link_color">Couleur des liens (redémarrage requis)</string>
-
     <string name="dont_use_custom_tabs">Ne pas utiliser d\'onglets personnalisés (Chrome/Firefox) lorsque vous ouvrez des liens</string>
-
     <string name="missing_closeable_column">missing closeable column in visible range.</string>
-<string name="privacy_policy">Politique de confidentialité</string>
+    <string name="privacy_policy">Politique de confidentialité</string>
     <string name="agree">J’accepte</string>
-
     <string name="ltl_around_toot">Fil local autour de ce pouet … (Mastodon 2.6)</string>
     <string name="ltl_around">Fil local autour de …</string>
     <string name="ltl_around_of">Fil local autour de %1$s</string>
-
     <string name="ftl_around">Fil global autour de …</string>
     <string name="ftl_around_of">Fil global autour de %1$s</string>
-
     <string name="ftl_around_toot">Fil fédéré autour de ce pouet … (Mastodon 2.6)</string>
     <string name="verified_at">vérifié à</string>
-
-<string name="use_old_api">Utiliser l’ancienne API</string>
+    <string name="use_old_api">Utiliser l’ancienne API</string>
     <string name="username_not_need_atmark">Le nom d’utilisateur ne devrait pas contenir «@» ou «/».</string>
     <string name="visibility_local_public">Public (local)</string>
     <string name="visibility_local_home">Accueil (local)</string>
@@ -885,4 +849,16 @@
     <string name="account_tl_around">Fil public autour …</string>
     <string name="boost_button_alpha">Transparence du bouton Boost (Unité:%. redémarrage de l’app nécessaire. Affecte également la transparence du contenu texte.)</string>
     <string name="move_notifications_quick_filter_to_column_setting">Afficher le filtre rapide des notifications dans la configuration de la colonne (redémarrage de l’application requis)</string>
+    <string name="official_account">Compte officiel</string>
+    <string name="releases">Sorties</string>
+    <string name="timezone">Fuseau horaire (redémarrage requis)</string>
+    <string name="device_timezone">Fuseau horaire de l’appareil</string>
+    <string name="hashtag_extra_any">Tags supplémentaires : qu’importe (tags sans #)</string>
+    <string name="hashtag_extra_all">Tags supplémentaires : tous (tags sans #)</string>
+    <string name="hashtag_extra_none">Tags supplémentaires : aucun (tags sans #)</string>
+    <string name="hashtag_title_any">ou %1$s</string>
+    <string name="hashtag_title_all">et %1$s</string>
+    <string name="hashtag_title_none">sans %1$s</string>
+    <string name="add">Ajouter</string>
+    <string name="follow_request_misskey">Demande d’abonnement (Misskey)</string>
 </resources>

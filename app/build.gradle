@@ -13,8 +13,8 @@ android {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
 
-        versionCode 342
-        versionName "3.4.2"
+        versionCode 343
+        versionName "3.4.3"
         applicationId "jp.juggler.subwaytooter"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -86,7 +86,7 @@ dependencies {
 
     // https://firebase.google.com/support/release-notes/android
     implementation "com.google.firebase:firebase-core:16.0.7"
-    implementation "com.google.firebase:firebase-messaging:17.3.4"
+    implementation "com.google.firebase:firebase-messaging:17.4.0"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"

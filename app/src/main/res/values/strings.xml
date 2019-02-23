@@ -890,5 +890,7 @@
     <string name="event_background_color">Event background color</string>
     <string name="unfollow_misskey">Unfollow (Misskey)</string>
     <string name="follow_request_misskey">Follow request (Misskey)</string>
+    <string name="dont_remove_deleted_toot_from_timeline">Don\'t remove deleted toots from timeline</string>
+    <string name="dont_show_column_background_image">Don\'t show column background image</string>
 
 </resources>

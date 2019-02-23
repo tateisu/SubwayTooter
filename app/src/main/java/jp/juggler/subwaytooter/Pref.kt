@@ -373,6 +373,19 @@ object Pref {
 		R.id.swShowSearchClear
 	)
 	
+	val bpDontRemoveDeletedToot = BooleanPref(
+		"DontRemoveDeletedToot",
+		false,
+		R.id.swDontRemoveDeletedToot
+	)
+	
+	val bpDontShowColumnBackgroundImage = BooleanPref(
+		"DontShowColumnBackgroundImage",
+		false,
+		R.id.swDontShowColumnBackgroundImage
+	)
+
+	
 
 	// int
 	

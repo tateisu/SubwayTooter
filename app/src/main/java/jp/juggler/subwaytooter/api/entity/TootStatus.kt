@@ -664,6 +664,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	fun markDeleted(context : Context, deletedAt : Long?) : Boolean? {
 		
+		if( Pref.bpDontRemoveDeletedToot( App1.getAppState(context).pref)) return false
+		
 		var sv = if(deletedAt != null) {
 			context.getString(R.string.status_deleted_at, formatTime(context, deletedAt, false))
 		} else {

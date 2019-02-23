@@ -841,7 +841,7 @@ class ColumnViewHolder(
 	@SuppressLint("StaticFieldLeak")
 	private fun loadBackgroundImage(iv : ImageView, url : String?) {
 		try {
-			if(url == null || url.isEmpty()) {
+			if(url == null || url.isEmpty() || Pref.bpDontShowColumnBackgroundImage(activity.pref) ) {
 				// 指定がないなら閉じる
 				closeBitmaps()
 				return

@@ -151,6 +151,7 @@ internal class StreamReader(
 			runOnMainLooper {
 				synchronized(this) {
 					if(bDisposed.get()) return@runOnMainLooper
+					if( Pref.bpDontRemoveDeletedToot(App1.getAppState(context).pref)) return@runOnMainLooper
 					for(column in App1.getAppState(context).column_list) {
 						try {
 							column.onStatusRemoved(tl_host, id)

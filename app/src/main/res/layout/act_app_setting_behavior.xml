@@ -216,6 +216,20 @@
 
         <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/dont_remove_deleted_toot_from_timeline"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontRemoveDeletedToot"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
         <!-- =============================================== -->
 
 

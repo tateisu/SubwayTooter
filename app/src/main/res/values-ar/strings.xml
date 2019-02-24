@@ -4,7 +4,6 @@
     <string name="account_add">إضافة حساب</string>
     <string name="cancel">إلغاء</string>
     <string name="api_error">خطأ في واجهة برمجة التطبيقات. %1$s</string>
-
     <string name="column_empty">استخدِم الزر السفلي الأيمن للوحة قصد إضافة عمود</string>
     <string name="home">الرئيسية</string>
     <string name="local_timeline">الخيط الزمني المحلي</string>
@@ -95,7 +94,6 @@
     <string name="clear">مسح</string>
     <string name="clear_text">مسح النص</string>
     <string name="clear_text_and_media">مسح النص والوسائط</string>
-
     <string name="color_and_background">اللون والخلفية…</string>
     <string name="column_background">خلفية العمود</string>
     <string name="foreground_color">اللون الأمامي</string>
@@ -168,23 +166,19 @@
     <string name="keyword_filter_new">عامل تصفية جديد</string>
     <string name="keyword_filter_edit">تعديل عامل التصفية</string>
     <string name="filtered">مُصفّى</string>
-
     <string name="filter_phrase">العِبارة</string>
     <string name="filter_options">الخيارات</string>
     <string name="filter_word_match">الكلمة كاملة</string>
     <string name="filter_expires_at">مدة نهاية الصلاحية</string>
-
     <string name="filter_home">الرئيسية</string>
     <string name="filter_notification">إشعار</string>
     <string name="filter_thread">المحادثة</string>
-
     <string name="visibility_home">الرئيسية</string>
     <string name="visibility_followers">المُتابِعون</string>
     <string name="dont_show_vote">إخفاء استطلاع الرأي</string>
     <string name="center">الوسط</string>
     <string name="misskey_hybrid_timeline_long">الخيط الزمني الاجتماعي (ميسكي)</string>
     <string name="app_name">Subway Tooter</string>
-
     <string name="instance">مثيل الخادوم</string>
     <string name="user_mail_address">البريد الإلكتروني</string>
     <string name="user_password">الكلمة السرية</string>
@@ -192,7 +186,6 @@
     <string name="instance_not_specified">لم يتم تحديد أي مثيل خادوم</string>
     <string name="mail_not_specified">لم يتم إدخال أي عنوان بريد إلكتروني</string>
     <string name="password_not_specified">لم يتم إدخال الكلمة السرية</string>
-
     <string name="network_error">خطأ في الشبكة.</string>
     <string name="error_response">خطأ في الإستجابة.</string>
     <string name="request_access_token">جارٍ طلب رمز النفاذ…</string>
@@ -244,7 +237,6 @@
     <string name="input_access_token">رمز المصادقة</string>
     <string name="title">العنوان</string>
     <string name="instance_information">معلومات مثيل الخادم</string>
-
     <string name="time_within_second">الآن</string>
     <string name="make_enquete">إنشاء استطلاع للرأي</string>
     <string name="profile_pin">تدبيس على الملف الشخصي</string>
@@ -304,7 +296,6 @@
     <string name="text_to_speech_initializing">جارٍ تشغيل خدمة تحويل النص إلى كلام…</string>
     <string name="toot_search_msp">البحث عن تبويقات (MSP)</string>
     <string name="toot_search_ts">البحث عن تبويقات (ts)</string>
-
     <string name="mastodon_search_portal">MSP(اليابان)</string>
     <string name="toot_search_of">البحث عن تبويق \"%1$s\"</string>
     <string name="public_profile">الملف العمومي</string>
@@ -320,7 +311,6 @@
     <string name="media_description">(المُرفَق %1$d) %2$s</string>
     <string name="description_empty">ليس هناك وصف.</string>
     <string name="operation_succeeded">تمت العملية.</string>
-
     <string name="list_create_hint">اسم القائمة الجديدة</string>
     <string name="list_created">تم إنشاء القائمة الجديدة.</string>
     <string name="list_member">قائمة المستخدِمين</string>
@@ -336,9 +326,7 @@
     <string name="post_error_contents_warning_empty">تبويقك بحاجة إلى نص تحذيري.</string>
     <string name="display_name_boosted_by">قام بترقيته %1$s</string>
     <string name="display_name_follow_request_by">أرسَل %1$s طلبًا للمتابَعة</string>
-
     <string name="pick_images">اختر صورة…</string>
-
     <string name="register_app_to_server">تسجيل هذا التطبيق على %1$s…</string>
     <string name="act_post">نشر تبويق</string>
     <string name="not_selected">(لم يتم اختياره)</string>
@@ -453,4 +441,14 @@
     <string name="animation">المؤثرات الحركية</string>
     <string name="existing_account">تسجيل الدخول</string>
     <string name="existing_account_desc">تسجيل الدخول بواسطة حساب تم انشاؤه.</string>
+    <string name="agree">أوافق</string>
+    <string name="create_account">إنشاء حساب</string>
+    <string name="create_account_desc">إنشاء حساب جديد على خادم محدد.</string>
+    <string name="user_name">اسم المستخدم</string>
+    <string name="password">الكلمة السرية</string>
+    <string name="password_hint">أدخل الكلمة السرية…</string>
+    <string name="agree_terms">أوافق على شروط الخدمة</string>
+    <string name="username_empty">فضلا أدخل اسم المستخدم.</string>
+    <string name="password_empty">يرجى تحديد الكلمة السرية.</string>
+    <string name="username_not_need_atmark">يجب ألا يحتوي اسم المستخدم على \"@\" أو\"/\".</string>
 </resources>

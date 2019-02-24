@@ -101,7 +101,7 @@ class ActKeywordFilter
 				startLoading()
 			} else {
 				etPhrase.setText(
-					intent.getStringExtra(EXTRA_INITIAL_PHRASE).notEmpty()
+					intent.getStringExtra(EXTRA_INITIAL_PHRASE)?.notEmpty()
 						?: getString(R.string.filter_expire_unlimited)
 				)
 			}

@@ -6,9 +6,6 @@ import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.AsyncTask
-import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
 import android.view.GestureDetector
@@ -19,20 +16,22 @@ import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
+import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
 import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_Notification
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.util.ScrollPosition
-import jp.juggler.util.createResizedBitmap
 import jp.juggler.subwaytooter.view.ListDivider
 import jp.juggler.util.*
+import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.textColor
 import java.io.Closeable
 import java.lang.reflect.Field
 import java.util.regex.Pattern
-import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
-import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
-import org.jetbrains.anko.backgroundDrawable
 
 @SuppressLint("ClickableViewAccessibility")
 class ColumnViewHolder(
@@ -46,13 +45,13 @@ class ColumnViewHolder(
 		private val log = LogCategory("ColumnViewHolder")
 		
 		val fieldRecycler : Field by lazy {
-			val field = androidx.recyclerview.widget.RecyclerView::class.java.getDeclaredField("mRecycler")
+			val field = RecyclerView::class.java.getDeclaredField("mRecycler")
 			field.isAccessible = true
 			field
 		}
 		
 		val fieldState : Field by lazy {
-			val field = androidx.recyclerview.widget.RecyclerView::class.java.getDeclaredField("mState")
+			val field = RecyclerView::class.java.getDeclaredField("mState")
 			field.isAccessible = true
 			field
 		}
@@ -68,9 +67,9 @@ class ColumnViewHolder(
 	private var page_idx : Int = 0
 	
 	private val tvLoading : TextView
-	val listView : androidx.recyclerview.widget.RecyclerView
+	val listView : RecyclerView
 	val refreshLayout : SwipyRefreshLayout
-	lateinit var listLayoutManager : androidx.recyclerview.widget.LinearLayoutManager
+	lateinit var listLayoutManager : LinearLayoutManager
 	
 	private val llColumnHeader : View
 	private val tvColumnIndex : TextView
@@ -710,7 +709,7 @@ class ColumnViewHolder(
 			llRefreshError.visibility = View.GONE
 			
 			//
-			listLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(activity)
+			listLayoutManager = LinearLayoutManager(activity)
 			listView.layoutManager = listLayoutManager
 			listView.adapter = status_adapter
 			
@@ -1492,8 +1491,14 @@ class ColumnViewHolder(
 	
 	fun scrollToTop() {
 		try {
+			listView.stopScroll()
+		} catch(ex : Throwable) {
+			log.e(ex,"stopScroll failed.")
+		}
+		try {
 			listLayoutManager.scrollToPositionWithOffset(0, 0)
-		} catch(ignored : Throwable) {
+		} catch(ex : Throwable) {
+			log.e(ex,"scrollToPositionWithOffset failed.")
 		}
 	}
 	

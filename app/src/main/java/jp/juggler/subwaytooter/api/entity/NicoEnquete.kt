@@ -18,6 +18,13 @@ class NicoEnquete(
 	list_attachment : ArrayList<TootAttachmentLike>?,
 	src : JSONObject
 ) {
+	enum class PollType{
+		Mastodon, // Mastodon 2.8's poll
+		Misskey, // Misskey's poll
+		FriendsNico, // friends.nico
+	}
+	
+	val poll_type : PollType
 	
 	// one of enquete,enquete_result
 	val type : String?
@@ -47,6 +54,7 @@ class NicoEnquete(
 		this.status_id = status.id
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
+			this.poll_type = PollType.Misskey
 			
 			this.items = parseChoiceListMisskey(
 				
@@ -87,6 +95,8 @@ class NicoEnquete(
 			).decodeHTML(this.question ?: "?")
 			
 		} else {
+			// TODO Mastodonのpollとfriends.nicoのアンケートを区別する
+			this.poll_type = PollType.FriendsNico
 			this.type = src.parseString("type")
 			
 			this.question = src.parseString("question")

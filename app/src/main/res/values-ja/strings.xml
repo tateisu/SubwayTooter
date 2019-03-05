@@ -870,5 +870,14 @@
     <string name="follow_request_misskey">フォローリクエスト (Misskey)</string>
     <string name="dont_remove_deleted_toot_from_timeline">削除された投稿をタイムラインから除去しない</string>
     <string name="dont_show_column_background_image">カラム背景画像を表示しない</string>
+    <string name="allow_multiple_choice">複数選択を許可する</string>
+    <string name="hide_totals">期限内は票数を隠す</string>
+    <string name="expiration">期限</string>
+    <string name="poll_dont_make">投票を作らない</string>
+    <string name="poll_make">投票を作る</string>
+    <string name="poll_make_friends_nico">投票を作る(friends.nico API)</string>
+    <string name="poll_expire_days">日</string>
+    <string name="poll_expire_hours">時間</string>
+    <string name="poll_expire_minutes">分</string>
 
 </resources>

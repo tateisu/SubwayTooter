@@ -164,6 +164,7 @@ class ActPost : AppCompatActivity(),
 		internal const val DRAFT_REPLY_IMAGE = "reply_image"
 		internal const val DRAFT_REPLY_URL = "reply_url"
 		internal const val DRAFT_IS_ENQUETE = "is_enquete"
+		internal const val DRAFT_POLL_TYPE = "poll_type"
 		internal const val DRAFT_ENQUETE_ITEMS = "enquete_items"
 		internal const val DRAFT_QUOTED_RENOTE = "quotedRenote"
 		
@@ -256,9 +257,16 @@ class ActPost : AppCompatActivity(),
 	
 	internal lateinit var cbQuoteRenote : CheckBox
 	
-	internal lateinit var cbEnquete : CheckBox
+	internal lateinit var spEnquete : Spinner
 	private lateinit var llEnquete : View
 	internal lateinit var list_etChoice : List<MyEditText>
+	
+	private lateinit var cbMultipleChoice : CheckBox
+	private lateinit var cbHideTotals : CheckBox
+	private lateinit var llExpire : LinearLayout
+	private lateinit var etExpireDays : EditText
+	private lateinit var etExpireHours : EditText
+	private lateinit var etExpireMinutes : EditText
 	
 	private lateinit var tvCharCount : TextView
 	internal lateinit var handler : Handler
@@ -634,7 +642,7 @@ class ActPost : AppCompatActivity(),
 							// 比較する前にデフォルトの公開範囲を計算する
 							visibility = visibility
 								?: account.visibility
-								?: TootVisibility.Public
+									?: TootVisibility.Public
 							// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになる
 							
 							if(TootVisibility.WebSetting == visibility) {
@@ -709,25 +717,35 @@ class ActPost : AppCompatActivity(),
 						
 						val src_enquete = base_status.enquete
 						val src_items = src_enquete?.items
-						if(src_items != null && src_enquete.type == NicoEnquete.TYPE_ENQUETE) {
-							cbEnquete.isChecked = true
-							text = decodeOptions.decodeHTML(src_enquete.question)
-							etContent.text = text
-							etContent.setSelection(text.length)
-							
-							var src_index = 0
-							for(et in list_etChoice) {
-								if(src_index < src_items.size) {
-									val choice = src_items[src_index]
-									if(src_index == src_items.size - 1 && choice.text == "\uD83E\uDD14") {
-										// :thinking_face: は再現しない
+						if(src_items != null) {
+							if(src_enquete.poll_type == NicoEnquete.PollType.FriendsNico && src_enquete.type != NicoEnquete.TYPE_ENQUETE) {
+								// フレニコAPIのアンケート結果は再編集の対象外
+							} else {
+								spEnquete.setSelection(
+									if(src_enquete.poll_type == NicoEnquete.PollType.FriendsNico) {
+										2
 									} else {
-										et.setText(decodeOptions.decodeEmoji(choice.text))
-										++ src_index
-										continue
+										1
 									}
+								)
+								text = decodeOptions.decodeHTML(src_enquete.question)
+								etContent.text = text
+								etContent.setSelection(text.length)
+								
+								var src_index = 0
+								for(et in list_etChoice) {
+									if(src_index < src_items.size) {
+										val choice = src_items[src_index]
+										if(src_index == src_items.size - 1 && choice.text == "\uD83E\uDD14") {
+											// :thinking_face: は再現しない
+										} else {
+											et.setText(decodeOptions.decodeEmoji(choice.text))
+											++ src_index
+											continue
+										}
+									}
+									et.setText("")
 								}
-								et.setText("")
 							}
 						}
 					}
@@ -794,7 +812,7 @@ class ActPost : AppCompatActivity(),
 		
 		visibility = visibility
 			?: account?.visibility
-			?: TootVisibility.Public
+				?: TootVisibility.Public
 		// 2017/9/13 VISIBILITY_WEB_SETTING から VISIBILITY_PUBLICに変更した
 		// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになるので…
 		
@@ -960,8 +978,43 @@ class ActPost : AppCompatActivity(),
 		
 		cbQuoteRenote = findViewById(R.id.cbQuoteRenote)
 		
-		cbEnquete = findViewById(R.id.cbEnquete)
+		spEnquete = findViewById<Spinner>(R.id.spEnquete).apply {
+			this.adapter = ArrayAdapter(
+				this@ActPost,
+				android.R.layout.simple_spinner_item,
+				arrayOf(
+					getString(R.string.poll_dont_make),
+					getString(R.string.poll_make),
+					getString(R.string.poll_make_friends_nico)
+				)
+			).apply {
+				setDropDownViewResource(R.layout.lv_spinner_dropdown)
+			}
+			
+			this.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+				override fun onNothingSelected(parent : AdapterView<*>?) {
+					showEnquete()
+					updateTextCount()
+				}
+				
+				override fun onItemSelected(
+					parent : AdapterView<*>?,
+					view : View?,
+					position : Int,
+					id : Long
+				) {
+					showEnquete()
+					updateTextCount()
+				}
+			}
+		}
 		llEnquete = findViewById(R.id.llEnquete)
+		llExpire = findViewById(R.id.llExpire)
+		cbHideTotals = findViewById(R.id.cbHideTotals)
+		cbMultipleChoice = findViewById(R.id.cbMultipleChoice)
+		etExpireDays = findViewById(R.id.etExpireDays)
+		etExpireHours = findViewById(R.id.etExpireHours)
+		etExpireMinutes = findViewById(R.id.etExpireMinutes)
 		
 		ivMedia = listOf(
 			findViewById(R.id.ivMedia1),
@@ -1018,10 +1071,6 @@ class ActPost : AppCompatActivity(),
 			updateContentWarning()
 		}
 		
-		cbEnquete.setOnCheckedChangeListener { _, _ ->
-			showEnquete()
-			updateTextCount()
-		}
 		
 		post_helper = PostHelper(this, pref, app_state.handler)
 		post_helper.attachEditText(formRoot, etContent, false, object : PostHelper.Callback2 {
@@ -1121,12 +1170,21 @@ class ActPost : AppCompatActivity(),
 		
 		var max = getMaxCharCount()
 		
-		if(cbEnquete.isChecked) {
-			max -= 150 // フレニコ固有。500-150で350になる
+		fun checkEnqueteLength() {
 			for(et in list_etChoice) {
 				length += TootStatus.countText(
 					EmojiDecoder.decodeShortCode(et.text.toString())
 				)
+			}
+			
+		}
+		
+		when(spEnquete.selectedItemPosition) {
+			1 -> checkEnqueteLength()
+			
+			2 -> {
+				max -= 150 // フレニコ固有。500-150で350になる
+				checkEnqueteLength()
 			}
 		}
 		
@@ -1320,7 +1378,7 @@ class ActPost : AppCompatActivity(),
 		
 		if(isFinishing) return
 		
-		vg(llAttachment,attachment_list.isNotEmpty())
+		vg(llAttachment, attachment_list.isNotEmpty())
 		ivMedia.forEachIndexed { i, v -> showAttachment_sub(v, i) }
 	}
 	
@@ -2156,15 +2214,46 @@ class ActPost : AppCompatActivity(),
 		
 		post_helper.content = etContent.text.toString().trim { it <= ' ' }
 		
-		if(! cbEnquete.isChecked) {
-			post_helper.enquete_items = null
-		} else {
+		fun copyEnqueteText() {
 			val enquete_items = ArrayList<String>()
 			for(et in list_etChoice) {
 				enquete_items.add(et.text.toString().trim { it <= ' ' })
 			}
 			post_helper.enquete_items = enquete_items
 		}
+		
+		fun getExpireSeconds() : Int {
+			
+			fun Double?.finiteOrZero() : Double = if(this?.isFinite() == true) this else 0.0
+			
+			val d = etExpireDays.text.toString().trim().toDoubleOrNull().finiteOrZero()
+			val h = etExpireHours.text.toString().trim().toDoubleOrNull().finiteOrZero()
+			val m = etExpireMinutes.text.toString().trim().toDoubleOrNull().finiteOrZero()
+			
+			return (d * 86400.0 + h * 3600.0 + m * 60.0).toInt()
+		}
+		
+		when(spEnquete.selectedItemPosition) {
+			1 -> {
+				copyEnqueteText()
+				post_helper.poll_type = NicoEnquete.PollType.Mastodon
+				post_helper.poll_expire_seconds = getExpireSeconds()
+				post_helper.poll_hide_totals = cbHideTotals.isChecked
+				post_helper.poll_multiple_choice = cbMultipleChoice.isChecked
+			}
+			
+			2 -> {
+				copyEnqueteText()
+				post_helper.poll_type = NicoEnquete.PollType.FriendsNico
+				
+			}
+			
+			else -> {
+				post_helper.enquete_items = null
+				post_helper.poll_type = null
+			}
+		}
+		
 		
 		if(! cbContentWarning.isChecked) {
 			post_helper.spoiler_text = null // nullはCWチェックなしを示す
@@ -2251,7 +2340,8 @@ class ActPost : AppCompatActivity(),
 		val content = etContent.text.toString()
 		val content_warning =
 			if(cbContentWarning.isChecked) etContentWarning.text.toString() else ""
-		val isEnquete = cbEnquete.isChecked
+
+		val isEnquete = spEnquete.selectedItemPosition > 0
 		
 		val str_choice = arrayOf(
 			if(isEnquete) list_etChoice[0].text.toString() else "",
@@ -2292,7 +2382,11 @@ class ActPost : AppCompatActivity(),
 			json.put(DRAFT_REPLY_URL, in_reply_to_url)
 			
 			json.put(DRAFT_QUOTED_RENOTE, cbQuoteRenote.isChecked)
-			json.put(DRAFT_IS_ENQUETE, isEnquete)
+
+			// deprecated. but still used in old draft.
+			// json.put(DRAFT_IS_ENQUETE, isEnquete)
+
+			json.put(DRAFT_POLL_TYPE, spEnquete.selectedItemPosition.toPollTypeString())
 			
 			val array = JSONArray()
 			for(s in str_choice) {
@@ -2307,6 +2401,19 @@ class ActPost : AppCompatActivity(),
 		}
 		
 	}
+	
+	// poll type string to spinner index
+	private fun String?.toPollTypeIndex() = when(this) {
+		"mastodon" -> 1
+		"friendsNico" -> 2
+		else -> 0
+	}
+	private fun Int?.toPollTypeString() = when(this) {
+		1->"mastodon"
+		2->"friendsNico"
+		else -> ""
+	}
+	
 	
 	private fun openDraftPicker() {
 		
@@ -2446,7 +2553,16 @@ class ActPost : AppCompatActivity(),
 				if(draft_visibility != null) this@ActPost.visibility = draft_visibility
 				
 				cbQuoteRenote.isChecked = draft.optBoolean(DRAFT_QUOTED_RENOTE)
-				cbEnquete.isChecked = draft.optBoolean(DRAFT_IS_ENQUETE, false)
+				
+				val sv = draft.optString(DRAFT_POLL_TYPE,null)
+				if(sv!=null){
+					spEnquete.setSelection( sv.toPollTypeIndex() )
+				}else{
+					// old draft
+					val bv = draft.optBoolean(DRAFT_IS_ENQUETE, false)
+					spEnquete.setSelection( if(bv) 2 else 0)
+				}
+				
 				val array = draft.optJSONArray(DRAFT_ENQUETE_ITEMS)
 				if(array != null) {
 					var src_index = 0
@@ -2628,7 +2744,11 @@ class ActPost : AppCompatActivity(),
 	}
 	
 	private fun showEnquete() {
-		llEnquete.visibility = if(cbEnquete.isChecked) View.VISIBLE else View.GONE
+		val i = spEnquete.selectedItemPosition
+		vg(llEnquete, i != 0)
+		vg(llExpire, i == 1)
+		vg(cbHideTotals, i == 1)
+		vg(cbMultipleChoice, i == 1)
 	}
 	
 	private val commitContentListener =

@@ -71,6 +71,11 @@ class PostHelper(
 	var in_reply_to_id : EntityId? = null
 	var attachment_list : ArrayList<PostAttachment>? = null
 	var enquete_items : ArrayList<String>? = null
+	var poll_type : NicoEnquete.PollType? = null
+	var poll_expire_seconds = 0
+	var poll_hide_totals = false
+	var poll_multiple_choice = false
+	
 	var emojiMapCustom : HashMap<String, CustomEmoji>? = null
 	var redraft_status_id : EntityId? = null
 	var useQuotedRenote = false
@@ -94,6 +99,11 @@ class PostHelper(
 		val in_reply_to_id = this.in_reply_to_id
 		val attachment_list = this.attachment_list
 		val enquete_items = this.enquete_items
+		var poll_type = this.poll_type
+		var poll_expire_seconds = this.poll_expire_seconds
+		var poll_hide_totals = this.poll_hide_totals
+		var poll_multiple_choice = this.poll_multiple_choice
+		
 		val visibility = this.visibility
 		val scheduledAt = this.scheduledAt
 		
@@ -112,10 +122,17 @@ class PostHelper(
 		}
 		
 		if(enquete_items?.isNotEmpty() == true) {
-			var n = 0
-			val ne = enquete_items.size
-			while(n < ne) {
+			
+			val choice_max_chars = if(isMisskey) {
+				15
+			} else when(poll_type) {
+				NicoEnquete.PollType.Mastodon -> 25
+				else -> 15
+			}
+			
+			for(n in 0 until enquete_items.size) {
 				val item = enquete_items[n]
+				
 				if(item.isEmpty()) {
 					if(n < 2) {
 						showToast(activity, true, R.string.enquete_item_is_empty, n + 1)
@@ -123,8 +140,8 @@ class PostHelper(
 					}
 				} else {
 					val code_count = item.codePointCount(0, item.length)
-					if(code_count > 15) {
-						val over = code_count - 15
+					if(code_count > choice_max_chars) {
+						val over = code_count - choice_max_chars
 						showToast(activity, true, R.string.enquete_item_too_long, n + 1, over)
 						return
 					} else if(n > 0) {
@@ -136,7 +153,6 @@ class PostHelper(
 						}
 					}
 				}
-				++ n
 			}
 		}
 		
@@ -292,7 +308,7 @@ class PostHelper(
 					}
 					log.d("delete redraft. result=$result")
 					Thread.sleep(2000L)
-				}else if(scheduledId != null) {
+				} else if(scheduledId != null) {
 					val r1 = client.request(
 						"/api/v1/scheduled_statuses/$scheduledId",
 						Request.Builder().delete()
@@ -480,21 +496,39 @@ class PostHelper(
 						}
 						
 						if(enquete_items?.isNotEmpty() == true) {
-							json.put("isEnquete", true)
-							val array = JSONArray()
-							for(item in enquete_items) {
-								array.put(
-									EmojiDecoder.decodeShortCode(
-										item,
-										emojiMapCustom = emojiMapCustom
+							if(poll_type == NicoEnquete.PollType.Mastodon) {
+								json.put("poll", JSONObject().apply {
+									put("multiple", poll_multiple_choice)
+									put("hide_totals", poll_hide_totals)
+									put("expires_in", poll_expire_seconds)
+									put("options", JSONArray().apply {
+										for(item in enquete_items) {
+											put(
+												EmojiDecoder.decodeShortCode(
+													item,
+													emojiMapCustom = emojiMapCustom
+												)
+											)
+										}
+									})
+								})
+							} else {
+								json.put("isEnquete", true)
+								val array = JSONArray()
+								for(item in enquete_items) {
+									array.put(
+										EmojiDecoder.decodeShortCode(
+											item,
+											emojiMapCustom = emojiMapCustom
+										)
 									)
-								)
+								}
+								json.put("enquete_items", array)
 							}
-							json.put("enquete_items", array)
 						}
 						
 						if(scheduledAt != 0L) {
-							if( ! instance.versionGE(TootInstance.VERSION_2_7_0_rc1) ) {
+							if(! instance.versionGE(TootInstance.VERSION_2_7_0_rc1)) {
 								return TootApiResult(activity.getString(R.string.scheduled_status_requires_mastodon_2_7_0))
 							}
 							// UTCの日時を渡す

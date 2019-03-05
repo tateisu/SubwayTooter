@@ -892,5 +892,15 @@
     <string name="follow_request_misskey">Follow request (Misskey)</string>
     <string name="dont_remove_deleted_toot_from_timeline">Don\'t remove deleted toots from timeline</string>
     <string name="dont_show_column_background_image">Don\'t show column background image</string>
+    <string name="allow_multiple_choice">Allow multiple choice</string>
+    <string name="hide_totals">Hide totals until expire</string>
+    <string name="expiration">Expiration</string>
+    <string name="poll_dont_make">Don\'t make poll</string>
+    <string name="poll_make">Make poll</string>
+    <string name="poll_make_friends_nico">Make poll (friends.nico API)</string>
+    <string name="plus">+</string>
+    <string name="poll_expire_days">days</string>
+    <string name="poll_expire_hours">hours</string>
+    <string name="poll_expire_minutes">minutes</string>
 
 </resources>

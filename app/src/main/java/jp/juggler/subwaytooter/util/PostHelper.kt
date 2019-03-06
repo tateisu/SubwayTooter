@@ -71,7 +71,7 @@ class PostHelper(
 	var in_reply_to_id : EntityId? = null
 	var attachment_list : ArrayList<PostAttachment>? = null
 	var enquete_items : ArrayList<String>? = null
-	var poll_type : NicoEnquete.PollType? = null
+	var poll_type : PollType? = null
 	var poll_expire_seconds = 0
 	var poll_hide_totals = false
 	var poll_multiple_choice = false
@@ -126,7 +126,7 @@ class PostHelper(
 			val choice_max_chars = if(isMisskey) {
 				15
 			} else when(poll_type) {
-				NicoEnquete.PollType.Mastodon -> 25
+				PollType.Mastodon -> 25
 				else -> 15
 			}
 			
@@ -496,7 +496,7 @@ class PostHelper(
 						}
 						
 						if(enquete_items?.isNotEmpty() == true) {
-							if(poll_type == NicoEnquete.PollType.Mastodon) {
+							if(poll_type == PollType.Mastodon) {
 								json.put("poll", JSONObject().apply {
 									put("multiple", poll_multiple_choice)
 									put("hide_totals", poll_hide_totals)

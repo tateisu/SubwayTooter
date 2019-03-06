@@ -778,7 +778,7 @@
     <string name="follow_request_cancelled">Follow request cancelled.</string>
     <string name="confirm_cancel_follow_request_who_from">Cancel follow request from %2$s to %1$s?</string>
     <string name="reaction">Reaction (Misskey)</string>
-    <string name="vote">Vote (Misskey)</string>
+    <string name="vote_misskey">Vote (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">Timeout for embedded media viewer (Unit:seconds, app restart(delete from app history) required)</string>
     <string name="link_color">Link color (app restart required)</string>
     <string name="missing_closeable_column">Missing closeable column in visible range.</string>
@@ -902,5 +902,10 @@
     <string name="poll_expire_days">days</string>
     <string name="poll_expire_hours">hours</string>
     <string name="poll_expire_minutes">minutes</string>
+    <string name="vote_1">1 vote</string>
+    <string name="vote_2">%1$d votes</string>
+    <string name="vote_expire_at">time limit: %1$s</string>
+    <string name="vote_count_unavailable">\?\?\? votes</string>
+    <string name="vote_button">Vote</string>
 
 </resources>

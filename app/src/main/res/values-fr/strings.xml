@@ -748,7 +748,7 @@
     <string name="follow_request_cancelled">Follow request was cancelled.</string>
     <string name="confirm_cancel_follow_request_who_from">La demande de suivi de %2$s à %1$s sera rejetée. Vous êtes sûr ?</string>
     <string name="reaction">Réaction (Misskey)</string>
-    <string name="vote">Vote (Misskey)</string>
+    <string name="vote_misskey">Vote (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">Timeout for embed media viewer (unit:seconds, app restart(delete from app history) required)</string>
     <string name="media_attachment_max_byte_size_movie">Taille maximale en octets des médias vidéo (unité : méga octets. par défaut : 40)</string>
     <string name="link_color">Couleur des liens (redémarrage requis)</string>

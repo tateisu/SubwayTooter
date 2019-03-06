@@ -6,16 +6,17 @@ import android.graphics.Typeface
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
+import android.util.LayoutDirection
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.view.ViewCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
@@ -25,6 +26,7 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
+import jp.juggler.subwaytooter.drawable.PollPlotDrawable
 import jp.juggler.subwaytooter.drawable.PreviewCardBorder
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.*
@@ -32,6 +34,7 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
 import jp.juggler.util.*
 import org.jetbrains.anko.*
+import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.max
 
@@ -707,13 +710,13 @@ internal class ItemViewHolder(
 		val in_reply_to_id = item.in_reply_to_id
 		val in_reply_to_account_id = item.in_reply_to_account_id
 		when {
-			reply != null ->{
+			reply != null -> {
 				showReply(
 					R.drawable.ic_reply,
 					R.string.reply_to,
 					reply
 				)
-				if( colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
+				if(colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
 			}
 			
 			in_reply_to_id != null && in_reply_to_account_id != null -> {
@@ -722,7 +725,7 @@ internal class ItemViewHolder(
 					in_reply_to_account_id,
 					item
 				)
-				if( colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
+				if(colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
 			}
 		}
 		showStatus(item, colorBg)
@@ -1190,20 +1193,16 @@ internal class ItemViewHolder(
 		// ニコフレのアンケートの表示
 		val enquete = status.enquete
 		if(enquete != null) {
-			if(access_info.isMisskey || NicoEnquete.TYPE_ENQUETE == enquete.type) {
+			if(enquete.pollType == PollType.FriendsNico && enquete.type != NicoEnquete.TYPE_ENQUETE) {
+				// フレニコの投票の結果表示は普通にテキストを表示するだけでよい
+			} else {
+				
+				// アンケートの本文を上書きする
 				val question = enquete.decoded_question
-				val items = enquete.items
-				
 				if(question.isNotBlank()) content = question
-				if(items != null) {
-					val now = System.currentTimeMillis()
-					var n = 0
-					for(item in items) {
-						makeEnqueteChoiceView(enquete, now, n ++, item)
-					}
-				}
 				
-				if(! access_info.isMisskey) makeEnqueteTimerView(enquete)
+				showEnqueteItems(status, enquete)
+				
 			}
 		}
 		
@@ -2455,59 +2454,176 @@ internal class ItemViewHolder(
 			})
 	}
 	
+	private fun showEnqueteItems(status : TootStatus, enquete : NicoEnquete) {
+		val items = enquete.items ?: return
+		
+		val now = System.currentTimeMillis()
+		
+		val canVote = when(enquete.pollType) {
+			PollType.Mastodon -> when {
+				enquete.expired -> false
+				now >= enquete.expired_at -> false
+				enquete.myVoted != null -> false
+				else -> true
+			}
+			
+			PollType.FriendsNico -> {
+				val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
+				enquete.myVoted == null && remain > 0L
+			}
+			
+			PollType.Misskey -> enquete.myVoted == null
+		}
+		
+		items.forEachIndexed { index, choice ->
+			makeEnqueteChoiceView(status, enquete, canVote, index, choice)
+		}
+		
+		when(enquete.pollType) {
+			PollType.Mastodon -> makeEnqueteFooterMastodon(status, enquete, canVote)
+			
+			PollType.FriendsNico -> makeEnqueteFooterFriendsNico(enquete)
+			
+			PollType.Misskey -> {
+			}
+		}
+	}
+	
 	private fun makeEnqueteChoiceView(
+		status : TootStatus,
 		enquete : NicoEnquete,
-		now : Long,
+		canVote : Boolean,
 		i : Int,
 		item : NicoEnquete.Choice
 	) {
-		val canVote = if(access_info.isMisskey) {
-			enquete.myVoted == null
-		} else {
-			val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
-			enquete.myVoted == null && remain > 0L
+		
+		val text = when(enquete.pollType) {
+			PollType.Misskey -> {
+				val sb = SpannableStringBuilder()
+					.append(item.decoded_text)
+				
+				if(enquete.myVoted != null) {
+					sb.append(" / ")
+					sb.append(activity.getString(R.string.vote_count_text, item.votes))
+					if(i == enquete.myVoted) sb.append(' ').append(0x2713.toChar())
+				}
+				sb
+			}
+			
+			PollType.FriendsNico -> {
+				item.decoded_text
+			}
+			
+			PollType.Mastodon -> if(canVote) {
+				item.decoded_text
+			} else {
+				val sb = SpannableStringBuilder()
+					.append(item.decoded_text)
+				if(! canVote) {
+					sb.append(" / ")
+					sb.append(
+						when(val v = item.votes) {
+							null -> activity.getString(R.string.vote_count_unavailable)
+							else -> activity.getString(R.string.vote_count_text, v)
+						}
+					)
+				}
+				sb
+			}
 		}
 		
+		// 投票ボタンの表示
 		val lp = LinearLayout.LayoutParams(
 			LinearLayout.LayoutParams.MATCH_PARENT,
 			LinearLayout.LayoutParams.WRAP_CONTENT
-		)
-		if(i == 0)
-			lp.topMargin = (0.5f + activity.density * 3f).toInt()
-		val b = Button(activity)
-		b.layoutParams = lp
-		b.isAllCaps = false
+		).apply {
+			if(i == 0) topMargin = (0.5f + activity.density * 3f).toInt()
+		}
 		
-		val text = if(access_info.isMisskey) {
-			val sb = SpannableStringBuilder()
-				.append(item.decoded_text)
-			
-			if(enquete.myVoted != null) {
-				sb.append(" / ")
-				sb.append(activity.getString(R.string.vote_count_text, item.votes))
-				if(i == enquete.myVoted) sb.append(' ').append(0x2713.toChar())
-			}
-			sb
-		} else {
-			item.decoded_text
-		}
-		b.text = text
-		val invalidator = NetworkEmojiInvalidator(activity.handler, b)
-		extra_invalidator_list.add(invalidator)
-		invalidator.register(text)
 		if(! canVote) {
-			b.isEnabled = false
-		} else {
-			val accessInfo = this@ItemViewHolder.access_info
-			b.setOnClickListener { view ->
-				val context = view.context ?: return@setOnClickListener
-				onClickEnqueteChoice(enquete, context, accessInfo, i)
+			
+			val b = TextView(activity)
+			b.layoutParams = lp
+
+			b.text = text
+			val invalidator = NetworkEmojiInvalidator(activity.handler, b)
+			extra_invalidator_list.add(invalidator)
+			invalidator.register(text)
+
+			b.padding = (activity.density * 3f + 0.5f).toInt()
+			
+			val ratio = when(enquete.pollType){
+				PollType.Mastodon ->{
+					val votesCount = enquete.votes_count ?:0
+					val max = enquete.maxVotesCount ?:0
+					if( max > 0 && votesCount > 0 ){
+						(item.votes?:0).toFloat() / votesCount.toFloat()
+					}else{
+						null
+					}
+				}
+				else->{
+					val ratios = enquete.ratios
+					if( ratios !=null && i <= ratios.size ){
+						ratios[i]
+					}else{
+						null
+					}
+				}
 			}
+
+			if( ratio != null){
+				b.backgroundDrawable = PollPlotDrawable(
+					color = (content_color and 0xFFFFFF) or 0x20000000,
+					ratio = ratio,
+					isRtl = b.layoutDirection == View.LAYOUT_DIRECTION_RTL,
+					startWidth = (activity.density * 2f + 0.5f).toInt()
+				)
+			}
+
+			llExtra.addView(b)
+
+		} else if(enquete.multiple) {
+			// 複数選択なのでチェックボックス
+			val b = CheckBox(activity)
+			b.layoutParams = lp
+			b.isAllCaps = false
+			b.text = text
+			val invalidator = NetworkEmojiInvalidator(activity.handler, b)
+			extra_invalidator_list.add(invalidator)
+			invalidator.register(text)
+			if(! canVote) {
+				b.isEnabled = false
+			} else {
+				b.isChecked = item.checked
+				b.setOnCheckedChangeListener { _, checked ->
+					item.checked = checked
+				}
+			}
+			llExtra.addView(b)
+			
+		} else {
+			val b = Button(activity)
+			b.layoutParams = lp
+			b.isAllCaps = false
+			b.text = text
+			val invalidator = NetworkEmojiInvalidator(activity.handler, b)
+			extra_invalidator_list.add(invalidator)
+			invalidator.register(text)
+			if(! canVote) {
+				b.isEnabled = false
+			} else {
+				val accessInfo = this@ItemViewHolder.access_info
+				b.setOnClickListener { view ->
+					val context = view.context ?: return@setOnClickListener
+					onClickEnqueteChoice(status, enquete, context, accessInfo, i)
+				}
+			}
+			llExtra.addView(b)
 		}
-		llExtra.addView(b)
 	}
 	
-	private fun makeEnqueteTimerView(enquete : NicoEnquete) {
+	private fun makeEnqueteFooterFriendsNico(enquete : NicoEnquete) {
 		val density = activity.density
 		val height = (0.5f + 6 * density).toInt()
 		val view = EnqueteTimerView(activity)
@@ -2517,43 +2633,133 @@ internal class ItemViewHolder(
 		llExtra.addView(view)
 	}
 	
+	private fun makeEnqueteFooterMastodon(
+		status : TootStatus,
+		enquete : NicoEnquete,
+		canVote : Boolean
+	) {
+		
+		val density = activity.density
+		
+		if(canVote && enquete.multiple) {
+			// 複数選択の投票ボタン
+			val lp = LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT
+			).apply {
+				topMargin = (0.5f + density * 3f).toInt()
+			}
+			
+			val b = Button(activity)
+			b.layoutParams = lp
+			b.isAllCaps = false
+			b.text = activity.getString(R.string.vote_button)
+			val accessInfo = this@ItemViewHolder.access_info
+			b.setOnClickListener { view ->
+				val context = view.context ?: return@setOnClickListener
+				sendMultiple(status, enquete, context, accessInfo)
+			}
+			llExtra.addView(b)
+		}
+		
+		val tv = TextView(activity)
+		val lp = LinearLayout.LayoutParams(
+			LinearLayout.LayoutParams.MATCH_PARENT,
+			LinearLayout.LayoutParams.WRAP_CONTENT
+		)
+		lp.topMargin = (0.5f + 3 * density).toInt()
+		tv.layoutParams = lp
+		
+		val sb = StringBuilder()
+		
+		val votes_count = enquete.votes_count ?: 0
+		when {
+			votes_count == 1 -> sb.append(activity.getString(R.string.vote_1))
+			votes_count > 1 -> sb.append(activity.getString(R.string.vote_2, votes_count))
+		}
+		
+		when(val t = enquete.expired_at) {
+			
+			Long.MAX_VALUE -> {
+			}
+			
+			else -> {
+				if(sb.isNotEmpty()) sb.append(" ")
+				sb.append(
+					activity.getString(
+						R.string.vote_expire_at,
+						TootStatus.formatTime(activity, t, false)
+					)
+				)
+			}
+		}
+		
+		tv.text = sb.toString()
+		
+		llExtra.addView(tv)
+	}
+	
 	private fun onClickEnqueteChoice(
+		status : TootStatus,
 		enquete : NicoEnquete,
 		context : Context,
 		accessInfo : SavedAccount,
 		idx : Int
 	) {
-		val now = System.currentTimeMillis()
 		if(enquete.myVoted != null) {
 			showToast(context, false, R.string.already_voted)
 			return
 		}
-		if(! accessInfo.isMisskey) {
-			val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
-			if(remain <= 0L) {
-				showToast(context, false, R.string.enquete_was_end)
-				return
+		
+		val now = System.currentTimeMillis()
+		
+		when(enquete.pollType) {
+			PollType.Misskey -> {
+				// Misskeyのアンケートには期限がない？
+			}
+			
+			PollType.FriendsNico -> {
+				val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
+				if(remain <= 0L) {
+					showToast(context, false, R.string.enquete_was_end)
+					return
+				}
+			}
+			
+			PollType.Mastodon -> {
+				if(enquete.expired || now >= enquete.expired_at) {
+					showToast(context, false, R.string.enquete_was_end)
+					return
+				}
 			}
 		}
 		
 		TootTaskRunner(context).run(accessInfo, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
-				return if(accessInfo.isMisskey) {
-					client.request(
-						"/api/notes/polls/vote",
-						accessInfo.putMisskeyApiToken(JSONObject())
-							.put("noteId", enquete.status_id.toString())
-							.put("choice", idx)
-							.toPostRequestBuilder()
-					)
-				} else {
-					client.request(
-						"/api/v1/votes/${enquete.status_id}",
-						JSONObject()
-							.put("item_index", idx.toString())
-							.toPostRequestBuilder()
-					)
-				}
+			override fun background(client : TootApiClient) = when(enquete.pollType) {
+				PollType.Misskey -> client.request(
+					"/api/notes/polls/vote",
+					accessInfo.putMisskeyApiToken(JSONObject())
+						.put("noteId", enquete.status_id.toString())
+						.put("choice", idx)
+						.toPostRequestBuilder()
+				)
+				PollType.Mastodon -> client.request(
+					"/api/v1/polls/${enquete.pollId}/votes",
+					JSONObject()
+						.put(
+							"choices",
+							JSONArray().apply {
+								put(idx)
+							}
+						)
+						.toPostRequestBuilder()
+				)
+				PollType.FriendsNico -> client.request(
+					"/api/v1/votes/${enquete.status_id}",
+					JSONObject()
+						.put("item_index", idx.toString())
+						.toPostRequestBuilder()
+				)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -2561,28 +2767,104 @@ internal class ItemViewHolder(
 				
 				val data = result.jsonObject
 				if(data != null) {
-					if(accessInfo.isMisskey) {
-						if(enquete.increaseVote(activity, idx, true)) {
+					when(enquete.pollType) {
+						PollType.Misskey -> if(enquete.increaseVote(activity, idx, true)) {
 							showToast(context, false, R.string.enquete_voted)
 							
 							// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
 							list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
 						}
 						
-					} else {
-						val message = data.parseString("message") ?: "?"
-						val valid = data.optBoolean("valid")
-						if(valid) {
-							showToast(context, false, R.string.enquete_voted)
-						} else {
-							showToast(context, true, R.string.enquete_vote_failed, message)
+						PollType.Mastodon -> {
+							val newPoll = NicoEnquete.parse(
+								TootParser(activity, accessInfo),
+								status,
+								status.media_attachments,
+								data,
+								PollType.Mastodon
+							)
+							if(newPoll != null) {
+								status.enquete = newPoll
+								// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
+								list_adapter.notifyChange(
+									reason = "onClickEnqueteChoice",
+									reset = true
+								)
+							} else if(result.error != null) {
+								showToast(context, true, "response parse error")
+							}
 						}
 						
+						PollType.FriendsNico -> {
+							val message = data.parseString("message") ?: "?"
+							val valid = data.optBoolean("valid")
+							if(valid) {
+								showToast(context, false, R.string.enquete_voted)
+							} else {
+								showToast(context, true, R.string.enquete_vote_failed, message)
+							}
+						}
 					}
 				} else {
 					showToast(context, true, result.error)
 				}
 				
+			}
+		})
+	}
+	
+	private fun sendMultiple(
+		status : TootStatus,
+		enquete : NicoEnquete,
+		context : Context,
+		accessInfo : SavedAccount
+	) {
+		val now = System.currentTimeMillis()
+		if(now >= enquete.expired_at) {
+			showToast(context, false, R.string.enquete_was_end)
+			return
+		}
+		
+		TootTaskRunner(context).run(accessInfo, object : TootTask {
+			
+			var newPoll : NicoEnquete? = null
+			
+			override fun background(client : TootApiClient) : TootApiResult? {
+				return client.request(
+					"/api/v1/polls/${enquete.pollId}/votes",
+					JSONObject()
+						.put("choices", JSONArray().apply {
+							enquete.items?.forEachIndexed { index, choice ->
+								if(choice.checked) put(index)
+							}
+						})
+						.toPostRequestBuilder()
+				)?.also { result ->
+					val data = result.jsonObject
+					if(data != null) {
+						newPoll = NicoEnquete.parse(
+							TootParser(activity, accessInfo),
+							status,
+							status.media_attachments,
+							data,
+							PollType.Mastodon
+						)
+						if(newPoll == null) result.setError("response parse error")
+					}
+				}
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				result ?: return  // cancelled.
+				
+				val newPoll = this.newPoll
+				if(newPoll != null) {
+					status.enquete = newPoll
+					// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
+					list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
+				} else if(result.error != null) {
+					showToast(context, true, result.error)
+				}
 			}
 		})
 	}
@@ -2604,12 +2886,14 @@ internal class ItemViewHolder(
 		val b = Benchmark(log, "Item-Inflate", 40L)
 		val rv = verticalLayout {
 			// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
-			layoutParams = androidx.recyclerview.widget.RecyclerView.LayoutParams(matchParent, wrapContent).apply {
-				marginStart = dip(8)
-				marginEnd = dip(8)
-				topMargin = dip(2f)
-				bottomMargin = dip(1f)
-			}
+			layoutParams =
+				androidx.recyclerview.widget.RecyclerView.LayoutParams(matchParent, wrapContent)
+					.apply {
+						marginStart = dip(8)
+						marginEnd = dip(8)
+						topMargin = dip(2f)
+						bottomMargin = dip(1f)
+					}
 			
 			setPaddingRelative(dip(4), dip(1f), dip(4), dip(2f))
 			

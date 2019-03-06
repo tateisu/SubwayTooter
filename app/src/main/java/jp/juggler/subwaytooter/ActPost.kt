@@ -165,6 +165,11 @@ class ActPost : AppCompatActivity(),
 		internal const val DRAFT_REPLY_URL = "reply_url"
 		internal const val DRAFT_IS_ENQUETE = "is_enquete"
 		internal const val DRAFT_POLL_TYPE = "poll_type"
+		internal const val DRAFT_POLL_MULTIPLE = "poll_multiple"
+		internal const val DRAFT_POLL_HIDE_TOTALS = "poll_hide_totals"
+		internal const val DRAFT_POLL_EXPIRE_DAY = "poll_expire_day"
+		internal const val DRAFT_POLL_EXPIRE_HOUR = "poll_expire_hour"
+		internal const val DRAFT_POLL_EXPIRE_MINUTE = "poll_expire_minute"
 		internal const val DRAFT_ENQUETE_ITEMS = "enquete_items"
 		internal const val DRAFT_QUOTED_RENOTE = "quotedRenote"
 		
@@ -718,11 +723,11 @@ class ActPost : AppCompatActivity(),
 						val src_enquete = base_status.enquete
 						val src_items = src_enquete?.items
 						if(src_items != null) {
-							if(src_enquete.poll_type == NicoEnquete.PollType.FriendsNico && src_enquete.type != NicoEnquete.TYPE_ENQUETE) {
+							if(src_enquete.pollType == PollType.FriendsNico && src_enquete.type != NicoEnquete.TYPE_ENQUETE) {
 								// フレニコAPIのアンケート結果は再編集の対象外
 							} else {
 								spEnquete.setSelection(
-									if(src_enquete.poll_type == NicoEnquete.PollType.FriendsNico) {
+									if(src_enquete.pollType == PollType.FriendsNico) {
 										2
 									} else {
 										1
@@ -1957,7 +1962,7 @@ class ActPost : AppCompatActivity(),
 									opener.open().use { inData ->
 										val tmp = ByteArray(4096)
 										while(true) {
-											val r = inData.read(tmp, 0, tmp.size)
+										val r = inData.read(tmp, 0, tmp.size)
 											if(r <= 0) break
 											sink.write(tmp, 0, r)
 										}
@@ -2236,7 +2241,7 @@ class ActPost : AppCompatActivity(),
 		when(spEnquete.selectedItemPosition) {
 			1 -> {
 				copyEnqueteText()
-				post_helper.poll_type = NicoEnquete.PollType.Mastodon
+				post_helper.poll_type = PollType.Mastodon
 				post_helper.poll_expire_seconds = getExpireSeconds()
 				post_helper.poll_hide_totals = cbHideTotals.isChecked
 				post_helper.poll_multiple_choice = cbMultipleChoice.isChecked
@@ -2244,7 +2249,7 @@ class ActPost : AppCompatActivity(),
 			
 			2 -> {
 				copyEnqueteText()
-				post_helper.poll_type = NicoEnquete.PollType.FriendsNico
+				post_helper.poll_type = PollType.FriendsNico
 				
 			}
 			
@@ -2388,11 +2393,17 @@ class ActPost : AppCompatActivity(),
 
 			json.put(DRAFT_POLL_TYPE, spEnquete.selectedItemPosition.toPollTypeString())
 			
-			val array = JSONArray()
-			for(s in str_choice) {
-				array.put(s)
-			}
-			json.put(DRAFT_ENQUETE_ITEMS, array)
+			json.put(DRAFT_POLL_MULTIPLE, cbMultipleChoice.isChecked)
+			json.put(DRAFT_POLL_HIDE_TOTALS, 	cbHideTotals.isChecked )
+			json.put(DRAFT_POLL_EXPIRE_DAY,etExpireDays.text.toString())
+			json.put(DRAFT_POLL_EXPIRE_HOUR,etExpireHours.text.toString())
+			json.put(DRAFT_POLL_EXPIRE_MINUTE,etExpireMinutes.text.toString())
+			
+			json.put(DRAFT_ENQUETE_ITEMS, JSONArray().apply{
+				for(s in str_choice) {
+					put(s)
+				}
+			})
 			
 			PostDraft.save(System.currentTimeMillis(), json)
 			
@@ -2562,6 +2573,13 @@ class ActPost : AppCompatActivity(),
 					val bv = draft.optBoolean(DRAFT_IS_ENQUETE, false)
 					spEnquete.setSelection( if(bv) 2 else 0)
 				}
+				
+				cbMultipleChoice.isChecked = draft.optBoolean(DRAFT_POLL_MULTIPLE)
+				cbHideTotals.isChecked = draft.optBoolean(DRAFT_POLL_HIDE_TOTALS)
+				etExpireDays.setText( draft.optString(DRAFT_POLL_EXPIRE_DAY,"1"))
+				etExpireHours.setText( draft.optString(DRAFT_POLL_EXPIRE_HOUR,""))
+				etExpireMinutes.setText( draft.optString(DRAFT_POLL_EXPIRE_MINUTE,""))
+				
 				
 				val array = draft.optJSONArray(DRAFT_ENQUETE_ITEMS)
 				if(array != null) {

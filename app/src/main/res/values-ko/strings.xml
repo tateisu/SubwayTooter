@@ -769,7 +769,7 @@
     <string name="follow_request_cancelled">팔로우 요청 취소됨.</string>
     <string name="confirm_cancel_follow_request_who_from">%2$s로부터 %1$s로의 팔로우 요청을 취소할까요\?</string>
     <string name="reaction">반응 (Misskey)</string>
-    <string name="vote">투표 (Misskey)</string>
+    <string name="vote_misskey">투표 (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">내장 미디어 뷰어 시간제한 (단위:초, 앱 재시작(앱 사용이력에서 삭제) 필요)</string>
     <string name="link_color">링크 색 (앱 재시작 필요)</string>
     <string name="missing_closeable_column">닫을 칼럼이 표시 범위에 없음.</string>

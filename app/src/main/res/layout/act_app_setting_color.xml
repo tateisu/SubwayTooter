@@ -415,7 +415,7 @@
 
         <TextView
             style="@style/setting_row_label_indent1"
-            android:text="@string/vote"
+            android:text="@string/vote_misskey"
             />
 
         <LinearLayout style="@style/setting_row_form">

@@ -207,7 +207,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			// ページネーションには日時を使う
 			this._orderId = EntityId(time_created_at.toString())
-
+			
 			// お気に入りカラムなどではパース直後に変更することがある
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
@@ -323,7 +323,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				parser,
 				this,
 				media_attachments,
-				src.optJSONObject("poll")
+				src.optJSONObject("poll"),
+				PollType.Misskey
 			)
 			
 			this.reactionCounts = parseReactionCounts(src.optJSONObject("reactionCounts"))
@@ -385,8 +386,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 							src.optJSONArray("media_attachments"),
 							log
 						)
-					this.visibility = TootVisibility.parseMastodon(src.parseString("visibility")) ?:
-						TootVisibility.Public
+					this.visibility = TootVisibility.parseMastodon(src.parseString("visibility"))
+						?: TootVisibility.Public
 					this.sensitive = src.optBoolean("sensitive")
 					
 				}
@@ -432,7 +433,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			this._orderId = this.id
 			this.in_reply_to_id = EntityId.mayNull(src.parseString("in_reply_to_id"))
-			this.in_reply_to_account_id = EntityId.mayNull(src.parseString("in_reply_to_account_id"))
+			this.in_reply_to_account_id =
+				EntityId.mayNull(src.parseString("in_reply_to_account_id"))
 			this.mentions = parseListOrNull(::TootMention, src.optJSONArray("mentions"), log)
 			this.tags = parseListOrNull(::TootTag, src.optJSONArray("tags"))
 			this.application =
@@ -467,7 +469,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				this.highlight_sound = options.highlight_sound
 			}
 			
-			val sv = (src.parseString("spoiler_text") ?: "").cleanCW()
+			var sv = (src.parseString("spoiler_text") ?: "").cleanCW()
 			this.spoiler_text = when {
 				sv.isEmpty() -> "" // CWなし
 				sv.isBlank() -> parser.context.getString(R.string.blank_cw)
@@ -488,12 +490,30 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				this.highlight_sound = options.highlight_sound
 			}
 			
-			this.enquete = NicoEnquete.parse(
-				parser,
-				this,
-				media_attachments,
-				src.parseString("enquete")
-			)
+			this.enquete = try {
+				sv = src.parseString("enquete") ?: ""
+				if(sv.isNotEmpty()) {
+					NicoEnquete.parse(
+						parser,
+						this,
+						media_attachments,
+						sv.toJsonObject(),
+						PollType.FriendsNico
+					)
+				} else {
+					val ov = src.optJSONObject("poll")
+					NicoEnquete.parse(
+						parser,
+						this,
+						media_attachments,
+						ov,
+						PollType.Mastodon
+					)
+				}
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				null
+			}
 			
 			// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
 			this.reblog = parser.status(src.optJSONObject("reblog"))
@@ -664,7 +684,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	fun markDeleted(context : Context, deletedAt : Long?) : Boolean? {
 		
-		if( Pref.bpDontRemoveDeletedToot( App1.getAppState(context).pref)) return false
+		if(Pref.bpDontRemoveDeletedToot(App1.getAppState(context).pref)) return false
 		
 		var sv = if(deletedAt != null) {
 			context.getString(R.string.status_deleted_at, formatTime(context, deletedAt, false))
@@ -717,7 +737,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			"""\Ahttps://([^/]+)/notes/([0-9a-f]{24})\b""",
 			Pattern.CASE_INSENSITIVE
 		)
-
+		
 		// PleromaのStatusのUri
 		internal val reStatusPageObjects =
 			Pattern.compile("""\Ahttps://([^/]+)/objects/([^?#/\s]+)(?:\z|[?#])""")
@@ -919,10 +939,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return if(host != null && host.isNotEmpty() && host != "?") host else null
 		}
 		
-		
-		
 		fun validStatusId(src : EntityId?) : EntityId? =
-			when{
+			when {
 				src == null -> null
 				src == EntityId.DEFAULT -> null
 				src.toString().startsWith("-") -> null
@@ -951,7 +969,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// https://misskey.xyz/notes/5b802367744b650030a13640
 					m = reStatusPageMisskey.matcher(uri)
-					if( m.find()) return EntityId(m.group(2))
+					if(m.find()) return EntityId(m.group(2))
 					
 					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
 					// tootsearch中の投稿からIDを読めるようにしたい
@@ -982,8 +1000,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// https://misskey.xyz/notes/5b802367744b650030a13640
 					m = reStatusPageMisskey.matcher(url)
-					if( m.find()) return EntityId(m.group(2))
-
+					if(m.find()) return EntityId(m.group(2))
+					
 					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
 					// tootsearch中の投稿からIDを読めるようにしたい
 					// しかしこのURL中のuuidはステータスIDではないので、無意味

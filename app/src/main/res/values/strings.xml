@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Subway Tooter</string>
-
     <string name="action_settings">Settings</string>
     <string name="account_add">Add an account</string>
     <string name="instance">Server</string>
@@ -12,11 +11,9 @@
     <string name="instance_not_specified">Server not specified</string>
     <string name="mail_not_specified">E-mail not specified</string>
     <string name="password_not_specified">Password not specified</string>
-
     <string name="network_error">Network error.</string>
     <string name="error_response">Error response.</string>
     <string name="api_error">API error. %1$s</string>
-
     <string name="register_app_to_server">Registering this app to %1$s…</string>
     <string name="request_access_token">Requesting access token…</string>
     <string name="request_api">Acquiring: %1$s %2$s</string>
@@ -67,12 +64,10 @@
     <string name="visibility_private">Followers-only</string>
     <string name="visibility_direct">Direct</string>
     <string name="visibility_web_setting">Trace web app setting</string>
-
     <string name="visibility_local_public">Public (local)</string>
     <string name="visibility_local_home">Home (local)</string>
     <string name="visibility_local_followers">Followers-only (local)</string>
     <string name="visibility_local_unlisted">Unlisted (local)</string>
-
     <string name="choose_visibility">Choose visibility</string>
     <string name="confirm_delete_attachment">Remove this attachment?</string>
     <string name="post_error_contents_empty">Put something in your toot.</string>
@@ -90,7 +85,6 @@
     <string name="display_name_mentioned_by">%1$s mentioned</string>
     <string name="display_name_voted_by">%1$s voted</string>
     <string name="display_name_follow_request_by">%1$s sent follow request</string>
-
     <string name="display_name_quoted_by">%1$s quoted</string>
     <string name="display_name_reaction_by">%1$s reactioned</string>
     <string name="display_name_followed_by">%1$s is following you</string>
@@ -157,7 +151,6 @@
     <string name="favourite_from_another_account">Favourite from another account</string>
     <string name="boost_from_another_account">Boost from another account</string>
     <string name="reaction_from_another_account">Reaction from another account</string>
-
     <string name="app_about">About this app</string>
     <string name="oss_license">OSS license</string>
     <string name="please_rate">Please take the time to review the app.</string>
@@ -300,15 +293,12 @@
     <string name="toot">Toot</string>
     <string name="clear_text">Clear text</string>
     <string name="clear_text_and_media">Clear text and media</string>
-
     <string name="menu">Menu</string>
     <string name="open_in_pseudo_account">Open in emulated account on %1$s</string>
-
     <string name="color_and_background">Color and Background…</string>
     <string name="column_background">Column background</string>
     <string name="pick_image">Pick an image</string>
     <string name="pick_images">Pick image(s)…</string>
-
     <string name="image_alpha">Image alpha</string>
     <string name="image">Image</string>
     <string name="column_header">Column header</string>
@@ -342,7 +332,7 @@
     <string name="minimum_column_width">Minimum column width (default=300dp, app restart required)</string>
     <string name="media_thumbnail_height">Media Thumbnail height (default=64dp, app restart required)</string>
     <string name="account_picker_reply">Reply from?</string>
-    <string name="account_picker_quoted_renote">Account to \"quoted renote\" ?</string>
+    <string name="account_picker_quoted_renote">Account to \"quoted renote\"\?</string>
     <string name="reply_from_another_account">Reply from another account</string>
     <string name="launcher_icon_by">Thanks to フタバ for the application icon.</string>
     <string name="ssl_bug_7_0">Android 7.0 can only use the elliptic curve \"prime256v1\".\nUnfortunately your server seems to not support it.\nThis bug has been fixed in Android 7.1.1.\nYou can either upgrade your OS or ask the server administrator to add support to the elliptic curve \"prime256v1\".\nSee also https://code.google.com/p/android/issues/detail?id=224438</string>
@@ -391,7 +381,6 @@
     <string name="toot_search">Toot search</string>
     <string name="toot_search_msp">Toot search (MSP)</string>
     <string name="toot_search_ts">Toot search (ts)</string>
-
     <string name="mastodon_search_portal">MSP (JP)</string>
     <string name="search_desc_mastodon_api">Account/hashtag search using Mastodon API.</string>
     <string name="toot_search_of">Toot search \"%1$s\"</string>
@@ -484,13 +473,12 @@
     <string name="auto_cw">Auto hide long text (by setting \"line counts\" greater than 0. app restart required)</string>
     <string name="auto_cw_prefix">(Auto CW)</string>
     <string name="enquete_item_is_empty">Enquete choice %1$d is empty.</string>
-    <string name="enquete_item_too_long">Enquete choice %1$d is too long. please decrease %2$d character(s).</string>
-    <string name="enquete_item_duplicate">Enquete choice %1$d is a duplicate of other choice.</string>
+    <string name="enquete_item_too_long">Enquete choice %1$d is too long. Please decrease by %2$d character(s).</string>
+    <string name="enquete_item_duplicate">Enquete choice %1$d is a duplicate of another choice.</string>
     <string name="profile_pin">Pin on profile</string>
     <string name="profile_unpin">Unpin from profile</string>
     <string name="profile_pin_progress">Changing pinned status…</string>
     <string name="length_warning">\"%1$s\" is too long (%2$d/%3$d characters).\nIt is not acceptable in the standard server, but it may be acceptable in some servers.\nAre you sure?</string>
-
     <string name="short_acct_local_user">Short acct for local user (app restart required)</string>
     <string name="loading_notification_title">Loading notification…</string>
     <string name="error_notification_title">Server timeout</string>
@@ -546,7 +534,6 @@
     <string name="hide_boost_in_home">Hide boosts by this user from your home TL</string>
     <string name="show_boost_in_home">Show boosts by this user from your home TL</string>
     <string name="operation_succeeded">Done.</string>
-
     <string name="list_member_add_remove">Add/remove from lists…</string>
     <string name="lists">Lists</string>
     <string name="list_show_member">show list users</string>
@@ -611,7 +598,6 @@
     <string name="domain_block_from_local">Can\'t use domain block for your server.</string>
     <string name="always_show_application">Show (via) application name if possible</string>
     <string name="force_gap_when_refresh">Force adding gap when refreshing top</string>
-
     <string name="avatar_icon_size">Avatar icon size (Unit:dp. default:48. app restart required)</string>
     <string name="avatar_icon_round_ratio">Avatar icon round ratio (Unit:%. default:33. app restart required)</string>
     <string name="avatar_icon_dont_round">Don\'t round corner of avatar icon (app restart required)</string>
@@ -686,15 +672,13 @@
     <string name="cant_sync_toot">Can\'t synchronize toot.</string>
     <string name="cant_change_account_when_redraft">Can\'t change account while using redraft.</string>
     <string name="delete_base_status_before_toot">Delete base status before posting.  All of favourites/boosts will be lost. Replies will be disconnected. Media attachments will not kept on Mastodon pre-2.4.1 . Are you sure?</string>
-    <string name="notification_tl_font_size">Notification TL font size (Unit:sp. leave empty to default. app restart required)</string>
+    <string name="notification_tl_font_size">Notification TL font size (Unit: sp. leave empty to default. app restart required)</string>
     <string name="notification_tl_icon_size">Notification TL icon size (Unit:dp. default:24. app restart required)</string>
     <string name="post_button_tapped_repeatly">Post button was tapped repeatedly</string>
     <string name="regex_filter_matches_empty_string">Regex filter matches to empty string.</string>
     <string name="follow_suggestion">Follow suggestion</string>
     <string name="close_all_columns">Close all columns</string>
     <string name="confirm_close_column_all">Really close all columns (exclude protected)?</string>
-
-
     <string name="keyword_filters">Keyword filters</string>
     <string name="keyword_filter">Keyword filter</string>
     <string name="keyword_filter_new">New filter</string>
@@ -702,23 +686,18 @@
     <string name="filter_delete_confirm">Delete the filter \'%1$s\'?</string>
     <string name="filter_of">Filter \'%1$s\'</string>
     <string name="filtered">filtered</string>
-
     <string name="filter_phrase">Phrase</string>
     <string name="filter_context">Filter contexts</string>
-
     <string name="filter_options">Options</string>
     <string name="filter_irreversible">Irreversible</string>
     <string name="filter_irreversible_long">Irreversible. Drop instead of hide. Filtered toots will disappear irreversibly, even if the filter is removed later.</string>
     <string name="filter_word_match">Whole word</string>
     <string name="filter_word_match_long">Whole word. Recommended to enable only phrases consisting of alphanumeric characters.</string>
-
     <string name="filter_expires_at">Expire</string>
-
     <string name="filter_home">home</string>
     <string name="filter_notification">notification</string>
     <string name="filter_public">public</string>
     <string name="filter_thread">conversation</string>
-
     <string name="dont_change">Don\'t change</string>
     <string name="filter_expire_unlimited">Unlimited</string>
     <string name="filter_expire_30min">30 minutes after saving</string>
@@ -740,7 +719,7 @@
     <string name="missing_available_account">There is no account available for this purpose.</string>
     <string name="misskey_account_not_supported">Misskey account is not supported.</string>
     <string name="misskey_cant_show_all_descendants">In Misskey, only direct replies to target note are enumerated. Not all descendants can be displayed.</string>
-    <string name="cant_get_misskey_app_secret">This Misskey server does not provide app secret in the response of /api/app/create API. please consider update misskey service version to server admin.</string>
+    <string name="cant_get_misskey_app_secret">This Misskey server does not provide app secret in the response of /api/app/create API. Please consider updating the Misskey service version to server admin.</string>
     <string name="visibility_style"><![CDATA[Visibility name & icon]]></string>
     <string name="visibility_style_by_account">Fit to column account</string>
     <string name="mastodon">Mastodon</string>
@@ -770,7 +749,6 @@
     <string name="direct_with_user_visibility">\'Direct to users\' visibility</string>
     <string name="direct_only_me_visibility">\'Direct only me\' visibility</string>
     <string name="already_voted">Already voted.</string>
-
     <string name="endorse_set">Endorse in your profile</string>
     <string name="endorse_unset">Remove endorsement in your profile</string>
     <string name="endorse_succeeded">Endorsed.</string>
@@ -785,15 +763,12 @@
     <string name="dont_use_custom_tabs">Don\'t use (Chrome/Firefox) \"Custom Tabs\" when opening links</string>
     <string name="privacy_policy">Privacy policy</string>
     <string name="agree">I agree</string>
-
     <string name="ltl_around_toot">Local TL around this toot</string>
     <string name="ltl_around">Local timeline around…</string>
     <string name="ltl_around_of">Local timeline around %1$s</string>
-
     <string name="ftl_around_toot">Federated TL around this toot</string>
     <string name="ftl_around">Federated timeline around…</string>
     <string name="ftl_around_of">Federated timeline around %1$s</string>
-
     <string name="account_tl_around_toot">Account TL around this toot</string>
     <string name="account_tl_around">Account timeline around…</string>
     <string name="account_tl_around_of">Account timeline around %1$s</string>
@@ -836,13 +811,11 @@
     <string name="birthday">Birthday</string>
     <string name="existing_account">Log in</string>
     <string name="existing_account_desc">Log in as existing account.</string>
-
     <string name="create_account">Create account</string>
     <string name="create_account_desc">Create new account on specified server.</string>
-
-    <string name="user_name_hint">ex) MonaLisa</string>
+    <string name="user_name_hint">ex.) MonaLisa</string>
     <string name="user_name">User name</string>
-    <string name="email_hint">ex) monalisa@gmail.com</string>
+    <string name="email_hint">ex.) monalisa@gmail.com</string>
     <string name="password">Password</string>
     <string name="password_hint">Enter the password…</string>
     <string name="terms">terms</string>
@@ -851,7 +824,7 @@
     <string name="username_empty">Please specify the user name.</string>
     <string name="email_empty">Please specify the e-mail address.</string>
     <string name="password_empty">Please specify the password.</string>
-    <string name="username_not_need_atmark">The user name must not contains \"@\" or \"/\".</string>
+    <string name="username_not_need_atmark">The username can not contain \"@\" or \"/\".</string>
     <string name="pseudo_account_cant_get_follow_list">Can\'t read follow list from pseudo account.</string>
     <string name="reaction_remove_confirm">Remove your reaction \"%1$s\"?</string>
     <string name="scheduled_status">Scheduled post</string>
@@ -862,11 +835,10 @@
     <string name="scheduled_status_list">Scheduled status list</string>
     <string name="cant_change_account_when_editing_scheduled_status">Can\'t change account when editing scheduled status.</string>
     <string name="delete_scheduled_status_before_update">Delete scheduled status before posting. Are you sure?</string>
-    <string name="reply_icon_size">Reply icon size(Unit:dp. default:24. app restart required)</string>
-    <string name="header_icon_size">Header icon size(Unit:dp. default:24. app restart required)</string>
-    <string name="header_text_size">Header text size(Unit:sp. default:14. app restart required)</string>
-    <string name="strip_icon_size">Column strip icon size(Unit:dp. default:30. app restart required)</string>
-
+    <string name="reply_icon_size">Reply icon size (Unit: dp. Default:24. App restart required)</string>
+    <string name="header_icon_size">Header icon size (Unit: dp. Default:24. App restart required)</string>
+    <string name="header_text_size">Header text size (Unit: sp. Default:14. App restart required)</string>
+    <string name="strip_icon_size">Column strip icon size (Unit: dp. Default:30. App restart required)</string>
     <string name="all">All</string>
     <string name="show_links_in_context_menu">Show links in context menu</string>
     <string name="scheduled_status_requires_mastodon_2_7_0">Scheduled status requires Mastodon 2.7.0 or later.</string>
@@ -907,5 +879,4 @@
     <string name="vote_expire_at">time limit: %1$s</string>
     <string name="vote_count_unavailable">\?\?\? votes</string>
     <string name="vote_button">Vote</string>
-
 </resources>

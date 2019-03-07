@@ -399,86 +399,102 @@
                 </FrameLayout>
 
                 <CheckBox
+                    android:id="@+id/cbMultipleChoice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:text="@string/allow_multiple_choice"
-                    android:id="@+id/cbMultipleChoice"
                     />
 
                 <CheckBox
+                    android:id="@+id/cbHideTotals"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:text="@string/hide_totals"
-                    android:id="@+id/cbHideTotals"
                     />
 
                 <LinearLayout
+                    android:id="@+id/llExpire"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:layout_marginTop="3dp"
-                    android:id="@+id/llExpire"
+                    android:orientation="horizontal"
                     >
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/expiration"
                         android:layout_marginEnd="4dp"
+                        android:text="@string/expiration"
                         />
+
                     <EditText
+                        android:id="@+id/etExpireDays"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:gravity="center"
                         android:inputType="numberDecimal"
-                        android:id="@+id/etExpireDays"
+                        android:minWidth="48dp"
                         android:text="1"
-                        tools:ignore="HardcodedText"
+                        tools:ignore="Autofill,HardcodedText"
+
                         />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/poll_expire_days"
                         />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/plus"
                         android:layout_marginStart="4dp"
                         android:layout_marginEnd="4dp"
+                        android:text="@string/plus"
                         />
+
                     <EditText
+                        android:id="@+id/etExpireHours"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:gravity="center"
                         android:inputType="numberDecimal"
-                        android:id="@+id/etExpireHours"
+                        android:minWidth="48dp"
+                        tools:ignore="Autofill,HardcodedText"
                         />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/poll_expire_hours"
                         />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/plus"
                         android:layout_marginStart="4dp"
                         android:layout_marginEnd="4dp"
+                        android:text="@string/plus"
                         />
+
                     <EditText
+                        android:id="@+id/etExpireMinutes"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:gravity="center"
                         android:inputType="numberDecimal"
-                        android:id="@+id/etExpireMinutes"
+                        android:minWidth="48dp"
+                        tools:ignore="Autofill,HardcodedText"
                         />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/poll_expire_minutes"
                         />
                 </LinearLayout>
-
-
 
             </LinearLayout>
 
@@ -501,8 +517,8 @@
             android:layout_height="48dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/media_attachment"
-            android:tint="?attr/colorVectorDrawable"
             android:src="@drawable/ic_attachment"
+            android:tint="?attr/colorVectorDrawable"
             />
 
         <ImageButton
@@ -512,10 +528,10 @@
             android:layout_marginStart="4dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/visibility"
-            android:minHeight="48dp"
             android:minWidth="48dp"
-            tools:src="@drawable/ic_public"
+            android:minHeight="48dp"
             android:tint="?attr/colorVectorDrawable"
+            tools:src="@drawable/ic_public"
             />
 
         <ImageButton
@@ -538,7 +554,6 @@
             android:contentDescription="@string/more"
             android:src="@drawable/ic_more"
             android:tint="?attr/colorVectorDrawable"
-
 
             />
 

@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.api
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.net.Uri
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.ClientInfo

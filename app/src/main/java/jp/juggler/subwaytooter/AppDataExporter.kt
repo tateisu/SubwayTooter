@@ -39,7 +39,7 @@ object AppDataExporter {
 	private const val KEY_MUTED_APP = "muted_app"
 	private const val KEY_MUTED_WORD = "muted_word"
 	private const val KEY_FAV_MUTE = "fav_mute"
-	private const val KEY_CLIENT_INFO = "client_info2"
+	// v3.4.5で廃止 private const val KEY_CLIENT_INFO = "client_info2"
 	private const val KEY_HIGHLIGHT_WORD = "highlight_word"
 	
 	@Throws(IOException::class, JSONException::class)

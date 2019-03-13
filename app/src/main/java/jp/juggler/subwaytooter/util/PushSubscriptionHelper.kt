@@ -39,7 +39,7 @@ class PushSubscriptionHelper(
 	
 	val flags : Int
 	
-	var subscribed : Boolean = false
+	private var subscribed : Boolean = false
 	
 	init {
 		var n = 0

@@ -388,8 +388,10 @@ object AppDataExporter {
 		writeFromTable(writer, KEY_MUTED_APP, MutedApp.table)
 		writeFromTable(writer, KEY_MUTED_WORD, MutedWord.table)
 		writeFromTable(writer, KEY_FAV_MUTE, FavMute.table)
-		writeFromTable(writer, KEY_CLIENT_INFO, ClientInfo.table)
 		writeFromTable(writer, KEY_HIGHLIGHT_WORD, HighlightWord.table)
+		
+		// 端末間でクライアントIDを再利用することはできなくなった
+		//writeFromTable(writer, KEY_CLIENT_INFO, ClientInfo.table)
 		
 		//////////////////////////////////////
 		run {
@@ -428,8 +430,12 @@ object AppDataExporter {
 				KEY_MUTED_WORD -> importTable(reader, MutedWord.table, null)
 				KEY_FAV_MUTE -> importTable(reader, FavMute.table, null)
 				KEY_HIGHLIGHT_WORD -> importTable(reader, HighlightWord.table, null)
-				KEY_CLIENT_INFO -> importTable(reader, ClientInfo.table, null)
 				KEY_COLUMN -> result = readColumn(app_state, reader, account_id_map)
+
+				// 端末間でクライアントIDを再利用することはできなくなった
+				// KEY_CLIENT_INFO -> importTable(reader, ClientInfo.table, null)
+
+				else-> reader.skipValue()
 			}
 		}
 		

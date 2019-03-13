@@ -1303,6 +1303,9 @@ class PollingWorker private constructor(contextArg : Context) {
 							name
 						)
 					
+					TootNotification.TYPE_POLL ->
+						"- " + context.getString(R.string.end_of_polling_from, name)
+					
 					else -> "- " + "?"
 				}
 			}

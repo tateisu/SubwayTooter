@@ -1224,10 +1224,9 @@ class TestTootApiClient {
 			callback = callback
 		)
 		client.account = accessInfo
-		val result = client.webSocket("/api/v1/streaming/?stream=public:local",
+		val(_,ws) = client.webSocket("/api/v1/streaming/?stream=public:local",
 			object : WebSocketListener() {
 			})
-		val ws = result?.data as? WebSocket
 		assertNotNull(ws)
 		ws?.cancel()
 	}

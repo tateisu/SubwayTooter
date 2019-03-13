@@ -1101,14 +1101,14 @@ class Column(
 					if(n ++ > 0) sb.append(", ")
 					sb.append(context.getString(R.string.notification_type_reaction))
 				}
-				if(isMisskey && ! dont_show_vote) {
+				if(! dont_show_vote) {
 					if(n ++ > 0) sb.append(", ")
 					sb.append(context.getString(R.string.notification_type_vote))
 				}
 				val n_max = if(isMisskey) {
 					6
 				} else {
-					4
+					5
 				}
 				if(n == 0 || n == n_max) return "" // 全部か皆無なら部分表記は要らない
 			}
@@ -1638,79 +1638,44 @@ class Column(
 	
 	private fun isFiltered(item : TootNotification) : Boolean {
 		
-		when(quick_filter) {
-			QUICK_FILTER_ALL -> {
-				when(item.type) {
-					TootNotification.TYPE_FAVOURITE -> if(dont_show_favourite) {
-						log.d("isFiltered: favourite notification filtered.")
-						return true
-					}
+		if(when(quick_filter) {
+				QUICK_FILTER_ALL -> when(item.type) {
+					TootNotification.TYPE_FAVOURITE -> dont_show_favourite
+					
 					TootNotification.TYPE_REBLOG,
 					TootNotification.TYPE_RENOTE,
-					TootNotification.TYPE_QUOTE -> if(dont_show_boost) {
-						log.d("isFiltered: reblog notification filtered.")
-						return true
-					}
+					TootNotification.TYPE_QUOTE -> dont_show_boost
 					
 					TootNotification.TYPE_FOLLOW_REQUEST,
-					TootNotification.TYPE_FOLLOW -> if(dont_show_follow) {
-						log.d("isFiltered: follow notification filtered.")
-						return true
-					}
+					TootNotification.TYPE_FOLLOW -> dont_show_follow
 					
 					TootNotification.TYPE_MENTION,
-					TootNotification.TYPE_REPLY -> if(dont_show_reply) {
-						log.d("isFiltered: mention notification filtered.")
-						return true
-					}
-					TootNotification.TYPE_REACTION -> if(dont_show_reaction) {
-						log.d("isFiltered: reaction notification filtered.")
-						return true
-					}
-					TootNotification.TYPE_VOTE -> if(dont_show_vote) {
-						log.d("isFiltered: vote notification filtered.")
-						return true
-					}
+					TootNotification.TYPE_REPLY -> dont_show_reply
+					
+					TootNotification.TYPE_REACTION -> dont_show_reaction
+					
+					TootNotification.TYPE_VOTE,
+					TootNotification.TYPE_POLL -> dont_show_vote
+					else -> false
 				}
-			}
-			
-			else -> {
-				when(item.type) {
-					TootNotification.TYPE_FAVOURITE -> if(quick_filter != QUICK_FILTER_FAVOURITE) {
-						log.d("isFiltered: ${item.type} notification filtered.")
-						return true
-					}
+				
+				else -> when(item.type) {
+					TootNotification.TYPE_FAVOURITE -> quick_filter != QUICK_FILTER_FAVOURITE
 					TootNotification.TYPE_REBLOG,
 					TootNotification.TYPE_RENOTE,
-					TootNotification.TYPE_QUOTE -> if(quick_filter != QUICK_FILTER_BOOST) {
-						log.d("isFiltered: ${item.type} notification filtered.")
-						return true
-					}
+					TootNotification.TYPE_QUOTE -> quick_filter != QUICK_FILTER_BOOST
 					TootNotification.TYPE_FOLLOW_REQUEST,
-					TootNotification.TYPE_FOLLOW -> if(quick_filter != QUICK_FILTER_FOLLOW) {
-						log.d("isFiltered: ${item.type} notification filtered.")
-						return true
-					}
+					TootNotification.TYPE_FOLLOW -> quick_filter != QUICK_FILTER_FOLLOW
 					TootNotification.TYPE_MENTION,
-					TootNotification.TYPE_REPLY -> if(quick_filter != QUICK_FILTER_MENTION) {
-						log.d("isFiltered: ${item.type} notification filtered.")
-						return true
-					}
-					TootNotification.TYPE_REACTION -> if(quick_filter != QUICK_FILTER_REACTION) {
-						log.d("isFiltered: ${item.type} notification filtered.")
-						return true
-					}
-					TootNotification.TYPE_VOTE -> if(quick_filter != QUICK_FILTER_VOTE) {
-						log.d("isFiltered: ${item.type} notification filtered.")
-						return true
-					}
-					
-					else -> {
-						log.d("isFiltered: ${item.type} notification filtered.")
-						return true
-					}
+					TootNotification.TYPE_REPLY -> quick_filter != QUICK_FILTER_MENTION
+					TootNotification.TYPE_REACTION -> quick_filter != QUICK_FILTER_REACTION
+					TootNotification.TYPE_VOTE,
+					TootNotification.TYPE_POLL -> quick_filter != QUICK_FILTER_VOTE
+					else -> true
 				}
-			}
+			}) {
+			log.d("isFiltered: ${item.type} notification filtered.")
+			return true
 		}
 		
 		val status = item.status
@@ -6985,6 +6950,7 @@ class Column(
 						if(dont_show_boost) sb.append("&exclude_types[]=reblog")
 						if(dont_show_follow) sb.append("&exclude_types[]=follow")
 						if(dont_show_reply) sb.append("&exclude_types[]=mention")
+						if(dont_show_vote) sb.append("&exclude_types[]=poll")
 					}
 					
 					else -> {

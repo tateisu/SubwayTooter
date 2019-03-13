@@ -669,7 +669,10 @@ class ActAccountSetting
 		
 		TootTaskRunner(this@ActAccountSetting).run(account, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return client.authentication1(Pref.spClientName(this@ActAccountSetting))
+				return client.authentication1(
+					Pref.spClientName(this@ActAccountSetting),
+					forceUpdateClient = false
+				)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

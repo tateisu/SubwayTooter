@@ -719,7 +719,6 @@
     <string name="follow_request_cancelled">Følgingsforespørsel forkastet.</string>
     <string name="confirm_cancel_follow_request_who_from">Følgingsforespørsel fra %1$s til %2$s vil forkastes. Er du sikker\?</string>
     <string name="reaction">Reaksjon (Misskey)</string>
-    <string name="vote_misskey">Stem (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">Tidsavbrudd for innebygd mediaviser (enhet:sekunder, programomstart (sletting fra programhistorikk) kreves)</string>
     <string name="link_color">Lenkefarge (programomstart kreves)</string>
     <string name="missing_closeable_column">mangler lukkbar kolonne i synlig område.</string>

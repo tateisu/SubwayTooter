@@ -509,9 +509,9 @@ class ActMain : AppCompatActivity()
 		MyClickableSpan.showLinkUnderline = Pref.bpShowLinkUnderline(pref)
 		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
 			?: getAttributeColor(this, R.attr.colorLink)
-
+		
 		// 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
-		for( column in app_state.column_list){
+		for(column in app_state.column_list) {
 			column.fireColumnColor()
 		}
 		
@@ -1439,9 +1439,13 @@ class ActMain : AppCompatActivity()
 			
 			env.tablet_pager.adapter = env.tablet_pager_adapter
 			env.tablet_pager.layoutManager = env.tablet_layout_manager
-			env.tablet_pager.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+			env.tablet_pager.addOnScrollListener(object :
+				androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
 				
-				override fun onScrollStateChanged(recyclerView : androidx.recyclerview.widget.RecyclerView, newState : Int) {
+				override fun onScrollStateChanged(
+					recyclerView : androidx.recyclerview.widget.RecyclerView,
+					newState : Int
+				) {
 					super.onScrollStateChanged(recyclerView, newState)
 					
 					val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
@@ -1456,7 +1460,11 @@ class ActMain : AppCompatActivity()
 					}
 				}
 				
-				override fun onScrolled(recyclerView : androidx.recyclerview.widget.RecyclerView, dx : Int, dy : Int) {
+				override fun onScrolled(
+					recyclerView : androidx.recyclerview.widget.RecyclerView,
+					dx : Int,
+					dy : Int
+				) {
 					super.onScrolled(recyclerView, dx, dy)
 					updateColumnStripSelection(- 1, - 1f)
 				}
@@ -1839,7 +1847,7 @@ class ActMain : AppCompatActivity()
 		}
 		
 		// OAuth2 認証コールバック
-		// subwaytooter://oauth/?...
+		// subwaytooter://oauth(\d*)/?...
 		TootTaskRunner(this@ActMain).run(object : TootTask {
 			
 			var ta : TootAccount? = null
@@ -1892,7 +1900,7 @@ class ActMain : AppCompatActivity()
 					// Mastodon 認証コールバック
 					
 					// エラー時
-					// subwaytooter://oauth
+					// subwaytooter://oauth(\d*)/
 					// ?error=access_denied
 					// &error_description=%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9%E3%81%AE%E6%89%80%E6%9C%89%E8%80%85%E3%81%BE%E3%81%9F%E3%81%AF%E8%AA%8D%E8%A8%BC%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%81%8C%E8%A6%81%E6%B1%82%E3%82%92%E6%8B%92%E5%90%A6%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82
 					// &state=db%3A3
@@ -1901,7 +1909,7 @@ class ActMain : AppCompatActivity()
 						return TootApiResult(error)
 					}
 					
-					// subwaytooter://oauth
+					// subwaytooter://oauth(\d*)/
 					//    ?code=113cc036e078ac500d3d0d3ad345cd8181456ab087abc67270d40f40a4e9e3c2
 					//    &state=host%3Amastodon.juggler.jp
 					
@@ -1915,25 +1923,33 @@ class ActMain : AppCompatActivity()
 						return TootApiResult("missing state in callback url.")
 					}
 					
-					if(sv.startsWith("db:")) {
-						try {
-							val dataId = sv.substring(3).toLong(10)
-							val sa = SavedAccount.loadAccount(this@ActMain, dataId)
-								?: return TootApiResult("missing account db_id=$dataId")
-							this.sa = sa
-							client.account = sa
-						} catch(ex : Throwable) {
-							log.trace(ex)
-							return TootApiResult(ex.withCaption("invalid state"))
+					for( param in sv.split(",")){
+						when {
+
+							param.startsWith("db:") -> try {
+								val dataId = param.substring(3).toLong(10)
+								val sa = SavedAccount.loadAccount(this@ActMain, dataId)
+									?: return TootApiResult("missing account db_id=$dataId")
+								this.sa = sa
+								client.account = sa
+							} catch(ex : Throwable) {
+								log.trace(ex)
+								return TootApiResult(ex.withCaption("invalid state"))
+							}
+
+							param.startsWith("host:") -> {
+								val host = param.substring(5)
+								client.instance = host
+							}
+
+							else -> {
+								// ignore other parameter
+							}
 						}
-						
-					} else if(sv.startsWith("host:")) {
-						val host = sv.substring(5)
-						client.instance = host
 					}
 					
 					val instance = client.instance
-						?: return TootApiResult("missing instance  in callback url.")
+						?: return TootApiResult("missing instance in callback url.")
 					
 					this.host = instance
 					val client_name = Pref.spClientName(this@ActMain)

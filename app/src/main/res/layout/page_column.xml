@@ -565,7 +565,7 @@
                 android:layout_height="match_parent"
                 android:layout_margin="0dp"
                 android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/vote_misskey"
+                android:contentDescription="@string/vote_polls"
                 />
         </LinearLayout>
     </HorizontalScrollView>

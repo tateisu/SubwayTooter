@@ -749,7 +749,7 @@
     <string name="visibility_local_followers">フォロワー (ローカル)</string>
     <string name="visibility_local_unlisted">未収載 (ローカル)</string>
 
-    <string name="vote_misskey">投票 (Misskey)</string>
+    <string name="vote_polls">投票やその結果</string>
     <string name="vote_count_text">%1$d票</string>
     <string name="wait_previous_operation">直前の操作が完了するまでお待ちください</string>
     <string name="with_attachment">添付データあり</string>
@@ -880,9 +880,9 @@
     <string name="poll_expire_hours">時間</string>
     <string name="poll_expire_minutes">分</string>
     <string name="vote_1">1 vote</string>
-    <string name="vote_2">%1$d votes</string>
+    <string name="vote_2">%1$d 人。</string>
     <string name="vote_expire_at">投票期限 %1$s</string>
     <string name="vote_count_unavailable">\?\?\?票</string>
     <string name="vote_button">投票</string>
-
+    <string name="end_of_polling_from">%1$sの調査の終了</string>
 </resources>

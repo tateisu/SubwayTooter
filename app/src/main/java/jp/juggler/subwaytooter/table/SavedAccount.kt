@@ -918,7 +918,8 @@ class SavedAccount(
 		
 		TootNotification.TYPE_REACTION -> notification_reaction
 		
-		TootNotification.TYPE_VOTE -> notification_vote
+		TootNotification.TYPE_VOTE,TootNotification.TYPE_POLL -> notification_vote
+		
 		
 		else -> false
 	}

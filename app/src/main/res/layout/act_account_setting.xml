@@ -610,7 +610,7 @@
             <CheckBox
                 android:id="@+id/cbNotificationVote"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/vote_misskey"
+                android:text="@string/vote_polls"
                 />
         </LinearLayout>
         <LinearLayout style="@style/setting_row_form">

@@ -128,23 +128,25 @@ class NicoEnquete(
 			this.votes_count = src.parseInt("votes_count")
 			this.myVoted = if(src.optBoolean("voted", false)) 1 else null
 			
-			if(this.items == null) {
-				maxVotesCount = null
-			} else if(this.multiple){
-				var max :Int? = null
-				for( item in items){
-					val v = item.votes
-					if( v != null && (max == null || v > max) ) max =v
-					
+			when {
+				this.items == null -> maxVotesCount = null
+				this.multiple -> {
+					var max :Int? = null
+					for( item in items){
+						val v = item.votes
+						if( v != null && (max == null || v > max) ) max =v
+						
+					}
+					maxVotesCount = max
 				}
-				maxVotesCount = max
-			} else {
-				var sum :Int?= null
-				for( item in items){
-					val v = item.votes
-					if( v != null ) sum = (sum?:0) + v
+				else -> {
+					var sum :Int?= null
+					for( item in items){
+						val v = item.votes
+						if( v != null ) sum = (sum?:0) + v
+					}
+					maxVotesCount = sum
 				}
-				maxVotesCount = sum
 			}
 
 		} else {

@@ -930,6 +930,19 @@ internal class ItemViewHolder(
 				}
 			}
 			
+			TootNotification.TYPE_POLL -> {
+				val colorBg = 0
+				if(n_account != null) showBoost(
+					n_accountRef,
+					n.time_created_at,
+					R.drawable.ic_vote,
+					R.string.end_of_polling_from
+				)
+				if(n_status != null) {
+					showNotificationStatus(n_status, colorBg)
+				}
+			}
+
 			else -> {
 				val colorBg = 0
 				if(n_account != null) showBoost(

@@ -658,7 +658,7 @@ class ColumnViewHolder(
 			vg(cbDontShowReply, column.canFilterReply())
 			vg(cbDontShowNormalToot, column.canFilterNormalToot())
 			vg(cbDontShowReaction, isNotificationColumn && column.isMisskey)
-			vg(cbDontShowVote, isNotificationColumn && column.isMisskey)
+			vg(cbDontShowVote, isNotificationColumn )
 			vg(cbDontShowFavourite, isNotificationColumn && ! column.isMisskey)
 			vg(cbDontShowFollow, isNotificationColumn)
 			
@@ -1525,8 +1525,6 @@ class ColumnViewHolder(
 		if(! isNotificationColumn) return
 		
 		vg(btnQuickFilterReaction, column.isMisskey)
-		vg(btnQuickFilterVote, column.isMisskey)
-		
 		vg(btnQuickFilterFavourite, ! column.isMisskey)
 		
 		val insideColumnSetting = Pref.bpMoveNotificationsQuickFilter(activity.pref)

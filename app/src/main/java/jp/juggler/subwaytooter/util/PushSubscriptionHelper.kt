@@ -48,7 +48,7 @@ class PushSubscriptionHelper(
 		if(account.notification_follow) n += 4
 		if(account.notification_mention) n += 8
 		if(account.isMisskey && account.notification_reaction) n += 16
-		if(account.isMisskey && account.notification_vote) n += 32
+		if(account.notification_vote) n += 32
 		this.flags = n
 	}
 	
@@ -365,6 +365,7 @@ class PushSubscriptionHelper(
 								put("favourite", account.notification_favourite)
 								put("reblog", account.notification_boost)
 								put("mention", account.notification_mention)
+								put("poll", account.notification_vote)
 							})
 						})
 					}

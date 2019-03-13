@@ -141,7 +141,7 @@ class ActMain : AppCompatActivity()
 	private lateinit var vFooterDivider1 : View
 	private lateinit var vFooterDivider2 : View
 	
-	val viewPool = androidx.recyclerview.widget.RecyclerView.RecycledViewPool()
+	val viewPool = RecyclerView.RecycledViewPool()
 	
 	var avatarIconSize : Int = 0
 	var notificationTlIconSize : Int = 0
@@ -157,9 +157,9 @@ class ActMain : AppCompatActivity()
 	}
 	
 	class TabletEnv {
-		internal lateinit var tablet_pager : androidx.recyclerview.widget.RecyclerView
+		internal lateinit var tablet_pager : RecyclerView
 		internal lateinit var tablet_pager_adapter : TabletColumnPagerAdapter
-		internal lateinit var tablet_layout_manager : androidx.recyclerview.widget.LinearLayoutManager
+		internal lateinit var tablet_layout_manager : LinearLayoutManager
 		internal lateinit var tablet_snap_helper : GravitySnapHelper
 		
 	}
@@ -168,7 +168,7 @@ class ActMain : AppCompatActivity()
 		get() {
 			val vs = tablet_layout_manager.findFirstVisibleItemPosition()
 			val ve = tablet_layout_manager.findLastVisibleItemPosition()
-			return if(vs == androidx.recyclerview.widget.RecyclerView.NO_POSITION || ve == androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+			return if(vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
 				IntRange(- 1, - 2) // empty and less than zero
 			} else {
 				IntRange(vs, min(ve, vs + nScreenColumn - 1))
@@ -462,7 +462,7 @@ class ActMain : AppCompatActivity()
 			{ env -> outState.putInt(STATE_CURRENT_PAGE, env.pager.currentItem) },
 			{ env ->
 				val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
-				if(ve != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+				if(ve != RecyclerView.NO_POSITION) {
 					outState.putInt(STATE_CURRENT_PAGE, ve)
 				}
 			})
@@ -1424,9 +1424,9 @@ class ActMain : AppCompatActivity()
 			env.tablet_pager = findViewById(R.id.rvPager)
 			env.tablet_pager_adapter = TabletColumnPagerAdapter(this)
 			env.tablet_layout_manager =
-				androidx.recyclerview.widget.LinearLayoutManager(
+				LinearLayoutManager(
 					this,
-					androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL,
+					LinearLayoutManager.HORIZONTAL,
 					false
 				)
 			
@@ -1438,10 +1438,10 @@ class ActMain : AppCompatActivity()
 			env.tablet_pager.adapter = env.tablet_pager_adapter
 			env.tablet_pager.layoutManager = env.tablet_layout_manager
 			env.tablet_pager.addOnScrollListener(object :
-				androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+				RecyclerView.OnScrollListener() {
 				
 				override fun onScrollStateChanged(
-					recyclerView : androidx.recyclerview.widget.RecyclerView,
+					recyclerView : RecyclerView,
 					newState : Int
 				) {
 					super.onScrollStateChanged(recyclerView, newState)
@@ -1459,7 +1459,7 @@ class ActMain : AppCompatActivity()
 				}
 				
 				override fun onScrolled(
-					recyclerView : androidx.recyclerview.widget.RecyclerView,
+					recyclerView : RecyclerView,
 					dx : Int,
 					dy : Int
 				) {
@@ -1921,9 +1921,9 @@ class ActMain : AppCompatActivity()
 						return TootApiResult("missing state in callback url.")
 					}
 					
-					for( param in sv.split(",")){
+					for(param in sv.split(",")) {
 						when {
-
+							
 							param.startsWith("db:") -> try {
 								val dataId = param.substring(3).toLong(10)
 								val sa = SavedAccount.loadAccount(this@ActMain, dataId)
@@ -1934,12 +1934,12 @@ class ActMain : AppCompatActivity()
 								log.trace(ex)
 								return TootApiResult(ex.withCaption("invalid state"))
 							}
-
+							
 							param.startsWith("host:") -> {
 								val host = param.substring(5)
 								client.instance = host
 							}
-
+							
 							else -> {
 								// ignore other parameter
 							}

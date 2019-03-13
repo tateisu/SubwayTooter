@@ -13,14 +13,6 @@ import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import com.google.android.material.navigation.NavigationView
-import androidx.core.view.GravityCompat
-import androidx.viewpager.widget.ViewPager
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -28,6 +20,12 @@ import android.util.JsonReader
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.navigation.NavigationView
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.EntityId
@@ -710,8 +708,8 @@ class ActMain : AppCompatActivity()
 	
 	override fun onClick(v : View) {
 		when(v.id) {
-			R.id.btnMenu -> if(! drawer.isDrawerOpen(Gravity.START)) {
-				drawer.openDrawer(Gravity.START)
+			R.id.btnMenu -> if(! drawer.isDrawerOpen(GravityCompat.START)) {
+				drawer.openDrawer(GravityCompat.START)
 			}
 			
 			R.id.btnToot -> Action_Account.openPost(this@ActMain)
@@ -780,7 +778,7 @@ class ActMain : AppCompatActivity()
 				refreshAfterPost()
 			}
 			
-			override fun onScheduledPostComplete(target_account : SavedAccount) { // TODO
+			override fun onScheduledPostComplete(target_account : SavedAccount) {
 			}
 		})
 	}
@@ -1491,7 +1489,7 @@ class ActMain : AppCompatActivity()
 				override fun onTextUpdate() {}
 				
 				override fun canOpenPopup() : Boolean {
-					return ! drawer.isDrawerOpen(Gravity.START)
+					return ! drawer.isDrawerOpen(GravityCompat.START)
 				}
 			})
 	}

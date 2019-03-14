@@ -138,7 +138,7 @@ internal class PopupAutoCompleteAcct(
 					if(acct[0] == ' ') {
 						// 絵文字ショートコード
 						if(! EmojiDecoder.canStartShortCode(sb, start)) sb.append(' ')
-						sb.append( findShortCode(acct.toString()))
+						sb.append(findShortCode(acct.toString()))
 					} else {
 						// @user@host, #hashtag
 						// 直後に空白を付与する
@@ -161,8 +161,6 @@ internal class PopupAutoCompleteAcct(
 		
 		updatePosition()
 	}
-	
-	
 	
 	private fun findShortCode(acct : String) : String {
 		val m = reLastShortCode.matcher(acct)
@@ -195,9 +193,14 @@ internal class PopupAutoCompleteAcct(
 			
 			val layout = etContent.layout
 			
-			popup_top = (text_top
-				+ etContent.totalPaddingTop
-				+ layout.getLineBottom(layout.lineCount - 1)) - etContent.scrollY
+			popup_top = try {
+				(text_top
+					+ etContent.totalPaddingTop
+					+ layout.getLineBottom(layout.lineCount - 1)) - etContent.scrollY
+			} catch(ex : Throwable) {
+				// java.lang.IllegalStateException
+				0
+			}
 			
 			if(popup_top < form_top) popup_top = form_top
 			

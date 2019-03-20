@@ -1,10 +1,10 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.graphics.*
 import android.os.Handler
 import android.os.SystemClock
+import com.caverock.androidsvg.SVG
 
 import java.io.ByteArrayInputStream
 import java.lang.ref.WeakReference
@@ -16,6 +16,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.apng.ApngFrames
 import jp.juggler.util.LogCategory
+import kotlin.math.ceil
 
 class CustomEmojiCache(internal val context : Context) {
 	
@@ -38,7 +39,7 @@ class CustomEmojiCache(internal val context : Context) {
 	private class Request(
 		val refTarget : WeakReference<Any>,
 		val url : String,
-		val onLoadComplete : ()->Unit
+		val onLoadComplete : () -> Unit
 	)
 	
 	////////////////////////////////
@@ -71,9 +72,9 @@ class CustomEmojiCache(internal val context : Context) {
 	
 	// tag_target を持つリクエストまたはtagがGCされたリクエストをキューから除去する
 	fun cancelRequest(refTarget : WeakReference<Any>) {
-
+		
 		val targetTag = refTarget.get() ?: return
-
+		
 		synchronized(queue) {
 			val it = queue.iterator()
 			while(it.hasNext()) {
@@ -101,20 +102,24 @@ class CustomEmojiCache(internal val context : Context) {
 		return null
 	}
 	
-	fun getFrames(refDrawTarget: WeakReference<Any>?, url : String, onLoadComplete :  ()->Unit) : ApngFrames? {
+	fun getFrames(
+		refDrawTarget : WeakReference<Any>?,
+		url : String,
+		onLoadComplete : () -> Unit
+	) : ApngFrames? {
 		try {
-			if( refDrawTarget?.get() == null ){
+			if(refDrawTarget?.get() == null) {
 				NetworkEmojiSpan.log.e("draw: DrawTarget is null ")
 				return null
 			}
 			
 			cancelRequest(refDrawTarget)
-
+			
 			synchronized(cache) {
 				val item = getCached(elapsedTime, url)
 				if(item != null) return item.frames
 			}
-
+			
 			// キャンセル操作の都合上、排他が必要
 			synchronized(queue) {
 				queue.addLast(Request(refDrawTarget, url, onLoadComplete))
@@ -154,21 +159,26 @@ class CustomEmojiCache(internal val context : Context) {
 					
 					var cache_size : Int = - 1
 					if(synchronized(cache) {
-						val now = elapsedTime
-						val item = getCached(now, request.url)
-						if(item != null) {
-							if(item.frames != null) {
-								fireCallback(request)
+							val now = elapsedTime
+							val item = getCached(now, request.url)
+							if(item != null) {
+								if(item.frames != null) {
+									fireCallback(request)
+								}
+								return@synchronized true
 							}
-							return@synchronized true
-						}
-						sweep_cache(now)
-						cache_size = cache.size
-						return@synchronized false
-					}) continue
+							sweep_cache(now)
+							cache_size = cache.size
+							return@synchronized false
+						}) continue
 					
 					if(DEBUG)
-						log.d("start get image. queue_size=%d, cache_size=%d url=%s", queue_size, cache_size, request.url)
+						log.d(
+							"start get image. queue_size=%d, cache_size=%d url=%s",
+							queue_size,
+							cache_size,
+							request.url
+						)
 					
 					var frames : ApngFrames? = null
 					try {
@@ -238,21 +248,21 @@ class CustomEmojiCache(internal val context : Context) {
 			for(item in list) {
 				cache.remove(item.url)
 				item.frames?.dispose()
-				if( ++removed >= over) break
+				if(++ removed >= over) break
 			}
 		}
 		
 		private fun decodeAPNG(data : ByteArray, url : String) : ApngFrames? {
 			try {
 				// PNGヘッダを確認
-				if( data.size >= 8
+				if(data.size >= 8
 					&& (data[0].toInt() and 0xff) == 0x89
-					&& (data[1].toInt() and 0xff) ==  0x50
-				){
+					&& (data[1].toInt() and 0xff) == 0x50
+				) {
 					// APNGをデコード
 					return ApngFrames.parseApng(ByteArrayInputStream(data), 64)
 				}
-
+				
 				// fall thru
 			} catch(ex : Throwable) {
 				if(DEBUG) log.trace(ex)
@@ -268,8 +278,23 @@ class CustomEmojiCache(internal val context : Context) {
 				} else {
 					log.e("Bitmap decode returns null. %s", url)
 				}
+				
+				// fall thru
 			} catch(ex : Throwable) {
 				log.e(ex, "Bitmap decode failed. %s", url)
+			}
+			
+			// SVGのロードを試みる
+			try {
+				val b = decodeSVG(data, 128.toFloat())
+				if(b != null) {
+					if(DEBUG) log.d("SVG decoded.")
+					return ApngFrames(b)
+				}
+				
+				// fall thru
+			} catch(ex : Throwable) {
+				log.e(ex, "SVG decode failed. %s", url)
 			}
 			
 			return null
@@ -298,6 +323,45 @@ class CustomEmojiCache(internal val context : Context) {
 			options.inJustDecodeBounds = false
 			options.inSampleSize = 1 shl bits
 			return BitmapFactory.decodeByteArray(data, 0, data.size, options)
+		}
+		
+		private fun decodeSVG(data : ByteArray, pixelMax : Float) : Bitmap? {
+			try {
+				val svg = SVG.getFromInputStream(ByteArrayInputStream(data))
+				val src_w = svg.documentWidth
+				val src_h = svg.documentHeight
+				val aspect = src_w / src_h
+				
+				val dst_w : Float
+				val dst_h : Float
+				if(aspect >= 1f) {
+					dst_w = pixelMax
+					dst_h = pixelMax / aspect
+				} else {
+					dst_h = pixelMax
+					dst_w = pixelMax * aspect
+				}
+				val w_ceil = ceil(dst_w)
+				val h_ceil = ceil(dst_h)
+				
+				// Create a Bitmap to render our SVG to
+				val b = Bitmap.createBitmap(w_ceil.toInt(), h_ceil.toInt(), Bitmap.Config.ARGB_8888)
+				// Create a Canvas to use for rendering
+				val canvas = Canvas(b)
+				
+				svg.renderToCanvas(
+					canvas,
+					if(aspect >= 1f) {
+						RectF(0f, h_ceil-dst_h, dst_w, dst_h) // 後半はw,hを指定する
+					} else {
+						RectF(w_ceil-dst_w, 0f, dst_w , dst_h) // 後半はw,hを指定する
+					}
+				)
+				return b
+			} catch(ex : Throwable) {
+				log.e(ex, "decodeSVG failed.")
+			}
+			return null
 		}
 	}
 	

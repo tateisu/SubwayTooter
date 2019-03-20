@@ -141,6 +141,8 @@ dependencies {
     // implementation 'com.simplecityapps:recyclerview-fastscroll:1.0.16'
 
     implementation 'me.drakeet.support:toastcompat:1.0.2'
+
+    implementation 'com.caverock:androidsvg-aar:1.3'
 }
 
 repositories {

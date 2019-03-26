@@ -2,7 +2,7 @@
 <resources>
     <string name="account">계정</string>
     <string name="account_add">계정 추가</string>
-<string name="action_settings">설정</string>
+    <string name="action_settings">설정</string>
     <string name="instance">서버</string>
     <string name="user_mail_address">이메일</string>
     <string name="user_password">비밀번호</string>
@@ -685,7 +685,7 @@
     <string name="cant_sync_toot">툿을 동기화할 수 없음.</string>
     <string name="cant_change_account_when_redraft">재편집 중에는 계정을 변경할 수 없음.</string>
     <string name="delete_base_status_before_toot">게시하기 전에 원래 툿을 삭제하기. 모든 즐겨찾기/부스트를 잃어 버립니다. 답글은 연결이 끊어집니다. 미디어 첨부는 마스토돈 2.4.1 이전 버전에서는 유지되지 않습니다. 계속하시겠습니까\?</string>
-    <string name="notification_tl_font_size">알림 타임라인 글꼴 크기 (단위:sp. 비워두면 기본값. 앱 재시작 필요)</string>
+    <string name="notification_tl_font_size">알림 타임라인 글꼴 크기 (단위: sp. 비워두면 기본값. 앱 재시작 필요)</string>
     <string name="notification_tl_icon_size">알림 타임라인 아이콘 크기 (단위:dp. 기본값:24. 앱 재시작 필요)</string>
     <string name="post_button_tapped_repeatly">게시 버튼이 반복적으로 두드려졌습니다</string>
     <string name="regex_filter_matches_empty_string">정규표현식 필터가 빈 문자열과 맞춰졌습니다.</string>
@@ -838,7 +838,7 @@
     <string name="username_empty">사용자 이름을 지정해 주세요.</string>
     <string name="email_empty">이메일 주소를 지정해 주세요.</string>
     <string name="password_empty">비밀번호를 지정해 주세요.</string>
-    <string name="username_not_need_atmark">사용자 이름은 \"@\" 또는 \"/\"를 포함하지 않아야 합니다.</string>
+    <string name="username_not_need_atmark">사용자 이름은 \"@\" 또는 \"/\"를 포함할 수 없습니다.</string>
     <string name="pseudo_account_cant_get_follow_list">의사 계정에서는 팔로우 목록을 읽을 수 없음.</string>
     <string name="reaction_remove_confirm">당신의 반응 \"%1$s\"를 삭제할까요\?</string>
     <string name="scheduled_status">예약 게시</string>
@@ -849,10 +849,10 @@
     <string name="scheduled_status_list">예약 게시 목록</string>
     <string name="cant_change_account_when_editing_scheduled_status">예약 게시 편집 중에는 계정을 변경할 수 없음.</string>
     <string name="delete_scheduled_status_before_update">게시 전에 예약 게시를 삭제합니다. 계속하시겠습니까\?</string>
-    <string name="reply_icon_size">답글 아이콘 크기 (단위:dp. 기본값:24. 앱 재시작 필요)</string>
-    <string name="header_icon_size">헤더 아이콘 크기 (단위:dp. 기본값:24. 앱 재시작 필요)</string>
-    <string name="header_text_size">헤더 글자 크기 (단위:sp. 기본값:14. 앱 재시작 필요)</string>
-    <string name="strip_icon_size">칼럼 띠 아이콘 크기 (단위:dp. 기본값:30. 앱 재시작 필요)</string>
+    <string name="reply_icon_size">답글 아이콘 크기 (단위: dp. 기본값:24. 앱 재시작 필요)</string>
+    <string name="header_icon_size">헤더 아이콘 크기 (단위: dp. 기본값:24. 앱 재시작 필요)</string>
+    <string name="header_text_size">헤더 글자 크기 (단위: sp. 기본값:14. 앱 재시작 필요)</string>
+    <string name="strip_icon_size">칼럼 띠 아이콘 크기 (단위: dp. 기본값:30. 앱 재시작 필요)</string>
     <string name="all">모두</string>
     <string name="show_links_in_context_menu">문맥 메뉴에 링크들 보이기</string>
     <string name="scheduled_status_requires_mastodon_2_7_0">예약 게시는 마스토돈 2.7.0 또는 이후 버전이 필요합니다.</string>
@@ -864,4 +864,30 @@
     <string name="show_link_underline">링크 밑줄 보이기</string>
     <string name="official_account">공식 계정</string>
     <string name="releases">공개 이력</string>
+    <string name="timezone">타임존 (앱 재시작 필요)</string>
+    <string name="device_timezone">기기 타임존</string>
+    <string name="hashtag_extra_any">추가 태그: 이 중 아무거나 (태그에 #을 쓰지 않습니다)</string>
+    <string name="hashtag_extra_all">추가 태그: 모두 포함 (태그에 #을 적지 않습니다)</string>
+    <string name="hashtag_extra_none">추가 태그: 제외 (태그에 #을 적지 않습니다)</string>
+    <string name="hashtag_title_any">또는 %1$s</string>
+    <string name="hashtag_title_all">그리고 %1$s</string>
+    <string name="hashtag_title_none">(%1$s를 제외)</string>
+    <string name="add">추가</string>
+    <string name="show_clear_button_in_search_bar">검색창에 초기화 버튼 보이기 (앱 재시작 필요)</string>
+    <string name="event_background_color">이벤트 배경 색</string>
+    <string name="unfollow_misskey">언팔로우 (미스키)</string>
+    <string name="follow_request_misskey">팔로우 리퀘스트 (미스키)</string>
+    <string name="dont_remove_deleted_toot_from_timeline">삭제 된 툿을 타임라인에서 지우기 않기</string>
+    <string name="dont_show_column_background_image">컬럼 배경 이미지를 보이지 않기</string>
+    <string name="allow_multiple_choice">여러 선택지를 허용</string>
+    <string name="hide_totals">마감 전까지 통계 숨기기</string>
+    <string name="expiration">마감</string>
+    <string name="poll_dont_make">투표 만들지 않기</string>
+    <string name="poll_make">투표 만들기</string>
+    <string name="poll_make_friends_nico">투표 만들기 (friends.nico API)</string>
+    <string name="plus">+</string>
+    <string name="poll_expire_days">일</string>
+    <string name="poll_expire_hours">시간</string>
+    <string name="poll_expire_minutes">분</string>
+    <string name="vote_1">1표</string>
 </resources>

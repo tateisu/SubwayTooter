@@ -22,7 +22,7 @@ class TootRelationShip(parser:TootParser,src : JSONObject) {
 	// Whether the authorized user is currently blocking the target account.
 	val blocking : Boolean
 
-	// misskey用
+	// misskeyとMastodon 2.8.0以降
 	val blocked_by : Boolean
 	
 	// Whether the authorized user is currently muting the target account.
@@ -94,7 +94,10 @@ class TootRelationShip(parser:TootParser,src : JSONObject) {
 			this.requested = src.optBoolean("requested")
 			this.endorsed = src.optBoolean("endorsed")
 			
-			blocked_by = false
+			// https://github.com/tootsuite/mastodon/commit/9745de883b198375ba23f7fde879f6d75ce2df0f
+			// Mastodon 2.8.0から
+			this.blocked_by = src.optBoolean("blocked_by")
+			
 			requested_by = false
 		}
 		

@@ -17,6 +17,7 @@ import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.apng.ApngFrames
 import jp.juggler.util.LogCategory
 import kotlin.math.ceil
+import kotlin.math.max
 
 class CustomEmojiCache(internal val context : Context) {
 	
@@ -330,6 +331,11 @@ class CustomEmojiCache(internal val context : Context) {
 				val svg = SVG.getFromInputStream(ByteArrayInputStream(data))
 				val src_w = svg.documentWidth
 				val src_h = svg.documentHeight
+				
+				// http://bigbadaboom.github.io/androidsvg/
+				// ロード失敗時に-1を返す例があるらしい
+				if( src_w <= 0f || src_h <=0f) return null
+
 				val aspect = src_w / src_h
 				
 				val dst_w : Float
@@ -337,7 +343,7 @@ class CustomEmojiCache(internal val context : Context) {
 				if(aspect >= 1f) {
 					dst_w = pixelMax
 					dst_h = pixelMax / aspect
-				} else {
+				}else {
 					dst_h = pixelMax
 					dst_w = pixelMax * aspect
 				}

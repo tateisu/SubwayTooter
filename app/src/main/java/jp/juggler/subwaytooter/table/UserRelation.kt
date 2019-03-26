@@ -205,6 +205,7 @@ class UserRelation {
 					cv.put(COL_FOLLOWING, src.following.b2i())
 					cv.put(COL_FOLLOWED_BY, src.followed_by.b2i())
 					cv.put(COL_BLOCKING, src.blocking.b2i())
+					cv.put(COL_BLOCKED_BY, src.blocked_by.b2i())
 					cv.put(COL_MUTING, src.muting.b2i())
 					cv.put(COL_REQUESTED, src.requested.b2i())
 					cv.put(COL_FOLLOWING_REBLOGS, src.showing_reblogs)

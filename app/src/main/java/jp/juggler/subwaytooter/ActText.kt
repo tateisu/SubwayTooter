@@ -3,15 +3,19 @@ package jp.juggler.subwaytooter
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.EditText
+import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.util.*
+import jp.juggler.util.LogCategory
+import jp.juggler.util.copyToClipboard
+import jp.juggler.util.hideKeyboard
+import jp.juggler.util.showToast
 import java.util.*
 
 class ActText : AppCompatActivity(), View.OnClickListener {
@@ -28,11 +32,11 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		internal const val EXTRA_CONTENT_END = "content_end"
 		internal const val EXTRA_ACCOUNT_DB_ID = "account_db_id"
 		
-		private fun addAfterLine(sb : StringBuilder, text : String) {
-			if(sb.isNotEmpty() && sb[sb.length - 1] != '\n') {
-				sb.append('\n')
+		private fun StringBuilder.addAfterLine( text : CharSequence) {
+			if( isNotEmpty() && this[length - 1] != '\n') {
+				append('\n')
 			}
-			sb.append(text)
+			append(text)
 		}
 		
 		private fun addHeader(
@@ -44,7 +48,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			if(sb.isNotEmpty() && sb[sb.length - 1] != '\n') {
 				sb.append('\n')
 			}
-			addAfterLine(sb, context.getString(key_str_id))
+			sb.addAfterLine( context.getString(key_str_id))
 			sb.append(": ")
 			sb.append(value?.toString() ?: "(null)")
 		}
@@ -79,19 +83,24 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 				addHeader(context, sb, R.string.send_header_content_warning, sv)
 			}
 			
-			addAfterLine(sb, "\n")
+			sb.addAfterLine( "\n")
 			
 			intent.putExtra(EXTRA_CONTENT_START, sb.length)
 			sb.append(DecodeOptions(context, access_info).decodeHTML(status.content))
+			
+			encodePolls(sb,context,status)
+			
 			intent.putExtra(EXTRA_CONTENT_END, sb.length)
 			
 			dumpAttachment(sb, status.media_attachments)
 			
-			addAfterLine(sb, String.format(Locale.JAPAN, "Status-Source: %s", status.json))
+			sb.addAfterLine( String.format(Locale.JAPAN, "Status-Source: %s", status.json))
 			
-			addAfterLine(sb, "")
+			sb.addAfterLine( "")
 			intent.putExtra(EXTRA_TEXT, sb.toString())
 		}
+		
+		
 		
 		private fun dumpAttachment(sb : StringBuilder, src : ArrayList<TootAttachmentLike>?) {
 			if(src == null) return
@@ -99,28 +108,139 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			for(ma in src) {
 				++ i
 				if(ma is TootAttachment) {
-					addAfterLine(sb, "\n")
-					addAfterLine(sb, String.format(Locale.JAPAN, "Media-%d-Url: %s", i, ma.url))
-					addAfterLine(
-						sb,
+					sb.addAfterLine( "\n")
+					sb.addAfterLine( String.format(Locale.JAPAN, "Media-%d-Url: %s", i, ma.url))
+					sb.addAfterLine(
 						String.format(Locale.JAPAN, "Media-%d-Remote-Url: %s", i, ma.remote_url)
 					)
-					addAfterLine(
-						sb,
+					sb.addAfterLine(
 						String.format(Locale.JAPAN, "Media-%d-Preview-Url: %s", i, ma.preview_url)
 					)
-					addAfterLine(
-						sb,
+					sb.	addAfterLine(
 						String.format(Locale.JAPAN, "Media-%d-Text-Url: %s", i, ma.text_url)
 					)
 				} else if(ma is TootAttachmentMSP) {
-					addAfterLine(sb, "\n")
-					addAfterLine(
-						sb,
+					sb.addAfterLine( "\n")
+					sb.	addAfterLine(
 						String.format(Locale.JAPAN, "Media-%d-Preview-Url: %s", i, ma.preview_url)
 					)
 				}
 			}
+		}
+		
+		
+		private fun encodePolls(sb :StringBuilder, context:Context,status : TootStatus) {
+			val enquete = status.enquete ?: return
+			val items = enquete.items ?: return
+			val now = System.currentTimeMillis()
+
+			
+			
+			val canVote = when(enquete.pollType) {
+				
+				// friends.nico の場合は本文に投票の選択肢が含まれるので
+				// アプリ側での文字列化は不要
+				PollType.FriendsNico -> return
+				
+				// MastodonとMisskeyは投票の選択肢が本文に含まれないので
+				// アプリ側で文字列化する
+				
+				PollType.Mastodon -> when {
+					enquete.expired -> false
+					now >= enquete.expired_at -> false
+					enquete.myVoted != null -> false
+					else -> true
+				}
+
+				PollType.Misskey -> enquete.myVoted == null
+			}
+			
+			sb.addAfterLine("\n")
+			
+			items.forEachIndexed { index, choice ->
+				encodePollChoice(sb, context, enquete, canVote, index, choice)
+			}
+			
+			when(enquete.pollType) {
+				PollType.Mastodon -> encodePollFooterMastodon(sb, context, enquete)
+
+				else->{}
+			}
+		}
+		
+		private fun encodePollChoice(
+			sb : StringBuilder,
+			context : Context,
+			enquete : NicoEnquete,
+			canVote : Boolean,
+			i : Int,
+			item : NicoEnquete.Choice
+		) {
+			
+			val text = when(enquete.pollType) {
+				PollType.Misskey -> {
+					val sb2 = StringBuilder().append(item.decoded_text)
+					if(enquete.myVoted != null) {
+						sb2.append(" / ")
+						sb2.append(context.getString(R.string.vote_count_text, item.votes))
+						if(i == enquete.myVoted) sb2.append(' ').append(0x2713.toChar())
+					}
+					sb2
+				}
+				
+				PollType.FriendsNico -> {
+					item.decoded_text
+				}
+				
+				PollType.Mastodon -> if(canVote) {
+					item.decoded_text
+				} else {
+					val sb2 = StringBuilder().append(item.decoded_text)
+					if(! canVote) {
+						sb2.append(" / ")
+						sb2.append(
+							when(val v = item.votes) {
+								null -> context.getString(R.string.vote_count_unavailable)
+								else -> context.getString(R.string.vote_count_text, v)
+							}
+						)
+					}
+					sb2
+				}
+			}
+			
+			sb.addAfterLine(text)
+		}
+
+		private fun encodePollFooterMastodon(
+			sb : StringBuilder,
+			context : Context,
+			enquete : NicoEnquete
+		) {
+			val line = StringBuilder()
+			
+			val votes_count = enquete.votes_count ?: 0
+			when {
+				votes_count == 1 -> line.append(context.getString(R.string.vote_1))
+				votes_count > 1 -> line.append(context.getString(R.string.vote_2, votes_count))
+			}
+			
+			when(val t = enquete.expired_at) {
+				
+				Long.MAX_VALUE -> {
+				}
+				
+				else -> {
+					if(line.isNotEmpty()) line.append(" ")
+					line.append(
+						context.getString(
+							R.string.vote_expire_at,
+							TootStatus.formatTime(context, t, false)
+						)
+					)
+				}
+			}
+			sb.addAfterLine(line)
 		}
 		
 		private fun encodeAccount(
@@ -142,11 +262,11 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			sb.append(who.url)
 			intent.putExtra(EXTRA_CONTENT_END, sb.length)
 			
-			addAfterLine(sb, "\n")
+			sb.addAfterLine( "\n")
 			
 			sb.append(DecodeOptions(context, access_info).decodeHTML(who.note))
 			
-			addAfterLine(sb, "\n")
+			sb.addAfterLine( "\n")
 			
 			addHeader(context, sb, R.string.send_header_account_name, who.display_name)
 			addHeader(context, sb, R.string.send_header_account_acct, access_info.getFullAcct(who))
@@ -183,7 +303,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			)
 			addHeader(context, sb, R.string.send_header_account_locked, who.locked)
 			
-			addAfterLine(sb, "")
+			sb.addAfterLine("")
 			intent.putExtra(EXTRA_TEXT, sb.toString())
 		}
 		
@@ -246,8 +366,13 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			val content_start = intent.getIntExtra(EXTRA_CONTENT_START, 0)
 			val content_end = intent.getIntExtra(EXTRA_CONTENT_END, sv.length)
 			etText.setText(sv)
-			etText.requestFocus()
-			etText.hideKeyboard()
+			
+			// Android 9 以降ではフォーカスがないとsetSelectionできない
+			if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+				etText.requestFocus()
+				etText.hideKeyboard()
+			}
+
 			etText.setSelection(content_start, content_end)
 		}
 	}

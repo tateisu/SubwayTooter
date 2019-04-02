@@ -11,9 +11,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.util.LogCategory
-import jp.juggler.util.copyToClipboard
-import jp.juggler.util.showToast
+import jp.juggler.util.*
 import java.util.*
 
 class ActText : AppCompatActivity(), View.OnClickListener {
@@ -248,6 +246,8 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			val content_start = intent.getIntExtra(EXTRA_CONTENT_START, 0)
 			val content_end = intent.getIntExtra(EXTRA_CONTENT_END, sv.length)
 			etText.setText(sv)
+			etText.requestFocus()
+			etText.hideKeyboard()
 			etText.setSelection(content_start, content_end)
 		}
 	}

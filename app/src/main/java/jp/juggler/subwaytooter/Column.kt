@@ -6402,7 +6402,7 @@ class Column(
 		return when(column_type) {
 			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_LIST_TL -> true
 			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
-			TYPE_HASHTAG_FROM_ACCT -> true
+			TYPE_HASHTAG_FROM_ACCT -> false
 			TYPE_CONVERSATION, TYPE_DIRECT_MESSAGES -> isMisskey
 			else -> false
 		}
@@ -6413,6 +6413,7 @@ class Column(
 		return when(column_type) {
 			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_LIST_TL, TYPE_DIRECT_MESSAGES -> true
 			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
+			TYPE_HASHTAG_FROM_ACCT -> true
 			else -> false
 		}
 	}
@@ -7131,9 +7132,9 @@ class Column(
 				profile_id = whoRef.get().id
 			}
 			
-			val sb = StringBuilder("/api/v1/accounts/${profile_id}/statuses?tagged=")
-				.append(hashtag.encodePercent())
+			val sb = StringBuilder("/api/v1/accounts/${profile_id}/statuses")
 				.append("?limit=").append(READ_LIMIT)
+				.append("&tagged=").append(hashtag.encodePercent())
 			
 			if(with_attachment) sb.append("&only_media=true")
 			if(instance_local) sb.append("&local=true")

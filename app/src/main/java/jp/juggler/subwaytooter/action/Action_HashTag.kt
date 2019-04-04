@@ -37,19 +37,19 @@ object Action_HashTag {
 		
 		// https://mastodon.juggler.jp/@tateisu/101865456016473337
 		// 一時的に使えなくする
-//		if( whoAcct != null ){
-//			val(username,instance)=whoAcct.split('@')
-//			d.addAction(AcctColor.getStringWithNickname(activity, R.string.open_hashtag_from_account ,whoAcct)) {
-//				timelineOtherInstance(
-//					activity,
-//					pos,
-//					"https://${instance}/@${username}/tagged/${ tag_without_sharp.encodePercent()}",
-//					host,
-//					tag_without_sharp,
-//					whoAcct
-//				)
-//			}
-//		}
+		if( whoAcct != null ){
+			val(username,instance)=whoAcct.split('@')
+			d.addAction(AcctColor.getStringWithNickname(activity, R.string.open_hashtag_from_account ,whoAcct)) {
+				timelineOtherInstance(
+					activity,
+					pos,
+					"https://${instance}/@${username}/tagged/${ tag_without_sharp.encodePercent()}",
+					host,
+					tag_without_sharp,
+					whoAcct
+				)
+			}
+		}
 		
 		
 		d.addAction(activity.getString(R.string.open_in_browser)) {

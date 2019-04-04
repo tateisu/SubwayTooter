@@ -1,15 +1,14 @@
 package jp.juggler.subwaytooter.action
 
-import java.util.ArrayList
-
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Column
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.encodePercent
+import java.util.*
 
 object Action_HashTag {
 	
@@ -20,9 +19,10 @@ object Action_HashTag {
 		url : String,
 		host : String,
 		tag_without_sharp : String,
-		tag_list : ArrayList<String>?
+		tag_list : ArrayList<String>?,
+		whoAcct: String?
 	) {
-		val tag_with_sharp = "#" + tag_without_sharp
+		val tag_with_sharp = "#$tag_without_sharp"
 		
 		val d = ActionsDialog()
 			.addAction(activity.getString(R.string.open_hashtag_column)) {
@@ -34,18 +34,37 @@ object Action_HashTag {
 					tag_without_sharp
 				)
 			}
-			.addAction(activity.getString(R.string.open_in_browser)) {
-				App1.openCustomTab(
-					activity,
-					url
-				)
-			}
-			.addAction(
-				activity.getString(
-					R.string.quote_hashtag_of,
-					tag_with_sharp
-				)
-			) { Action_Account.openPost(activity, tag_with_sharp + " ") }
+		
+		// https://mastodon.juggler.jp/@tateisu/101865456016473337
+		// 一時的に使えなくする
+//		if( whoAcct != null ){
+//			val(username,instance)=whoAcct.split('@')
+//			d.addAction(AcctColor.getStringWithNickname(activity, R.string.open_hashtag_from_account ,whoAcct)) {
+//				timelineOtherInstance(
+//					activity,
+//					pos,
+//					"https://${instance}/@${username}/tagged/${ tag_without_sharp.encodePercent()}",
+//					host,
+//					tag_without_sharp,
+//					whoAcct
+//				)
+//			}
+//		}
+		
+		
+		d.addAction(activity.getString(R.string.open_in_browser)) {
+			App1.openCustomTab(
+				activity,
+				url
+			)
+		}
+		.addAction(
+			activity.getString(
+				R.string.quote_hashtag_of,
+				tag_with_sharp
+			)
+		) { Action_Account.openPost(activity, "$tag_with_sharp ") }
+		
 		
 		if(tag_list != null && tag_list.size > 1) {
 			val sb = StringBuilder()
@@ -59,7 +78,7 @@ object Action_HashTag {
 					R.string.quote_all_hashtag_of,
 					tag_all
 				)
-			) { Action_Account.openPost(activity, tag_all + " ") }
+			) { Action_Account.openPost(activity, "$tag_all ") }
 		}
 		
 		d.show(activity, tag_with_sharp)
@@ -67,9 +86,17 @@ object Action_HashTag {
 	
 	// 検索カラムからハッシュタグを選んだ場合、カラムのアカウントでハッシュタグを開く
 	fun timeline(
-		activity : ActMain, pos : Int, access_info : SavedAccount, tag_without_sharp : String
+		activity : ActMain,
+		pos : Int,
+		access_info : SavedAccount,
+		tag_without_sharp : String,
+		whoAcct : String? = null
 	) {
-		activity.addColumn(pos, access_info, Column.TYPE_HASHTAG, tag_without_sharp)
+		if( whoAcct == null) {
+			activity.addColumn(pos, access_info, Column.TYPE_HASHTAG, tag_without_sharp)
+		}else {
+			activity.addColumn(pos, access_info, Column.TYPE_HASHTAG_FROM_ACCT, tag_without_sharp,whoAcct)
+		}
 	}
 	
 	// アカウントを選んでハッシュタグカラムを開く
@@ -78,7 +105,8 @@ object Action_HashTag {
 		pos : Int,
 		url : String,
 		host : String,
-		tag_without_sharp : String
+		tag_without_sharp : String,
+		whoAcct :String? = null
 	) {
 		
 		val dialog = ActionsDialog()
@@ -94,26 +122,36 @@ object Action_HashTag {
 		val list_original_pseudo = ArrayList<SavedAccount>()
 		val list_other = ArrayList<SavedAccount>()
 		for(a in account_list) {
-			if(! host.equals(a.host, ignoreCase = true)) {
-				list_other.add(a)
-			} else if(a.isPseudo) {
-				list_original_pseudo.add(a)
-			} else {
-				list_original.add(a)
+			if( whoAcct == null){
+				if(! host.equals(a.host, ignoreCase = true)) {
+					list_other.add(a)
+				} else if(a.isPseudo) {
+					list_original_pseudo.add(a)
+				} else {
+					list_original.add(a)
+				}
+			}else{
+				if(a.isPseudo) {
+					// acctからidを取得できない
+				}else if(a.isMisskey) {
+					// ミスキーのアカウント別タグTLは未対応
+				}else if(! host.equals(a.host, ignoreCase = true)) {
+					list_other.add(a)
+				} else {
+					list_original.add(a)
+				}
 			}
 		}
 		
 		// ブラウザで表示する
 		dialog.addAction(activity.getString(R.string.open_web_on_host, host)) {
-			App1.openCustomTab(
-				activity,
-				url
-			)
+			App1.openCustomTab(activity,url)
 		}
 		
 		// 同タンスのアカウントがない場合は疑似アカウントを作成して開く
-		if(list_original.isEmpty() && list_original_pseudo.isEmpty()) {
-			dialog.addAction(activity.getString(R.string.open_in_pseudo_account, "?@" + host)) {
+		// ただし疑似アカウントではアカウントの同期ができないため、特定ユーザのタグTLは読めない)
+		if( whoAcct == null && list_original.isEmpty() && list_original_pseudo.isEmpty()) {
+			dialog.addAction(activity.getString(R.string.open_in_pseudo_account, "?@$host")) {
 				addPseudoAccount(activity, host) { sa ->
 					timeline(activity, pos, sa, tag_without_sharp)
 				}
@@ -129,7 +167,7 @@ object Action_HashTag {
 					a.acct
 				)
 			)
-			{ timeline(activity, pos, a, tag_without_sharp) }
+			{ timeline(activity, pos, a, tag_without_sharp,whoAcct) }
 		}
 		for(a in list_original_pseudo) {
 			dialog.addAction(
@@ -139,7 +177,7 @@ object Action_HashTag {
 					a.acct
 				)
 			)
-			{ timeline(activity, pos, a, tag_without_sharp) }
+			{ timeline(activity, pos, a, tag_without_sharp,whoAcct) }
 		}
 		for(a in list_other) {
 			dialog.addAction(
@@ -149,10 +187,10 @@ object Action_HashTag {
 					a.acct
 				)
 			)
-			{ timeline(activity, pos, a, tag_without_sharp) }
+			{ timeline(activity, pos, a, tag_without_sharp,whoAcct) }
 		}
 		
-		dialog.show(activity, "#" + tag_without_sharp)
+		dialog.show(activity, "#$tag_without_sharp")
 	}
 	
 }

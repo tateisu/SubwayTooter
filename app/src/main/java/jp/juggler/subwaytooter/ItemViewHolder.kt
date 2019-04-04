@@ -2893,6 +2893,9 @@ internal class ItemViewHolder(
 		ad.show(activity, activity.getString(R.string.filter_of, item.phrase))
 	}
 	
+	internal fun getAccount() = status_account ?: boost_account ?: follow_account
+	
+	
 	/////////////////////////////////////////////////////////////////////
 	
 	private fun inflate(activity : ActMain) = with(activity.UI {}) {

@@ -177,10 +177,13 @@ class Column(
 		private const val KEY_PROFILE_ID = "profile_id"
 		private const val KEY_PROFILE_TAB = "tab"
 		private const val KEY_STATUS_ID = "status_id"
+		
 		private const val KEY_HASHTAG = "hashtag"
 		private const val KEY_HASHTAG_ANY = "hashtag_any"
 		private const val KEY_HASHTAG_ALL = "hashtag_all"
 		private const val KEY_HASHTAG_NONE = "hashtag_none"
+		private const val KEY_HASHTAG_ACCT = "hashtag_acct"
+		
 		private const val KEY_SEARCH_QUERY = "search_query"
 		private const val KEY_SEARCH_RESOLVE = "search_resolve"
 		private const val KEY_INSTANCE_URI = "instance_uri"
@@ -223,6 +226,7 @@ class Column(
 		internal const val TYPE_FEDERATED_AROUND = 30
 		internal const val TYPE_ACCOUNT_AROUND = 31
 		internal const val TYPE_SCHEDULED_STATUS = 33
+		internal const val TYPE_HASHTAG_FROM_ACCT = 34
 		
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
@@ -281,6 +285,7 @@ class Column(
 				TYPE_BOOSTED_BY -> context.getString(R.string.boosted_by)
 				TYPE_FAVOURITED_BY -> context.getString(R.string.favourited_by)
 				TYPE_HASHTAG -> context.getString(R.string.hashtag)
+				TYPE_HASHTAG_FROM_ACCT -> context.getString(R.string.hashtag_from_acct)
 				TYPE_MUTES -> context.getString(R.string.muted_users)
 				TYPE_KEYWORD_FILTER -> context.getString(R.string.keyword_filters)
 				TYPE_BLOCKS -> context.getString(R.string.blocked_users)
@@ -323,6 +328,7 @@ class Column(
 				TYPE_BOOSTED_BY -> R.drawable.ic_repeat
 				TYPE_FAVOURITED_BY -> if(SavedAccount.isNicoru(acct)) R.drawable.ic_nicoru else R.drawable.ic_star
 				TYPE_HASHTAG -> R.drawable.ic_hashtag
+				TYPE_HASHTAG_FROM_ACCT -> R.drawable.ic_hashtag
 				TYPE_MUTES -> R.drawable.ic_volume_off
 				TYPE_KEYWORD_FILTER -> R.drawable.ic_volume_off
 				TYPE_BLOCKS -> R.drawable.ic_block
@@ -356,7 +362,7 @@ class Column(
 		
 		val COLUMN_REGEX_FILTER_DEFAULT : (CharSequence?) -> Boolean = { false }
 		
-		private val time_format_hhmm = SimpleDateFormat("HH:mm", Locale.getDefault())
+		private val time_format_hhmm = SimpleDateFormat("HH:mm", Locale.JAPAN)
 		
 		private fun getResetTimeString() : String {
 			time_format_hhmm.timeZone = TimeZone.getDefault()
@@ -641,6 +647,7 @@ class Column(
 	internal var hashtag_any : String = ""
 	internal var hashtag_all : String = ""
 	internal var hashtag_none : String = ""
+	private var hashtag_acct : String = ""
 	
 	// プロフカラムでのアカウント情報
 	@Volatile
@@ -788,6 +795,11 @@ class Column(
 			TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER -> profile_id = getParamAt(params, 0)
 			TYPE_HASHTAG -> hashtag = getParamAt(params, 0)
 			
+			TYPE_HASHTAG_FROM_ACCT -> {
+				hashtag = getParamAt(params, 0)
+				hashtag_acct = getParamAt(params, 1)
+			}
+			
 			TYPE_SEARCH -> {
 				search_query = getParamAt(params, 0)
 				search_resolve = getParamAt(params, 1)
@@ -856,6 +868,11 @@ class Column(
 				hashtag_any = src.optString(KEY_HASHTAG_ANY)
 				hashtag_all = src.optString(KEY_HASHTAG_ALL)
 				hashtag_none = src.optString(KEY_HASHTAG_NONE)
+			}
+			
+			TYPE_HASHTAG_FROM_ACCT -> {
+				hashtag = src.optString(KEY_HASHTAG)
+				hashtag_acct = src.optString(KEY_HASHTAG_ACCT)
 			}
 			
 			TYPE_SEARCH -> {
@@ -928,6 +945,11 @@ class Column(
 				dst.put(KEY_HASHTAG_NONE, hashtag_none)
 			}
 			
+			TYPE_HASHTAG_FROM_ACCT -> {
+				dst.put(KEY_HASHTAG, hashtag)
+				dst.put(KEY_HASHTAG_ACCT, hashtag_acct)
+			}
+			
 			TYPE_SEARCH -> dst.put(KEY_SEARCH_QUERY, search_query).put(
 				KEY_SEARCH_RESOLVE,
 				search_resolve
@@ -964,6 +986,11 @@ class Column(
 						&& ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_any)
 						&& ((getParamAtNullable<String>(params, 2) ?: "") == hashtag_all)
 						&& ((getParamAtNullable<String>(params, 3) ?: "") == hashtag_none)
+				}
+				
+				TYPE_HASHTAG_FROM_ACCT -> {
+					(getParamAt<String>(params, 0) == hashtag)
+						&& ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_acct)
 				}
 				
 				TYPE_SEARCH -> getParamAt<String>(params, 0) == search_query && getParamAt<Boolean>(
@@ -1049,6 +1076,10 @@ class Column(
 					)
 				)
 				sb.toString()
+			}
+			
+			TYPE_HASHTAG_FROM_ACCT -> {
+				context.getString(R.string.hashtag_of_from, hashtag, hashtag_acct)
 			}
 			
 			TYPE_SEARCH ->
@@ -2044,7 +2075,7 @@ class Column(
 			
 			fun getStatuses(
 				client : TootApiClient,
-				path_base : String,
+				path_base : String?,
 				aroundMin : Boolean = false,
 				aroundMax : Boolean = false,
 				
@@ -2053,6 +2084,8 @@ class Column(
 					{ parser, jsonArray -> parser.statusList(jsonArray) },
 				initialUntilDate : Boolean = false
 			) : TootApiResult? {
+				
+				path_base ?: return null // cancelled.
 				
 				this@Column.useDate = isMisskey
 				// お気に入り一覧などでは変更される
@@ -3025,6 +3058,17 @@ class Column(
 							getStatuses(client, makeHashtagUrl())
 						}
 						
+						TYPE_HASHTAG_FROM_ACCT -> return if(isMisskey) {
+							// currently not supported
+							getStatuses(
+								client
+								, makeHashtagAcctUrl(client)
+								, misskeyParams = makeHashtagParams(parser)
+							)
+						} else {
+							getStatuses(client, makeHashtagAcctUrl(client))
+						}
+						
 						TYPE_REPORTS -> return parseReports(client, PATH_REPORTS)
 						
 						TYPE_NOTIFICATIONS -> return parseNotifications(client)
@@ -3532,11 +3576,11 @@ class Column(
 	
 	// return true if list bottom may have unread remain
 	private fun saveRangeEnd(result : TootApiResult?, list : List<TimelineItem>?) =
-		saveRange(true, false, result = result, list = list)
+		saveRange(true, bTop = false, result = result, list = list)
 	
 	// return true if list bottom may have unread remain
 	private fun saveRangeStart(result : TootApiResult?, list : List<TimelineItem>?) =
-		saveRange(false, true, result = result, list = list)
+		saveRange(false, bTop = true, result = result, list = list)
 	
 	private fun addRange(bBottom : Boolean, path : String) : String {
 		val delimiter = if(- 1 != path.indexOf('?')) '&' else '?'
@@ -4531,12 +4575,14 @@ class Column(
 			
 			fun getStatusList(
 				client : TootApiClient,
-				path_base : String,
+				path_base : String?,
 				aroundMin : Boolean = false,
 				misskeyParams : JSONObject? = null,
 				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
 					{ parser, jsonArray -> parser.statusList(jsonArray) }
 			) : TootApiResult? {
+				
+				path_base ?: return null // cancelled.
 				
 				val isMisskey = access_info.isMisskey
 				
@@ -5036,6 +5082,16 @@ class Column(
 							)
 						} else {
 							getStatusList(client, makeHashtagUrl())
+						}
+						
+						TYPE_HASHTAG_FROM_ACCT -> return if(isMisskey) {
+							getStatusList(
+								client
+								, makeHashtagAcctUrl(client)
+								, misskeyParams = makeHashtagParams(parser)
+							)
+						} else {
+							getStatusList(client, makeHashtagAcctUrl(client))
 						}
 						
 						TYPE_SEARCH_MSP ->
@@ -5637,12 +5693,14 @@ class Column(
 			
 			fun getStatusList(
 				client : TootApiClient,
-				path_base : String,
+				path_base : String?,
 				misskeyParams : JSONObject? = null
 				,
 				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
 					{ parser, jsonArray -> parser.statusList(jsonArray) }
 			) : TootApiResult? {
+				
+				path_base ?: return null // cancelled.
 				
 				val isMisskey = access_info.isMisskey
 				
@@ -5958,6 +6016,16 @@ class Column(
 							)
 						} else {
 							getStatusList(client, makeHashtagUrl())
+						}
+						
+						TYPE_HASHTAG_FROM_ACCT -> return if(isMisskey) {
+							getStatusList(
+								client
+								, makeHashtagAcctUrl(client)
+								, misskeyParams = makeHashtagParams(parser)
+							)
+						} else {
+							getStatusList(client, makeHashtagAcctUrl(client))
 						}
 						
 						TYPE_BOOSTED_BY -> getAccountList(
@@ -6292,7 +6360,7 @@ class Column(
 		) {
 			// リフレッシュしてからストリーミング開始
 			log.d("onStart: start auto refresh.")
-			startRefresh(true, false)
+			startRefresh(bSilent = true, bBottom = false)
 		} else if(isSearchColumn) {
 			// 検索カラムはリフレッシュもストリーミングもないが、表示開始のタイミングでリストの再描画を行いたい
 			fireShowContent(reason = "Column onStart isSearchColumn", reset = true)
@@ -6318,7 +6386,7 @@ class Column(
 		TYPE_HOME, TYPE_LIST_TL, TYPE_MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
 		TYPE_NOTIFICATIONS -> TootFilter.CONTEXT_NOTIFICATIONS
 		TYPE_CONVERSATION -> TootFilter.CONTEXT_THREAD
-		TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_PROFILE, TYPE_SEARCH -> TootFilter.CONTEXT_PUBLIC
+		TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_HASHTAG_FROM_ACCT, TYPE_PROFILE, TYPE_SEARCH -> TootFilter.CONTEXT_PUBLIC
 		TYPE_DIRECT_MESSAGES -> TootFilter.CONTEXT_PUBLIC
 		else -> TootFilter.CONTEXT_NONE
 		// TYPE_MISSKEY_HYBRID はHOMEでもPUBLICでもある… Misskeyだし関係ないが、NONEにするとアプリ内で完結するフィルタも働かなくなる
@@ -6334,6 +6402,7 @@ class Column(
 		return when(column_type) {
 			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_LIST_TL -> true
 			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
+			TYPE_HASHTAG_FROM_ACCT -> true
 			TYPE_CONVERSATION, TYPE_DIRECT_MESSAGES -> isMisskey
 			else -> false
 		}
@@ -6352,6 +6421,7 @@ class Column(
 		return when(column_type) {
 			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_LIST_TL -> true
 			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
+			TYPE_HASHTAG_FROM_ACCT -> true
 			else -> false
 		}
 	}
@@ -7046,6 +7116,29 @@ class Column(
 			sb
 				.append(makeHashtagExtraQuery())
 				.toString()
+		}
+	}
+	
+	private fun makeHashtagAcctUrl(client : TootApiClient) : String? {
+		return if(isMisskey) {
+			// currently not supported
+			"/api/notes/search_by_tag"
+		} else {
+			if(profile_id == null) {
+				val (result, whoRef) = client.syncAccountByAcct(access_info, hashtag_acct)
+				result ?: return null // cancelled.
+				whoRef ?: error(result.error ?: "unknown error")
+				profile_id = whoRef.get().id
+			}
+			
+			val sb = StringBuilder("/api/v1/accounts/${profile_id}/statuses?tagged=")
+				.append(hashtag.encodePercent())
+				.append("?limit=").append(READ_LIMIT)
+			
+			if(with_attachment) sb.append("&only_media=true")
+			if(instance_local) sb.append("&local=true")
+			
+			sb.toString()
 		}
 	}
 	

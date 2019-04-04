@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.util
 import java.util.ArrayList
 
 import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.table.SavedAccount
 
 @Suppress("MemberVisibilityCanPrivate")
@@ -12,10 +13,9 @@ class ChromeTabOpener(
 	val url : String,
 	var accessInfo : SavedAccount? = null,
 	var tagList : ArrayList<String>? = null,
-	var allowIntercept :Boolean = true
+	var allowIntercept :Boolean = true,
+	var whoRef : TootAccountRef? = null
 ) {
 	
-	fun open() {
-		activity.openChromeTab(this)
-	}
+	fun open() = activity.openChromeTab(this)
 }

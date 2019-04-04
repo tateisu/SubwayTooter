@@ -559,4 +559,5 @@ internal class ViewHolderHeaderProfile(
 	//		}
 	//	}
 	
+	override fun getAccount() : TootAccountRef? = whoRef
 }

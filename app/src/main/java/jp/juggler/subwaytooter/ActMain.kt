@@ -28,10 +28,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgTextInput
@@ -212,17 +209,22 @@ class ActMain : AppCompatActivity()
 		
 		var view = viewClicked
 		var column : Column? = null
+		var whoRef : TootAccountRef? = null
 		
 		while(true) {
 			val tag = view.tag
 			if(tag is ItemViewHolder) {
 				column = tag.column
+				whoRef = tag.getAccount()
+				
 				break
 			} else if(tag is ViewHolderItem) {
 				column = tag.ivh.column
+				whoRef = tag.ivh.getAccount()
 				break
 			} else if(tag is ViewHolderHeaderBase) {
 				column = tag.column
+				whoRef = tag.getAccount()
 				break
 			} else if(tag is TabletColumnViewHolder) {
 				column = tag.columnViewHolder.column
@@ -264,7 +266,8 @@ class ActMain : AppCompatActivity()
 			pos,
 			span.url,
 			accessInfo = access_info,
-			tagList = tag_list
+			tagList = tag_list,
+			whoRef = whoRef
 		).open()
 	}
 	
@@ -2314,6 +2317,13 @@ class ActMain : AppCompatActivity()
 			log.d("openChromeTab url=%s", opener.url)
 			
 			val accessInto = opener.accessInfo
+			val whoRef = opener.whoRef
+			val whoAcct = if(whoRef != null ){
+				accessInto?.getFullAcct(whoRef.get())
+			}else{
+				null
+			}
+			
 			if(opener.allowIntercept && accessInto != null) {
 				
 				// ハッシュタグはいきなり開くのではなくメニューがある
@@ -2328,11 +2338,14 @@ class ActMain : AppCompatActivity()
 						opener.url,
 						host,
 						tag_without_sharp,
-						opener.tagList
+						opener.tagList,
+						whoAcct
 					)
-					
 					return
 				}
+				
+				
+				
 				
 				// ステータスページをアプリから開く
 				m = TootStatus.reStatusPage.matcher(opener.url)

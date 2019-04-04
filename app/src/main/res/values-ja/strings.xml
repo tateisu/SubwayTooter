@@ -885,4 +885,6 @@
     <string name="vote_count_unavailable">\?\?\?票</string>
     <string name="vote_button">投票</string>
     <string name="end_of_polling_from">%1$sの調査の終了</string>
+    <string name="open_hashtag_from_account">(%1$sからの)ハッシュタグのカラムを開く</string>
+
 </resources>

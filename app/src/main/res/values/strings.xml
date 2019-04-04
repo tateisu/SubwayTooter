@@ -880,5 +880,8 @@
     <string name="vote_count_unavailable">\?\?\? votes</string>
     <string name="vote_button">Vote</string>
     <string name="end_of_polling_from">End of polling from %1$s</string>
+    <string name="open_hashtag_from_account">Open hashtag(from %1$s) column</string>
+    <string name="hashtag_from_acct">Hashtag from account</string>
+    <string name="hashtag_of_from">Hashtag :#%1$s from %2$s</string>
 
 </resources>

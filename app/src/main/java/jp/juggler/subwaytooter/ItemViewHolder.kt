@@ -479,7 +479,8 @@ internal class ItemViewHolder(
 							item.accountRef,
 							item.time_created_at,
 							R.drawable.ic_repeat,
-							R.string.display_name_boosted_by
+							R.string.display_name_boosted_by,
+							boost_status = item
 						)
 						showStatusOrReply(item.reblog, colorBg)
 					}
@@ -795,7 +796,8 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_repeat,
-					R.string.display_name_boosted_by
+					R.string.display_name_boosted_by,
+					boost_status = n_status
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status, colorBg)
@@ -810,7 +812,8 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					R.drawable.ic_repeat,
-					R.string.display_name_boosted_by
+					R.string.display_name_boosted_by,
+					boost_status = n_status
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status, colorBg)
@@ -1076,7 +1079,8 @@ internal class ItemViewHolder(
 		time : Long,
 		iconId : Int,
 		string_id : Int,
-		reactionDrawableId : Int? = null
+		reactionDrawableId : Int? = null,
+		boost_status: TootStatus? = null
 	) {
 		boost_account = whoRef
 		val who = whoRef.get()
@@ -1103,7 +1107,7 @@ internal class ItemViewHolder(
 		
 		boost_time = time
 		llBoosted.visibility = View.VISIBLE
-		showStatusTime(activity, tvBoostedTime, who, time = time)
+		showStatusTime(activity, tvBoostedTime, who, time = time,status = boost_status)
 		tvBoosted.text = text
 		boost_invalidator.register(text)
 		setAcct(tvBoostedAcct, access_info.getFullAcct(who), who.acct)

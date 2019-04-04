@@ -888,5 +888,7 @@
     <string name="open_hashtag_from_account">(%1$sからの)ハッシュタグのカラムを開く</string>
     <string name="hashtag_from_acct">Hashtag from account</string>
     <string name="hashtag_of_from">Hashtag :#%1$s (%2$sから)</string>
+    <string name="boost_with_visibility">公開範囲を指定してブースト</string>
+    <string name="confirm_private_boost_from">このトゥートを %1$s からブーストしますか? 全てのフォロワーに公開されます</string>
 
 </resources>

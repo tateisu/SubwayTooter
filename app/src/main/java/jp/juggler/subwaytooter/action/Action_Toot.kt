@@ -288,7 +288,8 @@ object Action_Toot {
 		nCrossAccountMode : Int,
 		callback : EmptyCallback?,
 		bSet : Boolean = true,
-		bConfirmed : Boolean = false
+		bConfirmed : Boolean = false,
+			visibility: TootVisibility? = null
 	) {
 		
 		// アカウントからステータスにブースト操作を行っているなら、何もしない
@@ -313,6 +314,7 @@ object Action_Toot {
 					when {
 						! bSet -> R.string.confirm_unboost_from
 						isPrivateToot -> R.string.confirm_boost_private_from
+						visibility == TootVisibility.PrivateFollowers -> R.string.confirm_private_boost_from
 						else -> R.string.confirm_boost_from
 					},
 					AcctColor.getNickname(access_info.acct)
@@ -327,7 +329,8 @@ object Action_Toot {
 							nCrossAccountMode,
 							callback,
 							bSet = bSet,
-							bConfirmed = true
+							bConfirmed = true,
+							visibility = visibility
 						)
 					}
 					
@@ -393,9 +396,13 @@ object Action_Toot {
 					}
 					
 				} else {
+					val b = JSONObject().apply {
+						if( visibility != null) put("visibility",visibility.strMastodon)
+					}.toPostRequestBuilder()
+
 					val result = client.request(
 						"/api/v1/statuses/${target_status.id}/${if(bSet) "reblog" else "unreblog"}",
-						"".toRequestBody().toPost()
+						b
 					)
 					// reblogはreblogを表すStatusを返す
 					// unreblogはreblogしたStatusを返す
@@ -403,7 +410,6 @@ object Action_Toot {
 					this.new_status = s?.reblog ?: s
 					
 					return result
-					
 				}
 			}
 			

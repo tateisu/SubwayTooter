@@ -17,6 +17,8 @@ import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgListMember
 import jp.juggler.subwaytooter.dialog.DlgQRCode
 import jp.juggler.subwaytooter.span.MyClickableSpan
@@ -120,9 +122,11 @@ internal class DlgContextMenu(
 		val btnAroundLTL : View = viewRoot.findViewById(R.id.btnAroundLTL)
 		val btnAroundFTL : View = viewRoot.findViewById(R.id.btnAroundFTL)
 		val btnCopyAccountId : Button = viewRoot.findViewById(R.id.btnCopyAccountId)
-		val btnOpenAccountInAdminWebUi :Button = viewRoot.findViewById(R.id.btnOpenAccountInAdminWebUi)
-		val btnOpenInstanceInAdminWebUi :Button = viewRoot.findViewById(R.id.btnOpenInstanceInAdminWebUi)
-		
+		val btnOpenAccountInAdminWebUi : Button =
+			viewRoot.findViewById(R.id.btnOpenAccountInAdminWebUi)
+		val btnOpenInstanceInAdminWebUi : Button =
+			viewRoot.findViewById(R.id.btnOpenInstanceInAdminWebUi)
+		val btnBoostWithVisibility : Button = viewRoot.findViewById(R.id.btnBoostWithVisibility)
 		val llLinks : LinearLayout = viewRoot.findViewById(R.id.llLinks)
 		
 		btnAroundAccountTL.setOnClickListener(this)
@@ -169,6 +173,7 @@ internal class DlgContextMenu(
 		btnCopyAccountId.setOnClickListener(this)
 		btnOpenAccountInAdminWebUi.setOnClickListener(this)
 		btnOpenInstanceInAdminWebUi.setOnClickListener(this)
+		btnBoostWithVisibility.setOnClickListener(this)
 		
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus).setOnClickListener(this)
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlAccount).setOnClickListener(this)
@@ -241,6 +246,8 @@ internal class DlgContextMenu(
 			btnDelete.visibility = if(status_by_me) View.VISIBLE else View.GONE
 			btnRedraft.visibility = if(status_by_me) View.VISIBLE else View.GONE
 			
+			vg(btnBoostWithVisibility, ! access_info.isPseudo && ! access_info.isMisskey)
+			
 			btnReport.visibility =
 				if(status_by_me || access_info.isPseudo) View.GONE else View.VISIBLE
 			
@@ -293,40 +300,48 @@ internal class DlgContextMenu(
 			// 被フォロー状態
 			// Styler.setFollowIconとは異なり細かい状態を表示しない
 			vg(ivFollowedBy, relation.followed_by)
-
+			
 			// フォロー状態
 			// Styler.setFollowIconとは異なりミュートやブロックを表示しない
-			btnFollow.setImageResource(when {
-				relation.getRequested(who) -> R.drawable.ic_follow_wait
-				relation.getFollowing(who) -> R.drawable.ic_follow_cross
-				else -> R.drawable.ic_follow_plus
-			})
-			btnFollow.imageTintList = ColorStateList.valueOf(getAttributeColor(
-				activity,
+			btnFollow.setImageResource(
 				when {
-					relation.getRequested(who) -> R.attr.colorRegexFilterError
-					relation.getFollowing(who) -> R.attr.colorImageButtonAccent
-					else -> R.attr.colorImageButton
+					relation.getRequested(who) -> R.drawable.ic_follow_wait
+					relation.getFollowing(who) -> R.drawable.ic_follow_cross
+					else -> R.drawable.ic_follow_plus
 				}
-			))
+			)
+			btnFollow.imageTintList = ColorStateList.valueOf(
+				getAttributeColor(
+					activity,
+					when {
+						relation.getRequested(who) -> R.attr.colorRegexFilterError
+						relation.getFollowing(who) -> R.attr.colorImageButtonAccent
+						else -> R.attr.colorImageButton
+					}
+				)
+			)
 			
 			// ミュート状態
-			btnMute.imageTintList = ColorStateList.valueOf(getAttributeColor(
-				activity,
-				when(relation.muting) {
-					true -> R.attr.colorImageButtonAccent
-					else -> R.attr.colorImageButton
-				}
-			))
+			btnMute.imageTintList = ColorStateList.valueOf(
+				getAttributeColor(
+					activity,
+					when(relation.muting) {
+						true -> R.attr.colorImageButtonAccent
+						else -> R.attr.colorImageButton
+					}
+				)
+			)
 			
 			// ブロック状態
-			btnBlock.imageTintList = ColorStateList.valueOf(getAttributeColor(
-				activity,
-				when(relation.blocking) {
-					true -> R.attr.colorImageButtonAccent
-					else -> R.attr.colorImageButton
-				}
-			))
+			btnBlock.imageTintList = ColorStateList.valueOf(
+				getAttributeColor(
+					activity,
+					when(relation.blocking) {
+						true -> R.attr.colorImageButtonAccent
+						else -> R.attr.colorImageButton
+					}
+				)
+			)
 		}
 		
 		if(who == null) {
@@ -350,10 +365,10 @@ internal class DlgContextMenu(
 			}
 			
 			btnCopyAccountId.visibility = View.VISIBLE
-			btnCopyAccountId.text = activity.getString(R.string.copy_account_id, who.id.toString() )
+			btnCopyAccountId.text = activity.getString(R.string.copy_account_id, who.id.toString())
 			
-			vg( btnOpenAccountInAdminWebUi , ! access_info.isPseudo)
-			vg( btnOpenInstanceInAdminWebUi , ! access_info.isPseudo)
+			vg(btnOpenAccountInAdminWebUi, ! access_info.isPseudo)
+			vg(btnOpenInstanceInAdminWebUi, ! access_info.isPseudo)
 		}
 		
 		viewRoot.findViewById<View>(R.id.btnAccountText).setOnClickListener(this)
@@ -735,10 +750,59 @@ internal class DlgContextMenu(
 				R.id.btnCopyAccountId -> who.id.toString().copyToClipboard(activity)
 				
 				R.id.btnOpenAccountInAdminWebUi ->
-					App1.openBrowser(activity,"https://${access_info.host}/admin/accounts/${who.id}")
-
+					App1.openBrowser(
+						activity,
+						"https://${access_info.host}/admin/accounts/${who.id}"
+					)
+				
 				R.id.btnOpenInstanceInAdminWebUi ->
-					App1.openBrowser(activity,"https://${access_info.host}/admin/instances/${who.host}")
+					App1.openBrowser(
+						activity,
+						"https://${access_info.host}/admin/instances/${who.host}"
+					)
+				
+				R.id.btnBoostWithVisibility -> {
+					val status = this.status ?: return
+					val list = if(access_info.isMisskey) {
+						arrayOf(
+							TootVisibility.Public,
+							TootVisibility.UnlistedHome,
+							TootVisibility.PrivateFollowers,
+							TootVisibility.LocalPublic,
+							TootVisibility.LocalHome,
+							TootVisibility.LocalFollowers,
+							TootVisibility.DirectSpecified,
+							TootVisibility.DirectPrivate
+						)
+					} else {
+						arrayOf(
+							TootVisibility.Public,
+							TootVisibility.UnlistedHome,
+							TootVisibility.PrivateFollowers
+						)
+					}
+					val caption_list = list
+						.map { Styler.getVisibilityCaption(activity, access_info.isMisskey, it) }
+						.toTypedArray()
+					
+					AlertDialog.Builder(activity)
+						.setTitle(R.string.choose_visibility)
+						.setItems(caption_list) { _, which ->
+							if(which in 0 until list.size) {
+								Action_Toot.boost(
+									activity,
+									access_info,
+									status,
+									access_info.getFullAcct(status.account),
+									NOT_CROSS_ACCOUNT,
+									activity.boost_complete_callback,
+									visibility = list[which]
+								)
+							}
+						}
+						.setNegativeButton(R.string.cancel, null)
+						.show()
+				}
 			}
 		}
 		

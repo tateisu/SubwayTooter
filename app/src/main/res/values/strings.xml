@@ -883,5 +883,7 @@
     <string name="open_hashtag_from_account">Open hashtag(from %1$s) column</string>
     <string name="hashtag_from_acct">Hashtag from account</string>
     <string name="hashtag_of_from">Hashtag :#%1$s from %2$s</string>
+    <string name="boost_with_visibility">Boost with visibility</string>
+    <string name="confirm_private_boost_from">Boost this status from %1$s ? It\'s shown to all followers.</string>
 
 </resources>

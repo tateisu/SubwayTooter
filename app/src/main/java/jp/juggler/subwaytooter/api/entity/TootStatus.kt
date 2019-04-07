@@ -206,7 +206,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.id = EntityId.mayDefault(misskeyId)
 			
 			// ページネーションには日時を使う
-			this._orderId = EntityId(time_created_at.toString())
+			this._orderId = EntityId(time_created_at.toString(),fromTime = true)
 			
 			// お気に入りカラムなどではパース直後に変更することがある
 			
@@ -912,8 +912,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			var rv : HashMap<String, Int>? = null
 			if(src != null) {
 				for(key in src.keys()) {
+					if( key?.isEmpty() != false ) continue
 					val v = src.parseInt(key) ?: continue
-					MisskeyReaction.shortcodeMap[key] ?: continue
+					// カスタム絵文字などが含まれるようになったので、内容のバリデーションはできない
 					if(rv == null) rv = HashMap()
 					rv[key] = v
 				}

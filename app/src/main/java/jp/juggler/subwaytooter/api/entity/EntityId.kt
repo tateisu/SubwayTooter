@@ -8,7 +8,10 @@ import jp.juggler.util.getStringOrNull
 import jp.juggler.util.notZero
 import org.json.JSONObject
 
-class EntityId(val x : String) : Comparable<EntityId> {
+class EntityId(
+	val x : String,
+	val fromTime: Boolean = false
+) : Comparable<EntityId> {
 	
 	companion object {
 

@@ -215,6 +215,10 @@ internal class StreamReader(
 							fireTimelineItem(parser.notification(body))
 						}
 						
+						"readAllNotifications"->{
+							// nothing to do
+						}
+						
 						else -> {
 							log.v("ignore streaming event $type")
 						}

@@ -287,7 +287,7 @@ class CustomEmojiCache(internal val context : Context) {
 			
 			// SVGのロードを試みる
 			try {
-				val b = decodeSVG(data, 128.toFloat())
+				val b = decodeSVG(url,data, 128.toFloat())
 				if(b != null) {
 					if(DEBUG) log.d("SVG decoded.")
 					return ApngFrames(b)
@@ -326,17 +326,18 @@ class CustomEmojiCache(internal val context : Context) {
 			return BitmapFactory.decodeByteArray(data, 0, data.size, options)
 		}
 		
-		private fun decodeSVG(data : ByteArray, pixelMax : Float) : Bitmap? {
+		private fun decodeSVG(url:String, data : ByteArray, pixelMax : Float) : Bitmap? {
 			try {
 				val svg = SVG.getFromInputStream(ByteArrayInputStream(data))
-				val src_w = svg.documentWidth
-				val src_h = svg.documentHeight
 				
-				// http://bigbadaboom.github.io/androidsvg/
-				// ロード失敗時に-1を返す例があるらしい
-				if( src_w <= 0f || src_h <=0f) return null
-
-				val aspect = src_w / src_h
+				val src_w = svg.documentWidth // the width in pixels, or -1 if there is no width available.
+				val src_h = svg.documentHeight // the height in pixels, or -1 if there is no height available.
+				val aspect = if( src_w <= 0f || src_h <=0f){
+					// widthやheightの情報がない
+					1f
+				}else{
+					src_w / src_h
+				}
 				
 				val dst_w : Float
 				val dst_h : Float

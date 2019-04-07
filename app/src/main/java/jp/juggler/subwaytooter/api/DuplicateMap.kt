@@ -2,11 +2,15 @@ package jp.juggler.subwaytooter.api
 
 import com.google.android.exoplayer2.Timeline
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.util.LogCategory
 import java.util.ArrayList
 import java.util.HashSet
 
 class DuplicateMap {
 	
+	companion object {
+		val log = LogCategory("DuplicateMap")
+	}
 	private val set_id = HashSet<EntityId>()
 	private val set_uri = HashSet<String>()
 	
@@ -39,10 +43,18 @@ class DuplicateMap {
 			is TootStatus,
 			is TootAccount,
 			is TootNotification -> {
-				val id = o.getOrderId()
+				var id = o.getOrderId()
 				if(id.notDefault){
-					if(set_id.contains(o.getOrderId())) return true
-					set_id.add(o.getOrderId())
+
+					// Misskeyで時刻順ページングを行う際は重複排除は時刻ではなくオブジェクトIDを使う
+					if( id.fromTime ){
+						when(o) {
+							is TootStatus -> id = o.id
+						}
+					}
+
+					if(set_id.contains(id)) return true
+					set_id.add(id)
 				}
 			}
 		}
@@ -50,11 +62,15 @@ class DuplicateMap {
 		return false
 	}
 	
+	
 	fun filterDuplicate(src : Collection<TimelineItem>?) : ArrayList<TimelineItem> {
 		val list_new = ArrayList<TimelineItem>()
 		if(src != null) {
 			for(o in src) {
-				if(isDuplicate(o)) continue
+				if(isDuplicate(o) ){
+					log.w("filterDuplicate: filter orderId ${o.getOrderId()}")
+					continue
+				}
 				list_new.add(o)
 			}
 		}

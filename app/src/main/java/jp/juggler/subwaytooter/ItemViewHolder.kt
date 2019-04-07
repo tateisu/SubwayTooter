@@ -2300,56 +2300,103 @@ internal class ItemViewHolder(
 			
 			box.addView(b)
 		}
-		var lastButton : View? = null
-		for(mr in MisskeyReaction.values()) {
-			val count = reactionsCount?.get(mr.shortcode)
-			if(count == null || count <= 0) continue
-			val b = CountImageButton(activity)
-			val blp = FlexboxLayout.LayoutParams(
-				FlexboxLayout.LayoutParams.WRAP_CONTENT,
-				buttonHeight
-			)
-			b.minimumWidth = buttonHeight
-			
-			b.imageResource = mr.btnDrawableId
-			b.scaleType = ImageView.ScaleType.FIT_CENTER
-			
-			b.layoutParams = blp
-			blp.endMargin = marginBetween
-			b.background = ContextCompat.getDrawable(
-				activity,
-				R.drawable.btn_bg_transparent
-			)
-			b.setTextColor(content_color)
-			b.setPaddingAndText(
-				paddingH, paddingV
-				, count.toString()
-				, 14f
-				, compoundPaddingDp
-			)
-			b.tag = mr.shortcode
-			b.setOnClickListener { addReaction(status, it.tag as? String) }
-			
-			b.setOnLongClickListener {
-				Action_Toot.reactionFromAnotherAccount(
-					activity,
-					access_info,
-					status_showing,
-					it.tag as? String
+		
+		if( reactionsCount != null){
+
+			var lastButton : View? = null
+
+			for(mr in MisskeyReaction.values()) {
+				val count = reactionsCount[mr.shortcode]
+				if(count == null || count <= 0) continue
+				val b = CountImageButton(activity)
+				val blp = FlexboxLayout.LayoutParams(
+					FlexboxLayout.LayoutParams.WRAP_CONTENT,
+					buttonHeight
 				)
-				true
+				b.minimumWidth = buttonHeight
+				
+				b.imageResource = mr.btnDrawableId
+				b.scaleType = ImageView.ScaleType.FIT_CENTER
+				
+				b.layoutParams = blp
+				blp.endMargin = marginBetween
+				b.background = ContextCompat.getDrawable(
+					activity,
+					R.drawable.btn_bg_transparent
+				)
+				b.setTextColor(content_color)
+				b.setPaddingAndText(
+					paddingH, paddingV
+					, count.toString()
+					, 14f
+					, compoundPaddingDp
+				)
+				b.tag = mr.shortcode
+				b.setOnClickListener { addReaction(status, it.tag as? String) }
+				
+				b.setOnLongClickListener {
+					Action_Toot.reactionFromAnotherAccount(
+						activity,
+						access_info,
+						status_showing,
+						it.tag as? String
+					)
+					true
+				}
+				
+				box.addView(b)
+				lastButton = b
 			}
 			
-			box.addView(b)
-			lastButton = b
+			// カスタム絵文字リアクション
+			val list = reactionsCount.keys
+				.filter { MisskeyReaction.shortcodeMap[ it] == null }
+				.sorted()
+
+			for( key in list ){
+				val count = reactionsCount.get(key)
+				if(count == null || count <= 0) continue
+				val b = Button(activity)
+				val blp = FlexboxLayout.LayoutParams(
+					FlexboxLayout.LayoutParams.WRAP_CONTENT,
+					buttonHeight
+				)
+				b.minimumWidth = buttonHeight
+				b.layoutParams = blp
+				blp.endMargin = marginBetween
+				b.background = ContextCompat.getDrawable(
+					activity,
+					R.drawable.btn_bg_transparent
+				)
+				b.setTextColor(content_color)
+				b.setPadding(paddingH,paddingV,paddingH,paddingV)
+				b.text = "$key $count"
+				b.allCaps = false
+				b.tag = key
+				b.setOnClickListener { addReaction(status, it.tag as? String) }
+				
+				b.setOnLongClickListener {
+					Action_Toot.reactionFromAnotherAccount(
+						activity,
+						access_info,
+						status_showing,
+						it.tag as? String
+					)
+					true
+				}
+				
+				box.addView(b)
+				lastButton = b
+			}
+
+			if(lastButton != null) {
+				val lp = lastButton.layoutParams
+				if(lp is ViewGroup.MarginLayoutParams) {
+					lp.endMargin = 0
+				}
+			}
 		}
 		
-		if(lastButton != null) {
-			val lp = lastButton.layoutParams
-			if(lp is ViewGroup.MarginLayoutParams) {
-				lp.endMargin = 0
-			}
-		}
 		
 		llExtra.addView(box)
 	}

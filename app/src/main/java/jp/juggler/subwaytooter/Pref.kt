@@ -483,6 +483,8 @@ object Pref {
 	
 	val spTimeZone = StringPref("TimeZone","")
 	
+	val spQuickTootMacro = StringPref("QuickTootMacro","")
+	
 	// long
 	val lpTabletTootDefaultAccount = LongPref("tablet_toot_default_account", - 1L)
 	

@@ -29,10 +29,7 @@ import com.google.android.material.navigation.NavigationView
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.dialog.AccountPicker
-import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.dialog.DlgTextInput
-import jp.juggler.subwaytooter.dialog.ProgressDialogEx
+import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.table.AcctColor
@@ -146,6 +143,7 @@ class ActMain : AppCompatActivity()
 	private lateinit var llQuickTootBar : View
 	private lateinit var etQuickToot : MyEditText
 	private lateinit var btnQuickToot : ImageButton
+	private lateinit var btnQuickTootMenu : ImageButton
 	lateinit var post_helper : PostHelper
 	
 	class PhoneEnv {
@@ -718,7 +716,30 @@ class ActMain : AppCompatActivity()
 			R.id.btnToot -> Action_Account.openPost(this@ActMain)
 			
 			R.id.btnQuickToot -> performQuickPost(null)
+			
+			R.id.btnQuickTootMenu -> performQuickTootMenu()
 		}
+	}
+	
+	private val dlgQuickTootMenu = DlgQuickTootMenu(this, object : DlgQuickTootMenu.Callback {
+		override fun onMacro(text : String) {
+			val editable = etQuickToot.text
+			if(editable?.isNotEmpty() ==true) {
+				val start = etQuickToot.selectionStart
+				val end = etQuickToot.selectionEnd
+				editable.replace(start, end, text)
+				etQuickToot.requestFocus()
+				etQuickToot.setSelection(start + text.length)
+			}else{
+				etQuickToot.setText(text)
+				etQuickToot.requestFocus()
+				etQuickToot.setSelection(text.length)
+			}
+		}
+	})
+	
+	private fun performQuickTootMenu() {
+		dlgQuickTootMenu.toggle()
 	}
 	
 	private fun performQuickPost(account : SavedAccount?) {
@@ -1335,6 +1356,7 @@ class ActMain : AppCompatActivity()
 		llQuickTootBar = findViewById(R.id.llQuickTootBar)
 		etQuickToot = findViewById(R.id.etQuickToot)
 		btnQuickToot = findViewById(R.id.btnQuickToot)
+		btnQuickTootMenu = findViewById(R.id.btnQuickTootMenu)
 		
 		if(! Pref.bpQuickTootBar(pref)) {
 			llQuickTootBar.visibility = View.GONE
@@ -1343,6 +1365,7 @@ class ActMain : AppCompatActivity()
 		btnToot.setOnClickListener(this)
 		btnMenu.setOnClickListener(this)
 		btnQuickToot.setOnClickListener(this)
+		btnQuickTootMenu.setOnClickListener(this)
 		
 		if(Pref.bpDontUseActionButtonWithQuickTootBar(pref)) {
 			etQuickToot.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
@@ -2318,9 +2341,9 @@ class ActMain : AppCompatActivity()
 			
 			val accessInto = opener.accessInfo
 			val whoRef = opener.whoRef
-			val whoAcct = if(whoRef != null ){
+			val whoAcct = if(whoRef != null) {
 				accessInto?.getFullAcct(whoRef.get())
-			}else{
+			} else {
 				null
 			}
 			
@@ -2343,9 +2366,6 @@ class ActMain : AppCompatActivity()
 					)
 					return
 				}
-				
-				
-				
 				
 				// ステータスページをアプリから開く
 				m = TootStatus.reStatusPage.matcher(opener.url)
@@ -2558,6 +2578,7 @@ class ActMain : AppCompatActivity()
 		btnMenu.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
 		btnToot.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
 		btnQuickToot.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
+		btnQuickTootMenu.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
 		
 		val csl = ColorStateList.valueOf(
 			footer_button_fg_color.notZero()
@@ -2566,6 +2587,7 @@ class ActMain : AppCompatActivity()
 		btnToot.imageTintList = csl
 		btnMenu.imageTintList = csl
 		btnQuickToot.imageTintList = csl
+		btnQuickTootMenu.imageTintList = csl
 		
 		var c = footer_tab_bg_color.notZero()
 			?: getAttributeColor(this, R.attr.colorColumnStripBackground)

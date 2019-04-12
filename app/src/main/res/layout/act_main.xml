@@ -123,6 +123,14 @@
             android:orientation="horizontal"
             >
 
+            <ImageButton
+                android:id="@+id/btnQuickTootMenu"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/quick_toot_menu"
+                app:srcCompat="@drawable/ic_description"
+                />
+
             <jp.juggler.subwaytooter.view.MyEditText
                 android:id="@+id/etQuickToot"
                 android:layout_width="0dp"

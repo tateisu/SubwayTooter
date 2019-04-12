@@ -366,7 +366,7 @@ class CustomEmojiCache(internal val context : Context) {
 				)
 				return b
 			} catch(ex : Throwable) {
-				log.e(ex, "decodeSVG failed.")
+				log.e(ex, "decodeSVG failed. $url")
 			}
 			return null
 		}

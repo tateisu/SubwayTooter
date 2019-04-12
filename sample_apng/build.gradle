@@ -24,6 +24,7 @@ android {
     }
 
     packagingOptions {
+        // https://github.com/Kotlin/kotlinx.coroutines/issues/1064
         pickFirst("META-INF/atomicfu.kotlin_module")
     }
 }

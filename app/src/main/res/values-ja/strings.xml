@@ -891,6 +891,6 @@
     <string name="boost_with_visibility">公開範囲を指定してブースト</string>
     <string name="confirm_private_boost_from">このトゥートを %1$s からブーストしますか? 全てのフォロワーに公開されます</string>
     <string name="quick_toot_menu">簡易投稿メニュー</string>
-    <string name="input">Input</string>
+    <string name="input">入力</string>
 
 </resources>

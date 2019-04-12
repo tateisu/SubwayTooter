@@ -16,7 +16,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.1'
+        classpath 'com.android.tools.build:gradle:3.3.2'
         classpath 'com.google.gms:google-services:4.2.0'
         // https://android-developers.googleblog.com/2018/05/announcing-new-sdk-versioning.html では
         // com.google.gms:google-services:3.3.0 以降を使うように書いてあるんだけど、3.3.0にするとGradle sync に失敗する。

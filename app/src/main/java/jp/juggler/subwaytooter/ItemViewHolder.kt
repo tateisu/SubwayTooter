@@ -10,13 +10,11 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
-import android.util.LayoutDirection
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.view.ViewCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
@@ -1210,7 +1208,7 @@ internal class ItemViewHolder(
 		// ニコフレのアンケートの表示
 		val enquete = status.enquete
 		if(enquete != null) {
-			if(enquete.pollType == PollType.FriendsNico && enquete.type != NicoEnquete.TYPE_ENQUETE) {
+			if(enquete.pollType == TootPollsType.FriendsNico && enquete.type != TootPolls.TYPE_ENQUETE) {
 				// フレニコの投票の結果表示は普通にテキストを表示するだけでよい
 			} else {
 				
@@ -2518,25 +2516,25 @@ internal class ItemViewHolder(
 			})
 	}
 	
-	private fun showEnqueteItems(status : TootStatus, enquete : NicoEnquete) {
+	private fun showEnqueteItems(status : TootStatus, enquete : TootPolls) {
 		val items = enquete.items ?: return
 		
 		val now = System.currentTimeMillis()
 		
 		val canVote = when(enquete.pollType) {
-			PollType.Mastodon -> when {
+			TootPollsType.Mastodon -> when {
 				enquete.expired -> false
 				now >= enquete.expired_at -> false
 				enquete.myVoted != null -> false
 				else -> true
 			}
 			
-			PollType.FriendsNico -> {
-				val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
+			TootPollsType.FriendsNico -> {
+				val remain = enquete.time_start + TootPolls.ENQUETE_EXPIRE - now
 				enquete.myVoted == null && remain > 0L
 			}
 			
-			PollType.Misskey -> enquete.myVoted == null
+			TootPollsType.Misskey -> enquete.myVoted == null
 		}
 		
 		items.forEachIndexed { index, choice ->
@@ -2544,25 +2542,25 @@ internal class ItemViewHolder(
 		}
 		
 		when(enquete.pollType) {
-			PollType.Mastodon -> makeEnqueteFooterMastodon(status, enquete, canVote)
+			TootPollsType.Mastodon -> makeEnqueteFooterMastodon(status, enquete, canVote)
 			
-			PollType.FriendsNico -> makeEnqueteFooterFriendsNico(enquete)
+			TootPollsType.FriendsNico -> makeEnqueteFooterFriendsNico(enquete)
 			
-			PollType.Misskey -> {
+			TootPollsType.Misskey -> {
 			}
 		}
 	}
 	
 	private fun makeEnqueteChoiceView(
 		status : TootStatus,
-		enquete : NicoEnquete,
+		enquete : TootPolls,
 		canVote : Boolean,
 		i : Int,
-		item : NicoEnquete.Choice
+		item : TootPollsChoice
 	) {
 		
 		val text = when(enquete.pollType) {
-			PollType.Misskey -> {
+			TootPollsType.Misskey -> {
 				val sb = SpannableStringBuilder()
 					.append(item.decoded_text)
 				
@@ -2574,11 +2572,11 @@ internal class ItemViewHolder(
 				sb
 			}
 			
-			PollType.FriendsNico -> {
+			TootPollsType.FriendsNico -> {
 				item.decoded_text
 			}
 			
-			PollType.Mastodon -> if(canVote) {
+			TootPollsType.Mastodon -> if(canVote) {
 				item.decoded_text
 			} else {
 				val sb = SpannableStringBuilder()
@@ -2617,7 +2615,7 @@ internal class ItemViewHolder(
 			b.padding = (activity.density * 3f + 0.5f).toInt()
 			
 			val ratio = when(enquete.pollType){
-				PollType.Mastodon ->{
+				TootPollsType.Mastodon ->{
 					val votesCount = enquete.votes_count ?:0
 					val max = enquete.maxVotesCount ?:0
 					if( max > 0 && votesCount > 0 ){
@@ -2687,19 +2685,19 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun makeEnqueteFooterFriendsNico(enquete : NicoEnquete) {
+	private fun makeEnqueteFooterFriendsNico(enquete : TootPolls) {
 		val density = activity.density
 		val height = (0.5f + 6 * density).toInt()
 		val view = EnqueteTimerView(activity)
 		view.layoutParams =
 			LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height)
-		view.setParams(enquete.time_start, NicoEnquete.ENQUETE_EXPIRE)
+		view.setParams(enquete.time_start, TootPolls.ENQUETE_EXPIRE)
 		llExtra.addView(view)
 	}
 	
 	private fun makeEnqueteFooterMastodon(
 		status : TootStatus,
-		enquete : NicoEnquete,
+		enquete : TootPolls,
 		canVote : Boolean
 	) {
 		
@@ -2765,7 +2763,7 @@ internal class ItemViewHolder(
 	
 	private fun onClickEnqueteChoice(
 		status : TootStatus,
-		enquete : NicoEnquete,
+		enquete : TootPolls,
 		context : Context,
 		accessInfo : SavedAccount,
 		idx : Int
@@ -2778,19 +2776,19 @@ internal class ItemViewHolder(
 		val now = System.currentTimeMillis()
 		
 		when(enquete.pollType) {
-			PollType.Misskey -> {
+			TootPollsType.Misskey -> {
 				// Misskeyのアンケートには期限がない？
 			}
 			
-			PollType.FriendsNico -> {
-				val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
+			TootPollsType.FriendsNico -> {
+				val remain = enquete.time_start + TootPolls.ENQUETE_EXPIRE - now
 				if(remain <= 0L) {
 					showToast(context, false, R.string.enquete_was_end)
 					return
 				}
 			}
 			
-			PollType.Mastodon -> {
+			TootPollsType.Mastodon -> {
 				if(enquete.expired || now >= enquete.expired_at) {
 					showToast(context, false, R.string.enquete_was_end)
 					return
@@ -2800,14 +2798,14 @@ internal class ItemViewHolder(
 		
 		TootTaskRunner(context).run(accessInfo, object : TootTask {
 			override fun background(client : TootApiClient) = when(enquete.pollType) {
-				PollType.Misskey -> client.request(
+				TootPollsType.Misskey -> client.request(
 					"/api/notes/polls/vote",
 					accessInfo.putMisskeyApiToken(JSONObject())
 						.put("noteId", enquete.status_id.toString())
 						.put("choice", idx)
 						.toPostRequestBuilder()
 				)
-				PollType.Mastodon -> client.request(
+				TootPollsType.Mastodon -> client.request(
 					"/api/v1/polls/${enquete.pollId}/votes",
 					JSONObject()
 						.put(
@@ -2818,7 +2816,7 @@ internal class ItemViewHolder(
 						)
 						.toPostRequestBuilder()
 				)
-				PollType.FriendsNico -> client.request(
+				TootPollsType.FriendsNico -> client.request(
 					"/api/v1/votes/${enquete.status_id}",
 					JSONObject()
 						.put("item_index", idx.toString())
@@ -2832,20 +2830,20 @@ internal class ItemViewHolder(
 				val data = result.jsonObject
 				if(data != null) {
 					when(enquete.pollType) {
-						PollType.Misskey -> if(enquete.increaseVote(activity, idx, true)) {
+						TootPollsType.Misskey -> if(enquete.increaseVote(activity, idx, true)) {
 							showToast(context, false, R.string.enquete_voted)
 							
 							// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
 							list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
 						}
 						
-						PollType.Mastodon -> {
-							val newPoll = NicoEnquete.parse(
+						TootPollsType.Mastodon -> {
+							val newPoll = TootPolls.parse(
 								TootParser(activity, accessInfo),
 								status,
 								status.media_attachments,
 								data,
-								PollType.Mastodon
+								TootPollsType.Mastodon
 							)
 							if(newPoll != null) {
 								status.enquete = newPoll
@@ -2859,7 +2857,7 @@ internal class ItemViewHolder(
 							}
 						}
 						
-						PollType.FriendsNico -> {
+						TootPollsType.FriendsNico -> {
 							val message = data.parseString("message") ?: "?"
 							val valid = data.optBoolean("valid")
 							if(valid) {
@@ -2879,7 +2877,7 @@ internal class ItemViewHolder(
 	
 	private fun sendMultiple(
 		status : TootStatus,
-		enquete : NicoEnquete,
+		enquete : TootPolls,
 		context : Context,
 		accessInfo : SavedAccount
 	) {
@@ -2891,7 +2889,7 @@ internal class ItemViewHolder(
 		
 		TootTaskRunner(context).run(accessInfo, object : TootTask {
 			
-			var newPoll : NicoEnquete? = null
+			var newPoll : TootPolls? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
@@ -2906,12 +2904,12 @@ internal class ItemViewHolder(
 				)?.also { result ->
 					val data = result.jsonObject
 					if(data != null) {
-						newPoll = NicoEnquete.parse(
+						newPoll = TootPolls.parse(
 							TootParser(activity, accessInfo),
 							status,
 							status.media_attachments,
 							data,
-							PollType.Mastodon
+							TootPollsType.Mastodon
 						)
 						if(newPoll == null) result.setError("response parse error")
 					}

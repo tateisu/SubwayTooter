@@ -140,19 +140,19 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 				
 				// friends.nico の場合は本文に投票の選択肢が含まれるので
 				// アプリ側での文字列化は不要
-				PollType.FriendsNico -> return
+				TootPollsType.FriendsNico -> return
 				
 				// MastodonとMisskeyは投票の選択肢が本文に含まれないので
 				// アプリ側で文字列化する
 				
-				PollType.Mastodon -> when {
+				TootPollsType.Mastodon -> when {
 					enquete.expired -> false
 					now >= enquete.expired_at -> false
 					enquete.myVoted != null -> false
 					else -> true
 				}
 
-				PollType.Misskey -> enquete.myVoted == null
+				TootPollsType.Misskey -> enquete.myVoted == null
 			}
 			
 			sb.addAfterLine("\n")
@@ -162,7 +162,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			}
 			
 			when(enquete.pollType) {
-				PollType.Mastodon -> encodePollFooterMastodon(sb, context, enquete)
+				TootPollsType.Mastodon -> encodePollFooterMastodon(sb, context, enquete)
 
 				else->{}
 			}
@@ -171,14 +171,14 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		private fun encodePollChoice(
 			sb : StringBuilder,
 			context : Context,
-			enquete : NicoEnquete,
+			enquete : TootPolls,
 			canVote : Boolean,
 			i : Int,
-			item : NicoEnquete.Choice
+			item : TootPollsChoice
 		) {
 			
 			val text = when(enquete.pollType) {
-				PollType.Misskey -> {
+				TootPollsType.Misskey -> {
 					val sb2 = StringBuilder().append(item.decoded_text)
 					if(enquete.myVoted != null) {
 						sb2.append(" / ")
@@ -188,11 +188,11 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 					sb2
 				}
 				
-				PollType.FriendsNico -> {
+				TootPollsType.FriendsNico -> {
 					item.decoded_text
 				}
 				
-				PollType.Mastodon -> if(canVote) {
+				TootPollsType.Mastodon -> if(canVote) {
 					item.decoded_text
 				} else {
 					val sb2 = StringBuilder().append(item.decoded_text)
@@ -215,7 +215,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		private fun encodePollFooterMastodon(
 			sb : StringBuilder,
 			context : Context,
-			enquete : NicoEnquete
+			enquete : TootPolls
 		) {
 			val line = StringBuilder()
 			

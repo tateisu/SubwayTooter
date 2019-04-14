@@ -11,18 +11,26 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.regex.Pattern
 
-enum class PollType {
-	Mastodon, // Mastodon 2.8's poll
-	Misskey, // Misskey's poll
-	FriendsNico, // friends.nico
+enum class TootPollsType {
+	Mastodon, // Mastodon 2.8
+	Misskey, // Misskey
+	FriendsNico, // friends.nico API
 }
 
-class NicoEnquete(
+class TootPollsChoice(
+	val text : String,
+	val decoded_text : Spannable,
+	var isVoted : Boolean = false, // misskey
+	var votes : Int? = 0, // misskey
+	var checked : Boolean = false // Mastodon
+)
+
+class TootPolls private constructor(
 	parser : TootParser,
 	status : TootStatus,
 	list_attachment : ArrayList<TootAttachmentLike>?,
 	src : JSONObject,
-	val pollType : PollType
+	val pollType : TootPollsType
 ) {
 	
 	// one of enquete,enquete_result
@@ -33,13 +41,13 @@ class NicoEnquete(
 	val decoded_question : Spannable // 表示用にデコードしてしまうのでNonNullになる
 	
 	// array of text with emoji
-	val items : ArrayList<Choice>?
+	val items : ArrayList<TootPollsChoice>?
 	
 	// 結果の数値 // null or array of number
 	var ratios : MutableList<Float>? = null
 	
 	// 結果の数値のテキスト // null or array of string
-	var ratios_text : MutableList<String>? = null
+	private var ratios_text : MutableList<String>? = null
 	
 	var myVoted : Int? = null
 	
@@ -60,132 +68,134 @@ class NicoEnquete(
 		this.time_start = status.time_created_at
 		this.status_id = status.id
 		
-		if(parser.serviceType == ServiceType.MISSKEY) {
-			
-			this.items = parseChoiceListMisskey(
+		when(pollType) {
+			TootPollsType.Misskey -> {
 				
-				src.optJSONArray("choices")
-			)
-			
-			val votesList = ArrayList<Int>()
-			var votesMax = 1
-			items?.forEachIndexed { index, choice ->
-				if(choice.isVoted) this.myVoted = index
-				val votes = choice.votes ?: 0
-				votesList.add(votes)
-				if(votes > votesMax) votesMax = votes
-			}
-			
-			if(votesList.isNotEmpty()) {
-				this.ratios = votesList.map { (it.toFloat() / votesMax.toFloat()) }.toMutableList()
-				this.ratios_text =
-					votesList.map { parser.context.getString(R.string.vote_count_text, it) }
-						.toMutableList()
-			} else {
-				this.ratios = null
-				this.ratios_text = null
-			}
-			
-			this.type = NicoEnquete.TYPE_ENQUETE
-			
-			this.question = status.content
-			this.decoded_question = DecodeOptions(
-				parser.context,
-				parser.linkHelper,
-				short = true,
-				decodeEmoji = true,
-				attachmentList = list_attachment,
-				linkTag = status,
-				emojiMapCustom = status.custom_emojis,
-				emojiMapProfile = status.profile_emojis
-			).decodeHTML(this.question ?: "?")
-			
-		} else if(pollType == PollType.Mastodon) {
-			this.type = "enquete"
-			
-			this.question = status.content
-			this.decoded_question = DecodeOptions(
-				parser.context,
-				parser.linkHelper,
-				short = true,
-				decodeEmoji = true,
-				attachmentList = list_attachment,
-				linkTag = status,
-				emojiMapCustom = status.custom_emojis,
-				emojiMapProfile = status.profile_emojis
-			).decodeHTML(this.question ?: "?")
-			
-			this.items = parseChoiceListMastodon(
-				parser.context,
-				status,
-				src.optJSONArray("options")?.toObjectList()
-			)
-			
-			this.pollId = EntityId.mayNull(src.parseString("id"))
-			this.expired_at = TootStatus.parseTime(src.parseString("expires_at")).notZero() ?: Long.MAX_VALUE
-			this.expired = src.optBoolean("expired", false)
-			this.multiple = src.optBoolean("multiple", false)
-			this.votes_count = src.parseInt("votes_count")
-			this.myVoted = if(src.optBoolean("voted", false)) 1 else null
-			
-			when {
-				this.items == null -> maxVotesCount = null
-				this.multiple -> {
-					var max :Int? = null
-					for( item in items){
-						val v = item.votes
-						if( v != null && (max == null || v > max) ) max =v
-						
-					}
-					maxVotesCount = max
+				this.items = parseChoiceListMisskey(
+					
+					src.optJSONArray("choices")
+				)
+				
+				val votesList = ArrayList<Int>()
+				var votesMax = 1
+				items?.forEachIndexed { index, choice ->
+					if(choice.isVoted) this.myVoted = index
+					val votes = choice.votes ?: 0
+					votesList.add(votes)
+					if(votes > votesMax) votesMax = votes
 				}
-				else -> {
-					var sum :Int?= null
-					for( item in items){
-						val v = item.votes
-						if( v != null ) sum = (sum?:0) + v
-					}
-					maxVotesCount = sum
+				
+				if(votesList.isNotEmpty()) {
+					this.ratios =
+						votesList.map { (it.toFloat() / votesMax.toFloat()) }.toMutableList()
+					this.ratios_text =
+						votesList.map { parser.context.getString(R.string.vote_count_text, it) }
+							.toMutableList()
+				} else {
+					this.ratios = null
+					this.ratios_text = null
 				}
+				
+				this.type = TYPE_ENQUETE
+				
+				this.question = status.content
+				this.decoded_question = DecodeOptions(
+					parser.context,
+					parser.linkHelper,
+					short = true,
+					decodeEmoji = true,
+					attachmentList = list_attachment,
+					linkTag = status,
+					emojiMapCustom = status.custom_emojis,
+					emojiMapProfile = status.profile_emojis
+				).decodeHTML(this.question ?: "?")
+				
 			}
-
-		} else {
-			this.type = src.parseString("type")
 			
-			this.question = src.parseString("question")
-			this.decoded_question = DecodeOptions(
-				parser.context,
-				parser.linkHelper,
-				short = true,
-				decodeEmoji = true,
-				attachmentList = list_attachment,
-				linkTag = status,
-				emojiMapCustom = status.custom_emojis,
-				emojiMapProfile = status.profile_emojis
-			).decodeHTML(this.question ?: "?")
+			TootPollsType.Mastodon -> {
+				this.type = "enquete"
+				
+				this.question = status.content
+				this.decoded_question = DecodeOptions(
+					parser.context,
+					parser.linkHelper,
+					short = true,
+					decodeEmoji = true,
+					attachmentList = list_attachment,
+					linkTag = status,
+					emojiMapCustom = status.custom_emojis,
+					emojiMapProfile = status.profile_emojis
+				).decodeHTML(this.question ?: "?")
+				
+				this.items = parseChoiceListMastodon(
+					parser.context,
+					status,
+					src.optJSONArray("options")?.toObjectList()
+				)
+				
+				this.pollId = EntityId.mayNull(src.parseString("id"))
+				this.expired_at =
+					TootStatus.parseTime(src.parseString("expires_at")).notZero() ?: Long.MAX_VALUE
+				this.expired = src.optBoolean("expired", false)
+				this.multiple = src.optBoolean("multiple", false)
+				this.votes_count = src.parseInt("votes_count")
+				this.myVoted = if(src.optBoolean("voted", false)) 1 else null
+				
+				when {
+					this.items == null -> maxVotesCount = null
+					
+					this.multiple -> {
+						var max : Int? = null
+						for(item in items) {
+							val v = item.votes
+							if(v != null && (max == null || v > max)) max = v
+							
+						}
+						maxVotesCount = max
+					}
+					
+					else -> {
+						var sum : Int? = null
+						for(item in items) {
+							val v = item.votes
+							if(v != null) sum = (sum ?: 0) + v
+						}
+						maxVotesCount = sum
+					}
+				}
+				
+			}
 			
-			this.items = parseChoiceListFriendsNico(
-				parser.context,
-				status,
-				src.parseStringArrayList("items")
-			)
-			
-			this.ratios = src.parseFloatArrayList("ratios")
-			this.ratios_text = src.parseStringArrayList("ratios_text")
+			TootPollsType.FriendsNico -> {
+				this.type = src.parseString("type")
+				
+				this.question = src.parseString("question")
+				this.decoded_question = DecodeOptions(
+					parser.context,
+					parser.linkHelper,
+					short = true,
+					decodeEmoji = true,
+					attachmentList = list_attachment,
+					linkTag = status,
+					emojiMapCustom = status.custom_emojis,
+					emojiMapProfile = status.profile_emojis
+				).decodeHTML(this.question ?: "?")
+				
+				this.items = parseChoiceListFriendsNico(
+					parser.context,
+					status,
+					src.parseStringArrayList("items")
+				)
+				
+				this.ratios = src.parseFloatArrayList("ratios")
+				this.ratios_text = src.parseStringArrayList("ratios_text")
+			}
 		}
 		
 	}
 	
-	class Choice(
-		val text : String,
-		val decoded_text : Spannable,
-		var isVoted : Boolean = false, // misskey
-		var votes : Int? = 0, // misskey
-		var checked : Boolean = false // Mastodon
-	)
-	
 	companion object {
-		internal val log = LogCategory("NicoEnquete")
+		internal val log = LogCategory("TootPolls")
 		
 		const val ENQUETE_EXPIRE = 30000L
 		
@@ -202,11 +212,11 @@ class NicoEnquete(
 			status : TootStatus,
 			list_attachment : ArrayList<TootAttachmentLike>?,
 			src : JSONObject?,
-			pollType : PollType
-		) : NicoEnquete? {
+			pollType : TootPollsType
+		) : TootPolls? {
 			src ?: return null
 			return try {
-				NicoEnquete(
+				TootPolls(
 					parser,
 					status,
 					list_attachment,
@@ -223,10 +233,10 @@ class NicoEnquete(
 			context : Context,
 			status : TootStatus,
 			objectArray : ArrayList<JSONObject>?
-		) : ArrayList<Choice>? {
+		) : ArrayList<TootPollsChoice>? {
 			if(objectArray != null) {
 				val size = objectArray.size
-				val items = ArrayList<Choice>(size)
+				val items = ArrayList<TootPollsChoice>(size)
 				val options = DecodeOptions(
 					context,
 					emojiMapCustom = status.custom_emojis,
@@ -240,7 +250,7 @@ class NicoEnquete(
 					val decoded_text = options.decodeHTML(text)
 					
 					items.add(
-						Choice(
+						TootPollsChoice(
 							text,
 							decoded_text,
 							votes = o.parseInt("votes_count") // may null
@@ -256,10 +266,10 @@ class NicoEnquete(
 			context : Context,
 			status : TootStatus,
 			stringArray : ArrayList<String>?
-		) : ArrayList<Choice>? {
+		) : ArrayList<TootPollsChoice>? {
 			if(stringArray != null) {
 				val size = stringArray.size
-				val items = ArrayList<Choice>(size)
+				val items = ArrayList<TootPollsChoice>(size)
 				val options = DecodeOptions(
 					context,
 					emojiMapCustom = status.custom_emojis,
@@ -272,7 +282,12 @@ class NicoEnquete(
 						.replaceAll(" ")
 					val decoded_text = options.decodeHTML(text)
 					
-					items.add(Choice(text, decoded_text))
+					items.add(
+						TootPollsChoice(
+							text,
+							decoded_text
+						)
+					)
 				}
 				if(items.isNotEmpty()) return items
 			}
@@ -281,9 +296,9 @@ class NicoEnquete(
 		
 		private fun parseChoiceListMisskey(
 			choices : JSONArray?
-		) : ArrayList<Choice>? {
+		) : ArrayList<TootPollsChoice>? {
 			if(choices != null) {
-				val items = ArrayList<Choice>()
+				val items = ArrayList<TootPollsChoice>()
 				for(i in 0 until choices.length()) {
 					val src = choices.optJSONObject(i)
 					
@@ -292,7 +307,7 @@ class NicoEnquete(
 						.replaceAll(" ")
 					val decoded_text = SpannableString(text) // misskey ではマークダウン不可で絵文字もない
 					
-					val dst = Choice(
+					val dst = TootPollsChoice(
 						text = text,
 						decoded_text = decoded_text,
 						// 配列インデクスと同じだった id = EntityId.mayNull(src.parseLong("id")),

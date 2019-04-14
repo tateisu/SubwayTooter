@@ -723,11 +723,11 @@ class ActPost : AppCompatActivity(),
 						val src_enquete = base_status.enquete
 						val src_items = src_enquete?.items
 						if(src_items != null) {
-							if(src_enquete.pollType == PollType.FriendsNico && src_enquete.type != NicoEnquete.TYPE_ENQUETE) {
+							if(src_enquete.pollType == TootPollsType.FriendsNico && src_enquete.type != TootPolls.TYPE_ENQUETE) {
 								// フレニコAPIのアンケート結果は再編集の対象外
 							} else {
 								spEnquete.setSelection(
-									if(src_enquete.pollType == PollType.FriendsNico) {
+									if(src_enquete.pollType == TootPollsType.FriendsNico) {
 										2
 									} else {
 										1
@@ -2241,7 +2241,7 @@ class ActPost : AppCompatActivity(),
 		when(spEnquete.selectedItemPosition) {
 			1 -> {
 				copyEnqueteText()
-				post_helper.poll_type = PollType.Mastodon
+				post_helper.poll_type = TootPollsType.Mastodon
 				post_helper.poll_expire_seconds = getExpireSeconds()
 				post_helper.poll_hide_totals = cbHideTotals.isChecked
 				post_helper.poll_multiple_choice = cbMultipleChoice.isChecked
@@ -2249,7 +2249,7 @@ class ActPost : AppCompatActivity(),
 			
 			2 -> {
 				copyEnqueteText()
-				post_helper.poll_type = PollType.FriendsNico
+				post_helper.poll_type = TootPollsType.FriendsNico
 				
 			}
 			

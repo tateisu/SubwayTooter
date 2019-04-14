@@ -136,7 +136,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	var conversation_main : Boolean = false
 	
-	var enquete : NicoEnquete? = null
+	var enquete : TootPolls? = null
 	
 	//
 	var replies_count : Long? = null
@@ -319,12 +319,12 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			}
 			
 			// contentを読んだ後にアンケートのデコード
-			this.enquete = NicoEnquete.parse(
+			this.enquete = TootPolls.parse(
 				parser,
 				this,
 				media_attachments,
 				src.optJSONObject("poll"),
-				PollType.Misskey
+				TootPollsType.Misskey
 			)
 			
 			this.reactionCounts = parseReactionCounts(src.optJSONObject("reactionCounts"))
@@ -493,21 +493,21 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.enquete = try {
 				sv = src.parseString("enquete") ?: ""
 				if(sv.isNotEmpty()) {
-					NicoEnquete.parse(
+					TootPolls.parse(
 						parser,
 						this,
 						media_attachments,
 						sv.toJsonObject(),
-						PollType.FriendsNico
+						TootPollsType.FriendsNico
 					)
 				} else {
 					val ov = src.optJSONObject("poll")
-					NicoEnquete.parse(
+					TootPolls.parse(
 						parser,
 						this,
 						media_attachments,
 						ov,
-						PollType.Mastodon
+						TootPollsType.Mastodon
 					)
 				}
 			} catch(ex : Throwable) {

@@ -99,10 +99,10 @@ class PostHelper(
 		val in_reply_to_id = this.in_reply_to_id
 		val attachment_list = this.attachment_list
 		val enquete_items = this.enquete_items
-		var poll_type = this.poll_type
-		var poll_expire_seconds = this.poll_expire_seconds
-		var poll_hide_totals = this.poll_hide_totals
-		var poll_multiple_choice = this.poll_multiple_choice
+		val poll_type = this.poll_type
+		val poll_expire_seconds = this.poll_expire_seconds
+		val poll_hide_totals = this.poll_hide_totals
+		val poll_multiple_choice = this.poll_multiple_choice
 		
 		val visibility = this.visibility
 		val scheduledAt = this.scheduledAt

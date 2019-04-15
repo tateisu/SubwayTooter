@@ -192,6 +192,7 @@ class TootApiClient(
 		fun getScopeArrayMisskey(@Suppress("UNUSED_PARAMETER") ti : TootInstance) =
 			JSONArray().apply {
 				if(ti.versionGE(TootInstance.MISSKEY_VERSION_11)) {
+					// https://github.com/syuilo/misskey/blob/master/src/server/api/kinds.ts
 					arrayOf(
 						"read:account",
 						"write:account",

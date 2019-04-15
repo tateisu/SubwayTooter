@@ -191,31 +191,57 @@ class TootApiClient(
 		
 		fun getScopeArrayMisskey(@Suppress("UNUSED_PARAMETER") ti : TootInstance) =
 			JSONArray().apply {
-				// https://github.com/syuilo/misskey/issues/2341
-				arrayOf(
-					"account-read",
-					"account-write",
-					"account/read",
-					"account/write",
-					"drive-read",
-					"drive-write",
-					"favorite-read",
-					"favorite-write",
-					"favorites-read",
-					"following-read",
-					"following-write",
-					"messaging-read",
-					"messaging-write",
-					"note-read",
-					"note-write",
-					"notification-read",
-					"notification-write",
-					"reaction-read",
-					"reaction-write",
-					"vote-read",
-					"vote-write"
-				
-				)
+				if(ti.versionGE(TootInstance.MISSKEY_VERSION_11)) {
+					arrayOf(
+						"read:account",
+						"write:account",
+						"read:blocks",
+						"write:blocks",
+						"read:drive",
+						"write:drive",
+						"read:favorites",
+						"write:favorites",
+						"read:following",
+						"write:following",
+						"read:messaging",
+						"write:messaging",
+						"read:mutes",
+						"write:mutes",
+						"write:notes",
+						"read:notifications",
+						"write:notifications",
+						"read:reactions",
+						"write:reactions",
+						"write:votes"
+					)
+				} else {
+					// https://github.com/syuilo/misskey/issues/2341
+					arrayOf(
+						"account-read",
+						"account-write",
+						"account/read",
+						"account/write",
+						"drive-read",
+						"drive-write",
+						"favorite-read",
+						"favorite-write",
+						"favorites-read",
+						"following-read",
+						"following-write",
+						"messaging-read",
+						"messaging-write",
+						"note-read",
+						"note-write",
+						"notification-read",
+						"notification-write",
+						"reaction-read",
+						"reaction-write",
+						"vote-read",
+						"vote-write"
+					
+					)
+					
+				}
 					// APIのエラーを回避するため、重複を排除する
 					.toMutableSet()
 					.forEach { put(it) }

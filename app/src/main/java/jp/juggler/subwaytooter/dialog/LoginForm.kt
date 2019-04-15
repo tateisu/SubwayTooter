@@ -131,6 +131,7 @@ object LoginForm {
 					if(s.isNotEmpty()) instance_list.add(s)
 				}
 			}
+			instance_list.sort()
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}

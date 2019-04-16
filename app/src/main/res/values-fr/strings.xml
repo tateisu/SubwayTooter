@@ -79,7 +79,7 @@
     <string name="confirm_before_boost">Confirmer avant de booster</string>
     <string name="confirm_block_user">Bloquer « %1$s » \?</string>
     <string name="confirm_boost_from">%1$s voulez-vous partager ce toot ?,\nil sera affiché chez vos abonnés et sur votre profil.</string>
-    <string name="confirm_unboost_from">Unboost this status from %1$s \?</string>
+    <string name="confirm_unboost_from">Désamorcer ce statut de %1$s \?</string>
     <string name="confirm_favourite_from">Favourite this status from %1$s ? Notification will be sent to the author.</string>
     <string name="confirm_unfavourite_from">Voulez-vous retirer ce statut des favoris de %1$s \?</string>
     <string name="confirm_close_column">Fermer cette colonne ?</string>
@@ -138,7 +138,7 @@
     <string name="favourited_by">Mis en favori par …</string>
     <string name="favourites">Favoris</string>
     <string name="federate_timeline">Fil fédéré</string>
-    <string name="file_size_too_big">Taille du fichier est trop grande. La limite maximale est de %1$d Mo.</string>
+    <string name="file_size_too_big">Le fichier est plus grand que la limite de %1$ dMo.</string>
     <string name="follow">S’abonner</string>
     <string name="follow_from_another_account">Suivre (sélection du compte)</string>
     <string name="follow_locked_user">Suivre un utilisateur verrouillé</string>
@@ -167,10 +167,10 @@
     <string name="image_capture">Utiliser l’appareil photo</string>
     <string name="pick_image">Choisir une image</string>
     <string name="pick_images">Choisir une image…</string>
-    <string name="instance">Instance</string>
+    <string name="instance">Serveur</string>
     <string name="instance_hint">Ex) mastodon.social</string>
     <string name="instance_not_need_slash">Nom de l’hôte de l’instance, sans « / » ni « @ ».</string>
-    <string name="instance_not_specified">Instance non spécifiée</string>
+    <string name="instance_not_specified">Serveur non spécifié</string>
     <string name="it_is_you">C\'est vous.</string>
     <string name="last_selection">Dernière sélection</string>
     <string name="led">Diode</string>

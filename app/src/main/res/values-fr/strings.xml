@@ -860,4 +860,26 @@
     <string name="hashtag_title_none">sans %1$s</string>
     <string name="add">Ajouter</string>
     <string name="follow_request_misskey">Demande d’abonnement (Misskey)</string>
+    <string name="vote_polls">Sondage ou son résultat</string>
+    <string name="unfollow_misskey">Se désabonner (Misskey)</string>
+    <string name="dont_remove_deleted_toot_from_timeline">Ne pas enlever les pouets supprimés sur le fil</string>
+    <string name="dont_show_column_background_image">Ne pas afficher l\'image de fond de la colonne</string>
+    <string name="allow_multiple_choice">Autoriser le choix multiple</string>
+    <string name="hide_totals">Cacher les totaux jusqu\'à expiration</string>
+    <string name="expiration">Expiration</string>
+    <string name="poll_dont_make">Sans sondage</string>
+    <string name="poll_make">Effectuer un sondage</string>
+    <string name="poll_make_friends_nico">Effectuer un sondage (friends.nico API)</string>
+    <string name="plus">+</string>
+    <string name="poll_expire_days">jours</string>
+    <string name="poll_expire_hours">heures</string>
+    <string name="poll_expire_minutes">minutes</string>
+    <string name="vote_1">1 vote</string>
+    <string name="vote_2">%1$d votes.</string>
+    <string name="vote_expire_at">expire : %1$s</string>
+    <string name="vote_count_unavailable">\?\?\? votes</string>
+    <string name="vote_button">Voter</string>
+    <string name="end_of_polling_from">Fin du sondage de %1$s</string>
+    <string name="quick_toot_menu">Menu de pouet rapide</string>
+    <string name="input">Entrée</string>
 </resources>

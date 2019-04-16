@@ -247,7 +247,7 @@ class TootPolls private constructor(
 					val text = reWhitespace
 						.matcher((o.parseString("title") ?: "?").sanitizeBDI())
 						.replaceAll(" ")
-					val decoded_text = options.decodeHTML(text)
+					val decoded_text = options.decodeEmoji(text)
 					
 					items.add(
 						TootPollsChoice(

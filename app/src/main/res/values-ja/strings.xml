@@ -892,5 +892,6 @@
     <string name="confirm_private_boost_from">このトゥートを %1$s からブーストしますか? 全てのフォロワーに公開されます</string>
     <string name="quick_toot_menu">簡易投稿メニュー</string>
     <string name="input">入力</string>
+    <string name="polls_choice_not_selected">1つ以上の項目を選んでください。</string>
 
 </resources>

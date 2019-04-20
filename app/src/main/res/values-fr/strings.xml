@@ -138,7 +138,7 @@
     <string name="favourited_by">Mis en favori par …</string>
     <string name="favourites">Favoris</string>
     <string name="federate_timeline">Fil fédéré</string>
-    <string name="file_size_too_big">Le fichier est plus grand que la limite de %1$ dMo.</string>
+    <string name="file_size_too_big">Le fichier est plus grand que la limite de %1$d Mo.</string>
     <string name="follow">S’abonner</string>
     <string name="follow_from_another_account">Suivre (sélection du compte)</string>
     <string name="follow_locked_user">Suivre un utilisateur verrouillé</string>

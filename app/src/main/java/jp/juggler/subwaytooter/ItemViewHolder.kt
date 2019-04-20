@@ -2887,6 +2887,11 @@ internal class ItemViewHolder(
 			return
 		}
 		
+		if( enquete.items?.find{ it.checked } == null ){
+			showToast(context, false, R.string.polls_choice_not_selected)
+			return
+		}
+		
 		TootTaskRunner(context).run(accessInfo, object : TootTask {
 			
 			var newPoll : TootPolls? = null

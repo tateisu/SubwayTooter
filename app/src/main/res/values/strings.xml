@@ -887,5 +887,6 @@
     <string name="confirm_private_boost_from">Boost this status from %1$s ? It\'s shown to all followers.</string>
     <string name="quick_toot_menu">Quick toot menu</string>
     <string name="input">Input</string>
+    <string name="polls_choice_not_selected">Please select 1 or more choices.</string>
 
 </resources>

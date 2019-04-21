@@ -116,7 +116,7 @@ class ActPost : AppCompatActivity(),
 		private val imageHeaderList = arrayOf(
 			Pair(
 				"image/jpeg",
-				intArrayOf(0xff, 0xd8, 0xff ).toByteArray()
+				intArrayOf(0xff, 0xd8, 0xff).toByteArray()
 			),
 			Pair(
 				"image/png",
@@ -144,7 +144,6 @@ class ActPost : AppCompatActivity(),
 			}
 			return null
 		}
-		
 		//	private void performCameraVideo(){
 		//
 		//		try{
@@ -555,8 +554,7 @@ class ActPost : AppCompatActivity(),
 			if(sent_intent != null) {
 				
 				appendContentText(sent_intent)
-				val action = sent_intent.action
-				when(action) {
+				when(sent_intent.action) {
 					Intent.ACTION_VIEW -> {
 						val uri = sent_intent.data
 						val type = sent_intent.type
@@ -873,7 +871,7 @@ class ActPost : AppCompatActivity(),
 			outState.putInt(KEY_VISIBILITY, it.id)
 		}
 		
-		if(! attachment_list.isEmpty()) {
+		if(attachment_list.isNotEmpty()) {
 			val array = JSONArray()
 			for(pa in attachment_list) {
 				// アップロード完了したものだけ保持する
@@ -1257,7 +1255,7 @@ class ActPost : AppCompatActivity(),
 			return
 		}
 		
-		if(! attachment_list.isEmpty()) {
+		if(attachment_list.isNotEmpty()) {
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
 			showToast(this, false, R.string.cant_change_account_when_attachment_specified)
 			return
@@ -2626,7 +2624,7 @@ class ActPost : AppCompatActivity(),
 				showEnquete()
 				showQuotedRenote()
 				
-				if(! list_warning.isEmpty()) {
+				if(list_warning.isNotEmpty()) {
 					val sb = StringBuilder()
 					for(s in list_warning) {
 						if(sb.isNotEmpty()) sb.append("\n")

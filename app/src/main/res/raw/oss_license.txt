@@ -2,6 +2,8 @@
 tateisu/SubwayTooter
 https://github.com/tateisu/SubwayTooter
 
+Copyright (C) 2017 tateisu
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -15,22 +17,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ====================================================
-Ranks/emojione
-https://github.com/Ranks/emojione
-
-EmojiOne Artwork
-- Applies to all PNG files found in the emojione-assets repo as well as any adaptations made.
-- Free license: emojione.com/developers/free-license
-- Premium license: emojione.com/developers/premium-license
-
-EmojiOne Non-Artwork
-- Applies to the Javascript, JSON, PHP, CSS, HTML files, and everything else not covered under the artwork license above, found in both the emojione and emojione-assets repos.
-- License: MIT
-- Complete Legal Terms: http://opensource.org/licenses/MIT
-
-====================================================
 square/okhttp
 https://github.com/square/okhttp
+
+Copyright (C) 2012 Square, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -152,6 +142,8 @@ limitations under the License.
 jrummyapps/colorpicker
 https://github.com/jrummyapps/colorpicker
 
+Copyright (C) 2017 Jared Rummler
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -225,9 +217,9 @@ SOFTWARE.
 iamcal/emoji-data
 https://github.com/iamcal/emoji-data
 
-The MIT License (MIT)
-
 Copyright (c) 2013 Cal Henderson
+
+The MIT License (MIT)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -275,6 +267,8 @@ THE SOFTWARE.
 google/ExoPlayer
 https://github.com/google/ExoPlayer
 
+Copyright (C) 2018 The Android Open Source Project
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -297,3 +291,41 @@ https://icons8.com/articles/weve-contributed-an-icon-to-imageoptim/
 https://wee.jp/mastodon/
 
 Copyright 2018 weepjp, kyori19.
+
+====================================================
+BigBadaboom/AndroidSVG
+https://github.com/BigBadaboom/androidsvg
+
+Copyright 2014 Paul LeBeau, Cave Rock Software Ltd.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+====================================================
+google/Conscrypt
+https://github.com/google/conscrypt
+
+Copyright (C) 2017 The Android Open Source Project
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+====================================================

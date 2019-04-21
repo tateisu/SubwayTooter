@@ -77,7 +77,7 @@ fun IntArray.toByteArray() : ByteArray {
 }
 
 // 各要素の下位8ビットを使ってバイト配列を作る
-fun CharArray.toByteArray() : ByteArray {
+fun CharArray.toLowerByteArray() : ByteArray {
 	val dst = ByteArray(this.size)
 	for(i in 0 until this.size) {
 		dst[i] = this[i].toByte()

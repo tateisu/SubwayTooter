@@ -114,12 +114,18 @@ class ActPost : AppCompatActivity(),
 		}
 		
 		private val imageHeaderList = arrayOf(
-			Pair("image/jpeg", intArrayOf(0xff, 0xd8, 0xff, 0xe0).toByteArray()),
+			Pair(
+				"image/jpeg",
+				intArrayOf(0xff, 0xd8, 0xff ).toByteArray()
+			),
 			Pair(
 				"image/png",
 				intArrayOf(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A).toByteArray()
 			),
-			Pair("image/gif", charArrayOf('G', 'I', 'F').toByteArray())
+			Pair(
+				"image/gif",
+				charArrayOf('G', 'I', 'F').toLowerByteArray()
+			)
 		)
 		
 		private fun checkImageHeaderList(contentResolver : ContentResolver, uri : Uri) : String? {
@@ -1962,7 +1968,7 @@ class ActPost : AppCompatActivity(),
 									opener.open().use { inData ->
 										val tmp = ByteArray(4096)
 										while(true) {
-										val r = inData.read(tmp, 0, tmp.size)
+											val r = inData.read(tmp, 0, tmp.size)
 											if(r <= 0) break
 											sink.write(tmp, 0, r)
 										}
@@ -2345,7 +2351,7 @@ class ActPost : AppCompatActivity(),
 		val content = etContent.text.toString()
 		val content_warning =
 			if(cbContentWarning.isChecked) etContentWarning.text.toString() else ""
-
+		
 		val isEnquete = spEnquete.selectedItemPosition > 0
 		
 		val str_choice = arrayOf(
@@ -2387,19 +2393,19 @@ class ActPost : AppCompatActivity(),
 			json.put(DRAFT_REPLY_URL, in_reply_to_url)
 			
 			json.put(DRAFT_QUOTED_RENOTE, cbQuoteRenote.isChecked)
-
+			
 			// deprecated. but still used in old draft.
 			// json.put(DRAFT_IS_ENQUETE, isEnquete)
-
+			
 			json.put(DRAFT_POLL_TYPE, spEnquete.selectedItemPosition.toPollTypeString())
 			
 			json.put(DRAFT_POLL_MULTIPLE, cbMultipleChoice.isChecked)
-			json.put(DRAFT_POLL_HIDE_TOTALS, 	cbHideTotals.isChecked )
-			json.put(DRAFT_POLL_EXPIRE_DAY,etExpireDays.text.toString())
-			json.put(DRAFT_POLL_EXPIRE_HOUR,etExpireHours.text.toString())
-			json.put(DRAFT_POLL_EXPIRE_MINUTE,etExpireMinutes.text.toString())
+			json.put(DRAFT_POLL_HIDE_TOTALS, cbHideTotals.isChecked)
+			json.put(DRAFT_POLL_EXPIRE_DAY, etExpireDays.text.toString())
+			json.put(DRAFT_POLL_EXPIRE_HOUR, etExpireHours.text.toString())
+			json.put(DRAFT_POLL_EXPIRE_MINUTE, etExpireMinutes.text.toString())
 			
-			json.put(DRAFT_ENQUETE_ITEMS, JSONArray().apply{
+			json.put(DRAFT_ENQUETE_ITEMS, JSONArray().apply {
 				for(s in str_choice) {
 					put(s)
 				}
@@ -2419,12 +2425,12 @@ class ActPost : AppCompatActivity(),
 		"friendsNico" -> 2
 		else -> 0
 	}
+	
 	private fun Int?.toPollTypeString() = when(this) {
-		1->"mastodon"
-		2->"friendsNico"
+		1 -> "mastodon"
+		2 -> "friendsNico"
 		else -> ""
 	}
-	
 	
 	private fun openDraftPicker() {
 		
@@ -2565,21 +2571,20 @@ class ActPost : AppCompatActivity(),
 				
 				cbQuoteRenote.isChecked = draft.optBoolean(DRAFT_QUOTED_RENOTE)
 				
-				val sv = draft.optString(DRAFT_POLL_TYPE,null)
-				if(sv!=null){
-					spEnquete.setSelection( sv.toPollTypeIndex() )
-				}else{
+				val sv = draft.optString(DRAFT_POLL_TYPE, null)
+				if(sv != null) {
+					spEnquete.setSelection(sv.toPollTypeIndex())
+				} else {
 					// old draft
 					val bv = draft.optBoolean(DRAFT_IS_ENQUETE, false)
-					spEnquete.setSelection( if(bv) 2 else 0)
+					spEnquete.setSelection(if(bv) 2 else 0)
 				}
 				
 				cbMultipleChoice.isChecked = draft.optBoolean(DRAFT_POLL_MULTIPLE)
 				cbHideTotals.isChecked = draft.optBoolean(DRAFT_POLL_HIDE_TOTALS)
-				etExpireDays.setText( draft.optString(DRAFT_POLL_EXPIRE_DAY,"1"))
-				etExpireHours.setText( draft.optString(DRAFT_POLL_EXPIRE_HOUR,""))
-				etExpireMinutes.setText( draft.optString(DRAFT_POLL_EXPIRE_MINUTE,""))
-				
+				etExpireDays.setText(draft.optString(DRAFT_POLL_EXPIRE_DAY, "1"))
+				etExpireHours.setText(draft.optString(DRAFT_POLL_EXPIRE_HOUR, ""))
+				etExpireMinutes.setText(draft.optString(DRAFT_POLL_EXPIRE_MINUTE, ""))
 				
 				val array = draft.optJSONArray(DRAFT_ENQUETE_ITEMS)
 				if(array != null) {

@@ -85,7 +85,7 @@ object Action_Account {
 							LoginForm.Action.Pseudo -> addPseudoAccount(
 								activity,
 								instance,
-								data.optBoolean("isMisskey", false)
+								misskeyVersion = TootApiClient.parseMisskeyVersion(data)
 							) { a ->
 								showToast(activity, false, R.string.server_confirmed)
 								val pos = App1.getAppState(activity).column_list.size
@@ -152,13 +152,13 @@ object Action_Account {
 					)
 					val ti = r1?.jsonObject ?: return r1
 					
-					val isMisskey = ti.optBoolean(TootApiClient.KEY_IS_MISSKEY)
-					val linkHelper = LinkHelper.newLinkHelper(instance, isMisskey = isMisskey)
+					val misskeyVersion = TootApiClient.parseMisskeyVersion(ti)
+					val linkHelper = LinkHelper.newLinkHelper(instance, misskeyVersion = misskeyVersion)
 					
 					val access_token = ti.parseString("access_token")
 						?: return TootApiResult("can't get user access token")
 					
-					val r2 = client.getUserCredential(access_token, isMisskey = isMisskey)
+					val r2 = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
 					this.ta = TootParser(activity, linkHelper).account(r2?.jsonObject)
 					if( this.ta != null) return r2
 

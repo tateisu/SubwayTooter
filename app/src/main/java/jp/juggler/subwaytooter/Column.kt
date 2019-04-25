@@ -400,7 +400,49 @@ class Column(
 				})
 		}
 		
-		private val misskeyArrayFinderUsers = { it : JSONObject -> it.optJSONArray("users") }
+		private val misskeyArrayFinderUsers = { it : JSONObject ->
+			it.optJSONArray("users")
+		}
+		
+		private val misskeyFollowingParser =
+			{ parser : TootParser, jsonArray : JSONArray ->
+				val dst = ArrayList<TootAccountRef>()
+				for(i in 0 until jsonArray.length()) {
+					val src = jsonArray.optJSONObject(i) ?: continue
+					
+					val accountRef = TootAccountRef.mayNull(
+						parser,
+						parser.account(src.optJSONObject("followee"))
+					) ?: continue
+					
+					val relationId = EntityId.mayNull(src.parseString("id")) ?: continue
+					
+					accountRef._orderId = relationId
+					
+					dst.add(accountRef)
+				}
+				dst
+			}
+
+		private val misskeyFollowersParser =
+			{ parser : TootParser, jsonArray : JSONArray ->
+				val dst = ArrayList<TootAccountRef>()
+				for(i in 0 until jsonArray.length()) {
+					val src = jsonArray.optJSONObject(i) ?: continue
+					
+					val accountRef = TootAccountRef.mayNull(
+						parser,
+						parser.account(src.optJSONObject("follower"))
+					) ?: continue
+					
+					val relationId = EntityId.mayNull(src.parseString("id")) ?: continue
+					
+					accountRef._orderId = relationId
+					
+					dst.add(accountRef)
+				}
+				dst
+			}
 		
 		private val misskeyCustomParserFollowRequest =
 			{ parser : TootParser, jsonArray : JSONArray ->
@@ -2810,6 +2852,17 @@ class Column(
 								
 								TAB_FOLLOWING -> return when {
 									
+									access_info.misskeyVersion >= 11 -> {
+										pagingType = PagingType.Default
+										parseAccountList(
+											client,
+											PATH_MISSKEY_PROFILE_FOLLOWING,
+											emptyMessage = context.getString(R.string.none_or_hidden_following),
+											misskeyParams = makeMisskeyParamsUserId(parser),
+											misskeyCustomParser = misskeyFollowingParser
+										)
+									}
+
 									isMisskey -> {
 										pagingType = PagingType.Cursor
 										parseAccountList(
@@ -2845,6 +2898,17 @@ class Column(
 								}
 								
 								TAB_FOLLOWERS -> return when {
+									
+									access_info.misskeyVersion >= 11 -> {
+										pagingType = PagingType.Default
+										parseAccountList(
+											client,
+											PATH_MISSKEY_PROFILE_FOLLOWERS,
+											emptyMessage = context.getString(R.string.none_or_hidden_followers),
+											misskeyParams = makeMisskeyParamsUserId(parser),
+											misskeyCustomParser = misskeyFollowersParser
+										)
+									}
 									
 									isMisskey -> {
 										pagingType = PagingType.Cursor
@@ -4955,15 +5019,23 @@ class Column(
 							
 							
 							when(profile_tab) {
-								TAB_FOLLOWING -> if(isMisskey) {
-									getAccountList(
+								TAB_FOLLOWING -> when {
+									access_info.misskeyVersion >= 11 ->{
+										this@Column.useDate = false
+										getAccountList(
+										client,
+										PATH_MISSKEY_PROFILE_FOLLOWING,
+										misskeyParams = makeMisskeyParamsUserId(parser),
+										misskeyCustomParser = misskeyFollowingParser
+									)
+									}
+									isMisskey -> getAccountList(
 										client,
 										PATH_MISSKEY_PROFILE_FOLLOWING,
 										misskeyParams = makeMisskeyParamsUserId(parser),
 										misskeyArrayFinder = misskeyArrayFinderUsers
 									)
-								} else {
-									getAccountList(
+									else -> getAccountList(
 										client,
 										String.format(
 											Locale.JAPAN,
@@ -4973,15 +5045,25 @@ class Column(
 									)
 								}
 								
-								TAB_FOLLOWERS -> if(isMisskey) {
-									getAccountList(
+								TAB_FOLLOWERS -> when {
+									access_info.misskeyVersion >= 11 ->{
+										this@Column.useDate = false
+										getAccountList(
+											client,
+											PATH_MISSKEY_PROFILE_FOLLOWERS,
+											misskeyParams = makeMisskeyParamsUserId(parser),
+											misskeyCustomParser = misskeyFollowersParser
+										)
+									}
+
+									isMisskey -> getAccountList(
 										client,
 										PATH_MISSKEY_PROFILE_FOLLOWERS,
 										misskeyParams = makeMisskeyParamsUserId(parser),
 										misskeyArrayFinder = misskeyArrayFinderUsers
 									)
-								} else {
-									getAccountList(
+
+									else -> getAccountList(
 										client,
 										String.format(
 											Locale.JAPAN,
@@ -6093,28 +6175,37 @@ class Column(
 						
 						TYPE_PROFILE -> when(profile_tab) {
 							
-							TAB_FOLLOWING -> if(isMisskey) {
-								getAccountList(
+							TAB_FOLLOWING -> when {
+								access_info.misskeyVersion >= 11 ->getAccountList(
+									client
+									, PATH_MISSKEY_PROFILE_FOLLOWING
+									, 	misskeyCustomParser = misskeyFollowingParser
+								)
+								
+								isMisskey -> getAccountList(
 									client
 									, PATH_MISSKEY_PROFILE_FOLLOWING
 									, misskeyParams = makeMisskeyParamsUserId(parser)
 								)
-							} else {
-								getAccountList(
+								else -> getAccountList(
 									client,
 									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)
 								)
 							}
 							
-							TAB_FOLLOWERS -> if(isMisskey) {
-								getAccountList(
+							TAB_FOLLOWERS -> when {
+								access_info.misskeyVersion >= 11 ->getAccountList(
+									client
+									, PATH_MISSKEY_PROFILE_FOLLOWING
+									, 	misskeyCustomParser = misskeyFollowersParser
+								)
+								
+								isMisskey -> getAccountList(
 									client
 									, PATH_MISSKEY_PROFILE_FOLLOWERS
 									, misskeyParams = makeMisskeyParamsUserId(parser)
 								)
-								
-							} else {
-								getAccountList(
+								else -> getAccountList(
 									client,
 									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id)
 								)
@@ -7252,6 +7343,8 @@ class Column(
 	}
 	
 	val isMisskey : Boolean = access_info.isMisskey
+
+	val misskeyVersion = access_info.misskeyVersion
 	
 	fun saveScrollPosition() {
 		try {

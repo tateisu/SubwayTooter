@@ -666,14 +666,11 @@ object Action_Toot {
 		
 		// 同タンスのアカウントがないなら、疑似アカウントで開く選択肢
 		if(local_account_list.isEmpty()) {
-			
-			val isMisskey = TootStatus.reStatusPageMisskey.matcher(url).find()
-			
 			if(status_id_original != null) {
 				dialog.addAction(
 					activity.getString(R.string.open_in_pseudo_account, "?@$host_original")
 				) {
-					addPseudoAccount(activity, host_original, isMisskey = isMisskey) { sa ->
+					addPseudoAccount(activity, host_original, misskeyVersion = null) { sa ->
 						conversationLocal(activity, pos, sa, status_id_original)
 					}
 				}
@@ -681,7 +678,7 @@ object Action_Toot {
 				dialog.addAction(
 					activity.getString(R.string.open_in_pseudo_account, "?@$host_original")
 				) {
-					addPseudoAccount(activity, host_original, isMisskey = isMisskey) { sa ->
+					addPseudoAccount(activity, host_original, misskeyVersion = null) { sa ->
 						conversationRemote(activity, pos, sa, url)
 					}
 				}

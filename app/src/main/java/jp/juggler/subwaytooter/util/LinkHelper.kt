@@ -19,18 +19,21 @@ interface LinkHelper {
 		}
 	}
 	
-	val isMisskey : Boolean
-		get() = false
+	val misskeyVersion : Int
+		get() = 0
+	
+	val isMisskey :Boolean
+		get() = misskeyVersion > 0
 	
 	companion object {
 		
-		fun newLinkHelper(host : String?, isMisskey : Boolean = false) = object : LinkHelper {
+		fun newLinkHelper(host : String?, misskeyVersion : Int = 0) = object : LinkHelper {
 
 			override val host : String?
 				get() = host
 
-			override val isMisskey : Boolean
-				get() = isMisskey
+			override val misskeyVersion : Int
+				get() = misskeyVersion
 		}
 		
 		val nullHost = object : LinkHelper {

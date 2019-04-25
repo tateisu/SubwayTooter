@@ -24,7 +24,10 @@ object Action_List {
 	
 	// リストを作成する
 	fun create(
-		activity : ActMain, access_info : SavedAccount, title : String, callback : CreateCallback?
+		activity : ActMain,
+		access_info : SavedAccount,
+		title : String,
+		callback : CreateCallback?
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
@@ -36,6 +39,7 @@ object Action_List {
 						"/api/users/lists/create",
 						access_info.putMisskeyApiToken()
 							.put("title", title)
+							.put("name", title)
 							.toPostRequestBuilder()
 					)
 				} else {

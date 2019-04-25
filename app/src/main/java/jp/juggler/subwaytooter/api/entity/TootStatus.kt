@@ -236,7 +236,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.misskeyVisibleIds = parseStringArray(src.optJSONArray("visibleUserIds"))
 			
 			this.media_attachments =
-				parseListOrNull(::TootAttachment, parser, src.optJSONArray("media"))
+				parseListOrNull(
+					::TootAttachment,
+					parser,
+					src.optJSONArray("files") ?: src.optJSONArray("media") // v11,v10
+				)
 			
 			// Misskeyは画像毎にNSFWフラグがある。どれか１枚でもNSFWならトゥート全体がNSFWということにする
 			var bv = src.optBoolean("sensitive")

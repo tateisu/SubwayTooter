@@ -4,13 +4,10 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.b2i
 import jp.juggler.util.LogCategory
 import jp.juggler.util.forEach
-import org.json.JSONObject
-
-import java.util.ArrayList
-import java.util.regex.Pattern
-
-import jp.juggler.util.parseLong
 import jp.juggler.util.parseString
+import org.json.JSONObject
+import java.util.*
+import java.util.regex.Pattern
 
 class TootList(parser:TootParser,src : JSONObject): TimelineItem(), Comparable<TootList> {
 
@@ -30,7 +27,7 @@ class TootList(parser:TootParser,src : JSONObject): TimelineItem(), Comparable<T
 	init {
 		if( parser.serviceType == ServiceType.MISSKEY){
 			id = EntityId.mayDefault(src.parseString("id") )
-			title = src.parseString("title")
+			title = src.parseString("name") ?: src.parseString("title") // v11,v10
 			this.title_for_sort = makeTitleForSort(this.title)
 			val user_list = ArrayList<EntityId>()
 			userIds = user_list

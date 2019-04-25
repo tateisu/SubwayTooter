@@ -61,7 +61,8 @@ class TootApiClient(
 		internal const val KEY_CLIENT_CREDENTIAL = "SubwayTooterClientCredential"
 		internal const val KEY_CLIENT_SCOPE = "SubwayTooterClientScope"
 		private const val KEY_AUTH_VERSION = "SubwayTooterAuthVersion"
-		const val KEY_IS_MISSKEY = "isMisskey"
+		const val KEY_IS_MISSKEY = "isMisskey" // for ClientInfo
+		const val KEY_MISSKEY_VERSION = "isMisskey" // for tokenInfo,TootInstance
 		const val KEY_MISSKEY_APP_SECRET = "secret"
 		const val KEY_API_KEY_MISSKEY = "apiKeyMisskey"
 		const val KEY_USER_ID = "userId"
@@ -71,6 +72,7 @@ class TootApiClient(
 		private val reStartJsonArray = Pattern.compile("\\A\\s*\\[")
 		private val reStartJsonObject = Pattern.compile("\\A\\s*\\{")
 		private val reWhiteSpace = Pattern.compile("\\s+")
+		private val reDigits = Pattern.compile("(\\d+)")
 		
 		private const val mspTokenUrl = "http://mastodonsearch.jp/api/v1.0.1/utoken"
 		private const val mspSearchUrl = "http://mastodonsearch.jp/api/v1.0.1/cross"
@@ -106,8 +108,7 @@ class TootApiClient(
 		}
 		
 		val DEFAULT_JSON_ERROR_PARSER = { json : JSONObject ->
-			val v = json.opt("error")
-			when(v) {
+			when(val v = json.opt("error")) {
 				null, JSONObject.NULL -> null
 				else -> v.toString()
 			}
@@ -258,6 +259,15 @@ class TootApiClient(
 		private fun compareScopeArray(a : JSONArray, b : JSONArray?) : Boolean {
 			return encodeScopeArray(a) == encodeScopeArray(b)
 		}
+		
+		// 引数はtoken_infoかTootInstanceのパース前のいずれか
+		fun parseMisskeyVersion(token_info : JSONObject) : Int {
+			return when(val o = token_info.opt(KEY_MISSKEY_VERSION)) {
+				is Int -> o
+				is Boolean -> if(o) 10 else 0
+				else -> 0
+			}
+		}
 	}
 	
 	@Suppress("unused")
@@ -345,7 +355,7 @@ class TootApiClient(
 		
 		if(! response.isSuccessful || bodyString?.isEmpty() != false) {
 			
-			result.error = TootApiClient.formatResponse(
+			result.error = formatResponse(
 				response,
 				result.caption,
 				if(bodyString?.isNotEmpty() == true) bodyString else NO_INFORMATION,
@@ -388,7 +398,7 @@ class TootApiClient(
 		
 		if(! response.isSuccessful || bodyBytes?.isEmpty() != false) {
 			
-			result.error = TootApiClient.formatResponse(
+			result.error = formatResponse(
 				response,
 				result.caption,
 				if(bodyBytes?.isNotEmpty() == true) bodyBytes.decodeUTF8() else NO_INFORMATION,
@@ -562,7 +572,13 @@ class TootApiClient(
 					.build()
 			}) {
 			parseJson(result) ?: return null
-			result.jsonObject?.put(KEY_IS_MISSKEY, true)
+			
+			result.jsonObject?.apply {
+				val m = reDigits.matcher(parseString("version") ?: "")
+				if(m.find()) {
+					put(KEY_MISSKEY_VERSION, m.group(1).toInt())
+				}
+			}
 		}
 		return result
 	}
@@ -574,7 +590,7 @@ class TootApiClient(
 		if(json != null) {
 			val parser = TootParser(
 				context,
-				LinkHelper.newLinkHelper(instance, isMisskey = json.optBoolean(KEY_IS_MISSKEY))
+				LinkHelper.newLinkHelper(instance, misskeyVersion = parseMisskeyVersion(json))
 			)
 			ti = parser.instance(json)
 			if(ti == null) result.setError("can't parse data in instance information.")
@@ -763,7 +779,7 @@ class TootApiClient(
 	}
 	
 	// oAuth2認証の続きを行う
-	fun authentication2Misskey(clientNameArg : String, token : String) : TootApiResult? {
+	fun authentication2Misskey(clientNameArg : String, token : String,misskeyVersion:Int) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
 		val instance = result.caption // same to instance
@@ -811,7 +827,7 @@ class TootApiClient(
 		
 		// ユーザ情報を読めたならtokenInfoを保存する
 		EntityId.mayNull(user.parseString("id"))?.putTo(token_info, KEY_USER_ID)
-		token_info.put(KEY_IS_MISSKEY, true)
+		token_info.put(KEY_MISSKEY_VERSION, misskeyVersion)
 		token_info.put(KEY_AUTH_VERSION, AUTH_VERSION)
 		token_info.put(KEY_API_KEY_MISSKEY, apiKey)
 		
@@ -1159,9 +1175,9 @@ class TootApiClient(
 	fun getUserCredential(
 		access_token : String
 		, tokenInfo : JSONObject = JSONObject()
-		, isMisskey : Boolean = false
+		, misskeyVersion : Int = 0
 	) : TootApiResult? {
-		if(isMisskey) {
+		if(misskeyVersion > 0) {
 			val result = TootApiResult.makeWithCaption(instance)
 			if(result.error != null) return result
 			
@@ -1179,7 +1195,7 @@ class TootApiClient(
 				// ユーザ情報を読めたならtokenInfoを保存する
 				tokenInfo.put(KEY_AUTH_VERSION, AUTH_VERSION)
 				tokenInfo.put(KEY_API_KEY_MISSKEY, access_token)
-				tokenInfo.put(KEY_IS_MISSKEY, true)
+				tokenInfo.put(KEY_MISSKEY_VERSION, misskeyVersion)
 				result.tokenInfo = tokenInfo
 			}
 			return r2
@@ -1573,7 +1589,7 @@ fun TootApiClient.syncStatus(
 			?.also { result ->
 				TootParser(
 					context,
-					LinkHelper.newLinkHelper(host, isMisskey = true),
+					LinkHelper.newLinkHelper(host, misskeyVersion = 10),
 					serviceType = ServiceType.MISSKEY
 				)
 					.status(result.jsonObject)

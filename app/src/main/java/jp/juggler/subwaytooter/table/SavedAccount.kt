@@ -24,11 +24,11 @@ class SavedAccount(
 	hostArg : String? = null,
 	var token_info : JSONObject? = null,
 	var loginAccount : TootAccount? = null, // 疑似アカウントではnull
-	private val _isMisskey : Boolean = false // 疑似アカウントでのみtrue
+	override val misskeyVersion: Int = 0
 ) : LinkHelper {
 	
 	override val isMisskey : Boolean
-		get() = _isMisskey
+		get() = misskeyVersion > 0
 	
 	val username : String
 	
@@ -97,7 +97,7 @@ class SavedAccount(
 		cursor.getLong(COL_ID), // db_id
 		cursor.getString(COL_USER), // acct
 		cursor.getString(COL_HOST) // host
-		, _isMisskey = cursor.getBoolean(COL_IS_MISSKEY)
+		, misskeyVersion = cursor.getInt(COL_MISSKEY_VERSION)
 	) {
 		
 		val jsonAccount = cursor.getString(COL_ACCOUNT).toJsonObject()
@@ -107,7 +107,7 @@ class SavedAccount(
 		} else {
 			val loginAccount = TootParser(
 				context,
-				LinkHelper.newLinkHelper(this@SavedAccount.host, isMisskey = isMisskey)
+				LinkHelper.newLinkHelper(this@SavedAccount.host, misskeyVersion = misskeyVersion)
 			).account(jsonAccount)
 			
 			if(loginAccount == null) {
@@ -408,7 +408,10 @@ class SavedAccount(
 		private const val COL_DEFAULT_TEXT = "default_text"
 		
 		// スキーマ28から
-		private const val COL_IS_MISSKEY = "is_misskey"
+		private const val COL_MISSKEY_VERSION = "is_misskey" // カラム名がおかしいのは、昔はboolean扱いだったから
+		// 0: not misskey
+		// 1: old(v10) misskey
+		// 11: misskey v11
 		
 		// スキーマ33から
 		private const val COL_NOTIFICATION_REACTION = "notification_reaction"
@@ -476,7 +479,7 @@ class SavedAccount(
 					+ ",$COL_DEFAULT_TEXT text default ''"
 					
 					// 以下はDBスキーマ28で更新
-					+ ",$COL_IS_MISSKEY integer default 0"
+					+ ",$COL_MISSKEY_VERSION integer default 0"
 					
 					// スキーマ33から
 					+ ",$COL_NOTIFICATION_REACTION integer default 1"
@@ -610,7 +613,7 @@ class SavedAccount(
 			}
 			if(oldVersion < 28 && newVersion >= 28) {
 				try {
-					db.execSQL("alter table $table add column $COL_IS_MISSKEY integer default 0")
+					db.execSQL("alter table $table add column $COL_MISSKEY_VERSION integer default 0")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
@@ -660,7 +663,7 @@ class SavedAccount(
 			acct : String,
 			account : JSONObject,
 			token : JSONObject,
-			isMisskey : Boolean = false
+			misskeyVersion : Int = 0
 		) : Long {
 			try {
 				val cv = ContentValues()
@@ -668,7 +671,7 @@ class SavedAccount(
 				cv.put(COL_USER, acct)
 				cv.put(COL_ACCOUNT, account.toString())
 				cv.put(COL_TOKEN, token.toString())
-				cv.put(COL_IS_MISSKEY, isMisskey.b2i())
+				cv.put(COL_MISSKEY_VERSION, misskeyVersion)
 				return App1.database.insert(table, null, cv)
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -936,7 +939,7 @@ class SavedAccount(
 			if(db_id != INVALID_DB_ID && myId == EntityId.CONFIRMING ) {
 				val accessToken = getAccessToken()
 				if(accessToken != null) {
-					val result = client.getUserCredential(accessToken, isMisskey = false)
+					val result = client.getUserCredential(accessToken)
 					if( result ==null || result.error!=null) return result
 					val ta = TootParser(context, this).account(result.jsonObject)
 					if(ta != null) {

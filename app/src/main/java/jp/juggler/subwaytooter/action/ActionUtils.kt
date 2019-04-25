@@ -19,7 +19,7 @@ import java.util.*
 internal fun addPseudoAccount(
 	context : Context,
 	host : String,
-	isMisskey : Boolean? = null,
+	misskeyVersion : Int? = null,
 	callback : (SavedAccount) -> Unit
 ) {
 	try {
@@ -32,15 +32,18 @@ internal fun addPseudoAccount(
 			return
 		}
 		
-		if(isMisskey == null) {
+		if(misskeyVersion == null) {
 			TootTaskRunner(context).run(object : TootTask {
 				
-				var isMisskey2 : Boolean = false
+				var isMisskey2 : Int = 0
 				
 				override fun background(client : TootApiClient) : TootApiResult? {
 					client.instance = host
 					val r = client.getInstanceInformation()
-					isMisskey2 = r?.jsonObject?.optBoolean(TootApiClient.KEY_IS_MISSKEY) ?: false
+					val o = r?.jsonObject
+					if( o != null){
+						isMisskey2 = TootApiClient.parseMisskeyVersion(o)
+					}
 					return r
 				}
 				
@@ -56,7 +59,7 @@ internal fun addPseudoAccount(
 		account_info.put("acct", username)
 		
 		val row_id =
-			SavedAccount.insert(host, full_acct, account_info, JSONObject(), isMisskey = isMisskey)
+			SavedAccount.insert(host, full_acct, account_info, JSONObject(), misskeyVersion = misskeyVersion)
 		account = SavedAccount.loadAccount(context, row_id)
 		if(account == null) {
 			throw RuntimeException("loadAccount returns null.")

@@ -1911,12 +1911,21 @@ class ActMain : AppCompatActivity()
 						client.instance = instance
 					}
 					
+					val (r2, ti) = client.parseInstanceInformation(client.getInstanceInformation())
+					if(ti==null) return r2
+					val misskeyVersion = when{
+						ti.versionGE(TootInstance.MISSKEY_VERSION_11) -> 11
+						else -> 10
+					}
+					
+					
+					
 					this.host = instance
 					val client_name = Pref.spClientName(this@ActMain)
-					val result = client.authentication2Misskey(client_name, token)
+					val result = client.authentication2Misskey(client_name, token,misskeyVersion)
 					this.ta = TootParser(
 						this@ActMain
-						, LinkHelper.newLinkHelper(instance, isMisskey = true)
+						, LinkHelper.newLinkHelper(instance, misskeyVersion = misskeyVersion)
 					).account(result?.jsonObject)
 					return result
 					
@@ -2062,12 +2071,14 @@ class ActMain : AppCompatActivity()
 			// アカウント追加時
 			val user = ta.username + "@" + host
 			
+			
+			
 			val row_id = SavedAccount.insert(
 				host,
 				user,
 				jsonObject,
 				token_info,
-				isMisskey = token_info.optBoolean(TootApiClient.KEY_IS_MISSKEY)
+				misskeyVersion = TootApiClient.parseMisskeyVersion(token_info)
 			)
 			val account = SavedAccount.loadAccount(this@ActMain, row_id)
 			if(account != null) {
@@ -2133,10 +2144,10 @@ class ActMain : AppCompatActivity()
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val r1 = client.getInstanceInformation()
 				val ti = r1?.jsonObject ?: return r1
-				val isMisskey = ti.optBoolean(TootApiClient.KEY_IS_MISSKEY)
+				val misskeyVersion = TootApiClient.parseMisskeyVersion(ti)
 				
-				val linkHelper = LinkHelper.newLinkHelper(host, isMisskey = isMisskey)
-				val result = client.getUserCredential(access_token, isMisskey = isMisskey)
+				val linkHelper = LinkHelper.newLinkHelper(host, misskeyVersion = misskeyVersion)
+				val result = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
 				this.ta = TootParser(this@ActMain, linkHelper)
 					.account(result?.jsonObject)
 				return result

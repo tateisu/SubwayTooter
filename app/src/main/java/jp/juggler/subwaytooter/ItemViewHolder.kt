@@ -943,7 +943,7 @@ internal class ItemViewHolder(
 					showNotificationStatus(n_status, colorBg)
 				}
 			}
-
+			
 			else -> {
 				val colorBg = 0
 				if(n_account != null) showBoost(
@@ -1078,7 +1078,7 @@ internal class ItemViewHolder(
 		iconId : Int,
 		string_id : Int,
 		reactionDrawableId : Int? = null,
-		boost_status: TootStatus? = null
+		boost_status : TootStatus? = null
 	) {
 		boost_account = whoRef
 		val who = whoRef.get()
@@ -1105,7 +1105,7 @@ internal class ItemViewHolder(
 		
 		boost_time = time
 		llBoosted.visibility = View.VISIBLE
-		showStatusTime(activity, tvBoostedTime, who, time = time,status = boost_status)
+		showStatusTime(activity, tvBoostedTime, who, time = time, status = boost_status)
 		tvBoosted.text = text
 		boost_invalidator.register(text)
 		setAcct(tvBoostedAcct, access_info.getFullAcct(who), who.acct)
@@ -2033,8 +2033,7 @@ internal class ItemViewHolder(
 			)
 			
 			btnSearchTag, llTrendTag -> {
-				val item = this.item
-				when(item) {
+				when(val item = this.item) {
 					//					is TootGap -> column.startGap(item)
 					//
 					//					is TootDomainBlock -> {
@@ -2073,8 +2072,8 @@ internal class ItemViewHolder(
 			val media_attachments =
 				status_showing?.media_attachments ?: (item as? TootScheduled)?.media_attachments
 				?: return
-			val item = if(i < media_attachments.size) media_attachments[i] else return
-			when(item) {
+			
+			when(val item = if(i < media_attachments.size) media_attachments[i] else return) {
 				is TootAttachmentMSP -> {
 					// マストドン検索ポータルのデータではmedia_attachmentsが簡略化されている
 					// 会話の流れを表示する
@@ -2299,10 +2298,10 @@ internal class ItemViewHolder(
 			box.addView(b)
 		}
 		
-		if( reactionsCount != null){
-
+		if(reactionsCount != null) {
+			
 			var lastButton : View? = null
-
+			
 			for(mr in MisskeyReaction.values()) {
 				val count = reactionsCount[mr.shortcode]
 				if(count == null || count <= 0) continue
@@ -2348,11 +2347,11 @@ internal class ItemViewHolder(
 			
 			// カスタム絵文字リアクション
 			val list = reactionsCount.keys
-				.filter { MisskeyReaction.shortcodeMap[ it] == null }
+				.filter { MisskeyReaction.shortcodeMap[it] == null }
 				.sorted()
-
-			for( key in list ){
-				val count = reactionsCount.get(key)
+			
+			for(key in list) {
+				val count = reactionsCount[key]
 				if(count == null || count <= 0) continue
 				val b = Button(activity)
 				val blp = FlexboxLayout.LayoutParams(
@@ -2367,7 +2366,7 @@ internal class ItemViewHolder(
 					R.drawable.btn_bg_transparent
 				)
 				b.setTextColor(content_color)
-				b.setPadding(paddingH,paddingV,paddingH,paddingV)
+				b.setPadding(paddingH, paddingV, paddingH, paddingV)
 				b.text = "$key $count"
 				b.allCaps = false
 				b.tag = key
@@ -2386,7 +2385,7 @@ internal class ItemViewHolder(
 				box.addView(b)
 				lastButton = b
 			}
-
+			
 			if(lastButton != null) {
 				val lp = lastButton.layoutParams
 				if(lp is ViewGroup.MarginLayoutParams) {
@@ -2486,7 +2485,7 @@ internal class ItemViewHolder(
 		TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
 			object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? =
-				// 成功すると204 no content
+					// 成功すると204 no content
 					client.request(
 						"/api/notes/reactions/delete",
 						access_info.putMisskeyApiToken(JSONObject())
@@ -2606,35 +2605,36 @@ internal class ItemViewHolder(
 			
 			val b = TextView(activity)
 			b.layoutParams = lp
-
+			
 			b.text = text
 			val invalidator = NetworkEmojiInvalidator(activity.handler, b)
 			extra_invalidator_list.add(invalidator)
 			invalidator.register(text)
-
+			
 			b.padding = (activity.density * 3f + 0.5f).toInt()
 			
-			val ratio = when(enquete.pollType){
-				TootPollsType.Mastodon ->{
-					val votesCount = enquete.votes_count ?:0
-					val max = enquete.maxVotesCount ?:0
-					if( max > 0 && votesCount > 0 ){
-						(item.votes?:0).toFloat() / votesCount.toFloat()
-					}else{
+			val ratio = when(enquete.pollType) {
+				TootPollsType.Mastodon -> {
+					val votesCount = enquete.votes_count ?: 0
+					val max = enquete.maxVotesCount ?: 0
+					if(max > 0 && votesCount > 0) {
+						(item.votes ?: 0).toFloat() / votesCount.toFloat()
+					} else {
 						null
 					}
 				}
-				else->{
+				
+				else -> {
 					val ratios = enquete.ratios
-					if( ratios !=null && i <= ratios.size ){
+					if(ratios != null && i <= ratios.size) {
 						ratios[i]
-					}else{
+					} else {
 						null
 					}
 				}
 			}
-
-			if( ratio != null){
+			
+			if(ratio != null) {
 				b.backgroundDrawable = PollPlotDrawable(
 					color = (content_color and 0xFFFFFF) or 0x20000000,
 					ratio = ratio,
@@ -2642,9 +2642,9 @@ internal class ItemViewHolder(
 					startWidth = (activity.density * 2f + 0.5f).toInt()
 				)
 			}
-
+			
 			llExtra.addView(b)
-
+			
 		} else if(enquete.multiple) {
 			// 複数選択なのでチェックボックス
 			val b = CheckBox(activity)
@@ -2887,7 +2887,7 @@ internal class ItemViewHolder(
 			return
 		}
 		
-		if( enquete.items?.find{ it.checked } == null ){
+		if(enquete.items?.find { it.checked } == null) {
 			showToast(context, false, R.string.polls_choice_not_selected)
 			return
 		}
@@ -2901,7 +2901,7 @@ internal class ItemViewHolder(
 					"/api/v1/polls/${enquete.pollId}/votes",
 					JSONObject()
 						.put("choices", JSONArray().apply {
-							enquete.items?.forEachIndexed { index, choice ->
+							enquete.items.forEachIndexed { index, choice ->
 								if(choice.checked) put(index)
 							}
 						})
@@ -2948,7 +2948,6 @@ internal class ItemViewHolder(
 	}
 	
 	internal fun getAccount() = status_account ?: boost_account ?: follow_account
-	
 	
 	/////////////////////////////////////////////////////////////////////
 	

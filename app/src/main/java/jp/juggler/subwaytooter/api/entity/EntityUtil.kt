@@ -124,6 +124,32 @@ inline fun <reified K, reified V> parseMapOrNull(
 	return null
 }
 
+inline fun <reified V> parseProfileEmoji2(
+	factory : (src : JSONObject,shortcode:String) -> V,
+	src : JSONObject?,
+	log : LogCategory = EntityUtil.log
+) : HashMap<String, V>? {
+	if(src != null) {
+		val size = src.length()
+		if(size > 0) {
+			val dst = HashMap<String, V>()
+			for( key in src.keys()){
+				val v = src.optJSONObject(key) ?: continue
+				val item = try{
+					factory(v,key)
+				} catch(ex : Throwable) {
+					log.trace(ex)
+					log.e(ex, "parseProfileEmoji2 failed.")
+					null
+				}
+				if(item != null) dst[key] = item
+			}
+			if(dst.isNotEmpty()) return dst
+		}
+	}
+	return null
+}
+
 ////////////////////////////////////////
 
 inline fun <reified T> parseItem(

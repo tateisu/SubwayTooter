@@ -206,7 +206,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.id = EntityId.mayDefault(misskeyId)
 			
 			// ページネーションには日時を使う
-			this._orderId = EntityId(time_created_at.toString(),fromTime = true)
+			this._orderId = EntityId(time_created_at.toString(), fromTime = true)
 			
 			// お気に入りカラムなどではパース直後に変更することがある
 			
@@ -331,7 +331,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				TootPollsType.Misskey
 			)
 			
-			this.reactionCounts = parseReactionCounts(src.optJSONObject("reactions") ?: src.optJSONObject("reactionCounts") )
+			this.reactionCounts = parseReactionCounts(
+				src.optJSONObject("reactions") ?: src.optJSONObject("reactionCounts")
+			)
 			this.myReaction = src.parseString("myReaction")
 			this.reblog = parser.status(src.optJSONObject("renote"))
 			
@@ -360,8 +362,12 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
 			this.custom_emojis = parseMapOrNull(CustomEmoji.decode, src.optJSONArray("emojis"), log)
-			this.profile_emojis =
-				parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"), log)
+			
+			this.profile_emojis = when(val o = src.opt("profile_emojis")) {
+				is JSONArray -> parseMapOrNull(::NicoProfileEmoji, o, log)
+				is JSONObject ->parseProfileEmoji2(::NicoProfileEmoji, o, log)
+				else -> null
+			}
 			
 			val who = parser.account(src.optJSONObject("account"))
 				?: throw RuntimeException("missing account")
@@ -916,7 +922,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			var rv : HashMap<String, Int>? = null
 			if(src != null) {
 				for(key in src.keys()) {
-					if( key?.isEmpty() != false ) continue
+					if(key?.isEmpty() != false) continue
 					val v = src.parseInt(key) ?: continue
 					// カスタム絵文字などが含まれるようになったので、内容のバリデーションはできない
 					if(rv == null) rv = HashMap()

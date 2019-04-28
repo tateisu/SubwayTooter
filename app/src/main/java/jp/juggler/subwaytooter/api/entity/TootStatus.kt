@@ -331,7 +331,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				TootPollsType.Misskey
 			)
 			
-			this.reactionCounts = parseReactionCounts(src.optJSONObject("reactionCounts"))
+			this.reactionCounts = parseReactionCounts(src.optJSONObject("reactions") ?: src.optJSONObject("reactionCounts") )
 			this.myReaction = src.parseString("myReaction")
 			this.reblog = parser.status(src.optJSONObject("renote"))
 			

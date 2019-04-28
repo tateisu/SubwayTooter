@@ -7,16 +7,15 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Environment
 import android.os.SystemClock
-import androidx.appcompat.app.AppCompatActivity
 import android.view.Gravity
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.InstanceTicker
 import jp.juggler.subwaytooter.util.ScrollPosition
-import jp.juggler.util.WordTrieTree
 import jp.juggler.util.*
 import okhttp3.Handshake
 import org.jetbrains.anko.backgroundDrawable
@@ -30,6 +29,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
@@ -346,7 +346,10 @@ class Column(
 				TYPE_SCHEDULED_STATUS -> R.drawable.ic_timer
 				else -> R.drawable.ic_info
 			}
+			
 		}
+		
+		private val channelIdSeed = AtomicInteger(0)
 		
 		// より古いデータの取得に使う
 		internal val reMaxId =
@@ -377,7 +380,7 @@ class Column(
 					var filter_list : ArrayList<TootFilter>? = null
 					
 					override fun background(client : TootApiClient) : TootApiResult? {
-						val result = client.request(Column.PATH_FILTERS)
+						val result = client.request(PATH_FILTERS)
 						val jsonArray = result?.jsonArray
 						if(jsonArray != null) {
 							filter_list = TootFilter.parseList(jsonArray)
@@ -423,7 +426,7 @@ class Column(
 				}
 				dst
 			}
-
+		
 		private val misskeyFollowersParser =
 			{ parser : TootParser, jsonArray : JSONArray ->
 				val dst = ArrayList<TootAccountRef>()
@@ -547,7 +550,7 @@ class Column(
 					return backgroundDir
 				}
 			}
-			val backgroundDir = context.getDir(Column.DIR_BACKGROUND_IMAGE, Context.MODE_PRIVATE)
+			val backgroundDir = context.getDir(DIR_BACKGROUND_IMAGE, Context.MODE_PRIVATE)
 			log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
 			return backgroundDir
 		}
@@ -592,20 +595,28 @@ class Column(
 	private val streamPath : String?
 		get() = if(isMisskey) {
 			val misskeyApiToken = access_info.misskeyApiToken
-			if(misskeyApiToken == null) {
-				// Misskey 8.25 からLTLだけ認証なしでも見れるようになった
-				when(column_type) {
-					TYPE_LOCAL -> "/local-timeline"
-					else -> null
+			if(access_info.misskeyVersion >= 11) {
+				when {
+					makeMisskeyChannelArg() == null -> null
+					misskeyApiToken == null -> "/" // 認証無し
+					else -> "/?i=$misskeyApiToken"
 				}
 			} else {
-				when(column_type) {
-					TYPE_HOME, TYPE_NOTIFICATIONS -> "/?i=$misskeyApiToken"
-					TYPE_LOCAL -> "/local-timeline?i=$misskeyApiToken"
-					TYPE_MISSKEY_HYBRID -> "/hybrid-timeline?i=$misskeyApiToken"
-					TYPE_FEDERATE -> "/global-timeline?i=$misskeyApiToken"
-					TYPE_LIST_TL -> "/user-list?i=$misskeyApiToken&listId=$profile_id"
-					else -> null
+				if(misskeyApiToken == null) {
+					// Misskey 8.25 からLTLだけ認証なしでも見れるようになった
+					when(column_type) {
+						TYPE_LOCAL -> "/local-timeline"
+						else -> null
+					}
+				} else {
+					when(column_type) {
+						TYPE_HOME, TYPE_NOTIFICATIONS -> "/?i=$misskeyApiToken"
+						TYPE_LOCAL -> "/local-timeline?i=$misskeyApiToken"
+						TYPE_MISSKEY_HYBRID -> "/hybrid-timeline?i=$misskeyApiToken"
+						TYPE_FEDERATE -> "/global-timeline?i=$misskeyApiToken"
+						TYPE_LIST_TL -> "/user-list?i=$misskeyApiToken&listId=$profile_id"
+						else -> null
+					}
 				}
 			}
 		} else {
@@ -2592,7 +2603,7 @@ class Column(
 					saveRange(true, true, result, src)
 					this.list_tmp = addWithFilterNotification(null, src)
 					//
-					if(! src.isEmpty()) {
+					if(src.isNotEmpty()) {
 						PollingWorker.injectData(context, access_info, src)
 					}
 					//
@@ -2862,7 +2873,7 @@ class Column(
 											misskeyCustomParser = misskeyFollowingParser
 										)
 									}
-
+									
 									isMisskey -> {
 										pagingType = PagingType.Cursor
 										parseAccountList(
@@ -4182,7 +4193,7 @@ class Column(
 					list_tmp = addWithFilterNotification(null, src)
 					saveRange(bBottom, ! bBottom, result, src)
 					
-					if(! src.isEmpty()) {
+					if(src.isNotEmpty()) {
 						PollingWorker.injectData(context, access_info, src)
 					}
 					
@@ -5020,15 +5031,16 @@ class Column(
 							
 							when(profile_tab) {
 								TAB_FOLLOWING -> when {
-									access_info.misskeyVersion >= 11 ->{
+									access_info.misskeyVersion >= 11 -> {
 										this@Column.useDate = false
 										getAccountList(
-										client,
-										PATH_MISSKEY_PROFILE_FOLLOWING,
-										misskeyParams = makeMisskeyParamsUserId(parser),
-										misskeyCustomParser = misskeyFollowingParser
-									)
+											client,
+											PATH_MISSKEY_PROFILE_FOLLOWING,
+											misskeyParams = makeMisskeyParamsUserId(parser),
+											misskeyCustomParser = misskeyFollowingParser
+										)
 									}
+									
 									isMisskey -> getAccountList(
 										client,
 										PATH_MISSKEY_PROFILE_FOLLOWING,
@@ -5046,7 +5058,7 @@ class Column(
 								}
 								
 								TAB_FOLLOWERS -> when {
-									access_info.misskeyVersion >= 11 ->{
+									access_info.misskeyVersion >= 11 -> {
 										this@Column.useDate = false
 										getAccountList(
 											client,
@@ -5055,14 +5067,14 @@ class Column(
 											misskeyCustomParser = misskeyFollowersParser
 										)
 									}
-
+									
 									isMisskey -> getAccountList(
 										client,
 										PATH_MISSKEY_PROFILE_FOLLOWERS,
 										misskeyParams = makeMisskeyParamsUserId(parser),
 										misskeyArrayFinder = misskeyArrayFinderUsers
 									)
-
+									
 									else -> getAccountList(
 										client,
 										String.format(
@@ -6176,10 +6188,10 @@ class Column(
 						TYPE_PROFILE -> when(profile_tab) {
 							
 							TAB_FOLLOWING -> when {
-								access_info.misskeyVersion >= 11 ->getAccountList(
+								access_info.misskeyVersion >= 11 -> getAccountList(
 									client
 									, PATH_MISSKEY_PROFILE_FOLLOWING
-									, 	misskeyCustomParser = misskeyFollowingParser
+									, misskeyCustomParser = misskeyFollowingParser
 								)
 								
 								isMisskey -> getAccountList(
@@ -6194,10 +6206,10 @@ class Column(
 							}
 							
 							TAB_FOLLOWERS -> when {
-								access_info.misskeyVersion >= 11 ->getAccountList(
+								access_info.misskeyVersion >= 11 -> getAccountList(
 									client
 									, PATH_MISSKEY_PROFILE_FOLLOWING
-									, 	misskeyCustomParser = misskeyFollowersParser
+									, misskeyCustomParser = misskeyFollowersParser
 								)
 								
 								isMisskey -> getAccountList(
@@ -6391,12 +6403,12 @@ class Column(
 		var cache = cacheHeaderDesc
 		if(cache != null) return cache
 		cache = when(column_type) {
-			Column.TYPE_SEARCH -> context.getString(R.string.search_desc_mastodon_api)
-			Column.TYPE_SEARCH_MSP -> loadSearchDesc(
+			TYPE_SEARCH -> context.getString(R.string.search_desc_mastodon_api)
+			TYPE_SEARCH_MSP -> loadSearchDesc(
 				R.raw.search_desc_msp_en,
 				R.raw.search_desc_msp_ja
 			)
-			Column.TYPE_SEARCH_TS -> loadSearchDesc(
+			TYPE_SEARCH_TS -> loadSearchDesc(
 				R.raw.search_desc_ts_en,
 				R.raw.search_desc_ts_ja
 			)
@@ -6598,21 +6610,56 @@ class Column(
 		else -> streamPath != null
 	}
 	
+	private fun createMisskeyConnectChannelMessage(channel:String,params:JSONObject = JSONObject()) =
+		JSONObject().apply {
+			put("type", "connect")
+			put("body", JSONObject().apply {
+				put("channel",channel)
+				put("id",streamCallback._channelId)
+				put("params",params)
+			})
+		}
+	
+	private fun makeMisskeyChannelArg():JSONObject?{
+		return if(access_info.misskeyVersion < 11) {
+			null
+		}else {
+			val misskeyApiToken = access_info.misskeyApiToken
+			if( misskeyApiToken == null) {
+				when(column_type) {
+					TYPE_LOCAL -> createMisskeyConnectChannelMessage("localTimeline")
+					else -> null
+				}
+			} else {
+				when(column_type) {
+					TYPE_HOME -> createMisskeyConnectChannelMessage("homeTimeline")
+					TYPE_LOCAL -> createMisskeyConnectChannelMessage("localTimeline")
+					TYPE_MISSKEY_HYBRID -> createMisskeyConnectChannelMessage("hybridTimeline")
+					TYPE_FEDERATE-> createMisskeyConnectChannelMessage("globalTimeline")
+					TYPE_NOTIFICATIONS ->createMisskeyConnectChannelMessage("main")
+					// TYPE_LIST_TL
+					// TYPE_HASHTAG
+					else -> null
+				}
+			}
+		}
+	}
+	
 	private val streamCallback = object : StreamReader.StreamCallback {
+		
+		val _channelId = channelIdSeed.incrementAndGet().toString()
+	
+		override fun channelId() = _channelId
 		
 		override fun onListeningStateChanged() {
 			if(is_dispose.get()) return
 			runOnMainLooper {
-				when {
-					is_dispose.get() -> {
-					
-					}
-					
-					else -> {
-						fireShowColumnStatus()
-						updateMisskeyCapture()
-					}
-				}
+				if( is_dispose.get()) return@runOnMainLooper
+				fireShowColumnStatus()
+				
+				streamReader?.registerMisskeyChannel( makeMisskeyChannelArg() )
+
+				updateMisskeyCapture()
 			}
 		}
 		
@@ -7343,7 +7390,7 @@ class Column(
 	}
 	
 	val isMisskey : Boolean = access_info.isMisskey
-
+	
 	val misskeyVersion = access_info.misskeyVersion
 	
 	fun saveScrollPosition() {

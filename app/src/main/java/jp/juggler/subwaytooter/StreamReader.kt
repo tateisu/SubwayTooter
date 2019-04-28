@@ -6,14 +6,11 @@ import android.os.Handler
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.WordTrieTree
-import jp.juggler.util.LogCategory
-import jp.juggler.util.runOnMainLooper
-import jp.juggler.util.toJsonObject
-import jp.juggler.util.withCaption
+import jp.juggler.util.*
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import org.json.JSONObject
 import java.net.ProtocolException
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -29,7 +26,9 @@ internal class StreamReader(
 	internal interface StreamCallback {
 		fun onTimelineItem(item : TimelineItem)
 		fun onListeningStateChanged()
-		fun onNoteUpdated(ev:MisskeyNoteUpdate)
+		fun onNoteUpdated(ev : MisskeyNoteUpdate)
+		
+		fun channelId() : String?
 	}
 	
 	companion object {
@@ -132,12 +131,13 @@ internal class StreamReader(
 			}
 		}
 		
-		private fun fireTimelineItem(item : TimelineItem?) {
+		private fun fireTimelineItem(item : TimelineItem?, channelId : String? = null) {
 			item ?: return
 			synchronized(this) {
 				if(bDisposed.get()) return@synchronized
 				for(callback in callback_list) {
 					try {
+						if(channelId != null && channelId != callback.channelId() ) continue
 						callback.onTimelineItem(item)
 					} catch(ex : Throwable) {
 						log.trace(ex)
@@ -151,7 +151,7 @@ internal class StreamReader(
 			runOnMainLooper {
 				synchronized(this) {
 					if(bDisposed.get()) return@runOnMainLooper
-					if( Pref.bpDontRemoveDeletedToot(App1.getAppState(context).pref)) return@runOnMainLooper
+					if(Pref.bpDontRemoveDeletedToot(App1.getAppState(context).pref)) return@runOnMainLooper
 					for(column in App1.getAppState(context).column_list) {
 						try {
 							column.onStatusRemoved(tl_host, id)
@@ -163,12 +163,13 @@ internal class StreamReader(
 			}
 		}
 		
-		private fun fireNoteUpdated(ev:MisskeyNoteUpdate) {
+		private fun fireNoteUpdated(ev : MisskeyNoteUpdate, channelId : String? = null) {
 			runOnMainLooper {
 				synchronized(this) {
 					if(bDisposed.get()) return@runOnMainLooper
 					for(callback in callback_list) {
 						try {
+							if(channelId != null && channelId != callback.channelId() ) continue
 							callback.onNoteUpdated(ev)
 						} catch(ex : Throwable) {
 							log.trace(ex)
@@ -176,6 +177,70 @@ internal class StreamReader(
 					}
 				}
 			}
+		}
+		
+		private fun handleMisskeyMessage(obj : JSONObject, channelId : String? = null) {
+			val type = obj.optString("type")
+			if(type?.isEmpty() != false) {
+				log.d("onMessage: missing type parameter")
+				return
+			}
+			when(type) {
+				
+				"channel" -> {
+					val body = obj.optJSONObject("body")
+					val id = body.parseString("id")
+					// ストリーミングのchannelイベントにチャネルIDが含まれない場合がある
+					// https://github.com/syuilo/misskey/issues/4801
+					handleMisskeyMessage(body, id)
+				}
+				
+				"readAllNotifications" -> {
+					// nothing to do
+				}
+				
+				// Misskey 11ではこれらのメッセージの形式が違う
+				"followed","renote","mention","meUpdated","follow","unfollow" ->{
+				
+//					{"id":"15","type":"followed","body":{"id":"7rm8yhnvzd","name":null,"username":"tateisu_test2","host":null,"avatarUrl":"https:\/\/misskey.io\/avatar\/7rm8yhnvzd","avatarColor":null,"emojis":[]}}
+//					{"id":"15","type":"renote","body":{"id":"7s063vasr4","createdAt":"2019-04-25T12:08:32.308Z","userId":"7rm8yhnvzd","user":{"id":"7rm8yhnvzd","name":null,"username":"tateisu_test2","host":null,"avatarUrl":"https://misskey.io/avatar/7rm8yhnvzd","avatarColor":null,"emojis":[]},"text":null,"cw":null,"visibility":"home","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":"7s04q1lagw","renote":{"id":"7s04q1lagw","createdAt":"2019-04-25T11:29:47.662Z","userId":"7rm6y6thc1","user":{"id":"7rm6y6thc1","name":null,"username":"tateisu","host":null,"avatarUrl":"https://pdg1.arkjp.net/misskey/drive/19c55428-7e2d-4050-86c4-39aa20bef593.jpg","avatarColor":"rgba(203,205,189,0)","emojis":[]},"text":"リストTLやタグTLのストリーミングチャネルはないんだろうか？  #MisskeyApi","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null}}}}
+//				{"id":"15","type":"mention","body":{"id":"7s067jr5jq","createdAt":"2019-04-25T12:11:23.969Z","userId":"7rm8yhnvzd","user":{"id":"7rm8yhnvzd","name":null,"username":"tateisu_test2","host":null,"avatarUrl":"https://misskey.io/avatar/7rm8yhnvzd","avatarColor":null,"emojis":[]},"text":"test","cw":null,"visibility":"home","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":"7s04q1lagw","renoteId":null,"mentions":["7rm6y6thc1"],"reply":{"id":"7s04q1lagw","createdAt":"2019-04-25T11:29:47.662Z","userId":"7rm6y6thc1","user":{"id":"7rm6y6thc1","name":null,"username":"tateisu","host":null,"avatarUrl":"https://pdg1.arkjp.net/misskey/drive/19c55428-7e2d-4050-86c4-39aa20bef593.jpg","avatarColor":"rgba(203,205,189,0)","emojis":[]},"text":"リストTLやタグTLのストリーミングチャネルはないんだろうか？  #MisskeyApi","cw":null,"visibility":"public","renoteCount":1,"repliesCount":1,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null}}}}
+//
+//			{"type":"channel","body":{"id":"15","type":"mention","body":{"id":"7s067jr5jq","createdAt":"2019-04-25T12:11:23.969Z","userId":"7rm8yhnvzd","user":{"id":"7rm8yhnvzd","name":null,"username":"tateisu_test2","host":null,"avatarUrl":"https:\/\/misskey.io\/avatar\/7rm8yhnvzd","avatarColor":null,"emojis":[]},"text":"test","cw":null,"visibility":"home","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":"7s04q1lagw","renoteId":null,"mentions":["7rm6y6thc1"],"reply":{"id":"7s04q1lagw","createdAt":"2019-04-25T11:29:47.662Z","userId":"7rm6y6thc1","user":{"id":"7rm6y6thc1","name":null,"username":"tateisu","host":null,"avatarUrl":"https:\/\/pdg1.arkjp.net\/misskey\/drive\/19c55428-7e2d-4050-86c4-39aa20bef593.jpg","avatarColor":"rgba(203,205,189,0)","emojis":[]},"text":"リストTLやタグTLのストリーミングチャネルはないんだろうか？  #MisskeyApi","cw":null,"visibility":"public","renoteCount":1,"repliesCount":1,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null}}}}
+//			{"type":"channel","body":{"id":"15","type":"meUpdated","body":{"id":"7rm6y6thc1","name":null,"username":"tateisu","host":null,"avatarUrl":"https://pdg1.arkjp.net/misskey/drive/19c55428-7e2d-4050-86c4-39aa20bef593.jpg","avatarColor":"rgba(203,205,189,0)","isAdmin":false,"isBot":false,"isCat":false,"isVerified":false,"emojis":[],"url":null,"createdAt":"2019-04-15T17:23:20.453Z","updatedAt":"2019-04-25T12:07:41.334Z","bannerUrl":null,"bannerColor":null,"isLocked":false,"isModerator":false,"description":"がうがう","location":null,"birthday":null,"followersCount":14,"followingCount":10,"notesCount":65,"pinnedNoteIds":[],"pinnedNotes":[],"avatarId":"7rm8fefuft","bannerId":null,"autoWatch":false,"alwaysMarkNsfw":false,"carefulBot":false,"twoFactorEnabled":false,"hasUnreadMessagingMessage":false,"hasUnreadNotification":false,"pendingReceivedFollowRequestsCount":0,"clientData":{},"email":null,"emailVerified":false}}}
+//			{"type":"channel","body":{"id":"15","type":"unfollow","body":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isAdmin":false,"isBot":true,"isCat":false,"isVerified":false,"emojis":[],"url":"https://friends.nico/@vandojpn","createdAt":"2019-04-15T11:44:21.907Z","updatedAt":"2019-04-25T12:13:59.839Z","bannerUrl":"https://pdg1.arkjp.net/misskey/drive/a091e3ef-e1b8-4460-bdd9-f47ea2e9f9f2.jpeg","bannerColor":"rgba(135,128,127,0)","isLocked":false,"isModerator":false,"description":"居場所亡くなったので\n移住先候補\n@vandojpn@mstdn.jp\n@vando@misskey.io","location":null,"birthday":null,"followersCount":2,"followingCount":0,"notesCount":353,"pinnedNoteIds":["7il4rez4b9","7qw3bj7kb0","7qw3cvtkbr","7qxtyp609n","7qyuxfswax"],"pinnedNotes":[{"id":"7il4rez4b9","createdAt":"2018-08-31T05:36:58.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"†┏┛:@vandojpn:┗┓†","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/100643230103007331"},{"id":"7qw3bj7kb0","createdAt":"2019-03-28T10:59:44.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"まさらっき、ハト先生、2年間お疲れ様。","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101827922107489261"},{"id":"7qw3cvtkbr","createdAt":"2019-03-28T11:00:47.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"引越し先はこちらです。みんなフォロしてね！\n\nhttps://misskey.xyz/@vando","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101827926245185143"},{"id":"7qxtyp609n","createdAt":"2019-03-29T16:13:21.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"Thank you and Good bye friends.nico for 2 years.\nfriends.nico はみんなの心の中に。","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101834817646842776"},{"id":"7qyuxfswax","createdAt":"2019-03-30T09:28:08.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"二コフレ終了の移住先候補\n\nhttps://misskey.xyz/@vando\n\nhttps://mstdn.jp/@vandojpn\n\n艦これ https://kancolle.social/@vando\n\nTwitter https://twitter.com/vajpn\n\n#theboss_tech \n#クロス\n#friends_nico","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101838886557246239"}],"isFollowing":true,"isFollowed":false,"hasPendingFollowRequestFromYou":false,"hasPendingFollowRequestToYou":false,"isBlocking":false,"isBlocked":false,"isMuted":false}}}
+//			{"type":"channel","body":{"id":"15","type":"follow","body":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isAdmin":false,"isBot":true,"isCat":false,"isVerified":false,"emojis":[],"url":"https://friends.nico/@vandojpn","createdAt":"2019-04-15T11:44:21.907Z","updatedAt":"2019-04-25T12:13:59.839Z","bannerUrl":"https://pdg1.arkjp.net/misskey/drive/a091e3ef-e1b8-4460-bdd9-f47ea2e9f9f2.jpeg","bannerColor":"rgba(135,128,127,0)","isLocked":false,"isModerator":false,"description":"居場所亡くなったので\n移住先候補\n@vandojpn@mstdn.jp\n@vando@misskey.io","location":null,"birthday":null,"followersCount":1,"followingCount":0,"notesCount":353,"pinnedNoteIds":["7il4rez4b9","7qw3bj7kb0","7qw3cvtkbr","7qxtyp609n","7qyuxfswax"],"pinnedNotes":[{"id":"7il4rez4b9","createdAt":"2018-08-31T05:36:58.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"†┏┛:@vandojpn:┗┓†","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/100643230103007331"},{"id":"7qw3bj7kb0","createdAt":"2019-03-28T10:59:44.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"まさらっき、ハト先生、2年間お疲れ様。","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101827922107489261"},{"id":"7qw3cvtkbr","createdAt":"2019-03-28T11:00:47.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"引越し先はこちらです。みんなフォロしてね！\n\nhttps://misskey.xyz/@vando","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101827926245185143"},{"id":"7qxtyp609n","createdAt":"2019-03-29T16:13:21.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"Thank you and Good bye friends.nico for 2 years.\nfriends.nico はみんなの心の中に。","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101834817646842776"},{"id":"7qyuxfswax","createdAt":"2019-03-30T09:28:08.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"二コフレ終了の移住先候補\n\nhttps://misskey.xyz/@vando\n\nhttps://mstdn.jp/@vandojpn\n\n艦これ https://kancolle.social/@vando\n\nTwitter https://twitter.com/vajpn\n\n#theboss_tech \n#クロス\n#friends_nico","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101838886557246239"}],"isFollowing":true,"isFollowed":false,"hasPendingFollowRequestFromYou":false,"hasPendingFollowRequestToYou":false,"isBlocking":false,"isBlocked":false,"isMuted":false}}}
+//
+//			{"type":"channel","body":{"id":"15","type":"follow","body":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isAdmin":false,"isBot":true,"isCat":false,"isVerified":false,"emojis":[],"url":"https://friends.nico/@vandojpn","createdAt":"2019-04-15T11:44:21.907Z","updatedAt":"2019-04-25T12:13:59.839Z","bannerUrl":"https://pdg1.arkjp.net/misskey/drive/a091e3ef-e1b8-4460-bdd9-f47ea2e9f9f2.jpeg","bannerColor":"rgba(135,128,127,0)","isLocked":false,"isModerator":false,"description":"居場所亡くなったので\n移住先候補\n@vandojpn@mstdn.jp\n@vando@misskey.io","location":null,"birthday":null,"followersCount":1,"followingCount":0,"notesCount":353,"pinnedNoteIds":["7il4rez4b9","7qw3bj7kb0","7qw3cvtkbr","7qxtyp609n","7qyuxfswax"],"pinnedNotes":[{"id":"7il4rez4b9","createdAt":"2018-08-31T05:36:58.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"†┏┛:@vandojpn:┗┓†","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/100643230103007331"},{"id":"7qw3bj7kb0","createdAt":"2019-03-28T10:59:44.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"まさらっき、ハト先生、2年間お疲れ様。","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101827922107489261"},{"id":"7qw3cvtkbr","createdAt":"2019-03-28T11:00:47.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"引越し先はこちらです。みんなフォロしてね！\n\nhttps://misskey.xyz/@vando","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101827926245185143"},{"id":"7qxtyp609n","createdAt":"2019-03-29T16:13:21.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"Thank you and Good bye friends.nico for 2 years.\nfriends.nico はみんなの心の中に。","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101834817646842776"},{"id":"7qyuxfswax","createdAt":"2019-03-30T09:28:08.000Z","userId":"7rluu9hv8h","user":{"id":"7rluu9hv8h","name":"（しむ）‮しむしむ","username":"vandojpn","host":"friends.nico","avatarUrl":"https://pdg1.arkjp.net/misskey/drive/98d731b3-ce32-48d4-b348-befd75106224.jpeg","avatarColor":"rgba(118,88,69,0)","isBot":true,"emojis":[]},"text":"二コフレ終了の移住先候補\n\nhttps://misskey.xyz/@vando\n\nhttps://mstdn.jp/@vandojpn\n\n艦これ https://kancolle.social/@vando\n\nTwitter https://twitter.com/vajpn\n\n#theboss_tech \n#クロス\n#friends_nico","cw":null,"visibility":"public","renoteCount":0,"repliesCount":0,"reactions":{},"emojis":[],"fileIds":[],"files":[],"replyId":null,"renoteId":null,"uri":"https://friends.nico/users/vandojpn/statuses/101838886557246239"}],"isFollowing":true,"isFollowed":false,"hasPendingFollowRequestFromYou":false,"hasPendingFollowRequestToYou":false,"isBlocking":false,"isBlocked":false,"isMuted":false}}}
+//			{"type":"noteUpdated","body":{"id":"7s06kfbynh","type":"reacted","body":{"reaction":"pudding","userId":"7rm8yhnvzd"}}}
+			
+					// 通知IDも日時もないイベントを受け取っても通知TLに反映させられないから無視するしかない
+					// https://github.com/syuilo/misskey/issues/4802
+				}
+				
+				"note" -> {
+					val body = obj.optJSONObject("body")
+					fireTimelineItem(parser.status(body), channelId)
+				}
+				
+				"noteUpdated" -> {
+					val body = obj.optJSONObject("body")
+					fireNoteUpdated(MisskeyNoteUpdate(body), channelId)
+				}
+				
+				"notification" -> {
+					val body = obj.optJSONObject("body")
+					fireTimelineItem(parser.notification(body), channelId)
+				}
+				
+				
+				
+				
+				else -> {
+					log.v("ignore streaming event $type")
+				}
+			}
+			
 		}
 		
 		/**
@@ -193,36 +258,7 @@ internal class StreamReader(
 				val obj = text.toJsonObject()
 				
 				if(access_info.isMisskey) {
-					val type = obj.optString("type")
-					if(type?.isEmpty() != false) {
-						log.d("onMessage: missing type parameter")
-						return
-					}
-					when(type) {
-						
-						"note" -> {
-							val body = obj.optJSONObject("body")
-							fireTimelineItem(parser.status(body))
-						}
-
-						"noteUpdated" -> {
-							val body = obj.optJSONObject("body")
-							fireNoteUpdated( MisskeyNoteUpdate(body))
-						}
-
-						"notification" -> {
-							val body = obj.optJSONObject("body")
-							fireTimelineItem(parser.notification(body))
-						}
-						
-						"readAllNotifications"->{
-							// nothing to do
-						}
-						
-						else -> {
-							log.v("ignore streaming event $type")
-						}
-					}
+					handleMisskeyMessage(obj)
 					
 				} else {
 					
@@ -242,13 +278,13 @@ internal class StreamReader(
 					
 					when(event) {
 						
-						"delete" -> when(payload){
+						"delete" -> when(payload) {
 							is Long -> fireDeleteId(EntityId(payload.toString()))
-							is String ->fireDeleteId(EntityId(payload.toString()))
+							is String -> fireDeleteId(EntityId(payload.toString()))
 							else -> log.d("unsupported payload type. $payload")
 						}
 						
-						else ->  when(payload){
+						else -> when(payload) {
 							is TimelineItem -> fireTimelineItem(payload)
 							else -> log.d("unsupported payload type. $payload")
 						}
@@ -332,14 +368,14 @@ internal class StreamReader(
 			
 			socket.set(null)
 			bListening.set(true)
-			synchronized(capturedId){
+			synchronized(capturedId) {
 				capturedId.clear()
 			}
 			fireListeningChanged()
 			
 			TootTaskRunner(context).run(access_info, object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val( result ,ws) = client.webSocket(end_point, this@Reader)
+					val (result, ws) = client.webSocket(end_point, this@Reader)
 					
 					when {
 						result == null -> {
@@ -347,6 +383,7 @@ internal class StreamReader(
 							bListening.set(false)
 							fireListeningChanged()
 						}
+						
 						ws == null -> {
 							val error = result.error
 							log.d("startRead: error. $error")
@@ -356,7 +393,8 @@ internal class StreamReader(
 							handler.removeCallbacks(proc_reconnect)
 							handler.postDelayed(proc_reconnect, 5000L)
 						}
-						else->{
+						
+						else -> {
 							socket.set(ws)
 							fireListeningChanged()
 						}
@@ -374,18 +412,19 @@ internal class StreamReader(
 		
 		fun capture(list : ArrayList<EntityId>) {
 			val socket = socket.get()
-			when{
+			when {
 				bDisposed.get() -> return
 				socket == null -> return
-				else->{
-					for( id in list ){
+				
+				else -> {
+					for(id in list) {
 						if(id.isDefault) continue
-						synchronized(capturedId){
-							if( capturedId.contains(id) ) return
+						synchronized(capturedId) {
+							if(capturedId.contains(id)) return
 							try {
 								if(socket.send("""{"type":"subNote","body": {"id":"$id"}}""")) {
 									capturedId.add(id)
-								}else{
+								} else {
 									log.w("capture failed.")
 								}
 							} catch(ex : Throwable) {
@@ -394,6 +433,33 @@ internal class StreamReader(
 						}
 					}
 				}
+			}
+		}
+		
+		fun registerMisskeyChannel(channelArg : JSONObject?) {
+			channelArg ?: return
+			try {
+				if(bDisposed.get()) return
+				socket.get()?.send(channelArg.toString())
+			} catch(ex : Throwable) {
+				log.e(ex, "registerMisskeyChannel failed.")
+			}
+		}
+		
+		fun removeChannel(channelId : String?) {
+			channelId?: return
+			try {
+				if(bDisposed.get()) return
+				socket.get()?.send(
+					JSONObject().apply{
+						put("type","disconnect")
+						put("body",JSONObject().apply{
+							put("id",channelId)
+						})
+					}.toString()
+				)
+			} catch(ex : Throwable) {
+				log.e(ex, "registerMisskeyChannel failed.")
 			}
 		}
 	}
@@ -424,12 +490,14 @@ internal class StreamReader(
 		endPoint : String,
 		highlightTrie : WordTrieTree?,
 		streamCallback : StreamCallback
-	) :Reader {
-
+	) : Reader {
+		
 		val reader = prepareReader(accessInfo, endPoint, highlightTrie)
 		reader.addCallback(streamCallback)
 		if(! reader.bListening.get()) {
 			reader.startRead()
+		} else {
+			streamCallback.onListeningStateChanged()
 		}
 		return reader
 	}
@@ -451,6 +519,8 @@ internal class StreamReader(
 						log.d("unregister: dispose $endPoint")
 						reader.dispose()
 						it.remove()
+					}else{
+						reader.removeChannel(streamCallback.channelId() )
 					}
 				}
 			}

@@ -186,9 +186,13 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			
 			// 絵文字データは先に読んでおく
 			this.custom_emojis = parseMapOrNull(CustomEmoji.decode, src.optJSONArray("emojis"))
-			this.profile_emojis =
-				parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"))
 			
+			this.profile_emojis = when(val o = src.opt("profile_emojis")) {
+				is JSONArray -> parseMapOrNull(::NicoProfileEmoji, o, TootStatus.log)
+				is JSONObject ->parseProfileEmoji2(::NicoProfileEmoji, o, TootStatus.log)
+				else -> null
+			}
+
 			// 疑似アカウントにacctとusernameだけ
 			this.url = src.parseString("url")
 			this.username = src.notEmptyOrThrow("username")

@@ -10,12 +10,14 @@ import java.lang.Math.pow
 import kotlin.math.abs
 import kotlin.math.sign
 
-class BlurhashView : AppCompatTextView {
+class Blurhash(blurhash : String, punch : Float = 1f) {
 	
 	companion object {
+		private fun String.sub1(idx : Int) = substring(idx, idx + 1)
+		private fun String.sub2(idx : Int) = substring(idx, idx + 2)
+		private fun String.sub4(idx : Int) = substring(idx, idx + 4)
 		
-		val log = LogCategory("BlurhashView")
-		
+		// map from base83 character to index
 		private val base83Map = SparseIntArray().apply {
 			val base83Chars =
 				"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~"
@@ -25,7 +27,7 @@ class BlurhashView : AppCompatTextView {
 			}
 		}
 		
-		// base83から整数へのデコード
+		// convert from base83 chars(1..4) to integer
 		private fun String.decodeBase83() : Int {
 			var v = 0
 			for(c in this) {
@@ -37,6 +39,7 @@ class BlurhashView : AppCompatTextView {
 			return v
 		}
 		
+		// array to convert gamma curve from sRGB(0..255) to linear(0..1f)
 		private val arraySRGB2Linear = FloatArray(256).apply {
 			for(i in 0 until 256) {
 				val v = i.toDouble() / 255.0
@@ -55,6 +58,7 @@ class BlurhashView : AppCompatTextView {
 			arraySRGB2Linear[if(value < 0) 0 else if(value > 255) 255 else value]
 		
 		private fun linearTosRGB(value : Float) : Int {
+			// binary search in arraySRGB2Linear
 			var start = 0
 			var end = 256
 			while(end - start > 1) {
@@ -90,73 +94,77 @@ class BlurhashView : AppCompatTextView {
 			decodeACSub(maximumValue, ((value / 19) % 19)),
 			decodeACSub(maximumValue, value % 19)
 		)
+	}
+	
+	private val numY : Int
+	private val numX : Int
+	private val colors : ArrayList<FloatArray>
+	
+	init {
+		if(blurhash.length < 6) error("blurhash: too short $blurhash")
 		
-		private fun String.sub1(idx : Int) = substring(idx, idx + 1)
-		private fun String.sub2(idx : Int) = substring(idx, idx + 2)
-		private fun String.sub4(idx : Int) = substring(idx, idx + 4)
+		val sizeFlag = blurhash.sub1(0).decodeBase83()
+		this.numY = (sizeFlag / 9) + 1
+		this.numX = (sizeFlag % 9) + 1
+		val quantisedMaximumValue : Int = blurhash.sub1(1).decodeBase83()
+		val maximumValue : Float = ((quantisedMaximumValue + 1).toFloat() / 166f) * punch
 		
-		private fun decode(
-			pixels : IntArray,
-			pixelWidth : Int,
-			pixelHeight : Int,
-			blurhash : String,
-			punch : Float = 1f
-		) {
-			
-			if(blurhash.length < 6) error("blurhash: too short $blurhash")
-			
-			val sizeFlag = blurhash.sub1(0).decodeBase83()
-			val numY : Int = (sizeFlag / 9) + 1
-			val numX : Int = (sizeFlag % 9) + 1
-			val quantisedMaximumValue : Int = blurhash.sub1(1).decodeBase83()
-			val maximumValue : Float = ((quantisedMaximumValue + 1).toFloat() / 166f) * punch
-			
-			if(blurhash.length != 4 + 2 * numX * numY) {
-				error("'blurhash length mismatch. actual=${blurhash.length},expect=${4 + 2 * numX * numY}")
-			}
-			
-			val colors = ArrayList<FloatArray>()
-			for(i in 0 until numX * numY) {
-				colors.add(
-					if(i == 0) {
-						decodeDC(blurhash.sub4(2).decodeBase83()) // 2..5
-					} else {
-						// 6..8,...
-						decodeAC(blurhash.sub2(4 + i * 2).decodeBase83(), maximumValue)
-					}
-				)
-			}
-			
-			var pos = 0
-			for(y in 0 until pixelHeight) {
-				val ky = Math.PI * y.toDouble() / pixelHeight.toDouble()
-				for(x in 0 until pixelWidth) {
-					val kx = Math.PI * x.toDouble() / pixelWidth.toDouble()
-					var r = 0f
-					var g = 0f
-					var b = 0f
-					for(j in 0 until numY) {
-						for(i in 0 until numX) {
-							val basis = (Math.cos(kx * i) * Math.cos(ky * j)).toFloat()
-							val color = colors[i + j * numX]
-							r += color[0] * basis
-							g += color[1] * basis
-							b += color[2] * basis
-						}
-					}
-					pixels[pos ++] = Color.argb(
-						255,
-						linearTosRGB(r),
-						linearTosRGB(g),
-						linearTosRGB(b)
-					)
-				}
-			}
+		if(blurhash.length != 4 + 2 * numX * numY) {
+			error("'blurhash length mismatch. actual=${blurhash.length},expect=${4 + 2 * numX * numY}")
 		}
 		
-		// デコード後のビットマップのサイズ
-		const val bitmapWidth = 32
-		const val bitmapHeight = 32
+		this.colors = ArrayList()
+		for(i in 0 until numX * numY) {
+			colors.add(
+				if(i == 0) {
+					decodeDC(blurhash.sub4(2).decodeBase83()) // 2..5
+				} else {
+					// 6..8,...
+					decodeAC(blurhash.sub2(4 + i * 2).decodeBase83(), maximumValue)
+				}
+			)
+		}
+		
+	}
+	
+	// render to IntArray that can be used to Bitmap.setPixels()
+	fun render(pixels : IntArray, pixelWidth : Int, pixelHeight : Int) {
+		var pos = 0
+		for(y in 0 until pixelHeight) {
+			val ky = Math.PI * y.toDouble() / pixelHeight.toDouble()
+			for(x in 0 until pixelWidth) {
+				val kx = Math.PI * x.toDouble() / pixelWidth.toDouble()
+				var r = 0f
+				var g = 0f
+				var b = 0f
+				for(j in 0 until numY) {
+					for(i in 0 until numX) {
+						val basis = (Math.cos(kx * i) * Math.cos(ky * j)).toFloat()
+						val color = colors[i + j * numX]
+						r += color[0] * basis
+						g += color[1] * basis
+						b += color[2] * basis
+					}
+				}
+				pixels[pos ++] = Color.argb(
+					255,
+					linearTosRGB(r),
+					linearTosRGB(g),
+					linearTosRGB(b)
+				)
+			}
+		}
+	}
+}
+
+class BlurhashView : AppCompatTextView {
+	
+	companion object {
+		val log = LogCategory("BlurhashView")
+		
+		// blurhashビットマップのサイズ
+		const val bitmapWidth = 16
+		const val bitmapHeight = 16
 	}
 	
 	constructor(context : Context) : super(context)
@@ -197,7 +205,7 @@ class BlurhashView : AppCompatTextView {
 			blurhashDecodeOk = if(v?.isEmpty() != false) {
 				false
 			} else try {
-				decode(pixels, bitmapWidth, bitmapHeight, v)
+				Blurhash(v).render(pixels, bitmapWidth, bitmapHeight)
 				blurhashBitmap.setPixels(
 					pixels,
 					0,

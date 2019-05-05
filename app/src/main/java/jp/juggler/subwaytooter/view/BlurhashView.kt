@@ -7,58 +7,51 @@ import android.util.SparseIntArray
 import androidx.appcompat.widget.AppCompatTextView
 import jp.juggler.util.LogCategory
 import java.lang.Math.pow
-import kotlin.math.abs
 import kotlin.math.sign
 
 class Blurhash(blurhash : String, punch : Float = 1f) {
 	
 	companion object {
-		private fun String.sub1(idx : Int) = substring(idx, idx + 1)
-		private fun String.sub2(idx : Int) = substring(idx, idx + 2)
-		private fun String.sub4(idx : Int) = substring(idx, idx + 4)
 		
 		// map from base83 character to index
 		private val base83Map = SparseIntArray().apply {
-			val base83Chars =
-				"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~"
-			for(i in 0 until base83Chars.length) {
-				val c = base83Chars[i]
-				put(c.toInt(), i)
-			}
+			"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~"
+				.forEachIndexed { index, c ->
+					put(c.toInt(), index)
+				}
 		}
 		
-		// convert from base83 chars(1..4) to integer
-		private fun String.decodeBase83() : Int {
+		// convert from base83 chars(1..4 length) to integer
+		private fun String.decodeBase83(start : Int, length : Int) : Int {
 			var v = 0
-			for(c in this) {
-				val ci = c.toInt()
-				val i = base83Map.get(ci, - 1)
-				if(i == - 1) error("decodeBase83: incorrect char code $ci")
-				v = v * 83 + i
+			for(i in start until start + length) {
+				val ci = this[i].toInt()
+				val idx = base83Map.get(ci, - 1)
+				if(idx == - 1) {
+					error("decodeBase83: incorrect char code $ci")
+				}
+				v = v * 83 + idx
 			}
 			return v
 		}
 		
 		// array to convert gamma curve from sRGB(0..255) to linear(0..1f)
-		private val arraySRGB2Linear = FloatArray(256).apply {
-			for(i in 0 until 256) {
-				val v = i.toDouble() / 255.0
-				this[i] =
-					if(v <= 0.04045) {
-						v / 12.92
-					} else {
-						pow(((v + 0.055) / 1.055), 2.4)
-					}
-						.toFloat()
-				
+		private val arraySRGB2Linear = FloatArray(256) { i ->
+			val v = i.toDouble() / 255.0
+			if(v <= 0.04045) {
+				v / 12.92
+			} else {
+				pow(((v + 0.055) / 1.055), 2.4)
 			}
+				.toFloat()
 		}
 		
-		private fun sRGBToLinear(value : Int) =
-			arraySRGB2Linear[if(value < 0) 0 else if(value > 255) 255 else value]
+		private fun clip(min:Int,max:Int,value:Int) = if(value < min) min else if(value > max) max else value
+		
+		private fun sRGBToLinear(value : Int) = arraySRGB2Linear[clip(0,255,value)]
 		
 		private fun linearTosRGB(value : Float) : Int {
-			// binary search in arraySRGB2Linear
+			// binary search in arraySRGB2Linear to avoid using pow()
 			var start = 0
 			var end = 256
 			while(end - start > 1) {
@@ -70,61 +63,54 @@ class Blurhash(blurhash : String, punch : Float = 1f) {
 					else -> return mid
 				}
 			}
-			return when {
-				start < 0 -> 0
-				start >= 256 -> 255
-				else -> start
-			}
+			return clip(0,255,start)
 		}
 		
-		private fun signPow(v : Float, exp : Double) : Float =
-			sign(v) * pow(abs(v).toDouble(), exp).toFloat()
-		
-		private fun decodeDC(value : Int) = floatArrayOf(
-			sRGBToLinear((value ushr 16) and 255),
-			sRGBToLinear((value ushr 8) and 255),
-			sRGBToLinear((value) and 255)
-		)
+		private fun signPow2(v : Float) : Float = sign(v) * (v * v)
 		
 		private fun decodeACSub(maximumValue : Float, v : Int) : Float =
-			signPow((v - 9).toFloat() / 9f, 2.0) * maximumValue
+			signPow2((v - 9).toFloat() / 9f) * maximumValue
 		
 		private fun decodeAC(value : Int, maximumValue : Float) = floatArrayOf(
 			decodeACSub(maximumValue, value / 361), // 19*19
 			decodeACSub(maximumValue, ((value / 19) % 19)),
 			decodeACSub(maximumValue, value % 19)
 		)
+		
+		private fun decodeDC(value : Int) = floatArrayOf(
+			sRGBToLinear((value ushr 16) and 255),
+			sRGBToLinear((value ushr 8) and 255),
+			sRGBToLinear((value) and 255)
+		)
 	}
 	
-	private val numY : Int
-	private val numX : Int
-	private val colors : ArrayList<FloatArray>
+	private val height : Int
+	private val width : Int
+	private val colors : Array<FloatArray>
 	
 	init {
-		if(blurhash.length < 6) error("blurhash: too short $blurhash")
-		
-		val sizeFlag = blurhash.sub1(0).decodeBase83()
-		this.numY = (sizeFlag / 9) + 1
-		this.numX = (sizeFlag % 9) + 1
-		val quantisedMaximumValue : Int = blurhash.sub1(1).decodeBase83()
-		val maximumValue : Float = ((quantisedMaximumValue + 1).toFloat() / 166f) * punch
-		
-		if(blurhash.length != 4 + 2 * numX * numY) {
-			error("'blurhash length mismatch. actual=${blurhash.length},expect=${4 + 2 * numX * numY}")
+		if(blurhash.length < 6) {
+			error("blurhash: too short $blurhash")
 		}
 		
-		this.colors = ArrayList()
-		for(i in 0 until numX * numY) {
-			colors.add(
-				if(i == 0) {
-					decodeDC(blurhash.sub4(2).decodeBase83()) // 2..5
-				} else {
-					// 6..8,...
-					decodeAC(blurhash.sub2(4 + i * 2).decodeBase83(), maximumValue)
-				}
-			)
+		val sizeFlag = blurhash.decodeBase83(0, 1)
+		this.height = (sizeFlag / 9) + 1
+		this.width = (sizeFlag % 9) + 1
+		
+		val lengthExpect = 4 + 2 * width * height
+		if(blurhash.length != lengthExpect) {
+			error("'blurhash length mismatch. expect=$lengthExpect,actual=${blurhash.length}")
 		}
 		
+		val quantisedMaximumValue = blurhash.decodeBase83(1, 1)
+		val maximumValue = ((quantisedMaximumValue + 1).toFloat() / 166f) * punch
+		
+		this.colors = Array(width * height) { i ->
+			when(i) {
+				0 -> decodeDC(blurhash.decodeBase83(2, 4))
+				else -> decodeAC(blurhash.decodeBase83(4 + i * 2, 2), maximumValue)
+			}
+		}
 	}
 	
 	// render to IntArray that can be used to Bitmap.setPixels()
@@ -137,10 +123,10 @@ class Blurhash(blurhash : String, punch : Float = 1f) {
 				var r = 0f
 				var g = 0f
 				var b = 0f
-				for(j in 0 until numY) {
-					for(i in 0 until numX) {
+				for(j in 0 until height) {
+					for(i in 0 until width) {
 						val basis = (Math.cos(kx * i) * Math.cos(ky * j)).toFloat()
-						val color = colors[i + j * numX]
+						val color = colors[i + j * width]
 						r += color[0] * basis
 						g += color[1] * basis
 						b += color[2] * basis
@@ -162,20 +148,20 @@ class BlurhashView : AppCompatTextView {
 	companion object {
 		val log = LogCategory("BlurhashView")
 		
-		// blurhashビットマップのサイズ
 		const val bitmapWidth = 16
 		const val bitmapHeight = 16
 	}
 	
-	constructor(context : Context) : super(context)
-	constructor(context : Context, attrs : AttributeSet) : super(context, attrs)
-	constructor(context : Context, attrs : AttributeSet, defStyleAttr : Int) : super(
-		context,
-		attrs,
-		defStyleAttr
-	)
+	constructor(context : Context) :
+		super(context)
 	
-	// bitmapとIntArrayはViewに保持して再利用する
+	constructor(context : Context, attrs : AttributeSet) :
+		super(context, attrs)
+	
+	constructor(context : Context, attrs : AttributeSet, defStyleAttr : Int) :
+		super(context, attrs, defStyleAttr)
+	
+	// keep bitmap and IntArray to reuse it.
 	private val pixels = IntArray(bitmapWidth * bitmapHeight)
 	private val blurhashBitmap = Bitmap.createBitmap(
 		bitmapWidth,
@@ -200,7 +186,6 @@ class BlurhashView : AppCompatTextView {
 	var blurhash : String? = null
 		set(v) {
 			if(v == field) return
-			field = v
 			
 			blurhashDecodeOk = if(v?.isEmpty() != false) {
 				false
@@ -220,6 +205,9 @@ class BlurhashView : AppCompatTextView {
 				log.e(ex, "blurhash decode failed.")
 				false
 			}
+			
+			field = v
+			invalidate()
 		}
 	
 	override fun onDraw(canvas : Canvas) {

@@ -32,6 +32,7 @@ class TootAttachment : TootAttachmentLike {
 		private const val KEY_FOCUS = "focus"
 		private const val KEY_X = "x"
 		private const val KEY_Y = "y"
+		private const val KEY_BLURHASH = "blurhash"
 		
 		fun decodeJson(src : JSONObject) = TootAttachment(src, decode = true)
 		
@@ -81,6 +82,9 @@ class TootAttachment : TootAttachmentLike {
 	// MisskeyはメディアごとにNSFWフラグがある
 	val isSensitive : Boolean
 	
+	// Mastodon 2.9.0 or later
+	val blurhash : String?
+	
 	///////////////////////////////
 	
 	override fun hasUrl(url : String) : Boolean = when(url) {
@@ -126,6 +130,7 @@ class TootAttachment : TootAttachmentLike {
 				focusY = 0f
 				isSensitive = src.optBoolean("isSensitive", false)
 				
+				blurhash = null
 			}
 			
 			else -> {
@@ -146,6 +151,9 @@ class TootAttachment : TootAttachmentLike {
 				val focus = src.optJSONObject("meta")?.optJSONObject("focus")
 				focusX = parseFocusValue(focus, "x")
 				focusY = parseFocusValue(focus, "y")
+				
+				blurhash = src.parseString("blurhash")
+				
 			}
 		}
 		
@@ -190,6 +198,7 @@ class TootAttachment : TootAttachmentLike {
 		put(KEY_TEXT_URL, text_url)
 		put(KEY_DESCRIPTION, description)
 		put(KEY_IS_SENSITIVE, isSensitive)
+		put(KEY_BLURHASH, blurhash)
 		
 		if(focusX != 0f || focusY != 0f) {
 			put(KEY_META, jsonObject {
@@ -220,7 +229,7 @@ class TootAttachment : TootAttachmentLike {
 		val focus = src.optJSONObject(KEY_META)?.optJSONObject(KEY_FOCUS)
 		focusX = parseFocusValue(focus, KEY_X)
 		focusY = parseFocusValue(focus, KEY_Y)
-		
+		blurhash = src.parseString(KEY_BLURHASH)
 	}
 }
 

@@ -14,6 +14,7 @@
       <w>autofill</w>
       <w>basi</w>
       <w>blockee</w>
+      <w>blurhash</w>
       <w>bumptech</w>
       <w>codepoint</w>
       <w>coroutine</w>
@@ -97,6 +98,7 @@
       <w>utoken</w>
       <w>workarea</w>
       <w>xiaomi</w>
+      <w>zabcdefghijklmnopqrstuvwxyz</w>
     </words>
   </dictionary>
 </component>

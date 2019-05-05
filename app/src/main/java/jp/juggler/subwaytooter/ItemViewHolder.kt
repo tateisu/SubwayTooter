@@ -10,6 +10,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
+import android.text.style.BackgroundColorSpan
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -90,7 +91,7 @@ internal class ItemViewHolder(
 	
 	private lateinit var flMedia : View
 	private lateinit var llMedia : View
-	private lateinit var btnShowMedia : TextView
+	private lateinit var btnShowMedia : BlurhashView
 	private lateinit var ivMedia1 : MyNetworkImageView
 	private lateinit var ivMedia2 : MyNetworkImageView
 	private lateinit var ivMedia3 : MyNetworkImageView
@@ -287,6 +288,12 @@ internal class ItemViewHolder(
 			val density = activity.density
 			cardBackground.round = (density * 8f)
 			cardBackground.width = (density * 1f)
+		}
+		
+		btnShowMedia.text = SpannableString(activity.getString(R.string.tap_to_show)).apply{
+			val colorBg = getAttributeColor(activity,R.attr.colorShowMediaBackground)
+				.applyAlphaMultiplier(0.5f)
+			setSpan(BackgroundColorSpan(colorBg),0, this.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 		}
 	}
 	
@@ -1308,6 +1315,10 @@ internal class ItemViewHolder(
 			setMedia(media_attachments, sb, ivMedia2, 1)
 			setMedia(media_attachments, sb, ivMedia3, 2)
 			setMedia(media_attachments, sb, ivMedia4, 3)
+
+			val m0 = if( media_attachments.isEmpty() ) null else media_attachments[0] as? TootAttachment
+			btnShowMedia.blurhash = m0?.blurhash
+			
 			if(sb.isNotEmpty()) {
 				tvMediaDescription.visibility = View.VISIBLE
 				tvMediaDescription.text = sb
@@ -3291,22 +3302,21 @@ internal class ItemViewHolder(
 										}
 									}
 									
-									btnShowMedia = textView {
+									btnShowMedia = blurhashView {
 										
-										backgroundColor = getAttributeColor(
+										errorColor = getAttributeColor(
 											context,
 											R.attr.colorShowMediaBackground
 										)
 										gravity = Gravity.CENTER_VERTICAL or Gravity.END
-										text = context.getString(R.string.tap_to_show)
-										textColor =
-											getAttributeColor(
-												context,
-												R.attr.colorShowMediaText
-											)
-										endPadding = dip(4)
-										minHeightCompat = dip(32)
+									
+										textColor = getAttributeColor(
+											context,
+											R.attr.colorShowMediaText
+										)
+
 									}.lparams(matchParent, matchParent)
+									
 								}
 							} else {
 								frameLayout {
@@ -3388,14 +3398,14 @@ internal class ItemViewHolder(
 										}
 									}
 									
-									btnShowMedia = textView {
+									btnShowMedia = blurhashView {
 										
-										backgroundColor = getAttributeColor(
+										errorColor = getAttributeColor(
 											context,
 											R.attr.colorShowMediaBackground
 										)
 										gravity = Gravity.CENTER
-										text = context.getString(R.string.tap_to_show)
+										
 										textColor = getAttributeColor(
 											context,
 											R.attr.colorShowMediaText

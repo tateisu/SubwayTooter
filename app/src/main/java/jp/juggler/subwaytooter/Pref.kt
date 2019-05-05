@@ -9,8 +9,11 @@ import jp.juggler.util.optInt
 abstract class BasePref<T>(val key : String) {
 	
 	init {
-		@Suppress("LeakingThis")
-		Pref.map[this.key] = this
+		if( Pref.map[key] != null )
+			error("Preference key duplicate: ${key}")
+		else
+			@Suppress("LeakingThis")
+			Pref.map[key] = this
 	}
 	
 	override fun equals(other : Any?) : Boolean {

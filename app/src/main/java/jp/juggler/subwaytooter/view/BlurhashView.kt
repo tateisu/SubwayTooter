@@ -46,9 +46,10 @@ class Blurhash(blurhash : String, punch : Float = 1f) {
 				.toFloat()
 		}
 		
-		private fun clip(min:Int,max:Int,value:Int) = if(value < min) min else if(value > max) max else value
+		private fun clip(min : Int, max : Int, value : Int) =
+			if(value < min) min else if(value > max) max else value
 		
-		private fun sRGBToLinear(value : Int) = arraySRGB2Linear[clip(0,255,value)]
+		private fun sRGBToLinear(value : Int) = arraySRGB2Linear[clip(0, 255, value)]
 		
 		private fun linearTosRGB(value : Float) : Int {
 			// binary search in arraySRGB2Linear to avoid using pow()
@@ -63,7 +64,7 @@ class Blurhash(blurhash : String, punch : Float = 1f) {
 					else -> return mid
 				}
 			}
-			return clip(0,255,start)
+			return clip(0, 255, start)
 		}
 		
 		private fun signPow2(v : Float) : Float = sign(v) * (v * v)
@@ -210,7 +211,7 @@ class BlurhashView : AppCompatTextView {
 			invalidate()
 		}
 	
-	override fun onDraw(canvas : Canvas) {
+	private fun drawBlurhash(canvas : Canvas) {
 		
 		val view_w = width
 		val view_h = height
@@ -225,7 +226,14 @@ class BlurhashView : AppCompatTextView {
 			rectDst.set(0, 0, view_w, view_h)
 			canvas.drawRect(rectDst, paint)
 		}
-		
+	}
+	
+	override fun onDraw(canvas : Canvas) {
+		drawBlurhash(canvas)
 		super.onDraw(canvas)
+	}
+	
+	override fun isOpaque() : Boolean {
+		return true
 	}
 }

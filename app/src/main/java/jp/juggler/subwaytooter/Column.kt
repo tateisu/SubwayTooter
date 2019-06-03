@@ -598,8 +598,8 @@ class Column(
 			if(access_info.misskeyVersion >= 11) {
 				when {
 					makeMisskeyChannelArg() == null -> null
-					misskeyApiToken == null -> "/" // 認証無し
-					else -> "/?i=$misskeyApiToken"
+					misskeyApiToken == null -> "/?_=$column_id" // 認証無し
+					else -> "/?_=$column_id&i=$misskeyApiToken"
 				}
 			} else {
 				if(misskeyApiToken == null) {

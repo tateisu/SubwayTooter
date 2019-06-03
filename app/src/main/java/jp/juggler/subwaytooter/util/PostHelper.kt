@@ -352,7 +352,7 @@ class PostHelper(
 						)
 						if(visibility_checked != null) {
 							
-							if(visibility_checked == TootVisibility.DirectSpecified) {
+							if(visibility_checked == TootVisibility.DirectSpecified || visibility_checked == TootVisibility.DirectPrivate ) {
 								val userIds = JSONArray()
 								val reMention =
 									Pattern.compile("(?:\\A|\\s)@([a-zA-Z0-9_]{1,20})(?:@([\\w.:-]+))?(?:\\z|\\s)")
@@ -376,11 +376,13 @@ class PostHelper(
 									}
 								}
 								json.put(
-									"visibility", if(userIds.length() == 0) {
-										"private"
-									} else {
-										json.put("visibleUserIds", userIds)
-										"specified"
+									"visibility", when {
+										userIds.length() > 0 -> {
+											json.put("visibleUserIds", userIds)
+											"specified"
+										}
+										account.misskeyVersion >= 11 -> "specified"
+										else -> "private"
 									}
 								)
 							} else {

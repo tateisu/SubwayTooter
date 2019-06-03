@@ -38,6 +38,7 @@ object Styler {
 				TootVisibility.DirectSpecified -> R.drawable.ic_mail
 				TootVisibility.DirectPrivate -> R.drawable.ic_lock
 				TootVisibility.WebSetting -> R.drawable.ic_question
+				TootVisibility.AccountSetting -> R.drawable.ic_question
 				
 				TootVisibility.LocalPublic -> R.drawable.ic_local_ltl
 				TootVisibility.LocalHome -> R.drawable.ic_local_home
@@ -51,6 +52,7 @@ object Styler {
 				TootVisibility.DirectSpecified -> R.drawable.ic_mail
 				TootVisibility.DirectPrivate -> R.drawable.ic_mail
 				TootVisibility.WebSetting -> R.drawable.ic_question
+				TootVisibility.AccountSetting -> R.drawable.ic_question
 				
 				TootVisibility.LocalPublic -> R.drawable.ic_local_ltl
 				TootVisibility.LocalHome -> R.drawable.ic_local_lock_open
@@ -79,6 +81,7 @@ object Styler {
 					TootVisibility.DirectSpecified -> R.string.visibility_direct
 					TootVisibility.DirectPrivate -> R.string.visibility_private
 					TootVisibility.WebSetting -> R.string.visibility_web_setting
+					TootVisibility.AccountSetting-> R.string.visibility_account_setting
 					
 					TootVisibility.LocalPublic -> R.string.visibility_local_public
 					TootVisibility.LocalHome -> R.string.visibility_local_home
@@ -91,6 +94,7 @@ object Styler {
 					TootVisibility.DirectSpecified -> R.string.visibility_direct
 					TootVisibility.DirectPrivate -> R.string.visibility_direct
 					TootVisibility.WebSetting -> R.string.visibility_web_setting
+					TootVisibility.AccountSetting-> R.string.visibility_account_setting
 					
 					TootVisibility.LocalPublic -> R.string.visibility_local_public
 					TootVisibility.LocalHome -> R.string.visibility_local_unlisted

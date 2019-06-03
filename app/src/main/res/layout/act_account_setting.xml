@@ -8,8 +8,8 @@
 
     android:clipToPadding="false"
     android:fillViewport="true"
-    android:paddingBottom="128dp"
     android:paddingTop="12dp"
+    android:paddingBottom="128dp"
     android:scrollbarStyle="outsideOverlay"
     tools:ignore="TooManyViews,Autofill"
     >
@@ -85,8 +85,8 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/toot_default_text"
             android:labelFor="@+id/etDefaultText"
+            android:text="@string/toot_default_text"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -95,12 +95,11 @@
                 android:id="@+id/etDefaultText"
                 style="@style/setting_horizontal_stretch"
                 android:layout_gravity="center_vertical"
-                android:padding="4dp"
                 android:inputType="textMultiLine"
+                android:padding="4dp"
                 />
 
         </LinearLayout>
-
 
         <View style="@style/setting_divider"/>
 
@@ -222,19 +221,19 @@
 
         <View style="@style/setting_divider"/>
 
-
         <TextView
             style="@style/setting_row_label"
             android:text="@string/profile_metadata"
             />
 
-
         <LinearLayout style="@style/setting_row_form_fields">
+
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldName1"
                 android:text="@string/field_name1"
                 />
+
             <EditText
                 android:id="@+id/etFieldName1"
                 style="@style/setting_horizontal_stretch"
@@ -243,11 +242,13 @@
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
+
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldValue1"
                 android:text="@string/field_value1"
                 />
+
             <EditText
                 android:id="@+id/etFieldValue1"
                 style="@style/setting_horizontal_stretch"
@@ -256,11 +257,13 @@
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
+
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldName2"
                 android:text="@string/field_name2"
                 />
+
             <EditText
                 android:id="@+id/etFieldName2"
                 style="@style/setting_horizontal_stretch"
@@ -275,6 +278,7 @@
                 android:labelFor="@+id/etFieldValue2"
                 android:text="@string/field_value2"
                 />
+
             <EditText
                 android:id="@+id/etFieldValue2"
                 style="@style/setting_horizontal_stretch"
@@ -283,11 +287,13 @@
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
+
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldName3"
                 android:text="@string/field_name3"
                 />
+
             <EditText
                 android:id="@+id/etFieldName3"
                 style="@style/setting_horizontal_stretch"
@@ -296,11 +302,13 @@
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
+
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldValue3"
                 android:text="@string/field_value3"
                 />
+
             <EditText
                 android:id="@+id/etFieldValue3"
                 style="@style/setting_horizontal_stretch"
@@ -309,11 +317,13 @@
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
+
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldName4"
                 android:text="@string/field_name4"
                 />
+
             <EditText
                 android:id="@+id/etFieldName4"
                 style="@style/setting_horizontal_stretch"
@@ -322,27 +332,30 @@
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
+
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldValue4"
                 android:text="@string/field_value4"
                 />
+
             <EditText
                 android:id="@+id/etFieldValue4"
                 style="@style/setting_horizontal_stretch"
                 android:inputType="textMultiLine"
                 />
 
-
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
+
             <TextView
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/available_mastodon_2_4_later"
                 android:layout_gravity="center_vertical"
                 android:gravity="end"
+                android:text="@string/available_mastodon_2_4_later"
                 />
+
             <ImageButton
                 android:id="@+id/btnFields"
                 android:layout_width="48dp"
@@ -362,53 +375,45 @@
             android:text="@string/actions"
             />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Button
+            android:id="@+id/btnOpenBrowser"
+            style="@style/setting_row_button"
+            android:ellipsize="start"
+            android:textAllCaps="false"
+            tools:text="open http://mastodon.juggler.jp/"
+            />
 
-            <Button
-                android:id="@+id/btnOpenBrowser"
-                style="@style/setting_horizontal_stretch"
-                android:ellipsize="start"
-                android:textAllCaps="false"
-                tools:text="open http://mastodon.juggler.jp/"
-                />
+        <Button
+            android:id="@+id/btnAccessToken"
+            style="@style/setting_row_button"
+            android:ellipsize="start"
+            android:text="@string/update_access_token"
+            android:textAllCaps="false"
+            />
 
-        </LinearLayout>
+        <Button
+            android:id="@+id/btnInputAccessToken"
+            style="@style/setting_row_button"
+            android:ellipsize="start"
+            android:text="@string/input_access_token"
+            android:textAllCaps="false"
+            />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Button
+            android:id="@+id/btnLoadPreference"
+            style="@style/setting_row_button"
+            android:ellipsize="start"
+            android:text="@string/load_preference_from_web_ui"
+            android:textAllCaps="false"
+            />
 
-            <Button
-                android:id="@+id/btnAccessToken"
-                style="@style/setting_horizontal_stretch"
-                android:ellipsize="start"
-                android:text="@string/update_access_token"
-                android:textAllCaps="false"
-                />
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Button
-                android:id="@+id/btnInputAccessToken"
-                style="@style/setting_horizontal_stretch"
-                android:ellipsize="start"
-                android:text="@string/input_access_token"
-                android:textAllCaps="false"
-                />
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Button
-                android:id="@+id/btnAccountRemove"
-                style="@style/setting_horizontal_stretch"
-                android:ellipsize="start"
-                android:text="@string/account_remove"
-                android:textAllCaps="false"
-                />
-
-        </LinearLayout>
+        <Button
+            android:id="@+id/btnAccountRemove"
+            style="@style/setting_row_button"
+            android:ellipsize="start"
+            android:text="@string/account_remove"
+            android:textAllCaps="false"
+            />
 
         <View style="@style/setting_divider"/>
 
@@ -430,6 +435,27 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:text="@string/mark_sensitive_by_default"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swMarkSensitive"
+                style="@style/setting_wrap"
+                />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:text="@string/sensitive_content_default_open"
             />
 
@@ -437,6 +463,27 @@
 
             <Switch
                 android:id="@+id/swNSFWOpen"
+                style="@style/setting_wrap"
+                />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/cw_default_open"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swExpandCW"
                 style="@style/setting_wrap"
                 />
 
@@ -597,6 +644,7 @@
                 android:text="@string/follow"
                 />
         </LinearLayout>
+
         <LinearLayout style="@style/setting_row_form">
 
             <CheckBox
@@ -605,6 +653,7 @@
                 android:text="@string/reaction"
                 />
         </LinearLayout>
+
         <LinearLayout style="@style/setting_row_form">
 
             <CheckBox
@@ -613,6 +662,7 @@
                 android:text="@string/vote_polls"
                 />
         </LinearLayout>
+
         <LinearLayout style="@style/setting_row_form">
 
             <Button

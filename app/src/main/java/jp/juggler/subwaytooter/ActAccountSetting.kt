@@ -86,12 +86,18 @@ class ActAccountSetting
 	
 	private lateinit var tvInstance : TextView
 	private lateinit var tvUser : TextView
-	private lateinit var btnAccessToken : View
-	private lateinit var btnInputAccessToken : View
-	private lateinit var btnAccountRemove : View
+	private lateinit var btnAccessToken : Button
+	private lateinit var btnInputAccessToken : Button
+	private lateinit var btnAccountRemove : Button
+	private lateinit var btnLoadPreference : Button
+	
 	private lateinit var btnVisibility : Button
+	
 	private lateinit var swNSFWOpen : Switch
 	private lateinit var swDontShowTimeout : Switch
+	private lateinit var swExpandCW : Switch
+	private lateinit var swMarkSensitive : Switch
+	
 	private lateinit var btnOpenBrowser : Button
 	private lateinit var btnPushSubscription : Button
 	private lateinit var cbNotificationMention : CheckBox
@@ -253,9 +259,12 @@ class ActAccountSetting
 		btnAccessToken = findViewById(R.id.btnAccessToken)
 		btnInputAccessToken = findViewById(R.id.btnInputAccessToken)
 		btnAccountRemove = findViewById(R.id.btnAccountRemove)
+		btnLoadPreference = findViewById(R.id.btnLoadPreference)
 		btnVisibility = findViewById(R.id.btnVisibility)
 		swNSFWOpen = findViewById(R.id.swNSFWOpen)
 		swDontShowTimeout = findViewById(R.id.swDontShowTimeout)
+		swExpandCW = findViewById(R.id.swExpandCW)
+		swMarkSensitive = findViewById(R.id.swMarkSensitive)
 		btnOpenBrowser = findViewById(R.id.btnOpenBrowser)
 		btnPushSubscription = findViewById(R.id.btnPushSubscription)
 		cbNotificationMention = findViewById(R.id.cbNotificationMention)
@@ -309,6 +318,7 @@ class ActAccountSetting
 		btnAccessToken.setOnClickListener(this)
 		btnInputAccessToken.setOnClickListener(this)
 		btnAccountRemove.setOnClickListener(this)
+		btnLoadPreference.setOnClickListener(this)
 		btnVisibility.setOnClickListener(this)
 		btnUserCustom.setOnClickListener(this)
 		btnProfileAvatar.setOnClickListener(this)
@@ -319,6 +329,8 @@ class ActAccountSetting
 		
 		swNSFWOpen.setOnCheckedChangeListener(this)
 		swDontShowTimeout.setOnCheckedChangeListener(this)
+		swExpandCW.setOnCheckedChangeListener(this)
+		swMarkSensitive.setOnCheckedChangeListener(this)
 		cbNotificationMention.setOnCheckedChangeListener(this)
 		cbNotificationBoost.setOnCheckedChangeListener(this)
 		cbNotificationFavourite.setOnCheckedChangeListener(this)
@@ -392,6 +404,8 @@ class ActAccountSetting
 		
 		swNSFWOpen.isChecked = a.dont_hide_nsfw
 		swDontShowTimeout.isChecked = a.dont_show_timeout
+		swExpandCW.isChecked = a.expand_cw
+		swMarkSensitive.isChecked = a.default_sensitive
 		cbNotificationMention.isChecked = a.notification_mention
 		cbNotificationBoost.isChecked = a.notification_boost
 		cbNotificationFavourite.isChecked = a.notification_favourite
@@ -444,7 +458,7 @@ class ActAccountSetting
 		
 		
 		
-		updateVisibility()
+		showVisibility()
 		showAcctColor()
 	}
 	
@@ -464,6 +478,8 @@ class ActAccountSetting
 		account.visibility = visibility
 		account.dont_hide_nsfw = swNSFWOpen.isChecked
 		account.dont_show_timeout = swDontShowTimeout.isChecked
+		account.expand_cw = swExpandCW.isChecked
+		account.default_sensitive = swMarkSensitive.isChecked
 		account.notification_mention = cbNotificationMention.isChecked
 		account.notification_boost = cbNotificationBoost.isChecked
 		account.notification_favourite = cbNotificationFavourite.isChecked
@@ -501,6 +517,7 @@ class ActAccountSetting
 			R.id.btnInputAccessToken -> inputAccessToken()
 			
 			R.id.btnAccountRemove -> performAccountRemove()
+			R.id.btnLoadPreference -> performLoadPreference()
 			R.id.btnVisibility -> performVisibility()
 			R.id.btnOpenBrowser -> App1.openBrowser(
 				this@ActAccountSetting,
@@ -543,7 +560,7 @@ class ActAccountSetting
 		}
 	}
 	
-	private fun updateVisibility() {
+	private fun showVisibility() {
 		btnVisibility.text = Styler.getVisibilityString(this, account.isMisskey, visibility)
 	}
 	
@@ -580,13 +597,67 @@ class ActAccountSetting
 			.setItems(caption_list) { _, which ->
 				if(which in 0 until list.size) {
 					visibility = list[which]
-					updateVisibility()
+					showVisibility()
 					saveUIToData()
 				}
 			}
 			.setNegativeButton(R.string.cancel, null)
 			.show()
 		
+	}
+	
+	private fun performLoadPreference() {
+		
+		TootTaskRunner(this).run(account, object : TootTask {
+			override fun background(client : TootApiClient) : TootApiResult? {
+				return client.request("/api/v1/preferences")
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				result ?: return
+				
+				val json = result.jsonObject
+				if(json == null) {
+					showToast(this@ActAccountSetting, true, result.error)
+					return
+				}
+				
+				var bChanged = false
+				try {
+					loading = true
+
+					val tmpVisibility =
+						TootVisibility.parseMastodon(json.parseString("posting:default:visibility"))
+					if(tmpVisibility != null) {
+						bChanged = true
+						visibility = tmpVisibility
+						showVisibility()
+					}
+					
+					val tmpDefaultSensitive = json.parseBoolean("posting:default:sensitive")
+					if(tmpDefaultSensitive != null) {
+						bChanged = true
+						swMarkSensitive.isChecked = tmpDefaultSensitive
+					}
+					
+					val tmpExpandMedia = json.parseString("reading:expand:media")
+					if(tmpExpandMedia?.isNotEmpty() == true) {
+						bChanged = true
+						swNSFWOpen.isChecked = (tmpExpandMedia == "show_all")
+					}
+					
+					val tmpExpandCW = json.parseBoolean("reading:expand:spoilers")
+					if(tmpExpandCW != null) {
+						bChanged = true
+						swExpandCW.isChecked = tmpExpandCW
+					}
+					
+				} finally {
+					loading = false
+					if(bChanged) saveUIToData()
+				}
+			}
+		})
 	}
 	
 	///////////////////////////////////////////////////

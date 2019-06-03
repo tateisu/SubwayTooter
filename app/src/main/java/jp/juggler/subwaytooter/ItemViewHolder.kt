@@ -563,7 +563,7 @@ internal class ItemViewHolder(
 					llContentWarning.visibility = View.VISIBLE
 					tvContentWarning.text = decoded_spoiler_text
 					spoiler_invalidator.register(decoded_spoiler_text)
-					val cw_shown = ContentWarning.isShown(item.uri, false)
+					val cw_shown = ContentWarning.isShown(item.uri, access_info.expand_cw)
 					showContent(cw_shown)
 				}
 				
@@ -1272,7 +1272,7 @@ internal class ItemViewHolder(
 				llContentWarning.visibility = View.VISIBLE
 				tvContentWarning.text = status.decoded_spoiler_text
 				spoiler_invalidator.register(status.decoded_spoiler_text)
-				val cw_shown = ContentWarning.isShown(status, false)
+				val cw_shown = ContentWarning.isShown(status, access_info.expand_cw)
 				showContent(cw_shown)
 			}
 			
@@ -1281,7 +1281,7 @@ internal class ItemViewHolder(
 				llContentWarning.visibility = View.VISIBLE
 				tvContentWarning.text = r.decoded_spoiler_text
 				spoiler_invalidator.register(r.decoded_spoiler_text)
-				val cw_shown = ContentWarning.isShown(status, false)
+				val cw_shown = ContentWarning.isShown(status, access_info.expand_cw)
 				showContent(cw_shown)
 			}
 			

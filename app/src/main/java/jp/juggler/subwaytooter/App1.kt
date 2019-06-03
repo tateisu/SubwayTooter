@@ -113,8 +113,10 @@ class App1 : Application() {
 		// 2018/10/31 v296 33 => 34 UserRelationMisskey に blocked_by を追加
 		// 2018/10/31 v296 34 => 35 UserRelationMisskey に requested_by を追加
 		// 2018/12/6 v317 35 => 36 ContentWarningテーブルの作り直し。
-		
-		internal const val DB_VERSION = 36
+		// 2019/6/4 v351 36 => 37 SavedAccount テーブルに項目追加。
+		// 2019/6/4 v351 37 => 38 SavedAccount テーブルに項目追加。
+
+		internal const val DB_VERSION = 38
 		
 		private val tableList = arrayOf(
 			LogData,

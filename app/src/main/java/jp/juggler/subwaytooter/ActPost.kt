@@ -678,6 +678,8 @@ class ActPost : AppCompatActivity(),
 			
 			appendContentText(account?.default_text, selectBefore = true)
 			
+			cbNSFW.isChecked = account?.default_sensitive ?: false
+			
 			// 再編集
 			sv = intent.getStringExtra(KEY_REDRAFT_STATUS)
 			if(sv != null && account != null) {
@@ -708,6 +710,10 @@ class ActPost : AppCompatActivity(),
 							}
 						}
 						
+						if( this.attachment_list.isNotEmpty() ) {
+							cbNSFW.isChecked = base_status.sensitive == true
+						}
+						
 						// 再編集の場合はdefault_textは反映されない
 						
 						val decodeOptions = DecodeOptions(this)
@@ -722,7 +728,7 @@ class ActPost : AppCompatActivity(),
 						etContentWarning.setText(text)
 						etContentWarning.setSelection(text.length)
 						cbContentWarning.isChecked = text.isNotEmpty()
-						cbNSFW.isChecked = base_status.sensitive == true
+						
 						
 						val src_enquete = base_status.enquete
 						val src_items = src_enquete?.items
@@ -790,7 +796,6 @@ class ActPost : AppCompatActivity(),
 						} else {
 							cbContentWarning.isChecked = false
 						}
-						cbNSFW.isChecked = item.sensitive
 						visibility = item.visibility
 						
 						// 2019/1/7 どうも添付データを古い投稿から引き継げないようだ…。
@@ -811,6 +816,9 @@ class ActPost : AppCompatActivity(),
 							} catch(ex : Throwable) {
 								log.trace(ex)
 							}
+						}
+						if( this.attachment_list.isNotEmpty()) {
+							cbNSFW.isChecked = item.sensitive
 						}
 					}
 				} catch(ex : Throwable) {

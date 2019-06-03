@@ -1,25 +1,23 @@
 package jp.juggler.subwaytooter.dialog
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.app.Dialog
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.put
 import jp.juggler.util.dismissSafe
 import java.lang.ref.WeakReference
 import android.view.Gravity
-
-
+import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.api.entity.TootVisibility
 
 class DlgQuickTootMenu(
 	internal val activity : ActMain,
 	internal val callback : Callback
-) {
+) : View.OnClickListener {
+	
 	companion object {
 		val etTextIds = arrayOf(
 			R.id.etText0,
@@ -37,10 +35,22 @@ class DlgQuickTootMenu(
 			R.id.btnText4,
 			R.id.btnText5
 		)
+		
+		val visibilityList = arrayOf(
+			TootVisibility.AccountSetting,
+			TootVisibility.WebSetting,
+			TootVisibility.Public,
+			TootVisibility.UnlistedHome,
+			TootVisibility.PrivateFollowers,
+			TootVisibility.DirectSpecified
+		)
+		
 	}
 	
 	interface Callback {
 		fun onMacro(text:String)
+		
+		var visibility : TootVisibility
 	}
 	
 	var dialogRef : WeakReference<Dialog>? = null
@@ -55,17 +65,13 @@ class DlgQuickTootMenu(
 	}
 	
 	val etText = arrayOfNulls<EditText>(6)
+	private lateinit var btnVisibility :Button
 	
 	@SuppressLint("InflateParams")
 	fun show(){
 		val view = activity.layoutInflater.inflate(R.layout.dlg_quick_toot_menu, null, false)
 
-		view.findViewById<Button>(R.id.btnCancel).setOnClickListener {
-			val dialog = dialogRef?.get()
-			if( dialog != null && dialog.isShowing) {
-				dialog.dismissSafe()
-			}
-		}
+		view.findViewById<Button>(R.id.btnCancel).setOnClickListener(this)
 		
 		val btnListener :View.OnClickListener = View.OnClickListener{ v ->
 			val text = etText[v.tag as? Int ?: 0]?.text?.toString()
@@ -90,6 +96,11 @@ class DlgQuickTootMenu(
 			})
 		}
 		
+		btnVisibility = view.findViewById(R.id.btnVisibility)
+		btnVisibility.setOnClickListener(this)
+		
+		showVisibility()
+		
 		val dialog = Dialog(activity)
 		this.dialogRef = WeakReference(dialog)
 		dialog.setCanceledOnTouchOutside(true)
@@ -107,6 +118,7 @@ class DlgQuickTootMenu(
 		dialog.show()
 	}
 	
+	
 	private fun loadStrings() =
 		Pref.spQuickTootMacro(activity.pref).split("\n")
 		
@@ -119,4 +131,38 @@ class DlgQuickTootMenu(
 				}
 			)
 			.apply()
+	
+	
+	override fun onClick(v : View?) { // TODO
+		when(v?.id){
+
+			R.id.btnCancel-> dialogRef?.get()?.dismissSafe()
+
+			R.id.btnVisibility -> performVisibility()
+		}
+	}
+	
+	
+	private fun performVisibility() {
+
+		val caption_list = visibilityList
+			.map { Styler.getVisibilityCaption(activity, false, it) }
+			.toTypedArray()
+		
+		AlertDialog.Builder(activity)
+			.setTitle(R.string.choose_visibility)
+			.setItems(caption_list) { _, which ->
+				if(which in 0 until visibilityList.size) {
+					callback.visibility = visibilityList[which]
+					showVisibility()
+				}
+			}
+			.setNegativeButton(R.string.cancel, null)
+			.show()
+		
+	}
+
+	private fun showVisibility() {
+		btnVisibility.text = Styler.getVisibilityCaption(activity,false,callback.visibility)
+	}
 }

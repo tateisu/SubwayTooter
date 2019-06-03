@@ -116,6 +116,30 @@ fun JSONObject.parseFloatArrayList(name : String) : ArrayList<Float>? {
 fun String.toJsonObject() = JSONObject(this)
 fun String.toJsonArray() = JSONArray(this)
 
+fun JSONObject.parseBoolean(key : String) : Boolean? {
+	val o = this.opt(key)
+	if(o == null || o == JSONObject.NULL) return null
+
+	return when(o){
+		is Boolean -> o
+		
+		is Int -> return o != 0
+		is Long -> return o != 0L
+		is Float -> return !(o.isFinite() && o == 0f)
+		is Double -> return !(o.isFinite() && o == 0.0)
+
+		is String -> when(o){
+			"", "0","false" ,"False" -> false
+			else-> true
+		}
+		
+		is JSONArray -> o.length() > 0
+		is JSONObject -> o.length() > 0
+
+		else -> true
+	}
+}
+
 fun JSONObject.parseString(key : String) : String? {
 	val o = this.opt(key)
 	return if(o == null || o == JSONObject.NULL) null else o.toString()

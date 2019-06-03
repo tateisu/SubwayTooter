@@ -146,6 +146,8 @@ class ActMain : AppCompatActivity()
 	private lateinit var btnQuickTootMenu : ImageButton
 	lateinit var post_helper : PostHelper
 	
+	private var quickTootVisibility : TootVisibility = TootVisibility.AccountSetting
+	
 	class PhoneEnv {
 		internal lateinit var pager : MyViewPager
 		internal lateinit var pager_adapter : ColumnPagerAdapter
@@ -722,15 +724,25 @@ class ActMain : AppCompatActivity()
 	}
 	
 	private val dlgQuickTootMenu = DlgQuickTootMenu(this, object : DlgQuickTootMenu.Callback {
+		
+		override var visibility : TootVisibility
+			get() = quickTootVisibility
+			set(value) {
+				if(value != quickTootVisibility) {
+					quickTootVisibility = value
+					pref.edit().put(Pref.spQuickTootVisibility, value.id.toString()).apply()
+				}
+			}
+		
 		override fun onMacro(text : String) {
 			val editable = etQuickToot.text
-			if(editable?.isNotEmpty() ==true) {
+			if(editable?.isNotEmpty() == true) {
 				val start = etQuickToot.selectionStart
 				val end = etQuickToot.selectionEnd
 				editable.replace(start, end, text)
 				etQuickToot.requestFocus()
 				etQuickToot.setSelection(start + text.length)
-			}else{
+			} else {
 				etQuickToot.setText(text)
 				etQuickToot.requestFocus()
 				etQuickToot.setSelection(text.length)
@@ -779,7 +791,12 @@ class ActMain : AppCompatActivity()
 		
 		post_helper.content = etQuickToot.text.toString().trim { it <= ' ' }
 		post_helper.spoiler_text = null
-		post_helper.visibility = account.visibility
+		
+		post_helper.visibility = when(quickTootVisibility) {
+			TootVisibility.AccountSetting -> account.visibility
+			else -> quickTootVisibility
+		}
+		
 		post_helper.bNSFW = false
 		post_helper.in_reply_to_id = null
 		post_helper.attachment_list = null
@@ -1255,7 +1272,9 @@ class ActMain : AppCompatActivity()
 	internal fun initUI() {
 		setContentView(R.layout.act_main)
 		
-		
+		quickTootVisibility =
+			TootVisibility.parseSavedVisibility(Pref.spQuickTootVisibility(pref))
+				?: quickTootVisibility
 		
 		Column.reloadDefaultColor(this, pref)
 		
@@ -1912,8 +1931,8 @@ class ActMain : AppCompatActivity()
 					}
 					
 					val (r2, ti) = client.parseInstanceInformation(client.getInstanceInformation())
-					if(ti==null) return r2
-					val misskeyVersion = when{
+					if(ti == null) return r2
+					val misskeyVersion = when {
 						ti.versionGE(TootInstance.MISSKEY_VERSION_11) -> 11
 						else -> 10
 					}
@@ -1922,7 +1941,7 @@ class ActMain : AppCompatActivity()
 					
 					this.host = instance
 					val client_name = Pref.spClientName(this@ActMain)
-					val result = client.authentication2Misskey(client_name, token,misskeyVersion)
+					val result = client.authentication2Misskey(client_name, token, misskeyVersion)
 					this.ta = TootParser(
 						this@ActMain
 						, LinkHelper.newLinkHelper(instance, misskeyVersion = misskeyVersion)
@@ -2070,8 +2089,6 @@ class ActMain : AppCompatActivity()
 		} else if(host != null) {
 			// アカウント追加時
 			val user = ta.username + "@" + host
-			
-			
 			
 			val row_id = SavedAccount.insert(
 				host,

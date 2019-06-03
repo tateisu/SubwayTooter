@@ -61,6 +61,9 @@ class SavedAccount(
 	var register_time : Long = 0
 	var default_text : String = ""
 	
+	var default_sensitive = false
+	var expand_cw = false
+	
 	private val refInstance = AtomicReference<TootInstance>(null)
 	
 	// DBには保存しない
@@ -152,6 +155,9 @@ class SavedAccount(
 		this.sound_uri = cursor.getString(COL_SOUND_URI)
 		
 		this.default_text = cursor.getStringOrNull(COL_DEFAULT_TEXT) ?: ""
+
+		this.default_sensitive = cursor.getBoolean(COL_DEFAULT_SENSITIVE)
+		this.expand_cw = cursor.getBoolean(COL_EXPAND_CW)
 		
 	}
 	
@@ -211,6 +217,9 @@ class SavedAccount(
 		cv.put(COL_SOUND_URI, sound_uri)
 		cv.put(COL_DEFAULT_TEXT, default_text)
 		
+		cv.put(COL_DEFAULT_SENSITIVE, default_sensitive.b2i())
+		cv.put(COL_EXPAND_CW, expand_cw.b2i())
+		
 		// UIからは更新しない
 		// notification_tag
 		// register_key
@@ -265,6 +274,8 @@ class SavedAccount(
 		this.notification_vote = b.notification_vote
 		this.notification_tag = b.notification_tag
 		this.default_text = b.default_text
+		this.default_sensitive = b.default_sensitive
+		this.expand_cw = b.expand_cw
 		
 		this.sound_uri = b.sound_uri
 	}
@@ -416,6 +427,9 @@ class SavedAccount(
 		// スキーマ33から
 		private const val COL_NOTIFICATION_REACTION = "notification_reaction"
 		private const val COL_NOTIFICATION_VOTE = "notification_vote"
+
+		private const val COL_DEFAULT_SENSITIVE = "default_sensitive"
+		private const val COL_EXPAND_CW = "expand_cw"
 		
 		/////////////////////////////////
 		// login information
@@ -484,6 +498,10 @@ class SavedAccount(
 					// スキーマ33から
 					+ ",$COL_NOTIFICATION_REACTION integer default 1"
 					+ ",$COL_NOTIFICATION_VOTE integer default 1"
+					
+					// スキーマ37から
+					+ ",$COL_DEFAULT_SENSITIVE integer default 0"
+					+ ",$COL_EXPAND_CW integer default 0"
 					
 					+ ")"
 			)
@@ -627,6 +645,19 @@ class SavedAccount(
 				}
 				try {
 					db.execSQL("alter table $table add column $COL_NOTIFICATION_VOTE integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
+			if(oldVersion < 38 && newVersion >= 38) {
+				try {
+					db.execSQL("alter table $table add column $COL_DEFAULT_SENSITIVE integer default 0")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				try {
+					db.execSQL("alter table $table add column $COL_EXPAND_CW integer default 0")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}

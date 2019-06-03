@@ -632,7 +632,11 @@
     <string name="send_message">メッセージを送る</string>
     <string name="send_message_from_another_account">別アカウントでメッセージを送る</string>
     <string name="send_text">テキストをアプリに送る</string>
+
     <string name="sensitive_content_default_open">NSFWな添付データを隠さない</string>
+    <string name="cw_default_open">CWされたコンテンツを隠さない</string>
+
+
     <string name="server_confirmed">サーバを確認しました</string>
     <string name="set_description">説明文を設定(マストドン2.0以降)</string>
     <string name="set_focus_point">焦点を設定 (マストドン2.3以降)</string>
@@ -743,6 +747,7 @@
     <string name="visibility_style_by_account">カラムのアカウントに合わせる</string>
     <string name="visibility_unlisted">未収載</string>
     <string name="visibility_web_setting">Webアプリの設定に追従する</string>
+    <string name="visibility_account_setting">アカウントの設定に追従する</string>
 
     <string name="visibility_local_public">公開 (ローカル)</string>
     <string name="visibility_local_home">ホーム (ローカル)</string>
@@ -894,5 +899,8 @@
     <string name="input">入力</string>
     <string name="polls_choice_not_selected">1つ以上の項目を選んでください。</string>
     <string name="custom_emoji_separator_zwsp">カスタム絵文字の区切りにゼロ幅空白を使う</string>
+    <string name="fixed_phrase">定型文</string>
+    <string name="mark_sensitive_by_default">メディアを常に閲覧注意としてマークする(投稿時)</string>
+    <string name="load_preference_from_web_ui">WebUIの設定をいくつか読み込む</string>
 
 </resources>

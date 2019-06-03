@@ -25,6 +25,27 @@
             android:paddingBottom="3dp"
             >
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/visibility"
+                />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnVisibility"
+                android:gravity="start|center_vertical"
+                android:textAllCaps="false"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/fixed_phrase"
+                android:layout_marginTop="6dp"
+                />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -162,6 +183,8 @@
                     android:text="@string/input"
                     />
             </LinearLayout>
+
+
         </LinearLayout>
 
     </jp.juggler.subwaytooter.view.MaxHeightScrollView>
@@ -179,7 +202,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/cancel"
+            android:text="@string/close"
             />
     </LinearLayout>
 </LinearLayout>

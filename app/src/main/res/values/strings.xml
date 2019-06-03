@@ -64,6 +64,7 @@
     <string name="visibility_private">Followers-only</string>
     <string name="visibility_direct">Direct</string>
     <string name="visibility_web_setting">Trace web app setting</string>
+    <string name="visibility_account_setting">Trace account setting</string>
     <string name="visibility_local_public">Public (local)</string>
     <string name="visibility_local_home">Home (local)</string>
     <string name="visibility_local_followers">Followers-only (local)</string>
@@ -99,7 +100,9 @@
     <string name="actions">Actions</string>
     <string name="default_status_visibility">Default toot visibility</string>
     <string name="confirm_before_boost">Confirm before boosting</string>
-    <string name="sensitive_content_default_open">Always open sensitive content</string>
+    <string name="sensitive_content_default_open">Showing sensitive attachments by default</string>
+    <string name="cw_default_open">Expand CWed content by default</string>
+
     <string name="user">User</string>
     <string name="confirm_account_remove">This account will be deleted and all the columns will be removed.\nAre you sure?</string>
     <string name="user_name_not_match">Username doesn\'t match</string>
@@ -889,5 +892,8 @@
     <string name="input">Input</string>
     <string name="polls_choice_not_selected">Please select 1 or more choices.</string>
     <string name="custom_emoji_separator_zwsp">use ZWSP instead of space for custom emoji separator</string>
+    <string name="fixed_phrase">fixed phrase</string>
+    <string name="mark_sensitive_by_default">Always mark media as sensitive (when posting)</string>
+    <string name="load_preference_from_web_ui">Load some preferences from WebUI</string>
 
 </resources>

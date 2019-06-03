@@ -9,7 +9,10 @@ enum class TootVisibility(
 ) {
 	
 	// IDは下書き保存などで永続化するので、リリース後は変更しないこと！
-	
+
+	// アカウント設定に合わせる。
+	AccountSetting(-1, 200, strMastodon = "account_setting", strMisskey = "account_setting"),
+
 	// WebUIの設定に合わせる。
 	WebSetting(0, 100, strMastodon = "web_setting", strMisskey = "web_setting"),
 	

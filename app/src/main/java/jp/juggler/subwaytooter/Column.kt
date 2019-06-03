@@ -3189,17 +3189,35 @@ class Column(
 								
 								// 直接の子リプライ。(子孫をたどることまではしない)
 								val list_desc = ArrayList<TootStatus>()
+								val idSet = HashSet<EntityId>()
+								var untilId : EntityId? = null
+								
 								while(true) {
 									if(client.isApiCancelled) return null
-									queryParams.put("offset", list_desc.size)
+									
+									if(untilId == null) {
+										queryParams.remove("untilId")
+										queryParams.remove("offset")
+									} else if(misskeyVersion >= 11) {
+										queryParams.put("untilId", untilId.toString())
+									} else {
+										queryParams.put("offset", list_desc.size)
+									}
+									
 									result = client.request(
 										"/api/notes/replies"
 										, queryParams.toPostRequestBuilder()
 									)
 									val jsonArray = result?.jsonArray ?: return result
 									val src = parser.statusList(jsonArray)
-									if(src.isEmpty()) break
-									list_desc.addAll(src)
+									untilId = null
+									for(status in src) {
+										if(idSet.contains(status.id)) continue
+										idSet.add(status.id)
+										list_desc.add(status)
+										untilId = status.id
+									}
+									if(untilId == null) break
 								}
 								
 								// 一つのリストにまとめる
@@ -6610,22 +6628,25 @@ class Column(
 		else -> streamPath != null
 	}
 	
-	private fun createMisskeyConnectChannelMessage(channel:String,params:JSONObject = JSONObject()) =
+	private fun createMisskeyConnectChannelMessage(
+		channel : String,
+		params : JSONObject = JSONObject()
+	) =
 		JSONObject().apply {
 			put("type", "connect")
 			put("body", JSONObject().apply {
-				put("channel",channel)
-				put("id",streamCallback._channelId)
-				put("params",params)
+				put("channel", channel)
+				put("id", streamCallback._channelId)
+				put("params", params)
 			})
 		}
 	
-	private fun makeMisskeyChannelArg():JSONObject?{
+	private fun makeMisskeyChannelArg() : JSONObject? {
 		return if(access_info.misskeyVersion < 11) {
 			null
-		}else {
+		} else {
 			val misskeyApiToken = access_info.misskeyApiToken
-			if( misskeyApiToken == null) {
+			if(misskeyApiToken == null) {
 				when(column_type) {
 					TYPE_LOCAL -> createMisskeyConnectChannelMessage("localTimeline")
 					else -> null
@@ -6635,8 +6656,8 @@ class Column(
 					TYPE_HOME -> createMisskeyConnectChannelMessage("homeTimeline")
 					TYPE_LOCAL -> createMisskeyConnectChannelMessage("localTimeline")
 					TYPE_MISSKEY_HYBRID -> createMisskeyConnectChannelMessage("hybridTimeline")
-					TYPE_FEDERATE-> createMisskeyConnectChannelMessage("globalTimeline")
-					TYPE_NOTIFICATIONS ->createMisskeyConnectChannelMessage("main")
+					TYPE_FEDERATE -> createMisskeyConnectChannelMessage("globalTimeline")
+					TYPE_NOTIFICATIONS -> createMisskeyConnectChannelMessage("main")
 					// TYPE_LIST_TL
 					// TYPE_HASHTAG
 					else -> null
@@ -6648,17 +6669,17 @@ class Column(
 	private val streamCallback = object : StreamReader.StreamCallback {
 		
 		val _channelId = channelIdSeed.incrementAndGet().toString()
-	
+		
 		override fun channelId() = _channelId
 		
 		override fun onListeningStateChanged() {
 			if(is_dispose.get()) return
 			runOnMainLooper {
-				if( is_dispose.get()) return@runOnMainLooper
+				if(is_dispose.get()) return@runOnMainLooper
 				fireShowColumnStatus()
 				
-				streamReader?.registerMisskeyChannel( makeMisskeyChannelArg() )
-
+				streamReader?.registerMisskeyChannel(makeMisskeyChannelArg())
+				
 				updateMisskeyCapture()
 			}
 		}

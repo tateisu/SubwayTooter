@@ -25,7 +25,7 @@ internal class StreamReader(
 	
 	internal interface StreamCallback {
 		fun onTimelineItem(item : TimelineItem)
-		fun onListeningStateChanged()
+		fun onListeningStateChanged(bListen : Boolean)
 		fun onNoteUpdated(ev : MisskeyNoteUpdate)
 		
 		fun channelId() : String?
@@ -109,10 +109,10 @@ internal class StreamReader(
 		}
 		
 		@Synchronized
-		fun fireListeningChanged() {
+		fun fireListeningChanged(bListen : Boolean ) {
 			for(c in callback_list) {
 				try {
-					c.onListeningStateChanged()
+					c.onListeningStateChanged(bListen)
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
@@ -312,7 +312,7 @@ internal class StreamReader(
 			handler.removeCallbacks(proc_alive)
 			handler.removeCallbacks(proc_reconnect)
 			handler.postDelayed(proc_reconnect, 10000L)
-			fireListeningChanged()
+			fireListeningChanged(false)
 		}
 		
 		/**
@@ -330,7 +330,7 @@ internal class StreamReader(
 			handler.removeCallbacks(proc_alive)
 			handler.removeCallbacks(proc_reconnect)
 			handler.postDelayed(proc_reconnect, 10000L)
-			fireListeningChanged()
+			fireListeningChanged(false)
 		}
 		
 		/**
@@ -344,7 +344,7 @@ internal class StreamReader(
 			bListening.set(false)
 			handler.removeCallbacks(proc_reconnect)
 			handler.removeCallbacks(proc_alive)
-			fireListeningChanged()
+			fireListeningChanged(false)
 			
 			if(ex is ProtocolException) {
 				val msg = ex.message
@@ -371,7 +371,7 @@ internal class StreamReader(
 			synchronized(capturedId) {
 				capturedId.clear()
 			}
-			fireListeningChanged()
+			fireListeningChanged(false)
 			
 			TootTaskRunner(context).run(access_info, object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? {
@@ -381,14 +381,14 @@ internal class StreamReader(
 						result == null -> {
 							log.d("startRead: cancelled.")
 							bListening.set(false)
-							fireListeningChanged()
+							fireListeningChanged(false)
 						}
 						
 						ws == null -> {
 							val error = result.error
 							log.d("startRead: error. $error")
 							bListening.set(false)
-							fireListeningChanged()
+							fireListeningChanged(false)
 							// this may network error.
 							handler.removeCallbacks(proc_reconnect)
 							handler.postDelayed(proc_reconnect, 5000L)
@@ -396,7 +396,7 @@ internal class StreamReader(
 						
 						else -> {
 							socket.set(ws)
-							fireListeningChanged()
+							fireListeningChanged(true)
 						}
 					}
 					return result
@@ -497,7 +497,7 @@ internal class StreamReader(
 		if(! reader.bListening.get()) {
 			reader.startRead()
 		} else {
-			streamCallback.onListeningStateChanged()
+			streamCallback.onListeningStateChanged(true)
 		}
 		return reader
 	}

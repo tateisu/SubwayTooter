@@ -53,6 +53,7 @@ class PostHelper(
 		
 		private val reCharsNotTag = Pattern.compile("[・\\s\\-+.,:;/]")
 		private val reCharsNotEmoji = Pattern.compile("[^0-9A-Za-z_-]")
+
 		
 	}
 	
@@ -960,6 +961,7 @@ class PostHelper(
 		
 	}
 	
+	
 	private fun SpannableStringBuilder.appendEmoji(
 		name : String,
 		instance : String?,
@@ -967,14 +969,19 @@ class PostHelper(
 	) : SpannableStringBuilder {
 		
 		val item = EmojiMap201709.sShortNameToImageId[name]
+		val separator = EmojiDecoder.customEmojiSeparator(pref)
 		if(item == null || instance != null) {
 			// カスタム絵文字は常にshortcode表現
-			if(! EmojiDecoder.canStartShortCode(this, this.length)) this.append(' ')
+			if(! EmojiDecoder.canStartShortCode(this, this.length)) append(separator)
 			this.append(SpannableString(":$name:"))
+			// セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
+			if( separator != ' ') append(separator)
 		} else if(! bInstanceHasCustomEmoji) {
 			// 古いタンスだとshortcodeを使う。見た目は絵文字に変える。
-			if(! EmojiDecoder.canStartShortCode(this, this.length)) this.append(' ')
+			if(! EmojiDecoder.canStartShortCode(this, this.length)) append(separator)
 			this.append(DecodeOptions(activity).decodeEmoji(":$name:"))
+			// セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
+			if( separator != ' ') append(separator)
 		} else {
 			// 十分に新しいタンスなら絵文字のunicodeを使う。見た目は絵文字に変える。
 			this.append(DecodeOptions(activity).decodeEmoji(item.unified))

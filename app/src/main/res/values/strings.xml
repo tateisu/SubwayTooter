@@ -888,5 +888,6 @@
     <string name="quick_toot_menu">Quick toot menu</string>
     <string name="input">Input</string>
     <string name="polls_choice_not_selected">Please select 1 or more choices.</string>
+    <string name="custom_emoji_separator_zwsp">use ZWSP instead of space for custom emoji separator</string>
 
 </resources>

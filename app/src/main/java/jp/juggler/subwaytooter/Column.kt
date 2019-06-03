@@ -6672,15 +6672,17 @@ class Column(
 		
 		override fun channelId() = _channelId
 		
-		override fun onListeningStateChanged() {
+		override fun onListeningStateChanged(bListen:Boolean) {
 			if(is_dispose.get()) return
 			runOnMainLooper {
 				if(is_dispose.get()) return@runOnMainLooper
 				fireShowColumnStatus()
 				
-				streamReader?.registerMisskeyChannel(makeMisskeyChannelArg())
+				if(bListen){
+					streamReader?.registerMisskeyChannel(makeMisskeyChannelArg())
+					updateMisskeyCapture()
+				}
 				
-				updateMisskeyCapture()
 			}
 		}
 		

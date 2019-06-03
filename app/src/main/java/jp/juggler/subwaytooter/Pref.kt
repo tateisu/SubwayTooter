@@ -387,9 +387,13 @@ object Pref {
 		false,
 		R.id.swDontShowColumnBackgroundImage
 	)
-
 	
-
+	val bpCustomEmojiSeparatorZwsp = BooleanPref(
+		"CustomEmojiSeparatorZwsp",
+		false,
+		R.id.swCustomEmojiSeparatorZwsp
+	)
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

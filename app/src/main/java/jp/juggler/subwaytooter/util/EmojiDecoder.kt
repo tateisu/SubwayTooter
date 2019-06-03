@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.annotation.DrawableRes
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -21,19 +22,28 @@ import java.util.regex.Pattern
 
 object EmojiDecoder {
 	
+	private const val cpColon = ':'.toInt()
+	
+	private const val cpZwsp = '\u200B'.toInt()
+	
+	fun customEmojiSeparator(pref : SharedPreferences) = if(Pref.bpCustomEmojiSeparatorZwsp(pref)) {
+		'\u200B'
+	} else {
+		' '
+	}
+	
 	// タンス側が落ち着いたら [^[:almun:]_] から [:space:]に切り替える
 	//	private fun isHeadOrAfterWhitespace( s:CharSequence,index:Int):Boolean {
 	//		val cp = s.codePointBefore(index)
 	//		return cp == -1 || CharacterGroup.isWhitespace(cp)
 	//	}
 	
-	private const val cpColon = ':'.toInt()
-	
 	fun canStartShortCode(s : CharSequence, index : Int) : Boolean {
 		val cp = s.codePointBefore(index)
 		return when(cp) {
 			- 1 -> true
 			cpColon -> false
+			cpZwsp -> true
 			// rubyの (Letter | Mark | Decimal_Number) はNG
 			// ftp://unicode.org/Public/5.1.0/ucd/UCD.html#General_Category_Values
 			else -> when(java.lang.Character.getType(cp).toByte()) {
@@ -54,7 +64,6 @@ object EmojiDecoder {
 				else -> true
 			}
 		}
-		
 		// https://mastodon.juggler.jp/@tateisu/99727683089280157
 		// https://github.com/tootsuite/mastodon/pull/5570 がマージされたらこっちに切り替える
 		// return cp == -1 || CharacterGroup.isWhitespace(cp)
@@ -202,7 +211,11 @@ object EmojiDecoder {
 	
 	private interface ShortCodeSplitterCallback {
 		fun onString(part : String) // shortcode以外の文字列
-		fun onShortCode(prevCodePoint:Int,part : String, name : String) // part : ":shortcode:", name : "shortcode"
+		fun onShortCode(
+			prevCodePoint : Int,
+			part : String,
+			name : String
+		) // part : ":shortcode:", name : "shortcode"
 	}
 	
 	private fun splitShortCode(
@@ -256,9 +269,9 @@ object EmojiDecoder {
 				continue
 			}
 			
-			val prevCodePoint = if(start >0){
+			val prevCodePoint = if(start > 0) {
 				s.codePointBefore(start)
-			}else{
+			} else {
 				0x20
 			}
 			
@@ -287,7 +300,7 @@ object EmojiDecoder {
 				builder.addUnicodeString(part)
 			}
 			
-			override fun onShortCode(prevCodePoint:Int,part : String, name : String) {
+			override fun onShortCode(prevCodePoint : Int, part : String, name : String) {
 				
 				// フレニコのプロフ絵文字
 				if(emojiMapProfile != null && name.length >= 2 && name[0] == '@') {
@@ -353,7 +366,7 @@ object EmojiDecoder {
 				sb.append(part)
 			}
 			
-			override fun onShortCode(prevCodePoint:Int,part : String, name : String) {
+			override fun onShortCode(prevCodePoint : Int, part : String, name : String) {
 				
 				// カスタム絵文字にマッチするなら変換しない
 				val emojiCustom = emojiMapCustom?.get(name)

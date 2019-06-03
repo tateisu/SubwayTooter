@@ -230,7 +230,24 @@
 
         </LinearLayout>
 
-        <!-- =============================================== -->
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/custom_emoji_separator_zwsp"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swCustomEmojiSeparatorZwsp"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
 
 
     </LinearLayout>

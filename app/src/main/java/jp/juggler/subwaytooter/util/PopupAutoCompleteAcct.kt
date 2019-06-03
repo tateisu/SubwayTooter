@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.util
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.SharedPreferences
 import android.os.Handler
 import androidx.core.content.ContextCompat
 import android.text.Spannable
@@ -12,6 +13,7 @@ import android.widget.CheckedTextView
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.LogCategory
@@ -40,6 +42,8 @@ internal class PopupAutoCompleteAcct(
 	val density : Float
 	private val popup_width : Int
 	val handler : Handler
+	
+	private val pref : SharedPreferences = Pref.pref(activity)
 	
 	private var popup_rows : Int = 0
 	
@@ -137,8 +141,11 @@ internal class PopupAutoCompleteAcct(
 					
 					if(acct[0] == ' ') {
 						// 絵文字ショートコード
-						if(! EmojiDecoder.canStartShortCode(sb, start)) sb.append(' ')
+						val separator =  EmojiDecoder.customEmojiSeparator(pref)
+						if(! EmojiDecoder.canStartShortCode(sb, start)) sb.append(separator)
 						sb.append(findShortCode(acct.toString()))
+						// セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
+						if( separator != ' ') sb.append(separator)
 					} else {
 						// @user@host, #hashtag
 						// 直後に空白を付与する

@@ -891,7 +891,6 @@
     <string name="vote_button">投票</string>
     <string name="end_of_polling_from">%1$sの調査の終了</string>
     <string name="open_hashtag_from_account">(%1$sからの)ハッシュタグのカラムを開く</string>
-    <string name="hashtag_from_acct">Hashtag from account</string>
     <string name="hashtag_of_from">Hashtag :#%1$s (%2$sから)</string>
     <string name="boost_with_visibility">公開範囲を指定してブースト</string>
     <string name="confirm_private_boost_from">このトゥートを %1$s からブーストしますか? 全てのフォロワーに公開されます</string>
@@ -902,5 +901,9 @@
     <string name="fixed_phrase">定型文</string>
     <string name="mark_sensitive_by_default">メディアを常に閲覧注意としてマークする(投稿時)</string>
     <string name="load_preference_from_web_ui">WebUIの設定をいくつか読み込む</string>
+
+    <string name="hashtag_from_acct">ハッシュタグ(特定ユーザから)</string>
+    <string name="notifications_from_acct">ユーザからの通知</string>
+    <string name="notifications_from">%1$sからの通知</string>
 
 </resources>

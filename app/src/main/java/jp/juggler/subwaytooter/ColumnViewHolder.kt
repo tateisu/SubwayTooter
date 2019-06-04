@@ -620,7 +620,7 @@ class ColumnViewHolder(
 			val status_adapter = ItemListAdapter(activity, column, this, bSimpleList)
 			this.status_adapter = status_adapter
 			
-			val isNotificationColumn = column.column_type == Column.TYPE_NOTIFICATIONS
+			val isNotificationColumn = column.isNotificationColumn
 			
 			// 添付メディアや正規表現のフィルタ
 			val bAllowFilter = column.canStatusFilter()
@@ -668,12 +668,12 @@ class ColumnViewHolder(
 			vg(cbDontStreaming, column.canStreaming())
 			vg(cbDontAutoRefresh, column.canAutoRefresh())
 			vg(cbHideMediaDefault, column.canNSFWDefault())
-			vg(cbSystemNotificationNotRelated, column.column_type == Column.TYPE_NOTIFICATIONS)
+			vg(cbSystemNotificationNotRelated, column.isNotificationColumn)
 			vg(cbEnableSpeech, column.canSpeech())
 			vg(cbOldApi, column.column_type == Column.TYPE_DIRECT_MESSAGES)
 			
 			
-			vg(btnDeleteNotification, column.column_type == Column.TYPE_NOTIFICATIONS)
+			vg(btnDeleteNotification, column.isNotificationColumn)
 			
 			if( vg(llSearch, column.isSearchColumn) ){
 				vg(btnSearchClear,Pref.bpShowSearchClear(activity.pref))
@@ -1520,7 +1520,7 @@ class ColumnViewHolder(
 	private fun showQuickFilter() {
 		val column = this.column ?: return
 		
-		val isNotificationColumn = column.column_type == Column.TYPE_NOTIFICATIONS
+		val isNotificationColumn = column.isNotificationColumn
 		vg(svQuickFilter, isNotificationColumn)
 		if(! isNotificationColumn) return
 		

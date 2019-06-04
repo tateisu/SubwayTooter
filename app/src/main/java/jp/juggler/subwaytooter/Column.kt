@@ -227,6 +227,7 @@ class Column(
 		internal const val TYPE_ACCOUNT_AROUND = 31
 		internal const val TYPE_SCHEDULED_STATUS = 33
 		internal const val TYPE_HASHTAG_FROM_ACCT = 34
+		internal const val TYPE_NOTIFICATION_FROM_ACCT = 35
 		
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
@@ -281,6 +282,7 @@ class Column(
 				TYPE_FAVOURITES -> context.getString(R.string.favourites)
 				TYPE_REPORTS -> context.getString(R.string.reports)
 				TYPE_NOTIFICATIONS -> context.getString(R.string.notifications)
+				TYPE_NOTIFICATION_FROM_ACCT -> context.getString(R.string.notifications_from_acct)
 				TYPE_CONVERSATION -> context.getString(R.string.conversation)
 				TYPE_BOOSTED_BY -> context.getString(R.string.boosted_by)
 				TYPE_FAVOURITED_BY -> context.getString(R.string.favourited_by)
@@ -323,12 +325,12 @@ class Column(
 				
 				TYPE_PROFILE -> R.drawable.ic_account_box
 				TYPE_FAVOURITES -> if(SavedAccount.isNicoru(acct)) R.drawable.ic_nicoru else R.drawable.ic_star
-				TYPE_NOTIFICATIONS -> R.drawable.ic_announcement
+				TYPE_NOTIFICATIONS, TYPE_NOTIFICATION_FROM_ACCT -> R.drawable.ic_announcement
+				
 				TYPE_CONVERSATION -> R.drawable.ic_forum
 				TYPE_BOOSTED_BY -> R.drawable.ic_repeat
 				TYPE_FAVOURITED_BY -> if(SavedAccount.isNicoru(acct)) R.drawable.ic_nicoru else R.drawable.ic_star
-				TYPE_HASHTAG -> R.drawable.ic_hashtag
-				TYPE_HASHTAG_FROM_ACCT -> R.drawable.ic_hashtag
+				TYPE_HASHTAG, TYPE_HASHTAG_FROM_ACCT -> R.drawable.ic_hashtag
 				TYPE_MUTES -> R.drawable.ic_volume_off
 				TYPE_KEYWORD_FILTER -> R.drawable.ic_volume_off
 				TYPE_BLOCKS -> R.drawable.ic_block
@@ -853,6 +855,10 @@ class Column(
 				hashtag_acct = getParamAt(params, 1)
 			}
 			
+			TYPE_NOTIFICATION_FROM_ACCT -> {
+				hashtag_acct = getParamAt(params, 0)
+			}
+			
 			TYPE_SEARCH -> {
 				search_query = getParamAt(params, 0)
 				search_resolve = getParamAt(params, 1)
@@ -925,6 +931,10 @@ class Column(
 			
 			TYPE_HASHTAG_FROM_ACCT -> {
 				hashtag = src.optString(KEY_HASHTAG)
+				hashtag_acct = src.optString(KEY_HASHTAG_ACCT)
+			}
+			
+			TYPE_NOTIFICATION_FROM_ACCT -> {
 				hashtag_acct = src.optString(KEY_HASHTAG_ACCT)
 			}
 			
@@ -1003,6 +1013,10 @@ class Column(
 				dst.put(KEY_HASHTAG_ACCT, hashtag_acct)
 			}
 			
+			TYPE_NOTIFICATION_FROM_ACCT -> {
+				dst.put(KEY_HASHTAG_ACCT, hashtag_acct)
+			}
+			
 			TYPE_SEARCH -> dst.put(KEY_SEARCH_QUERY, search_query).put(
 				KEY_SEARCH_RESOLVE,
 				search_resolve
@@ -1044,6 +1058,10 @@ class Column(
 				TYPE_HASHTAG_FROM_ACCT -> {
 					(getParamAt<String>(params, 0) == hashtag)
 						&& ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_acct)
+				}
+				
+				TYPE_NOTIFICATION_FROM_ACCT -> {
+					((getParamAtNullable<String>(params, 0) ?: "") == hashtag_acct)
 				}
 				
 				TYPE_SEARCH -> getParamAt<String>(params, 0) == search_query && getParamAt<Boolean>(
@@ -1133,6 +1151,13 @@ class Column(
 			
 			TYPE_HASHTAG_FROM_ACCT -> {
 				context.getString(R.string.hashtag_of_from, hashtag, hashtag_acct)
+			}
+			
+			TYPE_NOTIFICATION_FROM_ACCT -> {
+				context.getString(
+					R.string.notifications_from,
+					hashtag_acct
+				) + getNotificationTypeString()
 			}
 			
 			TYPE_SEARCH ->
@@ -1363,8 +1388,15 @@ class Column(
 		PollingWorker.queueNotificationCleared(context, access_info.db_id)
 	}
 	
+	val isNotificationColumn : Boolean
+		get() = when(column_type) {
+			TYPE_NOTIFICATIONS, TYPE_NOTIFICATION_FROM_ACCT -> true
+			else -> false
+		}
+	
 	fun removeNotificationOne(target_account : SavedAccount, notification : TootNotification) {
-		if(column_type != TYPE_NOTIFICATIONS) return
+		if(! isNotificationColumn) return
+		
 		if(access_info.acct != target_account.acct) return
 		
 		val tmp_list = ArrayList<TimelineItem>(list_data.size)
@@ -1405,7 +1437,7 @@ class Column(
 	}
 	
 	fun onHideFavouriteNotification(acct : String) {
-		if(column_type != TYPE_NOTIFICATIONS) return
+		if(! isNotificationColumn) return
 		
 		val tmp_list = ArrayList<TimelineItem>(list_data.size)
 		
@@ -2585,11 +2617,14 @@ class Column(
 				return result
 			}
 			
-			fun parseNotifications(client : TootApiClient) : TootApiResult? {
+			fun parseNotifications(
+				client : TootApiClient,
+				fromAcct : String? = null
+			) : TootApiResult? {
 				
 				val params = makeMisskeyBaseParameter(parser).addMisskeyNotificationFilter()
 				
-				val path_base = makeNotificationUrl()
+				val path_base = makeNotificationUrl(client, fromAcct )
 				
 				val time_start = SystemClock.elapsedRealtime()
 				val result = if(isMisskey) {
@@ -3147,6 +3182,11 @@ class Column(
 						TYPE_REPORTS -> return parseReports(client, PATH_REPORTS)
 						
 						TYPE_NOTIFICATIONS -> return parseNotifications(client)
+						
+						TYPE_NOTIFICATION_FROM_ACCT -> return parseNotifications(
+							client,
+							hashtag_acct
+						)
 						
 						TYPE_BOOSTED_BY -> return parseAccountList(
 							client,
@@ -4183,9 +4223,12 @@ class Column(
 				return firstResult
 			}
 			
-			fun getNotificationList(client : TootApiClient) : TootApiResult? {
+			fun getNotificationList(
+				client : TootApiClient,
+				fromAcct : String? = null
+			) : TootApiResult? {
 				
-				val path_base = makeNotificationUrl()
+				val path_base = makeNotificationUrl(client,fromAcct)
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				val last_since_id = idRecent
 				
@@ -5029,6 +5072,8 @@ class Column(
 						
 						TYPE_NOTIFICATIONS -> getNotificationList(client)
 						
+						TYPE_NOTIFICATION_FROM_ACCT -> getNotificationList(client, hashtag_acct)
+						
 						TYPE_BOOSTED_BY -> getAccountList(
 							client, String.format(
 								Locale.JAPAN, PATH_BOOSTED_BY,
@@ -5688,8 +5733,11 @@ class Column(
 				return result
 			}
 			
-			fun getNotificationList(client : TootApiClient) : TootApiResult? {
-				val path_base = makeNotificationUrl()
+			fun getNotificationList(
+				client : TootApiClient,
+				fromAcct : String? = null
+			) : TootApiResult? {
+				val path_base = makeNotificationUrl(client,fromAcct)
 				val params = makeMisskeyBaseParameter(parser).addMisskeyNotificationFilter()
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
@@ -6120,6 +6168,8 @@ class Column(
 						
 						TYPE_NOTIFICATIONS -> getNotificationList(client)
 						
+						TYPE_NOTIFICATION_FROM_ACCT -> getNotificationList(client, hashtag_acct)
+						
 						TYPE_HASHTAG -> if(isMisskey) {
 							getStatusList(
 								client
@@ -6505,7 +6555,7 @@ class Column(
 	// マストドン2.4.3rcのキーワードフィルタのコンテキスト
 	private fun getFilterContext() = when(column_type) {
 		TYPE_HOME, TYPE_LIST_TL, TYPE_MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
-		TYPE_NOTIFICATIONS -> TootFilter.CONTEXT_NOTIFICATIONS
+		TYPE_NOTIFICATIONS, TYPE_NOTIFICATION_FROM_ACCT -> TootFilter.CONTEXT_NOTIFICATIONS
 		TYPE_CONVERSATION -> TootFilter.CONTEXT_THREAD
 		TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_HASHTAG_FROM_ACCT, TYPE_PROFILE, TYPE_SEARCH -> TootFilter.CONTEXT_PUBLIC
 		TYPE_DIRECT_MESSAGES -> TootFilter.CONTEXT_PUBLIC
@@ -6521,7 +6571,7 @@ class Column(
 	// カラム設定に「ブーストを表示しない」ボタンを含めるなら真
 	fun canFilterBoost() : Boolean {
 		return when(column_type) {
-			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_LIST_TL -> true
+			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_NOTIFICATION_FROM_ACCT, TYPE_LIST_TL -> true
 			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
 			TYPE_HASHTAG_FROM_ACCT -> false
 			TYPE_CONVERSATION, TYPE_DIRECT_MESSAGES -> isMisskey
@@ -6532,7 +6582,7 @@ class Column(
 	// カラム設定に「返信を表示しない」ボタンを含めるなら真
 	fun canFilterReply() : Boolean {
 		return when(column_type) {
-			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_LIST_TL, TYPE_DIRECT_MESSAGES -> true
+			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_NOTIFICATION_FROM_ACCT, TYPE_LIST_TL, TYPE_DIRECT_MESSAGES -> true
 			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
 			TYPE_HASHTAG_FROM_ACCT -> true
 			else -> false
@@ -6618,7 +6668,7 @@ class Column(
 	}
 	
 	internal fun canSpeech() : Boolean {
-		return canStreaming() && column_type != TYPE_NOTIFICATIONS
+		return canStreaming() && ! isNotificationColumn
 	}
 	
 	internal fun canStreaming() = when {
@@ -6672,13 +6722,13 @@ class Column(
 		
 		override fun channelId() = _channelId
 		
-		override fun onListeningStateChanged(bListen:Boolean) {
+		override fun onListeningStateChanged(bListen : Boolean) {
 			if(is_dispose.get()) return
 			runOnMainLooper {
 				if(is_dispose.get()) return@runOnMainLooper
 				fireShowColumnStatus()
 				
-				if(bListen){
+				if(bListen) {
 					streamReader?.registerMisskeyChannel(makeMisskeyChannelArg())
 					updateMisskeyCapture()
 				}
@@ -6698,11 +6748,13 @@ class Column(
 				} else {
 					useConversationSummaryStreaming = true
 				}
+				
 			} else if(item is TootNotification) {
-				if(column_type != TYPE_NOTIFICATIONS) return
+				if(! isNotificationColumn) return
 				if(isFiltered(item)) return
+				
 			} else if(item is TootStatus) {
-				if(column_type == TYPE_NOTIFICATIONS) return
+				if(isNotificationColumn) return
 				
 				// マストドン2.6.0形式のDMカラム用イベントを利用したならば、その直後に発生する普通の投稿イベントを無視する
 				if(useConversationSummaryStreaming) return
@@ -6901,14 +6953,14 @@ class Column(
 			}
 			
 			// 通知カラムならストリーミング経由で届いたデータを通知ワーカーに伝達する
-			if(column_type == TYPE_NOTIFICATIONS) {
+			if(isNotificationColumn) {
 				val list = ArrayList<TootNotification>()
 				for(o in list_new) {
 					if(o is TootNotification) {
 						list.add(o)
 					}
 				}
-				if(! list.isEmpty()) {
+				if(list.isNotEmpty()) {
 					PollingWorker.injectData(context, access_info, list)
 				}
 			}
@@ -7170,7 +7222,7 @@ class Column(
 		}
 	}
 	
-	private fun makeNotificationUrl() : String {
+	private fun makeNotificationUrl(client : TootApiClient,fromAcct : String? = null) : String {
 		return when {
 			access_info.isMisskey -> "/api/i/notifications"
 			
@@ -7190,6 +7242,19 @@ class Column(
 						if(quick_filter != QUICK_FILTER_BOOST) sb.append("&exclude_types[]=reblog")
 						if(quick_filter != QUICK_FILTER_FOLLOW) sb.append("&exclude_types[]=follow")
 						if(quick_filter != QUICK_FILTER_MENTION) sb.append("&exclude_types[]=mention")
+					}
+				}
+				
+				if( fromAcct?.isNotEmpty() == true){
+					if( profile_id == null){
+						val (result, whoRef) = client.syncAccountByAcct(access_info, hashtag_acct)
+						if(result != null){
+							whoRef ?: error(result.error ?: "unknown error")
+							profile_id = whoRef.get().id
+						}
+					}
+					if( profile_id != null){
+						sb.append("&account_id=").append(profile_id.toString())
 					}
 				}
 				

@@ -776,6 +776,21 @@
                     />
 
                 <Button
+                    android:id="@+id/btnNotificationFrom"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="32dp"
+                    android:paddingBottom="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:text="@string/notifications_from_acct"
+                    android:textAllCaps="false"
+                    />
+
+                <Button
                     android:id="@+id/btnCopyAccountId"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

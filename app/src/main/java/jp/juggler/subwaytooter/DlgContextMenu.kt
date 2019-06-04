@@ -128,6 +128,10 @@ internal class DlgContextMenu(
 			viewRoot.findViewById(R.id.btnOpenInstanceInAdminWebUi)
 		val btnBoostWithVisibility : Button = viewRoot.findViewById(R.id.btnBoostWithVisibility)
 		val llLinks : LinearLayout = viewRoot.findViewById(R.id.llLinks)
+	
+		val btnNotificationFrom : Button = viewRoot.findViewById(R.id.btnNotificationFrom)
+		
+		btnNotificationFrom.setOnClickListener(this)
 		
 		btnAroundAccountTL.setOnClickListener(this)
 		btnAroundLTL.setOnClickListener(this)
@@ -295,6 +299,7 @@ internal class DlgContextMenu(
 		
 		if(access_info.isPseudo) {
 			llAccountActionBar.visibility = View.GONE
+			btnNotificationFrom.visibility = View.GONE
 		} else {
 			
 			// 被フォロー状態
@@ -802,6 +807,22 @@ internal class DlgContextMenu(
 						}
 						.setNegativeButton(R.string.cancel, null)
 						.show()
+				}
+				
+				R.id.btnNotificationFrom -> {
+					if( access_info.isMisskey){
+						showToast(activity,false,R.string.misskey_account_not_supported)
+					}else {
+						val acct = access_info.getFullAcct(who)
+						if(acct.isNotEmpty() && ! acct.contains('?')) {
+							activity.addColumn(
+								pos,
+								access_info,
+								Column.TYPE_NOTIFICATION_FROM_ACCT,
+								acct
+							)
+						}
+					}
 				}
 			}
 		}

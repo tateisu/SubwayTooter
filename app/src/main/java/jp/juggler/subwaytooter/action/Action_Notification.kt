@@ -45,7 +45,7 @@ object Action_Notification {
 				if(result.jsonObject != null) {
 					// ok. api have return empty object.
 					for(column in App1.getAppState(activity).column_list) {
-						if(column.column_type == Column.TYPE_NOTIFICATIONS && column.access_info.acct == target_account.acct) {
+						if(column.isNotificationColumn && column.access_info.acct == target_account.acct) {
 							column.removeNotifications()
 						}
 					}

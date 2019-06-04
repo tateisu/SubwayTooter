@@ -799,7 +799,7 @@
     <string name="tls_handshake">Négociation TLS</string>
     <string name="links">Liens</string>
     <string name="profile_directory">Annuaire des utilisateur·rice·s</string>
-    <string name="top_page">Haut de page</string>
+    <string name="top_page">Page à propos de l’instance</string>
     <string name="instance_ticker_copyright">#InstanceTicker
 \nhttps://wee.jp/mastodon/
 \nCopyright 2018 weepjp, kyori19.</string>

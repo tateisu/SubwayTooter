@@ -19,11 +19,140 @@ class ColumnTask_Gap(
 ) : ColumnTask(columnArg, ColumnTaskType.GAP) {
 	
 	companion object {
-		private val log = LogCategory("CT_Gap")
+		internal val log = LogCategory("CT_Gap")
 	}
 	
 	private var max_id : EntityId? = gap.max_id
 	private var since_id : EntityId? = gap.since_id
+	
+	override fun doInBackground(vararg unused : Void) : TootApiResult? {
+		ctStarted.set(true)
+		
+		val client = TootApiClient(context, callback = object : TootApiCallback {
+			override val isApiCancelled : Boolean
+				get() = isCancelled || column.is_dispose.get()
+			
+			override fun publishApiProgress(s : String) {
+				runOnMainLooper {
+					if(isCancelled) return@runOnMainLooper
+					column.task_progress = s
+					column.fireShowContent(reason = "gap progress", changeList = ArrayList())
+				}
+			}
+		})
+		
+		client.account = access_info
+		
+		try {
+			return (columnTypeProcMap[column.column_type] ?: columnTypeProcMap[Column.TYPE_HOME])
+				.gap(this, client)
+			
+		} finally {
+			try {
+				column.updateRelation(client, list_tmp, column.who_account, parser)
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+			
+			ctClosed.set(true)
+			runOnMainLooperDelayed(333L) {
+				if(! isCancelled) column.fireShowColumnStatus()
+			}
+		}
+	}
+	
+	override fun onPostExecute(result : TootApiResult?) {
+		if(column.is_dispose.get()) return
+		
+		if(isCancelled || result == null) {
+			return
+		}
+		
+		try {
+			
+			column.lastTask = null
+			column.bRefreshLoading = false
+			
+			val error = result.error
+			if(error != null) {
+				column.mRefreshLoadingError = error
+				column.fireShowContent(reason = "gap error", changeList = ArrayList())
+				return
+			}
+			
+			val list_tmp = this.list_tmp
+			if(list_tmp == null) {
+				column.fireShowContent(reason = "gap list_tmp is null", changeList = ArrayList())
+				return
+			}
+			
+			val list_new = column.duplicate_map.filterDuplicate(list_tmp)
+			// 0個でもギャップを消すために以下の処理を続ける
+			
+			val changeList = ArrayList<AdapterChange>()
+			
+			column.replaceConversationSummary(changeList, list_new, column.list_data)
+			
+			val added = list_new.size // may 0
+			
+			val position = column.list_data.indexOf(gap)
+			if(position == - 1) {
+				log.d("gap not found..")
+				column.fireShowContent(reason = "gap not found", changeList = ArrayList())
+				return
+			}
+			
+			// idx番目の要素がListViewのtopから何ピクセル下にあるか
+			var restore_idx = position + 1
+			var restore_y = 0
+			val holder = column.viewHolder
+			if(holder != null) {
+				try {
+					restore_y = holder.getListItemOffset(restore_idx)
+				} catch(ex : IndexOutOfBoundsException) {
+					restore_idx = position
+					try {
+						restore_y = holder.getListItemOffset(restore_idx)
+					} catch(ex2 : IndexOutOfBoundsException) {
+						restore_idx = - 1
+					}
+				}
+			}
+			
+			column.list_data.removeAt(position)
+			column.list_data.addAll(position, list_new)
+			
+			changeList.add(AdapterChange(AdapterChangeType.RangeRemove, position))
+			if(added > 0) {
+				changeList.add(
+					AdapterChange(
+						AdapterChangeType.RangeInsert,
+						position,
+						added
+					)
+				)
+			}
+			column.fireShowContent(reason = "gap updated", changeList = changeList)
+			
+			if(holder != null) {
+				if(restore_idx >= 0) {
+					// ギャップが画面内にあるなら
+					holder.setListItemTop(restore_idx + added - 1, restore_y)
+				} else {
+					// ギャップが画面内にない場合、何もしない
+				}
+			} else {
+				val scroll_save = column.scroll_save
+				if(scroll_save != null) {
+					scroll_save.adapterIndex += added - 1
+				}
+			}
+			
+			column.updateMisskeyCapture()
+		} finally {
+			column.fireShowColumnStatus()
+		}
+	}
 	
 	internal fun getAccountList(
 		client : TootApiClient,
@@ -640,136 +769,4 @@ class ColumnTask_Gap(
 		return result
 	}
 	
-	override fun doInBackground(vararg unused : Void) : TootApiResult? {
-		ctStarted.set(true)
-		
-		val client = TootApiClient(context, callback = object : TootApiCallback {
-			override val isApiCancelled : Boolean
-				get() = isCancelled || column.is_dispose.get()
-			
-			override fun publishApiProgress(s : String) {
-				runOnMainLooper {
-					if(isCancelled) return@runOnMainLooper
-					column.task_progress = s
-					column.fireShowContent(reason = "gap progress", changeList = ArrayList())
-				}
-			}
-		})
-		
-		client.account = access_info
-		
-		try {
-			return (columnTypeProcMap[column.column_type]?:columnTypeProcMap[Column.TYPE_HOME])
-				.procGap(this,client)
-			
-		} finally {
-			try {
-				column.updateRelation(client, list_tmp, column.who_account, parser)
-			} catch(ex : Throwable) {
-				log.trace(ex)
-			}
-			
-			ctClosed.set(true)
-			runOnMainLooperDelayed(333L) {
-				if(! isCancelled) column.fireShowColumnStatus()
-			}
-		}
-	}
-	
-	override fun onCancelled(result : TootApiResult?) {
-		onPostExecute(null)
-	}
-	
-	override fun onPostExecute(result : TootApiResult?) {
-		if(column.is_dispose.get()) return
-		
-		if(isCancelled || result == null) {
-			return
-		}
-		
-		try {
-			
-			column.lastTask = null
-			column.bRefreshLoading = false
-			
-			val error = result.error
-			if(error != null) {
-				column.mRefreshLoadingError = error
-				column.fireShowContent(reason = "gap error", changeList = ArrayList())
-				return
-			}
-			
-			val list_tmp = this.list_tmp
-			if(list_tmp == null) {
-				column.fireShowContent(reason = "gap list_tmp is null", changeList = ArrayList())
-				return
-			}
-			
-			val list_new = column.duplicate_map.filterDuplicate(list_tmp)
-			// 0個でもギャップを消すために以下の処理を続ける
-			
-			val changeList = ArrayList<AdapterChange>()
-			
-			column.replaceConversationSummary(changeList, list_new, column.list_data)
-			
-			val added = list_new.size // may 0
-			
-			val position = column.list_data.indexOf(gap)
-			if(position == - 1) {
-				log.d("gap not found..")
-				column.fireShowContent(reason = "gap not found", changeList = ArrayList())
-				return
-			}
-			
-			// idx番目の要素がListViewのtopから何ピクセル下にあるか
-			var restore_idx = position + 1
-			var restore_y = 0
-			val holder = column.viewHolder
-			if(holder != null) {
-				try {
-					restore_y = holder.getListItemOffset(restore_idx)
-				} catch(ex : IndexOutOfBoundsException) {
-					restore_idx = position
-					try {
-						restore_y = holder.getListItemOffset(restore_idx)
-					} catch(ex2 : IndexOutOfBoundsException) {
-						restore_idx = - 1
-					}
-				}
-			}
-			
-			column.list_data.removeAt(position)
-			column.list_data.addAll(position, list_new)
-			
-			changeList.add(AdapterChange(AdapterChangeType.RangeRemove, position))
-			if(added > 0) {
-				changeList.add(
-					AdapterChange(
-						AdapterChangeType.RangeInsert,
-						position,
-						added
-					)
-				)
-			}
-			column.fireShowContent(reason = "gap updated", changeList = changeList)
-			
-			if(holder != null) {
-				if(restore_idx >= 0) {
-					// ギャップが画面内にあるなら
-					holder.setListItemTop(restore_idx + added - 1, restore_y)
-				} else {
-					// ギャップが画面内にない場合、何もしない
-				}
-			} else {
-				val scroll_save = column.scroll_save
-				if(scroll_save != null) {
-					scroll_save.adapterIndex += added - 1
-				}
-			}
-			
-			column.updateMisskeyCapture()
-		} finally {
-			column.fireShowColumnStatus()
-		}
-	}
 }

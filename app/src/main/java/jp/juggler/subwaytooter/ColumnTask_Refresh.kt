@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter
 
-import android.annotation.SuppressLint
 import android.os.SystemClock
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -12,10 +11,9 @@ import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
 
-@SuppressLint("StaticFieldLeak")
 class ColumnTask_Refresh(
 	columnArg : Column,
-	internal val bSilent : Boolean,
+	private val bSilent : Boolean,
 	internal val bBottom : Boolean,
 	internal val posted_status_id : EntityId? = null,
 	internal val refresh_after_toot : Int = - 1
@@ -25,7 +23,183 @@ class ColumnTask_Refresh(
 ) {
 	
 	companion object {
-		val log = LogCategory("CT_Refresh")
+		internal val log = LogCategory("CT_Refresh")
+	}
+	
+	private var filterUpdated = false
+	
+	override fun doInBackground(vararg unused : Void) : TootApiResult? {
+		ctStarted.set(true)
+		
+		val client = TootApiClient(context, callback = object : TootApiCallback {
+			override val isApiCancelled : Boolean
+				get() = isCancelled || column.is_dispose.get()
+			
+			override fun publishApiProgress(s : String) {
+				runOnMainLooper {
+					if(isCancelled) return@runOnMainLooper
+					column.task_progress = s
+					column.fireShowContent(reason = "refresh progress", changeList = ArrayList())
+				}
+			}
+		})
+		client.account = access_info
+		try {
+			
+			if(! bBottom) {
+				val filterList = column.loadFilter2(client)
+				if(filterList != null) {
+					column.muted_word2 = column.encodeFilterTree(filterList)
+					filterUpdated = true
+				}
+			}
+			
+			return (columnTypeProcMap[column.column_type] ?: columnTypeProcMap[Column.TYPE_HOME])
+				.refresh(this, client)
+		} finally {
+			try {
+				column.updateRelation(client, list_tmp, column.who_account, parser)
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+			ctClosed.set(true)
+			runOnMainLooperDelayed(333L) {
+				if(! isCancelled) column.fireShowColumnStatus()
+			}
+		}
+	}
+	
+	override fun onPostExecute(result : TootApiResult?) {
+		if(column.is_dispose.get()) return
+		
+		if(isCancelled || result == null) {
+			return
+		}
+		try {
+			column.lastTask = null
+			column.bRefreshLoading = false
+			
+			if(filterUpdated) {
+				column.checkFiltersForListData(column.muted_word2)
+			}
+			
+			val error = result.error
+			if(error != null) {
+				column.mRefreshLoadingError = error
+				column.mRefreshLoadingErrorTime = SystemClock.elapsedRealtime()
+				column.fireShowContent(reason = "refresh error", changeList = ArrayList())
+				return
+			}
+			
+			val list_new = column.duplicate_map.filterDuplicate(list_tmp)
+			if(list_new.isEmpty()) {
+				column.fireShowContent(
+					reason = "refresh list_new is empty",
+					changeList = ArrayList()
+				)
+				return
+			}
+			
+			// 事前にスクロール位置を覚えておく
+			var sp : ScrollPosition? = null
+			val holder = column.viewHolder
+			if(holder != null) {
+				sp = holder.scrollPosition
+			}
+			
+			
+			
+			if(bBottom) {
+				val changeList = listOf(
+					AdapterChange(
+						AdapterChangeType.RangeInsert,
+						column.list_data.size,
+						list_new.size
+					)
+				)
+				column.list_data.addAll(list_new)
+				column.fireShowContent(reason = "refresh updated bottom", changeList = changeList)
+				
+				// 新着が少しだけ見えるようにスクロール位置を移動する
+				if(sp != null) {
+					holder?.setScrollPosition(sp, 20f)
+				}
+			} else {
+				
+				val changeList = ArrayList<AdapterChange>()
+				
+				if(column.list_data.isNotEmpty() && column.list_data[0] is TootGap) {
+					changeList.add(AdapterChange(AdapterChangeType.RangeRemove, 0, 1))
+					column.list_data.removeAt(0)
+				}
+				
+				for(o in list_new) {
+					if(o is TootStatus) {
+						val highlight_sound = o.highlight_sound
+						if(highlight_sound != null) {
+							App1.sound(highlight_sound)
+							break
+						}
+					}
+				}
+				
+				column.replaceConversationSummary(changeList, list_new, column.list_data)
+				
+				val added = list_new.size // may 0
+				
+				// 投稿後のリフレッシュなら当該投稿の位置を探す
+				var status_index = - 1
+				for(i in 0 until added) {
+					val o = list_new[i]
+					if(o is TootStatus && o.id == posted_status_id) {
+						status_index = i
+						break
+					}
+				}
+				
+				changeList.add(AdapterChange(AdapterChangeType.RangeInsert, 0, added))
+				column.list_data.addAll(0, list_new)
+				column.fireShowContent(reason = "refresh updated head", changeList = changeList)
+				
+				if(status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL) {
+					// 投稿後にその投稿にスクロールする
+					if(holder != null) {
+						holder.setScrollPosition(
+							ScrollPosition(column.toAdapterIndex(status_index)),
+							0f
+						)
+					} else {
+						column.scroll_save = ScrollPosition(column.toAdapterIndex(status_index))
+					}
+				} else {
+					//
+					val scroll_save = column.scroll_save
+					when {
+						// ViewHolderがある場合は増加件数分+deltaの位置にスクロールする
+						sp != null -> {
+							sp.adapterIndex += added
+							val delta = if(bSilent) 0f else - 20f
+							holder?.setScrollPosition(sp, delta)
+						}
+						// ViewHolderがなくて保存中の位置がある場合、増加件数分ずらす。deltaは難しいので反映しない
+						scroll_save != null -> scroll_save.adapterIndex += added
+						// 保存中の位置がない場合、保存中の位置を新しく作る
+						else -> column.scroll_save =
+							ScrollPosition(column.toAdapterIndex(added))
+					}
+				}
+			}
+			
+			column.updateMisskeyCapture()
+			
+		} finally {
+			column.fireShowColumnStatus()
+			
+			if(! bBottom) {
+				column.bRefreshingTop = false
+				column.resumeStreaming(false)
+			}
+		}
 	}
 	
 	internal fun getAccountList(
@@ -406,7 +580,7 @@ class ColumnTask_Refresh(
 		var result = if(isMisskey) {
 			client.request(
 				path_base,
-				params.addRangeMisskey( bBottom).toPostRequestBuilder()
+				params.addRangeMisskey(bBottom).toPostRequestBuilder()
 			)
 		} else {
 			client.request(column.addRange(bBottom, path_base))
@@ -624,7 +798,7 @@ class ColumnTask_Refresh(
 		var result = when {
 			isMisskey -> client.request(
 				path_base,
-				params.addRangeMisskey( bBottom).toPostRequestBuilder()
+				params.addRangeMisskey(bBottom).toPostRequestBuilder()
 			)
 			
 			aroundMin -> client.request(column.addRangeMin(path_base))
@@ -895,7 +1069,7 @@ class ColumnTask_Refresh(
 		var result = when {
 			isMisskey -> client.request(
 				path_base,
-				params.addRangeMisskey( bBottom).toPostRequestBuilder()
+				params.addRangeMisskey(bBottom).toPostRequestBuilder()
 			)
 			
 			aroundMin -> client.request(column.addRangeMin(path_base))
@@ -1135,183 +1309,4 @@ class ColumnTask_Refresh(
 		return firstResult
 	}
 	
-	private var filterUpdated = false
-	
-	override fun doInBackground(vararg unused : Void) : TootApiResult? {
-		ctStarted.set(true)
-		
-		val client = TootApiClient(context, callback = object : TootApiCallback {
-			override val isApiCancelled : Boolean
-				get() = isCancelled || column.is_dispose.get()
-			
-			override fun publishApiProgress(s : String) {
-				runOnMainLooper {
-					if(isCancelled) return@runOnMainLooper
-					column.task_progress = s
-					column.fireShowContent(reason = "refresh progress", changeList = ArrayList())
-				}
-			}
-		})
-		client.account = access_info
-		try {
-			
-			if(! bBottom) {
-				val filterList = column.loadFilter2(client)
-				if(filterList != null) {
-					column.muted_word2 = column.encodeFilterTree(filterList)
-					filterUpdated = true
-				}
-			}
-			
-			return (columnTypeProcMap[column.column_type]?:columnTypeProcMap[Column.TYPE_HOME])
-				.procRefresh(this,client)
-		} finally {
-			try {
-				column.updateRelation(client, list_tmp, column.who_account, parser)
-			} catch(ex : Throwable) {
-				log.trace(ex)
-			}
-			ctClosed.set(true)
-			runOnMainLooperDelayed(333L) {
-				if(! isCancelled) column.fireShowColumnStatus()
-			}
-		}
-	}
-	
-	override fun onCancelled(result : TootApiResult?) {
-		onPostExecute(null)
-	}
-	
-	override fun onPostExecute(result : TootApiResult?) {
-		if(column.is_dispose.get()) return
-		
-		if(isCancelled || result == null) {
-			return
-		}
-		try {
-			column.lastTask = null
-			column.bRefreshLoading = false
-			
-			if(filterUpdated) {
-				column.checkFiltersForListData(column.muted_word2)
-			}
-			
-			val error = result.error
-			if(error != null) {
-				column.mRefreshLoadingError = error
-				column.mRefreshLoadingErrorTime = SystemClock.elapsedRealtime()
-				column.fireShowContent(reason = "refresh error", changeList = ArrayList())
-				return
-			}
-			
-			val list_new = column.duplicate_map.filterDuplicate(list_tmp)
-			if(list_new.isEmpty()) {
-				column.fireShowContent(
-					reason = "refresh list_new is empty",
-					changeList = ArrayList()
-				)
-				return
-			}
-			
-			// 事前にスクロール位置を覚えておく
-			var sp : ScrollPosition? = null
-			val holder = column.viewHolder
-			if(holder != null) {
-				sp = holder.scrollPosition
-			}
-			
-			
-			
-			if(bBottom) {
-				val changeList = listOf(
-					AdapterChange(
-						AdapterChangeType.RangeInsert,
-						column.list_data.size,
-						list_new.size
-					)
-				)
-				column.list_data.addAll(list_new)
-				column.fireShowContent(reason = "refresh updated bottom", changeList = changeList)
-				
-				// 新着が少しだけ見えるようにスクロール位置を移動する
-				if(sp != null) {
-					holder?.setScrollPosition(sp, 20f)
-				}
-			} else {
-				
-				val changeList = ArrayList<AdapterChange>()
-				
-				if(column.list_data.isNotEmpty() && column.list_data[0] is TootGap) {
-					changeList.add(AdapterChange(AdapterChangeType.RangeRemove, 0, 1))
-					column.list_data.removeAt(0)
-				}
-				
-				for(o in list_new) {
-					if(o is TootStatus) {
-						val highlight_sound = o.highlight_sound
-						if(highlight_sound != null) {
-							App1.sound(highlight_sound)
-							break
-						}
-					}
-				}
-				
-				column.replaceConversationSummary(changeList, list_new, column.list_data)
-				
-				val added = list_new.size // may 0
-				
-				// 投稿後のリフレッシュなら当該投稿の位置を探す
-				var status_index = - 1
-				for(i in 0 until added) {
-					val o = list_new[i]
-					if(o is TootStatus && o.id == posted_status_id) {
-						status_index = i
-						break
-					}
-				}
-				
-				changeList.add(AdapterChange(AdapterChangeType.RangeInsert, 0, added))
-				column.list_data.addAll(0, list_new)
-				column.fireShowContent(reason = "refresh updated head", changeList = changeList)
-				
-				if(status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL) {
-					// 投稿後にその投稿にスクロールする
-					if(holder != null) {
-						holder.setScrollPosition(
-							ScrollPosition(column.toAdapterIndex(status_index)),
-							0f
-						)
-					} else {
-						column.scroll_save = ScrollPosition(column.toAdapterIndex(status_index))
-					}
-				} else {
-					//
-					val scroll_save = column.scroll_save
-					when {
-						// ViewHolderがある場合は増加件数分+deltaの位置にスクロールする
-						sp != null -> {
-							sp.adapterIndex += added
-							val delta = if(bSilent) 0f else - 20f
-							holder?.setScrollPosition(sp, delta)
-						}
-						// ViewHolderがなくて保存中の位置がある場合、増加件数分ずらす。deltaは難しいので反映しない
-						scroll_save != null -> scroll_save.adapterIndex += added
-						// 保存中の位置がない場合、保存中の位置を新しく作る
-						else -> column.scroll_save =
-							ScrollPosition(column.toAdapterIndex(added))
-					}
-				}
-			}
-			
-			column.updateMisskeyCapture()
-			
-		} finally {
-			column.fireShowColumnStatus()
-			
-			if(! bBottom) {
-				column.bRefreshingTop = false
-				column.resumeStreaming(false)
-			}
-		}
-	}
 }

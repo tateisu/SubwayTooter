@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter
 
-import android.annotation.SuppressLint
 import android.os.SystemClock
-import android.view.Gravity
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
@@ -15,18 +13,97 @@ import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 
-@SuppressLint("StaticFieldLeak")
 class ColumnTask_Loading(
 	columnArg : Column
 ) : ColumnTask(columnArg, ColumnTaskType.LOADING) {
 	
 	companion object {
-		val log = LogCategory("CT_Loading")
+		internal val log = LogCategory("CT_Loading")
 	}
 	
 	internal var instance_tmp : TootInstance? = null
 	
 	internal var list_pinned : ArrayList<TimelineItem>? = null
+	
+	override fun doInBackground(vararg unused : Void) : TootApiResult? {
+		ctStarted.set(true)
+		
+		if(Pref.bpInstanceTicker(pref)) {
+			InstanceTicker.load()
+		}
+		
+		val client = TootApiClient(context, callback = object : TootApiCallback {
+			override val isApiCancelled : Boolean
+				get() = isCancelled || column.is_dispose.get()
+			
+			override fun publishApiProgress(s : String) {
+				runOnMainLooper {
+					if(isCancelled) return@runOnMainLooper
+					column.task_progress = s
+					column.fireShowContent(reason = "loading progress", changeList = ArrayList())
+				}
+			}
+		})
+		
+		client.account = access_info
+		
+		try {
+			val result : TootApiResult? = access_info.checkConfirmed(context, client)
+			if(result == null || result.error != null) return result
+			
+			column.muted_word2 = column.encodeFilterTree(column.loadFilter2(client))
+			
+			return (columnTypeProcMap[column.column_type] ?: columnTypeProcMap[Column.TYPE_HOME])
+				.loading(this, client)
+			
+		} finally {
+			try {
+				column.updateRelation(client, list_tmp, column.who_account, parser)
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+			ctClosed.set(true)
+			runOnMainLooperDelayed(333L) {
+				if(! isCancelled) column.fireShowColumnStatus()
+			}
+		}
+	}
+	
+	override fun onPostExecute(result : TootApiResult?) {
+		if(column.is_dispose.get()) return
+		
+		if(isCancelled || result == null) {
+			return
+		}
+		
+		column.bInitialLoading = false
+		column.lastTask = null
+		
+		if(result.error != null) {
+			column.mInitialLoadingError = result.error ?: ""
+		} else {
+			column.duplicate_map.clear()
+			column.list_data.clear()
+			val list_tmp = this.list_tmp
+			if(list_tmp != null) {
+				val list_pinned = this.list_pinned
+				if(list_pinned?.isNotEmpty() == true) {
+					val list_new = column.duplicate_map.filterDuplicate(list_pinned)
+					column.list_data.addAll(list_new)
+				}
+				val list_new = column.duplicate_map.filterDuplicate(list_tmp)
+				column.list_data.addAll(list_new)
+			}
+			
+			column.resumeStreaming(false)
+		}
+		column.fireShowContent(reason = "loading updated", reset = true)
+		
+		// 初期ロードの直後は先頭に移動する
+		column.viewHolder?.scrollToTop()
+		
+		column.updateMisskeyCapture()
+	}
 	
 	internal fun getInstanceInformation(
 		client : TootApiClient,
@@ -62,7 +139,7 @@ class ColumnTask_Loading(
 		log.d("getStatusesPinned: list size=%s", list_pinned?.size ?: - 1)
 	}
 	
-	internal fun getStatuses(
+	internal fun getStatusList(
 		client : TootApiClient,
 		path_base : String?,
 		aroundMin : Boolean = false,
@@ -403,7 +480,7 @@ class ColumnTask_Loading(
 		return result
 	}
 	
-	internal fun parseAccountList(
+	internal fun getAccountList(
 		client : TootApiClient,
 		path_base : String,
 		emptyMessage : String? = null,
@@ -480,7 +557,7 @@ class ColumnTask_Loading(
 		return result
 	}
 	
-	internal fun parseDomainList(
+	internal fun getDomainList(
 		client : TootApiClient,
 		path_base : String
 	) : TootApiResult? {
@@ -493,7 +570,7 @@ class ColumnTask_Loading(
 		return result
 	}
 	
-	internal fun parseReports(client : TootApiClient, path_base : String) : TootApiResult? {
+	internal fun getReportList(client : TootApiClient, path_base : String) : TootApiResult? {
 		val result = client.request(path_base)
 		if(result != null) {
 			val src = parseList(::TootReport, result.jsonArray)
@@ -522,7 +599,7 @@ class ColumnTask_Loading(
 		return result
 	}
 	
-	internal fun parseNotifications(
+	internal fun getNotificationList(
 		client : TootApiClient,
 		fromAcct : String? = null
 	) : TootApiResult? {
@@ -606,7 +683,10 @@ class ColumnTask_Loading(
 		return result
 	}
 	
-	internal fun getPublicAroundStatuses(client : TootApiClient, url : String) : TootApiResult? {
+	internal fun getPublicAroundStatuses(
+		client : TootApiClient,
+		url : String
+	) : TootApiResult? {
 		// (Mastodonのみ対応)
 		
 		var instance = access_info.instance
@@ -633,14 +713,14 @@ class ColumnTask_Loading(
 		var bInstanceTooOld = false
 		if(instance?.versionGE(TootInstance.VERSION_2_6_0) == true) {
 			// 指定より新しいトゥート
-			result = getStatuses(client, url, aroundMin = true)
+			result = getStatusList(client, url, aroundMin = true)
 			if(result == null || result.error != null) return result
 		} else {
 			bInstanceTooOld = true
 		}
 		
 		// 指定位置より古いトゥート
-		result = getStatuses(client, url, aroundMax = true)
+		result = getStatusList(client, url, aroundMax = true)
 		if(result == null || result.error != null) return result
 		
 		list_tmp?.sortBy { it.getOrderId() }
@@ -685,14 +765,14 @@ class ColumnTask_Loading(
 		var bInstanceTooOld = false
 		if(instance?.versionGE(TootInstance.VERSION_2_6_0) == true) {
 			// 指定より新しいトゥート
-			result = getStatuses(client, path, aroundMin = true)
+			result = getStatusList(client, path, aroundMin = true)
 			if(result == null || result.error != null) return result
 		} else {
 			bInstanceTooOld = true
 		}
 		
 		// 指定位置より古いトゥート
-		result = getStatuses(client, path, aroundMax = true)
+		result = getStatusList(client, path, aroundMax = true)
 		if(result == null || result.error != null) return result
 		
 		list_tmp?.sortBy { it.getOrderId() }
@@ -718,88 +798,5 @@ class ColumnTask_Loading(
 		return result
 	}
 	
-	override fun doInBackground(vararg unused : Void) : TootApiResult? {
-		ctStarted.set(true)
-		
-		if(Pref.bpInstanceTicker(pref)) {
-			InstanceTicker.load()
-		}
-		
-		val client = TootApiClient(context, callback = object : TootApiCallback {
-			override val isApiCancelled : Boolean
-				get() = isCancelled || column.is_dispose.get()
-			
-			override fun publishApiProgress(s : String) {
-				runOnMainLooper {
-					if(isCancelled) return@runOnMainLooper
-					column.task_progress = s
-					column.fireShowContent(reason = "loading progress", changeList = ArrayList())
-				}
-			}
-		})
-		
-		client.account = access_info
-		
-		
-		try {
-			val result : TootApiResult? = access_info.checkConfirmed(context, client)
-			if(result == null || result.error != null) return result
-			
-			column.muted_word2 = column.encodeFilterTree(column.loadFilter2(client))
-			
-			return (columnTypeProcMap[column.column_type]?:columnTypeProcMap[Column.TYPE_HOME])
-				.procLoading(this,client)
-
-		} finally {
-			try {
-				column.updateRelation(client, list_tmp, column.who_account, parser)
-			} catch(ex : Throwable) {
-				log.trace(ex)
-			}
-			ctClosed.set(true)
-			runOnMainLooperDelayed(333L) {
-				if(! isCancelled) column.fireShowColumnStatus()
-			}
-		}
-	}
-	
-	override fun onCancelled(result : TootApiResult?) {
-		onPostExecute(null)
-	}
-	
-	override fun onPostExecute(result : TootApiResult?) {
-		if(column.is_dispose.get()) return
-		
-		if(isCancelled || result == null) {
-			return
-		}
-		
-		column.bInitialLoading = false
-		column.lastTask = null
-		
-		if(result.error != null) {
-			column.mInitialLoadingError = result.error ?: ""
-		} else {
-			column.duplicate_map.clear()
-			column.list_data.clear()
-			val list_tmp = this.list_tmp
-			if(list_tmp != null) {
-				val list_pinned = this.list_pinned
-				if(list_pinned?.isNotEmpty() == true) {
-					val list_new = column.duplicate_map.filterDuplicate(list_pinned)
-					column.list_data.addAll(list_new)
-				}
-				val list_new = column.duplicate_map.filterDuplicate(list_tmp)
-				column.list_data.addAll(list_new)
-			}
-			
-			column.resumeStreaming(false)
-		}
-		column.fireShowContent(reason = "loading updated", reset = true)
-		
-		// 初期ロードの直後は先頭に移動する
-		column.viewHolder?.scrollToTop()
-		
-		column.updateMisskeyCapture()
-	}
 }
+

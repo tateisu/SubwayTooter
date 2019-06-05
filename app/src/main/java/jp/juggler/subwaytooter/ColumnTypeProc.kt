@@ -18,35 +18,33 @@ import java.util.*
 - Refresh : (始端/終端の)差分更新
 - Gap : ギャップ部分の読み込み
 
-procLoading,procRefresh,procGap はそれぞれ this の種類が異なるので注意
+loading,refresh,gap はそれぞれ this の種類が異なるので注意
 同じ関数を呼び出してるように見えても実際には異なるクラスの異なる関数を呼び出している場合がある
  
  */
 
-private val unsupportedProcRefresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? =
+private val unsupportedRefresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? =
 	{ TootApiResult("edge reading not supported.") }
 
-private val unsupportedProcGap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? =
+private val unsupportedGap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? =
 	{ TootApiResult("gap reading not supported.") }
 
 class ColumnTypeProc(
-	val procLoading : ColumnTask_Loading.(client : TootApiClient) -> TootApiResult?,
-	val procRefresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? = unsupportedProcRefresh,
-	val procGap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? = unsupportedProcGap
+	val loading : ColumnTask_Loading.(client : TootApiClient) -> TootApiResult?,
+	val refresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? = unsupportedRefresh,
+	val gap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? = unsupportedGap
 )
+
 private fun SparseArray<ColumnTypeProc>.add(
 	type : Int,
-	procLoading : ColumnTask_Loading.(client : TootApiClient) -> TootApiResult?,
-	procRefresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? = unsupportedProcRefresh,
-	procGap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? = unsupportedProcGap
-) = put(
-	type,
-	ColumnTypeProc(procLoading, procRefresh, procGap)
-)
+	loading : ColumnTask_Loading.(client : TootApiClient) -> TootApiResult?,
+	refresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? = unsupportedRefresh,
+	gap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? = unsupportedGap
+) = put(type, ColumnTypeProc(loading, refresh, gap))
 
 private val profileStatusMastodon = ColumnTypeProc(
 	
-	procLoading = { client ->
+	loading = { client ->
 		var instance = access_info.instance
 		
 		// まだ取得してない
@@ -68,20 +66,15 @@ private val profileStatusMastodon = ColumnTypeProc(
 			getStatusesPinned(client, "$path&pinned=true")
 		}
 		
-		getStatuses(client, path)
+		getStatusList(client, path)
 	},
 	
-	procRefresh = { client ->
-		getStatusList(client, column.makeProfileStatusesUrl(column.profile_id))
-	},
-	
-	procGap = { client ->
-		getStatusList(client, column.makeProfileStatusesUrl(column.profile_id))
-	}
+	refresh = { client -> getStatusList(client, column.makeProfileStatusesUrl(column.profile_id)) },
+	gap = { client -> getStatusList(client, column.makeProfileStatusesUrl(column.profile_id)) }
 )
 
 private val profileStatusMisskey = ColumnTypeProc(
-	procLoading = { client ->
+	loading = { client ->
 		// 固定トゥートの取得
 		val pinnedNotes = column.who_account?.get()?.pinnedNotes
 		if(pinnedNotes != null) {
@@ -89,21 +82,21 @@ private val profileStatusMisskey = ColumnTypeProc(
 		}
 		
 		// 通常トゥートの取得
-		getStatuses(
+		getStatusList(
 			client,
 			Column.PATH_MISSKEY_PROFILE_STATUSES,
 			misskeyParams = column.makeMisskeyParamsProfileStatuses(parser),
 			initialUntilDate = true
 		)
 	},
-	procRefresh = { client ->
+	refresh = { client ->
 		getStatusList(
 			client,
 			Column.PATH_MISSKEY_PROFILE_STATUSES,
 			misskeyParams = column.makeMisskeyParamsProfileStatuses(parser)
 		)
 	},
-	procGap = { client ->
+	gap = { client ->
 		getStatusList(
 			client
 			, Column.PATH_MISSKEY_PROFILE_STATUSES
@@ -113,20 +106,20 @@ private val profileStatusMisskey = ColumnTypeProc(
 )
 
 private val followingMastodon = ColumnTypeProc(
-	procLoading = { client ->
-		parseAccountList(
+	loading = { client ->
+		getAccountList(
 			client,
 			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id),
 			emptyMessage = context.getString(R.string.none_or_hidden_following)
 		)
 	},
-	procRefresh = { client ->
+	refresh = { client ->
 		getAccountList(
 			client,
 			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id)
 		)
 	},
-	procGap = { client ->
+	gap = { client ->
 		getAccountList(
 			client,
 			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id)
@@ -135,7 +128,7 @@ private val followingMastodon = ColumnTypeProc(
 )
 
 private val followingMastodonPseudo = ColumnTypeProc(
-	procLoading = {
+	loading = {
 		column.idRecent = null
 		column.idOld = null
 		list_tmp = addOne(
@@ -147,9 +140,9 @@ private val followingMastodonPseudo = ColumnTypeProc(
 )
 
 private val followingMisskey10 = ColumnTypeProc(
-	procLoading = { client ->
+	loading = { client ->
 		column.pagingType = ColumnPagingType.Cursor
-		parseAccountList(
+		getAccountList(
 			client,
 			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
 			emptyMessage = context.getString(R.string.none_or_hidden_following),
@@ -157,7 +150,7 @@ private val followingMisskey10 = ColumnTypeProc(
 			misskeyArrayFinder = misskeyArrayFinderUsers
 		)
 	},
-	procRefresh = { client ->
+	refresh = { client ->
 		getAccountList(
 			client,
 			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
@@ -165,7 +158,7 @@ private val followingMisskey10 = ColumnTypeProc(
 			misskeyArrayFinder = misskeyArrayFinderUsers
 		)
 	},
-	procGap = { client ->
+	gap = { client ->
 		getAccountList(
 			client,
 			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
@@ -176,10 +169,10 @@ private val followingMisskey10 = ColumnTypeProc(
 )
 
 private val followingMisskey11 = ColumnTypeProc(
-	procLoading = { client ->
+	loading = { client ->
 		column.pagingType = ColumnPagingType.Default
 		column.useDate = false
-		parseAccountList(
+		getAccountList(
 			client,
 			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
 			emptyMessage = context.getString(R.string.none_or_hidden_following),
@@ -187,7 +180,7 @@ private val followingMisskey11 = ColumnTypeProc(
 			misskeyCustomParser = misskeyFollowingParser
 		)
 	},
-	procRefresh = { client ->
+	refresh = { client ->
 		column.useDate = false
 		getAccountList(
 			client,
@@ -196,7 +189,7 @@ private val followingMisskey11 = ColumnTypeProc(
 			misskeyCustomParser = misskeyFollowingParser
 		)
 	},
-	procGap = { client ->
+	gap = { client ->
 		getAccountList(
 			client,
 			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
@@ -207,9 +200,9 @@ private val followingMisskey11 = ColumnTypeProc(
 )
 
 private val followersMisskey11 = ColumnTypeProc(
-	procLoading = { client ->
+	loading = { client ->
 		column.pagingType = ColumnPagingType.Default
-		parseAccountList(
+		getAccountList(
 			client,
 			Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
 			emptyMessage = context.getString(R.string.none_or_hidden_followers),
@@ -218,7 +211,7 @@ private val followersMisskey11 = ColumnTypeProc(
 		)
 	},
 	
-	procRefresh = { client ->
+	refresh = { client ->
 		column.useDate = false
 		getAccountList(
 			client,
@@ -227,7 +220,7 @@ private val followersMisskey11 = ColumnTypeProc(
 			misskeyCustomParser = misskeyFollowersParser
 		)
 	},
-	procGap = { client ->
+	gap = { client ->
 		getAccountList(
 			client,
 			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
@@ -238,9 +231,9 @@ private val followersMisskey11 = ColumnTypeProc(
 )
 
 private val followersMisskey10 = ColumnTypeProc(
-	procLoading = { client ->
+	loading = { client ->
 		column.pagingType = ColumnPagingType.Cursor
-		parseAccountList(
+		getAccountList(
 			client,
 			Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
 			emptyMessage = context.getString(R.string.none_or_hidden_followers),
@@ -249,7 +242,7 @@ private val followersMisskey10 = ColumnTypeProc(
 		)
 	},
 	
-	procRefresh = { client ->
+	refresh = { client ->
 		getAccountList(
 			client,
 			Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
@@ -257,7 +250,7 @@ private val followersMisskey10 = ColumnTypeProc(
 			misskeyArrayFinder = misskeyArrayFinderUsers
 		)
 	},
-	procGap = { client ->
+	gap = { client ->
 		getAccountList(
 			client
 			, Column.PATH_MISSKEY_PROFILE_FOLLOWERS
@@ -267,7 +260,7 @@ private val followersMisskey10 = ColumnTypeProc(
 )
 
 private val followersMastodonPseudo = ColumnTypeProc(
-	procLoading = {
+	loading = {
 		column.idRecent = null
 		column.idOld = null
 		list_tmp = addOne(
@@ -279,21 +272,21 @@ private val followersMastodonPseudo = ColumnTypeProc(
 )
 
 private val followersMastodon = ColumnTypeProc(
-	procLoading = { client ->
-		parseAccountList(
+	loading = { client ->
+		getAccountList(
 			client,
 			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id),
 			emptyMessage = context.getString(R.string.none_or_hidden_followers)
 		)
 	},
 	
-	procRefresh = { client ->
+	refresh = { client ->
 		getAccountList(
 			client,
 			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id)
 		)
 	},
-	procGap = { client ->
+	gap = { client ->
 		getAccountList(
 			client,
 			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id)
@@ -305,52 +298,52 @@ private val profileTabProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	add(Column.TAB_STATUS,
 		
-		procLoading = { client ->
+		loading = { client ->
 			when {
-				isMisskey -> profileStatusMisskey.procLoading(this, client)
-				else -> profileStatusMastodon.procLoading(this, client)
+				isMisskey -> profileStatusMisskey.loading(this, client)
+				else -> profileStatusMastodon.loading(this, client)
 			}
 		},
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			when {
-				isMisskey -> profileStatusMisskey.procRefresh(this, client)
-				else -> profileStatusMastodon.procRefresh(this, client)
+				isMisskey -> profileStatusMisskey.refresh(this, client)
+				else -> profileStatusMastodon.refresh(this, client)
 			}
 		},
 		
-		procGap = { client ->
+		gap = { client ->
 			when {
-				isMisskey -> profileStatusMisskey.procGap(this, client)
-				else -> profileStatusMastodon.procGap(this, client)
+				isMisskey -> profileStatusMisskey.gap(this, client)
+				else -> profileStatusMastodon.gap(this, client)
 			}
 		}
 	)
 	
 	
 	add(Column.TAB_FOLLOWING,
-		procLoading = { client ->
+		loading = { client ->
 			when {
-				misskeyVersion >= 11 -> followingMisskey11.procLoading(this, client)
-				isMisskey -> followingMisskey10.procLoading(this, client)
-				access_info.isPseudo -> followingMastodonPseudo.procLoading(this, client)
-				else -> followingMastodon.procLoading(this, client)
+				misskeyVersion >= 11 -> followingMisskey11.loading(this, client)
+				isMisskey -> followingMisskey10.loading(this, client)
+				access_info.isPseudo -> followingMastodonPseudo.loading(this, client)
+				else -> followingMastodon.loading(this, client)
 			}
 		},
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			when {
-				misskeyVersion >= 11 -> followingMisskey11.procRefresh(this, client)
-				isMisskey -> followingMisskey10.procRefresh(this, client)
-				else -> followingMastodon.procRefresh(this, client)
+				misskeyVersion >= 11 -> followingMisskey11.refresh(this, client)
+				isMisskey -> followingMisskey10.refresh(this, client)
+				else -> followingMastodon.refresh(this, client)
 			}
 		},
-
-		procGap = { client ->
+		
+		gap = { client ->
 			when {
-				misskeyVersion >= 11 -> followingMisskey11.procGap(this, client)
-				isMisskey -> followingMisskey10.procGap(this, client)
-				else -> followingMastodon.procGap(this, client)
+				misskeyVersion >= 11 -> followingMisskey11.gap(this, client)
+				isMisskey -> followingMisskey10.gap(this, client)
+				else -> followingMastodon.gap(this, client)
 			}
 		}
 	)
@@ -358,30 +351,30 @@ private val profileTabProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	add(Column.TAB_FOLLOWERS,
 		
-		procLoading = { client ->
+		loading = { client ->
 			when {
-				misskeyVersion >= 11 -> followersMisskey11.procLoading(this, client)
-				isMisskey -> followersMisskey10.procLoading(this, client)
-				access_info.isPseudo -> followersMastodonPseudo.procLoading(this, client)
-				else -> followersMastodon.procLoading(this, client)
+				misskeyVersion >= 11 -> followersMisskey11.loading(this, client)
+				isMisskey -> followersMisskey10.loading(this, client)
+				access_info.isPseudo -> followersMastodonPseudo.loading(this, client)
+				else -> followersMastodon.loading(this, client)
 			}
 		},
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			when {
-				misskeyVersion >= 11 -> followersMisskey11.procRefresh(this, client)
-				isMisskey -> followersMisskey10.procRefresh(this, client)
-				access_info.isPseudo -> followersMastodonPseudo.procRefresh(this, client)
-				else -> followersMastodon.procRefresh(this, client)
+				misskeyVersion >= 11 -> followersMisskey11.refresh(this, client)
+				isMisskey -> followersMisskey10.refresh(this, client)
+				access_info.isPseudo -> followersMastodonPseudo.refresh(this, client)
+				else -> followersMastodon.refresh(this, client)
 			}
 		},
 		
-		procGap = { client ->
+		gap = { client ->
 			when {
-				misskeyVersion >= 11 -> followersMisskey11.procGap(this, client)
-				isMisskey -> followersMisskey10.procGap(this, client)
-				access_info.isPseudo -> followersMastodonPseudo.procGap(this, client)
-				else -> followersMastodon.procGap(this, client)
+				misskeyVersion >= 11 -> followersMisskey11.gap(this, client)
+				isMisskey -> followersMisskey10.gap(this, client)
+				access_info.isPseudo -> followersMastodonPseudo.gap(this, client)
+				else -> followersMastodon.gap(this, client)
 			}
 		}
 	)
@@ -390,34 +383,32 @@ private val profileTabProcMap = SparseArray<ColumnTypeProc>().apply {
 val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	add(Column.TYPE_HOME,
-		procLoading = { client -> getStatuses(client, column.makeHomeTlUrl()) },
-		procRefresh = { client -> getStatusList(client, column.makeHomeTlUrl()) },
-		procGap = { client -> getStatusList(client, column.makeHomeTlUrl()) }
+		loading = { client -> getStatusList(client, column.makeHomeTlUrl()) },
+		refresh = { client -> getStatusList(client, column.makeHomeTlUrl()) },
+		gap = { client -> getStatusList(client, column.makeHomeTlUrl()) }
 	)
 	
 	add(Column.TYPE_LOCAL,
-		procLoading = { client -> getStatuses(client, column.makePublicLocalUrl()) },
-		procRefresh = { client -> getStatusList(client, column.makePublicLocalUrl()) },
-		procGap = { client -> getStatusList(client, column.makePublicLocalUrl()) }
+		loading = { client -> getStatusList(client, column.makePublicLocalUrl()) },
+		refresh = { client -> getStatusList(client, column.makePublicLocalUrl()) },
+		gap = { client -> getStatusList(client, column.makePublicLocalUrl()) }
 	)
 	
 	add(Column.TYPE_FEDERATE,
-		procLoading = { client -> getStatuses(client, column.makePublicFederateUrl()) },
-		procRefresh = { client -> getStatusList(client, column.makePublicFederateUrl()) },
-		procGap = { client -> getStatusList(client, column.makePublicFederateUrl()) }
+		loading = { client -> getStatusList(client, column.makePublicFederateUrl()) },
+		refresh = { client -> getStatusList(client, column.makePublicFederateUrl()) },
+		gap = { client -> getStatusList(client, column.makePublicFederateUrl()) }
 	)
 	
 	add(Column.TYPE_MISSKEY_HYBRID,
-		procLoading = { client -> getStatuses(client, column.makeMisskeyHybridTlUrl()) },
-		procRefresh = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
-		procGap = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) }
+		loading = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
+		refresh = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
+		gap = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) }
 	)
 	
 	add(Column.TYPE_LOCAL_AROUND,
-		procLoading = { client ->
-			getPublicAroundStatuses(client, column.makePublicLocalUrl())
-		},
-		procRefresh = { client ->
+		loading = { client -> getPublicAroundStatuses(client, column.makePublicLocalUrl()) },
+		refresh = { client ->
 			if(bBottom) {
 				getStatusList(client, column.makePublicLocalUrl())
 			} else {
@@ -430,12 +421,8 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_FEDERATED_AROUND,
-		
-		procLoading = { client ->
-			getPublicAroundStatuses(client, column.makePublicFederateUrl())
-		},
-		
-		procRefresh = { client ->
+		loading = { client -> getPublicAroundStatuses(client, column.makePublicFederateUrl()) },
+		refresh = { client ->
 			if(bBottom) {
 				getStatusList(client, column.makePublicFederateUrl())
 			} else {
@@ -449,42 +436,28 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	add(Column.TYPE_PROFILE,
 		
-		procLoading = { client ->
+		loading = { client ->
 			val who_result = column.loadProfileAccount(client, parser, true)
 			if(client.isApiCancelled || column.who_account == null) return@add who_result
 			(profileTabProcMap[column.profile_tab] ?: profileTabProcMap[Column.TAB_STATUS])
-				.procLoading(this, client)
+				.loading(this, client)
 		},
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			column.loadProfileAccount(client, parser, false)
 			(profileTabProcMap[column.profile_tab] ?: profileTabProcMap[Column.TAB_STATUS])
-				.procRefresh(this, client)
+				.refresh(this, client)
 			
 		},
 		
-		procGap = { client ->
+		gap = { client ->
 			(profileTabProcMap[column.profile_tab] ?: profileTabProcMap[Column.TAB_STATUS])
-				.procGap(this, client)
+				.gap(this, client)
 		}
 	)
 	
 	add(Column.TYPE_FAVOURITES,
-		procLoading = { client ->
-			if(isMisskey) {
-				column.useDate = false
-				getStatuses(
-					client
-					, Column.PATH_MISSKEY_FAVORITES
-					, misskeyParams = column.makeMisskeyTimelineParameter(parser)
-					, misskeyCustomParser = misskeyCustomParserFavorites
-				)
-			} else {
-				getStatuses(client, Column.PATH_FAVOURITES)
-			}
-		},
-		
-		procRefresh = { client ->
+		loading = { client ->
 			if(isMisskey) {
 				column.useDate = false
 				getStatusList(
@@ -498,7 +471,21 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 			}
 		},
 		
-		procGap = { client ->
+		refresh = { client ->
+			if(isMisskey) {
+				column.useDate = false
+				getStatusList(
+					client
+					, Column.PATH_MISSKEY_FAVORITES
+					, misskeyParams = column.makeMisskeyTimelineParameter(parser)
+					, misskeyCustomParser = misskeyCustomParserFavorites
+				)
+			} else {
+				getStatusList(client, Column.PATH_FAVOURITES)
+			}
+		},
+		
+		gap = { client ->
 			if(isMisskey) {
 				column.useDate = false
 				getStatusList(
@@ -514,19 +501,19 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_NOTIFICATIONS,
-		procLoading = { client -> parseNotifications(client) },
-		procRefresh = { client -> getNotificationList(client) },
-		procGap = { client -> getNotificationList(client) }
+		loading = { client -> getNotificationList(client) },
+		refresh = { client -> getNotificationList(client) },
+		gap = { client -> getNotificationList(client) }
 	)
 	
 	add(Column.TYPE_NOTIFICATION_FROM_ACCT,
-		procLoading = { client -> parseNotifications(client, column.hashtag_acct) },
-		procRefresh = { client -> getNotificationList(client, column.hashtag_acct) },
-		procGap = { client -> getNotificationList(client, column.hashtag_acct) }
+		loading = { client -> getNotificationList(client, column.hashtag_acct) },
+		refresh = { client -> getNotificationList(client, column.hashtag_acct) },
+		gap = { client -> getNotificationList(client, column.hashtag_acct) }
 	)
 	
 	add(Column.TYPE_CONVERSATION,
-		procLoading = { client ->
+		loading = { client ->
 			
 			if(isMisskey) {
 				// 指定された発言そのもの
@@ -664,20 +651,20 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 		}
 	)
 	add(Column.TYPE_HASHTAG,
-		procLoading = { client ->
+		loading = { client ->
 			if(isMisskey) {
-				getStatuses(
+				getStatusList(
 					client
 					, column.makeHashtagUrl()
 					, misskeyParams = column.makeHashtagParams(parser)
 				
 				)
 			} else {
-				getStatuses(client, column.makeHashtagUrl())
+				getStatusList(client, column.makeHashtagUrl())
 			}
 		},
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			if(isMisskey) {
 				getStatusList(
 					client
@@ -689,7 +676,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 			}
 		},
 		
-		procGap = { client ->
+		gap = { client ->
 			if(isMisskey) {
 				getStatusList(
 					client
@@ -704,20 +691,20 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	add(Column.TYPE_HASHTAG_FROM_ACCT,
 		
-		procLoading = { client ->
+		loading = { client ->
 			if(isMisskey) {
 				// currently not supported
-				getStatuses(
+				getStatusList(
 					client
 					, column.makeHashtagAcctUrl(client)
 					, misskeyParams = column.makeHashtagParams(parser)
 				)
 			} else {
-				getStatuses(client, column.makeHashtagAcctUrl(client))
+				getStatusList(client, column.makeHashtagAcctUrl(client))
 			}
 		},
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			if(isMisskey) {
 				getStatusList(
 					client
@@ -729,7 +716,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 			}
 		},
 		
-		procGap = { client ->
+		gap = { client ->
 			if(isMisskey) {
 				getStatusList(
 					client
@@ -743,24 +730,20 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_SEARCH,
-		procLoading = { client ->
+		loading = { client ->
 			if(isMisskey) {
 				var result : TootApiResult? = TootApiResult()
 				val parser = TootParser(context, access_info)
-				var params : JSONObject
 				
 				list_tmp = ArrayList()
 				
 				val queryAccount = column.search_query.trim().replace("^@".toRegex(), "")
 				if(queryAccount.isNotEmpty()) {
-					
-					params = access_info.putMisskeyApiToken(JSONObject())
-						.put("query", queryAccount)
-						.put("localOnly", ! column.search_resolve)
-					
 					result = client.request(
 						"/api/users/search",
-						params.toPostRequestBuilder()
+						access_info.putMisskeyApiToken()
+							.put("query", queryAccount)
+							.put("localOnly", ! column.search_resolve).toPostRequestBuilder()
 					)
 					val jsonArray = result?.jsonArray
 					if(jsonArray != null) {
@@ -772,11 +755,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				
 				val queryTag = column.search_query.trim().replace("^#".toRegex(), "")
 				if(queryTag.isNotEmpty()) {
-					params = access_info.putMisskeyApiToken(JSONObject())
-						.put("query", queryTag)
 					result = client.request(
 						"/api/hashtags/search",
-						params.toPostRequestBuilder()
+						access_info.putMisskeyApiToken()
+							.put("query", queryTag)
+							.toPostRequestBuilder()
 					)
 					val jsonArray = result?.jsonArray
 					if(jsonArray != null) {
@@ -785,11 +768,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 					}
 				}
 				if(column.search_query.isNotEmpty()) {
-					params = access_info.putMisskeyApiToken(JSONObject())
-						.put("query", column.search_query)
 					result = client.request(
 						"/api/notes/search",
-						params.toPostRequestBuilder()
+						access_info.putMisskeyApiToken()
+							.put("query", column.search_query)
+							.toPostRequestBuilder()
 					)
 					val jsonArray = result?.jsonArray
 					if(jsonArray != null) {
@@ -874,106 +857,129 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_MUTES,
-		procLoading = { client ->
-			if(isMisskey) {
-				column.pagingType = ColumnPagingType.Cursor
-				parseAccountList(
-					client
-					, Column.PATH_MISSKEY_MUTES
-					, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
-					, misskeyArrayFinder = misskeyArrayFinderUsers
-				)
-			} else {
-				parseAccountList(client, Column.PATH_MUTES)
-			}
-		},
-		procRefresh = { client ->
-			if(isMisskey) {
-				getAccountList(
-					client
-					, Column.PATH_MISSKEY_MUTES
-					, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
-					, misskeyArrayFinder = misskeyArrayFinderUsers
-				)
-			} else {
-				getAccountList(client, Column.PATH_MUTES)
-			}
-		},
-		procGap = { client ->
-			if(isMisskey) {
-				getAccountList(
-					client
-					, Column.PATH_MISSKEY_MUTES
-					, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+		loading = { client ->
+			
+			when {
+				misskeyVersion >= 11 -> {
+					column.pagingType = ColumnPagingType.Default
+					getAccountList(
+						client,
+						Column.PATH_MISSKEY_MUTES,
+						misskeyParams = access_info.putMisskeyApiToken(),
+						misskeyCustomParser = misskeyCustomParserMutes
+					)
 					
-					, misskeyArrayFinder = misskeyArrayFinderUsers
+				}
+				isMisskey -> {
+					// misskey v10
+					column.pagingType = ColumnPagingType.Cursor
+					getAccountList(
+						client,
+						Column.PATH_MISSKEY_MUTES,
+						misskeyParams = access_info.putMisskeyApiToken(),
+						misskeyArrayFinder = misskeyArrayFinderUsers
+					)
+				}
+				else -> getAccountList(client, Column.PATH_MUTES)
+			}
+		},
+		
+		refresh = { client ->
+			when {
+				misskeyVersion >= 11 -> getAccountList(
+					client, Column.PATH_MISSKEY_MUTES,
+					misskeyParams = access_info.putMisskeyApiToken(),
+					misskeyCustomParser = misskeyCustomParserMutes
 				)
-			} else {
-				getAccountList(client, Column.PATH_MUTES)
+				isMisskey -> getAccountList(
+					client, Column.PATH_MISSKEY_MUTES,
+					misskeyParams = access_info.putMisskeyApiToken(),
+					misskeyArrayFinder = misskeyArrayFinderUsers
+				)
+				else -> getAccountList(client, Column.PATH_MUTES)
+			}
+		},
+		
+		gap = { client ->
+			when {
+				misskeyVersion >= 11 -> getAccountList(
+					client,
+					Column.PATH_MISSKEY_MUTES,
+					misskeyParams = access_info.putMisskeyApiToken(),
+					misskeyCustomParser = misskeyCustomParserMutes
+				)
+				isMisskey -> getAccountList(
+					client,
+					Column.PATH_MISSKEY_MUTES,
+					misskeyParams = access_info.putMisskeyApiToken(),
+					misskeyArrayFinder = misskeyArrayFinderUsers
+				)
+				else -> getAccountList(client, Column.PATH_MUTES)
 			}
 		}
 	)
 	
 	add(Column.TYPE_BLOCKS,
-		procLoading = { client ->
-			if(isMisskey) {
-				column.pagingType = ColumnPagingType.Default
-				val params = access_info.putMisskeyApiToken(JSONObject())
-				parseAccountList(
-					client,
-					"/api/blocking/list",
-					misskeyParams = params,
-					misskeyCustomParser = misskeyCustomParserBlocks
-				)
-			} else {
-				parseAccountList(client, Column.PATH_BLOCKS)
+		loading = { client ->
+			when {
+				isMisskey -> {
+					column.pagingType = ColumnPagingType.Default
+					getAccountList(
+						client,
+						"/api/blocking/list",
+						misskeyParams = access_info.putMisskeyApiToken(),
+						misskeyCustomParser = misskeyCustomParserBlocks
+					)
+				}
+				else -> getAccountList(client, Column.PATH_BLOCKS)
 			}
 		},
-		procRefresh = { client ->
-			if(isMisskey) {
-				column.pagingType = ColumnPagingType.Default
-				val params = access_info.putMisskeyApiToken(JSONObject())
-				getAccountList(
-					client,
-					"/api/blocking/list",
-					misskeyParams = params,
-					misskeyCustomParser = misskeyCustomParserBlocks
-				)
-			} else {
-				getAccountList(client, Column.PATH_BLOCKS)
+		refresh = { client ->
+			when {
+				isMisskey -> {
+					column.pagingType = ColumnPagingType.Default
+					getAccountList(
+						client,
+						"/api/blocking/list",
+						misskeyParams = access_info.putMisskeyApiToken(),
+						misskeyCustomParser = misskeyCustomParserBlocks
+					)
+				}
+				else -> getAccountList(client, Column.PATH_BLOCKS)
 			}
 		},
-		procGap = { client ->
-			if(isMisskey) {
-				column.pagingType = ColumnPagingType.Default
-				val params = access_info.putMisskeyApiToken(JSONObject())
-				getAccountList(
-					client,
-					"/api/blocking/list",
-					misskeyParams = params,
-					misskeyCustomParser = misskeyCustomParserBlocks
-				)
-			} else {
-				getAccountList(client, Column.PATH_BLOCKS)
+		
+		gap = { client ->
+			when {
+				isMisskey -> {
+					column.pagingType = ColumnPagingType.Default
+					getAccountList(
+						client,
+						"/api/blocking/list",
+						misskeyParams = access_info.putMisskeyApiToken(),
+						misskeyCustomParser = misskeyCustomParserBlocks
+					)
+				}
+				else -> getAccountList(client, Column.PATH_BLOCKS)
 			}
 		}
 	)
 	
 	add(Column.TYPE_FOLLOW_REQUESTS,
-		procLoading = { client ->
+		loading = { client ->
 			if(isMisskey) {
 				column.pagingType = ColumnPagingType.None
-				parseAccountList(
+				getAccountList(
 					client
 					, Column.PATH_MISSKEY_FOLLOW_REQUESTS
 					, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
 					, misskeyCustomParser = misskeyCustomParserFollowRequest
 				)
 			} else {
-				parseAccountList(client, Column.PATH_FOLLOW_REQUESTS)
+				getAccountList(client, Column.PATH_FOLLOW_REQUESTS)
 			}
 		},
-		procRefresh = { client ->
+		refresh = { client ->
 			if(isMisskey) {
 				getAccountList(
 					client
@@ -985,7 +991,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				getAccountList(client, Column.PATH_FOLLOW_REQUESTS)
 			}
 		},
-		procGap = { client ->
+		gap = { client ->
 			if(isMisskey) {
 				getAccountList(
 					client
@@ -1000,19 +1006,19 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_BOOSTED_BY,
-		procLoading = { client ->
-			parseAccountList(
+		loading = { client ->
+			getAccountList(
 				client,
 				String.format(Locale.JAPAN, Column.PATH_BOOSTED_BY, column.status_id)
 			)
 		},
-		procRefresh = { client ->
+		refresh = { client ->
 			getAccountList(
 				client,
 				String.format(Locale.JAPAN, Column.PATH_BOOSTED_BY, posted_status_id)
 			)
 		},
-		procGap = { client ->
+		gap = { client ->
 			getAccountList(
 				client,
 				String.format(Locale.JAPAN, Column.PATH_BOOSTED_BY, column.status_id)
@@ -1021,19 +1027,19 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_FAVOURITED_BY,
-		procLoading = { client ->
-			parseAccountList(
+		loading = { client ->
+			getAccountList(
 				client,
 				String.format(Locale.JAPAN, Column.PATH_FAVOURITED_BY, column.status_id)
 			)
 		},
-		procRefresh = { client ->
+		refresh = { client ->
 			getAccountList(
 				client,
 				String.format(Locale.JAPAN, Column.PATH_FAVOURITED_BY, posted_status_id)
 			)
 		},
-		procGap = { client ->
+		gap = { client ->
 			getAccountList(
 				client,
 				String.format(Locale.JAPAN, Column.PATH_FAVOURITED_BY, column.status_id)
@@ -1042,13 +1048,13 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_DOMAIN_BLOCKS,
-		procLoading = { client -> parseDomainList(client, Column.PATH_DOMAIN_BLOCK) },
-		procRefresh = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) }
+		loading = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) },
+		refresh = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) }
 	)
 	
 	add(Column.TYPE_SEARCH_MSP,
 		
-		procLoading = { client ->
+		loading = { client ->
 			column.idOld = null
 			val result : TootApiResult?
 			val q = column.search_query.trim { it <= ' ' }
@@ -1075,7 +1081,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 			result
 		},
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			
 			if(! bBottom) {
 				TootApiResult("head of list.")
@@ -1108,7 +1114,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	add(Column.TYPE_SEARCH_TS,
 		
-		procLoading = { client ->
+		loading = { client ->
 			column.idOld = null
 			val result : TootApiResult?
 			val q = column.search_query.trim { it <= ' ' }
@@ -1140,7 +1146,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 			result
 		},
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			if(! bBottom) {
 				TootApiResult("head of list.")
 			} else {
@@ -1174,7 +1180,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_INSTANCE_INFORMATION,
-		procLoading = { client ->
+		loading = { client ->
 			val result = getInstanceInformation(client, column.instance_uri)
 			if(instance_tmp != null) {
 				column.instance_information = instance_tmp
@@ -1185,7 +1191,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_LIST_LIST,
-		procLoading = { client ->
+		loading = { client ->
 			if(isMisskey) {
 				parseListList(
 					client,
@@ -1200,29 +1206,35 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	add(Column.TYPE_LIST_TL,
 		
-		procLoading = { client ->
+		loading = { client ->
 			column.loadListInfo(client, true)
 			if(isMisskey) {
-				val params = column.makeMisskeyTimelineParameter(parser)
-					.put("listId", column.profile_id)
-				getStatuses(client, column.makeListTlUrl(), misskeyParams = params)
-			} else {
-				getStatuses(client, column.makeListTlUrl())
-			}
-		},
-		
-		procRefresh = { client ->
-			column.loadListInfo(client, false)
-			if(isMisskey) {
-				val params = column.makeMisskeyTimelineParameter(parser)
-					.put("listId", column.profile_id)
-				getStatusList(client, column.makeListTlUrl(), misskeyParams = params)
+				getStatusList(
+					client,
+					column.makeListTlUrl(),
+					misskeyParams = column.makeMisskeyTimelineParameter(parser)
+						.put("listId", column.profile_id)
+				)
 			} else {
 				getStatusList(client, column.makeListTlUrl())
 			}
 		},
 		
-		procGap = { client ->
+		refresh = { client ->
+			column.loadListInfo(client, false)
+			if(isMisskey) {
+				getStatusList(
+					client,
+					column.makeListTlUrl(),
+					misskeyParams = column.makeMisskeyTimelineParameter(parser)
+						.put("listId", column.profile_id)
+				)
+			} else {
+				getStatusList(client, column.makeListTlUrl())
+			}
+		},
+		
+		gap = { client ->
 			if(isMisskey) {
 				getStatusList(
 					client,
@@ -1238,31 +1250,30 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	add(Column.TYPE_LIST_MEMBER,
 		
-		procLoading = { client ->
+		loading = { client ->
 			column.loadListInfo(client, true)
 			if(isMisskey) {
 				column.pagingType = ColumnPagingType.None
-				val params = access_info.putMisskeyApiToken(JSONObject())
-					.put("userIds", JSONArray().apply {
-						column.list_info?.userIds?.forEach {
-							this.put(it.toString())
-						}
-					})
-				parseAccountList(
+				getAccountList(
 					client,
 					"/api/users/show",
-					misskeyParams = params
+					misskeyParams = access_info.putMisskeyApiToken()
+						.put("userIds", JSONArray().apply {
+							column.list_info?.userIds?.forEach {
+								this.put(it.toString())
+							}
+						})
 				)
 				
 			} else {
-				parseAccountList(
+				getAccountList(
 					client,
 					String.format(Locale.JAPAN, Column.PATH_LIST_MEMBER, column.profile_id)
 				)
 			}
 		},
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			column.loadListInfo(client, false)
 			getAccountList(
 				client,
@@ -1272,7 +1283,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_DIRECT_MESSAGES,
-		procLoading = { client ->
+		loading = { client ->
 			column.useConversationSummarys = false
 			if(! column.use_old_api) {
 				
@@ -1295,10 +1306,10 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 			}
 			
 			// fallback to old api
-			return@add getStatuses(client, Column.PATH_DIRECT_MESSAGES)
+			return@add getStatusList(client, Column.PATH_DIRECT_MESSAGES)
 		},
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			if(column.useConversationSummarys) {
 				// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
 				getConversationSummaryList(client, Column.PATH_DIRECT_MESSAGES2)
@@ -1308,7 +1319,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 			}
 		},
 		
-		procGap = { client ->
+		gap = { client ->
 			if(column.useConversationSummarys) {
 				// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
 				getConversationSummaryList(client, Column.PATH_DIRECT_MESSAGES2)
@@ -1320,7 +1331,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_TREND_TAG,
-		procLoading = { client ->
+		loading = { client ->
 			val result = client.request("/api/v1/trends")
 			val src = parser.trendTagList(result?.jsonArray)
 			
@@ -1340,20 +1351,20 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	add(Column.TYPE_FOLLOW_SUGGESTION,
 		
-		procLoading = { client ->
+		loading = { client ->
 			if(isMisskey) {
 				column.pagingType = ColumnPagingType.Offset
-				parseAccountList(
+				getAccountList(
 					client
 					, Column.PATH_MISSKEY_FOLLOW_SUGGESTION
 					, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
 				)
 			} else {
-				parseAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
+				getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
 			}
 		},
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			if(isMisskey) {
 				getAccountList(
 					client
@@ -1365,7 +1376,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 			}
 		},
 		
-		procGap = { client ->
+		gap = { client ->
 			if(isMisskey) {
 				getAccountList(
 					client
@@ -1379,16 +1390,16 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_ENDORSEMENT,
-		procLoading = { client -> parseAccountList(client, Column.PATH_ENDORSEMENT) },
-		procRefresh = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
-		procGap = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) }
+		loading = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
+		refresh = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
+		gap = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) }
 	)
 	
 	add(Column.TYPE_ACCOUNT_AROUND,
 		
-		procLoading = { client -> getAccountAroundStatuses(client) },
+		loading = { client -> getAccountAroundStatuses(client) },
 		
-		procRefresh = { client ->
+		refresh = { client ->
 			val path = column.makeProfileStatusesUrl(column.profile_id)
 			if(bBottom) {
 				getStatusList(client, path)
@@ -1402,19 +1413,19 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_REPORTS,
-		procLoading = { client -> parseReports(client, Column.PATH_REPORTS) },
-		procRefresh = { client -> getReportList(client, Column.PATH_REPORTS) },
-		procGap = { client -> getReportList(client, Column.PATH_REPORTS) }
+		loading = { client -> getReportList(client, Column.PATH_REPORTS) },
+		refresh = { client -> getReportList(client, Column.PATH_REPORTS) },
+		gap = { client -> getReportList(client, Column.PATH_REPORTS) }
 	)
 	
 	add(Column.TYPE_KEYWORD_FILTER,
-		procLoading = { client -> parseFilterList(client, Column.PATH_FILTERS) }
+		loading = { client -> parseFilterList(client, Column.PATH_FILTERS) }
 	)
 	
 	add(
 		Column.TYPE_SCHEDULED_STATUS,
-		procLoading = { client -> getScheduledStatuses(client) },
-		procRefresh = { client -> getScheduledStatuses(client) }
+		loading = { client -> getScheduledStatuses(client) },
+		refresh = { client -> getScheduledStatuses(client) }
 	)
 	
 }

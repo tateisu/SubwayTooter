@@ -350,6 +350,25 @@ internal val misskeyCustomParserFollowRequest =
 		dst
 	}
 
+internal val misskeyCustomParserMutes =
+	{ parser : TootParser, jsonArray : JSONArray ->
+		val dst = ArrayList<TootAccountRef>()
+		for(i in 0 until jsonArray.length()) {
+			val src = jsonArray.optJSONObject(i) ?: continue
+			
+			val accountRef = TootAccountRef.mayNull(
+				parser,
+				parser.account(src.optJSONObject("mutee"))
+			) ?: continue
+			
+			val requestId = EntityId.mayNull(src.parseString("id")) ?: continue
+			
+			accountRef._orderId = requestId
+			
+			dst.add(accountRef)
+		}
+		dst
+	}
 internal val misskeyCustomParserBlocks =
 	{ parser : TootParser, jsonArray : JSONArray ->
 		val dst = ArrayList<TootAccountRef>()
@@ -369,7 +388,6 @@ internal val misskeyCustomParserBlocks =
 		}
 		dst
 	}
-
 internal val misskeyCustomParserFavorites =
 	{ parser : TootParser, jsonArray : JSONArray ->
 		val dst = ArrayList<TootStatus>()

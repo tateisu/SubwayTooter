@@ -23,6 +23,10 @@ abstract class ColumnTask(
 	val ctType : ColumnTaskType
 ) : AsyncTask<Void, Void, TootApiResult?>() {
 	
+	override fun onCancelled(result : TootApiResult?) {
+		onPostExecute(null)
+	}
+	
 	val ctStarted = AtomicBoolean(false)
 	val ctClosed = AtomicBoolean(false)
 	

@@ -118,6 +118,7 @@ class Column(
 		
 		const val PATH_MISSKEY_PROFILE = "/api/users/show"
 		const val PATH_MISSKEY_MUTES = "/api/mute/list"
+		const val PATH_MISSKEY_BLOCKS = "/api/blocking/list"
 		const val PATH_MISSKEY_FOLLOW_REQUESTS = "/api/following/requests/list"
 		const val PATH_MISSKEY_FOLLOW_SUGGESTION = "/api/users/recommendation"
 		const val PATH_MISSKEY_FAVORITES = "/api/i/favorites"

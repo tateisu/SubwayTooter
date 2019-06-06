@@ -856,11 +856,15 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 		}
 	)
 	
+	// ミスキーのミュートとブロックののページングは misskey v10 の途中で変わった
+	// https://github.com/syuilo/misskey/commit/f7069dcd18d72b52408a6bd80ad8f14492163e19
+	// ST的には新しい方にだけ対応する
+
 	add(Column.TYPE_MUTES,
+
 		loading = { client ->
-			
 			when {
-				misskeyVersion >= 11 -> {
+				isMisskey -> {
 					column.pagingType = ColumnPagingType.Default
 					getAccountList(
 						client,
@@ -870,31 +874,18 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 					)
 					
 				}
-				isMisskey -> {
-					// misskey v10
-					column.pagingType = ColumnPagingType.Cursor
-					getAccountList(
-						client,
-						Column.PATH_MISSKEY_MUTES,
-						misskeyParams = access_info.putMisskeyApiToken(),
-						misskeyArrayFinder = misskeyArrayFinderUsers
-					)
-				}
 				else -> getAccountList(client, Column.PATH_MUTES)
 			}
 		},
 		
 		refresh = { client ->
 			when {
-				misskeyVersion >= 11 -> getAccountList(
-					client, Column.PATH_MISSKEY_MUTES,
-					misskeyParams = access_info.putMisskeyApiToken(),
-					misskeyCustomParser = misskeyCustomParserMutes
-				)
 				isMisskey -> getAccountList(
-					client, Column.PATH_MISSKEY_MUTES,
+					client,
+					Column.PATH_MISSKEY_MUTES,
 					misskeyParams = access_info.putMisskeyApiToken(),
-					misskeyArrayFinder = misskeyArrayFinderUsers
+					misskeyArrayFinder = misskeyArrayFinderUsers,
+					misskeyCustomParser = misskeyCustomParserMutes
 				)
 				else -> getAccountList(client, Column.PATH_MUTES)
 			}
@@ -902,17 +893,12 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 		
 		gap = { client ->
 			when {
-				misskeyVersion >= 11 -> getAccountList(
-					client,
-					Column.PATH_MISSKEY_MUTES,
-					misskeyParams = access_info.putMisskeyApiToken(),
-					misskeyCustomParser = misskeyCustomParserMutes
-				)
 				isMisskey -> getAccountList(
 					client,
 					Column.PATH_MISSKEY_MUTES,
 					misskeyParams = access_info.putMisskeyApiToken(),
-					misskeyArrayFinder = misskeyArrayFinderUsers
+					misskeyArrayFinder = misskeyArrayFinderUsers,
+					misskeyCustomParser = misskeyCustomParserMutes
 				)
 				else -> getAccountList(client, Column.PATH_MUTES)
 			}
@@ -920,13 +906,14 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_BLOCKS,
+
 		loading = { client ->
 			when {
 				isMisskey -> {
 					column.pagingType = ColumnPagingType.Default
 					getAccountList(
 						client,
-						"/api/blocking/list",
+						Column.PATH_MISSKEY_BLOCKS,
 						misskeyParams = access_info.putMisskeyApiToken(),
 						misskeyCustomParser = misskeyCustomParserBlocks
 					)
@@ -934,13 +921,13 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				else -> getAccountList(client, Column.PATH_BLOCKS)
 			}
 		},
+
 		refresh = { client ->
 			when {
 				isMisskey -> {
-					column.pagingType = ColumnPagingType.Default
 					getAccountList(
 						client,
-						"/api/blocking/list",
+						Column.PATH_MISSKEY_BLOCKS,
 						misskeyParams = access_info.putMisskeyApiToken(),
 						misskeyCustomParser = misskeyCustomParserBlocks
 					)
@@ -952,10 +939,9 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 		gap = { client ->
 			when {
 				isMisskey -> {
-					column.pagingType = ColumnPagingType.Default
 					getAccountList(
 						client,
-						"/api/blocking/list",
+						Column.PATH_MISSKEY_BLOCKS,
 						misskeyParams = access_info.putMisskeyApiToken(),
 						misskeyCustomParser = misskeyCustomParserBlocks
 					)

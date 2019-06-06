@@ -369,6 +369,7 @@ internal val misskeyCustomParserMutes =
 		}
 		dst
 	}
+
 internal val misskeyCustomParserBlocks =
 	{ parser : TootParser, jsonArray : JSONArray ->
 		val dst = ArrayList<TootAccountRef>()

@@ -52,7 +52,7 @@
     <string name="cancel">Annuler</string>
     <string name="cancelled">Annulé</string>
     <string name="cant_change_account_when_attachment_specified">Vous ne pouvez pas changer de compte tant qu’il y a une pièce jointe dans les médias.</string>
-    <string name="cant_close_column_by_back_button_when_multiple_column_shown">Le bouton retour ne peut fermer la colonne quand plusieurs d\'entre elles sont visibles.</string>
+    <string name="cant_close_column_by_back_button_when_multiple_column_shown">Le bouton «Retour» ne pourra pas fermer la colonne quand plusieurs d’entre elles sont affichées.</string>
     <string name="cant_follow_locked_user">Impossible de suivre l’utilisateur non public</string>
     <string name="cant_remove_boost_while_favourited">Impossible de supprimer le partage s\'il est dans les favoris</string>
     <string name="choose_account">Choisissez un compte</string>
@@ -84,11 +84,12 @@
     <string name="confirm_unfavourite_from">Voulez-vous retirer ce statut des favoris de %1$s \?</string>
     <string name="confirm_close_column">Fermer cette colonne ?</string>
     <string name="confirm_delete_attachment">Retirer cette pièce jointe ?</string>
-    <string name="confirm_delete_notification">Toutes vos notifications sur votre instance seront effacées.\nÊtes-vous sur ?</string>
+    <string name="confirm_delete_notification">Vos notifications sur votre serveur seront effacées.
+\nÊtes-vous sur \?</string>
     <string name="confirm_delete_status">Supprimer ce pouet \?</string>
     <string name="confirm_follow_request_who_from">Envoyer une demande de suivi de %2$s vers l’utilisateur verrouillé %1$s ?</string>
     <string name="confirm_follow_who_from">Suivre %1$s depuis %2$s ?</string>
-    <string name="confirm_mute_user">L\'utilisateur \'%1$s\' sera muet. Êtes-vous sur ?</string>
+    <string name="confirm_mute_user">Silencier %1$s \? Êtes-vous sur \?</string>
     <string name="confirm_post_from">Publier le pouet via %1$s \?</string>
     <string name="confirm_unfollow_who_from">Ne plus suivre %1$s depuis %2$s ?</string>
     <string name="confirmation">Confirmation</string>
@@ -130,7 +131,7 @@
     <string name="drag_handle">Faites glisser la poignée</string>
     <string name="edit">Éditer</string>
     <string name="end_of_list">Fin de la liste</string>
-    <string name="exit_app_when_close_protected_column">Quitter l’application sans confirmation après avoir essayé de fermer une colonne protégée</string>
+    <string name="exit_app_when_close_protected_column">Quitter l’application lorsque vous essayez de fermer une colonne protégée avec le bouton \"Retour\" et sans confirmation</string>
     <string name="favourite">Favori</string>
     <string name="favourite_from_another_account">Placer dans les favoris à partir d\'un autre compte</string>
     <string name="favourite_succeeded">Mis en favoris</string>
@@ -146,7 +147,7 @@
     <string name="follow_request_cant_remove_by_sender">Il semble que la demande de suivi ne puisse pas être supprimée par son expéditeur …</string>
     <string name="follow_request_ng">Demande de suivi rejeté</string>
     <string name="follow_request_ok">Autoriser demande de suivi</string>
-    <string name="follow_request_rejected">Demande de suivi de %1$s rejeté.</string>
+    <string name="follow_request_rejected">Vous venez de rejeter la demande d’abonnement venant de %1$s.</string>
     <string name="follow_requested">Vous avez demandé à suivre un utilisateur verrouillé.</string>
     <string name="follow_requests">Demandes de suivi</string>
     <string name="follow_succeeded">Suivi</string>
@@ -169,7 +170,7 @@
     <string name="pick_images">Choisir une image…</string>
     <string name="instance">Serveur</string>
     <string name="instance_hint">Ex) mastodon.social</string>
-    <string name="instance_not_need_slash">Nom de l’hôte de l’instance, sans « / » ni « @ ».</string>
+    <string name="instance_not_need_slash">Nom de l’hôte du serveur sans « / » ni « @ ».</string>
     <string name="instance_not_specified">Serveur non spécifié</string>
     <string name="it_is_you">C\'est vous.</string>
     <string name="last_selection">Dernière sélection</string>
@@ -188,10 +189,10 @@
     <string name="mention2">Mentionner</string>
     <string name="menu">Menu</string>
     <string name="minimum_column_width">Largeur minimale des colonnes (défaut=300dp, redémarrage nécessaire)</string>
-    <string name="missing_permission_to_access_media">Missing app permission to access media.</string>
+    <string name="missing_permission_to_access_media">Autorisation de l’application manquante pour accéder aux médias.</string>
     <string name="more">Plus</string>
     <string name="mute">Désactiver le son</string>
-    <string name="mute_app_desc">Faire glisser pour supprimer. Vous devez rafraîchir pour voir les changements effectués.</string>
+    <string name="mute_app_desc">&gt; Faîtes glisser à gauche pour supprimer. Vous devez rafraîchir les colonnes pour voir les statuts publiés par les applications non masquées.</string>
     <string name="mute_app_of">silencer l’application « %1$s »</string>
     <string name="mute_succeeded">En sourdine</string>
     <string name="mute_word">Interdire le(s) mot(s)</string>
@@ -324,15 +325,15 @@
     <string name="word_was_muted">Ce mot a été interdit.</string>
     <string name="your_statuses">Vos statuts</string>
     <string name="launcher_icon_by">Merci à フタバ pour l’icône de l’application.</string>
-    <string name="ssl_bug_7_0">Android 7.0 ne peut utiliser que les courbées elliptiques « prime256v1 » pour les connexions sécurisées. 
-\nL\'instance à laquelle vous voulez vous connecter semble ne pas les gérer. 
-\nVous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1 ou demander à l’administrateur de votre instance de prendre en charge les courbes elliptiques « prime256v1 ». 
+    <string name="ssl_bug_7_0">Android 7.0 ne peut utiliser que les courbes elliptiques « prime256v1 » pour les connexions sécurisées. 
+\nL’instance à laquelle vous voulez vous connecter semble ne pas les gérer. 
+\nVous pouvez mettre à jour le système d’exploitation vers Android 7.1.1 ou demander à l’administrateur de votre instance de prendre en charge les courbes elliptiques « prime256v1 ». 
 \nPlus de détails ici : https://code.google.com/p/android/issues/detail\?id=224438</string>
     <string name="timeline_font">Police de caractères des fils (redémarrage nécessaire)</string>
     <string name="timeline_font_bold">Police de caractères des fils (grasse) (redémarrage nécessaire)</string>
-    <string name="account_in_draft_is_lost">Le compte utilisé pour la création de ce brouillon a été supprimé de Subway Tooter. Le lien avec le toot d\'origine ne peut être restauré.</string>
-    <string name="attachment_in_draft_is_lost">Une ou plusieurs pièces jointes de ce brouillon sont introuvables.</string>
-    <string name="reply_to_in_draft_is_lost">Le toot auquel ce brouillon fait référence n\'existe plus, vous ne pouvez plus y répondre a un contexte supprimé. in_reply_to</string>
+    <string name="account_in_draft_is_lost">Le compte utilisé pour la création de ce brouillon a été supprimé de cette application. Le lien avec le toot d’origine ne peut être restauré : in_reply_to, media attachment</string>
+    <string name="attachment_in_draft_is_lost">Une ou plusieurs pièces jointes à ce brouillon sont perdues.</string>
+    <string name="reply_to_in_draft_is_lost">Le pouet auquel ce brouillon fait référence n’existe plus, vous ne pouvez plus y répondre a un contexte supprimé : in_reply_to</string>
     <string name="restore_draft">Restaurer un brouillon</string>
     <string name="select_draft">Quel brouillon désirez-vous restaurer ?</string>
     <string name="app_data_export">Exporter les données de Subway Tooter</string>
@@ -343,19 +344,19 @@
 \nL’image d’arrière-plan d’une colonne ne peut être exportée/importée sur l’appareil.
 \nLa police de caractères des fils n’est pas exportée/importée.
 \nLa sonnerie de notification personnalisée ne peut être exportée/importée sur l’appareil.</string>
-    <string name="user_id_conversion_failed">Conversion de l’identification utilisateur échouée.</string>
+    <string name="user_id_conversion_failed">Conversion de l’identificateur utilisateur échouée.</string>
     <string name="draft_deleted">Brouillon effacé.</string>
     <string name="draft_picker_desc">Appui long pour effacer.</string>
     <string name="dont_crop_media_thumbnail">Ne pas recadrer les aperçus des médias joints (redémarrage nécessaire)</string>
     <string name="tab_indicator_color">Couleur de la ligne d\'indication des colonnes affichées</string>
     <string name="plugin">Plugin</string>
     <string name="select_plugin">Sélection du plugin</string>
-    <string name="plugin_not_installed">Aucun plugin Mushroom n\'est installé.</string>
+    <string name="plugin_not_installed">Plugin non installé.</string>
     <string name="language_code">fr</string>
     <string name="recommended_plugin">Plugins Mushroom recommandés</string>
     <string name="appearance">Apparence</string>
     <string name="behavior">Comportement</string>
-    <string name="notification_on_off_desc">Voir aussi les paramètres du compte pour activer/désactiver les notifications.</string>
+    <string name="notification_on_off_desc">Il existe également un paramètre de compte pour activer ou désactiver les notifications.</string>
     <string name="performance">Performance</string>
     <string name="tablet_mode">Mode tablette</string>
     <string name="post">Publication</string>
@@ -366,17 +367,17 @@
     <string name="enable_speech">Activer la lecture vocale</string>
     <string name="url_omitted">(URL omise)</string>
     <string name="blocked_domains">Domaines bloqués</string>
-    <string name="block_domain_that">Bloquer l\'ensemble du domaine \"%1$s\"</string>
-    <string name="confirm_block_domain">L\'ensemble du domaine \"%1$s\" sera bloqué. Êtes-vous sûr ?</string>
-    <string name="confirm_unblock_domain">Débloquer le domaine \"%1$s\" ?</string>
-    <string name="text_to_speech_initializing">Initialisation de la lecture vocale…</string>
-    <string name="text_to_speech_initialize_failed">Échec d’initialisation de la synthèse vocale. status=%1$s</string>
-    <string name="text_to_speech_shutdown">Arrêt de la lecture vocale…</string>
+    <string name="block_domain_that">Bloquer l’ensemble du domaine « %1$s »</string>
+    <string name="confirm_block_domain">L’ensemble du domaine « %1$s » sera bloqué. Êtes-vous sûr \?</string>
+    <string name="confirm_unblock_domain">Débloquer le domaine « %1$s » \?</string>
+    <string name="text_to_speech_initializing">Initialisation de la synthèse vocale…</string>
+    <string name="text_to_speech_initialize_failed">Échec d’initialisation de la synthèse vocale.Status : %1$s</string>
+    <string name="text_to_speech_shutdown">Arrêt de la synthèse vocale…</string>
     <string name="show_post_button_bar_top">Afficher la barre de boutons au dessus du champs de publication</string>
-    <string name="client_name">Nom du client (jeu de jetons d\'accès requis)</string>
+    <string name="client_name">Nom du client (mise à jour du jeton d\'accès requise)</string>
     <string name="toot_search">Recherche de pouets</string>
-    <string name="mastodon_search_portal">MSP(JP)</string>
-    <string name="search_desc_mastodon_api">Recherche de compte/étiquette à l\'aide de l\'API Mastodon.</string>
+    <string name="mastodon_search_portal">MSP (JP)</string>
+    <string name="search_desc_mastodon_api">Recherche de compte/étiquette à l’aide de l\'API Mastodon.</string>
     <string name="toot_search_of">Toot Rechercher \"%1$s\"</string>
     <string name="progress_synchronize_toot">Synchronisation du pouet…</string>
     <string name="send_header_account_name">Account-Name</string>
@@ -393,12 +394,12 @@
     <string name="open_local_timeline_for">Ouvrir le fil de \"%1$s\"</string>
     <string name="send_header_account_url">Account-Url</string>
     <string name="notification_sound">Notification sonore</string>
-    <string name="timeline_font_size">Timeline font size (Unit:sp. leave empty to default. app restart required)</string>
+    <string name="timeline_font_size">Taille de police du fil (Unit:sp. laisser vide à la valeur par défaut. Redémarrage requis)</string>
     <string name="acct_font_size">Acct font size (unit:sp. leave empty to default. app restart required)</string>
-    <string name="dont_add_duplication_check_header">Don\'t add duplication check header</string>
+    <string name="dont_add_duplication_check_header">Ne pas ajouter d’en-tête de vérification de duplication</string>
     <string name="show_quick_toot_bar">Afficher la barre \"Pouet rapide\" (redémarrage de l’app. requis.)</string>
     <string name="quick_toot_hint">Pouet rapide</string>
-    <string name="search_is_not_available_on_pseudo_account">Search function became not available on pseudo account .</string>
+    <string name="search_is_not_available_on_pseudo_account">La fonction de recherche n’est pas disponible sur le pseudo compte .</string>
     <string name="conversation_from_another_account">Consulter la conversation à partir d’un autre compte</string>
     <string name="show_avatar_image">Afficher l’avatar</string>
     <string name="quote_url">Citer l’URL …</string>
@@ -561,9 +562,9 @@
     <string name="your_lists">Vos listes</string>
     <string name="media_attachment_max_byte_size">Taille limite en octets des pièces jointes (image) (Unité:MB. La valeur par défaut est 8)</string>
     <string name="toot_search_msp">Recherche de pouets (MSP)</string>
-    <string name="toot_search_msp_of">Recherche de pouets (MSP) \"%1$s\"</string>
+    <string name="toot_search_msp_of">Recherche de pouets (MSP) « %1$s »</string>
     <string name="toot_search_ts">Recherche de pouets (ts)</string>
-    <string name="toot_search_ts_of">Recherche de pouets (ts) \"%1$s\"</string>
+    <string name="toot_search_ts_of">Recherche de pouets (ts) « %1$s »</string>
     <string name="tootsearch">tootsearch(JP)</string>
     <string name="cant_handle_uri_of">Subway Tooter ne peut pas gérer les URI \"%1$s\". Veuillez sélectionner une autre application.</string>
     <string name="use_internal_media_viewer">Utiliser la visionneuse de médias intégrée</string>
@@ -798,7 +799,7 @@
     <string name="tls_handshake">Négociation TLS</string>
     <string name="links">Liens</string>
     <string name="profile_directory">Annuaire des utilisateur·rice·s</string>
-    <string name="top_page">Haut de page</string>
+    <string name="top_page">Page à propos de l’instance</string>
     <string name="instance_ticker_copyright">#InstanceTicker
 \nhttps://wee.jp/mastodon/
 \nCopyright 2018 weepjp, kyori19.</string>
@@ -882,4 +883,15 @@
     <string name="end_of_polling_from">Fin du sondage de %1$s</string>
     <string name="quick_toot_menu">Menu de pouet rapide</string>
     <string name="input">Entrée</string>
+    <string name="around_toot_limitation_warning">La fonction \"Timeline around the specified time\" a une limitation pour le serveur Mastodon pre-2.6.0. Il est impossible d’obtenir un fil un peu plus récent à partir de l’heure spécifiée.</string>
+    <string name="instance_does_not_support_push_api_pleroma">L’API d’abonnement push n\'est pas supportée sur ce serveur (peut-être Pleroma).</string>
+    <string name="show_link_underline">Afficher des liens soulignés</string>
+    <string name="show_clear_button_in_search_bar">Afficher le bouton d’effacement sur la barre de recherche (redémarrage de l’app. requis)</string>
+    <string name="event_background_color">Couleur d\'arrière-plan de l\'événement</string>
+    <string name="open_hashtag_from_account">Ouvrir la colonne hashtag (depuis %1$s)</string>
+    <string name="hashtag_from_acct">Hashtag à partir du compte</string>
+    <string name="hashtag_of_from">Hashtag :#%1$s à partir de %2$s</string>
+    <string name="boost_with_visibility">Booster avec la visibilité</string>
+    <string name="confirm_private_boost_from">Booster ce statut venant de %1$s \? Il sera visible à tous vos abonné·e·s.</string>
+    <string name="polls_choice_not_selected">Veuillez sélectionner un ou plusieurs choix.</string>
 </resources>

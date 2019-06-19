@@ -680,7 +680,7 @@
     <string name="confirm_close_column_all">Toutes les colonnes (à l\'exclusion des colonnes protégées) seront fermées. Vous en êtes sûr ?</string>
     <string name="keyword_filters">Filtres de mots-clés</string>
     <string name="keyword_filter">Filtre de mots-clés</string>
-    <string name="keyword_filter_new">New filter</string>
+    <string name="keyword_filter_new">Nouveau filtre</string>
     <string name="keyword_filter_edit">Modifier le filtre</string>
     <string name="filter_delete_confirm">Le filtre\'%1$s\' sera supprimé. Vous êtes sûr ?</string>
     <string name="filter_of">Filter \'%1$s\'</string>

@@ -47,6 +47,7 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.*
 import javax.net.ssl.HttpsURLConnection
+import kotlin.math.max
 
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
@@ -63,6 +64,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		internal const val EXTRA_IDX = "idx"
 		internal const val EXTRA_DATA = "data"
 		internal const val EXTRA_SERVICE_TYPE = "serviceType"
+		
+		internal const val STATE_PLAYER_POS = "playerPos"
+		internal const val STATE_PLAYER_PLAY_WHEN_READY = "playerPlayWhenReady"
 		
 		internal fun <T : TootAttachmentLike> encodeMediaList(list : ArrayList<T>?) =
 			list?.encodeJson()?.toString() ?: "[]"
@@ -177,6 +181,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		outState.putInt(EXTRA_IDX, idx)
 		outState.putInt(EXTRA_SERVICE_TYPE, serviceType.ordinal)
 		outState.putString(EXTRA_DATA, encodeMediaList(media_list))
+		
+		outState.putLong(STATE_PLAYER_POS, exoPlayer.currentPosition)
+		outState.putBoolean(STATE_PLAYER_PLAY_WHEN_READY, exoPlayer.playWhenReady)
 	}
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
@@ -202,21 +209,20 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		initUI()
 		
-		load()
+		load(savedInstanceState)
 	}
 	
 	override fun onDestroy() {
 		super.onDestroy()
 		pbvImage.setBitmap(null)
 		exoPlayer.release()
-		exoPlayer
 	}
-
-	override fun finish(){
+	
+	override fun finish() {
 		super.finish()
-		overridePendingTransition(R.anim.fade_in,R.anim.slide_to_bottom)
+		overridePendingTransition(R.anim.fade_in, R.anim.slide_to_bottom)
 	}
-
+	
 	internal fun initUI() {
 		setContentView(R.layout.act_media_viewer)
 		pbvImage = findViewById(R.id.pbvImage)
@@ -240,11 +246,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		findViewById<View>(R.id.btnMore).setOnClickListener(this)
 		
 		pbvImage.setCallback(object : PinchBitmapView.Callback {
-			override fun onSwipe(deltaX : Int,deltaY:Int) {
+			override fun onSwipe(deltaX : Int, deltaY : Int) {
 				if(isDestroyed) return
-				if( deltaX != 0) {
+				if(deltaX != 0) {
 					loadDelta(deltaX)
-				}else{
+				} else {
 					log.d("finish by vertical swipe")
 					finish()
 				}
@@ -284,7 +290,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		load()
 	}
 	
-	internal fun load() {
+	internal fun load(state : Bundle? = null) {
 		
 		exoPlayer.stop()
 		pbvImage.visibility = View.GONE
@@ -304,13 +310,13 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			tvDescription.text = description
 		}
 		
-		when(ta.type){
-			TootAttachmentLike.TYPE_IMAGE ->loadBitmap(ta)
+		when(ta.type) {
+			TootAttachmentLike.TYPE_IMAGE -> loadBitmap(ta)
 			TootAttachmentLike.TYPE_VIDEO,
 			TootAttachmentLike.TYPE_GIFV,
-			TootAttachmentLike.TYPE_AUDIO ->loadVideo(ta)
+			TootAttachmentLike.TYPE_AUDIO -> loadVideo(ta, state)
 			// maybe TYPE_UNKNOWN
-			else-> showError(getString(R.string.media_attachment_type_error, ta.type))
+			else -> showError(getString(R.string.media_attachment_type_error, ta.type))
 		}
 		
 	}
@@ -324,7 +330,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	@SuppressLint("StaticFieldLeak")
-	private fun loadVideo(ta : TootAttachment) {
+	private fun loadVideo(ta : TootAttachment, state : Bundle? = null) {
 		
 		val url = ta.getLargeUrl(App1.pref)
 		if(url == null) {
@@ -351,11 +357,16 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		mediaSource.addEventListener(App1.getAppState(this).handler, mediaSourceEventListener)
 		
 		exoPlayer.prepare(mediaSource)
-		exoPlayer.playWhenReady = true
-		exoPlayer.repeatMode = when(ta.type){
+		exoPlayer.repeatMode = when(ta.type) {
 			TootAttachmentLike.TYPE_VIDEO -> Player.REPEAT_MODE_OFF
 			// GIFV or AUDIO
 			else -> Player.REPEAT_MODE_ALL
+		}
+		if(state == null) {
+			exoPlayer.playWhenReady = true
+		} else {
+			exoPlayer.playWhenReady = state.getBoolean(STATE_PLAYER_PLAY_WHEN_READY, true)
+			exoPlayer.seekTo(max(0L, state.getLong(STATE_PLAYER_POS, 0L)))
 		}
 	}
 	
@@ -612,7 +623,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				return bitmap2
 			}
 			
-			fun getHttpCached(client : TootApiClient, url : String) : Pair<TootApiResult?,ByteArray?> {
+			fun getHttpCached(
+				client : TootApiClient,
+				url : String
+			) : Pair<TootApiResult?, ByteArray?> {
 				val result = TootApiResult.makeWithCaption(url)
 				
 				val request = Request.Builder()
@@ -627,14 +641,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					) {
 						request
 					}
-				) return Pair(result,null)
+				) return Pair(result, null)
 				
-				if(client.isApiCancelled) return Pair(null,null)
+				if(client.isApiCancelled) return Pair(null, null)
 				
 				val response = requireNotNull(result.response)
 				if(! response.isSuccessful) {
 					result.setError(TootApiClient.formatResponse(response, result.caption))
-					return Pair(result,null)
+					return Pair(result, null)
 				}
 				
 				try {
@@ -645,11 +659,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 						}
 						client.publishApiProgressRatio(bytesRead.toInt(), bytesTotal.toInt())
 					}
-					if(client.isApiCancelled) return Pair(null,null)
-					return Pair(result,ba)
+					if(client.isApiCancelled) return Pair(null, null)
+					return Pair(result, ba)
 				} catch(ex : Throwable) {
 					result.setError(TootApiClient.formatResponse(response, result.caption, "?"))
-					return Pair(result,null)
+					return Pair(result, null)
 				}
 			}
 			
@@ -657,9 +671,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				if(urlList.isEmpty()) return TootApiResult("missing url")
 				var lastResult : TootApiResult? = null
 				for(url in urlList) {
-					val(result,ba) = getHttpCached(client, url)
+					val (result, ba) = getHttpCached(client, url)
 					lastResult = result
-					if( ba != null){
+					if(ba != null) {
 						client.publishApiProgress("decoding image…")
 						val bitmap = decodeBitmap(ba, 2048)
 						if(bitmap != null) {
@@ -704,7 +718,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		val permissionCheck = ContextCompat.checkSelfPermission(
 			this,
-			android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+			Manifest.permission.WRITE_EXTERNAL_STORAGE
 		)
 		if(permissionCheck != PackageManager.PERMISSION_GRANTED) {
 			preparePermission()

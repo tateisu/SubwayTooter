@@ -22,6 +22,15 @@ class ActCallback : AppCompatActivity() {
 		
 		internal val last_uri = AtomicReference<Uri>(null)
 		internal val sent_intent = AtomicReference<Intent>(null)
+		
+		private fun String?.isMediaMimeType() =when{
+			this == null -> false
+			this.startsWith("image/") -> true
+			this.startsWith("video/") -> true
+			this.startsWith("audio/") -> true
+			else -> false
+			
+		}
 	}
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
@@ -46,9 +55,7 @@ class ActCallback : AppCompatActivity() {
 					Intent.ACTION_SEND == action
 					|| Intent.ACTION_SEND_MULTIPLE == action
 					// ACTION_VIEW かつ  type が 画像かビデオ
-					|| Intent.ACTION_VIEW == action && type != null && (type.startsWith("image/") || type.startsWith(
-						"video/"
-					))) {
+					|| Intent.ACTION_VIEW == action && type.isMediaMimeType() ) {
 					
 					// Google Photo などから送られるIntentに含まれるuriの有効期間はActivityが閉じられるまで
 					// http://qiita.com/pside/items/a821e2fe9ae6b7c1a98c
@@ -92,7 +99,7 @@ class ActCallback : AppCompatActivity() {
 			val action = src.action
 			val type = src.type
 			
-			if(type != null && (type.startsWith("image/") || type.startsWith("video/"))) {
+			if( type.isMediaMimeType() ) {
 				if(Intent.ACTION_VIEW == action) {
 					src.data?.let { uriOriginal ->
 						try {

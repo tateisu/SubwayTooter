@@ -262,7 +262,7 @@ fun intentOpenDocument(mimeType : String) : Intent {
 fun intentGetContent(
 	allowMultiple : Boolean,
 	caption : String,
-	vararg mimeTypes : String
+	mimeTypes : Array<out String>
 ) : Intent {
 	val intent = Intent(Intent.ACTION_GET_CONTENT)
 	intent.addCategory(Intent.CATEGORY_OPENABLE)

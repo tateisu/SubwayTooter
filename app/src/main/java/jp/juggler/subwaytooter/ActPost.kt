@@ -104,6 +104,7 @@ class ActPost : AppCompatActivity(),
 			//
 			add("image/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
 			add("video/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
+			add("audio/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
 			//
 			add("image/jpeg")
 			add("image/png")
@@ -111,6 +112,17 @@ class ActPost : AppCompatActivity(),
 			add("video/webm")
 			add("video/mp4")
 			add("video/quicktime")
+			//
+			add("audio/webm")
+			add("audio/ogg")
+			add("audio/mpeg")
+			add("audio/mp3")
+			add("audio/wav")
+			add("audio/wave")
+			add("audio/x-wav")
+			add("audio/x-pn-wav")
+			add("audio/flac")
+			add("audio/x-flac")
 		}
 		
 		private val imageHeaderList = arrayOf(
@@ -125,22 +137,59 @@ class ActPost : AppCompatActivity(),
 			Pair(
 				"image/gif",
 				charArrayOf('G', 'I', 'F').toLowerByteArray()
+			),
+			Pair(
+				"audio/wav",
+				charArrayOf('R', 'I', 'F', 'F').toLowerByteArray()
+			),
+			Pair(
+				"audio/ogg",
+				charArrayOf('O', 'g', 'g', 'S').toLowerByteArray()
+			),
+			Pair(
+				"audio/flac",
+				charArrayOf('f', 'L', 'a', 'C').toLowerByteArray()
 			)
 		)
 		
-		private fun checkImageHeaderList(contentResolver : ContentResolver, uri : Uri) : String? {
+		private fun findMimeTypeByFileHeader(
+			contentResolver : ContentResolver,
+			uri : Uri
+		) : String? {
 			try {
 				contentResolver.openInputStream(uri)?.use { inStream ->
-					val data = ByteArray(32)
+					val data = ByteArray(65536)
 					val nRead = inStream.read(data, 0, data.size)
 					for(pair in imageHeaderList) {
 						val type = pair.first
 						val header = pair.second
 						if(nRead >= header.size && data.startWith(header)) return type
 					}
+					// scan mp3 frame header
+					loop@ for(i in 0 until nRead - 4) {
+						val b0 = data[i].toInt() and 255
+						if(b0 != 255) continue
+						val b1 = data[i + 1].toInt() and 255
+						if((b1 and 0b11100000) != 0b11100000) continue
+						
+						// mpegVersionId
+						when(((b1 shr 3) and 3)) {
+							1 -> continue@loop
+						}
+						
+						// mpegLayerId
+						when(((b1 shr 1) and 3)) {
+							1 -> {
+							}
+							
+							else -> continue@loop
+						}
+						
+						return "audio/mp3"
+					}
 				}
 			} catch(ex : Throwable) {
-				log.e(ex, "checkImageHeaderList failed.")
+				log.e(ex, "findMimeTypeByFileHeader failed.")
 			}
 			return null
 		}
@@ -710,7 +759,7 @@ class ActPost : AppCompatActivity(),
 							}
 						}
 						
-						if( this.attachment_list.isNotEmpty() ) {
+						if(this.attachment_list.isNotEmpty()) {
 							cbNSFW.isChecked = base_status.sensitive == true
 						}
 						
@@ -728,7 +777,6 @@ class ActPost : AppCompatActivity(),
 						etContentWarning.setText(text)
 						etContentWarning.setSelection(text.length)
 						cbContentWarning.isChecked = text.isNotEmpty()
-						
 						
 						val src_enquete = base_status.enquete
 						val src_items = src_enquete?.items
@@ -817,7 +865,7 @@ class ActPost : AppCompatActivity(),
 								log.trace(ex)
 							}
 						}
-						if( this.attachment_list.isNotEmpty()) {
+						if(this.attachment_list.isNotEmpty()) {
 							cbNSFW.isChecked = item.sensitive
 						}
 					}
@@ -1080,8 +1128,6 @@ class ActPost : AppCompatActivity(),
 		
 		for(iv in ivMedia) {
 			iv.setOnClickListener(this)
-			iv.setDefaultImage(defaultColorIcon(this, R.drawable.ic_upload))
-			iv.setErrorImage(defaultColorIcon(this, R.drawable.ic_unknown))
 		}
 		
 		cbContentWarning.setOnCheckedChangeListener { _, _ ->
@@ -1406,10 +1452,27 @@ class ActPost : AppCompatActivity(),
 			iv.visibility = View.VISIBLE
 			val pa = attachment_list[idx]
 			val a = pa.attachment
-			if(pa.status == PostAttachment.STATUS_UPLOADED && a != null) {
-				iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), a.preview_url)
-			} else {
-				iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), null)
+			when {
+				
+				a == null || pa.status != PostAttachment.STATUS_UPLOADED -> {
+					iv.setDefaultImage(defaultColorIcon(this, R.drawable.ic_upload))
+					iv.setErrorImage(defaultColorIcon(this, R.drawable.ic_unknown))
+					iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), null)
+				}
+				
+				else -> {
+					iv.setDefaultImage(defaultColorIcon(this, R.drawable.ic_upload))
+					iv.setErrorImage(
+						defaultColorIcon(
+							this,
+							when {
+								a.isAudio -> R.drawable.ic_music_note
+								else -> R.drawable.ic_unknown
+							}
+						)
+					)
+					iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), a.preview_url)
+				}
 			}
 		}
 	}
@@ -1422,24 +1485,25 @@ class ActPost : AppCompatActivity(),
 			showToast(this, false, ex.withCaption("can't get attachment item[$idx]."))
 			return
 		}
-		
-		AlertDialog.Builder(this)
-			.setTitle(R.string.media_attachment)
-			.setItems(
-				arrayOf<CharSequence>(
-					getString(R.string.set_description),
-					getString(R.string.set_focus_point),
-					getString(R.string.delete)
-				)
-			) { _, i ->
-				when(i) {
-					0 -> editAttachmentDescription(pa)
-					1 -> openFocusPoint(pa)
-					2 -> deleteAttachment(pa)
-				}
+
+		val a = ActionsDialog()
+			.addAction( getString(R.string.set_description) ){
+				editAttachmentDescription(pa)
 			}
-			.setNegativeButton(R.string.cancel, null)
-			.show()
+
+		if( pa.attachment?.isAudio == true ){
+			// can't set focus
+		}else{
+			a.addAction(getString(R.string.set_focus_point)){
+				openFocusPoint(pa)
+			}
+		}
+
+		a.addAction(getString(R.string.delete)){
+			deleteAttachment(pa)
+		}
+
+		a.show(this,title = getString(R.string.media_attachment))
 	}
 	
 	private fun openFocusPoint(pa : PostAttachment) {
@@ -1591,8 +1655,18 @@ class ActPost : AppCompatActivity(),
 		//		}
 		
 		val a = ActionsDialog()
-		a.addAction(getString(R.string.pick_images)) { performAttachmentOld() }
-		a.addAction(getString(R.string.image_capture)) { performCamera() }
+		a.addAction(getString(R.string.image_capture)) {
+			performCamera()
+		}
+		a.addAction(getString(R.string.pick_images)) {
+			openAttachmentChooser(R.string.pick_images, "image/*", "video/*")
+		}
+		a.addAction(getString(R.string.pick_videos)) {
+			openAttachmentChooser(R.string.pick_videos, "video/*")
+		}
+		a.addAction(getString(R.string.pick_audios)) {
+			openAttachmentChooser(R.string.pick_audios, "audio/*")
+		}
 		
 		//		a.addAction( getString( R.string.video_capture ), new Runnable() {
 		//			@Override public void run(){
@@ -1603,15 +1677,10 @@ class ActPost : AppCompatActivity(),
 		
 	}
 	
-	private fun performAttachmentOld() {
+	private fun openAttachmentChooser(titleId : Int, vararg mimeTypes : String) {
 		// SAFのIntentで開く
 		try {
-			val intent = intentGetContent(
-				true,
-				getString(R.string.pick_images)
-				, "image/*"
-				, "video/*"
-			)
+			val intent = intentGetContent(true, getString(titleId), mimeTypes)
 			startActivityForResult(intent, REQUEST_CODE_ATTACHMENT_OLD)
 		} catch(ex : Throwable) {
 			log.trace(ex)
@@ -1718,7 +1787,7 @@ class ActPost : AppCompatActivity(),
 		// image/j()pg だの image/j(e)pg だの、mime type を誤記するアプリがあまりに多い
 		// クレームで消耗するのを減らすためにファイルヘッダを確認する
 		if(mimeTypeArg == null || mimeTypeArg.startsWith("image/")) {
-			val sv = checkImageHeaderList(contentResolver, uri)
+			val sv = findMimeTypeByFileHeader(contentResolver, uri)
 			if(sv != null) return sv
 		}
 		
@@ -1861,7 +1930,7 @@ class ActPost : AppCompatActivity(),
 				val opener = createOpener(uri, mimeType)
 				
 				val media_size_max = when {
-					mimeType.startsWith("video") -> {
+					mimeType.startsWith("video") || mimeType.startsWith("audio") -> {
 						1000000 * Math.max(1, Pref.spMovieSizeMax.toInt(pref))
 					}
 					

@@ -302,6 +302,9 @@
     <string name="column_background">Column background</string>
     <string name="pick_image">Pick an image</string>
     <string name="pick_images">Pick image(s)…</string>
+    <string name="pick_videos">Pick video(s)…</string>
+    <string name="pick_audios">Pick audio(s)…</string>
+
     <string name="image_alpha">Image alpha</string>
     <string name="image">Image</string>
     <string name="column_header">Column header</string>

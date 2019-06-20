@@ -509,6 +509,8 @@
 
     <string name="pick_image">画像を選択</string>
     <string name="pick_images">画像を選択</string>
+    <string name="pick_videos">動画を選択</string>
+    <string name="pick_audios">音声を選択</string>
 
     <string name="please_add_account">アカウントがありません。事前にアカウントの追加を行ってください</string>
     <string name="please_donate">開発継続のために寄付をお願いします！</string>

@@ -1354,7 +1354,7 @@ class ActAccountSetting
 	
 	private fun performAttachment(request_code : Int) {
 		try {
-			val intent = intentGetContent(false, getString(R.string.pick_image), "image/*")
+			val intent = intentGetContent(false, getString(R.string.pick_image), arrayOf("image/*"))
 			startActivityForResult(intent, request_code)
 		} catch(ex : Throwable) {
 			log.trace(ex, "performAttachment failed.")

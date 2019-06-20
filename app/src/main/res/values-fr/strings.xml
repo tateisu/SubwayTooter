@@ -45,7 +45,7 @@
     <string name="boost">Booster</string>
     <string name="boost_from_another_account">Partager à partir d\'un autre compte</string>
     <string name="boost_succeeded">Boosté</string>
-    <string name="unboost_succeeded">boost supprimé</string>
+    <string name="unboost_succeeded">Le boost a été annulé</string>
     <string name="boosted_by">Partagé par …</string>
     <string name="button_background_color">Couleur d\'arrière plan des onglets</string>
     <string name="button_foreground_color">Couleur des onglets</string>
@@ -80,7 +80,7 @@
     <string name="confirm_block_user">Bloquer « %1$s » \?</string>
     <string name="confirm_boost_from">%1$s voulez-vous partager ce toot ?,\nil sera affiché chez vos abonnés et sur votre profil.</string>
     <string name="confirm_unboost_from">Désamorcer ce statut de %1$s \?</string>
-    <string name="confirm_favourite_from">Favourite this status from %1$s ? Notification will be sent to the author.</string>
+    <string name="confirm_favourite_from">Désirez-vous mettre en favoris la publication de %1$s \? Une notification sera envoyée à son auteur·rice.</string>
     <string name="confirm_unfavourite_from">Voulez-vous retirer ce statut des favoris de %1$s \?</string>
     <string name="confirm_close_column">Fermer cette colonne ?</string>
     <string name="confirm_delete_attachment">Retirer cette pièce jointe ?</string>
@@ -111,7 +111,7 @@
     <string name="discard">Annuler</string>
     <string name="display_name_boosted_by">Partagé par %1$s</string>
     <string name="display_name_favourited_by">Aimé par %1$s</string>
-    <string name="display_name_followed_by">Suivi par %1$s</string>
+    <string name="display_name_followed_by">%1$s s’est abonné à vous</string>
     <string name="display_name_unfollowed_by">%1$s a cessé de vous suivre</string>
     <string name="display_name_replied_by">Répondu par %1$s</string>
     <string name="display_name_voted_by">%1$s ont voté</string>
@@ -152,7 +152,7 @@
     <string name="follow_requests">Demandes de suivi</string>
     <string name="follow_succeeded">Suivi</string>
     <string name="followers">Abonnés</string>
-    <string name="following">Suivis</string>
+    <string name="following">Abonnements</string>
     <string name="footer_color">Personalisation de la barre d\'onglets (bas)</string>
     <string name="foreground_color">Couleur du texte</string>
     <string name="generating_qr_code">Créer un code QR…</string>
@@ -278,7 +278,7 @@
     <string name="send_message">Envoyer un message</string>
     <string name="send_message_from_another_account">Envoyer un message avec un autre compte</string>
     <string name="send_text">Envoyer du texte vers</string>
-    <string name="sensitive_content_default_open">Ouverture par défaut du contenu sensible</string>
+    <string name="sensitive_content_default_open">Afficher le contenu sensible par défaut</string>
     <string name="server_confirmed">Confirmation du serveur.</string>
     <string name="setting">Paramètres</string>
     <string name="show">Afficher</string>
@@ -305,7 +305,7 @@
     <string name="unfollow">Se désabonner</string>
     <string name="unfollow_succeeded">Désabonnement réussi</string>
     <string name="unmute">Activer le son</string>
-    <string name="unmute_succeeded">Activation du son réussie</string>
+    <string name="unmute_succeeded">N’est plus en sourdine</string>
     <string name="update_access_token">Mettre à jour le jeton d’accès</string>
     <string name="user">Utilisateur</string>
     <string name="user_mail_address">Adresse e-mail</string>
@@ -493,7 +493,7 @@
     <string name="mime_type_missing">Type MIME manquant.</string>
     <string name="mime_type_not_acceptable">Type MIME %1$s n\'est pas acceptable.
 \nTypes MIME pris en charge sont les suivants : image/jpeg, image/png, image/gif,/video/webm, video/mp4.</string>
-    <string name="dont_show_timeout">Ne pas afficher les notifications \"Délai d\'expiration du serveur\"</string>
+    <string name="dont_show_timeout">Ne pas afficher la notification \"Délai d’expiration du serveur\"</string>
     <string name="emoji_category_people">People</string>
     <string name="emoji_category_nature">Nature</string>
     <string name="emoji_category_foods">Alimentation</string>
@@ -549,12 +549,12 @@
     <string name="list_not_supported">Les listes ne sont pas supportées sur ce serveur.</string>
     <string name="cant_access_list">Impossible d’accéder aux listes</string>
     <string name="account_sync_failed">échec de la synchronisation du compte.</string>
-    <string name="list_retry_with_follow">Vous ne suivez pas encore %1$s. Souhaitez-vous le suivre et l’ajouter à la liste ?</string>
+    <string name="list_retry_with_follow">Vous ne suivez pas encore %1$s. Souhaitez-vous le·a suivre et l’ajouter à la liste \?</string>
     <string name="cant_add_list_follow_requesting">Can\'t add user to list:\nif the user is \"locked\", please wait until follow request is approved. else please retry 2…3 times.</string>
     <string name="cant_add_list_follow_failed">Impossible d\'ajouter l’utilisateur à la liste :
 \nÉchec de l’abonnement.</string>
     <string name="list_member_added">L\'utilisateur·trice a été ajouté·e à la liste.</string>
-    <string name="confirm_mute_notification_for_user">Les notifications provenant de cet·te utilisateur·trice ont étées mise en sourdine</string>
+    <string name="confirm_mute_notification_for_user">Mettre en sourdine les notifications provenant de cet·te utilisateur·trice</string>
     <string name="account_moved_to">%1$s a déménagé vers :</string>
     <string name="jump_moved_user">%1$s a été déplacé. Souhaitez-vous vérifier %2$s ?</string>
     <string name="ignore_suggestion">ignore suggestion</string>
@@ -605,11 +605,11 @@
     <string name="allow_column_duplication">Autoriser la duplication de colonnes</string>
     <string name="system_notification_not_related">Not chosen when tapping system notification</string>
     <string name="notification_type_mention">mention</string>
-    <string name="notification_type_follow">suivre</string>
-    <string name="notification_type_boost">booster</string>
+    <string name="notification_type_follow">abonnement</string>
+    <string name="notification_type_boost">boosts</string>
     <string name="notification_type_favourite">fav.</string>
     <string name="notification_type_reaction">réaction</string>
-    <string name="notification_type_vote">vote</string>
+    <string name="notification_type_vote">sondage</string>
     <string name="dont_show_normal_toot">Don\'t show normal toot</string>
     <string name="set_focus_point">Réglage de la zone de mise au point (Mastodon 2.3 ou ultérieur)</string>
     <string name="report_forward_desc">Le compte provient d\'une autre instance. Envoyer une copie anonyme du rapport à cette instance aussi ?</string>
@@ -618,14 +618,14 @@
     <string name="contact">contact account</string>
     <string name="languages">langues</string>
     <string name="append_attachment_url_to_content">Ajouter l\'URL de la pièce jointe au texte du pouet</string>
-    <string name="hide_favourite_notification_from_user">Désactiver les notifications Fav/BT de cet utilisateur</string>
-    <string name="show_favourite_notification_from_user">Activer les notifications Fav/BT depuis cet utilisateur</string>
+    <string name="hide_favourite_notification_from_user">Désactiver les notifications Fav/Boosts de cet·te utilisateur·rice</string>
+    <string name="show_favourite_notification_from_user">Activer les notifications Fav/Boosts provenant cet·te utilisateur·rice</string>
     <string name="fav_muted_user">FBN disabled users</string>
     <string name="fav_muted_user_long">Fav/Boost notification disabled users</string>
     <string name="changed">a changé.</string>
     <string name="thumbnails_arrange_vertically">Réarranger les vignettes verticalement (redémarrage requis)</string>
     <string name="instance_local">Instance locale</string>
-    <string name="pull_notification_check_interval">Intervalle de vérification des notifications (unité : minutes, par défaut : 15, min:15)</string>
+    <string name="pull_notification_check_interval">Intervalle de vérification des notifications (Unité : minutes, par défaut : 15, min:15)</string>
     <string name="follow_accept">accepter</string>
     <string name="follow_deny">refuser</string>
     <string name="follow_accept_confirm">Désirez-vous approuver la demande de suivi de %1$s ?</string>
@@ -647,11 +647,11 @@
     <string name="confirm_boost_private_from">Boost private status from %1$s ? It\'s shown to all followers.</string>
     <string name="boost_private_toot_not_allowed">Vous ne pouvez pas booster un toot privé publié par une autre personne.</string>
     <string name="update_push_subscription">Mise à jour de l\'abonnement push (Mastodon 2.4 ou plus récent)</string>
-    <string name="pseudo_account_not_supported">Le pseudo compte ne peut pas utiliser les notifications.</string>
+    <string name="pseudo_account_not_supported">Les pseudo comptes ne gèrent pas les notifications.</string>
     <string name="instance_does_not_support_push_api">L’aonnement push n’est pas supporté sur ce serveur (version %1$s).</string>
     <string name="missing_fcm_device_id">Impossible de préparer l’ID FCM du périphérique. Veuillez réessayer plus tard.</string>
     <string name="missing_install_id">Impossible de préparer l’ID d’installation. Veuillez réessayer plus tard.</string>
-    <string name="token_exported">En raison de l\'exportation des données de l\'application ou de la restauration à partir de la sauvegarde, ce jeton d\'accès peut également être utilisé par d\'autres appareils. Parce que les jetons d\'accès qui ne sont pas utilisés par d\'autres appareils sont nécessaires pour utiliser les notifications de push, nous recommandons de mettre à jour le jeton d\'accès.</string>
+    <string name="token_exported">En raison de l’exportation des données de l’application ou de la restauration à partir de la sauvegarde, ce jeton d’accès peut également être utilisé par d’autres appareils. Parce que les jetons d’accès qui ne sont pas utilisés par d’autres appareils sont nécessaires pour utiliser les notifications de push, nous recommandons de mettre à jour le jeton d’accès.</string>
     <string name="missing_push_api">L\'instance n\'a pas d\'abonnement par l\'API.</string>
     <string name="missing_push_scope">Votre token d\'accès ne contient pas de push scope. La mise à jour du token d\'accès est recommandée.</string>
     <string name="push_subscription_deleted">Abonnement Push supprimé.</string>
@@ -663,7 +663,7 @@
     <string name="none_or_hidden_following">Pas d’abonné·e·s ou caché·e·s selon ses paramètres.</string>
     <string name="none_or_hidden_followers">There is no followers, or hidden by setting.</string>
     <string name="yourself_can_see_your_network">Même si vous choisissez de cacher les graphiques sociaux, vous pouvez les voir.</string>
-    <string name="follow_follower_list_may_restrict">Si l’utilisateur distant choisit de masquer le graph social, seul·e·s les abonné·e·s/abonnements sur cette instance seront affichés.</string>
+    <string name="follow_follower_list_may_restrict">Si l’utilisateur·rice distant·e choisit de masquer le graph social, seul·e·s les abonné·e·s/abonnements sur cette instance seront affichés.</string>
     <string name="trend_tag">Les tendances des tags</string>
     <string name="people_talking">%1$d (%2$d) personnes en parlent</string>
     <string name="trend_tag_desc">The numbers indicate \'daily(weekly)\'. Daily numbers are reset at %1$s.</string>
@@ -671,7 +671,7 @@
     <string name="cant_sync_toot">Impossible de synchroniser le pouet.</string>
     <string name="cant_change_account_when_redraft">Impossible de changer de compte lors de la reformulation.</string>
     <string name="delete_base_status_before_toot">Supprimer le statut de base avant l\'affichage. Tous les favoris, les boosts seront perdus. Les réponses seront déconnectées. Les pièces jointes des médias ne seront pas conservées sur Mastodon avant la version 2.4.1. Vous êtes sûr ?</string>
-    <string name="notification_tl_font_size">Taille de police du fil de notifications (Unité:sp. laisser vide par défaut. Redémarrage requis)</string>
+    <string name="notification_tl_font_size">Taille de police du fil de notifications (Unité : sp. laisser vide par défaut. Redémarrage requis)</string>
     <string name="notification_tl_icon_size">Notification TL icon size (Unit:dp. default:24. app restart required)</string>
     <string name="post_button_tapped_repeatly">Le bouton Post a été tapé à plusieurs reprises</string>
     <string name="regex_filter_matches_empty_string">le filtre regex correspond à une chaîne vide.</string>
@@ -875,7 +875,7 @@
     <string name="poll_expire_days">jours</string>
     <string name="poll_expire_hours">heures</string>
     <string name="poll_expire_minutes">minutes</string>
-    <string name="vote_1">1 vote</string>
+    <string name="vote_1">1 voix</string>
     <string name="vote_2">%1$d votes.</string>
     <string name="vote_expire_at">expire : %1$s</string>
     <string name="vote_count_unavailable">\?\?\? votes</string>
@@ -894,4 +894,12 @@
     <string name="boost_with_visibility">Booster avec la visibilité</string>
     <string name="confirm_private_boost_from">Booster ce statut venant de %1$s \? Il sera visible à tous vos abonné·e·s.</string>
     <string name="polls_choice_not_selected">Veuillez sélectionner un ou plusieurs choix.</string>
+    <string name="cw_default_open">Développer le contenu publié sous avertissement CW par défaut</string>
+    <string name="fixed_phrase">phrase fixe</string>
+    <string name="mark_sensitive_by_default">Toujours marquer les médias comme sensibles (lors de la publication)</string>
+    <string name="load_preference_from_web_ui">Charger des préférences à partir de l’interface Web</string>
+    <string name="notifications_from_acct">Notifications de l’utilisateur·rice</string>
+    <string name="notifications_from">Notifications venant de %1$s</string>
+    <string name="pick_videos">Choisissez une vidéo …</string>
+    <string name="pick_audios">Choisissez un fichier audio …</string>
 </resources>

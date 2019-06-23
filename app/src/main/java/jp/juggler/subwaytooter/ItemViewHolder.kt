@@ -1632,14 +1632,14 @@ internal class ItemViewHolder(
 		val showUrl : Boolean
 		
 		when(ta.type) {
-			TootAttachmentLike.TYPE_AUDIO -> {
+			TootAttachmentType.Audio -> {
 				iv.setMediaType(0)
 				iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_music))
 				iv.setImageUrl(activity.pref, 0f, null)
 				showUrl = true
 			}
 			
-			TootAttachmentLike.TYPE_UNKNOWN -> {
+			TootAttachmentType.Unknown -> {
 				iv.setMediaType(0)
 				iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_question))
 				iv.setImageUrl(activity.pref, 0f, null)
@@ -1657,8 +1657,8 @@ internal class ItemViewHolder(
 				else -> {
 					iv.setMediaType(
 						when(ta.type) {
-							TootAttachmentLike.TYPE_VIDEO -> R.drawable.media_type_video
-							TootAttachmentLike.TYPE_GIFV -> R.drawable.media_type_gifv
+							TootAttachmentType.Video -> R.drawable.media_type_video
+							TootAttachmentType.GIFV -> R.drawable.media_type_gifv
 							else -> 0
 						}
 					)
@@ -2098,7 +2098,7 @@ internal class ItemViewHolder(
 				is TootAttachment -> when {
 					
 					// unknownが1枚だけなら内蔵ビューアを使わずにインテントを投げる
-					item.type == TootAttachmentLike.TYPE_UNKNOWN && media_attachments.size == 1 ->
+					item.type == TootAttachmentType.Unknown && media_attachments.size == 1 ->
 						App1.openCustomTab(activity, item)
 					
 					// 内蔵メディアビューアを使う

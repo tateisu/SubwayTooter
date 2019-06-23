@@ -8,8 +8,8 @@ class TootAttachmentMSP(
 ) : TootAttachmentLike {
 	
 	
-	override val type : String?
-		get() = null
+	override val type : TootAttachmentType
+		get() = TootAttachmentType.Unknown
 	
 	override val description : String?
 		get() = null

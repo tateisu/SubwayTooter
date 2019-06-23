@@ -311,12 +311,17 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		}
 		
 		when(ta.type) {
-			TootAttachmentLike.TYPE_IMAGE -> loadBitmap(ta)
-			TootAttachmentLike.TYPE_VIDEO,
-			TootAttachmentLike.TYPE_GIFV,
-			TootAttachmentLike.TYPE_AUDIO -> loadVideo(ta, state)
-			// maybe TYPE_UNKNOWN
-			else -> showError(getString(R.string.media_attachment_type_error, ta.type))
+
+			TootAttachmentType.Unknown ->
+				showError(getString(R.string.media_attachment_type_error, ta.type.id))
+
+			TootAttachmentType.Image ->
+				loadBitmap(ta)
+
+			TootAttachmentType.Video,
+			TootAttachmentType.GIFV,
+			TootAttachmentType.Audio ->
+				loadVideo(ta, state)
 		}
 		
 	}
@@ -358,7 +363,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		exoPlayer.prepare(mediaSource)
 		exoPlayer.repeatMode = when(ta.type) {
-			TootAttachmentLike.TYPE_VIDEO -> Player.REPEAT_MODE_OFF
+			TootAttachmentType.Video -> Player.REPEAT_MODE_OFF
 			// GIFV or AUDIO
 			else -> Player.REPEAT_MODE_ALL
 		}

@@ -517,7 +517,7 @@
             android:layout_height="48dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/media_attachment"
-            android:src="@drawable/ic_attachment"
+            android:src="@drawable/ic_clip"
             android:tint="?attr/colorVectorDrawable"
             />
 

@@ -1456,21 +1456,20 @@ class ActPost : AppCompatActivity(),
 				
 				a == null || pa.status != PostAttachment.STATUS_UPLOADED -> {
 					iv.setDefaultImage(defaultColorIcon(this, R.drawable.ic_upload))
-					iv.setErrorImage(defaultColorIcon(this, R.drawable.ic_unknown))
+					iv.setErrorImage(defaultColorIcon(this, R.drawable.ic_clip))
 					iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), null)
 				}
 				
-				else -> {
-					iv.setDefaultImage(defaultColorIcon(this, R.drawable.ic_upload))
-					iv.setErrorImage(
-						defaultColorIcon(
-							this,
-							when {
-								a.isAudio -> R.drawable.ic_music_note
-								else -> R.drawable.ic_unknown
-							}
-						)
-					)
+				else ->{
+					val defaultIconId = when(a.type) {
+						TootAttachmentType.Image -> R.drawable.ic_image
+						TootAttachmentType.Video,
+						TootAttachmentType.GIFV ->R.drawable.ic_videocam
+						TootAttachmentType.Audio ->R.drawable.ic_music_note
+						else -> R.drawable.ic_clip
+					}
+					iv.setDefaultImage(defaultColorIcon(this,defaultIconId))
+					iv.setErrorImage(defaultColorIcon(this,defaultIconId))
 					iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), a.preview_url)
 				}
 			}
@@ -1485,25 +1484,25 @@ class ActPost : AppCompatActivity(),
 			showToast(this, false, ex.withCaption("can't get attachment item[$idx]."))
 			return
 		}
-
+		
 		val a = ActionsDialog()
-			.addAction( getString(R.string.set_description) ){
+			.addAction(getString(R.string.set_description)) {
 				editAttachmentDescription(pa)
 			}
-
-		if( pa.attachment?.isAudio == true ){
+		
+		if(pa.attachment?.isAudio == true) {
 			// can't set focus
-		}else{
-			a.addAction(getString(R.string.set_focus_point)){
+		} else {
+			a.addAction(getString(R.string.set_focus_point)) {
 				openFocusPoint(pa)
 			}
 		}
-
-		a.addAction(getString(R.string.delete)){
+		
+		a.addAction(getString(R.string.delete)) {
 			deleteAttachment(pa)
 		}
-
-		a.show(this,title = getString(R.string.media_attachment))
+		
+		a.show(this, title = getString(R.string.media_attachment))
 	}
 	
 	private fun openFocusPoint(pa : PostAttachment) {

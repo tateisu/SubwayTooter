@@ -1,16 +1,16 @@
 package jp.juggler.subwaytooter.api.entity
 
-interface TootAttachmentLike{
-	
-	companion object {
-		const val TYPE_IMAGE = "image"
-		const val TYPE_VIDEO = "video"
-		const val TYPE_GIFV = "gifv"
-		const val TYPE_UNKNOWN = "unknown"
-		const val TYPE_AUDIO = "audio"
-	}
+enum class TootAttachmentType(val id:String){
+	Unknown("unknown"),
+	Image( "image"),
+	Video("video"),
+	GIFV("gifv"),
+	Audio("audio")
+}
 
-	val type : String?
+interface TootAttachmentLike{
+
+	val type : TootAttachmentType
 	val description : String?
 	val urlForThumbnail : String?
 	
@@ -23,6 +23,11 @@ interface TootAttachmentLike{
 	
 	
 	val isAudio : Boolean
-		get()= type == TYPE_AUDIO
+		get()= type == TootAttachmentType.Audio
+	
+	// GIFVの考慮漏れに注意？
+	val isVideo : Boolean
+		get()= type == TootAttachmentType.Video
+	
 }
 

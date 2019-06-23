@@ -36,13 +36,13 @@ class TootAttachment : TootAttachmentLike {
 		
 		fun decodeJson(src : JSONObject) = TootAttachment(src, decode = true)
 		
-		private val ext_audio = arrayOf(".mpga",".mp3",".aac",".ogg")
+		private val ext_audio = arrayOf(".mpga", ".mp3", ".aac", ".ogg")
 		
-		private fun guessMediaTypeByUrl(src : String?) : String? {
+		private fun guessMediaTypeByUrl(src : String?) : TootAttachmentType? {
 			val uri = src.mayUri() ?: return null
 			
-			if( ext_audio.find { uri.path?.endsWith(it) == true } != null ){
-				return TootAttachmentLike.TYPE_AUDIO
+			if(ext_audio.find { uri.path?.endsWith(it) == true } != null) {
+				return TootAttachmentType.Audio
 			}
 			
 			return null
@@ -56,7 +56,7 @@ class TootAttachment : TootAttachmentLike {
 	val id : EntityId
 	
 	//One of: "image", "video", "gifv". or may null ? may "unknown" ?
-	override val type : String?
+	override val type : TootAttachmentType
 	
 	//URL of the locally hosted version of the image
 	val url : String?
@@ -65,6 +65,8 @@ class TootAttachment : TootAttachmentLike {
 	val remote_url : String?
 	
 	//	URL of the preview image
+	// (Mastodon 2.9.2) audioのpreview_url は .mpga のURL
+	// (Misskey v11) audioのpreview_url は null
 	val preview_url : String?
 	
 	//	Shorter URL for the image, for insertion into text (only present on local images)
@@ -92,10 +94,10 @@ class TootAttachment : TootAttachmentLike {
 		else -> false
 	}
 	
-	override fun getUrlString() :String? =
-		if( remote_url?.isNotEmpty()==true){
+	override fun getUrlString() : String? =
+		if(remote_url?.isNotEmpty() == true) {
 			remote_url
-		}else{
+		} else {
 			url
 		}
 	
@@ -106,12 +108,12 @@ class TootAttachment : TootAttachmentLike {
 				id = EntityId.mayDefault(src.parseString("id"))
 				
 				val mimeType = src.parseString("type") ?: "?"
-
+				
 				this.type = when {
-					mimeType.startsWith("image/") -> TootAttachmentLike.TYPE_IMAGE
-					mimeType.startsWith("video/") -> TootAttachmentLike.TYPE_VIDEO
-					mimeType.startsWith("audio/") -> TootAttachmentLike.TYPE_AUDIO
-					else -> TootAttachmentLike.TYPE_UNKNOWN
+					mimeType.startsWith("image/") -> TootAttachmentType.Image
+					mimeType.startsWith("video/") -> TootAttachmentType.Video
+					mimeType.startsWith("audio/") -> TootAttachmentType.Audio
+					else -> TootAttachmentType.Unknown
 				}
 				
 				url = src.parseString("url")
@@ -142,11 +144,13 @@ class TootAttachment : TootAttachmentLike {
 				description = src.parseString("description")
 				isSensitive = false // Misskey用のパラメータなので、マストドンでは適当な値を使ってOK
 				
-				var t = src.parseString("type")
-				if( t ==null || t == TootAttachmentLike.TYPE_UNKNOWN ){
-					t = guessMediaTypeByUrl( remote_url ?: url)
+				type = when(val tmpType = parseType(src.parseString("type"))) {
+					null, TootAttachmentType.Unknown -> {
+						guessMediaTypeByUrl(remote_url ?: url) ?: TootAttachmentType.Unknown
+					}
+					
+					else -> tmpType
 				}
-				type = t ?: TootAttachmentLike.TYPE_UNKNOWN
 				
 				val focus = src.optJSONObject("meta")?.optJSONObject("focus")
 				focusX = parseFocusValue(focus, "x")
@@ -159,6 +163,8 @@ class TootAttachment : TootAttachmentLike {
 		
 	}
 	
+	private fun parseType(src : String?) =
+		TootAttachmentType.values().find { it.id == src }
 	
 	override val urlForThumbnail : String?
 		get() = when {
@@ -191,7 +197,7 @@ class TootAttachment : TootAttachmentLike {
 	fun encodeJson() = jsonObject {
 		put(KEY_IS_STRING_ID, true)
 		put(KEY_ID, id.toString())
-		put(KEY_TYPE, type)
+		put(KEY_TYPE, type.id)
 		put(KEY_URL, url)
 		put(KEY_REMOTE_URL, remote_url)
 		put(KEY_PREVIEW_URL, preview_url)
@@ -217,12 +223,19 @@ class TootAttachment : TootAttachmentLike {
 	) {
 		
 		id = EntityId.mayDefault(src.parseString(KEY_ID))
-		
-		type = src.parseString(KEY_TYPE)
 		url = src.parseString(KEY_URL)
 		remote_url = src.parseString(KEY_REMOTE_URL)
 		preview_url = src.parseString(KEY_PREVIEW_URL)
 		text_url = src.parseString(KEY_TEXT_URL)
+		
+		type = when(val tmpType = parseType(src.parseString(KEY_TYPE))) {
+			null, TootAttachmentType.Unknown -> {
+				guessMediaTypeByUrl(remote_url ?: url) ?: TootAttachmentType.Unknown
+			}
+			
+			else -> tmpType
+		}
+		
 		description = src.parseString(KEY_DESCRIPTION)
 		isSensitive = src.optBoolean(KEY_IS_SENSITIVE)
 		

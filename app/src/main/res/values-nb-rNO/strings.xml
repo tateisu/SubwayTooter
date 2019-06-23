@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Undergrunnstuter</string>
-
     <string name="action_settings">Innstillinger</string>
     <string name="account_add">Legg til en konto</string>
     <string name="instance">Instans</string>
@@ -12,10 +11,8 @@
     <string name="instance_not_specified">Ikke angitt insans</string>
     <string name="mail_not_specified">E-post ikke angitt</string>
     <string name="password_not_specified">Passord ikke angitt</string>
-
     <string name="network_error">Nettverksfeil.</string>
     <string name="api_error">API-feil. %1$s</string>
-
     <string name="register_app_to_server">Registerer dette programmet til %1$s…</string>
     <string name="request_access_token">Forespør tilgangssymbol…</string>
     <string name="request_api">Henter: %1$s %2$s</string>
@@ -77,7 +74,6 @@
     <string name="display_name_replied_by">%1$s svart</string>
     <string name="display_name_voted_by">%1$s avstemt</string>
     <string name="display_name_follow_request_by">%1$s sente følgeforespørsler</string>
-
     <string name="display_name_quoted_by">%1$s sitert</string>
     <string name="display_name_reaction_by">%1$s reagert på</string>
     <string name="display_name_followed_by">%1$s følger deg</string>
@@ -251,15 +247,12 @@
     <string name="toot">Tut</string>
     <string name="clear_text">Tøm tekst</string>
     <string name="clear_text_and_media">Tøm tekst og media</string>
-
     <string name="menu">Meny</string>
     <string name="open_in_pseudo_account">Åpne i emulert konto på %1$s</string>
-
     <string name="color_and_background">Farge og bakgrunn…</string>
     <string name="column_background">Kolonnens bakgrunn</string>
     <string name="pick_image">Velg et bilde</string>
     <string name="pick_images">Velg bilde(r)…</string>
-
     <string name="image">Bilde</string>
     <string name="foreground_color">Forgrunnsfarge</string>
     <string name="copy">Kopier</string>
@@ -311,7 +304,7 @@
     <string name="progress_synchronize_toot">Synkroniserer tut…</string>
     <string name="send_header_account_name">Kontonavn</string>
     <string name="send_header_account_url">Kontonettadresse</string>
-<string name="error_response">Feilsvar.</string>
+    <string name="error_response">Feilsvar.</string>
     <string name="federate_timeline">Forent tidslinje</string>
     <string name="login_required">Sett ditt tilgangssymbol fra kontoinnstillinger.</string>
     <string name="rate_on_store">Vurder i butikk</string>
@@ -368,7 +361,6 @@
     <string name="missing_mail_app">Manglende e-postprogram.</string>
     <string name="relative_timestamp">Vis relative tidsstempel</string>
     <string name="time_within_second">akkurat nå</string>
-
     <string name="relative_time_unit_second1">sekund</string>
     <string name="relative_time_unit_seconds">sekunder</string>
     <string name="relative_time_unit_minute1">minutt</string>
@@ -379,7 +371,6 @@
     <string name="relative_time_unit_days">dager</string>
     <string name="relative_time_phrase_past">%1$d %2$s siden</string>
     <string name="relative_time_phrase_future">%1$d %2$s senere</string>
-
     <string name="notification_channel_description">Disse innstillingen brukes for merknad for %1$s</string>
     <string name="notification_sound_before_oreo">Merknadslyd (før Android 8.0)</string>
     <string name="notification_style_after_oreo">Merknadsstil (Android 8.0 eller senere)</string>
@@ -399,7 +390,7 @@
     <string name="user_count">Brukerantall</string>
     <string name="toot_count">Tut-antall</string>
     <string name="domain_count">Tilkoblet domeneantall</string>
-    <string name="mime_type_missing">Manglende MIME-type.</string>
+    <string name="mime_type_missing">Manglende mediatype.</string>
     <string name="thumbnail">Miniatyrbilde</string>
     <string name="dont_show_timeout">Ikke vis \"Tjenertidsavbrudd\"-merknad</string>
     <string name="emoji_category_people">Folk</string>
@@ -432,7 +423,6 @@
     <string name="description_empty">beskrivelsen er ikke angitt.</string>
     <string name="attachment_description_sending">sender vedleggsbeskrivelse…</string>
     <string name="operation_succeeded">Vellykket operasjon.</string>
-
     <string name="lists">Lister</string>
     <string name="list_show_member">vis listebrukere</string>
     <string name="list_member_of">\"%1$s\" listebrukere</string>
@@ -538,8 +528,6 @@
     <string name="follow_suggestion">Følg forslag</string>
     <string name="close_all_columns">Lukk alle kolonner</string>
     <string name="confirm_close_column_all">Alle kolonner (unntatt beskyttede) vil lukkes. er du sikker?</string>
-
-
     <string name="keyword_filters">Nøkkelordfiltre</string>
     <string name="keyword_filter">Nøkkelordfilter</string>
     <string name="keyword_filter_new">Nytt filter</string>
@@ -547,22 +535,17 @@
     <string name="filter_delete_confirm">Filteret \"%1$s\" vil bli slettet. Er du sikker?</string>
     <string name="filter_of">Filtrer \"%1$s\"</string>
     <string name="filtered">filtrert</string>
-
     <string name="filter_phrase">Uttrykk</string>
     <string name="filter_context">Filter-bindeleddsinformasjon</string>
-
     <string name="filter_options">Valg</string>
     <string name="filter_irreversible">Kan ikke angres</string>
     <string name="filter_word_match">Helt ord</string>
     <string name="filter_word_match_long">Helt ord. Anbefalt å skru på kun fraser som består av alfanumeriske tegn.</string>
-
     <string name="filter_expires_at">Utløp</string>
-
     <string name="filter_home">hjem</string>
     <string name="filter_notification">merknad</string>
     <string name="filter_public">offentlig</string>
     <string name="filter_thread">samtale</string>
-
     <string name="dont_change">Ikke endre</string>
     <string name="filter_expire_unlimited">Ubegrenset</string>
     <string name="filter_expire_30min">En halvtime etter lagring</string>
@@ -648,7 +631,6 @@
     <string name="prior_chrome_custom_tabs">Tidligere Google Chrome (hvis egendefinerte faner er påslått)</string>
     <string name="enable_speech">Skrur på tale</string>
     <string name="toot_search_ts">Tutsøk (ts)</string>
-
     <string name="toot_search_ts_of">Tutsøk (ts) \"%1$s\"</string>
     <string name="open_local_timeline_for">Åpne \"%1$s\"-tidslinje</string>
     <string name="notification_sound">Merknadslyd</string>
@@ -669,7 +651,6 @@
     <string name="length_warning">\"%1$s\" er for lang (%2$d/%3$d tegn).
 \nGodtas ikke i standardinstans, men kan være gangbar mynt i noen instanser.
 \nEr du sikker\?</string>
-
     <string name="error_notification_summary">Hvis det er en nedlagt instans, fjern kontoen på den tjeneren.</string>
     <string name="open_hashtag_column">Åpne emneknaggskolonne</string>
     <string name="quote_hashtag_of">Siter emneknagg \"%1$s\"</string>
@@ -677,8 +658,8 @@
     <string name="parsing_response">Tolker svar…</string>
     <string name="cant_get_web_setting_visibility">Kan ikke hente synlighetsinnstilling i nettprogram.</string>
     <string name="not_provided_mastodon_under_1_6">Tilbys ikke i Mastodon 1.6</string>
-    <string name="mime_type_not_acceptable">MIME-typen %1$s godtas ikke.
-\nStøttede MIME-typer: image/jpeg, image/png, image/gif, video/webm, video/mp4 .</string>
+    <string name="mime_type_not_acceptable">Mediatypen %1$s godtas ikke. 
+\nStøttede mediatyper: image/jpeg, image/png, image/gif, video/webm og video/mp4.</string>
     <string name="disable_custom_emoji_animation">Skru av egendefinert emoji-animasjon (programomstart og gjeninnlasting av kolonne kreves)</string>
     <string name="list_member_add_remove">Legg til/fjern fra lister…</string>
     <string name="cant_add_list_follow_requesting">Kan ikke legge til bruker i liste:
@@ -715,7 +696,6 @@
     <string name="visibility_style">Synlighetsnavn og ikon</string>
     <string name="visibility_style_by_account">Tilpass til kolonnekonto</string>
     <string name="already_voted">Du har allerede stemt.</string>
-
     <string name="follow_request_cancelled">Følgingsforespørsel forkastet.</string>
     <string name="confirm_cancel_follow_request_who_from">Følgingsforespørsel fra %1$s til %2$s vil forkastes. Er du sikker\?</string>
     <string name="reaction">Reaksjon (Misskey)</string>
@@ -725,18 +705,15 @@
     <string name="dont_use_custom_tabs">Ikke åpne lenker i egendefinerte faner (Chrome/Firefox)</string>
     <string name="privacy_policy">Personvernspraksis</string>
     <string name="agree">Jeg samtykker</string>
-
     <string name="ltl_around_toot">Lokal tidslinje rundt denne tutingen… (Mastodon 2.6)</string>
     <string name="ltl_around">Lokal tidslinje rundt…</string>
     <string name="ltl_around_of">Lokal tidslinje rundt %1$s</string>
-
     <string name="account_tl_around_toot">Kontotidslinje rundt denne tutingen… (Mastodon 2.6)</string>
     <string name="account_tl_around">Konto-tidslinje rundt …</string>
     <string name="account_tl_around_of">Konto-tidslinje rundt %1$s</string>
     <string name="verified_at">bekreftet den</string>
     <string name="use_old_api">Bruk gammelt API</string>
-
-<string name="conversation_to">Til:</string>
+    <string name="conversation_to">Til:</string>
     <string name="animation">Animasjon</string>
     <string name="visibility_local_public">Offentlig (lokal)</string>
     <string name="visibility_local_home">Hjemme (lokal)</string>

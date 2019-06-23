@@ -102,7 +102,6 @@
     <string name="confirm_before_boost">Confirm before boosting</string>
     <string name="sensitive_content_default_open">Showing sensitive attachments by default</string>
     <string name="cw_default_open">Expand CWed content by default</string>
-
     <string name="user">User</string>
     <string name="confirm_account_remove">This account will be deleted and all the columns will be removed.\nAre you sure?</string>
     <string name="user_name_not_match">Username doesn\'t match</string>
@@ -304,7 +303,6 @@
     <string name="pick_images">Pick image(s)…</string>
     <string name="pick_videos">Pick video(s)…</string>
     <string name="pick_audios">Pick audio(s)…</string>
-
     <string name="image_alpha">Image alpha</string>
     <string name="image">Image</string>
     <string name="column_header">Column header</string>
@@ -502,8 +500,9 @@
     <string name="toot_count">Toots</string>
     <string name="domain_count">Connected domain count</string>
     <string name="not_provided_mastodon_under_1_6">Not provided pre Mastodon 1.6</string>
-    <string name="mime_type_missing">Missing MIME type.</string>
-    <string name="mime_type_not_acceptable">The MIME type %1$s is not acceptable.\nSupported MIME types are image/jpeg, image/png, image/gif, video/webm, video/mp4 .</string>
+    <string name="mime_type_missing">Missing media type.</string>
+    <string name="mime_type_not_acceptable">The media type %1$s is not accepted.
+\nSupported media types are image/jpeg, image/png, image/gif, video/webm and video/mp4.</string>
     <string name="dont_show_timeout">Don\'t show \"Server timeout\" notification</string>
     <string name="emoji_category_people">People</string>
     <string name="emoji_category_nature">Nature</string>
@@ -900,5 +899,4 @@
     <string name="load_preference_from_web_ui">Load some preferences from WebUI</string>
     <string name="notifications_from_acct">Notifications from user</string>
     <string name="notifications_from">Notifications from %1$s</string>
-
 </resources>

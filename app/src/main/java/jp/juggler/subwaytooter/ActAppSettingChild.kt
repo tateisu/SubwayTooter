@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter
 
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.ColorStateList
@@ -27,6 +28,7 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
+import java.lang.ref.WeakReference
 import java.text.NumberFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -157,6 +159,7 @@ class ActAppSettingChild : AppCompatActivity()
 	private var etRoundRatio : EditText? = null
 	private var etBoostAlpha : EditText? = null
 	private var etMediaReadTimeout : EditText? = null
+	private var etTranslateAppComponent : EditText? = null
 	
 	private var tvTimelineFontUrl : TextView? = null
 	private var timeline_font : String? = null
@@ -200,6 +203,13 @@ class ActAppSettingChild : AppCompatActivity()
 	private var hasTootBackgroundColorUi = false
 	private var hasLinkColorUi = false
 	private var hasColumnColorDefaultUi = false
+	
+	override fun onResume() {
+		super.onResume()
+		
+		checkIntentChoiced()
+	}
+	
 	
 	override fun onPause() {
 		super.onPause()
@@ -378,6 +388,8 @@ class ActAppSettingChild : AppCompatActivity()
 			, R.id.btnBackgroundColorVotedReset
 			, R.id.btnBackgroundColorFollowRequestedEdit
 			, R.id.btnBackgroundColorFollowRequestedReset
+			, R.id.btnTranslateAppComponentEdit
+			, R.id.btnTranslateAppComponentReset
 		).forEach {
 			findViewById<View>(it)?.setOnClickListener(this)
 		}
@@ -431,6 +443,9 @@ class ActAppSettingChild : AppCompatActivity()
 		
 		etMediaReadTimeout = findViewById(R.id.etMediaReadTimeout)
 		etMediaReadTimeout?.addTextChangedListener(this)
+		
+		etTranslateAppComponent = findViewById(R.id.etTranslateAppComponent)
+		etTranslateAppComponent?.addTextChangedListener(this)
 		
 		tvTimelineFontSize = findViewById(R.id.tvTimelineFontSize)
 		tvAcctFontSize = findViewById(R.id.tvAcctFontSize)
@@ -587,6 +602,7 @@ class ActAppSettingChild : AppCompatActivity()
 		etBoostAlpha?.setText(Pref.spBoostAlpha(pref))
 		
 		etMediaReadTimeout?.setText(Pref.spMediaReadTimeout(pref))
+		etTranslateAppComponent?.setText(Pref.spTranslateAppComponent(pref))
 		
 		timeline_font = Pref.spTimelineFont(pref)
 		timeline_font_bold = Pref.spTimelineFontBold(pref)
@@ -674,6 +690,7 @@ class ActAppSettingChild : AppCompatActivity()
 		putText(Pref.spRoundRatio, etRoundRatio)
 		putText(Pref.spBoostAlpha, etBoostAlpha)
 		putText(Pref.spMediaReadTimeout, etMediaReadTimeout)
+		putText(Pref.spTranslateAppComponent,etTranslateAppComponent)
 		
 		fun putIf(hasUi : Boolean, sp : StringPref, value : String) {
 			if(! hasUi) return
@@ -1114,6 +1131,54 @@ class ActAppSettingChild : AppCompatActivity()
 				saveUIToData()
 			}
 			
+			R.id.btnTranslateAppComponentEdit -> {
+				
+				val intent = Intent()
+				intent.action = Intent.ACTION_SEND
+				intent.type = "text/plain"
+				intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.content_sample))
+				
+				// このifはwhenにしてはならない。APIバージョン関連の警告が出てしまう
+				@Suppress("CascadeIf")
+				if(intent.resolveActivity(packageManager) == null) {
+					// ACTION_SENDを受け取れるアプリがインストールされてない
+					showToast(this, true, getString(R.string.missing_app_can_receive_action_send))
+				} else if(Build.VERSION.SDK_INT <= 21) {
+					// createChooserにIntentSenderを指定できるのはAndroid 22以降
+					showToast(
+						this,
+						true,
+						getString(R.string.translation_app_chooser_works_android_5_1)
+					)
+				} else try {
+					ChooseReceiver.lastComponentName = null
+					ChooseReceiver.setCallback{ checkIntentChoiced() }
+					
+					val receiver = Intent(this, ChooseReceiver::class.java)
+					val pendingIntent = PendingIntent.getBroadcast(
+						this,
+						1,
+						receiver,
+						PendingIntent.FLAG_UPDATE_CURRENT
+					)
+					startActivity(
+						Intent.createChooser(
+							intent,
+							getString(R.string.select_translate_app),
+							pendingIntent.intentSender
+						)
+					)
+					
+				} catch(ex : Throwable) {
+					log.trace(ex)
+					showToast(this, ex, "btnTranslateAppComponentEdit failed.")
+				}
+			}
+			
+			R.id.btnTranslateAppComponentReset -> {
+				etTranslateAppComponent?.setText("")
+				saveUIToData()
+			}
 		}
 	}
 	
@@ -1642,4 +1707,16 @@ class ActAppSettingChild : AppCompatActivity()
 			return list[position].id
 		}
 	}
+	
+	private fun checkIntentChoiced(){
+		if( isDestroyed ) return
+		
+		val cn = ChooseReceiver.lastComponentName
+		if(cn != null && etTranslateAppComponent != null) {
+			etTranslateAppComponent?.setText("${cn.packageName}/${cn.className}")
+			saveUIToData()
+			ChooseReceiver.lastComponentName = null
+		}
+	}
+	
 }

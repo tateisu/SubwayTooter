@@ -256,6 +256,8 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".ChooseReceiver" android:exported="false"/>
+
         <!-- okhttp3クライアントを指定する必要があるため、マニフェスト経由での組み込みは行わない -->
         <!--<meta-data-->
         <!--android:name="com.bumptech.glide.integration.okhttp3.OkHttpGlideModule"-->

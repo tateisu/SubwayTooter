@@ -907,5 +907,10 @@
     <string name="hashtag_from_acct">ハッシュタグ(特定ユーザから)</string>
     <string name="notifications_from_acct">ユーザからの通知</string>
     <string name="notifications_from">%1$sからの通知</string>
-
+    <string name="show_translate_button">翻訳ボタンを表示する</string>
+    <string name="translate">翻訳</string>
+    <string name="translate_app_component" >翻訳アプリのComponentName</string>
+    <string name="missing_app_can_receive_action_send">ACTION_SENDを受け取れるアプリがありません。</string>
+    <string name="select_translate_app">翻訳アプリを選択した後に設定画面まで戻ってください</string>
+    <string name="translation_app_chooser_works_android_5_1">翻訳アプリを選択する機能はAndroid5.1+で使えます。</string>
 </resources>

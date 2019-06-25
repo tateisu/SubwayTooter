@@ -900,5 +900,12 @@
     <string name="load_preference_from_web_ui">Load some preferences from WebUI</string>
     <string name="notifications_from_acct">Notifications from user</string>
     <string name="notifications_from">Notifications from %1$s</string>
+    <string name="show_translate_button">Show translate button</string>
+    <string name="translate">Translate</string>
+    <string name="translate_app_component" >Translation app component</string>
+    <string name="translate_app_component_default" translatable="false">com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity</string>
+    <string name="missing_app_can_receive_action_send">Missing app that can receive ACTION_SEND.</string>
+    <string name="select_translate_app">Select translation app, then back to app setting.</string>
+    <string name="translation_app_chooser_works_android_5_1">Sorry, translation app chooser works on Android 5.1+.</string>
 
 </resources>

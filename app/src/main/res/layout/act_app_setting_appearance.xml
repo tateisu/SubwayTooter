@@ -647,6 +647,8 @@
 
         </LinearLayout>
 
+
+
         <View style="@style/setting_divider"/>
 
     </LinearLayout>

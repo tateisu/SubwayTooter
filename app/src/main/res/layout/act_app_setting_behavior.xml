@@ -248,6 +248,60 @@
 
         <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+           android:text="@string/show_translate_button"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swShowTranslateButton"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etTranslateAppComponent"
+            android:text="@string/translate_app_component"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etTranslateAppComponent"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="text"
+                android:hint="@string/translate_app_component_default"
+                />
+
+        </LinearLayout>
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnTranslateAppComponentEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnTranslateAppComponentReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+        <View style="@style/setting_divider"/>
+
 
 
     </LinearLayout>

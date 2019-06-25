@@ -394,6 +394,13 @@ object Pref {
 		R.id.swCustomEmojiSeparatorZwsp
 	)
 	
+	val bpShowTranslateButton = BooleanPref(
+		"ShowTranslateButton",
+		false,
+		R.id.swShowTranslateButton
+	)
+	
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)
@@ -492,6 +499,8 @@ object Pref {
 	
 	val spQuickTootMacro = StringPref("QuickTootMacro","")
 	val spQuickTootVisibility = StringPref("QuickTootVisibility","")
+	
+	val spTranslateAppComponent = StringPref("TranslateAppComponent","")
 	
 	// long
 	val lpTabletTootDefaultAccount = LongPref("tablet_toot_default_account", - 1L)

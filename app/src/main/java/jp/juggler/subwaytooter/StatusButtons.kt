@@ -1,13 +1,15 @@
 package jp.juggler.subwaytooter
 
+import android.content.ComponentName
 import android.content.Context
-import android.content.res.ColorStateList
-import androidx.core.content.ContextCompat
+import android.content.Intent
+import android.content.SharedPreferences
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
@@ -19,6 +21,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.util.TootTextEncoder
 import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.CountImageButton
 import jp.juggler.util.*
@@ -37,6 +40,16 @@ internal class StatusButtons(
 	
 	companion object {
 		val log = LogCategory("StatusButtons")
+		
+		fun String.toComponentName() : ComponentName? {
+			try {
+				val idx = indexOf('/')
+				if(idx >= 1) return ComponentName(substring(0 until idx), substring(idx + 1))
+			} catch(ex:Throwable) {
+				log.e(ex,"incorrect component name $this")
+			}
+			return null
+		}
 	}
 	
 	private val access_info : SavedAccount
@@ -53,6 +66,7 @@ internal class StatusButtons(
 	private val llFollow2 = holder.llFollow2
 	private val btnFollow2 = holder.btnFollow2
 	private val ivFollowedBy2 = holder.ivFollowedBy2
+	private val btnTranslate = holder.btnTranslate
 	private val btnMore = holder.btnMore
 	
 	private val color_normal = column.getContentColor()
@@ -69,6 +83,7 @@ internal class StatusButtons(
 		btnFavourite.setOnLongClickListener(this)
 		btnFollow2.setOnClickListener(this)
 		btnFollow2.setOnLongClickListener(this)
+		btnTranslate.setOnClickListener(this)
 		btnMore.setOnClickListener(this)
 		btnConversation.setOnClickListener(this)
 		btnConversation.setOnLongClickListener(this)
@@ -210,6 +225,15 @@ internal class StatusButtons(
 			relation
 		}
 		
+		if(vg(btnTranslate, Pref.bpShowTranslateButton(activity.pref))) {
+			setButton(
+				btnTranslate,
+				true,
+				color_normal,
+				R.drawable.ic_translate,
+				activity.getString(R.string.translate)
+			)
+		}
 	}
 	
 	private fun setButton(
@@ -231,6 +255,25 @@ internal class StatusButtons(
 		b.setPaddingAndText(holder.paddingH, holder.paddingV, count, 14f, holder.compoundPaddingDp)
 		b.setTextColor(color.applyAlphaMultiplier(alpha))
 		b.contentDescription = contentDescription + count
+		b.isEnabled = enabled
+	}
+	
+	private fun setButton(
+		b : ImageButton,
+		enabled : Boolean,
+		color : Int,
+		drawableId : Int,
+		contentDescription : String
+	) {
+		val alpha = Styler.boost_alpha
+		val d = createColoredDrawable(
+			activity,
+			drawableId,
+			color,
+			alpha
+		)
+		b.setImageDrawable(d)
+		b.contentDescription = contentDescription
 		b.isEnabled = enabled
 	}
 	
@@ -381,6 +424,38 @@ internal class StatusButtons(
 				}
 			}
 			
+			btnTranslate -> {
+				
+				try {
+					val sv = TootTextEncoder.encodeStatusForTranslate(activity, access_info, status)
+					
+					var cn = Pref.spTranslateAppComponent(activity.pref)
+						.toComponentName()
+					if(cn == null) {
+						cn = activity.getString(R.string.translate_app_component_default)
+							.toComponentName()
+						if(cn == null) {
+							showToast(
+								activity,
+								true,
+								"please check translate app component in app setting."
+							)
+							return
+						}
+					}
+					
+					val intent = Intent()
+					intent.action = Intent.ACTION_SEND
+					intent.type = "text/plain"
+					intent.putExtra(Intent.EXTRA_TEXT, sv)
+					intent.component = cn
+					activity.startActivity(intent)
+				} catch(ex : Throwable) {
+					log.trace(ex)
+					showToast(activity, ex, "send failed.")
+				}
+			}
+			
 			btnMore -> DlgContextMenu(
 				activity,
 				column,
@@ -463,6 +538,7 @@ class StatusButtonsViewHolder(
 	lateinit var llFollow2 : View
 	lateinit var btnFollow2 : ImageButton
 	lateinit var ivFollowedBy2 : ImageView
+	lateinit var btnTranslate : ImageButton
 	lateinit var btnMore : ImageButton
 	
 	init {
@@ -553,6 +629,20 @@ class StatusButtonsViewHolder(
 						
 						importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
 					}.lparams(matchParent, matchParent)
+				}
+				
+				btnTranslate = imageButton {
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					
+					contentDescription = context.getString(R.string.translate)
+					imageResource = R.drawable.ic_translate
+				}.lparams(buttonHeight, buttonHeight) {
+					startMargin = marginBetween
 				}
 				
 				btnMore = imageButton {

@@ -180,6 +180,8 @@ internal class DlgContextMenu(
 		btnBoostWithVisibility.setOnClickListener(this)
 		
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus).setOnClickListener(this)
+		viewRoot.findViewById<View>(R.id.btnTranslate).setOnClickListener(this)
+		
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlAccount).setOnClickListener(this)
 		viewRoot.findViewById<View>(R.id.btnShareUrlStatus).setOnClickListener(this)
 		viewRoot.findViewById<View>(R.id.btnShareUrlAccount).setOnClickListener(this)
@@ -899,6 +901,8 @@ internal class DlgContextMenu(
 			}
 			
 			R.id.btnCancel -> dialog.cancel()
+			
+			R.id.btnTranslate -> Action_Toot.openTranslate(activity,access_info,status)
 			
 			R.id.btnQuoteUrlStatus -> status?.url?.let { url ->
 				if(url.isNotEmpty()) Action_Account.openPost(activity, url)

@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter.action
 
+import android.content.ComponentName
+import android.content.Intent
 import android.text.SpannableStringBuilder
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
@@ -11,6 +13,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
+import jp.juggler.subwaytooter.util.TootTextEncoder
 import jp.juggler.util.*
 import okhttp3.Request
 import org.json.JSONObject
@@ -118,10 +121,9 @@ object Action_Toot {
 			var new_status : TootStatus? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				
 				val target_status = if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					
-					val(result,status) = client.syncStatus(access_info, arg_status)
+					val (result, status) = client.syncStatus(access_info, arg_status)
 					status ?: return result
 					if(status.favourited) {
 						return TootApiResult(activity.getString(R.string.already_favourited))
@@ -143,7 +145,7 @@ object Action_Toot {
 							.putMisskeyApiToken(JSONObject())
 							.put("noteId", target_status.id.toString())
 							.toPostRequestBuilder()
-					)?.also{ result->
+					)?.also { result ->
 						// 正常レスポンスは 204 no content
 						// 既にお気に入り済みならエラー文字列に'already favorited' が返る
 						if(result.response?.code() == 204
@@ -151,7 +153,7 @@ object Action_Toot {
 							|| result.error?.contains("already not favorited") == true
 						) {
 							// 成功した
-							new_status = target_status.apply{
+							new_status = target_status.apply {
 								favourited = bSet
 							}
 						}
@@ -160,7 +162,7 @@ object Action_Toot {
 					client.request(
 						"/api/v1/statuses/${target_status.id}/${if(bSet) "favourite" else "unfavourite"}",
 						"".toRequestBody().toPost()
-					)?.also{ result->
+					)?.also { result ->
 						new_status = TootParser(activity, access_info).status(result.jsonObject)
 					}
 				}
@@ -289,7 +291,7 @@ object Action_Toot {
 		callback : EmptyCallback?,
 		bSet : Boolean = true,
 		bConfirmed : Boolean = false,
-			visibility: TootVisibility? = null
+		visibility : TootVisibility? = null
 	) {
 		
 		// アカウントからステータスにブースト操作を行っているなら、何もしない
@@ -360,10 +362,8 @@ object Action_Toot {
 				
 				val parser = TootParser(activity, access_info)
 				
-				
-				
 				val target_status = if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
-					val(result,status) = client.syncStatus(access_info, arg_status)
+					val (result, status) = client.syncStatus(access_info, arg_status)
 					if(status == null) return result
 					if(status.reblogged) {
 						return TootApiResult(activity.getString(R.string.already_boosted))
@@ -382,7 +382,8 @@ object Action_Toot {
 						val params = access_info.putMisskeyApiToken(JSONObject())
 							.put("renoteId", target_status.id.toString())
 						
-						val result = client.request("/api/notes/create", params.toPostRequestBuilder())
+						val result =
+							client.request("/api/notes/create", params.toPostRequestBuilder())
 						val jsonObject = result?.jsonObject
 						if(jsonObject != null) {
 							val new_status = parser.status(
@@ -397,9 +398,9 @@ object Action_Toot {
 					
 				} else {
 					val b = JSONObject().apply {
-						if( visibility != null) put("visibility",visibility.strMastodon)
+						if(visibility != null) put("visibility", visibility.strMastodon)
 					}.toPostRequestBuilder()
-
+					
 					val result = client.request(
 						"/api/v1/statuses/${target_status.id}/${if(bSet) "reblog" else "unreblog"}",
 						b
@@ -757,8 +758,8 @@ object Action_Toot {
 						}
 						result
 					} else {
-						val(result,status) = client.syncStatus(access_info, remote_status_url)
-						if(status != null){
+						val (result, status) = client.syncStatus(access_info, remote_status_url)
+						if(status != null) {
 							local_status_id = status.id
 							log.d("status id conversion %s => %s", remote_status_url, status.id)
 						}
@@ -871,7 +872,7 @@ object Action_Toot {
 				
 				var local_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val (result,status) = client.syncStatus(access_info, remote_status_url)
+					val (result, status) = client.syncStatus(access_info, remote_status_url)
 					local_status = status
 					return result
 				}
@@ -1090,14 +1091,14 @@ object Action_Toot {
 				
 				val target_status = if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					
-					val(result,status) = client.syncStatus(access_info, arg_status)
-
-					status?:  return result
-
+					val (result, status) = client.syncStatus(access_info, arg_status)
+					
+					status ?: return result
+					
 					if(status.myReaction != null) {
 						return TootApiResult(activity.getString(R.string.already_reactioned))
 					}
-
+					
 					status
 					
 				} else {
@@ -1254,5 +1255,43 @@ object Action_Toot {
 				
 			}
 		})
+	}
+	
+	fun openTranslate(activity : ActMain, access_info : SavedAccount, status : TootStatus?) {
+		status ?: return
+		
+		try {
+			
+			// convert "pkgName/className" string to ComponentName object.
+			fun String.cn() : ComponentName? {
+				try {
+					val idx = indexOf('/')
+					if(idx >= 1) return ComponentName(substring(0 until idx), substring(idx + 1))
+				} catch(ex : Throwable) {
+					log.e(ex, "incorrect component name $this")
+				}
+				return null
+			}
+
+			val cn = Pref.spTranslateAppComponent(activity.pref).cn()
+				?: activity.getString(R.string.translate_app_component_default).cn()
+			
+			if(cn == null) {
+				showToast(activity, true, "please check translate app component in app setting.")
+				return
+			}
+			
+			val sv = TootTextEncoder.encodeStatusForTranslate(activity, access_info, status)
+			
+			val intent = Intent()
+			intent.action = Intent.ACTION_SEND
+			intent.type = "text/plain"
+			intent.putExtra(Intent.EXTRA_TEXT, sv)
+			intent.component = cn
+			activity.startActivity(intent)
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			showToast(activity, ex, "openTranslate() failed.")
+		}
 	}
 }

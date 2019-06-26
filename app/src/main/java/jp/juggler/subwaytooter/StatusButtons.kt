@@ -1,9 +1,6 @@
 package jp.juggler.subwaytooter
 
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -21,7 +18,6 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.TootTextEncoder
 import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.CountImageButton
 import jp.juggler.util.*
@@ -40,16 +36,6 @@ internal class StatusButtons(
 	
 	companion object {
 		val log = LogCategory("StatusButtons")
-		
-		fun String.toComponentName() : ComponentName? {
-			try {
-				val idx = indexOf('/')
-				if(idx >= 1) return ComponentName(substring(0 until idx), substring(idx + 1))
-			} catch(ex:Throwable) {
-				log.e(ex,"incorrect component name $this")
-			}
-			return null
-		}
 	}
 	
 	private val access_info : SavedAccount
@@ -424,37 +410,7 @@ internal class StatusButtons(
 				}
 			}
 			
-			btnTranslate -> {
-				
-				try {
-					val sv = TootTextEncoder.encodeStatusForTranslate(activity, access_info, status)
-					
-					var cn = Pref.spTranslateAppComponent(activity.pref)
-						.toComponentName()
-					if(cn == null) {
-						cn = activity.getString(R.string.translate_app_component_default)
-							.toComponentName()
-						if(cn == null) {
-							showToast(
-								activity,
-								true,
-								"please check translate app component in app setting."
-							)
-							return
-						}
-					}
-					
-					val intent = Intent()
-					intent.action = Intent.ACTION_SEND
-					intent.type = "text/plain"
-					intent.putExtra(Intent.EXTRA_TEXT, sv)
-					intent.component = cn
-					activity.startActivity(intent)
-				} catch(ex : Throwable) {
-					log.trace(ex)
-					showToast(activity, ex, "send failed.")
-				}
-			}
+			btnTranslate -> Action_Toot.openTranslate(activity, access_info, status)
 			
 			btnMore -> DlgContextMenu(
 				activity,
@@ -505,9 +461,9 @@ open class _FlexboxLayout(ctx : Context) : FlexboxLayout(ctx) {
 	inline fun <T : View> T.lparams(
 		width : Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
 		height : Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-		init : FlexboxLayout.LayoutParams.() -> Unit = {}
+		init : LayoutParams.() -> Unit = {}
 	) : T {
-		val layoutParams = FlexboxLayout.LayoutParams(width, height)
+		val layoutParams = LayoutParams(width, height)
 		layoutParams.init()
 		this@lparams.layoutParams = layoutParams
 		return this

@@ -49,12 +49,26 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		
 		private var utteranceIdSeed = 0
 		
-		// データ保存用 および カラム一覧への伝達用
 		internal fun saveColumnList(context : Context, fileName : String, array : JSONArray) {
 			synchronized(log) {
 				try {
-					context.openFileOutput(fileName, Context.MODE_PRIVATE).use { os ->
-						os.write(array.toString().encodeUTF8())
+					val tmpName =
+						"tmpColumnList.${System.currentTimeMillis()}.${Thread.currentThread().id}"
+					val tmpFile = context.getFileStreamPath(tmpName)
+					try {
+						// write to tmp file
+						context.openFileOutput(tmpName, Context.MODE_PRIVATE).use { os ->
+							os.write(array.toString().encodeUTF8())
+						}
+						// rename
+						val outFile = context.getFileStreamPath(fileName)
+						if(! tmpFile.renameTo(outFile)) {
+							error("saveColumnList: rename failed!")
+						} else {
+							log.d("saveColumnList: rename ok: $outFile")
+						}
+					} finally {
+						tmpFile.delete() // ignore return value
 					}
 				} catch(ex : Throwable) {
 					log.trace(ex)
@@ -63,7 +77,6 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			}
 		}
 		
-		// データ保存用 および カラム一覧への伝達用
 		internal fun loadColumnList(context : Context, fileName : String) : JSONArray? {
 			synchronized(log) {
 				try {

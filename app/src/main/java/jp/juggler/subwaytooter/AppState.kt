@@ -51,33 +51,35 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		
 		// データ保存用 および カラム一覧への伝達用
 		internal fun saveColumnList(context : Context, fileName : String, array : JSONArray) {
-			
-			try {
-				context.openFileOutput(fileName, Context.MODE_PRIVATE).use { os ->
-					os.write(array.toString().encodeUTF8())
+			synchronized(log) {
+				try {
+					context.openFileOutput(fileName, Context.MODE_PRIVATE).use { os ->
+						os.write(array.toString().encodeUTF8())
+					}
+				} catch(ex : Throwable) {
+					log.trace(ex)
+					showToast(context, ex, "saveColumnList failed.")
 				}
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				showToast(context, ex, "saveColumnList failed.")
 			}
-			
 		}
 		
 		// データ保存用 および カラム一覧への伝達用
 		internal fun loadColumnList(context : Context, fileName : String) : JSONArray? {
-			try {
-				context.openFileInput(fileName).use { inData ->
-					val bao = ByteArrayOutputStream(inData.available())
-					IOUtils.copy(inData, bao)
-					return bao.toByteArray().decodeUTF8().toJsonArray()
+			synchronized(log) {
+				try {
+					context.openFileInput(fileName).use { inData ->
+						val bao = ByteArrayOutputStream(inData.available())
+						IOUtils.copy(inData, bao)
+						return bao.toByteArray().decodeUTF8().toJsonArray()
+					}
+				} catch(ignored : FileNotFoundException) {
+				} catch(ex : Throwable) {
+					log.trace(ex)
+					showToast(context, ex, "loadColumnList failed.")
 				}
-			} catch(ignored : FileNotFoundException) {
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				showToast(context, ex, "loadColumnList failed.")
+				
+				return null
 			}
-			
-			return null
 		}
 		
 		private fun getStatusText(status : TootStatus?) : Spannable? {

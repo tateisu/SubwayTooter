@@ -315,7 +315,7 @@ object HTMLDecoder {
 				
 				val start = sb.length
 				
-				sb.append( encodeUrl(options, sb_tmp.toString(), href) )
+				sb.append(encodeUrl(options, sb_tmp.toString(), href))
 				
 				val end = sb.length
 				
@@ -392,15 +392,33 @@ object HTMLDecoder {
 			href : String?
 		) : CharSequence {
 			
+			if(display_url.isNotEmpty()) {
+				when(display_url[0]) {
+					'@' -> {
+						// @mention
+						if(href != null && (options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref))) {
+							val acct = TootAccount.getAcctFromUrl(href)
+							if(acct != null) return "@$acct"
+						}
+						return display_url
+					}
+					
+					'#' -> {
+						// #hashtag
+						return display_url
+					}
+				}
+			}
+			
 			val context = options.context
-
-			if(context == null || ! options.short){
+			
+			if(context == null || ! options.short) {
 				return display_url
 			}
 			
 			// 添付メディアのURLなら絵文字に変換する
-			if( options.isMediaAttachment(href)){
-				return SpannableString(href).apply{
+			if(options.isMediaAttachment(href)) {
+				return SpannableString(href).apply {
 					setSpan(
 						EmojiImageSpan(context, R.drawable.emj_1f5bc_fe0f),
 						0,
@@ -412,11 +430,11 @@ object HTMLDecoder {
 			
 			// ニコニコ大百科のURLを変える
 			val m = reNicodic.matcher(href)
-			if( m.find() ){
-				return SpannableString("${m.group(1).decodePercent() }:nicodic:").apply{
+			if(m.find()) {
+				return SpannableString("${m.group(1).decodePercent()}:nicodic:").apply {
 					setSpan(
 						EmojiImageSpan(context, R.drawable.nicodic),
-						length -9,
+						length - 9,
 						length,
 						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 					)
@@ -426,17 +444,10 @@ object HTMLDecoder {
 			// 通常リンクはhttp,httpsだけでなく幾つかのスキーマ名が含まれる
 			// スキーマ名の直後には必ず :// が出現する
 			// https://github.com/tootsuite/mastodon/pull/7810
-			if( reNormalLink.matcher(display_url).find() ){
+			if(reNormalLink.matcher(display_url).find()) {
 				return shortenUrl(display_url)
 			}
 			
-			// メンションをfull acct にする
-			if( display_url.startsWith("@") && href != null && Pref.bpMentionFullAcct(App1.pref) ){
-				val acct = TootAccount.getAcctFromUrl(href)
-				if(acct != null) return "@$acct"
-			}
-			
-			// ハッシュタグやメンションはURLの短縮表示の対象外
 			return display_url
 		}
 	}

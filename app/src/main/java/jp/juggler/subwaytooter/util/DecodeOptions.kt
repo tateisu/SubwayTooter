@@ -23,7 +23,8 @@ class DecodeOptions(
 	var highlightTrie : WordTrieTree? = null,
 	var unwrapEmojiImageTag :Boolean = false,
 	var enlargeCustomEmoji :Float = 1f,
-	var forceHtml : Boolean = false // force use HTML instead of Misskey Markdown
+	var forceHtml : Boolean = false, // force use HTML instead of Misskey Markdown
+	var mentionFullAcct : Boolean = false
 ) {
 	
 	internal fun isMediaAttachment(url : String?) : Boolean {

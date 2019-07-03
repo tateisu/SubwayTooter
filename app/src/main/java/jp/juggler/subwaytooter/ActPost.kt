@@ -765,7 +765,7 @@ class ActPost : AppCompatActivity(),
 						
 						// 再編集の場合はdefault_textは反映されない
 						
-						val decodeOptions = DecodeOptions(this)
+						val decodeOptions = DecodeOptions(this, mentionFullAcct = true)
 						
 						var text : Spannable
 						

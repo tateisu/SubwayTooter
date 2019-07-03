@@ -24,6 +24,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.Spannable
+import android.text.SpannableStringBuilder
 import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
 import android.view.View
@@ -769,7 +770,8 @@ class ActPost : AppCompatActivity(),
 						
 						var text : Spannable
 						
-						text = decodeOptions.decodeHTML(base_status.content)
+						text = fixMentions(base_status.mentions, decodeOptions.decodeHTML(base_status.content))
+
 						etContent.text = text
 						etContent.setSelection(text.length)
 						
@@ -895,7 +897,16 @@ class ActPost : AppCompatActivity(),
 		showQuotedRenote()
 		showSchedule()
 	}
-	
+
+	private fun fixMentions(mentions : Iterable<TootMention>?, text : SpannableStringBuilder) : SpannableStringBuilder {
+		var toReturn = text.toString()
+		mentions?.forEach {
+			mention ->
+			toReturn  = toReturn.replace(Regex.fromLiteral(mention.username), Regex.escapeReplacement(mention.acct))
+		}
+		return SpannableStringBuilder(toReturn)
+	}
+
 	override fun onDestroy() {
 		post_helper.onDestroy()
 		attachment_worker?.cancel()

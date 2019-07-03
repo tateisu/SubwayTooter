@@ -349,7 +349,10 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		internal val reAccountUrl : Pattern =
 			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/@(\w+[\w-]*)(?:@(\w[\w.-]*\w))?(?=\z|[?#])""")
 		
-		fun getAcctFromUrl(url : String) : String? {
+		fun getAcctFromUrl(url : String?) : String? {
+
+			url ?: return null
+
 			val m = reAccountUrl.matcher(url)
 			return if(m.find()) {
 				val host = m.group(1)

@@ -396,10 +396,11 @@ object HTMLDecoder {
 				when(display_url[0]) {
 					'@' -> {
 						// @mention
-						if(href != null && (options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref))) {
+						if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
 							val acct = TootAccount.getAcctFromUrl(href)
 							if(acct != null) return "@$acct"
 						}
+						
 						return display_url
 					}
 					

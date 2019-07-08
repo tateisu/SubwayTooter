@@ -63,10 +63,26 @@ object Action_Notification {
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return client.request(
-					"/api/v1/notifications/dismiss",
-					"id=${notification.id}".toRequestBody().toPost()
+				
+				// https://github.com/tootsuite/mastodon/commit/30f5bcf3e749be9651ed39a07b893f70605f8a39
+				// 2種類のAPIがあり、片方は除去された
+				
+				// まず新しいAPIを試す
+				val result = client.request(
+					"/api/v1/notifications/${notification.id}/dismiss",
+					"".toRequestBody().toPost()
 				)
+				
+				return when(result?.response?.code()) {
+					
+					// 新しいAPIがない場合、古いAPIを試す
+					422 -> client.request(
+						"/api/v1/notifications/dismiss",
+						"id=${notification.id}".toRequestBody().toPost()
+					)
+					
+					else -> result
+				}
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

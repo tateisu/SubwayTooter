@@ -635,61 +635,6 @@ class StatusButtonsViewHolder(
 					}.lparams(matchParent, matchParent)
 				}
 				
-				btnTranslate = imageButton {
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
-					
-					contentDescription = context.getString(R.string.translate)
-					imageResource = R.drawable.ic_translate
-				}.lparams(buttonHeight, buttonHeight) {
-					startMargin = marginBetween
-				}
-				
-				btnCustomShare1 = imageButton {
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
-					
-					contentDescription = context.getString(R.string.translate)
-					imageResource = R.drawable.ic_translate
-				}.lparams(buttonHeight, buttonHeight) {
-					startMargin = marginBetween
-				}
-				
-				btnCustomShare2 = imageButton {
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
-					
-					contentDescription = context.getString(R.string.translate)
-					imageResource = R.drawable.ic_translate
-				}.lparams(buttonHeight, buttonHeight) {
-					startMargin = marginBetween
-				}
-				
-				btnCustomShare3 = imageButton {
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
-					
-					contentDescription = context.getString(R.string.translate)
-					imageResource = R.drawable.ic_translate
-				}.lparams(buttonHeight, buttonHeight) {
-					startMargin = marginBetween
-				}
 				
 				btnMore = imageButton {
 					background = ContextCompat.getDrawable(
@@ -704,8 +649,56 @@ class StatusButtonsViewHolder(
 				}.lparams(buttonHeight, buttonHeight) {
 					startMargin = marginBetween
 				}
+				
+				btnTranslate = imageButton {
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					
+				}.lparams(buttonHeight, buttonHeight) {
+					startMargin = marginBetween
+				}
+				
+				btnCustomShare1 = imageButton {
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					
+				}.lparams(buttonHeight, buttonHeight) {
+					startMargin = marginBetween
+				}
+				
+				btnCustomShare2 = imageButton {
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					
+				}.lparams(buttonHeight, buttonHeight) {
+					startMargin = marginBetween
+				}
+				
+				btnCustomShare3 = imageButton {
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					
+				}.lparams(buttonHeight, buttonHeight) {
+					startMargin = marginBetween
+				}
+
 			}
-			
 		}
 	}
 }

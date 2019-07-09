@@ -138,7 +138,7 @@ inline fun <S : CharSequence, Z : Any?> S?.letNotEmpty(block : (S) -> Z?) : Z? =
 
 // usage: str.notEmpty() ?: fallback
 // equivalent: if(this.isNotEmpty() ) this else null
-fun <S : CharSequence> S?.notEmpty() :S? = if( this?.isNotEmpty() ==true ) this else null
+fun <S : CharSequence> S?.notEmpty() : S? = if(this?.isNotEmpty() == true) this else null
 
 ////////////////////////////////////////////////////////////////////
 // string
@@ -150,7 +150,7 @@ fun String.encodeUTF8() = this.toByteArray(charsetUTF8)
 
 fun ByteArray.decodeUTF8() = this.toString(charsetUTF8)
 
-fun String.codePointCount(beginIndex:Int = 0): Int = this.codePointCount(beginIndex, this.length)
+fun String.codePointCount(beginIndex : Int = 0) : Int = this.codePointCount(beginIndex, this.length)
 
 // 16進ダンプ
 fun ByteArray.encodeHex() : String {
@@ -192,8 +192,12 @@ fun String?.filterNotEmpty() : String? = when {
 	else -> this
 }
 
-//fun String.ellipsize(max : Int) = if(this.length > max) this.substring(0, max - 1) + "…" else this
-//
+fun String?.ellipsizeDot3(max : Int) = when {
+	this == null -> null
+	this.length > max -> this.substring(0, max - 1) + "…"
+	else -> this
+}
+
 //fun String.toCamelCase() : String {
 //	val sb = StringBuilder()
 //	for(s in this.split("_".toRegex())) {

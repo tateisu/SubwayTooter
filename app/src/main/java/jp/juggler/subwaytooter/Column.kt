@@ -226,6 +226,8 @@ class Column(
 		internal const val QUICK_FILTER_REACTION = 5
 		internal const val QUICK_FILTER_VOTE = 6
 		
+		internal const val HASHTAG_ELLIPSIZE = 26
+		
 		@Suppress("UNCHECKED_CAST")
 		private inline fun <reified T> getParamAt(params : Array<out Any>, idx : Int) : T {
 			return params[idx] as T
@@ -387,7 +389,6 @@ class Column(
 					}
 				})
 		}
-		
 		
 		private val columnIdMap = HashMap<String, WeakReference<Column>?>()
 		private fun registerColumnId(id : String, column : Column) {
@@ -818,6 +819,9 @@ class Column(
 			TYPE_HASHTAG_FROM_ACCT -> {
 				hashtag = src.optString(KEY_HASHTAG)
 				hashtag_acct = src.optString(KEY_HASHTAG_ACCT)
+				hashtag_any = src.optString(KEY_HASHTAG_ANY)
+				hashtag_all = src.optString(KEY_HASHTAG_ALL)
+				hashtag_none = src.optString(KEY_HASHTAG_NONE)
 			}
 			
 			TYPE_NOTIFICATION_FROM_ACCT -> {
@@ -1011,33 +1015,26 @@ class Column(
 				(status_id?.toString() ?: "null")
 			)
 			
-			TYPE_HASHTAG -> {
-				val sb = StringBuilder(context.getString(R.string.hashtag_of, hashtag))
-				
-				if(hashtag_any.isNotBlank()) sb.append(' ').append(
+			TYPE_HASHTAG ->
+				StringBuilder(
 					context.getString(
-						R.string.hashtag_title_any,
-						hashtag_any
+						R.string.hashtag_of,
+						hashtag.ellipsizeDot3(HASHTAG_ELLIPSIZE)
 					)
 				)
-				if(hashtag_all.isNotBlank()) sb.append(' ').append(
-					context.getString(
-						R.string.hashtag_title_all,
-						hashtag_all
-					)
-				)
-				if(hashtag_none.isNotBlank()) sb.append(' ').append(
-					context.getString(
-						R.string.hashtag_title_none,
-						hashtag_none
-					)
-				)
-				sb.toString()
-			}
+					.appendHashtagExtra()
+					.toString()
 			
-			TYPE_HASHTAG_FROM_ACCT -> {
-				context.getString(R.string.hashtag_of_from, hashtag, hashtag_acct)
-			}
+			TYPE_HASHTAG_FROM_ACCT ->
+				StringBuilder(
+					context.getString(
+						R.string.hashtag_of_from,
+						hashtag.ellipsizeDot3(HASHTAG_ELLIPSIZE),
+						hashtag_acct
+					)
+				)
+					.appendHashtagExtra()
+					.toString()
 			
 			TYPE_NOTIFICATION_FROM_ACCT -> {
 				context.getString(
@@ -1574,7 +1571,6 @@ class Column(
 		return status.checkMuted()
 	}
 	
-	
 	internal fun isFiltered(item : TootNotification) : Boolean {
 		
 		if(when(quick_filter) {
@@ -1942,7 +1938,6 @@ class Column(
 		this.lastTask = task
 		task.executeOnExecutor(App1.task_executor)
 	}
-	
 	
 	private var bMinIdMatched : Boolean = false
 	
@@ -2345,6 +2340,35 @@ class Column(
 	
 	internal fun canAutoRefresh() : Boolean {
 		return streamPath != null
+	}
+	
+	internal fun hasHashtagExtra() = when {
+		isMisskey -> false
+		column_type == TYPE_HASHTAG || column_type == TYPE_HASHTAG_FROM_ACCT -> true
+		else -> false
+	}
+	
+	private fun StringBuilder.appendHashtagExtra() : StringBuilder {
+		val limit = ( HASHTAG_ELLIPSIZE * 2 - min( length , HASHTAG_ELLIPSIZE) ) /3
+		if(hashtag_any.isNotBlank()) append(' ').append(
+			context.getString(
+				R.string.hashtag_title_any,
+				hashtag_any.ellipsizeDot3(limit)
+			)
+		)
+		if(hashtag_all.isNotBlank()) append(' ').append(
+			context.getString(
+				R.string.hashtag_title_all,
+				hashtag_all.ellipsizeDot3(limit)
+			)
+		)
+		if(hashtag_none.isNotBlank()) append(' ').append(
+			context.getString(
+				R.string.hashtag_title_none,
+				hashtag_none.ellipsizeDot3(limit)
+			)
+		)
+		return this
 	}
 	
 	fun canReloadWhenRefreshTop() : Boolean {
@@ -2901,7 +2925,6 @@ class Column(
 			if(removeSet.contains(o.id)) it.remove()
 		}
 	}
-	
 	
 	internal fun loadFilter2(client : TootApiClient) : ArrayList<TootFilter>? {
 		if(access_info.isPseudo || access_info.isMisskey) return null

@@ -682,7 +682,7 @@ class ColumnViewHolder(
 			vg(llListList, column.column_type == Column.TYPE_LIST_LIST)
 			vg(cbResolve, column.column_type == Column.TYPE_SEARCH)
 			
-			vg(llHashtagExtra, column.column_type == Column.TYPE_HASHTAG && ! column.isMisskey)
+			vg(llHashtagExtra, column.hasHashtagExtra())
 			etHashtagExtraAny.setText(column.hashtag_any)
 			etHashtagExtraAll.setText(column.hashtag_all)
 			etHashtagExtraNone.setText(column.hashtag_none)

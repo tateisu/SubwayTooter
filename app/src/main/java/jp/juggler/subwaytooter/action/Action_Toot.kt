@@ -1,7 +1,5 @@
 package jp.juggler.subwaytooter.action
 
-import android.content.ComponentName
-import android.content.Intent
 import android.text.SpannableStringBuilder
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
@@ -13,7 +11,6 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
-import jp.juggler.subwaytooter.util.TootTextEncoder
 import jp.juggler.util.*
 import okhttp3.Request
 import org.json.JSONObject
@@ -1257,41 +1254,4 @@ object Action_Toot {
 		})
 	}
 	
-	fun openTranslate(activity : ActMain, access_info : SavedAccount, status : TootStatus?) {
-		status ?: return
-		
-		try {
-			
-			// convert "pkgName/className" string to ComponentName object.
-			fun String.cn() : ComponentName? {
-				try {
-					val idx = indexOf('/')
-					if(idx >= 1) return ComponentName(substring(0 until idx), substring(idx + 1))
-				} catch(ex : Throwable) {
-					log.e(ex, "incorrect component name $this")
-				}
-				return null
-			}
-
-			val cn = Pref.spTranslateAppComponent(activity.pref).cn()
-				?: activity.getString(R.string.translate_app_component_default).cn()
-			
-			if(cn == null) {
-				showToast(activity, true, "please check translate app component in app setting.")
-				return
-			}
-			
-			val sv = TootTextEncoder.encodeStatusForTranslate(activity, access_info, status)
-			
-			val intent = Intent()
-			intent.action = Intent.ACTION_SEND
-			intent.type = "text/plain"
-			intent.putExtra(Intent.EXTRA_TEXT, sv)
-			intent.component = cn
-			activity.startActivity(intent)
-		} catch(ex : Throwable) {
-			log.trace(ex)
-			showToast(activity, ex, "openTranslate() failed.")
-		}
-	}
 }

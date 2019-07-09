@@ -5,9 +5,7 @@ import android.app.Dialog
 import android.content.res.ColorStateList
 import androidx.core.app.ShareCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.AppCompatImageButton
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +16,6 @@ import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
-import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgListMember
 import jp.juggler.subwaytooter.dialog.DlgQRCode
 import jp.juggler.subwaytooter.span.MyClickableSpan
@@ -128,7 +125,7 @@ internal class DlgContextMenu(
 			viewRoot.findViewById(R.id.btnOpenInstanceInAdminWebUi)
 		val btnBoostWithVisibility : Button = viewRoot.findViewById(R.id.btnBoostWithVisibility)
 		val llLinks : LinearLayout = viewRoot.findViewById(R.id.llLinks)
-	
+		
 		val btnNotificationFrom : Button = viewRoot.findViewById(R.id.btnNotificationFrom)
 		
 		btnNotificationFrom.setOnClickListener(this)
@@ -812,9 +809,9 @@ internal class DlgContextMenu(
 				}
 				
 				R.id.btnNotificationFrom -> {
-					if( access_info.isMisskey){
-						showToast(activity,false,R.string.misskey_account_not_supported)
-					}else {
+					if(access_info.isMisskey) {
+						showToast(activity, false, R.string.misskey_account_not_supported)
+					} else {
 						val acct = access_info.getFullAcct(who)
 						if(acct.isNotEmpty() && ! acct.contains('?')) {
 							activity.addColumn(
@@ -902,7 +899,12 @@ internal class DlgContextMenu(
 			
 			R.id.btnCancel -> dialog.cancel()
 			
-			R.id.btnTranslate -> Action_Toot.openTranslate(activity,access_info,status)
+			R.id.btnTranslate -> CustomShare.invoke(
+				activity,
+				access_info,
+				status,
+				CustomShareTarget.Translate
+			)
 			
 			R.id.btnQuoteUrlStatus -> status?.url?.let { url ->
 				if(url.isNotEmpty()) Action_Account.openPost(activity, url)

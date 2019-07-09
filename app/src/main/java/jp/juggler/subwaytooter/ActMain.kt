@@ -510,6 +510,7 @@ class ActMain : AppCompatActivity()
 		MyClickableSpan.showLinkUnderline = Pref.bpShowLinkUnderline(pref)
 		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
 			?: getAttributeColor(this, R.attr.colorLink)
+		CustomShare.reloadCache(this,pref)
 		
 		// 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
 		for(column in app_state.column_list) {

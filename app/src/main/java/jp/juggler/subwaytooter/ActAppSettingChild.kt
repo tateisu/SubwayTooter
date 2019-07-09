@@ -9,6 +9,7 @@ import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PersistableBundle
 import androidx.annotation.ColorInt
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +20,8 @@ import android.view.ViewGroup
 import android.widget.*
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import jp.juggler.subwaytooter.action.CustomShare
+import jp.juggler.subwaytooter.action.CustomShareTarget
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
@@ -28,7 +31,6 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
-import java.lang.ref.WeakReference
 import java.text.NumberFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -90,6 +92,8 @@ class ActAppSettingChild : AppCompatActivity()
 		internal const val REQUEST_CODE_TIMELINE_FONT_BOLD = 2
 		
 		private val reLinefeed = Regex("[\\x0d\\x0a]+")
+		
+		internal const val STATE_CHOOSE_INTENT_TARGET = "customShareTarget"
 		
 	}
 	
@@ -159,7 +163,10 @@ class ActAppSettingChild : AppCompatActivity()
 	private var etRoundRatio : EditText? = null
 	private var etBoostAlpha : EditText? = null
 	private var etMediaReadTimeout : EditText? = null
-	private var etTranslateAppComponent : EditText? = null
+	private var tvTranslateAppComponent : TextView? = null
+	private var tvCustomShare1 : TextView? = null
+	private var tvCustomShare2 : TextView? = null
+	private var tvCustomShare3 : TextView? = null
 	
 	private var tvTimelineFontUrl : TextView? = null
 	private var timeline_font : String? = null
@@ -204,12 +211,13 @@ class ActAppSettingChild : AppCompatActivity()
 	private var hasLinkColorUi = false
 	private var hasColumnColorDefaultUi = false
 	
+	private var customShareTarget : CustomShareTarget? = null
+	
 	override fun onResume() {
 		super.onResume()
 		
-		checkIntentChoiced()
+		onCustomShareSelected()
 	}
-	
 	
 	override fun onPause() {
 		super.onPause()
@@ -225,6 +233,16 @@ class ActAppSettingChild : AppCompatActivity()
 		}
 	}
 	
+	override fun onSaveInstanceState(outState : Bundle?, outPersistentState : PersistableBundle?) {
+		super.onSaveInstanceState(outState, outPersistentState)
+		
+		outState ?: return
+		
+		val sv = customShareTarget?.name
+		if(sv != null) outState.putString(STATE_CHOOSE_INTENT_TARGET, sv)
+		
+	}
+	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
 		
@@ -237,6 +255,15 @@ class ActAppSettingChild : AppCompatActivity()
 		val titleId = intent.getIntExtra(EXTRA_TITLE_ID, 0)
 		
 		this.title = getString(titleId)
+		
+		if(savedInstanceState != null) {
+			try {
+				val sv = savedInstanceState.getString(STATE_CHOOSE_INTENT_TARGET)
+				customShareTarget = CustomShareTarget.values().firstOrNull { it.name == sv }
+			} catch(ex : Throwable) {
+				log.e(ex, "can't restore customShareTarget.")
+			}
+		}
 		
 		setContentView(layoutId)
 		
@@ -390,6 +417,12 @@ class ActAppSettingChild : AppCompatActivity()
 			, R.id.btnBackgroundColorFollowRequestedReset
 			, R.id.btnTranslateAppComponentEdit
 			, R.id.btnTranslateAppComponentReset
+			, R.id.btnCustomShare1Edit
+			, R.id.btnCustomShare1Reset
+			, R.id.btnCustomShare2Edit
+			, R.id.btnCustomShare2Reset
+			, R.id.btnCustomShare3Edit
+			, R.id.btnCustomShare3Reset
 		).forEach {
 			findViewById<View>(it)?.setOnClickListener(this)
 		}
@@ -444,8 +477,10 @@ class ActAppSettingChild : AppCompatActivity()
 		etMediaReadTimeout = findViewById(R.id.etMediaReadTimeout)
 		etMediaReadTimeout?.addTextChangedListener(this)
 		
-		etTranslateAppComponent = findViewById(R.id.etTranslateAppComponent)
-		etTranslateAppComponent?.addTextChangedListener(this)
+		tvTranslateAppComponent = findViewById(R.id.tvTranslateAppComponent)
+		tvCustomShare1 = findViewById(R.id.tvCustomShare1)
+		tvCustomShare2 = findViewById(R.id.tvCustomShare2)
+		tvCustomShare3 = findViewById(R.id.tvCustomShare3)
 		
 		tvTimelineFontSize = findViewById(R.id.tvTimelineFontSize)
 		tvAcctFontSize = findViewById(R.id.tvAcctFontSize)
@@ -602,7 +637,11 @@ class ActAppSettingChild : AppCompatActivity()
 		etBoostAlpha?.setText(Pref.spBoostAlpha(pref))
 		
 		etMediaReadTimeout?.setText(Pref.spMediaReadTimeout(pref))
-		etTranslateAppComponent?.setText(Pref.spTranslateAppComponent(pref))
+		
+		showCustomShareIcon(tvTranslateAppComponent, CustomShareTarget.Translate)
+		showCustomShareIcon(tvCustomShare1, CustomShareTarget.CustomShare1)
+		showCustomShareIcon(tvCustomShare2, CustomShareTarget.CustomShare2)
+		showCustomShareIcon(tvCustomShare3, CustomShareTarget.CustomShare3)
 		
 		timeline_font = Pref.spTimelineFont(pref)
 		timeline_font_bold = Pref.spTimelineFontBold(pref)
@@ -667,10 +706,11 @@ class ActAppSettingChild : AppCompatActivity()
 		putFontSize(Pref.fpNotificationTlFontSize, etNotificationTlFontSize)
 		putFontSize(Pref.fpHeaderTextSize, etHeaderTextSize)
 		
-		fun putText(sp : StringPref, et : EditText?, filter : (String) -> String = { it.trim() }) {
-			et ?: return
-			e.put(sp, filter(et.text.toString()))
+		fun putText(sp : StringPref, tv : TextView?, filter : (String) -> String = { it.trim() }) {
+			tv ?: return
+			e.put(sp, filter(tv.text.toString()))
 		}
+		
 		putText(Pref.spColumnWidth, etColumnWidth)
 		putText(Pref.spMediaThumbHeight, etMediaThumbHeight)
 		putText(Pref.spClientName, etClientName)
@@ -690,7 +730,6 @@ class ActAppSettingChild : AppCompatActivity()
 		putText(Pref.spRoundRatio, etRoundRatio)
 		putText(Pref.spBoostAlpha, etBoostAlpha)
 		putText(Pref.spMediaReadTimeout, etMediaReadTimeout)
-		putText(Pref.spTranslateAppComponent,etTranslateAppComponent)
 		
 		fun putIf(hasUi : Boolean, sp : StringPref, value : String) {
 			if(! hasUi) return
@@ -1131,54 +1170,15 @@ class ActAppSettingChild : AppCompatActivity()
 				saveUIToData()
 			}
 			
-			R.id.btnTranslateAppComponentEdit -> {
-				
-				val intent = Intent()
-				intent.action = Intent.ACTION_SEND
-				intent.type = "text/plain"
-				intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.content_sample))
-				
-				// このifはwhenにしてはならない。APIバージョン関連の警告が出てしまう
-				@Suppress("CascadeIf")
-				if(intent.resolveActivity(packageManager) == null) {
-					// ACTION_SENDを受け取れるアプリがインストールされてない
-					showToast(this, true, getString(R.string.missing_app_can_receive_action_send))
-				} else if(Build.VERSION.SDK_INT <= 21) {
-					// createChooserにIntentSenderを指定できるのはAndroid 22以降
-					showToast(
-						this,
-						true,
-						getString(R.string.translation_app_chooser_works_android_5_1)
-					)
-				} else try {
-					ChooseReceiver.lastComponentName = null
-					ChooseReceiver.setCallback{ checkIntentChoiced() }
-					
-					val receiver = Intent(this, ChooseReceiver::class.java)
-					val pendingIntent = PendingIntent.getBroadcast(
-						this,
-						1,
-						receiver,
-						PendingIntent.FLAG_UPDATE_CURRENT
-					)
-					startActivity(
-						Intent.createChooser(
-							intent,
-							getString(R.string.select_translate_app),
-							pendingIntent.intentSender
-						)
-					)
-					
-				} catch(ex : Throwable) {
-					log.trace(ex)
-					showToast(this, ex, "btnTranslateAppComponentEdit failed.")
-				}
-			}
+			R.id.btnTranslateAppComponentEdit -> openCustomShareChooser(CustomShareTarget.Translate)
+			R.id.btnCustomShare1Edit -> openCustomShareChooser(CustomShareTarget.CustomShare1)
+			R.id.btnCustomShare2Edit -> openCustomShareChooser(CustomShareTarget.CustomShare2)
+			R.id.btnCustomShare3Edit -> openCustomShareChooser(CustomShareTarget.CustomShare3)
 			
-			R.id.btnTranslateAppComponentReset -> {
-				etTranslateAppComponent?.setText("")
-				saveUIToData()
-			}
+			R.id.btnTranslateAppComponentReset -> setCustomShare(CustomShareTarget.Translate,"")
+			R.id.btnCustomShare1Reset -> setCustomShare(CustomShareTarget.CustomShare1,"")
+			R.id.btnCustomShare2Reset -> setCustomShare(CustomShareTarget.CustomShare2,"")
+			R.id.btnCustomShare3Reset -> setCustomShare(CustomShareTarget.CustomShare3,"")
 		}
 	}
 	
@@ -1708,15 +1708,104 @@ class ActAppSettingChild : AppCompatActivity()
 		}
 	}
 	
-	private fun checkIntentChoiced(){
-		if( isDestroyed ) return
+	private fun openCustomShareChooser(target : CustomShareTarget) {
+		
+		val intent = Intent()
+		intent.action = Intent.ACTION_SEND
+		intent.type = "text/plain"
+		intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.content_sample))
+		
+		// このifはwhenにしてはならない。APIバージョン関連の警告が出てしまう
+		@Suppress("CascadeIf")
+		if(intent.resolveActivity(packageManager) == null) {
+			// ACTION_SENDを受け取れるアプリがインストールされてない
+			showToast(this, true, getString(R.string.missing_app_can_receive_action_send))
+		} else if(Build.VERSION.SDK_INT <= 21) {
+			// createChooserにIntentSenderを指定できるのはAndroid 22以降
+			showToast(
+				this,
+				true,
+				getString(R.string.app_chooser_works_android_5_1)
+			)
+		} else try {
+			customShareTarget = target
+			ChooseReceiver.lastComponentName = null
+			ChooseReceiver.setCallback { onCustomShareSelected() }
+			
+			val receiver = Intent(this, ChooseReceiver::class.java)
+			val pendingIntent = PendingIntent.getBroadcast(
+				this,
+				1,
+				receiver,
+				PendingIntent.FLAG_UPDATE_CURRENT
+			)
+			startActivity(
+				Intent.createChooser(
+					intent,
+					getString(R.string.select_destination_app_and_back),
+					pendingIntent.intentSender
+				)
+			)
+			
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			showToast(this, ex, "openCustomShareChooser failed.")
+		}
+	}
+	
+	private fun onCustomShareSelected() {
+		if(isDestroyed) return
 		
 		val cn = ChooseReceiver.lastComponentName
-		if(cn != null && etTranslateAppComponent != null) {
-			etTranslateAppComponent?.setText("${cn.packageName}/${cn.className}")
-			saveUIToData()
+		if(cn != null ) {
 			ChooseReceiver.lastComponentName = null
+			setCustomShare(customShareTarget,"${cn.packageName}/${cn.className}")
 		}
+	}
+	
+	private fun setCustomShare(target : CustomShareTarget?, value : String){
+
+		target ?: return
+
+		val sp : StringPref
+		val tv : TextView?
+
+		when(target) {
+			
+			CustomShareTarget.Translate -> {
+				sp = Pref.spTranslateAppComponent
+				tv = tvTranslateAppComponent
+			}
+			
+			CustomShareTarget.CustomShare1 -> {
+				sp = Pref.spCustomShare1
+				tv = tvCustomShare1
+			}
+			
+			CustomShareTarget.CustomShare2 -> {
+				sp = Pref.spCustomShare2
+				tv = tvCustomShare2
+			}
+			
+			CustomShareTarget.CustomShare3 -> {
+				sp = Pref.spCustomShare3
+				tv = tvCustomShare3
+			}
+		}
+		pref.edit().put(sp, value).apply()
+		showCustomShareIcon(tv, target)
+	}
+	
+	private fun showCustomShareIcon(tv : TextView?, target : CustomShareTarget) {
+		
+		tv ?: return
+		
+		val cn = CustomShare.getCustomShareComponentName(this, pref, target)
+		val (label, icon) = CustomShare.getInfo(packageManager, cn)
+		
+		tv.text = label ?: getString(R.string.not_selected)
+		
+		tv.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
 	}
 	
 }

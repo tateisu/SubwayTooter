@@ -901,10 +901,14 @@
     <string name="notifications_from">Notifications from %1$s</string>
     <string name="show_translate_button">Show translate button</string>
     <string name="translate">Translate</string>
-    <string name="translate_app_component" >Translation app component</string>
+    <string name="translation_app" >Translation app</string>
     <string name="translate_app_component_default" translatable="false">com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity</string>
     <string name="missing_app_can_receive_action_send">Missing app that can receive ACTION_SEND.</string>
-    <string name="select_translate_app">Select translation app, then back to app setting.</string>
-    <string name="translation_app_chooser_works_android_5_1">Sorry, translation app chooser works on Android 5.1+.</string>
+    <string name="select_destination_app_and_back">Select the destination app, then back to app setting.</string>
+    <string name="app_chooser_works_android_5_1">Sorry, app chooser works on Android 5.1+.</string>
+    <string name="custom_share_button_1">Custom share button 1</string>
+    <string name="custom_share_button_2">Custom share button 2</string>
+    <string name="custom_share_button_3">Custom share button 3</string>
+    <string name="custom_share_app_not_found">the share target app is not installed. please configure it in \"App setting/behavior\".</string>
 
 </resources>

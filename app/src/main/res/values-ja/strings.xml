@@ -909,8 +909,13 @@
     <string name="notifications_from">%1$sからの通知</string>
     <string name="show_translate_button">翻訳ボタンを表示する</string>
     <string name="translate">翻訳</string>
-    <string name="translate_app_component" >翻訳アプリのComponentName</string>
+    <string name="translation_app" >翻訳アプリ</string>
     <string name="missing_app_can_receive_action_send">ACTION_SENDを受け取れるアプリがありません。</string>
-    <string name="select_translate_app">翻訳アプリを選択した後に設定画面まで戻ってください</string>
-    <string name="translation_app_chooser_works_android_5_1">翻訳アプリを選択する機能はAndroid5.1+で使えます。</string>
+    <string name="select_destination_app_and_back">出力先のアプリを選択した後に設定画面まで戻ってください</string>
+    <string name="app_chooser_works_android_5_1">アプリを選択する機能はAndroid5.1+で使えます。</string>
+    <string name="custom_share_button_1">カスタム共有ボタン1</string>
+    <string name="custom_share_button_2">カスタム共有ボタン2</string>
+    <string name="custom_share_button_3">カスタム共有ボタン3</string>
+    <string name="custom_share_app_not_found">共有先のアプリがインストールされていません。「アプリ設定/挙動」を確認してください</string>
+
 </resources>

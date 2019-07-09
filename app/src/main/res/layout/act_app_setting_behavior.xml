@@ -10,8 +10,8 @@
     android:clipToPadding="false"
 
     android:fillViewport="true"
-    android:paddingBottom="128dp"
     android:paddingTop="12dp"
+    android:paddingBottom="128dp"
     android:scrollbarStyle="outsideOverlay"
 
     tools:ignore="Autofill"
@@ -250,7 +250,7 @@
 
         <TextView
             style="@style/setting_row_label"
-           android:text="@string/show_translate_button"
+            android:text="@string/show_translate_button"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -262,25 +262,24 @@
 
         </LinearLayout>
 
-
         <View style="@style/setting_divider"/>
 
         <TextView
             style="@style/setting_row_label"
-            android:labelFor="@+id/etTranslateAppComponent"
-            android:text="@string/translate_app_component"
+            android:text="@string/translation_app"
             />
 
         <LinearLayout style="@style/setting_row_form">
 
-            <EditText
-                android:id="@+id/etTranslateAppComponent"
+            <TextView
+                android:id="@+id/tvTranslateAppComponent"
                 style="@style/setting_horizontal_stretch"
-                android:inputType="text"
-                android:hint="@string/translate_app_component_default"
+                android:drawablePadding="4dp"
+                android:gravity="center_vertical"
                 />
 
         </LinearLayout>
+
         <LinearLayout style="@style/setting_row_form">
 
             <Button
@@ -300,9 +299,122 @@
                 />
 
         </LinearLayout>
+
         <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/custom_share_button_1"
+            />
 
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                android:id="@+id/tvCustomShare1"
+                style="@style/setting_horizontal_stretch"
+                android:drawablePadding="4dp"
+                android:gravity="center_vertical"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnCustomShare1Edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnCustomShare1Reset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/custom_share_button_2"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                android:id="@+id/tvCustomShare2"
+                style="@style/setting_horizontal_stretch"
+                android:drawablePadding="4dp"
+                android:gravity="center_vertical"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnCustomShare2Edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnCustomShare2Reset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/custom_share_button_3"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                android:id="@+id/tvCustomShare3"
+                style="@style/setting_horizontal_stretch"
+                android:drawablePadding="4dp"
+                android:gravity="center_vertical"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnCustomShare3Edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnCustomShare3Reset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
 
     </LinearLayout>
 </ScrollView>

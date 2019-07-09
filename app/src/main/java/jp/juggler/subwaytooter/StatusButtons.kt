@@ -10,9 +10,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
-import jp.juggler.subwaytooter.action.Action_Follow
-import jp.juggler.subwaytooter.action.Action_Toot
-import jp.juggler.subwaytooter.action.NOT_CROSS_ACCOUNT
+import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
@@ -53,6 +51,9 @@ internal class StatusButtons(
 	private val btnFollow2 = holder.btnFollow2
 	private val ivFollowedBy2 = holder.ivFollowedBy2
 	private val btnTranslate = holder.btnTranslate
+	private val btnCustomShare1 = holder.btnCustomShare1
+	private val btnCustomShare2 = holder.btnCustomShare2
+	private val btnCustomShare3 = holder.btnCustomShare3
 	private val btnMore = holder.btnMore
 	
 	private val color_normal = column.getContentColor()
@@ -70,6 +71,9 @@ internal class StatusButtons(
 		btnFollow2.setOnClickListener(this)
 		btnFollow2.setOnLongClickListener(this)
 		btnTranslate.setOnClickListener(this)
+		btnCustomShare1.setOnClickListener(this)
+		btnCustomShare2.setOnClickListener(this)
+		btnCustomShare3.setOnClickListener(this)
 		btnMore.setOnClickListener(this)
 		btnConversation.setOnClickListener(this)
 		btnConversation.setOnLongClickListener(this)
@@ -212,14 +216,12 @@ internal class StatusButtons(
 		}
 		
 		if(vg(btnTranslate, Pref.bpShowTranslateButton(activity.pref))) {
-			setButton(
-				btnTranslate,
-				true,
-				color_normal,
-				R.drawable.ic_translate,
-				activity.getString(R.string.translate)
-			)
+			showCustomShare(CustomShareTarget.Translate, btnTranslate)
 		}
+		
+		showCustomShare(CustomShareTarget.CustomShare1, btnCustomShare1)
+		showCustomShare(CustomShareTarget.CustomShare2, btnCustomShare2)
+		showCustomShare(CustomShareTarget.CustomShare3, btnCustomShare3)
 	}
 	
 	private fun setButton(
@@ -261,6 +263,23 @@ internal class StatusButtons(
 		b.setImageDrawable(d)
 		b.contentDescription = contentDescription
 		b.isEnabled = enabled
+	}
+	
+	private fun showCustomShare(target : CustomShareTarget, b : ImageButton) {
+		val (label, icon) = CustomShare.getCache(target) ?: error("showCustomShare: invalid target")
+		
+		if(vg(b, label != null || icon != null)) {
+			b.isEnabled = true
+			b.contentDescription = label ?: "?"
+			b.setImageDrawable(
+				icon ?: createColoredDrawable(
+					activity,
+					R.drawable.ic_question,
+					color_normal,
+					Styler.boost_alpha
+				)
+			)
+		}
 	}
 	
 	override fun onClick(v : View) {
@@ -410,7 +429,33 @@ internal class StatusButtons(
 				}
 			}
 			
-			btnTranslate -> Action_Toot.openTranslate(activity, access_info, status)
+			btnTranslate -> CustomShare.invoke(
+				activity,
+				access_info,
+				status,
+				CustomShareTarget.Translate
+			)
+			
+			btnCustomShare1 -> CustomShare.invoke(
+				activity,
+				access_info,
+				status,
+				CustomShareTarget.CustomShare1
+			)
+			
+			btnCustomShare2 -> CustomShare.invoke(
+				activity,
+				access_info,
+				status,
+				CustomShareTarget.CustomShare2
+			)
+			
+			btnCustomShare3 -> CustomShare.invoke(
+				activity,
+				access_info,
+				status,
+				CustomShareTarget.CustomShare3
+			)
 			
 			btnMore -> DlgContextMenu(
 				activity,
@@ -495,6 +540,9 @@ class StatusButtonsViewHolder(
 	lateinit var btnFollow2 : ImageButton
 	lateinit var ivFollowedBy2 : ImageView
 	lateinit var btnTranslate : ImageButton
+	lateinit var btnCustomShare1 : ImageButton
+	lateinit var btnCustomShare2 : ImageButton
+	lateinit var btnCustomShare3 : ImageButton
 	lateinit var btnMore : ImageButton
 	
 	init {
@@ -588,6 +636,48 @@ class StatusButtonsViewHolder(
 				}
 				
 				btnTranslate = imageButton {
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					
+					contentDescription = context.getString(R.string.translate)
+					imageResource = R.drawable.ic_translate
+				}.lparams(buttonHeight, buttonHeight) {
+					startMargin = marginBetween
+				}
+				
+				btnCustomShare1 = imageButton {
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					
+					contentDescription = context.getString(R.string.translate)
+					imageResource = R.drawable.ic_translate
+				}.lparams(buttonHeight, buttonHeight) {
+					startMargin = marginBetween
+				}
+				
+				btnCustomShare2 = imageButton {
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					
+					contentDescription = context.getString(R.string.translate)
+					imageResource = R.drawable.ic_translate
+				}.lparams(buttonHeight, buttonHeight) {
+					startMargin = marginBetween
+				}
+				
+				btnCustomShare3 = imageButton {
 					background = ContextCompat.getDrawable(
 						context,
 						R.drawable.btn_bg_transparent

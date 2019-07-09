@@ -501,6 +501,9 @@ object Pref {
 	val spQuickTootVisibility = StringPref("QuickTootVisibility","")
 	
 	val spTranslateAppComponent = StringPref("TranslateAppComponent","")
+	val spCustomShare1 = StringPref("CustomShare1","")
+	val spCustomShare2 = StringPref("CustomShare2","")
+	val spCustomShare3 = StringPref("CustomShare3","")
 	
 	// long
 	val lpTabletTootDefaultAccount = LongPref("tablet_toot_default_account", - 1L)

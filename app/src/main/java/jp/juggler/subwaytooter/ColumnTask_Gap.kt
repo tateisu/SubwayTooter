@@ -6,10 +6,7 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.util.LogCategory
-import jp.juggler.util.runOnMainLooper
-import jp.juggler.util.runOnMainLooperDelayed
-import jp.juggler.util.toPostRequestBuilder
+import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -46,7 +43,8 @@ class ColumnTask_Gap(
 		try {
 			return (columnTypeProcMap[column.column_type] ?: columnTypeProcMap[Column.TYPE_HOME])
 				.gap(this, client)
-			
+		}catch(ex:Throwable){
+			return TootApiResult( ex.withCaption("gap loading failed.") )
 		} finally {
 			try {
 				column.updateRelation(client, list_tmp, column.who_account, parser)

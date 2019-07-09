@@ -817,8 +817,8 @@ class Column(
 			}
 			
 			TYPE_HASHTAG_FROM_ACCT -> {
-				hashtag = src.optString(KEY_HASHTAG)
 				hashtag_acct = src.optString(KEY_HASHTAG_ACCT)
+				hashtag = src.optString(KEY_HASHTAG)
 				hashtag_any = src.optString(KEY_HASHTAG_ANY)
 				hashtag_all = src.optString(KEY_HASHTAG_ALL)
 				hashtag_none = src.optString(KEY_HASHTAG_NONE)
@@ -899,8 +899,11 @@ class Column(
 			}
 			
 			TYPE_HASHTAG_FROM_ACCT -> {
-				dst.put(KEY_HASHTAG, hashtag)
 				dst.put(KEY_HASHTAG_ACCT, hashtag_acct)
+				dst.put(KEY_HASHTAG, hashtag)
+				dst.put(KEY_HASHTAG_ANY, hashtag_any)
+				dst.put(KEY_HASHTAG_ALL, hashtag_all)
+				dst.put(KEY_HASHTAG_NONE, hashtag_none)
 			}
 			
 			TYPE_NOTIFICATION_FROM_ACCT -> {
@@ -2344,12 +2347,15 @@ class Column(
 	
 	internal fun hasHashtagExtra() = when {
 		isMisskey -> false
-		column_type == TYPE_HASHTAG || column_type == TYPE_HASHTAG_FROM_ACCT -> true
+		column_type == TYPE_HASHTAG-> true
+
+		// TYPE_HASHTAG_FROM_ACCT は追加のタグを指定しても結果に反映されない
+		
 		else -> false
 	}
 	
 	private fun StringBuilder.appendHashtagExtra() : StringBuilder {
-		val limit = ( HASHTAG_ELLIPSIZE * 2 - min( length , HASHTAG_ELLIPSIZE) ) /3
+		val limit = (HASHTAG_ELLIPSIZE * 2 - min(length, HASHTAG_ELLIPSIZE)) / 3
 		if(hashtag_any.isNotBlank()) append(' ').append(
 			context.getString(
 				R.string.hashtag_title_any,

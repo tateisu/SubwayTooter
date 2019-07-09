@@ -125,6 +125,8 @@ internal fun Column.makeHashtagAcctUrl(client : TootApiClient) : String? {
 		if(with_attachment) sb.append("&only_media=true")
 		if(instance_local) sb.append("&local=true")
 		
+		sb.append(makeHashtagExtraQuery())
+		
 		sb.toString()
 	}
 }

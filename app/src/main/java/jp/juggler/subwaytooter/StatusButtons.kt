@@ -215,13 +215,50 @@ internal class StatusButtons(
 			relation
 		}
 		
+		val forceWrapAdditionalButtons = Pref.bpForceWrapAdditionalButtons(activity.pref)
+		var optionalButtonFirst : View? = null
+		var optionalButtonCount = 0
+		
+		fun showCustomShare(target : CustomShareTarget, b : ImageButton) {
+			val (label, icon) = CustomShare.getCache(target)
+				?: error("showCustomShare: invalid target")
+			
+			if(vg(b, label != null || icon != null)) {
+				b.isEnabled = true
+				b.contentDescription = label ?: "?"
+				b.setImageDrawable(
+					icon ?: createColoredDrawable(
+						activity,
+						R.drawable.ic_question,
+						color_normal,
+						Styler.boost_alpha
+					)
+				)
+				if(forceWrapAdditionalButtons) {
+					++ optionalButtonCount
+					if(optionalButtonFirst == null) {
+						optionalButtonFirst = b
+					}
+				}
+			}
+		}
+		
+		fun setWrap(b : ImageButton) {
+			(b.layoutParams as? FlexboxLayout.LayoutParams)
+				?.isWrapBefore = optionalButtonCount >= 1 && b == optionalButtonFirst
+		}
+		
 		if(vg(btnTranslate, Pref.bpShowTranslateButton(activity.pref))) {
 			showCustomShare(CustomShareTarget.Translate, btnTranslate)
 		}
-		
 		showCustomShare(CustomShareTarget.CustomShare1, btnCustomShare1)
 		showCustomShare(CustomShareTarget.CustomShare2, btnCustomShare2)
 		showCustomShare(CustomShareTarget.CustomShare3, btnCustomShare3)
+		
+		setWrap(btnTranslate)
+		setWrap(btnCustomShare1)
+		setWrap(btnCustomShare2)
+		setWrap(btnCustomShare3)
 	}
 	
 	private fun setButton(
@@ -246,41 +283,24 @@ internal class StatusButtons(
 		b.isEnabled = enabled
 	}
 	
-	private fun setButton(
-		b : ImageButton,
-		enabled : Boolean,
-		color : Int,
-		drawableId : Int,
-		contentDescription : String
-	) {
-		val alpha = Styler.boost_alpha
-		val d = createColoredDrawable(
-			activity,
-			drawableId,
-			color,
-			alpha
-		)
-		b.setImageDrawable(d)
-		b.contentDescription = contentDescription
-		b.isEnabled = enabled
-	}
-	
-	private fun showCustomShare(target : CustomShareTarget, b : ImageButton) {
-		val (label, icon) = CustomShare.getCache(target) ?: error("showCustomShare: invalid target")
-		
-		if(vg(b, label != null || icon != null)) {
-			b.isEnabled = true
-			b.contentDescription = label ?: "?"
-			b.setImageDrawable(
-				icon ?: createColoredDrawable(
-					activity,
-					R.drawable.ic_question,
-					color_normal,
-					Styler.boost_alpha
-				)
-			)
-		}
-	}
+	//	private fun setButton(
+	//		b : ImageButton,
+	//		enabled : Boolean,
+	//		color : Int,
+	//		drawableId : Int,
+	//		contentDescription : String
+	//	) {
+	//		val alpha = Styler.boost_alpha
+	//		val d = createColoredDrawable(
+	//			activity,
+	//			drawableId,
+	//			color,
+	//			alpha
+	//		)
+	//		b.setImageDrawable(d)
+	//		b.contentDescription = contentDescription
+	//		b.isEnabled = enabled
+	//	}
 	
 	override fun onClick(v : View) {
 		
@@ -697,7 +717,7 @@ class StatusButtonsViewHolder(
 				}.lparams(buttonHeight, buttonHeight) {
 					startMargin = marginBetween
 				}
-
+				
 			}
 		}
 	}

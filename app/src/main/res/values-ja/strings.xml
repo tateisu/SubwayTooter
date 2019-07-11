@@ -917,5 +917,6 @@
     <string name="custom_share_button_2">カスタム共有ボタン2</string>
     <string name="custom_share_button_3">カスタム共有ボタン3</string>
     <string name="custom_share_app_not_found">共有先のアプリがインストールされていません。「アプリ設定/挙動」を確認してください</string>
+    <string name="force_wrap_additional_buttons">追加ボタンを強制的に折り返す</string>
 
 </resources>

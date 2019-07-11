@@ -400,6 +400,13 @@ object Pref {
 		R.id.swShowTranslateButton
 	)
 	
+	val bpForceWrapAdditionalButtons = BooleanPref(
+		"ForceWrapAdditionalButtons",
+		false,
+		R.id.swForceWrapAdditionalButtons
+	)
+	
+	
 	
 	// int
 	

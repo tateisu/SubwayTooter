@@ -910,5 +910,6 @@
     <string name="custom_share_button_2">Custom share button 2</string>
     <string name="custom_share_button_3">Custom share button 3</string>
     <string name="custom_share_app_not_found">the share target app is not installed. please configure it in \"App setting/behavior\".</string>
+    <string name="force_wrap_additional_buttons">Force wrap additional buttons</string>
 
 </resources>

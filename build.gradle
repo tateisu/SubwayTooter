@@ -5,8 +5,8 @@ buildscript {
     ext.androidx_version= '1.0.0'
     ext.appcompat_version='1.0.2'
 
-    ext.kotlin_version = '1.3.31'
-    ext.kotlinx_coroutines_version = '1.2.1'
+    ext.kotlin_version = '1.3.41'
+    ext.kotlinx_coroutines_version = '1.2.2'
     ext.anko_version='0.10.8'
 
     repositories {
@@ -16,15 +16,12 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.0'
+        classpath 'com.android.tools.build:gradle:3.4.2'
         classpath 'com.google.gms:google-services:4.2.0'
-        // https://android-developers.googleblog.com/2018/05/announcing-new-sdk-versioning.html では
-        // com.google.gms:google-services:3.3.0 以降を使うように書いてあるんだけど、3.3.0にするとGradle sync に失敗する。
-        // エラーメッセージに特徴的な部分がなく原因はよく分からなかった。
-        // https://developers.google.com/android/guides/google-services-plugin のドキュメントだと3.2.1と書かれてるし、暫く待つかなあ…
-        // 関連
-        // https://stackoverflow.com/questions/50166102/gradle-project-sync-failing-after-google-announced-the-new-sdk-versioning-system
-        // https://issuetracker.google.com/issues/79122163
+        // com.google.gms:google-services:4.3.0 は
+        // 警告 API 'variant.getMergeResources()' is obsolete and has been replaced with 'variant.getMergeResourcesProvider()'.
+        // を出す。
+
 
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         // kotlin 1.3.0 を入れるとIDEがindex作成でエラーを繰り返し出すようになるので様子見する

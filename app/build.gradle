@@ -9,6 +9,14 @@ android {
 
     compileSdkVersion target_sdk_version
 
+    // exoplayer 2.9.0 以降は Java 8 compiler support を要求する
+    // https://github.com/google/ExoPlayer/blob/release-v2/RELEASENOTES.md
+    // Invoke-customs are only supported starting with Android O (--min-api 26)
+    // Default interface methods are only supported starting with Android N (--min-api 24)
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
@@ -89,10 +97,10 @@ dependencies {
     implementation "com.google.android.material:material:$androidx_version"
 
     // https://firebase.google.com/support/release-notes/android
-    implementation "com.google.firebase:firebase-core:16.0.8"
-    implementation "com.google.firebase:firebase-messaging:17.6.0"
+    implementation "com.google.firebase:firebase-core:17.0.0"
+    implementation "com.google.firebase:firebase-messaging:19.0.1"
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
@@ -118,18 +126,19 @@ dependencies {
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.9.0'
     implementation 'com.github.bumptech.glide:annotations:4.9.0'
     // kotlin では annotationProcessor の代わりに kapt を使う
-    kapt 'androidx.annotation:annotation:1.0.2'
+    kapt 'androidx.annotation:annotation:1.1.0'
     kapt 'com.github.bumptech.glide:compiler:4.9.0'
 
-    implementation "org.conscrypt:conscrypt-android:1.3.0"
+    implementation "org.conscrypt:conscrypt-android:2.1.0"
 
-    implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
+    implementation 'io.github.inflationx:calligraphy3:3.1.1'
+    implementation 'io.github.inflationx:viewpump:2.0.3'
 
-    implementation 'com.github.woxthebox:draglistview:1.6.3'
+    implementation 'com.github.woxthebox:draglistview:1.6.6'
 
     implementation 'com.github.omadahealth:swipy:1.2.3@aar'
 
-    implementation 'com.github.kenglxn.QRGen:android:2.4.0'
+    implementation 'com.github.kenglxn.QRGen:android:2.5.0'
 
     implementation 'commons-io:commons-io:2.6'
 
@@ -139,14 +148,11 @@ dependencies {
 
     implementation 'com.astuetz:pagerslidingtabstrip:1.0.1'
 
-    // exoplayer 2.9.0 は Java 8 compiler support を要求する
-    implementation 'com.google.android.exoplayer:exoplayer:2.8.4'
-
-    // implementation 'com.simplecityapps:recyclerview-fastscroll:1.0.16'
+    implementation 'com.google.android.exoplayer:exoplayer:2.10.2'
 
     implementation 'me.drakeet.support:toastcompat:1.0.2'
 
-    implementation 'com.caverock:androidsvg-aar:1.3'
+    implementation 'com.caverock:androidsvg-aar:1.4'
 }
 
 repositories {

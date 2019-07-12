@@ -21,7 +21,7 @@ import android.view.Window
 import android.widget.TextView
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
-import com.google.android.exoplayer2.source.ExtractorMediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.MediaSourceEventListener
 import com.google.android.exoplayer2.source.TrackGroupArray
@@ -348,15 +348,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		exoView.visibility = View.VISIBLE
 		
-		val defaultBandwidthMeter = DefaultBandwidthMeter()
+		val defaultBandwidthMeter = DefaultBandwidthMeter.Builder(this).build()
 		val extractorsFactory = DefaultExtractorsFactory()
 		
 		val dataSourceFactory = DefaultDataSourceFactory(
 			this, Util.getUserAgent(this, getString(R.string.app_name)), defaultBandwidthMeter
 		)
 		
-		val mediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
-			.setExtractorsFactory(extractorsFactory)
+		val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory,extractorsFactory)
 			.createMediaSource(url.toUri())
 		
 		mediaSource.addEventListener(App1.getAppState(this).handler, mediaSourceEventListener)

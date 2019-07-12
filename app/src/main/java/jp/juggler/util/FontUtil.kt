@@ -1,20 +1,24 @@
 package jp.juggler.util
 
 import android.graphics.Typeface
+import io.github.inflationx.calligraphy3.CalligraphyConfig
+import io.github.inflationx.calligraphy3.CalligraphyInterceptor
+import io.github.inflationx.calligraphy3.CalligraphyTypefaceSpan
+import io.github.inflationx.viewpump.ViewPump
 import jp.juggler.subwaytooter.R
-import uk.co.chrisjenx.calligraphy.CalligraphyConfig
-import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
 
-//import uk.co.chrisjenx.calligraphy.CalligraphyConfig
-//import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
-
-fun initializeFont(){
-	CalligraphyConfig.initDefault(
-		CalligraphyConfig.Builder()
-			.setFontAttrId(R.attr.fontPath)
+fun initializeFont() {
+	ViewPump.init(
+		ViewPump.builder()
+			.addInterceptor(
+				CalligraphyInterceptor(
+					CalligraphyConfig.Builder()
+						.setFontAttrId(R.attr.fontPath)
+						.build()
+				)
+			)
 			.build()
 	)
 }
 
 fun fontSpan(tf : Typeface) : Any = CalligraphyTypefaceSpan(tf)
-

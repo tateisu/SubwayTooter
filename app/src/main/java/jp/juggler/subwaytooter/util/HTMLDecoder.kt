@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.util
 
-import android.net.Uri
+import android.content.Context
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -129,8 +129,7 @@ object HTMLDecoder {
 		val sb = StringBuilder()
 		sb.ensureCapacity(size)
 		for(i in 0 until size) {
-			val c = src[i]
-			when(c) {
+			when(val c = src[i]) {
 				'<' -> sb.append("&lt;")
 				'>' -> sb.append("&gt;")
 				'"' -> sb.append("&quot;")
@@ -315,7 +314,7 @@ object HTMLDecoder {
 				
 				val start = sb.length
 				
-				sb.append(encodeUrl(options, sb_tmp.toString(), href))
+				sb.append(formatLinkCaption(options, sb_tmp, href))
 				
 				val end = sb.length
 				
@@ -383,74 +382,6 @@ object HTMLDecoder {
 			}
 		}
 		
-		private val reNormalLink = Pattern.compile("""\A\w+://""")
-		private val reNicodic = Pattern.compile("""\Ahttps?://dic.nicovideo.jp/a/([^?#/]+)""")
-		
-		private fun encodeUrl(
-			options : DecodeOptions,
-			display_url : String,
-			href : String?
-		) : CharSequence {
-			
-			if(display_url.isNotEmpty()) {
-				when(display_url[0]) {
-					'@' -> {
-						// @mention
-						if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
-							val acct = TootAccount.getAcctFromUrl(href)
-							if(acct != null) return "@$acct"
-						}
-						
-						return display_url
-					}
-					
-					'#' -> {
-						// #hashtag
-						return display_url
-					}
-				}
-			}
-			
-			val context = options.context
-			
-			if(context == null || ! options.short) {
-				return display_url
-			}
-			
-			// 添付メディアのURLなら絵文字に変換する
-			if(options.isMediaAttachment(href)) {
-				return SpannableString(href).apply {
-					setSpan(
-						EmojiImageSpan(context, R.drawable.emj_1f5bc_fe0f),
-						0,
-						length,
-						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-					)
-				}
-			}
-			
-			// ニコニコ大百科のURLを変える
-			val m = reNicodic.matcher(href)
-			if(m.find()) {
-				return SpannableString("${m.group(1).decodePercent()}:nicodic:").apply {
-					setSpan(
-						EmojiImageSpan(context, R.drawable.nicodic),
-						length - 9,
-						length,
-						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-					)
-				}
-			}
-			
-			// 通常リンクはhttp,httpsだけでなく幾つかのスキーマ名が含まれる
-			// スキーマ名の直後には必ず :// が出現する
-			// https://github.com/tootsuite/mastodon/pull/7810
-			if(reNormalLink.matcher(display_url).find()) {
-				return shortenUrl(display_url)
-			}
-			
-			return display_url
-		}
 	}
 	
 	// split attributes
@@ -525,6 +456,95 @@ object HTMLDecoder {
 			}
 		}
 		return sb
+	}
+	
+	private val reNormalLink = Pattern.compile("""\A\w+://[^/]*""")
+	
+	// URLの表記を短くする
+	// Punycode のデコードはサーバ側で行われる?ので、ここでは元リンクの表示テキストを元にURL短縮を試みる
+	fun shortenUrl(originalUrl : CharSequence) : CharSequence {
+		try {
+			
+			val m = reNormalLink.matcher(originalUrl)
+			if(m.find()) {
+				// 通常リンクはhttp,httpsだけでなく幾つかのスキーマ名が含まれる
+				// https://github.com/tootsuite/mastodon/pull/7810
+				// スキーマ名の直後には必ず :// が出現する
+				
+				val limit = m.end() + 10 // 10 characters for ( path + query + fragment )
+				if(originalUrl.length > limit) {
+					// 文字装飾をそのまま残したい
+					return SpannableStringBuilder()
+						.append(originalUrl.subSequence(0, limit))
+						.append('…')
+				}
+			}
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
+		
+		return originalUrl
+	}
+	
+	private val reNicodic = Pattern.compile("""\Ahttps?://dic.nicovideo.jp/a/([^?#/]+)""")
+	
+	private fun formatLinkCaption(
+		options : DecodeOptions,
+		originalCaption : CharSequence,
+		href : String?
+	) : CharSequence {
+		
+		if(originalCaption.isNotEmpty()) {
+			when(originalCaption[0]) {
+				'@' -> {
+					// @mention
+					if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
+						val acct = TootAccount.getAcctFromUrl(href)
+						if(acct != null) return "@$acct"
+					}
+					
+					return originalCaption
+				}
+				
+				'#' -> {
+					// #hashtag
+					return originalCaption
+				}
+			}
+		}
+		
+		val context = options.context
+		
+		if(context == null || ! options.short || href?.isEmpty() != false) {
+			return originalCaption
+		}
+		
+		// 添付メディアのURLなら絵文字に変換する
+		if(options.isMediaAttachment(href)) {
+			return SpannableString(href).apply {
+				setSpan(
+					EmojiImageSpan(context, R.drawable.emj_1f5bc_fe0f),
+					0,
+					length,
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+			}
+		}
+		
+		// ニコニコ大百科のURLを変える
+		val m = reNicodic.matcher(href)
+		if(m.find()) {
+			return SpannableString("${m.group(1).decodePercent()}:nicodic:").apply {
+				setSpan(
+					EmojiImageSpan(context, R.drawable.nicodic),
+					length - 9,
+					length,
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+			}
+		}
+		
+		return shortenUrl(originalCaption)
 	}
 	
 	private fun init1() {

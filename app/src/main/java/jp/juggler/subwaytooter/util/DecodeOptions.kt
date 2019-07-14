@@ -2,14 +2,12 @@ package jp.juggler.subwaytooter.util
 
 import android.content.Context
 import android.text.Spannable
-import android.text.SpannableStringBuilder
-
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji
 import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.WordTrieTree
-import java.util.HashMap
+import java.util.*
 
 class DecodeOptions(
 	val context : Context? = null,
@@ -21,8 +19,8 @@ class DecodeOptions(
 	var emojiMapCustom : HashMap<String, CustomEmoji>? = null,
 	var emojiMapProfile : HashMap<String, NicoProfileEmoji>? = null,
 	var highlightTrie : WordTrieTree? = null,
-	var unwrapEmojiImageTag :Boolean = false,
-	var enlargeCustomEmoji :Float = 1f,
+	var unwrapEmojiImageTag : Boolean = false,
+	var enlargeCustomEmoji : Float = 1f,
 	var forceHtml : Boolean = false, // force use HTML instead of Misskey Markdown
 	var mentionFullAcct : Boolean = false
 ) {
@@ -45,12 +43,16 @@ class DecodeOptions(
 	////////////////////////
 	// decoder
 	
-	fun decodeHTML(html : String?) : SpannableStringBuilder {
-		return HTMLDecoder.decodeHTML(this, html)
+	fun decodeHTML(html : String?) =
+		HTMLDecoder.decodeHTML(this, html)
+	
+	fun decodeEmoji(s : String?) : Spannable =
+		EmojiDecoder.decodeEmoji(this, s ?: "")
+	
+	fun decodeEmojiNullable(s : String?) = when(s) {
+		null -> null
+		else -> EmojiDecoder.decodeEmoji(this, s)
 	}
 	
-	fun decodeEmoji(s : String?) : Spannable {
-		return EmojiDecoder.decodeEmoji(this, s ?: "")
-	}
 	
 }

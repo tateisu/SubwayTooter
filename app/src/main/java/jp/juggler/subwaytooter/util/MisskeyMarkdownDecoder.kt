@@ -17,10 +17,10 @@ import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.subwaytooter.util.HTMLDecoder.shortenUrl
 import jp.juggler.util.LogCategory
 import jp.juggler.util.encodePercent
 import jp.juggler.util.fontSpan
-import jp.juggler.util.shortenUrl
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -750,10 +750,10 @@ object MisskeyMarkdownDecoder {
 		}
 		
 		// テキストを追加する
-		fun appendText(text : String, decodeEmoji : Boolean = false) {
+		fun appendText(text : CharSequence, decodeEmoji : Boolean = false) {
 			val start = sb.length
 			if(decodeEmoji) {
-				sb.append(options.decodeEmoji(text))
+				sb.append(options.decodeEmoji(text.toString()))
 			} else {
 				sb.append(text)
 			}
@@ -943,7 +943,7 @@ object MisskeyMarkdownDecoder {
 			appendText(text)
 			spanList.addWithOffset(sp, start)
 			spanList.addLast(start, sb.length, BackgroundColorSpan(0x40808080))
-			spanList.addLast(start, sb.length, android.text.style.RelativeSizeSpan(0.7f))
+			spanList.addLast(start, sb.length, RelativeSizeSpan(0.7f))
 			spanList.addLast(start, sb.length, fontSpan(Typeface.MONOSPACE))
 			closeBlock()
 		}),
@@ -954,12 +954,12 @@ object MisskeyMarkdownDecoder {
 			spanList.addLast(
 				start,
 				sb.length,
-				android.text.style.BackgroundColorSpan(0x20808080)
+				BackgroundColorSpan(0x20808080)
 			)
 			spanList.addLast(
 				start,
 				sb.length,
-				fontSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+				fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
 			)
 		}),
 		
@@ -1057,9 +1057,9 @@ object MisskeyMarkdownDecoder {
 			spanList.addLast(
 				start,
 				sb.length,
-				android.text.style.BackgroundColorSpan(0x20808080)
+				BackgroundColorSpan(0x20808080)
 			)
-			spanList.addLast(start, sb.length, android.text.style.RelativeSizeSpan(1.5f))
+			spanList.addLast(start, sb.length, RelativeSizeSpan(1.5f))
 			
 			closeBlock()
 		}),
@@ -1093,7 +1093,7 @@ object MisskeyMarkdownDecoder {
 			// 末尾にある空白のテキストノードを除去する
 			while(it.childNodes.isNotEmpty()) {
 				val last = it.childNodes.last()
-				if(last.type == NodeType.TEXT && last.args[0].isBlank()) {
+				if(last.type == TEXT && last.args[0].isBlank()) {
 					it.childNodes.removeLast()
 				} else {
 					break
@@ -1120,7 +1120,7 @@ object MisskeyMarkdownDecoder {
 					spanList.insert(i, 2)
 					spanList.addLast(
 						i, i + 1,
-						android.text.style.BackgroundColorSpan(bg_color)
+						BackgroundColorSpan(bg_color)
 					)
 				}
 			}
@@ -1128,7 +1128,7 @@ object MisskeyMarkdownDecoder {
 			spanList.addLast(
 				start,
 				sb.length,
-				fontSpan(Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+				fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
 			)
 			
 			closeBlock()

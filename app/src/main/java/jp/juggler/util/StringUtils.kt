@@ -140,6 +140,17 @@ inline fun <S : CharSequence, Z : Any?> S?.letNotEmpty(block : (S) -> Z?) : Z? =
 // equivalent: if(this.isNotEmpty() ) this else null
 fun <S : CharSequence> S?.notEmpty() : S? = if(this?.isNotEmpty() == true) this else null
 
+fun CharSequence.toUri() :Uri = Uri.parse(toString())
+
+fun CharSequence?.mayUri() : Uri? = try {
+	if(this?.isNotEmpty() == true)
+		toUri()
+	else
+		null
+} catch(ignored : Throwable) {
+	null
+}
+
 ////////////////////////////////////////////////////////////////////
 // string
 
@@ -255,38 +266,10 @@ fun String.sanitizeBDI() : String {
 
 // 指定した文字数までの部分文字列を返す
 // 文字列の長さが足りない場合は指定オフセットから終端までの長さを返す
-fun String.safeSubstring(count : Int, offset : Int = 0) = when {
-	offset + count <= length -> this.substring(offset, count)
-	else -> this.substring(offset, length)
-}
-
-// URLを適当に短くする
-fun shortenUrl(display_url : String) : String {
-	return try {
-		val uri = display_url.toUri()
-		
-		val sb = StringBuilder()
-		if(! display_url.startsWith("http")) {
-			sb.append(uri.scheme)
-			sb.append("://")
-		}
-		sb.append(uri.authority)
-		val a = uri.encodedPath ?: ""
-		val q = uri.encodedQuery
-		val f = uri.encodedFragment
-		val remain = a + (if(q == null) "" else "?$q") + if(f == null) "" else "#$f"
-		if(remain.length > 10) {
-			sb.append(remain.safeSubstring(10))
-			sb.append("…")
-		} else {
-			sb.append(remain)
-		}
-		sb.toString()
-	} catch(ex : Throwable) {
-		StringUtils.log.trace(ex)
-		display_url
-	}
-}
+//fun String.safeSubstring(count : Int, offset : Int = 0) = when {
+//	offset + count <= length -> this.substring(offset, count)
+//	else -> this.substring(offset, length)
+//}
 
 //// MD5ハッシュの作成
 //@Suppress("unused")
@@ -304,16 +287,7 @@ fun String.digestSHA256Base64Url() : String {
 	return this.encodeUTF8().digestSHA256().encodeBase64Url()
 }
 
-fun String.toUri() : Uri = Uri.parse(this)
 
-fun String?.mayUri() : Uri? = try {
-	if(this?.isNotEmpty() == true)
-		Uri.parse(this)
-	else
-		null
-} catch(ignored : Throwable) {
-	null
-}
 
 // Uri.encode(s:Nullable) だと nullチェックができないので、簡単なラッパーを用意する
 fun String.encodePercent(allow : String? = null) : String = Uri.encode(this, allow)

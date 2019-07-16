@@ -451,4 +451,11 @@
     <string name="username_empty">فضلا أدخل اسم المستخدم.</string>
     <string name="password_empty">يرجى تحديد الكلمة السرية.</string>
     <string name="username_not_need_atmark">يجب ألا يحتوي اسم المستخدم على \"@\" أو\"/\".</string>
+    <string name="notifications_from">إشعارات مِن %1$s</string>
+    <string name="show_translate_button">اظهر زر الترجمة</string>
+    <string name="translate">ترجم</string>
+    <string name="translation_app">تطبيق الترجمة</string>
+    <string name="custom_share_button_1">زر مشاركة مخصص 1</string>
+    <string name="custom_share_button_2">زر مشاركة مخصص 2</string>
+    <string name="custom_share_button_3">زر مشاركة مخصص 3</string>
 </resources>

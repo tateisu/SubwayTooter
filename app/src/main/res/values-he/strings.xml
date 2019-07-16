@@ -1,2 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="action_settings">הגדרות</string>
+    <string name="account_add">הוסף חשבון</string>
+    <string name="instance">שרת</string>
+    <string name="user_mail_address">דוא\"ל</string>
+    <string name="user_password">סיסמא</string>
+    <string name="ok">אשר</string>
+    <string name="cancel">בטל</string>
+    <string name="instance_not_specified">שרת לא מוגדר</string>
+    <string name="mail_not_specified">"דוא\"ל  לא מוגדר"</string>
+    <string name="password_not_specified">סיסמא לא מוגדרת</string>
+    <string name="network_error">שגיאת רשת.</string>
+    <string name="error_response">שגיאה כתגובה.</string>
+    <string name="api_error">שגיאת ממשק תכנותי. %1$s</string>
+    <string name="register_app_to_server">"רושם יישום זה ל-  %1$s …"</string>
+    <string name="request_access_token">מבקש אסימון גישה …</string>
+    <string name="request_api">משיג: %1$s %2$s</string>
+    <string name="reading_api">קורא: %1$s %2$s</string>
+    <string name="column_empty">השתמש בכפתור התפריט השמאלי התחתון כדי להוסיף עמודה</string>
+    <string name="home">בית</string>
+    <string name="local_timeline">ציר זמן מקומי</string>
+    <string name="federate_timeline">ציר זמן משולב</string>
+    <string name="login_required">נא כתוב את אסימון הגישה שלך מתוך הגדרות החשבון.</string>
+    <string name="cancelled">בוטל</string>
+    <string name="account_pick">בחר חשבון</string>
+    <string name="account_confirmed">החשבון אומת.</string>
+    <string name="reply">השב</string>
+    <string name="more">עוד</string>
+    <string name="close_column">סגור את העמודה</string>
+</resources>

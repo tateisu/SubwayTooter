@@ -59,4 +59,23 @@
     <string name="attachment_too_many">מותר עד 4 קבצים.</string>
     <string name="account_select_please">בחר חשבון</string>
     <string name="login_failed">לא ניתן להיכנס.</string>
+    <string name="file_size_too_big">הקובץ גדול מהמגבלה של 1$dMB .</string>
+    <string name="visibility_public">פומבי</string>
+    <string name="visibility_unlisted">לא גלוי</string>
+    <string name="visibility_private">עוקבים בלבד</string>
+    <string name="visibility_direct">ישיר</string>
+    <string name="visibility_account_setting">מעקב אחרי הגדרות החשבון</string>
+    <string name="visibility_local_public">פומבי (מקומית)</string>
+    <string name="visibility_local_home">בית (מקומית)</string>
+    <string name="visibility_local_followers">עוקבים בלבד (מקומית)</string>
+    <string name="visibility_local_unlisted">לא גלוי (מקומית)</string>
+    <string name="choose_visibility">בחר ניראות</string>
+    <string name="confirm_delete_attachment">האם להסיר קובץ מצורף זה\?</string>
+    <string name="post_error_contents_empty">שים משהו בתרועה שלך.</string>
+    <string name="post_error_contents_warning_empty">התרועה שלך זקוקה לאזהרה.</string>
+    <string name="wait_previous_operation">נא המתן עד שהפעולה האחרונה הסתיימה.</string>
+    <string name="cant_remove_boost_while_favourited">לא ניתן להסיר הגברה כל עוד היא מועדפת</string>
+    <string name="confirm">אשר</string>
+    <string name="confirm_boost_from">"האם לאשר הגברה למצב זה השייך ל-%1$s  \? הוא יהיה מוצג לכל העוקבים ובדף הפרופיל שלך."</string>
+    <string name="confirm_unboost_from">האם להפסיק להגביר מצב זה של %1$s \?</string>
 </resources>

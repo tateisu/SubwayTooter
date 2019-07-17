@@ -1,5 +1,40 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="language_code">cn</string>
     <string name="app_name">Subway Tooter</string>
+    <string name="action_settings">设置</string>
+    <string name="user_password">密码</string>
+    <string name="cancel">取消</string>
+    <string name="login_failed">不能登录。</string>
+    <string name="visibility_public">公共</string>
+    <string name="setting">设置</string>
+    <string name="column_index">%1$d／%2$d</string>
+    <string name="question">？</string>
+    <string name="color">颜色</string>
+    <string name="save">保存</string>
+    <string name="image">图片</string>
+    <string name="time_within_second">刚才</string>
+    <string name="relative_time_unit_minute1">分钟</string>
+    <string name="relative_time_unit_minutes">分钟</string>
+    <string name="relative_time_unit_hour1">小时</string>
+    <string name="relative_time_unit_hours">小时</string>
+    <string name="relative_time_phrase_past">%1$d %2$s</string>
+    <string name="emoji_category_people">人们</string>
+    <string name="emoji_category_foods">食品</string>
+    <string name="download">下载</string>
+    <string name="downloading">正在下载……</string>
+    <string name="zooming_of">×%3$.1f
+\n%1$d×%2$d</string>
+    <string name="languages">语言</string>
+    <string name="filter_public">公共</string>
+    <string name="start">开始</string>
+    <string name="location">地点</string>
+    <string name="birthday">生日</string>
+    <string name="existing_account">登录</string>
+    <string name="password">密码</string>
+    <string name="hashtag_title_any">还是%1$s</string>
+    <string name="hashtag_title_all">和%1$s</string>
+    <string name="hashtag_title_none">没有%1$s</string>
+    <string name="poll_expire_hours">小时</string>
+    <string name="poll_expire_minutes">分钟</string>
 </resources>

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="language_code">he</string>
     <string name="app_name">Subway Tooter</string>
@@ -30,5 +30,52 @@
     <string name="reply">השב</string>
     <string name="more">עוד</string>
     <string name="close_column">סגור את העמודה</string>
+    <string name="thumbnail">תמונה מוקטנת</string>
+    <string name="reload">טעינה מחדש</string>
+    <string name="favourites">מועדפים</string>
+    <string name="notifications">התראות</string>
+    <string name="reports">דיווחים</string>
+    <string name="your_statuses">הפרופיל שלך</string>
+    <string name="statuses_of">"הפרופיל של  %1$s"</string>
+    <string name="follow">עקוב</string>
+    <string name="following">עוקב</string>
+    <string name="followers">עוקבים</string>
+    <string name="statuses">מצבים</string>
+    <string name="hide">הסתר</string>
+    <string name="nsfw">לא בטוח בעבודה</string>
+    <string name="tap_to_show">לחץ כדי להציג</string>
+    <string name="show">הראה</string>
+    <string name="act_post">מפרסם תרועה</string>
+    <string name="content_warning">אזהרת תוכן</string>
+    <string name="please_add_account">כדי לפרסם תרועה, אתה צריך להגדיר חשבון.</string>
+    <string name="not_selected">(לא נבחר)</string>
+    <string name="content_warning_hint">כתוב כאן את אזהרתך</string>
+    <string name="content_hint">תוכן תרועתך</string>
+    <string name="status">תרועה</string>
+    <string name="list_empty">רשימה ריקה</string>
+    <string name="post_from">פרסם מ-</string>
+    <string name="choose_account">בחר חשבונך</string>
+    <string name="response_not_json">תגובת הממשק התכנותי אינה JSON.</string>
+    <string name="attachment_too_many">מותר עד 4 קבצים.</string>
+    <string name="account_select_please">בחר חשבון</string>
+    <string name="login_failed">לא ניתן להיכנס.</string>
+    <string name="file_size_too_big">הקובץ גדול מהמגבלה של 1$dMB .</string>
+    <string name="visibility_public">פומבי</string>
+    <string name="visibility_unlisted">לא גלוי</string>
+    <string name="visibility_private">עוקבים בלבד</string>
+    <string name="visibility_direct">ישיר</string>
+    <string name="visibility_account_setting">מעקב אחרי הגדרות החשבון</string>
+    <string name="visibility_local_public">פומבי (מקומית)</string>
+    <string name="visibility_local_home">בית (מקומית)</string>
+    <string name="visibility_local_followers">עוקבים בלבד (מקומית)</string>
+    <string name="visibility_local_unlisted">לא גלוי (מקומית)</string>
+    <string name="choose_visibility">בחר ניראות</string>
+    <string name="confirm_delete_attachment">האם להסיר קובץ מצורף זה\?</string>
+    <string name="post_error_contents_empty">שים משהו בתרועה שלך.</string>
+    <string name="post_error_contents_warning_empty">התרועה שלך זקוקה לאזהרה.</string>
+    <string name="wait_previous_operation">נא המתן עד שהפעולה האחרונה הסתיימה.</string>
+    <string name="cant_remove_boost_while_favourited">לא ניתן להסיר הגברה כל עוד היא מועדפת</string>
+    <string name="confirm">אשר</string>
+    <string name="confirm_boost_from">"האם לאשר הגברה למצב זה השייך ל-%1$s  \? הוא יהיה מוצג לכל העוקבים ובדף הפרופיל שלך."</string>
+    <string name="confirm_unboost_from">האם להפסיק להגביר מצב זה של %1$s \?</string>
 </resources>
-

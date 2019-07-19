@@ -10,12 +10,12 @@
     <string name="ok">אשר</string>
     <string name="cancel">בטל</string>
     <string name="instance_not_specified">שרת לא מוגדר</string>
-    <string name="mail_not_specified">"דוא\"ל  לא מוגדר"</string>
+    <string name="mail_not_specified">דוא\"ל  לא מוגדר</string>
     <string name="password_not_specified">סיסמא לא מוגדרת</string>
     <string name="network_error">שגיאת רשת.</string>
     <string name="error_response">שגיאה כתגובה.</string>
     <string name="api_error">שגיאת ממשק תכנותי. %1$s</string>
-    <string name="register_app_to_server">"רושם יישום זה ל-  %1$s …"</string>
+    <string name="register_app_to_server">רושם יישום זה ל-  %1$s …</string>
     <string name="request_access_token">מבקש אסימון גישה …</string>
     <string name="request_api">משיג: %1$s %2$s</string>
     <string name="reading_api">קורא: %1$s %2$s</string>
@@ -36,7 +36,7 @@
     <string name="notifications">התראות</string>
     <string name="reports">דיווחים</string>
     <string name="your_statuses">הפרופיל שלך</string>
-    <string name="statuses_of">"הפרופיל של  %1$s"</string>
+    <string name="statuses_of">הפרופיל של  %1$s</string>
     <string name="follow">עקוב</string>
     <string name="following">עוקב</string>
     <string name="followers">עוקבים</string>
@@ -59,7 +59,7 @@
     <string name="attachment_too_many">מותר עד 4 קבצים.</string>
     <string name="account_select_please">בחר חשבון</string>
     <string name="login_failed">לא ניתן להיכנס.</string>
-    <string name="file_size_too_big">הקובץ גדול מהמגבלה של 1$dMB .</string>
+    <string name="file_size_too_big">הקובץ גדול מהמגבלה של %1$dMB .</string>
     <string name="visibility_public">פומבי</string>
     <string name="visibility_unlisted">לא גלוי</string>
     <string name="visibility_private">עוקבים בלבד</string>
@@ -76,6 +76,6 @@
     <string name="wait_previous_operation">נא המתן עד שהפעולה האחרונה הסתיימה.</string>
     <string name="cant_remove_boost_while_favourited">לא ניתן להסיר הגברה כל עוד היא מועדפת</string>
     <string name="confirm">אשר</string>
-    <string name="confirm_boost_from">"האם לאשר הגברה למצב זה השייך ל-%1$s  \? הוא יהיה מוצג לכל העוקבים ובדף הפרופיל שלך."</string>
+    <string name="confirm_boost_from">האם לאשר הגברה למצב זה השייך ל-%1$s  \? הוא יהיה מוצג לכל העוקבים ובדף הפרופיל שלך.</string>
     <string name="confirm_unboost_from">האם להפסיק להגביר מצב זה של %1$s \?</string>
 </resources>

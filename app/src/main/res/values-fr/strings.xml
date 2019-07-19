@@ -338,7 +338,7 @@
     <string name="select_draft">Quel brouillon désirez-vous restaurer ?</string>
     <string name="app_data_export">Exporter les données de Subway Tooter</string>
     <string name="app_data_import">Importer les données dans Subway Tooter</string>
-    <string name="app_data_import_confirm">"Toutes les données existantes (avant import) seront effacées.  Êtes-vous sur \?"</string>
+    <string name="app_data_import_confirm">Toutes les données existantes (avant import) seront effacées.  Êtes-vous sur \?</string>
     <string name="app_data_import_desc">Vous pouvez exporter les données vers n’importe quelle application qui peut recevoir des données, mais vous ne pouvez importer des données qu\'à partir du stockage de l’appareil ou du Google Drive.
 \nL’image d’arrière-plan d’une colonne ne peut être exportée/importée sur l’appareil.
 \nLa police de caractères des fils n’est pas exportée/importée.
@@ -450,7 +450,7 @@
     <string name="notification_sound_before_oreo">Notification sonore (avant Android 8.0)</string>
     <string name="notification_style_after_oreo">Style de notifications (Android 8.0+)</string>
     <string name="notification_for">Notification for %1$s</string>
-    <string name="notification_channel_description">"Ce paramètre est utilisé pour ajuster les  notifications pour %1$s"</string>
+    <string name="notification_channel_description">Ce paramètre est utilisé pour ajuster les  notifications pour %1$s</string>
     <string name="notification_style_before_oreo">Style de notification (avant Android 8. Si votre appareil est sous Android 8.0+, veuillez vérifier les paramètres du compte)</string>
     <string name="enquete_was_end">Sondage terminé.</string>
     <string name="enquete_voted">a voté.</string>

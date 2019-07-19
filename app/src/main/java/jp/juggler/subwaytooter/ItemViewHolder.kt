@@ -91,7 +91,7 @@ internal class ItemViewHolder(
 	
 	private lateinit var flMedia : View
 	private lateinit var llMedia : View
-	private lateinit var btnShowMedia : BlurhashView
+	private lateinit var btnShowMedia : TextView
 	private lateinit var ivMedia1 : MyNetworkImageView
 	private lateinit var ivMedia2 : MyNetworkImageView
 	private lateinit var ivMedia3 : MyNetworkImageView
@@ -290,11 +290,18 @@ internal class ItemViewHolder(
 			cardBackground.width = (density * 1f)
 		}
 		
-		btnShowMedia.text = SpannableString(activity.getString(R.string.tap_to_show)).apply{
-			val colorBg = getAttributeColor(activity,R.attr.colorShowMediaBackground)
-				.applyAlphaMultiplier(0.5f)
-			setSpan(BackgroundColorSpan(colorBg),0, this.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-		}
+		(btnShowMedia as? BlurhashView)?.text =
+			SpannableString(activity.getString(R.string.tap_to_show))
+				.apply {
+					val colorBg = getAttributeColor(activity, R.attr.colorShowMediaBackground)
+						.applyAlphaMultiplier(0.5f)
+					setSpan(
+						BackgroundColorSpan(colorBg),
+						0,
+						this.length,
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+					)
+				}
 	}
 	
 	fun onViewRecycled() {
@@ -1315,9 +1322,12 @@ internal class ItemViewHolder(
 			setMedia(media_attachments, sb, ivMedia2, 1)
 			setMedia(media_attachments, sb, ivMedia3, 2)
 			setMedia(media_attachments, sb, ivMedia4, 3)
-
-			val m0 = if( media_attachments.isEmpty() ) null else media_attachments[0] as? TootAttachment
-			btnShowMedia.blurhash = m0?.blurhash
+			
+			(btnShowMedia as? BlurhashView)?.let {
+				val m0 =
+					if(media_attachments.isEmpty()) null else media_attachments[0] as? TootAttachment
+				it.blurhash = m0?.blurhash
+			}
 			
 			if(sb.isNotEmpty()) {
 				tvMediaDescription.visibility = View.VISIBLE
@@ -3302,20 +3312,22 @@ internal class ItemViewHolder(
 										}
 									}
 									
-									btnShowMedia = blurhashView {
+									btnShowMedia = textView {
 										
-										errorColor = getAttributeColor(
-											context,
-											R.attr.colorShowMediaBackground
-										)
+										background =
+											ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+										
+										padding = dip(4)
+										
+										minHeightCompat = dip(40)
+										
 										gravity = Gravity.CENTER_VERTICAL or Gravity.END
-									
-										textColor = getAttributeColor(
-											context,
-											R.attr.colorShowMediaText
-										)
-
-									}.lparams(matchParent, matchParent)
+										
+										text = context.getString(R.string.tap_to_show)
+										
+									}.lparams(wrapContent,wrapContent){
+										gravity = Gravity.END
+									}
 									
 								}
 							} else {

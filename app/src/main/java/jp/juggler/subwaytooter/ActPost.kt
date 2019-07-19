@@ -92,6 +92,7 @@ class ActPost : AppCompatActivity(),
 		private const val REQUEST_CODE_MUSHROOM = 3
 		private const val REQUEST_CODE_VIDEO = 4
 		private const val REQUEST_CODE_ATTACHMENT_OLD = 5
+		private const val REQUEST_CODE_SOUND = 6
 		
 		private const val PERMISSION_REQUEST_CODE = 1
 		
@@ -123,6 +124,11 @@ class ActPost : AppCompatActivity(),
 			add("audio/x-pn-wav")
 			add("audio/flac")
 			add("audio/x-flac")
+			
+			// https://github.com/tootsuite/mastodon/pull/11342
+			add("audio/aac")
+			add("audio/m4a")
+			add("audio/3gpp")
 		}
 		
 		private val imageHeaderList = arrayOf(
@@ -152,6 +158,44 @@ class ActPost : AppCompatActivity(),
 			)
 		)
 		
+		private val sig3gp = arrayOf(
+			"3ge6",
+			"3ge7",
+			"3gg6",
+			"3gp1",
+			"3gp2",
+			"3gp3",
+			"3gp4",
+			"3gp5",
+			"3gp6",
+			"3gp7",
+			"3gr6",
+			"3gr7",
+			"3gs6",
+			"3gs7",
+			"kddi"
+		).map { it.toCharArray().toLowerByteArray() }
+		
+		private val sigM4a = arrayOf(
+			"M4A ",
+			"M4B ",
+			"M4P "
+		).map { it.toCharArray().toLowerByteArray() }
+		
+		private val sigFtyp = "ftyp".toCharArray().toLowerByteArray()
+		
+		private fun matchSig(
+			data : ByteArray,
+			dataOffset : Int,
+			sig : ByteArray,
+			sigSize : Int = sig.size
+		) : Boolean {
+			for(i in 0 until sigSize) {
+				if(data[dataOffset + i] != sig[i]) return false
+			}
+			return true
+		}
+		
 		private fun findMimeTypeByFileHeader(
 			contentResolver : ContentResolver,
 			uri : Uri
@@ -165,27 +209,60 @@ class ActPost : AppCompatActivity(),
 						val header = pair.second
 						if(nRead >= header.size && data.startWith(header)) return type
 					}
-					// scan mp3 frame header
-					loop@ for(i in 0 until nRead - 4) {
+					
+					// scan frame header
+					for(i in 0 until nRead - 8) {
+						
+						if(! matchSig(data, i, sigFtyp)) continue
+						
+						// 3gpp check
+						for(s in sig3gp) {
+							if(matchSig(data, i + 4, s)) return "audio/3gpp"
+						}
+						
+						// m4a check
+						for(s in sigM4a) {
+							if(matchSig(data, i + 4, s)) return "audio/m4a"
+						}
+						
+					}
+					
+					// scan frame header
+					loop@ for(i in 0 until nRead - 2) {
+						
+						// mpeg frame header
 						val b0 = data[i].toInt() and 255
 						if(b0 != 255) continue
 						val b1 = data[i + 1].toInt() and 255
 						if((b1 and 0b11100000) != 0b11100000) continue
 						
-						// mpegVersionId
-						when(((b1 shr 3) and 3)) {
-							1 -> continue@loop
-						}
+						val mpegVersionId = ((b1 shr 3) and 3)
+						// 00 mpeg 2.5
+						// 01 not used
+						// 10 (mp3) mpeg 2 / (AAC) mpeg-4
+						// 11 (mp3) mpeg 1 / (AAC) mpeg-2
 						
-						// mpegLayerId
-						when(((b1 shr 1) and 3)) {
-							1 -> {
+						@Suppress("MoveVariableDeclarationIntoWhen")
+						val mpegLayerId = ((b1 shr 1) and 3)
+						// 00 (mp3)not used / (AAC) always 0
+						// 01 (mp3)layer III
+						// 10 (mp3)layer II
+						// 11 (mp3)layer I
+						
+						when(mpegLayerId) {
+							0 -> when(mpegVersionId) {
+								2, 3 -> return "audio/aac"
+								
+								else -> {
+								}
 							}
-							
-							else -> continue@loop
+							1 -> when(mpegVersionId) {
+								0, 2, 3 -> return "audio/mp3"
+								
+								else -> {
+								}
+							}
 						}
-						
-						return "audio/mp3"
 					}
 				}
 			} catch(ex : Throwable) {
@@ -193,16 +270,6 @@ class ActPost : AppCompatActivity(),
 			}
 			return null
 		}
-		//	private void performCameraVideo(){
-		//
-		//		try{
-		//			Intent takeVideoIntent = new Intent( MediaStore.ACTION_VIDEO_CAPTURE );
-		//			startActivityForResult( takeVideoIntent, REQUEST_CODE_VIDEO );
-		//		}catch( Throwable ex ){
-		//			warning.trace( ex );
-		//			Utils.showToast( this, ex, "opening video app failed." );
-		//		}
-		//	}
 		
 		/////////////////////////////////////////////////
 		
@@ -422,36 +489,48 @@ class ActPost : AppCompatActivity(),
 	}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
-		
-		if(requestCode == REQUEST_CODE_ATTACHMENT_OLD && resultCode == Activity.RESULT_OK) {
-			checkAttachments(data?.handleGetContentResult(contentResolver))
-			
-		} else if(requestCode == REQUEST_CODE_ATTACHMENT && resultCode == Activity.RESULT_OK) {
-			checkAttachments(data?.handleGetContentResult(contentResolver))
-		} else if(requestCode == REQUEST_CODE_CAMERA) {
-			
-			if(resultCode != Activity.RESULT_OK) {
-				// 失敗したら DBからデータを削除
-				val uriCameraImage = this.uriCameraImage
-				if(uriCameraImage != null) {
-					contentResolver.delete(uriCameraImage, null, null)
-					this@ActPost.uriCameraImage = null
-				}
-			} else {
-				// 画像のURL
-				val uri = data?.data ?: uriCameraImage
-				if(uri != null) {
-					addAttachment(uri)
-				} else {
-					showToast(this@ActPost, false, "missing image uri")
+		if(resultCode != RESULT_OK) {
+			when(requestCode) {
+				REQUEST_CODE_CAMERA -> {
+					// 失敗したら DBからデータを削除
+					val uriCameraImage = this.uriCameraImage
+					if(uriCameraImage != null) {
+						contentResolver.delete(uriCameraImage, null, null)
+						this@ActPost.uriCameraImage = null
+					}
 				}
 			}
-		} else if(requestCode == REQUEST_CODE_VIDEO && resultCode == Activity.RESULT_OK) {
-			data?.data?.let { addAttachment(it) }
-			
-		} else if(requestCode == REQUEST_CODE_MUSHROOM && resultCode == Activity.RESULT_OK) {
-			data?.getStringExtra("replace_key")?.let { applyMushroomResult(it) }
+		} else {
+			when(requestCode) {
+				REQUEST_CODE_ATTACHMENT_OLD -> checkAttachments(
+					data?.handleGetContentResult(
+						contentResolver
+					)
+				)
+				REQUEST_CODE_ATTACHMENT -> checkAttachments(
+					data?.handleGetContentResult(
+						contentResolver
+					)
+				)
+				
+				REQUEST_CODE_CAMERA -> {
+					// 画像のURL
+					val uri = data?.data ?: uriCameraImage
+					if(uri != null) {
+						addAttachment(uri)
+					} else {
+						showToast(this@ActPost, false, "missing image uri")
+					}
+				}
+				
+				REQUEST_CODE_VIDEO, REQUEST_CODE_SOUND -> data?.data?.let { addAttachment(it) }
+				
+				REQUEST_CODE_MUSHROOM -> {
+					data?.getStringExtra("replace_key")?.let { applyMushroomResult(it) }
+				}
+			}
 		}
+		
 		super.onActivityResult(requestCode, resultCode, data)
 	}
 	
@@ -1460,16 +1539,16 @@ class ActPost : AppCompatActivity(),
 					iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), null)
 				}
 				
-				else ->{
+				else -> {
 					val defaultIconId = when(a.type) {
 						TootAttachmentType.Image -> R.drawable.ic_image
 						TootAttachmentType.Video,
-						TootAttachmentType.GIFV ->R.drawable.ic_videocam
-						TootAttachmentType.Audio ->R.drawable.ic_music_note
+						TootAttachmentType.GIFV -> R.drawable.ic_videocam
+						TootAttachmentType.Audio -> R.drawable.ic_music_note
 						else -> R.drawable.ic_clip
 					}
-					iv.setDefaultImage(defaultColorIcon(this,defaultIconId))
-					iv.setErrorImage(defaultColorIcon(this,defaultIconId))
+					iv.setDefaultImage(defaultColorIcon(this, defaultIconId))
+					iv.setErrorImage(defaultColorIcon(this, defaultIconId))
 					iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), a.preview_url)
 				}
 			}
@@ -1654,9 +1733,6 @@ class ActPost : AppCompatActivity(),
 		//		}
 		
 		val a = ActionsDialog()
-		a.addAction(getString(R.string.image_capture)) {
-			performCamera()
-		}
 		a.addAction(getString(R.string.pick_images)) {
 			openAttachmentChooser(R.string.pick_images, "image/*", "video/*")
 		}
@@ -1666,12 +1742,24 @@ class ActPost : AppCompatActivity(),
 		a.addAction(getString(R.string.pick_audios)) {
 			openAttachmentChooser(R.string.pick_audios, "audio/*")
 		}
+		a.addAction(getString(R.string.image_capture)) {
+			performCamera()
+		}
+		a.addAction(getString(R.string.video_capture)) {
+			performCapture(
+				REQUEST_CODE_VIDEO,
+				MediaStore.ACTION_VIDEO_CAPTURE,
+				"can't open video capture app."
+			)
+		}
+		a.addAction(getString(R.string.voice_capture)) {
+			performCapture(
+				REQUEST_CODE_SOUND,
+				MediaStore.Audio.Media.RECORD_SOUND_ACTION,
+				"can't open voice capture app."
+			)
+		}
 		
-		//		a.addAction( getString( R.string.video_capture ), new Runnable() {
-		//			@Override public void run(){
-		//				performCameraVideo();
-		//			}
-		//		} );
 		a.show(this, null)
 		
 	}
@@ -2144,9 +2232,7 @@ class ActPost : AppCompatActivity(),
 	}
 	
 	private fun performCamera() {
-		
 		try {
-			// カメラで撮影
 			val filename = System.currentTimeMillis().toString() + ".jpg"
 			val values = ContentValues()
 			values.put(MediaStore.Images.Media.TITLE, filename)
@@ -2165,14 +2251,20 @@ class ActPost : AppCompatActivity(),
 		
 	}
 	
+	private fun performCapture(requestCode : Int, action : String, errorCaption : String) {
+		try {
+			startActivityForResult(Intent(action), requestCode)
+		} catch(ex : Throwable) {
+			log.trace(ex);
+			showToast(this, ex, errorCaption)
+		}
+	}
+	
 	private fun preparePermission() {
 		if(Build.VERSION.SDK_INT >= 23) {
-			// No explanation needed, we can request the permission.
-			
 			ActivityCompat.requestPermissions(
 				this,
-				arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE) //		Manifest.permission.CAMERA,
-				,
+				arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
 				PERMISSION_REQUEST_CODE
 			)
 		} else {

@@ -54,7 +54,7 @@ class ActCallback : AppCompatActivity() {
 				// ACTION_SEND か ACTION_SEND_MULTIPLE
 					Intent.ACTION_SEND == action
 					|| Intent.ACTION_SEND_MULTIPLE == action
-					// ACTION_VIEW かつ  type が 画像かビデオ
+					// ACTION_VIEW かつ  type が 画像かビデオか音声
 					|| Intent.ACTION_VIEW == action && type.isMediaMimeType() ) {
 					
 					// Google Photo などから送られるIntentに含まれるuriの有効期間はActivityが閉じられるまで

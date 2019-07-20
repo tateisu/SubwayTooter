@@ -124,7 +124,7 @@ private val bracketsMap = HashMap<Char, Int>().apply {
 }
 private val bracketsMapUrlSafe = HashMap<Char, Int>().apply {
 	brackets.forEach {
-		if( "([".contains(it[0]) ) return@forEach
+		if("([".contains(it[0])) return@forEach
 		put(it[0], 1)
 		put(it[1], - 1)
 	}
@@ -132,24 +132,24 @@ private val bracketsMapUrlSafe = HashMap<Char, Int>().apply {
 
 // 末尾の余計な」や（を取り除く。
 // 例えば「#タグ」 とか （#タグ）
-fun String.removeOrphanedBrackets(urlSafe:Boolean =false) : String {
+fun String.removeOrphanedBrackets(urlSafe : Boolean = false) : String {
 	var last = 0
-	val nests = when(urlSafe){
-		true->this.map {
+	val nests = when(urlSafe) {
+		true -> this.map {
 			last += bracketsMapUrlSafe[it] ?: 0
 			last
 		}
-		else->this.map {
+		else -> this.map {
 			
 			last += bracketsMap[it] ?: 0
 			last
 		}
 	}
-
+	
 	// first position of unmatched close
 	var pos = nests.indexOfFirst { it < 0 }
 	if(pos != - 1) return substring(0, pos)
-
+	
 	// last position of unmatched open
 	pos = nests.indexOfLast { it == 0 }
 	return substring(0, pos + 1)
@@ -1237,6 +1237,7 @@ object MisskeyMarkdownDecoder {
 			NodeType.QUOTE_BLOCK, NodeType.QUOTE_INLINE -> 1
 			else -> 0
 		}
+		
 	}
 	
 	// マークダウン要素の出現位置
@@ -1725,6 +1726,27 @@ object MisskeyMarkdownDecoder {
 				, NodeType.CODE_INLINE
 			)
 		)
+	}
+	
+	// 入力テキストからタグを抽出するために使う
+	// #を含まないタグ文字列のリスト、またはnullを返す
+	fun findHashtags(src : String?) : ArrayList<String>? {
+		try {
+			if(src != null) {
+				val root = Node(NodeType.ROOT, emptyArray(), null)
+				NodeParseEnv(root, src, 0, src.length).parseInside()
+				val result = ArrayList<String>()
+				fun track(n : Node) {
+					if(n.type == NodeType.HASHTAG) result.add(n.args[0])
+					n.childNodes.forEach { track(n) }
+				}
+				track(root)
+				if(result.isNotEmpty()) return result
+			}
+		} catch(ex : Throwable) {
+			log.e(ex, "findHashtags failed.")
+		}
+		return null
 	}
 	
 	// このファイルのエントリーポイント

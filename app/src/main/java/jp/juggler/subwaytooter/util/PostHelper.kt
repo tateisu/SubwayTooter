@@ -31,6 +31,7 @@ import org.json.JSONObject
 import java.lang.ref.WeakReference
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.math.min
 
 class PostHelper(
 	private val activity : AppCompatActivity,
@@ -41,20 +42,7 @@ class PostHelper(
 	companion object {
 		private val log = LogCategory("PostHelper")
 		
-		// [:word:] 単語構成文字 (Letter | Mark | Decimal_Number | Connector_Punctuation)
-		// [:alpha:] 英字 (Letter | Mark)
-		
-		private const val word = "[_\\p{L}\\p{M}\\p{Nd}\\p{Pc}]"
-		private const val alpha = "[_\\p{L}\\p{M}]"
-		
-		private val reTag = Pattern.compile(
-			"(?:^|[^/)\\w])#($word*$alpha$word*)", Pattern.CASE_INSENSITIVE
-		)
-		
-		private val reCharsNotTag = Pattern.compile("[・\\s\\-+.,:;/]")
 		private val reCharsNotEmoji = Pattern.compile("[^0-9A-Za-z_-]")
-
-		
 	}
 	
 	interface PostCompleteCallback {
@@ -177,10 +165,9 @@ class PostHelper(
 		
 		if(! bConfirmTag) {
 			
-			if(! account.isMisskey
-				&& visibility != TootVisibility.Public
-				&& reTag.matcher(content).find()
-			) {
+			val tags = TootTag.findHashtags(content,account.isMisskey)
+			if( tags != null && !visibility.isTagAllowed(isMisskey = account.isMisskey) ){
+				log.d("findHashtags ${tags.joinToString(",")}")
 				AlertDialog.Builder(activity)
 					.setCancelable(true)
 					.setMessage(R.string.hashtag_and_visibility_not_match)
@@ -736,7 +723,7 @@ class PostHelper(
 			}
 			
 			val part = src.substring(last_sharp + 1, end)
-			if(reCharsNotTag.matcher(part).find()) {
+			if( ! TootTag.isValid(part, isMisskey) ){
 				checkEmoji(et, src)
 				return
 			}
@@ -998,7 +985,7 @@ class PostHelper(
 			
 			val src = et.text ?: ""
 			val src_length = src.length
-			val end = Math.min(src_length, et.selectionEnd)
+			val end = min(src_length, et.selectionEnd)
 			val start = src.lastIndexOf(':', end - 1)
 			if(start == - 1 || end - start < 1) return@EmojiPicker
 			
@@ -1026,8 +1013,8 @@ class PostHelper(
 			
 			val src = et.text ?: ""
 			val src_length = src.length
-			val start = Math.min(src_length, et.selectionStart)
-			val end = Math.min(src_length, et.selectionEnd)
+			val start = min(src_length, et.selectionStart)
+			val end = min(src_length, et.selectionEnd)
 			
 			val sb = SpannableStringBuilder()
 				.append(src.subSequence(0, start))

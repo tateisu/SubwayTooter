@@ -5,20 +5,20 @@ enum class TootVisibility(
 	, val order : Int // 公開範囲の広い方とWeb設定に合わせる方が大きい
 	, val strMastodon : String
 	, val strMisskey : String
-	, @Suppress("unused") val isLocal :Boolean = false
+	, @Suppress("unused") val isLocal : Boolean = false
 ) {
 	
 	// IDは下書き保存などで永続化するので、リリース後は変更しないこと！
-
+	
 	// アカウント設定に合わせる。
-	AccountSetting(-1, 200, strMastodon = "account_setting", strMisskey = "account_setting"),
-
+	AccountSetting(- 1, 200, strMastodon = "account_setting", strMisskey = "account_setting"),
+	
 	// WebUIの設定に合わせる。
 	WebSetting(0, 100, strMastodon = "web_setting", strMisskey = "web_setting"),
 	
 	// 公開TLに流す
 	Public(1, 90, strMastodon = "public", strMisskey = "public"),
-	LocalPublic(6, 85, strMastodon = "public", strMisskey = "local-public",isLocal = true),
+	LocalPublic(6, 85, strMastodon = "public", strMisskey = "local-public", isLocal = true),
 	
 	// LTL,FTLには表示されない。
 	// フォロワーのホームには表示される。
@@ -26,7 +26,7 @@ enum class TootVisibility(
 	// (Mastodon)タグTLには出ない。
 	// (Misskey)タグTLには出る。
 	UnlistedHome(2, 80, strMastodon = "unlisted", strMisskey = "home"),
-	LocalHome(6, 75, strMastodon = "unlisted", strMisskey = "local-home",isLocal = true),
+	LocalHome(6, 75, strMastodon = "unlisted", strMisskey = "local-home", isLocal = true),
 	
 	// 未フォローには見せない。
 	// (Mastodon)フォロワーのHTLに出る。
@@ -36,8 +36,8 @@ enum class TootVisibility(
 	// (Misskey)非ログインの閲覧者から見たのタグTLには出るが内容は隠される。「あの人はエロゲのタグで何か話してた」とか分かっちゃう。
 	// (Misskey)非ログインの閲覧者から見たのプロフには出るが内容は隠される。「あの人は寝てるはずの時間に何か投稿してた」とか分かっちゃう。
 	PrivateFollowers(3, 70, strMastodon = "private", strMisskey = "followers"),
-	LocalFollowers(3, 65, strMastodon = "private", strMisskey = "local-followers",isLocal = true),
-
+	LocalFollowers(3, 65, strMastodon = "private", strMisskey = "local-followers", isLocal = true),
+	
 	// 指定したユーザにのみ送信する。
 	// (Misskey)送信先ユーザのIDをリストで指定する。投稿前にユーザの存在確認を行う機会がある。
 	// (Misskey)送信先ユーザが1以上ならspecified、0ならprivateを指定する。
@@ -65,24 +65,46 @@ enum class TootVisibility(
 		}
 	}
 	
+	fun isTagAllowed(isMisskey : Boolean) =
+		if(isMisskey)
+			when(this) {
+				// 以下の二つの指定ではチェックを行えないので許可扱いにする
+				AccountSetting, WebSetting -> true
+				// Misskeyは公開とホームに書いたタグはタグTLに出る
+				Public, LocalPublic, UnlistedHome, LocalHome -> true
+				
+				else -> false
+			}
+		else
+			when(this) {
+				// 以下の二つの指定ではチェックを行えないので許可扱いにする
+				AccountSetting, WebSetting -> true
+				// Mastodon は公開のみタグTLに出る
+				Public, LocalPublic -> true
+				
+				else -> false
+			}
+	
 	companion object {
 		
 		fun parseMastodon(a : String?) : TootVisibility? {
-			for(v in TootVisibility.values()) {
+			for(v in values()) {
 				if(v.strMastodon == a) return v
 			}
 			return null
 		}
 		
-		fun parseMisskey(a : String?,localOnly:Boolean = false ) : TootVisibility? {
-			for(v in TootVisibility.values()) {
-				if(v.strMisskey == a){
-					if( localOnly ){
-						when(v){
+		fun parseMisskey(a : String?, localOnly : Boolean = false) : TootVisibility? {
+			for(v in values()) {
+				if(v.strMisskey == a) {
+					if(localOnly) {
+						when(v) {
 							Public -> return LocalPublic
 							UnlistedHome -> return LocalHome
 							PrivateFollowers -> return LocalFollowers
-							else->{}
+							
+							else -> {
+							}
 						}
 					}
 					return v
@@ -92,7 +114,7 @@ enum class TootVisibility(
 		}
 		
 		fun fromId(id : Int) : TootVisibility? {
-			for(v in TootVisibility.values()) {
+			for(v in values()) {
 				if(v.id == id) return v
 			}
 			return null
@@ -102,12 +124,12 @@ enum class TootVisibility(
 			sv ?: return null
 			
 			// 新しい方式ではenumのID
-			for(v in TootVisibility.values()) {
+			for(v in values()) {
 				if(v.id.toString() == sv) return v
 			}
 			
 			// 古い方式ではマストドンの公開範囲文字列かweb_setting
-			for(v in TootVisibility.values()) {
+			for(v in values()) {
 				if(v.strMastodon == sv) return v
 			}
 			

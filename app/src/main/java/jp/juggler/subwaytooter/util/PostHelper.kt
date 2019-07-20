@@ -164,27 +164,30 @@ class PostHelper(
 		}
 		
 		if(! bConfirmTag) {
-			
-			val tags = TootTag.findHashtags(content,account.isMisskey)
-			if( tags != null && !visibility.isTagAllowed(isMisskey = account.isMisskey) ){
-				log.d("findHashtags ${tags.joinToString(",")}")
-				AlertDialog.Builder(activity)
-					.setCancelable(true)
-					.setMessage(R.string.hashtag_and_visibility_not_match)
-					.setNegativeButton(R.string.cancel, null)
-					.setPositiveButton(R.string.ok) { _, _ ->
-						post(
-							account,
-							true,
-							bConfirmAccount,
-							bConfirmRedraft,
-							callback
-						)
-					}
-					.show()
-				return
+			val isMisskey = account.isMisskey
+			if(! visibility.isTagAllowed(isMisskey)) {
+				val tags = TootTag.findHashtags(content, isMisskey)
+				if(tags != null) {
+					
+					log.d("findHashtags ${tags.joinToString(",")}")
+					
+					AlertDialog.Builder(activity)
+						.setCancelable(true)
+						.setMessage(R.string.hashtag_and_visibility_not_match)
+						.setNegativeButton(R.string.cancel, null)
+						.setPositiveButton(R.string.ok) { _, _ ->
+							post(
+								account = account,
+								bConfirmTag = true,
+								bConfirmAccount = bConfirmAccount,
+								bConfirmRedraft = bConfirmRedraft,
+								callback = callback
+							)
+						}
+						.show()
+					return
+				}
 			}
-			// MisskeyのWebUIはタグ種別による警告とかはないみたいだ
 		}
 		
 		if(! bConfirmRedraft && redraft_status_id != null) {
@@ -339,7 +342,7 @@ class PostHelper(
 						)
 						if(visibility_checked != null) {
 							
-							if(visibility_checked == TootVisibility.DirectSpecified || visibility_checked == TootVisibility.DirectPrivate ) {
+							if(visibility_checked == TootVisibility.DirectSpecified || visibility_checked == TootVisibility.DirectPrivate) {
 								val userIds = JSONArray()
 								val reMention =
 									Pattern.compile("(?:\\A|\\s)@([a-zA-Z0-9_]{1,20})(?:@([\\w.:-]+))?(?:\\z|\\s)")
@@ -368,6 +371,7 @@ class PostHelper(
 											json.put("visibleUserIds", userIds)
 											"specified"
 										}
+										
 										account.misskeyVersion >= 11 -> "specified"
 										else -> "private"
 									}
@@ -723,7 +727,7 @@ class PostHelper(
 			}
 			
 			val part = src.substring(last_sharp + 1, end)
-			if( ! TootTag.isValid(part, isMisskey) ){
+			if(! TootTag.isValid(part, isMisskey)) {
 				checkEmoji(et, src)
 				return
 			}
@@ -950,7 +954,6 @@ class PostHelper(
 		
 	}
 	
-	
 	private fun SpannableStringBuilder.appendEmoji(
 		name : String,
 		instance : String?,
@@ -964,13 +967,13 @@ class PostHelper(
 			if(! EmojiDecoder.canStartShortCode(this, this.length)) append(separator)
 			this.append(SpannableString(":$name:"))
 			// セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
-			if( separator != ' ') append(separator)
+			if(separator != ' ') append(separator)
 		} else if(! bInstanceHasCustomEmoji) {
 			// 古いタンスだとshortcodeを使う。見た目は絵文字に変える。
 			if(! EmojiDecoder.canStartShortCode(this, this.length)) append(separator)
 			this.append(DecodeOptions(activity).decodeEmoji(":$name:"))
 			// セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
-			if( separator != ' ') append(separator)
+			if(separator != ' ') append(separator)
 		} else {
 			// 十分に新しいタンスなら絵文字のunicodeを使う。見た目は絵文字に変える。
 			this.append(DecodeOptions(activity).decodeEmoji(item.unified))

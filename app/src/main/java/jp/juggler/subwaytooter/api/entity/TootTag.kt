@@ -56,10 +56,10 @@ open class TootTag(
 		// \p{Pc} : 連結用句読記号 (Connector punctuation)
 		
 		// rubyの [:word:] ： 単語構成文字 (Letter | Mark | Decimal_Number | Connector_Punctuation)
-		private val w = """\p{L}\p{M}\p{Nd}\p{Pc}"""
+		private const val w = """\p{L}\p{M}\p{Nd}\p{Pc}"""
 		
 		// rubyの [:alpha:] : 英字 (Letter | Mark)
-		private val a = """\p{L}\p{M}"""
+		private const val a = """\p{L}\p{M}"""
 		
 		// 2019/7/20 https://github.com/tootsuite/mastodon/pull/11363/files
 		private val reTagMastodon : Pattern =
@@ -75,7 +75,7 @@ open class TootTag(
 		// #test_ => #test_
 		// #one·two·three· => 末尾の・はタグに含まれない。#one·two·three までがハッシュタグになる。
 		// #0123456' => 数字だけのハッシュタグはタグとして認識されない。
-		// #000_000 => 認識される。
+		// #000_000 => 認識される。orの前半分が機能してるらしい
 		//
 		
 		// タグに使えない文字

@@ -418,13 +418,13 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/force_wrap_additional_buttons"
+            android:text="@string/additional_buttons_position"
             />
 
         <LinearLayout style="@style/setting_row_form">
 
-            <Switch
-                android:id="@+id/swForceWrapAdditionalButtons"
+            <Spinner
+                android:id="@+id/spAdditionalButtonsPosition"
                 style="@style/setting_horizontal_stretch"
                 />
 

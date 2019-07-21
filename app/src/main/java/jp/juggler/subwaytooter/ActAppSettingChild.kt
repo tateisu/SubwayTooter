@@ -110,6 +110,7 @@ class ActAppSettingChild : AppCompatActivity()
 	private var spUITheme : Spinner? = null
 	private var spResizeImage : Spinner? = null
 	private var spRefreshAfterToot : Spinner? = null
+	private var spAdditionalButtonsPosition : Spinner? = null
 	private var spDefaultAccount : Spinner? = null
 	private var spRepliesCount : Spinner? = null
 	private var spVisibilityStyle : Spinner? = null
@@ -346,6 +347,14 @@ class ActAppSettingChild : AppCompatActivity()
 			, getString(R.string.dont_refresh)
 		)
 		
+		spAdditionalButtonsPosition = initSpinner(
+			R.id.spAdditionalButtonsPosition
+			, getString(R.string.top)
+			, getString(R.string.bottom)
+			, getString(R.string.start)
+			, getString(R.string.end)
+		)
+		
 		spDefaultAccount = findViewById<Spinner>(R.id.spDefaultAccount)?.also {
 			it.adapter = AccountAdapter()
 			it.onItemSelectedListener = this@ActAppSettingChild
@@ -573,7 +582,7 @@ class ActAppSettingChild : AppCompatActivity()
 		spUITheme?.setSelection(Pref.ipUiTheme(pref))
 		spResizeImage?.setSelection(Pref.ipResizeImage(pref))
 		spRefreshAfterToot?.setSelection(Pref.ipRefreshAfterToot(pref))
-		
+		spAdditionalButtonsPosition?.setSelection(Pref.ipAdditionalButtonsPosition(pref))
 		
 		spDefaultAccount?.setSelection(
 			(spDefaultAccount?.adapter as? AccountAdapter)
@@ -585,7 +594,6 @@ class ActAppSettingChild : AppCompatActivity()
 			(spTimeZone?.adapter as? TimeZoneAdapter)
 				?.getIndexFromId(Pref.spTimeZone(pref))
 				?: 0
-		
 		)
 		
 		footer_button_bg_color = Pref.ipFooterButtonBgColor(pref)
@@ -696,6 +704,8 @@ class ActAppSettingChild : AppCompatActivity()
 			)
 		}
 		
+		
+		
 		fun putFontSize(fp : FloatPref, et : EditText?) {
 			et ?: return
 			e.put(fp, parseFontSize(et.text.toString().trim()))
@@ -750,6 +760,7 @@ class ActAppSettingChild : AppCompatActivity()
 		putSpinner(Pref.ipUiTheme, spUITheme)
 		putSpinner(Pref.ipResizeImage, spResizeImage)
 		putSpinner(Pref.ipRefreshAfterToot, spRefreshAfterToot)
+		putSpinner(Pref.ipAdditionalButtonsPosition, spAdditionalButtonsPosition)
 		
 		fun putIf(hasUi : Boolean, sp : IntPref, value : Int) {
 			if(! hasUi) return
@@ -1175,10 +1186,10 @@ class ActAppSettingChild : AppCompatActivity()
 			R.id.btnCustomShare2Edit -> openCustomShareChooser(CustomShareTarget.CustomShare2)
 			R.id.btnCustomShare3Edit -> openCustomShareChooser(CustomShareTarget.CustomShare3)
 			
-			R.id.btnTranslateAppComponentReset -> setCustomShare(CustomShareTarget.Translate,"")
-			R.id.btnCustomShare1Reset -> setCustomShare(CustomShareTarget.CustomShare1,"")
-			R.id.btnCustomShare2Reset -> setCustomShare(CustomShareTarget.CustomShare2,"")
-			R.id.btnCustomShare3Reset -> setCustomShare(CustomShareTarget.CustomShare3,"")
+			R.id.btnTranslateAppComponentReset -> setCustomShare(CustomShareTarget.Translate, "")
+			R.id.btnCustomShare1Reset -> setCustomShare(CustomShareTarget.CustomShare1, "")
+			R.id.btnCustomShare2Reset -> setCustomShare(CustomShareTarget.CustomShare2, "")
+			R.id.btnCustomShare3Reset -> setCustomShare(CustomShareTarget.CustomShare3, "")
 		}
 	}
 	
@@ -1757,19 +1768,19 @@ class ActAppSettingChild : AppCompatActivity()
 		if(isDestroyed) return
 		
 		val cn = ChooseReceiver.lastComponentName
-		if(cn != null ) {
+		if(cn != null) {
 			ChooseReceiver.lastComponentName = null
-			setCustomShare(customShareTarget,"${cn.packageName}/${cn.className}")
+			setCustomShare(customShareTarget, "${cn.packageName}/${cn.className}")
 		}
 	}
 	
-	private fun setCustomShare(target : CustomShareTarget?, value : String){
-
+	private fun setCustomShare(target : CustomShareTarget?, value : String) {
+		
 		target ?: return
-
+		
 		val sp : StringPref
 		val tv : TextView?
-
+		
 		when(target) {
 			
 			CustomShareTarget.Translate -> {

@@ -215,7 +215,6 @@ internal class StatusButtons(
 			relation
 		}
 		
-		val forceWrapAdditionalButtons = Pref.bpForceWrapAdditionalButtons(activity.pref)
 		var optionalButtonFirst : View? = null
 		var optionalButtonCount = 0
 		
@@ -234,19 +233,13 @@ internal class StatusButtons(
 						Styler.boost_alpha
 					)
 				)
-				if(forceWrapAdditionalButtons) {
-					++ optionalButtonCount
-					if(optionalButtonFirst == null) {
-						optionalButtonFirst = b
-					}
+				++ optionalButtonCount
+				if(optionalButtonFirst == null) {
+					optionalButtonFirst = b
 				}
 			}
 		}
 		
-		fun setWrap(b : ImageButton) {
-			(b.layoutParams as? FlexboxLayout.LayoutParams)
-				?.isWrapBefore = optionalButtonCount >= 1 && b == optionalButtonFirst
-		}
 		
 		if(vg(btnTranslate, Pref.bpShowTranslateButton(activity.pref))) {
 			showCustomShare(CustomShareTarget.Translate, btnTranslate)
@@ -255,10 +248,77 @@ internal class StatusButtons(
 		showCustomShare(CustomShareTarget.CustomShare2, btnCustomShare2)
 		showCustomShare(CustomShareTarget.CustomShare3, btnCustomShare3)
 		
-		setWrap(btnTranslate)
-		setWrap(btnCustomShare1)
-		setWrap(btnCustomShare2)
-		setWrap(btnCustomShare3)
+		val lpConversation = btnConversation.layoutParams as? FlexboxLayout.LayoutParams
+		val updateAdditionalButton : (btn : ImageButton) -> Unit
+		when(Pref.ipAdditionalButtonsPosition(activity.pref)) {
+			Pref.ABP_TOP -> {
+				// 1行目に追加ボタンが並ぶ
+				updateAdditionalButton = { btn ->
+					(btn.layoutParams as? FlexboxLayout.LayoutParams)?.let { lp ->
+						lp.isWrapBefore = false
+						lp.startMargin = when(btn) {
+							optionalButtonFirst -> 0
+							else -> holder.marginBetween
+						}
+					}
+				}
+				// 2行目は通常ボタンが並ぶ
+				// 2行目最初のボタンのstartMarginは追加ボタンの有無で変化する
+				lpConversation?.startMargin = 0
+				lpConversation?.isWrapBefore = (optionalButtonCount != 0)
+			}
+			
+			Pref.ABP_START -> {
+				// 始端に追加ボタンが並ぶ
+				updateAdditionalButton = { btn ->
+					(btn.layoutParams as? FlexboxLayout.LayoutParams)?.let { lp ->
+						lp.isWrapBefore = false
+						lp.startMargin = when(btn) {
+							optionalButtonFirst -> 0
+							else -> holder.marginBetween
+						}
+					}
+				}
+				// 続いて通常ボタンが並ぶ
+				lpConversation?.startMargin = holder.marginBetween
+				lpConversation?.isWrapBefore = false
+			}
+			
+			Pref.ABP_END -> {
+				// 始端に通常ボタンが並ぶ
+				lpConversation?.startMargin = 0
+				lpConversation?.isWrapBefore = false
+				// 続いて追加ボタンが並ぶ
+				updateAdditionalButton = { btn ->
+					(btn.layoutParams as? FlexboxLayout.LayoutParams)?.let { lp ->
+						lp.isWrapBefore = false
+						lp.startMargin = holder.marginBetween
+					}
+				}
+			}
+			
+			else /* Pref.ABP_BOTTOM */ -> {
+				// 1行目は通常ボタンが並ぶ
+				lpConversation?.startMargin = 0
+				lpConversation?.isWrapBefore = false
+				// 2行目は追加ボタンが並ぶ
+				updateAdditionalButton = { btn ->
+					(btn.layoutParams as? FlexboxLayout.LayoutParams)?.let { lp ->
+						lp.isWrapBefore = btn == optionalButtonFirst
+						lp.startMargin = when(btn) {
+							optionalButtonFirst -> 0
+							else -> holder.marginBetween
+						}
+					}
+				}
+			}
+			
+		}
+		
+		updateAdditionalButton(btnTranslate)
+		updateAdditionalButton(btnCustomShare1)
+		updateAdditionalButton(btnCustomShare2)
+		updateAdditionalButton(btnCustomShare3)
 	}
 	
 	private fun setButton(
@@ -543,7 +603,7 @@ class StatusButtonsViewHolder(
 ) {
 	
 	private val buttonHeight = ActMain.boostButtonSize
-	private val marginBetween = (ActMain.boostButtonSize.toFloat() * 0.05f + 0.5f).toInt()
+	internal val marginBetween = (ActMain.boostButtonSize.toFloat() * 0.05f + 0.5f).toInt()
 	
 	val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
 	val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
@@ -576,64 +636,22 @@ class StatusButtonsViewHolder(
 				flexWrap = FlexWrap.WRAP
 				this.justifyContent = justifyContent
 				
-				btnConversation = imageButton {
+				fun normalButtons() {
 					
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					contentDescription = context.getString(R.string.conversation_view)
+					btnConversation = imageButton {
+						
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						contentDescription = context.getString(R.string.conversation_view)
+						
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						imageResource = R.drawable.ic_forum
+					}.lparams(buttonHeight, buttonHeight)
 					
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
-					imageResource = R.drawable.ic_forum
-				}.lparams(buttonHeight, buttonHeight)
-				
-				btnReply = customView<CountImageButton> {
-					
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
-					minimumWidth = buttonHeight
-				}.lparams(wrapContent, buttonHeight) {
-					startMargin = marginBetween
-				}
-				
-				btnBoost = customView<CountImageButton> {
-					
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
-					minimumWidth = buttonHeight
-				}.lparams(wrapContent, buttonHeight) {
-					startMargin = marginBetween
-				}
-				
-				btnFavourite = customView<CountImageButton> {
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
-					minimumWidth = buttonHeight
-					
-				}.lparams(wrapContent, buttonHeight) {
-					startMargin = marginBetween
-				}
-				
-				llFollow2 = frameLayout {
-					lparams(buttonHeight, buttonHeight) {
-						startMargin = marginBetween
-					}
-					
-					btnFollow2 = imageButton {
+					btnReply = customView<CountImageButton> {
 						
 						background = ContextCompat.getDrawable(
 							context,
@@ -641,83 +659,140 @@ class StatusButtonsViewHolder(
 						)
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER
-						
-						contentDescription = context.getString(R.string.follow)
-						
-					}.lparams(matchParent, matchParent)
+						minimumWidth = buttonHeight
+					}.lparams(wrapContent, buttonHeight) {
+						startMargin = marginBetween
+					}
 					
-					ivFollowedBy2 = imageView {
+					btnBoost = customView<CountImageButton> {
 						
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						minimumWidth = buttonHeight
+					}.lparams(wrapContent, buttonHeight) {
+						startMargin = marginBetween
+					}
+					
+					btnFavourite = customView<CountImageButton> {
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						minimumWidth = buttonHeight
+						
+					}.lparams(wrapContent, buttonHeight) {
+						startMargin = marginBetween
+					}
+					
+					llFollow2 = frameLayout {
+						lparams(buttonHeight, buttonHeight) {
+							startMargin = marginBetween
+						}
+						
+						btnFollow2 = imageButton {
+							
+							background = ContextCompat.getDrawable(
+								context,
+								R.drawable.btn_bg_transparent
+							)
+							setPadding(paddingH, paddingV, paddingH, paddingV)
+							scaleType = ImageView.ScaleType.FIT_CENTER
+							
+							contentDescription = context.getString(R.string.follow)
+							
+						}.lparams(matchParent, matchParent)
+						
+						ivFollowedBy2 = imageView {
+							
+							setPadding(paddingH, paddingV, paddingH, paddingV)
+							scaleType = ImageView.ScaleType.FIT_CENTER
+							
+							importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+						}.lparams(matchParent, matchParent)
+					}
+					
+					
+					btnMore = imageButton {
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER
 						
-						importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-					}.lparams(matchParent, matchParent)
+						contentDescription = context.getString(R.string.more)
+						imageResource = R.drawable.ic_more
+					}.lparams(buttonHeight, buttonHeight) {
+						startMargin = marginBetween
+					}
 				}
 				
-				
-				btnMore = imageButton {
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
+				fun additionalButtons() {
+					btnTranslate = imageButton {
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						
+					}.lparams(buttonHeight, buttonHeight) {
+						startMargin = marginBetween
+					}
 					
-					contentDescription = context.getString(R.string.more)
-					imageResource = R.drawable.ic_more
-				}.lparams(buttonHeight, buttonHeight) {
-					startMargin = marginBetween
-				}
-				
-				btnTranslate = imageButton {
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
+					btnCustomShare1 = imageButton {
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						
+					}.lparams(buttonHeight, buttonHeight) {
+						startMargin = marginBetween
+					}
 					
-				}.lparams(buttonHeight, buttonHeight) {
-					startMargin = marginBetween
-				}
-				
-				btnCustomShare1 = imageButton {
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
+					btnCustomShare2 = imageButton {
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						
+					}.lparams(buttonHeight, buttonHeight) {
+						startMargin = marginBetween
+					}
 					
-				}.lparams(buttonHeight, buttonHeight) {
-					startMargin = marginBetween
+					btnCustomShare3 = imageButton {
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						
+					}.lparams(buttonHeight, buttonHeight) {
+						startMargin = marginBetween
+					}
 				}
-				
-				btnCustomShare2 = imageButton {
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
+				when(Pref.ipAdditionalButtonsPosition(activity.pref)) {
+					Pref.ABP_TOP, Pref.ABP_START -> {
+						additionalButtons()
+						normalButtons()
+					}
 					
-				}.lparams(buttonHeight, buttonHeight) {
-					startMargin = marginBetween
+					else -> {
+						normalButtons()
+						additionalButtons()
+					}
 				}
-				
-				btnCustomShare3 = imageButton {
-					background = ContextCompat.getDrawable(
-						context,
-						R.drawable.btn_bg_transparent
-					)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					scaleType = ImageView.ScaleType.FIT_CENTER
-					
-				}.lparams(buttonHeight, buttonHeight) {
-					startMargin = marginBetween
-				}
-				
 			}
 		}
 	}

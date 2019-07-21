@@ -400,14 +400,6 @@ object Pref {
 		R.id.swShowTranslateButton
 	)
 	
-	val bpForceWrapAdditionalButtons = BooleanPref(
-		"ForceWrapAdditionalButtons",
-		false,
-		R.id.swForceWrapAdditionalButtons
-	)
-	
-	
-	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)
@@ -432,11 +424,19 @@ object Pref {
 	const val RAT_REFRESH_DONT_SCROLL = 1
 	const val RAT_DONT_REFRESH = 2
 	
-	val ipVisibilityStyle = IntPref("ipVisibilityStyle", 0)
 	@Suppress("unused")
 	const val VS_BY_ACCOUNT = 0
 	const val VS_MASTODON = 1
 	const val VS_MISSKEY = 2
+	val ipVisibilityStyle = IntPref("ipVisibilityStyle", VS_BY_ACCOUNT)
+	
+	const val ABP_TOP = 0
+	@Suppress("unused")
+	const val ABP_BOTTOM = 1
+	const val ABP_START = 2
+	const val ABP_END = 3
+	val ipAdditionalButtonsPosition = IntPref( "AdditionalButtonsPosition",ABP_END)
+	
 	
 	val ipFooterButtonBgColor = IntPref("footer_button_bg_color", 0)
 	val ipFooterButtonFgColor = IntPref("footer_button_fg_color", 0)

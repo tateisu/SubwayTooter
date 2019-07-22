@@ -16,15 +16,13 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.MediaStore
+import android.text.*
 import androidx.core.view.inputmethod.InputConnectionCompat
 import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import android.text.Editable
-import android.text.Spannable
-import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.ViewGroup
@@ -846,10 +844,12 @@ class ActPost : AppCompatActivity(),
 						
 						val decodeOptions = DecodeOptions(this, mentionFullAcct = true)
 						
-						var text : Spannable
-						
-						text = decodeOptions.decodeHTML(base_status.content)
-						etContent.text = text
+						var text : CharSequence = if( account.isMisskey){
+							base_status.content ?: ""
+						}else{
+							decodeOptions.decodeHTML(base_status.content)
+						}
+						etContent.setText(text)
 						etContent.setSelection(text.length)
 						
 						text = decodeOptions.decodeEmoji(base_status.spoiler_text)

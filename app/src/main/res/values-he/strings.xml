@@ -78,13 +78,13 @@
     <string name="confirm">אשר</string>
     <string name="confirm_boost_from">האם לאשר הגברה למצב זה השייך ל-%1$s  \? הוא יהיה מוצג לכל העוקבים ובדף הפרופיל שלך.</string>
     <string name="confirm_unboost_from">האם להפסיק להגביר מצב זה של %1$s \?</string>
-    <string name="confirm_favourite_from">"העדף מצב זה השייך ל-  %1$s \?התראה תישלח למחבר."</string>
+    <string name="confirm_favourite_from">העדף מצב זה השייך ל-  %1$s \?התראה תישלח למחבר.</string>
     <string name="confirm_unfavourite_from">האם להפסיק להעדיף מצב זה של %1$s \?</string>
     <string name="display_name_favourited_by">%1$s הועדף</string>
     <string name="display_name_boosted_by">%1$s הוגבר</string>
     <string name="display_name_replied_by">%1$s השיב</string>
     <string name="display_name_mentioned_by">%1$s הוזכר</string>
-    <string name="display_name_voted_by">"%1$s  הצביע"</string>
+    <string name="display_name_voted_by">%1$s  הצביע</string>
     <string name="display_name_follow_request_by">%1$s שלח בקשת מעקב</string>
     <string name="display_name_quoted_by">%1$s ציטט</string>
     <string name="display_name_reaction_by">%1$s הגיב</string>
@@ -134,7 +134,7 @@
     <string name="open_column_list">פתח רשימת עמודות</string>
     <string name="back_button_action">פעולה של כפתור \"בחזרה\"</string>
     <string name="prior_local_url_when_open_attachment">כתובת URL מקומית קודמת בעת פתיחת קובץ מצורף</string>
-    <string name="disable_fast_scroller">"כבה את  הגולל המהיר (נא הפעל מחדש את היישום)"</string>
+    <string name="disable_fast_scroller">כבה את  הגולל המהיר (נא הפעל מחדש את היישום)</string>
     <string name="delete_succeeded">נמחק</string>
     <string name="developer">מפתח</string>
     <string name="with_attachment">עם קובץ מצורף</string>

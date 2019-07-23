@@ -5,7 +5,7 @@ import androidx.test.runner.AndroidJUnit4
 import org.junit.Test
 import org.junit.runner.RunWith
 
-import jp.juggler.subwaytooter.util.CharacterGroup
+import jp.juggler.util.CharacterGroup
 import jp.juggler.util.WordTrieTree
 
 import org.junit.Assert.assertEquals

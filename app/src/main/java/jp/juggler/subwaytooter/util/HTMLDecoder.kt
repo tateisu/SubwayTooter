@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.util
 
-import android.content.Context
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder

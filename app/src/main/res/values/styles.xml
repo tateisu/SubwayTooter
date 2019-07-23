@@ -3,7 +3,7 @@
     <!-- light theme -->
     <style name="AppTheme.Light" parent="Theme.AppCompat.Light.DarkActionBar">
 
-        <item name="android:windowBackground">@drawable/window_background_light</item>
+        <item name="android:windowBackground">@drawable/window_background</item>
         <item name="android:textColor">?attr/colorContentText</item>
 
         <item name="colorPrimary">@color/Light_colorPrimary</item>
@@ -45,7 +45,7 @@
         <item name="colorButtonBgCw">@color/Light_colorButtonBgCw</item>
         <item name="colorRefreshErrorBg">@color/Light_colorRefreshErrorBg</item>
         <item name="colorVectorDrawable">@color/Light_colorVectorDrawable</item>
-
+        <item name="colorWindowBackground">@color/Light_colorBackground</item>
 
     </style>
 
@@ -57,7 +57,7 @@
     <!-- dark theme -->
     <style name="AppTheme.Dark" parent="Theme.AppCompat">
 
-        <item name="android:windowBackground">@drawable/window_background_dark</item>
+        <item name="android:windowBackground">@drawable/window_background</item>
         <item name="android:textColor">?attr/colorContentText</item>
 
         <item name="android:navigationBarColor">@color/Dark_colorColumnStripBackground</item>
@@ -102,6 +102,7 @@
         <item name="colorRefreshErrorBg">@color/Dark_colorRefreshErrorBg</item>
 
         <item name="colorVectorDrawable">@color/Dark_colorVectorDrawable</item>
+        <item name="colorWindowBackground">@color/Dark_colorBackground</item>
 
     </style>
 

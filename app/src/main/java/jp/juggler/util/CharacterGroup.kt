@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter.util
+package jp.juggler.util
 
 import android.util.SparseBooleanArray
 import android.util.SparseIntArray
@@ -248,7 +248,10 @@ class CharacterGroup {
 		addGroup(arrayOf("」", "｣", "」"))
 		
 		// チルダ
-		addGroup(arrayOf("~", i2s(tmp, 0x301C), i2s(tmp, 0xFF5E)))
+		addGroup(arrayOf("~",
+			i2s(tmp, 0x301C),
+			i2s(tmp, 0xFF5E)
+		))
 		
 		// 半角カナの濁音,半濁音は2文字になる
 		addGroup(arrayOf("ガ", "が", "ｶﾞ"))

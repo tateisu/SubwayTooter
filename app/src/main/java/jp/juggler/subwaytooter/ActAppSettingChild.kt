@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
@@ -31,6 +32,7 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStream
 import java.text.NumberFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -88,6 +90,8 @@ class ActAppSettingChild : AppCompatActivity()
 		internal const val COLOR_DIALOG_ID_EVENT_BG_VOTE = 24
 		internal const val COLOR_DIALOG_ID_EVENT_BG_FOLLOWREQUEST = 25
 		
+		internal const val COLOR_DIALOG_ID_SWITCH_BUTTON = 26
+		
 		internal const val REQUEST_CODE_TIMELINE_FONT = 1
 		internal const val REQUEST_CODE_TIMELINE_FONT_BOLD = 2
 		
@@ -105,6 +109,8 @@ class ActAppSettingChild : AppCompatActivity()
 	)
 	
 	private val booleanViewList = ArrayList<BooleanViewInfo>()
+	
+	private lateinit var svContent : View
 	
 	private var spBackButtonAction : Spinner? = null
 	private var spUITheme : Spinner? = null
@@ -138,6 +144,7 @@ class ActAppSettingChild : AppCompatActivity()
 	private var event_bg_color_quote : Int = 0
 	private var event_bg_color_vote : Int = 0
 	private var event_bg_color_follow_request : Int = 0
+	private var switch_button_color = 0
 	
 	private var color_column_header_bg : Int = 0
 	private var color_column_header_fg : Int = 0
@@ -275,7 +282,11 @@ class ActAppSettingChild : AppCompatActivity()
 	
 	private fun initUI() {
 		
-		Styler.fixHorizontalPadding(findViewById(R.id.svContent))
+		svContent = findViewById(R.id.svContent)
+		
+		setSwitchColor(svContent)
+		
+		Styler.fixHorizontalPadding(svContent)
 		
 		// initialize Switch and CheckBox
 		for(info in Pref.map.values) {
@@ -432,6 +443,8 @@ class ActAppSettingChild : AppCompatActivity()
 			, R.id.btnCustomShare2Reset
 			, R.id.btnCustomShare3Edit
 			, R.id.btnCustomShare3Reset
+			, R.id.btnSwitchButtonColorEdit
+			, R.id.btnSwitchButtonColorReset
 		).forEach {
 			findViewById<View>(it)?.setOnClickListener(this)
 		}
@@ -617,6 +630,7 @@ class ActAppSettingChild : AppCompatActivity()
 		event_bg_color_quote = Pref.ipEventBgColorQuote(pref)
 		event_bg_color_vote = Pref.ipEventBgColorVote(pref)
 		event_bg_color_follow_request = Pref.ipEventBgColorFollowRequest(pref)
+		switch_button_color = Pref.ipSwitchOnColor(pref)
 		
 		color_column_header_bg = Pref.ipCcdHeaderBg(pref)
 		color_column_header_fg = Pref.ipCcdHeaderFg(pref)
@@ -792,6 +806,7 @@ class ActAppSettingChild : AppCompatActivity()
 			put(Pref.ipEventBgColorQuote, event_bg_color_quote)
 			put(Pref.ipEventBgColorVote, event_bg_color_vote)
 			put(Pref.ipEventBgColorFollowRequest, event_bg_color_follow_request)
+			put(Pref.ipSwitchOnColor, switch_button_color)
 		}
 		
 		
@@ -1181,6 +1196,19 @@ class ActAppSettingChild : AppCompatActivity()
 				saveUIToData()
 			}
 			
+			R.id.btnSwitchButtonColorEdit -> openColorPicker(
+				COLOR_DIALOG_ID_SWITCH_BUTTON,
+				switch_button_color,
+				true
+			)
+			
+			R.id.btnSwitchButtonColorReset -> {
+				switch_button_color = Pref.ipSwitchOnColor.defVal
+				saveUIToData()
+				setSwitchColor(svContent)
+				
+			}
+			
 			R.id.btnTranslateAppComponentEdit -> openCustomShareChooser(CustomShareTarget.Translate)
 			R.id.btnCustomShare1Edit -> openCustomShareChooser(CustomShareTarget.CustomShare1)
 			R.id.btnCustomShare2Edit -> openCustomShareChooser(CustomShareTarget.CustomShare2)
@@ -1369,6 +1397,11 @@ class ActAppSettingChild : AppCompatActivity()
 				saveUIToData()
 			}
 			
+			COLOR_DIALOG_ID_SWITCH_BUTTON -> {
+				switch_button_color = colorOpaque
+				saveUIToData()
+				setSwitchColor(svContent)
+			}
 		}
 	}
 	
@@ -1522,7 +1555,7 @@ class ActAppSettingChild : AppCompatActivity()
 			
 			val tmp_file = File(dir, "$file_name.tmp")
 			
-			val source = contentResolver.openInputStream(uri) // nullable
+			val source : InputStream? = contentResolver.openInputStream(uri)
 			if(source == null) {
 				showToast(this, false, "openInputStream returns null. uri=%s", uri)
 				return null
@@ -1817,6 +1850,74 @@ class ActAppSettingChild : AppCompatActivity()
 		tv.text = label ?: getString(R.string.not_selected)
 		
 		tv.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
+	}
+	
+	private fun setSwitchColor(root : View?) {
+		
+		fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
+			(Color.red(col1) + Color.red(col2)) ushr 1,
+			(Color.green(col1) + Color.green(col2)) ushr 1,
+			(Color.blue(col1) + Color.blue(col2)) ushr 1
+		)
+		
+		val colorBg = getAttributeColor(this, R.attr.colorWindowBackground)
+		
+		val colorOn = Pref.ipSwitchOnColor(pref)
+		
+		val colorOff = /* Pref.ipSwitchOffColor(pref).notZero() ?: */
+			getAttributeColor(this, android.R.attr.colorPrimary)
+
+		val colorDisabled = mixColor(colorBg, colorOff)
+		
+		
+		val colorTrackDisabled = mixColor( colorBg,colorDisabled)
+		val colorTrackOn = mixColor( colorBg,colorOn)
+		val colorTrackOff = mixColor( colorBg,colorOff)
+
+		// set Switch Color
+		// https://stackoverflow.com/a/25635526/9134243
+		val thumbStates = ColorStateList(
+			arrayOf(
+				intArrayOf(- android.R.attr.state_enabled),
+				intArrayOf(android.R.attr.state_checked),
+				intArrayOf()
+			),
+			intArrayOf(
+				colorDisabled,
+				colorOn,
+				colorOff
+			)
+		)
+		
+		val trackStates = ColorStateList(
+			arrayOf(
+				intArrayOf(- android.R.attr.state_enabled),
+				intArrayOf(android.R.attr.state_checked),
+				intArrayOf()
+			),
+			intArrayOf(
+				colorTrackDisabled,
+				colorTrackOn,
+				colorTrackOff
+			)
+		)
+		
+		root?.scan {
+			if(it !is Switch) {
+			} else if(Build.VERSION.SDK_INT < 23) {
+				// android 5
+				it.thumbDrawable?.setTintList(thumbStates)
+				it.trackDrawable?.setTintList(thumbStates) // not trackState
+			} else {
+				// android 6
+				it.thumbTintList = thumbStates
+				if(Build.VERSION.SDK_INT >= 24) {
+					// android 7
+					it.trackTintList = trackStates
+					it.trackTintMode = PorterDuff.Mode.SRC_OVER
+				}
+			}
+		}
 	}
 	
 }

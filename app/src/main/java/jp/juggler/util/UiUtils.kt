@@ -1,6 +1,5 @@
 package jp.juggler.util
 
-import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -14,14 +13,12 @@ import android.graphics.drawable.*
 import android.graphics.drawable.shapes.RectShape
 import android.os.Build
 import android.os.SystemClock
-import androidx.core.content.ContextCompat
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.SparseArray
-import android.view.View
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.R
-import org.jetbrains.anko.backgroundDrawable
 import java.util.*
 
 object UiUtils{

@@ -914,5 +914,6 @@
     <string name="additional_buttons_position">Additional buttons position (app restart required)</string>
     <string name="top">Top</string>
     <string name="bottom">Bottom</string>
+    <string name="switch_button_color">Switch button color</string>
 
 </resources>

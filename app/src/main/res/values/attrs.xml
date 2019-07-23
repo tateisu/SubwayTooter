@@ -91,4 +91,7 @@
     <!-- VectorDrawableのXMLに指定するfillColor -->
     <attr name="colorVectorDrawable" format="color"/>
 
+    <!-- @drawable/window_background_light と @drawable/window_background に指定した色をgetAttributeColorで取得したい -->
+    <attr name="colorWindowBackground" format="color"/>
+
 </resources>

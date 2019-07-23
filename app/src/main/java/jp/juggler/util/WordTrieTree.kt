@@ -1,8 +1,5 @@
 package jp.juggler.util
 
-import androidx.collection.SparseArrayCompat
-import jp.juggler.subwaytooter.util.CharacterGroup
-
 import java.util.ArrayList
 
 class WordTrieTree {

@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.preference.PreferenceManager
 import jp.juggler.util.optInt
 
@@ -52,7 +53,7 @@ class BooleanPref(
 	}
 }
 
-class IntPref(key : String, private val defVal : Int) : BasePref<Int>(key) {
+class IntPref(key : String, val defVal : Int) : BasePref<Int>(key) {
 	
 	override operator fun invoke(pref : SharedPreferences) : Int {
 		return pref.getInt(key, defVal)
@@ -448,6 +449,8 @@ object Pref {
 	val ipBoostButtonJustify = IntPref("ipBoostButtonJustify", 0) // 0=左,1=中央,2=右
 	
 	val ipLinkColor = IntPref("LinkColor", 0)
+	
+	val ipSwitchOnColor = IntPref("SwitchOnColor", Color.BLACK or 0x0080ff)
 	
 	val ipTootColorUnlisted = IntPref("ipTootColorUnlisted", 0)
 	val ipTootColorFollower = IntPref("ipTootColorFollower", 0)

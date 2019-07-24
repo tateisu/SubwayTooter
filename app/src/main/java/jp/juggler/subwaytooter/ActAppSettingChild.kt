@@ -61,6 +61,73 @@ class ActAppSettingChild : AppCompatActivity()
 			)
 		}
 		
+		fun setSwitchColor(activity : AppCompatActivity, pref : SharedPreferences, root : View?) {
+			
+			fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
+				(Color.red(col1) + Color.red(col2)) ushr 1,
+				(Color.green(col1) + Color.green(col2)) ushr 1,
+				(Color.blue(col1) + Color.blue(col2)) ushr 1
+			)
+			
+			val colorBg = getAttributeColor(activity, R.attr.colorWindowBackground)
+			
+			val colorOn = Pref.ipSwitchOnColor(pref)
+			
+			val colorOff = /* Pref.ipSwitchOffColor(pref).notZero() ?: */
+				getAttributeColor(activity, android.R.attr.colorPrimary)
+			
+			val colorDisabled = mixColor(colorBg, colorOff)
+			
+			val colorTrackDisabled = mixColor(colorBg, colorDisabled)
+			val colorTrackOn = mixColor(colorBg, colorOn)
+			val colorTrackOff = mixColor(colorBg, colorOff)
+			
+			// set Switch Color
+			// https://stackoverflow.com/a/25635526/9134243
+			val thumbStates = ColorStateList(
+				arrayOf(
+					intArrayOf(- android.R.attr.state_enabled),
+					intArrayOf(android.R.attr.state_checked),
+					intArrayOf()
+				),
+				intArrayOf(
+					colorDisabled,
+					colorOn,
+					colorOff
+				)
+			)
+			
+			val trackStates = ColorStateList(
+				arrayOf(
+					intArrayOf(- android.R.attr.state_enabled),
+					intArrayOf(android.R.attr.state_checked),
+					intArrayOf()
+				),
+				intArrayOf(
+					colorTrackDisabled,
+					colorTrackOn,
+					colorTrackOff
+				)
+			)
+			
+			root?.scan {
+				if(it !is Switch) {
+				} else if(Build.VERSION.SDK_INT < 23) {
+					// android 5
+					it.thumbDrawable?.setTintList(thumbStates)
+					it.trackDrawable?.setTintList(thumbStates) // not trackState
+				} else {
+					// android 6
+					it.thumbTintList = thumbStates
+					if(Build.VERSION.SDK_INT >= 24) {
+						// android 7
+						it.trackTintList = trackStates
+						it.trackTintMode = PorterDuff.Mode.SRC_OVER
+					}
+				}
+			}
+		}
+		
 		internal const val COLOR_DIALOG_ID_FOOTER_BUTTON_BG = 1
 		internal const val COLOR_DIALOG_ID_FOOTER_BUTTON_FG = 2
 		internal const val COLOR_DIALOG_ID_FOOTER_TAB_BG = 3
@@ -284,7 +351,7 @@ class ActAppSettingChild : AppCompatActivity()
 		
 		svContent = findViewById(R.id.svContent)
 		
-		setSwitchColor(svContent)
+		setSwitchColor(this, pref, svContent)
 		
 		Styler.fixHorizontalPadding(svContent)
 		
@@ -1205,7 +1272,7 @@ class ActAppSettingChild : AppCompatActivity()
 			R.id.btnSwitchButtonColorReset -> {
 				switch_button_color = Pref.ipSwitchOnColor.defVal
 				saveUIToData()
-				setSwitchColor(svContent)
+				setSwitchColor(this, pref, svContent)
 				
 			}
 			
@@ -1400,7 +1467,7 @@ class ActAppSettingChild : AppCompatActivity()
 			COLOR_DIALOG_ID_SWITCH_BUTTON -> {
 				switch_button_color = colorOpaque
 				saveUIToData()
-				setSwitchColor(svContent)
+				setSwitchColor(this, pref, svContent)
 			}
 		}
 	}
@@ -1850,74 +1917,6 @@ class ActAppSettingChild : AppCompatActivity()
 		tv.text = label ?: getString(R.string.not_selected)
 		
 		tv.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
-	}
-	
-	private fun setSwitchColor(root : View?) {
-		
-		fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
-			(Color.red(col1) + Color.red(col2)) ushr 1,
-			(Color.green(col1) + Color.green(col2)) ushr 1,
-			(Color.blue(col1) + Color.blue(col2)) ushr 1
-		)
-		
-		val colorBg = getAttributeColor(this, R.attr.colorWindowBackground)
-		
-		val colorOn = Pref.ipSwitchOnColor(pref)
-		
-		val colorOff = /* Pref.ipSwitchOffColor(pref).notZero() ?: */
-			getAttributeColor(this, android.R.attr.colorPrimary)
-
-		val colorDisabled = mixColor(colorBg, colorOff)
-		
-		
-		val colorTrackDisabled = mixColor( colorBg,colorDisabled)
-		val colorTrackOn = mixColor( colorBg,colorOn)
-		val colorTrackOff = mixColor( colorBg,colorOff)
-
-		// set Switch Color
-		// https://stackoverflow.com/a/25635526/9134243
-		val thumbStates = ColorStateList(
-			arrayOf(
-				intArrayOf(- android.R.attr.state_enabled),
-				intArrayOf(android.R.attr.state_checked),
-				intArrayOf()
-			),
-			intArrayOf(
-				colorDisabled,
-				colorOn,
-				colorOff
-			)
-		)
-		
-		val trackStates = ColorStateList(
-			arrayOf(
-				intArrayOf(- android.R.attr.state_enabled),
-				intArrayOf(android.R.attr.state_checked),
-				intArrayOf()
-			),
-			intArrayOf(
-				colorTrackDisabled,
-				colorTrackOn,
-				colorTrackOff
-			)
-		)
-		
-		root?.scan {
-			if(it !is Switch) {
-			} else if(Build.VERSION.SDK_INT < 23) {
-				// android 5
-				it.thumbDrawable?.setTintList(thumbStates)
-				it.trackDrawable?.setTintList(thumbStates) // not trackState
-			} else {
-				// android 6
-				it.thumbTintList = thumbStates
-				if(Build.VERSION.SDK_INT >= 24) {
-					// android 7
-					it.trackTintList = trackStates
-					it.trackTintMode = PorterDuff.Mode.SRC_OVER
-				}
-			}
-		}
 	}
 	
 }

@@ -252,7 +252,11 @@ class ActAccountSetting
 		this.handler = Handler()
 		setContentView(R.layout.act_account_setting)
 		
-		Styler.fixHorizontalPadding(findViewById(R.id.svContent))
+		val root :View = findViewById(R.id.svContent)
+		
+		Styler.fixHorizontalPadding(root)
+
+		ActAppSettingChild.setSwitchColor(this,pref,root)
 		
 		tvInstance = findViewById(R.id.tvInstance)
 		tvUser = findViewById(R.id.tvUser)

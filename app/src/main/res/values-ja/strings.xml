@@ -921,6 +921,6 @@
     <string name="additional_buttons_position">追加ボタンの位置(アプリ再起動が必要)</string>
     <string name="top">上</string>
     <string name="bottom">下</string>
-    <string name="switch_button_color">Switch button color</string>
+    <string name="switch_button_color">スイッチボタンの色</string>
 
 </resources>

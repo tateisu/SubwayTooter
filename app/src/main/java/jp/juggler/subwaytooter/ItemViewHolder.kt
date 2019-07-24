@@ -3234,7 +3234,7 @@ internal class ItemViewHolder(
 							
 							flMedia = if(verticalArrangeThumbnails) {
 								frameLayout {
-									lparams(matchParent, thumbnailHeight) {
+									lparams(matchParent, wrapContent) {
 										topMargin = dip(3)
 									}
 									llMedia = verticalLayout {
@@ -3324,7 +3324,7 @@ internal class ItemViewHolder(
 										
 										minHeightCompat = dip(48)
 										
-									}.lparams(matchParent,wrapContent)
+									}.lparams(matchParent,thumbnailHeight)
 									
 								}
 							} else {

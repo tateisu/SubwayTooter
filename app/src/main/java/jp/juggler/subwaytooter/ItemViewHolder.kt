@@ -91,7 +91,7 @@ internal class ItemViewHolder(
 	
 	private lateinit var flMedia : View
 	private lateinit var llMedia : View
-	private lateinit var btnShowMedia : TextView
+	private lateinit var btnShowMedia : BlurhashView
 	private lateinit var ivMedia1 : MyNetworkImageView
 	private lateinit var ivMedia2 : MyNetworkImageView
 	private lateinit var ivMedia3 : MyNetworkImageView
@@ -290,7 +290,7 @@ internal class ItemViewHolder(
 			cardBackground.width = (density * 1f)
 		}
 		
-		(btnShowMedia as? BlurhashView)?.text =
+		btnShowMedia.text =
 			SpannableString(activity.getString(R.string.tap_to_show))
 				.apply {
 					val colorBg = getAttributeColor(activity, R.attr.colorShowMediaBackground)
@@ -1323,11 +1323,8 @@ internal class ItemViewHolder(
 			setMedia(media_attachments, sb, ivMedia3, 2)
 			setMedia(media_attachments, sb, ivMedia4, 3)
 			
-			(btnShowMedia as? BlurhashView)?.let {
-				val m0 =
-					if(media_attachments.isEmpty()) null else media_attachments[0] as? TootAttachment
-				it.blurhash = m0?.blurhash
-			}
+			val m0 = if(media_attachments.isEmpty()) null else media_attachments[0] as? TootAttachment
+			btnShowMedia.blurhash = m0?.blurhash
 			
 			if(sb.isNotEmpty()) {
 				tvMediaDescription.visibility = View.VISIBLE
@@ -3312,22 +3309,22 @@ internal class ItemViewHolder(
 										}
 									}
 									
-									btnShowMedia = textView {
+									btnShowMedia = blurhashView {
 										
-										background =
-											ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+										errorColor = getAttributeColor(
+											context,
+											R.attr.colorShowMediaBackground
+										)
+										gravity = Gravity.CENTER
 										
-										padding = dip(4)
+										textColor = getAttributeColor(
+											context,
+											R.attr.colorShowMediaText
+										)
 										
-										minHeightCompat = dip(40)
+										minHeightCompat = dip(48)
 										
-										gravity = Gravity.CENTER_VERTICAL or Gravity.END
-										
-										text = context.getString(R.string.tap_to_show)
-										
-									}.lparams(wrapContent,wrapContent){
-										gravity = Gravity.END
-									}
+									}.lparams(matchParent,wrapContent)
 									
 								}
 							} else {

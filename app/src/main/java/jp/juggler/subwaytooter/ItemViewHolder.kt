@@ -3324,7 +3324,7 @@ internal class ItemViewHolder(
 										
 										minHeightCompat = dip(48)
 										
-									}.lparams(matchParent,wrapContent)
+									}.lparams(matchParent,thumbnailHeight)
 									
 								}
 							} else {

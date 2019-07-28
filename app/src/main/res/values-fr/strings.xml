@@ -412,7 +412,7 @@
     <string name="quote_name">Citer le nom …</string>
     <string name="format_of_quote_name">Format du \"nom cité\" (texte contenant %1$s)</string>
     <string name="dont_show_favourite">Ne pas afficher les favoris</string>
-    <string name="dont_show_follow">Masquer les follow</string>
+    <string name="dont_show_follow">Masquer les abonné·e·s</string>
     <string name="background_image">Image de fond</string>
     <string name="background_image_alpha">Transparence de l’image de fond</string>
     <string name="acct_color">Couleur du texte du compte</string>
@@ -432,7 +432,7 @@
     <string name="email">E-mail</string>
     <string name="description">Description</string>
     <string name="version">Version</string>
-    <string name="instance_information_of">Informations sur le serveur «%1$s».</string>
+    <string name="instance_information_of">Informations sur le serveur «%1$s»</string>
     <string name="instance_information">Informations sur le serveur</string>
     <string name="missing_mail_app">App de courriel manquante.</string>
     <string name="relative_timestamp">Afficher les horodatages relatifs</string>
@@ -549,7 +549,8 @@
     <string name="cant_access_list">Impossible d’accéder aux listes</string>
     <string name="account_sync_failed">Échec de la synchronisation du compte.</string>
     <string name="list_retry_with_follow">Vous ne suivez pas encore %1$s. Souhaitez-vous le·a suivre et l’ajouter à la liste \?</string>
-    <string name="cant_add_list_follow_requesting">Can\'t add user to list:\nif the user is \"locked\", please wait until follow request is approved. else please retry 2…3 times.</string>
+    <string name="cant_add_list_follow_requesting">Impossible d\'ajouter l’utilisateur·rice à la liste :
+\nVeuillez réessayer 2 à 3 fois. Si l\'utilisateur est «verrouillé·e», veuillez attendre l\'approbation de la demande d’abonnement.</string>
     <string name="cant_add_list_follow_failed">Impossible d\'ajouter l’utilisateur à la liste :
 \nÉchec de l’abonnement.</string>
     <string name="list_member_added">Ajouté·e.</string>
@@ -621,7 +622,7 @@
     <string name="show_favourite_notification_from_user">Activer les notifications Fav/Boosts provenant cet·te utilisateur·rice</string>
     <string name="fav_muted_user">FBN disabled users</string>
     <string name="fav_muted_user_long">Fav/Boost notification disabled users</string>
-    <string name="changed">a changé.</string>
+    <string name="changed">Changé.</string>
     <string name="thumbnails_arrange_vertically">Réarranger les vignettes verticalement (redémarrage requis)</string>
     <string name="instance_local">Serveur local</string>
     <string name="pull_notification_check_interval">Intervalle de vérification des notifications (Unité : minutes, par défaut : 15, min:15)</string>
@@ -708,7 +709,7 @@
     <string name="delete_suggestion">Enlever de vos suggestions d’abonnement …</string>
     <string name="delete_succeeded_confirm">Retirer l’utilisateur·rice \"%1$s\" de la liste des comptes recommandés \?</string>
     <string name="toot_context_parse_failed">Échec de l’analyse de la conversation.</string>
-    <string name="toot_default_text">Default text when composing toot. (not affected to quick toot bar and switching account in toot composing screen)</string>
+    <string name="toot_default_text">Texte par défaut lors de la rédaction d’un pouet. (N\'affecte pas la barre de pouet rapide, ni le changement de compte dans l’écran de rédaction des pouets)</string>
     <string name="list_divider_color">Couleur du séparateur de listes</string>
     <string name="display_replies_count">Afficher le nombre de réponses</string>
     <string name="replies_count_simple">0/1/1+</string>
@@ -742,8 +743,8 @@
     <string name="already_reactioned">déjà réagi.</string>
     <string name="already_voted">Vous avez déjà voté.</string>
     <string name="endorse_set">Recommander via votre page</string>
-    <string name="endorse_unset">Remove endorsement in your profile</string>
-    <string name="endorse_succeeded">Endorsement added.</string>
+    <string name="endorse_unset">Supprimer la recommandation via votre page</string>
+    <string name="endorse_succeeded">Recommandé·e.</string>
     <string name="remove_endorse_succeeded">Endorsement removed.</string>
     <string name="follow_request_cancelled">Demande d’abonnement annulée.</string>
     <string name="confirm_cancel_follow_request_who_from">Annuler la demande d’abonnement de %2$s à %1$s \?</string>
@@ -758,7 +759,7 @@
     <string name="ltl_around_toot">Fil local autour de ce pouet</string>
     <string name="ltl_around">Fil local autour de …</string>
     <string name="ltl_around_of">Fil local autour de %1$s</string>
-    <string name="ftl_around">Fil global autour de …</string>
+    <string name="ftl_around">"Fil global autour de  …"</string>
     <string name="ftl_around_of">Fil global autour de %1$s</string>
     <string name="ftl_around_toot">Fil fédéré autour de ce pouet</string>
     <string name="verified_at">vérifié à</string>
@@ -841,8 +842,8 @@
     <string name="card_description_length">Limite des caractères dans la description de la carte de prévisualisation</string>
     <string name="content_acct_color">Couleur du contenu du compte</string>
     <string name="reply_icon_size">Taille de l’icône de réponse (Unité : dp. Défault : 24. Redémarrage requis)</string>
-    <string name="header_icon_size">Taille de l\'icône d’en-tête (Unité:dp. défaut:24. redémarrage de l’application requis)</string>
-    <string name="header_text_size">Taille du texte de l’en-tête (Unité:sp. défaut:14. redémarrage de l’application requis)</string>
+    <string name="header_icon_size">Taille de l’icône d’en-tête (Unité : dp. Défaut : 24. Redémarrage de l’application requis)</string>
+    <string name="header_text_size">Taille du texte de l’en-tête (Unité : sp. Défaut : 14. Redémarrage de l’application requis)</string>
     <string name="strip_icon_size">Taille de l’icône de la barre de colonne (Unité : dp. Défaut : 30. Redémarrage de l’application requis)</string>
     <string name="show_acct_in_system_notification">Afficher le compte (au lieu du nom d’utilisateur) dans les notifications système</string>
     <string name="account_tl_around">Fil public autour …</string>

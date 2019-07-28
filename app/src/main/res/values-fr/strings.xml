@@ -759,7 +759,7 @@
     <string name="ltl_around_toot">Fil local autour de ce pouet</string>
     <string name="ltl_around">Fil local autour de …</string>
     <string name="ltl_around_of">Fil local autour de %1$s</string>
-    <string name="ftl_around">"Fil global autour de  …"</string>
+    <string name="ftl_around">Fil global autour de …</string>
     <string name="ftl_around_of">Fil global autour de %1$s</string>
     <string name="ftl_around_toot">Fil fédéré autour de ce pouet</string>
     <string name="verified_at">vérifié à</string>

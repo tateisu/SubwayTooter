@@ -457,7 +457,7 @@ object HTMLDecoder {
 		return sb
 	}
 	
-	private val reNormalLink = Pattern.compile("""\A\w+://[^/]*""")
+	private val reNormalLink = Pattern.compile("""\A(\w+://)[^/]*""")
 	
 	// URLの表記を短くする
 	// Punycode のデコードはサーバ側で行われる?ので、ここでは元リンクの表示テキストを元にURL短縮を試みる
@@ -465,17 +465,29 @@ object HTMLDecoder {
 		try {
 			
 			val m = reNormalLink.matcher(originalUrl)
-			if(m.find()) {
-				// 通常リンクはhttp,httpsだけでなく幾つかのスキーマ名が含まれる
-				// https://github.com/tootsuite/mastodon/pull/7810
-				// スキーマ名の直後には必ず :// が出現する
+			if(m.find()) return SpannableStringBuilder().apply {
+				// 文字装飾をそのまま残したいのでsubSequenceを返す
 				
+				// WebUIでは非表示スパンに隠れているが、
+				// 通常のリンクなら スキーマ名 + :// が必ず出現する
+				val schema = m.group(1)
+				val start = if(schema.startsWith("http")) {
+					// http,https の場合はスキーマ表記を省略する
+					schema.length
+				} else {
+					// その他のスキーマもMastodonでは許容される
+					// この場合はスキーマ名を省略しない
+					// https://github.com/tootsuite/mastodon/pull/7810
+					0
+				}
+				
+				val length = originalUrl.length
 				val limit = m.end() + 10 // 10 characters for ( path + query + fragment )
-				if(originalUrl.length > limit) {
-					// 文字装飾をそのまま残したい
-					return SpannableStringBuilder()
-						.append(originalUrl.subSequence(0, limit))
-						.append('…')
+				if(length > limit) {
+					append(originalUrl.subSequence(start, limit))
+					append('…')
+				} else {
+					append(originalUrl.subSequence(start, length))
 				}
 			}
 		} catch(ex : Throwable) {

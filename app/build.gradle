@@ -9,7 +9,7 @@ android {
 
     compileSdkVersion target_sdk_version
 
-    // exoplayer 2.9.0 以降は Java 8 compiler support を要求する
+    // exoPlayer 2.9.0 以降は Java 8 compiler support を要求する
     // https://github.com/google/ExoPlayer/blob/release-v2/RELEASENOTES.md
     // Invoke-customs are only supported starting with Android O (--min-api 26)
     // Default interface methods are only supported starting with Android N (--min-api 24)

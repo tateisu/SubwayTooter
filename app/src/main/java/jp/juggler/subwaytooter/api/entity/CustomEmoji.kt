@@ -11,11 +11,12 @@ class CustomEmoji(
 	val url : String, // 画像URL
 	val static_url : String?, // アニメーションなしの画像URL
 	val aliases : ArrayList<String>? = null,
-	val alias:String? =null
+	val alias : String? = null,
+	val visible_in_picker : Boolean = true
 ) : Mappable<String> {
 	
-	fun makeAlias(alias : String) = CustomEmoji (
-		shortcode= this.shortcode,
+	fun makeAlias(alias : String) = CustomEmoji(
+		shortcode = this.shortcode,
 		url = this.url,
 		static_url = this.static_url,
 		alias = alias
@@ -29,7 +30,8 @@ class CustomEmoji(
 			CustomEmoji(
 				shortcode = src.notEmptyOrThrow("shortcode"),
 				url = src.notEmptyOrThrow("url"),
-				static_url = src.parseString("static_url")
+				static_url = src.parseString("static_url"),
+				visible_in_picker = src.optBoolean("visible_in_picker", true)
 			)
 		}
 		val decodeMisskey : (JSONObject) -> CustomEmoji = { src ->
@@ -47,7 +49,7 @@ class CustomEmoji(
 			var dst = null as ArrayList<String>?
 			if(src != null) {
 				val size = src.length()
-				if( size > 0){
+				if(size > 0) {
 					dst = ArrayList(size)
 					for(i in 0 until size) {
 						val str = src.parseString(i) ?: continue
@@ -57,7 +59,7 @@ class CustomEmoji(
 					}
 				}
 			}
-			return if(dst?.isNotEmpty() == true ) dst else null
+			return if(dst?.isNotEmpty() == true) dst else null
 		}
 	}
 	

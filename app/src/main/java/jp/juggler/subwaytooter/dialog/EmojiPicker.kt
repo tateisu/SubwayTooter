@@ -3,14 +3,13 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
-import androidx.viewpager.widget.PagerAdapter
-import androidx.viewpager.widget.ViewPager
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
+import androidx.viewpager.widget.ViewPager
 import com.astuetz.PagerSlidingTabStrip
 import jp.juggler.emoji.EmojiMap201709
 import jp.juggler.subwaytooter.App1
@@ -31,7 +30,7 @@ class EmojiPicker(
 	@Suppress("CanBeParameter") private val isMisskey : Boolean,
 	private val onEmojiPicked : (name : String, instance : String?, bInstanceHasCustomEmoji : Boolean) -> Unit
 	// onEmojiPickedのinstance引数は通常の絵文字ならnull、カスタム絵文字なら非null、
-) : View.OnClickListener, androidx.viewpager.widget.ViewPager.OnPageChangeListener {
+) : View.OnClickListener, ViewPager.OnPageChangeListener {
 	
 	companion object {
 		
@@ -216,6 +215,7 @@ class EmojiPicker(
 		bInstanceHasCustomEmoji = true
 		custom_list.clear()
 		for(emoji in list) {
+			if(! emoji.visible_in_picker) continue
 			custom_list.add(EmojiItem(emoji.shortcode, instance))
 			emoji_url_map[emoji.shortcode] = emoji.url
 		}
@@ -302,30 +302,26 @@ class EmojiPicker(
 		title_id : Int
 	) {
 		
-		val title : String
-		val emoji_list : ArrayList<EmojiItem>
+		val title : String = activity.getString(title_id)
 		
-		init {
-			this.title = activity.getString(title_id)
-			val c = EmojiMap201709.sCategoryMap.get(category_id)
-			if(c != null) {
-				this.emoji_list = ArrayList()
-				for(name in c.emoji_list) {
-					this.emoji_list.add(EmojiItem(name, null))
+		val emoji_list = when(category_id) {
+			
+			CATEGORY_CUSTOM -> custom_list
+			
+			CATEGORY_RECENT ->
+				ArrayList<EmojiItem>().apply {
+					for(item in recent_list) {
+						if(item.instance != null && item.instance != instance) continue
+						add(item)
+					}
 				}
-			} else if(category_id == CATEGORY_RECENT) {
-				this.emoji_list = ArrayList()
-				for(item in recent_list) {
-					if(item.instance != null && item.instance != instance) continue
-					this.emoji_list.add(item)
+			
+			else -> ArrayList<EmojiItem>().apply {
+				EmojiMap201709.sCategoryMap.get(category_id)?.emoji_list?.forEach { name ->
+					add(EmojiItem(name, null))
 				}
-			} else if(category_id == CATEGORY_CUSTOM) {
-				this.emoji_list = custom_list
-			} else {
-				this.emoji_list = ArrayList()
 			}
 		}
-		
 	}
 	
 	inner class EmojiPickerPageViewHolder(activity : Activity, root : View) : BaseAdapter(),
@@ -452,10 +448,10 @@ class EmojiPicker(
 		val pref = App1.pref
 		
 		// Recentをロード(他インスタンスの絵文字を含む)
-		val list = try {
+		val list : ArrayList<JSONObject> = try {
 			Pref.spEmojiPickerRecent(pref).toJsonArray().toObjectList()
 		} catch(ignored : Throwable) {
-			ArrayList<JSONObject>()
+			ArrayList()
 		}
 		
 		// 選択された絵文字と同じ項目を除去

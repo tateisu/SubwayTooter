@@ -1,11 +1,15 @@
 package jp.juggler.subwaytooter
 
+import android.content.Context
 import android.util.SparseArray
 import android.view.Gravity
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.ellipsizeDot3
 import jp.juggler.util.encodePercent
 import jp.juggler.util.toPostRequestBuilder
 import org.json.JSONArray
@@ -29,7 +33,14 @@ private val unsupportedRefresh : ColumnTask_Refresh.(client : TootApiClient) -> 
 private val unsupportedGap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? =
 	{ TootApiResult("gap reading not supported.") }
 
+private val unusedIconId : (acct : String) -> Int = { R.drawable.ic_question }
+private val unusedName : (context : Context) -> String = { "?" }
+private val unusedName2 : Column.(long : Boolean) -> String? = { null }
+
 class ColumnTypeProc(
+	val iconId : (acct : String) -> Int = unusedIconId,
+	val name : (context : Context) -> String = unusedName,
+	val name2 : Column.(long : Boolean) -> String? = unusedName2,
 	val loading : ColumnTask_Loading.(client : TootApiClient) -> TootApiResult?,
 	val refresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? = unsupportedRefresh,
 	val gap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? = unsupportedGap
@@ -37,10 +48,13 @@ class ColumnTypeProc(
 
 private fun SparseArray<ColumnTypeProc>.add(
 	type : Int,
+	iconId : (acct : String) -> Int = unusedIconId,
+	name : (context : Context) -> String = unusedName,
+	name2 : Column.(long : Boolean) -> String? = unusedName2,
 	loading : ColumnTask_Loading.(client : TootApiClient) -> TootApiResult?,
 	refresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? = unsupportedRefresh,
 	gap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? = unsupportedGap
-) = put(type, ColumnTypeProc(loading, refresh, gap))
+) = put(type, ColumnTypeProc(iconId, name, name2, loading, refresh, gap))
 
 private val profileStatusMastodon = ColumnTypeProc(
 	
@@ -74,6 +88,7 @@ private val profileStatusMastodon = ColumnTypeProc(
 )
 
 private val profileStatusMisskey = ColumnTypeProc(
+	
 	loading = { client ->
 		// 固定トゥートの取得
 		val pinnedNotes = column.who_account?.get()?.pinnedNotes
@@ -106,6 +121,7 @@ private val profileStatusMisskey = ColumnTypeProc(
 )
 
 private val followingMastodon = ColumnTypeProc(
+	
 	loading = { client ->
 		getAccountList(
 			client,
@@ -128,6 +144,7 @@ private val followingMastodon = ColumnTypeProc(
 )
 
 private val followingMastodonPseudo = ColumnTypeProc(
+	
 	loading = {
 		column.idRecent = null
 		column.idOld = null
@@ -140,6 +157,7 @@ private val followingMastodonPseudo = ColumnTypeProc(
 )
 
 private val followingMisskey10 = ColumnTypeProc(
+	
 	loading = { client ->
 		column.pagingType = ColumnPagingType.Cursor
 		getAccountList(
@@ -169,6 +187,7 @@ private val followingMisskey10 = ColumnTypeProc(
 )
 
 private val followingMisskey11 = ColumnTypeProc(
+	
 	loading = { client ->
 		column.pagingType = ColumnPagingType.Default
 		column.useDate = false
@@ -200,6 +219,7 @@ private val followingMisskey11 = ColumnTypeProc(
 )
 
 private val followersMisskey11 = ColumnTypeProc(
+	
 	loading = { client ->
 		column.pagingType = ColumnPagingType.Default
 		getAccountList(
@@ -231,6 +251,7 @@ private val followersMisskey11 = ColumnTypeProc(
 )
 
 private val followersMisskey10 = ColumnTypeProc(
+	
 	loading = { client ->
 		column.pagingType = ColumnPagingType.Cursor
 		getAccountList(
@@ -260,6 +281,7 @@ private val followersMisskey10 = ColumnTypeProc(
 )
 
 private val followersMastodonPseudo = ColumnTypeProc(
+	
 	loading = {
 		column.idRecent = null
 		column.idOld = null
@@ -272,6 +294,7 @@ private val followersMastodonPseudo = ColumnTypeProc(
 )
 
 private val followersMastodon = ColumnTypeProc(
+	
 	loading = { client ->
 		getAccountList(
 			client,
@@ -322,6 +345,7 @@ private val profileTabProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	
 	add(Column.TAB_FOLLOWING,
+		
 		loading = { client ->
 			when {
 				misskeyVersion >= 11 -> followingMisskey11.loading(this, client)
@@ -383,30 +407,51 @@ private val profileTabProcMap = SparseArray<ColumnTypeProc>().apply {
 val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	add(Column.TYPE_HOME,
+		iconId = { R.drawable.ic_home },
+		name = { it.getString(R.string.home) },
+		
 		loading = { client -> getStatusList(client, column.makeHomeTlUrl()) },
 		refresh = { client -> getStatusList(client, column.makeHomeTlUrl()) },
 		gap = { client -> getStatusList(client, column.makeHomeTlUrl()) }
 	)
 	
 	add(Column.TYPE_LOCAL,
+		iconId = { R.drawable.ic_run },
+		name = { it.getString(R.string.local_timeline) },
+		
 		loading = { client -> getStatusList(client, column.makePublicLocalUrl()) },
 		refresh = { client -> getStatusList(client, column.makePublicLocalUrl()) },
 		gap = { client -> getStatusList(client, column.makePublicLocalUrl()) }
 	)
 	
 	add(Column.TYPE_FEDERATE,
+		iconId = { R.drawable.ic_bike },
+		name = { it.getString(R.string.federate_timeline) },
+		
 		loading = { client -> getStatusList(client, column.makePublicFederateUrl()) },
 		refresh = { client -> getStatusList(client, column.makePublicFederateUrl()) },
 		gap = { client -> getStatusList(client, column.makePublicFederateUrl()) }
 	)
 	
 	add(Column.TYPE_MISSKEY_HYBRID,
+		iconId = { R.drawable.ic_share },
+		name = { it.getString(R.string.misskey_hybrid_timeline) },
+		
 		loading = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
 		refresh = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
 		gap = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) }
 	)
 	
 	add(Column.TYPE_LOCAL_AROUND,
+		iconId = { R.drawable.ic_run },
+		name = { it.getString(R.string.ltl_around) },
+		name2 = {
+			context.getString(
+				R.string.ltl_around_of,
+				status_id?.toString() ?: "null"
+			)
+		},
+		
 		loading = { client -> getPublicAroundStatuses(client, column.makePublicLocalUrl()) },
 		refresh = { client ->
 			if(bBottom) {
@@ -421,6 +466,15 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_FEDERATED_AROUND,
+		iconId = { R.drawable.ic_bike },
+		name = { it.getString(R.string.ftl_around) },
+		name2 = {
+			context.getString(
+				R.string.ftl_around_of,
+				status_id?.toString() ?: "null"
+			)
+		},
+		
 		loading = { client -> getPublicAroundStatuses(client, column.makePublicFederateUrl()) },
 		refresh = { client ->
 			if(bBottom) {
@@ -435,6 +489,18 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_PROFILE,
+		iconId = { R.drawable.ic_account_box },
+		name = { it.getString(R.string.profile) },
+		name2 = {
+			val who = who_account?.get()
+			context.getString(
+				R.string.profile_of,
+				if(who != null)
+					AcctColor.getNickname(access_info.getFullAcct(who))
+				else
+					profile_id.toString()
+			)
+		},
 		
 		loading = { client ->
 			val who_result = column.loadProfileAccount(client, parser, true)
@@ -457,6 +523,9 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_FAVOURITES,
+		iconId = { if(SavedAccount.isNicoru(it)) R.drawable.ic_nicoru else R.drawable.ic_star },
+		name = { it.getString(R.string.favourites) },
+		
 		loading = { client ->
 			if(isMisskey) {
 				column.useDate = false
@@ -501,18 +570,42 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_NOTIFICATIONS,
+		iconId = { R.drawable.ic_announcement },
+		name = { it.getString(R.string.notifications) },
+		name2 = {
+			context.getString(R.string.notifications) + getNotificationTypeString()
+		},
+		
 		loading = { client -> getNotificationList(client) },
 		refresh = { client -> getNotificationList(client) },
 		gap = { client -> getNotificationList(client) }
 	)
 	
 	add(Column.TYPE_NOTIFICATION_FROM_ACCT,
+		iconId = { R.drawable.ic_announcement },
+		name = { it.getString(R.string.notifications_from_acct) },
+		name2 = {
+			context.getString(
+				R.string.notifications_from,
+				hashtag_acct
+			) + getNotificationTypeString()
+		},
+		
 		loading = { client -> getNotificationList(client, column.hashtag_acct) },
 		refresh = { client -> getNotificationList(client, column.hashtag_acct) },
 		gap = { client -> getNotificationList(client, column.hashtag_acct) }
 	)
 	
 	add(Column.TYPE_CONVERSATION,
+		iconId = { R.drawable.ic_forum },
+		name = { it.getString(R.string.conversation) },
+		name2 = {
+			context.getString(
+				R.string.conversation_around,
+				status_id?.toString() ?: "null"
+			)
+		},
+		
 		loading = { client ->
 			
 			if(isMisskey) {
@@ -651,6 +744,19 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 		}
 	)
 	add(Column.TYPE_HASHTAG,
+		iconId = { R.drawable.ic_hashtag },
+		name = { it.getString(R.string.hashtag) },
+		name2 = {
+			StringBuilder(
+				context.getString(
+					R.string.hashtag_of,
+					hashtag.ellipsizeDot3(Column.HASHTAG_ELLIPSIZE)
+				)
+			)
+				.appendHashtagExtra()
+				.toString()
+		},
+		
 		loading = { client ->
 			if(isMisskey) {
 				getStatusList(
@@ -691,6 +797,20 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	
 	add(Column.TYPE_HASHTAG_FROM_ACCT,
 		
+		iconId = { R.drawable.ic_hashtag },
+		name = { it.getString(R.string.hashtag_from_acct) },
+		name2 = {
+			StringBuilder(
+				context.getString(
+					R.string.hashtag_of_from,
+					hashtag.ellipsizeDot3(Column.HASHTAG_ELLIPSIZE),
+					hashtag_acct
+				)
+			)
+				.appendHashtagExtra()
+				.toString()
+		},
+		
 		loading = { client ->
 			if(isMisskey) {
 				// currently not supported
@@ -730,6 +850,15 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_SEARCH,
+		iconId = { R.drawable.ic_search },
+		name = { it.getString(R.string.search) },
+		name2 = { long ->
+			when {
+				long -> context.getString(R.string.search_of, search_query)
+				else -> context.getString(R.string.search)
+			}
+		},
+		
 		loading = { client ->
 			if(isMisskey) {
 				var result : TootApiResult? = TootApiResult()
@@ -859,9 +988,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	// ミスキーのミュートとブロックののページングは misskey v10 の途中で変わった
 	// https://github.com/syuilo/misskey/commit/f7069dcd18d72b52408a6bd80ad8f14492163e19
 	// ST的には新しい方にだけ対応する
-
+	
 	add(Column.TYPE_MUTES,
-
+		iconId = { R.drawable.ic_volume_off },
+		name = { it.getString(R.string.muted_users) },
+		
 		loading = { client ->
 			when {
 				isMisskey -> {
@@ -874,6 +1005,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 					)
 					
 				}
+				
 				else -> getAccountList(client, Column.PATH_MUTES)
 			}
 		},
@@ -906,7 +1038,9 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_BLOCKS,
-
+		iconId = { R.drawable.ic_block },
+		name = { it.getString(R.string.blocked_users) },
+		
 		loading = { client ->
 			when {
 				isMisskey -> {
@@ -918,10 +1052,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 						misskeyCustomParser = misskeyCustomParserBlocks
 					)
 				}
+				
 				else -> getAccountList(client, Column.PATH_BLOCKS)
 			}
 		},
-
+		
 		refresh = { client ->
 			when {
 				isMisskey -> {
@@ -932,6 +1067,7 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 						misskeyCustomParser = misskeyCustomParserBlocks
 					)
 				}
+				
 				else -> getAccountList(client, Column.PATH_BLOCKS)
 			}
 		},
@@ -946,12 +1082,16 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 						misskeyCustomParser = misskeyCustomParserBlocks
 					)
 				}
+				
 				else -> getAccountList(client, Column.PATH_BLOCKS)
 			}
 		}
 	)
 	
 	add(Column.TYPE_FOLLOW_REQUESTS,
+		iconId = { R.drawable.ic_follow_wait },
+		name = { it.getString(R.string.follow_requests) },
+		
 		loading = { client ->
 			if(isMisskey) {
 				column.pagingType = ColumnPagingType.None
@@ -992,6 +1132,9 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_BOOSTED_BY,
+		iconId = { R.drawable.ic_repeat },
+		name = { it.getString(R.string.boosted_by) },
+		
 		loading = { client ->
 			getAccountList(
 				client,
@@ -1013,6 +1156,9 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_FAVOURITED_BY,
+		iconId = { if(SavedAccount.isNicoru(it)) R.drawable.ic_nicoru else R.drawable.ic_star },
+		name = { it.getString(R.string.favourited_by) },
+		
 		loading = { client ->
 			getAccountList(
 				client,
@@ -1034,11 +1180,22 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_DOMAIN_BLOCKS,
+		iconId = { R.drawable.ic_cloud_off },
+		name = { it.getString(R.string.blocked_domains) },
+		
 		loading = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) },
 		refresh = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) }
 	)
 	
 	add(Column.TYPE_SEARCH_MSP,
+		iconId = { R.drawable.ic_search },
+		name = { it.getString(R.string.toot_search_msp) },
+		name2 = { long ->
+			when {
+				long -> context.getString(R.string.toot_search_msp_of, search_query)
+				else -> context.getString(R.string.toot_search_msp)
+			}
+		},
 		
 		loading = { client ->
 			column.idOld = null
@@ -1099,6 +1256,14 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_SEARCH_TS,
+		iconId = { R.drawable.ic_search },
+		name = { it.getString(R.string.toot_search_ts) },
+		name2 = { long ->
+			when {
+				long -> context.getString(R.string.toot_search_ts_of, search_query)
+				else -> context.getString(R.string.toot_search_ts)
+			}
+		},
 		
 		loading = { client ->
 			column.idOld = null
@@ -1166,6 +1331,15 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_INSTANCE_INFORMATION,
+		iconId = { R.drawable.ic_info },
+		name = { it.getString(R.string.instance_information) },
+		name2 = { long ->
+			when {
+				long -> context.getString(R.string.instance_information_of, instance_uri)
+				else ->context.getString(R.string.instance_information)
+			}
+		},
+		
 		loading = { client ->
 			val result = getInstanceInformation(client, column.instance_uri)
 			if(instance_tmp != null) {
@@ -1177,6 +1351,9 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_LIST_LIST,
+		iconId = { R.drawable.ic_list_list },
+		name = { it.getString(R.string.lists) },
+		
 		loading = { client ->
 			if(isMisskey) {
 				parseListList(
@@ -1191,6 +1368,14 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_LIST_TL,
+		iconId = { R.drawable.ic_list_tl },
+		name = { it.getString(R.string.list_timeline) },
+		name2 = {
+			context.getString(
+				R.string.list_tl_of,
+				list_info?.title ?: profile_id.toString()
+			)
+		},
 		
 		loading = { client ->
 			column.loadListInfo(client, true)
@@ -1235,6 +1420,14 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_LIST_MEMBER,
+		iconId = { R.drawable.ic_list_member },
+		name = { it.getString(R.string.list_member) },
+		name2 = {
+			context.getString(
+				R.string.list_member_of,
+				list_info?.title ?: profile_id.toString()
+			)
+		},
 		
 		loading = { client ->
 			column.loadListInfo(client, true)
@@ -1269,6 +1462,9 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_DIRECT_MESSAGES,
+		iconId = { R.drawable.ic_mail },
+		name = { it.getString(R.string.direct_messages) },
+		
 		loading = { client ->
 			column.useConversationSummarys = false
 			if(! column.use_old_api) {
@@ -1317,6 +1513,9 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_TREND_TAG,
+		iconId = { R.drawable.ic_hashtag },
+		name = { it.getString(R.string.trend_tag) },
+		
 		loading = { client ->
 			val result = client.request("/api/v1/trends")
 			val src = parser.trendTagList(result?.jsonArray)
@@ -1336,6 +1535,8 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_FOLLOW_SUGGESTION,
+		iconId = { R.drawable.ic_follow_plus },
+		name = { it.getString(R.string.follow_suggestion) },
 		
 		loading = { client ->
 			if(isMisskey) {
@@ -1376,12 +1577,23 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_ENDORSEMENT,
+		iconId = { R.drawable.ic_follow_plus },
+		name = { it.getString(R.string.endorse_set) },
+		
 		loading = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
 		refresh = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
 		gap = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) }
 	)
 	
 	add(Column.TYPE_ACCOUNT_AROUND,
+		iconId = { R.drawable.ic_account_box },
+		name = { it.getString(R.string.account_tl_around) },
+		name2 = {
+			context.getString(
+				R.string.account_tl_around_of,
+				status_id?.toString() ?: "null"
+			)
+		},
 		
 		loading = { client -> getAccountAroundStatuses(client) },
 		
@@ -1399,17 +1611,25 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 	)
 	
 	add(Column.TYPE_REPORTS,
+		iconId = { R.drawable.ic_info },
+		name = { it.getString(R.string.reports) },
+		
 		loading = { client -> getReportList(client, Column.PATH_REPORTS) },
 		refresh = { client -> getReportList(client, Column.PATH_REPORTS) },
 		gap = { client -> getReportList(client, Column.PATH_REPORTS) }
 	)
 	
 	add(Column.TYPE_KEYWORD_FILTER,
+		iconId = { R.drawable.ic_volume_off },
+		name = { it.getString(R.string.keyword_filters) },
+		
 		loading = { client -> parseFilterList(client, Column.PATH_FILTERS) }
 	)
 	
-	add(
-		Column.TYPE_SCHEDULED_STATUS,
+	add(Column.TYPE_SCHEDULED_STATUS,
+		iconId = { R.drawable.ic_timer },
+		name = { it.getString(R.string.scheduled_status) },
+		
 		loading = { client -> getScheduledStatuses(client) },
 		refresh = { client -> getScheduledStatuses(client) }
 	)

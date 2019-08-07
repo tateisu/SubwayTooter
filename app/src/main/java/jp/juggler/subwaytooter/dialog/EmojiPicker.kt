@@ -308,13 +308,12 @@ class EmojiPicker(
 			
 			CATEGORY_CUSTOM -> custom_list
 			
-			CATEGORY_RECENT ->
-				ArrayList<EmojiItem>().apply {
-					for(item in recent_list) {
-						if(item.instance != null && item.instance != instance) continue
-						add(item)
-					}
+			CATEGORY_RECENT -> ArrayList<EmojiItem>().apply {
+				for(item in recent_list) {
+					if(item.instance != null && item.instance != instance) continue
+					add(item)
 				}
+			}
 			
 			else -> ArrayList<EmojiItem>().apply {
 				EmojiMap201709.sCategoryMap.get(category_id)?.emoji_list?.forEach { name ->

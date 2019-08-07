@@ -416,7 +416,7 @@ class ActMain : AppCompatActivity()
 		
 		updateColumnStrip()
 		
-		if(! app_state.column_list.isEmpty()) {
+		if(app_state.column_list.isNotEmpty()) {
 			
 			// 前回最後に表示していたカラムの位置にスクロールする
 			val column_pos = Pref.ipLastColumnPos(pref)
@@ -510,7 +510,7 @@ class ActMain : AppCompatActivity()
 		MyClickableSpan.showLinkUnderline = Pref.bpShowLinkUnderline(pref)
 		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
 			?: getAttributeColor(this, R.attr.colorLink)
-		CustomShare.reloadCache(this,pref)
+		CustomShare.reloadCache(this, pref)
 		
 		// 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
 		for(column in app_state.column_list) {
@@ -649,7 +649,9 @@ class ActMain : AppCompatActivity()
 		if(posted_acct?.isNotEmpty() == true && posted_status_id == null) {
 			// 予約投稿なら予約投稿リストをリロードする
 			for(column in app_state.column_list) {
-				if(column.column_type == Column.TYPE_SCHEDULED_STATUS && column.access_info.acct == posted_acct) {
+				if(column.column_type == Column.TYPE_SCHEDULED_STATUS
+					&& column.access_info.acct == posted_acct
+				) {
 					column.startLoading()
 				}
 			}
@@ -877,7 +879,7 @@ class ActMain : AppCompatActivity()
 						setOrder(order)
 					}
 					
-					if(! app_state.column_list.isEmpty()) {
+					if(app_state.column_list.isNotEmpty()) {
 						val select = data.getIntExtra(ActColumnList.EXTRA_SELECTION, - 1)
 						if(0 <= select && select < app_state.column_list.size) {
 							scrollToColumn(select)
@@ -1090,10 +1092,8 @@ class ActMain : AppCompatActivity()
 	
 	// Handle navigation view item clicks here.
 	override fun onNavigationItemSelected(item : MenuItem) : Boolean {
-		val id = item.itemId
 		
-		
-		when(id) {
+		when(item.itemId) {
 			// アカウント
 			R.id.nav_account_add -> Action_Account.add(this)
 			R.id.nav_account_setting -> Action_Account.setting(this)
@@ -1228,12 +1228,14 @@ class ActMain : AppCompatActivity()
 				, bAllowMisskey = false
 			)
 			
-			//			R.id.nav_add_trend_tag ->Action_Account.timeline(
-			//				this,
-			//				defaultInsertPosition,
-			//				true,
-			//				Column.TYPE_TREND_TAG
-			//			)
+			R.id.nav_trend_tag -> Action_Account.timeline(
+				this,
+				defaultInsertPosition,
+				Column.TYPE_TREND_TAG,
+				bAllowPseudo = true,
+				bAllowMastodon = true,
+				bAllowMisskey = false
+			)
 			
 			// トゥート検索
 			
@@ -1259,7 +1261,7 @@ class ActMain : AppCompatActivity()
 			R.id.nav_highlight_word -> startActivity(Intent(this, ActHighlightWordList::class.java))
 			R.id.nav_app_about -> startActivityForResult(
 				Intent(this, ActAbout::class.java),
-				ActMain.REQUEST_APP_ABOUT
+				REQUEST_APP_ABOUT
 			)
 			R.id.nav_oss_license -> startActivity(Intent(this, ActOSSLicense::class.java))
 			R.id.nav_app_exit -> finish()
@@ -1495,8 +1497,8 @@ class ActMain : AppCompatActivity()
 					val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
 					val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
 					// 端に近い方に合わせる
-					val distance_left = Math.abs(vs)
-					val distance_right = Math.abs(app_state.column_list.size - 1 - ve)
+					val distance_left = abs(vs)
+					val distance_right = abs(app_state.column_list.size - 1 - ve)
 					if(distance_left < distance_right) {
 						scrollColumnStrip(vs)
 					} else {
@@ -2247,7 +2249,7 @@ class ActMain : AppCompatActivity()
 			
 			removeColumn(column)
 			
-			if(! app_state.column_list.isEmpty() && page_delete > 0 && page_showing == page_delete) {
+			if(app_state.column_list.isNotEmpty() && page_delete > 0 && page_showing == page_delete) {
 				val idx = page_delete - 1
 				scrollToColumn(idx)
 				val c = app_state.column_list[idx]
@@ -2259,7 +2261,7 @@ class ActMain : AppCompatActivity()
 		}, {
 			removeColumn(column)
 			
-			if(! app_state.column_list.isEmpty() && page_delete > 0) {
+			if(app_state.column_list.isNotEmpty() && page_delete > 0) {
 				val idx = page_delete - 1
 				scrollToColumn(idx)
 				val c = app_state.column_list[idx]
@@ -2643,9 +2645,8 @@ class ActMain : AppCompatActivity()
 			}
 		}, { env ->
 			for(i in 0 until env.tablet_layout_manager.childCount) {
-				val v = env.tablet_layout_manager.getChildAt(i)
 				
-				val columnViewHolder = when(v) {
+				val columnViewHolder = when(val v = env.tablet_layout_manager.getChildAt(i)) {
 					null -> null
 					else -> (env.tablet_pager.getChildViewHolder(v) as? TabletColumnViewHolder)?.columnViewHolder
 				}

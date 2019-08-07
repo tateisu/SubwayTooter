@@ -107,7 +107,7 @@ class Column(
 		const val PATH_SEARCH = "/api/v1/search?q=%s"
 		const val PATH_SEARCH_V2 = "/api/v2/search?q=%s"
 		// search args 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
-		internal const val PATH_INSTANCE = "/api/v1/instance"
+		// internal const val PATH_INSTANCE = "/api/v1/instance"
 		internal const val PATH_LIST_INFO = "/api/v1/lists/%s"
 		
 		const val PATH_FILTERS = "/api/v1/filters"
@@ -250,91 +250,18 @@ class Column(
 			
 		}
 		
-		fun getColumnTypeName(context : Context, type : Int) : String {
-			return when(type) {
-				TYPE_HOME -> context.getString(R.string.home)
-				
-				TYPE_LOCAL_AROUND -> context.getString(R.string.ltl_around)
-				TYPE_FEDERATED_AROUND -> context.getString(R.string.ftl_around)
-				TYPE_ACCOUNT_AROUND -> context.getString(R.string.account_tl_around)
-				
-				TYPE_LOCAL -> context.getString(R.string.local_timeline)
-				TYPE_FEDERATE -> context.getString(R.string.federate_timeline)
-				
-				TYPE_MISSKEY_HYBRID -> context.getString(R.string.misskey_hybrid_timeline)
-				
-				TYPE_PROFILE -> context.getString(R.string.profile)
-				TYPE_FAVOURITES -> context.getString(R.string.favourites)
-				TYPE_REPORTS -> context.getString(R.string.reports)
-				TYPE_NOTIFICATIONS -> context.getString(R.string.notifications)
-				TYPE_NOTIFICATION_FROM_ACCT -> context.getString(R.string.notifications_from_acct)
-				TYPE_CONVERSATION -> context.getString(R.string.conversation)
-				TYPE_BOOSTED_BY -> context.getString(R.string.boosted_by)
-				TYPE_FAVOURITED_BY -> context.getString(R.string.favourited_by)
-				TYPE_HASHTAG -> context.getString(R.string.hashtag)
-				TYPE_HASHTAG_FROM_ACCT -> context.getString(R.string.hashtag_from_acct)
-				TYPE_MUTES -> context.getString(R.string.muted_users)
-				TYPE_KEYWORD_FILTER -> context.getString(R.string.keyword_filters)
-				TYPE_BLOCKS -> context.getString(R.string.blocked_users)
-				TYPE_DOMAIN_BLOCKS -> context.getString(R.string.blocked_domains)
-				TYPE_SEARCH -> context.getString(R.string.search)
-				TYPE_SEARCH_MSP -> context.getString(R.string.toot_search_msp)
-				TYPE_SEARCH_TS -> context.getString(R.string.toot_search_ts)
-				TYPE_INSTANCE_INFORMATION -> context.getString(R.string.instance_information)
-				TYPE_FOLLOW_REQUESTS -> context.getString(R.string.follow_requests)
-				TYPE_FOLLOW_SUGGESTION -> context.getString(R.string.follow_suggestion)
-				TYPE_ENDORSEMENT -> context.getString(R.string.endorse_set)
-				
-				TYPE_LIST_LIST -> context.getString(R.string.lists)
-				TYPE_LIST_MEMBER -> context.getString(R.string.list_member)
-				TYPE_LIST_TL -> context.getString(R.string.list_timeline)
-				TYPE_DIRECT_MESSAGES -> context.getString(R.string.direct_messages)
-				TYPE_TREND_TAG -> context.getString(R.string.trend_tag)
-				TYPE_SCHEDULED_STATUS -> context.getString(R.string.scheduled_status)
-				else -> "?"
+		// 短い名前
+		fun getColumnTypeName(context : Context, type : Int) =
+			when(val item = columnTypeProcMap[type]) {
+				null -> "?"
+				else -> item.name(context)
 			}
-		}
 		
-		internal fun getIconId(acct : String, type : Int) : Int {
-			return when(type) {
-				TYPE_REPORTS -> R.drawable.ic_info
-				TYPE_HOME -> R.drawable.ic_home
-				
-				TYPE_LOCAL_AROUND -> R.drawable.ic_run
-				TYPE_FEDERATED_AROUND -> R.drawable.ic_bike
-				TYPE_ACCOUNT_AROUND -> R.drawable.ic_account_box
-				
-				TYPE_LOCAL -> R.drawable.ic_run
-				TYPE_FEDERATE -> R.drawable.ic_bike
-				TYPE_MISSKEY_HYBRID -> R.drawable.ic_share
-				
-				TYPE_PROFILE -> R.drawable.ic_account_box
-				TYPE_FAVOURITES -> if(SavedAccount.isNicoru(acct)) R.drawable.ic_nicoru else R.drawable.ic_star
-				TYPE_NOTIFICATIONS, TYPE_NOTIFICATION_FROM_ACCT -> R.drawable.ic_announcement
-				
-				TYPE_CONVERSATION -> R.drawable.ic_forum
-				TYPE_BOOSTED_BY -> R.drawable.ic_repeat
-				TYPE_FAVOURITED_BY -> if(SavedAccount.isNicoru(acct)) R.drawable.ic_nicoru else R.drawable.ic_star
-				TYPE_HASHTAG, TYPE_HASHTAG_FROM_ACCT -> R.drawable.ic_hashtag
-				TYPE_MUTES -> R.drawable.ic_volume_off
-				TYPE_KEYWORD_FILTER -> R.drawable.ic_volume_off
-				TYPE_BLOCKS -> R.drawable.ic_block
-				TYPE_DOMAIN_BLOCKS -> R.drawable.ic_cloud_off
-				TYPE_SEARCH, TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> R.drawable.ic_search
-				TYPE_INSTANCE_INFORMATION -> R.drawable.ic_info
-				TYPE_FOLLOW_REQUESTS -> R.drawable.ic_follow_wait
-				TYPE_FOLLOW_SUGGESTION -> R.drawable.ic_follow_plus
-				TYPE_ENDORSEMENT -> R.drawable.ic_follow_plus
-				TYPE_LIST_LIST -> R.drawable.ic_list_list
-				TYPE_LIST_MEMBER -> R.drawable.ic_list_member
-				TYPE_LIST_TL -> R.drawable.ic_list_tl
-				TYPE_DIRECT_MESSAGES -> R.drawable.ic_mail
-				TYPE_TREND_TAG -> R.drawable.ic_hashtag
-				TYPE_SCHEDULED_STATUS -> R.drawable.ic_timer
-				else -> R.drawable.ic_info
+		internal fun getIconId(acct : String, type : Int) =
+			when(val item = columnTypeProcMap[type]) {
+				null -> R.drawable.ic_info
+				else -> item.iconId(acct)
 			}
-			
-		}
 		
 		private val channelIdSeed = AtomicInteger(0)
 		
@@ -974,102 +901,13 @@ class Column(
 		}
 	}
 	
-	internal fun getColumnName(bLong : Boolean) : String {
-		return when(column_type) {
-			
-			TYPE_PROFILE -> {
-				val who = who_account?.get()
-				context.getString(
-					R.string.profile_of,
-					if(who != null)
-						AcctColor.getNickname(access_info.getFullAcct(who))
-					else
-						profile_id.toString()
-				)
-			}
-			
-			TYPE_LIST_MEMBER -> context.getString(
-				R.string.list_member_of,
-				list_info?.title ?: profile_id.toString()
-			)
-			
-			TYPE_LIST_TL -> context.getString(
-				R.string.list_tl_of,
-				list_info?.title ?: profile_id.toString()
-			)
-			
-			TYPE_CONVERSATION -> context.getString(
-				R.string.conversation_around,
-				(status_id?.toString() ?: "null")
-			)
-			
-			TYPE_LOCAL_AROUND -> context.getString(
-				R.string.ltl_around_of,
-				(status_id?.toString() ?: "null")
-			)
-			
-			TYPE_FEDERATED_AROUND -> context.getString(
-				R.string.ftl_around_of,
-				(status_id?.toString() ?: "null")
-			)
-			
-			TYPE_ACCOUNT_AROUND -> context.getString(
-				R.string.account_tl_around_of,
-				(status_id?.toString() ?: "null")
-			)
-			
-			TYPE_HASHTAG ->
-				StringBuilder(
-					context.getString(
-						R.string.hashtag_of,
-						hashtag.ellipsizeDot3(HASHTAG_ELLIPSIZE)
-					)
-				)
-					.appendHashtagExtra()
-					.toString()
-			
-			TYPE_HASHTAG_FROM_ACCT ->
-				StringBuilder(
-					context.getString(
-						R.string.hashtag_of_from,
-						hashtag.ellipsizeDot3(HASHTAG_ELLIPSIZE),
-						hashtag_acct
-					)
-				)
-					.appendHashtagExtra()
-					.toString()
-			
-			TYPE_NOTIFICATION_FROM_ACCT -> {
-				context.getString(
-					R.string.notifications_from,
-					hashtag_acct
-				) + getNotificationTypeString()
-			}
-			
-			TYPE_SEARCH ->
-				if(bLong) context.getString(R.string.search_of, search_query)
-				else getColumnTypeName(context, column_type)
-			
-			TYPE_SEARCH_MSP ->
-				if(bLong) context.getString(R.string.toot_search_msp_of, search_query)
-				else getColumnTypeName(context, column_type)
-			
-			TYPE_SEARCH_TS ->
-				if(bLong) context.getString(R.string.toot_search_ts_of, search_query)
-				else getColumnTypeName(context, column_type)
-			
-			TYPE_INSTANCE_INFORMATION ->
-				if(bLong) context.getString(R.string.instance_information_of, instance_uri)
-				else getColumnTypeName(context, column_type)
-			
-			TYPE_NOTIFICATIONS ->
-				context.getString(R.string.notifications) + getNotificationTypeString()
-			
-			else -> getColumnTypeName(context, column_type)
+	internal fun getColumnName(long : Boolean) =
+		when(val item = columnTypeProcMap[column_type]) {
+			null -> "?"
+			else -> item.name2(this, long) ?: item.name(context)
 		}
-	}
 	
-	private fun getNotificationTypeString() : String {
+	fun getNotificationTypeString() : String {
 		val sb = StringBuilder()
 		sb.append("(")
 		
@@ -1132,9 +970,8 @@ class Column(
 		}
 	}
 	
-	internal fun getIconId(type : Int) : Int {
-		return getIconId(access_info.acct, type)
-	}
+	internal fun getIconId(type : Int) =
+		getIconId(access_info.acct, type)
 	
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
 	fun findStatus(
@@ -1963,7 +1800,7 @@ class Column(
 			idMin = if(result.link_older == null) {
 				null
 			} else {
-				val m = reMaxId.matcher(result.link_older)
+				val m = reMaxId.matcher(result.link_older ?: "")
 				if(m.find()) {
 					EntityId(m.group(1))
 				} else {
@@ -1974,12 +1811,12 @@ class Column(
 			idMax = if(result.link_newer == null) {
 				null
 			} else {
-				var m = reMinId.matcher(result.link_newer)
+				var m = reMinId.matcher(result.link_newer ?: "")
 				if(m.find()) {
 					bMinIdMatched = true
 					EntityId(m.group(1))
 				} else {
-					m = reSinceId.matcher(result.link_newer)
+					m = reSinceId.matcher(result.link_newer ?: "")
 					if(m.find()) {
 						bMinIdMatched = false
 						EntityId(m.group(1))
@@ -2064,10 +1901,10 @@ class Column(
 		when(column_type) {
 			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE, TYPE_DIRECT_MESSAGES, TYPE_MISSKEY_HYBRID -> {
 				startRefresh(
-					true,
-					false,
-					posted_status_id,
-					refresh_after_post
+					bSilent = true,
+					bBottom = false,
+					posted_status_id = posted_status_id,
+					refresh_after_toot = refresh_after_post
 				)
 			}
 			
@@ -2076,10 +1913,10 @@ class Column(
 					&& profile_id == access_info.loginAccount?.id
 				) {
 					startRefresh(
-						true,
-						false,
-						posted_status_id,
-						refresh_after_post
+						bSilent = true,
+						bBottom = false,
+						posted_status_id = posted_status_id,
+						refresh_after_toot = refresh_after_post
 					)
 				}
 			}
@@ -2347,14 +2184,14 @@ class Column(
 	
 	internal fun hasHashtagExtra() = when {
 		isMisskey -> false
-		column_type == TYPE_HASHTAG-> true
-
+		column_type == TYPE_HASHTAG -> true
+		
 		// TYPE_HASHTAG_FROM_ACCT は追加のタグを指定しても結果に反映されない
 		
 		else -> false
 	}
 	
-	private fun StringBuilder.appendHashtagExtra() : StringBuilder {
+	fun StringBuilder.appendHashtagExtra() : StringBuilder {
 		val limit = (HASHTAG_ELLIPSIZE * 2 - min(length, HASHTAG_ELLIPSIZE)) / 3
 		if(hashtag_any.isNotBlank()) append(' ').append(
 			context.getString(

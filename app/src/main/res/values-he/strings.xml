@@ -324,4 +324,20 @@
     <string name="favourite_from_another_account">העדף מחשבון אחר</string>
     <string name="confirm_follow_who_from">האם לעקוב אחרי %1$s מ- %2$s\?</string>
     <string name="confirm_unfollow_who_from">האם להפסיק לעקוב אחרי %1$s מ- %2$s\?</string>
+    <string name="follow_request_cant_remove_by_sender">נראה שלא ניתן להסיר את בקשת המעקב על ידי מי ששלח אותה…</string>
+    <string name="profile">פרופיל</string>
+    <string name="profile_of">הפרופיל של %1$s</string>
+    <string name="it_is_you">זה אתה.</string>
+    <string name="refresh_after_toot">רענן לאחר התרועה</string>
+    <string name="refresh_scroll_to_toot">רענן, וגלול לצורך התרועה</string>
+    <string name="refresh_no_scroll">רענן, אל תגלול</string>
+    <string name="dont_refresh">אל תרענן</string>
+    <string name="boosted_by">הוגבר על ידי …</string>
+    <string name="favourited_by">הועדף על ידי …</string>
+    <string name="hashtag">תגית</string>
+    <string name="conversation">שיחה</string>
+    <string name="account_picker_open_user_who">באיזה חשבון להשתמש לצורך פתיחת משתמש %1$s\?</string>
+    <string name="account_picker_add_timeline_of">באיזה חשבון להשתמש לצורך פתיחת %1$s\?</string>
+    <string name="account_picker_open_setting">האם להשתמש בחשבון לצורך פתיחת ההגדרה\?</string>
+    <string name="account_picker_favourite">האם להעדיף חשבון\?</string>
 </resources>

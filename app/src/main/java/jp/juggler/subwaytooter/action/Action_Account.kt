@@ -217,7 +217,10 @@ object Action_Account {
 			bAuto = true,
 			message = activity.getString(
 				R.string.account_picker_add_timeline_of,
-				Column.getColumnTypeName(activity, type)
+				when(val ctp = columnTypeProcMap[type]) {
+					null -> "?"
+					else -> ctp.name(activity)
+				}
 			)
 		) { ai ->
 			when(type) {

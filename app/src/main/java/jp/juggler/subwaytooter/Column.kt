@@ -250,14 +250,7 @@ class Column(
 			
 		}
 		
-		// 短い名前
-		fun getColumnTypeName(context : Context, type : Int) =
-			when(val item = columnTypeProcMap[type]) {
-				null -> "?"
-				else -> item.name(context)
-			}
-		
-		internal fun getIconId(acct : String, type : Int) =
+		fun getIconId(acct : String, type : Int) =
 			when(val item = columnTypeProcMap[type]) {
 				null -> R.drawable.ic_info
 				else -> item.iconId(acct)

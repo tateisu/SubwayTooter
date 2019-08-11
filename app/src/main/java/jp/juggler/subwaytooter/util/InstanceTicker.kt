@@ -140,6 +140,7 @@ object InstanceTicker {
 				val ia = cols[4].split(',')
 					.filter { it.isNotBlank() }
 					.map { color(it) }
+					.reversed()
 				
 				this.colorBg = when {
 					ia.isNotEmpty() -> ColorBg(ia)

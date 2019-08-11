@@ -33,9 +33,9 @@ class ActList : AppCompatActivity(), CoroutineScope {
 	private lateinit var listAdapter : MyAdapter
 	private var timeAnimationStart : Long = 0L
 	
-	private lateinit var activityJob: Job
+	private lateinit var activityJob : Job
 	
-	override val coroutineContext: CoroutineContext
+	override val coroutineContext : CoroutineContext
 		get() = Dispatchers.Main + activityJob
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
@@ -50,15 +50,15 @@ class ActList : AppCompatActivity(), CoroutineScope {
 		listView.onItemClickListener = listAdapter
 		timeAnimationStart = SystemClock.elapsedRealtime()
 		
-		if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) {
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			// Assume thisActivity is the current activity
-			if( PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(
-				this,
-				Manifest.permission.WRITE_EXTERNAL_STORAGE
-			)){
+			if(PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(
+					this,
+					Manifest.permission.WRITE_EXTERNAL_STORAGE
+				)) {
 				ActivityCompat.requestPermissions(
 					this,
-					arrayOf( Manifest.permission.WRITE_EXTERNAL_STORAGE),
+					arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
 					
 					PERMISSION_REQUEST_CODE_STORAGE
 				)
@@ -71,7 +71,7 @@ class ActList : AppCompatActivity(), CoroutineScope {
 		super.onDestroy()
 		activityJob.cancel()
 	}
-
+	
 	override fun onRequestPermissionsResult(
 		requestCode : Int,
 		permissions : Array<String>,
@@ -89,12 +89,12 @@ class ActList : AppCompatActivity(), CoroutineScope {
 				}
 				return
 			}
-		// other 'case' lines to check for other
-		// permissions this app might request
+			// other 'case' lines to check for other
+			// permissions this app might request
 		}
 	}
 	
-	private fun load() = launch{
+	private fun load() = launch {
 		val list = async(Dispatchers.IO) {
 			// RawリソースのIDと名前の一覧
 			R.raw::class.java.fields
@@ -185,29 +185,32 @@ class ActList : AppCompatActivity(), CoroutineScope {
 				lastId = resId
 				apngView.apngFrames?.dispose()
 				apngView.apngFrames = null
-				launch{
-					var apngFrames :ApngFrames? = null
+				launch {
+					var apngFrames : ApngFrames? = null
 					try {
 						lastJob?.cancelAndJoin()
-
+						
 						val job = async(Dispatchers.IO) {
-							resources?.openRawResource(resId)?.use { inStream ->
-								ApngFrames.parseApng(inStream, 128)
+							try {
+								ApngFrames.parse(128){resources?.openRawResource(resId)}
+							} catch(ex : Throwable) {
+								ex.printStackTrace()
+								null
 							}
 						}
-
+						
 						lastJob = job
 						apngFrames = job.await()
-
-						if(apngFrames != null && lastId == resId ){
+						
+						if(apngFrames != null && lastId == resId) {
 							apngView.apngFrames = apngFrames
 							apngFrames = null
 						}
-
+						
 					} catch(ex : Throwable) {
 						ex.printStackTrace()
 						Log.e(TAG, "load error: ${ex.javaClass.simpleName} ${ex.message}")
-					}finally{
+					} finally {
 						apngFrames?.dispose()
 					}
 				}

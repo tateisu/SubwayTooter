@@ -10,11 +10,12 @@ import android.util.Log
 
 import java.io.InputStream
 import java.util.ArrayList
+import kotlin.math.max
 
 class ApngFrames private constructor(
 	private val pixelSizeMax : Int = 0,
 	private val debug : Boolean = false
-) : ApngDecoderCallback {
+) : ApngDecoderCallback, GifDecoderCallback {
 	
 	companion object {
 		
@@ -59,10 +60,10 @@ class ApngFrames private constructor(
 			val hDst : Int
 			if(wSrc >= hSrc) {
 				wDst = size_max
-				hDst = Math.max(1, scale(size_max, hSrc, wSrc))
+				hDst = max(1, scale(size_max, hSrc, wSrc))
 			} else {
 				hDst = size_max
-				wDst = Math.max(1, scale(size_max, wSrc, hSrc))
+				wDst = max(1, scale(size_max, wSrc, hSrc))
 			}
 			//Log.v(TAG,"scaleBitmap: $wSrc,$hSrc => $wDst,$hDst")
 			
@@ -90,8 +91,7 @@ class ApngFrames private constructor(
 		private fun toAndroidBitmap(src : ApngBitmap, size_max : Int) =
 			scaleBitmap(size_max, toAndroidBitmap(src))
 		
-		@Suppress("unused")
-		fun parseApng(
+		private fun parseApng(
 			inStream : InputStream,
 			pixelSizeMax : Int,
 			debug : Boolean = false
@@ -108,6 +108,50 @@ class ApngFrames private constructor(
 			}
 			
 		}
+		private fun parseGif(
+			inStream : InputStream,
+			pixelSizeMax : Int,
+			debug : Boolean = false
+		) : ApngFrames {
+			val result = ApngFrames(pixelSizeMax, debug)
+			try {
+				GifDecoder(result).read(inStream)
+				result.onParseComplete()
+				return result.takeIf { result.defaultImage != null || result.frames?.isNotEmpty() == true }
+					?: throw RuntimeException("GIF has no image")
+			} catch(ex : Throwable) {
+				result.dispose()
+				throw ex
+			}
+		}
+		
+		
+		// PNGヘッダを確認
+		
+		
+		@Suppress("unused")
+		fun parse(
+			pixelSizeMax : Int,
+			debug : Boolean = false,
+			opener: ()->InputStream?
+		) : ApngFrames? {
+			val buf = ByteArray(8){ 0.toByte() }
+			opener()?.use{ it.read(buf,0,buf.size) }
+			if(buf.size >= 8
+				&& (buf[0].toInt() and 0xff) == 0x89
+				&& (buf[1].toInt() and 0xff) == 0x50
+			) {
+				return opener()?.use{ parseApng(it,pixelSizeMax,debug) }
+			}
+			if(buf.size >= 6
+				&& buf[0].toChar() == 'G'
+				&& buf[1].toChar() == 'I'
+				&& buf[2].toChar() == 'F'
+			) {
+				return opener()?.use{ parseGif(it,pixelSizeMax,debug) }
+			}
+			return null
+		}
 	}
 	
 	private var header : ApngImageHeader? = null
@@ -119,7 +163,6 @@ class ApngFrames private constructor(
 	
 	var height : Int = 1
 		private set
-	
 	
 	class Frame(
 		val bitmap : Bitmap,
@@ -156,7 +199,6 @@ class ApngFrames private constructor(
 			}
 		}
 	
-
 	constructor(bitmap : Bitmap) : this() {
 		defaultImage = bitmap
 	}
@@ -214,9 +256,9 @@ class ApngFrames private constructor(
 		val isFinite = animationControl.isFinite
 		val repeatSequenceCount = if(isFinite) animationControl.numPlays else 1
 		val endWait = if(isFinite) DELAY_AFTER_END else 0L
-		val timeTotalLoop = Math.max(1, timeTotal * repeatSequenceCount + endWait)
+		val timeTotalLoop = max(1, timeTotal * repeatSequenceCount + endWait)
 		
-		val tf = (Math.max(0, t) / durationScale).toLong()
+		val tf = (max(0, t) / durationScale).toLong()
 		
 		// 全体の繰り返し時刻で余りを計算
 		val tl = tf % timeTotalLoop
@@ -251,7 +293,7 @@ class ApngFrames private constructor(
 		val frame = frames[s]
 		val delay = frame.timeStart + frame.timeWidth - tt
 		result.bitmap = frames[s].bitmap
-		result.delay = (0.5f + durationScale * Math.max(0f, delay.toFloat())).toLong()
+		result.delay = (0.5f + durationScale * max(0f, delay.toFloat())).toLong()
 		
 		// log.d("findFrame tf=%d,tl=%d/%d,tt=%d/%d,s=%d,w=%d,delay=%d",tf,tl,loop_total,tt,timeTotal,s,frame.timeWidth,result.delay);
 	}
@@ -278,8 +320,8 @@ class ApngFrames private constructor(
 		header : ApngImageHeader,
 		animationControl : ApngAnimationControl
 	) {
-		if(debug){
-			Log.d(TAG,"onAnimationInfo")
+		if(debug) {
+			Log.d(TAG, "onAnimationInfo")
 		}
 		this.animationControl = animationControl
 		this.frames = ArrayList(animationControl.numFrames)
@@ -290,32 +332,33 @@ class ApngFrames private constructor(
 	}
 	
 	override fun onDefaultImage(apng : Apng, bitmap : ApngBitmap) {
-		if(debug){
-			Log.d(TAG,"onDefaultImage")
+		if(debug) {
+			Log.d(TAG, "onDefaultImage")
 		}
 		defaultImage?.recycle()
 		defaultImage = toAndroidBitmap(bitmap, pixelSizeMax)
 	}
-	
-	
 	
 	override fun onAnimationFrame(
 		apng : Apng,
 		frameControl : ApngFrameControl,
 		frameBitmap : ApngBitmap
 	) {
-		if(debug){
-			Log.d(TAG,"onAnimationFrame seq=${frameControl.sequenceNumber }, xywh=${frameControl.xOffset},${frameControl.yOffset},${frameControl.width},${frameControl.height} blendOp=${frameControl.blendOp}, disposeOp=${frameControl.disposeOp},delay=${frameControl.delayMilliseconds}")
+		if(debug) {
+			Log.d(
+				TAG,
+				"onAnimationFrame seq=${frameControl.sequenceNumber}, xywh=${frameControl.xOffset},${frameControl.yOffset},${frameControl.width},${frameControl.height} blendOp=${frameControl.blendOp}, disposeOp=${frameControl.disposeOp},delay=${frameControl.delayMilliseconds}"
+			)
 		}
 		val frames = this.frames ?: return
 		val canvasBitmap = this.canvasBitmap ?: return
 		
-		val disposeOp = when{
-
+		val disposeOp = when {
+			
 			// If the first `fcTL` chunk uses a `dispose_op` of APNG_DISPOSE_OP_PREVIOUS it should be treated as APNG_DISPOSE_OP_BACKGROUND.
 			frameControl.disposeOp == DisposeOp.Previous && frames.isEmpty() -> DisposeOp.Background
-
-			else-> frameControl.disposeOp
+			
+			else -> frameControl.disposeOp
 		}
 		
 		val previous : Bitmap? = when(disposeOp) {
@@ -340,11 +383,11 @@ class ApngFrames private constructor(
 					frameControl.xOffset.toFloat(),
 					frameControl.yOffset.toFloat(),
 					when(frameControl.blendOp) {
-					// all color components of the frame, including alpha,
-					// overwrite the current contents of the frame's output buffer region.
+						// all color components of the frame, including alpha,
+						// overwrite the current contents of the frame's output buffer region.
 						BlendOp.Source -> sPaintDontBlend
-					// the frame should be composited onto the output buffer based on its alpha,
-					// using a simple OVER operation as described in the "Alpha Channel Processing" section of the PNG specification [PNG-1.2].
+						// the frame should be composited onto the output buffer based on its alpha,
+						// using a simple OVER operation as described in the "Alpha Channel Processing" section of the PNG specification [PNG-1.2].
 						BlendOp.Over -> null
 					}
 				)
@@ -352,34 +395,34 @@ class ApngFrames private constructor(
 				val frame = Frame(
 					bitmap = scaleBitmap(pixelSizeMax, canvasBitmap, recycleSrc = false),
 					timeStart = timeTotal,
-					timeWidth = Math.max(1L, frameControl.delayMilliseconds)
+					timeWidth = max(1L, frameControl.delayMilliseconds)
 				)
 				frames.add(frame)
 				timeTotal += frame.timeWidth
 				
 				when(disposeOp) {
-				
-				// no disposal is done on this frame before rendering the next;
-				// the contents of the output buffer are left as is.
+					
+					// no disposal is done on this frame before rendering the next;
+					// the contents of the output buffer are left as is.
 					DisposeOp.None -> {
 					}
-				
-				// the frame's region of the output buffer is
-				// to be cleared to fully transparent black
-				// before rendering the next frame.
+					
+					// the frame's region of the output buffer is
+					// to be cleared to fully transparent black
+					// before rendering the next frame.
 					DisposeOp.Background -> {
 						val rect = Rect()
 						rect.left = frameControl.xOffset
 						rect.top = frameControl.yOffset
 						rect.right = frameControl.xOffset + frameControl.width
 						rect.bottom = frameControl.yOffset + frameControl.height
-						canvas.drawRect(rect,sPaintClear)
+						canvas.drawRect(rect, sPaintClear)
 						//	canvas.drawColor(0, PorterDuff.Mode.CLEAR)
 					}
-				
-				// the frame's region of the output buffer is
-				// to be reverted to the previous contents
-				// before rendering the next frame.
+					
+					// the frame's region of the output buffer is
+					// to be reverted to the previous contents
+					// before rendering the next frame.
 					DisposeOp.Previous -> if(previous != null) {
 						canvas.drawBitmap(
 							previous,
@@ -398,4 +441,68 @@ class ApngFrames private constructor(
 			previous?.recycle()
 		}
 	}
+	
+	///////////////////////////////////////////////////////////////////////
+	// Gif support
+	
+	override fun onGifWarning(message : String) {
+		Log.w(TAG, message)
+	}
+	
+	override fun onGifDebug(message : String) {
+		Log.d(TAG, message)
+	}
+	
+	override fun canGifDebug() : Boolean = debug
+	
+	override fun onGifHeader(header : ApngImageHeader) {
+		this.header = header
+	}
+	
+	override fun onGifAnimationInfo(
+		
+		header : ApngImageHeader,
+		animationControl : ApngAnimationControl
+	) {
+		if(debug) {
+			Log.d(TAG, "onAnimationInfo")
+		}
+		this.animationControl = animationControl
+		this.frames = ArrayList(animationControl.numFrames)
+		
+		val canvasBitmap = createBlankBitmap(header.width, header.height)
+		this.canvasBitmap = canvasBitmap
+		this.canvas = Canvas(canvasBitmap)
+	}
+	
+	override fun onGifAnimationFrame(
+		
+		frameControl : ApngFrameControl,
+		frameBitmap : ApngBitmap
+	) {
+		if(debug) {
+			Log.d(
+				TAG,
+				"onAnimationFrame seq=${frameControl.sequenceNumber}, xywh=${frameControl.xOffset},${frameControl.yOffset},${frameControl.width},${frameControl.height} blendOp=${frameControl.blendOp}, disposeOp=${frameControl.disposeOp},delay=${frameControl.delayMilliseconds}"
+			)
+		}
+		val frames = this.frames ?: return
+		
+		val frameBitmapAndroid = toAndroidBitmap(frameBitmap)
+		try {
+			
+			val frame = Frame(
+				bitmap = scaleBitmap(pixelSizeMax, frameBitmapAndroid, recycleSrc = false),
+				timeStart = timeTotal,
+				timeWidth = max(1L, frameControl.delayMilliseconds)
+			)
+			frames.add(frame)
+			timeTotal += frame.timeWidth
+			
+		} finally {
+			frameBitmapAndroid.recycle()
+		}
+		
+	}
+	
 }

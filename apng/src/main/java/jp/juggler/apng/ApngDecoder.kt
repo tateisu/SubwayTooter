@@ -47,7 +47,8 @@ object ApngDecoder {
 				"IEND" -> break@loop
 				
 				"IHDR" -> {
-					val header = ApngImageHeader(ByteSequence(chunk.readBody(crc32, tokenizer)))
+					val header =
+						ApngImageHeader.parse(ByteSequence(chunk.readBody(crc32, tokenizer)))
 					bitmap = ApngBitmap(header.width, header.height)
 					apng.header = header
 					callback.onHeader(apng, header)
@@ -107,17 +108,17 @@ object ApngDecoder {
 				
 				"acTL" -> {
 					val header = apng.header ?: throw ApngParseError("missing IHDR")
-					val animationControl =
-						ApngAnimationControl(ByteSequence(chunk.readBody(crc32, tokenizer)))
+					val animationControl = ApngAnimationControl
+						.parse(ByteSequence(chunk.readBody(crc32, tokenizer)))
 					apng.animationControl = animationControl
 					callback.onAnimationInfo(apng, header, animationControl)
 				}
 				
 				"fcTL" -> {
 					val bat = ByteSequence(chunk.readBody(crc32, tokenizer))
-					val sequenceNumber =bat.readInt32()
+					val sequenceNumber = bat.readInt32()
 					checkSequenceNumber(sequenceNumber)
-					lastFctl = ApngFrameControl(bat,sequenceNumber)
+					lastFctl = ApngFrameControl.parse(bat, sequenceNumber)
 					fdatDecoder = null
 				}
 				
@@ -135,7 +136,7 @@ object ApngDecoder {
 							callback.onAnimationFrame(apng, fctl, bitmap)
 						}
 					}
-					val sequenceNumber =tokenizer.readInt32(crc32)
+					val sequenceNumber = tokenizer.readInt32(crc32)
 					checkSequenceNumber(sequenceNumber)
 					fdatDecoder.addData(
 						tokenizer.inStream,
@@ -145,8 +146,8 @@ object ApngDecoder {
 					)
 					chunk.checkCRC(tokenizer, crc32.value)
 				}
-			
-			// 無視するチャンク
+				
+				// 無視するチャンク
 				"cHRM", "gAMA", "iCCP", "sBIT", "sRGB", // color space information
 				"tEXt", "zTXt", "iTXt", // text information
 				"tIME", // timestamp

@@ -5,10 +5,10 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Environment
-import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.apng.ApngFrames
 import kotlinx.coroutines.*
 import java.io.File
@@ -63,16 +63,17 @@ class ActViewer : AppCompatActivity() , CoroutineScope {
 		launch{
 			var apngFrames : ApngFrames? = null
 			try {
-				
-				apngFrames = async(Dispatchers.IO) {
-					resources.openRawResource(resId).use {
-						ApngFrames.parseApng(
-							it,
+				apngFrames = withContext(Dispatchers.IO) {
+					try {
+						ApngFrames.parse(
 							1024,
 							debug = true
-						)
+						){resources?.openRawResource(resId)}
+					} catch(ex : Throwable) {
+						ex.printStackTrace()
+						null
 					}
-				}.await()
+				}
 				
 				apngView.visibility = View.VISIBLE
 				tvError.visibility = View.GONE

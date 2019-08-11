@@ -253,17 +253,12 @@ class CustomEmojiCache(internal val context : Context) {
 			}
 		}
 		
+		
 		private fun decodeAPNG(data : ByteArray, url : String) : ApngFrames? {
 			try {
-				// PNGヘッダを確認
-				if(data.size >= 8
-					&& (data[0].toInt() and 0xff) == 0x89
-					&& (data[1].toInt() and 0xff) == 0x50
-				) {
-					// APNGをデコード
-					return ApngFrames.parseApng(ByteArrayInputStream(data), 64)
-				}
-				
+				// APNGをデコード
+				val x = ApngFrames.parse(64){ ByteArrayInputStream(data) }
+				if(x != null) return x
 				// fall thru
 			} catch(ex : Throwable) {
 				if(DEBUG) log.trace(ex)

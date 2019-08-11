@@ -108,6 +108,7 @@ class ApngFrames private constructor(
 			}
 			
 		}
+		
 		private fun parseGif(
 			inStream : InputStream,
 			pixelSizeMax : Int,
@@ -115,7 +116,7 @@ class ApngFrames private constructor(
 		) : ApngFrames {
 			val result = ApngFrames(pixelSizeMax, debug)
 			try {
-				GifDecoder(result).read(inStream)
+				GifDecoder().parse(inStream, result)
 				result.onParseComplete()
 				return result.takeIf { result.defaultImage != null || result.frames?.isNotEmpty() == true }
 					?: throw RuntimeException("GIF has no image")
@@ -125,31 +126,31 @@ class ApngFrames private constructor(
 			}
 		}
 		
-		
-		// PNGヘッダを確認
-		
-		
 		@Suppress("unused")
 		fun parse(
 			pixelSizeMax : Int,
 			debug : Boolean = false,
-			opener: ()->InputStream?
+			opener : () -> InputStream?
 		) : ApngFrames? {
-			val buf = ByteArray(8){ 0.toByte() }
-			opener()?.use{ it.read(buf,0,buf.size) }
+			
+			val buf = ByteArray(8) { 0.toByte() }
+			opener()?.use { it.read(buf, 0, buf.size) }
+			
 			if(buf.size >= 8
 				&& (buf[0].toInt() and 0xff) == 0x89
 				&& (buf[1].toInt() and 0xff) == 0x50
 			) {
-				return opener()?.use{ parseApng(it,pixelSizeMax,debug) }
+				return opener()?.use { parseApng(it, pixelSizeMax, debug) }
 			}
+			
 			if(buf.size >= 6
 				&& buf[0].toChar() == 'G'
 				&& buf[1].toChar() == 'I'
 				&& buf[2].toChar() == 'F'
 			) {
-				return opener()?.use{ parseGif(it,pixelSizeMax,debug) }
+				return opener()?.use { parseGif(it, pixelSizeMax, debug) }
 			}
+			
 			return null
 		}
 	}
@@ -460,7 +461,6 @@ class ApngFrames private constructor(
 	}
 	
 	override fun onGifAnimationInfo(
-		
 		header : ApngImageHeader,
 		animationControl : ApngAnimationControl
 	) {
@@ -469,14 +469,12 @@ class ApngFrames private constructor(
 		}
 		this.animationControl = animationControl
 		this.frames = ArrayList(animationControl.numFrames)
-		
 		val canvasBitmap = createBlankBitmap(header.width, header.height)
 		this.canvasBitmap = canvasBitmap
 		this.canvas = Canvas(canvasBitmap)
 	}
 	
 	override fun onGifAnimationFrame(
-		
 		frameControl : ApngFrameControl,
 		frameBitmap : ApngBitmap
 	) {
@@ -488,9 +486,14 @@ class ApngFrames private constructor(
 		}
 		val frames = this.frames ?: return
 		
+		if(frames.isEmpty()) {
+			defaultImage?.recycle()
+			defaultImage = toAndroidBitmap(frameBitmap, pixelSizeMax)
+			// ここでwidth,heightがセットされる
+		}
+		
 		val frameBitmapAndroid = toAndroidBitmap(frameBitmap)
 		try {
-			
 			val frame = Frame(
 				bitmap = scaleBitmap(pixelSizeMax, frameBitmapAndroid, recycleSrc = false),
 				timeStart = timeTotal,

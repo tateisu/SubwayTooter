@@ -3,14 +3,19 @@ package jp.juggler.apng
 import java.io.InputStream
 import kotlin.math.min
 
+// thanks to https://raw.githubusercontent.com/rtyley/animated-gif-lib-for-java/master/src/main/java/com/madgag/gif/fmsware/GifDecoder.java
+// original code author is Kevin Weiner, FM Software.
+// LZW decoder adapted from John Cristy's ImageMagick.
+
 class GifDecoder {
 	
 	private class Rectangle(var x : Int = 0, var y : Int = 0, var w : Int = 0, var h : Int = 0) {
-		fun set(x : Int, y : Int, w : Int, h : Int) {
-			this.x = x
-			this.y = y
-			this.w = w
-			this.h = h
+		
+		fun set(src : Rectangle) {
+			this.x = src.x
+			this.y = src.y
+			this.w = src.w
+			this.h = src.h
 		}
 	}
 	
@@ -56,6 +61,14 @@ class GifDecoder {
 		}
 	}
 	
+	// 0=no action; 1=leave in place; 2=restore to bg; 3=restore to prev
+	enum class Dispose(val num:Int){
+		NoAction(0),
+		LeaveInPlace(1),
+		RestoreToBg(2),
+		RestoreToPrev(3)
+	}
+	
 	companion object {
 		
 		// max decoder pixel stack size
@@ -86,17 +99,12 @@ class GifDecoder {
 	private var lctFlag = false  // local color table flag
 	private var lctSize = 0 // local color table size
 	
-	private var ix = 0  // current image rectangle
-	private var iy = 0 // current image rectangle
-	private var iw = 0  // current image rectangle
-	private var ih = 0  // current image rectangle
-	
-	private val lastRect : Rectangle = Rectangle() // last image rect
+	private val srcRect = Rectangle() // current image position and size
+	private val lastRect = Rectangle() // last image rect
 	
 	// last graphic control extension info
-	private var dispose = 0
-	// 0=no action; 1=leave in place; 2=restore to bg; 3=restore to prev
-	private var lastDispose = 0
+	private var dispose = Dispose.NoAction
+	private var lastDispose = Dispose.NoAction
 	private var transparency = false // use transparent color
 	private var delay = 0 // delay in milliseconds
 	private var transIndex = 0 // transparent color index
@@ -113,19 +121,19 @@ class GifDecoder {
 	
 	// render to ApngBitmap
 	// may use some previous frame.
-	private fun render(destImage : ApngBitmap,act:IntArray) {
+	private fun render(destImage : ApngBitmap, act : IntArray) {
 		// expose destination image's pixels as int array
 		val dest = destImage.colors
 		val dest_w = destImage.width
 		
 		// fill in starting image contents based on last image's dispose code
-		if(lastDispose > 0) {
-
-			if(lastDispose == 3) {
+		if(lastDispose != Dispose.NoAction ) {
+			
+			if(lastDispose == Dispose.RestoreToPrev ) {
 				// use image before last
 				val idx = frames.size - 2
 				lastImage = if(idx > 0) {
-					frames[idx-1].second
+					frames[idx - 1].second
 				} else {
 					null
 				}
@@ -133,12 +141,12 @@ class GifDecoder {
 				// lastDisposeが3以外でもlastImageはnullではない場合がある
 			}
 			
-			lastImage?.let{ lastImage ->
-
+			lastImage?.let { lastImage ->
+				
 				// copy pixels
 				System.arraycopy(lastImage.colors, 0, dest, 0, dest.size)
 				
-				if(lastDispose == 2) {
+				if(lastDispose == Dispose.RestoreToBg ) {
 					val fillColor = if(transparency) {
 						0 // assume background is transparent
 					} else {
@@ -152,7 +160,7 @@ class GifDecoder {
 						dest.fill(fillColor, fromIndex = fillStart, toIndex = fillStart + fillWidth)
 					}
 				}
-
+				
 			}
 		}
 		
@@ -160,10 +168,10 @@ class GifDecoder {
 		var pass = 1
 		var inc = 8
 		var iline = 0
-		for(i in 0 until ih) {
+		for(i in 0 until srcRect.h) {
 			var line = i
 			if(interlace) {
-				if(iline >= ih) {
+				if(iline >= srcRect.h) {
 					when(++ pass) {
 						2 -> {
 							iline = 4
@@ -183,17 +191,17 @@ class GifDecoder {
 				line = iline
 				iline += inc
 			}
-			line += iy
+			line += srcRect.y
 			if(line < height) {
 				
 				// start of line in source
-				var sx = i * iw
+				var sx = i * srcRect.w
 				
 				//
 				val k = line * width
 				
 				// loop for dest line.
-				for(dx in k + ix until min(k + width, k + ix + iw)) {
+				for(dx in k + srcRect.x until min(k + width, k + srcRect.x + srcRect.w)) {
 					// map color and insert in destination
 					val index = pixels !![sx ++].toInt() and 0xff
 					val c = act[index]
@@ -210,8 +218,8 @@ class GifDecoder {
 	private fun decodeImageData(reader : Reader) {
 		
 		// allocate pixel array if need
-		val npix = iw * ih
-		if((pixels?.size ?: 0) < npix) pixels = ByteArray(npix)
+		val nPixels = srcRect.w * srcRect.h
+		if((pixels?.size ?: 0) < nPixels) pixels = ByteArray(nPixels)
 		val pixels = this.pixels !!
 		
 		if(prefix == null) prefix = ShortArray(MaxStackSize)
@@ -230,7 +238,7 @@ class GifDecoder {
 		var old_code = NullCode
 		var code_size = data_size + 1
 		var code_mask = (1 shl code_size) - 1
-
+		
 		for(code in 0 until clear) {
 			prefix[code] = 0
 			suffix[code] = code.toByte()
@@ -246,7 +254,7 @@ class GifDecoder {
 		var pi = 0
 		
 		var i = 0
-		while(i < npix) {
+		while(i < nPixels) {
 			if(top == 0) {
 				if(bits < code_size) {
 					//  Load bytes until there are enough bits for a code.
@@ -324,7 +332,7 @@ class GifDecoder {
 		}
 		
 		// clear missing pixels
-		for(n in pi until npix) {
+		for(n in pi until nPixels) {
 			pixels[n] = b0
 		}
 	}
@@ -354,15 +362,18 @@ class GifDecoder {
 		return tab
 	}
 	
+	private fun parseDispose(num:Int) =
+		Dispose.values().find { it.num == num } ?: error("unknown dispose $num")
+	
 	/**
 	 * Reads Graphics Control Extension values
 	 */
 	private fun parseGraphicControlExt(reader : Reader) {
 		reader.byte() // block size
 		val packed = reader.byte() // packed fields
-		dispose = (packed and 0x1c) shr 2 // disposal method
+		dispose = parseDispose( (packed and 0x1c) shr 2 )// disposal method
 		// elect to keep old image if discretionary
-		if(dispose == 0) dispose = 1
+		if(dispose == Dispose.NoAction ) dispose = Dispose.LeaveInPlace
 		
 		transparency = (packed and 1) != 0
 		// delay in milliseconds
@@ -388,10 +399,11 @@ class GifDecoder {
 	
 	// Reads next frame image
 	private fun parseFrame(reader : Reader) {
-		ix = reader.UInt16() // (sub)image position & size
-		iy = reader.UInt16()
-		iw = reader.UInt16()
-		ih = reader.UInt16()
+		// (sub)image position & size
+		srcRect.x = reader.UInt16()
+		srcRect.y = reader.UInt16()
+		srcRect.w = reader.UInt16()
+		srcRect.h = reader.UInt16()
 		
 		val packed = reader.byte()
 		lctFlag = (packed and 0x80) != 0 // 1 - local color table flag
@@ -404,8 +416,9 @@ class GifDecoder {
 			// make local table active
 			parseColorTable(reader, lctSize)
 		} else {
+			// make global table active
 			if(bgIndex == transIndex) bgColor = 0
-			gct !! // make global table active
+			gct !!
 		}
 		
 		var save = 0
@@ -418,7 +431,7 @@ class GifDecoder {
 		reader.skipBlock()
 		
 		val image = ApngBitmap(width, height).also {
-			render(it,act) // transfer pixel data to image
+			render(it, act) // transfer pixel data to image
 		}
 		
 		// add image to frame list
@@ -446,12 +459,13 @@ class GifDecoder {
 		 * Resets frame state for reading next image.
 		 */
 		lastDispose = dispose
-		lastRect.set(ix, iy, iw, ih)
+		lastImage = image
+		lastRect.set(srcRect)
 		lastBgColor = bgColor
-		dispose = 0
+
+		dispose = Dispose.NoAction
 		transparency = false
 		delay = 0
-		lastImage = image
 	}
 	
 	// read GIF content blocks
@@ -501,18 +515,21 @@ class GifDecoder {
 	/**
 	 * Initializes or re-initializes reader
 	 */
-	private fun reset(){
+	private fun reset() {
 		frames.clear()
 		lastImage = null
 		loopCount = ApngAnimationControl.PLAY_INDEFINITELY
+		gct = null
+		prefix = null
+		suffix = null
+		pixelStack = null
+		pixels = null
 	}
 	
 	/**
 	 * Reads GIF file header information.
 	 */
 	private fun parseImageHeader(reader : Reader) : ApngImageHeader {
-		
-		reset()
 		
 		val id = reader.string(6)
 		if(! id.startsWith("GIF"))
@@ -560,13 +577,16 @@ class GifDecoder {
 	}
 	
 	fun parse(src : InputStream, callback : GifDecoderCallback) {
+		
+		reset()
+		
 		val reader = Reader(src)
 		val header = parseImageHeader(reader)
 		val animationControl = readContents(reader)
 		
 		// GIFは最後まで読まないとフレーム数が分からない
-		if(frames.isEmpty()) throw error("there is no frame.")
 		
+		if(frames.isEmpty()) throw error("there is no frame.")
 		callback.onGifHeader(header)
 		callback.onGifAnimationInfo(header, animationControl)
 		for(frame in frames) {

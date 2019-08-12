@@ -236,7 +236,7 @@
     <string name="toot_search_ts">חיפוש תרועות (ts)</string>
     <string name="search_desc_mastodon_api">חיפוש חשבון/תגית באמצעות הממשק התכנותי של Mastodon.</string>
     <string name="toot_search_of">חיפוש תרועה \"%1$s\"</string>
-    <string name="toot_search_msp_of">"חיפוש תרועות (MSP)  \"%1$s\""</string>
+    <string name="toot_search_msp_of">חיפוש תרועות (MSP)  \"%1$s\"</string>
     <string name="toot_search_ts_of">חיפוש תרועות (ts) \"%1$s\"</string>
     <string name="progress_synchronize_toot">מסנכרן תרועה …</string>
     <string name="open_local_timeline_for">פתח את ציר הזמן של \"%1$s\"</string>
@@ -270,12 +270,12 @@
     <string name="relative_time_unit_hours">שעות</string>
     <string name="relative_time_unit_day1">יום</string>
     <string name="relative_time_unit_days">ימים</string>
-    <string name="relative_time_phrase_future">"%1$d  %2$s אחר כך"</string>
+    <string name="relative_time_phrase_future">%1$d  %2$s אחר כך</string>
     <string name="notification_channel_description">הגדרה זו משמשת להתאמת התראות עבור %1$s</string>
     <string name="notification_sound_before_oreo">צליל התראה (לפני אנדרואיד 8.0)</string>
-    <string name="notification_style_after_oreo">"סגנון התראה  (אנדרויד 8.0+)"</string>
+    <string name="notification_style_after_oreo">סגנון התראה  (אנדרויד 8.0+)</string>
     <string name="notification_for">התראה עבור %1$s</string>
-    <string name="notification_style_before_oreo">"סגנון התראה  (לפני אנדרויד 8. אם המכשיר שלך הוא  אנדרויד 8.0+ , נא לבדוק את הגדרות החשבון)"</string>
+    <string name="notification_style_before_oreo">סגנון התראה  (לפני אנדרויד 8. אם המכשיר שלך הוא  אנדרויד 8.0+ , נא לבדוק את הגדרות החשבון)</string>
     <string name="enquete_was_end">הסקירה הסתיימה.</string>
     <string name="enquete_voted">הצביע.</string>
     <string name="enquete_vote_failed">לא ניתן להצביע. %1$s</string>
@@ -287,7 +287,7 @@
     <string name="dont_use_action_button_with_quick_toot_bar">השבת את כפתור פעולת עורך שיטות הקלט בעת שימוש בסרגל \"תרועה מהירה\" (נא הפעל מחדש את היישום)</string>
     <string name="auto_cw">הסתר אוטומטית טקסט ארוך (על ידי הגדרת \"ספירת שורות\" גדולה מ -0. נא הפעל מחדש את היישום)</string>
     <string name="auto_cw_prefix">(אזהרת תוכן אוטומטית)</string>
-    <string name="enquete_item_is_empty">"אפשרות  %1$d בסקירה הינה ריקה."</string>
+    <string name="enquete_item_is_empty">אפשרות  %1$d בסקירה הינה ריקה.</string>
     <string name="switch_button_color">החלף צבע כפתור</string>
     <string name="cant_change_account_when_attachment_specified">לא ניתן להחליף בין חשבונות כל עוד יש מדיה מצורפת.</string>
     <string name="column">עמודה</string>
@@ -317,7 +317,7 @@
     <string name="open_web_page">פתח דף רשת</string>
     <string name="open_web_on_host">פתח דף רשת על %1$s</string>
     <string name="follow_from_another_account">עקוב מחשבון אחר</string>
-    <string name="search_of">"חפש  \"%1$s\""</string>
+    <string name="search_of">חפש  \"%1$s\"</string>
     <string name="search">חפש</string>
     <string name="resolve_non_local_account">טען חשבון שאינו מקומי</string>
     <string name="confirm_close_column">האם לסגור עמודה זו\?</string>

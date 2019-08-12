@@ -14,17 +14,17 @@ class ApngAnimationControl(
 	//  if it is 0, the animation should play indefinitely.
 	// If nonzero, the animation should come to rest on the final frame at the end of the last play.
 	val numPlays : Int = PLAY_INDEFINITELY
-){
+) {
 	
 	companion object {
 		const val PLAY_INDEFINITELY = 0
 		
-		internal fun parse(src : ByteSequence):ApngAnimationControl{
+		internal fun parse(src : ByteSequence) : ApngAnimationControl {
 			val numFrames = src.readInt32()
 			val numPlays = src.readInt32()
 			return ApngAnimationControl(
 				numFrames = numFrames,
-					numPlays = numPlays
+				numPlays = numPlays
 			)
 			
 		}

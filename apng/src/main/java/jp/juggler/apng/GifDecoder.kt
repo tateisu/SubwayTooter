@@ -3,11 +3,14 @@ package jp.juggler.apng
 import java.io.InputStream
 import kotlin.math.min
 
-// thanks to https://raw.githubusercontent.com/rtyley/animated-gif-lib-for-java/master/src/main/java/com/madgag/gif/fmsware/GifDecoder.java
+// https://raw.githubusercontent.com/rtyley/animated-gif-lib-for-java/master/src/main/java/com/madgag/gif/fmsware/GifDecoder.java
 // original code author is Kevin Weiner, FM Software.
 // LZW decoder adapted from John Cristy's ImageMagick.
 
-class GifDecoder {
+// http://www.theimage.com/animation/pages/disposal3.html
+// great sample images.
+
+class GifDecoder(val callback : GifDecoderCallback) {
 	
 	private class Rectangle(var x : Int = 0, var y : Int = 0, var w : Int = 0, var h : Int = 0) {
 		
@@ -34,7 +37,7 @@ class GifDecoder {
 			var nRead = 0
 			while(nRead < length) {
 				val delta = bis.read(ba, offset + nRead, length - nRead)
-				if(delta == - 1) throw RuntimeException("unexpected End of Stream")
+				if(delta == - 1) throw error("unexpected End of Stream")
 				nRead += delta
 			}
 		}
@@ -62,24 +65,19 @@ class GifDecoder {
 	}
 	
 	// 0=no action; 1=leave in place; 2=restore to bg; 3=restore to prev
-	enum class Dispose(val num:Int){
-		NoAction(0),
-		LeaveInPlace(1),
-		RestoreToBg(2),
-		RestoreToPrev(3)
+	enum class Dispose(val num : Int) {
+		
+		Unspecified(0),
+		DontDispose(1),
+		RestoreBackground(2),
+		RestorePrevious(3)
 	}
 	
 	companion object {
-		
-		// max decoder pixel stack size
 		private const val MaxStackSize = 4096
-		
 		private const val NullCode = - 1
-		
 		private const val b0 = 0.toByte()
-		
-		private const val OPAQUE = 0xff shl 24
-		
+		private const val OPAQUE = 255 shl 24
 	}
 	
 	private var width = 0 // full image width
@@ -103,8 +101,8 @@ class GifDecoder {
 	private val lastRect = Rectangle() // last image rect
 	
 	// last graphic control extension info
-	private var dispose = Dispose.NoAction
-	private var lastDispose = Dispose.NoAction
+	private var dispose = Dispose.Unspecified
+	private var lastDispose = Dispose.Unspecified
 	private var transparency = false // use transparent color
 	private var delay = 0 // delay in milliseconds
 	private var transIndex = 0 // transparent color index
@@ -117,52 +115,54 @@ class GifDecoder {
 	
 	private val frames = ArrayList<Pair<ApngFrameControl, ApngBitmap>>()
 	
-	private var lastImage : ApngBitmap? = null
+	private var previousImage : ApngBitmap? = null
+	
+	// 現在のdispose指定と描画結果を覚えておく
+	private fun memoryLastDispose(image : ApngBitmap) {
+		if(dispose != Dispose.RestorePrevious) previousImage = image
+		lastDispose = dispose
+		lastRect.set(srcRect)
+		lastBgColor = bgColor
+	}
+	
+	// 前回のdispose指定を反映する
+	private fun applyLastDispose(destImage : ApngBitmap) {
+		
+		if(lastDispose == Dispose.Unspecified) return
+		
+		// restore previous image
+		val previousImage = this.previousImage
+		if(previousImage != null) {
+			System.arraycopy(previousImage.colors, 0, destImage.colors, 0, destImage.colors.size)
+		}
+		
+		if(lastDispose == Dispose.RestoreBackground) {
+			
+			// fill lastRect
+			
+			val fillColor = if(transparency) {
+				0 // assume background is transparent
+			} else {
+				lastBgColor // use given background color
+			}
+			
+			for(y in lastRect.y until lastRect.y + lastRect.h) {
+				val fillStart = y * destImage.width + lastRect.x
+				val fillWidth = lastRect.w
+				destImage.colors.fill(
+					fillColor,
+					fromIndex = fillStart,
+					toIndex = fillStart + fillWidth
+				)
+			}
+		}
+	}
 	
 	// render to ApngBitmap
 	// may use some previous frame.
 	private fun render(destImage : ApngBitmap, act : IntArray) {
 		// expose destination image's pixels as int array
 		val dest = destImage.colors
-		val dest_w = destImage.width
-		
-		// fill in starting image contents based on last image's dispose code
-		if(lastDispose != Dispose.NoAction ) {
-			
-			if(lastDispose == Dispose.RestoreToPrev ) {
-				// use image before last
-				val idx = frames.size - 2
-				lastImage = if(idx > 0) {
-					frames[idx - 1].second
-				} else {
-					null
-				}
-			} else {
-				// lastDisposeが3以外でもlastImageはnullではない場合がある
-			}
-			
-			lastImage?.let { lastImage ->
-				
-				// copy pixels
-				System.arraycopy(lastImage.colors, 0, dest, 0, dest.size)
-				
-				if(lastDispose == Dispose.RestoreToBg ) {
-					val fillColor = if(transparency) {
-						0 // assume background is transparent
-					} else {
-						lastBgColor // use given background color
-					}
-					
-					// fill lastRect
-					for(y in lastRect.y until lastRect.y + lastRect.h) {
-						val fillStart = y * dest_w + lastRect.x
-						val fillWidth = lastRect.w
-						dest.fill(fillColor, fromIndex = fillStart, toIndex = fillStart + fillWidth)
-					}
-				}
-				
-			}
-		}
 		
 		// copy each source line to the appropriate place in the destination
 		var pass = 1
@@ -209,6 +209,7 @@ class GifDecoder {
 				}
 			}
 		}
+		
 	}
 	
 	/**
@@ -362,7 +363,7 @@ class GifDecoder {
 		return tab
 	}
 	
-	private fun parseDispose(num:Int) =
+	private fun parseDispose(num : Int) =
 		Dispose.values().find { it.num == num } ?: error("unknown dispose $num")
 	
 	/**
@@ -371,9 +372,10 @@ class GifDecoder {
 	private fun parseGraphicControlExt(reader : Reader) {
 		reader.byte() // block size
 		val packed = reader.byte() // packed fields
-		dispose = parseDispose( (packed and 0x1c) shr 2 )// disposal method
+		dispose = parseDispose((packed and 0x1c) shr 2) // disposal method
+		if(callback.canGifDebug()) callback.onGifDebug("parseGraphicControlExt: frame=${frames.size} dispose=$dispose")
 		// elect to keep old image if discretionary
-		if(dispose == Dispose.NoAction ) dispose = Dispose.LeaveInPlace
+		if(dispose == Dispose.Unspecified) dispose = Dispose.DontDispose
 		
 		transparency = (packed and 1) != 0
 		// delay in milliseconds
@@ -430,10 +432,6 @@ class GifDecoder {
 		decodeImageData(reader) // decode pixel data
 		reader.skipBlock()
 		
-		val image = ApngBitmap(width, height).also {
-			render(it, act) // transfer pixel data to image
-		}
-		
 		// add image to frame list
 		frames.add(
 			Pair(
@@ -447,7 +445,11 @@ class GifDecoder {
 					sequenceNumber = frames.size,
 					delayMilliseconds = delay.toLong()
 				),
-				image
+				ApngBitmap(width, height).also {
+					applyLastDispose(it)
+					render(it, act) // transfer pixel data to image
+					memoryLastDispose(it)
+				}
 			)
 		)
 		
@@ -458,12 +460,7 @@ class GifDecoder {
 		/**
 		 * Resets frame state for reading next image.
 		 */
-		lastDispose = dispose
-		lastImage = image
-		lastRect.set(srcRect)
-		lastBgColor = bgColor
-
-		dispose = Dispose.NoAction
+		dispose = Dispose.Unspecified
 		transparency = false
 		delay = 0
 	}
@@ -517,13 +514,13 @@ class GifDecoder {
 	 */
 	private fun reset() {
 		frames.clear()
-		lastImage = null
 		loopCount = ApngAnimationControl.PLAY_INDEFINITELY
 		gct = null
 		prefix = null
 		suffix = null
 		pixelStack = null
 		pixels = null
+		previousImage = null
 	}
 	
 	/**
@@ -576,7 +573,7 @@ class GifDecoder {
 		)
 	}
 	
-	fun parse(src : InputStream, callback : GifDecoderCallback) {
+	fun parse(src : InputStream) {
 		
 		reset()
 		

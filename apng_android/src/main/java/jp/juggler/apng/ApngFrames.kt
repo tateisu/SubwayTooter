@@ -116,7 +116,7 @@ class ApngFrames private constructor(
 		) : ApngFrames {
 			val result = ApngFrames(pixelSizeMax, debug)
 			try {
-				GifDecoder().parse(inStream, result)
+				GifDecoder(result).parse(inStream)
 				result.onParseComplete()
 				return result.takeIf { result.defaultImage != null || result.frames?.isNotEmpty() == true }
 					?: throw RuntimeException("GIF has no image")

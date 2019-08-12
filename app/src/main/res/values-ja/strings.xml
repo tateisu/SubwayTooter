@@ -923,5 +923,8 @@
     <string name="bottom">下</string>
     <string name="switch_button_color">スイッチボタンの色</string>
     <string name="max_toot_chars">投稿の最大文字数(0:デフォルト。サーバがmax_toot_charsを提供する場合はこの設定は無視されます)</string>
+    <string name="read_more_hashtag">ハッシュタグをもっと読む</string>
+    <string name="read_more_account">アカウントをもっと読む</string>
+    <string name="read_more_status">投稿をもっと読む</string>
 
 </resources>

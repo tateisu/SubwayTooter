@@ -9,18 +9,40 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.*
+import kotlin.collections.ArrayList
 
 class ColumnTask_Gap(
 	columnArg : Column,
-	private val gap : TootGap
+	private val gap : TimelineItem
 ) : ColumnTask(columnArg, ColumnTaskType.GAP) {
 	
 	companion object {
 		internal val log = LogCategory("CT_Gap")
 	}
 	
-	private var max_id : EntityId? = gap.max_id
-	private var since_id : EntityId? = gap.since_id
+	private var max_id : EntityId? = (gap as? TootGap)?.max_id
+	private var since_id : EntityId? = (gap as? TootGap)?.since_id
+	private val countTag: Int
+	private val countAccount: Int
+	private val countStatus: Int
+	init{
+		var countTag =0
+		var countAccount =0
+		var countStatus = 0
+		if( gap is TootSearchGap){
+			columnArg.list_data.forEach {
+				when(it){
+					is TootTag -> ++countTag
+					is TootAccountRef -> ++countAccount
+					is TootStatus -> ++countStatus
+				}
+			}
+		}
+		this.countTag = countTag
+		this.countAccount = countAccount
+		this.countStatus = countStatus
+	}
 	
 	override fun doInBackground(vararg unused : Void) : TootApiResult? {
 		ctStarted.set(true)
@@ -43,8 +65,8 @@ class ColumnTask_Gap(
 		try {
 			return (columnTypeProcMap[column.column_type] ?: columnTypeProcMap[Column.TYPE_HOME])
 				.gap(this, client)
-		}catch(ex:Throwable){
-			return TootApiResult( ex.withCaption("gap loading failed.") )
+		} catch(ex : Throwable) {
+			return TootApiResult(ex.withCaption("gap loading failed."))
 		} finally {
 			try {
 				column.updateRelation(client, list_tmp, column.who_account, parser)
@@ -767,4 +789,44 @@ class ColumnTask_Gap(
 		return result
 	}
 	
+	fun getSearchGap(client:TootApiClient):TootApiResult? {
+		if( gap !is TootSearchGap ) return null
+		
+		// https://mastodon2.juggler.jp/api/v2/search?q=gargron&type=accounts&offset=5
+
+		val typeKey = when( gap.type ) {
+			TootSearchGap.SearchType.Hashtag -> "hashtags"
+			TootSearchGap.SearchType.Account -> "accounts"
+			TootSearchGap.SearchType.Status -> "statuses"
+		}
+		val offset = when( gap.type ) {
+			TootSearchGap.SearchType.Hashtag -> countTag
+			TootSearchGap.SearchType.Account -> countAccount
+			TootSearchGap.SearchType.Status -> countStatus
+		}
+
+		var path = String.format(
+			Locale.JAPAN,
+			Column.PATH_SEARCH_V2,
+			column.search_query.encodePercent()
+		)
+		if(column.search_resolve) path += "&resolve=1"
+		path += "&type=$typeKey&offset=$offset"
+		
+		val result = client.request(path)
+		val jsonObject = result?.jsonObject
+		if(jsonObject != null) {
+			val tmp = parser.resultsV2(jsonObject)
+			if(tmp != null) {
+				list_tmp = ArrayList()
+				addAll(list_tmp, tmp.hashtags)
+				addAll(list_tmp, tmp.accounts)
+				addAll(list_tmp, tmp.statuses)
+				if(list_tmp?.isNotEmpty() == true) {
+					addOne(list_tmp, TootSearchGap(gap.type))
+				}
+			}
+		}
+		return result
+	}
 }

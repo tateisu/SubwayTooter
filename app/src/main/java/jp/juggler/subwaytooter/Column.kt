@@ -1981,7 +1981,7 @@ class Column(
 		fireShowColumnStatus()
 	}
 	
-	internal fun startGap(gap : TootGap?) {
+	internal fun startGap(gap : TimelineItem?) {
 		
 		if(gap == null) {
 			showToast(context, true, "gap is null")

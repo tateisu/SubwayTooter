@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter
 
-import android.util.SparseArray
 import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.syncAccountByAcct

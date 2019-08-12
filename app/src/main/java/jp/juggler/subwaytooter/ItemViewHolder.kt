@@ -504,6 +504,7 @@ internal class ItemViewHolder(
 			is TootNotification -> showNotification(item)
 			
 			is TootGap -> showGap()
+			is TootSearchGap -> showSearchGap(item)
 			is TootDomainBlock -> showDomainBlock(item)
 			is TootList -> showList(item)
 			
@@ -1024,6 +1025,15 @@ internal class ItemViewHolder(
 	private fun showGap() {
 		llSearchTag.visibility = View.VISIBLE
 		btnSearchTag.text = activity.getString(R.string.read_gap)
+	}
+	
+	private fun showSearchGap(item:TootSearchGap){
+		llSearchTag.visibility = View.VISIBLE
+		btnSearchTag.text = activity.getString(when(item.type){
+			TootSearchGap.SearchType.Hashtag -> R.string.read_more_hashtag
+			TootSearchGap.SearchType.Account -> R.string.read_more_account
+			TootSearchGap.SearchType.Status -> R.string.read_more_status
+		})
 	}
 	
 	private fun showReply(
@@ -1837,6 +1847,7 @@ internal class ItemViewHolder(
 				is TootConversationSummary -> openConversationSummary()
 				
 				is TootGap -> column.startGap(item)
+				is TootSearchGap -> column.startGap(item)
 				
 				is TootDomainBlock -> {
 					val domain = item.domain

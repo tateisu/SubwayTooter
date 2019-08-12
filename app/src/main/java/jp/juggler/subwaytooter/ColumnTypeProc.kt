@@ -949,8 +949,17 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 						if(tmp != null) {
 							list_tmp = ArrayList()
 							addAll(list_tmp, tmp.hashtags)
+							if(tmp.hashtags.isNotEmpty()){
+								addOne(list_tmp,TootSearchGap(TootSearchGap.SearchType.Hashtag))
+							}
 							addAll(list_tmp, tmp.accounts)
+							if(tmp.accounts.isNotEmpty()){
+								addOne(list_tmp,TootSearchGap(TootSearchGap.SearchType.Account))
+							}
 							addAll(list_tmp, tmp.statuses)
+							if(tmp.statuses.isNotEmpty()){
+								addOne(list_tmp,TootSearchGap(TootSearchGap.SearchType.Status))
+							}
 							return@add result
 						}
 					}
@@ -981,7 +990,9 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				
 				result
 			}
-			
+		},
+		gap = { client ->
+			getSearchGap(client)
 		}
 	)
 	

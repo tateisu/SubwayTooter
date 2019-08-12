@@ -37,4 +37,10 @@
     <string name="hashtag_title_none">没有%1$s</string>
     <string name="poll_expire_hours">小时</string>
     <string name="poll_expire_minutes">分钟</string>
+    <string name="mute">静音</string>
+    <string name="report">举报</string>
+    <string name="close">关闭</string>
+    <string name="image_capture">拍一张照片</string>
+    <string name="it_is_you">它是你。</string>
+    <string name="send">发送</string>
 </resources>

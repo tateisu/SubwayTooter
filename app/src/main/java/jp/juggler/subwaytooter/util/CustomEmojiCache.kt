@@ -1,23 +1,22 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.RectF
 import android.os.Handler
 import android.os.SystemClock
 import com.caverock.androidsvg.SVG
-
-import java.io.ByteArrayInputStream
-import java.lang.ref.WeakReference
-import java.util.ArrayList
-import java.util.LinkedList
-import java.util.concurrent.ConcurrentHashMap
-
+import jp.juggler.apng.ApngFrames
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
-import jp.juggler.apng.ApngFrames
 import jp.juggler.util.LogCategory
+import java.io.ByteArrayInputStream
+import java.lang.ref.WeakReference
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.ceil
-import kotlin.math.max
 
 class CustomEmojiCache(internal val context : Context) {
 	

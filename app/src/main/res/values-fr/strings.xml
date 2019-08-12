@@ -725,7 +725,7 @@
     <string name="misskey">Misskey</string>
     <string name="visibility_home">Fil principal</string>
     <string name="visibility_followers">Abonné·e·s</string>
-    <string name="vote_count_text">%1$d votes</string>
+    <string name="vote_count_text">%1$d voix</string>
     <string name="reaction_add">Ajouter une réaction</string>
     <string name="unknown_notification_from">notification inconnue venant de %1$s</string>
     <string name="dont_show_reaction">Masquer les réactions</string>
@@ -876,9 +876,9 @@
     <string name="poll_expire_hours">heures</string>
     <string name="poll_expire_minutes">minutes</string>
     <string name="vote_1">1 voix</string>
-    <string name="vote_2">%1$d votes.</string>
+    <string name="vote_2">%1$d voix.</string>
     <string name="vote_expire_at">expire : %1$s</string>
-    <string name="vote_count_unavailable">\?\?\? votes</string>
+    <string name="vote_count_unavailable">\?\?\? voix</string>
     <string name="vote_button">Voter</string>
     <string name="end_of_polling_from">Fin du sondage de %1$s</string>
     <string name="quick_toot_menu">Menu de pouet rapide</string>

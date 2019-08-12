@@ -915,5 +915,6 @@
     <string name="top">Top</string>
     <string name="bottom">Bottom</string>
     <string name="switch_button_color">Switch button color</string>
+    <string name="max_toot_chars">maximum character count in status (0:default. if server provides max_toot_chars, this setting is ignored.)</string>
 
 </resources>

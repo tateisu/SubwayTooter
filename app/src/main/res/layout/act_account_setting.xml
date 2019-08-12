@@ -723,6 +723,24 @@
 
         <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/max_toot_chars"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etMaxTootChars"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
         <!--<View style="@style/setting_divider"/>-->
 
         <!--<TextView-->

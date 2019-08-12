@@ -64,6 +64,8 @@ class SavedAccount(
 	var default_sensitive = false
 	var expand_cw = false
 	
+	var max_toot_chars = 0
+	
 	private val refInstance = AtomicReference<TootInstance>(null)
 	
 	// DBには保存しない
@@ -158,6 +160,7 @@ class SavedAccount(
 
 		this.default_sensitive = cursor.getBoolean(COL_DEFAULT_SENSITIVE)
 		this.expand_cw = cursor.getBoolean(COL_EXPAND_CW)
+		this.max_toot_chars = cursor.getInt(COL_MAX_TOOT_CHARS)
 		
 	}
 	
@@ -219,6 +222,7 @@ class SavedAccount(
 		
 		cv.put(COL_DEFAULT_SENSITIVE, default_sensitive.b2i())
 		cv.put(COL_EXPAND_CW, expand_cw.b2i())
+		cv.put(COL_MAX_TOOT_CHARS,max_toot_chars)
 		
 		// UIからは更新しない
 		// notification_tag
@@ -430,6 +434,7 @@ class SavedAccount(
 
 		private const val COL_DEFAULT_SENSITIVE = "default_sensitive"
 		private const val COL_EXPAND_CW = "expand_cw"
+		private const val COL_MAX_TOOT_CHARS = "max_toot_chars"
 		
 		/////////////////////////////////
 		// login information
@@ -502,6 +507,9 @@ class SavedAccount(
 					// スキーマ37から
 					+ ",$COL_DEFAULT_SENSITIVE integer default 0"
 					+ ",$COL_EXPAND_CW integer default 0"
+					
+					// スキーマ39から
+					+ ",$COL_MAX_TOOT_CHARS integer default 0"
 					
 					+ ")"
 			)
@@ -662,6 +670,14 @@ class SavedAccount(
 					log.trace(ex)
 				}
 				
+			}
+			
+			if(oldVersion < 39 && newVersion >= 39) {
+				try {
+					db.execSQL("alter table $table add column $COL_MAX_TOOT_CHARS integer default 0")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
 			}
 		}
 		

@@ -844,9 +844,9 @@ class ActPost : AppCompatActivity(),
 						
 						val decodeOptions = DecodeOptions(this, mentionFullAcct = true)
 						
-						var text : CharSequence = if( account.isMisskey){
+						var text : CharSequence = if(account.isMisskey) {
 							base_status.content ?: ""
-						}else{
+						} else {
 							decodeOptions.decodeHTML(base_status.content)
 						}
 						etContent.setText(text)
@@ -1250,10 +1250,11 @@ class ActPost : AppCompatActivity(),
 			}
 			
 			else -> {
-				val info = account.instance
 				
-				// 情報がないか古いなら再取得
+				// インスタンス情報を確認する
+				val info = account.instance
 				if(info == null || System.currentTimeMillis() - info.time_parse >= 300000L) {
+					// 情報がないか古いなら再取得
 					
 					// 同時に実行するタスクは1つまで
 					var lastTask = lastInstanceTask
@@ -1293,7 +1294,13 @@ class ActPost : AppCompatActivity(),
 				if(max != null && max > 0) return max
 			}
 		}
-		return 500
+		
+		// アカウント設定で指定した値があるならそれを使う
+		val forceMaxTootChars = account?.max_toot_chars
+		return when {
+			forceMaxTootChars != null && forceMaxTootChars > 0 -> forceMaxTootChars
+			else -> 500
+		}
 	}
 	
 	private fun updateTextCount() {

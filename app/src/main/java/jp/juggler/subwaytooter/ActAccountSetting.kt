@@ -150,6 +150,8 @@ class ActAccountSetting
 	private lateinit var listFieldValueInvalidator : List<NetworkEmojiInvalidator>
 	private lateinit var btnFields : View
 	
+	private lateinit var etMaxTootChars : EditText
+	
 	///////////////////////////////////////////////////
 	
 	internal var visibility = TootVisibility.Public
@@ -296,6 +298,7 @@ class ActAccountSetting
 		btnProfileHeader = findViewById(R.id.btnProfileHeader)
 		etDisplayName = findViewById(R.id.etDisplayName)
 		etDefaultText = findViewById(R.id.etDefaultText)
+		etMaxTootChars = findViewById(R.id.etMaxTootChars)
 		btnDisplayName = findViewById(R.id.btnDisplayName)
 		etNote = findViewById(R.id.etNote)
 		btnNote = findViewById(R.id.btnNote)
@@ -362,7 +365,7 @@ class ActAccountSetting
 		name_invalidator = NetworkEmojiInvalidator(handler, etDisplayName)
 		note_invalidator = NetworkEmojiInvalidator(handler, etNote)
 		default_text_invalidator = NetworkEmojiInvalidator(handler, etDefaultText)
-		
+
 		listFieldNameInvalidator = listEtFieldName.map {
 			NetworkEmojiInvalidator(handler, it)
 		}
@@ -393,6 +396,40 @@ class ActAccountSetting
 			}
 		})
 		
+		etMaxTootChars.addTextChangedListener(object : TextWatcher {
+			override fun beforeTextChanged(
+				s : CharSequence?,
+				start : Int,
+				count : Int,
+				after : Int
+			) {
+			}
+			
+			override fun onTextChanged(
+				s : CharSequence?,
+				start : Int,
+				before : Int,
+				count : Int
+			) {
+			}
+			
+			override fun afterTextChanged(s : Editable?) {
+				val num = etMaxTootChars.parseInt()
+				if( num != null && num >= 0){
+					saveUIToData()
+				}
+			}
+		})
+		
+	}
+	
+	private fun EditText.parseInt():Int?{
+		val sv = this.text?.toString() ?: return null
+		return try{
+			Integer.parseInt(sv,10)
+		}catch(ex:Throwable){
+			null
+		}
 	}
 	
 	private fun loadUIFromData(a : SavedAccount) {
@@ -431,7 +468,8 @@ class ActAccountSetting
 		notification_sound_uri = a.sound_uri
 		
 		etDefaultText.setText(a.default_text)
-		
+		etMaxTootChars.setText(a.max_toot_chars.toString())
+
 		loading = false
 		
 		val enabled = ! a.isPseudo
@@ -502,7 +540,14 @@ class ActAccountSetting
 		account.confirm_unfavourite = cbConfirmUnfavourite.isChecked
 		account.confirm_post = cbConfirmToot.isChecked
 		account.default_text = etDefaultText.text.toString()
-		
+
+		val num = etMaxTootChars.parseInt()
+		account.max_toot_chars = if( num != null && num >= 0){
+			num
+		}else{
+			0
+		}
+
 		account.saveSetting()
 		
 	}
@@ -1303,7 +1348,7 @@ class ActAccountSetting
 	private fun openPicker(permission_request_code : Int) {
 		val permissionCheck = ContextCompat.checkSelfPermission(
 			this,
-			android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+			Manifest.permission.WRITE_EXTERNAL_STORAGE
 		)
 		if(permissionCheck != PackageManager.PERMISSION_GRANTED) {
 			preparePermission(permission_request_code)

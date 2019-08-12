@@ -115,8 +115,8 @@ class App1 : Application() {
 		// 2018/12/6 v317 35 => 36 ContentWarningテーブルの作り直し。
 		// 2019/6/4 v351 36 => 37 SavedAccount テーブルに項目追加。
 		// 2019/6/4 v351 37 => 38 SavedAccount テーブルに項目追加。
-
-		internal const val DB_VERSION = 38
+		// 2019/8/12 v362 38 => 39 SavedAccount テーブルに項目追加。
+		internal const val DB_VERSION = 39
 		
 		private val tableList = arrayOf(
 			LogData,

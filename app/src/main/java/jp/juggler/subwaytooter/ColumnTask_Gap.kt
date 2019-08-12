@@ -23,19 +23,20 @@ class ColumnTask_Gap(
 	
 	private var max_id : EntityId? = (gap as? TootGap)?.max_id
 	private var since_id : EntityId? = (gap as? TootGap)?.since_id
-	private val countTag: Int
-	private val countAccount: Int
-	private val countStatus: Int
-	init{
-		var countTag =0
-		var countAccount =0
+	private val countTag : Int
+	private val countAccount : Int
+	private val countStatus : Int
+	
+	init {
+		var countTag = 0
+		var countAccount = 0
 		var countStatus = 0
-		if( gap is TootSearchGap){
+		if(gap is TootSearchGap) {
 			columnArg.list_data.forEach {
-				when(it){
-					is TootTag -> ++countTag
-					is TootAccountRef -> ++countAccount
-					is TootStatus -> ++countStatus
+				when(it) {
+					is TootTag -> ++ countTag
+					is TootAccountRef -> ++ countAccount
+					is TootStatus -> ++ countStatus
 				}
 			}
 		}
@@ -106,9 +107,16 @@ class ColumnTask_Gap(
 				return
 			}
 			
-			val list_new = column.duplicate_map.filterDuplicate(list_tmp)
+			val list_new = when(column.column_type){
+
+				// 検索カラムはIDによる重複排除が不可能
+				Column.TYPE_SEARCH -> list_tmp
+
+				// 他のカラムは重複排除してから追加
+				else -> column.duplicate_map.filterDuplicate(list_tmp)
+			}
+
 			// 0個でもギャップを消すために以下の処理を続ける
-			
 			val changeList = ArrayList<AdapterChange>()
 			
 			column.replaceConversationSummary(changeList, list_new, column.list_data)
@@ -789,29 +797,24 @@ class ColumnTask_Gap(
 		return result
 	}
 	
-	fun getSearchGap(client:TootApiClient):TootApiResult? {
-		if( gap !is TootSearchGap ) return null
+	fun getSearchGap(client : TootApiClient) : TootApiResult? {
+		if(gap !is TootSearchGap) return null
+		
+		
+		val (type, offset) = when(gap.type) {
+			TootSearchGap.SearchType.Hashtag -> Pair("hashtags", countTag)
+			TootSearchGap.SearchType.Account -> Pair("accounts", countAccount)
+			TootSearchGap.SearchType.Status -> Pair("statuses", countStatus)
+		}
 		
 		// https://mastodon2.juggler.jp/api/v2/search?q=gargron&type=accounts&offset=5
-
-		val typeKey = when( gap.type ) {
-			TootSearchGap.SearchType.Hashtag -> "hashtags"
-			TootSearchGap.SearchType.Account -> "accounts"
-			TootSearchGap.SearchType.Status -> "statuses"
-		}
-		val offset = when( gap.type ) {
-			TootSearchGap.SearchType.Hashtag -> countTag
-			TootSearchGap.SearchType.Account -> countAccount
-			TootSearchGap.SearchType.Status -> countStatus
-		}
-
 		var path = String.format(
 			Locale.JAPAN,
 			Column.PATH_SEARCH_V2,
 			column.search_query.encodePercent()
-		)
+		) + "&type=$type&offset=$offset"
+		
 		if(column.search_resolve) path += "&resolve=1"
-		path += "&type=$typeKey&offset=$offset"
 		
 		val result = client.request(path)
 		val jsonObject = result?.jsonObject

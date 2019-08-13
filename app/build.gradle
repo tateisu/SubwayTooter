@@ -21,8 +21,8 @@ android {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
 
-        versionCode 362
-        versionName "3.6.2"
+        versionCode 363
+        versionName "3.6.3"
         applicationId "jp.juggler.subwaytooter"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -118,8 +118,10 @@ dependencies {
     testImplementation 'junit:junit:4.12' // しばらくはkotlin-testとjunitを併用
 
     implementation 'com.squareup.okhttp3:okhttp:3.12.1'
+    implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.12.1'
     testImplementation 'com.squareup.okhttp3:mockwebserver:3.12.1'
     androidTestImplementation 'com.squareup.okhttp3:mockwebserver:3.12.1'
+    // glideは okhttp 3.9.1を使ってるようだが…
 
     // glide 4.8.0 は CustomTarget がないので保留
     implementation 'com.github.bumptech.glide:glide:4.9.0'

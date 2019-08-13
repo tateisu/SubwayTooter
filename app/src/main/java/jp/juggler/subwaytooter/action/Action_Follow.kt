@@ -177,16 +177,15 @@ object Action_Follow {
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
+				// リモートユーザの同期
+				var userId = who.id
+				if(who.acct.contains("@")) {
+					val (result, ar) = client.syncAccountByAcct(access_info, who.acct)
+					val user = ar?.get() ?: return result
+					userId = user.id
+				}
+
 				return if(access_info.isMisskey) {
-					
-					var userId : EntityId = who.id
-					
-					// リモートユーザの同期
-					if(who.acct.contains("@")) {
-						val (result, ar) = client.syncAccountByAcct(access_info, who.acct)
-						val user = ar?.get() ?: return result
-						userId = user.id
-					}
 					
 					client.request(
 						when {
@@ -225,37 +224,14 @@ object Action_Follow {
 					}
 					
 				} else {
-					
-					val parser = TootParser(activity, access_info)
-					
-					if(bFollow and who.acct.contains("@")) {
-						
-						// リモートフォローする
-						client.request(
-							"/api/v1/follows",
-							"uri=${who.acct.encodePercent()}".toRequestBody().toPost()
-						)?.also { result ->
-							val user = parser.account(result.jsonObject)
-							if(user != null) {
-								// リモートフォローAPIはリレーションを返さないので
-								// リレーションを取得しなおす
-								val rr = loadRelation1Mastodon(client, access_info, user)
-								relation = rr.relation
-								return rr.result
-							}
-						}
-						
-					} else {
-						// ローカルでフォロー/アンフォローする
-						client.request(
-							"/api/v1/accounts/${who.id}/${if(bFollow) "follow" else "unfollow"}"
-							, "".toRequestBody().toPost()
-						)?.also { result ->
-							val newRelation =
-								parseItem(::TootRelationShip, parser, result.jsonObject)
-							if(newRelation != null) {
-								relation = saveUserRelation(access_info, newRelation)
-							}
+					client.request(
+						"/api/v1/accounts/${userId}/${if(bFollow) "follow" else "unfollow"}"
+						, "".toRequestBody().toPost()
+					)?.also { result ->
+						val parser = TootParser(activity, access_info)
+						val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
+						if(newRelation != null) {
+							relation = saveUserRelation(access_info, newRelation)
 						}
 					}
 				}
@@ -472,64 +448,47 @@ object Action_Follow {
 		
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
-			var remote_who : TootAccount? = null
 			var relation : UserRelation? = null
+			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val parser = TootParser(activity, access_info)
-				var result : TootApiResult?
 				
-				if(access_info.isMisskey) {
-					
-					val delimiter = acct.indexOf('@')
-					val username = acct.substring(0, delimiter)
-					val host = acct.substring(delimiter + 1)
-					
-					// リモートユーザの同期
-					var params = access_info.putMisskeyApiToken(JSONObject())
-						.put("username", username)
-						.put("host", host)
-					result = client.request("/api/users/show", params.toPostRequestBuilder())
-					var user = parser.account(result?.jsonObject) ?: return result
-					val userId = user.id
-					
-					params = access_info.putMisskeyApiToken(JSONObject())
-						.put("userId", userId)
-					
-					result = client.request(
+				val (r2, ar) = client.syncAccountByAcct(access_info, acct)
+				var user = ar?.get() ?: return r2
+				val userId = user.id
+				
+				return if(access_info.isMisskey) {
+					client.request(
 						"/api/following/create",
-						params.toPostRequestBuilder()
-					)
-					
-					if(result?.error?.contains("already following") == true
-						|| result?.error?.contains("already not following") == true
-					) {
-						// DBから読み直して値を変更する
-						this.relation = UserRelation.load(access_info.db_id, userId).apply {
-							following = true
+						access_info.putMisskeyApiToken()
+							.put("userId", userId)
+							.toPostRequestBuilder()
+					).also { result ->
+						if(result?.error?.contains("already following") == true
+							|| result?.error?.contains("already not following") == true
+						) {
+							// DBから読み直して値を変更する
+							this.relation = UserRelation.load(access_info.db_id, userId).apply {
+								following = true
+							}
+						} else {
+							// parserに残ってるRelationをDBに保存する
+							user = parser.account(result?.jsonObject) ?: return result
+							this.relation = saveUserRelationMisskey(access_info, user.id, parser)
 						}
-					} else {
-						// parserに残ってるRelationをDBに保存する
-						user = parser.account(result?.jsonObject) ?: return result
-						this.relation = saveUserRelationMisskey(access_info, user.id, parser)
 					}
-					
 				} else {
-					result = client.request(
-						"/api/v1/follows",
-						"uri=${acct.encodePercent()}".toRequestBody().toPost()
-					)
-					val user = TootParser(activity, access_info).account(result?.jsonObject)
-					if(user != null) {
-						this.remote_who = user
-						val rr = loadRelation1Mastodon(client, access_info, user)
-						result = rr.result
-						relation = rr.relation
+					client.request(
+						"/api/v1/accounts/${userId}/follow"
+						, "".toRequestBody().toPost()
+					)?.also { result ->
+						val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
+						if(newRelation != null) {
+							relation = saveUserRelation(access_info, newRelation)
+						}
 					}
-					
 				}
-				
-				return result
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

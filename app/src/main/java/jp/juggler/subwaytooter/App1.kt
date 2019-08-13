@@ -33,6 +33,9 @@ import okhttp3.*
 import org.conscrypt.Conscrypt
 import java.io.File
 import java.io.InputStream
+import java.net.CookieHandler
+import java.net.CookieManager
+import java.net.CookiePolicy
 import java.security.Security
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
@@ -42,6 +45,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
 import kotlin.math.max
+import kotlin.math.min
 
 class App1 : Application() {
 	
@@ -218,10 +222,25 @@ class App1 : Application() {
 			chain.proceed(request_with_user_agent)
 		}
 		
+		private var cookieManager: CookieManager? = null
+		private var cookieJar: CookieJar? = null
+		
 		private fun prepareOkHttp(
 			timeoutSecondsConnect : Int,
 			timeoutSecondsRead : Int
 		) : OkHttpClient.Builder {
+		
+			var cookieJar = this.cookieJar
+			if( cookieJar == null){
+				val cookieManager = CookieManager().apply{
+					setCookiePolicy(CookiePolicy.ACCEPT_ALL)
+				}
+				CookieHandler.setDefault(cookieManager)
+				cookieJar = JavaNetCookieJar(cookieManager)
+
+				this.cookieManager = cookieManager
+				this.cookieJar = cookieJar
+			}
 			
 			val spec = ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
 				.allEnabledCipherSuites()
@@ -238,6 +257,10 @@ class App1 : Application() {
 				.sslSocketFactory(MySslSocketFactory, MySslSocketFactory.trustManager)
 				.addInterceptor(ProgressResponseBody.makeInterceptor())
 				.addInterceptor(user_agent_interceptor)
+
+			// クッキーの導入は検討中。とりあえずmstdn.jpではクッキー有効でも改善しなかったので現時点では追加しない
+			//	.cookieJar(cookieJar)
+			
 		}
 		
 		lateinit var ok_http_client : OkHttpClient
@@ -277,7 +300,7 @@ class App1 : Application() {
 				// the CPU with background work
 				
 				val CPU_COUNT = Runtime.getRuntime().availableProcessors()
-				val CORE_POOL_SIZE = Math.max(2, Math.min(CPU_COUNT - 1, 4))
+				val CORE_POOL_SIZE = max(2, min(CPU_COUNT - 1, 4))
 				val MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1
 				val KEEP_ALIVE_SECONDS = 30
 				

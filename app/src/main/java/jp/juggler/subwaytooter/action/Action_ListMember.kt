@@ -4,10 +4,7 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootRelationShip
-import jp.juggler.subwaytooter.api.entity.parseList
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
@@ -40,9 +37,9 @@ object Action_ListMember {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				var result : TootApiResult?
-				
 				val parser = TootParser(activity, access_info)
+				
+				var userId = local_who.id
 				
 				return if(access_info.isMisskey) {
 					// misskeyのリストはフォロー無関係
@@ -55,37 +52,24 @@ object Action_ListMember {
 					// 204 no content
 				} else {
 					if(bFollow) {
-						val relation : TootRelationShip?
-						if(access_info.isLocalUser(local_who)) {
-							
-							result = client.request(
-								"/api/v1/accounts/" + local_who.id + "/follow",
-								"".toRequestBody().toPost()
-							)
-						} else {
-							// リモートフォローする
-							result = client.request(
-								"/api/v1/follows",
-								"uri=${local_who.acct.encodePercent()}".toRequestBody().toPost()
-							)
-							
-							val jsonObject = result?.jsonObject ?: return result
-							
-							val a = parser.account(jsonObject)
-								?: return result.setError("parse error.")
-							
-							// リモートフォローの後にリレーションシップを取得しなおす
-							result = client.request("/api/v1/accounts/relationships?id[]=" + a.id)
-						}
-						val jsonArray = result?.jsonArray ?: return result
 						
-						val relation_list = parseList(::TootRelationShip, parser, jsonArray)
-						relation = if(relation_list.isEmpty()) null else relation_list[0]
-						
-						if(relation == null) {
-							return TootApiResult("parse error.")
+						// リモートユーザの解決
+						if(! access_info.isLocalUser(local_who)) {
+							val (r2, ar) = client.syncAccountByAcct(access_info, local_who.acct)
+							val user = ar?.get() ?: return r2
+							userId = user.id
 						}
-						saveUserRelation(access_info, relation)
+						
+						val result = client.request(
+							"/api/v1/accounts/$userId/follow",
+							"".toRequestBody().toPost()
+						) ?: return null
+						
+						val relation = saveUserRelation(
+							access_info,
+							parseItem(::TootRelationShip, parser, result.jsonObject)
+						)
+							?: return TootApiResult("parse error.")
 						
 						if(! relation.following) {
 							if(relation.requested) {
@@ -101,12 +85,14 @@ object Action_ListMember {
 					
 					client.request(
 						"/api/v1/lists/$list_id/accounts",
-						JSONObject().put(
-							"account_ids",
-							JSONArray().put(
-								local_who.id.toString()
+						JSONObject().apply {
+							put(
+								"account_ids",
+								JSONArray().apply {
+									put(userId.toString())
+								}
 							)
-						)
+						}
 							.toPostRequestBuilder()
 					)
 				}
@@ -191,11 +177,11 @@ object Action_ListMember {
 					client.request(
 						"/api/users/lists/pull",
 						access_info.putMisskeyApiToken()
-							.put("listId",list_id.toString())
-							.put("userId",local_who.id.toString())
+							.put("listId", list_id.toString())
+							.put("userId", local_who.id.toString())
 							.toPostRequestBuilder()
 					)
-				}else{
+				} else {
 					client.request(
 						"/api/v1/lists/${list_id}/accounts?account_ids[]=${local_who.id}",
 						Request.Builder().delete()

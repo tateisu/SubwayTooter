@@ -520,7 +520,7 @@
     <string name="not_blocked">Non bloqué.</string>
     <string name="not_muted">Pas mis en sourdine.</string>
     <string name="media_description">(pièce jointe %1$d) %2$s</string>
-    <string name="set_description">set description(Mastodon 2.0 ou plus récent)</string>
+    <string name="set_description">ajouter une description (Mastodon 2.0+)</string>
     <string name="attachment_description_cant_edit_while_uploading">La description de la pièce jointe ne peut être modifiée pendant le téléversement.</string>
     <string name="attachment_description">description de la pièce jointe</string>
     <string name="description_empty">aucune description.</string>
@@ -583,14 +583,14 @@
     <string name="media_attachment_empty">Pièces jointes manquantes.</string>
     <string name="media_attachment_type_error">The type of media attachment is \"%1$s\". ST can\'t handle it, but you can try open in browser.</string>
     <string name="video_buffering">Mise en mémoire tampon …</string>
-    <string name="dont_repeat_download_to_same_url">Can\'t repeat downloading same URL in a short time.</string>
+    <string name="dont_repeat_download_to_same_url">Impossible de re-télécharger de la même URL en l’espace de quelques secondes.</string>
     <string name="zooming_of">×%3$.1f\n%1$d×%2$d</string>
     <string name="media_attachment_still_uploading">En cours de téléchargement de médias.</string>
     <string name="highlight_word">Mettre en évidence le mot-clé</string>
     <string name="new_item">New item…</string>
     <string name="word_empty">Veuillez entrer un mot-clé.</string>
     <string name="already_exist">déjà existant.</string>
-    <string name="highlight_desc">Glissez pour supprimer. Il se peut que vous ayez besoin de recharger la colonne afin de vérifier le paramètre.</string>
+    <string name="highlight_desc">Glissez à gauche pour supprimer. Il se peut que vous ayez besoin de recharger afin de vérifier le paramètre.</string>
     <string name="check_sound">Jouer une notification sonore</string>
     <string name="keyword">Mot-clé</string>
     <string name="domain_block_from_pseudo">Impossible d\'utiliser le blocage de domaines à partir d\'un pseudo compte.</string>
@@ -718,7 +718,7 @@
     <string name="missing_available_account">Aucun compte n\'est disponible à cet effet.</string>
     <string name="misskey_account_not_supported">Le compte Misskey n\'est pas supporté.</string>
     <string name="misskey_cant_show_all_descendants">Dans Misskey, seules les réponses directes à la note cible sont énumérées. Tous les descendants ne peuvent pas être affichés.</string>
-    <string name="cant_get_misskey_app_secret">Ce serveur Misskey ne fournit pas de secret d\'application dans la réponse de /api/app/create API. Veuillez envisager de mettre à jour la version du service Misskey pour l\'admin du serveur.</string>
+    <string name="cant_get_misskey_app_secret">Ce serveur Misskey ne fournit pas de secret d’application dans la réponse de /api/app/create API. Veuillez envisager de mettre à jour la version du service Misskey pour l’admin du serveur.</string>
     <string name="visibility_style">Visibilité du nom et de l’icône</string>
     <string name="visibility_style_by_account">Ajuster à la colonne du compte</string>
     <string name="mastodon">Mastodon</string>
@@ -745,11 +745,11 @@
     <string name="endorse_set">Recommander via votre page</string>
     <string name="endorse_unset">Supprimer la recommandation via votre page</string>
     <string name="endorse_succeeded">Recommandé·e.</string>
-    <string name="remove_endorse_succeeded">Endorsement removed.</string>
+    <string name="remove_endorse_succeeded">N’est plus recommandé.</string>
     <string name="follow_request_cancelled">Demande d’abonnement annulée.</string>
     <string name="confirm_cancel_follow_request_who_from">Annuler la demande d’abonnement de %2$s à %1$s \?</string>
     <string name="reaction">Réaction (Misskey)</string>
-    <string name="timeout_for_embed_media_viewer">Timeout for embed media viewer (unit:seconds, app restart(delete from app history) required)</string>
+    <string name="timeout_for_embed_media_viewer">Délai d’expiration du visualiseur multimédia intégré (unité: secondes, redémarrage de l’application (suppression de l’historique de application) requis)</string>
     <string name="media_attachment_max_byte_size_movie">Taille maximale en octets des médias vidéo (unité : méga octets. par défaut : 40)</string>
     <string name="link_color">Couleur des liens (redémarrage requis)</string>
     <string name="dont_use_custom_tabs">Ne pas utiliser d’«onglets personnalisés» (Chrome/Firefox) lors de l’ouverture des liens</string>
@@ -913,4 +913,11 @@
     <string name="custom_share_button_2">Bouton de partage personnalisé 2</string>
     <string name="custom_share_button_3">Bouton de partage personnalisé 3</string>
     <string name="custom_share_app_not_found">l’application cible de partage n’est pas installée. Veuillez la configurer dans \"Paramètres/comportement\".</string>
+    <string name="additional_buttons_position">Position des boutons supplémentaires (redémarrage de l’application requis)</string>
+    <string name="top">En haut</string>
+    <string name="bottom">En bas</string>
+    <string name="max_toot_chars">nombre maximum de caractères dans le statut (0:par défaut. si le serveur fournit max_toot_chars, ce paramètre est ignoré.)</string>
+    <string name="read_more_hashtag">Lire plus de hashtags</string>
+    <string name="read_more_account">Lire plus de comptes</string>
+    <string name="read_more_status">Lire plus de pouets</string>
 </resources>

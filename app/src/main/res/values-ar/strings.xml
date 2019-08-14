@@ -76,7 +76,7 @@
     <string name="follow_request_ok">قبول طلب المتابعة</string>
     <string name="close">إغلاق</string>
     <string name="actions_for_status">الإجراءات على هذا التبويق</string>
-    <string name="actions_for_user">الإجراءات على هذا المستخدِم</string>
+    <string name="actions_for_user">إجراءات لهذا المستخدم</string>
     <string name="confirm_delete_status">هل أنت متأكد أنك تريد حذف هذا التبويق؟</string>
     <string name="color">اللون</string>
     <string name="edit">تعديل</string>
@@ -119,7 +119,7 @@
     <string name="block_domain_that">حجب النطاق \"%1$s\" بأكمله</string>
     <string name="toot_search">البحث عن تبويقات</string>
     <string name="show_avatar_image">عرض الصورة الرمزية</string>
-    <string name="actions_for_notification">الإجراءات على الإشعارات</string>
+    <string name="actions_for_notification">إجراءات خاصة بالإشعارات</string>
     <string name="delete_this_notification">حذف هذا الإشعار</string>
     <string name="dont_show_favourite">لا تقم بإظهار المفضلة</string>
     <string name="background_image">صورة الخلفية</string>
@@ -155,7 +155,7 @@
     <string name="download">تنزيل</string>
     <string name="downloading">عملية التنزيل جارية…</string>
     <string name="already_exist">موجود بالفعل.</string>
-    <string name="notification_type_follow">إتبع</string>
+    <string name="notification_type_follow">المتابَعة</string>
     <string name="changed">تم تغييرها.</string>
     <string name="follow_deny">رفض</string>
     <string name="direct_messages">الرسائل المباشرة</string>
@@ -197,7 +197,7 @@
     <string name="reload">إعادة التحميل</string>
     <string name="reports">التقارير</string>
     <string name="statuses_of">الملف الشخصي لـ %1$s</string>
-    <string name="follow">إتبع</string>
+    <string name="follow">اتبع</string>
     <string name="statuses">المنشورات</string>
     <string name="hide">إخفاء</string>
     <string name="nsfw">NSFW</string>
@@ -458,4 +458,18 @@
     <string name="custom_share_button_1">زر مشاركة مخصص 1</string>
     <string name="custom_share_button_2">زر مشاركة مخصص 2</string>
     <string name="custom_share_button_3">زر مشاركة مخصص 3</string>
+    <string name="post">النشر</string>
+    <string name="notification_type_mention">الإشارات</string>
+    <string name="notification_type_boost">الترقية</string>
+    <string name="notification_type_favourite">المفضلة</string>
+    <string name="redraft_and_delete">احذفه وأعد صياغته</string>
+    <string name="cant_change_account_when_redraft">لا يمكن تغيير الحساب أثناء إعادة الصياغة.</string>
+    <string name="actions_for_instance">إجراءات لهذا الخادم</string>
+    <string name="scheduled_status">المنشورات المبرمَجة</string>
+    <string name="scheduled_status_sent">تم إرسال المنشور المبرمَج.</string>
+    <string name="scheduled_status_delete_confirm">هل تريد حذف هذا المنشور المبرمَج؟</string>
+    <string name="scheduled_status_list">قائمة المنشورات المبرمَجة</string>
+    <string name="delete_scheduled_status_before_update">هل تريد حذف المنشور المبرمَج قبل نشره. هل أنت واثق؟</string>
+    <string name="copy_account_id">انسح معرّف الحساب %1$s</string>
+    <string name="open_in_admin_ui">افتحه على واجهة الويب الإدارية</string>
 </resources>

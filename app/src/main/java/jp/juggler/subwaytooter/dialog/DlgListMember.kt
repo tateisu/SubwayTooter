@@ -174,9 +174,13 @@ class DlgListMember(
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				// リストに追加したいアカウントの自タンスでのアカウントIDを取得する
+				// 現在の登録状況を知るため、対象ユーザの自タンスでのアカウントIDを取得する
+				// ドメインブロックなどの影響で同期できない場合があるが、
+				// 一覧そのものは取得できるのでこの段階ではエラーにはしない
 				val (r1, ar) = client.syncAccountByAcct(list_owner, target_user_full_acct)
-				val local_who = ar?.get() ?: return r1
+				r1 ?: return null // cancelled.
+				val local_who = ar?.get() // may null
+				if(local_who == null) showToast(activity, true, r1.error)
 				
 				this@DlgListMember.local_who = local_who
 				
@@ -193,9 +197,11 @@ class DlgListMember(
 							TootParser(activity, list_owner),
 							result.jsonArray ?: return@also
 						).apply {
-							forEach { list ->
-								list.isRegistered =
-									null != list.userIds?.find { it == local_who.id }
+							if(local_who != null) {
+								forEach { list ->
+									list.isRegistered =
+										null != list.userIds?.find { it == local_who.id }
+								}
 							}
 						}
 					}
@@ -204,7 +210,7 @@ class DlgListMember(
 					val set_registered = HashSet<EntityId>()
 					
 					// メンバーを指定してリスト登録状況を取得
-					client.request(
+					if(local_who != null) client.request(
 						"/api/v1/accounts/${local_who.id}/lists"
 					)?.also { result ->
 						val jsonArray = result.jsonArray ?: return result
@@ -224,9 +230,7 @@ class DlgListMember(
 							TootParser(activity, list_owner),
 							result.jsonArray ?: return@also
 						).apply {
-							
 							sort()
-							
 							forEach {
 								it.isRegistered = set_registered.contains(it.id)
 							}
@@ -241,7 +245,7 @@ class DlgListMember(
 				result ?: return // cancelled.
 				
 				val error = result.error
-				if(error?.isNotEmpty() == true && result.response?.code() == 404) {
+				if(error?.isNotEmpty() == true) {
 					showToast(activity, true, result.error)
 				}
 				
@@ -298,72 +302,57 @@ class DlgListMember(
 	internal class ErrorItem(val message : String)
 	
 	private inner class MyListAdapter : BaseAdapter() {
+
 		internal val item_list = ArrayList<Any>()
 		
-		override fun getCount() : Int {
-			return item_list.size
-		}
+		override fun getCount() : Int = item_list.size
 		
-		override fun getItem(position : Int) : Any? {
-			return if(position >= 0 && position < item_list.size) item_list[position] else null
-		}
+		override fun getItem(position : Int) : Any? =
+			if(position >= 0 && position < item_list.size) item_list[position] else null
 		
-		override fun getItemId(position : Int) : Long {
-			return 0
-		}
+		override fun getItemId(position : Int) : Long =
+			0L
 		
-		override fun getViewTypeCount() : Int {
-			return 2
-		}
+		override fun getViewTypeCount() : Int = 2
 		
-		override fun getItemViewType(position : Int) : Int {
-			val o = getItem(position)
-			return if(o is TootList) 0 else 1
-		}
+		override fun getItemViewType(position : Int) : Int =
+			when(getItem(position)) {
+				is TootList -> 0
+				else -> 1
+			}
 		
-		override fun getView(position : Int, viewOld : View?, parent : ViewGroup) : View {
-			val view : View
-			val o = getItem(position)
-			when(o) {
-				is TootList -> {
-					val holder : VH_List
+		override fun getView(position : Int, viewOld : View?, parent : ViewGroup) : View =
+			when(val o = getItem(position)) {
+				is TootList ->
 					if(viewOld != null) {
-						view = viewOld
-						holder = view.tag as VH_List
+						viewOld.apply { (tag as VH_List).bind(o) }
 					} else {
-						view = activity.layoutInflater.inflate(
+						val view : View = activity.layoutInflater.inflate(
 							R.layout.lv_list_member_list,
 							parent,
 							false
 						)
-						holder = VH_List(view)
-						view.tag = holder
+						view.apply { tag = VH_List(this).bind(o) }
 					}
-					holder.bind(o)
-				}
 				
-				is ErrorItem -> {
-					val holder : VH_Error
+				is ErrorItem ->
 					if(viewOld != null) {
-						view = viewOld
-						holder = view.tag as VH_Error
+						viewOld.apply { (tag as VH_Error).bind(o) }
 					} else {
-						view = activity.layoutInflater.inflate(
+						val view : View = activity.layoutInflater.inflate(
 							R.layout.lv_list_member_error,
 							parent,
 							false
 						)
-						holder = VH_Error(view)
-						view.tag = holder
+						view.apply { tag = VH_Error(view).bind(o) }
 					}
-					holder.bind(o)
-				}
 				
-				else -> view =
-					activity.layoutInflater.inflate(R.layout.lv_list_member_error, parent, false)
+				else -> activity.layoutInflater.inflate(
+					R.layout.lv_list_member_error,
+					parent,
+					false
+				)
 			}
-			return view
-		}
 	}
 	
 	internal inner class VH_List(view : View) : CompoundButton.OnCheckedChangeListener,
@@ -378,7 +367,7 @@ class DlgListMember(
 			cbItem.setOnCheckedChangeListener(this)
 		}
 		
-		fun bind(item : TootList) {
+		fun bind(item : TootList) = this.apply {
 			bBusy = true
 			
 			this.item = item
@@ -389,26 +378,25 @@ class DlgListMember(
 		}
 		
 		override fun onCheckedChanged(view : CompoundButton, isChecked : Boolean) {
-			if(bBusy) {
-				// ユーザ操作以外で変更されたなら何もしない
-				return
-			}
+			// ユーザ操作以外で変更されたなら何もしない
+			if(bBusy) return
 			
 			val list_owner = this@DlgListMember.list_owner
 			if(list_owner == null) {
 				showToast(activity, false, "list owner is not selected")
+				revokeCheckedChanged(isChecked)
 				return
 			}
 			
 			val local_who = this@DlgListMember.local_who
 			if(local_who == null) {
 				showToast(activity, false, "target user is not synchronized")
+				revokeCheckedChanged(isChecked)
 				return
 			}
 			
-			val item = this.item ?: return
-			
 			// 状態をサーバに伝える
+			val item = this.item ?: return
 			if(isChecked) {
 				Action_ListMember.add(activity, list_owner, item.id, local_who, callback = this)
 			} else {
@@ -417,18 +405,20 @@ class DlgListMember(
 		}
 		
 		override fun onListMemberUpdated(willRegistered : Boolean, bSuccess : Boolean) {
-			if(! bSuccess) {
-				item?.isRegistered = ! willRegistered
-				adapter.notifyDataSetChanged()
-			}
+			if(! bSuccess) revokeCheckedChanged(willRegistered)
+		}
+		
+		private fun revokeCheckedChanged(willRegistered : Boolean) {
+			item?.isRegistered = ! willRegistered
+			adapter.notifyDataSetChanged()
 		}
 	}
 	
 	internal inner class VH_Error(view : View) {
 		private val tvError : TextView = view.findViewById(R.id.tvError)
 		
-		fun bind(o : ErrorItem) {
-			this.tvError.text = o.message
+		fun bind(o : ErrorItem) = this.apply {
+			tvError.text = o.message
 		}
 	}
 }

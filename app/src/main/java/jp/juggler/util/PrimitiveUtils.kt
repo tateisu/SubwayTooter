@@ -15,6 +15,9 @@ fun Long.notZero() : Long? = if(this != 0L) this else null
 fun Float.notZero() : Float? = if(this != 0f) this else null
 fun Double.notZero() : Double? = if(this != .0) this else null
 
+// usage: boolean.truth() ?: fallback()
+// equivalent: if(this != 0 ) this else null
+fun Boolean.truth() : Boolean? = if(this) this else null
 
 ////////////////////////////////////////////////////////////////////
 // long
@@ -22,7 +25,7 @@ fun Double.notZero() : Double? = if(this != .0) this else null
 ////////////////////////////////////////////////////////////////////
 // float
 
-fun Float.abs() : Float = Math.abs(this)
+fun Float.abs() : Float = kotlin.math.abs(this)
 
 //@SuppressLint("DefaultLocale")
 //fun Long.formatTimeDuration() : String {

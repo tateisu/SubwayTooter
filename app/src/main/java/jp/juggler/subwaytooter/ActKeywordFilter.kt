@@ -285,7 +285,7 @@ class ActKeywordFilter
 					val app_state = App1.prepare(applicationContext)
 					for(column in app_state.column_list) {
 						if(column.access_info.acct == account.acct
-							&& column.column_type == Column.TYPE_KEYWORD_FILTER
+							&& column.type == ColumnType.KEYWORD_FILTER
 						) {
 							column.filter_reload_required = true
 						}

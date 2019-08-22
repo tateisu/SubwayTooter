@@ -3,25 +3,24 @@ package jp.juggler.subwaytooter
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
-import android.graphics.PorterDuff
 import android.os.Bundle
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import jp.juggler.util.*
-import org.json.JSONArray
-import org.json.JSONObject
-import java.util.*
+import androidx.appcompat.app.AppCompatActivity
 import com.woxthebox.draglistview.DragItem
 import com.woxthebox.draglistview.DragItemAdapter
 import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
+import jp.juggler.util.LogCategory
+import jp.juggler.util.activity
+import jp.juggler.util.getAttributeColor
+import jp.juggler.util.showToast
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.*
 
 class ActColumnList : AppCompatActivity() {
 	
@@ -34,9 +33,9 @@ class ActColumnList : AppCompatActivity() {
 		
 		fun open(activity : ActMain, currentItem : Int, requestCode : Int) {
 			val array = activity.app_state.encodeColumnList()
-			AppState.saveColumnList(activity, ActColumnList.TMP_FILE_COLUMN_LIST, array)
+			AppState.saveColumnList(activity, TMP_FILE_COLUMN_LIST, array)
 			val intent = Intent(activity, ActColumnList::class.java)
-			intent.putExtra(ActColumnList.EXTRA_SELECTION, currentItem)
+			intent.putExtra(EXTRA_SELECTION, currentItem)
 			activity.startActivityForResult(intent, requestCode)
 		}
 	}
@@ -221,7 +220,7 @@ class ActColumnList : AppCompatActivity() {
 		val name : String = json.optString(Column.KEY_COLUMN_NAME)
 		val acct : String = json.optString(Column.KEY_COLUMN_ACCESS)
 		val old_index = json.optInt(Column.KEY_OLD_INDEX)
-		val type = json.optInt(Column.KEY_TYPE)
+		val type = Column.typeMap[ json.optInt(Column.KEY_TYPE) ] ?: ColumnType.LOCAL
 		val acct_color_fg : Int
 		val acct_color_bg : Int
 		var bOldSelection : Boolean = false
@@ -268,7 +267,7 @@ class ActColumnList : AppCompatActivity() {
 			tvAccess.setBackgroundColor(item.acct_color_bg)
 			tvAccess.setPaddingRelative(acct_pad_lr, 0, acct_pad_lr, 0)
 			tvName.text = item.name
-			ivColumnIcon.setImageResource(Column.getIconId(item.acct, item.type))
+			ivColumnIcon.setImageResource( item.type.iconId(item.acct))
 			// 背景色がテーマ次第なので、カラム設定の色を反映するとアイコンが見えなくなる可能性がある
 			// よってアイコンやテキストにカラム設定の色を反映しない
 		}
@@ -300,7 +299,7 @@ class ActColumnList : AppCompatActivity() {
 			tv.text = item.name
 			
 			val ivColumnIcon:ImageView = dragView.findViewById(R.id.ivColumnIcon)
-			ivColumnIcon.setImageResource(Column.getIconId(item.acct, item.type))
+			ivColumnIcon.setImageResource(item.type.iconId(item.acct))
 			
 			dragView.findViewById<View>(R.id.ivBookmark).visibility =
 				clickedView.findViewById<View>(R.id.ivBookmark).visibility

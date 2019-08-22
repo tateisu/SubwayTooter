@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Environment
 import android.os.SystemClock
+import android.util.SparseArray
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.*
@@ -44,11 +45,17 @@ enum class ColumnPagingType {
 	None,
 }
 
+enum class ProfileTab(val id:Int,val ct:ColumnType){
+	Status(0,ColumnType.TabStatus),
+	Following(1,ColumnType.TabFollowing),
+	Followers(2,ColumnType.TabFollowers);
+}
+
 class Column(
 	val app_state : AppState,
 	val context : Context,
 	val access_info : SavedAccount,
-	val column_type : Int,
+	typeId : Int,
 	val column_id : String
 ) {
 	
@@ -177,45 +184,9 @@ class Column(
 		internal const val KEY_COLUMN_NAME = "column_name"
 		internal const val KEY_OLD_INDEX = "old_index"
 		
-		internal const val TYPE_HOME = 1
-		const val TYPE_LOCAL = 2
-		internal const val TYPE_FEDERATE = 3
-		const val TYPE_PROFILE = 4
-		internal const val TYPE_FAVOURITES = 5
-		internal const val TYPE_REPORTS = 6
-		const val TYPE_NOTIFICATIONS = 7
-		const val TYPE_CONVERSATION = 8
-		const val TYPE_HASHTAG = 9
-		internal const val TYPE_SEARCH = 10
-		internal const val TYPE_MUTES = 11
-		internal const val TYPE_BLOCKS = 12
-		internal const val TYPE_FOLLOW_REQUESTS = 13
-		internal const val TYPE_BOOSTED_BY = 14
-		internal const val TYPE_FAVOURITED_BY = 15
-		internal const val TYPE_DOMAIN_BLOCKS = 16
-		internal const val TYPE_SEARCH_MSP = 17
-		const val TYPE_INSTANCE_INFORMATION = 18
-		internal const val TYPE_LIST_LIST = 19
-		internal const val TYPE_LIST_TL = 20
-		internal const val TYPE_LIST_MEMBER = 21
-		internal const val TYPE_SEARCH_TS = 22
-		internal const val TYPE_DIRECT_MESSAGES = 23
-		internal const val TYPE_TREND_TAG = 24
-		internal const val TYPE_FOLLOW_SUGGESTION = 25
-		internal const val TYPE_KEYWORD_FILTER = 26
-		internal const val TYPE_MISSKEY_HYBRID = 27
-		internal const val TYPE_ENDORSEMENT = 28
-		internal const val TYPE_LOCAL_AROUND = 29
-		internal const val TYPE_FEDERATED_AROUND = 30
-		internal const val TYPE_ACCOUNT_AROUND = 31
-		internal const val TYPE_SCHEDULED_STATUS = 33
-		internal const val TYPE_HASHTAG_FROM_ACCT = 34
-		internal const val TYPE_NOTIFICATION_FROM_ACCT = 35
+		val typeMap : SparseArray<ColumnType> = SparseArray()
 		
-		internal const val TAB_STATUS = 0
-		internal const val TAB_FOLLOWING = 1
-		internal const val TAB_FOLLOWERS = 2
-		
+
 		internal var useInstanceTicker = false
 		
 		internal const val QUICK_FILTER_ALL = 0
@@ -249,12 +220,6 @@ class Column(
 			}
 			
 		}
-		
-		fun getIconId(acct : String, type : Int) =
-			when(val item = columnTypeProcMap[type]) {
-				null -> R.drawable.ic_info
-				else -> item.iconId(acct)
-			}
 		
 		private val channelIdSeed = AtomicInteger(0)
 		
@@ -394,6 +359,14 @@ class Column(
 		}
 	}
 	
+	val type = typeMap[typeId] ?: ColumnType.LOCAL
+	
+	fun getIconId() :Int =
+		type.iconId(access_info.acct)
+	
+	fun getColumnName(long : Boolean) =
+		type.name2(this, long) ?: type.name1(context)
+
 	private var callback_ref : WeakReference<Callback>? = null
 	
 	private val isActivityStart : Boolean
@@ -413,31 +386,31 @@ class Column(
 			} else {
 				if(misskeyApiToken == null) {
 					// Misskey 8.25 からLTLだけ認証なしでも見れるようになった
-					when(column_type) {
-						TYPE_LOCAL -> "/local-timeline"
+					when(type) {
+						ColumnType.LOCAL -> "/local-timeline"
 						else -> null
 					}
 				} else {
-					when(column_type) {
-						TYPE_HOME, TYPE_NOTIFICATIONS -> "/?i=$misskeyApiToken"
-						TYPE_LOCAL -> "/local-timeline?i=$misskeyApiToken"
-						TYPE_MISSKEY_HYBRID -> "/hybrid-timeline?i=$misskeyApiToken"
-						TYPE_FEDERATE -> "/global-timeline?i=$misskeyApiToken"
-						TYPE_LIST_TL -> "/user-list?i=$misskeyApiToken&listId=$profile_id"
+					when(type) {
+						ColumnType.HOME, ColumnType.NOTIFICATIONS -> "/?i=$misskeyApiToken"
+						ColumnType.LOCAL -> "/local-timeline?i=$misskeyApiToken"
+						ColumnType.MISSKEY_HYBRID -> "/hybrid-timeline?i=$misskeyApiToken"
+						ColumnType.FEDERATE -> "/global-timeline?i=$misskeyApiToken"
+						ColumnType.LIST_TL -> "/user-list?i=$misskeyApiToken&listId=$profile_id"
 						else -> null
 					}
 				}
 			}
 		} else {
-			when(column_type) {
-				TYPE_HOME, TYPE_NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
-				TYPE_LOCAL -> "/api/v1/streaming/?stream=public:local"
-				TYPE_FEDERATE -> "/api/v1/streaming/?stream=public"
-				TYPE_LIST_TL -> "/api/v1/streaming/?stream=list&list=$profile_id"
+			when(type) {
+				ColumnType.HOME, ColumnType.NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
+				ColumnType.LOCAL -> "/api/v1/streaming/?stream=public:local"
+				ColumnType.FEDERATE -> "/api/v1/streaming/?stream=public"
+				ColumnType.LIST_TL -> "/api/v1/streaming/?stream=list&list=$profile_id"
 				
-				TYPE_DIRECT_MESSAGES -> "/api/v1/streaming/?stream=direct"
+				ColumnType.DIRECT_MESSAGES -> "/api/v1/streaming/?stream=direct"
 				
-				TYPE_HASHTAG -> when(instance_local) {
+				ColumnType.HASHTAG -> when(instance_local) {
 					true -> {
 						"/api/v1/streaming/?stream=" + Uri.encode("hashtag:local") +
 							"&tag=" + hashtag.encodePercent() + makeHashtagExtraQuery()
@@ -454,8 +427,8 @@ class Column(
 	
 	private val isPublicStream : Boolean
 		get() {
-			return when(column_type) {
-				TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND -> true
+			return when(type) {
+				ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND -> true
 				else -> false
 			}
 		}
@@ -495,7 +468,7 @@ class Column(
 	internal var column_bg_image : String = ""
 	internal var column_bg_image_alpha = 1f
 	
-	internal var profile_tab = TAB_STATUS
+	internal var profile_tab = ProfileTab.Status
 	
 	internal var status_id : EntityId? = null
 	
@@ -611,8 +584,8 @@ class Column(
 	@Suppress("unused")
 	val listTitle : String
 		get() {
-			return when(column_type) {
-				TYPE_LIST_MEMBER, TYPE_LIST_TL -> {
+			return when(type) {
+				ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> {
 					val sv = list_info?.title
 					if(sv != null && sv.isNotEmpty()) sv else profile_id.toString()
 				}
@@ -624,16 +597,16 @@ class Column(
 	@Suppress("unused")
 	val listId : EntityId?
 		get() {
-			return when(column_type) {
-				TYPE_LIST_MEMBER, TYPE_LIST_TL -> profile_id
+			return when(type) {
+				ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> profile_id
 				else -> null
 			}
 		}
 	
 	val isSearchColumn : Boolean
 		get() {
-			return when(column_type) {
-				TYPE_SEARCH, TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> true
+			return when(type) {
+				ColumnType.SEARCH, ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> true
 				else -> false
 			}
 		}
@@ -651,28 +624,33 @@ class Column(
 	)
 		: this(app_state, app_state.context, access_info, type, generateColumnId()) {
 		this.callback_ref = WeakReference(callback)
-		when(type) {
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND -> status_id =
-				getParamAt(params, 0)
-			TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER -> profile_id = getParamAt(params, 0)
-			TYPE_HASHTAG -> hashtag = getParamAt(params, 0)
+		when(typeMap[type]) {
 			
-			TYPE_HASHTAG_FROM_ACCT -> {
+			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND -> status_id =
+				getParamAt(params, 0)
+			ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER -> profile_id = getParamAt(params, 0)
+			ColumnType.HASHTAG -> hashtag = getParamAt(params, 0)
+			
+			ColumnType.HASHTAG_FROM_ACCT -> {
 				hashtag = getParamAt(params, 0)
 				hashtag_acct = getParamAt(params, 1)
 			}
 			
-			TYPE_NOTIFICATION_FROM_ACCT -> {
+			ColumnType.NOTIFICATION_FROM_ACCT -> {
 				hashtag_acct = getParamAt(params, 0)
 			}
 			
-			TYPE_SEARCH -> {
+			ColumnType.SEARCH -> {
 				search_query = getParamAt(params, 0)
 				search_resolve = getParamAt(params, 1)
 			}
 			
-			TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> search_query = getParamAt(params, 0)
-			TYPE_INSTANCE_INFORMATION -> instance_uri = getParamAt(params, 0)
+			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> search_query = getParamAt(params, 0)
+			ColumnType.INSTANCE_INFORMATION -> instance_uri = getParamAt(params, 0)
+			
+			else->{
+			
+			}
 		}
 	}
 	
@@ -715,28 +693,29 @@ class Column(
 		column_bg_image = src.parseString(KEY_COLUMN_BACKGROUND_IMAGE) ?: ""
 		column_bg_image_alpha = src.optDouble(KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, 1.0).toFloat()
 		
-		when(column_type) {
+		when(type) {
 			
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND ->
+			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
 				status_id = EntityId.mayNull(src.parseString(KEY_STATUS_ID))
 			
-			TYPE_PROFILE -> {
+			ColumnType.PROFILE -> {
 				profile_id = EntityId.mayNull(src.parseString(KEY_PROFILE_ID))
-				profile_tab = src.optInt(KEY_PROFILE_TAB)
+				val tabId = src.optInt(KEY_PROFILE_TAB)
+				profile_tab = ProfileTab.values().find { it.id == tabId } ?: ProfileTab.Status
 			}
 			
-			TYPE_LIST_MEMBER, TYPE_LIST_TL -> {
+			ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> {
 				profile_id = EntityId.mayNull(src.parseString(KEY_PROFILE_ID))
 			}
 			
-			TYPE_HASHTAG -> {
+			ColumnType.HASHTAG -> {
 				hashtag = src.optString(KEY_HASHTAG)
 				hashtag_any = src.optString(KEY_HASHTAG_ANY)
 				hashtag_all = src.optString(KEY_HASHTAG_ALL)
 				hashtag_none = src.optString(KEY_HASHTAG_NONE)
 			}
 			
-			TYPE_HASHTAG_FROM_ACCT -> {
+			ColumnType.HASHTAG_FROM_ACCT -> {
 				hashtag_acct = src.optString(KEY_HASHTAG_ACCT)
 				hashtag = src.optString(KEY_HASHTAG)
 				hashtag_any = src.optString(KEY_HASHTAG_ANY)
@@ -744,18 +723,22 @@ class Column(
 				hashtag_none = src.optString(KEY_HASHTAG_NONE)
 			}
 			
-			TYPE_NOTIFICATION_FROM_ACCT -> {
+			ColumnType.NOTIFICATION_FROM_ACCT -> {
 				hashtag_acct = src.optString(KEY_HASHTAG_ACCT)
 			}
 			
-			TYPE_SEARCH -> {
+			ColumnType.SEARCH -> {
 				search_query = src.optString(KEY_SEARCH_QUERY)
 				search_resolve = src.optBoolean(KEY_SEARCH_RESOLVE, false)
 			}
 			
-			TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> search_query = src.optString(KEY_SEARCH_QUERY)
+			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> search_query = src.optString(KEY_SEARCH_QUERY)
 			
-			TYPE_INSTANCE_INFORMATION -> instance_uri = src.optString(KEY_INSTANCE_URI)
+			ColumnType.INSTANCE_INFORMATION -> instance_uri = src.optString(KEY_INSTANCE_URI)
+			
+			else->{
+			
+			}
 		}
 	}
 	
@@ -766,7 +749,7 @@ class Column(
 	@Throws(JSONException::class)
 	fun encodeJSON(dst : JSONObject, old_index : Int) {
 		dst.put(KEY_ACCOUNT_ROW_ID, access_info.db_id)
-		dst.put(KEY_TYPE, column_type)
+		dst.put(KEY_TYPE, type.id)
 		dst.put(KEY_COLUMN_ID, column_id)
 		
 		dst.putIfTrue(KEY_DONT_CLOSE, dont_close)
@@ -800,25 +783,26 @@ class Column(
 		dst.put(KEY_COLUMN_BACKGROUND_IMAGE, column_bg_image)
 		dst.put(KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, column_bg_image_alpha.toDouble())
 		
-		when(column_type) {
+		when(type) {
 			
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND ->
+			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
 				dst.put(KEY_STATUS_ID, status_id.toString())
 			
-			TYPE_PROFILE ->
-				dst.put(KEY_PROFILE_ID, profile_id.toString()).put(KEY_PROFILE_TAB, profile_tab)
+			ColumnType.PROFILE ->
+				dst.put(KEY_PROFILE_ID, profile_id.toString())
+					.put(KEY_PROFILE_TAB, profile_tab.id)
 			
-			TYPE_LIST_MEMBER, TYPE_LIST_TL ->
+			ColumnType.LIST_MEMBER, ColumnType.LIST_TL ->
 				dst.put(KEY_PROFILE_ID, profile_id.toString())
 			
-			TYPE_HASHTAG -> {
+			ColumnType.HASHTAG -> {
 				dst.put(KEY_HASHTAG, hashtag)
 				dst.put(KEY_HASHTAG_ANY, hashtag_any)
 				dst.put(KEY_HASHTAG_ALL, hashtag_all)
 				dst.put(KEY_HASHTAG_NONE, hashtag_none)
 			}
 			
-			TYPE_HASHTAG_FROM_ACCT -> {
+			ColumnType.HASHTAG_FROM_ACCT -> {
 				dst.put(KEY_HASHTAG_ACCT, hashtag_acct)
 				dst.put(KEY_HASHTAG, hashtag)
 				dst.put(KEY_HASHTAG_ANY, hashtag_any)
@@ -826,18 +810,22 @@ class Column(
 				dst.put(KEY_HASHTAG_NONE, hashtag_none)
 			}
 			
-			TYPE_NOTIFICATION_FROM_ACCT -> {
+			ColumnType.NOTIFICATION_FROM_ACCT -> {
 				dst.put(KEY_HASHTAG_ACCT, hashtag_acct)
 			}
 			
-			TYPE_SEARCH -> dst.put(KEY_SEARCH_QUERY, search_query).put(
+			ColumnType.SEARCH -> dst.put(KEY_SEARCH_QUERY, search_query).put(
 				KEY_SEARCH_RESOLVE,
 				search_resolve
 			)
 			
-			TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> dst.put(KEY_SEARCH_QUERY, search_query)
+			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> dst.put(KEY_SEARCH_QUERY, search_query)
 			
-			TYPE_INSTANCE_INFORMATION -> dst.put(KEY_INSTANCE_URI, instance_uri)
+			ColumnType.INSTANCE_INFORMATION -> dst.put(KEY_INSTANCE_URI, instance_uri)
+			
+			else ->{
+				// no extra parameter
+			}
 		}
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
@@ -849,42 +837,42 @@ class Column(
 		dst.put(KEY_OLD_INDEX, old_index)
 	}
 	
-	internal fun isSameSpec(ai : SavedAccount, type : Int, params : Array<out Any>) : Boolean {
-		if(type != column_type || ai.acct != access_info.acct) return false
+	internal fun isSameSpec(ai : SavedAccount, type : ColumnType, params : Array<out Any>) : Boolean {
+		if(type != this.type || ai.acct != access_info.acct) return false
 		
 		return try {
 			when(type) {
 				
-				TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER ->
+				ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER ->
 					profile_id == EntityId(getParamAt(params, 0))
 				
-				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND ->
+				ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
 					status_id == EntityId(getParamAt(params, 0))
 				
-				TYPE_HASHTAG -> {
+				ColumnType.HASHTAG -> {
 					(getParamAt<String>(params, 0) == hashtag)
 						&& ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_any)
 						&& ((getParamAtNullable<String>(params, 2) ?: "") == hashtag_all)
 						&& ((getParamAtNullable<String>(params, 3) ?: "") == hashtag_none)
 				}
 				
-				TYPE_HASHTAG_FROM_ACCT -> {
+				ColumnType.HASHTAG_FROM_ACCT -> {
 					(getParamAt<String>(params, 0) == hashtag)
 						&& ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_acct)
 				}
 				
-				TYPE_NOTIFICATION_FROM_ACCT -> {
+				ColumnType.NOTIFICATION_FROM_ACCT -> {
 					((getParamAtNullable<String>(params, 0) ?: "") == hashtag_acct)
 				}
 				
-				TYPE_SEARCH -> getParamAt<String>(params, 0) == search_query && getParamAt<Boolean>(
+				ColumnType.SEARCH -> getParamAt<String>(params, 0) == search_query && getParamAt<Boolean>(
 					params,
 					1
 				) == search_resolve
 				
-				TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> getParamAt<String>(params, 0) == search_query
+				ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> getParamAt<String>(params, 0) == search_query
 				
-				TYPE_INSTANCE_INFORMATION -> getParamAt<String>(params, 0) == instance_uri
+				ColumnType.INSTANCE_INFORMATION -> getParamAt<String>(params, 0) == instance_uri
 				
 				else -> true
 			}
@@ -893,12 +881,6 @@ class Column(
 			false
 		}
 	}
-	
-	internal fun getColumnName(long : Boolean) =
-		when(val item = columnTypeProcMap[column_type]) {
-			null -> "?"
-			else -> item.name2(this, long) ?: item.name(context)
-		}
 	
 	fun getNotificationTypeString() : String {
 		val sb = StringBuilder()
@@ -963,8 +945,7 @@ class Column(
 		}
 	}
 	
-	internal fun getIconId(type : Int) =
-		getIconId(access_info.acct, type)
+
 	
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
 	fun findStatus(
@@ -1036,8 +1017,8 @@ class Column(
 		fireShowContent(reason = "updateFollowIcons", reset = true)
 	}
 	
-	fun removeUser(targetAccount : SavedAccount, columnType : Int, who_id : EntityId) {
-		if(column_type == columnType && targetAccount.acct == access_info.acct) {
+	fun removeUser(targetAccount : SavedAccount, columnType : ColumnType, who_id : EntityId) {
+		if(type == columnType && targetAccount.acct == access_info.acct) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootAccountRef) {
@@ -1105,8 +1086,8 @@ class Column(
 	}
 	
 	val isNotificationColumn : Boolean
-		get() = when(column_type) {
-			TYPE_NOTIFICATIONS, TYPE_NOTIFICATION_FROM_ACCT -> true
+		get() = when(type) {
+			ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> true
 			else -> false
 		}
 	
@@ -1178,7 +1159,7 @@ class Column(
 		if(target_account.host != access_info.host) return
 		if(access_info.isPseudo) return
 		
-		if(column_type == TYPE_DOMAIN_BLOCKS) {
+		if(type == ColumnType.DOMAIN_BLOCKS) {
 			// ドメインブロック一覧を読み直す
 			startLoading()
 			return
@@ -1214,7 +1195,7 @@ class Column(
 	}
 	
 	fun onListListUpdated(account : SavedAccount) {
-		if(column_type == TYPE_LIST_LIST && access_info.acct == account.acct) {
+		if(type == ColumnType.LIST_LIST && access_info.acct == account.acct) {
 			startLoading()
 			val vh = viewHolder
 			vh?.onListListUpdated()
@@ -1223,16 +1204,20 @@ class Column(
 	
 	fun onListNameUpdated(account : SavedAccount, item : TootList) {
 		if(access_info.acct != account.acct) return
-		when(column_type) {
-			TYPE_LIST_LIST -> {
+		when(type) {
+			ColumnType.LIST_LIST -> {
 				startLoading()
 			}
 			
-			TYPE_LIST_TL, TYPE_LIST_MEMBER -> {
+			ColumnType.LIST_TL, ColumnType.LIST_MEMBER -> {
 				if(item.id == profile_id) {
 					this.list_info = item
 					fireShowColumnHeader()
 				}
+			}
+			
+			else->{
+			
 			}
 		}
 	}
@@ -1243,11 +1228,11 @@ class Column(
 		who : TootAccount,
 		bAdd : Boolean
 	) {
-		if(column_type == TYPE_LIST_TL && access_info.acct == account.acct && list_id == profile_id) {
+		if(type == ColumnType.LIST_TL && access_info.acct == account.acct && list_id == profile_id) {
 			if(! bAdd) {
 				removeAccountInTimeline(account, who.id)
 			}
-		} else if(column_type == TYPE_LIST_MEMBER && access_info.acct == account.acct && list_id == profile_id) {
+		} else if(type == ColumnType.LIST_MEMBER && access_info.acct == account.acct && list_id == profile_id) {
 			if(! bAdd) {
 				removeAccountInTimeline(account, who.id)
 			}
@@ -1891,8 +1876,8 @@ class Column(
 		posted_status_id : EntityId,
 		posted_reply_id : EntityId?
 	) {
-		when(column_type) {
-			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE, TYPE_DIRECT_MESSAGES, TYPE_MISSKEY_HYBRID -> {
+		when(type) {
+			ColumnType.HOME, ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.DIRECT_MESSAGES, ColumnType.MISSKEY_HYBRID -> {
 				startRefresh(
 					bSilent = true,
 					bBottom = false,
@@ -1901,8 +1886,8 @@ class Column(
 				)
 			}
 			
-			TYPE_PROFILE -> {
-				if(profile_tab == TAB_STATUS
+			ColumnType.PROFILE -> {
+				if(profile_tab == ProfileTab.Status
 					&& profile_id == access_info.loginAccount?.id
 				) {
 					startRefresh(
@@ -1914,7 +1899,7 @@ class Column(
 				}
 			}
 			
-			TYPE_CONVERSATION -> {
+			ColumnType.CONVERSATION -> {
 				// 会話への返信が行われたなら会話を更新する
 				try {
 					if(posted_reply_id != null) {
@@ -1927,6 +1912,10 @@ class Column(
 					}
 				} catch(_ : Throwable) {
 				}
+			}
+			
+			else->{
+			
 			}
 		}
 	}
@@ -2015,13 +2004,13 @@ class Column(
 	}
 	
 	val headerType : HeaderType?
-		get() = when(column_type) {
-			TYPE_PROFILE -> HeaderType.Profile
-			TYPE_SEARCH -> HeaderType.Search
-			TYPE_SEARCH_MSP -> HeaderType.Search
-			TYPE_SEARCH_TS -> HeaderType.Search
-			TYPE_INSTANCE_INFORMATION -> HeaderType.Instance
-			TYPE_KEYWORD_FILTER -> HeaderType.Filter
+		get() = when(type) {
+			ColumnType.PROFILE -> HeaderType.Profile
+			ColumnType.SEARCH -> HeaderType.Search
+			ColumnType.SEARCH_MSP -> HeaderType.Search
+			ColumnType.SEARCH_TS -> HeaderType.Search
+			ColumnType.INSTANCE_INFORMATION -> HeaderType.Instance
+			ColumnType.KEYWORD_FILTER -> HeaderType.Filter
 			else -> null
 		}
 	
@@ -2043,13 +2032,13 @@ class Column(
 	fun getHeaderDesc() : String? {
 		var cache = cacheHeaderDesc
 		if(cache != null) return cache
-		cache = when(column_type) {
-			TYPE_SEARCH -> context.getString(R.string.search_desc_mastodon_api)
-			TYPE_SEARCH_MSP -> loadSearchDesc(
+		cache = when(type) {
+			ColumnType.SEARCH -> context.getString(R.string.search_desc_mastodon_api)
+			ColumnType.SEARCH_MSP -> loadSearchDesc(
 				R.raw.search_desc_msp_en,
 				R.raw.search_desc_msp_ja
 			)
-			TYPE_SEARCH_TS -> loadSearchDesc(
+			ColumnType.SEARCH_TS -> loadSearchDesc(
 				R.raw.search_desc_ts_en,
 				R.raw.search_desc_ts_ja
 			)
@@ -2119,21 +2108,21 @@ class Column(
 	fun canStatusFilter() : Boolean {
 		if(getFilterContext() != TootFilter.CONTEXT_NONE) return true
 		
-		return when(column_type) {
-			TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> true
+		return when(type) {
+			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> true
 			else -> false
 		}
 	}
 	
 	// マストドン2.4.3rcのキーワードフィルタのコンテキスト
-	private fun getFilterContext() = when(column_type) {
-		TYPE_HOME, TYPE_LIST_TL, TYPE_MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
-		TYPE_NOTIFICATIONS, TYPE_NOTIFICATION_FROM_ACCT -> TootFilter.CONTEXT_NOTIFICATIONS
-		TYPE_CONVERSATION -> TootFilter.CONTEXT_THREAD
-		TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_HASHTAG_FROM_ACCT, TYPE_PROFILE, TYPE_SEARCH -> TootFilter.CONTEXT_PUBLIC
-		TYPE_DIRECT_MESSAGES -> TootFilter.CONTEXT_PUBLIC
+	private fun getFilterContext() = when(type) {
+		ColumnType.HOME, ColumnType.LIST_TL, ColumnType.MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
+		ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> TootFilter.CONTEXT_NOTIFICATIONS
+		ColumnType.CONVERSATION -> TootFilter.CONTEXT_THREAD
+		ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.HASHTAG_FROM_ACCT, ColumnType.PROFILE, ColumnType.SEARCH -> TootFilter.CONTEXT_PUBLIC
+		ColumnType.DIRECT_MESSAGES -> TootFilter.CONTEXT_PUBLIC
 		else -> TootFilter.CONTEXT_NONE
-		// TYPE_MISSKEY_HYBRID はHOMEでもPUBLICでもある… Misskeyだし関係ないが、NONEにするとアプリ内で完結するフィルタも働かなくなる
+		// ColumnType.MISSKEY_HYBRID はHOMEでもPUBLICでもある… Misskeyだし関係ないが、NONEにするとアプリ内で完結するフィルタも働かなくなる
 	}
 	
 	// カラム設定に「すべての画像を隠す」ボタンを含めるなら真
@@ -2143,30 +2132,30 @@ class Column(
 	
 	// カラム設定に「ブーストを表示しない」ボタンを含めるなら真
 	fun canFilterBoost() : Boolean {
-		return when(column_type) {
-			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_NOTIFICATION_FROM_ACCT, TYPE_LIST_TL -> true
-			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
-			TYPE_HASHTAG_FROM_ACCT -> false
-			TYPE_CONVERSATION, TYPE_DIRECT_MESSAGES -> isMisskey
+		return when(type) {
+			ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE, ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT, ColumnType.LIST_TL -> true
+			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
+			ColumnType.HASHTAG_FROM_ACCT -> false
+			ColumnType.CONVERSATION, ColumnType.DIRECT_MESSAGES -> isMisskey
 			else -> false
 		}
 	}
 	
 	// カラム設定に「返信を表示しない」ボタンを含めるなら真
 	fun canFilterReply() : Boolean {
-		return when(column_type) {
-			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_NOTIFICATION_FROM_ACCT, TYPE_LIST_TL, TYPE_DIRECT_MESSAGES -> true
-			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
-			TYPE_HASHTAG_FROM_ACCT -> true
+		return when(type) {
+			ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE, ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT, ColumnType.LIST_TL, ColumnType.DIRECT_MESSAGES -> true
+			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
+			ColumnType.HASHTAG_FROM_ACCT -> true
 			else -> false
 		}
 	}
 	
 	fun canFilterNormalToot() : Boolean {
-		return when(column_type) {
-			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_LIST_TL -> true
-			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
-			TYPE_HASHTAG_FROM_ACCT -> true
+		return when(type) {
+			ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.LIST_TL -> true
+			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
+			ColumnType.HASHTAG_FROM_ACCT -> true
 			else -> false
 		}
 	}
@@ -2177,9 +2166,9 @@ class Column(
 	
 	internal fun hasHashtagExtra() = when {
 		isMisskey -> false
-		column_type == TYPE_HASHTAG -> true
+		type == ColumnType.HASHTAG -> true
 		
-		// TYPE_HASHTAG_FROM_ACCT は追加のタグを指定しても結果に反映されない
+		// ColumnType.HASHTAG_FROM_ACCT は追加のタグを指定しても結果に反映されない
 		
 		else -> false
 	}
@@ -2208,20 +2197,20 @@ class Column(
 	}
 	
 	fun canReloadWhenRefreshTop() : Boolean {
-		return when(column_type) {
+		return when(type) {
 			
-			TYPE_KEYWORD_FILTER,
-			TYPE_SEARCH,
-			TYPE_SEARCH_MSP,
-			TYPE_SEARCH_TS,
-			TYPE_CONVERSATION,
-			TYPE_LIST_LIST,
-			TYPE_TREND_TAG,
-			TYPE_FOLLOW_SUGGESTION -> true
+			ColumnType.KEYWORD_FILTER,
+			ColumnType.SEARCH,
+			ColumnType.SEARCH_MSP,
+			ColumnType.SEARCH_TS,
+			ColumnType.CONVERSATION,
+			ColumnType.LIST_LIST,
+			ColumnType.TREND_TAG,
+			ColumnType.FOLLOW_SUGGESTION -> true
 			
-			TYPE_LIST_MEMBER,
-			TYPE_MUTES,
-			TYPE_FOLLOW_REQUESTS -> isMisskey
+			ColumnType.LIST_MEMBER,
+			ColumnType.MUTES,
+			ColumnType.FOLLOW_REQUESTS -> isMisskey
 			
 			else -> false
 		}
@@ -2229,27 +2218,27 @@ class Column(
 	
 	// カラム操作的にリフレッシュを許容するかどうか
 	fun canRefreshTopBySwipe() : Boolean {
-		return canReloadWhenRefreshTop() || when(column_type) {
-			TYPE_CONVERSATION,
-			TYPE_INSTANCE_INFORMATION -> false
+		return canReloadWhenRefreshTop() || when(type) {
+			ColumnType.CONVERSATION,
+			ColumnType.INSTANCE_INFORMATION -> false
 			else -> true
 		}
 	}
 	
 	// カラム操作的にリフレッシュを許容するかどうか
 	fun canRefreshBottomBySwipe() : Boolean {
-		return when(column_type) {
-			TYPE_LIST_LIST,
-			TYPE_CONVERSATION,
-			TYPE_INSTANCE_INFORMATION,
-			TYPE_KEYWORD_FILTER,
-			TYPE_SEARCH,
-			TYPE_TREND_TAG,
-			TYPE_FOLLOW_SUGGESTION -> false
+		return when(type) {
+			ColumnType.LIST_LIST,
+			ColumnType.CONVERSATION,
+			ColumnType.INSTANCE_INFORMATION,
+			ColumnType.KEYWORD_FILTER,
+			ColumnType.SEARCH,
+			ColumnType.TREND_TAG,
+			ColumnType.FOLLOW_SUGGESTION -> false
 			
-			TYPE_FOLLOW_REQUESTS -> isMisskey
+			ColumnType.FOLLOW_REQUESTS -> isMisskey
 			
-			TYPE_LIST_MEMBER -> ! isMisskey
+			ColumnType.LIST_MEMBER -> ! isMisskey
 			
 			else -> true
 		}
@@ -2302,19 +2291,19 @@ class Column(
 		} else {
 			val misskeyApiToken = access_info.misskeyApiToken
 			if(misskeyApiToken == null) {
-				when(column_type) {
-					TYPE_LOCAL -> createMisskeyConnectChannelMessage("localTimeline")
+				when(type) {
+					ColumnType.LOCAL -> createMisskeyConnectChannelMessage("localTimeline")
 					else -> null
 				}
 			} else {
-				when(column_type) {
-					TYPE_HOME -> createMisskeyConnectChannelMessage("homeTimeline")
-					TYPE_LOCAL -> createMisskeyConnectChannelMessage("localTimeline")
-					TYPE_MISSKEY_HYBRID -> createMisskeyConnectChannelMessage("hybridTimeline")
-					TYPE_FEDERATE -> createMisskeyConnectChannelMessage("globalTimeline")
-					TYPE_NOTIFICATIONS -> createMisskeyConnectChannelMessage("main")
-					// TYPE_LIST_TL
-					// TYPE_HASHTAG
+				when(type) {
+					ColumnType.HOME -> createMisskeyConnectChannelMessage("homeTimeline")
+					ColumnType.LOCAL -> createMisskeyConnectChannelMessage("localTimeline")
+					ColumnType.MISSKEY_HYBRID -> createMisskeyConnectChannelMessage("hybridTimeline")
+					ColumnType.FEDERATE -> createMisskeyConnectChannelMessage("globalTimeline")
+					ColumnType.NOTIFICATIONS -> createMisskeyConnectChannelMessage("main")
+					// ColumnType.LIST_TL
+					// ColumnType.HASHTAG
 					else -> null
 				}
 			}
@@ -2345,7 +2334,7 @@ class Column(
 			if(is_dispose.get()) return
 			
 			if(item is TootConversationSummary) {
-				if(column_type != TYPE_DIRECT_MESSAGES) return
+				if(type != ColumnType.DIRECT_MESSAGES) return
 				if(isFiltered(item.last_status)) return
 				if(use_old_api) {
 					useConversationSummaryStreaming = false
@@ -2364,7 +2353,7 @@ class Column(
 				// マストドン2.6.0形式のDMカラム用イベントを利用したならば、その直後に発生する普通の投稿イベントを無視する
 				if(useConversationSummaryStreaming) return
 				
-				if(column_type == TYPE_LOCAL && ! isMisskey && item.account.acct.indexOf('@') != - 1) return
+				if(type == ColumnType.LOCAL && ! isMisskey && item.account.acct.indexOf('@') != - 1) return
 				if(isFiltered(item)) return
 			}
 			
@@ -2830,7 +2819,7 @@ class Column(
 	}
 	
 	fun onFilterDeleted(filter : TootFilter, filterList : ArrayList<TootFilter>) {
-		if(column_type == TYPE_KEYWORD_FILTER) {
+		if(type == ColumnType.KEYWORD_FILTER) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootFilter) {
@@ -2929,4 +2918,6 @@ class Column(
 	init {
 		registerColumnId(column_id, this)
 	}
+	
+	
 }

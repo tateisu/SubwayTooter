@@ -89,7 +89,7 @@ object Action_Account {
 							) { a ->
 								showToast(activity, false, R.string.server_confirmed)
 								val pos = App1.getAppState(activity).column_list.size
-								activity.addColumn(pos, a, Column.TYPE_LOCAL)
+								activity.addColumn(pos, a, ColumnType.LOCAL)
 								dialog.dismissSafe()
 							}
 							
@@ -153,28 +153,29 @@ object Action_Account {
 					val ti = r1?.jsonObject ?: return r1
 					
 					val misskeyVersion = TootApiClient.parseMisskeyVersion(ti)
-					val linkHelper = LinkHelper.newLinkHelper(instance, misskeyVersion = misskeyVersion)
+					val linkHelper =
+						LinkHelper.newLinkHelper(instance, misskeyVersion = misskeyVersion)
 					
 					val access_token = ti.parseString("access_token")
 						?: return TootApiResult("can't get user access token")
 					
 					val r2 = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
 					this.ta = TootParser(activity, linkHelper).account(r2?.jsonObject)
-					if( this.ta != null) return r2
-
-					val jsonObject = JSONObject().apply{
-						put("id", EntityId.CONFIRMING.toString() )
-						put("username",username)
-						put("acct",username)
-						put("acct",username)
-						put("url","https://$instance/@$username")
+					if(this.ta != null) return r2
+					
+					val jsonObject = JSONObject().apply {
+						put("id", EntityId.CONFIRMING.toString())
+						put("username", username)
+						put("acct", username)
+						put("acct", username)
+						put("url", "https://$instance/@$username")
 					}
 					
 					this.ta = TootParser(activity, linkHelper).account(jsonObject)
 					r1.data = jsonObject
 					r1.tokenInfo = ti
 					return r1
-
+					
 				}
 				
 				override fun handleResult(result : TootApiResult?) {
@@ -202,7 +203,7 @@ object Action_Account {
 	fun timeline(
 		activity : ActMain,
 		pos : Int,
-		type : Int,
+		type : ColumnType,
 		bAllowPseudo : Boolean,
 		bAllowMisskey : Boolean = true,
 		bAllowMastodon : Boolean = true,
@@ -217,14 +218,11 @@ object Action_Account {
 			bAuto = true,
 			message = activity.getString(
 				R.string.account_picker_add_timeline_of,
-				when(val ctp = columnTypeProcMap[type]) {
-					null -> "?"
-					else -> ctp.name(activity)
-				}
+				type.name1(activity)
 			)
 		) { ai ->
 			when(type) {
-				Column.TYPE_PROFILE -> {
+				ColumnType.PROFILE -> {
 					val id = ai.loginAccount?.id
 					if(id != null) activity.addColumn(pos, ai, type, id)
 				}

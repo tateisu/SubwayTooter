@@ -550,7 +550,7 @@ object Action_Toot {
 		access_info : SavedAccount,
 		status_id : EntityId
 	) {
-		activity.addColumn(pos, access_info, Column.TYPE_CONVERSATION, status_id)
+		activity.addColumn(pos, access_info, ColumnType.CONVERSATION, status_id)
 	}
 	
 	// リモートかもしれない会話の流れを表示する

@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.graphics.Color
-import androidx.core.view.ViewCompat
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -478,19 +477,19 @@ internal class ViewHolderHeaderProfile(
 			}
 			
 			R.id.btnFollowing -> {
-				column.profile_tab = Column.TAB_FOLLOWING
+				column.profile_tab = ProfileTab.Following
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
 			R.id.btnFollowers -> {
-				column.profile_tab = Column.TAB_FOLLOWERS
+				column.profile_tab = ProfileTab.Followers
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
 			R.id.btnStatusCount -> {
-				column.profile_tab = Column.TAB_STATUS
+				column.profile_tab = ProfileTab.Status
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}

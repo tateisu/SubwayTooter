@@ -1,9 +1,6 @@
 package jp.juggler.subwaytooter.action
 
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Column
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -27,7 +24,7 @@ object Action_Instance {
 			false,
 			pos,
 			SavedAccount.na,
-			Column.TYPE_INSTANCE_INFORMATION,
+			ColumnType.INSTANCE_INFORMATION,
 			host
 		)
 	}
@@ -44,7 +41,7 @@ object Action_Instance {
 		if(account_list.isEmpty()) {
 			// 持ってないなら疑似アカウントを追加する
 			addPseudoAccount(activity, host) { ai ->
-				activity.addColumn(pos, ai, Column.TYPE_LOCAL)
+				activity.addColumn(pos, ai, ColumnType.LOCAL)
 			}
 		} else {
 			// 持ってるならアカウントを選んで開く
@@ -55,7 +52,7 @@ object Action_Instance {
 				bAuto = false,
 				message = activity.getString(R.string.account_picker_add_timeline_of, host),
 				accountListArg = account_list
-			) { ai -> activity.addColumn(pos, ai, Column.TYPE_LOCAL) }
+			) { ai -> activity.addColumn(pos, ai, ColumnType.LOCAL) }
 		}
 	}
 	
@@ -107,9 +104,9 @@ object Action_Instance {
 		access_info : SavedAccount,
 		pos : Int,
 		id : EntityId,
-		columnType : Int
+		type : ColumnType
 	) {
-		activity.addColumn(pos, access_info, columnType, id)
+		activity.addColumn(pos, access_info, type, id)
 	}
 	
 	private fun timelinePublicAround3(
@@ -117,12 +114,12 @@ object Action_Instance {
 		access_info : SavedAccount,
 		pos : Int,
 		status : TootStatus,
-		columnType : Int
+		type : ColumnType
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
-			var localStatus: TootStatus? = null
+			var localStatus : TootStatus? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val(result,localStatus) = client.syncStatus(access_info, status)
+				val (result, localStatus) = client.syncStatus(access_info, status)
 				this.localStatus = localStatus
 				return result
 			}
@@ -131,7 +128,7 @@ object Action_Instance {
 				result ?: return
 				val localStatus = this.localStatus
 				if(localStatus != null) {
-					timelinePublicAround2(activity, access_info, pos, localStatus.id, columnType)
+					timelinePublicAround2(activity, access_info, pos, localStatus.id, type)
 				} else {
 					showToast(activity, true, result.error)
 				}
@@ -146,7 +143,7 @@ object Action_Instance {
 		pos : Int,
 		host : String?,
 		status : TootStatus?,
-		columnType : Int,
+		type : ColumnType,
 		allowPseudo : Boolean = true
 	) {
 		if(host?.isEmpty() != false || host == "?") return
@@ -188,9 +185,9 @@ object Action_Instance {
 				accountListArg = account_list1
 			) { ai ->
 				if(! ai.isNA && ai.host.equals(access_info.host, ignoreCase = true)) {
-					timelinePublicAround2(activity, account_list1[0], pos, status.id, columnType)
+					timelinePublicAround2(activity, account_list1[0], pos, status.id, type)
 				} else {
-					timelinePublicAround3(activity, ai, pos, status, columnType)
+					timelinePublicAround3(activity, ai, pos, status, type)
 				}
 			}
 			return

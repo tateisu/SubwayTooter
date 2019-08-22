@@ -53,10 +53,9 @@ class ColumnTask_Loading(
 			
 			column.muted_word2 = column.encodeFilterTree(column.loadFilter2(client))
 			
-			return (columnTypeProcMap[column.column_type] ?: columnTypeProcMap[Column.TYPE_HOME])
-				.loading(this, client)
-		}catch(ex:Throwable){
-			return TootApiResult( ex.withCaption("loading failed.") )
+			return column.type.loading(this, client)
+		} catch(ex : Throwable) {
+			return TootApiResult(ex.withCaption("loading failed."))
 		} finally {
 			try {
 				column.updateRelation(client, list_tmp, column.who_account, parser)
@@ -187,7 +186,7 @@ class ColumnTask_Loading(
 			}
 			this.list_tmp = addWithFilterStatus(list_tmp, src)
 			
-			column.saveRange(true, true, result, src)
+			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
 			
 			if(aroundMin) {
 				while(true) {
@@ -351,7 +350,7 @@ class ColumnTask_Loading(
 			}
 			this.list_tmp = addWithFilterConversationSummary(list_tmp, src)
 			
-			column.saveRange(true, true, result, src)
+			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
 			
 			if(aroundMin) {
 				while(true) {
@@ -511,7 +510,7 @@ class ColumnTask_Loading(
 			val src = misskeyCustomParser(parser, jsonArray)
 			when(column.pagingType) {
 				ColumnPagingType.Default -> {
-					column.saveRange(true, true, result, src)
+					column.saveRange(bBottom = true, bTop = true, result = result, list = src)
 				}
 				
 				ColumnPagingType.Offset -> {
@@ -565,7 +564,7 @@ class ColumnTask_Loading(
 		val result = client.request(path_base)
 		if(result != null) {
 			val src = TootDomainBlock.parseList(result.jsonArray)
-			column.saveRange(true, true, result, src)
+			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
 			this.list_tmp = addAll(null, src)
 		}
 		return result
@@ -575,7 +574,7 @@ class ColumnTask_Loading(
 		val result = client.request(path_base)
 		if(result != null) {
 			val src = parseList(::TootReport, result.jsonArray)
-			column.saveRange(true, true, result, src)
+			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
 			list_tmp = addAll(null, src)
 		}
 		return result
@@ -594,7 +593,7 @@ class ColumnTask_Loading(
 		if(result != null) {
 			val src = parseList(::TootList, parser, result.jsonArray)
 			src.sort()
-			column.saveRange(true, true, result, src)
+			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
 			this.list_tmp = addAll(null, src)
 		}
 		return result
@@ -620,7 +619,7 @@ class ColumnTask_Loading(
 		var jsonArray = result?.jsonArray
 		if(jsonArray != null) {
 			var src = parser.notificationList(jsonArray)
-			column.saveRange(true, true, result, src)
+			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
 			this.list_tmp = addWithFilterNotification(null, src)
 			//
 			if(src.isNotEmpty()) {
@@ -794,10 +793,302 @@ class ColumnTask_Loading(
 		val src = parseList(::TootScheduled, parser, result?.jsonArray)
 		list_tmp = addAll(list_tmp, src)
 		
-		column.saveRange(true, true, result, src)
+		column.saveRange(bBottom = true, bTop = true, result = result, list = src)
 		
 		return result
 	}
 	
+	internal fun getConversation(client : TootApiClient) : TootApiResult? {
+		return if(isMisskey) {
+			// 指定された発言そのもの
+			val queryParams = column.makeMisskeyBaseParameter(parser)
+				.put("noteId", column.status_id)
+			var result = client.request(
+				"/api/notes/show"
+				, queryParams.toPostRequestBuilder()
+			)
+			val jsonObject = result?.jsonObject ?: return result
+			val target_status = parser.status(jsonObject)
+				?: return TootApiResult("TootStatus parse failed.")
+			target_status.conversation_main = true
+			
+			// 祖先
+			val list_asc = java.util.ArrayList<TootStatus>()
+			while(true) {
+				if(client.isApiCancelled) return null
+				queryParams.put("offset", list_asc.size)
+				result = client.request(
+					"/api/notes/conversation"
+					, queryParams.toPostRequestBuilder()
+				)
+				val jsonArray = result?.jsonArray ?: return result
+				val src = parser.statusList(jsonArray)
+				if(src.isEmpty()) break
+				list_asc.addAll(src)
+			}
+			
+			// 直接の子リプライ。(子孫をたどることまではしない)
+			val list_desc = java.util.ArrayList<TootStatus>()
+			val idSet = HashSet<EntityId>()
+			var untilId : EntityId? = null
+			
+			while(true) {
+				if(client.isApiCancelled) return null
+				
+				when {
+					untilId == null -> {
+						queryParams.remove("untilId")
+						queryParams.remove("offset")
+					}
+					
+					misskeyVersion >= 11 -> {
+						queryParams.put("untilId", untilId.toString())
+					}
+					
+					else -> queryParams.put("offset", list_desc.size)
+				}
+				
+				result = client.request(
+					"/api/notes/replies"
+					, queryParams.toPostRequestBuilder()
+				)
+				val jsonArray = result?.jsonArray ?: return result
+				val src = parser.statusList(jsonArray)
+				untilId = null
+				for(status in src) {
+					if(idSet.contains(status.id)) continue
+					idSet.add(status.id)
+					list_desc.add(status)
+					untilId = status.id
+				}
+				if(untilId == null) break
+			}
+			
+			// 一つのリストにまとめる
+			this.list_tmp = java.util.ArrayList<TimelineItem>(
+				list_asc.size + list_desc.size + 2
+			).apply {
+				addAll(list_asc.sortedBy { it.time_created_at })
+				add(target_status)
+				addAll(list_desc.sortedBy { it.time_created_at })
+				add(TootMessageHolder(context.getString(R.string.misskey_cant_show_all_descendants)))
+			}
+			
+			//
+			result
+			
+		} else {
+			// 指定された発言そのもの
+			var result = client.request(
+				String.format(Locale.JAPAN, Column.PATH_STATUSES, column.status_id)
+			)
+			var jsonObject = result?.jsonObject ?: return result
+			val target_status = parser.status(jsonObject)
+				?: return TootApiResult("TootStatus parse failed.")
+			
+			// 前後の会話
+			result = client.request(
+				String.format(
+					Locale.JAPAN,
+					Column.PATH_STATUSES_CONTEXT, column.status_id
+				)
+			)
+			jsonObject = result?.jsonObject ?: return result
+			val conversation_context =
+				parseItem(::TootContext, parser, jsonObject)
+			
+			// 一つのリストにまとめる
+			target_status.conversation_main = true
+			if(conversation_context != null) {
+				
+				this.list_tmp = java.util.ArrayList(
+					1
+						+ (conversation_context.ancestors?.size ?: 0)
+						+ (conversation_context.descendants?.size ?: 0)
+				)
+				//
+				if(conversation_context.ancestors != null)
+					addWithFilterStatus(
+						this.list_tmp,
+						conversation_context.ancestors
+					)
+				//
+				addOne(list_tmp, target_status)
+				//
+				if(conversation_context.descendants != null)
+					addWithFilterStatus(
+						this.list_tmp,
+						conversation_context.descendants
+					)
+				//
+			} else {
+				this.list_tmp = addOne(this.list_tmp, target_status)
+				this.list_tmp = addOne(
+					this.list_tmp,
+					TootMessageHolder(context.getString(R.string.toot_context_parse_failed))
+				)
+			}
+			
+			result
+		}
+	}
+	
+	internal fun getSearch(client : TootApiClient) : TootApiResult? {
+		return if(isMisskey) {
+			var result : TootApiResult? = TootApiResult()
+			val parser = TootParser(context, access_info)
+			
+			list_tmp = java.util.ArrayList()
+			
+			val queryAccount = column.search_query.trim().replace("^@".toRegex(), "")
+			if(queryAccount.isNotEmpty()) {
+				result = client.request(
+					"/api/users/search",
+					access_info.putMisskeyApiToken()
+						.put("query", queryAccount)
+						.put("localOnly", ! column.search_resolve).toPostRequestBuilder()
+				)
+				val jsonArray = result?.jsonArray
+				if(jsonArray != null) {
+					val src =
+						TootParser(context, access_info).accountList(jsonArray)
+					list_tmp = addAll(list_tmp, src)
+				}
+			}
+			
+			val queryTag = column.search_query.trim().replace("^#".toRegex(), "")
+			if(queryTag.isNotEmpty()) {
+				result = client.request(
+					"/api/hashtags/search",
+					access_info.putMisskeyApiToken()
+						.put("query", queryTag)
+						.toPostRequestBuilder()
+				)
+				val jsonArray = result?.jsonArray
+				if(jsonArray != null) {
+					val src = TootTag.parseTootTagList(parser, jsonArray)
+					list_tmp = addAll(list_tmp, src)
+				}
+			}
+			if(column.search_query.isNotEmpty()) {
+				result = client.request(
+					"/api/notes/search",
+					access_info.putMisskeyApiToken()
+						.put("query", column.search_query)
+						.toPostRequestBuilder()
+				)
+				val jsonArray = result?.jsonArray
+				if(jsonArray != null) {
+					val src = parser.statusList(jsonArray)
+					list_tmp = addWithFilterStatus(list_tmp, src)
+				}
+			}
+			
+			// 検索機能が無効だとsearch_query が 400を返すが、他のAPIがデータを返したら成功したことにする
+			if(list_tmp?.isNotEmpty() == true) {
+				TootApiResult()
+			} else {
+				result
+			}
+		} else {
+			if(access_info.isPseudo) {
+				// 1.5.0rc からマストドンの検索APIは認証を要求するようになった
+				return TootApiResult(context.getString(R.string.search_is_not_available_on_pseudo_account))
+			}
+			
+			var instance = access_info.instance
+			if(instance == null) {
+				getInstanceInformation(client, null)
+				if(instance_tmp != null) {
+					instance = instance_tmp
+					access_info.instance = instance
+				}
+			}
+			
+			
+			if(instance?.versionGE(TootInstance.VERSION_2_4_0) == true) {
+				// v2 api を試す
+				var path = String.format(
+					Locale.JAPAN,
+					Column.PATH_SEARCH_V2,
+					column.search_query.encodePercent()
+				)
+				if(column.search_resolve) path += "&resolve=1"
+				
+				client.request(path).also { result ->
+					val jsonObject = result?.jsonObject
+					if(jsonObject != null) {
+						val tmp = parser.resultsV2(jsonObject)
+						if(tmp != null) {
+							list_tmp = java.util.ArrayList()
+							addAll(list_tmp, tmp.hashtags)
+							if(tmp.hashtags.isNotEmpty()) {
+								addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Hashtag))
+							}
+							addAll(list_tmp, tmp.accounts)
+							if(tmp.accounts.isNotEmpty()) {
+								addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Account))
+							}
+							addAll(list_tmp, tmp.statuses)
+							if(tmp.statuses.isNotEmpty()) {
+								addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Status))
+							}
+							return result
+						}
+					}
+					if(instance.versionGE(TootInstance.VERSION_2_4_1_rc1)) {
+						// 2.4.1rc1以降はv2が確実に存在するはずなので、v1へのフォールバックを行わない
+						return result
+					}
+				}
+			}
+			
+			var path = String.format(
+				Locale.JAPAN,
+				Column.PATH_SEARCH,
+				column.search_query.encodePercent()
+			)
+			if(column.search_resolve) path += "&resolve=1"
+			
+			client.request(path).also { result ->
+				val jsonObject = result?.jsonObject
+				if(jsonObject != null) {
+					val tmp = parser.results(jsonObject)
+					if(tmp != null) {
+						list_tmp = java.util.ArrayList()
+						addAll(list_tmp, tmp.hashtags)
+						addAll(list_tmp, tmp.accounts)
+						addAll(list_tmp, tmp.statuses)
+					}
+				}
+			}
+		}
+		
+	}
+	
+	internal fun getDirectMessages(client : TootApiClient) : TootApiResult? {
+		column.useConversationSummarys = false
+		if(! column.use_old_api) {
+			
+			// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
+			val result = getConversationSummary(client,Column.PATH_DIRECT_MESSAGES2)
+			
+			when {
+				// cancelled
+				result == null -> return null
+				
+				//  not error
+				result.error.isNullOrBlank() -> {
+					column.useConversationSummarys = true
+					return result
+				}
+				
+				// else fall thru
+			}
+		}
+		
+		// fallback to old api
+		return getStatusList(client, Column.PATH_DIRECT_MESSAGES)
+	}
 }
 

@@ -1,10 +1,7 @@
 package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Column
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker
@@ -600,11 +597,11 @@ object Action_Follow {
 				val jsonObject = result.jsonObject
 				if(jsonObject != null) {
 					for(column in App1.getAppState(activity).column_list) {
-						column.removeUser(access_info, Column.TYPE_FOLLOW_REQUESTS, who.id)
+						column.removeUser(access_info, ColumnType.FOLLOW_REQUESTS, who.id)
 						
 						// 他のカラムでもフォロー状態の表示更新が必要
 						if(column.access_info.acct == access_info.acct
-							&& column.column_type != Column.TYPE_FOLLOW_REQUESTS
+							&& column.type != ColumnType.FOLLOW_REQUESTS
 						) {
 							column.fireRebindAdapterItems()
 						}

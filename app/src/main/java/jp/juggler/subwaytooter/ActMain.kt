@@ -649,7 +649,7 @@ class ActMain : AppCompatActivity()
 		if(posted_acct?.isNotEmpty() == true && posted_status_id == null) {
 			// 予約投稿なら予約投稿リストをリロードする
 			for(column in app_state.column_list) {
-				if(column.column_type == Column.TYPE_SCHEDULED_STATUS
+				if(column.type == ColumnType.SCHEDULED_STATUS
 					&& column.access_info.acct == posted_acct
 				) {
 					column.startLoading()
@@ -893,7 +893,7 @@ class ActMain : AppCompatActivity()
 						Action_Account.timeline(
 							this@ActMain,
 							defaultInsertPosition,
-							Column.TYPE_SEARCH,
+							ColumnType.SEARCH,
 							bAllowPseudo = true,
 							args = arrayOf(search, true)
 						)
@@ -972,7 +972,7 @@ class ActMain : AppCompatActivity()
 						false,
 						defaultInsertPosition,
 						SavedAccount.na,
-						Column.TYPE_SEARCH_MSP,
+						ColumnType.SEARCH_MSP,
 						text
 					)
 				}
@@ -983,7 +983,7 @@ class ActMain : AppCompatActivity()
 						false,
 						defaultInsertPosition,
 						SavedAccount.na,
-						Column.TYPE_SEARCH_TS,
+						ColumnType.SEARCH_TS,
 						text
 					)
 				}
@@ -1106,21 +1106,21 @@ class ActMain : AppCompatActivity()
 			R.id.nav_add_tl_home -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_HOME
+				, ColumnType.HOME
 				, bAllowPseudo = false
 			)
 			
 			R.id.nav_add_tl_local -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_LOCAL
+				, ColumnType.LOCAL
 				, bAllowPseudo = true
 			)
 			
 			R.id.nav_add_tl_misskey_hybrid -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_MISSKEY_HYBRID
+				, ColumnType.MISSKEY_HYBRID
 				, bAllowPseudo = true
 				, bAllowMastodon = false
 			)
@@ -1128,39 +1128,39 @@ class ActMain : AppCompatActivity()
 			R.id.nav_add_tl_federate -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_FEDERATE
+				, ColumnType.FEDERATE
 				, bAllowPseudo = true
 			)
 			R.id.nav_add_favourites -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_FAVOURITES
+				, ColumnType.FAVOURITES
 				, bAllowPseudo = false
 			)
 			R.id.nav_add_statuses -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_PROFILE
+				, ColumnType.PROFILE
 				, bAllowPseudo = false
 			)
 			R.id.nav_add_notifications -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_NOTIFICATIONS
+				, ColumnType.NOTIFICATIONS
 				, bAllowPseudo = false
 			)
 			
 			R.id.nav_add_direct_message -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_DIRECT_MESSAGES
+				, ColumnType.DIRECT_MESSAGES
 				, bAllowPseudo = false
 				, bAllowMisskey = false
 			)
 			R.id.nav_add_tl_search -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_SEARCH
+				, ColumnType.SEARCH
 				, bAllowPseudo = false
 				, args = arrayOf("", false)
 			)
@@ -1168,62 +1168,62 @@ class ActMain : AppCompatActivity()
 			R.id.nav_add_mutes -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_MUTES
+				, ColumnType.MUTES
 				, bAllowPseudo = false
 			)
 			
 			R.id.nav_add_blocks -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_BLOCKS
+				, ColumnType.BLOCKS
 				, bAllowPseudo = false
 			)
 			
 			R.id.nav_keyword_filter -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_KEYWORD_FILTER
+				, ColumnType.KEYWORD_FILTER
 				, bAllowPseudo = false
 				, bAllowMisskey = false
 			)
 			R.id.nav_add_domain_blocks -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_DOMAIN_BLOCKS
+				, ColumnType.DOMAIN_BLOCKS
 				, bAllowPseudo = false
 				, bAllowMisskey = false
 			)
 			R.id.nav_scheduled_statuses_list -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_SCHEDULED_STATUS
+				, ColumnType.SCHEDULED_STATUS
 				, bAllowPseudo = false
 				, bAllowMisskey = false
 			)
 			R.id.nav_add_list -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_LIST_LIST
+				, ColumnType.LIST_LIST
 				, bAllowPseudo = false
 			)
 			
 			R.id.nav_follow_requests -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_FOLLOW_REQUESTS
+				, ColumnType.FOLLOW_REQUESTS
 				, bAllowPseudo = false
 			)
 			
 			R.id.nav_follow_suggestion -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_FOLLOW_SUGGESTION
+				, ColumnType.FOLLOW_SUGGESTION
 				, bAllowPseudo = false
 			)
 			R.id.nav_endorsement -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
-				, Column.TYPE_ENDORSEMENT
+				, ColumnType.ENDORSEMENT
 				, bAllowPseudo = false
 				, bAllowMisskey = false
 			)
@@ -1231,7 +1231,7 @@ class ActMain : AppCompatActivity()
 			R.id.nav_trend_tag -> Action_Account.timeline(
 				this,
 				defaultInsertPosition,
-				Column.TYPE_TREND_TAG,
+				ColumnType.TREND_TAG,
 				bAllowPseudo = true,
 				bAllowMastodon = true,
 				bAllowMisskey = false
@@ -1242,14 +1242,14 @@ class ActMain : AppCompatActivity()
 			R.id.tootsearch -> addColumn(
 				defaultInsertPosition
 				, SavedAccount.na
-				, Column.TYPE_SEARCH_TS
+				, ColumnType.SEARCH_TS
 				, ""
 			)
 			
 			//			R.id.mastodon_search_portal -> addColumn(
 			//				defaultInsertPosition
 			//				, SavedAccount.na
-			//				, Column.TYPE_SEARCH_MSP
+			//				, ColumnType.SEARCH_MSP
 			//				, ""
 			//			)
 			
@@ -1606,7 +1606,7 @@ class ActMain : AppCompatActivity()
 			
 			column.setHeaderBackground(viewRoot)
 			
-			ivIcon.setImageResource(column.getIconId(column.column_type))
+			ivIcon.setImageResource(column.getIconId())
 			ivIcon.imageTintList = ColorStateList.valueOf(column.getHeaderNameColor())
 			
 			//
@@ -1861,7 +1861,7 @@ class ActMain : AppCompatActivity()
 				val account = SavedAccount.loadAccount(this@ActMain, dataId)
 				if(account != null) {
 					var column = app_state.column_list.firstOrNull {
-						it.column_type == Column.TYPE_NOTIFICATIONS
+						it.type == ColumnType.NOTIFICATIONS
 							&& account.acct == it.access_info.acct
 							&& ! it.system_notification_not_related
 					}
@@ -1873,7 +1873,7 @@ class ActMain : AppCompatActivity()
 							true,
 							defaultInsertPosition,
 							account,
-							Column.TYPE_NOTIFICATIONS
+							ColumnType.NOTIFICATIONS
 						)
 					}
 					
@@ -2134,12 +2134,12 @@ class ActMain : AppCompatActivity()
 				// 適当にカラムを追加する
 				val count = SavedAccount.count
 				if(count > 1) {
-					addColumn(false, defaultInsertPosition, account, Column.TYPE_HOME)
+					addColumn(false, defaultInsertPosition, account, ColumnType.HOME)
 				} else {
-					addColumn(false, defaultInsertPosition, account, Column.TYPE_HOME)
-					addColumn(false, defaultInsertPosition, account, Column.TYPE_NOTIFICATIONS)
-					addColumn(false, defaultInsertPosition, account, Column.TYPE_LOCAL)
-					addColumn(false, defaultInsertPosition, account, Column.TYPE_FEDERATE)
+					addColumn(false, defaultInsertPosition, account, ColumnType.HOME)
+					addColumn(false, defaultInsertPosition, account, ColumnType.NOTIFICATIONS)
+					addColumn(false, defaultInsertPosition, account, ColumnType.LOCAL)
+					addColumn(false, defaultInsertPosition, account, ColumnType.FEDERATE)
 				}
 				
 				return true
@@ -2326,7 +2326,7 @@ class ActMain : AppCompatActivity()
 	fun addColumn(
 		indexArg : Int,
 		ai : SavedAccount,
-		type : Int,
+		type : ColumnType,
 		vararg params : Any
 	) : Column {
 		return addColumn(
@@ -2342,7 +2342,7 @@ class ActMain : AppCompatActivity()
 		allowColumnDuplication : Boolean,
 		indexArg : Int,
 		ai : SavedAccount,
-		type : Int,
+		type : ColumnType,
 		vararg params : Any
 	) : Column {
 		if(! allowColumnDuplication) {
@@ -2356,7 +2356,7 @@ class ActMain : AppCompatActivity()
 			}
 		}
 		//
-		val col = Column(app_state, ai, this, type, *params)
+		val col = Column(app_state, ai, this, type.id, *params)
 		val index = addColumn(col, indexArg)
 		scrollToColumn(index)
 		if(! col.bFirstInitialized) {

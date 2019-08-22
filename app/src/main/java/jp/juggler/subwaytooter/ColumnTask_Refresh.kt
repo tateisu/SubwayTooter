@@ -54,8 +54,7 @@ class ColumnTask_Refresh(
 				}
 			}
 			
-			return (columnTypeProcMap[column.column_type] ?: columnTypeProcMap[Column.TYPE_HOME])
-				.refresh(this, client)
+			return column.type.refresh(this, client)
 		}catch(ex:Throwable){
 			return TootApiResult( ex.withCaption("refresh failed.") )
 		} finally {

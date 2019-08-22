@@ -64,8 +64,7 @@ class ColumnTask_Gap(
 		client.account = access_info
 		
 		try {
-			return (columnTypeProcMap[column.column_type] ?: columnTypeProcMap[Column.TYPE_HOME])
-				.gap(this, client)
+			return column.type.gap(this, client)
 		} catch(ex : Throwable) {
 			return TootApiResult(ex.withCaption("gap loading failed."))
 		} finally {
@@ -107,10 +106,10 @@ class ColumnTask_Gap(
 				return
 			}
 			
-			val list_new = when(column.column_type){
+			val list_new = when(column.type){
 
 				// 検索カラムはIDによる重複排除が不可能
-				Column.TYPE_SEARCH -> list_tmp
+				ColumnType.SEARCH -> list_tmp
 
 				// 他のカラムは重複排除してから追加
 				else -> column.duplicate_map.filterDuplicate(list_tmp)

@@ -606,11 +606,11 @@ class ColumnViewHolder(
 			log.d("onPageCreate [%d] %s", page_idx, column.getColumnName(true))
 			
 			val bSimpleList =
-				column.column_type != Column.TYPE_CONVERSATION && Pref.bpSimpleList(activity.pref)
+				column.type != ColumnType.CONVERSATION && Pref.bpSimpleList(activity.pref)
 			
 			tvColumnIndex.text = activity.getString(R.string.column_index, page_idx + 1, page_count)
 			tvColumnStatus.text = "?"
-			ivColumnIcon.setImageResource(column.getIconId(column.column_type))
+			ivColumnIcon.setImageResource(column.getIconId())
 			
 			listView.adapter = null
 			if(listView.itemDecorationCount == 0) {
@@ -662,7 +662,7 @@ class ColumnViewHolder(
 			vg(cbDontShowFavourite, isNotificationColumn && ! column.isMisskey)
 			vg(cbDontShowFollow, isNotificationColumn)
 			
-			vg(cbInstanceLocal, column.column_type == Column.TYPE_HASHTAG)
+			vg(cbInstanceLocal, column.type == ColumnType.HASHTAG)
 			
 			
 			vg(cbDontStreaming, column.canStreaming())
@@ -670,7 +670,7 @@ class ColumnViewHolder(
 			vg(cbHideMediaDefault, column.canNSFWDefault())
 			vg(cbSystemNotificationNotRelated, column.isNotificationColumn)
 			vg(cbEnableSpeech, column.canSpeech())
-			vg(cbOldApi, column.column_type == Column.TYPE_DIRECT_MESSAGES)
+			vg(cbOldApi, column.type == ColumnType.DIRECT_MESSAGES)
 			
 			
 			vg(btnDeleteNotification, column.isNotificationColumn)
@@ -679,8 +679,8 @@ class ColumnViewHolder(
 				vg(btnSearchClear,Pref.bpShowSearchClear(activity.pref))
 			}
 
-			vg(llListList, column.column_type == Column.TYPE_LIST_LIST)
-			vg(cbResolve, column.column_type == Column.TYPE_SEARCH)
+			vg(llListList, column.type == ColumnType.LIST_LIST)
+			vg(cbResolve, column.type == ColumnType.SEARCH)
 			
 			vg(llHashtagExtra, column.hasHashtagExtra())
 			etHashtagExtraAny.setText(column.hashtag_any)
@@ -1159,7 +1159,7 @@ class ColumnViewHolder(
 	fun rebindAdapterItems() {
 		for(childIndex in 0 until listView.childCount) {
 			val adapterIndex = listView.getChildAdapterPosition(listView.getChildAt(childIndex))
-			if(adapterIndex == androidx.recyclerview.widget.RecyclerView.NO_POSITION) continue
+			if(adapterIndex == RecyclerView.NO_POSITION) continue
 			status_adapter?.notifyItemChanged(adapterIndex)
 		}
 	}
@@ -1376,12 +1376,12 @@ class ColumnViewHolder(
 			if(column == null || listView.adapter !== last_adapter) return@Runnable
 			
 			try {
-				val recycler = fieldRecycler.get(listView) as androidx.recyclerview.widget.RecyclerView.Recycler
-				val state = fieldState.get(listView) as androidx.recyclerview.widget.RecyclerView.State
+				val recycler = fieldRecycler.get(listView) as RecyclerView.Recycler
+				val state = fieldState.get(listView) as RecyclerView.State
 				listLayoutManager.scrollVerticallyBy(dy, recycler, state)
 			} catch(ex : Throwable) {
 				log.trace(ex)
-				log.e("can't access field in class %s", androidx.recyclerview.widget.RecyclerView::class.java.simpleName)
+				log.e("can't access field in class %s", RecyclerView::class.java.simpleName)
 			}
 		}, 20L)
 	}
@@ -1392,7 +1392,7 @@ class ColumnViewHolder(
 		private val item_width : Int
 		private val widthSpec : Int
 		private var lastViewType : Int = - 1
-		private var lastViewHolder : androidx.recyclerview.widget.RecyclerView.ViewHolder? = null
+		private var lastViewHolder : RecyclerView.ViewHolder? = null
 		
 		init {
 			this.item_width = listView.width - listView.paddingLeft - listView.paddingRight
@@ -1481,7 +1481,7 @@ class ColumnViewHolder(
 		
 		val adapterIndex = listLayoutManager.findFirstVisibleItemPosition()
 		
-		if(adapterIndex == androidx.recyclerview.widget.RecyclerView.NO_POSITION)
+		if(adapterIndex == RecyclerView.NO_POSITION)
 			throw IndexOutOfBoundsException()
 		
 		return column?.toListIndex(adapterIndex)

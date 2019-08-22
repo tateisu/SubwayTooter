@@ -1,17 +1,13 @@
 package jp.juggler.subwaytooter
 
 import android.content.Context
-import android.util.SparseArray
 import android.view.Gravity
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.ellipsizeDot3
-import jp.juggler.util.encodePercent
-import jp.juggler.util.toPostRequestBuilder
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
@@ -33,418 +29,410 @@ private val unsupportedRefresh : ColumnTask_Refresh.(client : TootApiClient) -> 
 private val unsupportedGap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? =
 	{ TootApiResult("gap reading not supported.") }
 
-private val unusedIconId : (acct : String) -> Int = { R.drawable.ic_question }
-private val unusedName : (context : Context) -> String = { "?" }
-private val unusedName2 : Column.(long : Boolean) -> String? = { null }
+private val unusedIconId : (acct : String) -> Int =
+	{ R.drawable.ic_question }
 
-class ColumnTypeProc(
+private val unusedName : (context : Context) -> String =
+	{ "?" }
+
+private val unusedName2 : Column.(long : Boolean) -> String? =
+	{ null }
+
+enum class ColumnType(
+	val id : Int = 0,
 	val iconId : (acct : String) -> Int = unusedIconId,
-	val name : (context : Context) -> String = unusedName,
+	val name1 : (context : Context) -> String = unusedName,
 	val name2 : Column.(long : Boolean) -> String? = unusedName2,
 	val loading : ColumnTask_Loading.(client : TootApiClient) -> TootApiResult?,
 	val refresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? = unsupportedRefresh,
 	val gap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? = unsupportedGap
-)
-
-private fun SparseArray<ColumnTypeProc>.add(
-	type : Int,
-	iconId : (acct : String) -> Int = unusedIconId,
-	name : (context : Context) -> String = unusedName,
-	name2 : Column.(long : Boolean) -> String? = unusedName2,
-	loading : ColumnTask_Loading.(client : TootApiClient) -> TootApiResult?,
-	refresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? = unsupportedRefresh,
-	gap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? = unsupportedGap
-) = put(type, ColumnTypeProc(iconId, name, name2, loading, refresh, gap))
-
-private val profileStatusMastodon = ColumnTypeProc(
+) {
 	
-	loading = { client ->
-		var instance = access_info.instance
-		
-		// まだ取得してない
-		// 疑似アカウントの場合は過去のデータが別タンスかもしれない?
-		if(instance == null || access_info.isPseudo) {
-			getInstanceInformation(client, null)
-			if(instance_tmp != null) {
-				instance = instance_tmp
-				access_info.instance = instance
+	ProfileStatusMastodon(
+		loading = { client ->
+			var instance = access_info.instance
+			
+			// まだ取得してない
+			// 疑似アカウントの場合は過去のデータが別タンスかもしれない?
+			if(instance == null || access_info.isPseudo) {
+				getInstanceInformation(client, null)
+				if(instance_tmp != null) {
+					instance = instance_tmp
+					access_info.instance = instance
+				}
 			}
-		}
+			
+			val path = column.makeProfileStatusesUrl(column.profile_id)
+			
+			if(instance?.versionGE(TootInstance.VERSION_1_6) == true
+			// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
+			// && instance.instanceType != TootInstance.InstanceType.Pleroma
+			) {
+				getStatusesPinned(client, "$path&pinned=true")
+			}
+			
+			getStatusList(client, path)
+		},
 		
-		val path = column.makeProfileStatusesUrl(column.profile_id)
-		
-		if(instance?.versionGE(TootInstance.VERSION_1_6) == true
-		// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
-		// && instance.instanceType != TootInstance.InstanceType.Pleroma
-		) {
-			getStatusesPinned(client, "$path&pinned=true")
-		}
-		
-		getStatusList(client, path)
-	},
+		refresh = { client ->
+			getStatusList(
+				client,
+				column.makeProfileStatusesUrl(column.profile_id)
+			)
+		},
+		gap = { client -> getStatusList(client, column.makeProfileStatusesUrl(column.profile_id)) }
+	),
 	
-	refresh = { client -> getStatusList(client, column.makeProfileStatusesUrl(column.profile_id)) },
-	gap = { client -> getStatusList(client, column.makeProfileStatusesUrl(column.profile_id)) }
-)
-
-private val profileStatusMisskey = ColumnTypeProc(
-	
-	loading = { client ->
-		// 固定トゥートの取得
-		val pinnedNotes = column.who_account?.get()?.pinnedNotes
-		if(pinnedNotes != null) {
-			this.list_pinned = addWithFilterStatus(null, pinnedNotes)
-		}
-		
-		// 通常トゥートの取得
-		getStatusList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_STATUSES,
-			misskeyParams = column.makeMisskeyParamsProfileStatuses(parser),
-			initialUntilDate = true
-		)
-	},
-	refresh = { client ->
-		getStatusList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_STATUSES,
-			misskeyParams = column.makeMisskeyParamsProfileStatuses(parser)
-		)
-	},
-	gap = { client ->
-		getStatusList(
-			client
-			, Column.PATH_MISSKEY_PROFILE_STATUSES
-			, misskeyParams = column.makeMisskeyParamsProfileStatuses(parser)
-		)
-	}
-)
-
-private val followingMastodon = ColumnTypeProc(
-	
-	loading = { client ->
-		getAccountList(
-			client,
-			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id),
-			emptyMessage = context.getString(R.string.none_or_hidden_following)
-		)
-	},
-	refresh = { client ->
-		getAccountList(
-			client,
-			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id)
-		)
-	},
-	gap = { client ->
-		getAccountList(
-			client,
-			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id)
-		)
-	}
-)
-
-private val followingMastodonPseudo = ColumnTypeProc(
-	
-	loading = {
-		column.idRecent = null
-		column.idOld = null
-		list_tmp = addOne(
-			list_tmp,
-			TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
-		)
-		TootApiResult()
-	}
-)
-
-private val followingMisskey10 = ColumnTypeProc(
-	
-	loading = { client ->
-		column.pagingType = ColumnPagingType.Cursor
-		getAccountList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
-			emptyMessage = context.getString(R.string.none_or_hidden_following),
-			misskeyParams = column.makeMisskeyParamsUserId(parser),
-			misskeyArrayFinder = misskeyArrayFinderUsers
-		)
-	},
-	refresh = { client ->
-		getAccountList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
-			misskeyParams = column.makeMisskeyParamsUserId(parser),
-			misskeyArrayFinder = misskeyArrayFinderUsers
-		)
-	},
-	gap = { client ->
-		getAccountList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
-			misskeyParams = column.makeMisskeyParamsUserId(parser),
-			misskeyArrayFinder = misskeyArrayFinderUsers
-		)
-	}
-)
-
-private val followingMisskey11 = ColumnTypeProc(
-	
-	loading = { client ->
-		column.pagingType = ColumnPagingType.Default
-		column.useDate = false
-		getAccountList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
-			emptyMessage = context.getString(R.string.none_or_hidden_following),
-			misskeyParams = column.makeMisskeyParamsUserId(parser),
-			misskeyCustomParser = misskeyFollowingParser
-		)
-	},
-	refresh = { client ->
-		column.useDate = false
-		getAccountList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
-			misskeyParams = column.makeMisskeyParamsUserId(parser),
-			misskeyCustomParser = misskeyFollowingParser
-		)
-	},
-	gap = { client ->
-		getAccountList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
-			misskeyParams = column.makeMisskeyParamsUserId(parser),
-			misskeyCustomParser = misskeyFollowingParser
-		)
-	}
-)
-
-private val followersMisskey11 = ColumnTypeProc(
-	
-	loading = { client ->
-		column.pagingType = ColumnPagingType.Default
-		getAccountList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
-			emptyMessage = context.getString(R.string.none_or_hidden_followers),
-			misskeyParams = column.makeMisskeyParamsUserId(parser),
-			misskeyCustomParser = misskeyFollowersParser
-		)
-	},
-	
-	refresh = { client ->
-		column.useDate = false
-		getAccountList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
-			misskeyParams = column.makeMisskeyParamsUserId(parser),
-			misskeyCustomParser = misskeyFollowersParser
-		)
-	},
-	gap = { client ->
-		getAccountList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_FOLLOWING,
-			misskeyParams = column.makeMisskeyParamsUserId(parser),
-			misskeyCustomParser = misskeyFollowersParser
-		)
-	}
-)
-
-private val followersMisskey10 = ColumnTypeProc(
-	
-	loading = { client ->
-		column.pagingType = ColumnPagingType.Cursor
-		getAccountList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
-			emptyMessage = context.getString(R.string.none_or_hidden_followers),
-			misskeyParams = column.makeMisskeyParamsUserId(parser),
-			misskeyArrayFinder = misskeyArrayFinderUsers
-		)
-	},
-	
-	refresh = { client ->
-		getAccountList(
-			client,
-			Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
-			misskeyParams = column.makeMisskeyParamsUserId(parser),
-			misskeyArrayFinder = misskeyArrayFinderUsers
-		)
-	},
-	gap = { client ->
-		getAccountList(
-			client
-			, Column.PATH_MISSKEY_PROFILE_FOLLOWERS
-			, misskeyParams = column.makeMisskeyParamsUserId(parser)
-		)
-	}
-)
-
-private val followersMastodonPseudo = ColumnTypeProc(
-	
-	loading = {
-		column.idRecent = null
-		column.idOld = null
-		list_tmp = addOne(
-			list_tmp,
-			TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
-		)
-		TootApiResult()
-	}
-)
-
-private val followersMastodon = ColumnTypeProc(
-	
-	loading = { client ->
-		getAccountList(
-			client,
-			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id),
-			emptyMessage = context.getString(R.string.none_or_hidden_followers)
-		)
-	},
-	
-	refresh = { client ->
-		getAccountList(
-			client,
-			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id)
-		)
-	},
-	gap = { client ->
-		getAccountList(
-			client,
-			String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id)
-		)
-	}
-)
-
-private val profileTabProcMap = SparseArray<ColumnTypeProc>().apply {
-	
-	add(Column.TAB_STATUS,
+	ProfileStatusMisskey(
 		
 		loading = { client ->
+			// 固定トゥートの取得
+			val pinnedNotes = column.who_account?.get()?.pinnedNotes
+			if(pinnedNotes != null) {
+				this.list_pinned = addWithFilterStatus(null, pinnedNotes)
+			}
+			
+			// 通常トゥートの取得
+			getStatusList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_STATUSES,
+				misskeyParams = column.makeMisskeyParamsProfileStatuses(parser),
+				initialUntilDate = true
+			)
+		},
+		refresh = { client ->
+			getStatusList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_STATUSES,
+				misskeyParams = column.makeMisskeyParamsProfileStatuses(parser)
+			)
+		},
+		gap = { client ->
+			getStatusList(
+				client
+				, Column.PATH_MISSKEY_PROFILE_STATUSES
+				, misskeyParams = column.makeMisskeyParamsProfileStatuses(parser)
+			)
+		}
+	),
+	
+	FollowingMastodon(
+		
+		loading = { client ->
+			getAccountList(
+				client,
+				String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id),
+				emptyMessage = context.getString(R.string.none_or_hidden_following)
+			)
+		},
+		refresh = { client ->
+			getAccountList(
+				client,
+				String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id)
+			)
+		},
+		gap = { client ->
+			getAccountList(
+				client,
+				String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id)
+			)
+		}
+	),
+	
+	FollowingMastodonPseudo(
+		
+		loading = {
+			column.idRecent = null
+			column.idOld = null
+			list_tmp = addOne(
+				list_tmp,
+				TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
+			)
+			TootApiResult()
+		}
+	),
+	
+	FollowingMisskey10(
+		
+		loading = { client ->
+			column.pagingType = ColumnPagingType.Cursor
+			getAccountList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+				emptyMessage = context.getString(R.string.none_or_hidden_following),
+				misskeyParams = column.makeMisskeyParamsUserId(parser),
+				misskeyArrayFinder = misskeyArrayFinderUsers
+			)
+		},
+		refresh = { client ->
+			getAccountList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+				misskeyParams = column.makeMisskeyParamsUserId(parser),
+				misskeyArrayFinder = misskeyArrayFinderUsers
+			)
+		},
+		gap = { client ->
+			getAccountList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+				misskeyParams = column.makeMisskeyParamsUserId(parser),
+				misskeyArrayFinder = misskeyArrayFinderUsers
+			)
+		}
+	),
+	
+	FollowingMisskey11(
+		
+		loading = { client ->
+			column.pagingType = ColumnPagingType.Default
+			column.useDate = false
+			getAccountList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+				emptyMessage = context.getString(R.string.none_or_hidden_following),
+				misskeyParams = column.makeMisskeyParamsUserId(parser),
+				misskeyCustomParser = misskeyFollowingParser
+			)
+		},
+		refresh = { client ->
+			column.useDate = false
+			getAccountList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+				misskeyParams = column.makeMisskeyParamsUserId(parser),
+				misskeyCustomParser = misskeyFollowingParser
+			)
+		},
+		gap = { client ->
+			getAccountList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+				misskeyParams = column.makeMisskeyParamsUserId(parser),
+				misskeyCustomParser = misskeyFollowingParser
+			)
+		}
+	),
+	
+	FollowersMisskey11(
+		
+		loading = { client ->
+			column.pagingType = ColumnPagingType.Default
+			getAccountList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
+				emptyMessage = context.getString(R.string.none_or_hidden_followers),
+				misskeyParams = column.makeMisskeyParamsUserId(parser),
+				misskeyCustomParser = misskeyFollowersParser
+			)
+		},
+		
+		refresh = { client ->
+			column.useDate = false
+			getAccountList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
+				misskeyParams = column.makeMisskeyParamsUserId(parser),
+				misskeyCustomParser = misskeyFollowersParser
+			)
+		},
+		gap = { client ->
+			getAccountList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+				misskeyParams = column.makeMisskeyParamsUserId(parser),
+				misskeyCustomParser = misskeyFollowersParser
+			)
+		}
+	),
+	
+	FollowersMisskey10(
+		
+		loading = { client ->
+			column.pagingType = ColumnPagingType.Cursor
+			getAccountList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
+				emptyMessage = context.getString(R.string.none_or_hidden_followers),
+				misskeyParams = column.makeMisskeyParamsUserId(parser),
+				misskeyArrayFinder = misskeyArrayFinderUsers
+			)
+		},
+		
+		refresh = { client ->
+			getAccountList(
+				client,
+				Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
+				misskeyParams = column.makeMisskeyParamsUserId(parser),
+				misskeyArrayFinder = misskeyArrayFinderUsers
+			)
+		},
+		gap = { client ->
+			getAccountList(
+				client
+				, Column.PATH_MISSKEY_PROFILE_FOLLOWERS
+				, misskeyParams = column.makeMisskeyParamsUserId(parser)
+			)
+		}
+	),
+	
+	FollowersMastodonPseudo(
+		
+		loading = {
+			column.idRecent = null
+			column.idOld = null
+			list_tmp = addOne(
+				list_tmp,
+				TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
+			)
+			TootApiResult()
+		}
+	),
+	
+	FollowersMastodon(
+		
+		loading = { client ->
+			getAccountList(
+				client,
+				String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id),
+				emptyMessage = context.getString(R.string.none_or_hidden_followers)
+			)
+		},
+		
+		refresh = { client ->
+			getAccountList(
+				client,
+				String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id)
+			)
+		},
+		gap = { client ->
+			getAccountList(
+				client,
+				String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id)
+			)
+		}
+	),
+	
+	TabStatus(
+		loading = { client ->
 			when {
-				isMisskey -> profileStatusMisskey.loading(this, client)
-				else -> profileStatusMastodon.loading(this, client)
+				isMisskey -> ProfileStatusMisskey.loading(this, client)
+				else -> ProfileStatusMastodon.loading(this, client)
 			}
 		},
 		
 		refresh = { client ->
 			when {
-				isMisskey -> profileStatusMisskey.refresh(this, client)
-				else -> profileStatusMastodon.refresh(this, client)
+				isMisskey -> ProfileStatusMisskey.refresh(this, client)
+				else -> ProfileStatusMastodon.refresh(this, client)
 			}
 		},
 		
 		gap = { client ->
 			when {
-				isMisskey -> profileStatusMisskey.gap(this, client)
-				else -> profileStatusMastodon.gap(this, client)
+				isMisskey -> ProfileStatusMisskey.gap(this, client)
+				else -> ProfileStatusMastodon.gap(this, client)
 			}
 		}
-	)
+	),
 	
-	
-	add(Column.TAB_FOLLOWING,
-		
+	TabFollowing(
 		loading = { client ->
 			when {
-				misskeyVersion >= 11 -> followingMisskey11.loading(this, client)
-				isMisskey -> followingMisskey10.loading(this, client)
-				access_info.isPseudo -> followingMastodonPseudo.loading(this, client)
-				else -> followingMastodon.loading(this, client)
+				misskeyVersion >= 11 -> FollowingMisskey11.loading(this, client)
+				isMisskey -> FollowingMisskey10.loading(this, client)
+				access_info.isPseudo -> FollowingMastodonPseudo.loading(this, client)
+				else -> FollowingMastodon.loading(this, client)
 			}
 		},
 		
 		refresh = { client ->
 			when {
-				misskeyVersion >= 11 -> followingMisskey11.refresh(this, client)
-				isMisskey -> followingMisskey10.refresh(this, client)
-				else -> followingMastodon.refresh(this, client)
+				misskeyVersion >= 11 -> FollowingMisskey11.refresh(this, client)
+				isMisskey -> FollowingMisskey10.refresh(this, client)
+				else -> FollowingMastodon.refresh(this, client)
 			}
 		},
 		
 		gap = { client ->
 			when {
-				misskeyVersion >= 11 -> followingMisskey11.gap(this, client)
-				isMisskey -> followingMisskey10.gap(this, client)
-				else -> followingMastodon.gap(this, client)
+				misskeyVersion >= 11 -> FollowingMisskey11.gap(this, client)
+				isMisskey -> FollowingMisskey10.gap(this, client)
+				else -> FollowingMastodon.gap(this, client)
 			}
 		}
-	)
-	
-	
-	add(Column.TAB_FOLLOWERS,
-		
-		loading = { client ->
-			when {
-				misskeyVersion >= 11 -> followersMisskey11.loading(this, client)
-				isMisskey -> followersMisskey10.loading(this, client)
-				access_info.isPseudo -> followersMastodonPseudo.loading(this, client)
-				else -> followersMastodon.loading(this, client)
-			}
-		},
-		
-		refresh = { client ->
-			when {
-				misskeyVersion >= 11 -> followersMisskey11.refresh(this, client)
-				isMisskey -> followersMisskey10.refresh(this, client)
-				access_info.isPseudo -> followersMastodonPseudo.refresh(this, client)
-				else -> followersMastodon.refresh(this, client)
-			}
-		},
-		
-		gap = { client ->
-			when {
-				misskeyVersion >= 11 -> followersMisskey11.gap(this, client)
-				isMisskey -> followersMisskey10.gap(this, client)
-				access_info.isPseudo -> followersMastodonPseudo.gap(this, client)
-				else -> followersMastodon.gap(this, client)
-			}
-		}
-	)
-}
+	),
 
-val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
+	TabFollowers(
+		
+		loading = { client ->
+			when {
+				misskeyVersion >= 11 -> FollowersMisskey11.loading(this, client)
+				isMisskey -> FollowersMisskey10.loading(this, client)
+				access_info.isPseudo -> FollowersMastodonPseudo.loading(this, client)
+				else -> FollowersMastodon.loading(this, client)
+			}
+		},
+		
+		refresh = { client ->
+			when {
+				misskeyVersion >= 11 -> FollowersMisskey11.refresh(this, client)
+				isMisskey -> FollowersMisskey10.refresh(this, client)
+				access_info.isPseudo -> FollowersMastodonPseudo.refresh(this, client)
+				else -> FollowersMastodon.refresh(this, client)
+			}
+		},
+		
+		gap = { client ->
+			when {
+				misskeyVersion >= 11 -> FollowersMisskey11.gap(this, client)
+				isMisskey -> FollowersMisskey10.gap(this, client)
+				access_info.isPseudo -> FollowersMastodonPseudo.gap(this, client)
+				else -> FollowersMastodon.gap(this, client)
+			}
+		}
+	),
 	
-	add(Column.TYPE_HOME,
+	HOME(id = 1,
 		iconId = { R.drawable.ic_home },
-		name = { it.getString(R.string.home) },
+		name1 = { it.getString(R.string.home) },
 		
 		loading = { client -> getStatusList(client, column.makeHomeTlUrl()) },
 		refresh = { client -> getStatusList(client, column.makeHomeTlUrl()) },
 		gap = { client -> getStatusList(client, column.makeHomeTlUrl()) }
-	)
+	),
 	
-	add(Column.TYPE_LOCAL,
+	LOCAL(
+		id = 2,
 		iconId = { R.drawable.ic_run },
-		name = { it.getString(R.string.local_timeline) },
+		name1 = { it.getString(R.string.local_timeline) },
 		
 		loading = { client -> getStatusList(client, column.makePublicLocalUrl()) },
 		refresh = { client -> getStatusList(client, column.makePublicLocalUrl()) },
 		gap = { client -> getStatusList(client, column.makePublicLocalUrl()) }
-	)
+	),
 	
-	add(Column.TYPE_FEDERATE,
+	FEDERATE(3,
 		iconId = { R.drawable.ic_bike },
-		name = { it.getString(R.string.federate_timeline) },
+		name1 = { it.getString(R.string.federate_timeline) },
 		
 		loading = { client -> getStatusList(client, column.makePublicFederateUrl()) },
 		refresh = { client -> getStatusList(client, column.makePublicFederateUrl()) },
 		gap = { client -> getStatusList(client, column.makePublicFederateUrl()) }
-	)
+	),
 	
-	add(Column.TYPE_MISSKEY_HYBRID,
+	MISSKEY_HYBRID(27,
 		iconId = { R.drawable.ic_share },
-		name = { it.getString(R.string.misskey_hybrid_timeline) },
+		name1 = { it.getString(R.string.misskey_hybrid_timeline) },
 		
 		loading = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
 		refresh = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
 		gap = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) }
-	)
+	),
 	
-	add(Column.TYPE_LOCAL_AROUND,
+	LOCAL_AROUND(29,
 		iconId = { R.drawable.ic_run },
-		name = { it.getString(R.string.ltl_around) },
+		name1 = { it.getString(R.string.ltl_around) },
 		name2 = {
 			context.getString(
 				R.string.ltl_around_of,
@@ -463,11 +451,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				rv
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_FEDERATED_AROUND,
+	FEDERATED_AROUND(30,
 		iconId = { R.drawable.ic_bike },
-		name = { it.getString(R.string.ftl_around) },
+		name1 = { it.getString(R.string.ftl_around) },
 		name2 = {
 			context.getString(
 				R.string.ftl_around_of,
@@ -486,11 +474,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				rv
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_PROFILE,
+	PROFILE(4,
 		iconId = { R.drawable.ic_account_box },
-		name = { it.getString(R.string.profile) },
+		name1 = { it.getString(R.string.profile) },
 		name2 = {
 			val who = who_account?.get()
 			context.getString(
@@ -504,27 +492,26 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 		
 		loading = { client ->
 			val who_result = column.loadProfileAccount(client, parser, true)
-			if(client.isApiCancelled || column.who_account == null) return@add who_result
-			(profileTabProcMap[column.profile_tab] ?: profileTabProcMap[Column.TAB_STATUS])
-				.loading(this, client)
+			if(client.isApiCancelled || column.who_account == null)
+				who_result
+			else
+				column.profile_tab.ct.loading(this, client)
+			
 		},
 		
 		refresh = { client ->
 			column.loadProfileAccount(client, parser, false)
-			(profileTabProcMap[column.profile_tab] ?: profileTabProcMap[Column.TAB_STATUS])
-				.refresh(this, client)
-			
+			column.profile_tab.ct.refresh(this, client)
 		},
 		
 		gap = { client ->
-			(profileTabProcMap[column.profile_tab] ?: profileTabProcMap[Column.TAB_STATUS])
-				.gap(this, client)
+			column.profile_tab.ct.gap(this, client)
 		}
-	)
+	),
 	
-	add(Column.TYPE_FAVOURITES,
+	FAVOURITES(5,
 		iconId = { if(SavedAccount.isNicoru(it)) R.drawable.ic_nicoru else R.drawable.ic_star },
-		name = { it.getString(R.string.favourites) },
+		name1 = { it.getString(R.string.favourites) },
 		
 		loading = { client ->
 			if(isMisskey) {
@@ -567,11 +554,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				getStatusList(client, Column.PATH_FAVOURITES)
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_NOTIFICATIONS,
+	NOTIFICATIONS(7,
 		iconId = { R.drawable.ic_announcement },
-		name = { it.getString(R.string.notifications) },
+		name1 = { it.getString(R.string.notifications) },
 		name2 = {
 			context.getString(R.string.notifications) + getNotificationTypeString()
 		},
@@ -579,11 +566,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 		loading = { client -> getNotificationList(client) },
 		refresh = { client -> getNotificationList(client) },
 		gap = { client -> getNotificationList(client) }
-	)
+	),
 	
-	add(Column.TYPE_NOTIFICATION_FROM_ACCT,
+	NOTIFICATION_FROM_ACCT(35,
 		iconId = { R.drawable.ic_announcement },
-		name = { it.getString(R.string.notifications_from_acct) },
+		name1 = { it.getString(R.string.notifications_from_acct) },
 		name2 = {
 			context.getString(
 				R.string.notifications_from,
@@ -594,11 +581,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 		loading = { client -> getNotificationList(client, column.hashtag_acct) },
 		refresh = { client -> getNotificationList(client, column.hashtag_acct) },
 		gap = { client -> getNotificationList(client, column.hashtag_acct) }
-	)
+	),
 	
-	add(Column.TYPE_CONVERSATION,
+	CONVERSATION(8,
 		iconId = { R.drawable.ic_forum },
-		name = { it.getString(R.string.conversation) },
+		name1 = { it.getString(R.string.conversation) },
 		name2 = {
 			context.getString(
 				R.string.conversation_around,
@@ -607,145 +594,13 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 		},
 		
 		loading = { client ->
-			
-			if(isMisskey) {
-				// 指定された発言そのもの
-				val queryParams = column.makeMisskeyBaseParameter(parser)
-					.put("noteId", column.status_id)
-				var result = client.request(
-					"/api/notes/show"
-					, queryParams.toPostRequestBuilder()
-				)
-				val jsonObject = result?.jsonObject ?: return@add result
-				val target_status = parser.status(jsonObject)
-					?: return@add TootApiResult("TootStatus parse failed.")
-				target_status.conversation_main = true
-				
-				// 祖先
-				val list_asc = ArrayList<TootStatus>()
-				while(true) {
-					if(client.isApiCancelled) return@add null
-					queryParams.put("offset", list_asc.size)
-					result = client.request(
-						"/api/notes/conversation"
-						, queryParams.toPostRequestBuilder()
-					)
-					val jsonArray = result?.jsonArray ?: return@add result
-					val src = parser.statusList(jsonArray)
-					if(src.isEmpty()) break
-					list_asc.addAll(src)
-				}
-				
-				// 直接の子リプライ。(子孫をたどることまではしない)
-				val list_desc = ArrayList<TootStatus>()
-				val idSet = HashSet<EntityId>()
-				var untilId : EntityId? = null
-				
-				while(true) {
-					if(client.isApiCancelled) return@add null
-					
-					when {
-						untilId == null -> {
-							queryParams.remove("untilId")
-							queryParams.remove("offset")
-						}
-						
-						misskeyVersion >= 11 -> {
-							queryParams.put("untilId", untilId.toString())
-						}
-						
-						else -> queryParams.put("offset", list_desc.size)
-					}
-					
-					result = client.request(
-						"/api/notes/replies"
-						, queryParams.toPostRequestBuilder()
-					)
-					val jsonArray = result?.jsonArray ?: return@add result
-					val src = parser.statusList(jsonArray)
-					untilId = null
-					for(status in src) {
-						if(idSet.contains(status.id)) continue
-						idSet.add(status.id)
-						list_desc.add(status)
-						untilId = status.id
-					}
-					if(untilId == null) break
-				}
-				
-				// 一つのリストにまとめる
-				this.list_tmp = ArrayList<TimelineItem>(
-					list_asc.size + list_desc.size + 2
-				).apply {
-					addAll(list_asc.sortedBy { it.time_created_at })
-					add(target_status)
-					addAll(list_desc.sortedBy { it.time_created_at })
-					add(TootMessageHolder(context.getString(R.string.misskey_cant_show_all_descendants)))
-				}
-				
-				//
-				result
-				
-			} else {
-				// 指定された発言そのもの
-				var result = client.request(
-					String.format(Locale.JAPAN, Column.PATH_STATUSES, column.status_id)
-				)
-				var jsonObject = result?.jsonObject ?: return@add result
-				val target_status = parser.status(jsonObject)
-					?: return@add TootApiResult("TootStatus parse failed.")
-				
-				// 前後の会話
-				result = client.request(
-					String.format(
-						Locale.JAPAN,
-						Column.PATH_STATUSES_CONTEXT, column.status_id
-					)
-				)
-				jsonObject = result?.jsonObject ?: return@add result
-				val conversation_context =
-					parseItem(::TootContext, parser, jsonObject)
-				
-				// 一つのリストにまとめる
-				target_status.conversation_main = true
-				if(conversation_context != null) {
-					
-					this.list_tmp = ArrayList(
-						1
-							+ (conversation_context.ancestors?.size ?: 0)
-							+ (conversation_context.descendants?.size ?: 0)
-					)
-					//
-					if(conversation_context.ancestors != null)
-						addWithFilterStatus(
-							this.list_tmp,
-							conversation_context.ancestors
-						)
-					//
-					addOne(list_tmp, target_status)
-					//
-					if(conversation_context.descendants != null)
-						addWithFilterStatus(
-							this.list_tmp,
-							conversation_context.descendants
-						)
-					//
-				} else {
-					this.list_tmp = addOne(this.list_tmp, target_status)
-					this.list_tmp = addOne(
-						this.list_tmp,
-						TootMessageHolder(context.getString(R.string.toot_context_parse_failed))
-					)
-				}
-				
-				result
-			}
-			
+			getConversation(client)
 		}
-	)
-	add(Column.TYPE_HASHTAG,
+	),
+	
+	HASHTAG(9,
 		iconId = { R.drawable.ic_hashtag },
-		name = { it.getString(R.string.hashtag) },
+		name1 = { it.getString(R.string.hashtag) },
 		name2 = {
 			StringBuilder(
 				context.getString(
@@ -793,12 +648,12 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				getStatusList(client, column.makeHashtagUrl())
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_HASHTAG_FROM_ACCT,
+	HASHTAG_FROM_ACCT(34,
 		
 		iconId = { R.drawable.ic_hashtag },
-		name = { it.getString(R.string.hashtag_from_acct) },
+		name1 = { it.getString(R.string.hashtag_from_acct) },
 		name2 = {
 			StringBuilder(
 				context.getString(
@@ -847,11 +702,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				getStatusList(client, column.makeHashtagAcctUrl(client))
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_SEARCH,
+	SEARCH(10,
 		iconId = { R.drawable.ic_search },
-		name = { it.getString(R.string.search) },
+		name1 = { it.getString(R.string.search) },
 		name2 = { long ->
 			when {
 				long -> context.getString(R.string.search_of, search_query)
@@ -860,149 +715,20 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 		},
 		
 		loading = { client ->
-			if(isMisskey) {
-				var result : TootApiResult? = TootApiResult()
-				val parser = TootParser(context, access_info)
-				
-				list_tmp = ArrayList()
-				
-				val queryAccount = column.search_query.trim().replace("^@".toRegex(), "")
-				if(queryAccount.isNotEmpty()) {
-					result = client.request(
-						"/api/users/search",
-						access_info.putMisskeyApiToken()
-							.put("query", queryAccount)
-							.put("localOnly", ! column.search_resolve).toPostRequestBuilder()
-					)
-					val jsonArray = result?.jsonArray
-					if(jsonArray != null) {
-						val src =
-							TootParser(context, access_info).accountList(jsonArray)
-						list_tmp = addAll(list_tmp, src)
-					}
-				}
-				
-				val queryTag = column.search_query.trim().replace("^#".toRegex(), "")
-				if(queryTag.isNotEmpty()) {
-					result = client.request(
-						"/api/hashtags/search",
-						access_info.putMisskeyApiToken()
-							.put("query", queryTag)
-							.toPostRequestBuilder()
-					)
-					val jsonArray = result?.jsonArray
-					if(jsonArray != null) {
-						val src = TootTag.parseTootTagList(parser, jsonArray)
-						list_tmp = addAll(list_tmp, src)
-					}
-				}
-				if(column.search_query.isNotEmpty()) {
-					result = client.request(
-						"/api/notes/search",
-						access_info.putMisskeyApiToken()
-							.put("query", column.search_query)
-							.toPostRequestBuilder()
-					)
-					val jsonArray = result?.jsonArray
-					if(jsonArray != null) {
-						val src = parser.statusList(jsonArray)
-						list_tmp = addWithFilterStatus(list_tmp, src)
-					}
-				}
-				
-				// 検索機能が無効だとsearch_query が 400を返すが、他のAPIがデータを返したら成功したことにする
-				if(list_tmp?.isNotEmpty() == true) {
-					TootApiResult()
-				} else {
-					result
-				}
-			} else {
-				if(access_info.isPseudo) {
-					// 1.5.0rc からマストドンの検索APIは認証を要求するようになった
-					return@add TootApiResult(context.getString(R.string.search_is_not_available_on_pseudo_account))
-				}
-				
-				var instance = access_info.instance
-				if(instance == null) {
-					getInstanceInformation(client, null)
-					if(instance_tmp != null) {
-						instance = instance_tmp
-						access_info.instance = instance
-					}
-				}
-				
-				var result : TootApiResult?
-				
-				if(instance?.versionGE(TootInstance.VERSION_2_4_0) == true) {
-					// v2 api を試す
-					var path = String.format(
-						Locale.JAPAN,
-						Column.PATH_SEARCH_V2,
-						column.search_query.encodePercent()
-					)
-					if(column.search_resolve) path += "&resolve=1"
-					
-					result = client.request(path)
-					val jsonObject = result?.jsonObject
-					if(jsonObject != null) {
-						val tmp = parser.resultsV2(jsonObject)
-						if(tmp != null) {
-							list_tmp = ArrayList()
-							addAll(list_tmp, tmp.hashtags)
-							if(tmp.hashtags.isNotEmpty()){
-								addOne(list_tmp,TootSearchGap(TootSearchGap.SearchType.Hashtag))
-							}
-							addAll(list_tmp, tmp.accounts)
-							if(tmp.accounts.isNotEmpty()){
-								addOne(list_tmp,TootSearchGap(TootSearchGap.SearchType.Account))
-							}
-							addAll(list_tmp, tmp.statuses)
-							if(tmp.statuses.isNotEmpty()){
-								addOne(list_tmp,TootSearchGap(TootSearchGap.SearchType.Status))
-							}
-							return@add result
-						}
-					}
-					if(instance.versionGE(TootInstance.VERSION_2_4_1_rc1)) {
-						// 2.4.1rc1以降はv2が確実に存在するはずなので、v1へのフォールバックを行わない
-						return@add result
-					}
-				}
-				
-				var path = String.format(
-					Locale.JAPAN,
-					Column.PATH_SEARCH,
-					column.search_query.encodePercent()
-				)
-				if(column.search_resolve) path += "&resolve=1"
-				
-				result = client.request(path)
-				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
-					val tmp = parser.results(jsonObject)
-					if(tmp != null) {
-						list_tmp = ArrayList()
-						addAll(list_tmp, tmp.hashtags)
-						addAll(list_tmp, tmp.accounts)
-						addAll(list_tmp, tmp.statuses)
-					}
-				}
-				
-				result
-			}
+			getSearch(client)
 		},
 		gap = { client ->
 			getSearchGap(client)
 		}
-	)
+	),
 	
 	// ミスキーのミュートとブロックののページングは misskey v10 の途中で変わった
 	// https://github.com/syuilo/misskey/commit/f7069dcd18d72b52408a6bd80ad8f14492163e19
 	// ST的には新しい方にだけ対応する
 	
-	add(Column.TYPE_MUTES,
+	MUTES(11,
 		iconId = { R.drawable.ic_volume_off },
-		name = { it.getString(R.string.muted_users) },
+		name1 = { it.getString(R.string.muted_users) },
 		
 		loading = { client ->
 			when {
@@ -1046,11 +772,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				else -> getAccountList(client, Column.PATH_MUTES)
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_BLOCKS,
+	BLOCKS(12,
 		iconId = { R.drawable.ic_block },
-		name = { it.getString(R.string.blocked_users) },
+		name1 = { it.getString(R.string.blocked_users) },
 		
 		loading = { client ->
 			when {
@@ -1097,11 +823,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				else -> getAccountList(client, Column.PATH_BLOCKS)
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_FOLLOW_REQUESTS,
+	FOLLOW_REQUESTS(13,
 		iconId = { R.drawable.ic_follow_wait },
-		name = { it.getString(R.string.follow_requests) },
+		name1 = { it.getString(R.string.follow_requests) },
 		
 		loading = { client ->
 			if(isMisskey) {
@@ -1140,11 +866,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				getAccountList(client, Column.PATH_FOLLOW_REQUESTS)
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_BOOSTED_BY,
+	BOOSTED_BY(14,
 		iconId = { R.drawable.ic_repeat },
-		name = { it.getString(R.string.boosted_by) },
+		name1 = { it.getString(R.string.boosted_by) },
 		
 		loading = { client ->
 			getAccountList(
@@ -1164,11 +890,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				String.format(Locale.JAPAN, Column.PATH_BOOSTED_BY, column.status_id)
 			)
 		}
-	)
+	),
 	
-	add(Column.TYPE_FAVOURITED_BY,
+	FAVOURITED_BY(15,
 		iconId = { if(SavedAccount.isNicoru(it)) R.drawable.ic_nicoru else R.drawable.ic_star },
-		name = { it.getString(R.string.favourited_by) },
+		name1 = { it.getString(R.string.favourited_by) },
 		
 		loading = { client ->
 			getAccountList(
@@ -1188,19 +914,19 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				String.format(Locale.JAPAN, Column.PATH_FAVOURITED_BY, column.status_id)
 			)
 		}
-	)
+	),
 	
-	add(Column.TYPE_DOMAIN_BLOCKS,
+	DOMAIN_BLOCKS(16,
 		iconId = { R.drawable.ic_cloud_off },
-		name = { it.getString(R.string.blocked_domains) },
+		name1 = { it.getString(R.string.blocked_domains) },
 		
 		loading = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) },
 		refresh = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) }
-	)
+	),
 	
-	add(Column.TYPE_SEARCH_MSP,
+	SEARCH_MSP(17,
 		iconId = { R.drawable.ic_search },
-		name = { it.getString(R.string.toot_search_msp) },
+		name1 = { it.getString(R.string.toot_search_msp) },
 		name2 = { long ->
 			when {
 				long -> context.getString(R.string.toot_search_msp_of, search_query)
@@ -1264,11 +990,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				result
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_SEARCH_TS,
+	SEARCH_TS(22,
 		iconId = { R.drawable.ic_search },
-		name = { it.getString(R.string.toot_search_ts) },
+		name1 = { it.getString(R.string.toot_search_ts) },
 		name2 = { long ->
 			when {
 				long -> context.getString(R.string.toot_search_ts_of, search_query)
@@ -1339,15 +1065,15 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				result
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_INSTANCE_INFORMATION,
+	INSTANCE_INFORMATION(18,
 		iconId = { R.drawable.ic_info },
-		name = { it.getString(R.string.instance_information) },
+		name1 = { it.getString(R.string.instance_information) },
 		name2 = { long ->
 			when {
 				long -> context.getString(R.string.instance_information_of, instance_uri)
-				else ->context.getString(R.string.instance_information)
+				else -> context.getString(R.string.instance_information)
 			}
 		},
 		
@@ -1359,11 +1085,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 			}
 			result
 		}
-	)
+	),
 	
-	add(Column.TYPE_LIST_LIST,
+	LIST_LIST(19,
 		iconId = { R.drawable.ic_list_list },
-		name = { it.getString(R.string.lists) },
+		name1 = { it.getString(R.string.lists) },
 		
 		loading = { client ->
 			if(isMisskey) {
@@ -1376,11 +1102,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				parseListList(client, Column.PATH_LIST_LIST)
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_LIST_TL,
+	LIST_TL(20,
 		iconId = { R.drawable.ic_list_tl },
-		name = { it.getString(R.string.list_timeline) },
+		name1 = { it.getString(R.string.list_timeline) },
 		name2 = {
 			context.getString(
 				R.string.list_tl_of,
@@ -1428,11 +1154,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				getStatusList(client, column.makeListTlUrl())
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_LIST_MEMBER,
+	LIST_MEMBER(21,
 		iconId = { R.drawable.ic_list_member },
-		name = { it.getString(R.string.list_member) },
+		name1 = { it.getString(R.string.list_member) },
 		name2 = {
 			context.getString(
 				R.string.list_member_of,
@@ -1470,36 +1196,15 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				String.format(Locale.JAPAN, Column.PATH_LIST_MEMBER, column.profile_id)
 			)
 		}
-	)
+	),
 	
-	add(Column.TYPE_DIRECT_MESSAGES,
+	DIRECT_MESSAGES(23,
 		iconId = { R.drawable.ic_mail },
-		name = { it.getString(R.string.direct_messages) },
+		name1 = { it.getString(R.string.direct_messages) },
 		
 		loading = { client ->
-			column.useConversationSummarys = false
-			if(! column.use_old_api) {
-				
-				// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
-				val resultCS = getConversationSummary(
-					client,
-					Column.PATH_DIRECT_MESSAGES2
-				)
-				
-				when {
-					// cancelled
-					resultCS == null -> return@add null
-					
-					//  not error
-					resultCS.error.isNullOrBlank() -> {
-						column.useConversationSummarys = true
-						return@add resultCS
-					}
-				}
-			}
+			getDirectMessages(client)
 			
-			// fallback to old api
-			return@add getStatusList(client, Column.PATH_DIRECT_MESSAGES)
 		},
 		
 		refresh = { client ->
@@ -1521,11 +1226,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				getStatusList(client, Column.PATH_DIRECT_MESSAGES)
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_TREND_TAG,
+	TREND_TAG(24,
 		iconId = { R.drawable.ic_hashtag },
-		name = { it.getString(R.string.trend_tag) },
+		name1 = { it.getString(R.string.trend_tag) },
 		
 		loading = { client ->
 			val result = client.request("/api/v1/trends")
@@ -1543,11 +1248,11 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 			)
 			result
 		}
-	)
+	),
 	
-	add(Column.TYPE_FOLLOW_SUGGESTION,
+	FOLLOW_SUGGESTION(25,
 		iconId = { R.drawable.ic_follow_plus },
-		name = { it.getString(R.string.follow_suggestion) },
+		name1 = { it.getString(R.string.follow_suggestion) },
 		
 		loading = { client ->
 			if(isMisskey) {
@@ -1585,20 +1290,20 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_ENDORSEMENT,
+	ENDORSEMENT(28,
 		iconId = { R.drawable.ic_follow_plus },
-		name = { it.getString(R.string.endorse_set) },
+		name1 = { it.getString(R.string.endorse_set) },
 		
 		loading = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
 		refresh = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
 		gap = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) }
-	)
+	),
 	
-	add(Column.TYPE_ACCOUNT_AROUND,
+	ACCOUNT_AROUND(31,
 		iconId = { R.drawable.ic_account_box },
-		name = { it.getString(R.string.account_tl_around) },
+		name1 = { it.getString(R.string.account_tl_around) },
 		name2 = {
 			context.getString(
 				R.string.account_tl_around_of,
@@ -1619,30 +1324,39 @@ val columnTypeProcMap = SparseArray<ColumnTypeProc>().apply {
 				rv
 			}
 		}
-	)
+	),
 	
-	add(Column.TYPE_REPORTS,
+	@Suppress("unused")
+	REPORTS(6,
 		iconId = { R.drawable.ic_info },
-		name = { it.getString(R.string.reports) },
+		name1 = { it.getString(R.string.reports) },
 		
 		loading = { client -> getReportList(client, Column.PATH_REPORTS) },
 		refresh = { client -> getReportList(client, Column.PATH_REPORTS) },
 		gap = { client -> getReportList(client, Column.PATH_REPORTS) }
-	)
+	),
 	
-	add(Column.TYPE_KEYWORD_FILTER,
+	KEYWORD_FILTER(26,
 		iconId = { R.drawable.ic_volume_off },
-		name = { it.getString(R.string.keyword_filters) },
+		name1 = { it.getString(R.string.keyword_filters) },
 		
 		loading = { client -> parseFilterList(client, Column.PATH_FILTERS) }
-	)
+	),
 	
-	add(Column.TYPE_SCHEDULED_STATUS,
+	SCHEDULED_STATUS(33,
 		iconId = { R.drawable.ic_timer },
-		name = { it.getString(R.string.scheduled_status) },
+		name1 = { it.getString(R.string.scheduled_status) },
 		
 		loading = { client -> getScheduledStatuses(client) },
 		refresh = { client -> getScheduledStatuses(client) }
-	)
+	),
 	
+	;
+	
+	init {
+		val old = Column.typeMap[id]
+		if(id > 0 && old != null) error("ColumnType: duplicate id $id. name=$name, ${old.name}")
+		Column.typeMap.put(id, this)
+	}
 }
+

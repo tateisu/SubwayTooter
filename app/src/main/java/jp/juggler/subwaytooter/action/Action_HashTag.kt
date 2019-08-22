@@ -1,9 +1,6 @@
 package jp.juggler.subwaytooter.action
 
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Column
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -93,9 +90,9 @@ object Action_HashTag {
 		whoAcct : String? = null
 	) {
 		if( whoAcct == null) {
-			activity.addColumn(pos, access_info, Column.TYPE_HASHTAG, tag_without_sharp)
+			activity.addColumn(pos, access_info, ColumnType.HASHTAG, tag_without_sharp)
 		}else {
-			activity.addColumn(pos, access_info, Column.TYPE_HASHTAG_FROM_ACCT, tag_without_sharp,whoAcct)
+			activity.addColumn(pos, access_info, ColumnType.HASHTAG_FROM_ACCT, tag_without_sharp,whoAcct)
 		}
 	}
 	

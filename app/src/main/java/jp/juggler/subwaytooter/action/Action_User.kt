@@ -107,9 +107,9 @@ object Action_User {
 						if(column.access_info.acct != access_info.acct) continue
 						when {
 							! relation.muting -> {
-								if(column.column_type == Column.TYPE_MUTES) {
+								if(column.type == ColumnType.MUTES) {
 									// ミュート解除したら「ミュートしたユーザ」カラムから消える
-									column.removeUser(access_info, Column.TYPE_MUTES, who.id)
+									column.removeUser(access_info, ColumnType.MUTES, who.id)
 								} else {
 									// 他のカラムではフォローアイコンの表示更新が走る
 									column.updateFollowIcons(access_info)
@@ -117,7 +117,7 @@ object Action_User {
 								
 							}
 							
-							column.column_type == Column.TYPE_PROFILE && column.profile_id == who.id -> {
+							column.type == ColumnType.PROFILE && column.profile_id == who.id -> {
 								// 該当ユーザのプロフページのトゥートはミュートしてても見れる
 								// しかしフォローアイコンの表示更新は必要
 								column.updateFollowIcons(access_info)
@@ -244,11 +244,11 @@ object Action_User {
 							
 							! relation.blocking -> {
 								
-								if(column.column_type == Column.TYPE_BLOCKS) {
+								if(column.type == ColumnType.BLOCKS) {
 									// ブロック解除したら「ブロックしたユーザ」カラムのリストから消える
 									column.removeUser(
 										access_info,
-										Column.TYPE_BLOCKS,
+										ColumnType.BLOCKS,
 										who.id
 									)
 								} else {
@@ -266,7 +266,7 @@ object Action_User {
 							
 							// 該当ユーザのプロフカラムではブロックしててもトゥートを見れる
 							// しかしカラム中のフォローアイコン表示の更新は必要
-							column.column_type == Column.TYPE_PROFILE && who.id == column.profile_id -> {
+							column.type == ColumnType.PROFILE && who.id == column.profile_id -> {
 								column.updateFollowIcons(access_info)
 							}
 							
@@ -321,7 +321,7 @@ object Action_User {
 						App1.openCustomTab(activity, who_url)
 					}
 					
-					else -> activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
+					else -> activity.addColumn(pos, access_info, ColumnType.PROFILE, who.id)
 				}
 			}
 		})
@@ -348,7 +348,7 @@ object Action_User {
 			accountListArg = makeAccountListNonPseudo(activity, who_host)
 		) { ai ->
 			if(ai.host.equals(access_info.host, ignoreCase = true)) {
-				activity.addColumn(pos, ai, Column.TYPE_PROFILE, who.id)
+				activity.addColumn(pos, ai, ColumnType.PROFILE, who.id)
 			} else {
 				profileFromUrl(activity, pos, ai, who.url)
 			}
@@ -364,7 +364,7 @@ object Action_User {
 	) {
 		when {
 			access_info.isNA -> profileFromAnotherAccount(activity, pos, access_info, who)
-			else -> activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
+			else -> activity.addColumn(pos, access_info, ColumnType.PROFILE, who.id)
 		}
 	}
 	
@@ -645,7 +645,7 @@ object Action_User {
 				
 				// update suggestion column
 				for(column in activity.app_state.column_list) {
-					column.removeUser(access_info, Column.TYPE_FOLLOW_SUGGESTION, who.id)
+					column.removeUser(access_info, ColumnType.FOLLOW_SUGGESTION, who.id)
 				}
 			}
 		})

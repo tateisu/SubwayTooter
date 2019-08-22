@@ -941,7 +941,7 @@ internal class ItemViewHolder(
 					activity.addColumn(
 						activity.nextPosition(column)
 						, access_info
-						, Column.TYPE_FOLLOW_REQUESTS
+						, ColumnType.FOLLOW_REQUESTS
 					)
 				}
 			}
@@ -1027,13 +1027,15 @@ internal class ItemViewHolder(
 		btnSearchTag.text = activity.getString(R.string.read_gap)
 	}
 	
-	private fun showSearchGap(item:TootSearchGap){
+	private fun showSearchGap(item : TootSearchGap) {
 		llSearchTag.visibility = View.VISIBLE
-		btnSearchTag.text = activity.getString(when(item.type){
-			TootSearchGap.SearchType.Hashtag -> R.string.read_more_hashtag
-			TootSearchGap.SearchType.Account -> R.string.read_more_account
-			TootSearchGap.SearchType.Status -> R.string.read_more_status
-		})
+		btnSearchTag.text = activity.getString(
+			when(item.type) {
+				TootSearchGap.SearchType.Hashtag -> R.string.read_more_hashtag
+				TootSearchGap.SearchType.Account -> R.string.read_more_account
+				TootSearchGap.SearchType.Status -> R.string.read_more_status
+			}
+		)
 	}
 	
 	private fun showReply(
@@ -1163,7 +1165,7 @@ internal class ItemViewHolder(
 			alphaMultiplier = Styler.boost_alpha
 		)
 		
-		if(column.column_type == Column.TYPE_FOLLOW_REQUESTS) {
+		if(column.type == ColumnType.FOLLOW_REQUESTS) {
 			llFollowRequest.visibility = View.VISIBLE
 			btnFollowRequestAccept.imageTintList = content_color_csl
 			btnFollowRequestDeny.imageTintList = content_color_csl
@@ -1333,7 +1335,8 @@ internal class ItemViewHolder(
 			setMedia(media_attachments, sb, ivMedia3, 2)
 			setMedia(media_attachments, sb, ivMedia4, 3)
 			
-			val m0 = if(media_attachments.isEmpty()) null else media_attachments[0] as? TootAttachment
+			val m0 =
+				if(media_attachments.isEmpty()) null else media_attachments[0] as? TootAttachment
 			btnShowMedia.blurhash = m0?.blurhash
 			
 			if(sb.isNotEmpty()) {
@@ -1356,7 +1359,7 @@ internal class ItemViewHolder(
 		
 		val application = status.application
 		if(application != null
-			&& (column.column_type == Column.TYPE_CONVERSATION || Pref.bpShowAppName(activity.pref))
+			&& (column.type == ColumnType.CONVERSATION || Pref.bpShowAppName(activity.pref))
 		) {
 			tvApplication.visibility = View.VISIBLE
 			tvApplication.text =
@@ -1373,9 +1376,13 @@ internal class ItemViewHolder(
 			val host = who.host
 			
 			// LTLでホスト名が同じならTickerを表示しない
-			when(column.column_type) {
-				Column.TYPE_LOCAL, Column.TYPE_LOCAL_AROUND -> {
+			when(column.type) {
+				ColumnType.LOCAL, ColumnType.LOCAL_AROUND -> {
 					if(host == access_info.host) return
+				}
+				
+				else -> {
+				
 				}
 			}
 			
@@ -1529,12 +1536,12 @@ internal class ItemViewHolder(
 				time != null -> TootStatus.formatTime(
 					activity,
 					time,
-					column.column_type != Column.TYPE_CONVERSATION
+					column.type != ColumnType.CONVERSATION
 				)
 				status != null -> TootStatus.formatTime(
 					activity,
 					status.time_created_at,
-					column.column_type != Column.TYPE_CONVERSATION
+					column.type != ColumnType.CONVERSATION
 				)
 				else -> "?"
 			}
@@ -1578,7 +1585,7 @@ internal class ItemViewHolder(
 			TootStatus.formatTime(
 				activity,
 				item.timeScheduledAt,
-				column.column_type != Column.TYPE_CONVERSATION
+				column.type != ColumnType.CONVERSATION
 			)
 		)
 		
@@ -1890,20 +1897,20 @@ internal class ItemViewHolder(
 			}
 			
 			btnListTL -> if(item is TootList) {
-				activity.addColumn(pos, access_info, Column.TYPE_LIST_TL, item.id)
+				activity.addColumn(pos, access_info, ColumnType.LIST_TL, item.id)
 			}
 			
 			btnListMore -> if(item is TootList) {
 				ActionsDialog()
 					.addAction(activity.getString(R.string.list_timeline)) {
-						activity.addColumn(pos, access_info, Column.TYPE_LIST_TL, item.id)
+						activity.addColumn(pos, access_info, ColumnType.LIST_TL, item.id)
 					}
 					.addAction(activity.getString(R.string.list_member)) {
 						activity.addColumn(
 							false,
 							pos,
 							access_info,
-							Column.TYPE_LIST_MEMBER,
+							ColumnType.LIST_MEMBER,
 							item.id
 						)
 					}
@@ -2147,7 +2154,7 @@ internal class ItemViewHolder(
 		val card = status.card ?: return
 		
 		// 会話カラムで返信ステータスなら捏造したカードを表示しない
-		if(column.column_type == Column.TYPE_CONVERSATION
+		if(column.type == ColumnType.CONVERSATION
 			&& card.originalStatus != null
 			&& status.reply != null
 		) {
@@ -3335,7 +3342,7 @@ internal class ItemViewHolder(
 										
 										minHeightCompat = dip(48)
 										
-									}.lparams(matchParent,thumbnailHeight)
+									}.lparams(matchParent, thumbnailHeight)
 									
 								}
 							} else {

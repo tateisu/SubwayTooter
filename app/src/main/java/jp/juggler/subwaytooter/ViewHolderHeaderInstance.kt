@@ -236,7 +236,7 @@ internal class ViewHolderHeaderInstance(
 				Action_Account.timeline(
 					activity
 					, activity.nextPosition(column)
-					, Column.TYPE_SEARCH
+					, ColumnType.SEARCH
 					, bAllowPseudo = false
 					, args = arrayOf("@" + who.username + "@" + who.host, true)
 				)

@@ -49,7 +49,7 @@ internal class DlgContextMenu(
 	init {
 		this.access_info = column.access_info
 		
-		val column_type = column.column_type
+		val columnType = column.type
 		
 		val who = whoRef?.get()
 		val status = this.status
@@ -388,12 +388,12 @@ internal class DlgContextMenu(
 			else -> activity.getString(R.string.endorse_unset)
 		}
 		
-		if(column_type != Column.TYPE_FOLLOW_REQUESTS) {
+		if(columnType != ColumnType.FOLLOW_REQUESTS) {
 			btnFollowRequestOK.visibility = View.GONE
 			btnFollowRequestNG.visibility = View.GONE
 		}
 		
-		if(column_type != Column.TYPE_FOLLOW_SUGGESTION) {
+		if(columnType != ColumnType.FOLLOW_SUGGESTION) {
 			btnDeleteSuggestion.visibility = View.GONE
 		}
 		
@@ -729,7 +729,7 @@ internal class DlgContextMenu(
 					pos,
 					who.host,
 					status,
-					Column.TYPE_ACCOUNT_AROUND
+					ColumnType.ACCOUNT_AROUND
 					, allowPseudo = false
 				)
 				
@@ -739,7 +739,7 @@ internal class DlgContextMenu(
 					pos,
 					who.host,
 					status,
-					Column.TYPE_LOCAL_AROUND
+					ColumnType.LOCAL_AROUND
 				)
 				
 				R.id.btnAroundFTL -> Action_Instance.timelinePublicAround(
@@ -748,7 +748,7 @@ internal class DlgContextMenu(
 					pos,
 					who.host,
 					status,
-					Column.TYPE_FEDERATED_AROUND
+					ColumnType.FEDERATED_AROUND
 				)
 				
 				R.id.btnCopyAccountId -> who.id.toString().copyToClipboard(activity)
@@ -817,7 +817,7 @@ internal class DlgContextMenu(
 							activity.addColumn(
 								pos,
 								access_info,
-								Column.TYPE_NOTIFICATION_FROM_ACCT,
+								ColumnType.NOTIFICATION_FROM_ACCT,
 								acct
 							)
 						}
@@ -890,11 +890,11 @@ internal class DlgContextMenu(
 			}
 			
 			R.id.btnBoostedBy -> status?.let {
-				activity.addColumn(false, pos, access_info, Column.TYPE_BOOSTED_BY, it.id)
+				activity.addColumn(false, pos, access_info, ColumnType.BOOSTED_BY, it.id)
 			}
 			
 			R.id.btnFavouritedBy -> status?.let {
-				activity.addColumn(false, pos, access_info, Column.TYPE_FAVOURITED_BY, it.id)
+				activity.addColumn(false, pos, access_info, ColumnType.FAVOURITED_BY, it.id)
 			}
 			
 			R.id.btnCancel -> dialog.cancel()

@@ -1010,6 +1010,31 @@ class Column(
 		}
 	}
 	
+	// ミュート、ブロックが成功した時に呼ばれる
+	// リストメンバーカラムでメンバーをリストから除去した時に呼ばれる
+	// require full acct
+	fun removeAccountInTimelinePseudo(acct : String) {
+
+		val tmp_list = ArrayList<TimelineItem>(list_data.size)
+		for(o in list_data) {
+			if(o is TootStatus) {
+				if(acct == access_info.getFullAcct(o.account)) continue
+				if(acct == access_info.getFullAcct(o.reblog?.account )) continue
+			} else if(o is TootNotification) {
+				if(acct == access_info.getFullAcct(o.account )) continue
+				if(acct == access_info.getFullAcct(o.status?.account )) continue
+				if(acct == access_info.getFullAcct(o.status?.reblog?.account )) continue
+			}
+			
+			tmp_list.add(o)
+		}
+		if(tmp_list.size != list_data.size) {
+			list_data.clear()
+			list_data.addAll(tmp_list)
+			fireShowContent(reason = "removeAccountInTimelinePseudo")
+		}
+	}
+	
 	// misskeyカラムやプロフカラムでブロック成功した時に呼ばれる
 	fun updateFollowIcons(target_account : SavedAccount) {
 		if(target_account.acct != access_info.acct) return
@@ -1385,6 +1410,16 @@ class Column(
 		if(column_regex_filter(status.reblog?.decoded_content)) return true
 		if(column_regex_filter(status.decoded_spoiler_text)) return true
 		if(column_regex_filter(status.reblog?.decoded_spoiler_text)) return true
+		
+		if( access_info.isPseudo){
+			var r = UserRelation.loadPseudo( access_info.getFullAcct(status.account) )
+			if( r.muting || r.blocking ) return true
+			val reblog = status.reblog
+			if( reblog != null) {
+				r = UserRelation.loadPseudo(access_info.getFullAcct(reblog.account))
+				if(r.muting || r.blocking) return true
+			}
+		}
 		
 		return status.checkMuted()
 	}

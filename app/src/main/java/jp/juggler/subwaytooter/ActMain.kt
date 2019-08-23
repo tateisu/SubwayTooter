@@ -1259,6 +1259,9 @@ class ActMain : AppCompatActivity()
 			R.id.nav_muted_word -> startActivity(Intent(this, ActMutedWord::class.java))
 			R.id.nav_fav_mute -> startActivity(Intent(this, ActFavMute::class.java))
 			R.id.nav_highlight_word -> startActivity(Intent(this, ActHighlightWordList::class.java))
+			
+			R.id.nav_pseudo_account_mute ->  startActivity(Intent(this, ActMutedPseudoAccount::class.java))
+			
 			R.id.nav_app_about -> startActivityForResult(
 				Intent(this, ActAbout::class.java),
 				REQUEST_APP_ABOUT

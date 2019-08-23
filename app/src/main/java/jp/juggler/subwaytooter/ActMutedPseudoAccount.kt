@@ -11,19 +11,18 @@ import com.woxthebox.draglistview.DragItemAdapter
 import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
-import jp.juggler.subwaytooter.table.MutedWord
+import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getAttributeColor
 import java.util.*
 
-class ActMutedWord : AppCompatActivity() {
+class ActMutedPseudoAccount : AppCompatActivity() {
 	
 	companion object {
-		
-		private val log = LogCategory("ActMutedWord")
+		private val log = LogCategory("ActMutedPseudoAccount")
 	}
 	
-	private lateinit var listView : DragListView
+	internal lateinit var listView : DragListView
 	private lateinit var listAdapter : MyListAdapter
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
@@ -82,15 +81,18 @@ class ActMutedWord : AppCompatActivity() {
 				// mRefreshLayout.setEnabled( false );
 			}
 			
-			override fun onItemSwipeEnded(item : ListSwipeItem?, swipedDirection : ListSwipeItem.SwipeDirection?) {
+			override fun onItemSwipeEnded(
+				item : ListSwipeItem?,
+				swipedDirection : ListSwipeItem.SwipeDirection?
+			) {
 				// 操作完了でリフレッシュ許可
 				// mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
 				
 				// 左にスワイプした(右端に青が見えた) なら要素を削除する
 				if(swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
-					val o = item ?.tag
+					val o = item?.tag
 					if(o is MyItem) {
-						MutedWord.delete(o.name)
+						UserRelation.deletePseudo(o.id)
 						listAdapter.removeItem(listAdapter.getPositionForItem(o))
 					}
 				}
@@ -102,9 +104,9 @@ class ActMutedWord : AppCompatActivity() {
 		
 		val tmp_list = ArrayList<MyItem>()
 		try {
-			MutedWord.createCursor().use { cursor ->
-				val idx_id = cursor.getColumnIndex(MutedWord.COL_ID)
-				val idx_name = cursor.getColumnIndex(MutedWord.COL_NAME)
+			UserRelation.createCursorPseudo().use{ cursor->
+				val idx_id = cursor.getColumnIndex(UserRelation.COL_ID)
+				val idx_name = cursor.getColumnIndex(UserRelation.COL_WHO_ID)
 				while(cursor.moveToNext()) {
 					val id = cursor.getLong(idx_id)
 					val name = cursor.getString(idx_name)
@@ -123,7 +125,8 @@ class ActMutedWord : AppCompatActivity() {
 	internal class MyItem(val id : Long, val name : String)
 	
 	// リスト要素のViewHolder
-	internal class MyViewHolder(viewRoot : View) : DragItemAdapter.ViewHolder(viewRoot, R.id.ivDragHandle, false) {
+	internal class MyViewHolder(viewRoot : View) :
+		DragItemAdapter.ViewHolder(viewRoot, R.id.ivDragHandle, false) {
 		
 		val tvName : TextView
 		
@@ -156,18 +159,21 @@ class ActMutedWord : AppCompatActivity() {
 	}
 	
 	// ドラッグ操作中のデータ
-	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) : DragItem(context, layoutId) {
+	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) :
+		DragItem(context, layoutId) {
 		
 		override fun onBindDragView(clickedView : View, dragView : View) {
-			dragView.findViewById<TextView>(R.id.tvName).text = clickedView.findViewById<TextView>(R.id.tvName).text
+			dragView.findViewById<TextView>(R.id.tvName).text =
+				clickedView.findViewById<TextView>(R.id.tvName).text
 			
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
-				getAttributeColor(this@ActMutedWord, R.attr.list_item_bg_pressed_dragged)
+				getAttributeColor(this@ActMutedPseudoAccount, R.attr.list_item_bg_pressed_dragged)
 			)
 		}
 	}
 	
-	private inner class MyListAdapter internal constructor() : DragItemAdapter<MyItem, MyViewHolder>() {
+	private inner class MyListAdapter internal constructor() :
+		DragItemAdapter<MyItem, MyViewHolder>() {
 		
 		init {
 			setHasStableIds(true)

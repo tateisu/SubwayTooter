@@ -1,8 +1,9 @@
 package jp.juggler.subwaytooter.table
 
 import android.content.ContentValues
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import androidx.collection.LruCache
+import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
@@ -47,9 +48,10 @@ class UserRelation {
 		private val log = LogCategory("UserRelationMisskey")
 		
 		private const val table = "user_relation_misskey"
+		const val COL_ID = BaseColumns._ID
 		private const val COL_TIME_SAVE = "time_save"
-		private const val COL_DB_ID = "db_id" // SavedAccount のDB_ID
-		private const val COL_WHO_ID = "who_id" // ターゲットアカウントのID
+		private const val COL_DB_ID = "db_id" // SavedAccount のDB_ID。 疑似アカウント用のエントリは -2L
+		const val COL_WHO_ID = "who_id" // ターゲットアカウントのID
 		private const val COL_FOLLOWING = "following"
 		private const val COL_FOLLOWED_BY = "followed_by"
 		private const val COL_BLOCKING = "blocking"
@@ -60,12 +62,14 @@ class UserRelation {
 		private const val COL_BLOCKED_BY = "blocked_by"
 		private const val COL_REQUESTED_BY = "requested_by"
 		
+		private const val DB_ID_PSEUDO = -2L
+		
 		override fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
 			db.execSQL(
 				"""
 				create table if not exists $table
-				(_id INTEGER PRIMARY KEY
+				($COL_ID INTEGER PRIMARY KEY
 				,$COL_TIME_SAVE integer not null
 				,$COL_DB_ID integer not null
 				,$COL_WHO_ID text not null
@@ -150,7 +154,7 @@ class UserRelation {
 				cv.put(COL_ENDORSED, src.endorsed.b2i())
 				cv.put(COL_BLOCKED_BY,src.blocked_by.b2i())
 				cv.put(COL_REQUESTED_BY,src.requested_by.b2i())
-				App1.database.replace(table, null, cv)
+				App1.database.replaceOrThrow(table, null, cv)
 				
 				val key = String.format("%s:%s", db_id, whoId)
 				mMemoryCache.remove(key)
@@ -159,6 +163,7 @@ class UserRelation {
 				log.e(ex, "save failed.")
 			}
 		}
+		
 		// マストドン用
 		fun save1Mastodon(now : Long, db_id : Long, src : TootRelationShip) : UserRelation {
 			
@@ -178,7 +183,7 @@ class UserRelation {
 				cv.put(COL_ENDORSED,src.endorsed.b2i() )
 				cv.put(COL_BLOCKED_BY,src.blocked_by.b2i())
 				cv.put(COL_REQUESTED_BY,src.requested_by.b2i())
-				App1.database.replace(table, null, cv)
+				App1.database.replaceOrThrow(table, null, cv)
 				val key = String.format("%s:%s", db_id, id)
 				mMemoryCache.remove(key)
 			} catch(ex : Throwable) {
@@ -210,7 +215,7 @@ class UserRelation {
 					cv.put(COL_REQUESTED, src.requested.b2i())
 					cv.put(COL_FOLLOWING_REBLOGS, src.showing_reblogs)
 					cv.put(COL_ENDORSED,src.endorsed.b2i() )
-					db.replace(table, null, cv)
+					db.replaceOrThrow(table, null, cv)
 					
 				}
 				bOK = true
@@ -262,7 +267,7 @@ class UserRelation {
 					cv.put(COL_ENDORSED, src.endorsed.b2i())
 					cv.put(COL_BLOCKED_BY,src.blocked_by.b2i())
 					cv.put(COL_REQUESTED_BY,src.requested_by.b2i())
-					db.replace(table, null, cv)
+					db.replaceOrThrow(table, null, cv)
 				}
 				bOK = true
 			} catch(ex : Throwable) {
@@ -398,6 +403,29 @@ class UserRelation {
 				requested_by = src.optBoolean("hasPendingFollowRequestToYou")
 			}
 		}
-
+		
+		fun loadPseudo(acct : String) = load(DB_ID_PSEUDO,acct )
+		
+		fun createCursorPseudo() : Cursor =
+			App1.database.query(
+				table,
+				arrayOf(COL_ID, COL_WHO_ID),
+				"$COL_DB_ID=$DB_ID_PSEUDO and ( $COL_MUTING=1 or $COL_BLOCKING=1 )",
+				null,
+				null,
+				null,
+				"$COL_WHO_ID asc"
+				)
+		
+		fun deletePseudo(rowId : Long) {
+			try {
+				App1.database.delete(table, "$COL_ID=$rowId", null)
+			}catch(ex:Throwable){
+				log.trace(ex)
+			}
+		}
 	}
+	
+	fun savePseudo(acct:String) =
+		save1Misskey(System.currentTimeMillis() ,DB_ID_PSEUDO,acct,this)
 }

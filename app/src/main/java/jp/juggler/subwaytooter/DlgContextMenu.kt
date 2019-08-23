@@ -55,9 +55,11 @@ internal class DlgContextMenu(
 		val status = this.status
 		
 		this.relation = when {
-			who != null -> UserRelation.load(access_info.db_id, who.id)
-			else -> UserRelation()
+			who == null -> UserRelation()
+			access_info.isPseudo -> UserRelation.loadPseudo(access_info.getFullAcct(who))
+			else -> UserRelation.load(access_info.db_id, who.id)
 		}
+		
 		val viewRoot = activity.layoutInflater.inflate(R.layout.dlg_context_menu, null, false)
 		this.dialog = Dialog(activity)
 		dialog.setContentView(viewRoot)
@@ -296,11 +298,8 @@ internal class DlgContextMenu(
 		
 		llNotification.visibility = if(notification == null) View.GONE else View.VISIBLE
 		
-		if(access_info.isPseudo) {
-			llAccountActionBar.visibility = View.GONE
-			btnNotificationFrom.visibility = View.GONE
-		} else {
-			
+		
+		fun showRelation(relation : UserRelation) {
 			// 被フォロー状態
 			// Styler.setFollowIconとは異なり細かい状態を表示しない
 			vg(ivFollowedBy, relation.followed_by)
@@ -346,6 +345,22 @@ internal class DlgContextMenu(
 					}
 				)
 			)
+		}
+		
+		if(access_info.isPseudo) {
+			// 議事アカミュートができたのでアカウントアクションを表示する
+			showRelation(UserRelation())
+			llAccountActionBar.visibility = View.VISIBLE
+			vg(ivFollowedBy, false)
+			btnFollow.setImageResource(R.drawable.ic_follow_plus)
+			btnFollow.imageTintList =
+				ColorStateList.valueOf(getAttributeColor(activity, R.attr.colorImageButton))
+			
+			
+			
+			btnNotificationFrom.visibility = View.GONE
+		} else {
+			showRelation(relation)
 		}
 		
 		if(who == null) {
@@ -517,42 +532,30 @@ internal class DlgContextMenu(
 								bMute = false
 							)
 						
-						access_info.isMisskey -> {
-							// Misskey には「このユーザからの通知もミュート」オプションはない
-							
-							@SuppressLint("InflateParams")
-							val view =
-								activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
-							val tvMessage = view.findViewById<TextView>(R.id.tvMessage)
-							tvMessage.text =
-								activity.getString(R.string.confirm_mute_user, who.username)
-							val cbMuteNotification = view.findViewById<CheckBox>(R.id.cbSkipNext)
-							cbMuteNotification.visibility = View.GONE
-							AlertDialog.Builder(activity)
-								.setView(view)
-								.setNegativeButton(R.string.cancel, null)
-								.setPositiveButton(R.string.ok) { _, _ ->
-									Action_User.mute(
-										activity,
-										access_info,
-										who
-									)
-								}
-								.show()
-						}
-						
 						else -> {
-							
 							@SuppressLint("InflateParams")
 							val view =
 								activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
+							
 							val tvMessage = view.findViewById<TextView>(R.id.tvMessage)
-							tvMessage.text =
-								activity.getString(R.string.confirm_mute_user, who.username)
 							val cbMuteNotification = view.findViewById<CheckBox>(R.id.cbSkipNext)
-							cbMuteNotification.setText(R.string.confirm_mute_notification_for_user)
-							cbMuteNotification.isChecked = true
-							// オプション指定つきでミュート
+							
+							// Misskey には「このユーザからの通知もミュート」オプションはない
+							// 疑似アカウントにもない
+							val hasMuteNotification =
+								!access_info.isMisskey && ! access_info.isPseudo
+							if(hasMuteNotification) {
+								tvMessage.text =
+									activity.getString(R.string.confirm_mute_user, who.username)
+								cbMuteNotification.setText(R.string.confirm_mute_notification_for_user)
+								cbMuteNotification.isChecked = true
+								// オプション指定つきでミュート
+							} else {
+								tvMessage.text =
+									activity.getString(R.string.confirm_mute_user, who.username)
+								cbMuteNotification.visibility = View.GONE
+								cbMuteNotification.isChecked = false
+							}
 							AlertDialog.Builder(activity)
 								.setView(view)
 								.setNegativeButton(R.string.cancel, null)
@@ -565,19 +568,20 @@ internal class DlgContextMenu(
 									)
 								}
 								.show()
+							
 						}
 					}
 				
 				R.id.btnBlock ->
-					if(relation.blocking) {
-						Action_User.block(
+					when {
+						relation.blocking -> Action_User.block(
 							activity,
 							access_info,
 							who,
 							false
 						)
-					} else {
-						AlertDialog.Builder(activity)
+						
+						else -> AlertDialog.Builder(activity)
 							.setMessage(
 								activity.getString(
 									R.string.confirm_block_user,

@@ -197,6 +197,11 @@
             android:label="@string/muted_app"
             />
         <activity
+            android:name=".ActMutedPseudoAccount"
+            android:label="@string/muted_pseudo_account"
+            />
+
+        <activity
             android:name=".ActMutedWord"
             android:label="@string/muted_word"
             />

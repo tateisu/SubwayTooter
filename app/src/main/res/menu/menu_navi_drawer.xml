@@ -176,6 +176,11 @@
                     android:title="@string/fav_muted_user"/>
 
                 <item
+                    android:id="@+id/nav_pseudo_account_mute"
+                    android:icon="@drawable/ic_volume_off"
+                    android:title="@string/muted_pseudo_account"/>
+
+                <item
                     android:id="@+id/nav_app_about"
                     android:icon="@drawable/ic_info"
                     android:title="@string/app_about"/>

@@ -926,6 +926,6 @@
     <string name="read_more_hashtag">ハッシュタグをもっと読む</string>
     <string name="read_more_account">アカウントをもっと読む</string>
     <string name="read_more_status">投稿をもっと読む</string>
-    <string name="users_muted_by_pseudo_account">疑似アカでミュートしたユーザ</string>
+    <string name="muted_users_from_pseudo_account">ミュートしたユーザ(疑似アカウント用)</string>
 
 </resources>

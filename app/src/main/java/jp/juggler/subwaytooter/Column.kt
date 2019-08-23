@@ -359,7 +359,7 @@ class Column(
 		}
 	}
 	
-	val type = typeMap[typeId] ?: ColumnType.HOME
+	val type = ColumnType.parse( typeId )
 	
 	fun getIconId() :Int =
 		type.iconId(access_info.acct)

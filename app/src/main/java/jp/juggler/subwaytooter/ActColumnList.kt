@@ -220,7 +220,7 @@ class ActColumnList : AppCompatActivity() {
 		val name : String = json.optString(Column.KEY_COLUMN_NAME)
 		val acct : String = json.optString(Column.KEY_COLUMN_ACCESS)
 		val old_index = json.optInt(Column.KEY_OLD_INDEX)
-		val type = Column.typeMap[ json.optInt(Column.KEY_TYPE) ] ?: ColumnType.LOCAL
+		val type = ColumnType.parse( json.optInt(Column.KEY_TYPE) )
 		val acct_color_fg : Int
 		val acct_color_bg : Int
 		var bOldSelection : Boolean = false

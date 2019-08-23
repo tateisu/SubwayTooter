@@ -365,7 +365,7 @@ enum class ColumnType(
 			}
 		}
 	),
-
+	
 	TabFollowers(
 		
 		loading = { client ->
@@ -1362,18 +1362,20 @@ enum class ColumnType(
 		Column.typeMap.put(id, this)
 	}
 	
-	companion object{
+	companion object {
 		private val log = LogCategory("ColumnType")
-		fun dump(){
-			var min=Int.MAX_VALUE
-			var max=Int.MIN_VALUE
+		fun dump() {
+			var min = Int.MAX_VALUE
+			var max = Int.MIN_VALUE
 			values().forEach {
 				val id = it.id
-				min=min(min,id)
-				max=max(max,id)
+				min = min(min, id)
+				max = max(max, id)
 			}
 			log.d("dump: ColumnType range=$min..$max")
 		}
+		
+		fun parse(id : Int) = Column.typeMap[id] ?: HOME
 	}
 }
 

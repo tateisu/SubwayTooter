@@ -29,6 +29,7 @@ class SideMenuAdapter(
 		val icon : Int = 0,
 		val action : ActMain.() -> Unit = {}
 	)
+	
 	/*
 		no title => section divider
 		else no icon => section header with title
@@ -299,62 +300,55 @@ class SideMenuAdapter(
 	
 	private val iconColor = getAttributeColor(activity, R.attr.colorTimeSmall)
 	
-	override fun getCount() : Int =
-		list.size
-	
-	override fun getItem(position : Int) : Any =
-		list[position]
-	
+	override fun getCount() : Int = list.size
+	override fun getItem(position : Int) : Any = list[position]
 	override fun getItemId(position : Int) : Long = 0L
-	
 	override fun getViewTypeCount() : Int = 3
 	
-	override fun getItemViewType(position : Int) : Int {
-		val item = list[position]
-		return when {
-			item.title == 0 -> 0
-			item.icon == 0 -> 1
-			else -> 2
+	override fun getItemViewType(position : Int) : Int =
+		list[position].run {
+			when {
+				title == 0 -> 0
+				icon == 0 -> 1
+				else -> 2
+			}
 		}
-	}
 	
 	private inline fun <reified T : View> viewOrInflate(
 		view : View?,
 		parent : ViewGroup?,
 		resId : Int
-	) : T {
-		val v = view ?: activity.layoutInflater.inflate(resId, parent, false)
-		return if(v is T) v else error("invalid view type! $v")
-	}
+	) : T =
+		(view ?: activity.layoutInflater.inflate(resId, parent, false))
+			as? T ?: error("invalid view type! ${T::class.java.simpleName}")
 	
-	override fun getView(position : Int, view : View?, parent : ViewGroup?) : View {
-		
-		val item = list[position]
-		return when {
-			item.title == 0 -> viewOrInflate(view, parent, R.layout.lv_sidemenu_separator)
-			
-			item.icon == 0 -> viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_group)
-				.apply {
-					text = activity.getString(item.title)
-					
-				}
-			else -> viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item)
-				.apply {
-					isAllCaps = false
-					text = activity.getString(item.title)
-					val drawable = createColoredDrawable(activity, item.icon, iconColor, 1f)
-					setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
-					
-					setOnClickListener {
-						item.action(activity)
-						drawer.closeDrawer(GravityCompat.START)
+	override fun getView(position : Int, view : View?, parent : ViewGroup?) : View =
+		list[position].run {
+			when {
+				title == 0 -> viewOrInflate(view, parent, R.layout.lv_sidemenu_separator)
+				
+				icon == 0 -> viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_group)
+					.apply {
+						text = activity.getString(title)
 					}
-				}
+				
+				else -> viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item)
+					.apply {
+						isAllCaps = false
+						text = activity.getString(title)
+						val drawable = createColoredDrawable(activity, icon, iconColor, 1f)
+						setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
+						
+						setOnClickListener {
+							action(activity)
+							drawer.closeDrawer(GravityCompat.START)
+						}
+					}
+			}
 		}
-	}
 	
 	init {
-		navigationView.addView(ListView(activity).apply {
+		ListView(activity).apply {
 			adapter = this@SideMenuAdapter
 			layoutParams = FrameLayout.LayoutParams(
 				FrameLayout.LayoutParams.MATCH_PARENT,
@@ -369,7 +363,8 @@ class SideMenuAdapter(
 			setPadding(0, pad_tb, 0, pad_tb)
 			clipToPadding = false
 			scrollBarStyle = ListView.SCROLLBARS_OUTSIDE_OVERLAY
-		})
+			
+			navigationView.addView(this)
+		}
 	}
 }
-

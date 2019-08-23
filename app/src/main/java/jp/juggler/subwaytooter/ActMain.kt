@@ -7,7 +7,9 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.graphics.Rect
 import android.graphics.Typeface
+import android.graphics.drawable.StateListDrawable
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Build
@@ -23,8 +25,10 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager.widget.ViewPager
 import com.google.android.material.navigation.NavigationView
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
@@ -41,6 +45,7 @@ import jp.juggler.subwaytooter.util.PostHelper
 import jp.juggler.subwaytooter.view.*
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
+import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.backgroundDrawable
 import java.io.File
 import java.io.FileInputStream
@@ -54,11 +59,10 @@ import kotlin.math.abs
 import kotlin.math.min
 
 class ActMain : AppCompatActivity()
-	, NavigationView.OnNavigationItemSelectedListener
-	, View.OnClickListener
-	, androidx.viewpager.widget.ViewPager.OnPageChangeListener
 	, Column.Callback
-	, androidx.drawerlayout.widget.DrawerLayout.DrawerListener {
+	, View.OnClickListener
+	, ViewPager.OnPageChangeListener
+	, DrawerLayout.DrawerListener {
 	
 	companion object {
 		
@@ -127,7 +131,7 @@ class ActMain : AppCompatActivity()
 	internal var listItemPopup : StatusButtonsPopup? = null
 	
 	private lateinit var llEmpty : View
-	internal lateinit var drawer : androidx.drawerlayout.widget.DrawerLayout
+	internal lateinit var drawer : DrawerLayout
 	private lateinit var llColumnStrip : ColumnStripLinearLayout
 	private lateinit var svColumnStrip : HorizontalScrollView
 	private lateinit var btnMenu : ImageButton
@@ -996,7 +1000,6 @@ class ActMain : AppCompatActivity()
 	override fun onBackPressed() {
 		
 		// メニューが開いていたら閉じる
-		val drawer = findViewById<androidx.drawerlayout.widget.DrawerLayout>(R.id.drawer_layout)
 		if(drawer.isDrawerOpen(GravityCompat.START)) {
 			drawer.closeDrawer(GravityCompat.START)
 			return
@@ -1088,191 +1091,6 @@ class ActMain : AppCompatActivity()
 				dialog.show(this, null)
 			}
 		}
-	}
-	
-	// Handle navigation view item clicks here.
-	override fun onNavigationItemSelected(item : MenuItem) : Boolean {
-		
-		when(item.itemId) {
-			// アカウント
-			R.id.nav_account_add -> Action_Account.add(this)
-			R.id.nav_account_setting -> Action_Account.setting(this)
-			
-			// カラム
-			R.id.nav_column_list -> Action_App.columnList(this)
-			
-			R.id.nav_close_all_columns -> closeColumnAll()
-			
-			R.id.nav_add_tl_home -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.HOME
-				, bAllowPseudo = false
-			)
-			
-			R.id.nav_add_tl_local -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.LOCAL
-				, bAllowPseudo = true
-			)
-			
-			R.id.nav_add_tl_misskey_hybrid -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.MISSKEY_HYBRID
-				, bAllowPseudo = true
-				, bAllowMastodon = false
-			)
-			
-			R.id.nav_add_tl_federate -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.FEDERATE
-				, bAllowPseudo = true
-			)
-			R.id.nav_add_favourites -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.FAVOURITES
-				, bAllowPseudo = false
-			)
-			R.id.nav_add_statuses -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.PROFILE
-				, bAllowPseudo = false
-			)
-			R.id.nav_add_notifications -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.NOTIFICATIONS
-				, bAllowPseudo = false
-			)
-			
-			R.id.nav_add_direct_message -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.DIRECT_MESSAGES
-				, bAllowPseudo = false
-				, bAllowMisskey = false
-			)
-			R.id.nav_add_tl_search -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.SEARCH
-				, bAllowPseudo = false
-				, args = arrayOf("", false)
-			)
-			
-			R.id.nav_add_mutes -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.MUTES
-				, bAllowPseudo = false
-			)
-			
-			R.id.nav_add_blocks -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.BLOCKS
-				, bAllowPseudo = false
-			)
-			
-			R.id.nav_keyword_filter -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.KEYWORD_FILTER
-				, bAllowPseudo = false
-				, bAllowMisskey = false
-			)
-			R.id.nav_add_domain_blocks -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.DOMAIN_BLOCKS
-				, bAllowPseudo = false
-				, bAllowMisskey = false
-			)
-			R.id.nav_scheduled_statuses_list -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.SCHEDULED_STATUS
-				, bAllowPseudo = false
-				, bAllowMisskey = false
-			)
-			R.id.nav_add_list -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.LIST_LIST
-				, bAllowPseudo = false
-			)
-			
-			R.id.nav_follow_requests -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.FOLLOW_REQUESTS
-				, bAllowPseudo = false
-			)
-			
-			R.id.nav_follow_suggestion -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.FOLLOW_SUGGESTION
-				, bAllowPseudo = false
-			)
-			R.id.nav_endorsement -> Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.ENDORSEMENT
-				, bAllowPseudo = false
-				, bAllowMisskey = false
-			)
-			
-			R.id.nav_trend_tag -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				ColumnType.TREND_TAG,
-				bAllowPseudo = true,
-				bAllowMastodon = true,
-				bAllowMisskey = false
-			)
-			
-			// トゥート検索
-			
-			R.id.tootsearch -> addColumn(
-				defaultInsertPosition
-				, SavedAccount.na
-				, ColumnType.SEARCH_TS
-				, ""
-			)
-			
-			//			R.id.mastodon_search_portal -> addColumn(
-			//				defaultInsertPosition
-			//				, SavedAccount.na
-			//				, ColumnType.SEARCH_MSP
-			//				, ""
-			//			)
-			
-			// 設定
-			R.id.nav_app_setting -> ActAppSetting.open(this, REQUEST_CODE_APP_SETTING)
-			R.id.nav_muted_app -> startActivity(Intent(this, ActMutedApp::class.java))
-			R.id.nav_muted_word -> startActivity(Intent(this, ActMutedWord::class.java))
-			R.id.nav_fav_mute -> startActivity(Intent(this, ActFavMute::class.java))
-			R.id.nav_highlight_word -> startActivity(Intent(this, ActHighlightWordList::class.java))
-			
-			R.id.nav_pseudo_account_mute ->  startActivity(Intent(this, ActMutedPseudoAccount::class.java))
-			
-			R.id.nav_app_about -> startActivityForResult(
-				Intent(this, ActAbout::class.java),
-				REQUEST_APP_ABOUT
-			)
-			R.id.nav_oss_license -> startActivity(Intent(this, ActOSSLicense::class.java))
-			R.id.nav_app_exit -> finish()
-		}
-		
-		val drawer = findViewById<androidx.drawerlayout.widget.DrawerLayout>(R.id.drawer_layout)
-		drawer.closeDrawer(GravityCompat.START)
-		return true
 	}
 	
 	internal fun initUI() {
@@ -1370,7 +1188,7 @@ class ActMain : AppCompatActivity()
 		drawer.addDrawerListener(this)
 		
 		val navigationView = findViewById<NavigationView>(R.id.nav_view)
-		navigationView.setNavigationItemSelectedListener(this)
+		initSideMenu(navigationView)
 		
 		btnMenu = findViewById(R.id.btnMenu)
 		btnToot = findViewById(R.id.btnToot)
@@ -3120,4 +2938,365 @@ class ActMain : AppCompatActivity()
 		dialog.show()
 	}
 	
+	class MyMenuItem(val title : Int, val icon : Int, val action : () -> Unit = {})
+	
+	val sideMenuContents = ArrayList<MyMenuItem>().apply {
+		fun add(title : Int = 0, icon : Int = 0, action : () -> Unit = {}) {
+			add(MyMenuItem(title, icon, action))
+		}
+		
+		add(title = R.string.account)
+		
+		add(title = R.string.account_add, icon = R.drawable.ic_account_add) {
+			Action_Account.add(this@ActMain)
+		}
+		
+		/* android:id="@+id/nav_account_setting" */
+		add(icon = R.drawable.ic_settings, title = R.string.account_setting) {
+			Action_Account.setting(this@ActMain)
+		}
+		
+		add()
+		add(title = R.string.column)
+		/* android:id="@+id/nav_column_list" */
+		add(icon = R.drawable.ic_list_numbered, title = R.string.column_list) {
+			Action_App.columnList(this@ActMain)
+		}
+		/* android:id="@+id/nav_close_all_columns" */
+		add(
+			icon = R.drawable.ic_close, title = R.string.close_all_columns
+		) {
+			closeColumnAll()
+		}
+		/* android:id="@+id/nav_add_tl_home" */
+		
+		add(icon = R.drawable.ic_home, title = R.string.home) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.HOME
+				, bAllowPseudo = false
+			)
+		}
+		/* android:id="@+id/nav_add_notifications" */
+		add(icon = R.drawable.ic_announcement, title = R.string.notifications) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.NOTIFICATIONS
+				, bAllowPseudo = false
+			)
+		}
+		
+		/* android:id="@+id/nav_add_direct_message" */
+		add(icon = R.drawable.ic_mail, title = R.string.direct_messages) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.DIRECT_MESSAGES
+				, bAllowPseudo = false
+				, bAllowMisskey = false
+			)
+		}
+		
+		/* android:id="@+id/nav_add_tl_misskey_hybrid" */
+		add(icon = R.drawable.ic_share, title = R.string.misskey_hybrid_timeline_long) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.MISSKEY_HYBRID
+				, bAllowPseudo = true
+				, bAllowMastodon = false
+			)
+		}
+		
+		/* android:id="@+id/nav_add_tl_local" */
+		add(icon = R.drawable.ic_run, title = R.string.local_timeline) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.LOCAL
+				, bAllowPseudo = true
+			)
+		}
+		
+		/* android:id="@+id/nav_add_tl_federate" */
+		add(icon = R.drawable.ic_bike, title = R.string.federate_timeline) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.FEDERATE
+				, bAllowPseudo = true
+			)
+		}
+		
+		/* android:id="@+id/nav_add_list" */
+		add(icon = R.drawable.ic_list_list, title = R.string.lists) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.LIST_LIST
+				, bAllowPseudo = false
+			)
+		}
+		
+		/* android:id="@+id/nav_add_tl_search" */
+		add(icon = R.drawable.ic_search, title = R.string.search) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.SEARCH
+				, bAllowPseudo = false
+				, args = arrayOf("", false)
+			)
+		}
+		
+		/* android:id="@+id/nav_trend_tag" */
+		add(icon = R.drawable.ic_hashtag, title = R.string.trend_tag) {
+			Action_Account.timeline(
+				this@ActMain,
+				defaultInsertPosition,
+				ColumnType.TREND_TAG,
+				bAllowPseudo = true,
+				bAllowMastodon = true,
+				bAllowMisskey = false
+			)
+		}
+		/* android:id="@+id/nav_add_favourites" */
+		add(icon = R.drawable.ic_star, title = R.string.favourites) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.FAVOURITES
+				, bAllowPseudo = false
+			)
+		}
+		
+		/* android:id="@+id/nav_add_statuses" */
+		add(icon = R.drawable.ic_account_box, title = R.string.profile) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.PROFILE
+				, bAllowPseudo = false
+			)
+		}
+		
+		/* android:id="@+id/nav_follow_requests" */
+		add(icon = R.drawable.ic_follow_wait, title = R.string.follow_requests) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.FOLLOW_REQUESTS
+				, bAllowPseudo = false
+			)
+		}
+		
+		/* android:id="@+id/nav_follow_suggestion" */
+		add(icon = R.drawable.ic_follow_plus, title = R.string.follow_suggestion) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.FOLLOW_SUGGESTION
+				, bAllowPseudo = false
+			)
+		}
+		/* android:id="@+id/nav_endorsement" */
+		add(icon = R.drawable.ic_follow_plus, title = R.string.endorse_set) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.ENDORSEMENT
+				, bAllowPseudo = false
+				, bAllowMisskey = false
+			)
+		}
+		/* android:id="@+id/nav_add_mutes" */
+		add(icon = R.drawable.ic_volume_off, title = R.string.muted_users) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.MUTES
+				, bAllowPseudo = false
+			)
+		}
+		
+		/* android:id="@+id/nav_add_blocks" */
+		add(icon = R.drawable.ic_block, title = R.string.blocked_users) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.BLOCKS
+				, bAllowPseudo = false
+			)
+		}
+		
+		/* android:id="@+id/nav_keyword_filter" */
+		add(icon = R.drawable.ic_volume_off, title = R.string.keyword_filters) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.KEYWORD_FILTER
+				, bAllowPseudo = false
+				, bAllowMisskey = false
+			)
+		}
+		
+		/* android:id="@+id/nav_add_domain_blocks" */
+		add(icon = R.drawable.ic_cloud_off, title = R.string.blocked_domains) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.DOMAIN_BLOCKS
+				, bAllowPseudo = false
+				, bAllowMisskey = false
+			)
+		}
+		
+		/* android:id="@+id/nav_scheduled_statuses_list" */
+		add(icon = R.drawable.ic_timer, title = R.string.scheduled_status_list) {
+			Action_Account.timeline(
+				this@ActMain
+				, defaultInsertPosition
+				, ColumnType.SCHEDULED_STATUS
+				, bAllowPseudo = false
+				, bAllowMisskey = false
+			)
+		}
+		
+		
+		add()
+		add(title = R.string.toot_search)
+		
+		add(icon = R.drawable.ic_search, title = R.string.tootsearch) {
+			addColumn(
+				defaultInsertPosition
+				, SavedAccount.na
+				, ColumnType.SEARCH_TS
+				, ""
+			)
+		}
+		
+		add()
+		add(title = R.string.setting)
+		
+		add(icon = R.drawable.ic_settings, title = R.string.app_setting) {
+			ActAppSetting.open(this@ActMain, REQUEST_CODE_APP_SETTING)
+		}
+		
+		add(icon = R.drawable.ic_settings, title = R.string.highlight_word) {
+			startActivity(Intent(this@ActMain, ActHighlightWordList::class.java))
+		}
+		
+		add(icon = R.drawable.ic_volume_off, title = R.string.muted_app) {
+			startActivity(Intent(this@ActMain, ActMutedApp::class.java))
+		}
+		
+		add(icon = R.drawable.ic_volume_off, title = R.string.muted_word) {
+			startActivity(Intent(this@ActMain, ActMutedWord::class.java))
+		}
+		
+		add(icon = R.drawable.ic_volume_off, title = R.string.fav_muted_user) {
+			startActivity(Intent(this@ActMain, ActFavMute::class.java))
+		}
+		
+		add(
+			icon = R.drawable.ic_volume_off,
+			title = R.string.muted_users_from_pseudo_account
+		) {
+			startActivity(Intent(this@ActMain, ActMutedPseudoAccount::class.java))
+		}
+		
+		add(icon = R.drawable.ic_info, title = R.string.app_about) {
+			startActivityForResult(Intent(this@ActMain, ActAbout::class.java), REQUEST_APP_ABOUT)
+		}
+		
+		add(icon = R.drawable.ic_info, title = R.string.oss_license) {
+			startActivity(Intent(this@ActMain, ActOSSLicense::class.java))
+		}
+		
+		add(icon = R.drawable.ic_hot_tub, title = R.string.app_exit) {
+			finish()
+		}
+		
+	}
+	
+	inner class SideMenuAdapter : BaseAdapter() {
+		
+		private val iconColor = getAttributeColor(this@ActMain, R.attr.colorTimeSmall)
+		
+		override fun getCount() : Int =
+			sideMenuContents.size
+		
+		override fun getItem(position : Int) : Any =
+			sideMenuContents[position]
+		
+		override fun getItemId(position : Int) : Long = 0L
+		
+		override fun getViewTypeCount() : Int = 3
+		
+		override fun getItemViewType(position : Int) : Int {
+			val item = sideMenuContents[position]
+			return when {
+				item.title == 0 -> 0
+				item.icon == 0 -> 1
+				else -> 2
+			}
+		}
+		
+		private inline fun <reified T : View> viewOrInflate(
+			view : View?,
+			parent : ViewGroup?,
+			resId : Int
+		) : T {
+			val v = view ?: layoutInflater.inflate(resId, parent, false)
+			return if(v is T) v else error("invalid view type! $v")
+		}
+		
+		override fun getView(position : Int, view : View?, parent : ViewGroup?) : View {
+			
+			val item = sideMenuContents[position]
+			return when {
+				item.title == 0 -> viewOrInflate(view, parent, R.layout.lv_sidemenu_separator)
+				
+				item.icon == 0 -> viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_group)
+					.apply {
+						text = getString(item.title)
+						
+					}
+				else -> viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item)
+					.apply {
+						isAllCaps = false
+						text = getString(item.title)
+						val drawable = createColoredDrawable(this@ActMain, item.icon, iconColor, 1f)
+						setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
+						
+						setOnClickListener {
+							item.action()
+							drawer.closeDrawer(GravityCompat.START)
+						}
+					}
+			}
+		}
+	}
+	
+	private fun initSideMenu(navigationView : NavigationView) {
+		
+		navigationView.addView(ListView(this).apply {
+			adapter = SideMenuAdapter()
+			layoutParams = FrameLayout.LayoutParams(
+				FrameLayout.LayoutParams.MATCH_PARENT,
+				FrameLayout.LayoutParams.MATCH_PARENT
+			)
+			backgroundColor = getAttributeColor(this@ActMain, R.attr.colorWindowBackground)
+			selector = StateListDrawable()
+			divider = null
+			dividerHeight = 0
+			
+			val pad_tb = (density *12f + 0.5f) .toInt()
+			setPadding(0,pad_tb,0,pad_tb)
+			clipToPadding = false
+			scrollBarStyle =ListView.SCROLLBARS_OUTSIDE_OVERLAY
+		})
+	}
 }

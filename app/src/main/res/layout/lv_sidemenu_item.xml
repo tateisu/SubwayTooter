@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/btn_bg_transparent"
+    android:textColor="?attr/colorContentText"
+    android:gravity="center_vertical|start"
+    android:drawablePadding="12dp"
+    android:minHeight="44dp"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp"
+
+    />
+

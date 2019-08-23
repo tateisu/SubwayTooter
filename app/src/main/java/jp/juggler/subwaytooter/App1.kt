@@ -379,6 +379,9 @@ class App1 : Application() {
 			
 			custom_emoji_lister = CustomEmojiLister(app_context)
 			
+			ColumnType.dump()
+			
+			
 			state = AppState(app_context, pref)
 			appStateX = state
 			return state

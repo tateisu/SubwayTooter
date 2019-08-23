@@ -7,10 +7,13 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.LogCategory
 import jp.juggler.util.ellipsizeDot3
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
+import kotlin.math.max
+import kotlin.math.min
 
 /*
 カラム種別ごとの処理
@@ -1357,6 +1360,20 @@ enum class ColumnType(
 		val old = Column.typeMap[id]
 		if(id > 0 && old != null) error("ColumnType: duplicate id $id. name=$name, ${old.name}")
 		Column.typeMap.put(id, this)
+	}
+	
+	companion object{
+		private val log = LogCategory("ColumnType")
+		fun dump(){
+			var min=Int.MAX_VALUE
+			var max=Int.MIN_VALUE
+			values().forEach {
+				val id = it.id
+				min=min(min,id)
+				max=max(max,id)
+			}
+			log.d("dump: ColumnType range=$min..$max")
+		}
 	}
 }
 

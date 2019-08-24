@@ -111,18 +111,19 @@ class ActAppSettingChild : AppCompatActivity()
 			)
 			
 			root?.scan {
-				if(it !is Switch) {
-				} else if(Build.VERSION.SDK_INT < 23) {
-					// android 5
-					it.thumbDrawable?.setTintList(thumbStates)
-					it.trackDrawable?.setTintList(thumbStates) // not trackState
-				} else {
-					// android 6
-					it.thumbTintList = thumbStates
-					if(Build.VERSION.SDK_INT >= 24) {
-						// android 7
-						it.trackTintList = trackStates
-						it.trackTintMode = PorterDuff.Mode.SRC_OVER
+				(it as? Switch)?.apply{
+					if(Build.VERSION.SDK_INT < 23) {
+						// android 5
+						thumbDrawable?.setTintList(thumbStates)
+						trackDrawable?.setTintList(thumbStates) // not trackState
+					} else {
+						// android 6
+						thumbTintList = thumbStates
+						if(Build.VERSION.SDK_INT >= 24) {
+							// android 7
+							trackTintList = trackStates
+							trackTintMode = PorterDuff.Mode.SRC_OVER
+						}
 					}
 				}
 			}

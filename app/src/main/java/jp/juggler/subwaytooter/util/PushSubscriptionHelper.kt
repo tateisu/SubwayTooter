@@ -92,18 +92,21 @@ class PushSubscriptionHelper(
 					
 			)
 			val res = r?.response
-			if(res != null) {
-				when(res.code()) {
-					200 -> {
-						// 登録できたサーバーキーをアプリ内DBに保存
-						SubscriptionServerKey.save(clientIdentifier, serverKey)
-						addLog("(server public key is registered.)")
-					}
-					
-					else -> {
-						addLog("(server public key registration failed.)")
-						addLog("${res.code()} ${res.message()}")
-					}
+			when(res?.code) {
+
+				null ->{
+				
+				}
+
+				200 -> {
+					// 登録できたサーバーキーをアプリ内DBに保存
+					SubscriptionServerKey.save(clientIdentifier, serverKey)
+					addLog("(server public key is registered.)")
+				}
+				
+				else -> {
+					addLog("(server public key registration failed.)")
+					addLog("${res.code} ${res.message}")
 				}
 			}
 		}
@@ -183,7 +186,7 @@ class PushSubscriptionHelper(
 				var r = client.request("/api/v1/push/subscription")
 				var res = r?.response ?: return r // cancelled or missing response
 				var subscription404 = false
-				when(res.code()) {
+				when(res.code) {
 					200 -> {
 						if( r.error?.isNotEmpty() == true && r.jsonObject == null ){
 							// Pleromaが200応用でエラーHTMLを返す
@@ -221,8 +224,8 @@ class PushSubscriptionHelper(
 					}
 					
 					else -> {
-						addLog("${res.request()}")
-						addLog("${res.code()} ${res.message()}")
+						addLog("${res.request}")
+						addLog("${res.code} ${res.message}")
 					}
 				}
 				
@@ -245,13 +248,16 @@ class PushSubscriptionHelper(
 					}
 					
 					if(subscription404 && flags == 0) {
-						if(ti.versionGE(TootInstance.VERSION_2_4_0_rc2)) {
-							// 購読が不要で現在の状況が404だった場合
-							// 2.4.0rc2以降では「購読が存在しない」を示すので何もしなくてよい
-							if(verbose) addLog(context.getString(R.string.push_subscription_not_exists))
-							return TootApiResult()
-						} else {
-							// 2.4.0rc1では「APIが存在しない」と「購読が存在しない」を判別できない
+						when {
+							ti.versionGE(TootInstance.VERSION_2_4_0_rc2) -> {
+								// 購読が不要で現在の状況が404だった場合
+								// 2.4.0rc2以降では「購読が存在しない」を示すので何もしなくてよい
+								if(verbose) addLog(context.getString(R.string.push_subscription_not_exists))
+								return TootApiResult()
+							}
+							else -> {
+								// 2.4.0rc1では「APIが存在しない」と「購読が存在しない」を判別できない
+							}
 						}
 					}
 				}
@@ -297,7 +303,7 @@ class PushSubscriptionHelper(
 				)
 				
 				res = r?.response ?: return r
-				if(res.code() != 200) {
+				if(res.code != 200) {
 					return TootApiResult(error = context.getString(R.string.token_exported))
 				}
 				
@@ -310,7 +316,7 @@ class PushSubscriptionHelper(
 					)
 					res = r?.response ?: return r
 					
-					return when(res.code()) {
+					return when(res.code) {
 						200 -> {
 							if(! verbose) {
 								TootApiResult()
@@ -339,8 +345,8 @@ class PushSubscriptionHelper(
 						}
 						
 						else -> {
-							addLog("${res.request()}")
-							addLog("${res.code()} ${res.message()}")
+							addLog("${res.request}")
+							addLog("${res.code} ${res.message}")
 							r
 						}
 					}
@@ -377,7 +383,7 @@ class PushSubscriptionHelper(
 					
 					res = r?.response ?: return r
 					
-					return when(res.code()) {
+					return when(res.code) {
 						404 -> {
 							if(! verbose) {
 								TootApiResult()

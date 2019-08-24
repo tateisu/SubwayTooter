@@ -84,7 +84,7 @@ object Action_User {
 						val result = client.request(
 							"/api/v1/accounts/${who.id}/${if(bMute) "mute" else "unmute"}",
 							when {
-								! bMute -> "".toRequestBody()
+								! bMute -> "".toFormRequestBody()
 								else ->
 									JSONObject()
 										.put("notifications", bMuteNotification)
@@ -245,7 +245,7 @@ object Action_User {
 						
 						val result = client.request(
 							"/api/v1/accounts/${who.id}/${if(bBlock) "block" else "unblock"}",
-							"".toRequestBody().toPost()
+							"".toFormRequestBody().toPost()
 						)
 						val jsonObject = result?.jsonObject
 						if(jsonObject != null) {
@@ -546,7 +546,7 @@ object Action_User {
 						"&comment=" + comment.encodePercent() +
 						"&status_ids[]=" + status.id.toString() +
 						"&forward=" + if(forward) "true" else "false"
-						).toRequestBody().toPost()
+						).toFormRequestBody().toPost()
 				)
 			}
 			

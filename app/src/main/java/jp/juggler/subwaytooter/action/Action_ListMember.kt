@@ -62,7 +62,7 @@ object Action_ListMember {
 						
 						val result = client.request(
 							"/api/v1/accounts/$userId/follow",
-							"".toRequestBody().toPost()
+							"".toFormRequestBody().toPost()
 						) ?: return null
 						
 						val relation = saveUserRelation(
@@ -121,7 +121,7 @@ object Action_ListMember {
 						val response = result.response
 						val error = result.error
 						if(response != null
-							&& response.code() == 422
+							&& response.code == 422
 							&& error != null
 							&& reFollowError.matcher(error).find()
 						) {

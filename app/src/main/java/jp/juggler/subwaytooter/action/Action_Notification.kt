@@ -12,6 +12,7 @@ import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.showToast
+import jp.juggler.util.toFormRequestBody
 import jp.juggler.util.toPost
 import jp.juggler.util.toRequestBody
 
@@ -35,7 +36,7 @@ object Action_Notification {
 				// 空データを送る
 				return client.request(
 					"/api/v1/notifications/clear",
-					"".toRequestBody().toPost()
+					"".toFormRequestBody().toPost()
 				)
 			}
 			
@@ -70,15 +71,15 @@ object Action_Notification {
 				// まず新しいAPIを試す
 				val result = client.request(
 					"/api/v1/notifications/${notification.id}/dismiss",
-					"".toRequestBody().toPost()
+					"".toFormRequestBody().toPost()
 				)
 				
-				return when(result?.response?.code()) {
+				return when(result?.response?.code) {
 					
 					// 新しいAPIがない場合、古いAPIを試す
 					422 -> client.request(
 						"/api/v1/notifications/dismiss",
-						"id=${notification.id}".toRequestBody().toPost()
+						"id=${notification.id}".toFormRequestBody().toPost()
 					)
 					
 					else -> result

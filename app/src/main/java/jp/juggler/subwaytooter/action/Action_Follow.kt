@@ -223,7 +223,7 @@ object Action_Follow {
 				} else {
 					client.request(
 						"/api/v1/accounts/${userId}/${if(bFollow) "follow" else "unfollow"}"
-						, "".toRequestBody().toPost()
+						, "".toFormRequestBody().toPost()
 					)?.also { result ->
 						val parser = TootParser(activity, access_info)
 						val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
@@ -254,7 +254,7 @@ object Action_Follow {
 					
 					activity.showColumnMatchAccount(access_info)
 					
-				} else if(bFollow && who.locked && (result.response?.code() ?: - 1) == 422) {
+				} else if(bFollow && who.locked && (result.response?.code ?: - 1) == 422) {
 					showToast(activity, false, R.string.cant_follow_locked_user)
 				} else {
 					showToast(activity, false, result.error)
@@ -478,7 +478,7 @@ object Action_Follow {
 				} else {
 					client.request(
 						"/api/v1/accounts/${userId}/follow"
-						, "".toRequestBody().toPost()
+						, "".toFormRequestBody().toPost()
 					)?.also { result ->
 						val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
 						if(newRelation != null) {
@@ -498,7 +498,7 @@ object Action_Follow {
 					
 					if(callback != null) callback()
 					
-				} else if(locked && (result.response?.code() ?: - 1) == 422) {
+				} else if(locked && (result.response?.code ?: - 1) == 422) {
 					showToast(activity, false, R.string.cant_follow_locked_user)
 				} else {
 					showToast(activity, false, result.error)
@@ -586,7 +586,7 @@ object Action_Follow {
 					client.request(
 						"/api/v1/follow_requests/${who.id}/${if(bAllow) "authorize" else "reject"}",
 						// 空データ
-						"".toRequestBody().toPost()
+						"".toFormRequestBody().toPost()
 					)
 				}
 			}

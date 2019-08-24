@@ -40,6 +40,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.max
 
 class PollingWorker private constructor(contextArg : Context) {
 	
@@ -169,7 +170,7 @@ class PollingWorker private constructor(contextArg : Context) {
 				}
 				
 				val response = call.execute()
-				val body = response.body()?.string()
+				val body = response.body?.string()
 				
 				if(! response.isSuccessful || body?.isEmpty() != false) {
 					log.e(
@@ -218,12 +219,12 @@ class PollingWorker private constructor(contextArg : Context) {
 					val minInterval = 300000L // 5 min
 					val minFlex = 60000L // 1 min
 					builder.setPeriodic(
-						Math.max(minInterval, intervalMillis),
-						Math.max(minFlex, intervalMillis shr 1)
+						max(minInterval, intervalMillis),
+						max(minFlex, intervalMillis shr 1)
 					)
 				} else {
 					val minInterval = 300000L // 5 min
-					builder.setPeriodic(Math.max(minInterval, intervalMillis))
+					builder.setPeriodic(max(minInterval, intervalMillis))
 				}
 				builder.setPersisted(true)
 			} else {
@@ -350,7 +351,7 @@ class PollingWorker private constructor(contextArg : Context) {
 			
 			// 疑似ジョブを開始
 			val pw = getInstance(context)
-			pw.addJob(JOB_FCM, false)
+			pw.addJobFCM()
 			
 			// 疑似ジョブが終了するまで待機する
 			while(true) {
@@ -385,12 +386,12 @@ class PollingWorker private constructor(contextArg : Context) {
 		}
 		
 		private fun getEntityOrderId(account : SavedAccount, src : JSONObject) : EntityId =
-			if( account.isMisskey){
+			if(account.isMisskey) {
 				when(val created_at = src.parseString("createdAt")) {
 					null -> EntityId.DEFAULT
 					else -> EntityId(TootStatus.parseTime(created_at).toString())
 				}
-			}else{
+			} else {
 				EntityId.mayDefault(src.parseString("id"))
 			}
 	}
@@ -425,11 +426,13 @@ class PollingWorker private constructor(contextArg : Context) {
 		
 		this.context = context
 		
-		this.connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-			?: error("missing ConnectivityManager system service")
+		this.connectivityManager =
+			context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+				?: error("missing ConnectivityManager system service")
 		
-		this.notification_manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-			?: error("missing NotificationManager system service")
+		this.notification_manager =
+			context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+				?: error("missing NotificationManager system service")
 		
 		this.scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as? JobScheduler
 			?: error("missing JobScheduler system service")
@@ -438,8 +441,9 @@ class PollingWorker private constructor(contextArg : Context) {
 			?: error("missing PowerManager system service")
 		
 		// WifiManagerの取得時はgetApplicationContext を使わないとlintに怒られる
-		this.wifi_manager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
-			?: error("missing WifiManager system service")
+		this.wifi_manager =
+			context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+				?: error("missing WifiManager system service")
 		
 		power_lock = power_manager.newWakeLock(
 			PowerManager.PARTIAL_WAKE_LOCK,
@@ -581,7 +585,7 @@ class PollingWorker private constructor(contextArg : Context) {
 	}
 	
 	// FCMメッセージイベントから呼ばれる
-	private fun hasJob(jobId : Int) : Boolean {
+	private fun hasJob(@Suppress("SameParameterValue") jobId : Int) : Boolean {
 		synchronized(job_list) {
 			for(item in job_list) {
 				if(item.jobId == jobId) return true
@@ -591,8 +595,8 @@ class PollingWorker private constructor(contextArg : Context) {
 	}
 	
 	// FCMメッセージイベントから呼ばれる
-	private fun addJob(jobId : Int, bRemoveOld : Boolean) {
-		addJob(JobItem(jobId), bRemoveOld)
+	private fun addJobFCM() {
+		addJob(JobItem(JOB_FCM), false)
 	}
 	
 	private fun addJob(item : JobItem, bRemoveOld : Boolean) {
@@ -1257,7 +1261,7 @@ class PollingWorker private constructor(contextArg : Context) {
 				dstListJson.add(src)
 			}
 			
-			private fun getNotificationLine(item:Data):String{
+			private fun getNotificationLine(item : Data) : String {
 				val name = when(Pref.bpShowAcctInSystemNotification(pref)) {
 					false -> item.notification.accountRef?.decoded_display_name
 					
@@ -1309,7 +1313,6 @@ class PollingWorker private constructor(contextArg : Context) {
 					else -> "- " + "?"
 				}
 			}
-			
 			
 			private fun showNotification(data_list : ArrayList<Data>) {
 				
@@ -1455,9 +1458,8 @@ class PollingWorker private constructor(contextArg : Context) {
 				
 				log.d("showNotification[${account.acct}] creating notification(7)")
 				
-			
 				var a = getNotificationLine(item)
-
+				
 				val acct = item.access_info.acct
 				
 				if(data_list.size == 1) {

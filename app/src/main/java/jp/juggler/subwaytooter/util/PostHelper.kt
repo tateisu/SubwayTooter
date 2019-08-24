@@ -25,6 +25,7 @@ import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.*
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -784,7 +785,7 @@ class PostHelper(
 			// 通常の絵文字を部分一致で検索
 			val remain = limit - code_list.size
 			if(remain > 0) {
-				val s = src.substring(last_colon + 1, end).toLowerCase().replace('-', '_')
+				val s = src.substring(last_colon + 1, end).toLowerCase(Locale.JAPAN).replace('-', '_')
 				val matches = EmojiDecoder.searchShortCode(activity, s, remain)
 				log.d("checkEmoji: search for %s, result=%d", s, matches.size)
 				code_list.addAll(matches)
@@ -803,7 +804,7 @@ class PostHelper(
 		// カスタム絵文字の候補を作る
 		private fun customEmojiCodeList(
 			instance : String?,
-			limit : Int,
+			@Suppress("SameParameterValue") limit : Int,
 			needle : String
 		) : ArrayList<CharSequence> {
 			val dst = ArrayList<CharSequence>()
@@ -878,7 +879,7 @@ class PostHelper(
 	}
 	
 	fun setInstance(_instance : String?, isMisskey : Boolean) {
-		val instance = _instance?.toLowerCase()
+		val instance = _instance?.toLowerCase(Locale.JAPAN)
 		this.instance = instance
 		this.isMisskey = isMisskey
 		

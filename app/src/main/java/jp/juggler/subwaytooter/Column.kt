@@ -1647,7 +1647,7 @@ class Column(
 						val result =
 							client.request("/api/users/relation", params.toPostRequestBuilder())
 						
-						if(result == null || result.response?.code() in 400 until 500) break
+						if(result == null || result.response?.code in 400 until 500) break
 						
 						val list = parseList(::TootRelationShip, parser, result.jsonArray)
 						if(list.size == userIdList.size) {

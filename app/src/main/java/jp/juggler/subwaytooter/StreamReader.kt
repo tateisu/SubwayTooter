@@ -124,7 +124,7 @@ internal class StreamReader(
 		 * messages.
 		 */
 		override fun onOpen(webSocket : WebSocket, response : Response) {
-			log.d("WebSocket onOpen. url=%s .", webSocket.request().url())
+			log.d("WebSocket onOpen. url=%s .", webSocket.request().url)
 			if(access_info.isMisskey) {
 				handler.removeCallbacks(proc_alive)
 				handler.postDelayed(proc_alive, MISSKEY_ALIVE_INTERVAL)
@@ -300,12 +300,12 @@ internal class StreamReader(
 		/**
 		 * Invoked when the peer has indicated that no more incoming messages will be transmitted.
 		 */
-		override fun onClosing(webSocket : WebSocket, code : Int, reason : String?) {
+		override fun onClosing(webSocket : WebSocket, code : Int, reason : String) {
 			log.d(
 				"WebSocket onClosing. code=%s,reason=%s,url=%s .",
 				code,
 				reason,
-				webSocket.request().url()
+				webSocket.request().url
 			)
 			webSocket.cancel()
 			bListening.set(false)
@@ -319,12 +319,12 @@ internal class StreamReader(
 		 * Invoked when both peers have indicated that no more messages will be transmitted and the
 		 * connection has been successfully released. No further calls to this listener will be made.
 		 */
-		override fun onClosed(webSocket : WebSocket, code : Int, reason : String?) {
+		override fun onClosed(webSocket : WebSocket, code : Int, reason : String) {
 			log.d(
 				"WebSocket onClosed.  code=%s,reason=%s,url=%s .",
 				code,
 				reason,
-				webSocket.request().url()
+				webSocket.request().url
 			)
 			bListening.set(false)
 			handler.removeCallbacks(proc_alive)
@@ -338,16 +338,16 @@ internal class StreamReader(
 		 * network. Both outgoing and incoming messages may have been lost. No further calls to this
 		 * listener will be made.
 		 */
-		override fun onFailure(webSocket : WebSocket, ex : Throwable, response : Response?) {
-			log.e(ex, "WebSocket onFailure. url=%s .", webSocket.request().url())
+		override fun onFailure(webSocket : WebSocket, t : Throwable, response : Response?) {
+			log.e(t, "WebSocket onFailure. url=%s .", webSocket.request().url)
 			
 			bListening.set(false)
 			handler.removeCallbacks(proc_reconnect)
 			handler.removeCallbacks(proc_alive)
 			fireListeningChanged(false)
 			
-			if(ex is ProtocolException) {
-				val msg = ex.message
+			if(t is ProtocolException) {
+				val msg = t.message
 				if(msg != null && reAuthorizeError.matcher(msg).find()) {
 					log.e("seems old instance that does not support streaming public timeline without access token. don't retry...")
 					return

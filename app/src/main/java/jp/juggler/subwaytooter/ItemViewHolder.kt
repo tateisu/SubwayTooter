@@ -734,11 +734,7 @@ internal class ItemViewHolder(
 			}
 			
 			in_reply_to_id != null && in_reply_to_account_id != null -> {
-				showReply(
-					R.drawable.ic_reply,
-					in_reply_to_account_id,
-					item
-				)
+				showReply(in_reply_to_account_id,item)
 				if(colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
 			}
 		}
@@ -865,21 +861,23 @@ internal class ItemViewHolder(
 			TootNotification.TYPE_REPLY -> {
 				val colorBg = Pref.ipEventBgColorMention(activity.pref)
 				if(! bSimpleList && ! access_info.isMisskey) {
-					if(n_account != null) {
-						if(n_status?.in_reply_to_id != null
-							|| n_status?.reply != null
-						) {
+					when {
+						n_account == null -> {
+						
+						}
+						
+						n_status?.in_reply_to_id != null || n_status?.reply != null -> {
 							// トゥート内部に「～への返信」を表示するので、
 							// 通知イベントの「～からの返信」は表示しない
-						} else {
-							// 返信ではなくメンションの場合は「～からの返信」を表示する
+						}
+						
+						else -> // 返信ではなくメンションの場合は「～からの返信」を表示する
 							showBoost(
 								n_accountRef,
 								n.time_created_at,
 								R.drawable.ic_reply,
 								R.string.display_name_mentioned_by
 							)
-						}
 					}
 				}
 				if(n_status != null) {
@@ -1072,10 +1070,11 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showReply(
-		iconId : Int,
 		accountId : EntityId,
 		replyStatus : TootStatus
 	) {
+		val iconId = R.drawable.ic_reply
+		
 		llReply.visibility = View.VISIBLE
 		
 		val name = if(accountId == replyStatus.account.id) {
@@ -1233,10 +1232,15 @@ internal class ItemViewHolder(
 		
 		// ニコフレのアンケートの表示
 		val enquete = status.enquete
-		if(enquete != null) {
-			if(enquete.pollType == TootPollsType.FriendsNico && enquete.type != TootPolls.TYPE_ENQUETE) {
+		when {
+			enquete == null -> {
+			}
+			
+			enquete.pollType == TootPollsType.FriendsNico && enquete.type != TootPolls.TYPE_ENQUETE -> {
 				// フレニコの投票の結果表示は普通にテキストを表示するだけでよい
-			} else {
+			}
+			
+			else -> {
 				
 				// アンケートの本文を上書きする
 				val question = enquete.decoded_question
@@ -2484,7 +2488,7 @@ internal class ItemViewHolder(
 						return
 					}
 					
-					if((result.response?.code() ?: - 1) in 200 until 300) {
+					if((result.response?.code ?: - 1) in 200 until 300) {
 						if(status.increaseReaction(code, true, "addReaction")) {
 							// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
 							list_adapter.notifyChange(reason = "addReaction complete", reset = true)
@@ -2538,7 +2542,7 @@ internal class ItemViewHolder(
 						return
 					}
 					
-					if((result.response?.code() ?: - 1) in 200 until 300) {
+					if((result.response?.code ?: - 1) in 200 until 300) {
 						if(status.decreaseReaction(reaction, true, "removeReaction")) {
 							// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
 							list_adapter.notifyChange(

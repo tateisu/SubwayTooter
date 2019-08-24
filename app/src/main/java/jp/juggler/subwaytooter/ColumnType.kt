@@ -1084,7 +1084,7 @@ enum class ColumnType(
 			val result = getInstanceInformation(client, column.instance_uri)
 			if(instance_tmp != null) {
 				column.instance_information = instance_tmp
-				column.handshake = result?.response?.handshake()
+				column.handshake = result?.response?.handshake
 			}
 			result
 		}

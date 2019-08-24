@@ -173,8 +173,8 @@ internal class ViewHolderHeaderInstance(
 		tvHandshake.text = if(handshake == null) {
 			""
 		} else {
-			val sb = SpannableStringBuilder("${handshake.tlsVersion()}, ${handshake.cipherSuite()}")
-			val certs = handshake.peerCertificates().joinToString("\n") { cert ->
+			val sb = SpannableStringBuilder("${handshake.tlsVersion}, ${handshake.cipherSuite}")
+			val certs = handshake.peerCertificates.joinToString("\n") { cert ->
 				"\n============================\n" +
 					if(cert is OpenSSLX509Certificate) {
 						

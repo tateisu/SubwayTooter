@@ -6,10 +6,7 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.encodePercent
-import jp.juggler.util.showToast
-import jp.juggler.util.toRequest
-import jp.juggler.util.toRequestBody
+import jp.juggler.util.*
 import java.util.*
 
 object Action_Instance {
@@ -71,7 +68,7 @@ object Action_Instance {
 				return client.request(
 					"/api/v1/domain_blocks",
 					"domain=${domain.encodePercent()}"
-						.toRequestBody()
+						.toFormRequestBody()
 						.toRequest(if(bBlock) "POST" else "DELETE")
 				)
 			}

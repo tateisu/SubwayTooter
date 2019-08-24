@@ -43,6 +43,7 @@ import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -57,6 +58,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
+import kotlin.math.max
 
 class ActPost : AppCompatActivity(),
 	View.OnClickListener,
@@ -859,10 +861,14 @@ class ActPost : AppCompatActivity(),
 						
 						val src_enquete = base_status.enquete
 						val src_items = src_enquete?.items
-						if(src_items != null) {
-							if(src_enquete.pollType == TootPollsType.FriendsNico && src_enquete.type != TootPolls.TYPE_ENQUETE) {
+						when {
+							src_items == null ->{
+							
+							}
+							src_enquete.pollType == TootPollsType.FriendsNico && src_enquete.type != TootPolls.TYPE_ENQUETE -> {
 								// フレニコAPIのアンケート結果は再編集の対象外
-							} else {
+							}
+							else -> {
 								spEnquete.setSelection(
 									if(src_enquete.pollType == TootPollsType.FriendsNico) {
 										2
@@ -875,15 +881,18 @@ class ActPost : AppCompatActivity(),
 								etContent.setSelection(text.length)
 								
 								var src_index = 0
-								for(et in list_etChoice) {
+								loop@ for(et in list_etChoice) {
 									if(src_index < src_items.size) {
 										val choice = src_items[src_index]
-										if(src_index == src_items.size - 1 && choice.text == "\uD83E\uDD14") {
-											// :thinking_face: は再現しない
-										} else {
-											et.setText(decodeOptions.decodeEmoji(choice.text))
-											++ src_index
-											continue
+										when {
+											src_index == src_items.size - 1 && choice.text == "\uD83E\uDD14" -> {
+												// :thinking_face: は再現しない
+											}
+											else -> {
+												et.setText(decodeOptions.decodeEmoji(choice.text))
+												++ src_index
+												continue@loop
+											}
 										}
 									}
 									et.setText("")
@@ -1234,7 +1243,7 @@ class ActPost : AppCompatActivity(),
 		
 		
 		etContent.contentMineTypeArray =
-			acceptable_mime_types.toArray(arrayOfNulls<String>(ActPost.acceptable_mime_types.size))
+			acceptable_mime_types.toArray(arrayOfNulls<String>(acceptable_mime_types.size))
 		etContent.commitContentListener = commitContentListener
 		
 	}
@@ -1339,7 +1348,7 @@ class ActPost : AppCompatActivity(),
 		
 		val remain = max - length
 		
-		tvCharCount.text = Integer.toString(remain)
+		tvCharCount.text = remain.toString()
 		tvCharCount.setTextColor(
 			getAttributeColor(
 				this,
@@ -1576,10 +1585,11 @@ class ActPost : AppCompatActivity(),
 				editAttachmentDescription(pa)
 			}
 		
-		if(pa.attachment?.isAudio == true) {
-			// can't set focus
-		} else {
-			a.addAction(getString(R.string.set_focus_point)) {
+		when {
+			pa.attachment?.isAudio == true -> {
+				// can't set focus
+			}
+			else -> a.addAction(getString(R.string.set_focus_point)) {
 				openFocusPoint(pa)
 			}
 		}
@@ -2025,11 +2035,11 @@ class ActPost : AppCompatActivity(),
 				
 				val media_size_max = when {
 					mimeType.startsWith("video") || mimeType.startsWith("audio") -> {
-						1000000 * Math.max(1, Pref.spMovieSizeMax.toInt(pref))
+						1000000 * max(1, Pref.spMovieSizeMax.toInt(pref))
 					}
 					
 					else -> {
-						1000000 * Math.max(1, Pref.spMediaSizeMax.toInt(pref))
+						1000000 * max(1, Pref.spMediaSizeMax.toInt(pref))
 					}
 				}
 				
@@ -2075,7 +2085,7 @@ class ActPost : AppCompatActivity(),
 						fileName,
 						object : RequestBody() {
 							override fun contentType() : MediaType? {
-								return MediaType.parse(opener.mimeType)
+								return opener.mimeType.toMediaType()
 							}
 							
 							@Throws(IOException::class)
@@ -2124,7 +2134,7 @@ class ActPost : AppCompatActivity(),
 							fileName,
 							object : RequestBody() {
 								override fun contentType() : MediaType? {
-									return MediaType.parse(opener.mimeType)
+									return opener.mimeType.toMediaType()
 								}
 								
 								@Throws(IOException::class)
@@ -2262,7 +2272,7 @@ class ActPost : AppCompatActivity(),
 		try {
 			startActivityForResult(Intent(action), requestCode)
 		} catch(ex : Throwable) {
-			log.trace(ex);
+			log.trace(ex)
 			showToast(this, ex, errorCaption)
 		}
 	}
@@ -2340,7 +2350,7 @@ class ActPost : AppCompatActivity(),
 		AlertDialog.Builder(this)
 			.setTitle(R.string.choose_visibility)
 			.setItems(caption_list) { _, which ->
-				if(which in 0 until list.size) {
+				if(which in list.indices) {
 					visibility = list[which]
 					showVisibility()
 				}

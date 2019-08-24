@@ -11,8 +11,8 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
 import android.os.Build
-import androidx.browser.customtabs.CustomTabsIntent
 import android.util.Log
+import androidx.browser.customtabs.CustomTabsIntent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
 import com.bumptech.glide.Registry
@@ -215,11 +215,13 @@ class App1 : Application() {
 			}
 		}
 		
-		private val user_agent_interceptor = Interceptor { chain ->
-			val request_with_user_agent = chain.request().newBuilder()
-				.header("User-Agent", getUserAgent())
-				.build()
-			chain.proceed(request_with_user_agent)
+		private val user_agent_interceptor = object:Interceptor {
+			override fun intercept(chain : Interceptor.Chain) : Response {
+				val request_with_user_agent = chain.request().newBuilder()
+					.header("User-Agent", getUserAgent())
+					.build()
+				return chain.proceed(request_with_user_agent)
+			}
 		}
 		
 		private var cookieManager: CookieManager? = null
@@ -245,7 +247,6 @@ class App1 : Application() {
 			val spec = ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
 				.allEnabledCipherSuites()
 				.allEnabledTlsVersions()
-				.supportsTlsExtensions(true)
 				.build()
 			
 			return OkHttpClient.Builder()
@@ -505,7 +506,7 @@ class App1 : Application() {
 					.cacheControl(CACHE_CONTROL)
 					.url(url)
 				
-				val call = App1.ok_http_client2.newCall(request_builder.build())
+				val call = ok_http_client2.newCall(request_builder.build())
 				response = call.execute()
 			} catch(ex : Throwable) {
 				log.e(ex, "getHttp network error.")
@@ -518,7 +519,7 @@ class App1 : Application() {
 			}
 			
 			return try {
-				response.body()?.bytes()
+				response.body?.bytes()
 			} catch(ex : Throwable) {
 				log.e(ex, "getHttp content error.")
 				null
@@ -533,13 +534,13 @@ class App1 : Application() {
 			val response : Response
 			
 			try {
-				val request_builder = okhttp3.Request.Builder()
+				val request_builder = Request.Builder()
 					.url(url)
 					.cacheControl(CACHE_CONTROL)
 				
 				builderBlock(request_builder)
 				
-				val call = App1.ok_http_client2.newCall(request_builder.build())
+				val call = ok_http_client2.newCall(request_builder.build())
 				response = call.execute()
 			} catch(ex : Throwable) {
 				log.e(ex, "getHttp network error.")
@@ -552,7 +553,7 @@ class App1 : Application() {
 			}
 			
 			return try {
-				response.body()?.string()
+				response.body?.string()
 			} catch(ex : Throwable) {
 				log.e(ex, "getHttp content error.")
 				null

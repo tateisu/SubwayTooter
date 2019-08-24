@@ -16,15 +16,15 @@ import android.os.Bundle
 import android.os.Handler
 import android.provider.MediaStore
 import android.provider.Settings
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.SpannableString
 import android.text.TextWatcher
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -36,13 +36,16 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okio.BufferedSink
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
 import org.json.JSONObject
 import java.io.*
+import kotlin.math.max
 
 class ActAccountSetting
 	: AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
@@ -644,7 +647,7 @@ class ActAccountSetting
 		AlertDialog.Builder(this)
 			.setTitle(R.string.choose_visibility)
 			.setItems(caption_list) { _, which ->
-				if(which in 0 until list.size) {
+				if(which in list.indices) {
 					visibility = list[which]
 					showVisibility()
 					saveUIToData()
@@ -749,7 +752,7 @@ class ActAccountSetting
 									+ "&app_id=" + packageName.encodePercent()
 									+ "&tag=" + tag
 									)
-									.toRequestBody()
+									.toFormRequestBody()
 									.toPost()
 									.url(PollingWorker.APP_SERVER + "/unregister")
 									.build()
@@ -1079,7 +1082,7 @@ class ActAccountSetting
 					getDocumentName(contentResolver, opener.uri),
 					object : RequestBody() {
 						override fun contentType() : MediaType? {
-							return MediaType.parse(opener.mimeType)
+							return opener.mimeType.toMediaType()
 						}
 						
 						@Throws(IOException::class)
@@ -1184,7 +1187,7 @@ class ActAccountSetting
 									fileName,
 									object : RequestBody() {
 										override fun contentType() : MediaType? {
-											return MediaType.parse(value.mimeType)
+											return value.mimeType.toMediaType()
 										}
 										
 										override fun writeTo(sink : BufferedSink) {
@@ -1303,15 +1306,15 @@ class ActAccountSetting
 	private fun sendFields(bConfirmed : Boolean = false) {
 		val args = ArrayList<Pair<String, String>>()
 		var lengthLongest = - 1
-		for(i in 0 until listEtFieldName.size) {
+		for(i in listEtFieldName.indices) {
 			val k = listEtFieldName[i].text.toString().trim()
 			val v = listEtFieldValue[i].text.toString().trim()
 			args.add(Pair("fields_attributes[$i][name]", k))
 			args.add(Pair("fields_attributes[$i][value]", v))
 			
-			lengthLongest = Math.max(
+			lengthLongest = max(
 				lengthLongest,
-				Math.max(
+				max(
 					k.codePointCount(0, k.length),
 					v.codePointCount(0, v.length)
 				)

@@ -17,10 +17,11 @@ import okio.Sink
 import okio.Source
 import okio.Timeout
 import java.nio.ByteBuffer
+import kotlin.math.max
 
-class ProgressResponseBody private constructor(private val originalBody : ResponseBody) :
-	ResponseBody() {
-	
+class ProgressResponseBody private constructor(
+	private val originalBody : ResponseBody
+) : ResponseBody() {
 	
 	companion object {
 		
@@ -28,15 +29,14 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 		
 		// please append this for OkHttpClient.Builder#addInterceptor().
 		// ex) builder.addInterceptor( ProgressResponseBody.makeInterceptor() );
-		fun makeInterceptor() : Interceptor {
-			return Interceptor { chain ->
+		fun makeInterceptor() : Interceptor = object:Interceptor{
+			override fun intercept(chain : Interceptor.Chain) : Response {
 				val originalResponse = chain.proceed(chain.request())
-					?: throw RuntimeException("makeInterceptor: chain.proceed() returns null.")
 				
-				val originalBody = originalResponse.body()
-					?: throw RuntimeException("makeInterceptor: originalResponse.body() reruens null.")
+				val originalBody = originalResponse.body
+					?: throw RuntimeException("makeInterceptor: originalResponse.body() returns null.")
 				
-				originalResponse.newBuilder()
+				return originalResponse.newBuilder()
 					.body(ProgressResponseBody(originalBody))
 					.build()
 			}
@@ -44,7 +44,7 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 		
 		@Throws(IOException::class)
 		fun bytes(response : Response, callback : ProgressResponseBodyCallback) : ByteArray {
-			val body = response.body() ?: throw RuntimeException("response.body() is null.")
+			val body = response.body ?: throw RuntimeException("response.body() is null.")
 			return bytes(body, callback)
 		}
 		
@@ -88,17 +88,18 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 		return originalBody.contentLength()
 	}
 	
-	override fun source() : BufferedSource? {
-		if(wrappedSource == null) {
+	override fun source() : BufferedSource {
+		var ws = wrappedSource
+		if(ws == null) {
 			
-			val originalSource = originalBody.source() ?: return null
+			val originalSource = originalBody.source()
 			
-			try {
+			ws = try {
 				// if it is RealBufferedSource, I can access to source public field via reflection.
 				val field_source = originalSource.javaClass.getField("source")
 				
 				// If there is the method, create the wrapper.
-				wrappedSource = object : ForwardingBufferedSource(originalSource) {
+				object : ForwardingBufferedSource(originalSource) {
 					
 					@Throws(IOException::class)
 					override fun readByteArray() : ByteArray {
@@ -112,23 +113,23 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 						
 						try {
 							val contentLength = originalBody.contentLength()
-							val buffer = originalSource.buffer()
+							val buffer = originalSource.buffer
 							val source = field_source.get(originalSource) as Source?
 								?: throw IllegalArgumentException("source == null")
 							
 							// same thing of Buffer.writeAll(), with counting.
 							var nRead : Long = 0
-							callback(0, Math.max(contentLength, 1))
+							callback(0, max(contentLength, 1))
 							while(true) {
 								val delta = source.read(buffer, 8192)
 								if(delta == - 1L) break
 								nRead += delta
 								if(nRead > 0) {
-									callback(nRead, Math.max(contentLength, nRead))
+									callback(nRead, max(contentLength, nRead))
 								}
 							}
 							// EOS時の進捗
-							callback(nRead, Math.max(contentLength, nRead))
+							callback(nRead, max(contentLength, nRead))
 							
 							return buffer.readByteArray()
 							
@@ -143,22 +144,29 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 				}
 			} catch(ex : Throwable) {
 				log.e("can't access to RealBufferedSource#source field.")
-				wrappedSource = originalSource
+				originalSource
 			}
-			
+			wrappedSource = ws
 		}
-		return wrappedSource
+		return ws
 	}
 	
 	// To avoid double buffering, We have to make ForwardingBufferedSource.
-	internal open class ForwardingBufferedSource(private val originalSource : BufferedSource) :
-		BufferedSource {
+	internal open class ForwardingBufferedSource(
+		private val originalSource : BufferedSource
+	) : BufferedSource {
+		
+		override val buffer : Buffer
+			get() = originalSource.buffer
+		
+		@Suppress("DEPRECATION", "OverridingDeprecatedMember")
+		override fun buffer() : Buffer = originalSource.buffer()
+		
+		override fun peek() : BufferedSource = originalSource.peek()
 		
 		override fun read(dst : ByteBuffer?) = originalSource.read(dst)
 		
 		override fun isOpen() = originalSource.isOpen
-		
-		override fun buffer() : Buffer? = originalSource.buffer()
 		
 		override fun exhausted() = originalSource.exhausted()
 		
@@ -186,16 +194,16 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 		
 		override fun skip(byteCount : Long) = originalSource.skip(byteCount)
 		
-		override fun readByteString() : ByteString? = originalSource.readByteString()
+		override fun readByteString() : ByteString = originalSource.readByteString()
 		
-		override fun readByteString(byteCount : Long) : ByteString? =
+		override fun readByteString(byteCount : Long) : ByteString =
 			originalSource.readByteString(byteCount)
 		
 		override fun select(options : Options) = originalSource.select(options)
 		
-		override fun readByteArray() : ByteArray? = originalSource.readByteArray()
+		override fun readByteArray() : ByteArray = originalSource.readByteArray()
 		
-		override fun readByteArray(byteCount : Long) : ByteArray? =
+		override fun readByteArray(byteCount : Long) : ByteArray =
 			originalSource.readByteArray(byteCount)
 		
 		override fun read(sink : ByteArray) = originalSource.read(sink)
@@ -210,22 +218,22 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 		
 		override fun readAll(sink : Sink) = originalSource.readAll(sink)
 		
-		override fun readUtf8() : String? = originalSource.readUtf8()
+		override fun readUtf8() : String = originalSource.readUtf8()
 		
-		override fun readUtf8(byteCount : Long) : String? = originalSource.readUtf8(byteCount)
+		override fun readUtf8(byteCount : Long) : String = originalSource.readUtf8(byteCount)
 		
 		override fun readUtf8Line() : String? = originalSource.readUtf8Line()
 		
-		override fun readUtf8LineStrict() : String? = originalSource.readUtf8LineStrict()
+		override fun readUtf8LineStrict() : String = originalSource.readUtf8LineStrict()
 		
-		override fun readUtf8LineStrict(limit : Long) : String? =
+		override fun readUtf8LineStrict(limit : Long) : String =
 			originalSource.readUtf8LineStrict(limit)
 		
 		override fun readUtf8CodePoint() = originalSource.readUtf8CodePoint()
 		
-		override fun readString(charset : Charset) : String? = originalSource.readString(charset)
+		override fun readString(charset : Charset) : String = originalSource.readString(charset)
 		
-		override fun readString(byteCount : Long, charset : Charset) : String? =
+		override fun readString(byteCount : Long, charset : Charset) : String =
 			originalSource.readString(byteCount, charset)
 		
 		override fun indexOf(b : Byte) = originalSource.indexOf(b)
@@ -256,11 +264,11 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 			byteCount : Int
 		) = originalSource.rangeEquals(offset, bytes, bytesOffset, byteCount)
 		
-		override fun inputStream() : InputStream? = originalSource.inputStream()
+		override fun inputStream() : InputStream = originalSource.inputStream()
 		
 		override fun read(sink : Buffer, byteCount : Long) = originalSource.read(sink, byteCount)
 		
-		override fun timeout() : Timeout? = originalSource.timeout()
+		override fun timeout() : Timeout = originalSource.timeout()
 		
 		override fun close() = originalSource.close()
 	}

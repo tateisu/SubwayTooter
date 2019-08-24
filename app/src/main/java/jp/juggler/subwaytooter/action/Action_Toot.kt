@@ -145,7 +145,7 @@ object Action_Toot {
 					)?.also { result ->
 						// 正常レスポンスは 204 no content
 						// 既にお気に入り済みならエラー文字列に'already favorited' が返る
-						if(result.response?.code() == 204
+						if(result.response?.code == 204
 							|| result.error?.contains("already favorited") == true
 							|| result.error?.contains("already not favorited") == true
 						) {
@@ -158,7 +158,7 @@ object Action_Toot {
 				} else {
 					client.request(
 						"/api/v1/statuses/${target_status.id}/${if(bSet) "favourite" else "unfavourite"}",
-						"".toRequestBody().toPost()
+						"".toFormRequestBody().toPost()
 					)?.also { result ->
 						new_status = TootParser(activity, access_info).status(result.jsonObject)
 					}
@@ -517,7 +517,7 @@ object Action_Toot {
 				override fun background(client : TootApiClient) : TootApiResult? {
 					return client.request(
 						"/api/v1/conversations/${conversationSummary.id}/read",
-						"".toRequestBody().toPost()
+						"".toFormRequestBody().toPost()
 					)
 				}
 				
@@ -794,7 +794,7 @@ object Action_Toot {
 					
 					val result = client.request(
 						"/api/v1/statuses/${status.id}/${if(bSet) "pin" else "unpin"}",
-						"".toRequestBody().toPost()
+						"".toFormRequestBody().toPost()
 					)
 					
 					new_status = TootParser(activity, access_info).status(result?.jsonObject)
@@ -1002,7 +1002,7 @@ object Action_Toot {
 				
 				val result = client.request(
 					"/api/v1/statuses/${status.id}/${if(bMute) "mute" else "unmute"}",
-					"".toRequestBody().toPost()
+					"".toFormRequestBody().toPost()
 				)
 				
 				local_status = TootParser(activity, access_info).status(result?.jsonObject)

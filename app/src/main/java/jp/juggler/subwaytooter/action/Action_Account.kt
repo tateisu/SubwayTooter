@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 
 object Action_Account {
@@ -281,7 +282,7 @@ object Action_Account {
 						true -> "pin"
 						false -> "unpin"
 					},
-					"".toRequestBody().toPost()
+					"".toFormRequestBody().toPost()
 				)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {

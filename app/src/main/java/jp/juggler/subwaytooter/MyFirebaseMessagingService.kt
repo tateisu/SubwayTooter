@@ -20,13 +20,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 		
 		var tag : String? = null
 		val data = remoteMessage.data
-		if(data != null) {
-			for((key, value) in data) {
-				log.d("onMessageReceived: %s=%s", key, value)
-				when(key){
-					"notification_tag" -> tag = value
-					"acct" -> tag= "acct<>$value"
-				}
+		for((key, value) in data) {
+			log.d("onMessageReceived: %s=%s", key, value)
+			when(key){
+				"notification_tag" -> tag = value
+				"acct" -> tag= "acct<>$value"
 			}
 		}
 		
@@ -40,9 +38,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 		}
 	}
 	
-	override fun onNewToken(token : String?) {
+	
+	override fun onNewToken(token : String) {
 		try {
-			token?: return
 			log.d("onTokenRefresh: token=%s", token)
 			PrefDevice.prefDevice(this).edit().putString(PrefDevice.KEY_DEVICE_TOKEN, token).apply()
 

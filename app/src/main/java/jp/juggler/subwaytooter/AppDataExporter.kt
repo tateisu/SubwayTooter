@@ -52,8 +52,7 @@ object AppDataExporter {
 				writer.name(k)
 				writer.nullValue()
 			} else {
-				val o = src.get(k)
-				when(o) {
+				when(val o = src.get(k)) {
 					is String -> {
 						writer.name(k)
 						writer.value(o)
@@ -98,8 +97,7 @@ object AppDataExporter {
 		reader.beginObject()
 		while(reader.hasNext()) {
 			val name = reader.nextName()
-			val token = reader.peek()
-			when(token) {
+			when(val token = reader.peek()) {
 				
 				JsonToken.NULL -> reader.nextNull()
 				
@@ -221,8 +219,7 @@ object AppDataExporter {
 						}
 					}
 					
-					val token = reader.peek()
-					when(token) {
+					when( reader.peek() ) {
 						JsonToken.NULL -> {
 							reader.skipValue()
 							cv.putNull(name)
@@ -235,7 +232,7 @@ object AppDataExporter {
 						JsonToken.STRING -> cv.put(name, reader.nextString())
 						
 						else -> reader.skipValue()
-					} // 無視する
+					}
 				}
 				reader.endObject()
 				val new_id =
@@ -300,8 +297,7 @@ object AppDataExporter {
 				continue
 			}
 			
-			val prefItem = Pref.map[k]
-			when(prefItem) {
+			when(val prefItem = Pref.map[k]) {
 				is BooleanPref -> e.putBoolean(k, reader.nextBoolean())
 				is IntPref -> e.putInt(k, reader.nextInt())
 				is LongPref -> e.putLong(k, reader.nextLong())
@@ -350,13 +346,16 @@ object AppDataExporter {
 		reader.beginArray()
 		while(reader.hasNext()) {
 			val item = readJsonObject(reader)
-			val old_id = item.parseLong(Column.KEY_ACCOUNT_ROW_ID) ?: - 1L
-			if(old_id == - 1L) {
-				// 検索カラムは NAアカウントと紐ついている。変換の必要はない
-			} else {
-				val new_id =
-					id_map[old_id] ?: throw RuntimeException("readColumn: can't convert account id")
-				item.put(Column.KEY_ACCOUNT_ROW_ID, new_id)
+			
+			when(val old_id = item.parseLong(Column.KEY_ACCOUNT_ROW_ID) ?: - 1L) {
+				- 1L -> {
+					// 検索カラムは NAアカウントと紐ついている。変換の必要はない
+				}
+				else -> {
+					val new_id =
+						id_map[old_id] ?: throw RuntimeException("readColumn: can't convert account id")
+					item.put(Column.KEY_ACCOUNT_ROW_ID, new_id)
+				}
 			}
 			try {
 				result.add(Column(app_state, item))
@@ -415,9 +414,7 @@ object AppDataExporter {
 		val account_id_map = HashMap<Long, Long>()
 		
 		while(reader.hasNext()) {
-			val name = reader.nextName()
-			
-			when(name) {
+			when( reader.nextName()) {
 				KEY_PREF -> importPref(reader, app_state.pref)
 				KEY_ACCOUNT -> importTable(reader, SavedAccount.table, account_id_map)
 				
@@ -487,7 +484,7 @@ object AppDataExporter {
 	) : Boolean {
 		
 		// entryName がバックグラウンド画像のそれと一致するか
-		val m = AppDataExporter.reBackgroundImage.matcher(entryName)
+		val m = reBackgroundImage.matcher(entryName)
 		if(! m.find()) return false
 		
 		try {

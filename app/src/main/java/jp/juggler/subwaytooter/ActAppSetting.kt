@@ -16,6 +16,7 @@ import android.widget.BaseAdapter
 import android.widget.ListView
 import android.widget.TextView
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import java.io.File
 import java.io.FileOutputStream
@@ -183,6 +184,7 @@ class ActAppSetting : AppCompatActivity() {
 		object : AsyncTask<Void, String, File?>() {
 			
 			override fun doInBackground(vararg params : Void) : File? {
+				
 				try {
 					val cache_dir = cacheDir
 					cache_dir.mkdir()

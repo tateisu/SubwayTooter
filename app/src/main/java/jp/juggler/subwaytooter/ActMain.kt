@@ -515,11 +515,6 @@ class ActMain : AppCompatActivity()
 			?: getAttributeColor(this, R.attr.colorLink)
 		CustomShare.reloadCache(this, pref)
 		
-		// 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
-		for(column in app_state.column_list) {
-			column.fireColumnColor()
-		}
-		
 		var tz = TimeZone.getDefault()
 		try {
 			val tz_id = Pref.spTimeZone(pref)
@@ -530,24 +525,35 @@ class ActMain : AppCompatActivity()
 			log.e(ex, "getTimeZone failed.")
 		}
 		TootStatus.date_format.timeZone = tz
+
+		// バグいアカウントデータを消す
+		try{
+			SavedAccount.sweepBuggieData()
+		}catch(ex:Throwable){
+			log.trace(ex)
+		}
 		
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
-		run {
-			val new_order = ArrayList<Int>()
-			for(i in 0 until app_state.column_list.size) {
-				val column = app_state.column_list[i]
-				
-				if(! column.access_info.isNA) {
-					// 存在確認
-					SavedAccount.loadAccount(this@ActMain, column.access_info.db_id)
-						?: continue
-				}
-				new_order.add(i)
-			}
+		val new_order = ArrayList<Int>()
+		
+		for(i in 0 until app_state.column_list.size) {
+			val column = app_state.column_list[i]
 			
-			if(new_order.size != app_state.column_list.size) {
-				setOrder(new_order)
+			if(! column.access_info.isNA) {
+				// 存在確認
+				SavedAccount.loadAccount(this@ActMain, column.access_info.db_id)
+					?: continue
 			}
+			new_order.add(i)
+		}
+		
+		if(new_order.size != app_state.column_list.size) {
+			setOrder(new_order)
+		}
+		
+		// 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
+		for(column in app_state.column_list) {
+			column.fireColumnColor()
 		}
 		
 		// 各カラムのアカウント設定を読み直す

@@ -57,8 +57,8 @@ class SavedAccount(
 	var confirm_post : Boolean = false
 	
 	var notification_tag : String? = null
-	var register_key : String? = null
-	var register_time : Long = 0
+	private var register_key : String? = null
+	private var register_time : Long = 0
 	var default_text : String = ""
 	
 	var default_sensitive = false
@@ -95,7 +95,7 @@ class SavedAccount(
 			val hostInAcct = if(pos == - 1) "" else acct.substring(pos + 1)
 			if(hostInAcct.isEmpty()) throw RuntimeException("missing host in acct")
 			hostInAcct
-		}.toLowerCase()
+		}.toLowerCase(Locale.JAPAN)
 	}
 	
 	constructor(context : Context, cursor : Cursor) : this(
@@ -104,24 +104,16 @@ class SavedAccount(
 		cursor.getString(COL_HOST) // host
 		, misskeyVersion = cursor.getInt(COL_MISSKEY_VERSION)
 	) {
-		
-		val jsonAccount = cursor.getString(COL_ACCOUNT).toJsonObject()
-		if(jsonAccount.opt("id") == null) {
-			// 疑似アカウント
-			this.loginAccount = null
+		val strAccount = cursor.getString(COL_ACCOUNT)
+		val jsonAccount = strAccount.toJsonObject()
+		this.loginAccount = if(jsonAccount.opt("id") == null) {
+			null // 疑似アカウント
 		} else {
-			val loginAccount = TootParser(
+			TootParser(
 				context,
 				LinkHelper.newLinkHelper(this@SavedAccount.host, misskeyVersion = misskeyVersion)
 			).account(jsonAccount)
-			
-			if(loginAccount == null) {
-				log.e(
-					"missing loginAccount for %s",
-					cursor.getString(COL_ACCOUNT)
-				)
-			}
-			this.loginAccount = loginAccount
+				?: error("missing loginAccount for $strAccount")
 		}
 		
 		val sv = cursor.getStringOrNull(COL_VISIBILITY)
@@ -231,26 +223,26 @@ class SavedAccount(
 		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 	}
 	
-	fun saveNotificationTag() {
-		if(db_id == INVALID_DB_ID)
-			throw RuntimeException("SavedAccount.saveNotificationTag missing db_id")
-		
-		val cv = ContentValues()
-		cv.put(COL_NOTIFICATION_TAG, notification_tag)
-		
-		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
-	}
-	
-	fun saveRegisterKey() {
-		if(db_id == INVALID_DB_ID)
-			throw RuntimeException("SavedAccount.saveRegisterKey missing db_id")
-		
-		val cv = ContentValues()
-		cv.put(COL_REGISTER_KEY, register_key)
-		cv.put(COL_REGISTER_TIME, register_time)
-		
-		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
-	}
+//	fun saveNotificationTag() {
+//		if(db_id == INVALID_DB_ID)
+//			throw RuntimeException("SavedAccount.saveNotificationTag missing db_id")
+//
+//		val cv = ContentValues()
+//		cv.put(COL_NOTIFICATION_TAG, notification_tag)
+//
+//		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+//	}
+//
+//	fun saveRegisterKey() {
+//		if(db_id == INVALID_DB_ID)
+//			throw RuntimeException("SavedAccount.saveRegisterKey missing db_id")
+//
+//		val cv = ContentValues()
+//		cv.put(COL_REGISTER_KEY, register_key)
+//		cv.put(COL_REGISTER_TIME, register_time)
+//
+//		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+//	}
 	
 	// onResumeの時に設定を読み直す
 	fun reloadSetting(context : Context) {
@@ -727,7 +719,7 @@ class SavedAccount(
 			
 		}
 		
-		const val REGISTER_KEY_UNREGISTERED = "unregistered"
+		private const val REGISTER_KEY_UNREGISTERED = "unregistered"
 		
 		fun clearRegistrationCache() {
 			val cv = ContentValues()
@@ -764,7 +756,15 @@ class SavedAccount(
 		fun loadAccountList(context : Context) : ArrayList<SavedAccount> {
 			val result = ArrayList<SavedAccount>()
 			try {
-				App1.database.query(table, null, null, null, null, null, null)
+				App1.database.query(
+					table,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null
+				)
 					.use { cursor ->
 						while(cursor.moveToNext()) {
 							val a = parse(context, cursor)
@@ -884,6 +884,7 @@ class SavedAccount(
 			return if(c >= 'a' && c <= 'z') c - ('a' - 'A') else c
 		}
 		
+		@Suppress("SameParameterValue")
 		private fun host_match(
 			a : CharSequence,
 			a_startArg : Int,
@@ -936,6 +937,39 @@ class SavedAccount(
 			Collections.sort(account_list, account_comparator)
 		}
 		
+		fun sweepBuggieData(){
+			// https://github.com/tateisu/SubwayTooter/issues/107
+			// COL_ACCOUNTの内容がおかしければ削除する
+
+			val list = ArrayList<Long>()
+			try {
+				App1.database.query(
+					table,
+					null,
+					"$COL_ACCOUNT like ?",
+					arrayOf("jp.juggler.subwaytooter.api.entity.TootAccount@%"),
+					null,
+					null,
+					null
+				).use { cursor ->
+					while(cursor.moveToNext()) {
+						list.add(cursor.getLong(COL_ID))
+					}
+				}
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				log.e(ex, "sweepBuggieData failed.")
+			}
+
+			list.forEach{
+				try {
+					App1.database.delete(table,"$COL_ID=?",arrayOf(it.toString()))
+				} catch(ex : Throwable) {
+					log.trace(ex)
+					log.e(ex, "sweepBuggieData failed.")
+				}
+			}
+		}
 	}
 	
 	fun getAccessToken() : String? {
@@ -992,7 +1026,7 @@ class SavedAccount(
 					if(ta != null) {
 						this.loginAccount = ta
 						val cv = ContentValues()
-						cv.put(COL_ACCOUNT, ta.toString())
+						cv.put(COL_ACCOUNT, result.jsonObject.toString() )
 						App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 						PollingWorker.queueUpdateNotification(context)
 					}

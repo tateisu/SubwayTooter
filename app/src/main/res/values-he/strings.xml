@@ -376,4 +376,19 @@
     <string name="button_background_color">צבע הרקע של הכפתור</string>
     <string name="button_foreground_color">צבע חזית הכפתור</string>
     <string name="read_more_status">קרא עוד תרועות</string>
+    <string name="account_picker_follow">האם לעקוב אחרי החשבון\?</string>
+    <string name="account_picker_toot">האם להשתמש בחשבון לתרועות\?</string>
+    <string name="open_status_from">פתח מצב מ-</string>
+    <string name="help_translation">סייע בשיפור התרגום</string>
+    <string name="dont_use_streaming_api">רענן את הערוצים ידנית</string>
+    <string name="dont_refresh_on_activity_resume">כבה את הרענון האוטומטי בעת החזרה ליישום.</string>
+    <string name="status_id_conversion_failed">לא ניתן להמיר את שם המצב.</string>
+    <string name="already_favourited">כבר הועדף.</string>
+    <string name="already_boosted">כבר הוגבר.</string>
+    <string name="dont_screen_off">שמור על המסך פועל בעת השימוש ביישום.</string>
+    <string name="hide_media_default">הסתר את כל המדיה</string>
+    <string name="cant_close_column_by_back_button_when_multiple_column_shown">לא ניתן לסגור את העמודה באמצעות כפתור \"בחזרה\" כאשר מוצגות מספר עמודות.</string>
+    <string name="minimum_column_width">רוחב עמודה מזערי (ברירת מחדל היא 300dp, נא הפעל מחדש את היישום)</string>
+    <string name="media_thumbnail_height">גובה תמונה מוקטנת עבור מדיה (ברירת מחדל = 64dp, נא הפעל מחדש את האפליקציה)</string>
+    <string name="account_picker_reply">השב באמצעות\?</string>
 </resources>

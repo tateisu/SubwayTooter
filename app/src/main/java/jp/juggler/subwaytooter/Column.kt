@@ -45,10 +45,10 @@ enum class ColumnPagingType {
 	None,
 }
 
-enum class ProfileTab(val id:Int,val ct:ColumnType){
-	Status(0,ColumnType.TabStatus),
-	Following(1,ColumnType.TabFollowing),
-	Followers(2,ColumnType.TabFollowers);
+enum class ProfileTab(val id : Int, val ct : ColumnType) {
+	Status(0, ColumnType.TabStatus),
+	Following(1, ColumnType.TabFollowing),
+	Followers(2, ColumnType.TabFollowers)
 }
 
 class Column(
@@ -186,7 +186,6 @@ class Column(
 		
 		val typeMap : SparseArray<ColumnType> = SparseArray()
 		
-
 		internal var useInstanceTicker = false
 		
 		internal const val QUICK_FILTER_ALL = 0
@@ -359,14 +358,14 @@ class Column(
 		}
 	}
 	
-	val type = ColumnType.parse( typeId )
+	val type = ColumnType.parse(typeId)
 	
-	fun getIconId() :Int =
+	fun getIconId() : Int =
 		type.iconId(access_info.acct)
 	
 	fun getColumnName(long : Boolean) =
 		type.name2(this, long) ?: type.name1(context)
-
+	
 	private var callback_ref : WeakReference<Callback>? = null
 	
 	private val isActivityStart : Boolean
@@ -628,7 +627,8 @@ class Column(
 			
 			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND -> status_id =
 				getParamAt(params, 0)
-			ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER -> profile_id = getParamAt(params, 0)
+			ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER -> profile_id =
+				getParamAt(params, 0)
 			ColumnType.HASHTAG -> hashtag = getParamAt(params, 0)
 			
 			ColumnType.HASHTAG_FROM_ACCT -> {
@@ -648,7 +648,7 @@ class Column(
 			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> search_query = getParamAt(params, 0)
 			ColumnType.INSTANCE_INFORMATION -> instance_uri = getParamAt(params, 0)
 			
-			else->{
+			else -> {
 			
 			}
 		}
@@ -732,11 +732,12 @@ class Column(
 				search_resolve = src.optBoolean(KEY_SEARCH_RESOLVE, false)
 			}
 			
-			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> search_query = src.optString(KEY_SEARCH_QUERY)
+			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> search_query =
+				src.optString(KEY_SEARCH_QUERY)
 			
 			ColumnType.INSTANCE_INFORMATION -> instance_uri = src.optString(KEY_INSTANCE_URI)
 			
-			else->{
+			else -> {
 			
 			}
 		}
@@ -823,7 +824,7 @@ class Column(
 			
 			ColumnType.INSTANCE_INFORMATION -> dst.put(KEY_INSTANCE_URI, instance_uri)
 			
-			else ->{
+			else -> {
 				// no extra parameter
 			}
 		}
@@ -837,7 +838,11 @@ class Column(
 		dst.put(KEY_OLD_INDEX, old_index)
 	}
 	
-	internal fun isSameSpec(ai : SavedAccount, type : ColumnType, params : Array<out Any>) : Boolean {
+	internal fun isSameSpec(
+		ai : SavedAccount,
+		type : ColumnType,
+		params : Array<out Any>
+	) : Boolean {
 		if(type != this.type || ai.acct != access_info.acct) return false
 		
 		return try {
@@ -865,12 +870,18 @@ class Column(
 					((getParamAtNullable<String>(params, 0) ?: "") == hashtag_acct)
 				}
 				
-				ColumnType.SEARCH -> getParamAt<String>(params, 0) == search_query && getParamAt<Boolean>(
+				ColumnType.SEARCH -> getParamAt<String>(
+					params,
+					0
+				) == search_query && getParamAt<Boolean>(
 					params,
 					1
 				) == search_resolve
 				
-				ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> getParamAt<String>(params, 0) == search_query
+				ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> getParamAt<String>(
+					params,
+					0
+				) == search_query
 				
 				ColumnType.INSTANCE_INFORMATION -> getParamAt<String>(params, 0) == instance_uri
 				
@@ -945,8 +956,6 @@ class Column(
 		}
 	}
 	
-
-	
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
 	fun findStatus(
 		target_instance : String,
@@ -1014,16 +1023,16 @@ class Column(
 	// リストメンバーカラムでメンバーをリストから除去した時に呼ばれる
 	// require full acct
 	fun removeAccountInTimelinePseudo(acct : String) {
-
+		
 		val tmp_list = ArrayList<TimelineItem>(list_data.size)
 		for(o in list_data) {
 			if(o is TootStatus) {
 				if(acct == access_info.getFullAcct(o.account)) continue
-				if(acct == access_info.getFullAcct(o.reblog?.account )) continue
+				if(acct == access_info.getFullAcct(o.reblog?.account)) continue
 			} else if(o is TootNotification) {
-				if(acct == access_info.getFullAcct(o.account )) continue
-				if(acct == access_info.getFullAcct(o.status?.account )) continue
-				if(acct == access_info.getFullAcct(o.status?.reblog?.account )) continue
+				if(acct == access_info.getFullAcct(o.account)) continue
+				if(acct == access_info.getFullAcct(o.status?.account)) continue
+				if(acct == access_info.getFullAcct(o.status?.reblog?.account)) continue
 			}
 			
 			tmp_list.add(o)
@@ -1241,7 +1250,7 @@ class Column(
 				}
 			}
 			
-			else->{
+			else -> {
 			
 			}
 		}
@@ -1411,11 +1420,11 @@ class Column(
 		if(column_regex_filter(status.decoded_spoiler_text)) return true
 		if(column_regex_filter(status.reblog?.decoded_spoiler_text)) return true
 		
-		if( access_info.isPseudo){
-			var r = UserRelation.loadPseudo( access_info.getFullAcct(status.account) )
-			if( r.muting || r.blocking ) return true
+		if(access_info.isPseudo) {
+			var r = UserRelation.loadPseudo(access_info.getFullAcct(status.account))
+			if(r.muting || r.blocking) return true
 			val reblog = status.reblog
-			if( reblog != null) {
+			if(reblog != null) {
 				r = UserRelation.loadPseudo(access_info.getFullAcct(reblog.account))
 				if(r.muting || r.blocking) return true
 			}
@@ -1486,7 +1495,7 @@ class Column(
 			TootNotification.TYPE_FOLLOW -> {
 				val who = item.account
 				if(who != null && favMuteSet?.contains(access_info.getFullAcct(who)) == true) {
-					PollingWorker.log.d("%s is in favMuteSet.", access_info.getFullAcct(who))
+					log.d("%s is in favMuteSet.", access_info.getFullAcct(who))
 					return true
 				}
 			}
@@ -1949,7 +1958,7 @@ class Column(
 				}
 			}
 			
-			else->{
+			else -> {
 			
 			}
 		}
@@ -2707,11 +2716,15 @@ class Column(
 				}
 			} else {
 				val scroll_save = this@Column.scroll_save
-				if(scroll_save == null || scroll_save.isHead) {
+				when {
+
 					// スクロール位置が先頭なら先頭のまま
-				} else {
+					scroll_save == null || scroll_save.isHead -> {
+					
+					}
+
 					// 現在の要素が表示され続けるようにしたい
-					scroll_save.adapterIndex += added
+					else -> scroll_save.adapterIndex += added
 				}
 			}
 			
@@ -2953,6 +2966,4 @@ class Column(
 	init {
 		registerColumnId(column_id, this)
 	}
-	
-	
 }

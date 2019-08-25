@@ -525,11 +525,11 @@ class ActMain : AppCompatActivity()
 			log.e(ex, "getTimeZone failed.")
 		}
 		TootStatus.date_format.timeZone = tz
-
+		
 		// バグいアカウントデータを消す
-		try{
+		try {
 			SavedAccount.sweepBuggieData()
-		}catch(ex:Throwable){
+		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
 		
@@ -1192,7 +1192,7 @@ class ActMain : AppCompatActivity()
 		drawer = findViewById(R.id.drawer_layout)
 		drawer.addDrawerListener(this)
 		
-		SideMenuAdapter( this, findViewById(R.id.nav_view), drawer )
+		SideMenuAdapter(this, findViewById(R.id.nav_view), drawer)
 		
 		btnMenu = findViewById(R.id.btnMenu)
 		btnToot = findViewById(R.id.btnToot)
@@ -1871,103 +1871,102 @@ class ActMain : AppCompatActivity()
 		val token_info = result?.tokenInfo
 		val error = result?.error
 		
-		if(result == null) {
-			// cancelled.
+		when {
+			result == null -> {
+				// cancelled.
+			}
 			
-		} else if(error != null) {
-			showToast(this@ActMain, true, result.error)
+			error != null -> showToast(this@ActMain, true, result.error)
 			
-		} else if(token_info == null) {
-			showToast(this@ActMain, true, "can't get access token.")
+			token_info == null -> showToast(this@ActMain, true, "can't get access token.")
 			
-		} else if(jsonObject == null) {
-			showToast(this@ActMain, true, "can't parse json response.")
+			jsonObject == null -> showToast(this@ActMain, true, "can't parse json response.")
 			
-		} else if(ta == null) {
 			// 自分のユーザネームを取れなかった
 			// …普通はエラーメッセージが設定されてるはずだが
-			showToast(this@ActMain, true, "can't verify user credential.")
+			ta == null -> showToast(this@ActMain, true, "can't verify user credential.")
 			
-		} else if(sa != null) {
 			// アクセストークン更新時
-			
 			// インスタンスは同じだと思うが、ユーザ名が異なる可能性がある
-			if(sa.username != ta.username) {
-				showToast(this@ActMain, true, R.string.user_name_not_match)
-			} else {
-				showToast(this@ActMain, false, R.string.access_token_updated_for, sa.acct)
-				
-				// DBの情報を更新する
-				sa.updateTokenInfo(token_info)
-				
-				// 各カラムの持つアカウント情報をリロードする
-				reloadAccountSetting()
-				
-				// 自動でリロードする
-				for(it in app_state.column_list) {
-					if(it.access_info.acct == sa.acct) {
-						it.startLoading()
-					}
-				}
-				
-				// 通知の更新が必要かもしれない
-				PollingWorker.queueUpdateNotification(this@ActMain)
-				return true
-			}
-		} else if(host != null) {
-			// アカウント追加時
-			val user = ta.username + "@" + host
-			
-			val row_id = SavedAccount.insert(
-				host,
-				user,
-				jsonObject,
-				token_info,
-				misskeyVersion = TootApiClient.parseMisskeyVersion(token_info)
-			)
-			val account = SavedAccount.loadAccount(this@ActMain, row_id)
-			if(account != null) {
-				var bModified = false
-				
-				if(account.loginAccount?.locked == true) {
-					bModified = true
-					account.visibility = TootVisibility.PrivateFollowers
-				}
-				if(! account.isMisskey) {
-					val source = ta.source
-					if(source != null) {
-						val privacy = TootVisibility.parseMastodon(source.privacy)
-						if(privacy != null) {
-							bModified = true
-							account.visibility = privacy
+			sa != null ->
+				if(sa.username != ta.username) {
+					showToast(this@ActMain, true, R.string.user_name_not_match)
+				} else {
+					showToast(this@ActMain, false, R.string.access_token_updated_for, sa.acct)
+					
+					// DBの情報を更新する
+					sa.updateTokenInfo(token_info)
+					
+					// 各カラムの持つアカウント情報をリロードする
+					reloadAccountSetting()
+					
+					// 自動でリロードする
+					for(it in app_state.column_list) {
+						if(it.access_info.acct == sa.acct) {
+							it.startLoading()
 						}
-						
-						// XXX ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
-						// 現在、アカウント設定にはこの項目はない( 「NSFWな添付メディアを隠さない」はあるが全く別の効果)
 					}
 					
-					if(bModified) {
-						account.saveSetting()
+					// 通知の更新が必要かもしれない
+					PollingWorker.queueUpdateNotification(this@ActMain)
+					return true
+				}
+			
+			host != null -> {
+				// アカウント追加時
+				val user = ta.username + "@" + host
+				
+				val row_id = SavedAccount.insert(
+					host,
+					user,
+					jsonObject,
+					token_info,
+					misskeyVersion = TootApiClient.parseMisskeyVersion(token_info)
+				)
+				val account = SavedAccount.loadAccount(this@ActMain, row_id)
+				if(account != null) {
+					var bModified = false
+					
+					if(account.loginAccount?.locked == true) {
+						bModified = true
+						account.visibility = TootVisibility.PrivateFollowers
 					}
+					if(! account.isMisskey) {
+						val source = ta.source
+						if(source != null) {
+							val privacy = TootVisibility.parseMastodon(source.privacy)
+							if(privacy != null) {
+								bModified = true
+								account.visibility = privacy
+							}
+							
+							// XXX ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
+							// 現在、アカウント設定にはこの項目はない( 「NSFWな添付メディアを隠さない」はあるが全く別の効果)
+						}
+						
+						if(bModified) {
+							account.saveSetting()
+						}
+					}
+					
+					showToast(this@ActMain, false, R.string.account_confirmed)
+					
+					// 通知の更新が必要かもしれない
+					PollingWorker.queueUpdateNotification(this@ActMain)
+					
+					// 適当にカラムを追加する
+					val count = SavedAccount.count
+					if(count > 1) {
+						addColumn(false, defaultInsertPosition, account, ColumnType.HOME)
+					} else {
+						addColumn(false, defaultInsertPosition, account, ColumnType.HOME)
+						addColumn(false, defaultInsertPosition, account, ColumnType.NOTIFICATIONS)
+						addColumn(false, defaultInsertPosition, account, ColumnType.LOCAL)
+						addColumn(false, defaultInsertPosition, account, ColumnType.FEDERATE)
+					}
+					
+					return true
 				}
-				
-				showToast(this@ActMain, false, R.string.account_confirmed)
-				
-				// 通知の更新が必要かもしれない
-				PollingWorker.queueUpdateNotification(this@ActMain)
-				
-				// 適当にカラムを追加する
-				val count = SavedAccount.count
-				if(count > 1) {
-					addColumn(false, defaultInsertPosition, account, ColumnType.HOME)
-				} else {
-					addColumn(false, defaultInsertPosition, account, ColumnType.HOME)
-					addColumn(false, defaultInsertPosition, account, ColumnType.NOTIFICATIONS)
-					addColumn(false, defaultInsertPosition, account, ColumnType.LOCAL)
-					addColumn(false, defaultInsertPosition, account, ColumnType.FEDERATE)
-				}
-				
-				return true
 			}
 		}
 		return false
@@ -2348,7 +2347,7 @@ class ActMain : AppCompatActivity()
 					// https://misskey.xyz/@tateisu@twitter.com
 					
 					if(instance?.isNotEmpty() == true) {
-						when(instance.toLowerCase()) {
+						when(instance.toLowerCase(Locale.JAPAN)) {
 							"github.com", "twitter.com" -> {
 								App1.openCustomTab(this, "https://$instance/$user")
 							}

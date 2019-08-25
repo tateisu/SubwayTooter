@@ -39,7 +39,6 @@ import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import okio.BufferedSink
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor

@@ -5,9 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
-import androidx.core.content.FileProvider
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.util.JsonWriter
 import android.view.View
 import android.view.ViewGroup
@@ -15,8 +12,10 @@ import android.widget.AdapterView
 import android.widget.BaseAdapter
 import android.widget.ListView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import java.io.File
 import java.io.FileOutputStream
@@ -74,53 +73,50 @@ class ActAppSetting : AppCompatActivity() {
 		val block : (Item) -> Unit
 	)
 	
-	private fun genItem(titleId : Int, descId : Int? = null, block : (Item) -> Unit) =
-		Item(titleId, descId, block)
-	
 	inner class MyAdapter : BaseAdapter(), AdapterView.OnItemClickListener {
 		
-		val items = arrayOf(
+		private val items = arrayOf(
 			
-			genItem(R.string.notifications) {
+			Item(R.string.notifications) {
 				openChild(it, R.layout.act_app_setting_notifications)
 			},
 			
-			genItem(R.string.behavior) {
+			Item(R.string.behavior) {
 				openChild(it, R.layout.act_app_setting_behavior)
 			},
 			
-			genItem(R.string.post) {
+			Item(R.string.post) {
 				openChild(it, R.layout.act_app_setting_post)
 			},
 			
-			genItem(R.string.tablet_mode) {
+			Item(R.string.tablet_mode) {
 				openChild(it, R.layout.act_app_setting_tablet)
 			},
-
-			genItem(R.string.media_attachment) {
+			
+			Item(R.string.media_attachment) {
 				openChild(it, R.layout.act_app_setting_media_attachment)
 			},
 			
-			genItem(R.string.animation) {
+			Item(R.string.animation) {
 				openChild(it, R.layout.act_app_setting_animation)
 			},
-
-			genItem(R.string.appearance) {
+			
+			Item(R.string.appearance) {
 				openChild(it, R.layout.act_app_setting_appearance)
 			},
-
-			genItem(R.string.color) {
+			
+			Item(R.string.color) {
 				openChild(it, R.layout.act_app_setting_color)
 			},
-
-			genItem(R.string.performance) {
+			
+			Item(R.string.performance) {
 				openChild(it, R.layout.act_app_setting_performance)
 			},
-
-			genItem(R.string.app_data_export) {
+			
+			Item(R.string.app_data_export) {
 				exportAppData()
 			},
-			genItem(R.string.app_data_import, R.string.app_data_import_desc) {
+			Item(R.string.app_data_import, R.string.app_data_import_desc) {
 				importAppData()
 			}
 		)

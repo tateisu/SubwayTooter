@@ -55,7 +55,7 @@ abstract class ColumnTask(
 	internal fun JSONObject.putMisskeyUntil(id : EntityId?) = putMisskeyUntil(column, id)
 	internal fun JSONObject.putMisskeySince(id : EntityId?) = putMisskeySince(column, id)
 	internal fun JSONObject.addMisskeyNotificationFilter() = addMisskeyNotificationFilter(column)
-	internal fun JSONObject.addRangeMisskey(bBottom : Boolean) = addRangeMisskey(column,bBottom)
+	internal fun JSONObject.addRangeMisskey(bBottom : Boolean) = addRangeMisskey(column, bBottom)
 	
 	internal fun addOne(
 		dstArg : ArrayList<TimelineItem>?,

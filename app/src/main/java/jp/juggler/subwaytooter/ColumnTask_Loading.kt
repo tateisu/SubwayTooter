@@ -48,7 +48,7 @@ class ColumnTask_Loading(
 		client.account = access_info
 		
 		try {
-			val result : TootApiResult? = access_info.checkConfirmed(context, client)
+			val result = access_info.checkConfirmed(context, client)
 			if(result == null || result.error != null) return result
 			
 			column.muted_word2 = column.encodeFilterTree(column.loadFilter2(client))
@@ -105,15 +105,20 @@ class ColumnTask_Loading(
 		column.updateMisskeyCapture()
 	}
 	
+	/////////////////////////////////////////////////////////////////
+	// functions that called from ColumnTask.loading lambda.
+	
 	internal fun getInstanceInformation(
 		client : TootApiClient,
 		instance_name : String?
 	) : TootApiResult? {
-		if(instance_name != null) {
+		when {
 			// 「インスタンス情報」カラムをNAアカウントで開く場合
-			client.instance = instance_name
-		} else {
-			// カラムに紐付けられたアカウントのタンスのインスタンス情報
+			instance_name != null -> client.instance = instance_name
+			
+			// カラムに紐付けられたアカウントのタンスのインスタンス情報を取得する
+			else -> {
+			}
 		}
 		val (result, ti) = client.parseInstanceInformation(client.getInstanceInformation())
 		instance_tmp = ti
@@ -315,7 +320,7 @@ class ColumnTask_Loading(
 		return result
 	}
 	
-	internal fun getConversationSummary(
+	private fun getConversationSummary(
 		client : TootApiClient,
 		path_base : String,
 		aroundMin : Boolean = false,
@@ -1071,7 +1076,7 @@ class ColumnTask_Loading(
 		if(! column.use_old_api) {
 			
 			// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
-			val result = getConversationSummary(client,Column.PATH_DIRECT_MESSAGES2)
+			val result = getConversationSummary(client, Column.PATH_DIRECT_MESSAGES2)
 			
 			when {
 				// cancelled

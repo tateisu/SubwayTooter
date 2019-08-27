@@ -391,4 +391,22 @@
     <string name="minimum_column_width">רוחב עמודה מזערי (ברירת מחדל היא 300dp, נא הפעל מחדש את היישום)</string>
     <string name="media_thumbnail_height">גובה תמונה מוקטנת עבור מדיה (ברירת מחדל = 64dp, נא הפעל מחדש את האפליקציה)</string>
     <string name="account_picker_reply">השב באמצעות\?</string>
+    <string name="account_picker_quoted_renote">האם להשתמש בחשבון לצורך ציטוט מהגברה\?</string>
+    <string name="reply_from_another_account">השב מחשבון אחר</string>
+    <string name="launcher_icon_by">"תודה רבה  ל フ タ バ עבור סמל היישום."</string>
+    <string name="timeline_font">גופן ציר הזמן (נא הפעל מחדש את היישום)</string>
+    <string name="timeline_font_bold">גופן בעיצוב מודגש עבור ציר הזמן (נא הפעל מחדש את היישום)</string>
+    <string name="restore_draft">שחזר מהטיוטה</string>
+    <string name="select_draft">איזו מהטיוטות לשחזר\?</string>
+    <string name="account_in_draft_is_lost">החשבון ששימש ליצירת טיוטה זו הוסר מיישום זה. לא ניתן לשחזר את ההקשר הבא: in_reply_to,מדיה מצורפת</string>
+    <string name="reply_to_in_draft_is_lost">מקור התשובה שמופנה מהטיוטה אבד, כתוצאה מכך ההקשר הבא יוסר: in_reply_to</string>
+    <string name="attachment_in_draft_is_lost">חלק מהמדיות המצורפות לטיוטה אבדו.</string>
+    <string name="app_data_export">יצא את נתוני היישום</string>
+    <string name="app_data_import">יבא את נתוני היישום</string>
+    <string name="app_data_import_confirm">מידע שהיה קיים (לפני הייבוא) ינוקה. האם אתה בטוח\?</string>
+    <string name="user_id_conversion_failed">לא ניתן להמיר את מזהה המשתמש.</string>
+    <string name="draft_picker_desc">לחץ בצורה ארוכה כדי למחוק.</string>
+    <string name="draft_deleted">הטיוטה נמחקה.</string>
+    <string name="dont_crop_media_thumbnail">אל תחתוך מהתמונה המוקטנת עבור המדיה (נא הפעל מחדש את היישום)</string>
+    <string name="actions_for_notification">פעולות עבור ההתראה</string>
 </resources>

@@ -51,6 +51,14 @@ enum class ProfileTab(val id : Int, val ct : ColumnType) {
 	Followers(2, ColumnType.TabFollowers)
 }
 
+enum class HeaderType(val viewType : Int) {
+	Profile(1),
+	Search(2),
+	Instance(3),
+	Filter(4),
+	ProfileDirectory(5),
+}
+
 class Column(
 	val app_state : AppState,
 	val context : Context,
@@ -93,6 +101,8 @@ class Column(
 		internal const val PATH_FOLLOW_REQUESTS = "/api/v1/follow_requests?limit=$READ_LIMIT"
 		internal const val PATH_FOLLOW_SUGGESTION = "/api/v1/suggestions?limit=$READ_LIMIT"
 		internal const val PATH_ENDORSEMENT = "/api/v1/endorsements?limit=$READ_LIMIT"
+		
+		internal const val PATH_PROFILE_DIRECTORY = "/api/v1/directory?limit=$READ_LIMIT"
 		
 		internal const val PATH_BOOSTED_BY =
 			"/api/v1/statuses/%s/reblogged_by?limit=$READ_LIMIT" // 1:status_id
@@ -483,6 +493,7 @@ class Column(
 	internal var hashtag_none : String = ""
 	internal var hashtag_acct : String = ""
 	
+	
 	// プロフカラムでのアカウント情報
 	@Volatile
 	internal var who_account : TootAccountRef? = null
@@ -646,7 +657,9 @@ class Column(
 			}
 			
 			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> search_query = getParamAt(params, 0)
-			ColumnType.INSTANCE_INFORMATION -> instance_uri = getParamAt(params, 0)
+			
+			ColumnType.INSTANCE_INFORMATION ,
+			ColumnType.PROFILE_DIRECTORY -> instance_uri = getParamAt(params, 0)
 			
 			else -> {
 			
@@ -736,6 +749,12 @@ class Column(
 				src.optString(KEY_SEARCH_QUERY)
 			
 			ColumnType.INSTANCE_INFORMATION -> instance_uri = src.optString(KEY_INSTANCE_URI)
+
+			ColumnType.PROFILE_DIRECTORY ->{
+				instance_uri = src.optString(KEY_INSTANCE_URI)
+				search_query = src.optString(KEY_SEARCH_QUERY)
+				search_resolve = src.optBoolean(KEY_SEARCH_RESOLVE, false)
+			}
 			
 			else -> {
 			
@@ -815,14 +834,18 @@ class Column(
 				dst.put(KEY_HASHTAG_ACCT, hashtag_acct)
 			}
 			
-			ColumnType.SEARCH -> dst.put(KEY_SEARCH_QUERY, search_query).put(
-				KEY_SEARCH_RESOLVE,
-				search_resolve
-			)
+			ColumnType.SEARCH -> dst
+				.put(KEY_SEARCH_QUERY, search_query)
+				.put(KEY_SEARCH_RESOLVE,search_resolve)
 			
 			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> dst.put(KEY_SEARCH_QUERY, search_query)
 			
 			ColumnType.INSTANCE_INFORMATION -> dst.put(KEY_INSTANCE_URI, instance_uri)
+
+			ColumnType.PROFILE_DIRECTORY -> dst
+					.put(KEY_SEARCH_QUERY, search_query)
+					.put(KEY_SEARCH_RESOLVE,search_resolve)
+					.put(KEY_INSTANCE_URI, instance_uri)
 			
 			else -> {
 				// no extra parameter
@@ -870,20 +893,19 @@ class Column(
 					((getParamAtNullable<String>(params, 0) ?: "") == hashtag_acct)
 				}
 				
-				ColumnType.SEARCH -> getParamAt<String>(
-					params,
-					0
-				) == search_query && getParamAt<Boolean>(
-					params,
-					1
-				) == search_resolve
+				ColumnType.SEARCH ->
+					getParamAt<String>(params,0) == search_query &&
+						getParamAtNullable<Boolean>(params,1) == search_resolve
 				
-				ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> getParamAt<String>(
-					params,
-					0
-				) == search_query
+				ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS ->
+					getParamAt<String>(params,0) == search_query
 				
-				ColumnType.INSTANCE_INFORMATION -> getParamAt<String>(params, 0) == instance_uri
+				ColumnType.INSTANCE_INFORMATION-> getParamAt<String>(params, 0) == instance_uri
+				
+				ColumnType.PROFILE_DIRECTORY->
+					getParamAt<String>(params, 0) == instance_uri &&
+					getParamAtNullable<String>(params,1) == search_query &&
+					getParamAtNullable<Boolean>(params,2) == search_resolve
 				
 				else -> true
 			}
@@ -2040,30 +2062,13 @@ class Column(
 		fireShowColumnStatus()
 	}
 	
-	enum class HeaderType(val viewType : Int) {
-		Profile(1),
-		Search(2),
-		Instance(3),
-		Filter(4),
-	}
-	
-	val headerType : HeaderType?
-		get() = when(type) {
-			ColumnType.PROFILE -> HeaderType.Profile
-			ColumnType.SEARCH -> HeaderType.Search
-			ColumnType.SEARCH_MSP -> HeaderType.Search
-			ColumnType.SEARCH_TS -> HeaderType.Search
-			ColumnType.INSTANCE_INFORMATION -> HeaderType.Instance
-			ColumnType.KEYWORD_FILTER -> HeaderType.Filter
-			else -> null
-		}
 	
 	fun toAdapterIndex(listIndex : Int) : Int {
-		return if(headerType != null) listIndex + 1 else listIndex
+		return if(type.headerType != null) listIndex + 1 else listIndex
 	}
 	
 	fun toListIndex(adapterIndex : Int) : Int {
-		return if(headerType != null) adapterIndex - 1 else adapterIndex
+		return if(type.headerType != null) adapterIndex - 1 else adapterIndex
 	}
 	
 	private fun loadSearchDesc(raw_en : Int, raw_ja : Int) : String {
@@ -2250,7 +2255,8 @@ class Column(
 			ColumnType.CONVERSATION,
 			ColumnType.LIST_LIST,
 			ColumnType.TREND_TAG,
-			ColumnType.FOLLOW_SUGGESTION -> true
+			ColumnType.FOLLOW_SUGGESTION,
+			ColumnType.PROFILE_DIRECTORY -> true
 			
 			ColumnType.LIST_MEMBER,
 			ColumnType.MUTES,

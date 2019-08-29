@@ -32,6 +32,7 @@ internal class ViewHolderHeaderProfile(
 	
 	private val ivBackground : MyNetworkImageView
 	private val tvCreated : TextView
+	private val tvLastStatusAt : TextView
 	private val ivAvatar : MyNetworkImageView
 	private val tvDisplayName : TextView
 	private val tvAcct : TextView
@@ -69,6 +70,7 @@ internal class ViewHolderHeaderProfile(
 		ivBackground = viewRoot.findViewById(R.id.ivBackground)
 		llProfile = viewRoot.findViewById(R.id.llProfile)
 		tvCreated = viewRoot.findViewById(R.id.tvCreated)
+		tvLastStatusAt= viewRoot.findViewById(R.id.tvLastStatusAt)
 		ivAvatar = viewRoot.findViewById(R.id.ivAvatar)
 		tvDisplayName = viewRoot.findViewById(R.id.tvDisplayName)
 		tvAcct = viewRoot.findViewById(R.id.tvAcct)
@@ -143,6 +145,7 @@ internal class ViewHolderHeaderProfile(
 		if(! f.isNaN()) {
 			tvMovedAcct.textSize = f
 			tvCreated.textSize = f
+			tvLastStatusAt.textSize = f
 		}
 		
 		val contentColor = column.getContentColor()
@@ -168,6 +171,7 @@ internal class ViewHolderHeaderProfile(
 		val acctColor = column.getAcctColor()
 		tvCreated.textColor = acctColor
 		tvMovedAcct.textColor = acctColor
+		tvLastStatusAt.textColor = acctColor
 		
 		val whoRef = column.who_account
 		this.whoRef = whoRef
@@ -189,6 +193,7 @@ internal class ViewHolderHeaderProfile(
 		
 		if(who == null) {
 			tvCreated.text = ""
+			vg(tvLastStatusAt,false)
 			ivBackground.setImageDrawable(null)
 			ivAvatar.setImageDrawable(null)
 			
@@ -210,6 +215,11 @@ internal class ViewHolderHeaderProfile(
 		} else {
 			tvCreated.text =
 				TootStatus.formatTime(tvCreated.context, (whoDetail ?: who).time_created_at, true)
+			
+			if( vg( tvLastStatusAt,who.last_status_at > 0L)){
+				tvLastStatusAt.text = activity.getString(R.string.last_active)+": "+TootStatus.formatTime(activity,who.last_status_at,true)
+			}
+			
 			ivBackground.setImageUrl(
 				activity.pref,
 				0f,

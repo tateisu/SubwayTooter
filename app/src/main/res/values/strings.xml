@@ -920,5 +920,9 @@
     <string name="read_more_account">Read more accounts</string>
     <string name="read_more_status">Read more toots</string>
     <string name="muted_users_from_pseudo_account">Muted users from pseudo account</string>
+    <string name="order_active">Recently active</string>
+    <string name="order_new">New arrivals</string>
+    <string name="local_only">Local only</string>
+    <string name="last_active">Last active</string>
 
 </resources>

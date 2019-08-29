@@ -237,7 +237,7 @@ internal class ViewHolderHeaderInstance(
 					activity
 					, activity.nextPosition(column)
 					, ColumnType.SEARCH
-					, bAllowPseudo = false
+				
 					, args = arrayOf("@" + who.username + "@" + who.host, true)
 				)
 			}
@@ -247,7 +247,8 @@ internal class ViewHolderHeaderInstance(
 			R.id.btnAbout -> App1.openBrowser(activity, "https://${column.instance_uri}/about")
 			R.id.btnAboutMore ->
 				App1.openBrowser(activity, "https://${column.instance_uri}/about/more")
-			R.id.btnExplore -> App1.openBrowser(activity, "https://${column.instance_uri}/explore")
+			R.id.btnExplore ->
+				App1.openBrowser(activity, "https://${column.instance_uri}/explore")
 		}
 	}
 	

@@ -64,7 +64,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.HOME
-				, bAllowPseudo = false
+				
 			)
 		},
 		
@@ -73,7 +73,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.NOTIFICATIONS
-				, bAllowPseudo = false
+				
 			)
 		},
 		
@@ -82,8 +82,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.DIRECT_MESSAGES
-				, bAllowPseudo = false
-				, bAllowMisskey = false
+				
 			)
 		},
 		
@@ -92,8 +91,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.MISSKEY_HYBRID
-				, bAllowPseudo = true
-				, bAllowMastodon = false
+				
 			)
 		},
 		
@@ -102,7 +100,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.LOCAL
-				, bAllowPseudo = true
+			
 			)
 		},
 		
@@ -111,7 +109,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.FEDERATE
-				, bAllowPseudo = true
+				
 			)
 		},
 		
@@ -120,7 +118,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.LIST_LIST
-				, bAllowPseudo = false
+				
 			)
 		},
 		
@@ -129,7 +127,6 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.SEARCH
-				, bAllowPseudo = false
 				, args = arrayOf("", false)
 			)
 		},
@@ -138,10 +135,7 @@ class SideMenuAdapter(
 			Action_Account.timeline(
 				this,
 				defaultInsertPosition,
-				ColumnType.TREND_TAG,
-				bAllowPseudo = true,
-				bAllowMastodon = true,
-				bAllowMisskey = false
+				ColumnType.TREND_TAG
 			)
 		},
 		
@@ -150,7 +144,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.FAVOURITES
-				, bAllowPseudo = false
+				
 			)
 		},
 		
@@ -159,7 +153,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.PROFILE
-				, bAllowPseudo = false
+				
 			)
 		},
 		
@@ -168,7 +162,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.FOLLOW_REQUESTS
-				, bAllowPseudo = false
+			
 			)
 		},
 		
@@ -177,7 +171,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.FOLLOW_SUGGESTION
-				, bAllowPseudo = false
+				
 			)
 		},
 		
@@ -186,8 +180,15 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.ENDORSEMENT
-				, bAllowPseudo = false
-				, bAllowMisskey = false
+				
+			)
+		},
+		
+		Item(icon = R.drawable.ic_follow_plus, title = R.string.profile_directory) {
+			Action_Account.timeline(
+				this
+				, defaultInsertPosition
+				, ColumnType.PROFILE_DIRECTORY
 			)
 		},
 		
@@ -196,7 +197,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.MUTES
-				, bAllowPseudo = false
+				
 			)
 		},
 		
@@ -205,7 +206,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.BLOCKS
-				, bAllowPseudo = false
+				
 			)
 		},
 		
@@ -214,8 +215,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.KEYWORD_FILTER
-				, bAllowPseudo = false
-				, bAllowMisskey = false
+			
 			)
 		},
 		
@@ -224,8 +224,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.DOMAIN_BLOCKS
-				, bAllowPseudo = false
-				, bAllowMisskey = false
+			
 			)
 		},
 		
@@ -234,8 +233,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.SCHEDULED_STATUS
-				, bAllowPseudo = false
-				, bAllowMisskey = false
+				
 			)
 		},
 		

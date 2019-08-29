@@ -112,4 +112,13 @@ abstract class ColumnTask(
 		return dst
 	}
 	
+	internal val profileDirectoryPath:String
+		get(){
+			val order = when(val q = column.search_query) {
+				"new" -> q
+				else -> "active"
+			}
+			val local = ! column.search_resolve
+			return "${Column.PATH_PROFILE_DIRECTORY}&order=$order&local=$local"
+		}
 }

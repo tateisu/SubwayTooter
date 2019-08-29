@@ -42,6 +42,7 @@ class DuplicateMap {
 			is TootReport,
 			is TootStatus,
 			is TootAccount,
+			is TootAccountRef,
 			is TootNotification -> {
 				var id = o.getOrderId()
 				if(id.notDefault){

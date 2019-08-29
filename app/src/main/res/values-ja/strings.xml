@@ -927,5 +927,9 @@
     <string name="read_more_account">アカウントをもっと読む</string>
     <string name="read_more_status">投稿をもっと読む</string>
     <string name="muted_users_from_pseudo_account">ミュートしたユーザ(疑似アカウント用)</string>
+    <string name="order_active">活動順</string>
+    <string name="order_new">登録順</string>
+    <string name="local_only">ローカルのみ</string>
+    <string name="last_active">最近の活動</string>
 
 </resources>

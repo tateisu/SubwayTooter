@@ -48,7 +48,11 @@ enum class ColumnType(
 	val name2 : Column.(long : Boolean) -> String? = unusedName2,
 	val loading : ColumnTask_Loading.(client : TootApiClient) -> TootApiResult?,
 	val refresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? = unsupportedRefresh,
-	val gap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? = unsupportedGap
+	val gap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? = unsupportedGap,
+	val bAllowPseudo : Boolean = true,
+	val bAllowMisskey : Boolean = true,
+	val bAllowMastodon : Boolean = true,
+	val headerType : HeaderType? = null
 ) {
 	
 	ProfileStatusMastodon(
@@ -396,19 +400,22 @@ enum class ColumnType(
 		}
 	),
 	
-	HOME(id = 1,
+	HOME(
+		id = 1,
 		iconId = { R.drawable.ic_home },
 		name1 = { it.getString(R.string.home) },
 		
 		loading = { client -> getStatusList(client, column.makeHomeTlUrl()) },
 		refresh = { client -> getStatusList(client, column.makeHomeTlUrl()) },
-		gap = { client -> getStatusList(client, column.makeHomeTlUrl()) }
+		gap = { client -> getStatusList(client, column.makeHomeTlUrl()) },
+		bAllowPseudo = false
 	),
 	
 	LOCAL(
 		id = 2,
 		iconId = { R.drawable.ic_run },
 		name1 = { it.getString(R.string.local_timeline) },
+		bAllowPseudo = true,
 		
 		loading = { client -> getStatusList(client, column.makePublicLocalUrl()) },
 		refresh = { client -> getStatusList(client, column.makePublicLocalUrl()) },
@@ -418,6 +425,7 @@ enum class ColumnType(
 	FEDERATE(3,
 		iconId = { R.drawable.ic_bike },
 		name1 = { it.getString(R.string.federate_timeline) },
+		bAllowPseudo = true,
 		
 		loading = { client -> getStatusList(client, column.makePublicFederateUrl()) },
 		refresh = { client -> getStatusList(client, column.makePublicFederateUrl()) },
@@ -427,6 +435,8 @@ enum class ColumnType(
 	MISSKEY_HYBRID(27,
 		iconId = { R.drawable.ic_share },
 		name1 = { it.getString(R.string.misskey_hybrid_timeline) },
+		bAllowPseudo = true,
+		bAllowMastodon = false,
 		
 		loading = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
 		refresh = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
@@ -492,6 +502,8 @@ enum class ColumnType(
 					profile_id.toString()
 			)
 		},
+		bAllowPseudo = false,
+		headerType = HeaderType.Profile,
 		
 		loading = { client ->
 			val who_result = column.loadProfileAccount(client, parser, true)
@@ -515,6 +527,7 @@ enum class ColumnType(
 	FAVOURITES(5,
 		iconId = { if(SavedAccount.isNicoru(it)) R.drawable.ic_nicoru else R.drawable.ic_star },
 		name1 = { it.getString(R.string.favourites) },
+		bAllowPseudo = false,
 		
 		loading = { client ->
 			if(isMisskey) {
@@ -559,7 +572,8 @@ enum class ColumnType(
 		}
 	),
 	
-	NOTIFICATIONS(7,
+	NOTIFICATIONS(
+		7,
 		iconId = { R.drawable.ic_announcement },
 		name1 = { it.getString(R.string.notifications) },
 		name2 = {
@@ -568,7 +582,8 @@ enum class ColumnType(
 		
 		loading = { client -> getNotificationList(client) },
 		refresh = { client -> getNotificationList(client) },
-		gap = { client -> getNotificationList(client) }
+		gap = { client -> getNotificationList(client) },
+		bAllowPseudo = false
 	),
 	
 	NOTIFICATION_FROM_ACCT(35,
@@ -716,13 +731,11 @@ enum class ColumnType(
 				else -> context.getString(R.string.search)
 			}
 		},
+		bAllowPseudo = false,
+		headerType = HeaderType.Search,
 		
-		loading = { client ->
-			getSearch(client)
-		},
-		gap = { client ->
-			getSearchGap(client)
-		}
+		loading = { client -> getSearch(client) },
+		gap = { client -> getSearchGap(client) }
 	),
 	
 	// ミスキーのミュートとブロックののページングは misskey v10 の途中で変わった
@@ -732,6 +745,7 @@ enum class ColumnType(
 	MUTES(11,
 		iconId = { R.drawable.ic_volume_off },
 		name1 = { it.getString(R.string.muted_users) },
+		bAllowPseudo = false,
 		
 		loading = { client ->
 			when {
@@ -780,6 +794,7 @@ enum class ColumnType(
 	BLOCKS(12,
 		iconId = { R.drawable.ic_block },
 		name1 = { it.getString(R.string.blocked_users) },
+		bAllowPseudo = false,
 		
 		loading = { client ->
 			when {
@@ -831,6 +846,7 @@ enum class ColumnType(
 	FOLLOW_REQUESTS(13,
 		iconId = { R.drawable.ic_follow_wait },
 		name1 = { it.getString(R.string.follow_requests) },
+		bAllowPseudo = false,
 		
 		loading = { client ->
 			if(isMisskey) {
@@ -922,6 +938,8 @@ enum class ColumnType(
 	DOMAIN_BLOCKS(16,
 		iconId = { R.drawable.ic_cloud_off },
 		name1 = { it.getString(R.string.blocked_domains) },
+		bAllowPseudo = false,
+		bAllowMisskey = false,
 		
 		loading = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) },
 		refresh = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) }
@@ -936,6 +954,7 @@ enum class ColumnType(
 				else -> context.getString(R.string.toot_search_msp)
 			}
 		},
+		headerType = HeaderType.Search,
 		
 		loading = { client ->
 			column.idOld = null
@@ -1004,6 +1023,7 @@ enum class ColumnType(
 				else -> context.getString(R.string.toot_search_ts)
 			}
 		},
+		headerType = HeaderType.Search,
 		
 		loading = { client ->
 			column.idOld = null
@@ -1030,7 +1050,7 @@ enum class ColumnType(
 						TootStatus.parseListTootsearch(parser, jsonObject)
 					this.list_tmp = addWithFilterStatus(null, search_result)
 					if(search_result.isEmpty()) {
-						ColumnTask_Loading.log.d("search result is empty. %s", result.bodyString)
+						log.d("search result is empty. %s", result.bodyString)
 					}
 				}
 			}
@@ -1079,6 +1099,7 @@ enum class ColumnType(
 				else -> context.getString(R.string.instance_information)
 			}
 		},
+		headerType = HeaderType.Instance,
 		
 		loading = { client ->
 			val result = getInstanceInformation(client, column.instance_uri)
@@ -1093,6 +1114,7 @@ enum class ColumnType(
 	LIST_LIST(19,
 		iconId = { R.drawable.ic_list_list },
 		name1 = { it.getString(R.string.lists) },
+		bAllowPseudo = false,
 		
 		loading = { client ->
 			if(isMisskey) {
@@ -1201,7 +1223,8 @@ enum class ColumnType(
 		}
 	),
 	
-	DIRECT_MESSAGES(23,
+	DIRECT_MESSAGES(
+		23,
 		iconId = { R.drawable.ic_mail },
 		name1 = { it.getString(R.string.direct_messages) },
 		
@@ -1228,12 +1251,17 @@ enum class ColumnType(
 				// fallback to old api
 				getStatusList(client, Column.PATH_DIRECT_MESSAGES)
 			}
-		}
+		},
+		bAllowPseudo = false,
+		bAllowMisskey = false
 	),
 	
 	TREND_TAG(24,
 		iconId = { R.drawable.ic_hashtag },
 		name1 = { it.getString(R.string.trend_tag) },
+		bAllowPseudo = true,
+		bAllowMastodon = true,
+		bAllowMisskey = false,
 		
 		loading = { client ->
 			val result = client.request("/api/v1/trends")
@@ -1256,6 +1284,7 @@ enum class ColumnType(
 	FOLLOW_SUGGESTION(25,
 		iconId = { R.drawable.ic_follow_plus },
 		name1 = { it.getString(R.string.follow_suggestion) },
+		bAllowPseudo = false,
 		
 		loading = { client ->
 			if(isMisskey) {
@@ -1298,10 +1327,26 @@ enum class ColumnType(
 	ENDORSEMENT(28,
 		iconId = { R.drawable.ic_follow_plus },
 		name1 = { it.getString(R.string.endorse_set) },
+		bAllowPseudo = false,
+		bAllowMisskey = false,
 		
 		loading = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
 		refresh = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
 		gap = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) }
+	),
+	
+	PROFILE_DIRECTORY(36,
+		iconId = { R.drawable.ic_follow_plus },
+		name1 = { it.getString(R.string.profile_directory) },
+		bAllowPseudo = true,
+		headerType = HeaderType.ProfileDirectory,
+		loading = { client ->
+			column.pagingType = ColumnPagingType.Offset
+			getAccountList(client, profileDirectoryPath)
+		},
+		refresh = { client ->
+			getAccountList(client, profileDirectoryPath)
+		}
 	),
 	
 	ACCOUNT_AROUND(31,
@@ -1342,6 +1387,9 @@ enum class ColumnType(
 	KEYWORD_FILTER(26,
 		iconId = { R.drawable.ic_volume_off },
 		name1 = { it.getString(R.string.keyword_filters) },
+		bAllowPseudo = false,
+		bAllowMisskey = false,
+		headerType = HeaderType.Filter,
 		
 		loading = { client -> parseFilterList(client, Column.PATH_FILTERS) }
 	),
@@ -1349,6 +1397,8 @@ enum class ColumnType(
 	SCHEDULED_STATUS(33,
 		iconId = { R.drawable.ic_timer },
 		name1 = { it.getString(R.string.scheduled_status) },
+		bAllowPseudo = false,
+		bAllowMisskey = false,
 		
 		loading = { client -> getScheduledStatuses(client) },
 		refresh = { client -> getScheduledStatuses(client) }
@@ -1364,6 +1414,7 @@ enum class ColumnType(
 	
 	companion object {
 		private val log = LogCategory("ColumnType")
+		
 		fun dump() {
 			var min = Int.MAX_VALUE
 			var max = Int.MIN_VALUE

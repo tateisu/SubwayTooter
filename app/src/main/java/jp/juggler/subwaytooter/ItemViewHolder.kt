@@ -145,6 +145,8 @@ internal class ItemViewHolder(
 	private lateinit var ivInstanceTicker : MyNetworkImageView
 	private lateinit var tvInstanceTicker : TextView
 	
+	private lateinit var tvLastStatusAt : TextView
+	
 	private lateinit var access_info : SavedAccount
 	
 	private var buttons_for_status : StatusButtons? = null
@@ -257,6 +259,7 @@ internal class ItemViewHolder(
 			tvBoostedAcct.textSize = f
 			tvBoostedTime.textSize = f
 			tvFollowerAcct.textSize = f
+			tvLastStatusAt.textSize = f
 			tvAcct.textSize = f
 			tvTime.textSize = f
 			tvTrendTagDesc.textSize = f
@@ -1152,6 +1155,10 @@ internal class ItemViewHolder(
 		follow_invalidator.register(whoRef.decoded_display_name)
 		
 		setAcct(tvFollowerAcct, access_info.getFullAcct(who), who.acct)
+		
+		if( vg( tvLastStatusAt,who.last_status_at > 0L)){
+			tvLastStatusAt.text = activity.getString(R.string.last_active)+": "+TootStatus.formatTime(activity,who.last_status_at,true)
+		}
 		
 		val relation = UserRelation.load(access_info.db_id, who.id)
 		Styler.setFollowIcon(
@@ -3082,6 +3089,12 @@ internal class ItemViewHolder(
 					}.lparams(matchParent, wrapContent)
 					
 					tvFollowerAcct = textView {
+						setPaddingStartEnd(dip(4), dip(4))
+						textSize = 12f // SP
+						// tools:text="aaaaaaaaaaaaaaaa"
+					}.lparams(matchParent, wrapContent)
+					
+					tvLastStatusAt = textView {
 						setPaddingStartEnd(dip(4), dip(4))
 						textSize = 12f // SP
 						// tools:text="aaaaaaaaaaaaaaaa"

@@ -55,8 +55,8 @@ class ColumnTask_Refresh(
 			}
 			
 			return column.type.refresh(this, client)
-		}catch(ex:Throwable){
-			return TootApiResult( ex.withCaption("refresh failed.") )
+		} catch(ex : Throwable) {
+			return TootApiResult(ex.withCaption("refresh failed."))
 		} finally {
 			try {
 				column.updateRelation(client, list_tmp, column.who_account, parser)
@@ -214,6 +214,7 @@ class ColumnTask_Refresh(
 		
 		@Suppress("NON_EXHAUSTIVE_WHEN")
 		when(bBottom) {
+			
 			false -> when(column.pagingType) {
 				ColumnPagingType.Cursor,
 				ColumnPagingType.None,
@@ -221,6 +222,7 @@ class ColumnTask_Refresh(
 					return TootApiResult("can't refresh top.")
 				}
 			}
+			
 			true -> when(column.pagingType) {
 				ColumnPagingType.Cursor -> if(column.idOld == null) {
 					return TootApiResult(context.getString(R.string.end_of_list))
@@ -251,7 +253,13 @@ class ColumnTask_Refresh(
 					.toPostRequestBuilder()
 			)
 		} else {
-			client.request(column.addRange(bBottom, path_base))
+			when(column.pagingType) {
+				// profile directory 用
+				ColumnPagingType.Offset ->
+					client.request("$path_base&offset=${column.offsetNext}")
+				else ->
+					client.request(column.addRange(bBottom, path_base))
+			}
 		}
 		val firstResult = result
 		

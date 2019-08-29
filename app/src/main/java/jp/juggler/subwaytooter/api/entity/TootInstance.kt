@@ -22,6 +22,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		val VERSION_2_4_1 = VersionString("2.4.1")
 		val VERSION_2_6_0 = VersionString("2.6.0")
 		val VERSION_2_7_0_rc1 = VersionString("2.7.0rc1")
+		val VERSION_2_9_3 = VersionString("2.9.3")
 		
 		val MISSKEY_VERSION_11 = VersionString("11.0")
 	}

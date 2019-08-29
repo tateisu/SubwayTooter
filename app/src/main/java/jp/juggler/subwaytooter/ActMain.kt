@@ -903,7 +903,6 @@ class ActMain : AppCompatActivity()
 							this@ActMain,
 							defaultInsertPosition,
 							ColumnType.SEARCH,
-							bAllowPseudo = true,
 							args = arrayOf(search, true)
 						)
 					}

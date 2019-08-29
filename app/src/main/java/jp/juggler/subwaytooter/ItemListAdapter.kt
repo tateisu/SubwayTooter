@@ -14,7 +14,7 @@ internal class ItemListAdapter(
 	private val column : Column,
 	internal val columnVh : ColumnViewHolder,
 	private val bSimpleList : Boolean
-) : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 	
 	companion object {
 		private val log = LogCategory("ItemListAdapter")
@@ -76,12 +76,12 @@ internal class ItemListAdapter(
 	}
 	
 	override fun getItemViewType(position : Int) : Int {
-		val headerType = column.headerType
+		val headerType = column.type.headerType
 		if(headerType == null || position > 0) return 0
 		return headerType.viewType
 	}
 	
-	override fun onCreateViewHolder(parent : ViewGroup, viewType : Int) : androidx.recyclerview.widget.RecyclerView.ViewHolder {
+	override fun onCreateViewHolder(parent : ViewGroup, viewType : Int) : RecyclerView.ViewHolder {
 		when(viewType) {
 			0 -> {
 				val holder = ItemViewHolder(activity)
@@ -89,7 +89,7 @@ internal class ItemListAdapter(
 				return ViewHolderItem(holder)
 			}
 			
-			Column.HeaderType.Profile.viewType -> {
+			HeaderType.Profile.viewType -> {
 				val viewRoot =
 					activity.layoutInflater.inflate(R.layout.lv_header_profile, parent, false)
 				val holder = ViewHolderHeaderProfile(activity, viewRoot)
@@ -97,7 +97,7 @@ internal class ItemListAdapter(
 				return holder
 			}
 			
-			Column.HeaderType.Search.viewType -> {
+			HeaderType.Search.viewType -> {
 				val viewRoot =
 					activity.layoutInflater.inflate(R.layout.lv_header_search_desc, parent, false)
 				val holder = ViewHolderHeaderSearch(activity, viewRoot)
@@ -105,7 +105,7 @@ internal class ItemListAdapter(
 				return holder
 			}
 			
-			Column.HeaderType.Instance.viewType -> {
+			HeaderType.Instance.viewType -> {
 				val viewRoot =
 					activity.layoutInflater.inflate(R.layout.lv_header_instance, parent, false)
 				val holder = ViewHolderHeaderInstance(activity, viewRoot)
@@ -113,26 +113,32 @@ internal class ItemListAdapter(
 				return holder
 			}
 			
-			Column.HeaderType.Filter.viewType ->{
+			HeaderType.Filter.viewType ->{
 				val viewRoot =
 					activity.layoutInflater.inflate(R.layout.lv_header_filter, parent, false)
 				val holder = ViewHolderHeaderFilter(activity, viewRoot)
 				viewRoot.tag = holder
 				return holder
 			}
-			
+			HeaderType.ProfileDirectory.viewType ->{
+				val viewRoot =
+					activity.layoutInflater.inflate(R.layout.lv_header_profile_directory, parent, false)
+				val holder = ViewHolderHeaderProfileDirectory(activity, viewRoot)
+				viewRoot.tag = holder
+				return holder
+			}
 			else -> throw RuntimeException("unknown viewType: $viewType")
 		}
 	}
 	
-	fun findHeaderViewHolder(listView : androidx.recyclerview.widget.RecyclerView) : ViewHolderHeaderBase? {
-		return when(column.headerType) {
+	fun findHeaderViewHolder(listView : RecyclerView) : ViewHolderHeaderBase? {
+		return when(column.type.headerType) {
 			null -> null
 			else -> listView.findViewHolderForAdapterPosition(0) as? ViewHolderHeaderBase
 		}
 	}
 	
-	override fun onBindViewHolder(holder : androidx.recyclerview.widget.RecyclerView.ViewHolder, adapterIndex : Int) {
+	override fun onBindViewHolder(holder : RecyclerView.ViewHolder, adapterIndex : Int) {
 		if(holder is ViewHolderItem) {
 			val listIndex = column.toListIndex(adapterIndex)
 			holder.ivh.bind(this, column, bSimpleList, list[listIndex])
@@ -141,7 +147,7 @@ internal class ItemListAdapter(
 		}
 	}
 	
-	override fun onViewRecycled(holder : androidx.recyclerview.widget.RecyclerView.ViewHolder) {
+	override fun onViewRecycled(holder : RecyclerView.ViewHolder) {
 		if(holder is ViewHolderItem) {
 			holder.ivh.onViewRecycled()
 		} else if(holder is ViewHolderHeaderBase) {
@@ -173,7 +179,7 @@ internal class ItemListAdapter(
 
 				// ヘッダは毎回更新する
 				// (ヘッダだけ更新するためにカラのchangeListが渡される)
-				if(column.headerType != null){
+				if(column.type.headerType != null){
 					notifyItemRangeChanged(0, 1)
 				}
 

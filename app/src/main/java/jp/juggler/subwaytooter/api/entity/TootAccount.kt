@@ -100,6 +100,10 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	var location : String? = null
 	var birthday : String? = null
 	
+	// mastodon 3.0.0-dev
+	// last_status_at : "2019-08-29T12:42:08.838Z" or null
+	var last_status_at =0L
+	
 	init {
 		var sv : String?
 		
@@ -221,6 +225,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.isPro = false
 			// this.user_hides_network = src.optBoolean("user_hides_network")
 			
+			this.last_status_at = TootStatus.parseTime(src.parseString("last_status_at"))
+
 			when(parser.serviceType) {
 				ServiceType.MASTODON -> {
 					

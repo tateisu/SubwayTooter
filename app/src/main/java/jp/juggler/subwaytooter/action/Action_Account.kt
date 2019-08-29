@@ -18,7 +18,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 
 object Action_Account {
@@ -205,17 +204,14 @@ object Action_Account {
 		activity : ActMain,
 		pos : Int,
 		type : ColumnType,
-		bAllowPseudo : Boolean,
-		bAllowMisskey : Boolean = true,
-		bAllowMastodon : Boolean = true,
 		args : Array<out Any> = emptyArray()
 	) {
 		
 		AccountPicker.pick(
 			activity,
-			bAllowPseudo = bAllowPseudo,
-			bAllowMisskey = bAllowMisskey,
-			bAllowMastodon = bAllowMastodon,
+			bAllowPseudo =type.bAllowPseudo,
+			bAllowMisskey = type.bAllowMisskey,
+			bAllowMastodon = type.bAllowMastodon,
 			bAuto = true,
 			message = activity.getString(
 				R.string.account_picker_add_timeline_of,
@@ -223,9 +219,14 @@ object Action_Account {
 			)
 		) { ai ->
 			when(type) {
+				
 				ColumnType.PROFILE -> {
 					val id = ai.loginAccount?.id
 					if(id != null) activity.addColumn(pos, ai, type, id)
+				}
+				
+				ColumnType.PROFILE_DIRECTORY->{
+					activity.addColumn(pos, ai, type, ai.host)
 				}
 				
 				else -> activity.addColumn(pos, ai, type, *args)

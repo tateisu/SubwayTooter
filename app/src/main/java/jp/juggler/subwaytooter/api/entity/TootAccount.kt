@@ -2,18 +2,20 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.content.Context
 import android.text.Spannable
+import android.text.SpannableStringBuilder
 import android.widget.TextView
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.lang.StringBuilder
 import java.util.*
 import java.util.regex.Pattern
 
@@ -345,13 +347,47 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		).decodeEmoji(sv)
 	}
 	
-	fun setLastStatusText(tvLastStatusAt : TextView, fromProfileHeader : Boolean = false) {
+	private fun SpannableStringBuilder.replaceAllEx(
+		pattern : Pattern,
+		replacement : String
+	) : SpannableStringBuilder {
+		val m = pattern.matcher(this)
+		var buffer : SpannableStringBuilder? = null
+		var lastEnd = 0
+		while(m.find()) {
+			val dst = buffer ?: SpannableStringBuilder().also { buffer = it }
+			dst
+				.append(this.subSequence(lastEnd, m.start()))
+				.append(replacement) // 変数展開には未対応
+			lastEnd = m.end()
+		}
+		return buffer
+			?.also { if(lastEnd < length) it.append(subSequence(lastEnd, length)) }
+			?: this
+	}
+	
+	private fun SpannableStringBuilder.trimEx(isSpace : (c : Char) -> Boolean = { it <= ' ' }) : CharSequence {
+		var start = 0
+		var end = length
+		while(start < end && isSpace(this[start])) ++ start
+		while(end > start && isSpace(this[end - 1])) -- end
+		return when {
+			start >= end -> ""
+			start == 0 && end == length -> this
+			else -> subSequence(start, end)
+		}
+	}
+	
+	fun setLastStatusText(
+		tvLastStatusAt : TextView,
+		accessInfo : SavedAccount,
+		fromProfileHeader : Boolean = false
+	) {
 		val pref = App1.pref
 		val context = tvLastStatusAt.context
 		
-		var sb : StringBuilder? = null
-		val capacity = 256
-		fun prepareSb() = sb?.apply { append('\n') } ?: StringBuilder(capacity).also { sb = it }
+		var sb : SpannableStringBuilder? = null
+		fun prepareSb() = sb?.apply { append('\n') } ?: SpannableStringBuilder().also { sb = it }
 		val delm = ": "
 		
 		if(Pref.bpDirectoryLastActive(pref) && last_status_at > 0L)
@@ -360,22 +396,39 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				.append(delm)
 				.append(TootStatus.formatTime(context, last_status_at, true))
 		
-		if(! fromProfileHeader && Pref.bpDirectoryTootCount(pref)
-			&& (statuses_count ?: 0L) > 0L)
-			prepareSb()
-				.append(context.getString(R.string.toot_count))
-				.append(delm)
-				.append(statuses_count.toString())
-		
-		if(! fromProfileHeader && Pref.bpDirectoryFollowers(pref)
-			&& (followers_count ?: 0L) > 0L)
-			prepareSb()
-				.append(context.getString(R.string.followers))
-				.append(delm)
-				.append(followers_count.toString())
+		if(! fromProfileHeader) {
+			if(Pref.bpDirectoryTootCount(pref)
+				&& (statuses_count ?: 0L) > 0L)
+				prepareSb()
+					.append(context.getString(R.string.toot_count))
+					.append(delm)
+					.append(statuses_count.toString())
+			
+			if(Pref.bpDirectoryFollowers(pref)
+				&& (followers_count ?: 0L) > 0L)
+				prepareSb()
+					.append(context.getString(R.string.followers))
+					.append(delm)
+					.append(followers_count.toString())
+			
+			if(Pref.bpDirectoryNote(pref) && note?.isNotEmpty() == true) {
+				val decodedNote = DecodeOptions(context, accessInfo)
+					.decodeHTML(note)
+					.replaceAllEx(reNoteLineFeed, " ")
+					.trimEx()
+				prepareSb().append(
+					if(decodedNote is SpannableStringBuilder && decodedNote.length > 200) {
+						decodedNote.replace(200, decodedNote.length, "…")
+					} else {
+						decodedNote
+					}
+				)
+			}
+		}
 		
 		if(vg(tvLastStatusAt, sb != null)) {
 			tvLastStatusAt.text = sb
+			tvLastStatusAt.movementMethod = MyLinkMovementMethod
 		}
 	}
 	
@@ -383,6 +436,9 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		private val log = LogCategory("TootAccount")
 		
 		internal val reWhitespace : Pattern = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
+		
+		// noteをディレクトリに表示する際、制御文字や空白を変換する
+		private val reNoteLineFeed : Pattern = Pattern.compile("""[\x00-\x20\x7f　]+""")
 		
 		// MFMのメンション @username @username@host
 		// (Mastodonのカラムでは使われていない)

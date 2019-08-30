@@ -1156,7 +1156,7 @@ internal class ItemViewHolder(
 		
 		setAcct(tvFollowerAcct, access_info.getFullAcct(who), who.acct)
 		
-		who.setLastStatusText(tvLastStatusAt)
+		who.setLastStatusText(tvLastStatusAt,access_info)
 		
 		
 		val relation = UserRelation.load(access_info.db_id, who.id)
@@ -3093,7 +3093,7 @@ internal class ItemViewHolder(
 						// tools:text="aaaaaaaaaaaaaaaa"
 					}.lparams(matchParent, wrapContent)
 					
-					tvLastStatusAt = textView {
+					tvLastStatusAt = myTextView {
 						setPaddingStartEnd(dip(4), dip(4))
 						textSize = 12f // SP
 						// tools:text="aaaaaaaaaaaaaaaa"

@@ -418,6 +418,11 @@ object Pref {
 		true,
 		R.id.swDirectoryTootCount
 	)
+	val bpDirectoryNote = BooleanPref(
+		"DirectoryNote",
+		true,
+		R.id.swDirectoryNote
+	)
 	
 	
 	// int

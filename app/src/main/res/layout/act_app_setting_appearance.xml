@@ -673,7 +673,11 @@
             android:id="@+id/swDirectoryTootCount"
             android:text="@string/toot_count"
             />
-
+        <CheckBox
+            style="@style/setting_row_button"
+            android:id="@+id/swDirectoryNote"
+            android:text="@string/note"
+            />
         <View style="@style/setting_divider"/>
 
 

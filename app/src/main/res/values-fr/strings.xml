@@ -920,4 +920,10 @@
     <string name="read_more_hashtag">Lire plus de hashtags</string>
     <string name="read_more_account">Lire plus de comptes</string>
     <string name="read_more_status">Lire plus de pouets</string>
+    <string name="voice_capture">Enregister une voix</string>
+    <string name="switch_button_color">Changer la couleur du bouton</string>
+    <string name="order_active">Actifs·ves récemment</string>
+    <string name="order_new">Nouveaux arrivés</string>
+    <string name="local_only">Local uniquement</string>
+    <string name="last_active">Dernière activité</string>
 </resources>

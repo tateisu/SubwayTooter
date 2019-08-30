@@ -91,7 +91,16 @@ class ColumnTask_Loading(
 					val list_new = column.duplicate_map.filterDuplicate(list_pinned)
 					column.list_data.addAll(list_new)
 				}
-				val list_new = column.duplicate_map.filterDuplicate(list_tmp)
+
+				val list_new = when(column.type){
+					
+					// 検索カラムはIDによる重複排除が不可能
+					ColumnType.SEARCH -> list_tmp
+					
+					// 他のカラムは重複排除してから追加
+					else -> column.duplicate_map.filterDuplicate(list_tmp)
+				}
+
 				column.list_data.addAll(list_new)
 			}
 			

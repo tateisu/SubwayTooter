@@ -186,9 +186,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		this.serviceType = parser.serviceType
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
-			val instance = parser.linkHelper.host
+			val instance = parser.accessHost
 			val misskeyId = src.parseString("id")
-			this.host_access = parser.linkHelper.host
+			this.host_access = parser.accessHost
 			
 			val uri = src.parseString("uri")
 			if(uri != null) {
@@ -380,7 +380,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			when(parser.serviceType) {
 				ServiceType.MASTODON -> {
-					this.host_access = parser.linkHelper.host
+					this.host_access = parser.accessHost
 					
 					this.id = EntityId.mayDefault(src.parseString("id"))
 					this.uri = src.parseString("uri") ?: error("missing uri")
@@ -423,13 +423,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				}
 				
 				ServiceType.MSP -> {
-					this.host_access = null
+					this.host_access = parser.accessHost
 					
 					// MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
 					this.id = EntityId.mayDefault(src.parseString("id"))
 					// MSPだとuriは提供されない。LTL限定なのでURL的なものを作れるはず
 					this.uri =
-						"https://${parser.linkHelper.host}/users/${who.username}/statuses/$id"
+						"https://${parser.accessHost}/users/${who.username}/statuses/$id"
 					
 					this.time_created_at = parseTimeMSP(created_at)
 					this.media_attachments =

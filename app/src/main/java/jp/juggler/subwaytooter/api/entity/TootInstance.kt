@@ -22,6 +22,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		val VERSION_2_4_1 = VersionString("2.4.1")
 		val VERSION_2_6_0 = VersionString("2.6.0")
 		val VERSION_2_7_0_rc1 = VersionString("2.7.0rc1")
+		val VERSION_2_9_2 = VersionString("2.9.2")
 		val VERSION_2_9_3 = VersionString("2.9.3")
 		
 		val MISSKEY_VERSION_11 = VersionString("11.0")
@@ -76,8 +77,8 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 	init {
 		if(parser.serviceType == ServiceType.MISSKEY){
 			
-			this.uri = parser.linkHelper.host
-			this.title = parser.linkHelper.host
+			this.uri = parser.accessHost
+			this.title = parser.accessHost
 			this.description = "(Misskey instance)"
 			val sv = src.optJSONObject("maintainer")?.parseString("url")
 			this.email = when{
@@ -146,4 +147,10 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		return i >= 0
 	}
 
+	val misskeyVersion :Int
+	get()=when{
+		instanceType != InstanceType.Misskey -> 0
+		versionGE(MISSKEY_VERSION_11) -> 11
+		else->10
+	}
 }

@@ -818,7 +818,8 @@
     <string name="actions_for_instance">サーバーへのアクション</string>
     <string name="animation">アニメーション</string>
     <string name="links">リンク</string>
-    <string name="profile_directory">プロフィールディレクトリ</string>
+    <string name="profile_directory">ディレクトリ</string>
+    <string name="profile_directory_of">\"%1$s\"のディレクトリ</string>
     <string name="about_this_instance">このサーバーについて</string>
     <string name="top_page">トップページ</string>
     <string name="show_instance_ticker">#InstanceTicker を表示する(カラムのリロードが必要)</string>
@@ -931,5 +932,7 @@
     <string name="order_new">登録順</string>
     <string name="local_only">ローカルのみ</string>
     <string name="last_active">最近の活動</string>
+    <string name="profile_directory_not_supported_on_misskey">ディレクトリはMisskeyでは利用できません</string>
+    <string name="show_in_directory">ディレクトリに表示</string>
 
 </resources>

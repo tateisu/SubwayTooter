@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.action
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -10,6 +11,68 @@ import jp.juggler.util.*
 import java.util.*
 
 object Action_Instance {
+	
+	// ?@? からprofile directoryを開く
+	fun profileDirectory(
+		activity : ActMain,
+		currentColumn : Column,
+		host : String,
+		instance : TootInstance? = null
+	) {
+		when {
+			instance == null ->{
+				// インスタンスのバージョン情報がなければ取得してやり直し
+				TootTaskRunner(activity).run(host, object : TootTask {
+					var targetInstance : TootInstance? = null
+					override fun background(client : TootApiClient) : TootApiResult? {
+						val (ri, ti) = client.parseInstanceInformation(client.getInstanceInformation())
+						targetInstance = ti
+						return ri
+					}
+					
+					override fun handleResult(result : TootApiResult?) {
+						result ?: return // cancelled.
+						when {
+							targetInstance != null ->
+								profileDirectory(activity, currentColumn, host, targetInstance)
+							
+							else ->
+								showToast(activity, true, result.error)
+						}
+					}
+					
+				})
+				return
+			}
+			
+			instance.instanceType == TootInstance.InstanceType.Misskey ->
+				showToast(activity, false, R.string.profile_directory_not_supported_on_misskey)
+			
+			// TODO 3.0.0 がリリースされたらバージョン条件を切り替えること
+			! instance.versionGE(TootInstance.VERSION_2_9_2) ->
+				App1.openBrowser(activity, "https://$host/explore")
+			
+			currentColumn.access_info.host == host ->
+				activity.addColumn(
+					false,
+					activity.nextPosition(currentColumn),
+					currentColumn.access_info,
+					
+					ColumnType.PROFILE_DIRECTORY,
+					host
+				)
+
+			else -> addPseudoAccount(activity,host,misskeyVersion = 0) {
+				activity.addColumn(
+					false,
+					activity.nextPosition(currentColumn),
+					it,
+					ColumnType.PROFILE_DIRECTORY,
+					host
+				)
+			}
+		}
+	}
 	
 	// インスタンス情報カラムを開く
 	fun information(

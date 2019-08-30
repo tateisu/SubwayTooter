@@ -1338,6 +1338,7 @@ enum class ColumnType(
 	PROFILE_DIRECTORY(36,
 		iconId = { R.drawable.ic_follow_plus },
 		name1 = { it.getString(R.string.profile_directory) },
+		name2 = { context.getString(R.string.profile_directory_of, instance_uri)},
 		bAllowPseudo = true,
 		headerType = HeaderType.ProfileDirectory,
 		loading = { client ->
@@ -1353,10 +1354,8 @@ enum class ColumnType(
 		iconId = { R.drawable.ic_account_box },
 		name1 = { it.getString(R.string.account_tl_around) },
 		name2 = {
-			context.getString(
-				R.string.account_tl_around_of,
-				status_id?.toString() ?: "null"
-			)
+			val id =status_id?.toString() ?: "null"
+			context.getString(R.string.account_tl_around_of,id)
 		},
 		
 		loading = { client -> getAccountAroundStatuses(client) },

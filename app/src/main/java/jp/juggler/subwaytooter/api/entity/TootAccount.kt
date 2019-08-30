@@ -2,6 +2,10 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.content.Context
 import android.text.Spannable
+import android.widget.TextView
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.UserRelation
@@ -9,6 +13,7 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
+import java.lang.StringBuilder
 import java.util.*
 import java.util.regex.Pattern
 
@@ -83,7 +88,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	
 	val fields : ArrayList<Field>?
 	
-	val custom_emojis : java.util.HashMap<String, CustomEmoji>?
+	val custom_emojis : HashMap<String, CustomEmoji>?
 	
 	val bot : Boolean
 	val isCat : Boolean
@@ -102,7 +107,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	
 	// mastodon 3.0.0-dev
 	// last_status_at : "2019-08-29T12:42:08.838Z" or null
-	var last_status_at =0L
+	var last_status_at = 0L
 	
 	init {
 		var sv : String?
@@ -110,7 +115,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			
 			val remoteHost = src.parseString("host")
-			this.host = remoteHost ?: parser.linkHelper.host ?: error("missing host")
+			this.host = remoteHost ?: parser.accessHost ?: error("missing host")
 			
 			this.custom_emojis =
 				parseMapOrNull(CustomEmoji.decodeMisskey, src.optJSONArray("emojis"))
@@ -146,7 +151,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				
 				// アクセス元から見て内部ユーザなら short acct
 				remoteHost?.equals(
-					parser.linkHelper.host,
+					parser.accessHost,
 					ignoreCase = true
 				) != false -> username
 				
@@ -193,10 +198,10 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			
 			this.profile_emojis = when(val o = src.opt("profile_emojis")) {
 				is JSONArray -> parseMapOrNull(::NicoProfileEmoji, o, TootStatus.log)
-				is JSONObject ->parseProfileEmoji2(::NicoProfileEmoji, o, TootStatus.log)
+				is JSONObject -> parseProfileEmoji2(::NicoProfileEmoji, o, TootStatus.log)
 				else -> null
 			}
-
+			
 			// 疑似アカウントにacctとusernameだけ
 			this.url = src.parseString("url")
 			this.username = src.notEmptyOrThrow("username")
@@ -226,11 +231,11 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			// this.user_hides_network = src.optBoolean("user_hides_network")
 			
 			this.last_status_at = TootStatus.parseTime(src.parseString("last_status_at"))
-
+			
 			when(parser.serviceType) {
 				ServiceType.MASTODON -> {
 					
-					val hostAccess = parser.linkHelper.host
+					val hostAccess = parser.accessHost
 					
 					this.id = EntityId.mayDefault(src.parseString("id"))
 					
@@ -340,7 +345,40 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		).decodeEmoji(sv)
 	}
 	
-
+	fun setLastStatusText(tvLastStatusAt : TextView, fromProfileHeader : Boolean = false) {
+		val pref = App1.pref
+		val context = tvLastStatusAt.context
+		
+		var sb : StringBuilder? = null
+		val capacity = 256
+		fun prepareSb() = sb?.apply { append('\n') } ?: StringBuilder(capacity).also { sb = it }
+		val delm = ": "
+		
+		if(Pref.bpDirectoryLastActive(pref) && last_status_at > 0L)
+			prepareSb()
+				.append(context.getString(R.string.last_active))
+				.append(delm)
+				.append(TootStatus.formatTime(context, last_status_at, true))
+		
+		if(! fromProfileHeader && Pref.bpDirectoryTootCount(pref)
+			&& (statuses_count ?: 0L) > 0L)
+			prepareSb()
+				.append(context.getString(R.string.toot_count))
+				.append(delm)
+				.append(statuses_count.toString())
+		
+		if(! fromProfileHeader && Pref.bpDirectoryFollowers(pref)
+			&& (followers_count ?: 0L) > 0L)
+			prepareSb()
+				.append(context.getString(R.string.followers))
+				.append(delm)
+				.append(followers_count.toString())
+		
+		if(vg(tvLastStatusAt, sb != null)) {
+			tvLastStatusAt.text = sb
+		}
+	}
+	
 	companion object {
 		private val log = LogCategory("TootAccount")
 		
@@ -356,9 +394,9 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/@(\w+[\w-]*)(?:@(\w[\w.-]*\w))?(?=\z|[?#])""")
 		
 		fun getAcctFromUrl(url : String?) : String? {
-
+			
 			url ?: return null
-
+			
 			val m = reAccountUrl.matcher(url)
 			return if(m.find()) {
 				val host = m.group(1)
@@ -397,7 +435,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				val pos = acct.indexOf('@')
 				if(pos != - 1) {
 					val host = acct.substring(pos + 1)
-					if(host.isNotEmpty()) return host.toLowerCase()
+					if(host.isNotEmpty()) return host.toLowerCase(Locale.JAPAN)
 				}
 			}
 			
@@ -410,7 +448,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			// たぶんどんなURLでもauthorityの部分にホスト名が来るだろう(慢心)
 			url.mayUri()?.authority?.let { host ->
 				if(host.isNotEmpty()) {
-					return host.toLowerCase()
+					return host.toLowerCase(Locale.JAPAN)
 				}
 			}
 			
@@ -425,8 +463,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				val item = src.optJSONObject(i) ?: continue
 				val name = item.parseString("name") ?: continue
 				val value = item.parseString("value") ?: continue
-				val svVerifiedAt = item.parseString("verified_at")
-				val verifiedAt = when(svVerifiedAt) {
+				val verifiedAt = when(val svVerifiedAt = item.parseString("verified_at")) {
 					null -> 0L
 					else -> TootStatus.parseTime(svVerifiedAt)
 				}

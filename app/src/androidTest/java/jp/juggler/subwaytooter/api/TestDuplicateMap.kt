@@ -67,7 +67,7 @@ class TestDuplicateMap {
 			put("username", "user1")
 			put("acct", "user1")
 			put("id", 1L)
-			put("url", "http://${parser.linkHelper.host}/@user1")
+			put("url", "http://${parser.accessHost}/@user1")
 		}
 		
 		val account1 = TootAccount(parser,account1Json)
@@ -81,8 +81,8 @@ class TestDuplicateMap {
 			parser,
 			account1Json,
 			"1",
-			"http://${parser.linkHelper.host}/@${account1.username}/1",
-			"http://${parser.linkHelper.host}/@${account1.username}/1"
+			"http://${parser.accessHost}/@${account1.username}/1",
+			"http://${parser.accessHost}/@${account1.username}/1"
 		)
 		// 別のステータス
 		checkStatus(
@@ -90,8 +90,8 @@ class TestDuplicateMap {
 			parser,
 			account1Json,
 			"2",
-			"http://${parser.linkHelper.host}/@${account1.username}/2",
-			"http://${parser.linkHelper.host}/@${account1.username}/2"
+			"http://${parser.accessHost}/@${account1.username}/2",
+			"http://${parser.accessHost}/@${account1.username}/2"
 		)
 		// 今度はuriがない
 		checkStatus(
@@ -99,8 +99,8 @@ class TestDuplicateMap {
 			parser,
 			account1Json,
 			"3",
-			null, // "http://${parser.linkHelper.host}/@${account1.username}/3",
-			"http://${parser.linkHelper.host}/@${account1.username}/3"
+			null, // "http://${parser.accessHost}/@${account1.username}/3",
+			"http://${parser.accessHost}/@${account1.username}/3"
 		)
 		// 今度はuriとURLがない
 		checkStatus(
@@ -108,8 +108,8 @@ class TestDuplicateMap {
 			parser,
 			account1Json,
 			"4",
-			null, // "http://${parser.linkHelper.host}/@${account1.username}/4",
-			null //"http://${parser.linkHelper.host}/@${account1.username}/4"
+			null, // "http://${parser.accessHost}/@${account1.username}/4",
+			null //"http://${parser.accessHost}/@${account1.username}/4"
 		)
 		// 今度はIDがおかしい
 		checkStatus(
@@ -117,8 +117,8 @@ class TestDuplicateMap {
 			parser,
 			account1Json,
 			"",
-			null, // "http://${parser.linkHelper.host}/@${account1.username}/4",
-			null //"http://${parser.linkHelper.host}/@${account1.username}/4"
+			null, // "http://${parser.accessHost}/@${account1.username}/4",
+			null //"http://${parser.accessHost}/@${account1.username}/4"
 		)
 		
 	}
@@ -186,7 +186,7 @@ class TestDuplicateMap {
 			put("username", "user$id")
 			put("acct", "user$id")
 			put("id", id)
-			put("url", "http://${parser.linkHelper.host}/@user$id")
+			put("url", "http://${parser.accessHost}/@user$id")
 		}
 		
 		val item = TootAccountRef.notNull(parser,TootAccount(parser,itemJson))

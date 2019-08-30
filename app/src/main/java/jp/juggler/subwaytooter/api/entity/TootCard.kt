@@ -46,7 +46,7 @@ class TootCard(
 	constructor(parser : TootParser, src : TootStatus) : this(
 		originalStatus = src,
 		url = src.url,
-		title = "${src.account.display_name} @${parser.linkHelper.getFullAcct(src.account.acct)}",
+		title = "${src.account.display_name} @${parser.getFullAcct(src.account.acct)}",
 		description = src.spoiler_text.filterNotEmpty()
 			?: if(parser.serviceType == ServiceType.MISSKEY) {
 				src.content

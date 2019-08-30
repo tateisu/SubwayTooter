@@ -636,8 +636,13 @@ class Column(
 		this.callback_ref = WeakReference(callback)
 		when(typeMap[type]) {
 			
-			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND -> status_id =
-				getParamAt(params, 0)
+			ColumnType.CONVERSATION,
+			ColumnType.BOOSTED_BY,
+			ColumnType.FAVOURITED_BY,
+			ColumnType.LOCAL_AROUND,
+			ColumnType.FEDERATED_AROUND,
+			ColumnType.ACCOUNT_AROUND ->
+				status_id = getParamAt(params, 0)
 			ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER -> profile_id =
 				getParamAt(params, 0)
 			ColumnType.HASHTAG -> hashtag = getParamAt(params, 0)
@@ -656,10 +661,16 @@ class Column(
 				search_resolve = getParamAt(params, 1)
 			}
 			
-			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> search_query = getParamAt(params, 0)
+			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS ->
+				search_query = getParamAt(params, 0)
 			
-			ColumnType.INSTANCE_INFORMATION ,
-			ColumnType.PROFILE_DIRECTORY -> instance_uri = getParamAt(params, 0)
+			ColumnType.INSTANCE_INFORMATION ->
+				instance_uri = getParamAt(params, 0)
+
+			ColumnType.PROFILE_DIRECTORY ->{
+				instance_uri = getParamAt(params, 0)
+				search_resolve = true
+			}
 			
 			else -> {
 			

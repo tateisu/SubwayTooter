@@ -1,10 +1,8 @@
 package jp.juggler.subwaytooter.api
 
-import com.google.android.exoplayer2.Timeline
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.util.LogCategory
-import java.util.ArrayList
-import java.util.HashSet
+import java.util.*
 
 class DuplicateMap {
 	

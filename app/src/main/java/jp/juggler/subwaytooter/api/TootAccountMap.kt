@@ -12,10 +12,10 @@ object TootAccountMap{
 		val watcher: String
 		
 		init{
-			this.acct = parser.linkHelper.getFullAcct(who.acct)
+			this.acct = parser.getFullAcct(who.acct)
 			
 			this.watcher =when(parser.serviceType){
-				ServiceType.MASTODON -> requireNotNull(parser.linkHelper.host)
+				ServiceType.MASTODON -> requireNotNull(parser.accessHost)
 				ServiceType.TOOTSEARCH -> "?tootsearch"
 				ServiceType.MSP -> "?msp"
 				ServiceType.MISSKEY -> "?misskey"

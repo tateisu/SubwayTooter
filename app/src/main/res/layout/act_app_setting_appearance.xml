@@ -649,7 +649,33 @@
 
 
 
+
+
         <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/show_in_directory"
+            />
+
+        <CheckBox
+            style="@style/setting_row_button"
+            android:id="@+id/swDirectoryLastActive"
+            android:text="@string/last_active"
+            />
+        <CheckBox
+            style="@style/setting_row_button"
+            android:id="@+id/swDirectoryFollowers"
+            android:text="@string/followers"
+            />
+        <CheckBox
+            style="@style/setting_row_button"
+            android:id="@+id/swDirectoryTootCount"
+            android:text="@string/toot_count"
+            />
+
+        <View style="@style/setting_divider"/>
+
 
     </LinearLayout>
 </ScrollView>

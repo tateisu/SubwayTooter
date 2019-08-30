@@ -808,7 +808,8 @@
     <string name="animation">Animation</string>
     <string name="tls_handshake">TLS Handshake</string>
     <string name="links">Links</string>
-    <string name="profile_directory">Profile directory</string>
+    <string name="profile_directory">Directory</string>
+    <string name="profile_directory_of">Directory of \"%1$s\"</string>
     <string name="about_this_instance">About this server</string>
     <string name="top_page">Top page</string>
     <string name="show_instance_ticker">Show #InstanceTicker (column reload required)</string>
@@ -924,5 +925,7 @@
     <string name="order_new">New arrivals</string>
     <string name="local_only">Local only</string>
     <string name="last_active">Last active</string>
+    <string name="profile_directory_not_supported_on_misskey">Profile directory is not supported on Misskey</string>
+    <string name="show_in_directory">Show in directory</string>
 
 </resources>

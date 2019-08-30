@@ -99,6 +99,7 @@ internal class DlgContextMenu(
 			viewRoot.findViewById(R.id.btnOpenProfileFromAnotherAccount)
 		val btnDomainBlock : Button = viewRoot.findViewById(R.id.btnDomainBlock)
 		val btnInstanceInformation : Button = viewRoot.findViewById(R.id.btnInstanceInformation)
+		val btnProfileDirectory  : Button = viewRoot.findViewById(R.id.btnProfileDirectory)
 		val ivFollowedBy : ImageView = viewRoot.findViewById(R.id.ivFollowedBy)
 		val btnOpenTimeline : Button = viewRoot.findViewById(R.id.btnOpenTimeline)
 		val btnConversationAnotherAccount : View =
@@ -171,6 +172,7 @@ internal class DlgContextMenu(
 		btnShowFavourite.setOnClickListener(this)
 		btnListMemberAddRemove.setOnClickListener(this)
 		btnInstanceInformation.setOnClickListener(this)
+		btnProfileDirectory.setOnClickListener(this)
 		btnDomainBlock.setOnClickListener(this)
 		btnEndorse.setOnClickListener(this)
 		btnCopyAccountId.setOnClickListener(this)
@@ -365,15 +367,21 @@ internal class DlgContextMenu(
 		
 		if(who == null) {
 			btnInstanceInformation.visibility = View.GONE
+			btnProfileDirectory.visibility = View.GONE
 			btnDomainBlock.visibility = View.GONE
 			btnCopyAccountId.visibility = View.GONE
 			btnOpenAccountInAdminWebUi.visibility = View.GONE
 			btnOpenInstanceInAdminWebUi.visibility = View.GONE
 		} else {
-			val who_host = who.host
+			val who_host = getUserHost()
 			btnInstanceInformation.visibility = View.VISIBLE
 			btnInstanceInformation.text =
 				activity.getString(R.string.instance_information_of, who_host)
+
+			btnProfileDirectory.visibility = View.VISIBLE
+			btnProfileDirectory.text =
+				activity.getString(R.string.profile_directory_of, who_host)
+			
 			if(access_info.isPseudo || access_info.host.equals(who_host, ignoreCase = true)) {
 				// 疑似アカウントではドメインブロックできない
 				// 自ドメインはブロックできない
@@ -471,6 +479,15 @@ internal class DlgContextMenu(
 			window.attributes = lp
 		}
 		dialog.show()
+	}
+	
+	fun getUserHost():String {
+		val who_host = whoRef?.get()?.host
+		return when(who_host) {
+			"?" -> column.instance_uri
+			null,"" -> access_info.host
+			else -> who_host
+		}
 	}
 	
 	override fun onClick(v : View) {
@@ -717,8 +734,13 @@ internal class DlgContextMenu(
 				R.id.btnListMemberAddRemove ->
 					DlgListMember(activity, who, access_info).show()
 				
-				R.id.btnInstanceInformation ->
-					Action_Instance.information(activity, pos, who.host)
+				R.id.btnInstanceInformation ->{
+					Action_Instance.information(activity, pos, getUserHost())
+				}
+
+				R.id.btnProfileDirectory->{
+					Action_Instance.profileDirectory(activity,column,getUserHost())
+				}
 				
 				R.id.btnEndorse -> Action_Account.endorse(
 					activity,

@@ -3,8 +3,10 @@ package jp.juggler.subwaytooter
 import android.content.Intent
 import android.text.SpannableStringBuilder
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import jp.juggler.subwaytooter.action.Action_Account
+import jp.juggler.subwaytooter.action.Action_Instance
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
@@ -27,18 +29,22 @@ internal class ViewHolderHeaderInstance(
 		private val reWhitespaceBeforeLineFeed = Pattern.compile("[ \t\r]+\n")
 	}
 	
-	private val btnInstance : TextView
-	private val tvVersion : TextView
-	private val tvTitle : TextView
-	private val btnEmail : TextView
-	private val tvDescription : TextView
-	private val tvUserCount : TextView
-	private val tvTootCount : TextView
-	private val tvDomainCount : TextView
-	private val ivThumbnail : MyNetworkImageView
-	private val btnContact : TextView
-	private val tvLanguages : TextView
-	private val tvHandshake : TextView
+	private val btnInstance : TextView = viewRoot.findViewById(R.id.btnInstance)
+	private val tvVersion : TextView = viewRoot.findViewById(R.id.tvVersion)
+	private val tvTitle : TextView= viewRoot.findViewById(R.id.tvTitle)
+	private val btnEmail : TextView = viewRoot.findViewById(R.id.btnEmail)
+	private val tvDescription : TextView= viewRoot.findViewById(R.id.tvDescription)
+	private val tvUserCount : TextView = viewRoot.findViewById(R.id.tvUserCount)
+	private val tvTootCount : TextView = viewRoot.findViewById(R.id.tvTootCount)
+	private val tvDomainCount : TextView = viewRoot.findViewById(R.id.tvDomainCount)
+	private val ivThumbnail : MyNetworkImageView = viewRoot.findViewById(R.id.ivThumbnail)
+	private val btnContact : TextView= viewRoot.findViewById(R.id.btnContact)
+	private val tvLanguages : TextView= viewRoot.findViewById(R.id.tvLanguages)
+	private val tvHandshake : TextView = viewRoot.findViewById(R.id.tvHandshake)
+	
+	private val btnAbout : Button = viewRoot.findViewById(R.id.btnAbout)
+	private val btnAboutMore : Button = viewRoot.findViewById(R.id.btnAboutMore)
+	private val btnExplore : Button = viewRoot.findViewById(R.id.btnExplore)
 	
 	private var instance : TootInstance? = null
 	
@@ -52,28 +58,15 @@ internal class ViewHolderHeaderInstance(
 		//		tvSearchDesc.setMovementMethod( MyLinkMovementMethod.getInstance() );
 		//		tvSearchDesc.setText( sv );
 		
-		btnInstance = viewRoot.findViewById(R.id.btnInstance)
-		tvVersion = viewRoot.findViewById(R.id.tvVersion)
-		tvTitle = viewRoot.findViewById(R.id.tvTitle)
-		btnEmail = viewRoot.findViewById(R.id.btnEmail)
-		tvDescription = viewRoot.findViewById(R.id.tvDescription)
-		tvUserCount = viewRoot.findViewById(R.id.tvUserCount)
-		tvTootCount = viewRoot.findViewById(R.id.tvTootCount)
-		tvDomainCount = viewRoot.findViewById(R.id.tvDomainCount)
-		ivThumbnail = viewRoot.findViewById(R.id.ivThumbnail)
-		btnContact = viewRoot.findViewById(R.id.btnContact)
-		tvLanguages = viewRoot.findViewById(R.id.tvLanguages)
-		tvHandshake = viewRoot.findViewById(R.id.tvHandshake)
 		
 		btnInstance.setOnClickListener(this)
 		btnEmail.setOnClickListener(this)
 		btnContact.setOnClickListener(this)
 		ivThumbnail.setOnClickListener(this)
 		
-		
-		viewRoot.findViewById<View>(R.id.btnAbout)?.setOnClickListener(this)
-		viewRoot.findViewById<View>(R.id.btnAboutMore)?.setOnClickListener(this)
-		viewRoot.findViewById<View>(R.id.btnExplore)?.setOnClickListener(this)
+		btnAbout.setOnClickListener(this)
+		btnAboutMore.setOnClickListener(this)
+		btnExplore.setOnClickListener(this)
 		
 		tvDescription.movementMethod = MyLinkMovementMethod
 	}
@@ -99,10 +92,18 @@ internal class ViewHolderHeaderInstance(
 			tvLanguages.text = "?"
 			btnContact.text = "?"
 			btnContact.isEnabled = false
+			btnAbout.isEnabled = false
+			btnAboutMore.isEnabled = false
+			btnExplore.isEnabled = false
 		} else {
 			val uri = instance.uri ?: ""
+			val hasUri = uri.isNotEmpty()
 			btnInstance.text = uri
-			btnInstance.isEnabled = uri.isNotEmpty()
+
+			btnInstance.isEnabled = hasUri
+			btnAbout.isEnabled = hasUri
+			btnAboutMore.isEnabled = hasUri
+			btnExplore.isEnabled = hasUri
 			
 			tvVersion.text = instance.version ?: ""
 			tvTitle.text = instance.title ?: ""
@@ -168,6 +169,7 @@ internal class ViewHolderHeaderInstance(
 			} else {
 				ivThumbnail.setImageUrl(App1.pref, 0f, thumbnail, thumbnail)
 			}
+
 		}
 		
 		tvHandshake.text = if(handshake == null) {
@@ -244,11 +246,14 @@ internal class ViewHolderHeaderInstance(
 			
 			R.id.btnInstance -> App1.openBrowser(activity, "https://${column.instance_uri}/about")
 			R.id.ivThumbnail -> App1.openBrowser(activity, instance?.thumbnail)
-			R.id.btnAbout -> App1.openBrowser(activity, "https://${column.instance_uri}/about")
+
+			R.id.btnAbout ->
+				App1.openBrowser(activity, "https://${column.instance_uri}/about")
+
 			R.id.btnAboutMore ->
 				App1.openBrowser(activity, "https://${column.instance_uri}/about/more")
-			R.id.btnExplore ->
-				App1.openBrowser(activity, "https://${column.instance_uri}/explore")
+
+			R.id.btnExplore -> Action_Instance.profileDirectory(activity,column,column.instance_uri,instance=instance)
 		}
 	}
 	

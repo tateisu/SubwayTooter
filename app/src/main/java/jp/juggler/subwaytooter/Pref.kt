@@ -401,6 +401,25 @@ object Pref {
 		R.id.swShowTranslateButton
 	)
 	
+	val bpDirectoryLastActive = BooleanPref(
+		"DirectoryLastActive",
+		true,
+		R.id.swDirectoryLastActive
+	)
+	
+	val bpDirectoryFollowers = BooleanPref(
+		"DirectoryFollowers",
+		true,
+		R.id.swDirectoryFollowers
+	)
+	
+	val bpDirectoryTootCount = BooleanPref(
+		"DirectoryTootCount",
+		true,
+		R.id.swDirectoryTootCount
+	)
+	
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

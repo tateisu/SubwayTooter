@@ -179,11 +179,11 @@
     <string name="center">الوسط</string>
     <string name="misskey_hybrid_timeline_long">الخيط الزمني الاجتماعي (ميسكي)</string>
     <string name="app_name">Subway Tooter</string>
-    <string name="instance">مثيل الخادوم</string>
+    <string name="instance">الخادم</string>
     <string name="user_mail_address">البريد الإلكتروني</string>
     <string name="user_password">الكلمة السرية</string>
     <string name="ok">موافق</string>
-    <string name="instance_not_specified">لم يتم تحديد أي مثيل خادوم</string>
+    <string name="instance_not_specified">لم يتم تحديد أي خادم</string>
     <string name="mail_not_specified">لم يتم إدخال أي عنوان بريد إلكتروني</string>
     <string name="password_not_specified">لم يتم إدخال الكلمة السرية</string>
     <string name="network_error">خطأ في الشبكة.</string>
@@ -236,7 +236,7 @@
     <string name="pseudo_account">شبه حساب</string>
     <string name="input_access_token">رمز المصادقة</string>
     <string name="title">العنوان</string>
-    <string name="instance_information">معلومات مثيل الخادم</string>
+    <string name="instance_information">معلومات الخادم</string>
     <string name="time_within_second">الآن</string>
     <string name="make_enquete">إنشاء استطلاع للرأي</string>
     <string name="profile_pin">تدبيس على الملف الشخصي</string>
@@ -246,7 +246,7 @@
     <string name="video_pick">إختر فيديو</string>
     <string name="keyword_filters">الكلمات المُصفّاة</string>
     <string name="display_name_favourited_by">أُعجِب به %1$s</string>
-    <string name="sensitive_content_default_open">فتح المحتوى الحساس دائمًا</string>
+    <string name="sensitive_content_default_open">إظهار المحتوى الحساس تلقائيا</string>
     <string name="send_header_content_warning">التحذير عن المحتوى</string>
     <string name="open_profile">فتح الملف الشخصي</string>
     <string name="open_profile_from_another_account">فتح الملف الشخصي بحساب آخَر</string>
@@ -261,7 +261,7 @@
     <string name="display_name_quoted_by">إقتبَس %1$s</string>
     <string name="display_name_followed_by">%1$s يتابعك</string>
     <string name="user">المستخدِم</string>
-    <string name="instance_not_need_slash">اسم مضيف مثيل الخادوم، مِن دون \'/\'، \'@\'.</string>
+    <string name="instance_not_need_slash">اسم المضيف للخادم، مِن دون\'/\', \'@\'.</string>
     <string name="comment_empty">يجب عليك الإدلاء بسبب الإبلاغ عنه</string>
     <string name="hashtag_of">الوسم: #%1$s</string>
     <string name="open_web_on_host">فتح صفحة الويب على %1$s</string>
@@ -302,7 +302,7 @@
     <string name="uri">الرابط</string>
     <string name="enquete_voted">صوّت.</string>
     <string name="parsing_response">جارٍ نشر الردّ…</string>
-    <string name="video_capture">إلتقاط فيديو</string>
+    <string name="video_capture">التقاط فيديو</string>
     <string name="user_count">المستخدِمون</string>
     <string name="toot_count">التبويقات</string>
     <string name="emoji_category_recent">الحديثة</string>
@@ -431,7 +431,7 @@
     <string name="performance">الأداء</string>
     <string name="open_local_timeline_for">افتح الخط الزمني لـ \"%1$s\"</string>
     <string name="quote_name">اقتبِس اسمه…</string>
-    <string name="instance_information_of">معلومات مثيل الخادوم \"%1$s\"</string>
+    <string name="instance_information_of">معلومات عن الخادم \"%1$s\"</string>
     <string name="list_member_add_remove">إضافته أو تنحيته من القوائم…</string>
     <string name="field_value1">القيمة 1</string>
     <string name="field_value2">القيمة 2</string>

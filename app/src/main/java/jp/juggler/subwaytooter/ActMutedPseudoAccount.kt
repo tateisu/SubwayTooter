@@ -39,6 +39,7 @@ class ActMutedPseudoAccount : AppCompatActivity() {
 	
 	private fun initUI() {
 		setContentView(R.layout.act_word_list)
+		App1.initEdgeToEdge(this)
 		
 		Styler.fixHorizontalPadding2(findViewById(R.id.llContent))
 		

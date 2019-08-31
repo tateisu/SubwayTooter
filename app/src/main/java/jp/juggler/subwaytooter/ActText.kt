@@ -84,9 +84,9 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		initUI()
 		
 		if(savedInstanceState == null) {
-			val sv = intent.getStringExtra(EXTRA_TEXT)
+			val sv = intent.getStringExtra(EXTRA_TEXT) ?: ""
 			val content_start = intent.getIntExtra(EXTRA_CONTENT_START, 0)
-			val content_end = intent.getIntExtra(EXTRA_CONTENT_END, sv.length)
+			val content_end = intent.getIntExtra(EXTRA_CONTENT_END, sv.length )
 			etText.setText(sv)
 			
 			// Android 9 以降ではフォーカスがないとsetSelectionできない
@@ -101,6 +101,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	
 	internal fun initUI() {
 		setContentView(R.layout.act_text)
+		App1.initEdgeToEdge(this)
 		
 		Styler.fixHorizontalMargin(findViewById(R.id.svFooterBar))
 		Styler.fixHorizontalMargin(findViewById(R.id.svContent))

@@ -104,6 +104,7 @@ class ActHighlightWordEdit
 	
 	private fun initUI() {
 		setContentView(R.layout.act_highlight_edit)
+		App1.initEdgeToEdge(this)
 		
 		tvName = findViewById(R.id.tvName)
 		swSound = findViewById(R.id.swSound)

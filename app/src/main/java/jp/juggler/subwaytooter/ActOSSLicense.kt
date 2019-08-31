@@ -15,6 +15,7 @@ class ActOSSLicense : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 		App1.setActivityTheme(this, true)
 		setContentView(R.layout.act_oss_license)
+		App1.initEdgeToEdge(this)
 		
 		try {
 			val tv = findViewById<TextView>(R.id.tvText)

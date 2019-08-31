@@ -1105,6 +1105,7 @@ class ActPost : AppCompatActivity(),
 		density = resources.displayMetrics.density
 		
 		setContentView(R.layout.act_post)
+		App1.initEdgeToEdge(this)
 		
 		if(Pref.bpPostButtonBarTop(this)) {
 			val bar = findViewById<View>(R.id.llFooterBar)

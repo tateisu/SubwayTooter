@@ -225,6 +225,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
 	internal fun initUI() {
 		setContentView(R.layout.act_media_viewer)
+		App1.initEdgeToEdge(this)
+		
 		pbvImage = findViewById(R.id.pbvImage)
 		btnPrevious = findViewById(R.id.btnPrevious)
 		btnNext = findViewById(R.id.btnNext)
@@ -832,7 +834,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			val cd = ClipData(ClipDescription("media URL", mimeType), item)
 			
 			//クリップボードにデータを格納
-			cm.primaryClip = cd
+			cm.setPrimaryClip(cd)
 			
 			showToast(this, false, R.string.url_is_copied)
 			

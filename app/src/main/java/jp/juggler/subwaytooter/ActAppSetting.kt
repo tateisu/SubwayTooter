@@ -47,6 +47,7 @@ class ActAppSetting : AppCompatActivity() {
 		App1.setActivityTheme(this, false)
 		
 		setContentView(R.layout.act_app_setting)
+		App1.initEdgeToEdge(this)
 		
 		Styler.fixHorizontalPadding2(findViewById(R.id.llContent))
 		lvList = findViewById(R.id.lvList)

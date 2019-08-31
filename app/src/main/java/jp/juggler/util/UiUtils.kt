@@ -265,7 +265,7 @@ fun CharSequence.copyToClipboard(context:Context) {
 		
 		// Set the clipboard's primary clip.
 		
-		clipboard.primaryClip = clip
+		clipboard.setPrimaryClip(clip)
 		
 		showToast(context, false, R.string.copy_complete)
 	} catch(ex : Throwable) {

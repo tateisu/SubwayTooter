@@ -126,6 +126,7 @@ class ActKeywordFilter
 		
 		this.density = resources.displayMetrics.density
 		setContentView(R.layout.act_keyword_filter)
+		App1.initEdgeToEdge(this)
 		
 		Styler.fixHorizontalPadding(findViewById(R.id.svContent))
 		

@@ -342,6 +342,7 @@ class ActAppSettingChild : AppCompatActivity()
 		}
 		
 		setContentView(layoutId)
+		App1.initEdgeToEdge(this)
 		
 		initUI()
 		

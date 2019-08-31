@@ -56,6 +56,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	
 	private fun initUI() {
 		setContentView(R.layout.act_highlight_list)
+		App1.initEdgeToEdge(this)
 		
 		Styler.fixHorizontalPadding2(findViewById(R.id.llContent))
 		

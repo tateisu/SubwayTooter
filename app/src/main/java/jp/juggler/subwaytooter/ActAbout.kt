@@ -40,6 +40,7 @@ class ActAbout : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 		App1.setActivityTheme(this, false)
 		setContentView(R.layout.act_about)
+		App1.initEdgeToEdge(this)
 		
 		Styler.fixHorizontalPadding(findViewById(R.id.svContent))
 		

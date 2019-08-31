@@ -255,6 +255,7 @@ class ActAccountSetting
 		this.density = resources.displayMetrics.density
 		this.handler = Handler()
 		setContentView(R.layout.act_account_setting)
+		App1.initEdgeToEdge(this)
 		
 		val root :View = findViewById(R.id.svContent)
 		

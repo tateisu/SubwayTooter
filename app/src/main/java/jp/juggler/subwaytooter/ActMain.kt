@@ -1099,6 +1099,7 @@ class ActMain : AppCompatActivity()
 	
 	internal fun initUI() {
 		setContentView(R.layout.act_main)
+		App1.initEdgeToEdge(this)
 		
 		quickTootVisibility =
 			TootVisibility.parseSavedVisibility(Pref.spQuickTootVisibility(pref))

@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- light theme -->
-    <style name="AppTheme.Light" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme.Light.Base" parent="Theme.AppCompat.Light.DarkActionBar">
 
         <item name="android:windowBackground">@drawable/window_background</item>
         <item name="android:textColor">?attr/colorContentText</item>
@@ -49,13 +49,7 @@
 
     </style>
 
-    <style name="AppTheme.Light.NoActionBar" parent="AppTheme.Light">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-
-    <!-- dark theme -->
-    <style name="AppTheme.Dark" parent="Theme.AppCompat">
+    <style name="AppTheme.Dark.Base" parent="Theme.AppCompat">
 
         <item name="android:windowBackground">@drawable/window_background</item>
         <item name="android:textColor">?attr/colorContentText</item>
@@ -104,6 +98,11 @@
         <item name="colorVectorDrawable">@color/Dark_colorVectorDrawable</item>
         <item name="colorWindowBackground">@color/Dark_colorBackground</item>
 
+    </style>
+
+    <style name="AppTheme.Light.NoActionBar" parent="AppTheme.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 
     <style name="AppTheme.Dark.NoActionBar" parent="AppTheme.Dark">

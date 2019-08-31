@@ -300,6 +300,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	
 	private fun initUI() {
 		setContentView(R.layout.act_column_customize)
+		App1.initEdgeToEdge(this)
 		
 		Styler.fixHorizontalPadding(findViewById(R.id.svContent))
 		

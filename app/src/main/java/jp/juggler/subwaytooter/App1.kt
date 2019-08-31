@@ -12,6 +12,8 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import android.view.View
+import android.view.ViewGroup
 import androidx.browser.customtabs.CustomTabsIntent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
@@ -627,6 +629,17 @@ class App1 : Application() {
 			openCustomTab(activity, url)
 		}
 		
+		// https://developer.android.com/preview/features/gesturalnav?hl=ja
+		fun initEdgeToEdge(activity:Activity) {
+//			if(Build.VERSION.SDK_INT >= 29){
+//				val viewRoot = activity.findViewById<ViewGroup>(android.R.id.content).getChildAt(0)
+//				viewRoot.systemUiVisibility = (viewRoot.systemUiVisibility
+//					or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//					or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+//				viewRoot.setOnApplyWindowInsetsListener { v, insets ->
+//					insets.consumeSystemWindowInsets()
+//				}
+//			}
+		}
 	}
-	
 }

@@ -90,6 +90,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 				R.string.nickname_and_color
 		)
 		setContentView(R.layout.act_nickname)
+		App1.initEdgeToEdge(this)
 		
 		Styler.fixHorizontalPadding(findViewById(R.id.llContent))
 		

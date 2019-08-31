@@ -1,0 +1,15 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- light theme -->
+    <style name="AppTheme.Light" parent="AppTheme.Light.Base">
+<!--        <item name="android:navigationBarColor">@android:color/transparent</item>-->
+<!--        <item name="android:statusBarColor">@android:color/transparent</item>-->
+    </style>
+
+
+    <!-- dark theme -->
+    <style name="AppTheme.Dark" parent="AppTheme.Dark.Base">
+<!--        <item name="android:navigationBarColor">@android:color/transparent</item>-->
+<!--        <item name="android:statusBarColor">@android:color/transparent</item>-->
+    </style>
+
+</resources>

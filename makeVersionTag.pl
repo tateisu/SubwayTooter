@@ -52,7 +52,9 @@ my($tag)="v$1";
 print "# version=$tag\n";
 
 # すでにタグがあるなら何もしない
-if( not `git tag -l $tag` =~ /$tag/ ){
+if( `git tag -l $tag` =~ /$tag/ ){
+	print "# tag $tag is already exists.\n";
+}else{
 	cmd "git tag -a $tag -m $tag";
 }
 

@@ -76,4 +76,9 @@
     <string name="nsfw">NSFW</string>
     <string name="tap_to_show">轻触以查看</string>
     <string name="show">显示</string>
+    <string name="account_add">添加一个账户</string>
+    <string name="instance">服务器</string>
+    <string name="user_mail_address">E-mail</string>
+    <string name="api_error">API 错误 %1$s</string>
+    <string name="request_access_token">获取访问令牌中…</string>
 </resources>

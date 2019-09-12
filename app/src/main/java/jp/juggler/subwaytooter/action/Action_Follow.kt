@@ -181,7 +181,7 @@ object Action_Follow {
 					val user = ar?.get() ?: return result
 					userId = user.id
 				}
-
+				
 				return if(access_info.isMisskey) {
 					
 					client.request(
@@ -575,9 +575,9 @@ object Action_Follow {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-
+				
 				val parser = TootParser(activity, access_info)
-
+				
 				return if(access_info.isMisskey) {
 					client.request(
 						"/api/following/requests/${if(bAllow) "accept" else "reject"}",
@@ -585,24 +585,25 @@ object Action_Follow {
 							.put("userId", who.id)
 							.toPostRequestBuilder()
 					).also { result ->
-						
 						val user = parser.account(result?.jsonObject)
-						if(user!=null) {
+						if(user != null) {
 							// parserに残ってるRelationをDBに保存する
 							saveUserRelationMisskey(access_info, user.id, parser)
 						}
+						// 読めなくてもエラー処理は行わない
 					}
 				} else {
 					client.request(
 						"/api/v1/follow_requests/${who.id}/${if(bAllow) "authorize" else "reject"}",
 						"".toFormRequestBody().toPost()
-					)?.also{ result ->
+					)?.also { result ->
 						// Mastodon 3.0.0 から更新されたリレーションを返す
 						// https//github.com/tootsuite/mastodon/pull/11800
 						val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
 						if(newRelation != null) {
 							saveUserRelation(access_info, newRelation)
 						}
+						// 読めなくてもエラー処理は行わない
 					}
 				}
 			}

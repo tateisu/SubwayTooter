@@ -16,6 +16,7 @@ import android.os.SystemClock
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.SparseArray
+import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.R
@@ -301,4 +302,20 @@ class CustomTextWatcher(
 	override fun afterTextChanged(s : Editable) {
 		callback()
 	}
+}
+
+// ImageButton のForeground colorで有効/無効を表現する
+fun ImageButton.setEnabledColor(context:Context, iconId: Int,color:Int, enabled: Boolean) {
+	isEnabled = enabled
+	setImageDrawable(
+		createColoredDrawable(
+			context = context,
+			drawableId = iconId,
+			color = color,
+			alphaMultiplier = when (enabled) {
+				true -> 1f
+				else -> 0.5f
+			}
+		)
+	)
 }

@@ -11,10 +11,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.AsyncTask
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
+import android.os.*
 import android.provider.MediaStore
 import android.text.*
 import androidx.core.view.inputmethod.InputConnectionCompat
@@ -55,6 +52,7 @@ import org.json.JSONObject
 import java.io.*
 import java.lang.ref.WeakReference
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
@@ -380,6 +378,7 @@ class ActPost : AppCompatActivity(),
 	internal lateinit var cbContentWarning : CheckBox
 	internal lateinit var etContentWarning : MyEditText
 	internal lateinit var etContent : MyEditText
+	internal lateinit var btnFeaturedTag : ImageButton
 	
 	internal lateinit var cbQuoteRenote : CheckBox
 	
@@ -483,6 +482,7 @@ class ActPost : AppCompatActivity(),
 			R.id.btnMore -> performMore()
 			R.id.btnPlugin -> openMushroom()
 			R.id.btnEmojiPicker -> post_helper.openEmojiPickerFromMore()
+			R.id.btnFeaturedTag -> post_helper.openFeaturedTagList(featuredTagCache[account?.acct ?: ""]?.list)
 			R.id.ibSchedule -> performSchedule()
 			R.id.ibScheduleReset -> resetSchedule()
 		}
@@ -1211,6 +1211,8 @@ class ActPost : AppCompatActivity(),
 		btnAttachment.setOnClickListener(this)
 		btnPost.setOnClickListener(this)
 		btnRemoveReply.setOnClickListener(this)
+
+		btnFeaturedTag = findViewById(R.id.btnFeaturedTag)
 		
 		val btnPlugin : ImageButton = findViewById(R.id.btnPlugin)
 		val btnEmojiPicker : ImageButton = findViewById(R.id.btnEmojiPicker)
@@ -1218,6 +1220,7 @@ class ActPost : AppCompatActivity(),
 		
 		btnPlugin.setOnClickListener(this)
 		btnEmojiPicker.setOnClickListener(this)
+		btnFeaturedTag.setOnClickListener(this)
 		btnMore.setOnClickListener(this)
 		
 		for(iv in ivMedia) {
@@ -1265,7 +1268,6 @@ class ActPost : AppCompatActivity(),
 			}
 			
 			else -> {
-				
 				// インスタンス情報を確認する
 				val info = account.instance
 				if(info == null || System.currentTimeMillis() - info.time_parse >= 300000L) {
@@ -1340,7 +1342,6 @@ class ActPost : AppCompatActivity(),
 					EmojiDecoder.decodeShortCode(et.text.toString())
 				)
 			}
-			
 		}
 		
 		when(spEnquete.selectedItemPosition) {
@@ -1364,6 +1365,68 @@ class ActPost : AppCompatActivity(),
 					android.R.attr.textColorPrimary
 			)
 		)
+	}
+	
+	class FeaturedTagCache(
+		val list:List<TootTag>,
+		val time: Long
+	)
+	
+	private val featuredTagCache =ConcurrentHashMap<String,FeaturedTagCache>()
+	private var lastFeaturedTagTask : TootTaskRunner? = null
+	
+	private fun updateFeaturedTags(){
+		
+		fun setHashtagButtonEnabled(enabled:Boolean){
+			btnFeaturedTag.setEnabledColor(
+				this,
+				R.drawable.ic_hashtag,
+				getAttributeColor(this,R.attr.colorVectorDrawable)
+				,enabled
+			)
+		}
+		
+		val account = account
+		if( account==null || account.isPseudo){
+			setHashtagButtonEnabled(false)
+			return
+		}
+		
+		val now = SystemClock.elapsedRealtime()
+		val cache = featuredTagCache[account.acct]
+		if(cache!=null && now - cache.time <= 300000L ){
+			setHashtagButtonEnabled(cache.list.isNotEmpty())
+			return
+		}
+
+		// 同時に実行するタスクは1つまで
+		setHashtagButtonEnabled(false)
+		var lastTask = lastFeaturedTagTask
+		if(lastTask?.isActive != true) {
+			lastTask = TootTaskRunner(this, TootTaskRunner.PROGRESS_NONE)
+			lastFeaturedTagTask = lastTask
+			lastTask.run(account, object : TootTask {
+				
+				override fun background(client : TootApiClient) : TootApiResult? {
+					return if(account.isMisskey) {
+						featuredTagCache[account.acct] =
+							FeaturedTagCache(emptyList(), SystemClock.elapsedRealtime())
+						TootApiResult()
+					}else{
+						client.request("/api/v1/featured_tags")?.also{result->
+							val list = parseList(::TootTag,result.jsonArray)
+							featuredTagCache[account.acct] =
+								FeaturedTagCache(list, SystemClock.elapsedRealtime())
+						}
+					}
+				}
+				
+				override fun handleResult(result : TootApiResult?) {
+					if(isFinishing || isDestroyed) return
+					updateFeaturedTags()
+				}
+			})
+		}
 	}
 	
 	private fun updateContentWarning() {
@@ -1400,6 +1463,7 @@ class ActPost : AppCompatActivity(),
 				?: getAttributeColor(this, android.R.attr.textColorPrimary)
 		}
 		updateTextCount()
+		updateFeaturedTags()
 	}
 	
 	private fun performAccountChooser() {

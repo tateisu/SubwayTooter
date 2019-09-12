@@ -14,6 +14,7 @@ import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.EmojiPicker
 import jp.juggler.subwaytooter.span.MyClickableSpan
@@ -1032,6 +1033,41 @@ class PostHelper(
 			
 			proc_text_changed.run()
 		}.show()
+	}
+	
+	private fun SpannableStringBuilder.appendHashTag(tagWithoutSharp:String):SpannableStringBuilder{
+		val separator = ' '
+		if(! EmojiDecoder.canStartHashtag(this, this.length)) append(separator)
+		this.append('#').append(tagWithoutSharp)
+		append(separator)
+		return this
+	}
+	
+	fun openFeaturedTagList(list:List<TootTag>?){
+		if( list?.isEmpty() != false) return
+		val ad = ActionsDialog()
+		for(tag in list){
+			ad.addAction("#${tag.name}"){
+				val et = this.et ?: return@addAction
+				
+				val src = et.text ?: ""
+				val src_length = src.length
+				val start = min(src_length, et.selectionStart)
+				val end = min(src_length, et.selectionEnd)
+				
+				val sb = SpannableStringBuilder()
+					.append(src.subSequence(0, start))
+					.appendHashTag(tag.name)
+				val newSelection = sb.length
+				if(end < src_length) sb.append(src.subSequence(end, src_length))
+
+				et.text = sb
+				et.setSelection(newSelection)
+				
+				proc_text_changed.run()
+			}
+		}
+		ad.show(activity,activity.getString(R.string.featured_hashtags))
 	}
 	
 	//	final ActionMode.Callback action_mode_callback = new ActionMode.Callback() {

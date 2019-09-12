@@ -127,7 +127,7 @@ object LoginForm {
 			activity.resources.openRawResource(R.raw.server_list).use { inStream ->
 				val br = BufferedReader(InputStreamReader(inStream, "UTF-8"))
 				while(true) {
-					val s : String = br.readLine()?.trim { it <= ' ' }?.toLowerCase() ?: break
+					val s : String = br.readLine()?.trim { it <= ' ' }?.toLowerCase(Locale.JAPAN) ?: break
 					if(s.isNotEmpty()) instance_list.add(s)
 				}
 			}

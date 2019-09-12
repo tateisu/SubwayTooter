@@ -215,9 +215,22 @@
                     />
 
                 <ImageButton
+                    android:id="@+id/btnFeaturedTag"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/open_picker_emoji"
+                    android:src="@drawable/ic_hashtag"
+                    android:tint="?attr/colorVectorDrawable"
+
+                    />
+
+                <ImageButton
                     android:id="@+id/btnEmojiPicker"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/open_picker_emoji"
                     android:src="@drawable/ic_face"

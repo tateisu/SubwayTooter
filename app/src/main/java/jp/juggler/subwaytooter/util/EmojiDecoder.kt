@@ -25,6 +25,8 @@ object EmojiDecoder {
 	private const val cpColon = ':'.toInt()
 	
 	private const val cpZwsp = '\u200B'.toInt()
+
+	private const val cpSharp = '#'.toInt()
 	
 	fun customEmojiSeparator(pref : SharedPreferences) = if(Pref.bpCustomEmojiSeparatorZwsp(pref)) {
 		'\u200B'
@@ -46,7 +48,7 @@ object EmojiDecoder {
 			cpZwsp -> true
 			// rubyの (Letter | Mark | Decimal_Number) はNG
 			// ftp://unicode.org/Public/5.1.0/ucd/UCD.html#General_Category_Values
-			else -> when(java.lang.Character.getType(cp).toByte()) {
+			else -> when(Character.getType(cp).toByte()) {
 				// Letter
 				// LCはエイリアスなので文字から得られることはないはず
 				Character.UPPERCASE_LETTER,
@@ -67,6 +69,22 @@ object EmojiDecoder {
 		// https://mastodon.juggler.jp/@tateisu/99727683089280157
 		// https://github.com/tootsuite/mastodon/pull/5570 がマージされたらこっちに切り替える
 		// return cp == -1 || CharacterGroup.isWhitespace(cp)
+	}
+	
+	fun canStartHashtag(s : CharSequence, index : Int) : Boolean {
+		val cp = s.codePointBefore(index)
+		// HASHTAG_RE = /(?:^|[^\/\)\w])#(#{HASHTAG_NAME_RE})/i
+		return if( cp >= 0x80){
+			true
+		}else when(cp.toChar()) {
+			'/' -> false
+			')' -> false
+			'_' -> false
+			in 'a' .. 'z' -> false
+			in 'A' .. 'Z' -> false
+			in '0' .. '9' -> false
+			else -> true
+		}
 	}
 	
 	private class EmojiStringBuilder(internal val options : DecodeOptions) {

@@ -927,5 +927,6 @@
     <string name="last_active">Last active</string>
     <string name="profile_directory_not_supported_on_misskey">Profile directory is not supported on Misskey</string>
     <string name="show_in_directory">Show in directory</string>
+    <string name="featured_hashtags">Featured hashtags</string>
 
 </resources>

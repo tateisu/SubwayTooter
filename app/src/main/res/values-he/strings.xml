@@ -430,7 +430,7 @@
     <string name="mute_this_conversation">השתק התראות נוספות עבור שיחה זו</string>
     <string name="unmute_this_conversation">השתק התראות נוספות עבור שיחה זו</string>
     <string name="input_access_token">אסימון גישה</string>
-    <string name="input_access_token_desc">"ציין אסימון גישה במקום אמצעי זיהוי משתמש עבור משתמש  (מתקדם)"</string>
+    <string name="input_access_token_desc">ציין אסימון גישה במקום אמצעי זיהוי משתמש עבור משתמש  (מתקדם)</string>
     <string name="access_token_or_api_token">אסימון גישה (אם אתה משתמש ב- Misskey, הזן אסימון API)</string>
     <string name="token_not_specified">נא הזן את אסימון הגישה.</string>
     <string name="quote_name">צטט שם …</string>
@@ -440,10 +440,10 @@
     <string name="content_color">צבע הטקסט עבור תוכן</string>
     <string name="content_sample">(דוגמא)עטלף אבק נס דרך מזגן שהתפוצץ כי חם.</string>
     <string name="enable_gif_animation">אפשר אנימציית GIF (שצורכת הרבה סוללה)</string>
-    <string name="remote_profile_warning">"מידע ששייך לדף פרופיל מרוחק עלול  שלא להיות מוצג במדויק. לחץ כאן לצפייה בפרופיל בדפדפן."</string>
+    <string name="remote_profile_warning">מידע ששייך לדף פרופיל מרוחק עלול  שלא להיות מוצג במדויק. לחץ כאן לצפייה בפרופיל בדפדפן.</string>
     <string name="open_hashtag_column">פתח את עמודת התגית</string>
     <string name="quote_hashtag_of">צטט את התגית בשם \"%1$s\"</string>
-    <string name="quote_all_hashtag_of">"צטט את כל התגיות בשם  \"%1$s\""</string>
+    <string name="quote_all_hashtag_of">צטט את כל התגיות בשם  \"%1$s\"</string>
     <string name="parsing_response">מפרש את התגובה…</string>
     <string name="video_pick">בחר סרטון</string>
     <string name="already_followed">כבר עקבת.</string>
@@ -479,7 +479,7 @@
     <string name="attachment_description">תיאור קובץ מצורף</string>
     <string name="description_empty">לא נכתב תיאור.</string>
     <string name="attachment_description_sending">שולח את תיאור הקובץ המצורף …</string>
-    <string name="hide_boost_in_home">"הסתר הגברות של משתמש זה מציר הזמן  שבדף הבית שלך"</string>
+    <string name="hide_boost_in_home">הסתר הגברות של משתמש זה מציר הזמן  שבדף הבית שלך</string>
     <string name="show_boost_in_home">הצב הגברות של משתמש זה בציר הזמן שבדף הבית שלך</string>
     <string name="operation_succeeded">בוצע.</string>
     <string name="lists">רשימות</string>

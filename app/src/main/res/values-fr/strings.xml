@@ -465,7 +465,7 @@
     <string name="auto_cw_prefix">(CW automatique)</string>
     <string name="enquete_item_is_empty">Le choix du sondage %1$d est vide.</string>
     <string name="enquete_item_too_long">Le choix du sondage %1$d est trop long. Veuillez diminuer de %2$d caractères.</string>
-    <string name="enquete_item_duplicate">Choix de la file d\'attente %1$d est un duplicata d\'un autre choix.</string>
+    <string name="enquete_item_duplicate">Le choix du sondage %1$d est un duplicata d’un autre choix.</string>
     <string name="profile_pin">Épingler sur le profil</string>
     <string name="profile_unpin">Détacher du profil</string>
     <string name="profile_pin_progress">Modification du statut épinglé …</string>
@@ -490,8 +490,8 @@
     <string name="domain_count">Nombre de domaines connectés</string>
     <string name="not_provided_mastodon_under_1_6">Non fourni sous Mastodon avant la 1.6</string>
     <string name="mime_type_missing">Type MIME média manquant.</string>
-    <string name="mime_type_not_acceptable">Type MIME %1$s n\'est pas acceptable.
-\nTypes MIME pris en charge sont les suivants : image/jpeg, image/png, image/gif,/video/webm, video/mp4.</string>
+    <string name="mime_type_not_acceptable">Type MIME du média %1$s n’est pas acceptable. 
+\nTypes MIME pris en charge sont les suivants : image/jpeg, image/png, image/gif, video/webm et video/mp4.</string>
     <string name="dont_show_timeout">Ne pas afficher la notification \"Délai d’expiration du serveur\"</string>
     <string name="emoji_category_people">People</string>
     <string name="emoji_category_nature">Nature</string>
@@ -581,7 +581,7 @@
     <string name="share_url_more">Partager l\'URL …</string>
     <string name="copy_url">Copier l\'URL dans le presse-papiers</string>
     <string name="media_attachment_empty">Pièces jointes manquantes.</string>
-    <string name="media_attachment_type_error">The type of media attachment is \"%1$s\". ST can\'t handle it, but you can try open in browser.</string>
+    <string name="media_attachment_type_error">Le type de pièce jointe est \"%1$s\". ST ne peut pas le gérer mais vous pouvez essayer de l’ouvrir dans un navigateur.</string>
     <string name="video_buffering">Mise en mémoire tampon …</string>
     <string name="dont_repeat_download_to_same_url">Impossible de re-télécharger de la même URL en l’espace de quelques secondes.</string>
     <string name="zooming_of">×%3$.1f\n%1$d×%2$d</string>
@@ -620,7 +620,7 @@
     <string name="append_attachment_url_to_content">Ajouter l’URL de la pièce jointe au contenu du pouet</string>
     <string name="hide_favourite_notification_from_user">Désactiver les notifications Fav/Boosts de cet·te utilisateur·rice</string>
     <string name="show_favourite_notification_from_user">Activer les notifications Fav/Boosts provenant cet·te utilisateur·rice</string>
-    <string name="fav_muted_user">FBN disabled users</string>
+    <string name="fav_muted_user">Utilisateur·rice·s FBN désactivé·e·s</string>
     <string name="fav_muted_user_long">Fav/Boost notification disabled users</string>
     <string name="changed">Changé.</string>
     <string name="thumbnails_arrange_vertically">Réarranger les vignettes verticalement (redémarrage requis)</string>
@@ -644,7 +644,7 @@
     <string name="field_value4">Valeur 4</string>
     <string name="profile_metadata">Métadonnées de profil</string>
     <string name="available_mastodon_2_4_later">(disponible dans Mastodon 2.4+)</string>
-    <string name="confirm_boost_private_from">Boost private status from %1$s ? It\'s shown to all followers.</string>
+    <string name="confirm_boost_private_from">Booster le statut privé venant de %1$s \? Il sera affiché à tous les abonné·e·s.</string>
     <string name="boost_private_toot_not_allowed">Vous ne pouvez pas booster les pouets privés publiés par une autre personne.</string>
     <string name="update_push_subscription">Mise à jour de l’abonnement push (Mastodon 2.4+)</string>
     <string name="pseudo_account_not_supported">Les pseudo comptes ne gèrent pas les notifications.</string>
@@ -670,7 +670,7 @@
     <string name="redraft_and_delete">Supprimer et reformuler</string>
     <string name="cant_sync_toot">Impossible de synchroniser le pouet.</string>
     <string name="cant_change_account_when_redraft">Impossible de changer de compte lors de la reformulation.</string>
-    <string name="delete_base_status_before_toot">Supprimer le statut de base avant l\'affichage. Tous les favoris, les boosts seront perdus. Les réponses seront déconnectées. Les pièces jointes des médias ne seront pas conservées sur Mastodon avant la version 2.4.1. Vous êtes sûr ?</string>
+    <string name="delete_base_status_before_toot">Supprimer le statut de base avant l\'affichage. Tous les favoris et les boosts seront perdus. Les réponses seront déconnectées. Les pièces jointes des médias ne seront pas conservées sur Mastodon avant la version 2.4.1. Êtes-vous sûr·e \?</string>
     <string name="notification_tl_font_size">Taille de police du fil de notifications (Unité : sp. laisser vide par défaut. Redémarrage requis)</string>
     <string name="notification_tl_icon_size">Taille de l’icône de notification sur le fil (Unité : dp. par défaut : 24. Redémarrage de l\'application requis)</string>
     <string name="post_button_tapped_repeatly">Le bouton Publier a été appuyé à plusieurs reprises</string>
@@ -750,10 +750,10 @@
     <string name="confirm_cancel_follow_request_who_from">Annuler la demande d’abonnement de %2$s à %1$s \?</string>
     <string name="reaction">Réaction (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">Délai d’expiration du visualiseur multimédia intégré (unité: secondes, redémarrage de l’application (suppression de l’historique de application) requis)</string>
-    <string name="media_attachment_max_byte_size_movie">Taille maximale en octets des médias vidéo (unité : méga octets. par défaut : 40)</string>
+    <string name="media_attachment_max_byte_size_movie">Taille limite des octets de la pièce jointe (vidéo) (Unité : MB. La valeur par défaut est 40)</string>
     <string name="link_color">Couleur des liens (redémarrage requis)</string>
     <string name="dont_use_custom_tabs">Ne pas utiliser d’«onglets personnalisés» (Chrome/Firefox) lors de l’ouverture des liens</string>
-    <string name="missing_closeable_column">missing closeable column in visible range.</string>
+    <string name="missing_closeable_column">Colonne à fermer manquante dans la zone visible.</string>
     <string name="privacy_policy">Politique de confidentialité</string>
     <string name="agree">J’accepte</string>
     <string name="ltl_around_toot">Fil local autour de ce pouet</string>
@@ -798,7 +798,7 @@
     <string name="animation">Animation</string>
     <string name="tls_handshake">Négociation TLS</string>
     <string name="links">Liens</string>
-    <string name="profile_directory">Annuaire des utilisateur·rice·s</string>
+    <string name="profile_directory">Annuaire</string>
     <string name="top_page">Page à propos de l’instance</string>
     <string name="instance_ticker_copyright">#InstanceTicker
 \nhttps://wee.jp/mastodon/
@@ -926,4 +926,11 @@
     <string name="order_new">Nouveaux arrivés</string>
     <string name="local_only">Local uniquement</string>
     <string name="last_active">Dernière activité</string>
+    <string name="custom_emoji_separator_zwsp">Utiliser ZWSP au lieu d’un espace en tant que séparateur d’émoji personnalisé</string>
+    <string name="visibility_account_setting">Tracer la configuration du compte</string>
+    <string name="muted_users_from_pseudo_account">Utilisateur·rice·s en sourdine à partir du pseudo compte</string>
+    <string name="profile_directory_of">Annuaire de \"%1$s\"</string>
+    <string name="profile_directory_not_supported_on_misskey">L’annuaire des profils n’est pas supporté sur Misskey</string>
+    <string name="show_in_directory">Afficher dans l’annuaire</string>
+    <string name="account_picker_quoted_renote">Compte pour « renote citée » \?</string>
 </resources>

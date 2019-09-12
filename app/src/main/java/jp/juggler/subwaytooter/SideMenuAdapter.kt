@@ -10,7 +10,6 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.navigation.NavigationView
 import jp.juggler.subwaytooter.action.Action_Account
 import jp.juggler.subwaytooter.action.Action_App
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -20,7 +19,7 @@ import org.jetbrains.anko.backgroundColor
 
 class SideMenuAdapter(
 	val activity : ActMain,
-	navigationView : NavigationView,
+	navigationView : ViewGroup,
 	private val drawer : DrawerLayout
 ) : BaseAdapter() {
 	

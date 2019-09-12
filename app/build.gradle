@@ -97,12 +97,19 @@ dependencies {
     implementation project(':apng_android')
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
-//    implementation "androidx.legacy:legacy-support-v4:$androidx_version"
-//    implementation "androidx.legacy:legacy-support-v13:$androidx_version"
+
+    // DrawerLayout
     implementation "androidx.drawerlayout:drawerlayout:1.1.0-alpha03"
+
+    // NavigationView
+    implementation "com.google.android.material:material:1.1.0-alpha10"
+
+    // PreferenceManager
     implementation "androidx.preference:preference-ktx:1.1.0"
-    implementation "androidx.browser:browser:$androidx_version"
-    implementation "com.google.android.material:material:$androidx_version"
+
+    // CustomTabs
+    implementation "androidx.browser:browser:1.0.0"
+
     kapt 'androidx.annotation:annotation:1.1.0'
 
     // https://firebase.google.com/support/release-notes/android

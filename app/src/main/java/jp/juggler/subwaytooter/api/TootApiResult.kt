@@ -6,6 +6,7 @@ import org.json.JSONObject
 import java.util.regex.Pattern
 
 import jp.juggler.util.LogCategory
+import jp.juggler.util.groupEx
 import okhttp3.Response
 import okhttp3.WebSocket
 
@@ -91,8 +92,8 @@ open class TootApiResult(
 			//        <https://mastodon.juggler.jp/api/v1/timelines/home?limit=XX&since_id=436946>; rel="prev"
 			val m = reLinkURL.matcher(sv)
 			while(m.find()) {
-				val url = m.group(1)
-				val rel = m.group(2)
+				val url = m.groupEx(1)
+				val rel = m.groupEx(2)
 				//	warning.d("Link %s,%s",rel,url);
 				if("next" == rel) link_older = url
 				if("prev" == rel) link_newer = url

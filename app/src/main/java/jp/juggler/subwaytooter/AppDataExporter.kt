@@ -488,7 +488,7 @@ object AppDataExporter {
 		if(! m.find()) return false
 		
 		try {
-			val id = m.group(1)
+			val id = m.groupEx(1)
 			val column = columnList?.find { it.column_id == id }
 			if(column == null) {
 				log.e("missing column for id $id")

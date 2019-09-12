@@ -79,8 +79,8 @@ object HTMLDecoder {
 				if(start > last_end) {
 					sb.append(src.substring(last_end, start))
 				}
-				val is_numeric = m.group(1) !!.isNotEmpty()
-				val part = m.group(2) !!
+				val is_numeric = m.groupEx(1) !!.isNotEmpty()
+				val part = m.groupEx(2) !!
 				if(! is_numeric) {
 					val c = entity_map[part]
 					if(c != null) {
@@ -196,12 +196,12 @@ object HTMLDecoder {
 			
 			val m = reTag.matcher(text)
 			if(m.find()) {
-				val is_close = m.group(1) !!.isNotEmpty()
-				tag = m.group(2) !!.toLowerCase(Locale.JAPAN)
+				val is_close = m.groupEx(1) !!.isNotEmpty()
+				tag = m.groupEx(2) !!.toLowerCase(Locale.JAPAN)
 				
 				val m2 = reTagEnd.matcher(text)
 				val is_openclose = if(m2.find()) {
-					m2.group(1) !!.isNotEmpty()
+					m2.groupEx(1) !!.isNotEmpty()
 				} else {
 					false
 				}
@@ -229,7 +229,7 @@ object HTMLDecoder {
 			get() {
 				val m = reHref.matcher(text)
 				if(m.find()) {
-					val href = decodeEntity(m.group(1))
+					val href = decodeEntity(m.groupEx(1))
 					if(href.isNotEmpty()) {
 						return href
 					}
@@ -394,8 +394,8 @@ object HTMLDecoder {
 		val dst = HashMap<String, String>()
 		val m = reAttribute.matcher(text)
 		while(m.find()) {
-			val name = m.group(1) !!.toLowerCase(Locale.JAPAN)
-			val value = decodeEntity(m.group(3))
+			val name = m.groupEx(1) !!.toLowerCase(Locale.JAPAN)
+			val value = decodeEntity(m.groupEx(3))
 			dst[name] = value
 		}
 		return dst
@@ -479,7 +479,7 @@ object HTMLDecoder {
 				
 				// WebUIでは非表示スパンに隠れているが、
 				// 通常のリンクなら スキーマ名 + :// が必ず出現する
-				val schema = m.group(1)
+				val schema = m.groupEx(1)
 				val start = if(schema?.startsWith("http") == true) {
 					// http,https の場合はスキーマ表記を省略する
 					schema.length
@@ -568,7 +568,7 @@ object HTMLDecoder {
 		// ニコニコ大百科のURLを変える
 		val m = reNicodic.matcher(href)
 		if(m.find()) {
-			return SpannableString("${m.group(1) !!.decodePercent()}:nicodic:").apply {
+			return SpannableString("${m.groupEx(1) !!.decodePercent()}:nicodic:").apply {
 				setSpan(
 					EmojiImageSpan(context, R.drawable.nicodic),
 					length - 9,

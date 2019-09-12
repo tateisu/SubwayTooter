@@ -818,14 +818,14 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					} else {
 						val g = GregorianCalendar(tz_utc)
 						g.set(
-							m.group(1).optInt() ?: 1,
-							(m.group(2).optInt() ?: 1) - 1,
-							m.group(3).optInt() ?: 1,
-							m.group(4).optInt() ?: 0,
-							m.group(5).optInt() ?: 0,
-							m.group(6).optInt() ?: 0
+							m.groupEx(1).optInt() ?: 1,
+							(m.groupEx(2).optInt() ?: 1) - 1,
+							m.groupEx(3).optInt() ?: 1,
+							m.groupEx(4).optInt() ?: 0,
+							m.groupEx(5).optInt() ?: 0,
+							m.groupEx(6).optInt() ?: 0
 						)
-						g.set(Calendar.MILLISECOND, m.group(7).optInt() ?: 0)
+						g.set(Calendar.MILLISECOND, m.groupEx(7).optInt() ?: 0)
 						return g.timeInMillis
 					}
 				} catch(ex : Throwable) { // ParseException,  ArrayIndexOutOfBoundsException
@@ -846,12 +846,12 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					} else {
 						val g = GregorianCalendar(tz_utc)
 						g.set(
-							m.group(1).optInt() ?: 1,
-							(m.group(2).optInt() ?: 1) - 1,
-							m.group(3).optInt() ?: 1,
-							m.group(4).optInt() ?: 0,
-							m.group(5).optInt() ?: 0,
-							m.group(6).optInt() ?: 0
+							m.groupEx(1).optInt() ?: 1,
+							(m.groupEx(2).optInt() ?: 1) - 1,
+							m.groupEx(3).optInt() ?: 1,
+							m.groupEx(4).optInt() ?: 0,
+							m.groupEx(5).optInt() ?: 0,
+							m.groupEx(6).optInt() ?: 0
 						)
 						g.set(Calendar.MILLISECOND, 500)
 						return g.timeInMillis
@@ -993,29 +993,29 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				if(uri?.isNotEmpty() == true) {
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(uri)
-					if(m.find()) return EntityId(m.group(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2)!!)
 					
 					// https://server/@user/(status_id)
 					m = reTootUriAP2.matcher(uri)
-					if(m.find()) return EntityId(m.group(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2)!!)
 					
 					// https://misskey.xyz/notes/5b802367744b650030a13640
 					m = reStatusPageMisskey.matcher(uri)
-					if(m.find()) return EntityId(m.group(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2)!!)
 					
 					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
 					// tootsearch中の投稿からIDを読めるようにしたい
 					// しかしこのURL中のuuidはステータスIDではないので、無意味
 					// m = reObjects.matcher(uri)
-					// if(m.find()) return EntityId(m.group(2))
+					// if(m.find()) return EntityId(m.groupEx(2))
 					
 					// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
 					m = reStatusPageNotice.matcher(uri)
-					if(m.find()) return EntityId(m.group(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2)!!)
 					
 					// tag:mstdn.osaka,2017-12-19:objectId=5672321:objectType=Status
 					m = reTootUriOS.matcher(uri)
-					if(m.find()) return EntityId(m.group(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2)!!)
 					
 					log.w("can't parse status uri: $uri")
 				}
@@ -1024,25 +1024,25 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(url)
-					if(m.find()) return EntityId(m.group(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2)!!)
 					
 					// https://friends.nico/@(who)/(status_id)
 					m = reTootUriAP2.matcher(url)
-					if(m.find()) return EntityId(m.group(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2)!!)
 					
 					// https://misskey.xyz/notes/5b802367744b650030a13640
 					m = reStatusPageMisskey.matcher(url)
-					if(m.find()) return EntityId(m.group(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2)!!)
 					
 					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
 					// tootsearch中の投稿からIDを読めるようにしたい
 					// しかしこのURL中のuuidはステータスIDではないので、無意味
 					// m = reObjects.matcher(url)
-					// if(m.find()) return EntityId(m.group(2))
+					// if(m.find()) return EntityId(m.groupEx(2))
 					
 					// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
 					m = reStatusPageNotice.matcher(url)
-					if(m.find()) return EntityId(m.group(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2)!!)
 					
 					
 					log.w("can't parse status URL: $url")

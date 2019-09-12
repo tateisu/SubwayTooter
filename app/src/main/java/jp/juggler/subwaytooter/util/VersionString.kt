@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.util
 
+import jp.juggler.util.groupEx
 import java.math.BigInteger
 import java.util.ArrayList
 import java.util.regex.Pattern
@@ -68,7 +69,7 @@ class VersionString(src : String?) : Comparable<VersionString> {
 						if(m.find(next) && m.start() == next) {
 							// RCノード
 							next = m.end()
-							val numStr = m.group(1)
+							val numStr = m.groupEx(1)
 							val num = if(numStr?.isNotEmpty() == true) {
 								numStr.toInt()
 							} else {

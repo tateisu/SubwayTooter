@@ -574,7 +574,7 @@ class TootApiClient(
 			result.jsonObject?.apply {
 				val m = reDigits.matcher(parseString("version") ?: "")
 				if(m.find()) {
-					put(KEY_MISSKEY_VERSION, m.group(1) !!.toInt())
+					put(KEY_MISSKEY_VERSION, m.groupEx(1) !!.toInt())
 				}
 			}
 		}
@@ -1481,8 +1481,8 @@ fun TootApiClient.syncAccountByUrl(
 	val m = TootAccount.reAccountUrl.matcher(who_url)
 	if(m.find()) {
 		// val host = m.group(1)
-		val user = m.group(2) !!.decodePercent()
-		val instance = m.groupOrNull(3)?.decodePercent()
+		val user = m.groupEx(2) !!.decodePercent()
+		val instance = m.groupEx(3)?.decodePercent()
 		if(instance?.isNotEmpty() == true) {
 			return this.syncAccountByUrl(accessInfo, "https://$instance/@$user")
 		}
@@ -1580,8 +1580,8 @@ fun TootApiClient.syncStatus(
 	// これを投稿元タンスのURLに変換しないと、投稿の同期には使えない
 	val m = TootStatus.reStatusPageMisskey.matcher(urlArg)
 	if(m.find()) {
-		val host = m.group(1)
-		val noteId = m.group(2)
+		val host = m.groupEx(1)
+		val noteId = m.groupEx(2)
 		
 		TootApiClient(context, callback = callback)
 			.apply { instance = host }

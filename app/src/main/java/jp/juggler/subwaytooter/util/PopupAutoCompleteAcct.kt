@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getAttributeColor
+import jp.juggler.util.groupEx
 import java.util.*
 import java.util.regex.Pattern
 
@@ -171,7 +172,7 @@ internal class PopupAutoCompleteAcct(
 	
 	private fun findShortCode(acct : String) : String {
 		val m = reLastShortCode.matcher(acct)
-		if(m.find()) return m.group(0)!!
+		if(m.find()) return m.groupEx(0)!!
 		return acct
 	}
 	

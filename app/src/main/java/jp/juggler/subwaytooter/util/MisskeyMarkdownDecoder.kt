@@ -21,6 +21,7 @@ import jp.juggler.subwaytooter.util.HTMLDecoder.shortenUrl
 import jp.juggler.util.LogCategory
 import jp.juggler.util.encodePercent
 import jp.juggler.util.fontSpan
+import jp.juggler.util.groupEx
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -607,8 +608,8 @@ object MisskeySyntaxHighlighter {
 			
 			val match = remainMatcher(reKeyword)
 			if(! match.find()) return@arrayOf null
-			val kw = match.group(1) !!
-			val bracket = match.group(2) // may null
+			val kw = match.groupEx(1) !!
+			val bracket = match.groupEx(2) // may null
 			
 			when {
 				// 英数字や_を含まないキーワードは無視する
@@ -1382,7 +1383,7 @@ object MisskeyMarkdownDecoder {
 			! matcher.find() -> null
 			
 			else -> {
-				val textInside = matcher.group(1) !!
+				val textInside = matcher.groupEx(1) !!
 				makeDetected(
 					type,
 					arrayOf(textInside),
@@ -1448,7 +1449,7 @@ object MisskeyMarkdownDecoder {
 				if(! matcher.find(p)) break
 				p = matcher.end()
 				if(content.isNotEmpty()) content.append('\n')
-				content.append(matcher.group(1))
+				content.append(matcher.groupEx(1))
 				// 改行の直後なので次回マッチの ^ は大丈夫なはず…
 			}
 			if(content.isNotEmpty()) content.append('\n')
@@ -1493,8 +1494,8 @@ object MisskeyMarkdownDecoder {
 				! matcher.find() -> null
 				
 				else -> {
-					val tagName = matcher.group(1) !!
-					val textInside = matcher.group(2) !!
+					val tagName = matcher.groupEx(1) !!
+					val textInside = matcher.groupEx(2) !!
 					
 					fun a(type : NodeType) = makeDetected(
 						type,
@@ -1545,7 +1546,7 @@ object MisskeyMarkdownDecoder {
 				return@addParser null
 			}
 			
-			val url = matcher.group(1) !!.removeOrphanedBrackets(urlSafe = true)
+			val url = matcher.groupEx(1) !!.removeOrphanedBrackets(urlSafe = true)
 			makeDetected(
 				NodeType.URL,
 				arrayOf(url),
@@ -1611,12 +1612,12 @@ object MisskeyMarkdownDecoder {
 				! matcher.find() -> null
 				
 				else -> {
-					val title = matcher.group(1) !!
+					val title = matcher.groupEx(1) !!
 					makeDetected(
 						NodeType.LINK,
 						arrayOf(
 							title
-							, matcher.group(2) !! // url
+							, matcher.groupEx(2) !! // url
 							, text[pos].toString()   // silent なら "?" になる
 						),
 						matcher.start(), matcher.end(),
@@ -1662,8 +1663,8 @@ object MisskeyMarkdownDecoder {
 					else -> makeDetected(
 						NodeType.MENTION,
 						arrayOf(
-							matcher.group(1) !!,
-							matcher.group(2) ?: "" // username, host
+							matcher.groupEx(1) !!,
+							matcher.groupEx(2) ?: "" // username, host
 						),
 						matcher.start(), matcher.end(),
 						"", 0, 0
@@ -1689,7 +1690,7 @@ object MisskeyMarkdownDecoder {
 			}
 			
 			// 先頭の#を含まないタグテキスト
-			val tag = matcher.group(1) !!.removeOrphanedBrackets()
+			val tag = matcher.groupEx(1) !!.removeOrphanedBrackets()
 			
 			if(tag.isEmpty() || tag.length > 50 || reDigitsOnly.matcher(tag).find()) {
 				// 空文字列、50文字超過、数字だけのタグは不許可

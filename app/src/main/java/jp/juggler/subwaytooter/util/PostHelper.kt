@@ -349,8 +349,8 @@ class PostHelper(
 									Pattern.compile("(?:\\A|\\s)@([a-zA-Z0-9_]{1,20})(?:@([\\w.:-]+))?(?:\\z|\\s)")
 								val m = reMention.matcher(content)
 								while(m.find()) {
-									val username = m.group(1)
-									val host = m.group(2)
+									val username = m.groupEx(1)
+									val host = m.groupEx(2)
 									val queryParams = account.putMisskeyApiToken(JSONObject())
 									if(username?.isNotEmpty() == true) queryParams.put(
 										"username",

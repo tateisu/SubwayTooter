@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.MisskeyMarkdownDecoder
+import jp.juggler.util.groupEx
 import jp.juggler.util.notEmptyOrThrow
 import jp.juggler.util.parseString
 import org.json.JSONArray
@@ -93,7 +94,7 @@ open class TootTag(
 				val m = reTagMastodon.matcher(src)
 				while(m.find()) {
 					if(result == null) result = ArrayList()
-					result.add(m.group(1)!!)
+					result.add(m.groupEx(1)!!)
 				}
 				result
 			}

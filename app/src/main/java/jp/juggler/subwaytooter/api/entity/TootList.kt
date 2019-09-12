@@ -4,6 +4,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.b2i
 import jp.juggler.util.LogCategory
 import jp.juggler.util.forEach
+import jp.juggler.util.groupEx
 import jp.juggler.util.parseString
 import org.json.JSONObject
 import java.util.*
@@ -61,7 +62,7 @@ class TootList(parser:TootParser,src : JSONObject): TimelineItem(), Comparable<T
 						list.add(title.substring(last_end, match_start))
 					}
 					try {
-						list.add(m.group(1)!!.toLong())
+						list.add(m.groupEx(1)!!.toLong())
 					} catch(ex : Throwable) {
 						list.clear()
 						list.add(title)

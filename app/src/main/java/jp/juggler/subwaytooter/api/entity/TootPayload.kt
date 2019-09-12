@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.util.LogCategory
+import jp.juggler.util.groupEx
 import jp.juggler.util.toJsonObject
 import org.json.JSONArray
 import org.json.JSONObject
@@ -82,7 +83,7 @@ object TootPayload {
 				// 2017/8/24 18:37 mdx.ggtea.org でここを通った
 				val m = reNumber.matcher(payload)
 				if(m.find()) {
-					return m.group(1) !!.toLong(10)
+					return m.groupEx(1) !!.toLong(10)
 				}
 			}
 			

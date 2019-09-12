@@ -1857,7 +1857,7 @@ class Column(
 			} else {
 				val m = reMaxId.matcher(result.link_older ?: "")
 				if(m.find()) {
-					EntityId(m.group(1)!!)
+					EntityId(m.groupEx(1)!!)
 				} else {
 					null
 				}
@@ -1869,12 +1869,12 @@ class Column(
 				var m = reMinId.matcher(result.link_newer ?: "")
 				if(m.find()) {
 					bMinIdMatched = true
-					EntityId(m.group(1)!!)
+					EntityId(m.groupEx(1)!!)
 				} else {
 					m = reSinceId.matcher(result.link_newer ?: "")
 					if(m.find()) {
 						bMinIdMatched = false
-						EntityId(m.group(1)!!)
+						EntityId(m.groupEx(1)!!)
 					} else {
 						null
 					}

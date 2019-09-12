@@ -2068,7 +2068,7 @@ class ActPost : AppCompatActivity(),
 					var lastEnd = 0
 					while(m.find()) {
 						sb.append(s.substring(lastEnd, m.start()))
-						val escaped = m.groupOrNull(1)!!.encodeUTF8().encodeHex()
+						val escaped = m.groupEx(1)!!.encodeUTF8().encodeHex()
 						sb.append(escaped)
 						lastEnd = m.end()
 					}

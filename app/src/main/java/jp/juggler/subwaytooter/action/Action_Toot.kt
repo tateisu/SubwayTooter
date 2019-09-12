@@ -743,7 +743,7 @@ object Action_Toot {
 							try {
 								val m = reDetailedStatusTime.matcher(string)
 								if(m.find()) {
-									local_status_id = EntityId(m.group(1)!!)
+									local_status_id = EntityId(m.groupEx(1)!!)
 								}
 							} catch(ex : Throwable) {
 								log.e(ex, "openStatusRemote: can't parse status id from HTML data.")

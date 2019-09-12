@@ -7,6 +7,7 @@ import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.LogCategory
 import jp.juggler.util.ellipsize
+import jp.juggler.util.groupEx
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
@@ -26,18 +27,18 @@ object InstanceTicker {
 		var m = reColor6.matcher(v)
 		if(m.find()) {
 			return Color.rgb(
-				parseHex(m.group(1)),
-				parseHex(m.group(2)),
-				parseHex(m.group(3))
+				parseHex(m.groupEx(1)),
+				parseHex(m.groupEx(2)),
+				parseHex(m.groupEx(3))
 			)
 		}
 		//
 		m = reColor3.matcher(v)
 		if(m.find()) {
 			return Color.rgb(
-				parseHex(m.group(1)) * 0x11,
-				parseHex(m.group(2)) * 0x11,
-				parseHex(m.group(3)) * 0x11
+				parseHex(m.groupEx(1)) * 0x11,
+				parseHex(m.groupEx(2)) * 0x11,
+				parseHex(m.groupEx(3)) * 0x11
 			)
 		}
 		if(v.isNotEmpty()) log.e("parseColor: can't parse $v")
@@ -169,7 +170,7 @@ object InstanceTicker {
 			val m = reLine.matcher(text)
 			while(m.find()) {
 				try {
-					val cols = m.group(1)?.split('\t')
+					val cols = m.groupEx(1)?.split('\t')
 					if(cols == null || cols.size < 7 || cols[0].contains('[')) continue
 					
 					val item = Item(cols)

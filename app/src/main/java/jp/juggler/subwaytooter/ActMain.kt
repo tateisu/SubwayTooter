@@ -252,7 +252,7 @@ class ActMain : AppCompatActivity()
 					if(m.find()) {
 						val s_tag = when {
 							s.text.startsWith("#") -> s.text
-							else -> "#${m.groupOrNull(2)?.decodePercent()}"
+							else -> "#${m.groupEx(2)?.decodePercent()}"
 						}
 						if(tag_list == null) tag_list = ArrayList()
 						tag_list.add(s_tag)
@@ -1524,8 +1524,8 @@ class ActMain : AppCompatActivity()
 		var m = TootStatus.reStatusPage.matcher(url)
 		if(m.find()) {
 			try {
-				val host = m.group(1) !!
-				val status_id = EntityId(m.group(3) !!)
+				val host = m.groupEx(1) !!
+				val status_id = EntityId(m.groupEx(3) !!)
 				
 				// ステータスをアプリ内で開く
 				Action_Toot.conversationOtherInstance(
@@ -1548,8 +1548,8 @@ class ActMain : AppCompatActivity()
 		m = TootStatus.reStatusPageMisskey.matcher(url)
 		if(m.find()) {
 			try {
-				val host = m.group(1) !!
-				val status_id = EntityId(m.group(2) !!)
+				val host = m.groupEx(1) !!
+				val status_id = EntityId(m.groupEx(2) !!)
 				// ステータスをアプリ内で開く
 				Action_Toot.conversationOtherInstance(
 					this@ActMain,
@@ -1569,9 +1569,9 @@ class ActMain : AppCompatActivity()
 		// ユーザページをアプリ内で開く
 		m = TootAccount.reAccountUrl.matcher(url)
 		if(m.find()) {
-			val host = m.group(1) !!
-			val user = m.group(2) !!.decodePercent()
-			val instance = m.groupOrNull(3)?.decodePercent()
+			val host = m.groupEx(1) !!
+			val user = m.groupEx(2) !!.decodePercent()
+			val instance = m.groupEx(3)?.decodePercent()
 			
 			if(instance?.isNotEmpty() == true) {
 				Action_User.profile(
@@ -1599,8 +1599,8 @@ class ActMain : AppCompatActivity()
 		// intentFilterの都合でこの形式のURLが飛んでくることはないのだが…。
 		m = TootAccount.reAccountUrl2.matcher(url)
 		if(m.find()) {
-			val host = m.group(1) !!
-			val user = m.group(2) !!.decodePercent()
+			val host = m.groupEx(1) !!
+			val user = m.groupEx(2) !!.decodePercent()
 			
 			Action_User.profile(
 				this@ActMain,
@@ -2207,8 +2207,8 @@ class ActMain : AppCompatActivity()
 				var m = reUrlHashTag.matcher(opener.url)
 				if(m.find()) {
 					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
-					val host = m.group(1) !!
-					val tag_without_sharp = m.group(2) !!.decodePercent()
+					val host = m.groupEx(1) !!
+					val tag_without_sharp = m.groupEx(2) !!.decodePercent()
 					Action_HashTag.dialog(
 						this@ActMain,
 						opener.pos,
@@ -2226,8 +2226,8 @@ class ActMain : AppCompatActivity()
 				if(m.find()) {
 					try {
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
-						val host = m.group(1) !!
-						val status_id = EntityId(m.group(3) !!)
+						val host = m.groupEx(1) !!
+						val status_id = EntityId(m.groupEx(3) !!)
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(
 								this@ActMain,
@@ -2257,8 +2257,8 @@ class ActMain : AppCompatActivity()
 				if(m.find()) {
 					try {
 						// https://misskey.xyz/notes/(id)
-						val host = m.group(1) !!
-						val status_id = EntityId(m.group(2) !!)
+						val host = m.groupEx(1) !!
+						val status_id = EntityId(m.groupEx(2) !!)
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(
 								this@ActMain,
@@ -2288,8 +2288,8 @@ class ActMain : AppCompatActivity()
 				if(m.find()) {
 					try {
 						// https://misskey.xyz/objects/(id)
-						val host = m.group(1)
-						// ステータスIDではないのでどのタンスで開くにせよ検索APIを通すことになるval object_id = EntityId(m.group(2))
+						val host = m.groupEx(1)
+						// ステータスIDではないのでどのタンスで開くにせよ検索APIを通すことになるval object_id = EntityId(m.groupEx(2))
 						Action_Toot.conversationOtherInstance(
 							this@ActMain,
 							opener.pos,
@@ -2310,8 +2310,8 @@ class ActMain : AppCompatActivity()
 				if(m.find()) {
 					try {
 						// https://misskey.xyz/notes/(id)
-						val host = m.group(1) !!
-						val status_id = EntityId(m.group(2) !!)
+						val host = m.groupEx(1) !!
+						val status_id = EntityId(m.groupEx(2) !!)
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(
 								this@ActMain,
@@ -2339,9 +2339,9 @@ class ActMain : AppCompatActivity()
 				// ユーザページをアプリ内で開く
 				m = TootAccount.reAccountUrl.matcher(opener.url)
 				if(m.find()) {
-					val host = m.group(1) !!
-					val user = m.group(2) !!.decodePercent()
-					val instance = m.groupOrNull(3)?.decodePercent()
+					val host = m.groupEx(1) !!
+					val user = m.groupEx(2) !!.decodePercent()
+					val instance = m.groupEx(3)?.decodePercent()
 					// https://misskey.xyz/@tateisu@github.com
 					// https://misskey.xyz/@tateisu@twitter.com
 					
@@ -2382,8 +2382,8 @@ class ActMain : AppCompatActivity()
 				
 				m = TootAccount.reAccountUrl2.matcher(opener.url)
 				if(m.find()) {
-					val host = m.group(1) !!
-					val user = m.group(2) !!.decodePercent()
+					val host = m.groupEx(1) !!
+					val user = m.groupEx(2) !!.decodePercent()
 					
 					Action_User.profile(
 						this@ActMain,

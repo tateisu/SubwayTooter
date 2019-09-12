@@ -83,10 +83,8 @@ class TootApiClient(
 			val size = array.length()
 			if(size > 0) {
 				val item = array.optJSONObject(size - 1)
-				if(item != null) {
-					val sv = item.optString("msp_id")
-					if(sv?.isNotEmpty() == true) return sv
-				}
+				val sv = item?.parseString("msp_id")
+				if(sv?.isNotEmpty() == true) return sv
 			}
 			// MSPでは終端は分からず、何度もリトライする
 			return old
@@ -576,7 +574,7 @@ class TootApiClient(
 			result.jsonObject?.apply {
 				val m = reDigits.matcher(parseString("version") ?: "")
 				if(m.find()) {
-					put(KEY_MISSKEY_VERSION, m.group(1).toInt())
+					put(KEY_MISSKEY_VERSION, m.group(1) !!.toInt())
 				}
 			}
 		}
@@ -1483,7 +1481,7 @@ fun TootApiClient.syncAccountByUrl(
 	val m = TootAccount.reAccountUrl.matcher(who_url)
 	if(m.find()) {
 		// val host = m.group(1)
-		val user = m.group(2).decodePercent()
+		val user = m.group(2) !!.decodePercent()
 		val instance = m.groupOrNull(3)?.decodePercent()
 		if(instance?.isNotEmpty() == true) {
 			return this.syncAccountByUrl(accessInfo, "https://$instance/@$user")

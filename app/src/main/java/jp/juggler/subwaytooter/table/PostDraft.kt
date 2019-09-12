@@ -42,7 +42,7 @@ class PostDraft {
 		
 	}
 	
-	companion object :TableCompanion{
+	companion object : TableCompanion {
 		
 		private val log = LogCategory("PostDraft")
 		
@@ -101,7 +101,7 @@ class PostDraft {
 				}
 				keys.sort()
 				for(k in keys) {
-					val v = if(json.isNull(k)) "(null)" else json.opt(k).toString()
+					val v = (if(json.isNull(k)) null else json.opt(k))?.toString() ?: "(null)"
 					sb.append("&")
 					sb.append(k)
 					sb.append("=")

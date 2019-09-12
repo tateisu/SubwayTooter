@@ -65,7 +65,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		
 		// ハンドル部分をドラッグで並べ替えできるRecyclerView
 		listView = findViewById(R.id.drag_list_view)
-		listView.setLayoutManager(androidx.recyclerview.widget.LinearLayoutManager(this))
+		listView.setLayoutManager(LinearLayoutManager(this))
 		listView.setAdapter(listAdapter, false)
 		
 		listView.setCanDragHorizontally(true)
@@ -157,10 +157,10 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 			tvName.setBackgroundColor(item.color_bg)
 			tvName.setTextColor(
 				item.color_fg.notZero()
-					?:getAttributeColor(this@ActHighlightWordList,android.R.attr.textColorPrimary)
+					?: getAttributeColor(this@ActHighlightWordList, android.R.attr.textColorPrimary)
 			)
 			
-			vg(btnSound,item.sound_type != HighlightWord.SOUND_TYPE_NONE)
+			vg(btnSound, item.sound_type != HighlightWord.SOUND_TYPE_NONE)
 			btnSound.setOnClickListener(this)
 			btnSound.tag = item
 		}
@@ -253,19 +253,21 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
-		if(requestCode == REQUEST_CODE_EDIT && resultCode == RESULT_OK && data != null) {
-			try {
-				val item =
-					HighlightWord(data.getStringExtra(ActHighlightWordEdit.EXTRA_ITEM).toJsonObject())
-				item.save()
-				loadData()
-				return
-			} catch(ex : Throwable) {
-				throw RuntimeException("can't loading data", ex)
-			}
-			
+		when {
+			requestCode == REQUEST_CODE_EDIT &&
+				resultCode == RESULT_OK &&
+				data != null ->
+				try {
+					val sv = data.getStringExtra(ActHighlightWordEdit.EXTRA_ITEM) ?: return
+					val item = HighlightWord(sv.toJsonObject())
+					item.save()
+					loadData()
+				} catch(ex : Throwable) {
+					throw RuntimeException("can't load data", ex)
+				}
+
+			else -> super.onActivityResult(requestCode, resultCode, data)
 		}
-		super.onActivityResult(requestCode, resultCode, data)
 	}
 	
 	private fun stopLastRingtone() {

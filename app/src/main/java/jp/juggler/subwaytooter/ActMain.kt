@@ -9,10 +9,7 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.net.Uri
-import android.os.AsyncTask
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
+import android.os.*
 import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -253,8 +250,10 @@ class ActMain : AppCompatActivity()
 				for(s in cs.getSpans(0, cs.length, MyClickableSpan::class.java)) {
 					val m = reUrlHashTag.matcher(s.url)
 					if(m.find()) {
-						val s_tag =
-							if(s.text.startsWith("#")) s.text else "#" + m.group(2).decodePercent()
+						val s_tag = when {
+							s.text.startsWith("#") -> s.text
+							else -> "#${m.groupOrNull(2)?.decodePercent()}"
+						}
 						if(tag_list == null) tag_list = ArrayList()
 						tag_list.add(s_tag)
 					}
@@ -459,10 +458,10 @@ class ActMain : AppCompatActivity()
 		log.w("onNewIntent: isResumed = isResumed")
 	}
 	
-	override fun onSaveInstanceState(outState : Bundle?) {
-		log.d("onSaveInstanceState")
+	override fun onSaveInstanceState(outState : Bundle) {
 		super.onSaveInstanceState(outState)
-		outState ?: return
+		
+		log.d("onSaveInstanceState")
 		
 		phoneTab(
 			{ env -> outState.putInt(STATE_CURRENT_PAGE, env.pager.currentItem) },
@@ -1525,8 +1524,8 @@ class ActMain : AppCompatActivity()
 		var m = TootStatus.reStatusPage.matcher(url)
 		if(m.find()) {
 			try {
-				val host = m.group(1)
-				val status_id = EntityId(m.group(3))
+				val host = m.group(1) !!
+				val status_id = EntityId(m.group(3) !!)
 				
 				// ステータスをアプリ内で開く
 				Action_Toot.conversationOtherInstance(
@@ -1549,8 +1548,8 @@ class ActMain : AppCompatActivity()
 		m = TootStatus.reStatusPageMisskey.matcher(url)
 		if(m.find()) {
 			try {
-				val host = m.group(1)
-				val status_id = EntityId(m.group(2))
+				val host = m.group(1) !!
+				val status_id = EntityId(m.group(2) !!)
 				// ステータスをアプリ内で開く
 				Action_Toot.conversationOtherInstance(
 					this@ActMain,
@@ -1570,8 +1569,8 @@ class ActMain : AppCompatActivity()
 		// ユーザページをアプリ内で開く
 		m = TootAccount.reAccountUrl.matcher(url)
 		if(m.find()) {
-			val host = m.group(1)
-			val user = m.group(2).decodePercent()
+			val host = m.group(1) !!
+			val user = m.group(2) !!.decodePercent()
 			val instance = m.groupOrNull(3)?.decodePercent()
 			
 			if(instance?.isNotEmpty() == true) {
@@ -1600,8 +1599,8 @@ class ActMain : AppCompatActivity()
 		// intentFilterの都合でこの形式のURLが飛んでくることはないのだが…。
 		m = TootAccount.reAccountUrl2.matcher(url)
 		if(m.find()) {
-			val host = m.group(1)
-			val user = m.group(2).decodePercent()
+			val host = m.group(1) !!
+			val user = m.group(2) !!.decodePercent()
 			
 			Action_User.profile(
 				this@ActMain,
@@ -2208,8 +2207,8 @@ class ActMain : AppCompatActivity()
 				var m = reUrlHashTag.matcher(opener.url)
 				if(m.find()) {
 					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
-					val host = m.group(1)
-					val tag_without_sharp = m.group(2).decodePercent()
+					val host = m.group(1) !!
+					val tag_without_sharp = m.group(2) !!.decodePercent()
 					Action_HashTag.dialog(
 						this@ActMain,
 						opener.pos,
@@ -2227,8 +2226,8 @@ class ActMain : AppCompatActivity()
 				if(m.find()) {
 					try {
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
-						val host = m.group(1)
-						val status_id = EntityId(m.group(3))
+						val host = m.group(1) !!
+						val status_id = EntityId(m.group(3) !!)
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(
 								this@ActMain,
@@ -2258,8 +2257,8 @@ class ActMain : AppCompatActivity()
 				if(m.find()) {
 					try {
 						// https://misskey.xyz/notes/(id)
-						val host = m.group(1)
-						val status_id = EntityId(m.group(2))
+						val host = m.group(1) !!
+						val status_id = EntityId(m.group(2) !!)
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(
 								this@ActMain,
@@ -2311,8 +2310,8 @@ class ActMain : AppCompatActivity()
 				if(m.find()) {
 					try {
 						// https://misskey.xyz/notes/(id)
-						val host = m.group(1)
-						val status_id = EntityId(m.group(2))
+						val host = m.group(1) !!
+						val status_id = EntityId(m.group(2) !!)
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(
 								this@ActMain,
@@ -2340,8 +2339,8 @@ class ActMain : AppCompatActivity()
 				// ユーザページをアプリ内で開く
 				m = TootAccount.reAccountUrl.matcher(opener.url)
 				if(m.find()) {
-					val host = m.group(1)
-					val user = m.group(2).decodePercent()
+					val host = m.group(1) !!
+					val user = m.group(2) !!.decodePercent()
 					val instance = m.groupOrNull(3)?.decodePercent()
 					// https://misskey.xyz/@tateisu@github.com
 					// https://misskey.xyz/@tateisu@twitter.com
@@ -2383,8 +2382,8 @@ class ActMain : AppCompatActivity()
 				
 				m = TootAccount.reAccountUrl2.matcher(opener.url)
 				if(m.find()) {
-					val host = m.group(1)
-					val user = m.group(2).decodePercent()
+					val host = m.group(1) !!
+					val user = m.group(2) !!.decodePercent()
 					
 					Action_User.profile(
 						this@ActMain,
@@ -2662,7 +2661,9 @@ class ActMain : AppCompatActivity()
 			AsyncTask<Void, String, ArrayList<Column>?>() {
 			
 			fun setProgressMessage(sv : String) {
-				runOnMainLooper { progress.setMessage(sv) }
+				runOnMainLooper {
+					progress.setMessageEx(sv)
+				}
 			}
 			
 			override fun doInBackground(vararg params : Void) : ArrayList<Column>? {
@@ -2678,7 +2679,7 @@ class ActMain : AppCompatActivity()
 					cacheDir.mkdir()
 					val file = File(
 						cacheDir,
-						"SubwayTooter.${android.os.Process.myPid()}.${android.os.Process.myTid()}.tmp"
+						"SubwayTooter.${Process.myPid()}.${Process.myTid()}.tmp"
 					)
 					val source = contentResolver.openInputStream(uri)
 					if(source == null) {
@@ -2801,7 +2802,7 @@ class ActMain : AppCompatActivity()
 		} catch(ignored : Throwable) {
 		}
 		
-		progress.isIndeterminate = true
+		progress.isIndeterminateEx = true
 		progress.setCancelable(false)
 		progress.setOnCancelListener { task.cancel(true) }
 		progress.show()

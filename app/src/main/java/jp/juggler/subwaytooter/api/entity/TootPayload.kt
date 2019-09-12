@@ -32,14 +32,14 @@ object TootPayload {
 			
 			if(payload is JSONObject) {
 				return when(event) {
-				
-				// ここを通るケースはまだ確認できていない
+					
+					// ここを通るケースはまだ確認できていない
 					"update" -> parser.status(payload)
-				
-				// ここを通るケースはまだ確認できていない
+					
+					// ここを通るケースはまだ確認できていない
 					"notification" -> parser.notification(payload)
-				
-				// ここを通るケースはまだ確認できていない
+					
+					// ここを通るケースはまだ確認できていない
 					else -> {
 						log.e("unknown payload(1). message=%s", parent_text)
 						null
@@ -60,15 +60,15 @@ object TootPayload {
 				if(payload[0] == '{') {
 					val src = payload.toJsonObject()
 					return when(event) {
-					// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
+						// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
 						"update" -> parser.status(src)
-					
-					// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
-						"notification" -> parser.notification(src)
-					
-						"conversation" -> parseItem(::TootConversationSummary,parser,src)
 						
-					// ここを通るケースはまだ確認できていない
+						// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
+						"notification" -> parser.notification(src)
+						
+						"conversation" -> parseItem(::TootConversationSummary, parser, src)
+						
+						// ここを通るケースはまだ確認できていない
 						else -> {
 							log.e("unknown payload(2). message=%s", parent_text)
 							null
@@ -82,7 +82,7 @@ object TootPayload {
 				// 2017/8/24 18:37 mdx.ggtea.org でここを通った
 				val m = reNumber.matcher(payload)
 				if(m.find()) {
-					return m.group(1).toLong(10)
+					return m.group(1) !!.toLong(10)
 				}
 			}
 			

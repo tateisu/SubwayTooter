@@ -56,9 +56,9 @@ object DlgQRCode {
 			}
 			
 		}
-		progress.isIndeterminate = true
+		progress.isIndeterminateEx = true
 		progress.setCancelable(true)
-		progress.setMessage(activity.getString(R.string.generating_qr_code))
+		progress.setMessageEx(activity.getString(R.string.generating_qr_code))
 		progress.setOnCancelListener { task.cancel(true) }
 		progress.show()
 		

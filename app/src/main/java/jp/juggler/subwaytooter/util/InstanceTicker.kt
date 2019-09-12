@@ -14,7 +14,7 @@ object InstanceTicker {
 	
 	private val log = LogCategory("InstanceTicker")
 	
-	private fun parseHex(group : String) : Int = group.toInt(16)
+	private fun parseHex(group : String?) : Int = group?.toInt(16) ?: 0
 	
 	private val reColor6 =
 		Pattern.compile("""#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})""", Pattern.CASE_INSENSITIVE)
@@ -169,8 +169,8 @@ object InstanceTicker {
 			val m = reLine.matcher(text)
 			while(m.find()) {
 				try {
-					val cols = m.group(1).split('\t')
-					if(cols.size < 7 || cols[0].contains('[')) continue
+					val cols = m.group(1)?.split('\t')
+					if(cols == null || cols.size < 7 || cols[0].contains('[')) continue
 					
 					val item = Item(cols)
 					if(item.instance.isNotEmpty()) list[item.instance] = item

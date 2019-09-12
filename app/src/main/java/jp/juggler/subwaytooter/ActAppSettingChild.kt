@@ -10,15 +10,14 @@ import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.PersistableBundle
-import androidx.annotation.ColorInt
-import androidx.annotation.IdRes
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.annotation.ColorInt
+import androidx.annotation.IdRes
+import androidx.appcompat.app.AppCompatActivity
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.action.CustomShare
@@ -309,11 +308,9 @@ class ActAppSettingChild : AppCompatActivity()
 		}
 	}
 	
-	override fun onSaveInstanceState(outState : Bundle?, outPersistentState : PersistableBundle?) {
-		super.onSaveInstanceState(outState, outPersistentState)
-		
-		outState ?: return
-		
+	override fun onSaveInstanceState(outState : Bundle) {
+		super.onSaveInstanceState(outState)
+
 		val sv = customShareTarget?.name
 		if(sv != null) outState.putString(STATE_CHOOSE_INTENT_TARGET, sv)
 		
@@ -1554,8 +1551,9 @@ class ActAppSettingChild : AppCompatActivity()
 	private fun parseFontSize(src : String) : Float {
 		try {
 			if(src.isNotEmpty()) {
-				val f = NumberFormat.getInstance(Locale.getDefault()).parse(src).toFloat()
+				val f = NumberFormat.getInstance(Locale.getDefault()).parse(src)?.toFloat()
 				return when {
+					f==null -> Float.NaN
 					f.isNaN() -> Float.NaN
 					f < 0f -> 0f
 					f > 999f -> 999f

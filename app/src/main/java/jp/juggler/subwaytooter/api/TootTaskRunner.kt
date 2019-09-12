@@ -192,7 +192,7 @@ class TootTaskRunner(
 		
 		val message = info.message.trim { it <= ' ' }
 		val progress_prefix = this.progress_prefix
-		progress.setMessage(
+		progress.setMessageEx(
 			if(progress_prefix == null || progress_prefix.isEmpty()) {
 				message
 			} else if(message.isEmpty()) {
@@ -202,7 +202,7 @@ class TootTaskRunner(
 			}
 		)
 		
-		progress.isIndeterminate = info.isIndeterminate
+		progress.isIndeterminateEx = info.isIndeterminate
 		if(info.isIndeterminate) {
 			progress.setProgressNumberFormat(null)
 			progress.setProgressPercentFormat(null)

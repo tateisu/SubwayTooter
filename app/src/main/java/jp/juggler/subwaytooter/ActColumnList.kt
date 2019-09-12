@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -57,10 +58,8 @@ class ActColumnList : AppCompatActivity() {
 		}
 	}
 	
-	override fun onSaveInstanceState(outState : Bundle?) {
+	override fun onSaveInstanceState(outState : Bundle) {
 		super.onSaveInstanceState(outState)
-		
-		outState ?: return
 		
 		outState.putInt(EXTRA_SELECTION, old_selection)
 		
@@ -221,7 +220,7 @@ class ActColumnList : AppCompatActivity() {
 		val name : String = json.optString(Column.KEY_COLUMN_NAME)
 		val acct : String = json.optString(Column.KEY_COLUMN_ACCESS)
 		val old_index = json.optInt(Column.KEY_OLD_INDEX)
-		val type = ColumnType.parse( json.optInt(Column.KEY_TYPE) )
+		val type = ColumnType.parse(json.optInt(Column.KEY_TYPE))
 		val acct_color_fg : Int
 		val acct_color_bg : Int
 		var bOldSelection : Boolean = false
@@ -268,7 +267,7 @@ class ActColumnList : AppCompatActivity() {
 			tvAccess.setBackgroundColor(item.acct_color_bg)
 			tvAccess.setPaddingRelative(acct_pad_lr, 0, acct_pad_lr, 0)
 			tvName.text = item.name
-			ivColumnIcon.setImageResource( item.type.iconId(item.acct))
+			ivColumnIcon.setImageResource(item.type.iconId(item.acct))
 			// 背景色がテーマ次第なので、カラム設定の色を反映するとアイコンが見えなくなる可能性がある
 			// よってアイコンやテキストにカラム設定の色を反映しない
 		}
@@ -291,7 +290,7 @@ class ActColumnList : AppCompatActivity() {
 		override fun onBindDragView(clickedView : View, dragView : View) {
 			val item = clickedView.tag as MyItem
 			
-			var tv :TextView = dragView.findViewById(R.id.tvAccess)
+			var tv : TextView = dragView.findViewById(R.id.tvAccess)
 			tv.text = item.acct
 			tv.setTextColor(item.acct_color_fg)
 			tv.setBackgroundColor(item.acct_color_bg)
@@ -299,7 +298,7 @@ class ActColumnList : AppCompatActivity() {
 			tv = dragView.findViewById(R.id.tvName)
 			tv.text = item.name
 			
-			val ivColumnIcon:ImageView = dragView.findViewById(R.id.ivColumnIcon)
+			val ivColumnIcon : ImageView = dragView.findViewById(R.id.ivColumnIcon)
 			ivColumnIcon.setImageResource(item.type.iconId(item.acct))
 			
 			dragView.findViewById<View>(R.id.ivBookmark).visibility =

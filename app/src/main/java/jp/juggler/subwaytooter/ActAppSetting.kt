@@ -257,7 +257,7 @@ class ActAppSetting : AppCompatActivity() {
 			}
 		}
 		
-		progress.isIndeterminate = true
+		progress.isIndeterminateEx = true
 		progress.setCancelable(true)
 		progress.setOnCancelListener { task.cancel(true) }
 		progress.show()

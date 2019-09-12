@@ -9,10 +9,7 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.os.Build
-import android.os.Bundle
-import android.os.Environment
-import android.os.SystemClock
+import android.os.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatActivity
@@ -173,10 +170,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		}
 	}
 	
-	override fun onSaveInstanceState(outState : Bundle?) {
+	override fun onSaveInstanceState(outState : Bundle) {
 		super.onSaveInstanceState(outState)
 		
-		outState ?: return
+		log.d("onSaveInstanceState")
 		
 		outState.putInt(EXTRA_IDX, idx)
 		outState.putInt(EXTRA_SERVICE_TYPE, serviceType.ordinal)
@@ -476,7 +473,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			
 			var bitmap : Bitmap? = null
 			
-			private fun decodeBitmap(data : ByteArray, pixel_max : Int) : Bitmap? {
+			private fun decodeBitmap(
+				data : ByteArray,
+				@Suppress("SameParameterValue") pixel_max : Int
+			) : Bitmap? {
 				
 				// EXIF回転情報の取得
 				val orientation : Int? = try {
@@ -660,7 +660,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				try {
 					val ba = ProgressResponseBody.bytes(response) { bytesRead, bytesTotal ->
 						// 50MB以上のデータはキャンセルする
-						if(Math.max(bytesRead, bytesTotal) >= 50000000) {
+						if(max(bytesRead, bytesTotal) >= 50000000) {
 							throw RuntimeException("media attachment is larger than 50000000")
 						}
 						client.publishApiProgressRatio(bytesRead.toInt(), bytesTotal.toInt())
@@ -790,8 +790,15 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
 		request.setTitle(fileName)
 		request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
-		//メディアスキャンを許可する
-		request.allowScanningByMediaScanner()
+		
+		@Suppress("ControlFlowWithEmptyBody")
+		if( Build.VERSION.SDK_INT >= 29) {
+			// Android 10 以降では allowScanningByMediaScanner は無視される
+		}else{
+			//メディアスキャンを許可する
+			@Suppress("DEPRECATION")
+			request.allowScanningByMediaScanner()
+		}
 		
 		//ダウンロード中・ダウンロード完了時にも通知を表示する
 		request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
@@ -873,7 +880,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		ad : ActionsDialog,
 		caption_prefix : String,
 		url : String?,
-		action : String
+		@Suppress("SameParameterValue") action : String
 	) {
 		val uri = url.mayUri() ?: return
 		

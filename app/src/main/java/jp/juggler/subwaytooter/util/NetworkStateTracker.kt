@@ -14,6 +14,15 @@ class NetworkStateTracker(
 	
 	companion object {
 		private val log = LogCategory("NetworkStateTracker")
+		
+		private val NetworkCapabilities?.isConnected : Boolean
+			get() = if(this == null) {
+				log.e("isConnected: missing NetworkCapabilities.")
+				false
+			} else {
+				this.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+			}
+		
 	}
 	
 	private val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE)
@@ -28,122 +37,106 @@ class NetworkStateTracker(
 		}
 	}
 	
-	private fun <T> tryOrNull(block : () -> T?) : T? = try {
-		block()
-	} catch(ex : Throwable) {
-		null
-	}
+//	private fun <T> tryOrNull(block : () -> T?) : T? = try {
+//		block()
+//	} catch(ex : Throwable) {
+//		null
+//	}
 	
-	@Suppress("DEPRECATION")
-	private fun NetworkInfo?.getStateString() =
-		if(this == null) {
-			"null"
-		} else {
-			// API 28 以上で typeName と state がdeprecated になっている
-			"${tryOrNull { this.typeName }} ${tryOrNull { this.subtypeName }} ${tryOrNull { this.state }} ${tryOrNull { this.detailedState }}"
-		}
+//	@Suppress("DEPRECATION")
+//	private fun NetworkInfo?.getStateString() =
+//		if(this == null) {
+//			"null"
+//		} else {
+//			// API 28 以上で typeName と state がdeprecated になっている
+//			"${tryOrNull { this.typeName }} ${tryOrNull { this.subtypeName }} ${tryOrNull { this.state }} ${tryOrNull { this.detailedState }}"
+//		}
 	
 	////////////////////////////////////////////////////////////////
 	// NetworkCallback
 	
 	//	Called when the framework connects and has declared a new network ready for use.
 	// 準備ができた
-	override fun onAvailable(network : Network?) {
-		val ni : NetworkInfo? = try {
-			cm?.getNetworkInfo(network)
-		} catch(ex : Throwable) {
-			null
-		}
-		log.d("onAvailable ${ni.getStateString()}")
+	override fun onAvailable(network : Network) {
 		super.onAvailable(network)
-		this.lastNetwork = network
+		val nc = try {
+			cm?.getNetworkCapabilities(network)?.toString()
+		} catch(ex : Throwable) {
+			log.e(ex, "getNetworkCapabilities failed.")
+		}
+		log.d("onAvailable $network $nc")
+		if( cm?.getNetworkCapabilities(network).isConnected ){
+			this.lastNetwork = network
+		}
 	}
 	
 	//	Called when the network the framework connected to for this request changes capabilities but still satisfies the stated need.
 	//  接続完了し、ネットワークが変わったあと
 	override fun onCapabilitiesChanged(
-		network : Network?,
-		networkCapabilities : NetworkCapabilities?
+		network : Network,
+		networkCapabilities : NetworkCapabilities
 	) {
-		val ni : NetworkInfo? = try {
-			cm?.getNetworkInfo(network)
-		} catch(ex : Throwable) {
-			null
-		}
-		log.d("onCapabilitiesChanged ${ni.getStateString()}")
 		super.onCapabilitiesChanged(network, networkCapabilities)
-		this.lastNetwork = network
+		log.d("onCapabilitiesChanged $network, $networkCapabilities")
+		if(networkCapabilities.isConnected) {
+			this.lastNetwork = network
+		}
 	}
 	
 	//	Called when the network the framework connected to for this request changes LinkProperties.
-	override fun onLinkPropertiesChanged(network : Network?, linkProperties : LinkProperties?) {
-		val ni : NetworkInfo? = try {
-			cm?.getNetworkInfo(network)
-		} catch(ex : Throwable) {
-			null
-		}
-		log.d("onLinkPropertiesChanged ${ni.getStateString()}")
+	override fun onLinkPropertiesChanged(network : Network, linkProperties : LinkProperties) {
 		super.onLinkPropertiesChanged(network, linkProperties)
-		this.lastNetwork = network
+		log.d("onLinkPropertiesChanged $network, $linkProperties")
+		if( cm?.getNetworkCapabilities(network).isConnected ){
+			this.lastNetwork = network
+		}
 	}
 	
-	override fun onLosing(network : Network?, maxMsToLive : Int) {
-		val ni : NetworkInfo? = try {
-			cm?.getNetworkInfo(network)
-		} catch(ex : Throwable) {
-			null
-		}
-		log.d("onLosing ${ni.getStateString()}")
+	override fun onLosing(network : Network, maxMsToLive : Int) {
 		super.onLosing(network, maxMsToLive)
-		this.lastNetwork = null
+		log.d("onLosing $network, $maxMsToLive")
+		if(lastNetwork == network) lastNetwork = null
 	}
 	
 	//	Called when the framework has a hard loss of the network or when the graceful failure ends.
-	override fun onLost(network : Network?) {
-		val ni : NetworkInfo? = try {
-			cm?.getNetworkInfo(network)
-		} catch(ex : Throwable) {
-			null
-		}
-		log.d("onLost ${ni.getStateString()}")
+	override fun onLost(network : Network) {
 		super.onLost(network)
-		this.lastNetwork = null
+		log.d("onLost $network")
+		if(lastNetwork == network) lastNetwork = null
 	}
 	
 	////////////////////////////////////////////////////////////////
 	
 	val isConnected : Boolean
-		get() {
-			return if(cm == null) {
+		get() = when(cm) {
+			null -> {
 				log.e("isConnected: missing ConnectivityManager")
 				true
-				
-			} else {
-				val activeNetworkInfo = cm.activeNetworkInfo
-				if(activeNetworkInfo == null) {
-					log.e("isConnected: missing activeNetworkInfo")
-					false
-				} else if(! activeNetworkInfo.isConnected) {
-					log.e("not connected: ${activeNetworkInfo.getStateString()}")
+			}
+			else -> if(Build.VERSION.SDK_INT >= 23) {
+				val activeNetwork = cm.activeNetwork
+				if(activeNetwork == null) {
+					log.e("isConnected: missing activeNetwork")
 					false
 				} else {
-					true
+					cm.getNetworkCapabilities(activeNetwork).isConnected
+				}
+			} else {
+				@Suppress("DEPRECATION")
+				val ani = cm.activeNetworkInfo
+				if(ani == null) {
+					log.e("isConnected: missing activeNetworkInfo")
+					false
+				} else {
+					@Suppress("DEPRECATION")
+					ani.isConnected
 				}
 			}
 		}
 	
 	fun checkNetworkState() {
-		
-		if(cm == null) {
-			log.e("isConnected: missing ConnectivityManager")
-		} else {
-			val activeNetworkInfo = cm.activeNetworkInfo
-				?: throw RuntimeException("missing activeNetworkInfo")
-			
-			if(activeNetworkInfo.isConnected) return
-			
-			throw RuntimeException("not connected. ${activeNetworkInfo.getStateString()}")
-			
+		if(!isConnected) {
+			throw RuntimeException("checkNetworkState: not connected.")
 		}
 	}
 }

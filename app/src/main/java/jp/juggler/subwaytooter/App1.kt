@@ -12,8 +12,6 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
 import android.os.Build
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
 import androidx.browser.customtabs.CustomTabsIntent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
@@ -147,42 +145,42 @@ class App1 : Application() {
 		
 		val database : SQLiteDatabase get() = db_open_helper.writableDatabase
 		
-		private val APPROVED_CIPHER_SUITES = arrayOf(
-			
-			// 以下は okhttp 3 のデフォルト
-			// This is nearly equal to the cipher suites supported in Chrome 51, current as of 2016-05-25.
-			// All of these suites are available on Android 7.0; earlier releases support a subset of these
-			// suites. https://github.com/square/okhttp/issues/1972
-			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-			CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-			CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
-			CipherSuite.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
-			
-			// Note that the following cipher suites are all on HTTP/2's bad cipher suites list. We'll
-			// continue to include them until better suites are commonly available. For example, none
-			// of the better cipher suites listed above shipped with Android 4.4 or Java 7.
-			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-			CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
-			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-			CipherSuite.TLS_RSA_WITH_AES_128_GCM_SHA256,
-			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
-			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
-			CipherSuite.TLS_RSA_WITH_AES_256_CBC_SHA,
-			CipherSuite.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
-			
-			//https://www.ssllabs.com/ssltest/analyze.html?d=mastodon.cloud&latest
-			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, // mastodon.cloud用 デフォルトにはない
-			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, //mastodon.cloud用 デフォルトにはない
-			
-			// https://www.ssllabs.com/ssltest/analyze.html?d=m.sighash.info
-			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, // m.sighash.info 用 デフォルトにはない
-			CipherSuite.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, // m.sighash.info 用 デフォルトにはない
-			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA256, // m.sighash.info 用 デフォルトにはない
-			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA
-		) // m.sighash.info 用 デフォルトにはない
+//		private val APPROVED_CIPHER_SUITES = arrayOf(
+//
+//			// 以下は okhttp 3 のデフォルト
+//			// This is nearly equal to the cipher suites supported in Chrome 51, current as of 2016-05-25.
+//			// All of these suites are available on Android 7.0; earlier releases support a subset of these
+//			// suites. https://github.com/square/okhttp/issues/1972
+//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+//			CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+//			CipherSuite.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+//
+//			// Note that the following cipher suites are all on HTTP/2's bad cipher suites list. We'll
+//			// continue to include them until better suites are commonly available. For example, none
+//			// of the better cipher suites listed above shipped with Android 4.4 or Java 7.
+//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+//			CipherSuite.TLS_RSA_WITH_AES_128_GCM_SHA256,
+//			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
+//			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
+//			CipherSuite.TLS_RSA_WITH_AES_256_CBC_SHA,
+//			CipherSuite.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
+//
+//			//https://www.ssllabs.com/ssltest/analyze.html?d=mastodon.cloud&latest
+//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, // mastodon.cloud用 デフォルトにはない
+//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, //mastodon.cloud用 デフォルトにはない
+//
+//			// https://www.ssllabs.com/ssltest/analyze.html?d=m.sighash.info
+//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, // m.sighash.info 用 デフォルトにはない
+//			CipherSuite.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, // m.sighash.info 用 デフォルトにはない
+//			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA256, // m.sighash.info 用 デフォルトにはない
+//			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+//		) // m.sighash.info 用 デフォルトにはない
 		
 		//	private int getBitmapPoolSize( Context context ){
 		//		ActivityManager am = ((ActivityManager)context.getSystemService(Activity.ACTIVITY_SERVICE));
@@ -204,7 +202,7 @@ class App1 : Application() {
 		//		return maxSize * 1024;
 		//	}
 		
-		val reNotAllowedInUserAgent = Pattern.compile("[^\\x21-\\x7e]+") !!
+		val reNotAllowedInUserAgent :Pattern = Pattern.compile("[^\\x21-\\x7e]+")
 		
 		val userAgentDefault =
 			"SubwayTooter/${BuildConfig.VERSION_NAME} Android/${Build.VERSION.RELEASE}"
@@ -630,7 +628,7 @@ class App1 : Application() {
 		}
 		
 		// https://developer.android.com/preview/features/gesturalnav?hl=ja
-		fun initEdgeToEdge(activity:Activity) {
+		fun initEdgeToEdge(@Suppress("UNUSED_PARAMETER") activity:Activity) {
 //			if(Build.VERSION.SDK_INT >= 29){
 //				val viewRoot = activity.findViewById<ViewGroup>(android.R.id.content).getChildAt(0)
 //				viewRoot.systemUiVisibility = (viewRoot.systemUiVisibility

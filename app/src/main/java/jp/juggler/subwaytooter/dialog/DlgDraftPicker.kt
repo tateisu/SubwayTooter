@@ -17,10 +17,12 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.util.dismissSafe
+import jp.juggler.util.parseString
 import jp.juggler.util.showToast
 import org.json.JSONObject
 
-class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, DialogInterface.OnDismissListener {
+class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
+	DialogInterface.OnDismissListener {
 	
 	private lateinit var activity : ActPost
 	private lateinit var callback : (draft : JSONObject) -> Unit
@@ -41,7 +43,12 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 		}
 	}
 	
-	override fun onItemLongClick(parent : AdapterView<*>, view : View, position : Int, id : Long) : Boolean {
+	override fun onItemLongClick(
+		parent : AdapterView<*>,
+		view : View,
+		position : Int,
+		id : Long
+	) : Boolean {
 		
 		val draft = getPostDraft(position)
 		if(draft != null) {
@@ -60,7 +67,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 		
 		lvDraft.adapter = null
 		
-		cursor ?.close()
+		cursor?.close()
 	}
 	
 	@SuppressLint("InflateParams")
@@ -146,8 +153,8 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 			
 			val json = draft.json
 			if(json != null) {
-				val cw = json.optString(ActPost.DRAFT_CONTENT_WARNING)
-				val c = json.optString(ActPost.DRAFT_CONTENT)
+				val cw = json.parseString(ActPost.DRAFT_CONTENT_WARNING)
+				val c = json.parseString(ActPost.DRAFT_CONTENT)
 				val sb = StringBuilder()
 				if(cw?.trim { it <= ' ' }?.isNotEmpty() == true) {
 					sb.append(cw)

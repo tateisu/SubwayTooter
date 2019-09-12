@@ -61,7 +61,7 @@ class TootList(parser:TootParser,src : JSONObject): TimelineItem(), Comparable<T
 						list.add(title.substring(last_end, match_start))
 					}
 					try {
-						list.add(m.group(1).toLong(10))
+						list.add(m.group(1)!!.toLong())
 					} catch(ex : Throwable) {
 						list.clear()
 						list.add(title)

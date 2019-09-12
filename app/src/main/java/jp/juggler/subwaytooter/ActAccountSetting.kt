@@ -1575,12 +1575,8 @@ class ActAccountSetting
 			
 		}
 		
-		@Suppress("DEPRECATION")
-		progress.isIndeterminate = true
-		
-		@Suppress("DEPRECATION")
-		progress.setMessage("preparing image…")
-		
+		progress.isIndeterminateEx = true
+		progress.setMessageEx("preparing image…")
 		progress.setOnCancelListener { task.cancel(true) }
 		progress.show()
 		

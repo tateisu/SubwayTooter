@@ -451,7 +451,16 @@ class PollingWorker private constructor(contextArg : Context) {
 		)
 		power_lock.setReferenceCounted(false)
 		
-		wifi_lock = wifi_manager.createWifiLock(PollingWorker::class.java.name)
+		wifi_lock = if(Build.VERSION.SDK_INT >= 29) {
+			wifi_manager.createWifiLock(
+				WifiManager.WIFI_MODE_FULL_HIGH_PERF,
+				PollingWorker::class.java.name
+			)
+		} else {
+			@Suppress("DEPRECATION")
+			wifi_manager.createWifiLock(PollingWorker::class.java.name)
+		}
+		
 		wifi_lock.setReferenceCounted(false)
 		
 		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
@@ -1489,9 +1498,8 @@ class PollingWorker private constructor(contextArg : Context) {
 		}
 		
 		private fun processInjectedData() {
-			while(inject_queue.size > 0) {
-				
-				val data = inject_queue.poll()
+			while(true) {
+				val data = inject_queue.poll() ?: break
 				
 				val account = SavedAccount.loadAccount(context, data.account_db_id) ?: continue
 				

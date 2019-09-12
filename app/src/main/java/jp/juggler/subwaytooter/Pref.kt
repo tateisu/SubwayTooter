@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import jp.juggler.util.optInt
 
 @Suppress("EqualsOrHashCode")

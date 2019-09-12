@@ -997,10 +997,8 @@ class ActPost : AppCompatActivity(),
 		super.onDestroy()
 	}
 	
-	override fun onSaveInstanceState(outState : Bundle?) {
+	override fun onSaveInstanceState(outState : Bundle) {
 		super.onSaveInstanceState(outState)
-		
-		outState ?: return
 		
 		outState.putInt(STATE_MUSHROOM_INPUT, mushroom_input)
 		outState.putInt(STATE_MUSHROOM_START, mushroom_start)
@@ -2070,7 +2068,7 @@ class ActPost : AppCompatActivity(),
 					var lastEnd = 0
 					while(m.find()) {
 						sb.append(s.substring(lastEnd, m.start()))
-						val escaped = m.group(1).encodeUTF8().encodeHex()
+						val escaped = m.groupOrNull(1)!!.encodeUTF8().encodeHex()
 						sb.append(escaped)
 						lastEnd = m.end()
 					}
@@ -2681,7 +2679,9 @@ class ActPost : AppCompatActivity(),
 						get() = isCancelled
 					
 					override fun publishApiProgress(s : String) {
-						runOnMainLooper { progress.setMessage(s) }
+						runOnMainLooper {
+							progress.setMessageEx(s)
+						}
 					}
 				})
 				
@@ -2740,15 +2740,15 @@ class ActPost : AppCompatActivity(),
 					return
 				}
 				
-				val content = draft.optString(DRAFT_CONTENT)
-				val content_warning = draft.optString(DRAFT_CONTENT_WARNING)
+				val content = draft.parseString(DRAFT_CONTENT) ?: ""
+				val content_warning = draft.parseString(DRAFT_CONTENT_WARNING) ?: ""
 				val content_warning_checked = draft.optBoolean(DRAFT_CONTENT_WARNING_CHECK)
 				val nsfw_checked = draft.optBoolean(DRAFT_NSFW_CHECK)
 				val tmp_attachment_list = draft.optJSONArray(DRAFT_ATTACHMENT_LIST)
 				val reply_id = EntityId.from(draft, DRAFT_REPLY_ID)
-				val reply_text = draft.optString(DRAFT_REPLY_TEXT, null)
-				val reply_image = draft.optString(DRAFT_REPLY_IMAGE, null)
-				val reply_url = draft.optString(DRAFT_REPLY_URL, null)
+				val reply_text = draft.parseString(DRAFT_REPLY_TEXT)
+				val reply_image = draft.parseString(DRAFT_REPLY_IMAGE)
+				val reply_url = draft.parseString(DRAFT_REPLY_URL)
 				val draft_visibility = TootVisibility
 					.parseSavedVisibility(draft.parseString(DRAFT_VISIBILITY))
 				
@@ -2756,14 +2756,14 @@ class ActPost : AppCompatActivity(),
 				etContent.setText(evEmoji)
 				etContent.setSelection(evEmoji.length)
 				etContentWarning.setText(content_warning)
-				etContentWarning.setSelection(content_warning.length)
+				etContentWarning.setSelection(content_warning.length )
 				cbContentWarning.isChecked = content_warning_checked
 				cbNSFW.isChecked = nsfw_checked
 				if(draft_visibility != null) this@ActPost.visibility = draft_visibility
 				
 				cbQuoteRenote.isChecked = draft.optBoolean(DRAFT_QUOTED_RENOTE)
 				
-				val sv = draft.optString(DRAFT_POLL_TYPE, null)
+				val sv = draft.parseString(DRAFT_POLL_TYPE)
 				if(sv != null) {
 					spEnquete.setSelection(sv.toPollTypeIndex())
 				} else {
@@ -2793,14 +2793,13 @@ class ActPost : AppCompatActivity(),
 				
 				if(account != null) selectAccount(account)
 				
-				if(tmp_attachment_list.length() > 0) {
+				if( tmp_attachment_list != null && tmp_attachment_list.length() > 0){
 					attachment_list.clear()
 					tmp_attachment_list.forEach {
 						if(it !is JSONObject) return@forEach
 						val pa = PostAttachment(TootAttachment.decodeJson(it))
 						attachment_list.add(pa)
 					}
-					
 				}
 				
 				if(reply_id != null) {
@@ -2831,7 +2830,8 @@ class ActPost : AppCompatActivity(),
 				}
 			}
 		}
-		progress.isIndeterminate = true
+
+		progress.isIndeterminateEx = true
 		progress.setCancelable(true)
 		progress.setOnCancelListener { task.cancel(true) }
 		progress.show()

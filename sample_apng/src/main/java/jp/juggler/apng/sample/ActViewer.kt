@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -106,7 +105,16 @@ class ActViewer : AppCompatActivity() , CoroutineScope {
 		val title = this.title
 		
 		launch(Dispatchers.IO){
-			val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+			
+			//deprecated in Android 10 (API level 29)
+			//val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+			
+			val dir = getExternalFilesDir(null)
+			if(dir==null){
+				Log.e(TAG, "getExternalFilesDir(null) returns null.")
+				return@launch
+			}
+			
 			dir.mkdirs()
 			if(! dir.exists() ) {
 				Log.e(TAG, "Directory not exists: ${dir}")

@@ -66,7 +66,8 @@ object HTMLDecoder {
 		return num.toChar()
 	}
 	
-	fun decodeEntity(src : String) : String {
+	fun decodeEntity(src : String?) : String {
+		src ?: return ""
 		var sb : StringBuilder? = null
 		val m = reEntity.matcher(src)
 		var last_end = 0
@@ -78,8 +79,8 @@ object HTMLDecoder {
 				if(start > last_end) {
 					sb.append(src.substring(last_end, start))
 				}
-				val is_numeric = m.group(1).isNotEmpty()
-				val part = m.group(2)
+				val is_numeric = m.group(1) !!.isNotEmpty()
+				val part = m.group(2) !!
 				if(! is_numeric) {
 					val c = entity_map[part]
 					if(c != null) {
@@ -195,15 +196,20 @@ object HTMLDecoder {
 			
 			val m = reTag.matcher(text)
 			if(m.find()) {
-				val is_close = m.group(1).isNotEmpty()
-				tag = m.group(2).toLowerCase()
+				val is_close = m.group(1) !!.isNotEmpty()
+				tag = m.group(2) !!.toLowerCase(Locale.JAPAN)
+				
 				val m2 = reTagEnd.matcher(text)
-				var is_openclose = false
-				if(m2.find()) {
-					is_openclose = m2.group(1).isNotEmpty()
+				val is_openclose = if(m2.find()) {
+					m2.group(1) !!.isNotEmpty()
+				} else {
+					false
 				}
-				open_type =
-					if(is_close) OPEN_TYPE_CLOSE else if(is_openclose) OPEN_TYPE_OPEN_CLOSE else OPEN_TYPE_OPEN
+				open_type = when {
+					is_close -> OPEN_TYPE_CLOSE
+					is_openclose -> OPEN_TYPE_OPEN_CLOSE
+					else -> OPEN_TYPE_OPEN
+				}
 				if(tag == "br") open_type = OPEN_TYPE_OPEN_CLOSE
 			} else {
 				tag = TAG_TEXT
@@ -388,7 +394,7 @@ object HTMLDecoder {
 		val dst = HashMap<String, String>()
 		val m = reAttribute.matcher(text)
 		while(m.find()) {
-			val name = m.group(1).toLowerCase()
+			val name = m.group(1) !!.toLowerCase(Locale.JAPAN)
 			val value = decodeEntity(m.group(3))
 			dst[name] = value
 		}
@@ -435,7 +441,7 @@ object HTMLDecoder {
 		for(item in src_list) {
 			if(sb.isNotEmpty()) sb.append(" ")
 			val start = sb.length
-
+			
 			sb.append('@')
 				.append(
 					if(Pref.bpMentionFullAcct(App1.pref)) {
@@ -474,7 +480,7 @@ object HTMLDecoder {
 				// WebUIでは非表示スパンに隠れているが、
 				// 通常のリンクなら スキーマ名 + :// が必ず出現する
 				val schema = m.group(1)
-				val start = if(schema.startsWith("http")) {
+				val start = if(schema?.startsWith("http") == true) {
 					// http,https の場合はスキーマ表記を省略する
 					schema.length
 				} else {
@@ -517,11 +523,11 @@ object HTMLDecoder {
 						// https://github.com/tateisu/SubwayTooter/issues/108
 						// check mentions to skip getAcctFromUrl
 						val mentions = options.mentions
-						if( mentions != null){
-							for( it in mentions){
-								if( it.url == href ){
+						if(mentions != null) {
+							for(it in mentions) {
+								if(it.url == href) {
 									val acct = it.acct
-									if( acct.contains('@')) return  "@$acct"
+									if(acct.contains('@')) return "@$acct"
 								}
 							}
 						}
@@ -562,7 +568,7 @@ object HTMLDecoder {
 		// ニコニコ大百科のURLを変える
 		val m = reNicodic.matcher(href)
 		if(m.find()) {
-			return SpannableString("${m.group(1).decodePercent()}:nicodic:").apply {
+			return SpannableString("${m.group(1) !!.decodePercent()}:nicodic:").apply {
 				setSpan(
 					EmojiImageSpan(context, R.drawable.nicodic),
 					length - 9,

@@ -93,7 +93,7 @@ open class TootTag(
 				val m = reTagMastodon.matcher(src)
 				while(m.find()) {
 					if(result == null) result = ArrayList()
-					result.add(m.group(1))
+					result.add(m.group(1)!!)
 				}
 				result
 			}

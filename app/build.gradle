@@ -97,14 +97,16 @@ dependencies {
     implementation project(':apng_android')
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
-    implementation "androidx.legacy:legacy-support-v4:$androidx_version"
-    implementation "androidx.legacy:legacy-support-v13:$androidx_version"
+//    implementation "androidx.legacy:legacy-support-v4:$androidx_version"
+//    implementation "androidx.legacy:legacy-support-v13:$androidx_version"
+    implementation "androidx.drawerlayout:drawerlayout:1.1.0-alpha03"
+    implementation "androidx.preference:preference-ktx:1.1.0"
     implementation "androidx.browser:browser:$androidx_version"
     implementation "com.google.android.material:material:$androidx_version"
     kapt 'androidx.annotation:annotation:1.1.0'
 
     // https://firebase.google.com/support/release-notes/android
-    implementation "com.google.firebase:firebase-core:17.1.0"
+    implementation "com.google.firebase:firebase-core:17.2.0"
     implementation "com.google.firebase:firebase-messaging:20.0.0"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -161,7 +163,7 @@ dependencies {
 
     implementation 'com.astuetz:pagerslidingtabstrip:1.0.1'
 
-    implementation 'com.google.android.exoplayer:exoplayer:2.10.2'
+    implementation 'com.google.android.exoplayer:exoplayer:2.10.4'
 
     implementation 'me.drakeet.support:toastcompat:1.0.2'
 

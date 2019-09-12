@@ -171,7 +171,7 @@ internal class PopupAutoCompleteAcct(
 	
 	private fun findShortCode(acct : String) : String {
 		val m = reLastShortCode.matcher(acct)
-		if(m.find()) return m.group(0)
+		if(m.find()) return m.group(0)!!
 		return acct
 	}
 	

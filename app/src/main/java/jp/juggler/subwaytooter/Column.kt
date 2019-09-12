@@ -1857,7 +1857,7 @@ class Column(
 			} else {
 				val m = reMaxId.matcher(result.link_older ?: "")
 				if(m.find()) {
-					EntityId(m.group(1))
+					EntityId(m.group(1)!!)
 				} else {
 					null
 				}
@@ -1869,12 +1869,12 @@ class Column(
 				var m = reMinId.matcher(result.link_newer ?: "")
 				if(m.find()) {
 					bMinIdMatched = true
-					EntityId(m.group(1))
+					EntityId(m.group(1)!!)
 				} else {
 					m = reSinceId.matcher(result.link_newer ?: "")
 					if(m.find()) {
 						bMinIdMatched = false
-						EntityId(m.group(1))
+						EntityId(m.group(1)!!)
 					} else {
 						null
 					}
@@ -2587,9 +2587,7 @@ class Column(
 			last_show_stream_data.set(now)
 			
 			val tmpList = ArrayList<TimelineItem>()
-			while(stream_data_queue.isNotEmpty()) {
-				tmpList.add(stream_data_queue.poll())
-			}
+			while(true) tmpList.add(stream_data_queue.poll()?:break)
 			if(tmpList.isEmpty()) return
 			
 			// キューから読めた件数が0の場合を除き、少し後に再処理させることでマージ漏れを防ぐ

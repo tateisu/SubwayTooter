@@ -224,7 +224,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 					sv,
 					TextToSpeech.QUEUE_ADD,
 					null, // Bundle params
-					Integer.toString(++ utteranceIdSeed) // String utteranceId
+					(++ utteranceIdSeed).toString() // String utteranceId
 				)
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -295,7 +295,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		// 背景フォルダの掃除
 		try {
 			val backgroundImageDir = Column.getBackgroundImageDir(context)
-			backgroundImageDir.list().forEach { name ->
+			backgroundImageDir.list()?.forEach { name ->
 				val file = File(backgroundImageDir, name)
 				if(file.isFile) {
 					val delm = name.indexOf(':')

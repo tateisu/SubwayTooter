@@ -188,7 +188,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			}
 			
 			R.id.btnColumnBackgroundImage -> {
-				val intent = intentGetContent(false, getString(R.string.pick_image), arrayOf("image/*"))
+				val intent =
+					intentGetContent(false, getString(R.string.pick_image), arrayOf("image/*"))
 				startActivityForResult(intent, REQUEST_CODE_PICK_BACKGROUND)
 			}
 			
@@ -225,10 +226,16 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	override fun onDialogDismissed(dialogId : Int) {}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
-		if(requestCode == REQUEST_CODE_PICK_BACKGROUND && data != null && resultCode == RESULT_OK) {
-			data.handleGetContentResult(contentResolver).firstOrNull()
-				?.uri?.let { updateBackground(it) }
+		when {
+			requestCode == REQUEST_CODE_PICK_BACKGROUND &&
+				data != null &&
+				resultCode == RESULT_OK ->
+				data.handleGetContentResult(contentResolver)
+					.firstOrNull()?.uri?.let { updateBackground(it) }
+			
+			else -> super.onActivityResult(requestCode, resultCode, data)
 		}
+		
 	}
 	
 	private fun updateBackground(uriArg : Uri) {
@@ -371,10 +378,11 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			override fun afterTextChanged(s : Editable) {
 				if(loading_busy) return
 				try {
-					var f =
-						NumberFormat.getInstance(Locale.getDefault()).parse(etAlpha.text.toString())
-							.toFloat()
-					if(! f.isNaN()) {
+					
+					var f = NumberFormat.getInstance(Locale.getDefault())
+						.parse(etAlpha.text.toString())?.toFloat()
+					
+					if(f != null && ! f.isNaN()) {
 						if(f < 0f) f = 0f
 						if(f > 1f) f = 1f
 						column.column_bg_image_alpha = f

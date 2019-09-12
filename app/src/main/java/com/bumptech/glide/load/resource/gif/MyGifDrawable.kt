@@ -284,7 +284,7 @@ class MyGifDrawable internal constructor(
 		//		int outWidth = destRect.width();
 		//		int outHeight = destRect.height();
 		
-		mDstRectF.set(destRect)
+		mDstRectF.set(destRect!!)
 		mShaderMatrix.reset()
 		mShaderMatrix.preScale(mDstRectF.width() / src_w, mDstRectF.height() / src_h)
 		

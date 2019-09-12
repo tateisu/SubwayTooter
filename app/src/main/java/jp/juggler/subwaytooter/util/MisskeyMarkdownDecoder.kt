@@ -366,7 +366,7 @@ object MisskeySyntaxHighlighter {
 		addAll(_keywords)
 		
 		// UPPER
-		addAll(_keywords.map { k -> k.toUpperCase() })
+		addAll(_keywords.map { k -> k.toUpperCase(Locale.JAPAN) })
 		
 		// Snake
 		addAll(_keywords.map { k -> k[0].toUpperCase() + k.substring(1) })
@@ -607,8 +607,8 @@ object MisskeySyntaxHighlighter {
 			
 			val match = remainMatcher(reKeyword)
 			if(! match.find()) return@arrayOf null
-			val kw = match.group(1)
-			val bracket = match.group(2)
+			val kw = match.group(1) !!
+			val bracket = match.group(2) // may null
 			
 			when {
 				// 英数字や_を含まないキーワードは無視する
@@ -803,7 +803,10 @@ object MisskeyMarkdownDecoder {
 	
 	////////////////////////////////////////////////////////////////////////////
 	
-	private fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
+	private fun mixColor(
+		@Suppress("SameParameterValue") col1 : Int,
+		col2 : Int
+	) : Int = Color.rgb(
 		(Color.red(col1) + Color.red(col2)) ushr 1,
 		(Color.green(col1) + Color.green(col2)) ushr 1,
 		(Color.blue(col1) + Color.blue(col2)) ushr 1
@@ -854,7 +857,7 @@ object MisskeyMarkdownDecoder {
 					else -> host
 				} ?: "?"
 				
-				when(userHost.toLowerCase()) {
+				when(userHost.toLowerCase(Locale.JAPAN)) {
 					
 					// https://github.com/syuilo/misskey/pull/3603
 					
@@ -1069,11 +1072,13 @@ object MisskeyMarkdownDecoder {
 			
 			val start = this.start
 			fireRenderChildNodes(it)
-			if(it.quoteNest > 0) {
-				// 引用ネストの内部ではセンタリングさせると引用マーカーまで動いてしまうので
-				// センタリングが機能しないようにする
-			} else {
-				spanList.addLast(
+			when {
+				it.quoteNest > 0 -> {
+					// 引用ネストの内部ではセンタリングさせると引用マーカーまで動いてしまうので
+					// センタリングが機能しないようにする
+				}
+				
+				else -> spanList.addLast(
 					start,
 					sb.length,
 					android.text.style.AlignmentSpan.Standard(
@@ -1377,8 +1382,7 @@ object MisskeyMarkdownDecoder {
 			! matcher.find() -> null
 			
 			else -> {
-				
-				val textInside = matcher.group(1)
+				val textInside = matcher.group(1) !!
 				makeDetected(
 					type,
 					arrayOf(textInside),
@@ -1489,8 +1493,8 @@ object MisskeyMarkdownDecoder {
 				! matcher.find() -> null
 				
 				else -> {
-					val tagName = matcher.group(1)
-					val textInside = matcher.group(2)
+					val tagName = matcher.group(1) !!
+					val textInside = matcher.group(2) !!
 					
 					fun a(type : NodeType) = makeDetected(
 						type,
@@ -1541,7 +1545,7 @@ object MisskeyMarkdownDecoder {
 				return@addParser null
 			}
 			
-			val url = matcher.group(1).removeOrphanedBrackets(urlSafe = true)
+			val url = matcher.group(1) !!.removeOrphanedBrackets(urlSafe = true)
 			makeDetected(
 				NodeType.URL,
 				arrayOf(url),
@@ -1607,12 +1611,12 @@ object MisskeyMarkdownDecoder {
 				! matcher.find() -> null
 				
 				else -> {
-					val title = matcher.group(1)
+					val title = matcher.group(1) !!
 					makeDetected(
 						NodeType.LINK,
 						arrayOf(
 							title
-							, matcher.group(2) // url
+							, matcher.group(2) !! // url
 							, text[pos].toString()   // silent なら "?" になる
 						),
 						matcher.start(), matcher.end(),
@@ -1658,7 +1662,7 @@ object MisskeyMarkdownDecoder {
 					else -> makeDetected(
 						NodeType.MENTION,
 						arrayOf(
-							matcher.group(1),
+							matcher.group(1) !!,
 							matcher.group(2) ?: "" // username, host
 						),
 						matcher.start(), matcher.end(),
@@ -1685,7 +1689,7 @@ object MisskeyMarkdownDecoder {
 			}
 			
 			// 先頭の#を含まないタグテキスト
-			val tag = matcher.group(1).removeOrphanedBrackets()
+			val tag = matcher.group(1) !!.removeOrphanedBrackets()
 			
 			if(tag.isEmpty() || tag.length > 50 || reDigitsOnly.matcher(tag).find()) {
 				// 空文字列、50文字超過、数字だけのタグは不許可
@@ -1738,7 +1742,7 @@ object MisskeyMarkdownDecoder {
 				val result = ArrayList<String>()
 				fun track(n : Node) {
 					if(n.type == NodeType.HASHTAG) result.add(n.args[0])
-					n.childNodes.forEach { track(n) }
+					n.childNodes.forEach { track(it) }
 				}
 				track(root)
 				if(result.isNotEmpty()) return result

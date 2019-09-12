@@ -107,7 +107,8 @@ class TootPolls private constructor(
 					attachmentList = list_attachment,
 					linkTag = status,
 					emojiMapCustom = status.custom_emojis,
-					emojiMapProfile = status.profile_emojis
+					emojiMapProfile = status.profile_emojis,
+					mentions = status.mentions
 				).decodeHTML(this.question ?: "?")
 				
 			}
@@ -124,7 +125,8 @@ class TootPolls private constructor(
 					attachmentList = list_attachment,
 					linkTag = status,
 					emojiMapCustom = status.custom_emojis,
-					emojiMapProfile = status.profile_emojis
+					emojiMapProfile = status.profile_emojis,
+					mentions = status.mentions
 				).decodeHTML(this.question ?: "?")
 				
 				this.items = parseChoiceListMastodon(
@@ -178,7 +180,8 @@ class TootPolls private constructor(
 					attachmentList = list_attachment,
 					linkTag = status,
 					emojiMapCustom = status.custom_emojis,
-					emojiMapProfile = status.profile_emojis
+					emojiMapProfile = status.profile_emojis,
+					mentions = status.mentions
 				).decodeHTML(this.question ?: "?")
 				
 				this.items = parseChoiceListFriendsNico(

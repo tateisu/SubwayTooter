@@ -844,7 +844,11 @@ class ActPost : AppCompatActivity(),
 						
 						// 再編集の場合はdefault_textは反映されない
 						
-						val decodeOptions = DecodeOptions(this, mentionFullAcct = true)
+						val decodeOptions = DecodeOptions(
+							this,
+							mentionFullAcct = true,
+							mentions = base_status.mentions
+						)
 						
 						var text : CharSequence = if(account.isMisskey) {
 							base_status.content ?: ""
@@ -862,12 +866,14 @@ class ActPost : AppCompatActivity(),
 						val src_enquete = base_status.enquete
 						val src_items = src_enquete?.items
 						when {
-							src_items == null ->{
+							src_items == null -> {
 							
 							}
+							
 							src_enquete.pollType == TootPollsType.FriendsNico && src_enquete.type != TootPolls.TYPE_ENQUETE -> {
 								// フレニコAPIのアンケート結果は再編集の対象外
 							}
+							
 							else -> {
 								spEnquete.setSelection(
 									if(src_enquete.pollType == TootPollsType.FriendsNico) {
@@ -888,6 +894,7 @@ class ActPost : AppCompatActivity(),
 											src_index == src_items.size - 1 && choice.text == "\uD83E\uDD14" -> {
 												// :thinking_face: は再現しない
 											}
+											
 											else -> {
 												et.setText(decodeOptions.decodeEmoji(choice.text))
 												++ src_index
@@ -1590,6 +1597,7 @@ class ActPost : AppCompatActivity(),
 			pa.attachment?.isAudio == true -> {
 				// can't set focus
 			}
+			
 			else -> a.addAction(getString(R.string.set_focus_point)) {
 				openFocusPoint(pa)
 			}

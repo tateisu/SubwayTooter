@@ -327,7 +327,7 @@ fun Bundle.parseString(key : String) : String? {
 // Pattern
 
 fun Matcher.groupOrNull(g : Int) : String? =
-	if(groupCount() >= g) {
+	if(g in 0 until groupCount() ) {
 		group(g)
 	} else {
 		null

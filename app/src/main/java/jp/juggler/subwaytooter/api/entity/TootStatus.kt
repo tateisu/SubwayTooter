@@ -280,7 +280,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				emojiMapCustom = custom_emojis,
 				emojiMapProfile = profile_emojis,
 				attachmentList = media_attachments,
-				highlightTrie = parser.highlightTrie
+				highlightTrie = parser.highlightTrie,
+				mentions = null // MisskeyはMFMをパースし終わるまでメンションが分からない
 			)
 			
 			this.decoded_content = options.decodeHTML(content)
@@ -290,14 +291,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			}
 			
 			// Markdownのデコード結果からmentionsを読むのだった
-			this.mentions =
-				(decoded_content as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
-			this.decoded_mentions = HTMLDecoder.decodeMentions(
-				parser.linkHelper,
-				this.mentions,
-				this
-			) ?: EMPTY_SPANNABLE
-			
+			val mentions1 = (decoded_content as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
+
+		
 			val sv = src.parseString("cw")?.cleanCW()
 			this.spoiler_text = when {
 				sv == null -> "" // CWなし
@@ -305,6 +301,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				else -> sv
 			}
 			
+			// ハイライト検出のためにDecodeOptionsを作り直す？
 			options = DecodeOptions(
 				parser.context,
 				parser.linkHelper,
@@ -313,7 +310,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				emojiMapCustom = custom_emojis,
 				emojiMapProfile = profile_emojis,
 				attachmentList = media_attachments,
-				highlightTrie = parser.highlightTrie
+				highlightTrie = parser.highlightTrie,
+				mentions = null // MisskeyはMFMをパースし終わるまでメンションが分からない
 			)
 			this.decoded_spoiler_text = options.decodeHTML(spoiler_text)
 			
@@ -321,6 +319,15 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			if(options.highlight_sound != null && this.highlight_sound == null) {
 				this.highlight_sound = options.highlight_sound
 			}
+
+			val mentions2 = (decoded_spoiler_text as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
+			
+			this.mentions = mergeMentions(mentions1,mentions2)
+			this.decoded_mentions = HTMLDecoder.decodeMentions(
+				parser.linkHelper,
+				this.mentions,
+				this
+			) ?: EMPTY_SPANNABLE
 			
 			// contentを読んだ後にアンケートのデコード
 			this.enquete = TootPolls.parse(
@@ -410,7 +417,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.uri = src.parseString("uri") ?: error("missing uri")
 					this.id = findStatusIdFromUri(uri, url) ?: EntityId.DEFAULT
 					
-					this.time_created_at = TootStatus.parseTime(this.created_at)
+					this.time_created_at = parseTime(this.created_at)
 					this.media_attachments = parseListOrNull(
 						::TootAttachment,
 						parser,
@@ -470,7 +477,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				emojiMapCustom = custom_emojis,
 				emojiMapProfile = profile_emojis,
 				attachmentList = media_attachments,
-				highlightTrie = parser.highlightTrie
+				highlightTrie = parser.highlightTrie,
+				mentions = mentions
 			)
 			
 			this.decoded_content = options.decodeHTML(content)
@@ -486,11 +494,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				else -> sv
 			}
 			
+			// ハイライト検出のためにDecodeOptionsを作り直す？
 			options = DecodeOptions(
 				parser.context,
 				emojiMapCustom = custom_emojis,
 				emojiMapProfile = profile_emojis,
-				highlightTrie = parser.highlightTrie
+				highlightTrie = parser.highlightTrie,
+				mentions = mentions
 			)
 			
 			this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
@@ -533,6 +543,18 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		}
 	}
 	
+	private fun mergeMentions(
+		mentions1 : java.util.ArrayList<TootMention>?,
+		mentions2 : java.util.ArrayList<TootMention>?
+	) : java.util.ArrayList<TootMention>? {
+		val size = (mentions1?.size?:0) + (mentions2?.size?:0)
+		if( size == 0) return null
+		val dst = ArrayList<TootMention>(size)
+		if(mentions1!=null) dst.addAll(mentions1)
+		if(mentions2!=null) dst.addAll(mentions2)
+		return dst
+	}
+	
 	///////////////////////////////////////////////////
 	// ユーティリティ
 	
@@ -545,14 +567,14 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	fun checkMuted() : Boolean {
 		
 		// app mute
-		val muted_app = TootStatus.muted_app
+		val muted_app = muted_app
 		if(muted_app != null) {
 			val name = application?.name
 			if(name != null && muted_app.contains(name)) return true
 		}
 		
 		// word mute
-		val muted_word = TootStatus.muted_word
+		val muted_word = muted_word
 		if(muted_word != null) {
 			if(muted_word.matchShort(decoded_content)) return true
 			if(muted_word.matchShort(decoded_spoiler_text)) return true
@@ -971,15 +993,15 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				if(uri?.isNotEmpty() == true) {
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(uri)
-					if(m.find()) return EntityId(m.group(2))
+					if(m.find()) return EntityId(m.group(2)!!)
 					
 					// https://server/@user/(status_id)
 					m = reTootUriAP2.matcher(uri)
-					if(m.find()) return EntityId(m.group(2))
+					if(m.find()) return EntityId(m.group(2)!!)
 					
 					// https://misskey.xyz/notes/5b802367744b650030a13640
 					m = reStatusPageMisskey.matcher(uri)
-					if(m.find()) return EntityId(m.group(2))
+					if(m.find()) return EntityId(m.group(2)!!)
 					
 					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
 					// tootsearch中の投稿からIDを読めるようにしたい
@@ -989,11 +1011,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
 					m = reStatusPageNotice.matcher(uri)
-					if(m.find()) return EntityId(m.group(2))
+					if(m.find()) return EntityId(m.group(2)!!)
 					
 					// tag:mstdn.osaka,2017-12-19:objectId=5672321:objectType=Status
 					m = reTootUriOS.matcher(uri)
-					if(m.find()) return EntityId(m.group(2))
+					if(m.find()) return EntityId(m.group(2)!!)
 					
 					log.w("can't parse status uri: $uri")
 				}
@@ -1002,15 +1024,15 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(url)
-					if(m.find()) return EntityId(m.group(2))
+					if(m.find()) return EntityId(m.group(2)!!)
 					
 					// https://friends.nico/@(who)/(status_id)
 					m = reTootUriAP2.matcher(url)
-					if(m.find()) return EntityId(m.group(2))
+					if(m.find()) return EntityId(m.group(2)!!)
 					
 					// https://misskey.xyz/notes/5b802367744b650030a13640
 					m = reStatusPageMisskey.matcher(url)
-					if(m.find()) return EntityId(m.group(2))
+					if(m.find()) return EntityId(m.group(2)!!)
 					
 					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
 					// tootsearch中の投稿からIDを読めるようにしたい
@@ -1020,7 +1042,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
 					m = reStatusPageNotice.matcher(url)
-					if(m.find()) return EntityId(m.group(2))
+					if(m.find()) return EntityId(m.group(2)!!)
 					
 					
 					log.w("can't parse status URL: $url")

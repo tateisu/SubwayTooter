@@ -5,6 +5,7 @@ import android.text.Spannable
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji
 import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
+import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.WordTrieTree
 import java.util.*
@@ -22,7 +23,8 @@ class DecodeOptions(
 	var unwrapEmojiImageTag : Boolean = false,
 	var enlargeCustomEmoji : Float = 1f,
 	var forceHtml : Boolean = false, // force use HTML instead of Misskey Markdown
-	var mentionFullAcct : Boolean = false
+	var mentionFullAcct : Boolean = false,
+	var mentions: ArrayList<TootMention>? = null
 ) {
 	
 	internal fun isMediaAttachment(url : String?) : Boolean {

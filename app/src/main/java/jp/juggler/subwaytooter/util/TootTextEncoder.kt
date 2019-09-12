@@ -63,7 +63,7 @@ object TootTextEncoder {
 		sb.addAfterLine( "\n")
 		
 		intent.putExtra(ActText.EXTRA_CONTENT_START, sb.length)
-		sb.append(DecodeOptions(context, access_info).decodeHTML(status.content))
+		sb.append(DecodeOptions(context, access_info,mentions = status.mentions).decodeHTML(status.content))
 		
 		encodePolls(sb,context,status)
 		
@@ -90,7 +90,7 @@ object TootTextEncoder {
 			sb.append(sv).append("\n\n")
 		}
 		
-		sb.append(DecodeOptions(context, access_info).decodeHTML(status.content))
+		sb.append(DecodeOptions(context, access_info,mentions=status.mentions).decodeHTML(status.content))
 		
 		encodePolls(sb,context,status)
 		

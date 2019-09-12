@@ -26,11 +26,9 @@ internal class ViewHolderHeaderSearch(
 	override fun bindData(column : Column) {
 		super.bindData(column)
 		
-		val html = column.getHeaderDesc() ?: ""
-		val sv = DecodeOptions(activity, access_info,decodeEmoji = true).decodeHTML( html)
-		
-		tvSearchDesc.text = sv
 		tvSearchDesc.textColor = column.getContentColor()
+		tvSearchDesc.text = DecodeOptions(activity, access_info, decodeEmoji = true)
+			.decodeHTML(column.getHeaderDesc() ?: "")
 	}
 	
 	override fun onViewRecycled() {

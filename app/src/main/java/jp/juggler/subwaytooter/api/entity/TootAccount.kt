@@ -378,13 +378,13 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		}
 	}
 	
-	fun setLastStatusText(
-		tvLastStatusAt : TextView,
+	fun setAccountExtra(
+		tv : TextView,
 		accessInfo : SavedAccount,
 		fromProfileHeader : Boolean = false
 	) {
 		val pref = App1.pref
-		val context = tvLastStatusAt.context
+		val context = tv.context
 		
 		var sb : SpannableStringBuilder? = null
 		fun prepareSb() = sb?.apply { append('\n') } ?: SpannableStringBuilder().also { sb = it }
@@ -416,19 +416,21 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 					.decodeHTML(note)
 					.replaceAllEx(reNoteLineFeed, " ")
 					.trimEx()
-				prepareSb().append(
-					if(decodedNote is SpannableStringBuilder && decodedNote.length > 200) {
-						decodedNote.replace(200, decodedNote.length, "…")
-					} else {
-						decodedNote
-					}
-				)
+				if(decodedNote.isNotBlank()) {
+					prepareSb().append(
+						if(decodedNote is SpannableStringBuilder && decodedNote.length > 200) {
+							decodedNote.replace(200, decodedNote.length, "…")
+						} else {
+							decodedNote
+						}
+					)
+				}
 			}
 		}
 		
-		if(vg(tvLastStatusAt, sb != null)) {
-			tvLastStatusAt.text = sb
-			tvLastStatusAt.movementMethod = MyLinkMovementMethod
+		if(vg(tv, sb != null)) {
+			tv.text = sb
+			tv.movementMethod = MyLinkMovementMethod
 		}
 	}
 	
@@ -449,28 +451,37 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		internal val reAccountUrl : Pattern =
 			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/@(\w+[\w-]*)(?:@(\w[\w.-]*\w))?(?=\z|[?#])""")
 		
+		// host,user
+		internal val reAccountUrl2 : Pattern =
+			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/users/(\w|\w+[\w-]*\w)(?=\z|[?#])""")
+		
 		fun getAcctFromUrl(url : String?) : String? {
 			
 			url ?: return null
 			
-			val m = reAccountUrl.matcher(url)
-			return if(m.find()) {
-				val host = m.group(1)
-				val user = m.group(2).decodePercent()
+			var m = reAccountUrl.matcher(url)
+			if(m.find()) {
+				val host = m.groupOrNull(1)
+				val user = m.groupOrNull(2)?.decodePercent()
 				val instance = m.groupOrNull(3)?.decodePercent()
-				if(instance?.isNotEmpty() == true) {
+				return if(instance?.isNotEmpty() == true) {
 					"$user@$instance"
 				} else {
 					"$user@$host"
 				}
-			} else {
-				null
 			}
+			
+			m = reAccountUrl2.matcher(url)
+			if(m.find()) {
+				val host = m.groupOrNull(1)
+				val user = m.groupOrNull(2)?.decodePercent()
+				
+				return "$user@$host"
+			}
+
+			return null
 		}
 		
-		// host,user
-		internal val reAccountUrl2 : Pattern =
-			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/users/(\w|\w+[\w-]*\w)(?=\z|[?#])""")
 		
 		private fun parseSource(src : JSONObject?) : Source? {
 			src ?: return null

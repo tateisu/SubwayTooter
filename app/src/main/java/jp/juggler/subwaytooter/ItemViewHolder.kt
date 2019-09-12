@@ -1156,7 +1156,7 @@ internal class ItemViewHolder(
 		
 		setAcct(tvFollowerAcct, access_info.getFullAcct(who), who.acct)
 		
-		who.setLastStatusText(tvLastStatusAt,access_info)
+		who.setAccountExtra(tvLastStatusAt,access_info)
 		
 		
 		val relation = UserRelation.load(access_info.db_id, who.id)

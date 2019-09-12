@@ -435,12 +435,15 @@ object HTMLDecoder {
 		for(item in src_list) {
 			if(sb.isNotEmpty()) sb.append(" ")
 			val start = sb.length
+
 			sb.append('@')
-			if(Pref.bpMentionFullAcct(App1.pref)) {
-				sb.append(linkHelper.getFullAcct(item.acct))
-			} else {
-				sb.append(item.acct)
-			}
+				.append(
+					if(Pref.bpMentionFullAcct(App1.pref)) {
+						linkHelper.getFullAcct(item.acct)
+					} else {
+						item.acct
+					}
+				)
 			val end = sb.length
 			val url = item.url
 			if(end > start) {
@@ -510,6 +513,20 @@ object HTMLDecoder {
 				'@' -> {
 					// @mention
 					if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
+						
+						// https://github.com/tateisu/SubwayTooter/issues/108
+						// check mentions to skip getAcctFromUrl
+						val mentions = options.mentions
+						if( mentions != null){
+							for( it in mentions){
+								if( it.url == href ){
+									val acct = it.acct
+									if( acct.contains('@')) return  "@$acct"
+								}
+							}
+						}
+						
+						// Account.note does not have mentions metadata. we can't drop resolving by mention URL.
 						val acct = TootAccount.getAcctFromUrl(href)
 						if(acct != null) return "@$acct"
 					}

@@ -257,11 +257,11 @@ class ActAccountSetting
 		setContentView(R.layout.act_account_setting)
 		App1.initEdgeToEdge(this)
 		
-		val root :View = findViewById(R.id.svContent)
+		val root : View = findViewById(R.id.svContent)
 		
 		Styler.fixHorizontalPadding(root)
-
-		ActAppSettingChild.setSwitchColor(this,pref,root)
+		
+		ActAppSettingChild.setSwitchColor(this, pref, root)
 		
 		tvInstance = findViewById(R.id.tvInstance)
 		tvUser = findViewById(R.id.tvUser)
@@ -368,7 +368,7 @@ class ActAccountSetting
 		name_invalidator = NetworkEmojiInvalidator(handler, etDisplayName)
 		note_invalidator = NetworkEmojiInvalidator(handler, etNote)
 		default_text_invalidator = NetworkEmojiInvalidator(handler, etDefaultText)
-
+		
 		listFieldNameInvalidator = listEtFieldName.map {
 			NetworkEmojiInvalidator(handler, it)
 		}
@@ -418,7 +418,7 @@ class ActAccountSetting
 			
 			override fun afterTextChanged(s : Editable?) {
 				val num = etMaxTootChars.parseInt()
-				if( num != null && num >= 0){
+				if(num != null && num >= 0) {
 					saveUIToData()
 				}
 			}
@@ -426,11 +426,11 @@ class ActAccountSetting
 		
 	}
 	
-	private fun EditText.parseInt():Int?{
+	private fun EditText.parseInt() : Int? {
 		val sv = this.text?.toString() ?: return null
-		return try{
-			Integer.parseInt(sv,10)
-		}catch(ex:Throwable){
+		return try {
+			Integer.parseInt(sv, 10)
+		} catch(ex : Throwable) {
 			null
 		}
 	}
@@ -472,7 +472,7 @@ class ActAccountSetting
 		
 		etDefaultText.setText(a.default_text)
 		etMaxTootChars.setText(a.max_toot_chars.toString())
-
+		
 		loading = false
 		
 		val enabled = ! a.isPseudo
@@ -543,14 +543,14 @@ class ActAccountSetting
 		account.confirm_unfavourite = cbConfirmUnfavourite.isChecked
 		account.confirm_post = cbConfirmToot.isChecked
 		account.default_text = etDefaultText.text.toString()
-
+		
 		val num = etMaxTootChars.parseInt()
-		account.max_toot_chars = if( num != null && num >= 0){
+		account.max_toot_chars = if(num != null && num >= 0) {
 			num
-		}else{
+		} else {
 			0
 		}
-
+		
 		account.saveSetting()
 		
 	}
@@ -677,7 +677,7 @@ class ActAccountSetting
 				var bChanged = false
 				try {
 					loading = true
-
+					
 					val tmpVisibility =
 						TootVisibility.parseMastodon(json.parseString("posting:default:visibility"))
 					if(tmpVisibility != null) {
@@ -953,12 +953,6 @@ class ActAccountSetting
 				emojiMapProfile = src.profile_emojis,
 				emojiMapCustom = src.custom_emojis
 			)
-			// fieldsのnameにはカスタム絵文字が適用されない
-			val decodeOptionsNoCustomEmoji = DecodeOptions(
-				context = this@ActAccountSetting,
-				linkHelper = account,
-				emojiMapProfile = src.profile_emojis
-			)
 			
 			val display_name = src.display_name
 			val name = decodeOptions.decodeEmoji(display_name)
@@ -993,7 +987,10 @@ class ActAccountSetting
 			if(src.source?.fields != null) {
 				val fields = src.source.fields
 				listEtFieldName.forEachIndexed { i, et ->
-					val text = decodeOptionsNoCustomEmoji.decodeEmoji(
+					// いつからかfields name にもカスタム絵文字が使えるようになった
+					// https://github.com/tootsuite/mastodon/pull/11350
+					// しかし
+					val text = decodeOptions.decodeEmoji(
 						when {
 							i >= fields.size -> ""
 							else -> fields[i].name
@@ -1022,7 +1019,9 @@ class ActAccountSetting
 				val fields = src.fields
 				
 				listEtFieldName.forEachIndexed { i, et ->
-					val text = decodeOptionsNoCustomEmoji.decodeEmoji(
+					// いつからかfields name にもカスタム絵文字が使えるようになった
+					// https://github.com/tootsuite/mastodon/pull/11350
+					val text = decodeOptions.decodeEmoji(
 						when {
 							fields == null || i >= fields.size -> ""
 							else -> fields[i].name
@@ -1576,11 +1575,13 @@ class ActAccountSetting
 			
 		}
 		
+		@Suppress("DEPRECATION")
 		progress.isIndeterminate = true
+		
+		@Suppress("DEPRECATION")
 		progress.setMessage("preparing image…")
-		progress.setOnCancelListener {
-			task.cancel(true)
-		}
+		
+		progress.setOnCancelListener { task.cancel(true) }
 		progress.show()
 		
 		task.executeOnExecutor(App1.task_executor)

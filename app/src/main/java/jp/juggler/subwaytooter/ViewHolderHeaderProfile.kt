@@ -216,7 +216,7 @@ internal class ViewHolderHeaderProfile(
 			tvCreated.text =
 				TootStatus.formatTime(tvCreated.context, (whoDetail ?: who).time_created_at, true)
 			
-			who.setLastStatusText(tvLastStatusAt,access_info,fromProfileHeader = true)
+			who.setAccountExtra(tvLastStatusAt,access_info,fromProfileHeader = true)
 			
 			
 			ivBackground.setImageUrl(
@@ -338,17 +338,10 @@ internal class ViewHolderHeaderProfile(
 				
 				llFields.visibility = View.VISIBLE
 				
-				// fieldsのnameにはカスタム絵文字が適用されない
-				val nameDecodeOptions = DecodeOptions(
-					context = activity,
-					decodeEmoji = true,
-					linkHelper = access_info,
-					short = true,
-					emojiMapProfile = who.profile_emojis
-				)
-				
-				// valueはMisskeyならMFM、MastodonならHTML
-				val valueDecodeOptions = DecodeOptions(
+				// fieldsのnameにはカスタム絵文字が適用されるようになった
+				// https://github.com/tootsuite/mastodon/pull/11350
+				// fieldsのvalueはMisskeyならMFM、MastodonならHTML
+				val fieldDecodeOptions = DecodeOptions(
 					context = activity,
 					decodeEmoji = true,
 					linkHelper = access_info,
@@ -368,7 +361,7 @@ internal class ViewHolderHeaderProfile(
 						LinearLayout.LayoutParams.MATCH_PARENT,
 						LinearLayout.LayoutParams.WRAP_CONTENT
 					)
-					val nameText = nameDecodeOptions.decodeEmoji(item.name)
+					val nameText = fieldDecodeOptions.decodeEmoji(item.name)
 					val nameInvalidator = NetworkEmojiInvalidator(activity.handler, nameView)
 					nameInvalidator.register(nameText)
 					
@@ -387,7 +380,7 @@ internal class ViewHolderHeaderProfile(
 						LinearLayout.LayoutParams.WRAP_CONTENT
 					)
 					
-					val valueText = valueDecodeOptions.decodeHTML(item.value)
+					val valueText = fieldDecodeOptions.decodeHTML(item.value)
 					if(item.verified_at > 0L) {
 						valueText.append('\n')
 						

@@ -4,7 +4,7 @@ import android.view.ViewManager
 import jp.juggler.subwaytooter.view.BlurhashView
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.subwaytooter.view.MyTextView
-import jp.juggler.subwaytooter.view.TrendTagHistoryView
+import jp.juggler.subwaytooter.view.TagHistoryView
 import org.jetbrains.anko.custom.ankoView
 
 // Anko Layout中にカスタムビューを指定する為に拡張関数を定義する
@@ -18,8 +18,8 @@ inline fun ViewManager.myTextView(init: MyTextView.() -> Unit) : MyTextView {
 }
 
 
-inline fun ViewManager.trendTagHistoryView(init: TrendTagHistoryView.() -> Unit): TrendTagHistoryView {
-	return ankoView({ TrendTagHistoryView(it) }, theme = 0, init = init)
+inline fun ViewManager.trendTagHistoryView(init: TagHistoryView.() -> Unit): TagHistoryView {
+	return ankoView({ TagHistoryView(it) }, theme = 0, init = init)
 }
 
 inline fun ViewManager.blurhashView(init: BlurhashView.() -> Unit): BlurhashView {

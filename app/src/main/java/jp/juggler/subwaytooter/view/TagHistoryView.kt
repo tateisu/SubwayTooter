@@ -1,15 +1,17 @@
 package jp.juggler.subwaytooter.view
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
-import jp.juggler.subwaytooter.api.entity.TootTrendTag
-import jp.juggler.util.*
+import jp.juggler.subwaytooter.api.entity.TootTag
+import jp.juggler.util.clipRange
 import kotlin.math.max
 import kotlin.math.min
 
-class TrendTagHistoryView : View {
+class TagHistoryView : View {
 	
 	private val paint = Paint()
 	private var values : List<Float>? = null
@@ -47,7 +49,7 @@ class TrendTagHistoryView : View {
 		invalidate()
 	}
 	
-	fun setHistory(history : ArrayList<TootTrendTag.History>?) {
+	fun setHistory(history : ArrayList<TootTag.History>?) {
 		if(history?.isEmpty() != false) {
 			delta = 0f
 			values = null

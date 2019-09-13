@@ -1,16 +1,11 @@
 package jp.juggler.subwaytooter
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.api.TootApiCallback
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.*
-import kotlin.collections.ArrayList
 
 class ColumnTask_Gap(
 	columnArg : Column,
@@ -106,15 +101,15 @@ class ColumnTask_Gap(
 				return
 			}
 			
-			val list_new = when(column.type){
-
+			val list_new = when(column.type) {
+				
 				// 検索カラムはIDによる重複排除が不可能
 				ColumnType.SEARCH -> list_tmp
-
+				
 				// 他のカラムは重複排除してから追加
 				else -> column.duplicate_map.filterDuplicate(list_tmp)
 			}
-
+			
 			// 0個でもギャップを消すために以下の処理を続ける
 			val changeList = ArrayList<AdapterChange>()
 			
@@ -161,17 +156,22 @@ class ColumnTask_Gap(
 			}
 			column.fireShowContent(reason = "gap updated", changeList = changeList)
 			
-			if(holder != null) {
-				if(restore_idx >= 0) {
-					// ギャップが画面内にあるなら
-					holder.setListItemTop(restore_idx + added - 1, restore_y)
-				} else {
-					// ギャップが画面内にない場合、何もしない
+			when {
+				
+				// ViewHolderがない
+				holder == null -> {
+					val scroll_save = column.scroll_save
+					if(scroll_save != null) {
+						scroll_save.adapterIndex += added - 1
+					}
 				}
-			} else {
-				val scroll_save = column.scroll_save
-				if(scroll_save != null) {
-					scroll_save.adapterIndex += added - 1
+				
+				// ギャップが画面内にあるなら
+				restore_idx >= 0 ->
+					holder.setListItemTop(restore_idx + added - 1, restore_y)
+				
+				// ギャップが画面内にない場合、何もしない
+				else -> {
 				}
 			}
 			
@@ -807,28 +807,19 @@ class ColumnTask_Gap(
 		}
 		
 		// https://mastodon2.juggler.jp/api/v2/search?q=gargron&type=accounts&offset=5
-		var path = String.format(
-			Locale.JAPAN,
-			Column.PATH_SEARCH_V2,
-			column.search_query.encodePercent()
-		) + "&type=$type&offset=$offset"
+		var query = "q=${column.search_query.encodePercent()}&type=$type&offset=$offset"
+		if(column.search_resolve) query += "&resolve=1"
 		
-		if(column.search_resolve) path += "&resolve=1"
-		
-		val result = client.request(path)
-		val jsonObject = result?.jsonObject
-		if(jsonObject != null) {
-			val tmp = parser.resultsV2(jsonObject)
-			if(tmp != null) {
-				list_tmp = ArrayList()
-				addAll(list_tmp, tmp.hashtags)
-				addAll(list_tmp, tmp.accounts)
-				addAll(list_tmp, tmp.statuses)
-				if(list_tmp?.isNotEmpty() == true) {
-					addOne(list_tmp, TootSearchGap(gap.type))
-				}
+		val (apiResult, searchResult) = client.requestMastodonSearch(parser, query)
+		if(searchResult != null) {
+			list_tmp = ArrayList()
+			addAll(list_tmp, searchResult.hashtags)
+			addAll(list_tmp, searchResult.accounts)
+			addAll(list_tmp, searchResult.statuses)
+			if(list_tmp?.isNotEmpty() == true) {
+				addOne(list_tmp, TootSearchGap(gap.type))
 			}
 		}
-		return result
+		return apiResult
 	}
 }

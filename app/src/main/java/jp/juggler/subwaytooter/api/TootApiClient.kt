@@ -1471,6 +1471,26 @@ class TootApiClient(
 	
 }
 
+// query: query_string after ? ( ? itself is excluded )
+fun TootApiClient.requestMastodonSearch(parser:TootParser,query : String) : Pair<TootApiResult?, TootResults?> {
+	
+	var searchApiVersion = 2
+	var apiResult = request("/api/v2/search?$query")
+		?: return Pair(null, null)
+
+	if( (apiResult.response?.code?:0) in 400 until 500 ) {
+		searchApiVersion = 1
+		apiResult = request("/api/v1/search?$query")
+			?: return Pair(null, null)
+		
+	}
+	
+	val searchResult =  parser.results(apiResult.jsonObject)
+	searchResult?.searchApiVersion = searchApiVersion
+	
+	return Pair(apiResult,searchResult)
+}
+
 // result.data に TootAccountRefを格納して返す。もしくはエラーかキャンセル
 fun TootApiClient.syncAccountByUrl(
 	accessInfo : SavedAccount,
@@ -1490,13 +1510,13 @@ fun TootApiClient.syncAccountByUrl(
 	
 	val parser = TootParser(context, accessInfo)
 	
-	var ar : TootAccountRef? = null
-	val result = if(accessInfo.isMisskey) {
+	return if(accessInfo.isMisskey) {
 		
 		val acct = TootAccount.getAcctFromUrl(who_url)
-			?: return Pair(TootApiResult(context.getString(R.string.user_id_conversion_failed)), ar)
+			?: return Pair(TootApiResult(context.getString(R.string.user_id_conversion_failed)), null)
 		
-		request(
+		var ar : TootAccountRef? = null
+		val result = request(
 			"/api/users/show",
 			accessInfo.putMisskeyApiToken(JSONObject()).apply {
 				when(val delm = acct.indexOf('@')) {
@@ -1515,17 +1535,15 @@ fun TootApiClient.syncAccountByUrl(
 					setError(context.getString(R.string.user_id_conversion_failed))
 				}
 			}
-		
+		Pair(result, ar)
 	} else {
-		request("/api/v1/search?q=${who_url.encodePercent()}&resolve=true")
-			?.apply {
-				ar = parser.results(jsonObject)?.accounts?.firstOrNull()
-				if(ar == null && error == null) {
-					setError(context.getString(R.string.user_id_conversion_failed))
-				}
-			}
+		val (apiResult, searchResult) = requestMastodonSearch(parser,"q=${who_url.encodePercent()}&resolve=true")
+		val ar = searchResult?.accounts?.firstOrNull()
+		if(apiResult != null && apiResult.error == null && ar == null) {
+			apiResult.setError(context.getString(R.string.user_id_conversion_failed))
+		}
+		Pair(apiResult, ar)
 	}
-	return Pair(result, ar)
 }
 
 fun TootApiClient.syncAccountByAcct(
@@ -1534,9 +1552,9 @@ fun TootApiClient.syncAccountByAcct(
 ) : Pair<TootApiResult?, TootAccountRef?> {
 	
 	val parser = TootParser(context, accessInfo)
-	var ar : TootAccountRef? = null
-	val result = if(accessInfo.isMisskey) {
-		request(
+	return if(accessInfo.isMisskey) {
+		var ar : TootAccountRef? = null
+		val result = request(
 			"/api/users/show",
 			accessInfo.putMisskeyApiToken()
 				.apply {
@@ -1557,16 +1575,16 @@ fun TootApiClient.syncAccountByAcct(
 					setError(context.getString(R.string.user_id_conversion_failed))
 				}
 			}
+		Pair(result, ar)
 	} else {
-		request("/api/v1/search?q=${acct.encodePercent()}&resolve=true")
-			?.apply {
-				ar = parser.results(jsonObject)?.accounts?.firstOrNull()
-				if(ar == null && error == null) {
-					setError(context.getString(R.string.user_id_conversion_failed))
-				}
-			}
+		val (apiResult, searchResult) = requestMastodonSearch(parser,"q=${acct.encodePercent()}&resolve=true")
+		val ar = searchResult?.accounts?.firstOrNull()
+		if(apiResult != null && apiResult.error == null && ar == null) {
+			apiResult.setError(context.getString(R.string.user_id_conversion_failed))
+		}
+		Pair(apiResult, ar)
 	}
-	return Pair(result, ar)
+	
 }
 
 fun TootApiClient.syncStatus(
@@ -1611,9 +1629,9 @@ fun TootApiClient.syncStatus(
 	
 	// 使いたいタンス上の投稿IDを取得する
 	val parser = TootParser(context, accessInfo)
-	var targetStatus : TootStatus? = null
-	val result = if(accessInfo.isMisskey) {
-		request(
+	return if(accessInfo.isMisskey) {
+		var targetStatus : TootStatus? = null
+		val result = request(
 			"/api/ap/show",
 			accessInfo.putMisskeyApiToken()
 				.put("uri", url)
@@ -1625,16 +1643,16 @@ fun TootApiClient.syncStatus(
 					setError(context.getString(R.string.cant_sync_toot))
 				}
 			}
+		Pair(result, targetStatus)
 	} else {
-		request("/api/v1/search?q=${url.encodePercent()}&resolve=true")
-			?.apply {
-				targetStatus = parser.results(jsonObject)?.statuses?.firstOrNull()
-				if(targetStatus == null && error == null) {
-					setError(context.getString(R.string.cant_sync_toot))
-				}
-			}
+		val(apiResult,searchResult) = requestMastodonSearch(parser,"${url.encodePercent()}&resolve=true")
+		val targetStatus = searchResult?.statuses?.firstOrNull()
+		if( apiResult!= null && apiResult.error==null && targetStatus==null){
+			apiResult.setError(context.getString(R.string.cant_sync_toot))
+		}
+		Pair(apiResult,targetStatus)
 	}
-	return Pair(result, targetStatus)
+	
 }
 
 fun TootApiClient.syncStatus(

@@ -42,11 +42,9 @@ class TootParser(
 	fun notification(src : JSONObject?) = parseItem(::TootNotification, this, src)
 	fun notificationList(src : JSONArray?) = parseList(::TootNotification, this, src)
 	
+	fun tagList(array : JSONArray?) = parseList(::TootTag, array)
 	fun results(src : JSONObject?) = parseItem(::TootResults, this, src)
 	fun instance(src : JSONObject?) = parseItem(::TootInstance, this, src)
-	fun trendTagList(array : JSONArray?) = parseList(::TootTrendTag, array)
-	
-	fun resultsV2(src : JSONObject) = parseItem(::TootResultsV2, this, src)
 	
 	fun getMisskeyUserRelation(whoId : EntityId) = misskeyUserRelationMap[whoId]
 	

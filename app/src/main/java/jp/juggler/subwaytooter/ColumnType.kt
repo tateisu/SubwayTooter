@@ -1265,7 +1265,7 @@ enum class ColumnType(
 		
 		loading = { client ->
 			val result = client.request("/api/v1/trends")
-			val src = parser.trendTagList(result?.jsonArray)
+			val src = parser.tagList(result?.jsonArray)
 			
 			this.list_tmp = addAll(this.list_tmp, src)
 			this.list_tmp = addOne(

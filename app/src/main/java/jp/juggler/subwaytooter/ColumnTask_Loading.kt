@@ -1,10 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.api.TootApiCallback
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.util.InstanceTicker
 import jp.juggler.util.*
@@ -980,7 +977,7 @@ class ColumnTask_Loading(
 				)
 				val jsonArray = result?.jsonArray
 				if(jsonArray != null) {
-					val src = TootTag.parseTootTagList(parser, jsonArray)
+					val src = TootTag.parseList(parser, jsonArray)
 					list_tmp = addAll(list_tmp, src)
 				}
 			}
@@ -1019,63 +1016,27 @@ class ColumnTask_Loading(
 				}
 			}
 			
+			var query="q=${column.search_query.encodePercent()}"
+			if(column.search_resolve) query += "&resolve=1"
 			
-			if(instance?.versionGE(TootInstance.VERSION_2_4_0) == true) {
-				// v2 api を試す
-				var path = String.format(
-					Locale.JAPAN,
-					Column.PATH_SEARCH_V2,
-					column.search_query.encodePercent()
-				)
-				if(column.search_resolve) path += "&resolve=1"
-				
-				client.request(path).also { result ->
-					val jsonObject = result?.jsonObject
-					if(jsonObject != null) {
-						val tmp = parser.resultsV2(jsonObject)
-						if(tmp != null) {
-							list_tmp = java.util.ArrayList()
-							addAll(list_tmp, tmp.hashtags)
-							if(tmp.hashtags.isNotEmpty()) {
-								addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Hashtag))
-							}
-							addAll(list_tmp, tmp.accounts)
-							if(tmp.accounts.isNotEmpty()) {
-								addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Account))
-							}
-							addAll(list_tmp, tmp.statuses)
-							if(tmp.statuses.isNotEmpty()) {
-								addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Status))
-							}
-							return result
-						}
-					}
-					if(instance.versionGE(TootInstance.VERSION_2_4_1_rc1)) {
-						// 2.4.1rc1以降はv2が確実に存在するはずなので、v1へのフォールバックを行わない
-						return result
-					}
+			val(apiResult,searchResult)= client.requestMastodonSearch(parser,query)
+			if( searchResult != null){
+				list_tmp = java.util.ArrayList()
+				addAll(list_tmp, searchResult.hashtags)
+				if(searchResult.searchApiVersion>=2 && searchResult.hashtags.isNotEmpty()) {
+					addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Hashtag))
+				}
+				addAll(list_tmp, searchResult.accounts)
+				if(searchResult.searchApiVersion>=2 && searchResult.accounts.isNotEmpty()) {
+					addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Account))
+				}
+				addAll(list_tmp, searchResult.statuses)
+				if( searchResult.searchApiVersion>=2 && searchResult.statuses.isNotEmpty()) {
+					addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Status))
 				}
 			}
+			return apiResult
 			
-			var path = String.format(
-				Locale.JAPAN,
-				Column.PATH_SEARCH,
-				column.search_query.encodePercent()
-			)
-			if(column.search_resolve) path += "&resolve=1"
-			
-			client.request(path).also { result ->
-				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
-					val tmp = parser.results(jsonObject)
-					if(tmp != null) {
-						list_tmp = java.util.ArrayList()
-						addAll(list_tmp, tmp.hashtags)
-						addAll(list_tmp, tmp.accounts)
-						addAll(list_tmp, tmp.statuses)
-					}
-				}
-			}
 		}
 		
 	}

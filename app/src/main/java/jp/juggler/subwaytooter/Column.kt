@@ -121,8 +121,6 @@ class Column(
 		internal const val PATH_ACCOUNT = "/api/v1/accounts/%s" // 1:account_id
 		internal const val PATH_STATUSES = "/api/v1/statuses/%s" // 1:status_id
 		internal const val PATH_STATUSES_CONTEXT = "/api/v1/statuses/%s/context" // 1:status_id
-		const val PATH_SEARCH = "/api/v1/search?q=%s"
-		const val PATH_SEARCH_V2 = "/api/v2/search?q=%s"
 		// search args 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
 		// internal const val PATH_INSTANCE = "/api/v1/instance"
 		internal const val PATH_LIST_INFO = "/api/v1/lists/%s"

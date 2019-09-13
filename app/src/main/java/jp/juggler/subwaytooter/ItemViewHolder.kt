@@ -107,7 +107,7 @@ internal class ItemViewHolder(
 	private lateinit var tvTrendTagName : TextView
 	private lateinit var tvTrendTagDesc : TextView
 	private lateinit var tvTrendTagCount : TextView
-	private lateinit var cvTrendTagHistory : TrendTagHistoryView
+	private lateinit var cvTagHistory : TagHistoryView
 	
 	private lateinit var llList : View
 	private lateinit var btnListTL : Button
@@ -443,7 +443,7 @@ internal class ItemViewHolder(
 		tvMessageHolder.setTextColor(c)
 		tvTrendTagName.setTextColor(c)
 		tvTrendTagCount.setTextColor(c)
-		cvTrendTagHistory.setColor(c)
+		cvTagHistory.setColor(c)
 		tvFilterPhrase.setTextColor(c)
 		tvMediaDescription.setTextColor(c)
 		tvCardText.setTextColor(c)
@@ -513,8 +513,6 @@ internal class ItemViewHolder(
 			
 			is TootMessageHolder -> showMessageHolder(item)
 			
-			// TootTrendTag の後に TootTagを判定すること
-			is TootTrendTag -> showTrendTag(item)
 			is TootTag -> showSearchTag(item)
 			
 			is TootFilter -> showFilter(item)
@@ -743,16 +741,7 @@ internal class ItemViewHolder(
 		}
 		showStatus(item, colorBg)
 	}
-	
-	private fun showTrendTag(item : TootTrendTag) {
-		llTrendTag.visibility = View.VISIBLE
-		tvTrendTagName.text = "#${item.name}"
-		tvTrendTagDesc.text =
-			activity.getString(R.string.people_talking, item.accountDaily, item.accountWeekly)
-		tvTrendTagCount.text = "${item.countDaily}(${item.countWeekly})"
-		cvTrendTagHistory.setHistory(item.history)
-	}
-	
+
 	private fun showMessageHolder(item : TootMessageHolder) {
 		tvMessageHolder.visibility = View.VISIBLE
 		tvMessageHolder.text = item.text
@@ -1019,8 +1008,18 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showSearchTag(tag : TootTag) {
-		llSearchTag.visibility = View.VISIBLE
-		btnSearchTag.text = "#" + tag.name
+		if( tag.history?.isNotEmpty() == true ){
+			llTrendTag.visibility = View.VISIBLE
+			tvTrendTagName.text = "#${tag.name}"
+			tvTrendTagDesc.text =
+				activity.getString(R.string.people_talking, tag.accountDaily, tag.accountWeekly)
+			tvTrendTagCount.text = "${tag.countDaily}(${tag.countWeekly})"
+			cvTagHistory.setHistory(tag.history)
+		}else{
+			llSearchTag.visibility = View.VISIBLE
+			btnSearchTag.text = "#" + tag.name
+			
+		}
 	}
 	
 	private fun showGap() {
@@ -3592,7 +3591,7 @@ internal class ItemViewHolder(
 					endMargin = dip(6)
 				}
 				
-				cvTrendTagHistory = trendTagHistoryView {
+				cvTagHistory = trendTagHistoryView {
 				
 				}.lparams(dip(64), dip(32))
 				

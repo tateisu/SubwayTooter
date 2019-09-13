@@ -2,51 +2,108 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.MisskeyMarkdownDecoder
-import jp.juggler.util.groupEx
-import jp.juggler.util.notEmptyOrThrow
-import jp.juggler.util.parseString
+import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.regex.Pattern
 
-open class TootTag(
+open class TootTag constructor(
+	
 	// The hashtag, not including the preceding #
 	val name : String,
+	
 	// The URL of the hashtag. may null if generated from TootContext
-	val url : String? = null
+	val url : String? = null,
+	
+	// Mastodon /api/v2/search provides history.
+	val history : ArrayList<History>? = null
+
 ) : TimelineItem() {
 	
-	constructor(src : JSONObject) : this(
+	val countDaily : Int
+	val countWeekly : Int
+	val accountDaily : Int
+	val accountWeekly : Int
+	
+	init {
+		countDaily = history?.first()?.uses ?: 0
+		countWeekly = history?.sumBy { it.uses } ?: 0
+		
+		accountDaily = history?.first()?.accounts ?: 0
+		accountWeekly = history?.map { it.accounts }?.max() ?: accountDaily
+	}
+	
+	class History(src : JSONObject) {
+		val day : Long
+		val uses : Int
+		val accounts : Int
+		
+		init {
+			day = src.parseLong("day")
+				?: throw RuntimeException("TootTrendTag.History: missing day")
+			uses = src.parseInt("uses")
+				?: throw RuntimeException("TootTrendTag.History: missing uses")
+			accounts = src.parseInt("accounts")
+				?: throw RuntimeException("TootTrendTag.History: missing accounts")
+		}
+		
+	}
+	
+	// for TREND_TAG column
+	constructor( src : JSONObject) : this(
 		name = src.notEmptyOrThrow("name"),
-		url = src.parseString("url")
+		url = src.parseString("url"),
+		history = parseHistories( src.optJSONArray("history"))
 	)
 	
 	companion object {
 		
-		// 検索結果のhashtagリストから生成する
-		fun parseTootTagList(parser : TootParser, array : JSONArray?) : ArrayList<TootTag> {
+		val log = LogCategory("TootTag")
+		
+		private fun parseHistories(src : JSONArray?) : ArrayList<History>? {
+			src ?: return null
+			
+			val dst = ArrayList<History>()
+			for(i in 0 until src.length()) {
+				try {
+					dst.add(History(src.optJSONObject(i)))
+				} catch(ex : Throwable) {
+					log.e(ex, "parseHistories failed.")
+				}
+			}
+			return dst
+		}
+		
+		fun parseList(parser : TootParser, array : JSONArray?) : ArrayList<TootTag> {
 			val result = ArrayList<TootTag>()
-			if(parser.serviceType == ServiceType.MISSKEY) {
-				if(array != null) {
+			if(array != null) {
+				if(parser.serviceType == ServiceType.MISSKEY) {
 					for(i in 0 until array.length()) {
 						val sv = array.parseString(i)
 						if(sv?.isNotEmpty() == true) {
 							result.add(TootTag(name = sv))
 						}
 					}
-				}
-				
-			} else {
-				if(array != null) {
+				} else {
 					for(i in 0 until array.length()) {
-						val sv = array.parseString(i)
-						if(sv?.isNotEmpty() == true) {
-							result.add(TootTag(name = sv))
+						val tag = try {
+							when(val item = array.opt(i)) {
+								is String -> if(item.isNotEmpty()) {
+									TootTag(name = item)
+								} else {
+									null
+								}
+								is JSONObject -> TootTag(item)
+								else -> null
+							}
+						} catch(ex : Throwable) {
+							log.w(ex, "parseList: parse error")
+							null
 						}
+						if(tag != null) result.add(tag)
 					}
 				}
 			}
-			
 			return result
 		}
 		
@@ -94,7 +151,7 @@ open class TootTag(
 				val m = reTagMastodon.matcher(src)
 				while(m.find()) {
 					if(result == null) result = ArrayList()
-					result.add(m.groupEx(1)!!)
+					result.add(m.groupEx(1) !!)
 				}
 				result
 			}

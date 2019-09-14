@@ -101,10 +101,16 @@ class NetworkStateTracker(
 				"connectionState: activeNetwork is null"
 			} else {
 				val capabilities = cm.getNetworkCapabilities(activeNetwork)
-				if(! capabilities.isConnected) {
-					"connectionState: not connected. $activeNetwork  $capabilities"
-				} else {
+				
+				// log.d("connectionState: $activeNetwork $capabilities")
+				// connectionState: 103 [ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&VALIDATED&NOT_ROAMING&FOREGROUND&NOT_CONGESTED&NOT_SUSPENDED LinkUpBandwidth>=1048576Kbps LinkDnBandwidth>=1048576Kbps SignalStrength: -48]
+
+				// capabilities.isConnected でも cm.isDefaultNetworkActive でもなく
+				// インターネット接続ありかどうかを確認する
+				if( capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ==true ) {
 					null
+				}else{
+					"connectionState: hasCapability(internet) is false. $activeNetwork $capabilities"
 				}
 			}
 		} else {

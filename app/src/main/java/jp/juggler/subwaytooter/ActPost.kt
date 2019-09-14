@@ -378,7 +378,7 @@ class ActPost : AppCompatActivity(),
 	internal lateinit var cbContentWarning : CheckBox
 	internal lateinit var etContentWarning : MyEditText
 	internal lateinit var etContent : MyEditText
-	internal lateinit var btnFeaturedTag : ImageButton
+	private lateinit var btnFeaturedTag : ImageButton
 	
 	internal lateinit var cbQuoteRenote : CheckBox
 	
@@ -1385,11 +1385,12 @@ class ActPost : AppCompatActivity(),
 			return
 		}
 		
-		val now = SystemClock.elapsedRealtime()
 		val cache = featuredTagCache[account.acct]
 		
 		vg(btnFeaturedTag, cache?.list?.isNotEmpty() == true)
-		if(cache != null && cache.time <= 300000L) return
+		
+		val now = SystemClock.elapsedRealtime()
+		if(cache != null && now - cache.time <= 300000L) return
 		
 		// 同時に実行するタスクは1つまで
 		var lastTask = lastFeaturedTagTask

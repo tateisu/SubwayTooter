@@ -1645,7 +1645,7 @@ fun TootApiClient.syncStatus(
 			}
 		Pair(result, targetStatus)
 	} else {
-		val(apiResult,searchResult) = requestMastodonSearch(parser,"${url.encodePercent()}&resolve=true")
+		val(apiResult,searchResult) = requestMastodonSearch(parser,"q=${url.encodePercent()}&resolve=true")
 		val targetStatus = searchResult?.statuses?.firstOrNull()
 		if( apiResult!= null && apiResult.error==null && targetStatus==null){
 			apiResult.setError(context.getString(R.string.cant_sync_toot))

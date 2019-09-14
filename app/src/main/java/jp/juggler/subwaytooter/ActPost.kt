@@ -482,7 +482,9 @@ class ActPost : AppCompatActivity(),
 			R.id.btnMore -> performMore()
 			R.id.btnPlugin -> openMushroom()
 			R.id.btnEmojiPicker -> post_helper.openEmojiPickerFromMore()
-			R.id.btnFeaturedTag -> post_helper.openFeaturedTagList(featuredTagCache[account?.acct ?: ""]?.list)
+			R.id.btnFeaturedTag -> post_helper.openFeaturedTagList(
+				featuredTagCache[account?.acct ?: ""]?.list
+			)
 			R.id.ibSchedule -> performSchedule()
 			R.id.ibScheduleReset -> resetSchedule()
 		}
@@ -1211,7 +1213,7 @@ class ActPost : AppCompatActivity(),
 		btnAttachment.setOnClickListener(this)
 		btnPost.setOnClickListener(this)
 		btnRemoveReply.setOnClickListener(this)
-
+		
 		btnFeaturedTag = findViewById(R.id.btnFeaturedTag)
 		
 		val btnPlugin : ImageButton = findViewById(R.id.btnPlugin)
@@ -1368,39 +1370,30 @@ class ActPost : AppCompatActivity(),
 	}
 	
 	class FeaturedTagCache(
-		val list:List<TootTag>,
-		val time: Long
+		val list : List<TootTag>,
+		val time : Long
 	)
 	
-	private val featuredTagCache =ConcurrentHashMap<String,FeaturedTagCache>()
+	private val featuredTagCache = ConcurrentHashMap<String, FeaturedTagCache>()
 	private var lastFeaturedTagTask : TootTaskRunner? = null
 	
-	private fun updateFeaturedTags(){
-		
-		fun setHashtagButtonEnabled(enabled:Boolean){
-			btnFeaturedTag.setEnabledColor(
-				this,
-				R.drawable.ic_hashtag,
-				getAttributeColor(this,R.attr.colorVectorDrawable)
-				,enabled
-			)
-		}
+	private fun updateFeaturedTags() {
 		
 		val account = account
-		if( account==null || account.isPseudo){
-			setHashtagButtonEnabled(false)
+		if(account == null || account.isPseudo) {
+			vg(btnFeaturedTag, false)
 			return
 		}
 		
 		val now = SystemClock.elapsedRealtime()
 		val cache = featuredTagCache[account.acct]
-		if(cache!=null && now - cache.time <= 300000L ){
-			setHashtagButtonEnabled(cache.list.isNotEmpty())
+		if(cache != null && now - cache.time <= 300000L) {
+			vg(btnFeaturedTag, cache.list.isNotEmpty())
 			return
 		}
-
+		
 		// 同時に実行するタスクは1つまで
-		setHashtagButtonEnabled(false)
+		vg(btnFeaturedTag, false)
 		var lastTask = lastFeaturedTagTask
 		if(lastTask?.isActive != true) {
 			lastTask = TootTaskRunner(this, TootTaskRunner.PROGRESS_NONE)
@@ -1412,9 +1405,9 @@ class ActPost : AppCompatActivity(),
 						featuredTagCache[account.acct] =
 							FeaturedTagCache(emptyList(), SystemClock.elapsedRealtime())
 						TootApiResult()
-					}else{
-						client.request("/api/v1/featured_tags")?.also{result->
-							val list = parseList(::TootTag,result.jsonArray)
+					} else {
+						client.request("/api/v1/featured_tags")?.also { result ->
+							val list = parseList(::TootTag, result.jsonArray)
 							featuredTagCache[account.acct] =
 								FeaturedTagCache(list, SystemClock.elapsedRealtime())
 						}
@@ -2132,7 +2125,7 @@ class ActPost : AppCompatActivity(),
 					var lastEnd = 0
 					while(m.find()) {
 						sb.append(s.substring(lastEnd, m.start()))
-						val escaped = m.groupEx(1)!!.encodeUTF8().encodeHex()
+						val escaped = m.groupEx(1) !!.encodeUTF8().encodeHex()
 						sb.append(escaped)
 						lastEnd = m.end()
 					}
@@ -2820,7 +2813,7 @@ class ActPost : AppCompatActivity(),
 				etContent.setText(evEmoji)
 				etContent.setSelection(evEmoji.length)
 				etContentWarning.setText(content_warning)
-				etContentWarning.setSelection(content_warning.length )
+				etContentWarning.setSelection(content_warning.length)
 				cbContentWarning.isChecked = content_warning_checked
 				cbNSFW.isChecked = nsfw_checked
 				if(draft_visibility != null) this@ActPost.visibility = draft_visibility
@@ -2857,7 +2850,7 @@ class ActPost : AppCompatActivity(),
 				
 				if(account != null) selectAccount(account)
 				
-				if( tmp_attachment_list != null && tmp_attachment_list.length() > 0){
+				if(tmp_attachment_list != null && tmp_attachment_list.length() > 0) {
 					attachment_list.clear()
 					tmp_attachment_list.forEach {
 						if(it !is JSONObject) return@forEach
@@ -2894,7 +2887,7 @@ class ActPost : AppCompatActivity(),
 				}
 			}
 		}
-
+		
 		progress.isIndeterminateEx = true
 		progress.setCancelable(true)
 		progress.setOnCancelListener { task.cancel(true) }

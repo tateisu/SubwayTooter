@@ -1387,13 +1387,11 @@ class ActPost : AppCompatActivity(),
 		
 		val now = SystemClock.elapsedRealtime()
 		val cache = featuredTagCache[account.acct]
-		if(cache != null && now - cache.time <= 300000L) {
-			vg(btnFeaturedTag, cache.list.isNotEmpty())
-			return
-		}
+		
+		vg(btnFeaturedTag, cache?.list?.isNotEmpty() == true)
+		if(cache != null && cache.time <= 300000L) return
 		
 		// 同時に実行するタスクは1つまで
-		vg(btnFeaturedTag, false)
 		var lastTask = lastFeaturedTagTask
 		if(lastTask?.isActive != true) {
 			lastTask = TootTaskRunner(this, TootTaskRunner.PROGRESS_NONE)

@@ -725,12 +725,14 @@ class PollingWorker private constructor(contextArg : Context) {
 				job_status.set("check network status..")
 				
 				val net_wait_start = SystemClock.elapsedRealtime()
-				while(! checkNetwork()) {
+				while(true){
+					val connectionState = App1.getAppState(context).networkTracker.connectionState
+							?: break
 					if(isJobCancelled) throw JobCancelledException()
 					val now = SystemClock.elapsedRealtime()
 					val delta = now - net_wait_start
 					if(delta >= 10000L) {
-						log.d("network state timeout.")
+						log.d("network state timeout. $connectionState")
 						break
 					}
 					waitWorkerThread(333L)
@@ -804,9 +806,7 @@ class PollingWorker private constructor(contextArg : Context) {
 			log.d(")JobItem.run jobId=${jobId}, cancel=${isJobCancelled}")
 		}
 		
-		private fun checkNetwork() : Boolean {
-			return App1.getAppState(context).networkTracker.isConnected
-		}
+		
 	}
 	
 	internal inner class TaskRunner {

@@ -26,31 +26,28 @@ class NetworkStateTracker(
 	}
 	
 	private val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE)
-		as? ConnectivityManager
-	
-	private var lastNetwork : Network? = null
+		as ConnectivityManager
 	
 	init {
 		if(Build.VERSION.SDK_INT >= 28) {
-			cm?.registerDefaultNetworkCallback(this)
-			lastNetwork = cm?.activeNetwork
+			cm.registerDefaultNetworkCallback(this)
 		}
 	}
 	
-//	private fun <T> tryOrNull(block : () -> T?) : T? = try {
-//		block()
-//	} catch(ex : Throwable) {
-//		null
-//	}
+	//	private fun <T> tryOrNull(block : () -> T?) : T? = try {
+	//		block()
+	//	} catch(ex : Throwable) {
+	//		null
+	//	}
 	
-//	@Suppress("DEPRECATION")
-//	private fun NetworkInfo?.getStateString() =
-//		if(this == null) {
-//			"null"
-//		} else {
-//			// API 28 以上で typeName と state がdeprecated になっている
-//			"${tryOrNull { this.typeName }} ${tryOrNull { this.subtypeName }} ${tryOrNull { this.state }} ${tryOrNull { this.detailedState }}"
-//		}
+	//	@Suppress("DEPRECATION")
+	//	private fun NetworkInfo?.getStateString() =
+	//		if(this == null) {
+	//			"null"
+	//		} else {
+	//			// API 28 以上で typeName と state がdeprecated になっている
+	//			"${tryOrNull { this.typeName }} ${tryOrNull { this.subtypeName }} ${tryOrNull { this.state }} ${tryOrNull { this.detailedState }}"
+	//		}
 	
 	////////////////////////////////////////////////////////////////
 	// NetworkCallback
@@ -60,14 +57,11 @@ class NetworkStateTracker(
 	override fun onAvailable(network : Network) {
 		super.onAvailable(network)
 		val nc = try {
-			cm?.getNetworkCapabilities(network)?.toString()
+			cm.getNetworkCapabilities(network)?.toString()
 		} catch(ex : Throwable) {
 			log.e(ex, "getNetworkCapabilities failed.")
 		}
 		log.d("onAvailable $network $nc")
-		if( cm?.getNetworkCapabilities(network).isConnected ){
-			this.lastNetwork = network
-		}
 	}
 	
 	//	Called when the network the framework connected to for this request changes capabilities but still satisfies the stated need.
@@ -78,65 +72,57 @@ class NetworkStateTracker(
 	) {
 		super.onCapabilitiesChanged(network, networkCapabilities)
 		log.d("onCapabilitiesChanged $network, $networkCapabilities")
-		if(networkCapabilities.isConnected) {
-			this.lastNetwork = network
-		}
 	}
 	
 	//	Called when the network the framework connected to for this request changes LinkProperties.
 	override fun onLinkPropertiesChanged(network : Network, linkProperties : LinkProperties) {
 		super.onLinkPropertiesChanged(network, linkProperties)
 		log.d("onLinkPropertiesChanged $network, $linkProperties")
-		if( cm?.getNetworkCapabilities(network).isConnected ){
-			this.lastNetwork = network
-		}
 	}
 	
 	override fun onLosing(network : Network, maxMsToLive : Int) {
 		super.onLosing(network, maxMsToLive)
 		log.d("onLosing $network, $maxMsToLive")
-		if(lastNetwork == network) lastNetwork = null
 	}
 	
 	//	Called when the framework has a hard loss of the network or when the graceful failure ends.
 	override fun onLost(network : Network) {
 		super.onLost(network)
 		log.d("onLost $network")
-		if(lastNetwork == network) lastNetwork = null
 	}
 	
 	////////////////////////////////////////////////////////////////
 	
-	val isConnected : Boolean
-		get() = when(cm) {
-			null -> {
-				log.e("isConnected: missing ConnectivityManager")
-				true
-			}
-			else -> if(Build.VERSION.SDK_INT >= 23) {
-				val activeNetwork = cm.activeNetwork
-				if(activeNetwork == null) {
-					log.e("isConnected: missing activeNetwork")
-					false
-				} else {
-					cm.getNetworkCapabilities(activeNetwork).isConnected
-				}
+	// null if connected, else error status.
+	val connectionState : String?
+		get() = if(Build.VERSION.SDK_INT >= 29) {
+			val activeNetwork = cm.activeNetwork
+			if(activeNetwork == null) {
+				"connectionState: activeNetwork is null"
 			} else {
-				@Suppress("DEPRECATION")
-				val ani = cm.activeNetworkInfo
-				if(ani == null) {
-					log.e("isConnected: missing activeNetworkInfo")
-					false
+				val capabilities = cm.getNetworkCapabilities(activeNetwork)
+				if(! capabilities.isConnected) {
+					"connectionState: not connected. $activeNetwork  $capabilities"
 				} else {
-					@Suppress("DEPRECATION")
-					ani.isConnected
+					null
 				}
+			}
+		} else {
+			@Suppress("DEPRECATION")
+			val activeNetworkInfo = cm.activeNetworkInfo
+			
+			@Suppress("DEPRECATION")
+			if(activeNetworkInfo == null) {
+				"connectionState: activeNetworkInfo is null"
+			} else if(! activeNetworkInfo.isConnected) {
+				"connectionState: not connected. $activeNetworkInfo"
+			} else {
+				null
 			}
 		}
 	
 	fun checkNetworkState() {
-		if(!isConnected) {
-			throw RuntimeException("checkNetworkState: not connected.")
-		}
+		val status = connectionState
+		if(status != null) throw RuntimeException(status)
 	}
 }

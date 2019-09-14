@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
+import android.graphics.drawable.PictureDrawable
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
@@ -11,12 +12,11 @@ import android.view.WindowManager
 import android.widget.*
 import androidx.viewpager.widget.ViewPager
 import com.astuetz.PagerSlidingTabStrip
-import jp.juggler.emoji.EmojiMap201709
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.R
+import com.bumptech.glide.Glide
+
+import jp.juggler.emoji.EmojiMap
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
-import jp.juggler.subwaytooter.put
 import jp.juggler.subwaytooter.view.MyViewPager
 import jp.juggler.subwaytooter.view.NetworkEmojiView
 import jp.juggler.util.*
@@ -117,56 +117,56 @@ class EmojiPicker(
 		page_list.add(
 			EmojiPickerPage(
 				true,
-				EmojiMap201709.CATEGORY_PEOPLE,
+				EmojiMap.CATEGORY_PEOPLE,
 				R.string.emoji_category_people
 			)
 		)
 		page_list.add(
 			EmojiPickerPage(
 				true,
-				EmojiMap201709.CATEGORY_NATURE,
+				EmojiMap.CATEGORY_NATURE,
 				R.string.emoji_category_nature
 			)
 		)
 		page_list.add(
 			EmojiPickerPage(
 				true,
-				EmojiMap201709.CATEGORY_FOODS,
+				EmojiMap.CATEGORY_FOODS,
 				R.string.emoji_category_foods
 			)
 		)
 		page_list.add(
 			EmojiPickerPage(
 				true,
-				EmojiMap201709.CATEGORY_ACTIVITY,
+				EmojiMap.CATEGORY_ACTIVITY,
 				R.string.emoji_category_activity
 			)
 		)
 		page_list.add(
 			EmojiPickerPage(
 				true,
-				EmojiMap201709.CATEGORY_PLACES,
+				EmojiMap.CATEGORY_PLACES,
 				R.string.emoji_category_places
 			)
 		)
 		page_list.add(
 			EmojiPickerPage(
 				true,
-				EmojiMap201709.CATEGORY_OBJECTS,
+				EmojiMap.CATEGORY_OBJECTS,
 				R.string.emoji_category_objects
 			)
 		)
 		page_list.add(
 			EmojiPickerPage(
 				true,
-				EmojiMap201709.CATEGORY_SYMBOLS,
+				EmojiMap.CATEGORY_SYMBOLS,
 				R.string.emoji_category_symbols
 			)
 		)
 		page_list.add(
 			EmojiPickerPage(
 				true,
-				EmojiMap201709.CATEGORY_FLAGS,
+				EmojiMap.CATEGORY_FLAGS,
 				R.string.emoji_category_flags
 			)
 		)
@@ -267,7 +267,7 @@ class EmojiPicker(
 		val tone = viewRoot.findViewById<View>(selected_tone).tag as SkinTone
 		for(suffix in tone.suffix_list) {
 			val new_name = name + suffix
-			val info = EmojiMap201709.sShortNameToImageId[new_name]
+			val info = EmojiMap.sShortNameToEmojiInfo[new_name]
 			if(info != null) return new_name
 		}
 		return name
@@ -316,7 +316,7 @@ class EmojiPicker(
 			}
 			
 			else -> ArrayList<EmojiItem>().apply {
-				EmojiMap201709.sCategoryMap.get(category_id)?.emoji_list?.forEach { name ->
+				EmojiMap.sCategoryMap.get(category_id)?.emoji_list?.forEach { name ->
 					add(EmojiItem(name, null))
 				}
 			}
@@ -375,28 +375,7 @@ class EmojiPicker(
 			val page = this.page ?: throw RuntimeException("page is not assigned")
 			val view : View
 			val item = page.emoji_list[position]
-			if(item.instance == null) {
-				if(viewOld == null) {
-					view = ImageView(activity)
-					val lp = AbsListView.LayoutParams(wh, wh)
-					view.layoutParams = lp
-				} else {
-					view = viewOld
-				}
-				view.tag = item
-				if(view is ImageView) {
-					val name = if(page.hasSkinTone) {
-						applySkinTone(item.name)
-					} else {
-						item.name
-					}
-					
-					val info = EmojiMap201709.sShortNameToImageId[name]
-					if(info != null) {
-						view.setImageResource(info.image_id)
-					}
-				}
-			} else {
+			if(item.instance != null) {
 				if(viewOld == null) {
 					view = NetworkEmojiView(activity)
 					val lp = AbsListView.LayoutParams(wh, wh)
@@ -404,10 +383,44 @@ class EmojiPicker(
 				} else {
 					view = viewOld
 				}
-				view.tag = item
+				view.setTag(R.id.btnAbout,item)
 				if(view is NetworkEmojiView) {
 					view.setEmoji(emoji_url_map[item.name])
 				}
+			} else {
+				if(viewOld == null) {
+					view = ImageView(activity)
+					val lp = AbsListView.LayoutParams(wh, wh)
+					view.layoutParams = lp
+				} else {
+					view = viewOld
+				}
+				view.setTag(R.id.btnAbout,item)
+				if(view is ImageView) {
+					val name = if(page.hasSkinTone) {
+						applySkinTone(item.name)
+					} else {
+						item.name
+					}
+					
+					val info = EmojiMap.sShortNameToEmojiInfo[name]
+					if(info != null) {
+						val er = info.er
+						if(er.isSvg){
+							Glide.with(activity)
+								.`as`(PictureDrawable::class.java)
+								
+								.load("file:///android_asset/${er.assetsName}")
+								.into(view)
+						}else{
+							Glide.with(activity)
+								.load(er.drawableId)
+								.into(view)
+						}
+					}
+				}
+			
+				
 			}
 			
 			return view
@@ -424,11 +437,11 @@ class EmojiPicker(
 				selected(name, item.instance)
 			} else {
 				// 普通の絵文字
-				EmojiMap201709.sShortNameToImageId[name] ?: return
+				EmojiMap.sShortNameToEmojiInfo[name] ?: return
 				
 				if(page.hasSkinTone) {
 					val sv = applySkinTone(name)
-					if(EmojiMap201709.sShortNameToImageId[sv] != null) {
+					if(EmojiMap.sShortNameToEmojiInfo[sv] != null) {
 						name = sv
 					}
 				}
@@ -551,3 +564,4 @@ class EmojiPicker(
 	}
 	
 }
+

@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable
 import androidx.annotation.IntRange
 import androidx.core.content.ContextCompat
 import android.text.style.ReplacementSpan
+import jp.juggler.emoji.EmojiMap
 
 import java.lang.ref.WeakReference
 
@@ -119,3 +120,4 @@ class EmojiImageSpan(
 	}
 	
 }
+

@@ -22,6 +22,8 @@ use Carp qw(confess);
 
 =cut
 
+my $JAVA_HOME = '/cygdrive/c/Java/jre-x64-1.8';
+
 binmode \*STDOUT,":encoding(utf8)";
 binmode \*STDERR,":encoding(utf8)";
 
@@ -86,51 +88,141 @@ sub findEmojiImage($){
 	return;
 }
 
+my @svgConverts;
+my @pngConverts;
+my @mastodonSvg;
+my @twemojiSvg;
+my @overrideSvg;
+my @overridePng;
+my @emojiDataPng;
+
+sub mayCopySvg($$){
+	my($dst,$src)=@_;
+	return 0 if not -f $src;
+
+	if(not -f $dst ){
+		copy($src,$dst) or die "copy filed! $src $dst $!\n";
+	}
+	return 1;
+}
+
+sub mayCopyWebp($$){
+	my($dst,$src)=@_;
+	return 0 if not -f $src;
+	
+	if(not -f $dst ){
+		push @pngConverts,[ $dst, $src];
+	}
+	return 1;
+}
+
+sub copyImages{
+	warn "count mastodonSvg =",(0+@mastodonSvg),"\n";
+	warn "count twemojiSvg =",(0+@twemojiSvg),"\n";
+	warn "count overrideSvg =",(0+@overrideSvg),"\n";
+	warn "count overridePng =",(0+@overridePng),"\n";
+	warn "count emojiDataPng =",(0+@emojiDataPng),"\n";
+
+	if( @svgConverts ){
+		warn "convertinng svg...",(0+@svgConverts),"\n";
+
+		open(my $fh,">","tmp.list") or die "tmp.list $!";
+		for(@svgConverts){
+			my($dst,$src)=@$_;
+			print $fh "$dst $src\n";
+		}
+		close($fh) or die "tmp.list $!";
+
+		system qq($JAVA_HOME/bin/java.exe -jar SVGToVectorDrawable/out/artifacts/SVGToVectorDrawable_jar/SVGToVectorDrawable.jar tmp.list);
+		if ($? == -1) {
+	    	warn "failed to execute: $!\n";
+	    }elsif ($? & 127) {
+			warn sprintf "child died with signal %d, %s coredump\n",($? & 127),  ($? & 128) ? 'with' : 'without';
+		}elsif($? != 0) {
+			warn sprintf "child exited with value %d\n", $? >> 8;
+		}
+	}
+	
+	if( @pngConverts ){
+		warn  "convertinng png...",(0+@pngConverts),"\n";
+		for(@pngConverts){
+			my($dst,$src)=@$_;
+			system qq(cwebp $src -quiet -o $dst);
+			if ($? == -1) {
+		    	warn  "failed to execute: $!\n";
+		    }elsif ($? & 127) {
+				warn sprintf  "child died with signal %d, %s coredump\n",($? & 127),  ($? & 128) ? 'with' : 'without';
+			}elsif($? != 0) {
+				warn sprintf  "child exited with value %d\n", $? >> 8;
+			}
+		}
+	}
+}
+
+
 sub getEmojiResId($$){
 	my($image,$name)=@_;
 
-	# コードポイントに合う画像ファイルがあるか調べる
-	my $image_path = findEmojiImage($image);
-	if( not $image_path ){
-		warn "$name : missing image. $image\n";
-		next;
-	}
+	# 小文字で拡張子なし
+	my $imageLc = lc $image;
+	$imageLc =~ s/\.png//;
+	
+	# 画像リソースの名前
+	my $resName = "emj_$imageLc";
+	$resName =~ tr/-/_/;
+	
+	# 出力先ファイル名
+	my $dstPathWebp = "drawable-nodpi/$resName.webp";
+	my $dstPathSvg = "assets/$resName.svg";
 
-	# 画像ファイルをpng フォルダにコピーする
-	my $dst_name = "emj_". lc($image);
-	$dst_name =~ tr/-/_/;
-	my $dst_path = "png/$dst_name";
+	{do{
+		my $svg;
+		my $png;
 
-	if( not -f $dst_path ){
+		# using override SVG?
+		$svg = "override/$imageLc.svg";
+		if( mayCopySvg( $dstPathSvg,$svg) ){
+			push @overrideSvg,$svg;
+			last;
+		}
+		
+		# using override PNG?
+		$png = "override/$imageLc.png";
+		if( mayCopyWebp( $dstPathWebp,$png) ){
+			push @overridePng,$png;
+			last;
+		}
 
 		# using svg from mastodon folder?
-		my $mastodonSvg = "mastodon/public/emoji/".lc($image);
-		$mastodonSvg =~ s/\.png$/\.svg/i;
-		if( -f $mastodonSvg ){
-			warn "convert from mastodon SVG file: $mastodonSvg\n";
-			system qq(magick.exe -density 128 -background none $mastodonSvg png32:$dst_path);
+		$svg = "mastodon/public/emoji/$imageLc.svg";
+		if( mayCopySvg( $dstPathSvg,$svg) ){
+			push @mastodonSvg,$svg;
+			last;
+		}
 
-		}else{
-			# override?
-			my $override = "override/$dst_name";
-			if( -f $override){
-				copy( $override,$dst_path ) or die "$dst_path $!";
-			}else{
-				copy( $image_path,$dst_path ) or die "$dst_path $!";
-			}
+		# using svg from twemoji?
+		$svg = "twemoji/assets/svg/$imageLc.svg";
+		if( mayCopySvg( $dstPathSvg,$svg) ){
+			push @twemojiSvg,$svg;
+			last;
 		}
 
 
-	}
-	
-	# override?
-	my $override = "override/$dst_name";
-	
-	# 画像リソースの名前
-	my $res_name = $dst_name;
-	$res_name =~ s/\.png//;
-	
-	return $res_name;
+
+		
+		# using emoji-data PNG?
+		$png = findEmojiImage($image);
+		if( not $png ){
+			die "emoji-data has no emoji for $image\n";
+		}elsif( mayCopyWebp( $dstPathWebp,$png) ){
+			push @emojiDataPng,$png;
+			last;
+		}
+
+		die "missing emoji: $imageLc\n";
+	}while 0; }
+
+	return $resName;
 }
 
 sub getEmojiResIdOld($$){
@@ -142,19 +234,14 @@ sub getEmojiResIdOld($$){
 		die "$name : missing image. $image\n";
 	}
 
-	# 画像ファイルをpng フォルダにコピーする
-	my $dst_name = "emj_". lc("$image.png");
-	$dst_name =~ tr/-/_/;
-	my $dst_path = "png/$dst_name";
-	if( not -f $dst_path ){
-		copy( $image_path,$dst_path ) or die "$dst_path $!";
-	}
-
 	# 画像リソースの名前
-	my $res_name = $dst_name;
-	$res_name =~ s/\.png//;
-	
-	return $res_name;
+	my $resName = "emj_". lc($image);
+	$resName =~ tr/-/_/;
+
+	my $dstPathWebp = "drawable-nodpi/$resName.webp";
+	mayCopyWebp( $dstPathWebp,$image_path);
+
+	return $resName;
 }
 
 my %res_map;
@@ -404,6 +491,10 @@ sub removeZWJ($){
 }
 
 ################################################################
+
+copyImages();
+
+################################################################
 # 重複チェック
 
 my @fix_code;
@@ -436,17 +527,22 @@ updateNameMap();
 for(@fix_code){
 	my($code,$selected_res_name)=@$_;
 	my $rh = $code_map{$code};
+	if(not $rh){
+		warn "fix_code: code_map[$code] is null\n";
+		next;
+	}
+
 	my $found = 0;
 	for my $res_name (sort keys %$rh ){
 		my $res_info = $rh->{$res_name};
 		if( $res_name eq $selected_res_name ){
 			$found = 1;
 		}else{
-			warn "remove $code from $res_name...\n";
+			warn "fix_code: remove $code from $res_name...\n";
 			delete $res_info->{codepoint_map}->{$code};
 		}
 	}
-	$found or die "missing relation for $code and $selected_res_name\n";
+	$found or warn "fix_code: missing relation for $code and $selected_res_name\n";
 }
 
 for(@fix_name){
@@ -462,7 +558,7 @@ for(@fix_name){
 			delete $res_info->{shortname_map}->{$name};
 		}
 	}
-	$found or die "missing relation for $name and $selected_res_name\n";
+	$found or warn "fix_name: missing relation for $name and $selected_res_name\n";
 }
 
 for(@fix_category){
@@ -517,7 +613,7 @@ for my $code (sort keys %code_map){
 # カテゴリ情報を読む
 
 my $category_data;
-if(1){
+if(not -e "category-pretty.json"){
 	my $json = JSON->new->allow_nonref->relaxed(1);
 	my $d1 = loadFile "./emoji-mart/data/all.json";
 	my $d2="";
@@ -601,6 +697,26 @@ my $utf8 = Encode::find_encoding("utf8");
 my $utf16 = Encode::find_encoding("UTF-16BE");
 my $utf16_max_length = 0;
 
+sub makeUtf16($){
+	my($codepoint_chars) = @_;
+	
+	# コードポイントのリストからperl内部表現の文字列にする
+	my $str = join '',map{ chr hex $_ } @$codepoint_chars;
+
+	# perl内部表現からUTF-16に変換する
+	my $str_utf16 = $utf16->encode( $str );
+
+	# $str_utf16 をJavaのエスケープ表現に直す
+	my @utf16_chars = unpack("n*",$str_utf16);
+
+
+	my $char_count = 0+@utf16_chars;
+	if( $char_count > $utf16_max_length ){
+		$utf16_max_length = $char_count;
+	}
+
+	return join('',map{ sprintf qq(\\u%04x),$_} @utf16_chars );
+}
 
 
 # 画像リソースIDとUnidoceシーケンスの関連付けを出力する
@@ -608,22 +724,12 @@ for my $res_name ( sort keys %res_map ){
 	my $res_info = $res_map{$res_name};
 
 	for my $codepoint_name( sort keys %{$res_info->{codepoint_map}} ){
-		my $codepoint_chars = $res_info->{codepoint_map}{$codepoint_name};
-
-		# コードポイントのリストからperl内部表現の文字列にする
-		my $str = join '',map{ chr hex $_ } @$codepoint_chars;
-
-		# perl内部表現からUTF-16に変換する
-		my $str_utf16 = $utf16->encode( $str );
-
-		# $str_utf16 をJavaのエスケープ表現に直す
-		my @utf16_chars = unpack("n*",$str_utf16);
-		my $char_count = 0+@utf16_chars;
-		if( $char_count > $utf16_max_length ){
-			$utf16_max_length = $char_count;
+		my $java_chars = makeUtf16($res_info->{codepoint_map}{$codepoint_name});
+		if( -e "assets/$res_name.svg" ){
+			addCode( qq{code( "$java_chars", "$res_name.svg" );});
+		}else{
+			addCode( qq{code( "$java_chars", R.drawable.$res_name );});
 		}
-		my $java_chars = join('',map{ sprintf qq(\\u%04x),$_} @utf16_chars );
-		addCode( qq{code( R.drawable.$res_name, "$java_chars" );});
 	}
 }
 
@@ -641,15 +747,9 @@ for my $name (sort keys %name_map){
 	my @res_list = values %$rh;
 	my $res_info = $res_list[0];
 
-	my $chars = parseCodePoint( $res_info->{unified} );
-	# コードポイントのリストからperl内部表現の文字列にする
-	my $str = join '',map{ chr hex $_ } @$chars;
-	# perl内部表現からUTF-16に変換する
-	my $str_utf16 = $utf16->encode( $str );
-	my @utf16_chars = unpack("n*",$str_utf16);
-	# UTF-16の文字のリストをJavaのエスケープ表現に直す
-	my $java_chars = join('',map{ sprintf qq(\\u%04x),$_} @utf16_chars );
-	addCode( qq{name( "$name", R.drawable.$res_info->{res_name}, "$java_chars" );});
+	my $utf16Unified = makeUtf16( parseCodePoint( $res_info->{unified} ));
+
+	addCode( qq{name( "$name", "$utf16Unified" );});
 }
 
 my %categoryNameMapping =(
@@ -714,6 +814,7 @@ close($fh) or die "$out_file : $!";
 	close($fh) or die "$out_file : $!";
 
 }
+
 
 #########################################################################
 __DATA__

@@ -6,7 +6,7 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.*
-import jp.juggler.emoji.EmojiMap201709
+import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.action.Action_Follow
 import jp.juggler.subwaytooter.action.Action_User
 import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
@@ -14,6 +14,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.span.EmojiImageSpan
+import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
@@ -258,9 +259,9 @@ internal class ViewHolderHeaderProfile(
 				
 				if(whoDetail?.locked ?: who.locked) {
 					append(" ")
-					val info = EmojiMap201709.sShortNameToImageId["lock"]
+					val info = EmojiMap.sShortNameToEmojiInfo["lock"]
 					if(info != null) {
-						appendSpan("locked", EmojiImageSpan(activity, info.image_id))
+						appendSpan("locked",info.er.createSpan(activity))
 					} else {
 						append("locked")
 					}
@@ -268,9 +269,9 @@ internal class ViewHolderHeaderProfile(
 				
 				if(who.bot) {
 					append(" ")
-					val info = EmojiMap201709.sShortNameToImageId["robot_face"]
+					val info = EmojiMap.sShortNameToEmojiInfo["robot_face"]
 					if(info != null) {
-						appendSpan("bot", EmojiImageSpan(activity, info.image_id))
+						appendSpan("bot", info.er.createSpan(activity))
 					} else {
 						append("bot")
 					}

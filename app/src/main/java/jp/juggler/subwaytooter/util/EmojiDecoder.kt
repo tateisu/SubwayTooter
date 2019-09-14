@@ -2,12 +2,12 @@ package jp.juggler.subwaytooter.util
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.annotation.DrawableRes
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.util.SparseBooleanArray
-import jp.juggler.emoji.EmojiMap201709
+import androidx.annotation.DrawableRes
+import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
+import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.codePointBefore
 import java.util.*
@@ -25,8 +26,6 @@ object EmojiDecoder {
 	private const val cpColon = ':'.toInt()
 	
 	private const val cpZwsp = '\u200B'.toInt()
-
-	private const val cpSharp = '#'.toInt()
 	
 	fun customEmojiSeparator(pref : SharedPreferences) = if(Pref.bpCustomEmojiSeparatorZwsp(pref)) {
 		'\u200B'
@@ -41,8 +40,7 @@ object EmojiDecoder {
 	//	}
 	
 	fun canStartShortCode(s : CharSequence, index : Int) : Boolean {
-		val cp = s.codePointBefore(index)
-		return when(cp) {
+		return when(val cp = s.codePointBefore(index)) {
 			- 1 -> true
 			cpColon -> false
 			cpZwsp -> true
@@ -74,9 +72,9 @@ object EmojiDecoder {
 	fun canStartHashtag(s : CharSequence, index : Int) : Boolean {
 		val cp = s.codePointBefore(index)
 		// HASHTAG_RE = /(?:^|[^\/\)\w])#(#{HASHTAG_NAME_RE})/i
-		return if( cp >= 0x80){
+		return if(cp >= 0x80) {
 			true
-		}else when(cp.toChar()) {
+		} else when(cp.toChar()) {
 			'/' -> false
 			')' -> false
 			'_' -> false
@@ -157,26 +155,46 @@ object EmojiDecoder {
 			}
 		}
 		
+		internal fun addImageSpan(text : String, er: EmojiMap.EmojiResource) {
+			val context = options.context
+			if(context == null) {
+				openNormalText()
+				sb.append(text)
+			} else {
+				closeNormalText()
+				val start = sb.length
+				sb.append(text)
+				val end = sb.length
+				sb.setSpan(
+					er.createSpan(context),
+					start,
+					end,
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+			}
+		}
+		val evs = EmojiMap.EmojiResource(0)
+		
 		internal fun addUnicodeString(s : String) {
 			var i = 0
 			val end = s.length
 			while(i < end) {
 				val remain = end - i
 				var emoji : String? = null
-				var image_id : Int? = null
+				var emojiResource : EmojiMap.EmojiResource? = null
 				
-				for(j in EmojiMap201709.utf16_max_length downTo 1) {
+				for(j in EmojiMap.utf16_max_length downTo 1) {
 					
 					if(j > remain) continue
 					
 					val check = s.substring(i, i + j)
 					
-					image_id = EmojiMap201709.sUTF16ToImageId[check] ?: continue
+					emojiResource = EmojiMap.sUTF16ToEmojiResource[check] ?: continue
 					
 					emoji = if(j < remain && s[i + j].toInt() == 0xFE0E) {
 						// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
 						// その文字を絵文字化しない
-						image_id = 0
+						emojiResource = evs
 						s.substring(i, i + j + 1)
 					} else {
 						check
@@ -185,14 +203,14 @@ object EmojiDecoder {
 					break
 				}
 				
-				if(image_id != null && emoji != null) {
-					if(image_id == 0) {
+				if(emojiResource != null && emoji != null) {
+					if(emojiResource == evs) {
 						// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
 						// その文字を絵文字化しない
 						openNormalText()
 						sb.append(emoji)
 					} else {
-						addImageSpan(emoji, image_id)
+						addImageSpan(emoji, emojiResource)
 					}
 					i += emoji.length
 				} else {
@@ -238,7 +256,7 @@ object EmojiDecoder {
 	
 	private fun splitShortCode(
 		s : String,
-		startArg : Int,
+		@Suppress("SameParameterValue") startArg : Int,
 		end : Int,
 		callback : ShortCodeSplitterCallback
 	) {
@@ -344,9 +362,10 @@ object EmojiDecoder {
 				}
 				
 				// 通常の絵文字
-				val info = EmojiMap201709.sShortNameToImageId[name.toLowerCase().replace('-', '_')]
+				val info =
+					EmojiMap.sShortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
 				if(info != null) {
-					builder.addImageSpan(part, info.image_id)
+					builder.addImageSpan(part, info.er)
 					return
 				}
 				
@@ -394,7 +413,7 @@ object EmojiDecoder {
 				}
 				
 				// カスタム絵文字ではなく通常の絵文字のショートコードなら絵文字に変換する
-				val info = EmojiMap201709.sShortNameToImageId[name.toLowerCase().replace('-', '_')]
+				val info = EmojiMap.sShortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
 				sb.append(info?.unified ?: part)
 			}
 		})
@@ -409,11 +428,11 @@ object EmojiDecoder {
 		limit : Int
 	) : ArrayList<CharSequence> {
 		val dst = ArrayList<CharSequence>()
-		for(shortCode in EmojiMap201709.sShortNameList) {
+		for(shortCode in EmojiMap.sShortNameList) {
 			if(dst.size >= limit) break
 			if(! shortCode.contains(prefix)) continue
 			
-			val info = EmojiMap201709.sShortNameToImageId[shortCode] ?: continue
+			val info = EmojiMap.sShortNameToEmojiInfo[shortCode] ?: continue
 			
 			val sb = SpannableStringBuilder()
 			val start = 0
@@ -421,7 +440,7 @@ object EmojiDecoder {
 			val end = sb.length
 			
 			sb.setSpan(
-				EmojiImageSpan(context, info.image_id),
+				info.er.createSpan(context),
 				start,
 				end,
 				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE

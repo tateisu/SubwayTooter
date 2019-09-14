@@ -10,11 +10,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
+import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.span.EmojiImageSpan
+import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.*
+import kotlin.math.min
 
 object Styler {
 	
@@ -81,7 +84,7 @@ object Styler {
 					TootVisibility.DirectSpecified -> R.string.visibility_direct
 					TootVisibility.DirectPrivate -> R.string.visibility_private
 					TootVisibility.WebSetting -> R.string.visibility_web_setting
-					TootVisibility.AccountSetting-> R.string.visibility_account_setting
+					TootVisibility.AccountSetting -> R.string.visibility_account_setting
 					
 					TootVisibility.LocalPublic -> R.string.visibility_local_public
 					TootVisibility.LocalHome -> R.string.visibility_local_home
@@ -94,7 +97,7 @@ object Styler {
 					TootVisibility.DirectSpecified -> R.string.visibility_direct
 					TootVisibility.DirectPrivate -> R.string.visibility_direct
 					TootVisibility.WebSetting -> R.string.visibility_web_setting
-					TootVisibility.AccountSetting-> R.string.visibility_account_setting
+					TootVisibility.AccountSetting -> R.string.visibility_account_setting
 					
 					TootVisibility.LocalPublic -> R.string.visibility_local_public
 					TootVisibility.LocalHome -> R.string.visibility_local_unlisted
@@ -283,7 +286,7 @@ object Styler {
 	fun calcIconRound(wh : Int) = wh.toFloat() * round_ratio
 	
 	fun calcIconRound(lp : ViewGroup.LayoutParams) =
-		Math.min(lp.width, lp.height).toFloat() * round_ratio
+		min(lp.width, lp.height).toFloat() * round_ratio
 	
 }
 
@@ -305,18 +308,18 @@ fun SpannableStringBuilder.appendColorShadeIcon(
 	return this
 }
 
-fun SpannableStringBuilder.appendDrawableIcon(
+fun SpannableStringBuilder.appendMisskeyReaction(
 	context : Context,
-	drawable_id : Int,
+	emojiUtf16 : String,
 	text : String
 ) : SpannableStringBuilder {
 	val start = this.length
 	this.append(text)
 	val end = this.length
+	
 	this.setSpan(
-		EmojiImageSpan(context, drawable_id),
-		start,
-		end,
+		EmojiMap.sUTF16ToEmojiResource[emojiUtf16] !!.createSpan(context),
+		start, end,
 		Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 	)
 	return this

@@ -2457,7 +2457,7 @@ internal class ItemViewHolder(
 			for(mr in MisskeyReaction.values()) {
 				val newCode = mr.shortcode
 				val sb = SpannableStringBuilder()
-					.appendDrawableIcon(activity, mr.drawableId, " ")
+					.appendMisskeyReaction(activity, mr.emojiUtf16, " ")
 					.append(' ')
 					.append(mr.shortcode)
 				ad.addAction(sb) {

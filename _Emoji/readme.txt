@@ -4,35 +4,45 @@
 *依存データ
 
 # emojione v2.2.7 (古いMastodonとの互換性のため)
-git clone -b v2.2.7 git@github.com:emojione/emojione.git
+rm -fr emojione
+git clone -b v2.2.7 git@github.com:emojione/emojione.git emojione
 
 # Gargron's fork of emoji-mart (master branch)
-git clone git@github.com:Gargron/emoji-mart.git
+rm -fr emoji-mart
+git clone git@github.com:Gargron/emoji-mart.git emoji-mart
 
-# emoji-data 4.0.4
-# (上のemoji-martのpackages.jsonで指定されたバージョンに合わせる
-git clone -b v4.0.4 git@github.com:iamcal/emoji-data.git
+rm -fr emoji-data
+git clone git@github.com:iamcal/emoji-data.git emoji-data
 
 # マストドン公式
-git clone git@github.com:tootsuite/mastodon.git
+rm -fr mastodon
+git clone git@github.com:tootsuite/mastodon.git mastodon
 
-#オーバライド用
-override フォルダにPNG画像を用意する
-マストドンのタンスにある絵文字を以下のようにPNGに変換します
-magick.exe -density 128 -background none 1f923.svg png32:emj_1f923.png
+# twemoji
+git clone git@github.com:twitter/twemoji.git
+
+# override/ フォルダに優先的に使いたいsvgやpngを入れておく
+
+1f923.svg      傾いた笑う顔。演出的な理由でMastodonで使われている
+265f-fe0f.svg  Black Chess Pawn. Emoji 11.0 で追加されたがtwemojiに入ってない。
+267e-fe0f.svg  Permanent Paper Sign. Emoji 11.0 で追加されたがtwemojiに入ってない。
 
 
 ########################################
 
 * 前準備
-mkdir png
+mkdir assets drawable-nodpi
+rm -f assets/* drawable-nodpi/* category-pretty.json
 
 * ビルド
-perl makeJavaCode.pl 
+perl makeJavaCode.pl 2>error.log
 
 * 出力
-- png フォルダの中味をアプリの drawable-nodpi フォルダにコピーします。
-- EmojiData201709.java の中味を jp.juggler.subwaytooter.util.EmojiData201709 の中に貼り付けます。
+
+assets の中身を C:\mastodon-related\TestEmojiSvg\app/src/main/assets にコピー。 TestEmojiSvg をビルドしてエラーが出ないか試す
+assets の中身を C:\mastodon-related\SubwayTooter\emoji\src\main\assets にコピー。
+drawable-nodpi の中身を C:\mastodon-related\SubwayTooter\emoji\src\main\res\drawable-nodpi にコピー。
+EmojiData201709.java の中味を emoji/src/main/java/.../EmojiMap.java の所定の場所にペースト。
 
 
 #################################

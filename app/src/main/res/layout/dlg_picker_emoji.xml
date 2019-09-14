@@ -19,7 +19,7 @@
             android:id="@+id/btnSkinTone1"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/emj_1f3fb"
+            android:background="#f7dece"
             android:contentDescription="@string/skin_tone_light"
             android:src="@drawable/emj_2714_fe0f"
             />
@@ -28,7 +28,7 @@
             android:id="@+id/btnSkinTone2"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/emj_1f3fc"
+            android:background="#f3d2a2"
             android:contentDescription="@string/skin_tone_medium_light"
             />
 
@@ -36,7 +36,7 @@
             android:id="@+id/btnSkinTone3"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/emj_1f3fd"
+            android:background="#d5ab88"
             android:contentDescription="@string/skin_tone_medium"
             />
 
@@ -44,7 +44,7 @@
             android:id="@+id/btnSkinTone4"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/emj_1f3fe"
+            android:background="#af7e57"
             android:contentDescription="@string/skin_tone_medium_dark"
             />
 
@@ -52,7 +52,7 @@
             android:id="@+id/btnSkinTone5"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/emj_1f3ff"
+            android:background="#7c533e"
             android:contentDescription="@string/skin_tone_dark"
             />
     </LinearLayout>

@@ -1060,7 +1060,7 @@ object Action_Toot {
 				val newCode = mr.shortcode
 				
 				val sb = SpannableStringBuilder()
-					.appendDrawableIcon(activity, mr.drawableId, " ")
+					.appendMisskeyReaction(activity, mr.emojiUtf16, " ")
 					.append(' ')
 					.append(mr.shortcode)
 				

@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.text.*
 import android.text.style.ForegroundColorSpan
 import android.view.View
-import jp.juggler.emoji.EmojiMap201709
+import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
@@ -962,7 +962,7 @@ class PostHelper(
 		bInstanceHasCustomEmoji : Boolean
 	) : SpannableStringBuilder {
 		
-		val item = EmojiMap201709.sShortNameToImageId[name]
+		val item = EmojiMap.sShortNameToEmojiInfo[name]
 		val separator = EmojiDecoder.customEmojiSeparator(pref)
 		if(item == null || instance != null) {
 			// カスタム絵文字は常にshortcode表現

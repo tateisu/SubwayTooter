@@ -10,7 +10,6 @@ import android.os.SystemClock
 import com.caverock.androidsvg.SVG
 import jp.juggler.apng.ApngFrames
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.util.LogCategory
 import java.io.ByteArrayInputStream
 import java.lang.ref.WeakReference
@@ -109,7 +108,7 @@ class CustomEmojiCache(internal val context : Context) {
 	) : ApngFrames? {
 		try {
 			if(refDrawTarget?.get() == null) {
-				NetworkEmojiSpan.log.e("draw: DrawTarget is null ")
+				log.e("draw: DrawTarget is null ")
 				return null
 			}
 			

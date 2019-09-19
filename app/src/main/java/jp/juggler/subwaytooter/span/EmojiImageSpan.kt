@@ -3,11 +3,9 @@ package jp.juggler.subwaytooter.span
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import android.text.style.ReplacementSpan
 import androidx.annotation.IntRange
 import androidx.core.content.ContextCompat
-import android.text.style.ReplacementSpan
-import jp.juggler.emoji.EmojiMap
-
 import java.lang.ref.WeakReference
 
 class EmojiImageSpan(

@@ -16,7 +16,7 @@ import java.lang.ref.WeakReference
 class NetworkEmojiSpan internal constructor(
 	private val url : String,
 	private val scale : Float = 1f
-) : ReplacementSpan(),AnimatableSpan {
+) : ReplacementSpan(), AnimatableSpan {
 	
 	companion object {
 		
@@ -30,7 +30,6 @@ class NetworkEmojiSpan internal constructor(
 	private val rect_src = Rect()
 	private val rect_dst = RectF()
 	
-
 	// フレーム探索結果を格納する構造体を確保しておく
 	private val mFrameFindResult = ApngFrames.FindFrameResult()
 	
@@ -48,7 +47,6 @@ class NetworkEmojiSpan internal constructor(
 		this.refDrawTarget = WeakReference(draw_target_tag)
 		this.invalidate_callback = invalidate_callback
 	}
-
 	
 	override fun getSize(
 		paint : Paint,
@@ -88,7 +86,7 @@ class NetworkEmojiSpan internal constructor(
 		
 		// APNGデータの取得
 		val frames = App1.custom_emoji_cache.getFrames(refDrawTarget, url) {
-			invalidate_callback.delayInvalidate(0)
+			invalidate_callback.delayInvalidate(0L)
 		} ?: return
 		
 		val t = if(Pref.bpDisableEmojiAnimation(App1.pref))
@@ -106,33 +104,33 @@ class NetworkEmojiSpan internal constructor(
 		}
 		val srcWidth = b.width
 		val srcHeight = b.height
-		if(srcWidth < 1 || srcHeight <1){
+		if(srcWidth < 1 || srcHeight < 1) {
 			log.e("draw: bitmap size is too small.")
 			return
 		}
-		rect_src.set(0, 0, srcWidth, srcHeight )
-
+		rect_src.set(0, 0, srcWidth, srcHeight)
+		
 		// 絵文字の正方形のサイズ
 		val dstSize = textPaint.textSize * scale_ratio * scale
-
+		
 		// ベースラインから上下方向にずらすオフセット
 		val c_descent = dstSize * descent_ratio
 		val transY = baseline - dstSize + c_descent
 		
 		// 絵文字のアスペクト比から描画範囲の幅と高さを決める
-		val dstWidth:Float
-		val dstHeight:Float
+		val dstWidth : Float
+		val dstHeight : Float
 		val aspectSrc = srcWidth.toFloat() / srcHeight.toFloat()
-		if( aspectSrc >= 1f){
+		if(aspectSrc >= 1f) {
 			dstWidth = dstSize
-			dstHeight = dstSize /aspectSrc
-		}else{
+			dstHeight = dstSize / aspectSrc
+		} else {
 			dstHeight = dstSize
 			dstWidth = dstSize * aspectSrc
 		}
-		val dstX = (dstSize-dstWidth)/2f
-		val dstY = (dstSize-dstHeight)/2f
-		rect_dst.set(dstX,dstY,dstX+dstWidth,dstY+dstHeight)
+		val dstX = (dstSize - dstWidth) / 2f
+		val dstY = (dstSize - dstHeight) / 2f
+		rect_dst.set(dstX, dstY, dstX + dstWidth, dstY + dstHeight)
 		
 		canvas.save()
 		canvas.translate(x, transY)

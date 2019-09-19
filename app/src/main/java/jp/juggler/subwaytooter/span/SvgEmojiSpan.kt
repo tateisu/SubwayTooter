@@ -44,10 +44,8 @@ class SvgEmojiSpan internal constructor(
 				}
 			}
 		
-		class BitmapCacheKey(
-			var code : String = "",
-			var size : Int = 1
-		) : Comparable<BitmapCacheKey> {
+		class BitmapCacheKey(var code : String = "", var size : Int = 1) :
+			Comparable<BitmapCacheKey> {
 			
 			override fun hashCode() : Int {
 				return code.hashCode() xor size
@@ -67,25 +65,22 @@ class SvgEmojiSpan internal constructor(
 				}
 			// don't use "when(other){ this -> …", it recursive call "equals()"
 		}
-		
-		class BitmapCacheValue(
-			val bitmap : Bitmap?,
-			var lastUsed : Long
-		)
+
+		class BitmapCacheValue(val bitmap : Bitmap?, var lastUsed : Long)
 		
 		private val bitmapCache = HashMap<BitmapCacheKey, BitmapCacheValue>()
 		
 		// 時々キャッシュを掃除する
-		private var lastSweepCache = 0L
 		private const val sweepInterval = 30000L
 		private const val sweepExpire = 10000L
-		private const val sweepLimit1 = 512 // この個数を超えたら
-		private const val sweepLimit2 = 128 // この個数まで減らす
+		private const val sweepLimit1 = 64 // この個数を超えたら
+		private const val sweepLimit2 = 32 // この個数まで減らす
+		private var lastSweepTime = 0L
 		
 		private fun sweepCache(now : Long) {
 			val cacheSize = bitmapCache.size
-			if(now - lastSweepCache >= sweepInterval && cacheSize >= sweepLimit1) {
-				lastSweepCache = now
+			if(now - lastSweepTime >= sweepInterval && cacheSize >= sweepLimit1) {
+				lastSweepTime = now
 				val list = bitmapCache.entries.sortedBy { it.value.lastUsed }
 				// 最低保持数より多い分が検査対象
 				var mayRemove = cacheSize - sweepLimit2
@@ -177,7 +172,7 @@ class SvgEmojiSpan internal constructor(
 						Bitmap.createBitmap(dstSizeInt, dstSizeInt, Bitmap.Config.ARGB_8888)
 							?.also { renderBitmap(it, svg, dstSize) }
 					} catch(ex : Throwable) {
-						log.e(ex, "bitmap allocation failed!")
+						log.trace(ex, "bitmap allocation failed!")
 						null
 					}
 				}

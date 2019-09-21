@@ -12,6 +12,48 @@ import java.util.*
 
 object Action_Instance {
 	
+	// サイドメニューからprofile directory を開く
+	fun profileDirectoryFromSideMenu(activity : ActMain) {
+		AccountPicker.pick(
+			activity,
+			bAllowPseudo = true,
+			bAllowMisskey = false,
+			bAllowMastodon = true,
+			bAuto = true,
+			message = activity.getString(
+				R.string.account_picker_add_timeline_of,
+				ColumnType.PROFILE_DIRECTORY.name1(activity)
+			)
+		) { ai ->
+			TootTaskRunner(activity).run(ai, object : TootTask {
+				var ti : TootInstance? = null
+				override fun background(client : TootApiClient) : TootApiResult? {
+					return client.getInstanceInformation()?.also { result ->
+						val (_, instance) = client.parseInstanceInformation(result)
+						ti = instance
+					}
+				}
+				
+				override fun handleResult(result : TootApiResult?) {
+					val instance = ti
+					if(result != null && instance != null) {
+						when {
+							! instance.versionGE(TootInstance.VERSION_3_0_0_rc1) ->
+								App1.openBrowser(activity, "https://${ai.host}/explore")
+							
+							else -> activity.addColumn(
+								activity.defaultInsertPosition,
+								ai,
+								ColumnType.PROFILE_DIRECTORY,
+								ai.host
+							)
+						}
+					}
+				}
+			})
+		}
+	}
+	
 	// ?@? からprofile directoryを開く
 	fun profileDirectory(
 		activity : ActMain,
@@ -20,7 +62,7 @@ object Action_Instance {
 		instance : TootInstance? = null
 	) {
 		when {
-			instance == null ->{
+			instance == null -> {
 				// インスタンスのバージョン情報がなければ取得してやり直し
 				TootTaskRunner(activity).run(host, object : TootTask {
 					var targetInstance : TootInstance? = null
@@ -48,8 +90,7 @@ object Action_Instance {
 			instance.instanceType == TootInstance.InstanceType.Misskey ->
 				showToast(activity, false, R.string.profile_directory_not_supported_on_misskey)
 			
-			// TODO 3.0.0 がリリースされたらバージョン条件を切り替えること
-			! instance.versionGE(TootInstance.VERSION_2_9_2) ->
+			! instance.versionGE(TootInstance.VERSION_3_0_0_rc1) ->
 				App1.openBrowser(activity, "https://$host/explore")
 			
 			currentColumn.access_info.host == host ->
@@ -61,8 +102,8 @@ object Action_Instance {
 					ColumnType.PROFILE_DIRECTORY,
 					host
 				)
-
-			else -> addPseudoAccount(activity,host,misskeyVersion = 0) {
+			
+			else -> addPseudoAccount(activity, host, misskeyVersion = 0) {
 				activity.addColumn(
 					false,
 					activity.nextPosition(currentColumn),

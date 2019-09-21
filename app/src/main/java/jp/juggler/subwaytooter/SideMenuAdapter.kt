@@ -12,6 +12,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import jp.juggler.subwaytooter.action.Action_Account
 import jp.juggler.subwaytooter.action.Action_App
+import jp.juggler.subwaytooter.action.Action_Instance
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.createColoredDrawable
 import jp.juggler.util.getAttributeColor
@@ -63,7 +64,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.HOME
-				
+			
 			)
 		},
 		
@@ -72,7 +73,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.NOTIFICATIONS
-				
+			
 			)
 		},
 		
@@ -81,7 +82,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.DIRECT_MESSAGES
-				
+			
 			)
 		},
 		
@@ -90,7 +91,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.MISSKEY_HYBRID
-				
+			
 			)
 		},
 		
@@ -108,7 +109,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.FEDERATE
-				
+			
 			)
 		},
 		
@@ -117,7 +118,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.LIST_LIST
-				
+			
 			)
 		},
 		
@@ -143,7 +144,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.FAVOURITES
-				
+			
 			)
 		},
 		
@@ -152,7 +153,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.PROFILE
-				
+			
 			)
 		},
 		
@@ -170,7 +171,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.FOLLOW_SUGGESTION
-				
+			
 			)
 		},
 		
@@ -179,16 +180,13 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.ENDORSEMENT
-				
+			
 			)
 		},
 		
 		Item(icon = R.drawable.ic_follow_plus, title = R.string.profile_directory) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.PROFILE_DIRECTORY
-			)
+			Action_Instance.profileDirectoryFromSideMenu(this)
+			
 		},
 		
 		Item(icon = R.drawable.ic_volume_off, title = R.string.muted_users) {
@@ -196,7 +194,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.MUTES
-				
+			
 			)
 		},
 		
@@ -205,7 +203,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.BLOCKS
-				
+			
 			)
 		},
 		
@@ -232,7 +230,7 @@ class SideMenuAdapter(
 				this
 				, defaultInsertPosition
 				, ColumnType.SCHEDULED_STATUS
-				
+			
 			)
 		},
 		

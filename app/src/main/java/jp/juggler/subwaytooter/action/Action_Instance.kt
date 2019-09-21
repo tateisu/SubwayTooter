@@ -12,54 +12,12 @@ import java.util.*
 
 object Action_Instance {
 	
-	// サイドメニューからprofile directory を開く
-	fun profileDirectoryFromSideMenu(activity : ActMain) {
-		AccountPicker.pick(
-			activity,
-			bAllowPseudo = true,
-			bAllowMisskey = false,
-			bAllowMastodon = true,
-			bAuto = true,
-			message = activity.getString(
-				R.string.account_picker_add_timeline_of,
-				ColumnType.PROFILE_DIRECTORY.name1(activity)
-			)
-		) { ai ->
-			TootTaskRunner(activity).run(ai, object : TootTask {
-				var ti : TootInstance? = null
-				override fun background(client : TootApiClient) : TootApiResult? {
-					return client.getInstanceInformation()?.also { result ->
-						val (_, instance) = client.parseInstanceInformation(result)
-						ti = instance
-					}
-				}
-				
-				override fun handleResult(result : TootApiResult?) {
-					val instance = ti
-					if(result != null && instance != null) {
-						when {
-							! instance.versionGE(TootInstance.VERSION_3_0_0_rc1) ->
-								App1.openBrowser(activity, "https://${ai.host}/explore")
-							
-							else -> activity.addColumn(
-								activity.defaultInsertPosition,
-								ai,
-								ColumnType.PROFILE_DIRECTORY,
-								ai.host
-							)
-						}
-					}
-				}
-			})
-		}
-	}
-	
-	// ?@? からprofile directoryを開く
-	fun profileDirectory(
+	private fun profileDirectory(
 		activity : ActMain,
-		currentColumn : Column,
+		accessInfo : SavedAccount,
 		host : String,
-		instance : TootInstance? = null
+		instance : TootInstance? = null,
+		pos : Int = activity.defaultInsertPosition
 	) {
 		when {
 			instance == null -> {
@@ -76,7 +34,7 @@ object Action_Instance {
 						result ?: return // cancelled.
 						when {
 							targetInstance != null ->
-								profileDirectory(activity, currentColumn, host, targetInstance)
+								profileDirectory(activity, accessInfo, host, targetInstance, pos)
 							
 							else ->
 								showToast(activity, true, result.error)
@@ -93,26 +51,58 @@ object Action_Instance {
 			! instance.versionGE(TootInstance.VERSION_3_0_0_rc1) ->
 				App1.openBrowser(activity, "https://$host/explore")
 			
-			currentColumn.access_info.host == host ->
+			accessInfo.host == host ->
 				activity.addColumn(
 					false,
-					activity.nextPosition(currentColumn),
-					currentColumn.access_info,
-					
+					pos,
+					accessInfo,
 					ColumnType.PROFILE_DIRECTORY,
 					host
 				)
 			
-			else -> addPseudoAccount(activity, host, misskeyVersion = 0) {
+			else -> addPseudoAccount(activity, host, misskeyVersion = 0) { ai->
 				activity.addColumn(
 					false,
-					activity.nextPosition(currentColumn),
-					it,
+					pos,
+					ai,
 					ColumnType.PROFILE_DIRECTORY,
 					host
 				)
 			}
 		}
+	}
+	
+	// サイドメニューからprofile directory を開く
+	fun profileDirectoryFromSideMenu(activity : ActMain) {
+		AccountPicker.pick(
+			activity,
+			bAllowPseudo = true,
+			bAllowMisskey = false,
+			bAllowMastodon = true,
+			bAuto = true,
+			message = activity.getString(
+				R.string.account_picker_add_timeline_of,
+				ColumnType.PROFILE_DIRECTORY.name1(activity)
+			)
+		) { ai ->
+			profileDirectory(activity,ai,ai.host)
+		}
+	}
+	
+	// ?@? からprofile directoryを開く
+	fun profileDirectoryFromInstanceInformation(
+		activity : ActMain,
+		currentColumn : Column,
+		host : String,
+		instance : TootInstance? = null
+	) {
+		profileDirectory(
+			activity,
+			currentColumn.access_info,
+			host,
+			instance,
+			pos=activity.nextPosition(currentColumn)
+		)
 	}
 	
 	// インスタンス情報カラムを開く

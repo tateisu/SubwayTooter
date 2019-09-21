@@ -253,7 +253,7 @@ internal class ViewHolderHeaderInstance(
 			R.id.btnAboutMore ->
 				App1.openBrowser(activity, "https://${column.instance_uri}/about/more")
 
-			R.id.btnExplore -> Action_Instance.profileDirectory(activity,column,column.instance_uri,instance=instance)
+			R.id.btnExplore -> Action_Instance.profileDirectoryFromInstanceInformation(activity,column,column.instance_uri,instance=instance)
 		}
 	}
 	

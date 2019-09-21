@@ -739,7 +739,7 @@ internal class DlgContextMenu(
 				}
 
 				R.id.btnProfileDirectory->{
-					Action_Instance.profileDirectory(activity,column,getUserHost())
+					Action_Instance.profileDirectoryFromInstanceInformation(activity,column,getUserHost())
 				}
 				
 				R.id.btnEndorse -> Action_Account.endorse(

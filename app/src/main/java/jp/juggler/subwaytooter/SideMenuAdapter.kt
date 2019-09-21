@@ -60,191 +60,95 @@ class SideMenuAdapter(
 		},
 		
 		Item(icon = R.drawable.ic_home, title = R.string.home) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.HOME
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.HOME)
 		},
 		
 		Item(icon = R.drawable.ic_announcement, title = R.string.notifications) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.NOTIFICATIONS
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.NOTIFICATIONS)
 		},
 		
 		Item(icon = R.drawable.ic_mail, title = R.string.direct_messages) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.DIRECT_MESSAGES
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.DIRECT_MESSAGES)
 		},
 		
 		Item(icon = R.drawable.ic_share, title = R.string.misskey_hybrid_timeline_long) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.MISSKEY_HYBRID
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.MISSKEY_HYBRID)
 		},
 		
 		Item(icon = R.drawable.ic_run, title = R.string.local_timeline) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.LOCAL
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.LOCAL)
 		},
 		
 		Item(icon = R.drawable.ic_bike, title = R.string.federate_timeline) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.FEDERATE
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.FEDERATE)
 		},
 		
 		Item(icon = R.drawable.ic_list_list, title = R.string.lists) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.LIST_LIST
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.LIST_LIST)
 		},
 		
 		Item(icon = R.drawable.ic_search, title = R.string.search) {
 			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.SEARCH
-				, args = arrayOf("", false)
+				this,
+				defaultInsertPosition,
+				ColumnType.SEARCH,
+				args = arrayOf("", false)
 			)
 		},
 		
 		Item(icon = R.drawable.ic_hashtag, title = R.string.trend_tag) {
-			Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				ColumnType.TREND_TAG
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.TREND_TAG)
 		},
 		
 		Item(icon = R.drawable.ic_star, title = R.string.favourites) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.FAVOURITES
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.FAVOURITES)
 		},
 		
 		Item(icon = R.drawable.ic_account_box, title = R.string.profile) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.PROFILE
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.PROFILE)
 		},
 		
 		Item(icon = R.drawable.ic_follow_wait, title = R.string.follow_requests) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.FOLLOW_REQUESTS
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.FOLLOW_REQUESTS)
 		},
 		
 		Item(icon = R.drawable.ic_follow_plus, title = R.string.follow_suggestion) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.FOLLOW_SUGGESTION
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.FOLLOW_SUGGESTION)
 		},
 		
 		Item(icon = R.drawable.ic_follow_plus, title = R.string.endorse_set) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.ENDORSEMENT
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.ENDORSEMENT)
 		},
 		
 		Item(icon = R.drawable.ic_follow_plus, title = R.string.profile_directory) {
 			Action_Instance.profileDirectoryFromSideMenu(this)
-			
 		},
 		
 		Item(icon = R.drawable.ic_volume_off, title = R.string.muted_users) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.MUTES
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.MUTES)
 		},
 		
 		Item(icon = R.drawable.ic_block, title = R.string.blocked_users) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.BLOCKS
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.BLOCKS)
 		},
 		
 		Item(icon = R.drawable.ic_volume_off, title = R.string.keyword_filters) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.KEYWORD_FILTER
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.KEYWORD_FILTER)
 		},
 		
 		Item(icon = R.drawable.ic_cloud_off, title = R.string.blocked_domains) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.DOMAIN_BLOCKS
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.DOMAIN_BLOCKS)
 		},
 		
 		Item(icon = R.drawable.ic_timer, title = R.string.scheduled_status_list) {
-			Action_Account.timeline(
-				this
-				, defaultInsertPosition
-				, ColumnType.SCHEDULED_STATUS
-			
-			)
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.SCHEDULED_STATUS)
 		},
 		
 		Item(),
-		
 		Item(title = R.string.toot_search),
 		
 		Item(icon = R.drawable.ic_search, title = R.string.tootsearch) {
-			addColumn(
-				defaultInsertPosition
-				, SavedAccount.na
-				, ColumnType.SEARCH_TS
-				, ""
-			)
+			addColumn(defaultInsertPosition, SavedAccount.na, ColumnType.SEARCH_TS, "")
 		},
 		
 		Item(),

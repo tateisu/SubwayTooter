@@ -1017,7 +1017,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					m = reTootUriOS.matcher(uri)
 					if(m.find()) return EntityId(m.groupEx(2)!!)
 					
-					log.w("can't parse status uri: $uri")
+					log.w("findStatusIdFromUri: unsupported uri. $uri")
 				}
 				
 				if(url?.isNotEmpty() == true) {
@@ -1045,7 +1045,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					if(m.find()) return EntityId(m.groupEx(2)!!)
 					
 					
-					log.w("can't parse status URL: $url")
+					log.w("findStatusIdFromUri: unsupported url. $url")
 				}
 				
 			} catch(ex : Throwable) {

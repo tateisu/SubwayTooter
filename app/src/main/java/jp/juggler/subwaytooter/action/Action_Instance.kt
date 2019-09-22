@@ -12,6 +12,7 @@ import java.util.*
 
 object Action_Instance {
 	
+	// profile directory を開く
 	private fun profileDirectory(
 		activity : ActMain,
 		accessInfo : SavedAccount,
@@ -20,37 +21,33 @@ object Action_Instance {
 		pos : Int = activity.defaultInsertPosition
 	) {
 		when {
-			instance == null -> {
-				// インスタンスのバージョン情報がなければ取得してやり直し
-				TootTaskRunner(activity).run(host, object : TootTask {
-					var targetInstance : TootInstance? = null
-					override fun background(client : TootApiClient) : TootApiResult? {
-						val (ri, ti) = client.parseInstanceInformation(client.getInstanceInformation())
-						targetInstance = ti
-						return ri
+			// インスタンスのバージョン情報がなければ取得してやり直し
+			instance == null -> TootTaskRunner(activity).run(host, object : TootTask {
+				var targetInstance : TootInstance? = null
+				override fun background(client : TootApiClient) : TootApiResult? {
+					val (ri, ti) = client.parseInstanceInformation(client.getInstanceInformation())
+					targetInstance = ti
+					return ri
+				}
+				
+				override fun handleResult(result : TootApiResult?) {
+					result ?: return // cancelled.
+					when(val ti = targetInstance) {
+						null -> showToast(activity, true, result.error)
+						else -> profileDirectory(activity, accessInfo, host, ti, pos)
 					}
-					
-					override fun handleResult(result : TootApiResult?) {
-						result ?: return // cancelled.
-						when {
-							targetInstance != null ->
-								profileDirectory(activity, accessInfo, host, targetInstance, pos)
-							
-							else ->
-								showToast(activity, true, result.error)
-						}
-					}
-					
-				})
-				return
-			}
+				}
+			})
 			
+			// Misskey非対応
 			instance.instanceType == TootInstance.InstanceType.Misskey ->
 				showToast(activity, false, R.string.profile_directory_not_supported_on_misskey)
 			
+			// バージョンが足りないならWebページを開く
 			! instance.versionGE(TootInstance.VERSION_3_0_0_rc1) ->
 				App1.openBrowser(activity, "https://$host/explore")
 			
+			// ホスト名部分が一致するならそのアカウントで開く
 			accessInfo.host == host ->
 				activity.addColumn(
 					false,
@@ -60,7 +57,8 @@ object Action_Instance {
 					host
 				)
 			
-			else -> addPseudoAccount(activity, host, misskeyVersion = 0) { ai->
+			// 疑似アカウントで開く
+			else -> addPseudoAccount(activity, host, misskeyVersion = 0) { ai ->
 				activity.addColumn(
 					false,
 					pos,
@@ -85,11 +83,11 @@ object Action_Instance {
 				ColumnType.PROFILE_DIRECTORY.name1(activity)
 			)
 		) { ai ->
-			profileDirectory(activity,ai,ai.host)
+			profileDirectory(activity, ai, ai.host)
 		}
 	}
 	
-	// ?@? からprofile directoryを開く
+	// インスタンス情報カラムやコンテキストメニューからprofile directoryを開く
 	fun profileDirectoryFromInstanceInformation(
 		activity : ActMain,
 		currentColumn : Column,
@@ -97,11 +95,9 @@ object Action_Instance {
 		instance : TootInstance? = null
 	) {
 		profileDirectory(
-			activity,
-			currentColumn.access_info,
-			host,
-			instance,
-			pos=activity.nextPosition(currentColumn)
+			activity, currentColumn.access_info, host,
+			instance = instance,
+			pos = activity.nextPosition(currentColumn)
 		)
 	}
 	

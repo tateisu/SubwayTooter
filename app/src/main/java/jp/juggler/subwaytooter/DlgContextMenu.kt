@@ -78,7 +78,8 @@ internal class DlgContextMenu(
 		val btnDelete : View = viewRoot.findViewById(R.id.btnDelete)
 		val btnRedraft : View = viewRoot.findViewById(R.id.btnRedraft)
 		
-		val btnReport : View = viewRoot.findViewById(R.id.btnReport)
+		val btnReportStatus : View = viewRoot.findViewById(R.id.btnReportStatus)
+		val btnReportUser : View = viewRoot.findViewById(R.id.btnReportUser)
 		val btnMuteApp : Button = viewRoot.findViewById(R.id.btnMuteApp)
 		val llAccountActionBar : View = viewRoot.findViewById(R.id.llAccountActionBar)
 		val btnFollow : ImageButton = viewRoot.findViewById(R.id.btnFollow)
@@ -99,7 +100,7 @@ internal class DlgContextMenu(
 			viewRoot.findViewById(R.id.btnOpenProfileFromAnotherAccount)
 		val btnDomainBlock : Button = viewRoot.findViewById(R.id.btnDomainBlock)
 		val btnInstanceInformation : Button = viewRoot.findViewById(R.id.btnInstanceInformation)
-		val btnProfileDirectory  : Button = viewRoot.findViewById(R.id.btnProfileDirectory)
+		val btnProfileDirectory : Button = viewRoot.findViewById(R.id.btnProfileDirectory)
 		val ivFollowedBy : ImageView = viewRoot.findViewById(R.id.ivFollowedBy)
 		val btnOpenTimeline : Button = viewRoot.findViewById(R.id.btnOpenTimeline)
 		val btnConversationAnotherAccount : View =
@@ -144,7 +145,8 @@ internal class DlgContextMenu(
 		btnReactionAnotherAccount.setOnClickListener(this)
 		btnReplyAnotherAccount.setOnClickListener(this)
 		btnQuotedRenote.setOnClickListener(this)
-		btnReport.setOnClickListener(this)
+		btnReportStatus.setOnClickListener(this)
+		btnReportUser.setOnClickListener(this)
 		btnMuteApp.setOnClickListener(this)
 		btnDelete.setOnClickListener(this)
 		btnRedraft.setOnClickListener(this)
@@ -255,7 +257,7 @@ internal class DlgContextMenu(
 			
 			vg(btnBoostWithVisibility, ! access_info.isPseudo && ! access_info.isMisskey)
 			
-			btnReport.visibility =
+			btnReportStatus.visibility =
 				if(status_by_me || access_info.isPseudo) View.GONE else View.VISIBLE
 			
 			val application_name = status.application?.name
@@ -372,12 +374,15 @@ internal class DlgContextMenu(
 			btnCopyAccountId.visibility = View.GONE
 			btnOpenAccountInAdminWebUi.visibility = View.GONE
 			btnOpenInstanceInAdminWebUi.visibility = View.GONE
+			
+			btnReportUser.visibility = View.GONE
+			
 		} else {
 			val who_host = getUserHost()
 			btnInstanceInformation.visibility = View.VISIBLE
 			btnInstanceInformation.text =
 				activity.getString(R.string.instance_information_of, who_host)
-
+			
 			btnProfileDirectory.visibility = View.VISIBLE
 			btnProfileDirectory.text =
 				activity.getString(R.string.profile_directory_of, who_host)
@@ -396,6 +401,10 @@ internal class DlgContextMenu(
 			
 			vg(btnOpenAccountInAdminWebUi, ! access_info.isPseudo)
 			vg(btnOpenInstanceInAdminWebUi, ! access_info.isPseudo)
+			
+			btnReportUser.visibility =
+				if(access_info.isPseudo || access_info.isMe(who)) View.GONE else View.VISIBLE
+			
 		}
 		
 		viewRoot.findViewById<View>(R.id.btnAccountText).setOnClickListener(this)
@@ -481,11 +490,10 @@ internal class DlgContextMenu(
 		dialog.show()
 	}
 	
-	fun getUserHost():String {
-		val who_host = whoRef?.get()?.host
-		return when(who_host) {
+	private fun getUserHost() : String {
+		return when(val who_host = whoRef?.get()?.host) {
 			"?" -> column.instance_uri
-			null,"" -> access_info.host
+			null, "" -> access_info.host
 			else -> who_host
 		}
 	}
@@ -500,9 +508,13 @@ internal class DlgContextMenu(
 		
 		if(whoRef != null && who != null) {
 			when(v.id) {
-				R.id.btnReport -> if(status is TootStatus) {
+
+				R.id.btnReportStatus -> if(status is TootStatus) {
 					Action_User.reportForm(activity, access_info, who, status)
 				}
+
+				R.id.btnReportUser ->
+					Action_User.reportForm(activity, access_info, who )
 				
 				R.id.btnFollow ->
 					when {
@@ -560,7 +572,7 @@ internal class DlgContextMenu(
 							// Misskey には「このユーザからの通知もミュート」オプションはない
 							// 疑似アカウントにもない
 							val hasMuteNotification =
-								!access_info.isMisskey && ! access_info.isPseudo
+								! access_info.isMisskey && ! access_info.isPseudo
 							if(hasMuteNotification) {
 								tvMessage.text =
 									activity.getString(R.string.confirm_mute_user, who.username)
@@ -734,12 +746,16 @@ internal class DlgContextMenu(
 				R.id.btnListMemberAddRemove ->
 					DlgListMember(activity, who, access_info).show()
 				
-				R.id.btnInstanceInformation ->{
+				R.id.btnInstanceInformation -> {
 					Action_Instance.information(activity, pos, getUserHost())
 				}
-
-				R.id.btnProfileDirectory->{
-					Action_Instance.profileDirectoryFromInstanceInformation(activity,column,getUserHost())
+				
+				R.id.btnProfileDirectory -> {
+					Action_Instance.profileDirectoryFromInstanceInformation(
+						activity,
+						column,
+						getUserHost()
+					)
 				}
 				
 				R.id.btnEndorse -> Action_Account.endorse(

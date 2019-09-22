@@ -1,113 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:text="@string/user"
-            />
+            android:layout_marginEnd="12dp"
+            android:text="@string/user" />
 
         <TextView
             android:id="@+id/tvUser"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:textSize="20sp"
-            />
+            android:layout_marginEnd="12dp"
+            android:textSize="20sp" />
 
         <TextView
+            android:id="@+id/tvStatusCaption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:text="@string/status"
-            />
+            android:layout_marginEnd="12dp"
+            android:text="@string/status" />
 
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            />
+            android:layout_marginEnd="12dp"
+            android:background="?attr/colorButtonBgCw"
+            android:padding="6dp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
             android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="12dp"
             android:labelFor="@+id/etComment"
-            android:text="@string/report_reason"
-            />
+            android:text="@string/report_reason" />
 
-        <EditText
-            android:id="@+id/etComment"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
             android:layout_marginStart="12dp"
-            android:inputType="text"
-            />
+            android:layout_marginEnd="12dp"
+            android:background="?attr/colorPostFormBackground">
+
+            <EditText
+                android:id="@+id/etComment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:importantForAutofill="no"
+                android:inputType="text" />
+        </FrameLayout>
 
         <TextView
             android:id="@+id/tvForwardDesc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:text="@string/report_forward_desc"
-            />
+            android:layout_marginEnd="12dp"
+            android:text="@string/report_forward_desc" />
 
         <CheckBox
             android:id="@+id/cbForward"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
             android:layout_marginStart="12dp"
-            />
+            android:layout_marginEnd="12dp" />
 
         <LinearLayout
             style="?android:attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            >
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnCancel"
@@ -115,8 +96,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/cancel"
-                />
+                android:text="@string/cancel" />
 
             <Button
                 android:id="@+id/btnOk"
@@ -124,8 +104,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/ok"
-                />
+                android:text="@string/ok" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

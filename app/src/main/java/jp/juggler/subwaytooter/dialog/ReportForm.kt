@@ -27,6 +27,7 @@ object ReportForm {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_report_user, null, false)
 		
 		val tvUser :TextView = view.findViewById(R.id.tvUser)
+		val tvStatusCaption :TextView = view.findViewById(R.id.tvStatusCaption)
 		val tvStatus :TextView = view.findViewById(R.id.tvStatus)
 		val etComment :EditText = view.findViewById(R.id.etComment)
 		
@@ -47,7 +48,14 @@ object ReportForm {
 		
 		
 		tvUser.text = who.acct
-		tvStatus.text = status?.decoded_content ?: ""
+		
+		
+		if( status == null){
+			tvStatusCaption.visibility = View.GONE
+			tvStatus.visibility = View.GONE
+		}else{
+			tvStatus.text = status.decoded_content
+		}
 		
 		val dialog = Dialog(activity)
 		dialog.setContentView(view)

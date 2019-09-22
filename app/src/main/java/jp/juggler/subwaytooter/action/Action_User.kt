@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.TootApiResultCallback
 import jp.juggler.util.*
 import okhttp3.Request
+import org.json.JSONArray
 import org.json.JSONObject
 
 object Action_User {
@@ -241,6 +242,7 @@ object Action_User {
 						
 						result
 					}
+					
 					else -> {
 						
 						val result = client.request(
@@ -278,14 +280,14 @@ object Action_User {
 					}
 					
 					for(column in App1.getAppState(activity).column_list) {
-						if( column.access_info.isPseudo){
+						if(column.access_info.isPseudo) {
 							if(relation.blocking) {
 								// ミュートしたユーザの情報はTLから消える
 								column.removeAccountInTimelinePseudo(access_info.getFullAcct(who))
 							}
 							// フォローアイコンの表示更新が走る
 							column.updateFollowIcons(access_info)
-						}else if(column.access_info.acct == access_info.acct) {
+						} else if(column.access_info.acct == access_info.acct) {
 							
 							when {
 								
@@ -513,11 +515,13 @@ object Action_User {
 	
 	// 通報フォームを開く
 	fun reportForm(
-		activity : ActMain, access_info : SavedAccount, who : TootAccount, status : TootStatus
+		activity : ActMain,
+		access_info : SavedAccount,
+		who : TootAccount,
+		status : TootStatus? = null
 	) {
 		ReportForm.showReportForm(activity, access_info, who, status) { dialog, comment, forward ->
 			report(activity, access_info, who, status, comment, forward) {
-				// 成功したらダイアログを閉じる
 				dialog.dismissSafe()
 			}
 		}
@@ -528,7 +532,7 @@ object Action_User {
 		activity : ActMain,
 		access_info : SavedAccount,
 		who : TootAccount,
-		status : TootStatus,
+		status : TootStatus?,
 		comment : String,
 		forward : Boolean,
 		onReportComplete : TootApiResultCallback
@@ -542,11 +546,16 @@ object Action_User {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/reports",
-					("account_id=" + who.id.toString() +
-						"&comment=" + comment.encodePercent() +
-						"&status_ids[]=" + status.id.toString() +
-						"&forward=" + if(forward) "true" else "false"
-						).toFormRequestBody().toPost()
+					JSONObject().apply{
+						put("account_id",who.id.toString())
+						put("comment",comment)
+						put("forward",forward)
+						if(status != null){
+							put("status_ids",JSONArray().apply{
+								put(status.id.toString())
+							})
+						}
+					}.toPostRequestBuilder()
 				)
 			}
 			

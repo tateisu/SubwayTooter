@@ -144,11 +144,11 @@ object TootTextEncoder {
 			TootPollsType.Mastodon -> when {
 				enquete.expired -> false
 				now >= enquete.expired_at -> false
-				enquete.myVoted != null -> false
+				enquete.ownVoted -> false
 				else -> true
 			}
 			
-			TootPollsType.Misskey -> enquete.myVoted == null
+			TootPollsType.Misskey -> enquete.ownVoted
 		}
 		
 		sb.addAfterLine("\n")
@@ -176,10 +176,10 @@ object TootTextEncoder {
 		val text = when(enquete.pollType) {
 			TootPollsType.Misskey -> {
 				val sb2 = StringBuilder().append(item.decoded_text)
-				if(enquete.myVoted != null) {
+				if( enquete.ownVoted ) {
 					sb2.append(" / ")
 					sb2.append(context.getString(R.string.vote_count_text, item.votes))
-					if(i == enquete.myVoted) sb2.append(' ').append(0x2713.toChar())
+					if(item.isVoted ) sb2.append(' ').append(0x2713.toChar())
 				}
 				sb2
 			}

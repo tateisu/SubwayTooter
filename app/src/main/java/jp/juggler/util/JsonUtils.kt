@@ -63,6 +63,9 @@ inline fun JSONArray.downForEachIndexed(block : (i : Int, v : Any?) -> Unit) {
 	}
 }
 
+inline fun <T : Any?> JSONArray.map(block : (Any?) -> T) =
+	(0 until length()).map { block(opt(it)) }
+
 //fun JSONArray.toAnyList() : ArrayList<Any> {
 //	val dst_list = ArrayList<Any>(length())
 //	forEach { if(it != null) dst_list.add(it) }
@@ -119,23 +122,23 @@ fun String.toJsonArray() = JSONArray(this)
 fun JSONObject.parseBoolean(key : String) : Boolean? {
 	val o = this.opt(key)
 	if(o == null || o == JSONObject.NULL) return null
-
-	return when(o){
+	
+	return when(o) {
 		is Boolean -> o
 		
 		is Int -> return o != 0
 		is Long -> return o != 0L
-		is Float -> return !(o.isFinite() && o == 0f)
-		is Double -> return !(o.isFinite() && o == 0.0)
-
-		is String -> when(o){
-			"", "0","false" ,"False" -> false
-			else-> true
+		is Float -> return ! (o.isFinite() && o == 0f)
+		is Double -> return ! (o.isFinite() && o == 0.0)
+		
+		is String -> when(o) {
+			"", "0", "false", "False" -> false
+			else -> true
 		}
 		
 		is JSONArray -> o.length() > 0
 		is JSONObject -> o.length() > 0
-
+		
 		else -> true
 	}
 }
@@ -211,21 +214,20 @@ fun JSONObject.parseInt(key : String) : Int? {
 	}
 }
 
-
 fun jsonObject(initializer : JSONObject.() -> Unit) : JSONObject {
 	val dst = JSONObject()
 	dst.initializer()
 	return dst
 }
 
-fun Array<String>.toJsonArray() : JSONArray = JSONArray().also{
-	for(s in this){
+fun Array<String>.toJsonArray() : JSONArray = JSONArray().also {
+	for(s in this) {
 		it.put(s)
 	}
 }
 
-fun jsonArray(vararg args:String) = JSONArray().also{
-	for(s in args){
+fun jsonArray(vararg args : String) = JSONArray().also {
+	for(s in args) {
 		it.put(s)
 	}
 }

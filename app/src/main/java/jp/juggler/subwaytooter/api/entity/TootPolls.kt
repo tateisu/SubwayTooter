@@ -49,8 +49,6 @@ class TootPolls private constructor(
 	// 結果の数値のテキスト // null or array of string
 	private var ratios_text : MutableList<String>? = null
 	
-	var myVoted : Int? = null
-	
 	// 以下はJSONには存在しないが内部で使う
 	val time_start : Long
 	val status_id : EntityId
@@ -62,6 +60,8 @@ class TootPolls private constructor(
 	var votes_count : Int? = null
 	var maxVotesCount : Int? = null
 	var pollId : EntityId? = null
+	
+	var ownVoted : Boolean
 	
 	init {
 		
@@ -78,12 +78,14 @@ class TootPolls private constructor(
 				
 				val votesList = ArrayList<Int>()
 				var votesMax = 1
-				items?.forEachIndexed { index, choice ->
-					if(choice.isVoted) this.myVoted = index
+				var ownVoted = false
+				items?.forEach { choice ->
+					if(choice.isVoted) ownVoted = true
 					val votes = choice.votes ?: 0
 					votesList.add(votes)
 					if(votes > votesMax) votesMax = votes
 				}
+				this.ownVoted = ownVoted
 				
 				if(votesList.isNotEmpty()) {
 					this.ratios =
@@ -141,7 +143,18 @@ class TootPolls private constructor(
 				this.expired = src.optBoolean("expired", false)
 				this.multiple = src.optBoolean("multiple", false)
 				this.votes_count = src.parseInt("votes_count")
-				this.myVoted = if(src.optBoolean("voted", false)) 1 else null
+				
+				var ownVoted = src.optBoolean("voted", false)
+
+				src.optJSONArray("own_votes")?.forEach {
+					if( it is Number){
+						val i = it.toInt()
+						items?.get(i)?.isVoted = true
+						ownVoted = true
+					}
+				}
+
+				this.ownVoted = ownVoted
 				
 				when {
 					this.items == null -> maxVotesCount = null
@@ -192,6 +205,8 @@ class TootPolls private constructor(
 				
 				this.ratios = src.parseFloatArrayList("ratios")
 				this.ratios_text = src.parseStringArrayList("ratios_text")
+				
+				this.ownVoted = false
 			}
 		}
 		
@@ -333,7 +348,7 @@ class TootPolls private constructor(
 		synchronized(this) {
 			try {
 				// 既に投票済み状態なら何もしない
-				if(myVoted != null) return false
+				if(ownVoted) return false
 				
 				val item = this.items?.get(argChoice) ?: return false
 				item.votes = (item.votes ?: 0) + 1
@@ -343,7 +358,7 @@ class TootPolls private constructor(
 				val votesList = ArrayList<Int>()
 				var votesMax = 1
 				items.forEachIndexed { index, choice ->
-					if(choice.isVoted) this.myVoted = index
+					if(choice.isVoted) ownVoted = true
 					val votes = choice.votes ?: 0
 					votesList.add(votes)
 					if(votes > votesMax) votesMax = votes

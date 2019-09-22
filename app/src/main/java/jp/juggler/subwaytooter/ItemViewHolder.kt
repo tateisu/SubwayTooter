@@ -2569,16 +2569,16 @@ internal class ItemViewHolder(
 			TootPollsType.Mastodon -> when {
 				enquete.expired -> false
 				now >= enquete.expired_at -> false
-				enquete.myVoted != null -> false
+				enquete.ownVoted -> false
 				else -> true
 			}
 			
 			TootPollsType.FriendsNico -> {
 				val remain = enquete.time_start + TootPolls.ENQUETE_EXPIRE - now
-				enquete.myVoted == null && remain > 0L
+				remain > 0L && !enquete.ownVoted
 			}
 			
-			TootPollsType.Misskey -> enquete.myVoted == null
+			TootPollsType.Misskey -> !enquete.ownVoted
 		}
 		
 		items.forEachIndexed { index, choice ->
@@ -2608,10 +2608,10 @@ internal class ItemViewHolder(
 				val sb = SpannableStringBuilder()
 					.append(item.decoded_text)
 				
-				if(enquete.myVoted != null) {
+				if( enquete.ownVoted ) {
 					sb.append(" / ")
 					sb.append(activity.getString(R.string.vote_count_text, item.votes))
-					if(i == enquete.myVoted) sb.append(' ').append(0x2713.toChar())
+					if( item.isVoted ) sb.append(' ').append(0x2713.toChar())
 				}
 				sb
 			}
@@ -2633,6 +2633,7 @@ internal class ItemViewHolder(
 							else -> activity.getString(R.string.vote_count_text, v)
 						}
 					)
+					if( item.isVoted ) sb.append(' ').append(0x2713.toChar())
 				}
 				sb
 			}
@@ -2813,7 +2814,7 @@ internal class ItemViewHolder(
 		accessInfo : SavedAccount,
 		idx : Int
 	) {
-		if(enquete.myVoted != null) {
+		if(enquete.ownVoted) {
 			showToast(context, false, R.string.already_voted)
 			return
 		}

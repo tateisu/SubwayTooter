@@ -479,11 +479,7 @@ internal class ItemViewHolder(
 					item.hasAnyContent() -> {
 						// 引用Renote
 						val colorBg = Pref.ipEventBgColorBoost(activity.pref)
-						showReply(
-							R.drawable.ic_repeat,
-							R.string.renote_to,
-							reblog
-						)
+						showReply(reblog, R.drawable.ic_repeat, R.string.renote_to)
 						showStatus(item, colorBg)
 					}
 					
@@ -726,16 +722,12 @@ internal class ItemViewHolder(
 		val in_reply_to_account_id = item.in_reply_to_account_id
 		when {
 			reply != null -> {
-				showReply(
-					R.drawable.ic_reply,
-					R.string.reply_to,
-					reply
-				)
+				showReply(reply, R.drawable.ic_reply, R.string.reply_to)
 				if(colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
 			}
 			
 			in_reply_to_id != null && in_reply_to_account_id != null -> {
-				showReply(in_reply_to_account_id, item)
+				showReply(item, in_reply_to_account_id)
 				if(colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
 			}
 		}
@@ -766,11 +758,7 @@ internal class ItemViewHolder(
 				
 				else -> {
 					// 引用Renote
-					showReply(
-						R.drawable.ic_repeat,
-						R.string.renote_to,
-						reblog
-					)
+					showReply(reblog, R.drawable.ic_repeat, R.string.renote_to)
 					showStatus(item, Pref.ipEventBgColorQuote(activity.pref))
 				}
 			}
@@ -1038,11 +1026,10 @@ internal class ItemViewHolder(
 		)
 	}
 	
-	private fun showReply(
-		iconId : Int,
-		text : Spannable
-	) {
+	private fun showReply(iconId : Int, text : Spannable) {
+		
 		llReply.visibility = View.VISIBLE
+		
 		
 		setIconDrawableId(
 			activity,
@@ -1056,31 +1043,17 @@ internal class ItemViewHolder(
 		reply_invalidator.register(text)
 	}
 	
-	private fun showReply(
-		iconId : Int,
-		stringId : Int,
-		reply : TootStatus
-	) {
+	private fun showReply(reply : TootStatus, iconId : Int, stringId : Int) {
 		status_reply = reply
-		
-		// val who = reply.account
-		// showStatusTime(activity, tvReplyTime, who, time = reply.time_created_at)
-		// setAcct(tvReplyAcct, access_info.getFullAcct(who), who.acct)
-		
-		val text = reply.accountRef.decoded_display_name.intoStringResource(activity, stringId)
-		showReply(iconId, text)
+		showReply(
+			iconId,
+			reply.accountRef.decoded_display_name.intoStringResource(activity, stringId)
+		)
 	}
 	
-	private fun showReply(
-		accountId : EntityId,
-		reply : TootStatus
-	) {
-		status_reply = reply
-		
-		
-		llReply.visibility = View.VISIBLE
-		
+	private fun showReply(reply : TootStatus, accountId : EntityId) {
 		val name = if(accountId == reply.account.id) {
+			// 自己レスなら
 			AcctColor.getNicknameWithColor(access_info.getFullAcct(reply.account))
 		} else {
 			val m = reply.mentions?.find { it.id == accountId }
@@ -1831,12 +1804,19 @@ internal class ItemViewHolder(
 			
 			llReply -> {
 				val s = status_reply
-				if(s != null) {
-					Action_Toot.conversation(activity, pos, access_info, s)
-				} else {
-					val id = status_showing?.in_reply_to_id
-					if(id != null) {
-						Action_Toot.conversationLocal(activity, pos, access_info, id)
+
+				when {
+					s != null -> Action_Toot.conversation(activity, pos, access_info, s)
+					
+					// tootsearchは返信元のIDを取得するのにひと手間必要
+					column.type == ColumnType.SEARCH_TS ->
+						Action_Toot.showReplyTootsearch(activity, pos, status_showing)
+
+					else -> {
+						val id = status_showing?.in_reply_to_id
+						if(id != null) {
+							Action_Toot.conversationLocal(activity, pos, access_info, id)
+						}
 					}
 				}
 			}
@@ -2019,8 +1999,10 @@ internal class ItemViewHolder(
 			
 			llReply -> {
 				val s = status_reply
-				if(s != null) {
-					DlgContextMenu(
+				when {
+
+					// 返信元のstatusがあるならコンテキストメニュー
+					s != null -> DlgContextMenu(
 						activity,
 						column,
 						s.accountRef,
@@ -2028,15 +2010,27 @@ internal class ItemViewHolder(
 						notification,
 						tvContent
 					).show()
-				} else {
-					val id = status_showing?.in_reply_to_id
-					if(id != null) {
-						Action_Toot.conversationLocal(
+					
+					// それ以外はコンテキストメニューではなく会話を開く
+
+					// tootsearchは返信元のIDを取得するのにひと手間必要
+					column.type == ColumnType.SEARCH_TS ->
+						Action_Toot.showReplyTootsearch(
 							activity,
 							activity.nextPosition(column),
-							access_info,
-							id
+							status_showing
 						)
+					
+					else -> {
+						val id = status_showing?.in_reply_to_id
+						if(id != null) {
+							Action_Toot.conversationLocal(
+								activity,
+								activity.nextPosition(column),
+								access_info,
+								id
+							)
+						}
 					}
 				}
 			}

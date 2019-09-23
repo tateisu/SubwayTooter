@@ -743,7 +743,7 @@ object Action_Toot {
 							try {
 								val m = reDetailedStatusTime.matcher(string)
 								if(m.find()) {
-									local_status_id = EntityId(m.groupEx(1)!!)
+									local_status_id = EntityId(m.groupEx(1) !!)
 								}
 							} catch(ex : Throwable) {
 								log.e(ex, "openStatusRemote: can't parse status id from HTML data.")
@@ -774,7 +774,88 @@ object Action_Toot {
 					}
 				}
 			})
+	}
+	
+	// tootsearchでは返信表記にreplyオブジェクトがない。
+	// in_reply_to_idを参照するしかない
+	// ところがtootsearchでは投稿をどのタンスから読んだか分からないので、IDは全面的に信用できない。
+	// 疑似ではないアカウントを選んだ後に表示中の投稿を検索APIで調べて、そのリプライのIDを取得しなおす
+	fun showReplyTootsearch(
+		activity : ActMain,
+		pos : Int,
+		status : TootStatus?
+	) {
+		status ?: return
 		
+		// step2: 選択したアカウントで投稿を検索して返信元の投稿のIDを調べる
+		fun step2(a : SavedAccount) = TootTaskRunner(activity).run(a, object : TootTask {
+			var tmp:TootStatus? = null
+			override fun background(client : TootApiClient) : TootApiResult? {
+				val(result,status)=client.syncStatus(a,status)
+				this.tmp = status
+				return result
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				result?:return
+				val status = tmp
+				val replyId = status?.in_reply_to_id
+				when {
+					status ==null -> showToast(activity, true, result.error ?: "?")
+					replyId == null -> showToast(activity, true, "showReplyTootsearch: in_reply_to_id is null")
+					else -> conversationLocal(activity,pos,a,replyId)
+				}
+			}
+		})
+		
+		// step 1: choose account
+		
+		val dialog = ActionsDialog()
+		
+		// トゥートの投稿元タンスにあるアカウント
+		val local_account_list = ArrayList<SavedAccount>()
+		
+		// その他のタンスにあるアカウント
+		val other_account_list = ArrayList<SavedAccount>()
+		
+		val host = status.account.host
+		
+		for(a in SavedAccount.loadAccountList(activity)) {
+			
+			// 検索APIはログイン必須なので疑似アカウントは使えない
+			if(a.isPseudo) continue
+			
+			if(a.host.equals(host, ignoreCase = true)) {
+				local_account_list.add(a)
+			} else {
+				// 別タンスでも実アカウントなら検索APIでステータスIDを変換できる
+				other_account_list.add(a)
+			}
+		}
+		
+		SavedAccount.sort(local_account_list)
+		for(a in local_account_list) {
+			dialog.addAction(
+				AcctColor.getStringWithNickname(
+					activity,
+					R.string.open_in_account,
+					a.acct
+				)
+			) { step2(a) }
+		}
+		
+		SavedAccount.sort(other_account_list)
+		for(a in other_account_list) {
+			dialog.addAction(
+				AcctColor.getStringWithNickname(
+					activity,
+					R.string.open_in_account,
+					a.acct
+				)
+			) { step2(a) }
+		}
+		
+		dialog.show(activity, activity.getString(R.string.open_status_from))
 	}
 	
 	////////////////////////////////////////

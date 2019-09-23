@@ -737,7 +737,7 @@
     <string name="end">End</string>
     <string name="misskey_hybrid_timeline">Fil social</string>
     <string name="misskey_hybrid_timeline_long">Fil Social (Misskey)</string>
-    <string name="renote_to">Renote to %1$s</string>
+    <string name="renote_to">Republier vers %1$s</string>
     <string name="reply_to">Réponse à %1$s</string>
     <string name="deleted_at">supprimé à %1$s</string>
     <string name="already_reactioned">déjà réagi.</string>
@@ -933,4 +933,5 @@
     <string name="profile_directory_not_supported_on_misskey">L’annuaire des profils n’est pas supporté sur Misskey</string>
     <string name="show_in_directory">Afficher dans l’annuaire</string>
     <string name="account_picker_quoted_renote">Compte pour « renote citée » \?</string>
+    <string name="featured_hashtags">Hashtags populaires</string>
 </resources>

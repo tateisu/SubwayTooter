@@ -417,8 +417,11 @@ object Action_Toot {
 				val new_status = this.new_status
 				
 				when {
+					
+					// cancelled.
 					result == null -> {
-					} // cancelled.
+					}
+					
 					new_status != null -> {
 						// カウント数は遅延があるみたいなので、恣意的に表示を変更する
 						// ブーストカウント数を加工する
@@ -465,9 +468,7 @@ object Action_Toot {
 		activity.showColumnMatchAccount(access_info)
 	}
 	
-	fun delete(
-		activity : ActMain, access_info : SavedAccount, status_id : EntityId
-	) {
+	fun delete(activity : ActMain, access_info : SavedAccount, status_id : EntityId) {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
@@ -776,7 +777,7 @@ object Action_Toot {
 			})
 	}
 	
-	// tootsearchでは返信表記にreplyオブジェクトがない。
+	// tootsearch APIは投稿の返信元を示すreplyの情報がない。
 	// in_reply_to_idを参照するしかない
 	// ところがtootsearchでは投稿をどのタンスから読んだか分からないので、IDは全面的に信用できない。
 	// 疑似ではないアカウントを選んだ後に表示中の投稿を検索APIで調べて、そのリプライのIDを取得しなおす

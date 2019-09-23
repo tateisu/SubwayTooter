@@ -783,42 +783,39 @@ object Action_Toot {
 	fun showReplyTootsearch(
 		activity : ActMain,
 		pos : Int,
-		status : TootStatus?
+		statusArg : TootStatus?
 	) {
-		status ?: return
+		statusArg ?: return
 		
 		// step2: 選択したアカウントで投稿を検索して返信元の投稿のIDを調べる
 		fun step2(a : SavedAccount) = TootTaskRunner(activity).run(a, object : TootTask {
-			var tmp:TootStatus? = null
+			var tmp : TootStatus? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val(result,status)=client.syncStatus(a,status)
+				val (result, status) = client.syncStatus(a, statusArg)
 				this.tmp = status
 				return result
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
-				result?:return
+				result ?: return
 				val status = tmp
 				val replyId = status?.in_reply_to_id
 				when {
-					status ==null -> showToast(activity, true, result.error ?: "?")
-					replyId == null -> showToast(activity, true, "showReplyTootsearch: in_reply_to_id is null")
-					else -> conversationLocal(activity,pos,a,replyId)
+					status == null -> showToast(activity, true, result.error ?: "?")
+					replyId == null -> showToast(
+						activity,true,
+						"showReplyTootsearch: in_reply_to_id is null"
+					)
+					else -> conversationLocal(activity, pos, a, replyId)
 				}
 			}
 		})
 		
 		// step 1: choose account
 		
-		val dialog = ActionsDialog()
-		
-		// トゥートの投稿元タンスにあるアカウント
+		val host = statusArg.account.host
 		val local_account_list = ArrayList<SavedAccount>()
-		
-		// その他のタンスにあるアカウント
 		val other_account_list = ArrayList<SavedAccount>()
-		
-		val host = status.account.host
 		
 		for(a in SavedAccount.loadAccountList(activity)) {
 			
@@ -828,10 +825,11 @@ object Action_Toot {
 			if(a.host.equals(host, ignoreCase = true)) {
 				local_account_list.add(a)
 			} else {
-				// 別タンスでも実アカウントなら検索APIでステータスIDを変換できる
 				other_account_list.add(a)
 			}
 		}
+		
+		val dialog = ActionsDialog()
 		
 		SavedAccount.sort(local_account_list)
 		for(a in local_account_list) {

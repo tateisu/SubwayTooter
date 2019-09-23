@@ -1066,6 +1066,9 @@ internal class ItemViewHolder(
 		
 		val text = name.intoStringResource(activity, R.string.reply_to)
 		showReply(R.drawable.ic_reply, text)
+		
+		// tootsearchはreplyオブジェクトがなくin_reply_toだけが提供される場合があるが
+		// tootsearchではどのタンスから読んだか分からないのでin_reply_toのIDも信用できない
 	}
 	
 	private fun showBoost(

@@ -735,13 +735,13 @@ internal class ItemViewHolder(
 			}
 			
 			in_reply_to_id != null && in_reply_to_account_id != null -> {
-				showReply(in_reply_to_account_id,item)
+				showReply(in_reply_to_account_id, item)
 				if(colorBgArg == 0) colorBg = Pref.ipEventBgColorMention(activity.pref)
 			}
 		}
 		showStatus(item, colorBg)
 	}
-
+	
 	private fun showMessageHolder(item : TootMessageHolder) {
 		tvMessageHolder.visibility = View.VISIBLE
 		tvMessageHolder.text = item.text
@@ -1008,14 +1008,14 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showSearchTag(tag : TootTag) {
-		if( tag.history?.isNotEmpty() == true ){
+		if(tag.history?.isNotEmpty() == true) {
 			llTrendTag.visibility = View.VISIBLE
 			tvTrendTagName.text = "#${tag.name}"
 			tvTrendTagDesc.text =
 				activity.getString(R.string.people_talking, tag.accountDaily, tag.accountWeekly)
 			tvTrendTagCount.text = "${tag.countDaily}(${tag.countWeekly})"
 			cvTagHistory.setHistory(tag.history)
-		}else{
+		} else {
 			llSearchTag.visibility = View.VISIBLE
 			btnSearchTag.text = "#" + tag.name
 			
@@ -1073,16 +1073,17 @@ internal class ItemViewHolder(
 	
 	private fun showReply(
 		accountId : EntityId,
-		replyStatus : TootStatus
+		reply : TootStatus
 	) {
-		val iconId = R.drawable.ic_reply
+		status_reply = reply
+		
 		
 		llReply.visibility = View.VISIBLE
 		
-		val name = if(accountId == replyStatus.account.id) {
-			AcctColor.getNicknameWithColor(access_info.getFullAcct(replyStatus.account))
+		val name = if(accountId == reply.account.id) {
+			AcctColor.getNicknameWithColor(access_info.getFullAcct(reply.account))
 		} else {
-			val m = replyStatus.mentions?.find { it.id == accountId }
+			val m = reply.mentions?.find { it.id == accountId }
 			if(m != null) {
 				AcctColor.getNicknameWithColor(access_info.getFullAcct(m.acct))
 			} else {
@@ -1091,12 +1092,7 @@ internal class ItemViewHolder(
 		}
 		
 		val text = name.intoStringResource(activity, R.string.reply_to)
-		
-		// val who = reply.account
-		// showStatusTime(activity, tvReplyTime, who, time = reply.time_created_at)
-		// setAcct(tvReplyAcct, access_info.getFullAcct(who), who.acct)
-		
-		showReply(iconId, text)
+		showReply(R.drawable.ic_reply, text)
 	}
 	
 	private fun showBoost(
@@ -1155,8 +1151,7 @@ internal class ItemViewHolder(
 		
 		setAcct(tvFollowerAcct, access_info.getFullAcct(who), who.acct)
 		
-		who.setAccountExtra(tvLastStatusAt,access_info)
-		
+		who.setAccountExtra(tvLastStatusAt, access_info)
 		
 		val relation = UserRelation.load(access_info.db_id, who.id)
 		Styler.setFollowIcon(
@@ -2575,10 +2570,10 @@ internal class ItemViewHolder(
 			
 			TootPollsType.FriendsNico -> {
 				val remain = enquete.time_start + TootPolls.ENQUETE_EXPIRE - now
-				remain > 0L && !enquete.ownVoted
+				remain > 0L && ! enquete.ownVoted
 			}
 			
-			TootPollsType.Misskey -> !enquete.ownVoted
+			TootPollsType.Misskey -> ! enquete.ownVoted
 		}
 		
 		items.forEachIndexed { index, choice ->
@@ -2608,10 +2603,10 @@ internal class ItemViewHolder(
 				val sb = SpannableStringBuilder()
 					.append(item.decoded_text)
 				
-				if( enquete.ownVoted ) {
+				if(enquete.ownVoted) {
 					sb.append(" / ")
 					sb.append(activity.getString(R.string.vote_count_text, item.votes))
-					if( item.isVoted ) sb.append(' ').append(0x2713.toChar())
+					if(item.isVoted) sb.append(' ').append(0x2713.toChar())
 				}
 				sb
 			}
@@ -2633,7 +2628,7 @@ internal class ItemViewHolder(
 							else -> activity.getString(R.string.vote_count_text, v)
 						}
 					)
-					if( item.isVoted ) sb.append(' ').append(0x2713.toChar())
+					if(item.isVoted) sb.append(' ').append(0x2713.toChar())
 				}
 				sb
 			}

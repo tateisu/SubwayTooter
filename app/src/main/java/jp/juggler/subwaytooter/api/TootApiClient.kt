@@ -488,7 +488,7 @@ class TootApiClient(
 				// HTMLならタグを除去する
 				val ct = response.body?.contentType()
 				if(ct?.subtype == "html") {
-					val decoded = DecodeOptions().decodeHTML(bodyString).toString()
+					val decoded = DecodeOptions().decodeHTML(bodyString).toString().replace("""[\s　]+""".toRegex()," ")
 					bodyString = decoded
 				}
 				

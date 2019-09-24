@@ -357,7 +357,7 @@ class TootPolls private constructor(
 				// update ratios
 				val votesList = ArrayList<Int>()
 				var votesMax = 1
-				items.forEachIndexed { index, choice ->
+				items.forEach { choice ->
 					if(choice.isVoted) ownVoted = true
 					val votes = choice.votes ?: 0
 					votesList.add(votes)

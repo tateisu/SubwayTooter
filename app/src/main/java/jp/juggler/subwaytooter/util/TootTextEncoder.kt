@@ -153,8 +153,8 @@ object TootTextEncoder {
 		
 		sb.addAfterLine("\n")
 		
-		items.forEachIndexed { index, choice ->
-			encodePollChoice(sb, context, enquete, canVote, index, choice)
+		items.forEach { choice ->
+			encodePollChoice(sb, context, enquete, canVote, choice)
 		}
 		
 		when(enquete.pollType) {
@@ -169,7 +169,6 @@ object TootTextEncoder {
 		context : Context,
 		enquete : TootPolls,
 		canVote : Boolean,
-		i : Int,
 		item : TootPollsChoice
 	) {
 		

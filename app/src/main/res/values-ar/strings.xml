@@ -472,4 +472,5 @@
     <string name="delete_scheduled_status_before_update">هل تريد حذف المنشور المبرمَج قبل نشره. هل أنت واثق؟</string>
     <string name="copy_account_id">انسح معرّف الحساب %1$s</string>
     <string name="open_in_admin_ui">افتحه على واجهة الويب الإدارية</string>
+    <string name="visibility_account_setting">تتبّع إعداد الحساب</string>
 </resources>

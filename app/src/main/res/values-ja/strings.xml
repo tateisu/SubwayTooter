@@ -935,5 +935,6 @@
     <string name="profile_directory_not_supported_on_misskey">ディレクトリはMisskeyでは利用できません</string>
     <string name="show_in_directory">ディレクトリに表示</string>
     <string name="featured_hashtags">注目のハッシュタグ</string>
+    <string name="custom_emoji">カスタム絵文字</string>
 
 </resources>

@@ -55,13 +55,16 @@ class CustomEmojiCache(internal val context : Context) {
 	private val queue = LinkedList<Request>()
 	
 	private val handler : Handler
-	private val worker : Worker
+	private val workers = ArrayList<Worker>()
 	
 	init {
 		handler = Handler(context.mainLooper)
 		cache = ConcurrentHashMap()
-		worker = Worker()
-		worker.start()
+		for(i in 0 until 4) {
+			val worker = Worker(workers)
+			worker.start()
+			workers.add(worker)
+		}
 	}
 	
 	// カラムのリロードボタンを押したタイミングでエラーキャッシュをクリアする
@@ -123,7 +126,7 @@ class CustomEmojiCache(internal val context : Context) {
 			synchronized(queue) {
 				queue.addLast(Request(refDrawTarget, url, onLoadComplete))
 			}
-			worker.notifyEx()
+			workers.first().notifyEx()
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			// たまにcache変数がなぜかnullになる端末があるらしい
@@ -131,45 +134,55 @@ class CustomEmojiCache(internal val context : Context) {
 		return null
 	}
 	
-	private inner class Worker : WorkerBase() {
+	private inner class Worker(waiter : Any?) : WorkerBase(waiter) {
 		
 		override fun cancel() {
 			// このスレッドはプロセスが生きてる限りキャンセルされない
 		}
 		
 		override fun run() {
+			var ts : Long
+			var te : Long
 			while(true) {
 				try {
 					var queue_size : Int
 					val request = synchronized(queue) {
 						val x = if(queue.isNotEmpty()) queue.removeFirst() else null
 						queue_size = queue.size
-						return@synchronized x
+						x
 					}
 					
 					if(request == null) {
 						if(DEBUG) log.d("wait")
+						ts = elapsedTime
 						waitEx(86400000L)
+						te = elapsedTime
+						if(te - ts >= 200L) log.d("sleep ${te - ts}ms")
 						continue
 					}
 					
 					// 描画先がGCされたなら何もしない
 					request.refTarget.get() ?: continue
 					
+					ts = elapsedTime
 					var cache_size : Int = - 1
-					if(synchronized(cache) {
-							val now = elapsedTime
-							val item = getCached(now, request.url)
-							if(item != null) {
-								if(item.frames != null) {
-									fireCallback(request)
-								}
-								return@synchronized true
+					val chache_used = synchronized(cache) {
+						val now = elapsedTime
+						val item = getCached(now, request.url)
+						if(item != null) {
+							if(item.frames != null) {
+								fireCallback(request)
 							}
-							sweep_cache(now)
-							cache_size = cache.size
-							return@synchronized false
-						}) continue
+							return@synchronized true
+						}
+						sweep_cache(now)
+						cache_size = cache.size
+						return@synchronized false
+					}
+					te = elapsedTime
+					if(te - ts >= 200L) log.d("cache_used? ${te - ts}ms")
+					
+					if(chache_used) continue
 					
 					if(DEBUG)
 						log.d(
@@ -181,16 +194,27 @@ class CustomEmojiCache(internal val context : Context) {
 					
 					var frames : ApngFrames? = null
 					try {
+						
+						ts = elapsedTime
 						val data = App1.getHttpCached(request.url)
+						te = elapsedTime
+						if(te - ts >= 200L) log.d("image get? ${te - ts}ms")
+						
 						if(data == null) {
 							log.e("get failed. url=%s", request.url)
 						} else {
+							
+							ts = elapsedTime
 							frames = decodeAPNG(data, request.url)
+							te = elapsedTime
+							if(te - ts >= 200L) log.d("iamge decode? ${te - ts}ms")
+							
 						}
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
 					
+					ts = elapsedTime
 					synchronized(cache) {
 						if(frames == null) {
 							cache_error.put(request.url, elapsedTime)
@@ -207,6 +231,8 @@ class CustomEmojiCache(internal val context : Context) {
 							fireCallback(request)
 						}
 					}
+					te = elapsedTime
+					if(te - ts >= 200L) log.d("update_cache? ${te - ts}ms")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 					
@@ -251,11 +277,10 @@ class CustomEmojiCache(internal val context : Context) {
 			}
 		}
 		
-		
 		private fun decodeAPNG(data : ByteArray, url : String) : ApngFrames? {
 			try {
 				// APNGをデコード
-				val x = ApngFrames.parse(64){ ByteArrayInputStream(data) }
+				val x = ApngFrames.parse(64) { ByteArrayInputStream(data) }
 				if(x != null) return x
 				// fall thru
 			} catch(ex : Throwable) {
@@ -280,7 +305,7 @@ class CustomEmojiCache(internal val context : Context) {
 			
 			// SVGのロードを試みる
 			try {
-				val b = decodeSVG(url,data, 128.toFloat())
+				val b = decodeSVG(url, data, 128.toFloat())
 				if(b != null) {
 					if(DEBUG) log.d("SVG decoded.")
 					return ApngFrames(b)
@@ -296,7 +321,10 @@ class CustomEmojiCache(internal val context : Context) {
 		
 		private val options = BitmapFactory.Options()
 		
-		private fun decodeBitmap(data : ByteArray, pixel_max : Int) : Bitmap? {
+		private fun decodeBitmap(
+			data : ByteArray,
+			@Suppress("SameParameterValue") pixel_max : Int
+		) : Bitmap? {
 			options.inJustDecodeBounds = true
 			options.inScaled = false
 			options.outWidth = 0
@@ -319,16 +347,22 @@ class CustomEmojiCache(internal val context : Context) {
 			return BitmapFactory.decodeByteArray(data, 0, data.size, options)
 		}
 		
-		private fun decodeSVG(url:String, data : ByteArray, pixelMax : Float) : Bitmap? {
+		private fun decodeSVG(
+			url : String,
+			data : ByteArray,
+			@Suppress("SameParameterValue") pixelMax : Float
+		) : Bitmap? {
 			try {
 				val svg = SVG.getFromInputStream(ByteArrayInputStream(data))
 				
-				val src_w = svg.documentWidth // the width in pixels, or -1 if there is no width available.
-				val src_h = svg.documentHeight // the height in pixels, or -1 if there is no height available.
-				val aspect = if( src_w <= 0f || src_h <=0f){
+				val src_w =
+					svg.documentWidth // the width in pixels, or -1 if there is no width available.
+				val src_h =
+					svg.documentHeight // the height in pixels, or -1 if there is no height available.
+				val aspect = if(src_w <= 0f || src_h <= 0f) {
 					// widthやheightの情報がない
 					1f
-				}else{
+				} else {
 					src_w / src_h
 				}
 				
@@ -337,7 +371,7 @@ class CustomEmojiCache(internal val context : Context) {
 				if(aspect >= 1f) {
 					dst_w = pixelMax
 					dst_h = pixelMax / aspect
-				}else {
+				} else {
 					dst_h = pixelMax
 					dst_w = pixelMax * aspect
 				}
@@ -352,9 +386,9 @@ class CustomEmojiCache(internal val context : Context) {
 				svg.renderToCanvas(
 					canvas,
 					if(aspect >= 1f) {
-						RectF(0f, h_ceil-dst_h, dst_w, dst_h) // 後半はw,hを指定する
+						RectF(0f, h_ceil - dst_h, dst_w, dst_h) // 後半はw,hを指定する
 					} else {
-						RectF(w_ceil-dst_w, 0f, dst_w , dst_h) // 後半はw,hを指定する
+						RectF(w_ceil - dst_w, 0f, dst_w, dst_h) // 後半はw,hを指定する
 					}
 				)
 				return b

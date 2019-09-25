@@ -17,9 +17,12 @@ import com.bumptech.glide.Glide
 import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
+import jp.juggler.subwaytooter.view.HeaderGridView
 import jp.juggler.subwaytooter.view.MyViewPager
 import jp.juggler.subwaytooter.view.NetworkEmojiView
 import jp.juggler.util.*
+import org.jetbrains.anko.padding
+import org.jetbrains.anko.textColor
 import org.json.JSONObject
 import java.util.*
 
@@ -31,6 +34,22 @@ class EmojiPicker(
 	private val onEmojiPicked : (name : String, instance : String?, bInstanceHasCustomEmoji : Boolean) -> Unit
 	// onEmojiPickedのinstance引数は通常の絵文字ならnull、カスタム絵文字なら非null、
 ) : View.OnClickListener, ViewPager.OnPageChangeListener {
+	
+	class SkinTone(val suffix_list : Array<out String>) {
+		companion object {
+			fun create(vararg suffix_list : String) : SkinTone {
+				return SkinTone(suffix_list)
+			}
+		}
+	}
+	
+	internal class EmojiItem(val name : String, val instance : String?)
+	
+	internal class CustomCategory(
+		val rangeStart : Int,
+		val rangeLength : Int,
+		val view : View
+	)
 	
 	companion object {
 		
@@ -66,23 +85,14 @@ class EmojiPicker(
 	
 	private val recent_list = ArrayList<EmojiItem>()
 	
-	private val custom_list = ArrayList<EmojiItem>()
+	private var custom_list = ArrayList<EmojiItem>()
+	private var custom_categories = ArrayList<CustomCategory>()
 	
 	private val emoji_url_map = HashMap<String, String>()
 	
 	private val recent_page_idx : Int
 	
 	private val custom_page_idx : Int
-	
-	class SkinTone(val suffix_list : Array<out String>) {
-		companion object {
-			fun create(vararg suffix_list : String) : SkinTone {
-				return SkinTone(suffix_list)
-			}
-		}
-	}
-	
-	internal class EmojiItem(val name : String, val instance : String?)
 	
 	init {
 		
@@ -213,13 +223,52 @@ class EmojiPicker(
 	private fun setCustomEmojiList(list : ArrayList<CustomEmoji>?) {
 		if(list == null) return
 		bInstanceHasCustomEmoji = true
-		custom_list.clear()
+		
+		// make categories
+		val newList = TreeMap<String, ArrayList<EmojiItem>>()
 		for(emoji in list) {
 			if(! emoji.visible_in_picker) continue
-			custom_list.add(EmojiItem(emoji.shortcode, instance))
+			val category = emoji.category ?: ""
+			var subList = newList[category]
+			if(subList == null) {
+				subList = ArrayList()
+				newList[category] = subList
+			}
+			subList.add(EmojiItem(emoji.shortcode, instance))
 			emoji_url_map[emoji.shortcode] = emoji.url
 		}
-		pager_adapter.getPageViewHolder(custom_page_idx)?.notifyDataSetChanged()
+		// compose categories data list
+		val entries = newList.entries
+		custom_list.clear()
+		custom_categories.clear()
+		custom_list.ensureCapacity(entries.sumBy { it.value.size })
+		custom_categories.ensureCapacity(entries.size)
+		entries.forEach {
+			val rangeStart = custom_list.size
+			custom_list.addAll(it.value)
+			val rangeLength = custom_list.size - rangeStart
+			
+			custom_categories.add(CustomCategory(
+				rangeStart,
+				rangeLength,
+				TextView(activity).apply {
+					layoutParams = FrameLayout.LayoutParams(
+						FrameLayout.LayoutParams.MATCH_PARENT,
+						FrameLayout.LayoutParams.WRAP_CONTENT
+					)
+					text = when(val name = it.key) {
+						"" -> this@EmojiPicker.activity.getString(R.string.custom_emoji)
+						else -> name
+					}
+					textColor =
+						getAttributeColor(this@EmojiPicker.activity, R.attr.colorContentText)
+					textSize = 16f // SP単位
+					padding = (resources.displayMetrics.density * 2f + 0.5f).toInt()
+				}
+			))
+		}
+		
+		pager_adapter.getPageViewHolder(custom_page_idx)?.reloadCustomEmoji()
 		pager_adapter.getPageViewHolder(recent_page_idx)?.notifyDataSetChanged()
 	}
 	
@@ -293,12 +342,12 @@ class EmojiPicker(
 		val id = view.id
 		selected_tone = if(selected_tone == id) 0 else id
 		showSkinTone()
-		pager_adapter.eachViewHolder { _, vh -> vh.reload() }
+		pager_adapter.eachViewHolder { _, vh -> vh.reloadSkinTone() }
 	}
 	
 	internal inner class EmojiPickerPage(
 		val hasSkinTone : Boolean,
-		category_id : Int,
+		val category_id : Int,
 		title_id : Int
 	) {
 		
@@ -326,29 +375,45 @@ class EmojiPicker(
 	inner class EmojiPickerPageViewHolder(activity : Activity, root : View) : BaseAdapter(),
 		AdapterView.OnItemClickListener {
 		
-		private val gridView : GridView
-		private val wh : Int
+		private val gridView : HeaderGridView = root.findViewById(R.id.gridView)
+		private val wh = (0.5f + 48f * activity.resources.displayMetrics.density).toInt()
 		
 		private var page : EmojiPickerPage? = null
 		
-		init {
-			this.gridView = root.findViewById(R.id.gridView)
-			gridView.adapter = this
-			gridView.onItemClickListener = this
-			
-			this.wh = (0.5f + 48f * activity.resources.displayMetrics.density).toInt()
-		}
-		
 		internal fun onPageCreate(page : EmojiPickerPage) {
 			this.page = page
+			if(page.category_id != CATEGORY_CUSTOM) {
+				gridView.adapter = this
+			} else {
+				reloadCustomEmoji()
+			}
+			gridView.onItemClickListener = this
 		}
 		
 		internal fun onPageDestroy() {
-		
 		}
 		
-		internal fun reload() {
-			this.notifyDataSetChanged()
+		internal fun reloadSkinTone() {
+			val page = this.page ?: throw RuntimeException("page is not assigned")
+			if(page.category_id != CATEGORY_CUSTOM) {
+				this.notifyDataSetChanged()
+			}
+		}
+		
+		fun reloadCustomEmoji() {
+			gridView.reset()
+			if(custom_categories.size >= 2) {
+				for(item in custom_categories) {
+					gridView.addHeaderView(
+						rangeStart = item.rangeStart,
+						rangeLength = item.rangeLength,
+						itemHeight = wh,
+						v = item.view,
+						isSelectable = false
+					)
+				}
+			}
+			gridView.adapter = this
 		}
 		
 		override fun getCount() : Int {
@@ -376,17 +441,11 @@ class EmojiPicker(
 			val view : View
 			val item = page.emoji_list[position]
 			if(item.instance != null) {
-				if(viewOld == null) {
-					view = NetworkEmojiView(activity)
-					val lp = AbsListView.LayoutParams(wh, wh)
-					view.layoutParams = lp
-				} else {
-					view = viewOld
+				view = viewOld ?: NetworkEmojiView(activity).apply {
+					layoutParams = AbsListView.LayoutParams(wh, wh)
 				}
-				view.setTag(R.id.btnAbout,item)
-				if(view is NetworkEmojiView) {
-					view.setEmoji(emoji_url_map[item.name])
-				}
+				view.setTag(R.id.btnAbout, item)
+				(view as? NetworkEmojiView)?.setEmoji(emoji_url_map[item.name])
 			} else {
 				if(viewOld == null) {
 					view = ImageView(activity)
@@ -395,7 +454,7 @@ class EmojiPicker(
 				} else {
 					view = viewOld
 				}
-				view.setTag(R.id.btnAbout,item)
+				view.setTag(R.id.btnAbout, item)
 				if(view is ImageView) {
 					val name = if(page.hasSkinTone) {
 						applySkinTone(item.name)
@@ -406,50 +465,56 @@ class EmojiPicker(
 					val info = EmojiMap.sShortNameToEmojiInfo[name]
 					if(info != null) {
 						val er = info.er
-						if(er.isSvg){
+						if(er.isSvg) {
 							Glide.with(activity)
 								.`as`(PictureDrawable::class.java)
 								
 								.load("file:///android_asset/${er.assetsName}")
 								.into(view)
-						}else{
+						} else {
 							Glide.with(activity)
 								.load(er.drawableId)
 								.into(view)
 						}
 					}
 				}
-			
 				
 			}
 			
 			return view
 		}
 		
-		override fun onItemClick(adapterView : AdapterView<*>, view : View, idx : Int, l : Long) {
-			
+		override fun onItemClick(
+			adapterView : AdapterView<*>,
+			view : View,
+			idxArg : Int,
+			l : Long
+		) {
 			val page = this.page ?: return
 			
-			val item = page.emoji_list[idx]
-			var name = item.name
-			if(item.instance != null && item.instance.isNotEmpty()) {
-				// カスタム絵文字
-				selected(name, item.instance)
-			} else {
-				// 普通の絵文字
-				EmojiMap.sShortNameToEmojiInfo[name] ?: return
-				
-				if(page.hasSkinTone) {
-					val sv = applySkinTone(name)
-					if(EmojiMap.sShortNameToEmojiInfo[sv] != null) {
-						name = sv
+			val idx = gridView.findListItemIndex(idxArg)
+			
+			if(idx in 0 until page.emoji_list.size) {
+				val item = page.emoji_list[idx]
+				var name = item.name
+				if(item.instance != null && item.instance.isNotEmpty()) {
+					// カスタム絵文字
+					selected(name, item.instance)
+				} else {
+					// 普通の絵文字
+					EmojiMap.sShortNameToEmojiInfo[name] ?: return
+					
+					if(page.hasSkinTone) {
+						val sv = applySkinTone(name)
+						if(EmojiMap.sShortNameToEmojiInfo[sv] != null) {
+							name = sv
+						}
 					}
+					
+					selected(name, null)
 				}
-				
-				selected(name, null)
 			}
 		}
-		
 	}
 	
 	// name はスキントーン適用済みであること

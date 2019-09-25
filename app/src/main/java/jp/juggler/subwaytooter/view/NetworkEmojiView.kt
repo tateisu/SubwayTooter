@@ -46,6 +46,7 @@ class NetworkEmojiView : View {
 	fun setEmoji(url : String?) {
 		this.url = url
 		mPaint.isFilterBitmap = true
+		invalidate()
 	}
 	
 	override fun onDraw(canvas : Canvas) {

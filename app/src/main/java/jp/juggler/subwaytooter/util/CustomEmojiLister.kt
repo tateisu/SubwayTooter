@@ -4,13 +4,11 @@ import android.content.Context
 import android.os.Handler
 import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.util.LogCategory
 import jp.juggler.util.toJsonArray
 import jp.juggler.util.toRequestBody
-import okhttp3.RequestBody
 import org.json.JSONObject
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -33,20 +31,12 @@ class CustomEmojiLister(internal val context : Context) {
 	internal class CacheItem(
 		val instance : String,
 		var list : ArrayList<CustomEmoji>? = null,
-		var listWithAliases : ArrayList<CustomEmoji>? = null
-	) {
-		
-		// 参照された時刻
-		var time_used : Long = 0
-		
+		var listWithAliases : ArrayList<CustomEmoji>? = null,
 		// ロードした時刻
-		var time_update : Long = 0
-		
-		init {
-			time_update = elapsedTime
-			time_used = time_update
-		}
-	}
+		var time_update : Long = elapsedTime,
+		// 参照された時刻
+		var time_used : Long = time_update
+	)
 	
 	internal class Request(
 		val instance : String,
@@ -101,7 +91,7 @@ class CustomEmojiLister(internal val context : Context) {
 	) : ArrayList<CustomEmoji>? {
 		try {
 			if(_instance.isEmpty()) return null
-			val instance = _instance.toLowerCase()
+			val instance = _instance.toLowerCase(Locale.JAPAN)
 			
 			synchronized(cache) {
 				val item = getCached(elapsedTime, instance)
@@ -123,7 +113,7 @@ class CustomEmojiLister(internal val context : Context) {
 	) : ArrayList<CustomEmoji>? {
 		try {
 			if(_instance.isEmpty()) return null
-			val instance = _instance.toLowerCase()
+			val instance = _instance.toLowerCase(Locale.JAPAN)
 			
 			synchronized(cache) {
 				val item = getCached(elapsedTime, instance)
@@ -196,7 +186,7 @@ class CustomEmojiLister(internal val context : Context) {
 					try {
 						val data = if(request.isMisskey) {
 							App1.getHttpCachedString("https://" + request.instance + "/api/meta") { builder ->
-								builder.post( JSONObject().toRequestBody() )
+								builder.post(JSONObject().toRequestBody())
 							}
 							
 						} else {
@@ -236,7 +226,6 @@ class CustomEmojiLister(internal val context : Context) {
 				}
 			}
 		}
-		
 		
 		private fun fireCallback(
 			request : Request,
@@ -297,15 +286,14 @@ class CustomEmojiLister(internal val context : Context) {
 			}
 		}
 		
-		
 		private fun makeListWithAlias(list : ArrayList<CustomEmoji>?) : ArrayList<CustomEmoji> {
 			val dst = ArrayList<CustomEmoji>()
-			if( list != null) {
+			if(list != null) {
 				dst.addAll(list)
 				for(item in list) {
 					val aliases = item.aliases ?: continue
 					for(alias in aliases) {
-						if( alias.equals(item.shortcode,ignoreCase = true)) continue
+						if(alias.equals(item.shortcode, ignoreCase = true)) continue
 						dst.add(item.makeAlias(alias))
 					}
 				}

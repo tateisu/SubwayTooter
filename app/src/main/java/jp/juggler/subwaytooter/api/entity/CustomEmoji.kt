@@ -12,7 +12,8 @@ class CustomEmoji(
 	val static_url : String?, // アニメーションなしの画像URL
 	val aliases : ArrayList<String>? = null,
 	val alias : String? = null,
-	val visible_in_picker : Boolean = true
+	val visible_in_picker : Boolean = true,
+	val category: String? = null
 ) : Mappable<String> {
 	
 	fun makeAlias(alias : String) = CustomEmoji(
@@ -26,14 +27,17 @@ class CustomEmoji(
 		get() = shortcode
 	
 	companion object {
+		
 		val decode : (JSONObject) -> CustomEmoji = { src ->
 			CustomEmoji(
 				shortcode = src.notEmptyOrThrow("shortcode"),
 				url = src.notEmptyOrThrow("url"),
 				static_url = src.parseString("static_url"),
-				visible_in_picker = src.optBoolean("visible_in_picker", true)
+				visible_in_picker = src.optBoolean("visible_in_picker", true),
+				category =src.parseString("category")
 			)
 		}
+		
 		val decodeMisskey : (JSONObject) -> CustomEmoji = { src ->
 			val url = src.parseString("url") ?: error("missing url")
 			

@@ -105,12 +105,11 @@ object Action_Account {
 							}
 						}
 					} else {
-						val error = result.error ?: "(no information)"
+						val error = result.error ?: "(no error information)"
 						if(error.contains("SSLHandshakeException")
 							&& (Build.VERSION.RELEASE.startsWith("7.0")
-								|| Build.VERSION.RELEASE.startsWith("7.1") && ! Build.VERSION.RELEASE.startsWith(
-								"7.1."
-							)
+								|| Build.VERSION.RELEASE.startsWith("7.1")
+								&& ! Build.VERSION.RELEASE.startsWith("7.1.")
 								)
 						) {
 							AlertDialog.Builder(activity)
@@ -118,13 +117,12 @@ object Action_Account {
 								.setNeutralButton(R.string.close, null)
 								.show()
 						} else {
-							showToast(activity, true, error)
+							showToast(activity, true, "$error ${result.requestInfo}")
 						}
 					}
 				}
 			})
 		}
-		
 	}
 	
 	private fun createAccount(
@@ -209,7 +207,7 @@ object Action_Account {
 		
 		AccountPicker.pick(
 			activity,
-			bAllowPseudo =type.bAllowPseudo,
+			bAllowPseudo = type.bAllowPseudo,
 			bAllowMisskey = type.bAllowMisskey,
 			bAllowMastodon = type.bAllowMastodon,
 			bAuto = true,
@@ -225,7 +223,7 @@ object Action_Account {
 					if(id != null) activity.addColumn(pos, ai, type, id)
 				}
 				
-				ColumnType.PROFILE_DIRECTORY->{
+				ColumnType.PROFILE_DIRECTORY -> {
 					activity.addColumn(pos, ai, type, ai.host)
 				}
 				

@@ -687,7 +687,7 @@ class App1 : Application() {
 				clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
 				clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
 				addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-
+				
 				var c = Pref.ipStatusBarColor(pref).notZero() ?: getAttributeColor(
 					activity,
 					R.attr.colorPrimaryDark
@@ -695,12 +695,8 @@ class App1 : Application() {
 				statusBarColor = c or Color.BLACK
 				
 				if(Build.VERSION.SDK_INT >= 23) {
-					val min = rgbToLab(Color.BLACK)
-					val max = rgbToLab(Color.WHITE)
-					val current = rgbToLab(c)
-					
 					decorView.systemUiVisibility =
-						if(current.first >= (min.first + max.first) / 2f) {
+						if( rgbToLab(c).first >= 50f) {
 							//Dark Text to show up on your light status bar
 							decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 						} else {
@@ -713,11 +709,9 @@ class App1 : Application() {
 				if(c != 0) {
 					navigationBarColor = c or Color.BLACK
 					
-					if( Build.VERSION.SDK_INT >= 26){
-						val current = rgbToLab(c)
-
+					if(Build.VERSION.SDK_INT >= 26) {
 						decorView.systemUiVisibility =
-							if(current.first >= 50) {
+							if(rgbToLab(c).first >= 50f) {
 								//Dark Text to show up on your light status bar
 								decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
 							} else {
@@ -726,7 +720,6 @@ class App1 : Application() {
 							}
 					}
 				} // else: need restart app.
-				
 			}
 		}
 	}

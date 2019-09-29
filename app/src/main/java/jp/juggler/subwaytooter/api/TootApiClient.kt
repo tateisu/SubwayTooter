@@ -1178,8 +1178,7 @@ class TootApiClient(
 		
 	}
 	
-	// アクセストークン手動入力でアカウントを更新する場合
-	// verify_credentialsを呼び出す
+	// アクセストークン手動入力でアカウントを更新する場合、アカウントの情報を取得する
 	fun getUserCredential(
 		access_token : String
 		, tokenInfo : JSONObject = JSONObject()

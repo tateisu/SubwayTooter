@@ -455,7 +455,8 @@ class EmojiPicker(
 					view = viewOld
 				}
 				view.setTag(R.id.btnAbout, item)
-				if(view is ImageView) {
+				if(view is ImageView && view.activity?.isDestroyed == false ) {
+					
 					val name = if(page.hasSkinTone) {
 						applySkinTone(item.name)
 					} else {
@@ -468,7 +469,6 @@ class EmojiPicker(
 						if(er.isSvg) {
 							Glide.with(activity)
 								.`as`(PictureDrawable::class.java)
-								
 								.load("file:///android_asset/${er.assetsName}")
 								.into(view)
 						} else {

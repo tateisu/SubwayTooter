@@ -15,7 +15,6 @@ sub cmd($){
     }
 }
 
-my $buildFile = 'app/build.gradle';
 
 # ワーキングツリーに変更がないことを確認
 open(my $fh,"-|","git status --porcelain --branch")
@@ -46,6 +45,7 @@ close($fh)
 @untrackedFiles and die "forgot git add?\n",map{ "- $_\n"} @untrackedFiles;
 
 # 現在のバージョン番号を取得
+my $buildFile = 'app/build.gradle';
 `cat $buildFile` =~ /versionName\s+["']([\d\.]+)["']/ 
 	or die "missing versionName in $buildFile\n";
 my($tag)="v$1";

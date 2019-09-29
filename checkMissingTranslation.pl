@@ -6,6 +6,54 @@ use File::Find;
 use XML::Simple;
 use Data::Dump qw(dump);
 
+
+
+sub cmd($){
+	print "+ ",$_[0],"\n";
+	my $rv=system $_[0];
+	if ($? == -1) {
+        die "failed to execute: $!\n";
+    }elsif ($? & 127) {
+        die "child died with signal %d, %s coredump\n", ($? & 127), ($? & 128) ? 'with' : 'without';
+    }else {
+		my $rv = $? >> 8;
+		$rv and die "child exited with value $rv\n";
+    }
+}
+
+
+# ワーキングツリーに変更がないことを確認
+open(my $fh,"-|","git status --porcelain --branch")
+	or die "can't check git status. $!";
+
+my @untrackedFiles;
+while(<$fh>){
+	chomp;
+	if(/^\?\?\s*(\S+)/){
+		my $path =$1;
+		next if $path =~ /\.idea|_Emoji/;
+		push @untrackedFiles,$path
+	}elsif( /^##\s*(\S+?)(?:\.\.|$)/ ){
+		my $branch=$1;
+		print "# branch=$branch\n";
+		$branch eq 'master'
+			or die "current branch is not master.\n";
+#	}else{
+#		warn "working tree is not clean.\n";
+#		cmd "git status";
+#		exit 1;
+	}
+}
+
+close($fh)
+	or die "can't check git status. $!";
+
+@untrackedFiles and die "forgot git add?\n",map{ "- $_\n"} @untrackedFiles;
+
+
+
+
+
 my $xml = XML::Simple->new;
 
 my $master_name = "_master";

@@ -110,7 +110,7 @@ class ActAppSettingChild : AppCompatActivity()
 			)
 			
 			root?.scan {
-				(it as? Switch)?.apply{
+				(it as? Switch)?.apply {
 					if(Build.VERSION.SDK_INT < 23) {
 						// android 5
 						thumbDrawable?.setTintList(thumbStates)
@@ -158,6 +158,8 @@ class ActAppSettingChild : AppCompatActivity()
 		internal const val COLOR_DIALOG_ID_EVENT_BG_FOLLOWREQUEST = 25
 		
 		internal const val COLOR_DIALOG_ID_SWITCH_BUTTON = 26
+		internal const val COLOR_DIALOG_ID_STATUS_BAR = 27
+		internal const val COLOR_DIALOG_ID_NAVIGATION_BAR = 28
 		
 		internal const val REQUEST_CODE_TIMELINE_FONT = 1
 		internal const val REQUEST_CODE_TIMELINE_FONT_BOLD = 2
@@ -212,6 +214,8 @@ class ActAppSettingChild : AppCompatActivity()
 	private var event_bg_color_vote : Int = 0
 	private var event_bg_color_follow_request : Int = 0
 	private var switch_button_color = 0
+	private var status_bar_color = 0
+	private var navigation_bar_color = 0
 	
 	private var color_column_header_bg : Int = 0
 	private var color_column_header_fg : Int = 0
@@ -310,7 +314,7 @@ class ActAppSettingChild : AppCompatActivity()
 	
 	override fun onSaveInstanceState(outState : Bundle) {
 		super.onSaveInstanceState(outState)
-
+		
 		val sv = customShareTarget?.name
 		if(sv != null) outState.putString(STATE_CHOOSE_INTENT_TARGET, sv)
 		
@@ -511,6 +515,11 @@ class ActAppSettingChild : AppCompatActivity()
 			, R.id.btnCustomShare3Reset
 			, R.id.btnSwitchButtonColorEdit
 			, R.id.btnSwitchButtonColorReset
+			, R.id.btnStatusBarColorEdit
+			, R.id.btnStatusBarColorReset
+			, R.id.btnNavigationBarColorEdit
+			, R.id.btnNavigationBarColorReset
+		
 		).forEach {
 			findViewById<View>(it)?.setOnClickListener(this)
 		}
@@ -697,6 +706,8 @@ class ActAppSettingChild : AppCompatActivity()
 		event_bg_color_vote = Pref.ipEventBgColorVote(pref)
 		event_bg_color_follow_request = Pref.ipEventBgColorFollowRequest(pref)
 		switch_button_color = Pref.ipSwitchOnColor(pref)
+		status_bar_color = Pref.ipStatusBarColor(pref)
+		navigation_bar_color = Pref.ipNavigationBarColor(pref)
 		
 		color_column_header_bg = Pref.ipCcdHeaderBg(pref)
 		color_column_header_fg = Pref.ipCcdHeaderFg(pref)
@@ -873,6 +884,8 @@ class ActAppSettingChild : AppCompatActivity()
 			put(Pref.ipEventBgColorVote, event_bg_color_vote)
 			put(Pref.ipEventBgColorFollowRequest, event_bg_color_follow_request)
 			put(Pref.ipSwitchOnColor, switch_button_color)
+			put(Pref.ipStatusBarColor, status_bar_color)
+			put(Pref.ipNavigationBarColor, navigation_bar_color)
 		}
 		
 		
@@ -1275,6 +1288,31 @@ class ActAppSettingChild : AppCompatActivity()
 				
 			}
 			
+			R.id.btnStatusBarColorEdit -> openColorPicker(
+				COLOR_DIALOG_ID_STATUS_BAR,
+				status_bar_color,
+				false
+			)
+			
+			R.id.btnStatusBarColorReset -> {
+				status_bar_color = Pref.ipStatusBarColor.defVal
+				saveUIToData()
+				App1.setStatusBarColor(this)
+				
+			}
+			
+			R.id.btnNavigationBarColorEdit -> openColorPicker(
+				COLOR_DIALOG_ID_NAVIGATION_BAR,
+				navigation_bar_color,
+				false
+			)
+			
+			R.id.btnNavigationBarColorReset -> {
+				navigation_bar_color = Pref.ipNavigationBarColor.defVal
+				saveUIToData()
+				App1.setStatusBarColor(this)
+			}
+			
 			R.id.btnTranslateAppComponentEdit -> openCustomShareChooser(CustomShareTarget.Translate)
 			R.id.btnCustomShare1Edit -> openCustomShareChooser(CustomShareTarget.CustomShare1)
 			R.id.btnCustomShare2Edit -> openCustomShareChooser(CustomShareTarget.CustomShare2)
@@ -1468,6 +1506,18 @@ class ActAppSettingChild : AppCompatActivity()
 				saveUIToData()
 				setSwitchColor(this, pref, svContent)
 			}
+			
+			COLOR_DIALOG_ID_STATUS_BAR -> {
+				status_bar_color = colorOpaque
+				saveUIToData()
+				App1.setStatusBarColor(this)
+			}
+			
+			COLOR_DIALOG_ID_NAVIGATION_BAR -> {
+				navigation_bar_color = colorOpaque
+				saveUIToData()
+				App1.setStatusBarColor(this)
+			}
 		}
 	}
 	
@@ -1553,7 +1603,7 @@ class ActAppSettingChild : AppCompatActivity()
 			if(src.isNotEmpty()) {
 				val f = NumberFormat.getInstance(Locale.getDefault()).parse(src)?.toFloat()
 				return when {
-					f==null -> Float.NaN
+					f == null -> Float.NaN
 					f.isNaN() -> Float.NaN
 					f < 0f -> 0f
 					f > 999f -> 999f

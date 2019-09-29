@@ -9,9 +9,11 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import android.view.WindowManager
 import androidx.browser.customtabs.CustomTabsIntent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
@@ -492,6 +494,7 @@ class App1 : Application() {
 				}
 			)
 			
+			setStatusBarColor(activity)
 		}
 		
 		internal val CACHE_CONTROL = CacheControl.Builder()
@@ -638,6 +641,21 @@ class App1 : Application() {
 //					insets.consumeSystemWindowInsets()
 //				}
 //			}
+		}
+		
+		fun setStatusBarColor(activity : Activity) {
+			
+			activity.window?.apply{
+				var c = Pref.ipStatusBarColor(pref).notZero() ?: getAttributeColor(activity,R.attr.colorPrimaryDark)
+				clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+				addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+				statusBarColor = c or Color.BLACK
+				
+				c = Pref.ipNavigationBarColor(pref)
+				if(c!=0){
+					navigationBarColor = c or Color.BLACK
+				} // else: need restart app.
+			}
 		}
 	}
 }

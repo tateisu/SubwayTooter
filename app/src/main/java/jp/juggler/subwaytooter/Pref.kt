@@ -476,6 +476,9 @@ object Pref {
 	
 	val ipSwitchOnColor = IntPref("SwitchOnColor", Color.BLACK or 0x0080ff)
 	
+	val ipStatusBarColor = IntPref("StatusBarColor", 0)
+	val ipNavigationBarColor = IntPref("NavigationBarColor", 0)
+	
 	val ipTootColorUnlisted = IntPref("ipTootColorUnlisted", 0)
 	val ipTootColorFollower = IntPref("ipTootColorFollower", 0)
 	val ipTootColorDirectUser = IntPref("ipTootColorDirectUser", 0)

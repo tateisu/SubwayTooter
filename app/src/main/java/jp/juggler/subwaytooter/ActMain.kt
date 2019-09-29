@@ -412,8 +412,6 @@ class ActMain : AppCompatActivity()
 		notification_tl_font_size_sp = validateFloat(Pref.fpNotificationTlFontSize(pref))
 		header_text_size_sp = validateFloat(Pref.fpHeaderTextSize(pref))
 		
-		
-		
 		initUI()
 		
 		updateColumnStrip()

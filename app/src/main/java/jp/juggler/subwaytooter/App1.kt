@@ -13,6 +13,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import android.view.View
 import android.view.WindowManager
 import androidx.browser.customtabs.CustomTabsIntent
 import com.bumptech.glide.Glide
@@ -48,6 +49,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 
 class App1 : Application() {
 	
@@ -147,42 +149,42 @@ class App1 : Application() {
 		
 		val database : SQLiteDatabase get() = db_open_helper.writableDatabase
 		
-//		private val APPROVED_CIPHER_SUITES = arrayOf(
-//
-//			// 以下は okhttp 3 のデフォルト
-//			// This is nearly equal to the cipher suites supported in Chrome 51, current as of 2016-05-25.
-//			// All of these suites are available on Android 7.0; earlier releases support a subset of these
-//			// suites. https://github.com/square/okhttp/issues/1972
-//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-//			CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
-//			CipherSuite.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
-//
-//			// Note that the following cipher suites are all on HTTP/2's bad cipher suites list. We'll
-//			// continue to include them until better suites are commonly available. For example, none
-//			// of the better cipher suites listed above shipped with Android 4.4 or Java 7.
-//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
-//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-//			CipherSuite.TLS_RSA_WITH_AES_128_GCM_SHA256,
-//			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
-//			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
-//			CipherSuite.TLS_RSA_WITH_AES_256_CBC_SHA,
-//			CipherSuite.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
-//
-//			//https://www.ssllabs.com/ssltest/analyze.html?d=mastodon.cloud&latest
-//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, // mastodon.cloud用 デフォルトにはない
-//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, //mastodon.cloud用 デフォルトにはない
-//
-//			// https://www.ssllabs.com/ssltest/analyze.html?d=m.sighash.info
-//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, // m.sighash.info 用 デフォルトにはない
-//			CipherSuite.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, // m.sighash.info 用 デフォルトにはない
-//			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA256, // m.sighash.info 用 デフォルトにはない
-//			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA
-//		) // m.sighash.info 用 デフォルトにはない
+		//		private val APPROVED_CIPHER_SUITES = arrayOf(
+		//
+		//			// 以下は okhttp 3 のデフォルト
+		//			// This is nearly equal to the cipher suites supported in Chrome 51, current as of 2016-05-25.
+		//			// All of these suites are available on Android 7.0; earlier releases support a subset of these
+		//			// suites. https://github.com/square/okhttp/issues/1972
+		//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+		//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+		//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+		//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+		//			CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+		//			CipherSuite.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+		//
+		//			// Note that the following cipher suites are all on HTTP/2's bad cipher suites list. We'll
+		//			// continue to include them until better suites are commonly available. For example, none
+		//			// of the better cipher suites listed above shipped with Android 4.4 or Java 7.
+		//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+		//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+		//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+		//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+		//			CipherSuite.TLS_RSA_WITH_AES_128_GCM_SHA256,
+		//			CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
+		//			CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
+		//			CipherSuite.TLS_RSA_WITH_AES_256_CBC_SHA,
+		//			CipherSuite.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
+		//
+		//			//https://www.ssllabs.com/ssltest/analyze.html?d=mastodon.cloud&latest
+		//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, // mastodon.cloud用 デフォルトにはない
+		//			CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, //mastodon.cloud用 デフォルトにはない
+		//
+		//			// https://www.ssllabs.com/ssltest/analyze.html?d=m.sighash.info
+		//			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, // m.sighash.info 用 デフォルトにはない
+		//			CipherSuite.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, // m.sighash.info 用 デフォルトにはない
+		//			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA256, // m.sighash.info 用 デフォルトにはない
+		//			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+		//		) // m.sighash.info 用 デフォルトにはない
 		
 		//	private int getBitmapPoolSize( Context context ){
 		//		ActivityManager am = ((ActivityManager)context.getSystemService(Activity.ACTIVITY_SERVICE));
@@ -204,7 +206,7 @@ class App1 : Application() {
 		//		return maxSize * 1024;
 		//	}
 		
-		val reNotAllowedInUserAgent :Pattern = Pattern.compile("[^\\x21-\\x7e]+")
+		val reNotAllowedInUserAgent : Pattern = Pattern.compile("[^\\x21-\\x7e]+")
 		
 		val userAgentDefault =
 			"SubwayTooter/${BuildConfig.VERSION_NAME} Android/${Build.VERSION.RELEASE}"
@@ -217,7 +219,7 @@ class App1 : Application() {
 			}
 		}
 		
-		private val user_agent_interceptor = object:Interceptor {
+		private val user_agent_interceptor = object : Interceptor {
 			override fun intercept(chain : Interceptor.Chain) : Response {
 				val request_with_user_agent = chain.request().newBuilder()
 					.header("User-Agent", getUserAgent())
@@ -226,22 +228,22 @@ class App1 : Application() {
 			}
 		}
 		
-		private var cookieManager: CookieManager? = null
-		private var cookieJar: CookieJar? = null
+		private var cookieManager : CookieManager? = null
+		private var cookieJar : CookieJar? = null
 		
 		private fun prepareOkHttp(
 			timeoutSecondsConnect : Int,
 			timeoutSecondsRead : Int
 		) : OkHttpClient.Builder {
-		
+			
 			var cookieJar = this.cookieJar
-			if( cookieJar == null){
-				val cookieManager = CookieManager().apply{
+			if(cookieJar == null) {
+				val cookieManager = CookieManager().apply {
 					setCookiePolicy(CookiePolicy.ACCEPT_ALL)
 				}
 				CookieHandler.setDefault(cookieManager)
 				cookieJar = JavaNetCookieJar(cookieManager)
-
+				
 				this.cookieManager = cookieManager
 				this.cookieJar = cookieJar
 			}
@@ -260,7 +262,7 @@ class App1 : Application() {
 				.sslSocketFactory(MySslSocketFactory, MySslSocketFactory.trustManager)
 				.addInterceptor(ProgressResponseBody.makeInterceptor())
 				.addInterceptor(user_agent_interceptor)
-
+			
 			// クッキーの導入は検討中。とりあえずmstdn.jpではクッキー有効でも改善しなかったので現時点では追加しない
 			//	.cookieJar(cookieJar)
 			
@@ -631,30 +633,100 @@ class App1 : Application() {
 		}
 		
 		// https://developer.android.com/preview/features/gesturalnav?hl=ja
-		fun initEdgeToEdge(@Suppress("UNUSED_PARAMETER") activity:Activity) {
-//			if(Build.VERSION.SDK_INT >= 29){
-//				val viewRoot = activity.findViewById<ViewGroup>(android.R.id.content).getChildAt(0)
-//				viewRoot.systemUiVisibility = (viewRoot.systemUiVisibility
-//					or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-//					or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
-//				viewRoot.setOnApplyWindowInsetsListener { v, insets ->
-//					insets.consumeSystemWindowInsets()
-//				}
-//			}
+		fun initEdgeToEdge(@Suppress("UNUSED_PARAMETER") activity : Activity) {
+			//			if(Build.VERSION.SDK_INT >= 29){
+			//				val viewRoot = activity.findViewById<ViewGroup>(android.R.id.content).getChildAt(0)
+			//				viewRoot.systemUiVisibility = (viewRoot.systemUiVisibility
+			//					or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+			//					or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+			//				viewRoot.setOnApplyWindowInsetsListener { v, insets ->
+			//					insets.consumeSystemWindowInsets()
+			//				}
+			//			}
+		}
+		
+		private fun rgbToLab(rgb : Int) : Triple<Float, Float, Float> {
+			
+			fun Int.revGamma() : Float {
+				val v = toFloat() / 255f
+				return when {
+					v > 0.04045f -> ((v + 0.055f) / 1.055f).pow(2.4f)
+					else -> v / 12.92f
+				}
+			}
+			
+			val r = Color.red(rgb).revGamma()
+			val g = Color.green(rgb).revGamma()
+			val b = Color.blue(rgb).revGamma()
+			
+			//https://en.wikipedia.org/wiki/Lab_color_space#CIELAB-CIEXYZ_conversions
+			
+			fun f(src : Float, k : Float) : Float {
+				val v = src * k
+				return when {
+					v > 0.008856f -> v.pow(1f / 3f)
+					else -> (7.787f * v) + (4f / 29f)
+				}
+			}
+			
+			val x = f(r * 0.4124f + g * 0.3576f + b * 0.1805f, 100f / 95.047f)
+			val y = f(r * 0.2126f + g * 0.7152f + b * 0.0722f, 100f / 100f)
+			val z = f(r * 0.0193f + g * 0.1192f + b * 0.9505f, 100f / 108.883f)
+			
+			return Triple(
+				(116 * y) - 16, // L
+				500 * (x - y), // a
+				200 * (y - z) //b
+			)
 		}
 		
 		fun setStatusBarColor(activity : Activity) {
 			
-			activity.window?.apply{
-				var c = Pref.ipStatusBarColor(pref).notZero() ?: getAttributeColor(activity,R.attr.colorPrimaryDark)
+			activity.window?.apply {
+				
 				clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+				clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
 				addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+
+				var c = Pref.ipStatusBarColor(pref).notZero() ?: getAttributeColor(
+					activity,
+					R.attr.colorPrimaryDark
+				)
 				statusBarColor = c or Color.BLACK
 				
+				if(Build.VERSION.SDK_INT >= 23) {
+					val min = rgbToLab(Color.BLACK)
+					val max = rgbToLab(Color.WHITE)
+					val current = rgbToLab(c)
+					
+					decorView.systemUiVisibility =
+						if(current.first >= (min.first + max.first) / 2f) {
+							//Dark Text to show up on your light status bar
+							decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+						} else {
+							//Light Text to show up on your dark status bar
+							decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+						}
+				}
+				
 				c = Pref.ipNavigationBarColor(pref)
-				if(c!=0){
+				if(c != 0) {
 					navigationBarColor = c or Color.BLACK
+					
+					if( Build.VERSION.SDK_INT >= 26){
+						val current = rgbToLab(c)
+
+						decorView.systemUiVisibility =
+							if(current.first >= 50) {
+								//Dark Text to show up on your light status bar
+								decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+							} else {
+								//Light Text to show up on your dark status bar
+								decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+							}
+					}
 				} // else: need restart app.
+				
 			}
 		}
 	}

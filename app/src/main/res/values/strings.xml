@@ -929,7 +929,6 @@
     <string name="show_in_directory">Show in directory</string>
     <string name="featured_hashtags">Featured hashtags</string>
     <string name="custom_emoji">Custom emoji</string>
-    <string name="status_bar_color">Status bar color (app restart required)</string>
-    <string name="navigation_bar_color">Navigation bar color (app restart required)</string>
-
+    <string name="status_bar_color">Status bar color (app restart required. pre-Android 6 can\'t adjust icon and text color)</string>
+    <string name="navigation_bar_color">Navigation bar color (app restart required. pre-Android 8 can\'t adjust icon color)</string>
 </resources>

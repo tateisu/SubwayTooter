@@ -936,7 +936,7 @@
     <string name="show_in_directory">ディレクトリに表示</string>
     <string name="featured_hashtags">注目のハッシュタグ</string>
     <string name="custom_emoji">カスタム絵文字</string>
-    <string name="status_bar_color">ステータスバーの色(アプリ再起動が必要)</string>
-    <string name="navigation_bar_color">ナビゲーションバーの色(アプリ再起動が必要)</string>
+    <string name="status_bar_color">ステータスバーの色(アプリ再起動が必要。Android 6未満はアイコンやテキストの色を調整できません)</string>
+    <string name="navigation_bar_color">ナビゲーションバーの色(アプリ再起動が必要。Android 8未満はアイコンの色を調整できません)</string>
 
 </resources>

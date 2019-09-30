@@ -18,8 +18,6 @@ class ColumnTask_Loading(
 		internal val log = LogCategory("CT_Loading")
 	}
 	
-	internal var instance_tmp : TootInstance? = null
-	
 	internal var list_pinned : ArrayList<TimelineItem>? = null
 	
 	override fun doInBackground(vararg unused : Void) : TootApiResult? {
@@ -88,8 +86,8 @@ class ColumnTask_Loading(
 					val list_new = column.duplicate_map.filterDuplicate(list_pinned)
 					column.list_data.addAll(list_new)
 				}
-
-				val list_new = when(column.type){
+				
+				val list_new = when(column.type) {
 					
 					// 検索カラムはIDによる重複排除が不可能
 					ColumnType.SEARCH -> list_tmp
@@ -97,7 +95,7 @@ class ColumnTask_Loading(
 					// 他のカラムは重複排除してから追加
 					else -> column.duplicate_map.filterDuplicate(list_tmp)
 				}
-
+				
 				column.list_data.addAll(list_new)
 			}
 			
@@ -114,23 +112,7 @@ class ColumnTask_Loading(
 	/////////////////////////////////////////////////////////////////
 	// functions that called from ColumnTask.loading lambda.
 	
-	internal fun getInstanceInformation(
-		client : TootApiClient,
-		instance_name : String?
-	) : TootApiResult? {
-		when {
-			// 「インスタンス情報」カラムをNAアカウントで開く場合
-			instance_name != null -> client.instance = instance_name
-			
-			// カラムに紐付けられたアカウントのタンスのインスタンス情報を取得する
-			else -> {
-			}
-		}
-		val (result, ti) = client.parseInstanceInformation(client.getInstanceInformation())
-		instance_tmp = ti
-		return result
-	}
-	
+
 	internal fun getStatusesPinned(client : TootApiClient, path_base : String) {
 		val result = client.request(path_base)
 		val jsonArray = result?.jsonArray
@@ -700,14 +682,8 @@ class ColumnTask_Loading(
 	) : TootApiResult? {
 		// (Mastodonのみ対応)
 		
-		var instance = access_info.instance
-		if(instance == null) {
-			getInstanceInformation(client, null)
-			if(instance_tmp != null) {
-				instance = instance_tmp
-				access_info.instance = instance
-			}
-		}
+		val (instanceResult, instance) = TootInstance.get(client, access_info)
+		if(instance == null) return instanceResult
 		
 		// ステータスIDに該当するトゥート
 		// タンスをまたいだりすると存在しないかもしれないが、エラーは出さない
@@ -722,7 +698,7 @@ class ColumnTask_Loading(
 		column.idRecent = null
 		
 		var bInstanceTooOld = false
-		if(instance?.versionGE(TootInstance.VERSION_2_6_0) == true) {
+		if(instance.versionGE(TootInstance.VERSION_2_6_0)) {
 			// 指定より新しいトゥート
 			result = getStatusList(client, url, aroundMin = true)
 			if(result == null || result.error != null) return result
@@ -750,14 +726,8 @@ class ColumnTask_Loading(
 	internal fun getAccountAroundStatuses(client : TootApiClient) : TootApiResult? {
 		// (Mastodonのみ対応)
 		
-		var instance = access_info.instance
-		if(instance == null) {
-			getInstanceInformation(client, null)
-			if(instance_tmp != null) {
-				instance = instance_tmp
-				access_info.instance = instance
-			}
-		}
+		val (instanceResult, instance) = TootInstance.get(client, access_info)
+		if(instance == null) return instanceResult
 		
 		// ステータスIDに該当するトゥート
 		// タンスをまたいだりすると存在しないかもしれない
@@ -774,7 +744,7 @@ class ColumnTask_Loading(
 		column.idRecent = null
 		
 		var bInstanceTooOld = false
-		if(instance?.versionGE(TootInstance.VERSION_2_6_0) == true) {
+		if(instance.versionGE(TootInstance.VERSION_2_6_0)) {
 			// 指定より新しいトゥート
 			result = getStatusList(client, path, aroundMin = true)
 			if(result == null || result.error != null) return result
@@ -1007,31 +977,25 @@ class ColumnTask_Loading(
 				return TootApiResult(context.getString(R.string.search_is_not_available_on_pseudo_account))
 			}
 			
-			var instance = access_info.instance
-			if(instance == null) {
-				getInstanceInformation(client, null)
-				if(instance_tmp != null) {
-					instance = instance_tmp
-					access_info.instance = instance
-				}
-			}
+			val(instanceResult,instance) = TootInstance.get(client,access_info)
+			if( instance==null) return instanceResult
 			
-			var query="q=${column.search_query.encodePercent()}"
+			var query = "q=${column.search_query.encodePercent()}"
 			if(column.search_resolve) query += "&resolve=1"
 			
-			val(apiResult,searchResult)= client.requestMastodonSearch(parser,query)
-			if( searchResult != null){
+			val (apiResult, searchResult) = client.requestMastodonSearch(parser, query)
+			if(searchResult != null) {
 				list_tmp = java.util.ArrayList()
 				addAll(list_tmp, searchResult.hashtags)
-				if(searchResult.searchApiVersion>=2 && searchResult.hashtags.isNotEmpty()) {
+				if(searchResult.searchApiVersion >= 2 && searchResult.hashtags.isNotEmpty()) {
 					addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Hashtag))
 				}
 				addAll(list_tmp, searchResult.accounts)
-				if(searchResult.searchApiVersion>=2 && searchResult.accounts.isNotEmpty()) {
+				if(searchResult.searchApiVersion >= 2 && searchResult.accounts.isNotEmpty()) {
 					addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Account))
 				}
 				addAll(list_tmp, searchResult.statuses)
-				if( searchResult.searchApiVersion>=2 && searchResult.statuses.isNotEmpty()) {
+				if(searchResult.searchApiVersion >= 2 && searchResult.statuses.isNotEmpty()) {
 					addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Status))
 				}
 			}

@@ -972,9 +972,7 @@ class ActPost : AppCompatActivity(),
 			}
 		}
 		
-		visibility = visibility
-			?: account?.visibility
-				?: TootVisibility.Public
+		visibility = visibility ?: account?.visibility ?: TootVisibility.Public
 		// 2017/9/13 VISIBILITY_WEB_SETTING から VISIBILITY_PUBLICに変更した
 		// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになるので…
 		
@@ -1271,42 +1269,30 @@ class ActPost : AppCompatActivity(),
 			
 			else -> {
 				// インスタンス情報を確認する
-				val info = account.instance
-				if(info == null || System.currentTimeMillis() - info.time_parse >= 300000L) {
+				val info = TootInstance.getCached(account.host)
+				if(info == null || info.isExpire ) {
 					// 情報がないか古いなら再取得
 					
 					// 同時に実行するタスクは1つまで
-					var lastTask = lastInstanceTask
-					if(lastTask?.isActive != true) {
-						lastTask = TootTaskRunner(this, TootTaskRunner.PROGRESS_NONE)
-						lastInstanceTask = lastTask
-						lastTask.run(account, object : TootTask {
-							var newInfo : TootInstance? = null
-							
-							override fun background(client : TootApiClient) : TootApiResult? {
-								val result = if(account.isMisskey) {
-									client.request(
-										"/api/meta",
-										account.putMisskeyApiToken().toPostRequestBuilder()
-									)
-								} else {
-									client.request("/api/v1/instance")
+					if(lastInstanceTask?.isActive != true) {
+						lastInstanceTask = TootTaskRunner(this, TootTaskRunner.PROGRESS_NONE)
+							.run(account, object : TootTask {
+								var newInfo : TootInstance? = null
+								
+								override fun background(client : TootApiClient) : TootApiResult? {
+									val (result, ti) = TootInstance.get(client, account)
+									newInfo = ti
+									return result
 								}
-								newInfo =
-									TootParser(this@ActPost, account).instance(result?.jsonObject)
-								return result
-							}
-							
-							override fun handleResult(result : TootApiResult?) {
-								if(isFinishing || isDestroyed) return
-								if(newInfo != null) {
-									account.instance = newInfo
-									updateTextCount()
+								
+								override fun handleResult(result : TootApiResult?) {
+									if(isFinishing || isDestroyed) return
+									if(newInfo != null) updateTextCount()
 								}
-							}
-						})
+							})
 						// fall thru
 					}
+					// fall thru
 				}
 				
 				val max = info?.max_toot_chars
@@ -2094,9 +2080,17 @@ class ActPost : AppCompatActivity(),
 				
 				client.account = account
 				
+				val (tiResult, ti) = TootInstance.get(client, account)
+				if(ti == null) return tiResult
+				
 				val opener = createOpener(uri, mimeType)
 				
 				val media_size_max = when {
+					
+					ti.instanceType == TootInstance.InstanceType.Pixelfed -> {
+						1000000 * max(1, Pref.spMediaSizeMaxPixelfed.toInt(pref))
+					}
+					
 					mimeType.startsWith("video") || mimeType.startsWith("audio") -> {
 						1000000 * max(1, Pref.spMovieSizeMax.toInt(pref))
 					}

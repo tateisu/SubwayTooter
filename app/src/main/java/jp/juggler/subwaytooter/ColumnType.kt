@@ -57,28 +57,21 @@ enum class ColumnType(
 	
 	ProfileStatusMastodon(
 		loading = { client ->
-			var instance = access_info.instance
-			
-			// まだ取得してない
-			// 疑似アカウントの場合は過去のデータが別タンスかもしれない?
-			if(instance == null || access_info.isPseudo) {
-				getInstanceInformation(client, null)
-				if(instance_tmp != null) {
-					instance = instance_tmp
-					access_info.instance = instance
+			val(instanceResult,instance) = TootInstance.get(client,access_info)
+			if(instance==null){
+				instanceResult
+			}else {
+				val path = column.makeProfileStatusesUrl(column.profile_id)
+				
+				if(instance.versionGE(TootInstance.VERSION_1_6)
+				// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
+				// && instance.instanceType != TootInstance.InstanceType.Pleroma
+				) {
+					getStatusesPinned(client, "$path&pinned=true")
 				}
+				
+				getStatusList(client, path)
 			}
-			
-			val path = column.makeProfileStatusesUrl(column.profile_id)
-			
-			if(instance?.versionGE(TootInstance.VERSION_1_6) == true
-			// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
-			// && instance.instanceType != TootInstance.InstanceType.Pleroma
-			) {
-				getStatusesPinned(client, "$path&pinned=true")
-			}
-			
-			getStatusList(client, path)
 		},
 		
 		refresh = { client ->
@@ -1102,12 +1095,26 @@ enum class ColumnType(
 		headerType = HeaderType.Instance,
 		
 		loading = { client ->
-			val result = getInstanceInformation(client, column.instance_uri)
-			if(instance_tmp != null) {
-				column.instance_information = instance_tmp
-				column.handshake = result?.response?.handshake
+			val(instanceResult,instance) = TootInstance.get(client,access_info,column.instance_uri)
+			if(instance!=null) {
+				column.instance_information = instance
+				column.handshake = instanceResult?.response?.handshake
 			}
-			result
+			instanceResult
+//
+//			// 「インスタンス情報」カラムをNAアカウントで開く場合
+//			instance_name != null -> client.instance = instance_name
+//
+//	val (result, ti) = client.parseInstanceInformation(client.getInstanceInformation())
+//	instance_tmp = ti
+//				return result
+//			}
+//
+//			val result = getInstanceInformation(client, column.instance_uri)
+//			if(instance_tmp != null) {
+//
+//			}
+//			result
 		}
 	),
 	

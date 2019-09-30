@@ -250,26 +250,12 @@ class PostHelper(
 			
 			var status : TootStatus? = null
 			
-			var instance_tmp : TootInstance? = null
 			
 			var credential_tmp : TootAccount? = null
 			
 			val parser = TootParser(activity, account)
 			
 			var scheduledStatusSucceeded = false
-			
-			fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
-				val result = if(account.isMisskey) {
-					val params = JSONObject().apply {
-						put("dummy", 1)
-					}
-					client.request("/api/meta", params.toPostRequestBuilder())
-				} else {
-					client.request("/api/v1/instance")
-				}
-				instance_tmp = parseItem(::TootInstance, parser, result?.jsonObject)
-				return result
-			}
 			
 			fun getCredential(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/accounts/verify_credentials")
@@ -311,12 +297,8 @@ class PostHelper(
 				
 				var visibility_checked : TootVisibility? = visibility
 				
-				var instance = account.instance
-				if(instance == null) {
-					val r2 = getInstanceInformation(client)
-					instance = instance_tmp ?: return r2
-					account.instance = instance
-				}
+				val(ri,instance) = TootInstance.get(client,account)
+				if(instance==null) return ri
 				
 				if(visibility == TootVisibility.WebSetting) {
 					visibility_checked =

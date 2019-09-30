@@ -1,34 +1,97 @@
 package jp.juggler.subwaytooter.api.entity
 
+import android.os.SystemClock
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
-import jp.juggler.util.parseInt
-import jp.juggler.util.parseLong
-import jp.juggler.util.parseString
-import jp.juggler.util.toStringArrayList
+import jp.juggler.util.*
 import org.json.JSONObject
+import java.util.*
 import java.util.regex.Pattern
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class TootInstance(parser : TootParser, src : JSONObject) {
 	
 	companion object {
 		private val rePleroma = Pattern.compile("\\bpleroma\\b", Pattern.CASE_INSENSITIVE)
+		private val rePixelfed = Pattern.compile("\\bpixelfed\\b", Pattern.CASE_INSENSITIVE)
 		
 		val VERSION_1_6 = VersionString("1.6")
 		val VERSION_2_4_0_rc1 = VersionString("2.4.0rc1")
 		val VERSION_2_4_0_rc2 = VersionString("2.4.0rc2")
-//		val VERSION_2_4_0 = VersionString("2.4.0")
-//		val VERSION_2_4_1_rc1 = VersionString("2.4.1rc1")
+		//		val VERSION_2_4_0 = VersionString("2.4.0")
+		//		val VERSION_2_4_1_rc1 = VersionString("2.4.1rc1")
 		val VERSION_2_4_1 = VersionString("2.4.1")
 		val VERSION_2_6_0 = VersionString("2.6.0")
 		val VERSION_2_7_0_rc1 = VersionString("2.7.0rc1")
 		val VERSION_3_0_0_rc1 = VersionString("3.0.0rc1")
 		
 		val MISSKEY_VERSION_11 = VersionString("11.0")
+		
+		private const val EXPIRE = 600000L
+		
+		private val cache = HashMap<String, TootInstance>()
+		
+		// get from cache
+		// no request, no expiration check
+		fun getCached(host : String) : TootInstance? {
+			synchronized(cache) {
+				return cache[host.toLowerCase(Locale.JAPAN)]
+			}
+		}
+		
+		fun get(
+			client : TootApiClient,
+			account : SavedAccount,
+			host : String? = null
+		) : Pair<TootApiResult?, TootInstance?> {
+			val tmpInstance = client.instance
+			val tmpAccount = client.account
+			try {
+				synchronized(cache) {
+					// re-use cached item.
+					val now = SystemClock.elapsedRealtime()
+					val item = cache[account.host.toLowerCase(Locale.JAPAN)]
+					if(item != null && now - item.time_parse <= EXPIRE)
+						return Pair(TootApiResult(), item)
+					
+					// get new information
+					client.account = account
+					if(host != null) client.instance = host
+					val result = if(account.isMisskey) {
+						val params = JSONObject().apply {
+							put("dummy", 1)
+						}
+						client.request("/api/meta", params.toPostRequestBuilder())
+					} else {
+						client.request("/api/v1/instance")
+					}
+					
+					val data = parseItem(
+						::TootInstance,
+						TootParser(client.context, account),
+						result?.jsonObject
+					)
+					if(data != null) {
+						cache[account.host.toLowerCase(Locale.JAPAN)] = data
+					}
+					return Pair(result, data)
+				}
+			} finally {
+				client.account = tmpAccount
+				client.instance = tmpInstance // must be last.
+			}
+		}
 	}
 	
 	// いつ取得したか(内部利用)
-	var time_parse : Long = System.currentTimeMillis()
+	private var time_parse : Long = SystemClock.elapsedRealtime()
+	
+	val isExpire : Boolean
+		get() = SystemClock.elapsedRealtime() - time_parse >= EXPIRE
 	
 	//	URI of the current instance
 	val uri : String?
@@ -64,9 +127,11 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 	
 	// インスタンスの種別
 	enum class InstanceType {
+		
 		Mastodon,
-		Pleroma,
-		Misskey
+		Misskey,
+		Pixelfed,
+		Pleroma
 	}
 	
 	val instanceType : InstanceType
@@ -74,15 +139,15 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 	// XXX: urls をパースしてない。使ってないから…
 	
 	init {
-		if(parser.serviceType == ServiceType.MISSKEY){
+		if(parser.serviceType == ServiceType.MISSKEY) {
 			
 			this.uri = parser.accessHost
 			this.title = parser.accessHost
 			this.description = "(Misskey instance)"
 			val sv = src.optJSONObject("maintainer")?.parseString("url")
-			this.email = when{
-				sv?.startsWith("mailto:") ==true-> sv.substring(7)
-				else-> sv
+			this.email = when {
+				sv?.startsWith("mailto:") == true -> sv.substring(7)
+				else -> sv
 			}
 			
 			this.version = src.parseString("version")
@@ -94,15 +159,15 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			this.languages = src.optJSONArray("langs")?.toStringArrayList() ?: ArrayList()
 			this.contact_account = null
 			
-		}else {
+		} else {
 			this.uri = src.parseString("uri")
 			this.title = src.parseString("title")
 			this.description = src.parseString("description")
 			
 			val sv = src.parseString("email")
-			this.email = when{
-				sv?.startsWith("mailto:") ==true-> sv.substring(7)
-				else-> sv
+			this.email = when {
+				sv?.startsWith("mailto:") == true -> sv.substring(7)
+				else -> sv
 			}
 			
 			this.version = src.parseString("version")
@@ -114,6 +179,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			
 			this.instanceType = when {
 				rePleroma.matcher(version ?: "").find() -> InstanceType.Pleroma
+				rePixelfed.matcher(version ?: "").find() -> InstanceType.Pixelfed
 				else -> InstanceType.Mastodon
 			}
 			
@@ -145,11 +211,71 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		val i = VersionString.compare(decoded_version, check)
 		return i >= 0
 	}
-
-	val misskeyVersion :Int
-	get()=when{
-		instanceType != InstanceType.Misskey -> 0
-		versionGE(MISSKEY_VERSION_11) -> 11
-		else->10
-	}
+	
+	val misskeyVersion : Int
+		get() = when {
+			instanceType != InstanceType.Misskey -> 0
+			versionGE(MISSKEY_VERSION_11) -> 11
+			else -> 10
+		}
 }
+
+//
+//import android.os.SystemClock
+//import jp.juggler.subwaytooter.api.TootApiClient
+//import jp.juggler.subwaytooter.api.TootApiResult
+//import jp.juggler.subwaytooter.api.TootParser
+//import jp.juggler.subwaytooter.api.entity.TootInstance
+//import jp.juggler.subwaytooter.api.entity.parseItem
+//import jp.juggler.subwaytooter.table.SavedAccount
+//import jp.juggler.util.toPostRequestBuilder
+//import org.json.JSONObject
+//import java.util.*
+//import kotlin.collections.HashMap
+//
+//object InstanceInformationCache {
+//
+//
+//	//		var instance =
+//	//		if(instance == null) {
+//	//			val r2 = getInstanceInformation(client)
+//	//			instance = instance_tmp ?: return r2
+//	//			account.instance = instance
+//	//		}
+//	//		var instance_tmp : TootInstance? = null
+//	//		fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
+//	//
+//	//			instance_tmp =
+//	//			return result
+//	//		}
+//	//
+//	//		client.instance = host
+//	//		val result = if(isMisskey) {
+//	//			client.getInstanceInformation()
+//	//			client.request(
+//	//				"/api/meta",
+//	//				account.putMisskeyApiToken().toPostRequestBuilder()
+//	//			)
+//	//		} else {
+//	//			client.request("/api/v1/instance")
+//	//		}
+//	//		newInfo =
+//	//			TootParser(this@ActPost, account).instance(result?.jsonObject)
+//	//		return Pair(null,null)
+//	//	}
+//
+//	//private val refInstance = AtomicReference<TootInstance>(null)
+//	//
+//	//// DBには保存しない
+//	//var instance : TootInstance?
+//	//	get() {
+//	//		val instance = refInstance.get()
+//	//		return when {
+//	//			instance == null -> null
+//	//			System.currentTimeMillis() - instance.time_parse > INSTANCE_INFORMATION_EXPIRE -> null
+//	//			else -> instance
+//	//		}
+//	//	}
+//	//	set(instance) = refInstance.set(instance)
+//
+//}

@@ -519,6 +519,7 @@ object Pref {
 	val spStripIconSize = StringPref("StripIconSize", "30")
 	val spMediaSizeMax = StringPref("max_media_size", "8")
 	val spMovieSizeMax = StringPref("max_movie_size", "40")
+	val spMediaSizeMaxPixelfed = StringPref("MediaSizeMaxPixelfed", "15")
 	val spTimelineFont = StringPref("timeline_font", "", skipImport = true)
 	val spTimelineFontBold = StringPref("timeline_font_bold", "", skipImport = true)
 	val spMspUserToken = StringPref("mastodon_search_portal_user_token", "")

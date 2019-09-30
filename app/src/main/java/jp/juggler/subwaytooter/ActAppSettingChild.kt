@@ -239,6 +239,7 @@ class ActAppSettingChild : AppCompatActivity()
 	private var etCardDescriptionLength : EditText? = null
 	private var etMediaSizeMax : EditText? = null
 	private var etMovieSizeMax : EditText? = null
+	private var etMediaSizeMaxPixelfed : EditText? = null
 	private var etRoundRatio : EditText? = null
 	private var etBoostAlpha : EditText? = null
 	private var etMediaReadTimeout : EditText? = null
@@ -565,6 +566,9 @@ class ActAppSettingChild : AppCompatActivity()
 		etMovieSizeMax = findViewById(R.id.etMovieSizeMax)
 		etMovieSizeMax?.addTextChangedListener(this)
 		
+		etMediaSizeMaxPixelfed= findViewById(R.id.etMediaSizeMaxPixelfed)
+		etMediaSizeMaxPixelfed?.addTextChangedListener(this)
+		
 		etRoundRatio = findViewById(R.id.etRoundRatio)
 		etRoundRatio?.addTextChangedListener(this)
 		
@@ -732,6 +736,7 @@ class ActAppSettingChild : AppCompatActivity()
 		
 		etMediaSizeMax?.setText(Pref.spMediaSizeMax(pref))
 		etMovieSizeMax?.setText(Pref.spMovieSizeMax(pref))
+		etMediaSizeMaxPixelfed?.setText(Pref.spMediaSizeMaxPixelfed(pref))
 		etRoundRatio?.setText(Pref.spRoundRatio(pref))
 		etBoostAlpha?.setText(Pref.spBoostAlpha(pref))
 		
@@ -828,6 +833,7 @@ class ActAppSettingChild : AppCompatActivity()
 		putText(Pref.spPullNotificationCheckInterval, etPullNotificationCheckInterval)
 		putText(Pref.spMediaSizeMax, etMediaSizeMax)
 		putText(Pref.spMovieSizeMax, etMovieSizeMax)
+		putText(Pref.spMediaSizeMaxPixelfed, etMediaSizeMaxPixelfed)
 		putText(Pref.spRoundRatio, etRoundRatio)
 		putText(Pref.spBoostAlpha, etBoostAlpha)
 		putText(Pref.spMediaReadTimeout, etMediaReadTimeout)

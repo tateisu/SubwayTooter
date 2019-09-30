@@ -572,6 +572,9 @@
     <string name="your_lists">Your lists</string>
     <string name="media_attachment_max_byte_size">Media attachment (image) bytes size limit (Unit:MB. The default is 8)</string>
     <string name="media_attachment_max_byte_size_movie">Media attachment (movie) bytes size limit (Unit:MB. The default is 40)</string>
+    <string name="media_attachment_max_byte_size_pixelfed">Media attachment (Pixelfed) bytes size limit (Unit:MB. The default is 15)</string>
+
+
     <string name="tootsearch">tootsearch (JP)</string>
     <string name="cant_handle_uri_of">Subway Tooter can\'t handle URI \"%1$s\". Please select other app.</string>
     <string name="use_internal_media_viewer">Use built-in media viewer</string>

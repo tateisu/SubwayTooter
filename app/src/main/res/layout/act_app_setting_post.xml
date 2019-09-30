@@ -81,6 +81,25 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:labelFor="@+id/etMediaSizeMaxPixelfed"
+            android:text="@string/media_attachment_max_byte_size_pixelfed"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etMediaSizeMaxPixelfed"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="number"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:text="@string/refresh_after_toot"
             />
 

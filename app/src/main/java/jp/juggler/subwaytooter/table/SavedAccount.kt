@@ -66,19 +66,7 @@ class SavedAccount(
 	
 	var max_toot_chars = 0
 	
-	private val refInstance = AtomicReference<TootInstance>(null)
-	
-	// DBには保存しない
-	var instance : TootInstance?
-		get() {
-			val instance = refInstance.get()
-			return when {
-				instance == null -> null
-				System.currentTimeMillis() - instance.time_parse > INSTANCE_INFORMATION_EXPIRE -> null
-				else -> instance
-			}
-		}
-		set(instance) = refInstance.set(instance)
+
 	
 	init {
 		val pos = acct.indexOf('@')
@@ -431,7 +419,6 @@ class SavedAccount(
 		/////////////////////////////////
 		// login information
 		const val INVALID_DB_ID = - 1L
-		private const val INSTANCE_INFORMATION_EXPIRE = 60000L * 5
 		
 		// アプリデータのインポート時に呼ばれる
 		fun onDBDelete(db : SQLiteDatabase) {

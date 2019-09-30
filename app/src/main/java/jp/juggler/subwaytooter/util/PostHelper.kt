@@ -45,6 +45,10 @@ class PostHelper(
 		private val log = LogCategory("PostHelper")
 		
 		private val reCharsNotEmoji = Pattern.compile("[^0-9A-Za-z_-]")
+		
+		private val reAscii = Pattern.compile("""[\x00-\x7f]""")
+		private val reNotAscii = Pattern.compile("""[^\x00-\x7f]""")
+		
 	}
 	
 	interface PostCompleteCallback {
@@ -77,12 +81,22 @@ class PostHelper(
 	
 	private var last_post_task : WeakReference<TootTaskRunner>? = null
 	
+	fun post(account : SavedAccount, callback : PostCompleteCallback) = post(
+		account,
+		callback,
+		bConfirmTag = false,
+		bConfirmAccount = false,
+		bConfirmRedraft = false,
+		bConfirmTagCharacter = false
+	)
+	
 	fun post(
 		account : SavedAccount,
-		bConfirmTag : Boolean = false,
-		bConfirmAccount : Boolean = false,
-		bConfirmRedraft : Boolean = false,
-		callback : PostCompleteCallback
+		callback : PostCompleteCallback,
+		bConfirmTag : Boolean,
+		bConfirmAccount : Boolean,
+		bConfirmRedraft : Boolean,
+		bConfirmTagCharacter : Boolean
 	) {
 		val content = this.content ?: ""
 		val spoiler_text = this.spoiler_text
@@ -159,10 +173,50 @@ class PostHelper(
 						}
 					
 					override fun onOK() {
-						post(account, bConfirmTag, true, bConfirmRedraft, callback)
+						post(
+							account, callback,
+							bConfirmTag = bConfirmTag,
+							bConfirmAccount = true,
+							bConfirmRedraft = bConfirmRedraft,
+							bConfirmTagCharacter = bConfirmTagCharacter
+						)
 					}
 				})
 			return
+		}
+		
+		if(! bConfirmTagCharacter && Pref.bpWarnHashtagAsciiAndNonAscii(App1.pref)) {
+			val tags = TootTag.findHashtags(content, isMisskey)
+			val badTags = tags
+				?.filter {
+					val hasAscii = reAscii.matcher(it).find()
+					val hasNotAscii = reNotAscii.matcher(it).find()
+					hasAscii && hasNotAscii
+				}
+				?.map { "#$it" }
+			if(badTags?.isNotEmpty() == true) {
+				
+				AlertDialog.Builder(activity)
+					.setCancelable(true)
+					.setMessage(
+						activity.getString(
+							R.string.hashtag_contains_ascii_and_not_ascii,
+							badTags.joinToString(", ")
+						)
+					)
+					.setNegativeButton(R.string.cancel, null)
+					.setPositiveButton(R.string.ok) { _, _ ->
+						post(
+							account, callback,
+							bConfirmTag = bConfirmTag,
+							bConfirmAccount = bConfirmAccount,
+							bConfirmRedraft = bConfirmRedraft,
+							bConfirmTagCharacter = true
+						)
+					}
+					.show()
+				return
+			}
 		}
 		
 		if(! bConfirmTag) {
@@ -179,11 +233,11 @@ class PostHelper(
 						.setNegativeButton(R.string.cancel, null)
 						.setPositiveButton(R.string.ok) { _, _ ->
 							post(
-								account = account,
+								account, callback,
 								bConfirmTag = true,
 								bConfirmAccount = bConfirmAccount,
 								bConfirmRedraft = bConfirmRedraft,
-								callback = callback
+								bConfirmTagCharacter = bConfirmTagCharacter
 							)
 						}
 						.show()
@@ -199,11 +253,11 @@ class PostHelper(
 				.setNegativeButton(R.string.cancel, null)
 				.setPositiveButton(R.string.ok) { _, _ ->
 					post(
-						account,
-						bConfirmTag,
-						bConfirmAccount,
-						true,
-						callback
+						account, callback,
+						bConfirmTag = bConfirmTag,
+						bConfirmAccount = bConfirmAccount,
+						bConfirmRedraft = true,
+						bConfirmTagCharacter = bConfirmTagCharacter
 					)
 				}
 				.show()
@@ -216,11 +270,11 @@ class PostHelper(
 				.setNegativeButton(R.string.cancel, null)
 				.setPositiveButton(R.string.ok) { _, _ ->
 					post(
-						account,
-						bConfirmTag,
-						bConfirmAccount,
-						true,
-						callback
+						account, callback,
+						bConfirmTag = bConfirmTag,
+						bConfirmAccount = bConfirmAccount,
+						bConfirmRedraft = true,
+						bConfirmTagCharacter = bConfirmTagCharacter
 					)
 				}
 				.show()
@@ -249,7 +303,6 @@ class PostHelper(
 		).run(account, object : TootTask {
 			
 			var status : TootStatus? = null
-			
 			
 			var credential_tmp : TootAccount? = null
 			
@@ -297,8 +350,17 @@ class PostHelper(
 				
 				var visibility_checked : TootVisibility? = visibility
 				
-				val(ri,instance) = TootInstance.get(client,account)
-				if(instance==null) return ri
+				val (ri, instance) = TootInstance.get(client, account)
+				if(instance == null) return ri
+				
+				if(instance.instanceType == TootInstance.InstanceType.Pixelfed) {
+					if(in_reply_to_id != null && attachment_list?.isNotEmpty() == true) {
+						return TootApiResult(activity.getString(R.string.pixelfed_does_not_allow_reply_with_media))
+					}
+					if(in_reply_to_id == null && attachment_list?.isNotEmpty() != true) {
+						return TootApiResult(activity.getString(R.string.pixelfed_does_not_allow_post_without_media))
+					}
+				}
 				
 				if(visibility == TootVisibility.WebSetting) {
 					visibility_checked =
@@ -768,7 +830,8 @@ class PostHelper(
 			// 通常の絵文字を部分一致で検索
 			val remain = limit - code_list.size
 			if(remain > 0) {
-				val s = src.substring(last_colon + 1, end).toLowerCase(Locale.JAPAN).replace('-', '_')
+				val s =
+					src.substring(last_colon + 1, end).toLowerCase(Locale.JAPAN).replace('-', '_')
 				val matches = EmojiDecoder.searchShortCode(activity, s, remain)
 				log.d("checkEmoji: search for %s, result=%d", s, matches.size)
 				code_list.addAll(matches)
@@ -1017,7 +1080,7 @@ class PostHelper(
 		}.show()
 	}
 	
-	private fun SpannableStringBuilder.appendHashTag(tagWithoutSharp:String):SpannableStringBuilder{
+	private fun SpannableStringBuilder.appendHashTag(tagWithoutSharp : String) : SpannableStringBuilder {
 		val separator = ' '
 		if(! EmojiDecoder.canStartHashtag(this, this.length)) append(separator)
 		this.append('#').append(tagWithoutSharp)
@@ -1025,11 +1088,11 @@ class PostHelper(
 		return this
 	}
 	
-	fun openFeaturedTagList(list:List<TootTag>?){
-		if( list?.isEmpty() != false) return
+	fun openFeaturedTagList(list : List<TootTag>?) {
+		if(list?.isEmpty() != false) return
 		val ad = ActionsDialog()
-		for(tag in list){
-			ad.addAction("#${tag.name}"){
+		for(tag in list) {
+			ad.addAction("#${tag.name}") {
 				val et = this.et ?: return@addAction
 				
 				val src = et.text ?: ""
@@ -1042,14 +1105,14 @@ class PostHelper(
 					.appendHashTag(tag.name)
 				val newSelection = sb.length
 				if(end < src_length) sb.append(src.subSequence(end, src_length))
-
+				
 				et.text = sb
 				et.setSelection(newSelection)
 				
 				proc_text_changed.run()
 			}
 		}
-		ad.show(activity,activity.getString(R.string.featured_hashtags))
+		ad.show(activity, activity.getString(R.string.featured_hashtags))
 	}
 	
 	//	final ActionMode.Callback action_mode_callback = new ActionMode.Callback() {

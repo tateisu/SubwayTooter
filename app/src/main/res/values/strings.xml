@@ -934,4 +934,8 @@
     <string name="custom_emoji">Custom emoji</string>
     <string name="status_bar_color">Status bar color (app restart required. pre-Android 6 can\'t adjust icon and text color)</string>
     <string name="navigation_bar_color">Navigation bar color (app restart required. pre-Android 8 can\'t adjust icon color)</string>
+    <string name="pixelfed_does_not_allow_reply_with_media">Pixelfed does not allow reply with media attachment.</string>
+    <string name="pixelfed_does_not_allow_post_without_media">Pixelfed does not allow post (not reply) without media attachment.</string>
+    <string name="hashtag_contains_ascii_and_not_ascii">Hashtag %1$s contains both of ASCII and non-ASCII characters. It may be a typo. Are you sure?</string>
+    <string name="warn_hashtag_ascii_and_non_ascii">Warn if hashtag contains both of ASCII and non-ASCII characters</string>
 </resources>

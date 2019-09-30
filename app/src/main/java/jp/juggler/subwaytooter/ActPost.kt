@@ -128,6 +128,17 @@ class ActPost : AppCompatActivity(),
 			add("audio/m4a")
 			add("audio/3gpp")
 		}
+		internal val acceptable_mime_types_pixelfed = HashSet<String>().apply {
+			//
+			add("image/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
+			add("video/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
+			//
+			add("image/jpeg")
+			add("image/png")
+			add("image/gif")
+			add("video/mp4")
+			add("video/m4v")
+		}
 		
 		private val imageHeaderList = arrayOf(
 			Pair(
@@ -1270,7 +1281,7 @@ class ActPost : AppCompatActivity(),
 			else -> {
 				// インスタンス情報を確認する
 				val info = TootInstance.getCached(account.host)
-				if(info == null || info.isExpire ) {
+				if(info == null || info.isExpire) {
 					// 情報がないか古いなら再取得
 					
 					// 同時に実行するタスクは1つまで
@@ -2003,9 +2014,21 @@ class ActPost : AppCompatActivity(),
 			return
 		}
 		
-		if(! acceptable_mime_types.contains(mime_type)) {
-			showToast(this, true, R.string.mime_type_not_acceptable, mime_type)
-			return
+		val instance = TootInstance.getCached(account.host)
+		if(instance?.instanceType == TootInstance.InstanceType.Pixelfed) {
+			if(in_reply_to_id != null) {
+				showToast(this, true, R.string.pixelfed_does_not_allow_reply_with_media)
+				return
+			}
+			if(! acceptable_mime_types_pixelfed.contains(mime_type)) {
+				showToast(this, true, R.string.mime_type_not_acceptable, mime_type)
+				return
+			}
+		} else {
+			if(! acceptable_mime_types.contains(mime_type)) {
+				showToast(this, true, R.string.mime_type_not_acceptable, mime_type)
+				return
+			}
 		}
 		
 		app_state.attachment_list = this.attachment_list
@@ -2082,6 +2105,15 @@ class ActPost : AppCompatActivity(),
 				
 				val (tiResult, ti) = TootInstance.get(client, account)
 				if(ti == null) return tiResult
+				
+				if(ti.instanceType == TootInstance.InstanceType.Pixelfed) {
+					if(in_reply_to_id != null) {
+						return TootApiResult(getString(R.string.pixelfed_does_not_allow_reply_with_media))
+					}
+					if(! acceptable_mime_types_pixelfed.contains(mimeType)) {
+						return TootApiResult(getString(R.string.mime_type_not_acceptable, mimeType))
+					}
+				}
 				
 				val opener = createOpener(uri, mimeType)
 				

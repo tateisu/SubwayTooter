@@ -424,6 +424,12 @@ object Pref {
 		R.id.swDirectoryNote
 	)
 	
+	val bpWarnHashtagAsciiAndNonAscii = BooleanPref(
+		"WarnHashtagAsciiAndNonAscii",
+		false,
+		R.id.swWarnHashtagAsciiAndNonAscii
+	)
+	
 	
 	// int
 	

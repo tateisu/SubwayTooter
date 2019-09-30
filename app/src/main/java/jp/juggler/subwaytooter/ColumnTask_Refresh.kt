@@ -372,6 +372,10 @@ class ColumnTask_Refresh(
 						}
 						
 						max_id = column.parseRange(result, src).first
+						if(max_id == null) {
+							log.d("refresh-account-top: max_id is null.")
+							break
+						}
 						
 						if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
 							log.d("refresh-account-top: timeout. make gap.")
@@ -382,8 +386,8 @@ class ColumnTask_Refresh(
 							break
 						}
 						
-						val path =
-							"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+						val path = "$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+						
 						result = client.request(path)
 						
 						jsonObject = result?.jsonObject
@@ -457,6 +461,10 @@ class ColumnTask_Refresh(
 						
 						// 直前に読んだ範囲のmaxIdを調べる
 						max_id = column.parseRange(result, src).first
+						if(max_id == null) {
+							log.d("refresh-domain-top: max_id is null.")
+							break
+						}
 						
 						if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
 							log.d("refresh-domain-top: timeout.")
@@ -468,8 +476,8 @@ class ColumnTask_Refresh(
 							break
 						}
 						
-						val path =
-							"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+						val path = "$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+						
 						result = client.request(path)
 						jsonArray = result?.jsonArray
 						if(jsonArray == null) {
@@ -538,6 +546,10 @@ class ColumnTask_Refresh(
 					
 					// 直前に読んだ範囲のmaxIdを調べる
 					max_id = column.parseRange(result, src).first
+					if(max_id == null) {
+						log.d("refresh-report-top: max_id is null.")
+						break
+					}
 					
 					if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
 						log.d("refresh-report-top: timeout. make gap.")
@@ -548,8 +560,8 @@ class ColumnTask_Refresh(
 						break
 					}
 					
-					val path =
-						"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+					val path = "$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+					
 					result = client.request(path)
 					jsonArray = result?.jsonArray
 					if(jsonArray == null) {
@@ -689,6 +701,10 @@ class ColumnTask_Refresh(
 						}
 						
 						max_id = column.parseRange(result, src).first
+						if(max_id == null) {
+							log.d("refresh-notification-offset: max_id is null.")
+							break
+						}
 						
 						if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
 							log.d("refresh-notification-offset: timeout. make gap.")
@@ -699,8 +715,8 @@ class ColumnTask_Refresh(
 							break
 						}
 						
-						val path =
-							"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+						val path = "$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+						
 						result = client.request(path)
 						jsonArray = result?.jsonArray
 						if(jsonArray == null) {
@@ -743,6 +759,11 @@ class ColumnTask_Refresh(
 						break
 					}
 					
+					if(column.idOld == null) {
+						log.d("refresh-notification-bottom: idOld is null.")
+						break
+					}
+					
 					// 十分読んだらそれで終了
 					if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
 						log.d("refresh-notification-bottom: read enough data.")
@@ -763,7 +784,8 @@ class ColumnTask_Refresh(
 								.toPostRequestBuilder()
 						)
 					} else {
-						client.request("${path_base}${delimiter}max_id=${column.idOld}")
+						val path = "${path_base}${delimiter}max_id=${column.idOld}"
+						client.request(path)
 					}
 					
 					jsonArray = result?.jsonArray
@@ -944,6 +966,10 @@ class ColumnTask_Refresh(
 						}
 						
 						max_id = column.parseRange(result, src).first
+						if(max_id == null) {
+							log.d("refresh-ConversationSummary-top: max_id is null.")
+							break
+						}
 						
 						if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
 							log.d("refresh-ConversationSummary-top: read enough. make gap.")
@@ -962,8 +988,8 @@ class ColumnTask_Refresh(
 							break
 						}
 						
-						val path =
-							"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+						val path = "$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+						
 						result = client.request(path)
 						
 						val jsonArray2 = result?.jsonArray
@@ -1002,6 +1028,10 @@ class ColumnTask_Refresh(
 					// 直前のデータが0個なら終了とみなすしかなさそう
 					if(src.isEmpty()) {
 						log.d("refresh-ConversationSummary-bottom: previous size == 0.")
+						break
+					}
+					if(column.idOld == null) {
+						log.d("refresh-ConversationSummary-bottom: idOld is null.")
 						break
 					}
 					
@@ -1215,6 +1245,10 @@ class ColumnTask_Refresh(
 						}
 						
 						max_id = column.parseRange(result, src).first
+						if(max_id == null) {
+							log.d("refresh-status-top: max_id is null..")
+							break
+						}
 						
 						if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
 							log.d("refresh-status-top: read enough. make gap.")
@@ -1233,8 +1267,7 @@ class ColumnTask_Refresh(
 							break
 						}
 						
-						val path =
-							"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+						val path = "$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
 						result = client.request(path)
 						
 						val jsonArray2 = result?.jsonArray
@@ -1273,6 +1306,11 @@ class ColumnTask_Refresh(
 					// 直前のデータが0個なら終了とみなすしかなさそう
 					if(src.isEmpty()) {
 						log.d("refresh-status-bottom: previous size == 0.")
+						break
+					}
+					
+					if(column.idOld == null) {
+						log.d("refresh-status-bottom: idOld is null.")
 						break
 					}
 					

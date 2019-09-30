@@ -279,6 +279,12 @@ class ColumnTask_Gap(
 					break
 				}
 				
+				if(max_id==null){
+					showToast(context,false,"gap-account: missing max_id")
+					log.d("account: missing max_id")
+					break
+				}
+				
 				val path = "$path_base${delimiter}max_id=$max_id&since_id=$since_id"
 				val r2 = client.request(path)
 				
@@ -385,8 +391,13 @@ class ColumnTask_Gap(
 					break
 				}
 				
-				val path =
-					path_base + delimiter + "max_id=" + max_id + "&since_id=" + since_id
+				if(max_id==null){
+					showToast(context,false,"gap-report: missing max_id")
+					log.d("report: missing max_id")
+					break
+				}
+				
+				val path = "$path_base${delimiter}max_id=$max_id&since_id=$since_id"
 				val r2 = client.request(path)
 				val jsonArray = r2?.jsonArray
 				if(jsonArray == null) {
@@ -496,8 +507,14 @@ class ColumnTask_Gap(
 					addOne(list_tmp, TootGap.mayNull(max_id, since_id))
 					break
 				}
-				val path =
-					path_base + delimiter + "max_id=" + max_id + "&since_id=" + since_id
+				
+				if(max_id==null){
+					showToast(context,false,"gap-notification: missing max_id")
+					log.d("notification: missing max_id")
+					break
+				}
+				
+				val path = "$path_base${delimiter}max_id=$max_id&since_id=$since_id"
 				val r2 = client.request(path)
 				val jsonArray = r2?.jsonArray
 				if(jsonArray == null) {
@@ -624,6 +641,12 @@ class ColumnTask_Gap(
 					log.d("statuses: timeout.")
 					// タイムアウト
 					bLastGap = true
+					break
+				}
+				
+				if(max_id==null){
+					showToast(context,false,"gap-statuses: missing max_id")
+					log.d("statuses: missing max_id")
 					break
 				}
 				
@@ -755,6 +778,12 @@ class ColumnTask_Gap(
 					log.d("statuses: timeout.")
 					// タイムアウト
 					bLastGap = true
+					break
+				}
+				
+				if(max_id==null){
+					showToast(context,false,"gap-getConversationSummaryList: missing max_id")
+					log.d("getConversationSummaryList: missing max_id")
 					break
 				}
 				

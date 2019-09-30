@@ -30,6 +30,8 @@ import androidx.viewpager.widget.ViewPager
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromUrl
+import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
 import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
@@ -49,7 +51,6 @@ import java.io.FileOutputStream
 import java.io.InputStreamReader
 import java.lang.ref.WeakReference
 import java.util.*
-import java.util.regex.Pattern
 import java.util.zip.ZipInputStream
 import kotlin.math.abs
 import kotlin.math.min
@@ -84,15 +85,13 @@ class ActMain : AppCompatActivity()
 		// 外部からインテントを受信した後、アカウント選択中に画面回転したらアカウント選択からやり直す
 		internal var sent_intent2 : Intent? = null
 		
-		internal val reUrlHashTag =
-			Pattern.compile("""\Ahttps://([^/]+)/tags/([^?#・\s\-+.,:;/]+)(?:\z|[?#])""")
-		
 		var boostButtonSize = 1
 		var replyIconSize = 1
 		var headerIconSize = 1
 		var stripIconSize = 1
 		var timeline_font : Typeface = Typeface.DEFAULT
 		var timeline_font_bold : Typeface = Typeface.DEFAULT_BOLD
+		
 	}
 	
 	//	@Override
@@ -248,14 +247,10 @@ class ActMain : AppCompatActivity()
 			val cs = (viewClicked as TextView).text
 			if(cs is Spannable) {
 				for(s in cs.getSpans(0, cs.length, MyClickableSpan::class.java)) {
-					val m = reUrlHashTag.matcher(s.url)
-					if(m.find()) {
-						val s_tag = when {
-							s.text.startsWith("#") -> s.text
-							else -> "#${m.groupEx(2)?.decodePercent()}"
-						}
+					val pair = s.url.findHashtagFromUrl()
+					if(pair != null) {
 						if(tag_list == null) tag_list = ArrayList()
-						tag_list.add(s_tag)
+						tag_list.add(if(s.text.startsWith('#')) s.text else "#${pair.first}")
 					}
 				}
 			}
@@ -1518,54 +1513,23 @@ class ActMain : AppCompatActivity()
 		
 		val url = uri.toString()
 		
-		// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
-		var m = TootStatus.reStatusPage.matcher(url)
-		if(m.find()) {
-			try {
-				val host = m.groupEx(1) !!
-				val status_id = EntityId(m.groupEx(3) !!)
-				
-				// ステータスをアプリ内で開く
-				Action_Toot.conversationOtherInstance(
-					this@ActMain,
-					defaultInsertPosition,
-					url,
-					status_id,
-					host,
-					status_id
-				)
-				
-			} catch(ex : Throwable) {
-				showToast(this, ex, "can't parse status id.")
-			}
-			
+		val statusInfo = url.findStatusIdFromUrl()
+		if( statusInfo != null){
+			// ステータスをアプリ内で開く
+			Action_Toot.conversationOtherInstance(
+				this@ActMain,
+				defaultInsertPosition,
+				statusInfo.url,
+				statusInfo.statusId,
+				statusInfo.host,
+				statusInfo.statusId
+			)
 			return
 		}
 		
-		// https://misskey.xyz/notes/(id)
-		m = TootStatus.reStatusPageMisskey.matcher(url)
-		if(m.find()) {
-			try {
-				val host = m.groupEx(1) !!
-				val status_id = EntityId(m.groupEx(2) !!)
-				// ステータスをアプリ内で開く
-				Action_Toot.conversationOtherInstance(
-					this@ActMain,
-					defaultInsertPosition,
-					url,
-					status_id,
-					host,
-					status_id
-				)
-			} catch(ex : Throwable) {
-				showToast(this, ex, "can't parse status id.")
-			}
-			
-			return
-		}
 		
 		// ユーザページをアプリ内で開く
-		m = TootAccount.reAccountUrl.matcher(url)
+		var m = TootAccount.reAccountUrl.matcher(url)
 		if(m.find()) {
 			val host = m.groupEx(1) !!
 			val user = m.groupEx(2) !!.decodePercent()
@@ -2202,140 +2166,49 @@ class ActMain : AppCompatActivity()
 			if(opener.allowIntercept && accessInto != null) {
 				
 				// ハッシュタグはいきなり開くのではなくメニューがある
-				var m = reUrlHashTag.matcher(opener.url)
-				if(m.find()) {
-					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
-					val host = m.groupEx(1) !!
-					val tag_without_sharp = m.groupEx(2) !!.decodePercent()
+				val tagInfo = opener.url.findHashtagFromUrl()
+				if(tagInfo != null){
 					Action_HashTag.dialog(
 						this@ActMain,
 						opener.pos,
 						opener.url,
-						host,
-						tag_without_sharp,
+						tagInfo.second,
+						tagInfo.first,
 						opener.tagList,
 						whoAcct
 					)
 					return
 				}
 				
-				// ステータスページをアプリから開く
-				m = TootStatus.reStatusPage.matcher(opener.url)
-				if(m.find()) {
-					try {
-						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
-						val host = m.groupEx(1) !!
-						val status_id = EntityId(m.groupEx(3) !!)
-						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
-							Action_Toot.conversationOtherInstance(
-								this@ActMain,
-								opener.pos,
-								opener.url,
-								status_id,
-								host,
-								status_id
-							)
-						} else {
-							Action_Toot.conversationLocal(
-								this@ActMain,
-								opener.pos,
-								accessInto,
-								status_id
-							)
-						}
-					} catch(ex : Throwable) {
-						showToast(this, ex, "can't parse status id.")
-					}
-					
-					return
-				}
-				
-				// ステータスページをアプリから開く
-				m = TootStatus.reStatusPageMisskey.matcher(opener.url)
-				if(m.find()) {
-					try {
-						// https://misskey.xyz/notes/(id)
-						val host = m.groupEx(1) !!
-						val status_id = EntityId(m.groupEx(2) !!)
-						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
-							Action_Toot.conversationOtherInstance(
-								this@ActMain,
-								opener.pos,
-								opener.url,
-								status_id,
-								host,
-								status_id
-							)
-						} else {
-							Action_Toot.conversationLocal(
-								this@ActMain,
-								opener.pos,
-								accessInto,
-								status_id
-							)
-						}
-					} catch(ex : Throwable) {
-						showToast(this, ex, "can't parse status id.")
-					}
-					
-					return
-				}
-				
-				
-				m = TootStatus.reStatusPageObjects.matcher(opener.url)
-				if(m.find()) {
-					try {
-						// https://misskey.xyz/objects/(id)
-						val host = m.groupEx(1)
-						// ステータスIDではないのでどのタンスで開くにせよ検索APIを通すことになるval object_id = EntityId(m.groupEx(2))
+				val statusInfo = opener.url.findStatusIdFromUrl()
+				if( statusInfo != null){
+					if(accessInto.isNA ||
+						statusInfo.statusId == null ||
+						! statusInfo.host.equals(accessInto.host, ignoreCase = true)
+					) {
 						Action_Toot.conversationOtherInstance(
 							this@ActMain,
 							opener.pos,
-							opener.url,
-							null,
-							host,
-							null
+							statusInfo.url,
+							statusInfo.statusId,
+							statusInfo.host,
+							statusInfo.statusId
 						)
-					} catch(ex : Throwable) {
-						showToast(this, ex, "can't parse status id.")
+					} else {
+						Action_Toot.conversationLocal(
+							this@ActMain,
+							opener.pos,
+							accessInto,
+							statusInfo.statusId
+						)
 					}
-					
 					return
 				}
+			
 				
-				// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
-				m = TootStatus.reStatusPageNotice.matcher(opener.url)
-				if(m.find()) {
-					try {
-						// https://misskey.xyz/notes/(id)
-						val host = m.groupEx(1) !!
-						val status_id = EntityId(m.groupEx(2) !!)
-						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
-							Action_Toot.conversationOtherInstance(
-								this@ActMain,
-								opener.pos,
-								opener.url,
-								status_id,
-								host,
-								status_id
-							)
-						} else {
-							Action_Toot.conversationLocal(
-								this@ActMain,
-								opener.pos,
-								accessInto,
-								status_id
-							)
-						}
-					} catch(ex : Throwable) {
-						showToast(this, ex, "can't parse status id.")
-					}
-					
-					return
-				}
 				
 				// ユーザページをアプリ内で開く
-				m = TootAccount.reAccountUrl.matcher(opener.url)
+				var m = TootAccount.reAccountUrl.matcher(opener.url)
 				if(m.find()) {
 					val host = m.groupEx(1) !!
 					val user = m.groupEx(2) !!.decodePercent()

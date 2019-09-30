@@ -77,7 +77,7 @@ class ColumnTask_Loading(
 		column.lastTask = null
 		
 		if(result.error != null) {
-			column.mInitialLoadingError = result.error ?: ""
+			column.mInitialLoadingError = "${result.error} ${result.requestInfo}"
 		} else {
 			column.duplicate_map.clear()
 			column.list_data.clear()

@@ -733,6 +733,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		return true
 	}
 	
+	
+	class FindStatusIdFromUrlResult(
+		val statusId : EntityId?, // may null
+		val host:String,
+		val url :String
+	)
+	
 	companion object {
 		
 		internal val log = LogCategory("TootStatus")
@@ -760,7 +767,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			Pattern.compile("https?://([^/]+)/@[A-Za-z0-9_]+/([^?#/\\s]+)")
 		
 		// 公開ステータスページのURL マストドン
-		internal val reStatusPage =
+		private val reStatusPage =
 			Pattern.compile("""\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/([^?#/\s]+)(?:\z|[?#])""")
 		
 		// 公開ステータスページのURL Misskey
@@ -770,12 +777,64 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		)
 		
 		// PleromaのStatusのUri
-		internal val reStatusPageObjects =
+		private val reStatusPageObjects =
 			Pattern.compile("""\Ahttps://([^/]+)/objects/([^?#/\s]+)(?:\z|[?#])""")
 		
 		// PleromaのStatusの公開ページ
-		internal val reStatusPageNotice =
+		private val reStatusPageNotice =
 			Pattern.compile("""\Ahttps://([^/]+)/notice/([^?#/\s]+)(?:\z|[?#])""")
+
+		// PixelfedのStatusの公開ページ
+		// https://pixelfed.tokyo/p/tateisu/84169185147621376
+		private val reStatusPagePixelfed =
+			Pattern.compile("""\Ahttps://([^/]+)/p/([A-Za-z0-9_]+)/([^?#/\s]+)(?:\z|[?#])""")
+		
+		// returns null or pair( status_id, host ,url )
+		fun String.findStatusIdFromUrl():FindStatusIdFromUrlResult?{
+			// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
+			var m = reStatusPage.matcher(this)
+			if(m.find()) {
+				return FindStatusIdFromUrlResult( EntityId(m.groupEx(3) !!), m.groupEx(1) !! ,this)
+			}
+
+			// https://misskey.xyz/notes/(id)
+			m = reStatusPageMisskey.matcher(this)
+			if(m.find()) {
+				return FindStatusIdFromUrlResult( EntityId(m.groupEx(2) !!), m.groupEx(1) !! ,this)
+			}
+			
+			// https://misskey.xyz/objects/(id)
+			m = reStatusPageObjects.matcher(this)
+			if(m.find()) {
+				return FindStatusIdFromUrlResult(
+					null, // ステータスIDではないのでどのタンスで開くにせよ検索APIを通すことになる
+					m.groupEx(1) !! ,
+					this
+				)
+			}
+			
+			// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
+			m = reStatusPageNotice.matcher(this)
+			if(m.find()) {
+				return FindStatusIdFromUrlResult(
+					EntityId(m.groupEx(2) !!),
+					m.groupEx(1) !! ,
+					this
+				)
+			}
+			
+			m = reStatusPagePixelfed.matcher(this)
+			if(m.find()){
+				return FindStatusIdFromUrlResult(
+					EntityId(m.groupEx(3) !!),
+					m.groupEx(1) !! ,
+					this
+				)
+			}
+			
+			return null
+		}
+		
 		
 		fun parseListTootsearch(
 			parser : TootParser,

@@ -50,10 +50,10 @@ open class TootTag constructor(
 	}
 	
 	// for TREND_TAG column
-	constructor( src : JSONObject) : this(
+	constructor(src : JSONObject) : this(
 		name = src.notEmptyOrThrow("name"),
 		url = src.parseString("url"),
-		history = parseHistories( src.optJSONArray("history"))
+		history = parseHistories(src.optJSONArray("history"))
 	)
 	
 	companion object {
@@ -162,6 +162,33 @@ open class TootTag constructor(
 			} else {
 				! reCharsNotTagMastodon.matcher(src).find()
 			}
+		
+		// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
+		private val reUrlHashTag =
+			Pattern.compile("""\Ahttps://([^/]+)/tags/([^?#・\s\-+.,:;/]+)(?:\z|[?#])""")
+		
+		// https://pixelfed.tokyo/discover/tags/SubwayTooter?src=hash
+		private val reUrlHashTagPixelfed =
+			Pattern.compile("""\Ahttps://([^/]+)/discover/tags/([^?#・\s\-+.,:;/]+)(?:\z|[?#])""")
+		
+		// returns null or pair of ( decoded tag without sharp, host)
+		fun String.findHashtagFromUrl() : Pair<String, String>? {
+			var m = reUrlHashTag.matcher(this)
+			if(m.find()) {
+				val host = m.groupEx(1) !!
+				val tag = m.groupEx(2) !!.decodePercent()
+				return Pair(tag, host)
+			}
+			
+			m = reUrlHashTagPixelfed.matcher(this)
+			if(m.find()) {
+				val host = m.groupEx(1) !!
+				val tag = m.groupEx(2) !!.decodePercent()
+				return Pair(tag, host)
+			}
+			
+			return null
+		}
 		
 	}
 }

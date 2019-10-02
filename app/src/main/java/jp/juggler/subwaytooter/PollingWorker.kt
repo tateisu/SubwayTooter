@@ -25,6 +25,7 @@ import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.*
@@ -725,9 +726,9 @@ class PollingWorker private constructor(contextArg : Context) {
 				job_status.set("check network status..")
 				
 				val net_wait_start = SystemClock.elapsedRealtime()
-				while(true){
+				while(true) {
 					val connectionState = App1.getAppState(context).networkTracker.connectionState
-							?: break
+						?: break
 					if(isJobCancelled) throw JobCancelledException()
 					val now = SystemClock.elapsedRealtime()
 					val delta = now - net_wait_start
@@ -805,7 +806,6 @@ class PollingWorker private constructor(contextArg : Context) {
 			}
 			log.d(")JobItem.run jobId=${jobId}, cancel=${isJobCancelled}")
 		}
-		
 		
 	}
 	
@@ -1081,6 +1081,9 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					// 未確認アカウントはチェック対象外
 					if(! account.isConfirmed) return
+					
+					val (_, instance) = TootInstance.get(client)
+					if(instance == null) return
 					
 					client.account = account
 					

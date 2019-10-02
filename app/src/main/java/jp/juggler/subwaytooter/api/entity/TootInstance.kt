@@ -7,14 +7,14 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.LinkHelper
+import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.util.*
 import okhttp3.Request
 import org.json.JSONObject
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class TootInstance(parser : TootParser, src : JSONObject) {
 	
@@ -150,6 +150,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			else -> 10
 		}
 	
+
 	companion object {
 		private val rePleroma = Pattern.compile("""\bpleroma\b""", Pattern.CASE_INSENSITIVE)
 		private val rePixelfed = Pattern.compile("""\bpixelfed\b""", Pattern.CASE_INSENSITIVE)
@@ -170,9 +171,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		
 		private const val EXPIRE = (1000 * 3600).toLong()
 		
-		private val cache = HashMap<String, TootInstance>()
 		
-
 		// 引数はtoken_infoかTootInstanceのパース前のいずれか
 		fun parseMisskeyVersion(token_info : JSONObject) : Int {
 			return when(val o = token_info.opt(TootApiClient.KEY_MISSKEY_VERSION)) {
@@ -257,19 +256,33 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		//
 		//					ti == null ->
 		//						result.setError()
-
+		
 		//				}
 		//			}
 		//			return Pair(result, ti)
 		//		}
 		
+		
+		// インスタンス情報のキャッシュ
+
+		class CacheEntry( var data : TootInstance? = null )
+		
+		private val cache = HashMap<String, CacheEntry>()
+		
+		private fun getCacheEntry(host : String) : CacheEntry =
+			synchronized(cache) {
+				val hostLower = host.toLowerCase(Locale.JAPAN)
+				var item = cache[hostLower]
+				if(item == null) {
+					item = CacheEntry()
+					cache[hostLower] = item
+				}
+				item
+			}
+		
 		// get from cache
 		// no request, no expiration check
-		fun getCached(host : String) : TootInstance? {
-			synchronized(cache) {
-				return cache[host.toLowerCase(Locale.JAPAN)]
-			}
-		}
+		fun getCached(host : String) = getCacheEntry(host).data
 		
 		fun get(
 			client : TootApiClient,
@@ -281,14 +294,16 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			val tmpInstance = client.instance
 			val tmpAccount = client.account
 			try {
-				synchronized(cache) {
-					client.account = account
-					if(host != null) client.instance = host
-					val instanceName = client.instance !!.toLowerCase(Locale.JAPAN)
-					
+				client.account = account
+				if(host != null) client.instance = host
+				val instanceName = client.instance !!.toLowerCase(Locale.JAPAN)
+				
+				// ホスト名ごとに用意したオブジェクトで同期する
+				val cacheEntry = getCacheEntry(instanceName)
+				synchronized(cacheEntry) {
 					// re-use cached item.
 					val now = SystemClock.elapsedRealtime()
-					var item = cache[instanceName]
+					var item = cacheEntry.data
 					if(item != null && now - item.time_parse <= EXPIRE) {
 						
 						if(item.instanceType == InstanceType.Pixelfed &&
@@ -319,9 +334,9 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 						client.getInstanceInformation()
 					}
 					
-					val json = result?.jsonObject ?: return Pair(result,null)
+					val json = result?.jsonObject ?: return Pair(result, null)
 					
-					item =parseItem(
+					item = parseItem(
 						::TootInstance,
 						if(account != null) {
 							TootParser(client.context, account)
@@ -336,7 +351,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 						},
 						json
 					)
-
+					
 					return when {
 						item == null ->
 							Pair(result.setError("can't parse data in instance information."), null)
@@ -344,10 +359,13 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 						item.instanceType == InstanceType.Pixelfed &&
 							! Pref.bpEnablePixelfed(App1.pref) &&
 							! allowPixelfed ->
-							Pair(result.setError("currently Pixelfed instance is not supported."), null)
+							Pair(
+								result.setError("currently Pixelfed instance is not supported."),
+								null
+							)
 						
 						else -> {
-							cache[instanceName] = item
+							cacheEntry.data = item
 							Pair(result, item)
 						}
 					}

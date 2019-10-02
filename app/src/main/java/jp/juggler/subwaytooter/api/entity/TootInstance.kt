@@ -234,44 +234,14 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			return r1 // 通信エラーの表示ならr1でもr2でも構わないはず
 		}
 		
-		//		// インスタンス情報を取得する
-		//		private fun parseInstanceInformation(
-		//			client : TootApiClient,
-		//			result : TootApiResult?,
-		//			allowPixelfed : Boolean = false
-		//		)
-		//			: Pair<TootApiResult?, TootInstance?> {
-		//			var ti : TootInstance? = null
-		//			val json = result?.jsonObject
-		//			if(json != null) {
-		//				val parser = TootParser(
-		//					client.context,
-		//					LinkHelper.newLinkHelper(
-		//						client.instance,
-		//						misskeyVersion = TootApiClient.parseMisskeyVersion(json)
-		//					)
-		//				)
-		//				ti = parser.instance(json)
-		//				when {
-		//
-		//					ti == null ->
-		//						result.setError()
 		
-		//				}
-		//			}
-		//			return Pair(result, ti)
-		//		}
-		
-		
-		// インスタンス情報のキャッシュ
-
+		// インスタンス情報のキャッシュ。同期オブジェクトを兼ねる
 		class CacheEntry( var data : TootInstance? = null )
 		
 		private val cache = HashMap<String, CacheEntry>()
 		
-		private fun getCacheEntry(host : String) : CacheEntry =
+		private fun getCacheEntry(hostLower : String) : CacheEntry =
 			synchronized(cache) {
-				val hostLower = host.toLowerCase(Locale.JAPAN)
 				var item = cache[hostLower]
 				if(item == null) {
 					item = CacheEntry()
@@ -282,7 +252,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		
 		// get from cache
 		// no request, no expiration check
-		fun getCached(host : String) = getCacheEntry(host).data
+		fun getCached(host : String) = getCacheEntry(host.toLowerCase(Locale.JAPAN)).data
 		
 		fun get(
 			client : TootApiClient,

@@ -128,7 +128,7 @@ object Action_Account {
 									.setNeutralButton(R.string.close, null)
 									.show()
 							} else {
-								showToast(activity, true, "$error ${result.requestInfo}")
+								showToast(activity, true, "$error ${result.requestInfo}".trim())
 							}
 						}
 					}

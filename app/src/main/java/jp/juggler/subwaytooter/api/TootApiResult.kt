@@ -34,7 +34,7 @@ open class TootApiResult(
 		}
 	}
 	
-	var requestInfo = "(no request information)"
+	var requestInfo = ""
 	
 	var tokenInfo : JSONObject? = null
 	

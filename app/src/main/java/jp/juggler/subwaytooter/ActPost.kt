@@ -1291,7 +1291,7 @@ class ActPost : AppCompatActivity(),
 								var newInfo : TootInstance? = null
 								
 								override fun background(client : TootApiClient) : TootApiResult? {
-									val (result, ti) = TootInstance.get(client, account)
+									val (result, ti) = TootInstance.get(client)
 									newInfo = ti
 									return result
 								}
@@ -2103,7 +2103,7 @@ class ActPost : AppCompatActivity(),
 				
 				client.account = account
 				
-				val (tiResult, ti) = TootInstance.get(client, account)
+				val (tiResult, ti) = TootInstance.get(client)
 				if(ti == null) return tiResult
 				
 				if(ti.instanceType == TootInstance.InstanceType.Pixelfed) {

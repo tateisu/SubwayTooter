@@ -25,7 +25,7 @@ object Action_Instance {
 			instance == null -> TootTaskRunner(activity).run(host, object : TootTask {
 				var targetInstance : TootInstance? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val (ri, ti) = client.parseInstanceInformation(client.getInstanceInformation())
+					val (ri, ti) = TootInstance.get(client, host, allowPixelfed = true)
 					targetInstance = ti
 					return ri
 				}
@@ -58,7 +58,7 @@ object Action_Instance {
 				)
 			
 			// 疑似アカウントで開く
-			else -> addPseudoAccount(activity, host, misskeyVersion = 0) { ai ->
+			else -> addPseudoAccount(activity, host, instanceInfo = instance) { ai ->
 				activity.addColumn(
 					false,
 					pos,

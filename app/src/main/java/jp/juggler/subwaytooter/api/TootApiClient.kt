@@ -72,8 +72,7 @@ class TootApiClient(
 		private val reStartJsonArray = Pattern.compile("\\A\\s*\\[")
 		private val reStartJsonObject = Pattern.compile("\\A\\s*\\{")
 		private val reWhiteSpace = Pattern.compile("\\s+")
-		private val reDigits = Pattern.compile("(\\d+)")
-		
+
 		private const val mspTokenUrl = "http://mastodonsearch.jp/api/v1.0.1/utoken"
 		private const val mspSearchUrl = "http://mastodonsearch.jp/api/v1.0.1/cross"
 		private const val mspApiKey = "e53de7f66130208f62d1808672bf6320523dcd0873dc69bc"
@@ -258,14 +257,7 @@ class TootApiClient(
 			return encodeScopeArray(a) == encodeScopeArray(b)
 		}
 		
-		// 引数はtoken_infoかTootInstanceのパース前のいずれか
-		fun parseMisskeyVersion(token_info : JSONObject) : Int {
-			return when(val o = token_info.opt(KEY_MISSKEY_VERSION)) {
-				is Int -> o
-				is Boolean -> if(o) 10 else 0
-				else -> 0
-			}
-		}
+		
 	}
 	
 	@Suppress("unused")
@@ -559,46 +551,7 @@ class TootApiClient(
 	
 	//////////////////////////////////////////////////////////////////////
 	// misskey authentication
-	
-	// 疑似アカウントの追加時に、インスタンスの検証を行う
-	private fun getInstanceInformationMisskey() : TootApiResult? {
-		val result = TootApiResult.makeWithCaption(instance)
-		if(result.error != null) return result
-		if(sendRequest(result) {
-				JSONObject().apply {
-					put("dummy", 1)
-				}
-					.toPostRequestBuilder()
-					.url("https://$instance/api/meta")
-					.build()
-			}) {
-			parseJson(result) ?: return null
-			
-			result.jsonObject?.apply {
-				val m = reDigits.matcher(parseString("version") ?: "")
-				if(m.find()) {
-					put(KEY_MISSKEY_VERSION, m.groupEx(1) !!.toInt())
-				}
-			}
-		}
-		return result
-	}
-	
-	// インスタンス情報を取得する
-	internal fun parseInstanceInformation(result : TootApiResult?) : Pair<TootApiResult?, TootInstance?> {
-		var ti : TootInstance? = null
-		val json = result?.jsonObject
-		if(json != null) {
-			val parser = TootParser(
-				context,
-				LinkHelper.newLinkHelper(instance, misskeyVersion = parseMisskeyVersion(json))
-			)
-			ti = parser.instance(json)
-			if(ti == null) result.setError("can't parse data in instance information.")
-		}
-		return Pair(result, ti)
-	}
-	
+
 	private fun getAppInfoMisskey(appId : String?) : TootApiResult? {
 		appId ?: return TootApiResult("missing app id")
 		val result = TootApiResult.makeWithCaption(instance)
@@ -847,21 +800,7 @@ class TootApiClient(
 	
 	//////////////////////////////////////////////////////////////////////
 	
-	// 疑似アカウントの追加時に、インスタンスの検証を行う
-	private fun getInstanceInformationMastodon() : TootApiResult? {
-		val result = TootApiResult.makeWithCaption(instance)
-		if(result.error != null) return result
-		
-		if(sendRequest(result) {
-				Request.Builder().url("https://$instance/api/v1/instance").build()
-			}
-		) {
-			parseJson(result) ?: return null
-		}
-		
-		// misskeyの事は忘れて本来のエラー情報を返す
-		return result
-	}
+
 	
 	// クライアントをタンスに登録
 	fun registerClient(scope_string : String, clientName : String) : TootApiResult? {
@@ -1083,54 +1022,35 @@ class TootApiClient(
 		clientNameArg : String,
 		ti : TootInstance,
 		forceUpdateClient : Boolean = false
-	) : TootApiResult? =
-		prepareClientMastodon(clientNameArg, ti, forceUpdateClient)?.also { result ->
+	) : TootApiResult? {
+		
+		if(ti.instanceType == TootInstance.InstanceType.Pixelfed) {
+			return TootApiResult("currently Pixelfed instance is not supported.")
+		}
+		
+		return prepareClientMastodon(clientNameArg, ti, forceUpdateClient)?.also { result ->
 			val client_info = result.jsonObject
 			if(client_info != null) {
 				result.data = prepareBrowserUrl(getScopeString(ti), client_info)
 			}
 		}
-	
-	// 疑似アカウントの追加時に、インスタンスの検証を行う
-	fun getInstanceInformation() : TootApiResult? {
-		// misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
-		val r2 = getInstanceInformationMisskey() ?: return null
-		if(r2.jsonObject != null) return r2
-		
-		// マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
-		val r1 = getInstanceInformationMastodon() ?: return null
-		if(r1.jsonObject != null) return r1
-		
-		return r1 // 通信エラーの表示ならr1でもr2でも構わないはず
 	}
 	
+
 	// クライアントを登録してブラウザで開くURLを生成する
 	fun authentication1(
 		clientNameArg : String,
 		forceUpdateClient : Boolean = false
 	) : TootApiResult? {
 		
-		var lastRi : TootApiResult?
-		
-		// misskeyのインスタンス情報
-		run {
-			val (ri, ti) = parseInstanceInformation(getInstanceInformationMisskey())
-			lastRi = ri
-			if(ti != null && (ri?.response?.code ?: 0) in 200 until 300) {
-				return authentication1Misskey(clientNameArg, ti)
-			}
+		val (ri, ti) = TootInstance.get(this)
+		return if(ti == null || (ri?.response?.code ?: 0) !in 200 until 300) {
+			ri
+		} else if(ti.misskeyVersion > 0) {
+			authentication1Misskey(clientNameArg, ti)
+		} else {
+			authentication1Mastodon(clientNameArg, ti, forceUpdateClient)
 		}
-		
-		// マストドンのインスタンス情報
-		run {
-			val (ri, ti) = parseInstanceInformation(getInstanceInformationMastodon())
-			lastRi = ri
-			if(ti != null && (ri?.response?.code ?: 0) in 200 until 300) {
-				return authentication1Mastodon(clientNameArg, ti, forceUpdateClient)
-			}
-		}
-		
-		return lastRi
 	}
 	
 	// oAuth2認証の続きを行う
@@ -1234,32 +1154,19 @@ class TootApiClient(
 	
 	fun createUser1(clientNameArg : String) : TootApiResult? {
 		
-		var lastRi : TootApiResult?
-		
-		// misskeyのインスタンス情報
-		run {
-			val (ri, ti) = parseInstanceInformation(getInstanceInformationMisskey())
-			lastRi = ri
-			if(ti != null && (ri?.response?.code ?: 0) in 200 until 300) {
-				return TootApiResult("Misskey has no API to create new account")
-			}
-			
+		val (ri, ti) = TootInstance.get(this)
+		if(ti == null) return ri
+		return when(ti.instanceType) {
+			TootInstance.InstanceType.Misskey ->
+				TootApiResult("Misskey has no API to create new account")
+			TootInstance.InstanceType.Pleroma ->
+				TootApiResult("Pleroma has no API to create new account")
+			TootInstance.InstanceType.Pixelfed ->
+				TootApiResult("Pixelfed has no API to create new account")
+			else ->
+				prepareClientMastodon(clientNameArg, ti)
+			// result.jsonObject に credentialつきのclient_info を格納して返す
 		}
-		
-		// マストドンのインスタンス情報
-		run {
-			val (ri, ti) = parseInstanceInformation(getInstanceInformationMastodon())
-			lastRi = ri
-			if(ti != null && (ri?.response?.code ?: 0) in 200 until 300) {
-				if(ti.version?.matches("""\bPleroma\b""".toRegex()) == true) {
-					return TootApiResult("Pleroma has no API to create new account")
-				}
-				// result.jsonObject に credentialつきのclient_info を格納して返す
-				return prepareClientMastodon(clientNameArg, ti)
-			}
-		}
-		
-		return lastRi
 	}
 	
 	// ユーザ名入力の後に呼ばれる

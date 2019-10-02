@@ -350,7 +350,7 @@ class PostHelper(
 				
 				var visibility_checked : TootVisibility? = visibility
 				
-				val (ri, instance) = TootInstance.get(client, account)
+				val (ri, instance) = TootInstance.get(client)
 				if(instance == null) return ri
 				
 				if(instance.instanceType == TootInstance.InstanceType.Pixelfed) {

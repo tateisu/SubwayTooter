@@ -430,6 +430,11 @@ object Pref {
 		R.id.swWarnHashtagAsciiAndNonAscii
 	)
 	
+	val bpEnablePixelfed = BooleanPref(
+		"EnablePixelfed",
+		false,
+		R.id.swEnablePixelfed
+	)
 	
 	// int
 	

@@ -1514,7 +1514,7 @@ class ActMain : AppCompatActivity()
 		val url = uri.toString()
 		
 		val statusInfo = url.findStatusIdFromUrl()
-		if( statusInfo != null){
+		if(statusInfo != null) {
 			// ステータスをアプリ内で開く
 			Action_Toot.conversationOtherInstance(
 				this@ActMain,
@@ -1526,7 +1526,6 @@ class ActMain : AppCompatActivity()
 			)
 			return
 		}
-		
 		
 		// ユーザページをアプリ内で開く
 		var m = TootAccount.reAccountUrl.matcher(url)
@@ -1719,21 +1718,16 @@ class ActMain : AppCompatActivity()
 						client.instance = instance
 					}
 					
-					val (r2, ti) = client.parseInstanceInformation(client.getInstanceInformation())
+					val (r2, ti) = TootInstance.get(client)
 					if(ti == null) return r2
-					val misskeyVersion = when {
-						ti.versionGE(TootInstance.MISSKEY_VERSION_11) -> 11
-						else -> 10
-					}
-					
-					
 					
 					this.host = instance
 					val client_name = Pref.spClientName(this@ActMain)
-					val result = client.authentication2Misskey(client_name, token, misskeyVersion)
+					val result =
+						client.authentication2Misskey(client_name, token, ti.misskeyVersion)
 					this.ta = TootParser(
 						this@ActMain
-						, LinkHelper.newLinkHelper(instance, misskeyVersion = misskeyVersion)
+						, LinkHelper.newLinkHelper(instance, misskeyVersion = ti.misskeyVersion)
 					).account(result?.jsonObject)
 					return result
 					
@@ -1882,7 +1876,7 @@ class ActMain : AppCompatActivity()
 					user,
 					jsonObject,
 					token_info,
-					misskeyVersion = TootApiClient.parseMisskeyVersion(token_info)
+					misskeyVersion = TootInstance.parseMisskeyVersion(token_info)
 				)
 				val account = SavedAccount.loadAccount(this@ActMain, row_id)
 				if(account != null) {
@@ -1947,10 +1941,11 @@ class ActMain : AppCompatActivity()
 			var ta : TootAccount? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val r1 = client.getInstanceInformation()
-				val ti = r1?.jsonObject ?: return r1
-				val misskeyVersion = TootApiClient.parseMisskeyVersion(ti)
 				
+				val (instanceResult, instance) = TootInstance.get(client,host)
+				if(instance == null) return instanceResult
+				
+				val misskeyVersion = instance.misskeyVersion
 				val linkHelper = LinkHelper.newLinkHelper(host, misskeyVersion = misskeyVersion)
 				val result = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
 				this.ta = TootParser(this@ActMain, linkHelper)
@@ -1959,7 +1954,6 @@ class ActMain : AppCompatActivity()
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
-				
 				if(afterAccountVerify(result, ta, sa, host)) {
 					dialog_host?.dismissSafe()
 					dialog_token?.dismissSafe()
@@ -2167,7 +2161,7 @@ class ActMain : AppCompatActivity()
 				
 				// ハッシュタグはいきなり開くのではなくメニューがある
 				val tagInfo = opener.url.findHashtagFromUrl()
-				if(tagInfo != null){
+				if(tagInfo != null) {
 					Action_HashTag.dialog(
 						this@ActMain,
 						opener.pos,
@@ -2181,7 +2175,7 @@ class ActMain : AppCompatActivity()
 				}
 				
 				val statusInfo = opener.url.findStatusIdFromUrl()
-				if( statusInfo != null){
+				if(statusInfo != null) {
 					if(accessInto.isNA ||
 						statusInfo.statusId == null ||
 						! statusInfo.host.equals(accessInto.host, ignoreCase = true)
@@ -2204,8 +2198,6 @@ class ActMain : AppCompatActivity()
 					}
 					return
 				}
-			
-				
 				
 				// ユーザページをアプリ内で開く
 				var m = TootAccount.reAccountUrl.matcher(opener.url)

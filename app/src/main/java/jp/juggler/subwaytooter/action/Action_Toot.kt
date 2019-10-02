@@ -669,7 +669,7 @@ object Action_Toot {
 				dialog.addAction(
 					activity.getString(R.string.open_in_pseudo_account, "?@$host_original")
 				) {
-					addPseudoAccount(activity, host_original, misskeyVersion = null) { sa ->
+					addPseudoAccount(activity, host_original) { sa ->
 						conversationLocal(activity, pos, sa, status_id_original)
 					}
 				}
@@ -677,7 +677,7 @@ object Action_Toot {
 				dialog.addAction(
 					activity.getString(R.string.open_in_pseudo_account, "?@$host_original")
 				) {
-					addPseudoAccount(activity, host_original, misskeyVersion = null) { sa ->
+					addPseudoAccount(activity, host_original) { sa ->
 						conversationRemote(activity, pos, sa, url)
 					}
 				}

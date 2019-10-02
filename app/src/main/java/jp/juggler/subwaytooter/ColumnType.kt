@@ -57,7 +57,7 @@ enum class ColumnType(
 	
 	ProfileStatusMastodon(
 		loading = { client ->
-			val(instanceResult,instance) = TootInstance.get(client,access_info)
+			val(instanceResult,instance) = TootInstance.get(client)
 			if(instance==null){
 				instanceResult
 			}else {
@@ -1095,7 +1095,7 @@ enum class ColumnType(
 		headerType = HeaderType.Instance,
 		
 		loading = { client ->
-			val(instanceResult,instance) = TootInstance.get(client,access_info,column.instance_uri)
+			val(instanceResult,instance) = TootInstance.get(client,column.instance_uri,allowPixelfed = true)
 			if(instance!=null) {
 				column.instance_information = instance
 				column.handshake = instanceResult?.response?.handshake

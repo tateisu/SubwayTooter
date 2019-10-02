@@ -1,12 +1,15 @@
 package jp.juggler.subwaytooter.api.entity
 
 import android.os.SystemClock
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
+import okhttp3.Request
 import org.json.JSONObject
 import java.util.*
 import java.util.regex.Pattern
@@ -14,78 +17,6 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 class TootInstance(parser : TootParser, src : JSONObject) {
-	
-	companion object {
-		private val rePleroma = Pattern.compile("\\bpleroma\\b", Pattern.CASE_INSENSITIVE)
-		private val rePixelfed = Pattern.compile("\\bpixelfed\\b", Pattern.CASE_INSENSITIVE)
-		
-		val VERSION_1_6 = VersionString("1.6")
-		val VERSION_2_4_0_rc1 = VersionString("2.4.0rc1")
-		val VERSION_2_4_0_rc2 = VersionString("2.4.0rc2")
-		//		val VERSION_2_4_0 = VersionString("2.4.0")
-		//		val VERSION_2_4_1_rc1 = VersionString("2.4.1rc1")
-		val VERSION_2_4_1 = VersionString("2.4.1")
-		val VERSION_2_6_0 = VersionString("2.6.0")
-		val VERSION_2_7_0_rc1 = VersionString("2.7.0rc1")
-		val VERSION_3_0_0_rc1 = VersionString("3.0.0rc1")
-		
-		val MISSKEY_VERSION_11 = VersionString("11.0")
-		
-		private const val EXPIRE = 600000L
-		
-		private val cache = HashMap<String, TootInstance>()
-		
-		// get from cache
-		// no request, no expiration check
-		fun getCached(host : String) : TootInstance? {
-			synchronized(cache) {
-				return cache[host.toLowerCase(Locale.JAPAN)]
-			}
-		}
-		
-		fun get(
-			client : TootApiClient,
-			account : SavedAccount,
-			host : String? = null
-		) : Pair<TootApiResult?, TootInstance?> {
-			val tmpInstance = client.instance
-			val tmpAccount = client.account
-			try {
-				synchronized(cache) {
-					// re-use cached item.
-					val now = SystemClock.elapsedRealtime()
-					val item = cache[account.host.toLowerCase(Locale.JAPAN)]
-					if(item != null && now - item.time_parse <= EXPIRE)
-						return Pair(TootApiResult(), item)
-					
-					// get new information
-					client.account = account
-					if(host != null) client.instance = host
-					val result = if(account.isMisskey) {
-						val params = JSONObject().apply {
-							put("dummy", 1)
-						}
-						client.request("/api/meta", params.toPostRequestBuilder())
-					} else {
-						client.request("/api/v1/instance")
-					}
-					
-					val data = parseItem(
-						::TootInstance,
-						TootParser(client.context, account),
-						result?.jsonObject
-					)
-					if(data != null) {
-						cache[account.host.toLowerCase(Locale.JAPAN)] = data
-					}
-					return Pair(result, data)
-				}
-			} finally {
-				client.account = tmpAccount
-				client.instance = tmpInstance // must be last.
-			}
-		}
-	}
 	
 	// いつ取得したか(内部利用)
 	private var time_parse : Long = SystemClock.elapsedRealtime()
@@ -218,64 +149,213 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			versionGE(MISSKEY_VERSION_11) -> 11
 			else -> 10
 		}
-}
+	
+	companion object {
+		private val rePleroma = Pattern.compile("""\bpleroma\b""", Pattern.CASE_INSENSITIVE)
+		private val rePixelfed = Pattern.compile("""\bpixelfed\b""", Pattern.CASE_INSENSITIVE)
+		
+		val VERSION_1_6 = VersionString("1.6")
+		val VERSION_2_4_0_rc1 = VersionString("2.4.0rc1")
+		val VERSION_2_4_0_rc2 = VersionString("2.4.0rc2")
+		//		val VERSION_2_4_0 = VersionString("2.4.0")
+		//		val VERSION_2_4_1_rc1 = VersionString("2.4.1rc1")
+		val VERSION_2_4_1 = VersionString("2.4.1")
+		val VERSION_2_6_0 = VersionString("2.6.0")
+		val VERSION_2_7_0_rc1 = VersionString("2.7.0rc1")
+		val VERSION_3_0_0_rc1 = VersionString("3.0.0rc1")
+		
+		val MISSKEY_VERSION_11 = VersionString("11.0")
+		
+		private val reDigits = Pattern.compile("(\\d+)")
+		
+		private const val EXPIRE = (1000 * 3600).toLong()
+		
+		private val cache = HashMap<String, TootInstance>()
+		
 
-//
-//import android.os.SystemClock
-//import jp.juggler.subwaytooter.api.TootApiClient
-//import jp.juggler.subwaytooter.api.TootApiResult
-//import jp.juggler.subwaytooter.api.TootParser
-//import jp.juggler.subwaytooter.api.entity.TootInstance
-//import jp.juggler.subwaytooter.api.entity.parseItem
-//import jp.juggler.subwaytooter.table.SavedAccount
-//import jp.juggler.util.toPostRequestBuilder
-//import org.json.JSONObject
-//import java.util.*
-//import kotlin.collections.HashMap
-//
-//object InstanceInformationCache {
-//
-//
-//	//		var instance =
-//	//		if(instance == null) {
-//	//			val r2 = getInstanceInformation(client)
-//	//			instance = instance_tmp ?: return r2
-//	//			account.instance = instance
-//	//		}
-//	//		var instance_tmp : TootInstance? = null
-//	//		fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
-//	//
-//	//			instance_tmp =
-//	//			return result
-//	//		}
-//	//
-//	//		client.instance = host
-//	//		val result = if(isMisskey) {
-//	//			client.getInstanceInformation()
-//	//			client.request(
-//	//				"/api/meta",
-//	//				account.putMisskeyApiToken().toPostRequestBuilder()
-//	//			)
-//	//		} else {
-//	//			client.request("/api/v1/instance")
-//	//		}
-//	//		newInfo =
-//	//			TootParser(this@ActPost, account).instance(result?.jsonObject)
-//	//		return Pair(null,null)
-//	//	}
-//
-//	//private val refInstance = AtomicReference<TootInstance>(null)
-//	//
-//	//// DBには保存しない
-//	//var instance : TootInstance?
-//	//	get() {
-//	//		val instance = refInstance.get()
-//	//		return when {
-//	//			instance == null -> null
-//	//			System.currentTimeMillis() - instance.time_parse > INSTANCE_INFORMATION_EXPIRE -> null
-//	//			else -> instance
-//	//		}
-//	//	}
-//	//	set(instance) = refInstance.set(instance)
-//
-//}
+		// 引数はtoken_infoかTootInstanceのパース前のいずれか
+		fun parseMisskeyVersion(token_info : JSONObject) : Int {
+			return when(val o = token_info.opt(TootApiClient.KEY_MISSKEY_VERSION)) {
+				is Int -> o
+				is Boolean -> if(o) 10 else 0
+				else -> 0
+			}
+		}
+		
+		// 疑似アカウントの追加時に、インスタンスの検証を行う
+		private fun TootApiClient.getInstanceInformationMastodon() : TootApiResult? {
+			val result = TootApiResult.makeWithCaption(instance)
+			if(result.error != null) return result
+			
+			if(sendRequest(result) {
+					Request.Builder().url("https://$instance/api/v1/instance").build()
+				}
+			) {
+				parseJson(result) ?: return null
+			}
+			
+			// misskeyの事は忘れて本来のエラー情報を返す
+			return result
+		}
+		
+		// 疑似アカウントの追加時に、インスタンスの検証を行う
+		private fun TootApiClient.getInstanceInformationMisskey() : TootApiResult? {
+			val result = TootApiResult.makeWithCaption(instance)
+			if(result.error != null) return result
+			if(sendRequest(result) {
+					JSONObject().apply {
+						put("dummy", 1)
+					}
+						.toPostRequestBuilder()
+						.url("https://$instance/api/meta")
+						.build()
+				}) {
+				parseJson(result) ?: return null
+				
+				result.jsonObject?.apply {
+					val m = reDigits.matcher(parseString("version") ?: "")
+					if(m.find()) {
+						put(TootApiClient.KEY_MISSKEY_VERSION, m.groupEx(1) !!.toInt())
+					}
+				}
+			}
+			return result
+		}
+		
+		// 疑似アカウントの追加時に、インスタンスの検証を行う
+		private fun TootApiClient.getInstanceInformation() : TootApiResult? {
+			// misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
+			val r2 = getInstanceInformationMisskey() ?: return null
+			if(r2.jsonObject != null) return r2
+			
+			// マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
+			val r1 = getInstanceInformationMastodon() ?: return null
+			if(r1.jsonObject != null) return r1
+			
+			return r1 // 通信エラーの表示ならr1でもr2でも構わないはず
+		}
+		
+		//		// インスタンス情報を取得する
+		//		private fun parseInstanceInformation(
+		//			client : TootApiClient,
+		//			result : TootApiResult?,
+		//			allowPixelfed : Boolean = false
+		//		)
+		//			: Pair<TootApiResult?, TootInstance?> {
+		//			var ti : TootInstance? = null
+		//			val json = result?.jsonObject
+		//			if(json != null) {
+		//				val parser = TootParser(
+		//					client.context,
+		//					LinkHelper.newLinkHelper(
+		//						client.instance,
+		//						misskeyVersion = TootApiClient.parseMisskeyVersion(json)
+		//					)
+		//				)
+		//				ti = parser.instance(json)
+		//				when {
+		//
+		//					ti == null ->
+		//						result.setError()
+
+		//				}
+		//			}
+		//			return Pair(result, ti)
+		//		}
+		
+		// get from cache
+		// no request, no expiration check
+		fun getCached(host : String) : TootInstance? {
+			synchronized(cache) {
+				return cache[host.toLowerCase(Locale.JAPAN)]
+			}
+		}
+		
+		fun get(
+			client : TootApiClient,
+			host : String? = client.instance,
+			account : SavedAccount? = if(host == client.instance) client.account else null,
+			allowPixelfed : Boolean = false
+		) : Pair<TootApiResult?, TootInstance?> {
+			
+			val tmpInstance = client.instance
+			val tmpAccount = client.account
+			try {
+				synchronized(cache) {
+					client.account = account
+					if(host != null) client.instance = host
+					val instanceName = client.instance !!.toLowerCase(Locale.JAPAN)
+					
+					// re-use cached item.
+					val now = SystemClock.elapsedRealtime()
+					var item = cache[instanceName]
+					if(item != null && now - item.time_parse <= EXPIRE) {
+						
+						if(item.instanceType == InstanceType.Pixelfed &&
+							! Pref.bpEnablePixelfed(App1.pref) &&
+							! allowPixelfed
+						) {
+							return Pair(
+								TootApiResult("currently Pixelfed instance is not supported."),
+								null
+							)
+						}
+						
+						return Pair(TootApiResult(), item)
+						
+					}
+					
+					// get new information
+					val result = if(account != null) {
+						if(account.isMisskey) {
+							val params = JSONObject().apply {
+								put("dummy", 1)
+							}
+							client.request("/api/meta", params.toPostRequestBuilder())
+						} else {
+							client.request("/api/v1/instance")
+						}
+					} else {
+						client.getInstanceInformation()
+					}
+					
+					val json = result?.jsonObject ?: return Pair(result,null)
+					
+					item =parseItem(
+						::TootInstance,
+						if(account != null) {
+							TootParser(client.context, account)
+						} else {
+							TootParser(
+								client.context,
+								LinkHelper.newLinkHelper(
+									instanceName,
+									misskeyVersion = parseMisskeyVersion(json)
+								)
+							)
+						},
+						json
+					)
+
+					return when {
+						item == null ->
+							Pair(result.setError("can't parse data in instance information."), null)
+						
+						item.instanceType == InstanceType.Pixelfed &&
+							! Pref.bpEnablePixelfed(App1.pref) &&
+							! allowPixelfed ->
+							Pair(result.setError("currently Pixelfed instance is not supported."), null)
+						
+						else -> {
+							cache[instanceName] = item
+							Pair(result, item)
+						}
+					}
+				}
+			} finally {
+				client.account = tmpAccount
+				client.instance = tmpInstance // must be last.
+			}
+		}
+	}
+}

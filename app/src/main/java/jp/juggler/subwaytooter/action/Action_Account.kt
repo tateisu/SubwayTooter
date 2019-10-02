@@ -6,10 +6,7 @@ import android.os.Build
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootRelationShip
-import jp.juggler.subwaytooter.api.entity.parseItem
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.DlgCreateAccount
 import jp.juggler.subwaytooter.dialog.DlgTextInput
@@ -37,87 +34,102 @@ object Action_Account {
 				override fun background(client : TootApiClient) : TootApiResult? = when(action) {
 					LoginForm.Action.Existing -> client.authentication1(Pref.spClientName(activity))
 					LoginForm.Action.Create -> client.createUser1(Pref.spClientName(activity))
-					else -> client.getInstanceInformation()
+					
+					LoginForm.Action.Pseudo, LoginForm.Action.Token -> {
+						val (ri, ti) = TootInstance.get(client)
+						if(ti != null) ri?.data = ti
+						ri
+					}
 				}
 				
 				override fun handleResult(result : TootApiResult?) {
-					if(result == null) return  // cancelled.
+
+					result  ?: return  // cancelled.
 					
-					val data = result.data
-					if(data is String) {
-						// ブラウザ用URLが生成された
-						val intent = Intent()
-						intent.data = data.toUri()
-						activity.startAccessTokenUpdate(intent)
-						dialog.dismissSafe()
-					} else if(data is JSONObject) {
-						// インスタンスを確認できた
-						when(action) {
-							LoginForm.Action.Token -> DlgTextInput.show(
-								activity,
-								activity.getString(R.string.access_token_or_api_token),
-								null,
-								object : DlgTextInput.Callback {
-									
-									@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
-									override fun onOK(
-										dialog_token : Dialog,
-										text : String
-									) {
-										
-										// dialog引数が二つあるのに注意
-										activity.checkAccessToken(
-											dialog,
-											dialog_token,
-											instance,
-											text,
-											null
-										)
-										
-									}
-									
-									override fun onEmptyError() {
-										showToast(activity, true, R.string.token_not_specified)
-									}
-								}
-							)
-							
-							LoginForm.Action.Pseudo -> addPseudoAccount(
-								activity,
-								instance,
-								misskeyVersion = TootApiClient.parseMisskeyVersion(data)
-							) { a ->
-								showToast(activity, false, R.string.server_confirmed)
-								val pos = App1.getAppState(activity).column_list.size
-								activity.addColumn(pos, a, ColumnType.LOCAL)
-								dialog.dismissSafe()
-							}
-							
-							LoginForm.Action.Create -> createAccount(
+					when(val data = result.data) {
+						
+						// ブラウザ用URLが生成された (LoginForm.Action.Existing)
+						is String -> {
+							val intent = Intent()
+							intent.data = data.toUri()
+							activity.startAccessTokenUpdate(intent)
+							dialog.dismissSafe()
+						}
+						
+						// インスタンスを確認できた (LoginForm.Action.Create)
+						is JSONObject ->{
+							createAccount(
 								activity,
 								instance,
 								data,
 								dialog
 							)
-							
-							else -> {
-								// will not happened
+						}
+						
+						// インスタンス情報を取得した( Pseudo, Token )
+						is TootInstance -> {
+							when(action) {
+								
+								LoginForm.Action.Pseudo -> addPseudoAccount(
+									activity,
+									instance,
+									instanceInfo = data
+								) { a ->
+									showToast(activity, false, R.string.server_confirmed)
+									val pos = App1.getAppState(activity).column_list.size
+									activity.addColumn(pos, a, ColumnType.LOCAL)
+									dialog.dismissSafe()
+								}
+								
+								LoginForm.Action.Token -> DlgTextInput.show(
+									activity,
+									activity.getString(R.string.access_token_or_api_token),
+									null,
+									object : DlgTextInput.Callback {
+										
+										@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+										override fun onOK(
+											dialog_token : Dialog,
+											text : String
+										) {
+											
+											// dialog引数が二つあるのに注意
+											activity.checkAccessToken(
+												dialog,
+												dialog_token,
+												instance,
+												text,
+												null
+											)
+											
+										}
+										
+										override fun onEmptyError() {
+											showToast(activity, true, R.string.token_not_specified)
+										}
+									}
+								)
+								
+								// never happen
+								else->{}
 							}
 						}
-					} else {
-						val error = result.error ?: "(no error information)"
-						if(error.contains("SSLHandshakeException")
-							&& (Build.VERSION.RELEASE.startsWith("7.0")
-								|| Build.VERSION.RELEASE.startsWith("7.1")
-								&& ! Build.VERSION.RELEASE.startsWith("7.1.")
-								)
-						) {
-							AlertDialog.Builder(activity)
-								.setMessage(error + "\n\n" + activity.getString(R.string.ssl_bug_7_0))
-								.setNeutralButton(R.string.close, null)
-								.show()
-						} else {
-							showToast(activity, true, "$error ${result.requestInfo}")
+						
+						else -> {
+							val error = result.error ?: "(no error information)"
+							if(error.contains("SSLHandshakeException")
+								&& (Build.VERSION.RELEASE.startsWith("7.0")
+									|| Build.VERSION.RELEASE.startsWith("7.1")
+									&& ! Build.VERSION.RELEASE.startsWith("7.1.")
+									)
+							) {
+								AlertDialog.Builder(activity)
+									.setMessage(error + "\n\n" + activity.getString(R.string.ssl_bug_7_0))
+									.setNeutralButton(R.string.close, null)
+									.show()
+							} else {
+								showToast(activity, true, "$error ${result.requestInfo}")
+							}
 						}
 					}
 				}
@@ -150,7 +162,7 @@ object Action_Account {
 					)
 					val ti = r1?.jsonObject ?: return r1
 					
-					val misskeyVersion = TootApiClient.parseMisskeyVersion(ti)
+					val misskeyVersion = TootInstance.parseMisskeyVersion(ti)
 					val linkHelper =
 						LinkHelper.newLinkHelper(instance, misskeyVersion = misskeyVersion)
 					

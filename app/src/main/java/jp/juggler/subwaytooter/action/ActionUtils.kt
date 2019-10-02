@@ -1,11 +1,10 @@
 package jp.juggler.subwaytooter.action
 
 import android.content.Context
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootRelationShip
-import jp.juggler.subwaytooter.api.entity.parseList
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.LogCategory
@@ -19,7 +18,7 @@ import java.util.*
 internal fun addPseudoAccount(
 	context : Context,
 	host : String,
-	misskeyVersion : Int? = null,
+	instanceInfo : TootInstance? = null,
 	callback : (SavedAccount) -> Unit
 ) {
 	try {
@@ -32,23 +31,21 @@ internal fun addPseudoAccount(
 			return
 		}
 		
-		if(misskeyVersion == null) {
-			TootTaskRunner(context).run(object : TootTask {
+		if(instanceInfo == null) {
+			TootTaskRunner(context).run(host,object : TootTask {
 				
-				var isMisskey2 : Int = 0
+				var targetInstance :TootInstance? =null
 				
 				override fun background(client : TootApiClient) : TootApiResult? {
-					client.instance = host
-					val r = client.getInstanceInformation()
-					val o = r?.jsonObject
-					if( o != null){
-						isMisskey2 = TootApiClient.parseMisskeyVersion(o)
-					}
-					return r
+					val(instanceResult,instance) = TootInstance.get(client)
+					if(instance!=null) targetInstance = instance
+					return instanceResult
 				}
 				
-				override fun handleResult(result : TootApiResult?) {
-					if(result != null) addPseudoAccount(context, host, isMisskey2, callback)
+				override fun handleResult(result : TootApiResult?) =when{
+					result==null ->{}
+					targetInstance == null -> showToast(context,false,result.error)
+					else -> addPseudoAccount(context, host, targetInstance, callback)
 				}
 			})
 			return
@@ -58,8 +55,14 @@ internal fun addPseudoAccount(
 		account_info.put("username", username)
 		account_info.put("acct", username)
 		
-		val row_id =
-			SavedAccount.insert(host, full_acct, account_info, JSONObject(), misskeyVersion = misskeyVersion)
+		val row_id = SavedAccount.insert(
+			host,
+			full_acct,
+			account_info,
+			JSONObject(),
+			misskeyVersion = instanceInfo.misskeyVersion
+		)
+
 		account = SavedAccount.loadAccount(context, row_id)
 		if(account == null) {
 			throw RuntimeException("loadAccount returns null.")

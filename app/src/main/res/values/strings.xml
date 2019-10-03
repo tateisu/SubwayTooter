@@ -231,6 +231,7 @@
     <string name="resize_image">Resize attachment image (JPEG, PNG)</string>
     <string name="dont_resize">Don\'t resize</string>
     <string name="long_side_pixel">Resize to %1$d pixels</string>
+    <string name="resize_square_pixels">Resize to %1$d square pixels (equiv. %2$dx%2$d)</string>
     <string name="image_capture">Take a picture</string>
     <string name="video_capture">Capture a video</string>
     <string name="voice_capture">Capture a voice</string>

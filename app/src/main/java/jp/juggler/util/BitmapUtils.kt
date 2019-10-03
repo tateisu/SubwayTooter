@@ -5,15 +5,45 @@ import android.graphics.*
 import android.net.Uri
 import it.sephiroth.android.library.exif2.ExifInterface
 import java.io.FileNotFoundException
+import kotlin.math.max
+import kotlin.math.sqrt
 
-object BitmapUtils {
-	internal val log = LogCategory("BitmapUtils")
+private val log = LogCategory("BitmapUtils")
+
+// EXIFのorientationが特定の値ならwとhを入れ替える
+private fun rotateSize(orientation:Int? ,w:Float,h:Float):PointF =
+	when(orientation) {
+		5, 6, 7, 8 -> PointF(h, w)
+		else -> PointF(w, h)
+	}
+
+enum class ResizeType{
+	None,
+	LongSide,
+	SquarePixel,
 }
+
+class ResizeConfig(
+	val type: ResizeType,
+	val size: Int
+)
 
 fun createResizedBitmap(
 	context : Context,
 	uri : Uri,
-	resizeToArg : Int,
+	sizeLongSide : Int,
+	skipIfNoNeedToResizeAndRotate : Boolean = false
+) = createResizedBitmap(
+	context,
+	uri,
+	if(sizeLongSide<=0) ResizeConfig(ResizeType.None,0) else ResizeConfig(ResizeType.LongSide,sizeLongSide),
+	skipIfNoNeedToResizeAndRotate = skipIfNoNeedToResizeAndRotate
+)
+
+fun createResizedBitmap(
+	context : Context,
+	uri : Uri,
+	resizeConfig : ResizeConfig,
 	skipIfNoNeedToResizeAndRotate : Boolean = false
 ) : Bitmap? {
 	
@@ -44,24 +74,69 @@ fun createResizedBitmap(
 			showToast(context, false, "could not get image bounds.")
 			return null
 		}
+
+		// 回転後のサイズ
+		val srcSize = rotateSize(orientation,src_width.toFloat(),src_height.toFloat())
+		val aspect = srcSize.x / srcSize.y
+
 		
-		// 長辺
-		val size = Math.max(src_width, src_height)
+		/// 出力サイズの計算
+		val sizeSpec = resizeConfig.size.toFloat()
+		val dstSize:PointF = when(resizeConfig.type){
+			ResizeType.None ->
+				srcSize
+			ResizeType.LongSide->
+				if(max(srcSize.x, srcSize.y) <= resizeConfig.size) {
+					srcSize
+				} else {
+					if(aspect >= 1f) {
+						PointF(
+							resizeConfig.size.toFloat(),
+							sizeSpec / aspect
+						)
+					} else {
+						PointF(
+							sizeSpec * aspect,
+							resizeConfig.size.toFloat()
+						)
+					}
+				}
+			ResizeType.SquarePixel->{
+				val maxPixels = sizeSpec * sizeSpec
+				val currentPixels = srcSize.x * srcSize.y
+				if( currentPixels <= maxPixels ) {
+					srcSize
+				}else {
+					val y = sqrt( maxPixels / aspect)
+					val x = aspect * y
+					PointF( x,y)
+				}
+			}
+		}
+		
+		val dstSizeInt = Point(
+			max(1,(dstSize.x+0.5f).toInt()),
+			max(1,(dstSize.y+0.5f).toInt())
+		)
+
+		val reSizeRequired = dstSizeInt.x != srcSize.x.toInt() || dstSizeInt.y != srcSize.y.toInt()
 		
 		// リサイズも回転も必要がない場合
 		if(skipIfNoNeedToResizeAndRotate
 			&& (orientation == null || orientation == 1)
-			&& (resizeToArg <= 0 || size <= resizeToArg)) {
-			BitmapUtils.log.d("createOpener: no need to resize & rotate")
+			&& !reSizeRequired
+		) {
+			log.d("createOpener: no need to resize & rotate")
 			return null
 		}
 		
-		val resize_to = Math.min(size, resizeToArg)
-		
+		// 長辺
+		val dstMax = max( dstSize.x, dstSize.y).toInt()
+
 		// inSampleSizeを計算
 		var bits = 0
-		var x = size
-		while(resize_to > 0 && x > resize_to * 2) {
+		var x = max( srcSize.x,srcSize.y).toInt()
+		while( x > 512 && x > dstMax * 2 ){
 			++ bits
 			x = x shr 1
 		}
@@ -78,22 +153,10 @@ fun createResizedBitmap(
 			return null
 		}
 		try {
+			// サンプル数が変化している
 			src_width = options.outWidth
 			src_height = options.outHeight
-			val scale : Float
-			var dst_width : Int
-			var dst_height : Int
-			if(src_width >= src_height) {
-				scale = resize_to / src_width.toFloat()
-				dst_width = resize_to
-				dst_height = (0.5f + src_height / src_width.toFloat() * resize_to).toInt()
-				if(dst_height < 1) dst_height = 1
-			} else {
-				scale = resize_to / src_height.toFloat()
-				dst_height = resize_to
-				dst_width = (0.5f + src_width / src_height.toFloat() * resize_to).toInt()
-				if(dst_width < 1) dst_width = 1
-			}
+			val scale = dstMax.toFloat() / max(src_width,src_height)
 			
 			val matrix = Matrix()
 			matrix.reset()
@@ -102,58 +165,35 @@ fun createResizedBitmap(
 			matrix.postTranslate(src_width * - 0.5f, src_height * - 0.5f)
 			// スケーリング
 			matrix.postScale(scale, scale)
+
 			// 回転情報があれば回転
-			if(orientation != null) {
-				val tmp : Int
 				when(orientation) {
-					
 					2 -> matrix.postScale(1f, - 1f)  // 上下反転
 					3 -> matrix.postRotate(180f) // 180度回転
 					4 -> matrix.postScale(- 1f, 1f) // 左右反転
 					
-					5 -> {
-						tmp = dst_width
-						
-						dst_width = dst_height
-						dst_height = tmp
+					5 ->{
 						matrix.postScale(1f, - 1f)
 						matrix.postRotate(- 90f)
 					}
 					
-					6 -> {
-						tmp = dst_width
-						dst_width = dst_height
-						dst_height = tmp
-						matrix.postRotate(90f)
-					}
+					6 -> matrix.postRotate(90f)
 					
 					7 -> {
-						tmp = dst_width
-						
-						dst_width = dst_height
-						dst_height = tmp
 						matrix.postScale(1f, - 1f)
 						matrix.postRotate(90f)
 					}
 					
-					8 -> {
-						tmp = dst_width
-						
-						dst_width = dst_height
-						dst_height = tmp
-						matrix.postRotate(- 90f)
-					}
-					
-					else -> {
-					}
+					8 -> matrix.postRotate(- 90f)
 				}
-			}
+			
+			
+
 			// 表示領域に埋まるように平行移動
-			matrix.postTranslate(dst_width * 0.5f, dst_height * 0.5f)
+			matrix.postTranslate(dstSizeInt.x.toFloat() * 0.5f, dstSizeInt.y.toFloat() * 0.5f)
 			
 			// 出力用Bitmap作成
-			var dst : Bitmap? =
-				Bitmap.createBitmap(dst_width, dst_height, Bitmap.Config.ARGB_8888)
+			var dst : Bitmap? = Bitmap.createBitmap(dstSizeInt.x,dstSizeInt.y, Bitmap.Config.ARGB_8888)
 			try {
 				return if(dst == null) {
 					showToast(context, false, "bitmap creation failed.")
@@ -163,10 +203,10 @@ fun createResizedBitmap(
 					val paint = Paint()
 					paint.isFilterBitmap = true
 					canvas.drawBitmap(sourceBitmap, matrix, paint)
-					BitmapUtils.log.d(
+					log.d(
 						"createResizedBitmap: resized to %sx%s",
-						dst_width,
-						dst_height
+						dstSizeInt.x,
+						dstSizeInt.y
 					)
 					val tmp = dst
 					dst = null
@@ -179,11 +219,11 @@ fun createResizedBitmap(
 			sourceBitmap.recycle()
 		}
 	} catch(ex : FileNotFoundException) {
-		BitmapUtils.log.w(ex, "not found. $uri")
+		log.w(ex, "not found. $uri")
 	} catch(ex : SecurityException) {
-		BitmapUtils.log.w(ex, "maybe we need pick up image again.")
+		log.w(ex, "maybe we need pick up image again.")
 	} catch(ex : Throwable) {
-		BitmapUtils.log.trace(ex, "createResizedBitmap")
+		log.trace(ex, "createResizedBitmap")
 	}
 	return null
 }

@@ -97,7 +97,25 @@ class ActPost : AppCompatActivity(),
 		internal const val MIME_TYPE_JPEG = "image/jpeg"
 		internal const val MIME_TYPE_PNG = "image/png"
 		
-		internal val list_resize_max = intArrayOf(0, 640, 800, 1024, 1280, 1600, 2048)
+
+		
+		internal val resizeConfigList = arrayOf(
+			ResizeConfig(ResizeType.None,0),
+
+			ResizeConfig(ResizeType.LongSide,640),
+			ResizeConfig(ResizeType.LongSide,800),
+			ResizeConfig(ResizeType.LongSide,1024),
+			ResizeConfig(ResizeType.LongSide,1280),
+			ResizeConfig(ResizeType.LongSide,1600),
+			ResizeConfig(ResizeType.LongSide,2048),
+			
+			ResizeConfig(ResizeType.SquarePixel,640),
+			ResizeConfig(ResizeType.SquarePixel,800),
+			ResizeConfig(ResizeType.SquarePixel,1024),
+			ResizeConfig(ResizeType.SquarePixel,1280),
+			ResizeConfig(ResizeType.SquarePixel,1600),
+			ResizeConfig(ResizeType.SquarePixel,2048)
+		)
 		
 		internal val acceptable_mime_types = HashSet<String>().apply {
 			//
@@ -1876,12 +1894,12 @@ class ActPost : AppCompatActivity(),
 				}
 				
 				// 設定からリサイズ指定を読む
-				val resize_to = list_resize_max[Pref.ipResizeImage(pref)]
+				val resizeConfig = resizeConfigList[Pref.ipResizeImage(pref)]
 				
 				val bitmap = createResizedBitmap(
 					this,
 					uri,
-					resize_to,
+					resizeConfig,
 					skipIfNoNeedToResizeAndRotate = true
 				)
 				if(bitmap != null) {

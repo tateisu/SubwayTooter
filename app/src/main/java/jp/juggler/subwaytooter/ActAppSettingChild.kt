@@ -412,15 +412,15 @@ class ActAppSettingChild : AppCompatActivity()
 			, getString(R.string.theme_dark)
 		)
 		
-		spResizeImage = initSpinner(
-			R.id.spResizeImage
-			, getString(R.string.dont_resize)
-			, getString(R.string.long_side_pixel, 640)
-			, getString(R.string.long_side_pixel, 800)
-			, getString(R.string.long_side_pixel, 1024)
-			, getString(R.string.long_side_pixel, 1280)
-			// サーバ側でさらに縮小されるようなので、1280より上は用意しない
-		)
+		val resizeList = ActPost.resizeConfigList.map{
+			when(it.type){
+				ResizeType.None->getString(R.string.dont_resize)
+				ResizeType.LongSide->getString(R.string.long_side_pixel, it.size)
+				ResizeType.SquarePixel->getString(R.string.resize_square_pixels, it.size*it.size,it.size)
+			}
+		}.toTypedArray()
+		
+		spResizeImage = initSpinner(R.id.spResizeImage ,*resizeList )
 		
 		spRefreshAfterToot = initSpinner(
 			R.id.spRefreshAfterToot
@@ -648,7 +648,9 @@ class ActAppSettingChild : AppCompatActivity()
 		
 	}
 	
-	private fun initSpinner(@IdRes viewId : Int, vararg captions : String) : Spinner? =
+
+
+	private fun initSpinner(@IdRes viewId : Int,vararg captions : String) : Spinner? =
 		findViewById<Spinner>(viewId)?.apply {
 			adapter = ArrayAdapter(
 				this@ActAppSettingChild,

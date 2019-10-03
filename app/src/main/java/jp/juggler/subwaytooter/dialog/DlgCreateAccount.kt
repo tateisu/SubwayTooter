@@ -11,8 +11,10 @@ import android.widget.EditText
 import android.widget.TextView
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.util.LogCategory
 import jp.juggler.util.showToast
+import jp.juggler.util.vg
 
 object DlgCreateAccount {
 	private val log = LogCategory("DlgCreateAccount")
@@ -26,7 +28,8 @@ object DlgCreateAccount {
 			username : String,
 			email : String,
 			password : String,
-			agreement : Boolean
+			agreement : Boolean,
+			reason : String?
 		) -> Unit
 	) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_account_create, null, false)
@@ -37,9 +40,19 @@ object DlgCreateAccount {
 		val etEmail : EditText = view.findViewById(R.id.etEmail)
 		val etPassword : EditText = view.findViewById(R.id.etPassword)
 		val cbAgreement : CheckBox = view.findViewById(R.id.cbAgreement)
+		val tvDescription : TextView = view.findViewById(R.id.tvDescription)
+		val etReason : EditText = view.findViewById(R.id.etReason)
+		val tvReasonCaption : TextView = view.findViewById(R.id.tvReasonCaption)
 		
 		val dialog = Dialog(activity)
 		dialog.setContentView(view)
+		
+		val instanceInfo = TootInstance.getCached(instance)
+		tvDescription.text = instanceInfo?.short_description ?: TootInstance.DESCRIPTION_DEFAULT
+		
+		val showReason = instanceInfo?.approval_required ?: false
+		vg(tvReasonCaption, showReason)
+		vg(etReason, showReason)
 		
 		val listener : View.OnClickListener = View.OnClickListener { v ->
 			when(v.id) {
@@ -53,10 +66,12 @@ object DlgCreateAccount {
 					dialog.cancel()
 				
 				R.id.btnOk -> {
-					val username = etUserName.text.toString().trim { it <= ' ' }
-					val email = etEmail.text.toString().trim { it <= ' ' }
-					val password = etPassword.text.toString().trim { it <= ' ' }
+					val username = etUserName.text.toString().trim()
+					val email = etEmail.text.toString().trim()
+					val password = etPassword.text.toString().trim()
 					val agreement = cbAgreement.isChecked
+					val reason =
+						if(etReason.visibility == View.VISIBLE) etReason.text.toString().trim() else null
 					
 					when {
 						
@@ -77,9 +92,9 @@ object DlgCreateAccount {
 							username,
 							email,
 							password,
-							agreement
+							agreement,
+							reason
 						)
-						
 					}
 				}
 				
@@ -100,6 +115,7 @@ object DlgCreateAccount {
 			WindowManager.LayoutParams.WRAP_CONTENT
 		)
 		dialog.show()
+		
 	}
 	
 }

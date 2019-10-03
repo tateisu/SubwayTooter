@@ -56,6 +56,12 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 	// (Pleroma only) トゥートの最大文字数
 	val max_toot_chars : Int?
 	
+	// (Mastodon 3.0.0)
+	val short_description : String
+	
+	// (Mastodon 3.0.0)
+	val approval_required : Boolean
+	
 	// インスタンスの種別
 	enum class InstanceType {
 		
@@ -74,7 +80,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			
 			this.uri = parser.accessHost
 			this.title = parser.accessHost
-			this.description = "(Misskey instance)"
+			this.description = src.parseString("description") ?: "(Misskey instance)"
 			val sv = src.optJSONObject("maintainer")?.parseString("url")
 			this.email = when {
 				sv?.startsWith("mailto:") == true -> sv.substring(7)
@@ -89,6 +95,9 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			this.instanceType = InstanceType.Misskey
 			this.languages = src.optJSONArray("langs")?.toStringArrayList() ?: ArrayList()
 			this.contact_account = null
+			
+			this.short_description = description
+			this.approval_required = false
 			
 		} else {
 			this.uri = src.parseString("uri")
@@ -122,6 +131,9 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			)
 			contact_account =
 				parseItem(::TootAccount, parser2, src.optJSONObject("contact_account"))
+			
+			this.short_description = src.parseString("short_description") ?: DESCRIPTION_DEFAULT
+			this.approval_required = src.parseBoolean("approval_required") ?: false
 		}
 	}
 	
@@ -150,7 +162,6 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			else -> 10
 		}
 	
-
 	companion object {
 		private val rePleroma = Pattern.compile("""\bpleroma\b""", Pattern.CASE_INSENSITIVE)
 		private val rePixelfed = Pattern.compile("""\bpixelfed\b""", Pattern.CASE_INSENSITIVE)
@@ -171,6 +182,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		
 		private const val EXPIRE = (1000 * 3600).toLong()
 		
+		const val DESCRIPTION_DEFAULT = "(no description)"
 		
 		// 引数はtoken_infoかTootInstanceのパース前のいずれか
 		fun parseMisskeyVersion(token_info : JSONObject) : Int {
@@ -234,9 +246,8 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			return r1 // 通信エラーの表示ならr1でもr2でも構わないはず
 		}
 		
-		
 		// インスタンス情報のキャッシュ。同期オブジェクトを兼ねる
-		class CacheEntry( var data : TootInstance? = null )
+		class CacheEntry(var data : TootInstance? = null)
 		
 		private val cache = HashMap<String, CacheEntry>()
 		

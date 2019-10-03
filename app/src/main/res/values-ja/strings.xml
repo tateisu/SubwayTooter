@@ -944,5 +944,6 @@
     <string name="hashtag_contains_ascii_and_not_ascii">ハッシュタグ %1$s はASCIIと非ASCIIの文字の両方を含みます。誤記かもしれません。続けますか?</string>
     <string name="warn_hashtag_ascii_and_non_ascii">ハッシュタグがASCIIと非ASCIIの文字の両方を含む時に警告する</string>
     <string name="enable_connect_to_pixelfed_server">Pixelfedサーバへの接続を有効にする(試験的実装。問題が多い)</string>
+    <string name="reason_create_account">サーバーにアカウントを作成したい理由 (optional)</string>
 
 </resources>

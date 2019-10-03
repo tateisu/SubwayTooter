@@ -43,8 +43,8 @@ object Action_Account {
 				}
 				
 				override fun handleResult(result : TootApiResult?) {
-
-					result  ?: return  // cancelled.
+					
+					result ?: return  // cancelled.
 					
 					when(val data = result.data) {
 						
@@ -57,7 +57,7 @@ object Action_Account {
 						}
 						
 						// インスタンスを確認できた (LoginForm.Action.Create)
-						is JSONObject ->{
+						is JSONObject -> {
 							createAccount(
 								activity,
 								instance,
@@ -111,7 +111,8 @@ object Action_Account {
 								)
 								
 								// never happen
-								else->{}
+								else -> {
+								}
 							}
 						}
 						
@@ -146,7 +147,7 @@ object Action_Account {
 		DlgCreateAccount.showCreateAccountForm(
 			activity,
 			instance
-		) { dialog_create, username, email, password, agreement ->
+		) { dialog_create, username, email, password, agreement, reason ->
 			// dialog引数が二つあるのに注意
 			TootTaskRunner(activity).run(instance, object : TootTask {
 				
@@ -158,7 +159,8 @@ object Action_Account {
 						username,
 						email,
 						password,
-						agreement
+						agreement,
+						reason
 					)
 					val ti = r1?.jsonObject ?: return r1
 					

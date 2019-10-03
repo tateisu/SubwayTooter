@@ -72,7 +72,7 @@ class TootApiClient(
 		private val reStartJsonArray = Pattern.compile("\\A\\s*\\[")
 		private val reStartJsonObject = Pattern.compile("\\A\\s*\\{")
 		private val reWhiteSpace = Pattern.compile("\\s+")
-
+		
 		private const val mspTokenUrl = "http://mastodonsearch.jp/api/v1.0.1/utoken"
 		private const val mspSearchUrl = "http://mastodonsearch.jp/api/v1.0.1/cross"
 		private const val mspApiKey = "e53de7f66130208f62d1808672bf6320523dcd0873dc69bc"
@@ -256,7 +256,6 @@ class TootApiClient(
 		private fun compareScopeArray(a : JSONArray, b : JSONArray?) : Boolean {
 			return encodeScopeArray(a) == encodeScopeArray(b)
 		}
-		
 		
 	}
 	
@@ -551,7 +550,7 @@ class TootApiClient(
 	
 	//////////////////////////////////////////////////////////////////////
 	// misskey authentication
-
+	
 	private fun getAppInfoMisskey(appId : String?) : TootApiResult? {
 		appId ?: return TootApiResult("missing app id")
 		val result = TootApiResult.makeWithCaption(instance)
@@ -800,8 +799,6 @@ class TootApiClient(
 	
 	//////////////////////////////////////////////////////////////////////
 	
-
-	
 	// クライアントをタンスに登録
 	fun registerClient(scope_string : String, clientName : String) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(this.instance)
@@ -1036,7 +1033,6 @@ class TootApiClient(
 		}
 	}
 	
-
 	// クライアントを登録してブラウザで開くURLを生成する
 	fun authentication1(
 		clientNameArg : String,
@@ -1175,7 +1171,8 @@ class TootApiClient(
 		username : String,
 		email : String,
 		password : String,
-		agreement : Boolean
+		agreement : Boolean,
+		reason : String?
 	) : TootApiResult? {
 		
 		val client_credential = client_info.parseString(KEY_CLIENT_CREDENTIAL)
@@ -1186,9 +1183,19 @@ class TootApiClient(
 		
 		log.d("createUser2Mastodon: client is : ${client_info}")
 		
+		
 		if(! sendRequest(result) {
-				"username=${username.encodePercent()}&email=${email.encodePercent()}&password=${password.encodePercent()}&agreement=${agreement}"
-					.toFormRequestBody().toPost()
+
+				val params = ArrayList<String>().apply{
+					add("username=${username.encodePercent()}")
+					add("email=${email.encodePercent()}")
+					add("password=${password.encodePercent()}")
+					add("agreement=${agreement}")
+					if( reason?.isNotEmpty() == true ) add("reason=${reason.encodePercent()}")
+				}
+
+				params
+					.joinToString("&").toFormRequestBody().toPost()
 					.url("https://$instance/api/v1/accounts")
 					.header("Authorization", "Bearer ${client_credential}")
 					.build()

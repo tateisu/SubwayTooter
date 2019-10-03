@@ -939,4 +939,5 @@
     <string name="hashtag_contains_ascii_and_not_ascii">Hashtag %1$s contains both of ASCII and non-ASCII characters. It may be a typo. Are you sure?</string>
     <string name="warn_hashtag_ascii_and_non_ascii">Warn if hashtag contains both of ASCII and non-ASCII characters</string>
     <string name="enable_connect_to_pixelfed_server">Enable connect to Pixelfed server (experimental. many problems)</string>
+    <string name="reason_create_account">Reason why you want to create an account on this server (optional)</string>
 </resources>

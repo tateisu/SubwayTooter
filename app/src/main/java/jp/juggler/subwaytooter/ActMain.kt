@@ -1831,7 +1831,7 @@ class ActMain : AppCompatActivity()
 				// cancelled.
 			}
 			
-			error != null -> showToast(this@ActMain, true, result.error)
+			error != null -> showToast(this@ActMain, true, "${result.error} ${result.requestInfo}".trim() )
 			
 			token_info == null -> showToast(this@ActMain, true, "can't get access token.")
 			

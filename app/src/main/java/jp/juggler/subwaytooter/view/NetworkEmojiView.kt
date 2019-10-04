@@ -20,7 +20,11 @@ class NetworkEmojiView : View {
 	
 	constructor(context : Context, attrs : AttributeSet?) : super(context, attrs)
 	
-	constructor(context : Context, attrs : AttributeSet?, defStyleAttr : Int) : super(context, attrs, defStyleAttr)
+	constructor(context : Context, attrs : AttributeSet?, defStyleAttr : Int) : super(
+		context,
+		attrs,
+		defStyleAttr
+	)
 	
 	private var url : String? = null
 	
@@ -56,9 +60,9 @@ class NetworkEmojiView : View {
 		if(url == null || url.isBlank()) return
 		
 		// APNGデータの取得
-		val frames = App1.custom_emoji_cache.getFrames(tagDrawTarget,url){
+		val frames = App1.custom_emoji_cache.getFrames(tagDrawTarget, url) {
 			postInvalidateOnAnimation()
-		}?: return
+		} ?: return
 		
 		val now = SystemClock.elapsedRealtime()
 		
@@ -74,8 +78,34 @@ class NetworkEmojiView : View {
 		val b = mFrameFindResult.bitmap
 		if(b == null || b.isRecycled) return
 		
+		val srcWidth = b.width.toFloat()
+		val srcHeight = b.height.toFloat()
+		if(srcWidth < 1f || srcHeight < 1f) return
+		val srcAspect = srcWidth / srcHeight
+		
+		val dstWidth = this.width.toFloat()
+		val dstHeight = this.height.toFloat()
+		if(dstWidth < 1f || dstHeight < 1f) return
+		val dstAspect = dstWidth / dstHeight
+		
+		val drawWidth : Float
+		val drawHeight : Float
+		if(srcAspect >= dstAspect) {
+			// ソースの方が横長
+			drawWidth = dstWidth
+			drawHeight = srcHeight * (dstWidth / srcWidth)
+			
+		} else {
+			// ソースの方が縦長
+			drawHeight = dstHeight
+			drawWidth = srcWidth * (dstHeight / srcHeight)
+		}
+		
+		val drawLeft = (dstWidth - drawWidth) / 2f
+		val drawTop = (dstHeight - drawHeight) / 2f
+		
 		rect_src.set(0, 0, b.width, b.height)
-		rect_dst.set(0f, 0f, this.width.toFloat(), this.height.toFloat())
+		rect_dst.set(drawLeft, drawTop, drawLeft + drawWidth, drawTop + drawHeight)
 		canvas.drawBitmap(b, rect_src, rect_dst, mPaint)
 		
 		// 少し後に描画しなおす

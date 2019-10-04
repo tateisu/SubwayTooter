@@ -277,7 +277,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			try {
 				client.account = account
 				if(host != null) client.instance = host
-				val instanceName = client.instance !!.toLowerCase(Locale.JAPAN)
+				val instanceName = client.instance !! .toLowerCase(Locale.JAPAN)
 				
 				// ホスト名ごとに用意したオブジェクトで同期する
 				val cacheEntry = getCacheEntry(instanceName)

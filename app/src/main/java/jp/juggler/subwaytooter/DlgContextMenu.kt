@@ -46,6 +46,38 @@ internal class DlgContextMenu(
 	
 	private val dialog : Dialog
 	
+	private val viewRoot = activity.layoutInflater.inflate(R.layout.dlg_context_menu, null, false)
+	
+	private val btnCrossAccountActionsForStatus : Button =
+		viewRoot.findViewById(R.id.btnCrossAccountActionsForStatus)
+	private val llCrossAccountActionsForStatus : View =
+		viewRoot.findViewById(R.id.llCrossAccountActionsForStatus)
+	
+	private val btnCrossAccountActionsForAccount : Button =
+		viewRoot.findViewById(R.id.btnCrossAccountActionsForAccount)
+	private val llCrossAccountActionsForAccount : View =
+		viewRoot.findViewById(R.id.llCrossAccountActionsForAccount)
+	
+	private val btnAroundThisToot : Button =
+		viewRoot.findViewById(R.id.btnAroundThisToot)
+	private val llAroundThisToot : View =
+		viewRoot.findViewById(R.id.llAroundThisToot)
+	
+	private val btnYourToot : Button =
+		viewRoot.findViewById(R.id.btnYourToot)
+	private val llYourToot : View =
+		viewRoot.findViewById(R.id.llYourToot)
+	
+	private val btnStatusExtraAction : Button =
+		viewRoot.findViewById(R.id.btnStatusExtraAction)
+	private val llStatusExtraAction : View =
+		viewRoot.findViewById(R.id.llStatusExtraAction)
+	
+	private val btnAccountExtraAction : Button =
+		viewRoot.findViewById(R.id.btnAccountExtraAction)
+	private val llAccountExtraAction : View =
+		viewRoot.findViewById(R.id.llAccountExtraAction)
+	
 	init {
 		this.access_info = column.access_info
 		
@@ -60,7 +92,6 @@ internal class DlgContextMenu(
 			else -> UserRelation.load(access_info.db_id, who.id)
 		}
 		
-		val viewRoot = activity.layoutInflater.inflate(R.layout.dlg_context_menu, null, false)
 		this.dialog = Dialog(activity)
 		dialog.setContentView(viewRoot)
 		dialog.setCancelable(true)
@@ -131,64 +162,89 @@ internal class DlgContextMenu(
 		val llLinks : LinearLayout = viewRoot.findViewById(R.id.llLinks)
 		
 		val btnNotificationFrom : Button = viewRoot.findViewById(R.id.btnNotificationFrom)
+		val btnProfilePin = viewRoot.findViewById<View>(R.id.btnProfilePin)
+		val btnProfileUnpin = viewRoot.findViewById<View>(R.id.btnProfileUnpin)
+		val btnBoostedBy = viewRoot.findViewById<View>(R.id.btnBoostedBy)
+		val btnFavouritedBy = viewRoot.findViewById<View>(R.id.btnFavouritedBy)
 		
-		btnNotificationFrom.setOnClickListener(this)
 		
-		btnAroundAccountTL.setOnClickListener(this)
-		btnAroundLTL.setOnClickListener(this)
-		btnAroundFTL.setOnClickListener(this)
+		arrayOf(
+			btnNotificationFrom,
+			btnAroundAccountTL,
+			btnAroundLTL,
+			btnAroundFTL,
+			btnStatusWebPage,
+			btnText,
+			btnFavouriteAnotherAccount,
+			btnBoostAnotherAccount,
+			btnReactionAnotherAccount,
+			btnReplyAnotherAccount,
+			btnQuotedRenote,
+			btnReportStatus,
+			btnReportUser,
+			btnMuteApp,
+			btnDelete,
+			btnRedraft,
+			btnFollow,
+			btnMute,
+			btnBlock,
+			btnProfile,
+			btnSendMessage,
+			btnAccountWebPage,
+			btnFollowRequestOK,
+			btnFollowRequestNG,
+			btnDeleteSuggestion,
+			btnFollowFromAnotherAccount,
+			btnSendMessageFromAnotherAccount,
+			btnOpenProfileFromAnotherAccount,
+			btnOpenTimeline,
+			btnConversationAnotherAccount,
+			btnAvatarImage,
+			btnNotificationDelete,
+			btnConversationMute,
+			btnHideBoost,
+			btnShowBoost,
+			btnHideFavourite,
+			btnShowFavourite,
+			btnListMemberAddRemove,
+			btnInstanceInformation,
+			btnProfileDirectory,
+			btnDomainBlock,
+			btnEndorse,
+			btnCopyAccountId,
+			btnOpenAccountInAdminWebUi,
+			btnOpenInstanceInAdminWebUi,
+			btnBoostWithVisibility,
+			btnProfilePin,
+			btnProfileUnpin,
+			btnBoostedBy,
+			btnFavouritedBy,
+			
+			btnCrossAccountActionsForStatus,
+			btnCrossAccountActionsForAccount,
+			btnAroundThisToot,
+			btnYourToot,
+			btnStatusExtraAction,
+			btnAccountExtraAction,
+			
+			viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus),
+			viewRoot.findViewById<View>(R.id.btnTranslate),
+			viewRoot.findViewById<View>(R.id.btnQuoteUrlAccount),
+			viewRoot.findViewById<View>(R.id.btnShareUrlStatus),
+			viewRoot.findViewById<View>(R.id.btnShareUrlAccount),
+			viewRoot.findViewById<View>(R.id.btnQuoteName)
 		
-		btnStatusWebPage.setOnClickListener(this)
-		btnText.setOnClickListener(this)
-		btnFavouriteAnotherAccount.setOnClickListener(this)
-		btnBoostAnotherAccount.setOnClickListener(this)
-		btnReactionAnotherAccount.setOnClickListener(this)
-		btnReplyAnotherAccount.setOnClickListener(this)
-		btnQuotedRenote.setOnClickListener(this)
-		btnReportStatus.setOnClickListener(this)
-		btnReportUser.setOnClickListener(this)
-		btnMuteApp.setOnClickListener(this)
-		btnDelete.setOnClickListener(this)
-		btnRedraft.setOnClickListener(this)
-		btnFollow.setOnClickListener(this)
-		btnMute.setOnClickListener(this)
-		btnBlock.setOnClickListener(this)
-		btnFollow.setOnLongClickListener(this)
-		btnProfile.setOnClickListener(this)
-		btnSendMessage.setOnClickListener(this)
-		btnAccountWebPage.setOnClickListener(this)
-		btnFollowRequestOK.setOnClickListener(this)
-		btnFollowRequestNG.setOnClickListener(this)
-		btnDeleteSuggestion.setOnClickListener(this)
-		btnFollowFromAnotherAccount.setOnClickListener(this)
-		btnSendMessageFromAnotherAccount.setOnClickListener(this)
-		btnOpenProfileFromAnotherAccount.setOnClickListener(this)
-		btnOpenTimeline.setOnClickListener(this)
-		btnConversationAnotherAccount.setOnClickListener(this)
-		btnAvatarImage.setOnClickListener(this)
-		btnNotificationDelete.setOnClickListener(this)
-		btnConversationMute.setOnClickListener(this)
-		btnHideBoost.setOnClickListener(this)
-		btnShowBoost.setOnClickListener(this)
-		btnHideFavourite.setOnClickListener(this)
-		btnShowFavourite.setOnClickListener(this)
-		btnListMemberAddRemove.setOnClickListener(this)
-		btnInstanceInformation.setOnClickListener(this)
-		btnProfileDirectory.setOnClickListener(this)
-		btnDomainBlock.setOnClickListener(this)
-		btnEndorse.setOnClickListener(this)
-		btnCopyAccountId.setOnClickListener(this)
-		btnOpenAccountInAdminWebUi.setOnClickListener(this)
-		btnOpenInstanceInAdminWebUi.setOnClickListener(this)
-		btnBoostWithVisibility.setOnClickListener(this)
+		).forEach {
+			it.setOnClickListener(this@DlgContextMenu)
+		}
 		
-		viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus).setOnClickListener(this)
-		viewRoot.findViewById<View>(R.id.btnTranslate).setOnClickListener(this)
-		
-		viewRoot.findViewById<View>(R.id.btnQuoteUrlAccount).setOnClickListener(this)
-		viewRoot.findViewById<View>(R.id.btnShareUrlStatus).setOnClickListener(this)
-		viewRoot.findViewById<View>(R.id.btnShareUrlAccount).setOnClickListener(this)
-		viewRoot.findViewById<View>(R.id.btnQuoteName).setOnClickListener(this)
+		arrayOf(
+			btnFollow,
+			btnProfile,
+			btnSendMessage
+		).forEach {
+			it.setOnLongClickListener(this)
+		}
 		
 		val account_list = SavedAccount.loadAccountList(activity)
 		//	final ArrayList< SavedAccount > account_list_non_pseudo_same_instance = new ArrayList<>();
@@ -252,8 +308,9 @@ internal class DlgContextMenu(
 			}
 			vg(llLinks, llLinks.childCount > 1)
 			
-			btnDelete.visibility = if(status_by_me) View.VISIBLE else View.GONE
-			btnRedraft.visibility = if(status_by_me) View.VISIBLE else View.GONE
+			vg(btnYourToot, status_by_me)
+			
+			
 			
 			vg(btnBoostWithVisibility, ! access_info.isPseudo && ! access_info.isMisskey)
 			
@@ -267,41 +324,24 @@ internal class DlgContextMenu(
 				btnMuteApp.text = activity.getString(R.string.mute_app_of, application_name)
 			}
 			
-			val btnBoostedBy = viewRoot.findViewById<View>(R.id.btnBoostedBy)
-			val btnFavouritedBy = viewRoot.findViewById<View>(R.id.btnFavouritedBy)
-			btnBoostedBy.setOnClickListener(this)
-			btnFavouritedBy.setOnClickListener(this)
-			val isNA = access_info.isNA
-			btnBoostedBy.visibility = if(isNA) View.GONE else View.VISIBLE
-			btnFavouritedBy.visibility = if(isNA) View.GONE else View.VISIBLE
-			
-			val btnProfilePin = viewRoot.findViewById<View>(R.id.btnProfilePin)
-			val btnProfileUnpin = viewRoot.findViewById<View>(R.id.btnProfileUnpin)
-			btnProfilePin.setOnClickListener(this)
-			btnProfileUnpin.setOnClickListener(this)
 			val canPin = status.canPin(access_info)
-			btnProfileUnpin.visibility = if(canPin && status.pinned) View.VISIBLE else View.GONE
-			btnProfilePin.visibility = if(canPin && ! status.pinned) View.VISIBLE else View.GONE
+			vg(btnProfileUnpin, canPin && status.pinned)
+			vg(btnProfilePin, canPin && ! status.pinned)
 		}
 		
-		var bShowConversationMute = false
-		if(status != null) {
-			if(access_info.isMe(status.account)) {
-				bShowConversationMute = true
-			} else if(notification != null && TootNotification.TYPE_MENTION == notification.type) {
-				bShowConversationMute = true
-			}
+		val bShowConversationMute = when {
+			status == null -> false
+			access_info.isMe(status.account) -> true
+			notification != null && TootNotification.TYPE_MENTION == notification.type -> true
+			else -> false
 		}
 		
-		if(! bShowConversationMute) {
-			btnConversationMute.visibility = View.GONE
-		} else {
+		if(vg(btnConversationMute, bShowConversationMute)) {
 			val muted = status?.muted ?: false
 			btnConversationMute.setText(if(muted) R.string.unmute_this_conversation else R.string.mute_this_conversation)
 		}
 		
-		llNotification.visibility = if(notification == null) View.GONE else View.VISIBLE
-		
+		vg(llNotification, notification != null)
 		
 		fun showRelation(relation : UserRelation) {
 			// 被フォロー状態
@@ -352,7 +392,7 @@ internal class DlgContextMenu(
 		}
 		
 		if(access_info.isPseudo) {
-			// 議事アカミュートができたのでアカウントアクションを表示する
+			// 疑似アカミュートができたのでアカウントアクションを表示する
 			showRelation(UserRelation())
 			llAccountActionBar.visibility = View.VISIBLE
 			vg(ivFollowedBy, false)
@@ -360,17 +400,26 @@ internal class DlgContextMenu(
 			btnFollow.imageTintList =
 				ColorStateList.valueOf(getAttributeColor(activity, R.attr.colorImageButton))
 			
-			
-			
 			btnNotificationFrom.visibility = View.GONE
 		} else {
 			showRelation(relation)
 		}
 		
+		val who_host = getUserHost()
+		val llInstance : View = viewRoot.findViewById(R.id.llInstance)
+		if(vg(llInstance, ! (who_host.isEmpty() || who_host == "?"))) {
+			val tvInstanceActions : TextView = viewRoot.findViewById(R.id.tvInstanceActions)
+			tvInstanceActions.text = activity.getString(R.string.instance_actions_for, who_host)
+			
+			// 疑似アカウントではドメインブロックできない
+			// 自ドメインはブロックできない
+			vg(
+				btnDomainBlock,
+				! (access_info.isPseudo || access_info.host.equals(who_host, ignoreCase = true))
+			)
+		}
+		
 		if(who == null) {
-			btnInstanceInformation.visibility = View.GONE
-			btnProfileDirectory.visibility = View.GONE
-			btnDomainBlock.visibility = View.GONE
 			btnCopyAccountId.visibility = View.GONE
 			btnOpenAccountInAdminWebUi.visibility = View.GONE
 			btnOpenInstanceInAdminWebUi.visibility = View.GONE
@@ -378,23 +427,6 @@ internal class DlgContextMenu(
 			btnReportUser.visibility = View.GONE
 			
 		} else {
-			val who_host = getUserHost()
-			btnInstanceInformation.visibility = View.VISIBLE
-			btnInstanceInformation.text =
-				activity.getString(R.string.instance_information_of, who_host)
-			
-			btnProfileDirectory.visibility = View.VISIBLE
-			btnProfileDirectory.text =
-				activity.getString(R.string.profile_directory_of, who_host)
-			
-			if(access_info.isPseudo || access_info.host.equals(who_host, ignoreCase = true)) {
-				// 疑似アカウントではドメインブロックできない
-				// 自ドメインはブロックできない
-				btnDomainBlock.visibility = View.GONE
-			} else {
-				btnDomainBlock.visibility = View.VISIBLE
-				btnDomainBlock.text = activity.getString(R.string.block_domain_that, who_host)
-			}
 			
 			btnCopyAccountId.visibility = View.VISIBLE
 			btnCopyAccountId.text = activity.getString(R.string.copy_account_id, who.id.toString())
@@ -469,14 +501,16 @@ internal class DlgContextMenu(
 			}
 		}
 		
-		val who_host = who?.host
-		if(who_host == null || who_host.isEmpty() || who_host == "?") {
-			btnOpenTimeline.visibility = View.GONE
-		} else {
-			btnOpenTimeline.text = activity.getString(R.string.open_local_timeline_for, who_host)
-		}
+		
 		
 		btnListMemberAddRemove.visibility = View.VISIBLE
+		
+		updateGroup(btnCrossAccountActionsForStatus, llCrossAccountActionsForStatus)
+		updateGroup(btnCrossAccountActionsForAccount, llCrossAccountActionsForAccount)
+		updateGroup(btnAroundThisToot, llAroundThisToot)
+		updateGroup(btnYourToot, llYourToot)
+		updateGroup(btnStatusExtraAction, llStatusExtraAction)
+		updateGroup(btnAccountExtraAction, llAccountExtraAction)
 	}
 	
 	fun show() {
@@ -498,7 +532,69 @@ internal class DlgContextMenu(
 		}
 	}
 	
+	private fun updateGroup(btn : Button, group : View, toggle : Boolean = false) {
+		if(btn.visibility != View.VISIBLE) {
+			vg(group, false)
+			return
+		}
+		
+		if(toggle) vg(group, group.visibility != View.VISIBLE)
+		
+		val iconId = if(group.visibility == View.VISIBLE) {
+			R.drawable.ic_arrow_drop_up
+		} else {
+			R.drawable.ic_arrow_drop_down
+		}
+		
+		val iconColor = getAttributeColor(activity, R.attr.colorTimeSmall)
+		val drawable = createColoredDrawable(activity, iconId, iconColor, 1f)
+		btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
+	}
+	
 	override fun onClick(v : View) {
+		
+		// ダイアログを閉じない操作
+		when(v.id) {
+			R.id.btnCrossAccountActionsForStatus ->
+				return updateGroup(
+					btnCrossAccountActionsForStatus,
+					llCrossAccountActionsForStatus,
+					toggle = true
+				)
+			
+			R.id.btnCrossAccountActionsForAccount ->
+				return updateGroup(
+					btnCrossAccountActionsForAccount,
+					llCrossAccountActionsForAccount,
+					toggle = true
+				)
+			R.id.btnAroundThisToot ->
+				return updateGroup(
+					btnAroundThisToot,
+					llAroundThisToot,
+					toggle = true
+				)
+			R.id.btnYourToot ->
+				return updateGroup(
+					btnYourToot,
+					llYourToot,
+					toggle = true
+				)
+			R.id.btnStatusExtraAction ->
+				return updateGroup(
+					btnStatusExtraAction,
+					llStatusExtraAction,
+					toggle = true
+				)
+			R.id.btnAccountExtraAction ->
+				return updateGroup(
+					btnAccountExtraAction,
+					llAccountExtraAction,
+					toggle = true
+				)
+		}
+		
+		
 		dialog.dismissSafe()
 		
 		val pos = activity.nextPosition(column)
@@ -508,13 +604,13 @@ internal class DlgContextMenu(
 		
 		if(whoRef != null && who != null) {
 			when(v.id) {
-
+				
 				R.id.btnReportStatus -> if(status is TootStatus) {
 					Action_User.reportForm(activity, access_info, who, status)
 				}
-
+				
 				R.id.btnReportUser ->
-					Action_User.reportForm(activity, access_info, who )
+					Action_User.reportForm(activity, access_info, who)
 				
 				R.id.btnFollow ->
 					when {
@@ -696,6 +792,7 @@ internal class DlgContextMenu(
 				
 				R.id.btnOpenTimeline -> {
 					val who_host = who.host
+					@Suppress("ControlFlowWithEmptyBody")
 					if(who_host.isEmpty() || who_host == "?") {
 						// 何もしない
 					} else {
@@ -834,7 +931,7 @@ internal class DlgContextMenu(
 					AlertDialog.Builder(activity)
 						.setTitle(R.string.choose_visibility)
 						.setItems(caption_list) { _, which ->
-							if(which in 0 until list.size) {
+							if(which in list.indices) {
 								Action_Toot.boost(
 									activity,
 									access_info,
@@ -1000,6 +1097,23 @@ internal class DlgContextMenu(
 					access_info,
 					who
 				)
+				return true
+			}
+			
+			R.id.btnProfile -> {
+				dialog.dismissSafe()
+				Action_User.profileFromAnotherAccount(
+					activity,
+					activity.nextPosition(column),
+					access_info,
+					who
+				)
+				return true
+			}
+			
+			R.id.btnSendMessage -> {
+				dialog.dismissSafe()
+				Action_User.mentionFromAnotherAccount(activity, access_info, who)
 				return true
 			}
 		}

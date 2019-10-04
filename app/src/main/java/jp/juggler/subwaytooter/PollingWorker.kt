@@ -1082,10 +1082,10 @@ class PollingWorker private constructor(contextArg : Context) {
 					// 未確認アカウントはチェック対象外
 					if(! account.isConfirmed) return
 					
+					client.account = account
 					val (_, instance) = TootInstance.get(client)
 					if(instance == null) return
 					
-					client.account = account
 					
 					val wps = PushSubscriptionHelper(context, account)
 					if(wps.flags != 0) {

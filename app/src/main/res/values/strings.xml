@@ -674,7 +674,7 @@
     <string name="none_or_hidden_following">Not following anyone, or hidden by setting.</string>
     <string name="none_or_hidden_followers">No followers, or hidden by setting.</string>
     <string name="yourself_can_see_your_network">Even if you choose to hide social graphs, yourself can see it.</string>
-    <string name="follow_follower_list_may_restrict">If the remote user chooses to hide the social graph, only the followings/followers on this server will be displayed.</string>
+    <string name="follow_follower_list_may_restrict">If the remote user choose to hide the social graph, only the followings/followers on this server will be displayed.</string>
     <string name="trend_tag">Trending tags</string>
     <string name="people_talking">%1$d(%2$d) people talking</string>
     <string name="trend_tag_desc">The numbers indicate \'daily(weekly)\'. Daily numbers are reset at %1$s.</string>
@@ -941,4 +941,11 @@
     <string name="warn_hashtag_ascii_and_non_ascii">Warn if hashtag contains both of ASCII and non-ASCII characters</string>
     <string name="enable_connect_to_pixelfed_server">Enable connect to Pixelfed server (experimental. many problems)</string>
     <string name="reason_create_account">Reason why you want to create an account on this server (optional)</string>
+    <string name="cross_account_actions">Cross-account actions</string>
+    <string name="account_timeline">Account timeline</string>
+    <string name="around_this_toot">Around this toot</string>
+    <string name="your_toot">Your toot</string>
+    <string name="extra_actions">Extra actions</string>
+    <string name="block_domain">Block whole domain</string>
+    <string name="instance_actions_for">Actions for the server \"%1$s\"</string>
 </resources>

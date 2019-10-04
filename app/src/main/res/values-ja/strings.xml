@@ -946,5 +946,12 @@
     <string name="warn_hashtag_ascii_and_non_ascii">ハッシュタグがASCIIと非ASCIIの文字の両方を含む時に警告する</string>
     <string name="enable_connect_to_pixelfed_server">Pixelfedサーバへの接続を有効にする(試験的実装。問題が多い)</string>
     <string name="reason_create_account">サーバーにアカウントを作成したい理由 (optional)</string>
+    <string name="cross_account_actions">別アカ操作</string>
+    <string name="account_timeline">アカウントタイムライン</string>
+    <string name="around_this_toot">このトゥート付近の</string>
+    <string name="your_toot">あなたの投稿</string>
+    <string name="extra_actions">追加のアクション</string>
+    <string name="block_domain">ドメイン全体をブロック</string>
+    <string name="instance_actions_for">\"%1$s\" サーバへのアクション</string>
 
 </resources>

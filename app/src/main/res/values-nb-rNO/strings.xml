@@ -688,7 +688,7 @@
     <string name="token_exported">Som følge av eksport av programdata eller gjenoppretting fra sikkerhetskopi, brukes dette tilgangssymbolet også av andre enheter. Fordi tilgangssymboler som ikke brukes av andre enheter kreves for å bruke push-merknader, anbefales oppdatering av tilgangssymbolet.</string>
     <string name="missing_push_api">Instansen har inget API for push-merknader.</string>
     <string name="follow_follower_list_may_restrict">Hvis en bruker annensteds hen velger å skjule den sosiale grafen, vil kun følgende/følgere på denne instansen vises.</string>
-    <string name="trend_tag_desc">Nummer indikerer \'daglig(ukentlig)\'. Daglige nummer tilbakestilles %1$s.</string>
+    <string name="trend_tag_desc">Nummer indikerer \'daglig(ukentlig)\'.</string>
     <string name="post_button_tapped_repeatly">Postingsknapp ble trykket gjentatte ganger</string>
     <string name="regex_filter_matches_empty_string">Filtersøk med regulært uttrykk samsvarer med tom streng.</string>
     <string name="filter_irreversible_long">Kan ikke angres. Dropp istedenfor å skjule. Filtrerte tutinger vil fjernes for godt, som om filteret fjernes senere.</string>

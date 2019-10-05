@@ -243,13 +243,6 @@ class Column(
 		
 		val COLUMN_REGEX_FILTER_DEFAULT : (CharSequence?) -> Boolean = { false }
 		
-		private val time_format_hhmm = SimpleDateFormat("HH:mm", Locale.JAPAN)
-		
-		internal fun getResetTimeString() : String {
-			time_format_hhmm.timeZone = TimeZone.getDefault()
-			return time_format_hhmm.format(Date(0L))
-		}
-		
 		fun onFiltersChanged(context : Context, access_info : SavedAccount) {
 			
 			TootTaskRunner(context, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,

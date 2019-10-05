@@ -680,7 +680,7 @@
     <string name="follow_follower_list_may_restrict">타 서버 사용자가 소셜 그래프를 숨기기를 선택하면 이 서버의 팔로우/팔로워만 표시될 것입니다.</string>
     <string name="trend_tag">경향 태그들</string>
     <string name="people_talking">%1$d(%2$d) 명의 사람들이 얘기 중</string>
-    <string name="trend_tag_desc">숫자들은 \'일간(주간)\'을 나타냅니다. 일간 숫자는 %1$s에 초기화됩니다.</string>
+    <string name="trend_tag_desc">숫자들은 \'일간(주간)\'을 나타냅니다.</string>
     <string name="redraft_and_delete">삭제하고 다시 편집</string>
     <string name="cant_sync_toot">툿을 동기화할 수 없음.</string>
     <string name="cant_change_account_when_redraft">재편집 중에는 계정을 변경할 수 없음.</string>

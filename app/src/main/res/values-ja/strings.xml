@@ -709,7 +709,7 @@
     <string name="toot_search_ts_of">トゥート検索(ts) \"%1$s\"</string>
     <string name="tootsearch">tootsearch</string>
     <string name="trend_tag">トレンドタグ</string>
-    <string name="trend_tag_desc">数字は「日毎（週毎）」を示します。 日毎の数字は%1$sにリセットされます。</string>
+    <string name="trend_tag_desc">数字は「日毎（週毎）」を示します。</string>
     <string name="ui_theme">UIテーマ(アプリ再起動が必要)</string>
     <string name="unblock">ブロック解除</string>
     <string name="unblock_succeeded">ブロック解除できました</string>

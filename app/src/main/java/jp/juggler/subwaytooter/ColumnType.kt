@@ -1277,10 +1277,7 @@ enum class ColumnType(
 			this.list_tmp = addAll(this.list_tmp, src)
 			this.list_tmp = addOne(
 				this.list_tmp, TootMessageHolder(
-					context.getString(
-						R.string.trend_tag_desc,
-						Column.getResetTimeString()
-					),
+					context.getString(R.string.trend_tag_desc),
 					gravity = Gravity.END
 				)
 			)

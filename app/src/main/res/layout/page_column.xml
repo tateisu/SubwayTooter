@@ -1,650 +1,649 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:ignore="Autofill"
-    >
-
-    <LinearLayout
-        android:id="@+id/llColumnHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_column_header"
-        android:orientation="vertical"
-        android:paddingStart="12dp"
-        android:paddingTop="3dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="3dp"
-        >
+    tools:ignore="Autofill">
+    <!--
 
         <LinearLayout
+            android:id="@+id/llColumnHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="bottom"
-            android:orientation="horizontal"
-            >
-
-            <TextView
-                android:id="@+id/tvColumnContext"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="end"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"
-                android:textColor="?attr/colorColumnHeaderAcct"
-                android:textSize="12sp"
-                tools:text="tvColumnContext"
-                />
-
-            <TextView
-                android:id="@+id/tvColumnStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:gravity="end"
-                android:textColor="?attr/colorColumnHeaderPageNumber"
-                android:textSize="12sp"
-                tools:text="RS"
-                />
-
-            <TextView
-                android:id="@+id/tvColumnIndex"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:gravity="end"
-                android:textColor="?attr/colorColumnHeaderPageNumber"
-                android:textSize="12sp"
-                tools:text="col 6/12"
-                />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="0dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:baselineAligned="false"
-            >
-
-            <ImageView
-                android:id="@+id/ivColumnIcon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="4dp"
-                android:importantForAccessibility="no"
-                android:scaleType="fitCenter"
-                />
-
-            <TextView
-                android:id="@+id/tvColumnName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                tools:text="tvColumnName"
-                />
-
-            <ImageButton
-                android:id="@+id/btnColumnSetting"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="2dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/setting"
-                android:src="@drawable/ic_tune"
-                android:padding="8dp"
-                android:scaleType="fitCenter"
-                />
-
-            <ImageButton
-                android:id="@+id/btnColumnReload"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="2dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/reload"
-                android:src="@drawable/ic_refresh"
-                android:padding="8dp"
-                android:scaleType="fitCenter"
-                />
-
-            <ImageButton
-                android:id="@+id/btnColumnClose"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="2dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/close_column"
-                android:src="@drawable/ic_close"
-                android:padding="8dp"
-                android:scaleType="fitCenter"
-                />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <jp.juggler.subwaytooter.view.MaxHeightScrollView
-        android:id="@+id/llColumnSetting"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fadeScrollbars="false"
-        app:maxHeight="240dp"
-        >
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorColumnSettingBackground"
+            android:background="@drawable/bg_column_header"
             android:orientation="vertical"
             android:paddingStart="12dp"
             android:paddingTop="3dp"
             android:paddingEnd="12dp"
             android:paddingBottom="3dp"
-            android:id="@+id/llColumnSettingInside"
             >
 
             <LinearLayout
-                android:id="@+id/llHashtagExtra"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                >
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:labelFor="@+id/etHashtagExtraAny"
-                    android:text="@string/hashtag_extra_any"
-                    android:textColor="?attr/colorColumnHeaderPageNumber"
-                    />
-
-                <EditText
-                    android:id="@+id/etHashtagExtraAny"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:scrollHorizontally="true"
-                    />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:labelFor="@+id/etHashtagExtraAll"
-                    android:text="@string/hashtag_extra_all"
-                    android:textColor="?attr/colorColumnHeaderPageNumber"
-                    />
-
-                <EditText
-                    android:id="@+id/etHashtagExtraAll"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:scrollHorizontally="true"
-                    />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:labelFor="@+id/etHashtagExtraNone"
-                    android:text="@string/hashtag_extra_none"
-                    android:textColor="?attr/colorColumnHeaderPageNumber"
-                    />
-
-                <EditText
-                    android:id="@+id/etHashtagExtraNone"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:scrollHorizontally="true"
-                    />
-
-            </LinearLayout>
-
-            <CheckBox
-                android:id="@+id/cbDontCloseColumn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/dont_close_column"
-                />
-
-            <CheckBox
-                android:id="@+id/cbWithAttachment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/with_attachment"
-                />
-
-            <CheckBox
-                android:id="@+id/cbWithHighlight"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/with_highlight"
-                />
-
-            <CheckBox
-                android:id="@+id/cbDontShowBoost"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/dont_show_boost"
-                />
-
-            <CheckBox
-                android:id="@+id/cbDontShowFavourite"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/dont_show_favourite"
-                />
-
-            <CheckBox
-                android:id="@+id/cbDontShowFollow"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/dont_show_follow"
-                />
-
-            <CheckBox
-                android:id="@+id/cbDontShowReply"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/dont_show_reply"
-                />
-
-            <CheckBox
-                android:id="@+id/cbDontShowReaction"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/dont_show_reaction"
-                />
-
-            <CheckBox
-                android:id="@+id/cbDontShowVote"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/dont_show_vote"
-                />
-
-            <CheckBox
-                android:id="@+id/cbDontShowNormalToot"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/dont_show_normal_toot"
-                />
-
-            <CheckBox
-                android:id="@+id/cbInstanceLocal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/instance_local"
-                />
-
-            <CheckBox
-                android:id="@+id/cbDontStreaming"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/dont_use_streaming_api"
-                />
-
-            <CheckBox
-                android:id="@+id/cbDontAutoRefresh"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/dont_refresh_on_activity_resume"
-                />
-
-            <CheckBox
-                android:id="@+id/cbHideMediaDefault"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/hide_media_default"
-                />
-
-            <CheckBox
-                android:id="@+id/cbSystemNotificationNotRelated"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/system_notification_not_related"
-                />
-
-            <CheckBox
-                android:id="@+id/cbEnableSpeech"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/enable_speech"
-                />
-
-            <CheckBox
-                android:id="@+id/cbOldApi"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/use_old_api"
-                />
-
-            <LinearLayout
-                android:id="@+id/llRegexFilter"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:gravity="bottom"
                 android:orientation="horizontal"
                 >
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/tvColumnContext"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:labelFor="@+id/etRegexFilter"
-                    android:text="@string/regex_filter"
-                    android:textColor="?attr/colorColumnHeaderPageNumber"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:textColor="?attr/colorColumnHeaderAcct"
+                    android:textSize="12sp"
+                    tools:text="tvColumnContext"
                     />
 
                 <TextView
-                    android:id="@+id/tvRegexFilterError"
-                    android:layout_width="0dp"
+                    android:id="@+id/tvColumnStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:gravity="end"
+                    android:textColor="?attr/colorColumnHeaderPageNumber"
+                    android:textSize="12sp"
+                    tools:text="RS"
+                    />
+
+                <TextView
+                    android:id="@+id/tvColumnIndex"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:layout_weight="1"
-                    android:textColor="?attr/colorRegexFilterError"
+                    android:gravity="end"
+                    android:textColor="?attr/colorColumnHeaderPageNumber"
+                    android:textSize="12sp"
+                    tools:text="col 6/12"
                     />
 
             </LinearLayout>
 
-            <EditText
-                android:id="@+id/etRegexFilter"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
-                android:maxLines="1"
-                android:scrollHorizontally="true"
-                />
+                android:layout_marginTop="0dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                >
 
-            <Button
-                android:id="@+id/btnDeleteNotification"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/notification_delete"
-                android:textAllCaps="false"
-                />
+                <ImageView
+                    android:id="@+id/ivColumnIcon"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="4dp"
+                    android:importantForAccessibility="no"
+                    android:scaleType="fitCenter"
+                    />
 
-            <Button
-                android:id="@+id/btnColor"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/color_and_background"
-                android:textAllCaps="false"
-                />
+                <TextView
+                    android:id="@+id/tvColumnName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="tvColumnName"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColumnSetting"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="2dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/setting"
+                    android:src="@drawable/ic_tune"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColumnReload"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="2dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/reload"
+                    android:src="@drawable/ic_refresh"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColumnClose"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="2dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/close_column"
+                    android:src="@drawable/ic_close"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    />
+
+            </LinearLayout>
+
         </LinearLayout>
-    </jp.juggler.subwaytooter.view.MaxHeightScrollView>
 
-    <LinearLayout
-        android:id="@+id/llSearch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorSearchFormBackground"
-        android:orientation="vertical"
-        android:paddingStart="12dp"
-        android:paddingTop="3dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="3dp"
-        >
-
-        <LinearLayout
+        <jp.juggler.subwaytooter.view.MaxHeightScrollView
+            android:id="@+id/llColumnSetting"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fadeScrollbars="false"
+            app:maxHeight="240dp"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorColumnSettingBackground"
+                android:orientation="vertical"
+                android:paddingStart="12dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="3dp"
+                android:id="@+id/llColumnSettingInside"
+                >
+
+                <LinearLayout
+                    android:id="@+id/llHashtagExtra"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:labelFor="@+id/etHashtagExtraAny"
+                        android:text="@string/hashtag_extra_any"
+                        android:textColor="?attr/colorColumnHeaderPageNumber"
+                        />
+
+                    <EditText
+                        android:id="@+id/etHashtagExtraAny"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:scrollHorizontally="true"
+                        />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:labelFor="@+id/etHashtagExtraAll"
+                        android:text="@string/hashtag_extra_all"
+                        android:textColor="?attr/colorColumnHeaderPageNumber"
+                        />
+
+                    <EditText
+                        android:id="@+id/etHashtagExtraAll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:scrollHorizontally="true"
+                        />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:labelFor="@+id/etHashtagExtraNone"
+                        android:text="@string/hashtag_extra_none"
+                        android:textColor="?attr/colorColumnHeaderPageNumber"
+                        />
+
+                    <EditText
+                        android:id="@+id/etHashtagExtraNone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:scrollHorizontally="true"
+                        />
+
+                </LinearLayout>
+
+                <CheckBox
+                    android:id="@+id/cbDontCloseColumn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_close_column"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbWithAttachment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/with_attachment"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbWithHighlight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/with_highlight"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbDontShowBoost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_show_boost"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbDontShowFavourite"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_show_favourite"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbDontShowFollow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_show_follow"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbDontShowReply"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_show_reply"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbDontShowReaction"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_show_reaction"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbDontShowVote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_show_vote"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbDontShowNormalToot"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_show_normal_toot"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbInstanceLocal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/instance_local"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbDontStreaming"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_use_streaming_api"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbDontAutoRefresh"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_refresh_on_activity_resume"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbHideMediaDefault"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/hide_media_default"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbSystemNotificationNotRelated"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/system_notification_not_related"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbEnableSpeech"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/enable_speech"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbOldApi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/use_old_api"
+                    />
+
+                <LinearLayout
+                    android:id="@+id/llRegexFilter"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:labelFor="@+id/etRegexFilter"
+                        android:text="@string/regex_filter"
+                        android:textColor="?attr/colorColumnHeaderPageNumber"
+                        />
+
+                    <TextView
+                        android:id="@+id/tvRegexFilterError"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1"
+                        android:textColor="?attr/colorRegexFilterError"
+                        />
+
+                </LinearLayout>
+
+                <EditText
+                    android:id="@+id/etRegexFilter"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:scrollHorizontally="true"
+                    />
+
+                <Button
+                    android:id="@+id/btnDeleteNotification"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/notification_delete"
+                    android:textAllCaps="false"
+                    />
+
+                <Button
+                    android:id="@+id/btnColor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/color_and_background"
+                    android:textAllCaps="false"
+                    />
+            </LinearLayout>
+        </jp.juggler.subwaytooter.view.MaxHeightScrollView>
+
+        <LinearLayout
+            android:id="@+id/llSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSearchFormBackground"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="3dp"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:gravity="center"
+                android:orientation="horizontal"
+                >
+
+                <EditText
+                    android:id="@+id/etSearch"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    tools:ignore="LabelFor"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnSearchClear"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/clear"
+                    android:src="@drawable/ic_close"
+                    android:tint="?attr/colorVectorDrawable"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnSearch"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/search"
+                    android:src="@drawable/ic_search"
+                    android:tint="?attr/colorVectorDrawable"
+                    />
+
+            </LinearLayout>
+
+            <CheckBox
+                android:id="@+id/cbResolve"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/resolve_non_local_account"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llListList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSearchFormBackground"
             android:baselineAligned="false"
             android:gravity="center"
             android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="3dp"
             >
 
             <EditText
-                android:id="@+id/etSearch"
+                android:id="@+id/etListName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:imeOptions="actionSearch"
+                android:hint="@string/list_create_hint"
+                android:imeOptions="actionSend"
                 android:inputType="text"
                 tools:ignore="LabelFor"
                 />
 
             <ImageButton
-                android:id="@+id/btnSearchClear"
+                android:id="@+id/btnListAdd"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginStart="4dp"
                 android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/clear"
-                android:src="@drawable/ic_close"
-                android:tint="?attr/colorVectorDrawable"
-                />
-
-            <ImageButton
-                android:id="@+id/btnSearch"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="4dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/search"
-                android:src="@drawable/ic_search"
+                android:contentDescription="@string/add"
+                android:src="@drawable/ic_add"
                 android:tint="?attr/colorVectorDrawable"
                 />
 
         </LinearLayout>
 
-        <CheckBox
-            android:id="@+id/cbResolve"
-            android:layout_width="wrap_content"
+        <HorizontalScrollView
+            android:id="@+id/svQuickFilter"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/resolve_non_local_account"
-            />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llListList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorSearchFormBackground"
-        android:baselineAligned="false"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:paddingStart="12dp"
-        android:paddingTop="3dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="3dp"
-        >
-
-        <EditText
-            android:id="@+id/etListName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="@string/list_create_hint"
-            android:imeOptions="actionSend"
-            android:inputType="text"
-            tools:ignore="LabelFor"
-            />
-
-        <ImageButton
-            android:id="@+id/btnListAdd"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="4dp"
-            android:background="@drawable/btn_bg_transparent"
-            android:contentDescription="@string/add"
-            android:src="@drawable/ic_add"
-            android:tint="?attr/colorVectorDrawable"
-            />
-
-    </LinearLayout>
-
-    <HorizontalScrollView
-        android:id="@+id/svQuickFilter"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fillViewport="true"
-        >
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:orientation="horizontal"
+            android:fillViewport="true"
             >
 
-            <Button
-                android:id="@+id/btnQuickFilterAll"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_margin="0dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:minWidth="40dp"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"
-                android:text="@string/all"
-                android:textAllCaps="false"
-                android:stateListAnimator="@null"
-                />
+                android:layout_height="40dp"
+                android:orientation="horizontal"
+                >
 
-            <ImageButton
-                android:id="@+id/btnQuickFilterMention"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_margin="0dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/mention2"
-                />
+                <Button
+                    android:id="@+id/btnQuickFilterAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_margin="0dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:minWidth="40dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:text="@string/all"
+                    android:textAllCaps="false"
+                    android:stateListAnimator="@null"
+                    />
 
-            <ImageButton
-                android:id="@+id/btnQuickFilterFavourite"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_margin="0dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/favourite"
-                />
+                <ImageButton
+                    android:id="@+id/btnQuickFilterMention"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="0dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/mention2"
+                    />
 
-            <ImageButton
-                android:id="@+id/btnQuickFilterBoost"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_margin="0dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/boost"
-                />
+                <ImageButton
+                    android:id="@+id/btnQuickFilterFavourite"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="0dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/favourite"
+                    />
 
-            <ImageButton
-                android:id="@+id/btnQuickFilterFollow"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_margin="0dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/follow"
-                />
+                <ImageButton
+                    android:id="@+id/btnQuickFilterBoost"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="0dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/boost"
+                    />
 
-            <ImageButton
-                android:id="@+id/btnQuickFilterReaction"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_margin="0dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/reaction"
-                />
+                <ImageButton
+                    android:id="@+id/btnQuickFilterFollow"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="0dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/follow"
+                    />
 
-            <ImageButton
-                android:id="@+id/btnQuickFilterVote"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_margin="0dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/vote_polls"
-                />
-        </LinearLayout>
-    </HorizontalScrollView>
+                <ImageButton
+                    android:id="@+id/btnQuickFilterReaction"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="0dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/reaction"
+                    />
 
-    <FrameLayout
-        android:id="@+id/flColumnBackground"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        >
-
-        <ImageView
-            android:id="@+id/ivColumnBackgroundImage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:importantForAccessibility="no"
-            android:scaleType="centerCrop"
-            android:visibility="gone"
-            />
-
-        <TextView
-            android:id="@+id/tvLoading"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            />
-
-        <com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
-            android:id="@+id/swipyRefreshLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:srl_direction="both"
-            >
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/listView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-
-                android:clipToPadding="false"
-                android:fadeScrollbars="false"
-                android:padding="0dp"
-
-                android:scrollbarStyle="outsideOverlay"
-                android:scrollbars="vertical"
-                />
-
-        </com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout>
+                <ImageButton
+                    android:id="@+id/btnQuickFilterVote"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="0dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/vote_polls"
+                    />
+            </LinearLayout>
+        </HorizontalScrollView>
 
         <FrameLayout
-            android:id="@+id/llRefreshError"
+            android:id="@+id/flColumnBackground"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_margin="6dp"
-            android:background="@drawable/bg_refresh_error"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             >
 
             <ImageView
-                android:id="@+id/ivRefreshError"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="start|center_vertical"
-                android:layout_marginStart="4dp"
-                android:scaleType="fitCenter"
+                android:id="@+id/ivColumnBackgroundImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:importantForAccessibility="no"
-                android:src="@drawable/ic_error"
-                android:tint="#ff0000"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
                 />
 
             <TextView
-                android:id="@+id/tvRefreshError"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top"
-                android:layout_marginStart="32dp"
-                android:scaleType="center"
-                android:textColor="#fff"
+                android:id="@+id/tvLoading"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
                 />
+
+            <com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
+                android:id="@+id/swipyRefreshLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srl_direction="both"
+                >
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/listView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+
+                    android:clipToPadding="false"
+                    android:fadeScrollbars="false"
+                    android:padding="0dp"
+
+                    android:scrollbarStyle="outsideOverlay"
+                    android:scrollbars="vertical"
+                    />
+
+            </com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout>
+
+            <FrameLayout
+                android:id="@+id/llRefreshError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_margin="6dp"
+                android:background="@drawable/bg_refresh_error"
+                >
+
+                <ImageView
+                    android:id="@+id/ivRefreshError"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="start|center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:scaleType="fitCenter"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_error"
+                    android:tint="#ff0000"
+                    />
+
+                <TextView
+                    android:id="@+id/tvRefreshError"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top"
+                    android:layout_marginStart="32dp"
+                    android:scaleType="center"
+                    android:textColor="#fff"
+                    />
+            </FrameLayout>
         </FrameLayout>
-    </FrameLayout>
+-->
 </LinearLayout>

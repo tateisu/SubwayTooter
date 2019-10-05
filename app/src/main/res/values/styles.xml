@@ -68,7 +68,8 @@
         <item name="colorRippleEffect">@color/Dark_colorRippleEffect</item>
         <item name="colorButtonSelected">@color/Dark_colorButtonSelected</item>
         <item name="colorReplyBackground">@color/Dark_colorReplyBackground</item>
-        <item name="colorColumnListDeleteBackground">@color/Dark_colorColumnListDeleteBackground</item>
+        <item name="colorColumnListDeleteBackground">@color/Dark_colorColumnListDeleteBackground
+        </item>
         <item name="colorColumnListDeleteText">@color/Dark_colorColumnListDeleteText</item>
         <item name="colorColumnListDragHandleBackground">
             @color/Dark_colorColumnListDragHandleBackground
@@ -110,9 +111,9 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="setting_group_header">
         <item name="android:layout_width">match_parent</item>
@@ -150,6 +151,7 @@
         <item name="android:paddingStart">12dp</item>
 
     </style>
+
     <style name="setting_row_label">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -229,7 +231,7 @@
         <item name="android:imeOptions">actionDone</item>
     </style>
 
-    <style name="recycler_view_with_scroll_bar" >
+    <style name="recycler_view_with_scroll_bar">
         <item name="android:clipToPadding">false</item>
         <item name="android:fadeScrollbars">false</item>
         <item name="android:padding">0dp</item>
@@ -237,6 +239,5 @@
         <item name="android:scrollbars">vertical</item>
 
     </style>
-
 
 </resources>

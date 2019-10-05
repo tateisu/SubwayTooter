@@ -15,9 +15,9 @@ class ScrollPosition {
 	val isHead : Boolean
 		get() = adapterIndex == 0 && offset >= 0
 	
-	override fun toString() : String ="ScrlPos($adapterIndex,$offset)"
+	override fun toString() : String = "ScrlPos($adapterIndex,$offset)"
 	
-	constructor(adapterIndex : Int =0) {
+	constructor(adapterIndex : Int = 0) {
 		this.adapterIndex = adapterIndex
 		this.offset = 0
 	}
@@ -25,13 +25,15 @@ class ScrollPosition {
 	constructor(holder : ColumnViewHolder) {
 		val layoutManager = holder.listLayoutManager
 		val findPosition = layoutManager.findFirstVisibleItemPosition()
-		if(findPosition == androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+		if(findPosition == RecyclerView.NO_POSITION) {
 			adapterIndex = 0
 			offset = 0
 		} else {
 			adapterIndex = findPosition
 			val firstItemView = layoutManager.findViewByPosition(findPosition)
-			offset = (firstItemView?.top ?: 0) - (((firstItemView?.layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin)?:0)
+			offset = (firstItemView?.top
+				?: 0) - (((firstItemView?.layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin)
+				?: 0)
 		}
 	}
 	

@@ -67,26 +67,24 @@ fun vg(v : View, visible : Boolean) : Boolean {
 	return visible
 }
 
-
-fun ViewGroup.generateLayoutParamsEx():ViewGroup.LayoutParams?=
+fun ViewGroup.generateLayoutParamsEx() : ViewGroup.LayoutParams? =
 	try {
 		val parser = resources.getLayout(R.layout.generate_params)
 		// Skip everything until the view tag.
-		while(true){
+		while(true) {
 			val token = parser.nextToken()
 			if(token == XmlPullParser.START_TAG) break
 		}
 		generateLayoutParams(parser)
-	} catch (ex:Throwable) {
-		log.e(ex,"generateLayoutParamsEx failed")
+	} catch(ex : Throwable) {
+		log.e(ex, "generateLayoutParamsEx failed")
 		null
 	}
 
-
 // isChecked with skipping animation
-var CompoundButton.isCheckedEx :Boolean
+var CompoundButton.isCheckedNoAnime : Boolean
 	get() = isChecked
-	set(value){
+	set(value) {
 		isChecked = value
 		jumpDrawablesToCurrentState()
 	}

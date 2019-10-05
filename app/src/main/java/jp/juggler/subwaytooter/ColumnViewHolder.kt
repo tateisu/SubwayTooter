@@ -33,7 +33,7 @@ import java.util.regex.Pattern
 @SuppressLint("ClickableViewAccessibility")
 class ColumnViewHolder(
 	val activity : ActMain,
-	parent:ViewGroup
+	parent : ViewGroup
 ) : View.OnClickListener,
 	SwipyRefreshLayout.OnRefreshListener,
 	CompoundButton.OnCheckedChangeListener, View.OnLongClickListener {
@@ -68,7 +68,6 @@ class ColumnViewHolder(
 	lateinit var refreshLayout : SwipyRefreshLayout
 	
 	lateinit var listLayoutManager : LinearLayoutManager
-	
 	
 	private lateinit var llColumnHeader : View
 	private lateinit var tvColumnIndex : TextView
@@ -253,7 +252,8 @@ class ColumnViewHolder(
 		tvLoading.setOnTouchListener(ErrorFlickListener(activity))
 	}
 	
-	val viewRoot : View = inflate(activity,parent)
+	val viewRoot : View = inflate(activity, parent)
+	
 	init {
 		
 		viewRoot.scan { v ->
@@ -266,7 +266,7 @@ class ColumnViewHolder(
 				log.trace(ex)
 			}
 		}
-	
+		
 		
 		
 		if(Pref.bpShareViewPool(activity.pref)) {
@@ -278,8 +278,6 @@ class ColumnViewHolder(
 		//		if( animator is DefaultItemAnimator){
 		//			animator.supportsChangeAnimations = false
 		//		}
-		
-		
 		
 		btnListAdd.setOnClickListener(this)
 		
@@ -310,7 +308,7 @@ class ColumnViewHolder(
 		btnColumnClose.setOnLongClickListener(this)
 		btnDeleteNotification.setOnClickListener(this)
 		
-			btnColor.setOnClickListener(this)
+		btnColor.setOnClickListener(this)
 		
 		refreshLayout.setOnRefreshListener(this)
 		refreshLayout.setDistanceToTriggerSync((0.5f + 20f * activity.density).toInt())
@@ -559,30 +557,30 @@ class ColumnViewHolder(
 			val bAllowFilter = column.canStatusFilter()
 			
 			llColumnSetting.visibility = View.GONE
-		
 			
 			
-			cbDontCloseColumn.isCheckedEx = column.dont_close
-			cbWithAttachment.isCheckedEx = column.with_attachment
-			cbWithHighlight.isCheckedEx = column.with_highlight
-			cbDontShowBoost.isCheckedEx = column.dont_show_boost
-			cbDontShowFollow.isCheckedEx = column.dont_show_follow
-			cbDontShowFavourite.isCheckedEx = column.dont_show_favourite
-			cbDontShowReply.isCheckedEx = column.dont_show_reply
-			cbDontShowReaction.isCheckedEx = column.dont_show_reaction
-			cbDontShowVote.isCheckedEx = column.dont_show_vote
-			cbDontShowNormalToot.isCheckedEx = column.dont_show_normal_toot
-			cbInstanceLocal.isCheckedEx = column.instance_local
-			cbDontStreaming.isCheckedEx = column.dont_streaming
-			cbDontAutoRefresh.isCheckedEx = column.dont_auto_refresh
-			cbHideMediaDefault.isCheckedEx = column.hide_media_default
-			cbSystemNotificationNotRelated.isCheckedEx = column.system_notification_not_related
-			cbEnableSpeech.isCheckedEx = column.enable_speech
-			cbOldApi.isCheckedEx = column.use_old_api
+			
+			cbDontCloseColumn.isCheckedNoAnime = column.dont_close
+			cbWithAttachment.isCheckedNoAnime = column.with_attachment
+			cbWithHighlight.isCheckedNoAnime = column.with_highlight
+			cbDontShowBoost.isCheckedNoAnime = column.dont_show_boost
+			cbDontShowFollow.isCheckedNoAnime = column.dont_show_follow
+			cbDontShowFavourite.isCheckedNoAnime = column.dont_show_favourite
+			cbDontShowReply.isCheckedNoAnime = column.dont_show_reply
+			cbDontShowReaction.isCheckedNoAnime = column.dont_show_reaction
+			cbDontShowVote.isCheckedNoAnime = column.dont_show_vote
+			cbDontShowNormalToot.isCheckedNoAnime = column.dont_show_normal_toot
+			cbInstanceLocal.isCheckedNoAnime = column.instance_local
+			cbDontStreaming.isCheckedNoAnime = column.dont_streaming
+			cbDontAutoRefresh.isCheckedNoAnime = column.dont_auto_refresh
+			cbHideMediaDefault.isCheckedNoAnime = column.hide_media_default
+			cbSystemNotificationNotRelated.isCheckedNoAnime = column.system_notification_not_related
+			cbEnableSpeech.isCheckedNoAnime = column.enable_speech
+			cbOldApi.isCheckedNoAnime = column.use_old_api
 			
 			etRegexFilter.setText(column.regex_text)
 			etSearch.setText(column.search_query)
-			cbResolve.isCheckedEx = column.search_resolve
+			cbResolve.isCheckedNoAnime = column.search_resolve
 			
 			vg(cbWithAttachment, bAllowFilter)
 			vg(cbWithHighlight, bAllowFilter)
@@ -593,7 +591,7 @@ class ColumnViewHolder(
 			vg(cbDontShowReply, column.canFilterReply())
 			vg(cbDontShowNormalToot, column.canFilterNormalToot())
 			vg(cbDontShowReaction, isNotificationColumn && column.isMisskey)
-			vg(cbDontShowVote, isNotificationColumn )
+			vg(cbDontShowVote, isNotificationColumn)
 			vg(cbDontShowFavourite, isNotificationColumn && ! column.isMisskey)
 			vg(cbDontShowFollow, isNotificationColumn)
 			
@@ -610,10 +608,10 @@ class ColumnViewHolder(
 			
 			vg(btnDeleteNotification, column.isNotificationColumn)
 			
-			if( vg(llSearch, column.isSearchColumn) ){
-				vg(btnSearchClear,Pref.bpShowSearchClear(activity.pref))
+			if(vg(llSearch, column.isSearchColumn)) {
+				vg(btnSearchClear, Pref.bpShowSearchClear(activity.pref))
 			}
-
+			
 			vg(llListList, column.type == ColumnType.LIST_LIST)
 			vg(cbResolve, column.type == ColumnType.SEARCH)
 			
@@ -773,7 +771,7 @@ class ColumnViewHolder(
 	@SuppressLint("StaticFieldLeak")
 	private fun loadBackgroundImage(iv : ImageView, url : String?) {
 		try {
-			if(url == null || url.isEmpty() || Pref.bpDontShowColumnBackgroundImage(activity.pref) ) {
+			if(url == null || url.isEmpty() || Pref.bpDontShowColumnBackgroundImage(activity.pref)) {
 				// 指定がないなら閉じる
 				closeBitmaps()
 				return
@@ -994,7 +992,7 @@ class ColumnViewHolder(
 				if(column.isSearchColumn) {
 					etSearch.hideKeyboard()
 					etSearch.setText(column.search_query)
-					cbResolve.isCheckedEx = column.search_resolve
+					cbResolve.isCheckedNoAnime = column.search_resolve
 				}
 				refreshLayout.isRefreshing = false
 				column.startLoading()
@@ -1426,12 +1424,12 @@ class ColumnViewHolder(
 		try {
 			listView.stopScroll()
 		} catch(ex : Throwable) {
-			log.e(ex,"stopScroll failed.")
+			log.e(ex, "stopScroll failed.")
 		}
 		try {
 			listLayoutManager.scrollToPositionWithOffset(0, 0)
 		} catch(ex : Throwable) {
-			log.e(ex,"scrollToPositionWithOffset failed.")
+			log.e(ex, "scrollToPositionWithOffset failed.")
 		}
 	}
 	
@@ -1561,28 +1559,27 @@ class ColumnViewHolder(
 		)
 	}
 	
-
-	private fun inflate(activity : ActMain,parent:ViewGroup) = with(activity.UI {}) {
+	private fun inflate(activity : ActMain, parent : ViewGroup) = with(activity.UI {}) {
 		val b = Benchmark(log, "Item-Inflate", 40L)
-		var label: TextView? = null
+		var label : TextView? = null
 		val rv = verticalLayout {
 			// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
 			val lp = parent.generateLayoutParamsEx()
-			if( lp != null){
+			if(lp != null) {
 				lp.width = matchParent
 				lp.height = matchParent
-				if( lp is ViewGroup.MarginLayoutParams){
+				if(lp is ViewGroup.MarginLayoutParams) {
 					lp.marginStart = dip(8)
 					lp.marginEnd = dip(8)
 					lp.topMargin = dip(2f)
 					lp.bottomMargin = dip(1f)
 				}
-				layoutParams =lp
+				layoutParams = lp
 			}
 			
 			llColumnHeader = verticalLayout {
 				lparams(matchParent, wrapContent)
-				background = ContextCompat.getDrawable(context,R.drawable.bg_column_header)
+				background = ContextCompat.getDrawable(context, R.drawable.bg_column_header)
 				startPadding = dip(12)
 				endPadding = dip(12)
 				topPadding = dip(3)
@@ -1592,38 +1589,38 @@ class ColumnViewHolder(
 					lparams(matchParent, wrapContent)
 					gravity = Gravity.BOTTOM
 					
-					tvColumnContext = textView{
+					tvColumnContext = textView {
 						gravity = Gravity.END
 						startPadding = dip(4)
 						endPadding = dip(4)
-						textColor= getAttributeColor(context,R.attr.colorColumnHeaderAcct)
+						textColor = getAttributeColor(context, R.attr.colorColumnHeaderAcct)
 						textSize = 12f
 						
-					}.lparams(0, wrapContent){
+					}.lparams(0, wrapContent) {
 						weight = 1f
 					}
 					
-					tvColumnStatus= textView{
+					tvColumnStatus = textView {
 						gravity = Gravity.END
-						textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
+						textColor = getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
 						textSize = 12f
 						
-					}.lparams(wrapContent, wrapContent){
+					}.lparams(wrapContent, wrapContent) {
 						marginStart = dip(12)
 					}
 					
-					tvColumnIndex = textView{
+					tvColumnIndex = textView {
 						gravity = Gravity.END
-						textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
+						textColor = getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
 						textSize = 12f
 						
-					}.lparams(wrapContent, wrapContent){
+					}.lparams(wrapContent, wrapContent) {
 						marginStart = dip(4)
 					}
 				}
 				
 				linearLayout {
-					lparams(matchParent, wrapContent){
+					lparams(matchParent, wrapContent) {
 						topMargin = dip(0)
 						
 					}
@@ -1639,14 +1636,15 @@ class ColumnViewHolder(
 						endMargin = dip(4)
 					}
 					
-					tvColumnName = textView{
+					tvColumnName = textView {
 					
 					}.lparams(dip(0), wrapContent) {
-						weight =1f
+						weight = 1f
 					}
 					
 					btnColumnSetting = imageButton {
-						background = ContextCompat.getDrawable(context,R.drawable.btn_bg_transparent)
+						background =
+							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 						contentDescription = context.getString(R.string.setting)
 						setImageResource(R.drawable.ic_tune)
 						padding = dip(8)
@@ -1657,7 +1655,8 @@ class ColumnViewHolder(
 					}
 					
 					btnColumnReload = imageButton {
-						background = ContextCompat.getDrawable(context,R.drawable.btn_bg_transparent)
+						background =
+							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 						contentDescription = context.getString(R.string.reload)
 						setImageResource(R.drawable.ic_refresh)
 						padding = dip(8)
@@ -1670,7 +1669,8 @@ class ColumnViewHolder(
 					}
 					
 					btnColumnClose = imageButton {
-						background = ContextCompat.getDrawable(context,R.drawable.btn_bg_transparent)
+						background =
+							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 						contentDescription = context.getString(R.string.close_column)
 						setImageResource(R.drawable.ic_close)
 						padding = dip(8)
@@ -1684,7 +1684,7 @@ class ColumnViewHolder(
 				}
 			} // end of column header
 			
-			llColumnSetting = maxHeightScrollView{
+			llColumnSetting = maxHeightScrollView {
 				lparams(matchParent, wrapContent)
 				isScrollbarFadingEnabled = false
 				maxHeight = dip(240)
@@ -1692,276 +1692,293 @@ class ColumnViewHolder(
 				llColumnSettingInside = verticalLayout {
 					lparams(matchParent, wrapContent)
 					
-					backgroundColor = getAttributeColor(context,R.attr.colorColumnSettingBackground)
+					backgroundColor =
+						getAttributeColor(context, R.attr.colorColumnSettingBackground)
 					startPadding = dip(12)
 					endPadding = dip(12)
 					topPadding = dip(3)
-					bottomPadding =dip(3)
+					bottomPadding = dip(3)
 					
 					llHashtagExtra = verticalLayout {
 						lparams(matchParent, wrapContent)
 						
-						label = textView{
-							textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
+						label = textView {
+							textColor =
+								getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
 							text = context.getString(R.string.hashtag_extra_any)
-						}.lparams(matchParent,wrapContent)
+						}.lparams(matchParent, wrapContent)
 						
-						etHashtagExtraAny = editText{
+						etHashtagExtraAny = editText {
 							id = View.generateViewId()
 							inputType = InputType.TYPE_CLASS_TEXT
 							maxLines = 1
 							setHorizontallyScrolling(true)
 							isHorizontalScrollBarEnabled = true
-						}.lparams(matchParent,wrapContent)
+						}.lparams(matchParent, wrapContent)
 						label?.labelFor = etHashtagExtraAny.id
 						
 						label = textView {
-							textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
+							textColor =
+								getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
 							text = context.getString(R.string.hashtag_extra_all)
-						}.lparams(matchParent,wrapContent)
+						}.lparams(matchParent, wrapContent)
 						
-						etHashtagExtraAll = editText{
+						etHashtagExtraAll = editText {
 							id = View.generateViewId()
 							inputType = InputType.TYPE_CLASS_TEXT
 							maxLines = 1
 							setHorizontallyScrolling(true)
 							isHorizontalScrollBarEnabled = true
-						}.lparams(matchParent,wrapContent)
+						}.lparams(matchParent, wrapContent)
 						label?.labelFor = etHashtagExtraAll.id
-
-						label = textView {
-							textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
-							text = context.getString(R.string.hashtag_extra_none)
-						}.lparams(matchParent,wrapContent)
 						
-						etHashtagExtraNone = editText{
+						label = textView {
+							textColor =
+								getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
+							text = context.getString(R.string.hashtag_extra_none)
+						}.lparams(matchParent, wrapContent)
+						
+						etHashtagExtraNone = editText {
 							id = View.generateViewId()
 							inputType = InputType.TYPE_CLASS_TEXT
 							maxLines = 1
 							setHorizontallyScrolling(true)
 							isHorizontalScrollBarEnabled = true
-						}.lparams(matchParent,wrapContent)
+						}.lparams(matchParent, wrapContent)
 						label?.labelFor = etHashtagExtraNone.id
 					} // end of hashtag extra
 					
-					
 					cbDontCloseColumn = checkBox {
 						text = context.getString(R.string.dont_close_column)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					cbWithAttachment = checkBox {
 						text = context.getString(R.string.with_attachment)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					
 					cbWithHighlight = checkBox {
 						text = context.getString(R.string.with_highlight)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					cbDontShowBoost = checkBox {
 						text = context.getString(R.string.dont_show_boost)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					
 					cbDontShowFavourite = checkBox {
 						text = context.getString(R.string.dont_show_favourite)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					
 					cbDontShowFollow = checkBox {
 						text = context.getString(R.string.dont_show_follow)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					cbDontShowReply = checkBox {
 						text = context.getString(R.string.dont_show_reply)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					cbDontShowReaction = checkBox {
 						text = context.getString(R.string.dont_show_reaction)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					cbDontShowVote = checkBox {
 						text = context.getString(R.string.dont_show_vote)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					cbDontShowNormalToot = checkBox {
 						text = context.getString(R.string.dont_show_normal_toot)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					
 					cbInstanceLocal = checkBox {
 						text = context.getString(R.string.instance_local)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					
 					cbDontStreaming = checkBox {
 						text = context.getString(R.string.dont_use_streaming_api)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					
 					cbDontAutoRefresh = checkBox {
 						text = context.getString(R.string.dont_refresh_on_activity_resume)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					cbHideMediaDefault = checkBox {
 						text = context.getString(R.string.hide_media_default)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					cbSystemNotificationNotRelated = checkBox {
 						text = context.getString(R.string.system_notification_not_related)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					cbEnableSpeech = checkBox {
 						text = context.getString(R.string.enable_speech)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					
 					cbOldApi = checkBox {
 						text = context.getString(R.string.use_old_api)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
 					llRegexFilter = linearLayout {
-						lparams(matchParent,wrapContent)
+						lparams(matchParent, wrapContent)
 						
-						label = textView{
-							textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
+						label = textView {
+							textColor =
+								getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
 							text = context.getString(R.string.regex_filter)
-						}.lparams(wrapContent,wrapContent)
+						}.lparams(wrapContent, wrapContent)
 						
-						tvRegexFilterError = textView{
-							textColor= getAttributeColor(context,R.attr.colorRegexFilterError)
-						}.lparams(0,wrapContent){
-							weight=1f
+						tvRegexFilterError = textView {
+							textColor = getAttributeColor(context, R.attr.colorRegexFilterError)
+						}.lparams(0, wrapContent) {
+							weight = 1f
 							startMargin = dip(4)
 						}
 						
-						
 					}
-					etRegexFilter = editText{
+					etRegexFilter = editText {
 						id = View.generateViewId()
 						inputType = InputType.TYPE_CLASS_TEXT
 						maxLines = 1
 						setHorizontallyScrolling(true)
 						isHorizontalScrollBarEnabled = true
 						
-						
-					}.lparams(matchParent,wrapContent)
-					label?.labelFor =etRegexFilter.id
+					}.lparams(matchParent, wrapContent)
+					label?.labelFor = etRegexFilter.id
 					
-					btnDeleteNotification = button{
+					btnDeleteNotification = button {
 						isAllCaps = false
 						text = context.getString(R.string.notification_delete)
 						
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 					
-					btnColor = button{
+					btnColor = button {
 						isAllCaps = false
 						text = context.getString(R.string.color_and_background)
-					}.lparams(matchParent,wrapContent)
+					}.lparams(matchParent, wrapContent)
 				}
 				
 			} // end of column setting scroll view
 			
 			llSearch = verticalLayout {
-				lparams(matchParent,wrapContent)
-				backgroundColor = getAttributeColor(context,R.attr.colorSearchFormBackground)
-				startPadding=dip(12)
-				endPadding=dip(12)
-				topPadding=dip(3)
-				bottomPadding=dip(3)
+				lparams(matchParent, wrapContent)
+				backgroundColor = getAttributeColor(context, R.attr.colorSearchFormBackground)
+				startPadding = dip(12)
+				endPadding = dip(12)
+				topPadding = dip(3)
+				bottomPadding = dip(3)
 				
 				linearLayout {
-					lparams(matchParent,wrapContent)
-					isBaselineAligned=false
+					lparams(matchParent, wrapContent)
+					isBaselineAligned = false
 					gravity = Gravity.CENTER
 					
-					etSearch = editText{
+					etSearch = editText {
 						id = View.generateViewId()
 						imeOptions = EditorInfo.IME_ACTION_SEARCH
 						inputType = InputType.TYPE_CLASS_TEXT
 						maxLines = 1
 						
-					}.lparams(0, wrapContent){
-						weight=1f
+					}.lparams(0, wrapContent) {
+						weight = 1f
 					}
 					
-					btnSearchClear = imageButton{
+					btnSearchClear = imageButton {
 						backgroundResource = R.drawable.btn_bg_transparent
 						contentDescription = context.getString(R.string.clear)
 						imageResource = R.drawable.ic_close
-						imageTintList = ColorStateList.valueOf(getAttributeColor(context,R.attr.colorVectorDrawable))
-					}.lparams(dip(40),dip(40)){
+						imageTintList = ColorStateList.valueOf(
+							getAttributeColor(
+								context,
+								R.attr.colorVectorDrawable
+							)
+						)
+					}.lparams(dip(40), dip(40)) {
 						startMargin = dip(4)
 					}
 					
-					btnSearch = imageButton{
+					btnSearch = imageButton {
 						backgroundResource = R.drawable.btn_bg_transparent
 						contentDescription = context.getString(R.string.search)
 						imageResource = R.drawable.ic_search
-						imageTintList = ColorStateList.valueOf(getAttributeColor(context,R.attr.colorVectorDrawable))
-					}.lparams(dip(40),dip(40)){
+						imageTintList = ColorStateList.valueOf(
+							getAttributeColor(
+								context,
+								R.attr.colorVectorDrawable
+							)
+						)
+					}.lparams(dip(40), dip(40)) {
 						startMargin = dip(4)
 					}
 				}
 				
 				cbResolve = checkBox {
 					text = context.getString(R.string.resolve_non_local_account)
-				}.lparams(wrapContent,wrapContent) // チェックボックスの余白はタッチ判定外
+				}.lparams(wrapContent, wrapContent) // チェックボックスの余白はタッチ判定外
 				
 			} // end of search bar
 			
 			llListList = linearLayout {
-				lparams(matchParent,wrapContent)
+				lparams(matchParent, wrapContent)
 				
-				startPadding=dip(12)
-				endPadding=dip(12)
-				topPadding=dip(3)
-				bottomPadding=dip(3)
+				startPadding = dip(12)
+				endPadding = dip(12)
+				topPadding = dip(3)
+				bottomPadding = dip(3)
 				
-				backgroundColor = getAttributeColor(context,R.attr.colorSearchFormBackground)
+				backgroundColor = getAttributeColor(context, R.attr.colorSearchFormBackground)
 				isBaselineAligned = false
 				gravity = Gravity.CENTER
 				
 				
-				etListName = editText{
+				etListName = editText {
 					hint = context.getString(R.string.list_create_hint)
 					imeOptions = EditorInfo.IME_ACTION_SEND
 					inputType = InputType.TYPE_CLASS_TEXT
-				}.lparams(0,wrapContent){
-					weight= 1f
+				}.lparams(0, wrapContent) {
+					weight = 1f
 				}
 				
 				btnListAdd = imageButton {
 					backgroundResource = R.drawable.btn_bg_transparent
 					contentDescription = context.getString(R.string.add)
 					imageResource = R.drawable.ic_add
-					imageTintList = ColorStateList.valueOf(getAttributeColor(context,R.attr.colorVectorDrawable))
-				}.lparams(dip(40),dip(40)){
+					imageTintList = ColorStateList.valueOf(
+						getAttributeColor(
+							context,
+							R.attr.colorVectorDrawable
+						)
+					)
+				}.lparams(dip(40), dip(40)) {
 					startMargin = dip(4)
 				}
 			} // end of list list header
 			
 			svQuickFilter = horizontalScrollView {
-				lparams(matchParent,wrapContent)
+				lparams(matchParent, wrapContent)
 				isFillViewport = true
 				linearLayout {
-					lparams(matchParent,dip(40))
+					lparams(matchParent, dip(40))
 					
-					btnQuickFilterAll = button{
+					btnQuickFilterAll = button {
 						backgroundResource = R.drawable.btn_bg_transparent
 						minWidthCompat = dip(40)
 						startPadding = dip(4)
@@ -1969,80 +1986,80 @@ class ColumnViewHolder(
 						isAllCaps = false
 						stateListAnimator = null
 						text = context.getString(R.string.all)
-					}.lparams(wrapContent,matchParent){
+					}.lparams(wrapContent, matchParent) {
 						margin = 0
 					}
 					
-					btnQuickFilterMention = imageButton{
+					btnQuickFilterMention = imageButton {
 						backgroundResource = R.drawable.btn_bg_transparent
 						contentDescription = context.getString(R.string.mention2)
-					}.lparams(dip(40),matchParent){
+					}.lparams(dip(40), matchParent) {
 						margin = 0
 					}
 					
-					btnQuickFilterFavourite = imageButton{
+					btnQuickFilterFavourite = imageButton {
 						backgroundResource = R.drawable.btn_bg_transparent
 						contentDescription = context.getString(R.string.favourite)
-					}.lparams(dip(40),matchParent){
+					}.lparams(dip(40), matchParent) {
 						margin = 0
 					}
 					
-					btnQuickFilterBoost = imageButton{
+					btnQuickFilterBoost = imageButton {
 						backgroundResource = R.drawable.btn_bg_transparent
 						contentDescription = context.getString(R.string.boost)
-					}.lparams(dip(40),matchParent){
+					}.lparams(dip(40), matchParent) {
 						margin = 0
 					}
 					
-					btnQuickFilterFollow = imageButton{
+					btnQuickFilterFollow = imageButton {
 						backgroundResource = R.drawable.btn_bg_transparent
 						contentDescription = context.getString(R.string.follow)
-					}.lparams(dip(40),matchParent){
+					}.lparams(dip(40), matchParent) {
 						margin = 0
 					}
 					
-					btnQuickFilterReaction = imageButton{
+					btnQuickFilterReaction = imageButton {
 						backgroundResource = R.drawable.btn_bg_transparent
 						contentDescription = context.getString(R.string.reaction)
-					}.lparams(dip(40),matchParent){
+					}.lparams(dip(40), matchParent) {
 						margin = 0
 					}
 					
 					
-					btnQuickFilterVote = imageButton{
+					btnQuickFilterVote = imageButton {
 						backgroundResource = R.drawable.btn_bg_transparent
 						contentDescription = context.getString(R.string.vote_polls)
-					}.lparams(dip(40),matchParent){
+					}.lparams(dip(40), matchParent) {
 						margin = 0
 					}
 				}
 			} // end of notification quick filter bar
 			
-			flColumnBackground = frameLayout{
+			flColumnBackground = frameLayout {
 				
-				ivColumnBackgroundImage = imageView{
+				ivColumnBackgroundImage = imageView {
 					
 					importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
 					scaleType = ImageView.ScaleType.CENTER_CROP
 					visibility = View.GONE
 					
-				}.lparams(matchParent,matchParent)
+				}.lparams(matchParent, matchParent)
 				
-				tvLoading = textView{
+				tvLoading = textView {
 					gravity = Gravity.CENTER
-				}.lparams(matchParent,matchParent)
+				}.lparams(matchParent, matchParent)
 				
-				refreshLayout = swipyRefreshLayout{
-					lparams(matchParent,matchParent)
+				refreshLayout = swipyRefreshLayout {
+					lparams(matchParent, matchParent)
 					
 					direction = SwipyRefreshLayoutDirection.BOTH
 					
 					// スタイルで指定しないとAndroid 6 で落ちる…
-					listView = recyclerView{
+					listView = recyclerView {
 						listLayoutManager = LinearLayoutManager(activity)
 						layoutManager = listLayoutManager
 						
-					}.lparams(matchParent,matchParent){
+					}.lparams(matchParent, matchParent) {
 					
 					}
 				}
@@ -2052,34 +2069,34 @@ class ColumnViewHolder(
 					foregroundGravity = Gravity.BOTTOM
 					backgroundResource = R.drawable.bg_refresh_error
 					
-					startPadding=dip(6)
-					endPadding=dip(6)
-					topPadding=dip(3)
-					bottomPadding=dip(3)
+					startPadding = dip(6)
+					endPadding = dip(6)
+					topPadding = dip(3)
+					bottomPadding = dip(3)
 					
-					ivRefreshError = imageView{
+					ivRefreshError = imageView {
 						
 						importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
 						scaleType = ImageView.ScaleType.FIT_CENTER
 						imageResource = R.drawable.ic_error
 						imageTintList = ColorStateList.valueOf(Color.RED)
 						
-					}.lparams(dip(24),dip(24)){
+					}.lparams(dip(24), dip(24)) {
 						gravity = Gravity.START or Gravity.CENTER_VERTICAL
 						startMargin = dip(4)
 					}
 					
-					tvRefreshError = textView{
+					tvRefreshError = textView {
 						textColor = Color.WHITE
 						
-					}.lparams(matchParent, wrapContent){
+					}.lparams(matchParent, wrapContent) {
 						gravity = Gravity.TOP or Gravity.START
-						startMargin =dip(32)
+						startMargin = dip(32)
 					}
-				}.lparams(matchParent, wrapContent){
+				}.lparams(matchParent, wrapContent) {
 					margin = dip(6)
 				}
-			}.lparams(matchParent,0){
+			}.lparams(matchParent, 0) {
 				weight = 1f
 			}
 		}

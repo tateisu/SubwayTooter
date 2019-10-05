@@ -1170,7 +1170,7 @@ class PollingWorker private constructor(contextArg : Context) {
 						if(array != null) {
 							try {
 								for(i in array.length() - 1 downTo 0) {
-									update_sub( array.optJSONObject(i) ?: continue)
+									update_sub(array.optJSONObject(i) ?: continue)
 								}
 							} catch(ex : JSONException) {
 								log.trace(ex)

@@ -3,12 +3,10 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
+import android.graphics.Typeface
 import android.graphics.drawable.PictureDrawable
 import android.util.SparseArray
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.*
 import android.widget.*
 import androidx.viewpager.widget.ViewPager
 import com.astuetz.PagerSlidingTabStrip
@@ -256,14 +254,19 @@ class EmojiPicker(
 						FrameLayout.LayoutParams.MATCH_PARENT,
 						FrameLayout.LayoutParams.WRAP_CONTENT
 					)
+					padding = (resources.displayMetrics.density * 2f + 0.5f).toInt()
+					gravity = Gravity.START or Gravity.CENTER_VERTICAL
+
+					setTypeface(typeface, Typeface.BOLD)
+
+					textColor =
+						getAttributeColor(this@EmojiPicker.activity, R.attr.colorContentText)
+					textSize = 16f // SP単位
+
 					text = when(val name = it.key) {
 						"" -> this@EmojiPicker.activity.getString(R.string.custom_emoji)
 						else -> name
 					}
-					textColor =
-						getAttributeColor(this@EmojiPicker.activity, R.attr.colorContentText)
-					textSize = 16f // SP単位
-					padding = (resources.displayMetrics.density * 2f + 0.5f).toInt()
 				}
 			))
 		}

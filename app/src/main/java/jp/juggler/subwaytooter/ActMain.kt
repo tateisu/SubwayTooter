@@ -490,10 +490,14 @@ class ActMain : AppCompatActivity()
 		get() = bStart
 	
 	override fun onStart() {
+		val tsTotal = SystemClock.elapsedRealtime()
 		super.onStart()
 		
 		bStart = true
 		log.d("onStart")
+		
+		var ts= SystemClock.elapsedRealtime()
+		var te:Long
 		
 		// カラーカスタマイズを読み直す
 		ListDivider.color = Pref.ipListDividerColor(pref)
@@ -507,6 +511,10 @@ class ActMain : AppCompatActivity()
 			?: getAttributeColor(this, R.attr.colorLink)
 		CustomShare.reloadCache(this, pref)
 		
+		te = SystemClock.elapsedRealtime()
+		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms : reload color")
+		ts = SystemClock.elapsedRealtime()
+
 		var tz = TimeZone.getDefault()
 		try {
 			val tz_id = Pref.spTimeZone(pref)
@@ -518,12 +526,20 @@ class ActMain : AppCompatActivity()
 		}
 		TootStatus.date_format.timeZone = tz
 		
+		te = SystemClock.elapsedRealtime()
+		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms : reload timezone")
+		ts = SystemClock.elapsedRealtime()
+
 		// バグいアカウントデータを消す
 		try {
 			SavedAccount.sweepBuggieData()
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
+		
+		te = SystemClock.elapsedRealtime()
+		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms : sweepBuggieData")
+		ts = SystemClock.elapsedRealtime()
 		
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
 		val new_order = ArrayList<Int>()
@@ -543,32 +559,66 @@ class ActMain : AppCompatActivity()
 			setOrder(new_order)
 		}
 		
+		te = SystemClock.elapsedRealtime()
+		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms : column order")
+		ts = SystemClock.elapsedRealtime()
+		
 		// 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
 		for(column in app_state.column_list) {
 			column.fireColumnColor()
 		}
 		
+		te = SystemClock.elapsedRealtime()
+		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :fireColumnColor")
+		ts = SystemClock.elapsedRealtime()
+		
 		// 各カラムのアカウント設定を読み直す
 		reloadAccountSetting()
 		
+		te = SystemClock.elapsedRealtime()
+		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :reloadAccountSetting")
+		ts = SystemClock.elapsedRealtime()
+		
+		
 		// 投稿直後ならカラムの再取得を行う
 		refreshAfterPost()
+		
+		te = SystemClock.elapsedRealtime()
+		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :refreshAfterPost")
+		ts = SystemClock.elapsedRealtime()
 		
 		// 画面復帰時に再取得やストリーミング開始を行う
 		for(column in app_state.column_list) {
 			column.onStart(this)
 		}
 		
+		te = SystemClock.elapsedRealtime()
+		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :column.onStart")
+		ts = SystemClock.elapsedRealtime()
+		
 		// カラムの表示範囲インジケータを更新
 		updateColumnStripSelection(- 1, - 1f)
+		
+		te = SystemClock.elapsedRealtime()
+		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :updateColumnStripSelection")
+		ts = SystemClock.elapsedRealtime()
+		
 		
 		for(c in app_state.column_list) {
 			c.fireShowContent(reason = "ActMain onStart", reset = true)
 		}
 		
+		te = SystemClock.elapsedRealtime()
+		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :fireShowContent")
+		ts = SystemClock.elapsedRealtime()
+		
+		
 		// 相対時刻表示
 		proc_updateRelativeTime.run()
 		
+		
+		te = SystemClock.elapsedRealtime()
+		if( te-tsTotal >= 100L) log.w("onStart: ${te-tsTotal}ms : total")
 	}
 	
 	override fun onStop() {

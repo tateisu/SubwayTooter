@@ -229,4 +229,14 @@
         <item name="android:imeOptions">actionDone</item>
     </style>
 
+    <style name="recycler_view_with_scroll_bar" >
+        <item name="android:clipToPadding">false</item>
+        <item name="android:fadeScrollbars">false</item>
+        <item name="android:padding">0dp</item>
+        <item name="android:scrollbarStyle">outsideOverlay</item>
+        <item name="android:scrollbars">vertical</item>
+
+    </style>
+
+
 </resources>

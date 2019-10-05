@@ -10,7 +10,7 @@ import jp.juggler.subwaytooter.R
 
 class MaxHeightScrollView : ScrollView {
 	
-	private var maxHeight : Int = 0
+	var maxHeight : Int = 0
 	
 	constructor(context : Context) : super(context)
 	constructor(context : Context, attrs : AttributeSet) : super(context, attrs) {

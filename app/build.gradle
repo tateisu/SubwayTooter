@@ -110,6 +110,9 @@ dependencies {
     // CustomTabs
     implementation "androidx.browser:browser:1.0.0"
 
+    // Recyclerview
+    implementation "androidx.recyclerview:recyclerview:1.1.0-beta04"
+
     kapt 'androidx.annotation:annotation:1.1.0'
 
     // https://firebase.google.com/support/release-notes/android

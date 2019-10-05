@@ -6,6 +6,11 @@ import android.content.ContextWrapper
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.CheckBox
+import android.widget.CompoundButton
+import jp.juggler.subwaytooter.ColumnViewHolder
+import jp.juggler.subwaytooter.R
+import org.xmlpull.v1.XmlPullParser
 
 private val log = LogCategory("ViewUtils")
 
@@ -61,3 +66,27 @@ fun vg(v : View, visible : Boolean) : Boolean {
 	v.visibility = if(visible) View.VISIBLE else View.GONE
 	return visible
 }
+
+
+fun ViewGroup.generateLayoutParamsEx():ViewGroup.LayoutParams?=
+	try {
+		val parser = resources.getLayout(R.layout.generate_params)
+		// Skip everything until the view tag.
+		while(true){
+			val token = parser.nextToken()
+			if(token == XmlPullParser.START_TAG) break
+		}
+		generateLayoutParams(parser)
+	} catch (ex:Throwable) {
+		log.e(ex,"generateLayoutParamsEx failed")
+		null
+	}
+
+
+// isChecked with skipping animation
+var CompoundButton.isCheckedEx :Boolean
+	get() = isChecked
+	set(value){
+		isChecked = value
+		jumpDrawablesToCurrentState()
+	}

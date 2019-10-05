@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter
 
-import androidx.viewpager.widget.PagerAdapter
 import android.util.SparseArray
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import jp.juggler.subwaytooter.util.Benchmark
@@ -15,14 +13,8 @@ internal class ColumnPagerAdapter(private val activity : ActMain) : androidx.vie
 		val log = LogCategory("ColumnPagerAdapter")
 	}
 	
-	private val inflater : LayoutInflater
-	private val column_list : ArrayList<Column>
+	private val column_list : ArrayList<Column> = activity.app_state.column_list
 	private val holder_list = SparseArray<ColumnViewHolder>()
-	
-	init {
-		this.inflater = activity.layoutInflater
-		this.column_list = activity.app_state.column_list
-	}
 	
 	override fun getCount() : Int {
 		return column_list.size
@@ -47,23 +39,20 @@ internal class ColumnPagerAdapter(private val activity : ActMain) : androidx.vie
 	private val viewCache = LinkedList<ColumnViewHolder>()
 	
 	override fun instantiateItem(container : ViewGroup, page_idx : Int) : Any {
-		val viewRoot : View
 		val holder : ColumnViewHolder
 		if(viewCache.isNotEmpty()) {
 			val b = Benchmark(log, "instantiateItem: cached")
 			holder = viewCache.removeFirst()
-			viewRoot = holder.viewRoot
 			b.report()
 		} else {
 			val b = Benchmark(log, "instantiateItem: new")
-			viewRoot = inflater.inflate(R.layout.page_column, container, false)
-			holder = ColumnViewHolder(activity, viewRoot)
+			holder = ColumnViewHolder(activity,container)
 			b.report()
 		}
-		container.addView(viewRoot, 0)
+		container.addView(holder.viewRoot, 0)
 		holder_list.put(page_idx, holder)
 		holder.onPageCreate(column_list[page_idx], page_idx, column_list.size)
-		return viewRoot
+		return holder.viewRoot
 	}
 	
 	override fun destroyItem(container : ViewGroup, page_idx : Int, obj : Any) {

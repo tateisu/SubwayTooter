@@ -6,12 +6,10 @@ import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.AsyncTask
+import android.text.InputType
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
-import android.view.GestureDetector
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.inputmethod.EditorInfo
@@ -24,11 +22,10 @@ import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirec
 import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_Notification
 import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.util.ScrollPosition
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.ListDivider
 import jp.juggler.util.*
-import org.jetbrains.anko.backgroundDrawable
-import org.jetbrains.anko.textColor
+import org.jetbrains.anko.*
 import java.io.Closeable
 import java.lang.reflect.Field
 import java.util.regex.Pattern
@@ -36,7 +33,7 @@ import java.util.regex.Pattern
 @SuppressLint("ClickableViewAccessibility")
 class ColumnViewHolder(
 	val activity : ActMain,
-	val viewRoot : View
+	parent:ViewGroup
 ) : View.OnClickListener,
 	SwipyRefreshLayout.OnRefreshListener,
 	CompoundButton.OnCheckedChangeListener, View.OnLongClickListener {
@@ -66,75 +63,79 @@ class ColumnViewHolder(
 	private var status_adapter : ItemListAdapter? = null
 	private var page_idx : Int = 0
 	
-	private val tvLoading : TextView
-	val listView : RecyclerView
-	val refreshLayout : SwipyRefreshLayout
+	private lateinit var tvLoading : TextView
+	lateinit var listView : RecyclerView
+	lateinit var refreshLayout : SwipyRefreshLayout
+	
 	lateinit var listLayoutManager : LinearLayoutManager
 	
-	private val llColumnHeader : View
-	private val tvColumnIndex : TextView
-	private val tvColumnStatus : TextView
-	private val tvColumnContext : TextView
-	private val ivColumnIcon : ImageView
-	private val tvColumnName : TextView
 	
-	private val llColumnSetting : View
+	private lateinit var llColumnHeader : View
+	private lateinit var tvColumnIndex : TextView
+	private lateinit var tvColumnStatus : TextView
+	private lateinit var tvColumnContext : TextView
+	private lateinit var ivColumnIcon : ImageView
+	private lateinit var tvColumnName : TextView
 	
-	private val btnSearch : ImageButton
-	private val btnSearchClear : ImageButton
-	private val etSearch : EditText
-	private val cbResolve : CheckBox
-	private val etRegexFilter : EditText
-	private val tvRegexFilterError : TextView
+	private lateinit var llColumnSetting : View
+	private lateinit var llColumnSettingInside : LinearLayout
 	
-	private val btnColumnSetting : ImageButton
-	private val btnColumnReload : ImageButton
-	private val btnColumnClose : ImageButton
+	private lateinit var btnSearch : ImageButton
+	private lateinit var btnSearchClear : ImageButton
+	private lateinit var etSearch : EditText
+	private lateinit var cbResolve : CheckBox
+	private lateinit var etRegexFilter : EditText
+	private lateinit var tvRegexFilterError : TextView
 	
-	private val flColumnBackground : View
-	private val ivColumnBackgroundImage : ImageView
-	private val llSearch : View
-	private val cbDontCloseColumn : CheckBox
-	private val cbWithAttachment : CheckBox
-	private val cbWithHighlight : CheckBox
-	private val cbDontShowBoost : CheckBox
-	private val cbDontShowFollow : CheckBox
-	private val cbDontShowFavourite : CheckBox
-	private val cbDontShowReply : CheckBox
-	private val cbDontShowReaction : CheckBox
-	private val cbDontShowVote : CheckBox
-	private val cbDontShowNormalToot : CheckBox
-	private val cbInstanceLocal : CheckBox
-	private val cbDontStreaming : CheckBox
-	private val cbDontAutoRefresh : CheckBox
-	private val cbHideMediaDefault : CheckBox
-	private val cbSystemNotificationNotRelated : CheckBox
-	private val cbEnableSpeech : CheckBox
-	private val cbOldApi : CheckBox
-	private val llRegexFilter : View
-	private val btnDeleteNotification : Button
+	private lateinit var btnColumnSetting : ImageButton
+	private lateinit var btnColumnReload : ImageButton
+	private lateinit var btnColumnClose : ImageButton
 	
-	private val svQuickFilter : HorizontalScrollView
-	private val btnQuickFilterAll : Button
-	private val btnQuickFilterMention : ImageButton
-	private val btnQuickFilterFavourite : ImageButton
-	private val btnQuickFilterBoost : ImageButton
-	private val btnQuickFilterFollow : ImageButton
-	private val btnQuickFilterReaction : ImageButton
-	private val btnQuickFilterVote : ImageButton
+	private lateinit var flColumnBackground : View
+	private lateinit var ivColumnBackgroundImage : ImageView
+	private lateinit var llSearch : View
+	private lateinit var cbDontCloseColumn : CheckBox
+	private lateinit var cbWithAttachment : CheckBox
+	private lateinit var cbWithHighlight : CheckBox
+	private lateinit var cbDontShowBoost : CheckBox
+	private lateinit var cbDontShowFollow : CheckBox
+	private lateinit var cbDontShowFavourite : CheckBox
+	private lateinit var cbDontShowReply : CheckBox
+	private lateinit var cbDontShowReaction : CheckBox
+	private lateinit var cbDontShowVote : CheckBox
+	private lateinit var cbDontShowNormalToot : CheckBox
+	private lateinit var cbInstanceLocal : CheckBox
+	private lateinit var cbDontStreaming : CheckBox
+	private lateinit var cbDontAutoRefresh : CheckBox
+	private lateinit var cbHideMediaDefault : CheckBox
+	private lateinit var cbSystemNotificationNotRelated : CheckBox
+	private lateinit var cbEnableSpeech : CheckBox
+	private lateinit var cbOldApi : CheckBox
+	private lateinit var llRegexFilter : View
+	private lateinit var btnDeleteNotification : Button
+	private lateinit var btnColor : Button
 	
-	private val llRefreshError : FrameLayout
-	private val ivRefreshError : ImageView
-	private val tvRefreshError : TextView
+	private lateinit var svQuickFilter : HorizontalScrollView
+	private lateinit var btnQuickFilterAll : Button
+	private lateinit var btnQuickFilterMention : ImageButton
+	private lateinit var btnQuickFilterFavourite : ImageButton
+	private lateinit var btnQuickFilterBoost : ImageButton
+	private lateinit var btnQuickFilterFollow : ImageButton
+	private lateinit var btnQuickFilterReaction : ImageButton
+	private lateinit var btnQuickFilterVote : ImageButton
 	
-	private val llListList : View
-	private val etListName : EditText
-	private val btnListAdd : View
+	private lateinit var llRefreshError : FrameLayout
+	private lateinit var ivRefreshError : ImageView
+	private lateinit var tvRefreshError : TextView
 	
-	private val llHashtagExtra : LinearLayout
-	private val etHashtagExtraAny : EditText
-	private val etHashtagExtraAll : EditText
-	private val etHashtagExtraNone : EditText
+	private lateinit var llListList : View
+	private lateinit var etListName : EditText
+	private lateinit var btnListAdd : View
+	
+	private lateinit var llHashtagExtra : LinearLayout
+	private lateinit var etHashtagExtraAny : EditText
+	private lateinit var etHashtagExtraAll : EditText
+	private lateinit var etHashtagExtraNone : EditText
 	
 	private val isPageDestroyed : Boolean
 		get() = column == null || activity.isFinishing
@@ -252,37 +253,21 @@ class ColumnViewHolder(
 		tvLoading.setOnTouchListener(ErrorFlickListener(activity))
 	}
 	
+	val viewRoot : View = inflate(activity,parent)
 	init {
 		
 		viewRoot.scan { v ->
 			try {
-				if(v is Button) {
-					// ボタンは触らない
-				} else if(v is TextView) {
+				// ボタンではないTextViewのフォントを変更する
+				if(v is TextView && v !is Button) {
 					v.typeface = ActMain.timeline_font
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
 		}
+	
 		
-		flColumnBackground = viewRoot.findViewById(R.id.flColumnBackground)
-		ivColumnBackgroundImage = viewRoot.findViewById(R.id.ivColumnBackgroundImage)
-		llColumnHeader = viewRoot.findViewById(R.id.llColumnHeader)
-		
-		tvColumnIndex = viewRoot.findViewById(R.id.tvColumnIndex)
-		tvColumnStatus = viewRoot.findViewById(R.id.tvColumnStatus)
-		
-		tvColumnName = viewRoot.findViewById(R.id.tvColumnName)
-		tvColumnContext = viewRoot.findViewById(R.id.tvColumnContext)
-		ivColumnIcon = viewRoot.findViewById(R.id.ivColumnIcon)
-		
-		btnColumnSetting = viewRoot.findViewById(R.id.btnColumnSetting)
-		btnColumnReload = viewRoot.findViewById(R.id.btnColumnReload)
-		btnColumnClose = viewRoot.findViewById(R.id.btnColumnClose)
-		
-		tvLoading = viewRoot.findViewById(R.id.tvLoading)
-		listView = viewRoot.findViewById(R.id.listView)
 		
 		if(Pref.bpShareViewPool(activity.pref)) {
 			listView.setRecycledViewPool(activity.viewPool)
@@ -294,16 +279,8 @@ class ColumnViewHolder(
 		//			animator.supportsChangeAnimations = false
 		//		}
 		
-		btnSearch = viewRoot.findViewById(R.id.btnSearch)
-		btnSearchClear = viewRoot.findViewById(R.id.btnSearchClear)
-		etSearch = viewRoot.findViewById(R.id.etSearch)
-		cbResolve = viewRoot.findViewById(R.id.cbResolve)
 		
-		llSearch = viewRoot.findViewById(R.id.llSearch)
-		llListList = viewRoot.findViewById(R.id.llListList)
 		
-		btnListAdd = viewRoot.findViewById(R.id.btnListAdd)
-		etListName = viewRoot.findViewById(R.id.etListName)
 		btnListAdd.setOnClickListener(this)
 		
 		etListName.setOnEditorActionListener { _, actionId, _ ->
@@ -314,46 +291,6 @@ class ColumnViewHolder(
 			}
 			handled
 		}
-		
-		llColumnSetting = viewRoot.findViewById(R.id.llColumnSetting)
-		
-		cbDontCloseColumn = viewRoot.findViewById(R.id.cbDontCloseColumn)
-		cbWithAttachment = viewRoot.findViewById(R.id.cbWithAttachment)
-		cbWithHighlight = viewRoot.findViewById(R.id.cbWithHighlight)
-		cbDontShowBoost = viewRoot.findViewById(R.id.cbDontShowBoost)
-		cbDontShowFollow = viewRoot.findViewById(R.id.cbDontShowFollow)
-		cbDontShowFavourite = viewRoot.findViewById(R.id.cbDontShowFavourite)
-		cbDontShowReply = viewRoot.findViewById(R.id.cbDontShowReply)
-		cbDontShowReaction = viewRoot.findViewById(R.id.cbDontShowReaction)
-		cbDontShowVote = viewRoot.findViewById(R.id.cbDontShowVote)
-		cbDontShowNormalToot = viewRoot.findViewById(R.id.cbDontShowNormalToot)
-		cbInstanceLocal = viewRoot.findViewById(R.id.cbInstanceLocal)
-		cbDontStreaming = viewRoot.findViewById(R.id.cbDontStreaming)
-		cbDontAutoRefresh = viewRoot.findViewById(R.id.cbDontAutoRefresh)
-		cbHideMediaDefault = viewRoot.findViewById(R.id.cbHideMediaDefault)
-		cbSystemNotificationNotRelated = viewRoot.findViewById(R.id.cbSystemNotificationNotRelated)
-		cbEnableSpeech = viewRoot.findViewById(R.id.cbEnableSpeech)
-		cbOldApi = viewRoot.findViewById(R.id.cbOldApi)
-		etRegexFilter = viewRoot.findViewById(R.id.etRegexFilter)
-		llRegexFilter = viewRoot.findViewById(R.id.llRegexFilter)
-		tvRegexFilterError = viewRoot.findViewById(R.id.tvRegexFilterError)
-		
-		btnDeleteNotification = viewRoot.findViewById(R.id.btnDeleteNotification)
-		
-		svQuickFilter = viewRoot.findViewById(R.id.svQuickFilter)
-		btnQuickFilterAll = viewRoot.findViewById(R.id.btnQuickFilterAll)
-		btnQuickFilterMention = viewRoot.findViewById(R.id.btnQuickFilterMention)
-		btnQuickFilterFavourite = viewRoot.findViewById(R.id.btnQuickFilterFavourite)
-		btnQuickFilterBoost = viewRoot.findViewById(R.id.btnQuickFilterBoost)
-		btnQuickFilterFollow = viewRoot.findViewById(R.id.btnQuickFilterFollow)
-		btnQuickFilterReaction = viewRoot.findViewById(R.id.btnQuickFilterReaction)
-		btnQuickFilterVote = viewRoot.findViewById(R.id.btnQuickFilterVote)
-		val llColumnSettingInside : LinearLayout = viewRoot.findViewById(R.id.llColumnSettingInside)
-		
-		llHashtagExtra = viewRoot.findViewById(R.id.llHashtagExtra)
-		etHashtagExtraAny = viewRoot.findViewById(R.id.etHashtagExtraAny)
-		etHashtagExtraAll = viewRoot.findViewById(R.id.etHashtagExtraAll)
-		etHashtagExtraNone = viewRoot.findViewById(R.id.etHashtagExtraNone)
 		
 		
 		
@@ -373,15 +310,11 @@ class ColumnViewHolder(
 		btnColumnClose.setOnLongClickListener(this)
 		btnDeleteNotification.setOnClickListener(this)
 		
-		viewRoot.findViewById<View>(R.id.btnColor).setOnClickListener(this)
+			btnColor.setOnClickListener(this)
 		
-		this.refreshLayout = viewRoot.findViewById(R.id.swipyRefreshLayout)
 		refreshLayout.setOnRefreshListener(this)
 		refreshLayout.setDistanceToTriggerSync((0.5f + 20f * activity.density).toInt())
 		
-		llRefreshError = viewRoot.findViewById(R.id.llRefreshError)
-		ivRefreshError = viewRoot.findViewById(R.id.ivRefreshError)
-		tvRefreshError = viewRoot.findViewById(R.id.tvRefreshError)
 		llRefreshError.setOnClickListener(this)
 		
 		
@@ -626,28 +559,30 @@ class ColumnViewHolder(
 			val bAllowFilter = column.canStatusFilter()
 			
 			llColumnSetting.visibility = View.GONE
+		
 			
-			cbDontCloseColumn.isChecked = column.dont_close
-			cbWithAttachment.isChecked = column.with_attachment
-			cbWithHighlight.isChecked = column.with_highlight
-			cbDontShowBoost.isChecked = column.dont_show_boost
-			cbDontShowFollow.isChecked = column.dont_show_follow
-			cbDontShowFavourite.isChecked = column.dont_show_favourite
-			cbDontShowReply.isChecked = column.dont_show_reply
-			cbDontShowReaction.isChecked = column.dont_show_reaction
-			cbDontShowVote.isChecked = column.dont_show_vote
-			cbDontShowNormalToot.isChecked = column.dont_show_normal_toot
-			cbInstanceLocal.isChecked = column.instance_local
-			cbDontStreaming.isChecked = column.dont_streaming
-			cbDontAutoRefresh.isChecked = column.dont_auto_refresh
-			cbHideMediaDefault.isChecked = column.hide_media_default
-			cbSystemNotificationNotRelated.isChecked = column.system_notification_not_related
-			cbEnableSpeech.isChecked = column.enable_speech
-			cbOldApi.isChecked = column.use_old_api
+			
+			cbDontCloseColumn.isCheckedEx = column.dont_close
+			cbWithAttachment.isCheckedEx = column.with_attachment
+			cbWithHighlight.isCheckedEx = column.with_highlight
+			cbDontShowBoost.isCheckedEx = column.dont_show_boost
+			cbDontShowFollow.isCheckedEx = column.dont_show_follow
+			cbDontShowFavourite.isCheckedEx = column.dont_show_favourite
+			cbDontShowReply.isCheckedEx = column.dont_show_reply
+			cbDontShowReaction.isCheckedEx = column.dont_show_reaction
+			cbDontShowVote.isCheckedEx = column.dont_show_vote
+			cbDontShowNormalToot.isCheckedEx = column.dont_show_normal_toot
+			cbInstanceLocal.isCheckedEx = column.instance_local
+			cbDontStreaming.isCheckedEx = column.dont_streaming
+			cbDontAutoRefresh.isCheckedEx = column.dont_auto_refresh
+			cbHideMediaDefault.isCheckedEx = column.hide_media_default
+			cbSystemNotificationNotRelated.isCheckedEx = column.system_notification_not_related
+			cbEnableSpeech.isCheckedEx = column.enable_speech
+			cbOldApi.isCheckedEx = column.use_old_api
 			
 			etRegexFilter.setText(column.regex_text)
 			etSearch.setText(column.search_query)
-			cbResolve.isChecked = column.search_resolve
+			cbResolve.isCheckedEx = column.search_resolve
 			
 			vg(cbWithAttachment, bAllowFilter)
 			vg(cbWithHighlight, bAllowFilter)
@@ -709,8 +644,6 @@ class ColumnViewHolder(
 			llRefreshError.visibility = View.GONE
 			
 			//
-			listLayoutManager = LinearLayoutManager(activity)
-			listView.layoutManager = listLayoutManager
 			listView.adapter = status_adapter
 			
 			//XXX FastScrollerのサポートを諦める。ライブラリはいくつかあるんだけど、設定でON/OFFできなかったり頭文字バブルを無効にできなかったり
@@ -936,75 +869,75 @@ class ColumnViewHolder(
 		// リロードやリフレッシュ操作で直るようにする
 		column.addColumnViewHolder(this)
 		
-		when(view.id) {
+		when(view) {
 			
-			R.id.cbDontCloseColumn -> {
+			cbDontCloseColumn -> {
 				column.dont_close = isChecked
 				showColumnCloseButton()
 				activity.app_state.saveColumnList()
 			}
 			
-			R.id.cbWithAttachment -> {
+			cbWithAttachment -> {
 				column.with_attachment = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
-			R.id.cbWithHighlight -> {
+			cbWithHighlight -> {
 				column.with_highlight = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
-			R.id.cbDontShowBoost -> {
+			cbDontShowBoost -> {
 				column.dont_show_boost = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
-			R.id.cbDontShowReply -> {
+			cbDontShowReply -> {
 				column.dont_show_reply = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
-			R.id.cbDontShowReaction -> {
+			cbDontShowReaction -> {
 				column.dont_show_reaction = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
-			R.id.cbDontShowVote -> {
+			cbDontShowVote -> {
 				column.dont_show_vote = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
-			R.id.cbDontShowNormalToot -> {
+			cbDontShowNormalToot -> {
 				column.dont_show_normal_toot = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
-			R.id.cbDontShowFavourite -> {
+			cbDontShowFavourite -> {
 				column.dont_show_favourite = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
-			R.id.cbDontShowFollow -> {
+			cbDontShowFollow -> {
 				column.dont_show_follow = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
-			R.id.cbInstanceLocal -> {
+			cbInstanceLocal -> {
 				column.instance_local = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
 			
-			R.id.cbDontStreaming -> {
+			cbDontStreaming -> {
 				column.dont_streaming = isChecked
 				activity.app_state.saveColumnList()
 				if(isChecked) {
@@ -1014,28 +947,28 @@ class ColumnViewHolder(
 				}
 			}
 			
-			R.id.cbDontAutoRefresh -> {
+			cbDontAutoRefresh -> {
 				column.dont_auto_refresh = isChecked
 				activity.app_state.saveColumnList()
 			}
 			
-			R.id.cbHideMediaDefault -> {
+			cbHideMediaDefault -> {
 				column.hide_media_default = isChecked
 				activity.app_state.saveColumnList()
 				column.fireShowContent(reason = "HideMediaDefault in ColumnSetting", reset = true)
 			}
 			
-			R.id.cbSystemNotificationNotRelated -> {
+			cbSystemNotificationNotRelated -> {
 				column.system_notification_not_related = isChecked
 				activity.app_state.saveColumnList()
 			}
 			
-			R.id.cbEnableSpeech -> {
+			cbEnableSpeech -> {
 				column.enable_speech = isChecked
 				activity.app_state.saveColumnList()
 			}
 			
-			R.id.cbOldApi -> {
+			cbOldApi -> {
 				column.use_old_api = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
@@ -1052,22 +985,22 @@ class ColumnViewHolder(
 		// リロードやリフレッシュ操作で直るようにする
 		column.addColumnViewHolder(this)
 		
-		when(v.id) {
-			R.id.btnColumnClose -> activity.closeColumn(column)
+		when(v) {
+			btnColumnClose -> activity.closeColumn(column)
 			
-			R.id.btnColumnReload -> {
+			btnColumnReload -> {
 				App1.custom_emoji_cache.clearErrorCache()
 				
 				if(column.isSearchColumn) {
 					etSearch.hideKeyboard()
 					etSearch.setText(column.search_query)
-					cbResolve.isChecked = column.search_resolve
+					cbResolve.isCheckedEx = column.search_resolve
 				}
 				refreshLayout.isRefreshing = false
 				column.startLoading()
 			}
 			
-			R.id.btnSearch -> {
+			btnSearch -> {
 				etSearch.hideKeyboard()
 				column.search_query = etSearch.text.toString().trim { it <= ' ' }
 				column.search_resolve = cbResolve.isChecked
@@ -1075,7 +1008,7 @@ class ColumnViewHolder(
 				column.startLoading()
 			}
 			
-			R.id.btnSearchClear -> {
+			btnSearchClear -> {
 				etSearch.setText("")
 				column.search_query = ""
 				column.search_resolve = cbResolve.isChecked
@@ -1083,23 +1016,23 @@ class ColumnViewHolder(
 				column.startLoading()
 			}
 			
-			R.id.llColumnHeader -> scrollToTop2()
+			llColumnHeader -> scrollToTop2()
 			
-			R.id.btnColumnSetting -> llColumnSetting.visibility =
+			btnColumnSetting -> llColumnSetting.visibility =
 				if(llColumnSetting.visibility == View.VISIBLE) View.GONE else View.VISIBLE
 			
-			R.id.btnDeleteNotification -> Action_Notification.deleteAll(
+			btnDeleteNotification -> Action_Notification.deleteAll(
 				activity,
 				column.access_info,
 				false
 			)
 			
-			R.id.btnColor -> {
+			btnColor -> {
 				val idx = activity.app_state.column_list.indexOf(column)
 				ActColumnCustomize.open(activity, idx, ActMain.REQUEST_CODE_COLUMN_COLOR)
 			}
 			
-			R.id.btnListAdd -> {
+			btnListAdd -> {
 				val tv = etListName.text.toString().trim { it <= ' ' }
 				if(tv.isEmpty()) {
 					showToast(activity, true, R.string.list_name_empty)
@@ -1108,26 +1041,26 @@ class ColumnViewHolder(
 				Action_List.create(activity, column.access_info, tv, null)
 			}
 			
-			R.id.llRefreshError -> {
+			llRefreshError -> {
 				column.mRefreshLoadingErrorPopupState = 1 - column.mRefreshLoadingErrorPopupState
 				showRefreshError()
 			}
 			
-			R.id.btnQuickFilterAll -> clickQuickFilter(Column.QUICK_FILTER_ALL)
-			R.id.btnQuickFilterMention -> clickQuickFilter(Column.QUICK_FILTER_MENTION)
-			R.id.btnQuickFilterFavourite -> clickQuickFilter(Column.QUICK_FILTER_FAVOURITE)
-			R.id.btnQuickFilterBoost -> clickQuickFilter(Column.QUICK_FILTER_BOOST)
-			R.id.btnQuickFilterFollow -> clickQuickFilter(Column.QUICK_FILTER_FOLLOW)
-			R.id.btnQuickFilterReaction -> clickQuickFilter(Column.QUICK_FILTER_REACTION)
-			R.id.btnQuickFilterVote -> clickQuickFilter(Column.QUICK_FILTER_VOTE)
+			btnQuickFilterAll -> clickQuickFilter(Column.QUICK_FILTER_ALL)
+			btnQuickFilterMention -> clickQuickFilter(Column.QUICK_FILTER_MENTION)
+			btnQuickFilterFavourite -> clickQuickFilter(Column.QUICK_FILTER_FAVOURITE)
+			btnQuickFilterBoost -> clickQuickFilter(Column.QUICK_FILTER_BOOST)
+			btnQuickFilterFollow -> clickQuickFilter(Column.QUICK_FILTER_FOLLOW)
+			btnQuickFilterReaction -> clickQuickFilter(Column.QUICK_FILTER_REACTION)
+			btnQuickFilterVote -> clickQuickFilter(Column.QUICK_FILTER_VOTE)
 			
 		}
 		
 	}
 	
 	override fun onLongClick(v : View) : Boolean {
-		return when(v.id) {
-			R.id.btnColumnClose -> {
+		return when(v) {
+			btnColumnClose -> {
 				val idx = activity.app_state.column_list.indexOf(column)
 				activity.closeColumnAll(idx)
 				true
@@ -1302,13 +1235,13 @@ class ColumnViewHolder(
 		when(column.mRefreshLoadingErrorPopupState) {
 			// initially expanded
 			0 -> {
-				tvRefreshError.setSingleLine(false)
+				tvRefreshError.isSingleLine = false
 				tvRefreshError.ellipsize = null
 			}
 			
 			// tap to minimize
 			1 -> {
-				tvRefreshError.setSingleLine(true)
+				tvRefreshError.isSingleLine = true
 				tvRefreshError.ellipsize = TextUtils.TruncateAt.END
 			}
 		}
@@ -1628,4 +1561,529 @@ class ColumnViewHolder(
 		)
 	}
 	
+
+	private fun inflate(activity : ActMain,parent:ViewGroup) = with(activity.UI {}) {
+		val b = Benchmark(log, "Item-Inflate", 40L)
+		var label: TextView? = null
+		val rv = verticalLayout {
+			// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
+			val lp = parent.generateLayoutParamsEx()
+			if( lp != null){
+				lp.width = matchParent
+				lp.height = matchParent
+				if( lp is ViewGroup.MarginLayoutParams){
+					lp.marginStart = dip(8)
+					lp.marginEnd = dip(8)
+					lp.topMargin = dip(2f)
+					lp.bottomMargin = dip(1f)
+				}
+				layoutParams =lp
+			}
+			
+			llColumnHeader = verticalLayout {
+				lparams(matchParent, wrapContent)
+				background = ContextCompat.getDrawable(context,R.drawable.bg_column_header)
+				startPadding = dip(12)
+				endPadding = dip(12)
+				topPadding = dip(3)
+				bottomPadding = dip(3)
+				
+				linearLayout {
+					lparams(matchParent, wrapContent)
+					gravity = Gravity.BOTTOM
+					
+					tvColumnContext = textView{
+						gravity = Gravity.END
+						startPadding = dip(4)
+						endPadding = dip(4)
+						textColor= getAttributeColor(context,R.attr.colorColumnHeaderAcct)
+						textSize = 12f
+						
+					}.lparams(0, wrapContent){
+						weight = 1f
+					}
+					
+					tvColumnStatus= textView{
+						gravity = Gravity.END
+						textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
+						textSize = 12f
+						
+					}.lparams(wrapContent, wrapContent){
+						marginStart = dip(12)
+					}
+					
+					tvColumnIndex = textView{
+						gravity = Gravity.END
+						textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
+						textSize = 12f
+						
+					}.lparams(wrapContent, wrapContent){
+						marginStart = dip(4)
+					}
+				}
+				
+				linearLayout {
+					lparams(matchParent, wrapContent){
+						topMargin = dip(0)
+						
+					}
+					gravity = Gravity.CENTER_VERTICAL
+					isBaselineAligned = false
+					
+					ivColumnIcon = imageView {
+						
+						importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						
+					}.lparams(dip(32), dip(32)) {
+						endMargin = dip(4)
+					}
+					
+					tvColumnName = textView{
+					
+					}.lparams(dip(0), wrapContent) {
+						weight =1f
+					}
+					
+					btnColumnSetting = imageButton {
+						background = ContextCompat.getDrawable(context,R.drawable.btn_bg_transparent)
+						contentDescription = context.getString(R.string.setting)
+						setImageResource(R.drawable.ic_tune)
+						padding = dip(8)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+					}.lparams(dip(40), dip(40)) {
+						gravity = Gravity.CENTER_VERTICAL
+						startMargin = dip(2)
+					}
+					
+					btnColumnReload = imageButton {
+						background = ContextCompat.getDrawable(context,R.drawable.btn_bg_transparent)
+						contentDescription = context.getString(R.string.reload)
+						setImageResource(R.drawable.ic_refresh)
+						padding = dip(8)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						
+					}.lparams(dip(40), dip(40)) {
+						gravity = Gravity.CENTER_VERTICAL
+						startMargin = dip(2)
+						
+					}
+					
+					btnColumnClose = imageButton {
+						background = ContextCompat.getDrawable(context,R.drawable.btn_bg_transparent)
+						contentDescription = context.getString(R.string.close_column)
+						setImageResource(R.drawable.ic_close)
+						padding = dip(8)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						
+					}.lparams(dip(40), dip(40)) {
+						gravity = Gravity.CENTER_VERTICAL
+						startMargin = dip(2)
+						
+					}
+				}
+			} // end of column header
+			
+			llColumnSetting = maxHeightScrollView{
+				lparams(matchParent, wrapContent)
+				isScrollbarFadingEnabled = false
+				maxHeight = dip(240)
+				
+				llColumnSettingInside = verticalLayout {
+					lparams(matchParent, wrapContent)
+					
+					backgroundColor = getAttributeColor(context,R.attr.colorColumnSettingBackground)
+					startPadding = dip(12)
+					endPadding = dip(12)
+					topPadding = dip(3)
+					bottomPadding =dip(3)
+					
+					llHashtagExtra = verticalLayout {
+						lparams(matchParent, wrapContent)
+						
+						label = textView{
+							textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
+							text = context.getString(R.string.hashtag_extra_any)
+						}.lparams(matchParent,wrapContent)
+						
+						etHashtagExtraAny = editText{
+							id = View.generateViewId()
+							inputType = InputType.TYPE_CLASS_TEXT
+							maxLines = 1
+							setHorizontallyScrolling(true)
+							isHorizontalScrollBarEnabled = true
+						}.lparams(matchParent,wrapContent)
+						label?.labelFor = etHashtagExtraAny.id
+						
+						label = textView {
+							textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
+							text = context.getString(R.string.hashtag_extra_all)
+						}.lparams(matchParent,wrapContent)
+						
+						etHashtagExtraAll = editText{
+							id = View.generateViewId()
+							inputType = InputType.TYPE_CLASS_TEXT
+							maxLines = 1
+							setHorizontallyScrolling(true)
+							isHorizontalScrollBarEnabled = true
+						}.lparams(matchParent,wrapContent)
+						label?.labelFor = etHashtagExtraAll.id
+
+						label = textView {
+							textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
+							text = context.getString(R.string.hashtag_extra_none)
+						}.lparams(matchParent,wrapContent)
+						
+						etHashtagExtraNone = editText{
+							id = View.generateViewId()
+							inputType = InputType.TYPE_CLASS_TEXT
+							maxLines = 1
+							setHorizontallyScrolling(true)
+							isHorizontalScrollBarEnabled = true
+						}.lparams(matchParent,wrapContent)
+						label?.labelFor = etHashtagExtraNone.id
+					} // end of hashtag extra
+					
+					
+					cbDontCloseColumn = checkBox {
+						text = context.getString(R.string.dont_close_column)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					cbWithAttachment = checkBox {
+						text = context.getString(R.string.with_attachment)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					
+					cbWithHighlight = checkBox {
+						text = context.getString(R.string.with_highlight)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					cbDontShowBoost = checkBox {
+						text = context.getString(R.string.dont_show_boost)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					
+					cbDontShowFavourite = checkBox {
+						text = context.getString(R.string.dont_show_favourite)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					
+					cbDontShowFollow = checkBox {
+						text = context.getString(R.string.dont_show_follow)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					cbDontShowReply = checkBox {
+						text = context.getString(R.string.dont_show_reply)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					cbDontShowReaction = checkBox {
+						text = context.getString(R.string.dont_show_reaction)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					cbDontShowVote = checkBox {
+						text = context.getString(R.string.dont_show_vote)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					cbDontShowNormalToot = checkBox {
+						text = context.getString(R.string.dont_show_normal_toot)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					
+					cbInstanceLocal = checkBox {
+						text = context.getString(R.string.instance_local)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					
+					cbDontStreaming = checkBox {
+						text = context.getString(R.string.dont_use_streaming_api)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					
+					cbDontAutoRefresh = checkBox {
+						text = context.getString(R.string.dont_refresh_on_activity_resume)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					cbHideMediaDefault = checkBox {
+						text = context.getString(R.string.hide_media_default)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					cbSystemNotificationNotRelated = checkBox {
+						text = context.getString(R.string.system_notification_not_related)
+					}.lparams(matchParent,wrapContent)
+					
+					cbEnableSpeech = checkBox {
+						text = context.getString(R.string.enable_speech)
+					}.lparams(matchParent,wrapContent)
+					
+					
+					cbOldApi = checkBox {
+						text = context.getString(R.string.use_old_api)
+					}.lparams(matchParent,wrapContent)
+					
+					llRegexFilter = linearLayout {
+						lparams(matchParent,wrapContent)
+						
+						label = textView{
+							textColor= getAttributeColor(context,R.attr.colorColumnHeaderPageNumber)
+							text = context.getString(R.string.regex_filter)
+						}.lparams(wrapContent,wrapContent)
+						
+						tvRegexFilterError = textView{
+							textColor= getAttributeColor(context,R.attr.colorRegexFilterError)
+						}.lparams(0,wrapContent){
+							weight=1f
+							startMargin = dip(4)
+						}
+						
+						
+					}
+					etRegexFilter = editText{
+						id = View.generateViewId()
+						inputType = InputType.TYPE_CLASS_TEXT
+						maxLines = 1
+						setHorizontallyScrolling(true)
+						isHorizontalScrollBarEnabled = true
+						
+						
+					}.lparams(matchParent,wrapContent)
+					label?.labelFor =etRegexFilter.id
+					
+					btnDeleteNotification = button{
+						isAllCaps = false
+						text = context.getString(R.string.notification_delete)
+						
+					}.lparams(matchParent,wrapContent)
+					
+					btnColor = button{
+						isAllCaps = false
+						text = context.getString(R.string.color_and_background)
+					}.lparams(matchParent,wrapContent)
+				}
+				
+			} // end of column setting scroll view
+			
+			llSearch = verticalLayout {
+				lparams(matchParent,wrapContent)
+				backgroundColor = getAttributeColor(context,R.attr.colorSearchFormBackground)
+				startPadding=dip(12)
+				endPadding=dip(12)
+				topPadding=dip(3)
+				bottomPadding=dip(3)
+				
+				linearLayout {
+					lparams(matchParent,wrapContent)
+					isBaselineAligned=false
+					gravity = Gravity.CENTER
+					
+					etSearch = editText{
+						id = View.generateViewId()
+						imeOptions = EditorInfo.IME_ACTION_SEARCH
+						inputType = InputType.TYPE_CLASS_TEXT
+						maxLines = 1
+						
+					}.lparams(0, wrapContent){
+						weight=1f
+					}
+					
+					btnSearchClear = imageButton{
+						backgroundResource = R.drawable.btn_bg_transparent
+						contentDescription = context.getString(R.string.clear)
+						imageResource = R.drawable.ic_close
+						imageTintList = ColorStateList.valueOf(getAttributeColor(context,R.attr.colorVectorDrawable))
+					}.lparams(dip(40),dip(40)){
+						startMargin = dip(4)
+					}
+					
+					btnSearch = imageButton{
+						backgroundResource = R.drawable.btn_bg_transparent
+						contentDescription = context.getString(R.string.search)
+						imageResource = R.drawable.ic_search
+						imageTintList = ColorStateList.valueOf(getAttributeColor(context,R.attr.colorVectorDrawable))
+					}.lparams(dip(40),dip(40)){
+						startMargin = dip(4)
+					}
+				}
+				
+				cbResolve = checkBox {
+					text = context.getString(R.string.resolve_non_local_account)
+				}.lparams(wrapContent,wrapContent) // チェックボックスの余白はタッチ判定外
+				
+			} // end of search bar
+			
+			llListList = linearLayout {
+				lparams(matchParent,wrapContent)
+				
+				startPadding=dip(12)
+				endPadding=dip(12)
+				topPadding=dip(3)
+				bottomPadding=dip(3)
+				
+				backgroundColor = getAttributeColor(context,R.attr.colorSearchFormBackground)
+				isBaselineAligned = false
+				gravity = Gravity.CENTER
+				
+				
+				etListName = editText{
+					hint = context.getString(R.string.list_create_hint)
+					imeOptions = EditorInfo.IME_ACTION_SEND
+					inputType = InputType.TYPE_CLASS_TEXT
+				}.lparams(0,wrapContent){
+					weight= 1f
+				}
+				
+				btnListAdd = imageButton {
+					backgroundResource = R.drawable.btn_bg_transparent
+					contentDescription = context.getString(R.string.add)
+					imageResource = R.drawable.ic_add
+					imageTintList = ColorStateList.valueOf(getAttributeColor(context,R.attr.colorVectorDrawable))
+				}.lparams(dip(40),dip(40)){
+					startMargin = dip(4)
+				}
+			} // end of list list header
+			
+			svQuickFilter = horizontalScrollView {
+				lparams(matchParent,wrapContent)
+				isFillViewport = true
+				linearLayout {
+					lparams(matchParent,dip(40))
+					
+					btnQuickFilterAll = button{
+						backgroundResource = R.drawable.btn_bg_transparent
+						minWidthCompat = dip(40)
+						startPadding = dip(4)
+						endPadding = dip(4)
+						isAllCaps = false
+						stateListAnimator = null
+						text = context.getString(R.string.all)
+					}.lparams(wrapContent,matchParent){
+						margin = 0
+					}
+					
+					btnQuickFilterMention = imageButton{
+						backgroundResource = R.drawable.btn_bg_transparent
+						contentDescription = context.getString(R.string.mention2)
+					}.lparams(dip(40),matchParent){
+						margin = 0
+					}
+					
+					btnQuickFilterFavourite = imageButton{
+						backgroundResource = R.drawable.btn_bg_transparent
+						contentDescription = context.getString(R.string.favourite)
+					}.lparams(dip(40),matchParent){
+						margin = 0
+					}
+					
+					btnQuickFilterBoost = imageButton{
+						backgroundResource = R.drawable.btn_bg_transparent
+						contentDescription = context.getString(R.string.boost)
+					}.lparams(dip(40),matchParent){
+						margin = 0
+					}
+					
+					btnQuickFilterFollow = imageButton{
+						backgroundResource = R.drawable.btn_bg_transparent
+						contentDescription = context.getString(R.string.follow)
+					}.lparams(dip(40),matchParent){
+						margin = 0
+					}
+					
+					btnQuickFilterReaction = imageButton{
+						backgroundResource = R.drawable.btn_bg_transparent
+						contentDescription = context.getString(R.string.reaction)
+					}.lparams(dip(40),matchParent){
+						margin = 0
+					}
+					
+					
+					btnQuickFilterVote = imageButton{
+						backgroundResource = R.drawable.btn_bg_transparent
+						contentDescription = context.getString(R.string.vote_polls)
+					}.lparams(dip(40),matchParent){
+						margin = 0
+					}
+				}
+			} // end of notification quick filter bar
+			
+			flColumnBackground = frameLayout{
+				
+				ivColumnBackgroundImage = imageView{
+					
+					importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+					scaleType = ImageView.ScaleType.CENTER_CROP
+					visibility = View.GONE
+					
+				}.lparams(matchParent,matchParent)
+				
+				tvLoading = textView{
+					gravity = Gravity.CENTER
+				}.lparams(matchParent,matchParent)
+				
+				refreshLayout = swipyRefreshLayout{
+					lparams(matchParent,matchParent)
+					
+					direction = SwipyRefreshLayoutDirection.BOTH
+					
+					// スタイルで指定しないとAndroid 6 で落ちる…
+					listView = recyclerView{
+						listLayoutManager = LinearLayoutManager(activity)
+						layoutManager = listLayoutManager
+						
+					}.lparams(matchParent,matchParent){
+					
+					}
+				}
+				
+				llRefreshError = frameLayout {
+					
+					foregroundGravity = Gravity.BOTTOM
+					backgroundResource = R.drawable.bg_refresh_error
+					
+					startPadding=dip(6)
+					endPadding=dip(6)
+					topPadding=dip(3)
+					bottomPadding=dip(3)
+					
+					ivRefreshError = imageView{
+						
+						importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						imageResource = R.drawable.ic_error
+						imageTintList = ColorStateList.valueOf(Color.RED)
+						
+					}.lparams(dip(24),dip(24)){
+						gravity = Gravity.START or Gravity.CENTER_VERTICAL
+						startMargin = dip(4)
+					}
+					
+					tvRefreshError = textView{
+						textColor = Color.WHITE
+						
+					}.lparams(matchParent, wrapContent){
+						gravity = Gravity.TOP or Gravity.START
+						startMargin =dip(32)
+					}
+				}.lparams(matchParent, wrapContent){
+					margin = dip(6)
+				}
+			}.lparams(matchParent,0){
+				weight = 1f
+			}
+		}
+		b.report()
+		rv
+	}
 }

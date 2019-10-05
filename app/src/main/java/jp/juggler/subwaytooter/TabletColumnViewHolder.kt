@@ -1,27 +1,20 @@
 package jp.juggler.subwaytooter
 
+import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import android.view.View
-
 import jp.juggler.util.LogCategory
 
 internal class TabletColumnViewHolder(
 	activity : ActMain,
-	viewRoot : View
-) : androidx.recyclerview.widget.RecyclerView.ViewHolder(viewRoot) {
+	parent: ViewGroup,
+	val columnViewHolder : ColumnViewHolder = ColumnViewHolder(activity,parent)
+) : RecyclerView.ViewHolder(columnViewHolder.viewRoot) {
 	
 	companion object {
 		val log = LogCategory("TabletColumnViewHolder")
 	}
 	
-	val columnViewHolder : ColumnViewHolder
-	
 	private var pageIndex = - 1
-	
-	init {
-		columnViewHolder = ColumnViewHolder(activity, viewRoot)
-		// viewRoot.findViewById<View>(R.id.vTabletDivider).visibility = View.VISIBLE
-	}
 	
 	fun bind(column : Column, pageIndex : Int, column_count : Int) {
 		log.d("bind. %d => %d ", this.pageIndex, pageIndex)

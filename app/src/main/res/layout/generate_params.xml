@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<view xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    />
+<!-- https://stackoverflow.com/questions/7018267/generating-a-layoutparams-based-on-the-type-of-parent -->

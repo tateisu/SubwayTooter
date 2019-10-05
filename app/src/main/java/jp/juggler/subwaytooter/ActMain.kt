@@ -392,8 +392,8 @@ class ActMain : AppCompatActivity()
 	override fun onCreate(savedInstanceState : Bundle?) {
 		log.d("onCreate")
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, true)
 		requestWindowFeature(Window.FEATURE_NO_TITLE)
+		App1.setActivityTheme(this, true)
 		
 		handler = Handler()
 		app_state = App1.getAppState(this)

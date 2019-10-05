@@ -1083,14 +1083,14 @@ class PollingWorker private constructor(contextArg : Context) {
 					if(! account.isConfirmed) return
 					
 					client.account = account
-
+					
 					val wps = PushSubscriptionHelper(context, account)
 					
 					if(wps.flags != 0) {
 						job.bPollingRequired.set(true)
 						
 						val (instanceResult, instance) = TootInstance.get(client)
-						if(instance == null){
+						if(instance == null) {
 							if(instanceResult != null) log.e("${instanceResult.error} ${instanceResult.requestInfo}".trim())
 							return
 						}

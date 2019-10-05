@@ -185,8 +185,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, true, R.style.AppTheme_Dark_NoActionBar)
 		requestWindowFeature(Window.FEATURE_NO_TITLE)
+		App1.setActivityTheme(this, true, R.style.AppTheme_Dark_NoActionBar)
 		
 		val intent = intent
 		

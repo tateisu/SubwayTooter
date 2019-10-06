@@ -30,6 +30,14 @@ object IfdId {
 	const val TYPE_IFD_GPS = 4
 	/* This is used in ExifData to allocate enough IfdData */
 	const val TYPE_IFD_COUNT = 5
+	
+	val list = intArrayOf(
+		TYPE_IFD_0,
+		TYPE_IFD_1,
+		TYPE_IFD_EXIF,
+		TYPE_IFD_INTEROPERABILITY,
+		TYPE_IFD_GPS
+	)
 }
 
 
@@ -39,17 +47,6 @@ internal class IfdData(
 	// the ID of this IFD.
 	val id : Int
 ) {
-	
-	companion object {
-		val ifds = intArrayOf(
-			IfdId.TYPE_IFD_0,
-			IfdId.TYPE_IFD_1,
-			IfdId.TYPE_IFD_EXIF,
-			IfdId.TYPE_IFD_INTEROPERABILITY,
-			IfdId.TYPE_IFD_GPS
-		)
-	}
-	
 	private val mExifTags = HashMap<Short, ExifTag>()
 	
 	// the offset of next IFD.

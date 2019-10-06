@@ -97,10 +97,10 @@ class ExifInterface {
 	 */
 	val thumbnailBytes : ByteArray?
 		get() = when {
-				mData.hasCompressedThumbnail() -> mData.compressedThumbnail
-				mData.hasUncompressedStrip() -> null // TODO: implement this
-				else -> null
-			}
+			mData.hasCompressedThumbnail() -> mData.compressedThumbnail
+			mData.hasUncompressedStrip() -> null // TODO: implement this
+			else -> null
+		}
 	
 	/**
 	 * Returns the thumbnail if it is jpeg compressed, or null if none exists.
@@ -308,16 +308,12 @@ class ExifInterface {
 	 * @throws java.io.IOException for I/O error
 	 */
 	@Throws(IOException::class)
-	fun readExif(inStream : InputStream?, options : Int) {
-		requireNotNull(inStream) { NULL_ARGUMENT_STRING }
-		val d : ExifData
+	fun readExif(inStream : InputStream, options : Int) {
 		try {
-			d = ExifReader(this).read(inStream, options)
+			mData = ExifReader(this).read(inStream, options)
 		} catch(e : ExifInvalidFormatException) {
 			throw IOException("Invalid exif format : $e")
 		}
-		
-		mData = d
 	}
 	
 	/**
@@ -1223,12 +1219,12 @@ class ExifInterface {
 		val t = getTag(tagId, ifdId) ?: return 0
 		return t.componentCount
 	}
-
+	
 	// Gets the defined type for a tag.
 	// tagId : a defined tag constant, e.g. [.TAG_IMAGE_WIDTH].
 	fun getDefinedTagType(tagId : Int) : Short {
 		val info = tagInfo.get(tagId)
-		return if(info == 0)  - 1 else getTypeFromInfo(info)
+		return if(info == 0) - 1 else getTypeFromInfo(info)
 	}
 	
 	fun buildUninitializedTag(tagId : Int) : ExifTag? {
@@ -1362,7 +1358,7 @@ class ExifInterface {
 	}
 	
 	private fun getTagDefinitionsForTagId(tagId : Short) : IntArray? {
-		val ifds = IfdData.ifds
+		val ifds = IfdId.list
 		val defs = IntArray(ifds.size)
 		var counter = 0
 		val infos = tagInfo
@@ -2809,7 +2805,7 @@ class ExifInterface {
 		// IFD Interoperability tags
 		val TAG_INTEROPERABILITY_INDEX = defineTag(IfdId.TYPE_IFD_INTEROPERABILITY, 1.toShort())
 		
-		val DEFAULT_BYTE_ORDER :ByteOrder = ByteOrder.BIG_ENDIAN
+		val DEFAULT_BYTE_ORDER : ByteOrder = ByteOrder.BIG_ENDIAN
 		private const val NULL_ARGUMENT_STRING = "Argument is null"
 		
 		private const val GPS_DATE_FORMAT_STR = "yyyy:MM:dd"
@@ -2921,7 +2917,7 @@ class ExifInterface {
 		
 		fun getAllowedIfdsFromInfo(info : Int) : IntArray? {
 			val ifdFlags = getAllowedIfdFlagsFromInfo(info)
-			val ifds = IfdData.ifds
+			val ifds = IfdId.list
 			val l = ArrayList<Int>()
 			for(i in 0 until IfdId.TYPE_IFD_COUNT) {
 				val flag = ifdFlags shr i and 1
@@ -3031,7 +3027,7 @@ class ExifInterface {
 				return 0
 			}
 			var flags = 0
-			val ifds = IfdData.ifds
+			val ifds = IfdId.list
 			for(i in 0 until IfdId.TYPE_IFD_COUNT) {
 				for(j in allowedIfds) {
 					if(ifds[i] == j) {
@@ -3106,7 +3102,7 @@ class ExifInterface {
 		}
 		
 		fun isIfdAllowed(info : Int, ifd : Int) : Boolean {
-			val ifds = IfdData.ifds
+			val ifds = IfdId.list
 			val ifdFlags = getAllowedIfdFlagsFromInfo(info)
 			for(i in ifds.indices) {
 				if(ifd == ifds[i] && ifdFlags shr i and 1 == 1) {

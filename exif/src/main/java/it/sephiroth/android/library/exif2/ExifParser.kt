@@ -26,37 +26,29 @@ import java.nio.charset.Charset
 import java.util.*
 import kotlin.math.min
 
-internal open class ExifParser @Throws(IOException::class, ExifInvalidFormatException::class)
+internal open class ExifParser
+@Throws(IOException::class, ExifInvalidFormatException::class)
 private constructor(
-	inputStream : InputStream?,
+	inputStream : InputStream,
 	private val mOptions : Int,
 	private val mInterface : ExifInterface
 ) {
 	
-	private val mCorrespondingEvent = TreeMap<Int, Any>()
-	private val mTiffStream : CountedDataInputStream?
-	private var mIfdStartOffset = 0
-	
-	/**
-	 * Gets number of tags in the current IFD area.
-	 */
+	// number of tags in the current IFD area.
 	private var tagCountInCurrentIfd = 0
 	
 	/**
-	 * Gets the ID of current IFD.
+	 * the ID of current IFD.
 	 *
 	 * @see IfdId.TYPE_IFD_0
-	 *
 	 * @see IfdId.TYPE_IFD_1
-	 *
 	 * @see IfdId.TYPE_IFD_GPS
-	 *
 	 * @see IfdId.TYPE_IFD_INTEROPERABILITY
-	 *
 	 * @see IfdId.TYPE_IFD_EXIF
 	 */
 	var currentIfd : Int = 0
 		private set
+
 	/**
 	 * If [.next] return [.EVENT_NEW_TAG] or
 	 * [.EVENT_VALUE_OF_REGISTERED_TAG], call this function to get the
@@ -101,7 +93,7 @@ private constructor(
 		private set
 	var jpegProcess : Short = 0
 		private set
-	private val mSections : MutableList<Section>
+	
 	var uncompressedDataPosition = 0
 		private set
 	
@@ -135,41 +127,41 @@ private constructor(
 	/**
 	 * Gets the byte order of the current InputStream.
 	 */
-	val byteOrder : ByteOrder?
-		get() = mTiffStream?.byteOrder
+	val byteOrder : ByteOrder
+		get() = mTiffStream.byteOrder
 	
 	val sections : List<Section>
 		get() = mSections
 	
+	private val mCorrespondingEvent = TreeMap<Int, Any>()
+	
+	private val mSections = ArrayList<Section>(0)
+	
+	private var mIfdStartOffset = 0
+	
+	private val mTiffStream : CountedDataInputStream = seekTiffData(inputStream)
+	
 	init {
-		if(inputStream == null) {
-			throw IOException("Null argument inputStream to ExifParser")
-		}
-		
-		Log.v(TAG, "Reading exif...")
-		mSections = ArrayList(0)
-		mTiffStream = seekTiffData(inputStream)
 		
 		// Log.d( TAG, "sections size: " + mSections.size() );
 		
 		val tiffStream = mTiffStream
-		if(tiffStream != null) {
-			parseTiffHeader(tiffStream)
-			
-			val offset = tiffStream.readUnsignedInt()
-			if(offset > Integer.MAX_VALUE) {
-				throw ExifInvalidFormatException("Invalid offset $offset")
-			}
-			mIfd0Position = offset.toInt()
-			currentIfd = IfdId.TYPE_IFD_0
-			
-			if(isIfdRequested(IfdId.TYPE_IFD_0) || needToParseOffsetsInCurrentIfd()) {
-				registerIfd(IfdId.TYPE_IFD_0, offset)
-				if(offset != DEFAULT_IFD0_OFFSET.toLong()) {
-					val ba = ByteArray(offset.toInt() - DEFAULT_IFD0_OFFSET)
-					mDataAboveIfd0 = ba
-					read(ba)
-				}
+		
+		parseTiffHeader(tiffStream)
+		
+		val offset = tiffStream.readUnsignedInt()
+		if(offset > Integer.MAX_VALUE) {
+			throw ExifInvalidFormatException("Invalid offset $offset")
+		}
+		mIfd0Position = offset.toInt()
+		currentIfd = IfdId.TYPE_IFD_0
+		
+		if(isIfdRequested(IfdId.TYPE_IFD_0) || needToParseOffsetsInCurrentIfd()) {
+			registerIfd(IfdId.TYPE_IFD_0, offset)
+			if(offset != DEFAULT_IFD0_OFFSET.toLong()) {
+				val ba = ByteArray(offset.toInt() - DEFAULT_IFD0_OFFSET)
+				mDataAboveIfd0 = ba
+				read(ba)
 			}
 		}
 	}
@@ -189,17 +181,17 @@ private constructor(
 	}
 	
 	@Throws(IOException::class, ExifInvalidFormatException::class)
-	private fun seekTiffData(inputStream : InputStream) : CountedDataInputStream? {
+	private fun seekTiffData(inputStream : InputStream) : CountedDataInputStream {
 		val dataStream = CountedDataInputStream(inputStream)
 		var tiffStream : CountedDataInputStream? = null
 		
 		var a = dataStream.readUnsignedByte()
 		val b = dataStream.readUnsignedByte()
 		
-		if(a != 0xFF || b != JpegHeader.TAG_SOI) {
-			Log.e(TAG, "invalid jpeg header")
-			return null
-		}
+
+		if(a == 137 && b == 80) error("maybe PNG image")
+
+		if(a != 0xFF || b != JpegHeader.TAG_SOI) error("invalid jpeg header")
 		
 		while(true) {
 			val itemlen : Int
@@ -218,7 +210,7 @@ private constructor(
 			}
 			
 			if(a > 10) {
-				Log.w(TAG, "Extraneous " + (a - 1) + " padding bytes before section " + marker)
+				Log.w(TAG, "Extraneous ${a - 1} padding bytes before section $marker")
 			}
 			
 			val section = Section()
@@ -257,7 +249,7 @@ private constructor(
 					// stop before hitting compressed data
 					mSections.add(section)
 					uncompressedDataPosition = dataStream.readByteCount
-					return tiffStream
+					return tiffStream !!
 				}
 				
 				JpegHeader.TAG_M_DQT ->
@@ -267,10 +259,9 @@ private constructor(
 				JpegHeader.TAG_M_DHT -> {
 				}
 				
+				// in case it's a tables-only JPEG stream
 				JpegHeader.TAG_M_EOI -> {
-					// in case it's a tables-only JPEG stream
-					Log.w(TAG, "No image in jpeg!")
-					return null
+					error("\"No image in jpeg!\"")
 				}
 				
 				JpegHeader.TAG_M_COM ->
@@ -475,9 +466,8 @@ private constructor(
 	 * Equivalent to read(buffer, 0, buffer.length).
 	 */
 	@Throws(IOException::class)
-	fun read(buffer : ByteArray) : Int {
-		return mTiffStream?.read(buffer) ?: 0
-	}
+	fun read(buffer : ByteArray) : Int = mTiffStream.read(buffer)
+	
 	//
 	//	/**
 	//	 * Parses the the given InputStream with default options; that is, every IFD
@@ -504,7 +494,6 @@ private constructor(
 	 */
 	@Throws(IOException::class, ExifInvalidFormatException::class)
 	operator fun next() : Int {
-		mTiffStream ?: return EVENT_END
 		
 		val offset = mTiffStream.readByteCount
 		val endOfTags = mIfdStartOffset + OFFSET_SIZE + TAG_SIZE * tagCountInCurrentIfd
@@ -601,13 +590,11 @@ private constructor(
 	 */
 	@Throws(IOException::class, ExifInvalidFormatException::class)
 	protected fun skipRemainingTagsInCurrentIfd() {
-		if(mTiffStream == null) return
 		
 		val endOfTags = mIfdStartOffset + OFFSET_SIZE + TAG_SIZE * tagCountInCurrentIfd
 		var offset = mTiffStream.readByteCount
-		if(offset > endOfTags) {
-			return
-		}
+		if(offset > endOfTags) return
+		
 		if(mNeedToParseOffsetsInCurrentIfd) {
 			while(offset < endOfTags) {
 				val tag = readTag()
@@ -632,7 +619,8 @@ private constructor(
 	
 	@Throws(IOException::class)
 	private fun skipTo(offset : Int) {
-		mTiffStream?.skipTo(offset.toLong())
+		mTiffStream.skipTo(offset.toLong())
+		
 		// Log.v(TAG, "available: " + mTiffStream.available() );
 		while(! mCorrespondingEvent.isEmpty() && mCorrespondingEvent.firstKey() < offset) {
 			mCorrespondingEvent.pollFirstEntry()
@@ -649,7 +637,6 @@ private constructor(
 	 * @see .EVENT_VALUE_OF_REGISTERED_TAG
 	 */
 	fun registerForTagValue(tag : ExifTag) {
-		mTiffStream ?: return
 		if(tag.offset >= mTiffStream.readByteCount) {
 			mCorrespondingEvent[tag.offset] = ExifTagEvent(tag, true)
 		}
@@ -665,7 +652,6 @@ private constructor(
 	
 	@Throws(IOException::class, ExifInvalidFormatException::class)
 	private fun readTag() : ExifTag? {
-		mTiffStream ?: return null
 		
 		val tagId = mTiffStream.readShort()
 		val dataFormat = mTiffStream.readShort()
@@ -802,7 +788,6 @@ private constructor(
 	
 	@Throws(IOException::class)
 	fun readFullTagValue(tag : ExifTag) {
-		mTiffStream ?: return
 		
 		// Some invalid images contains tags with wrong size, check it here
 		val type = tag.dataType
@@ -869,10 +854,8 @@ private constructor(
 	 * Reads bytes from the InputStream.
 	 */
 	@Throws(IOException::class)
-	protected fun read(buffer : ByteArray, offset : Int, length : Int) : Int {
-		mTiffStream ?: return 0
-		return mTiffStream.read(buffer, offset, length)
-	}
+	protected fun read(buffer : ByteArray, offset : Int, length : Int) : Int =
+		mTiffStream.read(buffer, offset, length)
 	
 	/**
 	 * Reads a String from the InputStream with US-ASCII charset. The parser
@@ -889,7 +872,7 @@ private constructor(
 	@JvmOverloads
 	protected fun readString(n : Int, charset : Charset = US_ASCII) : String =
 		when {
-			mTiffStream == null || n <= 0 -> ""
+			n <= 0 -> ""
 			else -> mTiffStream.readString(n, charset)
 		}
 	
@@ -898,10 +881,8 @@ private constructor(
 	 * InputStream.
 	 */
 	@Throws(IOException::class)
-	protected fun readUnsignedShort() : Int {
-		val iv = mTiffStream?.readShort() ?: 0
-		return iv.toInt() and 0xffff
-	}
+	protected fun readUnsignedShort() : Int =
+		mTiffStream.readShort().toInt() and 0xffff
 	
 	/**
 	 * Reads value of type [ExifTag.TYPE_UNSIGNED_LONG] from the
@@ -927,9 +908,8 @@ private constructor(
 	 * Reads value of type [ExifTag.TYPE_LONG] from the InputStream.
 	 */
 	@Throws(IOException::class)
-	protected fun readLong() : Long {
-		return mTiffStream?.readInt()?.toLong() ?: 0L
-	}
+	protected fun readLong() : Long =
+		mTiffStream.readInt().toLong()
 	
 	/**
 	 * Reads value of type [ExifTag.TYPE_RATIONAL] from the InputStream.
@@ -1184,8 +1164,7 @@ private constructor(
 		 * @throws ExifInvalidFormatException
 		 */
 		@Throws(IOException::class, ExifInvalidFormatException::class)
-		fun parse(inputStream : InputStream, options : Int, iRef : ExifInterface) : ExifParser {
-			return ExifParser(inputStream, options, iRef)
-		}
+		fun parse(inputStream : InputStream, options : Int, iRef : ExifInterface) : ExifParser =
+			ExifParser(inputStream, options, iRef)
 	}
 }

@@ -37,7 +37,7 @@ internal class ExifReader(private val mInterface : ExifInterface) {
 	@Throws(ExifInvalidFormatException::class, IOException::class)
 	fun read(inputStream : InputStream, options : Int) : ExifData {
 		val parser = ExifParser.parse(inputStream, options, mInterface)
-		val exifData = ExifData(parser.byteOrder !!)
+		val exifData = ExifData(parser.byteOrder )
 		exifData.sections = parser.sections
 		exifData.mUncompressedDataPosition = parser.uncompressedDataPosition
 		

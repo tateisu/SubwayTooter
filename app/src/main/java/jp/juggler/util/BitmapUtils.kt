@@ -51,12 +51,17 @@ fun createResizedBitmap(
 		
 		// EXIF回転情報の取得
 		val orientation : Int? = context.contentResolver.openInputStream(uri)?.use { inStream ->
-			val exif = ExifInterface()
-			exif.readExif(
-				inStream,
-				ExifInterface.Options.OPTION_IFD_0 or ExifInterface.Options.OPTION_IFD_1 or ExifInterface.Options.OPTION_IFD_EXIF
-			)
-			exif.getTagIntValue(ExifInterface.TAG_ORIENTATION)
+			try {
+				val exif = ExifInterface()
+				exif.readExif(
+					inStream,
+					ExifInterface.Options.OPTION_IFD_0 or ExifInterface.Options.OPTION_IFD_1 or ExifInterface.Options.OPTION_IFD_EXIF
+				)
+				exif.getTagIntValue(ExifInterface.TAG_ORIENTATION)
+			}catch(ex:Throwable){
+				log.w(ex,"createResizedBitmap: exif parse failed." )
+				null
+			}
 		}
 		
 		// 画像のサイズを調べる

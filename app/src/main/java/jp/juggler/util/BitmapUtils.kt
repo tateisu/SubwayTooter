@@ -26,12 +26,36 @@ val InputStream.imageOrientation : Int?
 		null
 	}
 
-// EXIFのorientationが特定の値ならwとhを入れ替える
+// 回転情報の値に合わせて、wとhを入れ替える
 private fun rotateSize(orientation : Int?, w : Float, h : Float) : PointF =
 	when(orientation) {
 		5, 6, 7, 8 -> PointF(h, w)
 		else -> PointF(w, h)
 	}
+
+// 回転情報を解決するようにmatrixに回転を加える
+private fun Matrix.resolveOrientation(orientation : Int?) : Matrix {
+	when(orientation) {
+		2 -> postScale(1f, - 1f)
+		3 -> postRotate(180f)
+		4 -> postScale(- 1f, 1f)
+		
+		5 -> {
+			postScale(1f, - 1f)
+			postRotate(- 90f)
+		}
+		
+		6 -> postRotate(90f)
+		
+		7 -> {
+			postScale(1f, - 1f)
+			postRotate(90f)
+		}
+		
+		8 -> postRotate(- 90f)
+	}
+	return this
+}
 
 enum class ResizeType {
 	None,
@@ -171,37 +195,21 @@ fun createResizedBitmap(
 			src_height = options.outHeight
 			val scale = dstMax.toFloat() / max(src_width, src_height)
 			
-			val matrix = Matrix()
-			matrix.reset()
-			
-			// 画像の中心が原点に来るようにして
-			matrix.postTranslate(src_width * - 0.5f, src_height * - 0.5f)
-			// スケーリング
-			matrix.postScale(scale, scale)
-			
-			// 回転情報があれば回転
-			when(orientation) {
-				2 -> matrix.postScale(1f, - 1f)  // 上下反転
-				3 -> matrix.postRotate(180f) // 180度回転
-				4 -> matrix.postScale(- 1f, 1f) // 左右反転
+			val matrix = Matrix().apply {
+				reset()
 				
-				5 -> {
-					matrix.postScale(1f, - 1f)
-					matrix.postRotate(- 90f)
-				}
+				// 画像の中心が原点に来るようにして
+				postTranslate(src_width * - 0.5f, src_height * - 0.5f)
 				
-				6 -> matrix.postRotate(90f)
+				// スケーリング
+				postScale(scale, scale)
 				
-				7 -> {
-					matrix.postScale(1f, - 1f)
-					matrix.postRotate(90f)
-				}
+				// 回転情報があれば回転
+				resolveOrientation(orientation)
 				
-				8 -> matrix.postRotate(- 90f)
+				// 表示領域に埋まるように平行移動
+				postTranslate(dstSizeInt.x.toFloat() * 0.5f, dstSizeInt.y.toFloat() * 0.5f)
 			}
-			
-			// 表示領域に埋まるように平行移動
-			matrix.postTranslate(dstSizeInt.x.toFloat() * 0.5f, dstSizeInt.y.toFloat() * 0.5f)
 			
 			// 出力用Bitmap作成
 			var dst : Bitmap? =

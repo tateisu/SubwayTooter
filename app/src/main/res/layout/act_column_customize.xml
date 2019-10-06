@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/svContent"
     android:layout_width="match_parent"
@@ -8,24 +7,20 @@
 
     android:clipToPadding="false"
     android:fillViewport="true"
-    android:paddingBottom="12dp"
     android:paddingTop="12dp"
-    android:scrollbarStyle="outsideOverlay"
-    >
+    android:paddingBottom="12dp"
+    android:scrollbarStyle="outsideOverlay">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/column_header"
-            />
+            android:text="@string/column_header" />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -35,11 +30,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="6dp"
                 android:gravity="center_vertical"
-                android:paddingBottom="3dp"
-                android:paddingEnd="12dp"
                 android:paddingStart="12dp"
                 android:paddingTop="3dp"
-                >
+                android:paddingEnd="12dp"
+                android:paddingBottom="3dp"
+                tools:ignore="UseCompoundDrawables">
 
                 <ImageView
                     android:id="@+id/ivColumnHeader"
@@ -47,25 +42,21 @@
                     android:layout_height="32dp"
                     android:layout_marginEnd="4dp"
                     android:importantForAccessibility="no"
-                    tools:src="?attr/btn_federate_tl"
-                    />
+                    tools:src="@drawable/ic_bike" />
 
                 <TextView
                     android:id="@+id/tvColumnName"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    tools:text="@string/federate_timeline"
-                    />
+                    tools:text="@string/federate_timeline" />
             </LinearLayout>
 
         </LinearLayout>
 
-
-            <TextView
-                style="@style/setting_row_label_indent1"
-                android:text="@string/background_color"
-                />
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/background_color" />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -73,23 +64,19 @@
                 android:id="@+id/btnHeaderBackgroundEdit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/edit"
-                />
+                android:text="@string/edit" />
 
             <Button
                 android:id="@+id/btnHeaderBackgroundReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/reset"
-                />
+                android:text="@string/reset" />
 
         </LinearLayout>
 
-
-            <TextView
-                style="@style/setting_row_label_indent1"
-                android:text="@string/foreground_color"
-                />
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/foreground_color" />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -98,70 +85,63 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/edit"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnHeaderTextReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reset"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/column"
-            />
+            android:text="@string/column" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <FrameLayout
                 android:id="@+id/flColumnBackground"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
+                android:layout_height="wrap_content">
 
                 <ImageView
                     android:id="@+id/ivColumnBackground"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:importantForAccessibility="no"
-                    android:scaleType="centerCrop"
-                    />
+                    android:scaleType="centerCrop" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="12dp"
                     android:orientation="vertical"
-                    >
+                    android:padding="12dp">
 
                     <TextView
+                        android:id="@+id/tvSampleAcct"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
                         android:gravity="start"
                         android:maxLines="1"
-                        android:textColor="?attr/colorTimeSmall"
-                        android:textSize="12sp"
                         android:text="@string/acct_sample"
-                        android:id="@+id/tvSampleAcct"
-                        />
+                        android:textColor="?attr/colorTimeSmall"
+                        android:textSize="12sp" />
 
                     <jp.juggler.subwaytooter.view.MyTextView
+                        android:id="@+id/tvSampleContent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
-                        android:lineSpacingMultiplier="1.1"
-                        android:textColor="?attr/colorContentText"
                         android:gravity="start"
+                        android:lineSpacingMultiplier="1.1"
                         android:text="@string/content_sample"
-                        android:id="@+id/tvSampleContent"
-                        />
+                        android:textColor="?attr/colorContentText" />
                 </LinearLayout>
             </FrameLayout>
 
@@ -171,8 +151,7 @@
 
             <TextView
                 style="@style/setting_row_label"
-                android:text="@string/background_color"
-                />
+                android:text="@string/background_color" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -182,17 +161,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/edit"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnColumnBackgroundColorReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reset"
-                android:textAllCaps="false"
-                />
-
+                android:textAllCaps="false" />
 
         </LinearLayout>
 
@@ -200,8 +176,7 @@
 
             <TextView
                 style="@style/setting_row_label"
-                android:text="@string/background_image"
-                />
+                android:text="@string/background_image" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -211,16 +186,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/pick_image"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnColumnBackgroundImageReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reset"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
         </LinearLayout>
 
@@ -229,21 +202,18 @@
             <TextView
                 style="@style/setting_row_label"
                 android:labelFor="@+id/etAlpha"
-                android:text="@string/background_image_alpha"
-                />
+                android:text="@string/background_image_alpha" />
         </LinearLayout>
 
         <LinearLayout
             style="@style/setting_row_form"
             android:layout_height="48dp"
             android:baselineAligned="false"
-            android:gravity="center_vertical"
-            >
+            android:gravity="center_vertical">
 
             <View
                 android:layout_width="0dp"
-                android:layout_height="48dp"
-                />
+                android:layout_height="48dp" />
 
             <EditText
                 android:id="@+id/etAlpha"
@@ -251,28 +221,25 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
                 android:digits="0123456789.,"
+                android:importantForAutofill="no"
                 android:inputType="numberDecimal"
                 android:maxLines="1"
-                android:minLines="1"
                 android:minWidth="64dp"
-                />
+                android:minLines="1" />
 
             <SeekBar
                 android:id="@+id/sbColumnBackgroundAlpha"
                 style="@style/setting_horizontal_stretch"
                 android:layout_height="48dp"
-                android:paddingEnd="32dp"
                 android:paddingStart="32dp"
-                />
+                android:paddingEnd="32dp" />
         </LinearLayout>
-
 
         <LinearLayout style="@style/setting_row_form">
 
             <TextView
                 style="@style/setting_row_label"
-                android:text="@string/acct_color"
-                />
+                android:text="@string/acct_color" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -282,27 +249,22 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/edit"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnAcctColorReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reset"
-                android:textAllCaps="false"
-                />
-
+                android:textAllCaps="false" />
 
         </LinearLayout>
-
 
         <LinearLayout style="@style/setting_row_form">
 
             <TextView
                 style="@style/setting_row_label"
-                android:text="@string/content_color"
-                />
+                android:text="@string/content_color" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -312,19 +274,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/edit"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnContentColorReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reset"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
     </LinearLayout>
 </ScrollView>

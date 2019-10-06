@@ -127,7 +127,8 @@ object LoginForm {
 			activity.resources.openRawResource(R.raw.server_list).use { inStream ->
 				val br = BufferedReader(InputStreamReader(inStream, "UTF-8"))
 				while(true) {
-					val s : String = br.readLine()?.trim { it <= ' ' }?.toLowerCase(Locale.JAPAN) ?: break
+					val s : String =
+						br.readLine()?.trim { it <= ' ' }?.toLowerCase(Locale.JAPAN) ?: break
 					if(s.isNotEmpty()) instance_list.add(s)
 				}
 			}
@@ -145,10 +146,10 @@ object LoginForm {
 					return value as String
 				}
 				
-				override fun performFiltering(constraint : CharSequence?) : Filter.FilterResults {
-					val result = Filter.FilterResults()
+				override fun performFiltering(constraint : CharSequence?) : FilterResults {
+					val result = FilterResults()
 					if(constraint?.isNotEmpty() == true) {
-						val key = constraint.toString().toLowerCase()
+						val key = constraint.toString().toLowerCase(Locale.JAPAN)
 						// suggestions リストは毎回生成する必要がある。publishResultsと同時にアクセスされる場合がある
 						val suggestions = StringArray()
 						for(s in instance_list) {
@@ -165,7 +166,7 @@ object LoginForm {
 				
 				override fun publishResults(
 					constraint : CharSequence?,
-					results : Filter.FilterResults?
+					results : FilterResults?
 				) {
 					clear()
 					val values = results?.values

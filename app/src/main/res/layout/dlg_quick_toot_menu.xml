@@ -1,189 +1,176 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <jp.juggler.subwaytooter.view.MaxHeightScrollView
         android:id="@+id/llColumnSetting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fadeScrollbars="false"
-        app:maxHeight="240dp"
-        >
+        app:maxHeight="240dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingStart="12dp"
-            android:paddingEnd="12dp"
             android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            >
+            android:paddingEnd="12dp"
+            android:paddingBottom="3dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/visibility"
-                />
+                android:text="@string/visibility" />
 
             <Button
+                android:id="@+id/btnVisibility"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/btnVisibility"
                 android:gravity="start|center_vertical"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/fixed_phrase"
                 android:layout_marginTop="6dp"
-                />
+                android:text="@string/fixed_phrase" />
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
+                android:layout_height="wrap_content">
 
                 <EditText
                     android:id="@+id/etText0"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:importantForAutofill="no"
                     android:inputType="text"
-                    />
+                    tools:ignore="LabelFor" />
 
                 <Button
                     android:id="@+id/btnText0"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:minWidth="48dp"
-                    android:text="@string/input"
-                    />
+                    android:text="@string/input" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
+                android:layout_height="wrap_content">
 
                 <EditText
                     android:id="@+id/etText1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:importantForAutofill="no"
                     android:inputType="text"
-                    />
+                    tools:ignore="LabelFor" />
 
                 <Button
                     android:id="@+id/btnText1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:minWidth="48dp"
-                    android:text="@string/input"
-                    />
+                    android:text="@string/input" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
+                android:layout_height="wrap_content">
 
                 <EditText
                     android:id="@+id/etText2"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:importantForAutofill="no"
                     android:inputType="text"
-                    />
+                    tools:ignore="LabelFor" />
 
                 <Button
                     android:id="@+id/btnText2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:minWidth="48dp"
-                    android:text="@string/input"
-                    />
+                    android:text="@string/input" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
+                android:layout_height="wrap_content">
 
                 <EditText
                     android:id="@+id/etText3"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:importantForAutofill="no"
                     android:inputType="text"
-                    />
+                    tools:ignore="LabelFor" />
 
                 <Button
                     android:id="@+id/btnText3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:minWidth="48dp"
-                    android:text="@string/input"
-                    />
+                    android:text="@string/input" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
+                android:layout_height="wrap_content">
 
                 <EditText
                     android:id="@+id/etText4"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:inputType="text"
                     android:layout_marginEnd="6dp"
-                    />
+                    android:layout_weight="1"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    tools:ignore="LabelFor" />
 
                 <Button
                     android:id="@+id/btnText4"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:minWidth="48dp"
-                    android:text="@string/input"
-                    />
+                    android:text="@string/input" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
+                android:layout_height="wrap_content">
 
                 <EditText
                     android:id="@+id/etText5"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:inputType="text"
                     android:layout_marginEnd="6dp"
-                    />
+                    android:layout_weight="1"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    tools:ignore="LabelFor" />
 
                 <Button
                     android:id="@+id/btnText5"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:minWidth="48dp"
-                    android:text="@string/input"
-                    />
+                    android:text="@string/input" />
             </LinearLayout>
-
 
         </LinearLayout>
 
@@ -193,8 +180,7 @@
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btnCancel"
@@ -202,7 +188,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/close"
-            />
+            android:text="@string/close" />
     </LinearLayout>
 </LinearLayout>

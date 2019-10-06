@@ -89,15 +89,15 @@ class PushSubscriptionHelper(
 					.toPostRequestBuilder()
 					.url("${PollingWorker.APP_SERVER}/webpushserverkey")
 					.build()
-					
+			
 			)
 			val res = r?.response
 			when(res?.code) {
-
-				null ->{
+				
+				null -> {
 				
 				}
-
+				
 				200 -> {
 					// 登録できたサーバーキーをアプリ内DBに保存
 					SubscriptionServerKey.save(clientIdentifier, serverKey)
@@ -188,7 +188,7 @@ class PushSubscriptionHelper(
 				var subscription404 = false
 				when(res.code) {
 					200 -> {
-						if( r.error?.isNotEmpty() == true && r.jsonObject == null ){
+						if(r.error?.isNotEmpty() == true && r.jsonObject == null) {
 							// Pleromaが200応用でエラーHTMLを返す
 							return TootApiResult(
 								error = context.getString(
@@ -196,7 +196,7 @@ class PushSubscriptionHelper(
 								)
 							)
 						}
-
+						
 						// たぶん購読が存在する
 					}
 					
@@ -215,7 +215,7 @@ class PushSubscriptionHelper(
 						}
 					}
 					
-					in 400 until 500 ->{
+					in 400 until 500 -> {
 						return TootApiResult(
 							error = context.getString(
 								R.string.instance_does_not_support_push_api_pleroma
@@ -234,9 +234,9 @@ class PushSubscriptionHelper(
 				if(oldSubscription == null) {
 					
 					// 現在の購読状況が分からない場合はインスタンスのバージョンを調べる必要がある
-					val(result,ti) = TootInstance.get(client)
+					val (ti, result) = TootInstance.get(client)
 					ti ?: return result
-
+					
 					if(! ti.versionGE(TootInstance.VERSION_2_4_0_rc1)) {
 						// 2.4.0rc1 未満にはプッシュ購読APIはない
 						return TootApiResult(
@@ -255,6 +255,7 @@ class PushSubscriptionHelper(
 								if(verbose) addLog(context.getString(R.string.push_subscription_not_exists))
 								return TootApiResult()
 							}
+							
 							else -> {
 								// 2.4.0rc1では「APIが存在しない」と「購読が存在しない」を判別できない
 							}
@@ -296,7 +297,7 @@ class PushSubscriptionHelper(
 				r = client.http(
 					JSONObject()
 						.put("token_digest", tokenDigest)
-				.put("install_id", install_id)
+						.put("install_id", install_id)
 						.toPostRequestBuilder()
 						.url("${PollingWorker.APP_SERVER}/webpushtokencheck")
 						.build()

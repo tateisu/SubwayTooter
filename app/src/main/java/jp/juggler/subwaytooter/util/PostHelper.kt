@@ -350,8 +350,8 @@ class PostHelper(
 				
 				var visibility_checked : TootVisibility? = visibility
 				
-				val (ri, instance) = TootInstance.get(client)
-				if(instance == null) return ri
+				val (instance, ri) = TootInstance.get(client)
+				instance ?: return ri
 				
 				if(instance.instanceType == TootInstance.InstanceType.Pixelfed) {
 					if(in_reply_to_id != null && attachment_list?.isNotEmpty() == true) {

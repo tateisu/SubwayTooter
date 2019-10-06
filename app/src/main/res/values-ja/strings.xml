@@ -177,7 +177,7 @@
     <string name="conversation_around">会話の流れ(id:%1$s)</string>
     <string name="conversation_from_another_account">別アカウントで会話の流れ</string>
     <string name="conversation_view">会話ビュー</string>
-    <string name="copy">コピー</string>
+    <string name="copy_st">コピー</string>
     <string name="copy_complete">クリップボードにコピーしました</string>
     <string name="copy_url">URLをクリップボードにコピー</string>
     <string name="default_status_visibility">投稿の公開範囲の既定値</string>

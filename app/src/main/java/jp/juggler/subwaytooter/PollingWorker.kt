@@ -1089,7 +1089,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					if(wps.flags != 0) {
 						job.bPollingRequired.set(true)
 						
-						val (instanceResult, instance) = TootInstance.get(client)
+						val (instance, instanceResult) = TootInstance.get(client)
 						if(instance == null) {
 							if(instanceResult != null) log.e("${instanceResult.error} ${instanceResult.requestInfo}".trim())
 							return

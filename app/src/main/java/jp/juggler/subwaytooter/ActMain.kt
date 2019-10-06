@@ -496,8 +496,8 @@ class ActMain : AppCompatActivity()
 		bStart = true
 		log.d("onStart")
 		
-		var ts= SystemClock.elapsedRealtime()
-		var te:Long
+		var ts = SystemClock.elapsedRealtime()
+		var te : Long
 		
 		// カラーカスタマイズを読み直す
 		ListDivider.color = Pref.ipListDividerColor(pref)
@@ -512,9 +512,9 @@ class ActMain : AppCompatActivity()
 		CustomShare.reloadCache(this, pref)
 		
 		te = SystemClock.elapsedRealtime()
-		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms : reload color")
+		if(te - ts >= 100L) log.w("onStart: ${te - ts}ms : reload color")
 		ts = SystemClock.elapsedRealtime()
-
+		
 		var tz = TimeZone.getDefault()
 		try {
 			val tz_id = Pref.spTimeZone(pref)
@@ -527,9 +527,9 @@ class ActMain : AppCompatActivity()
 		TootStatus.date_format.timeZone = tz
 		
 		te = SystemClock.elapsedRealtime()
-		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms : reload timezone")
+		if(te - ts >= 100L) log.w("onStart: ${te - ts}ms : reload timezone")
 		ts = SystemClock.elapsedRealtime()
-
+		
 		// バグいアカウントデータを消す
 		try {
 			SavedAccount.sweepBuggieData()
@@ -538,7 +538,7 @@ class ActMain : AppCompatActivity()
 		}
 		
 		te = SystemClock.elapsedRealtime()
-		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms : sweepBuggieData")
+		if(te - ts >= 100L) log.w("onStart: ${te - ts}ms : sweepBuggieData")
 		ts = SystemClock.elapsedRealtime()
 		
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
@@ -560,7 +560,7 @@ class ActMain : AppCompatActivity()
 		}
 		
 		te = SystemClock.elapsedRealtime()
-		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms : column order")
+		if(te - ts >= 100L) log.w("onStart: ${te - ts}ms : column order")
 		ts = SystemClock.elapsedRealtime()
 		
 		// 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
@@ -569,22 +569,21 @@ class ActMain : AppCompatActivity()
 		}
 		
 		te = SystemClock.elapsedRealtime()
-		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :fireColumnColor")
+		if(te - ts >= 100L) log.w("onStart: ${te - ts}ms :fireColumnColor")
 		ts = SystemClock.elapsedRealtime()
 		
 		// 各カラムのアカウント設定を読み直す
 		reloadAccountSetting()
 		
 		te = SystemClock.elapsedRealtime()
-		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :reloadAccountSetting")
+		if(te - ts >= 100L) log.w("onStart: ${te - ts}ms :reloadAccountSetting")
 		ts = SystemClock.elapsedRealtime()
-		
 		
 		// 投稿直後ならカラムの再取得を行う
 		refreshAfterPost()
 		
 		te = SystemClock.elapsedRealtime()
-		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :refreshAfterPost")
+		if(te - ts >= 100L) log.w("onStart: ${te - ts}ms :refreshAfterPost")
 		ts = SystemClock.elapsedRealtime()
 		
 		// 画面復帰時に再取得やストリーミング開始を行う
@@ -593,14 +592,14 @@ class ActMain : AppCompatActivity()
 		}
 		
 		te = SystemClock.elapsedRealtime()
-		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :column.onStart")
+		if(te - ts >= 100L) log.w("onStart: ${te - ts}ms :column.onStart")
 		ts = SystemClock.elapsedRealtime()
 		
 		// カラムの表示範囲インジケータを更新
 		updateColumnStripSelection(- 1, - 1f)
 		
 		te = SystemClock.elapsedRealtime()
-		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :updateColumnStripSelection")
+		if(te - ts >= 100L) log.w("onStart: ${te - ts}ms :updateColumnStripSelection")
 		ts = SystemClock.elapsedRealtime()
 		
 		
@@ -609,16 +608,14 @@ class ActMain : AppCompatActivity()
 		}
 		
 		te = SystemClock.elapsedRealtime()
-		if( te-ts >= 100L) log.w("onStart: ${te-ts}ms :fireShowContent")
-		ts = SystemClock.elapsedRealtime()
-		
+		if(te - ts >= 100L) log.w("onStart: ${te - ts}ms :fireShowContent")
 		
 		// 相対時刻表示
 		proc_updateRelativeTime.run()
 		
 		
 		te = SystemClock.elapsedRealtime()
-		if( te-tsTotal >= 100L) log.w("onStart: ${te-tsTotal}ms : total")
+		if(te - tsTotal >= 100L) log.w("onStart: ${te - tsTotal}ms : total")
 	}
 	
 	override fun onStop() {
@@ -1768,8 +1765,8 @@ class ActMain : AppCompatActivity()
 						client.instance = instance
 					}
 					
-					val (r2, ti) = TootInstance.get(client)
-					if(ti == null) return r2
+					val (ti, r2) = TootInstance.get(client)
+					ti ?: return r2
 					
 					this.host = instance
 					val client_name = Pref.spClientName(this@ActMain)
@@ -1881,7 +1878,11 @@ class ActMain : AppCompatActivity()
 				// cancelled.
 			}
 			
-			error != null -> showToast(this@ActMain, true, "${result.error} ${result.requestInfo}".trim() )
+			error != null -> showToast(
+				this@ActMain,
+				true,
+				"${result.error} ${result.requestInfo}".trim()
+			)
 			
 			token_info == null -> showToast(this@ActMain, true, "can't get access token.")
 			
@@ -1992,8 +1993,8 @@ class ActMain : AppCompatActivity()
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				val (instanceResult, instance) = TootInstance.get(client,host)
-				if(instance == null) return instanceResult
+				val (instance, instanceResult) = TootInstance.get(client, host)
+				instance ?: return instanceResult
 				
 				val misskeyVersion = instance.misskeyVersion
 				val linkHelper = LinkHelper.newLinkHelper(host, misskeyVersion = misskeyVersion)

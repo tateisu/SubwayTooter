@@ -7,9 +7,9 @@ import android.graphics.Rect
 import android.graphics.Typeface
 import android.util.AttributeSet
 import android.view.ViewGroup
-import android.widget.ImageButton
+import androidx.appcompat.widget.AppCompatImageButton
 
-class CountImageButton : ImageButton{
+class CountImageButton : AppCompatImageButton {
 	
 	constructor(context : Context) : super(context) {
 		init(context)
@@ -44,11 +44,11 @@ class CountImageButton : ImageButton{
 		invalidate()
 	}
 	
-	var compoundPadding = 0
-	var paddingRightOriginal = 0
-	var paddingRightWithText = 0
-	val textBounds = Rect()
-	var textWidth = 0
+	private var compoundPadding = 0
+	private var paddingRightOriginal = 0
+	private var paddingRightWithText = 0
+	private val textBounds = Rect()
+	private var textWidth = 0
 	
 	override fun setPadding(left : Int, top : Int, right : Int, bottom : Int) {
 		paddingRightOriginal = right

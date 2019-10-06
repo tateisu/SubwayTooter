@@ -48,9 +48,9 @@ class ColumnTask_Loading(
 			
 			column.muted_word2 = column.encodeFilterTree(column.loadFilter2(client))
 			
-			if( !access_info.isNA) {
-				val (instanceResult, instance) = TootInstance.get(client)
-				if(instance == null) return instanceResult
+			if(! access_info.isNA) {
+				val (instance, instanceResult) = TootInstance.get(client)
+				instance ?: return instanceResult
 				if(instance.instanceType == TootInstance.InstanceType.Pixelfed) {
 					return TootApiResult("currently Pixelfed instance is not supported.")
 				}
@@ -121,7 +121,6 @@ class ColumnTask_Loading(
 	/////////////////////////////////////////////////////////////////
 	// functions that called from ColumnTask.loading lambda.
 	
-
 	internal fun getStatusesPinned(client : TootApiClient, path_base : String) {
 		val result = client.request(path_base)
 		val jsonArray = result?.jsonArray
@@ -691,8 +690,8 @@ class ColumnTask_Loading(
 	) : TootApiResult? {
 		// (Mastodonのみ対応)
 		
-		val (instanceResult, instance) = TootInstance.get(client)
-		if(instance == null) return instanceResult
+		val (instance, instanceResult) = TootInstance.get(client)
+		instance ?: return instanceResult
 		
 		// ステータスIDに該当するトゥート
 		// タンスをまたいだりすると存在しないかもしれないが、エラーは出さない
@@ -735,8 +734,8 @@ class ColumnTask_Loading(
 	internal fun getAccountAroundStatuses(client : TootApiClient) : TootApiResult? {
 		// (Mastodonのみ対応)
 		
-		val (instanceResult, instance) = TootInstance.get(client)
-		if(instance == null) return instanceResult
+		val (instance, instanceResult) = TootInstance.get(client)
+		instance ?: return instanceResult
 		
 		// ステータスIDに該当するトゥート
 		// タンスをまたいだりすると存在しないかもしれない
@@ -986,8 +985,8 @@ class ColumnTask_Loading(
 				return TootApiResult(context.getString(R.string.search_is_not_available_on_pseudo_account))
 			}
 			
-			val(instanceResult,instance) = TootInstance.get(client)
-			if( instance==null) return instanceResult
+			val (instance, instanceResult) = TootInstance.get(client)
+			instance ?: return instanceResult
 			
 			var query = "q=${column.search_query.encodePercent()}"
 			if(column.search_resolve) query += "&resolve=1"

@@ -100,7 +100,7 @@
     <string name="conversation">conversation</string>
     <string name="conversation_around">Conversation du statut: %1$s</string>
     <string name="conversation_view">Visualiser la conversation</string>
-    <string name="copy">Copier</string>
+    <string name="copy_st">Copier</string>
     <string name="copy_complete">Presse-papiers mis à jour.</string>
     <string name="default_status_visibility">Visibilité par défaut du pouet</string>
     <string name="delete">Supprimer</string>

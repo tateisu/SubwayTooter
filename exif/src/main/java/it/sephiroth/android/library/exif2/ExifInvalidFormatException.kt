@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-package it.sephiroth.android.library.exif2;
+package it.sephiroth.android.library.exif2
 
-public class ExifInvalidFormatException extends Exception {
-	public ExifInvalidFormatException( String meg ) {
-		super( meg );
-	}
-}
+class ExifInvalidFormatException(meg : String) : Exception(meg)

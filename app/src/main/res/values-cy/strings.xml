@@ -242,7 +242,7 @@
     <string name="image">Delwedd</string>
     <string name="column_header">Pennawd y golofn</string>
     <string name="foreground_color">Lliw y blaendir</string>
-    <string name="copy">Copïo</string>
+    <string name="copy_st">Copïo</string>
     <string name="send">Anfon</string>
     <string name="mute_word">Gwahardd gair</string>
     <string name="select_and_copy">Dewis a chopïo</string>

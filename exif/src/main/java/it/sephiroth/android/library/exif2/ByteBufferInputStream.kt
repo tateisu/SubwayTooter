@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-package it.sephiroth.android.library.exif2;
+package it.sephiroth.android.library.exif2
 
-/**
- * The constants of the IFD ID defined in EXIF spec.
- */
-public interface IfdId {
-	public static final int TYPE_IFD_0 = 0;
-	public static final int TYPE_IFD_1 = 1;
-	public static final int TYPE_IFD_EXIF = 2;
-	public static final int TYPE_IFD_INTEROPERABILITY = 3;
-	public static final int TYPE_IFD_GPS = 4;
-	/* This is used in ExifData to allocate enough IfdData */
-	static final int TYPE_IFD_COUNT = 5;
+import java.io.InputStream
+import java.nio.ByteBuffer
+import kotlin.math.min
 
+internal class ByteBufferInputStream(private val mBuf : ByteBuffer) : InputStream() {
+	
+	override fun read() : Int = when {
+		! mBuf.hasRemaining() -> - 1
+		else -> mBuf.get().toInt() and 0xFF
+	}
+	
+	override fun read(bytes : ByteArray, off : Int, len : Int) : Int {
+		if(! mBuf.hasRemaining()) return - 1
+		val willRead = min(len, mBuf.remaining())
+		mBuf.get(bytes, off, willRead)
+		return willRead
+	}
 }

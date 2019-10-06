@@ -255,7 +255,7 @@
     <string name="pick_images">Velg bilde(r)…</string>
     <string name="image">Bilde</string>
     <string name="foreground_color">Forgrunnsfarge</string>
-    <string name="copy">Kopier</string>
+    <string name="copy_st">Kopier</string>
     <string name="send">Send</string>
     <string name="mute_word">Bannlys ord</string>
     <string name="select_and_copy">Velg og kopier</string>

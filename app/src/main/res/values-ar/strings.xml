@@ -97,7 +97,7 @@
     <string name="color_and_background">اللون والخلفية…</string>
     <string name="column_background">خلفية العمود</string>
     <string name="foreground_color">اللون الأمامي</string>
-    <string name="copy">نسخ</string>
+    <string name="copy_st">نسخ</string>
     <string name="search_web">البحث على الويب</string>
     <string name="muted_word">الكلمات المحظورة</string>
     <string name="word_was_muted">تم حظر الكلمة.</string>

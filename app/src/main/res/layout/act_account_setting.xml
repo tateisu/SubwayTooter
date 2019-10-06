@@ -726,6 +726,7 @@
         <TextView
             style="@style/setting_row_label"
             android:text="@string/max_toot_chars"
+            android:labelFor="@+id/etMaxTootChars"
             />
 
         <LinearLayout style="@style/setting_row_form">

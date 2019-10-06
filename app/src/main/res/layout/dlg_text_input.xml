@@ -1,37 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <TextView
+        android:id="@+id/tvCaption"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
         android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
-        android:id="@+id/tvCaption"
+        android:layout_marginEnd="12dp"
         android:labelFor="@+id/etInput"
-        />
+        tools:ignore="LabelFor" />
 
     <EditText
         android:id="@+id/etInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
         android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
         android:imeOptions="actionDone"
-        android:inputType="text"
-        />
+        android:importantForAutofill="no"
+        android:inputType="text" />
 
     <LinearLayout
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btnCancel"
@@ -39,8 +37,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/cancel"
-            />
+            android:text="@string/cancel" />
 
         <Button
             android:id="@+id/btnOk"
@@ -48,7 +45,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/ok"
-            />
+            android:text="@string/ok" />
     </LinearLayout>
 </LinearLayout>

@@ -57,10 +57,10 @@ enum class ColumnType(
 	
 	ProfileStatusMastodon(
 		loading = { client ->
-			val(instanceResult,instance) = TootInstance.get(client)
-			if(instance==null){
+			val (instance, instanceResult) = TootInstance.get(client)
+			if(instance == null) {
 				instanceResult
-			}else {
+			} else {
 				val path = column.makeProfileStatusesUrl(column.profile_id)
 				
 				if(instance.versionGE(TootInstance.VERSION_1_6)
@@ -1095,26 +1095,31 @@ enum class ColumnType(
 		headerType = HeaderType.Instance,
 		
 		loading = { client ->
-			val(instanceResult,instance) = TootInstance.get(client,column.instance_uri,allowPixelfed = true)
-			if(instance!=null) {
+			val (instance, instanceResult) = TootInstance.get(
+				client,
+				column.instance_uri,
+				allowPixelfed = true,
+				forceUpdate = true
+			)
+			if(instance != null) {
 				column.instance_information = instance
 				column.handshake = instanceResult?.response?.handshake
 			}
 			instanceResult
-//
-//			// 「インスタンス情報」カラムをNAアカウントで開く場合
-//			instance_name != null -> client.instance = instance_name
-//
-//	val (result, ti) = client.parseInstanceInformation(client.getInstanceInformation())
-//	instance_tmp = ti
-//				return result
-//			}
-//
-//			val result = getInstanceInformation(client, column.instance_uri)
-//			if(instance_tmp != null) {
-//
-//			}
-//			result
+			//
+			//			// 「インスタンス情報」カラムをNAアカウントで開く場合
+			//			instance_name != null -> client.instance = instance_name
+			//
+			//	val (result, ti) = client.parseInstanceInformation(client.getInstanceInformation())
+			//	instance_tmp = ti
+			//				return result
+			//			}
+			//
+			//			val result = getInstanceInformation(client, column.instance_uri)
+			//			if(instance_tmp != null) {
+			//
+			//			}
+			//			result
 		}
 	),
 	
@@ -1342,7 +1347,7 @@ enum class ColumnType(
 	PROFILE_DIRECTORY(36,
 		iconId = { R.drawable.ic_follow_plus },
 		name1 = { it.getString(R.string.profile_directory) },
-		name2 = { context.getString(R.string.profile_directory_of, instance_uri)},
+		name2 = { context.getString(R.string.profile_directory_of, instance_uri) },
 		bAllowPseudo = true,
 		headerType = HeaderType.ProfileDirectory,
 		loading = { client ->
@@ -1358,8 +1363,8 @@ enum class ColumnType(
 		iconId = { R.drawable.ic_account_box },
 		name1 = { it.getString(R.string.account_tl_around) },
 		name2 = {
-			val id =status_id?.toString() ?: "null"
-			context.getString(R.string.account_tl_around_of,id)
+			val id = status_id?.toString() ?: "null"
+			context.getString(R.string.account_tl_around_of, id)
 		},
 		
 		loading = { client -> getAccountAroundStatuses(client) },

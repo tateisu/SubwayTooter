@@ -269,8 +269,9 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			client : TootApiClient,
 			host : String? = client.instance,
 			account : SavedAccount? = if(host == client.instance) client.account else null,
-			allowPixelfed : Boolean = false
-		) : Pair<TootApiResult?, TootInstance?> {
+			allowPixelfed : Boolean = false,
+			forceUpdate :Boolean = false
+		) : Pair<TootInstance?,TootApiResult?> {
 			
 			val tmpInstance = client.instance
 			val tmpAccount = client.account
@@ -282,23 +283,27 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 				// ホスト名ごとに用意したオブジェクトで同期する
 				val cacheEntry = getCacheEntry(instanceName)
 				synchronized(cacheEntry) {
-					// re-use cached item.
-					val now = SystemClock.elapsedRealtime()
-					var item = cacheEntry.data
-					if(item != null && now - item.time_parse <= EXPIRE) {
-						
-						if(item.instanceType == InstanceType.Pixelfed &&
-							! Pref.bpEnablePixelfed(App1.pref) &&
-							! allowPixelfed
-						) {
-							return Pair(
-								TootApiResult("currently Pixelfed instance is not supported."),
-								null
-							)
+
+					var item: TootInstance?
+
+					if(!forceUpdate) {
+						// re-use cached item.
+						val now = SystemClock.elapsedRealtime()
+						item = cacheEntry.data
+						if(item != null && now - item.time_parse <= EXPIRE) {
+							
+							if(item.instanceType == InstanceType.Pixelfed &&
+								! Pref.bpEnablePixelfed(App1.pref) &&
+								! allowPixelfed
+							) {
+								return Pair(
+									null,
+									TootApiResult("currently Pixelfed instance is not supported.")
+								)
+							}
+							
+							return Pair(item,TootApiResult() )
 						}
-						
-						return Pair(TootApiResult(), item)
-						
 					}
 					
 					// get new information
@@ -315,7 +320,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 						client.getInstanceInformation()
 					}
 					
-					val json = result?.jsonObject ?: return Pair(result, null)
+					val json = result?.jsonObject ?: return Pair(null,result)
 					
 					item = parseItem(
 						::TootInstance,
@@ -335,19 +340,22 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 					
 					return when {
 						item == null ->
-							Pair(result.setError("can't parse data in instance information."), null)
+							Pair(
+								null,
+								result.setError("instance information parse error.")
+							)
 						
 						item.instanceType == InstanceType.Pixelfed &&
 							! Pref.bpEnablePixelfed(App1.pref) &&
 							! allowPixelfed ->
 							Pair(
-								result.setError("currently Pixelfed instance is not supported."),
-								null
+								null,
+								result.setError("currently Pixelfed instance is not supported.")
 							)
 						
 						else -> {
 							cacheEntry.data = item
-							Pair(result, item)
+							Pair(item,result)
 						}
 					}
 				}

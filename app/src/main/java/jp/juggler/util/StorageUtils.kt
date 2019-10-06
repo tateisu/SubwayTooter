@@ -3,114 +3,110 @@ package jp.juggler.util
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
-import android.os.storage.StorageManager
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import org.apache.commons.io.IOUtils
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.InputStream
 import java.util.*
 
-internal object StorageUtils{
-	
-	private val log = LogCategory("StorageUtils")
-	
-	private const val PATH_TREE = "tree"
-	private const val PATH_DOCUMENT = "document"
-	
-	internal class FileInfo(any_uri : String?) {
-		
-		var uri : Uri? = null
-		private var mime_type : String? = null
-		
-		init {
-			if(any_uri != null) {
-				uri = if(any_uri.startsWith("/")) {
-					Uri.fromFile(File(any_uri))
-				} else {
-					any_uri.toUri()
-				}
-				val ext = MimeTypeMap.getFileExtensionFromUrl(any_uri)
-				if(ext != null) {
-					mime_type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext.toLowerCase())
-				}
-			}
-		}
-	}
-	
-	private fun getSecondaryStorageVolumesMap(context : Context) : Map<String, String> {
-		val result = HashMap<String, String>()
-		try {
-			val sm = context.applicationContext.getSystemService(Context.STORAGE_SERVICE) as? StorageManager
-			if(sm == null) {
-				log.e("can't get StorageManager")
-			} else {
-				
-				// SDカードスロットのある7.0端末が手元にないから検証できない
-				//			if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ){
-				//				for(StorageVolume volume : sm.getStorageVolumes() ){
-				//					// String path = volume.getPath();
-				//					String state = volume.getState();
-				//
-				//				}
-				//			}
-				
-				val getVolumeList = sm.javaClass.getMethod("getVolumeList")
-				val volumes = getVolumeList.invoke(sm)
-				log.d("volumes type=%s", volumes.javaClass)
-				
-				if(volumes is ArrayList<*>) {
-					//
-					for(volume in volumes) {
-						val volume_clazz = volume.javaClass
-						
-						val path = volume_clazz.getMethod("getPath").invoke(volume) as? String
-						val state = volume_clazz.getMethod("getState").invoke(volume) as? String
-						if(path != null && state == "mounted") {
-							//
-							val isPrimary = volume_clazz.getMethod("isPrimary").invoke(volume) as? Boolean
-							if(isPrimary == true) result["primary"] = path
-							//
-							val uuid = volume_clazz.getMethod("getUuid").invoke(volume) as? String
-							if(uuid != null) result[uuid] = path
-						}
-					}
-				}
-			}
-		} catch(ex : Throwable) {
-			log.trace(ex)
-		}
-		
-		return result
-	}
-	
-	private fun isExternalStorageDocument(uri : Uri) : Boolean {
-		return "com.android.externalstorage.documents" == uri.authority
-	}
-	
-	private fun getDocumentId(documentUri : Uri) : String {
-		val paths = documentUri.pathSegments
-		if(paths.size >= 2 && PATH_DOCUMENT == paths[0]) {
-			// document
-			return paths[1]
-		}
-		if(paths.size >= 4 && PATH_TREE == paths[0]
-			&& PATH_DOCUMENT == paths[2]) {
-			// document in tree
-			return paths[3]
-		}
-		if(paths.size >= 2 && PATH_TREE == paths[0]) {
-			// tree
-			return paths[1]
-		}
-		throw IllegalArgumentException("Invalid URI: $documentUri")
-	}
-	
+// internal object StorageUtils{
+//
+//	private val log = LogCategory("StorageUtils")
+//
+//	private const val PATH_TREE = "tree"
+//	private const val PATH_DOCUMENT = "document"
+//
+//	internal class FileInfo(any_uri : String?) {
+//
+//		var uri : Uri? = null
+//		private var mime_type : String? = null
+//
+//		init {
+//			if(any_uri != null) {
+//				uri = if(any_uri.startsWith("/")) {
+//					Uri.fromFile(File(any_uri))
+//				} else {
+//					any_uri.toUri()
+//				}
+//				val ext = MimeTypeMap.getFileExtensionFromUrl(any_uri)
+//				if(ext != null) {
+//					mime_type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext.toLowerCase(Locale.JAPAN))
+//				}
+//			}
+//		}
+//	}
+//
+//	private fun getSecondaryStorageVolumesMap(context : Context) : Map<String, String> {
+//		val result = HashMap<String, String>()
+//		try {
+//			val sm = context.applicationContext.getSystemService(Context.STORAGE_SERVICE) as? StorageManager
+//			if(sm == null) {
+//				log.e("can't get StorageManager")
+//			} else {
+//
+//				// SDカードスロットのある7.0端末が手元にないから検証できない
+//				//			if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ){
+//				//				for(StorageVolume volume : sm.getStorageVolumes() ){
+//				//					// String path = volume.getPath();
+//				//					String state = volume.getState();
+//				//
+//				//				}
+//				//			}
+//
+//				val getVolumeList = sm.javaClass.getMethod("getVolumeList")
+//				val volumes = getVolumeList.invoke(sm)
+//				log.d("volumes type=%s", volumes.javaClass)
+//
+//				if(volumes is ArrayList<*>) {
+//					//
+//					for(volume in volumes) {
+//						val volume_clazz = volume.javaClass
+//
+//						val path = volume_clazz.getMethod("getPath").invoke(volume) as? String
+//						val state = volume_clazz.getMethod("getState").invoke(volume) as? String
+//						if(path != null && state == "mounted") {
+//							//
+//							val isPrimary = volume_clazz.getMethod("isPrimary").invoke(volume) as? Boolean
+//							if(isPrimary == true) result["primary"] = path
+//							//
+//							val uuid = volume_clazz.getMethod("getUuid").invoke(volume) as? String
+//							if(uuid != null) result[uuid] = path
+//						}
+//					}
+//				}
+//			}
+//		} catch(ex : Throwable) {
+//			log.trace(ex)
+//		}
+//
+//		return result
+//	}
+//
+//	private fun isExternalStorageDocument(uri : Uri) : Boolean {
+//		return "com.android.externalstorage.documents" == uri.authority
+//	}
+//
+//	private fun getDocumentId(documentUri : Uri) : String {
+//		val paths = documentUri.pathSegments
+//		if(paths.size >= 2 && PATH_DOCUMENT == paths[0]) {
+//			// document
+//			return paths[1]
+//		}
+//		if(paths.size >= 4 && PATH_TREE == paths[0]
+//			&& PATH_DOCUMENT == paths[2]) {
+//			// document in tree
+//			return paths[3]
+//		}
+//		if(paths.size >= 2 && PATH_TREE == paths[0]) {
+//			// tree
+//			return paths[1]
+//		}
+//		throw IllegalArgumentException("Invalid URI: $documentUri")
+//	}
+
 //	fun getFile(context : Context, path : String) : File? {
 //		try {
 //			if(path.startsWith("/")) return File(path)
@@ -163,20 +159,23 @@ internal object StorageUtils{
 //
 //		return null
 //	}
-	
-	internal val mimeTypeExMap : HashMap<String, String> by lazy {
-		val map = HashMap<String, String>()
-		map["BDM"] = "application/vnd.syncml.dm+wbxml"
-		map["DAT"] = ""
-		map["TID"] = ""
-		map["js"] = "text/javascript"
-		map["sh"] = "application/x-sh"
-		map["lua"] = "text/x-lua"
-		map
-	}
-	
-	
-	const val MIME_TYPE_APPLICATION_OCTET_STREAM = "application/octet-stream"
+//
+
+//
+//
+//}
+
+private const val MIME_TYPE_APPLICATION_OCTET_STREAM = "application/octet-stream"
+
+private val mimeTypeExMap : HashMap<String, String> by lazy {
+	val map = HashMap<String, String>()
+	map["BDM"] = "application/vnd.syncml.dm+wbxml"
+	map["DAT"] = ""
+	map["TID"] = ""
+	map["js"] = "text/javascript"
+	map["sh"] = "application/x-sh"
+	map["lua"] = "text/x-lua"
+	map
 }
 
 @Suppress("unused")
@@ -190,7 +189,7 @@ fun getMimeType(log : LogCategory?, src : String) : String {
 		if(mime_type?.isNotEmpty() == true) return mime_type
 		
 		//
-		mime_type = StorageUtils.mimeTypeExMap[ext]
+		mime_type = mimeTypeExMap[ext]
 		if(mime_type?.isNotEmpty() == true) return mime_type
 		
 		// 戻り値が空文字列の場合とnullの場合があり、空文字列の場合は既知なのでログ出力しない
@@ -199,9 +198,8 @@ fun getMimeType(log : LogCategory?, src : String) : String {
 			log.w("getMimeType(): unknown file extension '%s'", ext)
 		}
 	}
-	return StorageUtils.MIME_TYPE_APPLICATION_OCTET_STREAM
+	return MIME_TYPE_APPLICATION_OCTET_STREAM
 }
-
 
 fun getDocumentName(contentResolver : ContentResolver, uri : Uri) : String {
 	val errorName = "no_name"
@@ -287,7 +285,6 @@ fun intentGetContent(
 	
 	return Intent.createChooser(intent, caption)
 }
-
 
 data class GetContentResultEntry(
 	val uri : Uri,

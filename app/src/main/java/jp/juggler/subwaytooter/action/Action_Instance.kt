@@ -25,7 +25,7 @@ object Action_Instance {
 			instance == null -> TootTaskRunner(activity).run(host, object : TootTask {
 				var targetInstance : TootInstance? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val (ri, ti) = TootInstance.get(client, host, allowPixelfed = true)
+					val (ti, ri) = TootInstance.get(client, host, allowPixelfed = true)
 					targetInstance = ti
 					return ri
 				}

@@ -36,7 +36,7 @@ object Action_Account {
 					LoginForm.Action.Create -> client.createUser1(Pref.spClientName(activity))
 					
 					LoginForm.Action.Pseudo, LoginForm.Action.Token -> {
-						val (ri, ti) = TootInstance.get(client)
+						val (ti, ri) = TootInstance.get(client)
 						if(ti != null) ri?.data = ti
 						ri
 					}

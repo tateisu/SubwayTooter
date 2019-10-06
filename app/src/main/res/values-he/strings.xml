@@ -364,7 +364,7 @@
     <string name="column_header">כותר העמודה</string>
     <string name="foreground_color">צבע החזית</string>
     <string name="hashtag_and_visibility_not_match">הודעה זו מכילה תגיות , אך נראות ההודעה אינה ציבורית. בדרך כלל ניתן לחפש תגיות רק בהודעות ציבוריות. האם אתה בטוח\?</string>
-    <string name="copy">העתק</string>
+    <string name="copy_st">העתק</string>
     <string name="send">שלח</string>
     <string name="mute_word">אסור מילה</string>
     <string name="select_and_copy">בחר והעתק</string>

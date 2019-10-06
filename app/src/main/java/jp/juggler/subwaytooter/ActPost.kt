@@ -97,24 +97,22 @@ class ActPost : AppCompatActivity(),
 		internal const val MIME_TYPE_JPEG = "image/jpeg"
 		internal const val MIME_TYPE_PNG = "image/png"
 		
-
-		
 		internal val resizeConfigList = arrayOf(
-			ResizeConfig(ResizeType.None,0),
-
-			ResizeConfig(ResizeType.LongSide,640),
-			ResizeConfig(ResizeType.LongSide,800),
-			ResizeConfig(ResizeType.LongSide,1024),
-			ResizeConfig(ResizeType.LongSide,1280),
-			ResizeConfig(ResizeType.LongSide,1600),
-			ResizeConfig(ResizeType.LongSide,2048),
+			ResizeConfig(ResizeType.None, 0),
 			
-			ResizeConfig(ResizeType.SquarePixel,640),
-			ResizeConfig(ResizeType.SquarePixel,800),
-			ResizeConfig(ResizeType.SquarePixel,1024),
-			ResizeConfig(ResizeType.SquarePixel,1280),
-			ResizeConfig(ResizeType.SquarePixel,1600),
-			ResizeConfig(ResizeType.SquarePixel,2048)
+			ResizeConfig(ResizeType.LongSide, 640),
+			ResizeConfig(ResizeType.LongSide, 800),
+			ResizeConfig(ResizeType.LongSide, 1024),
+			ResizeConfig(ResizeType.LongSide, 1280),
+			ResizeConfig(ResizeType.LongSide, 1600),
+			ResizeConfig(ResizeType.LongSide, 2048),
+			
+			ResizeConfig(ResizeType.SquarePixel, 640),
+			ResizeConfig(ResizeType.SquarePixel, 800),
+			ResizeConfig(ResizeType.SquarePixel, 1024),
+			ResizeConfig(ResizeType.SquarePixel, 1280),
+			ResizeConfig(ResizeType.SquarePixel, 1600),
+			ResizeConfig(ResizeType.SquarePixel, 2048)
 		)
 		
 		internal val acceptable_mime_types = HashSet<String>().apply {
@@ -1309,7 +1307,7 @@ class ActPost : AppCompatActivity(),
 								var newInfo : TootInstance? = null
 								
 								override fun background(client : TootApiClient) : TootApiResult? {
-									val (result, ti) = TootInstance.get(client)
+									val (ti, result) = TootInstance.get(client)
 									newInfo = ti
 									return result
 								}
@@ -2121,8 +2119,8 @@ class ActPost : AppCompatActivity(),
 				
 				client.account = account
 				
-				val (tiResult, ti) = TootInstance.get(client)
-				if(ti == null) return tiResult
+				val (ti, tiResult) = TootInstance.get(client)
+				ti ?: return tiResult
 				
 				if(ti.instanceType == TootInstance.InstanceType.Pixelfed) {
 					if(in_reply_to_id != null) {

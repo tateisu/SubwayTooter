@@ -1,10 +1,10 @@
 package jp.juggler.subwaytooter.action
 
 import android.content.Context
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.LogCategory
@@ -32,19 +32,21 @@ internal fun addPseudoAccount(
 		}
 		
 		if(instanceInfo == null) {
-			TootTaskRunner(context).run(host,object : TootTask {
+			TootTaskRunner(context).run(host, object : TootTask {
 				
-				var targetInstance :TootInstance? =null
+				var targetInstance : TootInstance? = null
 				
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val(instanceResult,instance) = TootInstance.get(client)
-					if(instance!=null) targetInstance = instance
+					val (instance, instanceResult) = TootInstance.get(client)
+					targetInstance = instance
 					return instanceResult
 				}
 				
-				override fun handleResult(result : TootApiResult?) =when{
-					result==null ->{}
-					targetInstance == null -> showToast(context,false,result.error)
+				override fun handleResult(result : TootApiResult?) = when {
+					result == null -> {
+					}
+					
+					targetInstance == null -> showToast(context, false, result.error)
 					else -> addPseudoAccount(context, host, targetInstance, callback)
 				}
 			})
@@ -62,7 +64,7 @@ internal fun addPseudoAccount(
 			JSONObject(),
 			misskeyVersion = instanceInfo.misskeyVersion
 		)
-
+		
 		account = SavedAccount.loadAccount(context, row_id)
 		if(account == null) {
 			throw RuntimeException("loadAccount returns null.")
@@ -122,24 +124,24 @@ internal fun saveUserRelationMisskey(
 	return relation
 }
 
-// relationshipを取得
-internal fun loadRelation1Mastodon(
-	client : TootApiClient,
-	access_info : SavedAccount,
-	who : TootAccount
-) : RelationResult {
-	val rr = RelationResult()
-	rr.result = client.request("/api/v1/accounts/relationships?id=${who.id}")
-	val r2 = rr.result
-	val jsonArray = r2?.jsonArray
-	if(jsonArray != null) {
-		val list = parseList(::TootRelationShip, TootParser(client.context, access_info), jsonArray)
-		if(list.isNotEmpty()) {
-			rr.relation = saveUserRelation(access_info, list[0])
-		}
-	}
-	return rr
-}
+//// relationshipを取得
+//internal fun loadRelation1Mastodon(
+//	client : TootApiClient,
+//	access_info : SavedAccount,
+//	who : TootAccount
+//) : RelationResult {
+//	val rr = RelationResult()
+//	rr.result = client.request("/api/v1/accounts/relationships?id=${who.id}")
+//	val r2 = rr.result
+//	val jsonArray = r2?.jsonArray
+//	if(jsonArray != null) {
+//		val list = parseList(::TootRelationShip, TootParser(client.context, access_info), jsonArray)
+//		if(list.isNotEmpty()) {
+//			rr.relation = saveUserRelation(access_info, list[0])
+//		}
+//	}
+//	return rr
+//}
 
 // 別アカ操作と別タンスの関係
 const val NOT_CROSS_ACCOUNT = 1

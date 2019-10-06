@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/viewRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -18,8 +16,7 @@
         android:fadingEdgeLength="20dp"
         android:fillViewport="true"
         android:requiresFadingEdge="vertical"
-        android:scrollbarStyle="outsideOverlay"
-        >
+        android:scrollbarStyle="outsideOverlay">
 
         <LinearLayout
             android:id="@+id/llContent"
@@ -29,8 +26,7 @@
             android:paddingStart="12dp"
             android:paddingTop="12dp"
             android:paddingEnd="12dp"
-            android:paddingBottom="320dp"
-            >
+            android:paddingBottom="320dp">
 
             <LinearLayout
                 android:id="@+id/llReply"
@@ -39,21 +35,18 @@
                 android:layout_marginBottom="4dp"
                 android:background="?attr/colorReplyBackground"
                 android:orientation="vertical"
-                android:padding="6dp"
-                >
+                android:padding="6dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/reply_to_this_status"
-                    />
+                    android:text="@string/reply_to_this_status" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    >
+                    android:orientation="horizontal">
 
                     <jp.juggler.subwaytooter.view.MyNetworkImageView
                         android:id="@+id/ivReply"
@@ -61,16 +54,14 @@
                         android:layout_height="40dp"
                         android:layout_marginEnd="8dp"
                         android:background="@drawable/btn_bg_transparent"
-                        android:scaleType="fitCenter"
-                        />
+                        android:scaleType="fitCenter" />
 
                     <TextView
                         android:id="@+id/tvReplyTo"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:gravity="center_vertical"
-                        />
+                        android:gravity="center_vertical" />
 
                     <ImageButton
                         android:id="@+id/btnRemoveReply"
@@ -81,31 +72,27 @@
                         android:contentDescription="@string/delete"
                         android:gravity="center_vertical"
                         android:src="@drawable/ic_close"
-                        android:tint="?attr/colorVectorDrawable"
-                        />
+                        android:tint="?attr/colorVectorDrawable" />
                 </LinearLayout>
 
                 <CheckBox
                     android:id="@+id/cbQuoteRenote"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/make_quote_renote"
-                    />
+                    android:text="@string/make_quote_renote" />
 
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                >
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="4dp"
-                    android:text="@string/post_from"
-                    />
+                    android:text="@string/post_from" />
 
                 <Button
                     android:id="@+id/btnAccount"
@@ -116,8 +103,7 @@
                     android:gravity="center_vertical"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
-                    android:textAllCaps="false"
-                    />
+                    android:textAllCaps="false" />
             </LinearLayout>
 
             <LinearLayout
@@ -127,16 +113,14 @@
                 android:layout_marginTop="4dp"
                 android:baselineAligned="false"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
-                >
+                android:orientation="horizontal">
 
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
                     android:id="@+id/ivMedia1"
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
                     android:background="@drawable/btn_bg_transparent"
-                    android:scaleType="fitCenter"
-                    />
+                    android:scaleType="fitCenter" />
 
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
                     android:id="@+id/ivMedia2"
@@ -144,8 +128,7 @@
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
                     android:background="@drawable/btn_bg_transparent"
-                    android:scaleType="fitCenter"
-                    />
+                    android:scaleType="fitCenter" />
 
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
                     android:id="@+id/ivMedia3"
@@ -153,8 +136,7 @@
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
                     android:background="@drawable/btn_bg_transparent"
-                    android:scaleType="fitCenter"
-                    />
+                    android:scaleType="fitCenter" />
 
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
                     android:id="@+id/ivMedia4"
@@ -162,8 +144,7 @@
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
                     android:background="@drawable/btn_bg_transparent"
-                    android:scaleType="fitCenter"
-                    />
+                    android:scaleType="fitCenter" />
 
                 <CheckBox
                     android:id="@+id/cbNSFW"
@@ -171,8 +152,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical|start"
                     android:layout_marginStart="4dp"
-                    android:text="@string/nsfw"
-                    />
+                    android:text="@string/nsfw" />
             </LinearLayout>
 
             <CheckBox
@@ -180,30 +160,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="@string/content_warning"
-                />
+                android:text="@string/content_warning" />
 
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorPostFormBackground"
-                >
+                android:background="?attr/colorPostFormBackground">
 
                 <jp.juggler.subwaytooter.view.MyEditText
                     android:id="@+id/etContentWarning"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/content_warning_hint"
-                    android:inputType="text"
-                    />
+                    android:inputType="text" />
             </FrameLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:baselineAligned="false"
-                android:orientation="horizontal"
-                >
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"
@@ -211,8 +187,7 @@
                     android:layout_gravity="bottom"
                     android:layout_marginTop="8dp"
                     android:layout_weight="1"
-                    android:text="@string/status"
-                    />
+                    android:text="@string/status" />
 
                 <ImageButton
                     android:id="@+id/btnFeaturedTag"
@@ -253,8 +228,7 @@
                     android:gravity="start|top"
                     android:hint="@string/content_hint"
                     android:inputType="textMultiLine"
-                    android:minLines="5"
-                    />
+                    android:minLines="5" />
 
             </FrameLayout>
 
@@ -262,14 +236,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="@string/scheduled_status"
-                />
+                android:text="@string/scheduled_status" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                >
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/tvSchedule"
@@ -277,8 +249,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
-                    android:gravity="center"
-                    />
+                    android:gravity="center" />
 
                 <ImageButton
                     android:id="@+id/ibSchedule"
@@ -309,36 +280,31 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="@string/make_enquete"
-                />
+                android:text="@string/make_enquete" />
 
             <LinearLayout
                 android:id="@+id/llEnquete"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                >
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="@string/choice1"
-                    />
+                    android:text="@string/choice1" />
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/colorPostFormBackground"
-                    >
+                    android:background="?attr/colorPostFormBackground">
 
                     <jp.juggler.subwaytooter.view.MyEditText
                         android:id="@+id/etChoice1"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="start|top"
-                        android:inputType="text"
-                        />
+                        android:inputType="text" />
 
                 </FrameLayout>
 
@@ -346,22 +312,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="@string/choice2"
-                    />
+                    android:text="@string/choice2" />
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/colorPostFormBackground"
-                    >
+                    android:background="?attr/colorPostFormBackground">
 
                     <jp.juggler.subwaytooter.view.MyEditText
                         android:id="@+id/etChoice2"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="start|top"
-                        android:inputType="text"
-                        />
+                        android:inputType="text" />
 
                 </FrameLayout>
 
@@ -369,22 +332,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="@string/choice3"
-                    />
+                    android:text="@string/choice3" />
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/colorPostFormBackground"
-                    >
+                    android:background="?attr/colorPostFormBackground">
 
                     <jp.juggler.subwaytooter.view.MyEditText
                         android:id="@+id/etChoice3"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="start|top"
-                        android:inputType="text"
-                        />
+                        android:inputType="text" />
 
                 </FrameLayout>
 
@@ -392,22 +352,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="@string/choice4"
-                    />
+                    android:text="@string/choice4" />
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/colorPostFormBackground"
-                    >
+                    android:background="?attr/colorPostFormBackground">
 
                     <jp.juggler.subwaytooter.view.MyEditText
                         android:id="@+id/etChoice4"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="start|top"
-                        android:inputType="text"
-                        />
+                        android:inputType="text" />
 
                 </FrameLayout>
 
@@ -416,31 +373,27 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="@string/allow_multiple_choice"
-                    />
+                    android:text="@string/allow_multiple_choice" />
 
                 <CheckBox
                     android:id="@+id/cbHideTotals"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="@string/hide_totals"
-                    />
+                    android:text="@string/hide_totals" />
 
                 <LinearLayout
                     android:id="@+id/llExpire"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:orientation="horizontal"
-                    >
+                    android:orientation="horizontal">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="4dp"
-                        android:text="@string/expiration"
-                        />
+                        android:text="@string/expiration" />
 
                     <EditText
                         android:id="@+id/etExpireDays"
@@ -450,23 +403,21 @@
                         android:inputType="numberDecimal"
                         android:minWidth="48dp"
                         android:text="1"
-                        tools:ignore="Autofill,HardcodedText"
+                        tools:ignore="Autofill,HardcodedText,LabelFor"
 
                         />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/poll_expire_days"
-                        />
+                        android:text="@string/poll_expire_days" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
                         android:layout_marginEnd="4dp"
-                        android:text="@string/plus"
-                        />
+                        android:text="@string/plus" />
 
                     <EditText
                         android:id="@+id/etExpireHours"
@@ -475,22 +426,19 @@
                         android:gravity="center"
                         android:inputType="numberDecimal"
                         android:minWidth="48dp"
-                        tools:ignore="Autofill,HardcodedText"
-                        />
+                        tools:ignore="Autofill,HardcodedText,LabelFor" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/poll_expire_hours"
-                        />
+                        android:text="@string/poll_expire_hours" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
                         android:layout_marginEnd="4dp"
-                        android:text="@string/plus"
-                        />
+                        android:text="@string/plus" />
 
                     <EditText
                         android:id="@+id/etExpireMinutes"
@@ -499,14 +447,12 @@
                         android:gravity="center"
                         android:inputType="numberDecimal"
                         android:minWidth="48dp"
-                        tools:ignore="Autofill,HardcodedText"
-                        />
+                        tools:ignore="Autofill,HardcodedText,LabelFor" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/poll_expire_minutes"
-                        />
+                        android:text="@string/poll_expire_minutes" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -521,8 +467,7 @@
         android:layout_height="48dp"
         android:background="?attr/colorStatusButtonsPopupBg"
         android:baselineAligned="false"
-        android:orientation="horizontal"
-        >
+        android:orientation="horizontal">
 
         <ImageButton
             android:id="@+id/btnAttachment"
@@ -531,8 +476,7 @@
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/media_attachment"
             android:src="@drawable/ic_clip"
-            android:tint="?attr/colorVectorDrawable"
-            />
+            android:tint="?attr/colorVectorDrawable" />
 
         <ImageButton
             android:id="@+id/btnVisibility"
@@ -544,8 +488,7 @@
             android:minWidth="48dp"
             android:minHeight="48dp"
             android:tint="?attr/colorVectorDrawable"
-            tools:src="@drawable/ic_public"
-            />
+            tools:src="@drawable/ic_public" />
 
         <ImageButton
             android:id="@+id/btnPlugin"
@@ -555,8 +498,7 @@
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/plugin"
             android:src="@drawable/ic_extension"
-            android:tint="?attr/colorVectorDrawable"
-            />
+            android:tint="?attr/colorVectorDrawable" />
 
         <ImageButton
             android:id="@+id/btnMore"
@@ -573,8 +515,7 @@
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            />
+            android:layout_weight="1" />
 
         <TextView
             android:id="@+id/tvCharCount"
@@ -585,8 +526,7 @@
             android:gravity="end|center_vertical"
             android:minWidth="32dp"
             tools:text="-500"
-            tools:textColor="#f00"
-            />
+            tools:textColor="#f00" />
 
         <ImageButton
             android:id="@+id/btnPost"

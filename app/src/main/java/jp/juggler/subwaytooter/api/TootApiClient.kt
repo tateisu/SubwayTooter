@@ -1039,13 +1039,11 @@ class TootApiClient(
 		forceUpdateClient : Boolean = false
 	) : TootApiResult? {
 		
-		val (ri, ti) = TootInstance.get(this)
-		return if(ti == null || (ri?.response?.code ?: 0) !in 200 until 300) {
-			ri
-		} else if(ti.misskeyVersion > 0) {
-			authentication1Misskey(clientNameArg, ti)
-		} else {
-			authentication1Mastodon(clientNameArg, ti, forceUpdateClient)
+		val (ti, ri) = TootInstance.get(this)
+		ti ?: return ri
+		return when {
+			ti.misskeyVersion > 0 -> authentication1Misskey(clientNameArg, ti)
+			else -> authentication1Mastodon(clientNameArg, ti, forceUpdateClient)
 		}
 	}
 	
@@ -1150,8 +1148,9 @@ class TootApiClient(
 	
 	fun createUser1(clientNameArg : String) : TootApiResult? {
 		
-		val (ri, ti) = TootInstance.get(this)
-		if(ti == null) return ri
+		val (ti, ri) = TootInstance.get(this)
+		ti ?: return ri
+		
 		return when(ti.instanceType) {
 			TootInstance.InstanceType.Misskey ->
 				TootApiResult("Misskey has no API to create new account")
@@ -1185,15 +1184,15 @@ class TootApiClient(
 		
 		
 		if(! sendRequest(result) {
-
-				val params = ArrayList<String>().apply{
+				
+				val params = ArrayList<String>().apply {
 					add("username=${username.encodePercent()}")
 					add("email=${email.encodePercent()}")
 					add("password=${password.encodePercent()}")
 					add("agreement=${agreement}")
-					if( reason?.isNotEmpty() == true ) add("reason=${reason.encodePercent()}")
+					if(reason?.isNotEmpty() == true) add("reason=${reason.encodePercent()}")
 				}
-
+				
 				params
 					.joinToString("&").toFormRequestBody().toPost()
 					.url("https://$instance/api/v1/accounts")

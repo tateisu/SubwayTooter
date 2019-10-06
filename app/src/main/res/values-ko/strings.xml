@@ -305,7 +305,7 @@
     <string name="column_header">칼럼 헤더</string>
     <string name="foreground_color">전면색</string>
     <string name="hashtag_and_visibility_not_match">이 메시지는 해시태그를 포함하고 있지만 공개 범위가 전체 공개가 아닙니다. 보통 해시태그는 공개 메시지에서만 검색 가능합니다. 계속하시겠습니까\?</string>
-    <string name="copy">복사</string>
+    <string name="copy_st">복사</string>
     <string name="send">전송</string>
     <string name="mute_word">금지 단어</string>
     <string name="select_and_copy">선택과 복사</string>

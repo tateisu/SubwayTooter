@@ -2,7 +2,6 @@ package it.sephiroth.android.library.exif2
 
 import android.util.Log
 import android.util.SparseIntArray
-import junit.framework.Assert.fail
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -13,6 +12,7 @@ class Test1 {
 	
 	@Test
 	fun testLog() {
+		Log.v("TEST","test")
 		assertTrue("using android.util.Log", true)
 	}
 	
@@ -74,7 +74,7 @@ class Test1 {
 		rv = getOrientation(fileName)
 		assertEquals(fileName,1,rv.first)
 		
-		// this file has no orientation, raises exception.
+		// this file has no orientation, it raises exception.
 		fileName = "test2.jpg"
 		rv = getOrientation(fileName)
 		assertTrue(fileName,rv.second != null)

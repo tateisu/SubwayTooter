@@ -33,12 +33,7 @@ import java.util.Arrays
  * @see IfdData
  */
 @Suppress("unused")
-internal open class ExifData(
-	/**
-	 * Gets the byte order.
-	 */
-	val byteOrder : ByteOrder
-) {
+internal open class ExifData( val byteOrder : ByteOrder ) {
 	
 	var sections : List<ExifParser.Section>? = null
 	private val mIfdDatas = arrayOfNulls<IfdData>(IfdId.TYPE_IFD_COUNT)
@@ -110,7 +105,6 @@ internal open class ExifData(
 				Log.w(TAG, "Failed to decode the user comment")
 				null
 			}
-			
 		}
 	
 	/**
@@ -120,7 +114,7 @@ internal open class ExifData(
 	val allTags : List<ExifTag>?
 		get() {
 			val ret = ArrayList<ExifTag>()
-			mIfdDatas.forEach { it?.allTags?.forEach { tag->ret.add(tag)  } }
+			mIfdDatas.forEach { it?.allTags?.forEach { tag -> ret.add(tag) } }
 			return if(ret.isEmpty()) null else ret
 		}
 	
@@ -241,7 +235,7 @@ internal open class ExifData(
 	 */
 	fun getAllTagsForIfd(ifd : Int) : List<ExifTag>? {
 		val d = mIfdDatas[ifd] ?: return null
-		val tags = d.allTags ?: return null
+		val tags = d.allTags
 		val ret = ArrayList<ExifTag>(tags.size)
 		for(t in tags) {
 			ret.add(t)
@@ -327,8 +321,13 @@ internal open class ExifData(
 	
 	companion object {
 		private const val TAG = "ExifData"
-		private val USER_COMMENT_ASCII = byteArrayOf(0x41, 0x53, 0x43, 0x49, 0x49, 0x00, 0x00, 0x00)
-		private val USER_COMMENT_JIS = byteArrayOf(0x4A, 0x49, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00)
+		
+		private val USER_COMMENT_ASCII =
+			byteArrayOf(0x41, 0x53, 0x43, 0x49, 0x49, 0x00, 0x00, 0x00)
+		
+		private val USER_COMMENT_JIS =
+			byteArrayOf(0x4A, 0x49, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00)
+		
 		private val USER_COMMENT_UNICODE =
 			byteArrayOf(0x55, 0x4E, 0x49, 0x43, 0x4F, 0x44, 0x45, 0x00)
 	}

@@ -249,7 +249,7 @@ private constructor(
 					// stop before hitting compressed data
 					mSections.add(section)
 					uncompressedDataPosition = dataStream.readByteCount
-					return tiffStream !!
+					return tiffStream ?: error("stop before hitting compressed data")
 				}
 				
 				JpegHeader.TAG_M_DQT ->

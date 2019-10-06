@@ -9,18 +9,21 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.os.*
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
+import android.os.Bundle
+import android.os.Environment
+import android.os.SystemClock
 import android.view.View
 import android.view.Window
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.MediaSourceEventListener
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
@@ -28,7 +31,6 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
-import it.sephiroth.android.library.exif2.ExifInterface
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
@@ -310,13 +312,13 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		}
 		
 		when(ta.type) {
-
+			
 			TootAttachmentType.Unknown ->
 				showError(getString(R.string.media_attachment_type_error, ta.type.id))
-
+			
 			TootAttachmentType.Image ->
 				loadBitmap(ta)
-
+			
 			TootAttachmentType.Video,
 			TootAttachmentType.GIFV,
 			TootAttachmentType.Audio ->
@@ -354,7 +356,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			this, Util.getUserAgent(this, getString(R.string.app_name)), defaultBandwidthMeter
 		)
 		
-		val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory,extractorsFactory)
+		val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
 			.createMediaSource(url.toUri())
 		
 		mediaSource.addEventListener(App1.getAppState(this).handler, mediaSourceEventListener)
@@ -478,19 +480,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				@Suppress("SameParameterValue") pixel_max : Int
 			) : Bitmap? {
 				
-				// EXIF回転情報の取得
-				val orientation : Int? = try {
-					ExifInterface().apply {
-						readExif(
-							ByteArrayInputStream(data),
-							ExifInterface.Options.OPTION_IFD_0
-								or ExifInterface.Options.OPTION_IFD_1
-								or ExifInterface.Options.OPTION_IFD_EXIF
-						)
-					}.getTagIntValue(ExifInterface.TAG_ORIENTATION)
-				} catch(ex : Throwable) {
-					null
-				}
+				val orientation : Int? = ByteArrayInputStream(data).imageOrientation
 				
 				// detects image size
 				options.inJustDecodeBounds = true
@@ -792,9 +782,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
 		
 		@Suppress("ControlFlowWithEmptyBody")
-		if( Build.VERSION.SDK_INT >= 29) {
+		if(Build.VERSION.SDK_INT >= 29) {
 			// Android 10 以降では allowScanningByMediaScanner は無視される
-		}else{
+		} else {
 			//メディアスキャンを許可する
 			@Suppress("DEPRECATION")
 			request.allowScanningByMediaScanner()

@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.exp
+import kotlin.math.ln
 
 /**
  * This class provides methods and constants for reading and writing jpeg file
@@ -51,7 +52,6 @@ class ExifInterface {
 	private var mData = ExifData(DEFAULT_BYTE_ORDER)
 	
 	private val mGPSTimeStampCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-	private var mTagInfo : SparseIntArray? = null
 	
 	/**
 	 * Get the exif tags in this ExifInterface object or null if none exist.
@@ -61,31 +61,24 @@ class ExifInterface {
 	val allTags : List<ExifTag>?
 		get() = mData.allTags
 	
-	val tagInfo : SparseIntArray
-		get() {
-			var v = mTagInfo
-			if(v == null) {
-				v = SparseIntArray()
-				mTagInfo = v
-				initTagInfo()
-			}
-			return v
-		}
+	val tagInfo : SparseIntArray by lazy { SparseIntArray().also { it.initTagInfo() } }
 	
 	/**
 	 * Returns the thumbnail from IFD1 as a bitmap, or null if none exists.
 	 *
 	 * @return the thumbnail as a bitmap.
 	 */
-	// TODO: implement uncompressed
 	val thumbnailBitmap : Bitmap?
-		get() {
-			if(mData.hasCompressedThumbnail()) {
+		get() = when {
+			mData.hasCompressedThumbnail() -> {
 				val thumb = mData.compressedThumbnail
-				return BitmapFactory.decodeByteArray(thumb, 0, thumb !!.size)
-			} else if(mData.hasUncompressedStrip()) {
+				BitmapFactory.decodeByteArray(thumb, 0, thumb !!.size)
 			}
-			return null
+			
+			// TODO: implement uncompressed
+			mData.hasUncompressedStrip() -> null
+			
+			else -> null
 		}
 	
 	/**
@@ -195,10 +188,10 @@ class ExifInterface {
 			val latitude = getTagRationalValues(TAG_GPS_LATITUDE)
 			val latitudeRef = getTagStringValue(TAG_GPS_LATITUDE_REF)
 			
-			return if(null == latitude || null == latitudeRef) null else convertRationalLatLonToString(
-				latitude,
-				latitudeRef
-			)
+			return if(null == latitude || null == latitudeRef)
+				null
+			else
+				convertRationalLatLonToString(latitude, latitudeRef)
 		}
 	
 	/**
@@ -210,10 +203,10 @@ class ExifInterface {
 			val longitude = getTagRationalValues(TAG_GPS_LONGITUDE)
 			val longitudeRef = getTagStringValue(TAG_GPS_LONGITUDE_REF)
 			
-			return if(null == longitude || null == longitudeRef) null else convertRationalLatLonToString(
-				longitude,
-				longitudeRef
-			)
+			return if(null == longitude || null == longitudeRef)
+				null
+			else
+				convertRationalLatLonToString(longitude, longitudeRef)
 		}
 	
 	/**
@@ -221,15 +214,13 @@ class ExifInterface {
 	 */
 	val apertureSize : Double
 		get() {
-			var rational = getTagRationalValue(TAG_F_NUMBER)
-			if(null != rational && rational.toDouble() > 0) {
-				return rational.toDouble()
-			}
+			var v = getTagRationalValue(TAG_F_NUMBER)?.toDouble()
+			if(v != null && v > 0.0) return v
 			
-			rational = getTagRationalValue(TAG_APERTURE_VALUE)
-			return if(null != rational && rational.toDouble() > 0) {
-				exp(rational.toDouble() * Math.log(2.0) * 0.5)
-			} else 0.0
+			v = getTagRationalValue(TAG_APERTURE_VALUE)?.toDouble()
+			if(v != null && v > 0.0) return exp(v * ln(2.0) * 0.5)
+			
+			return 0.0
 		}
 	
 	/**
@@ -244,8 +235,9 @@ class ExifInterface {
 			if(null != lensModel) return lensModel
 			
 			val rat = getTagRationalValues(TAG_LENS_SPECS)
-			return if(null != rat) ExifUtil.processLensSpecifications(rat) else null
+			if(null != rat) return ExifUtil.processLensSpecifications(rat)
 			
+			return null
 		}
 	
 	init {
@@ -530,475 +522,6 @@ class ExifInterface {
 		return if(! ExifTag.isValidIfd(ifdId)) {
 			null
 		} else mData.getTag(getTrueTagKey(tagId), ifdId)
-	}
-	
-	private fun initTagInfo() {
-		/*
-		 * We put tag information in a 4-bytes integer. The first byte a bitmask
-		 * representing the allowed IFDs of the tag, the second byte is the data
-		 * type, and the last two byte are a short value indicating the default
-		 * component count of this tag.
-		 */
-		// IFD0 tags
-		val ifdAllowedIfds = intArrayOf(IfdId.TYPE_IFD_0, IfdId.TYPE_IFD_1)
-		val ifdFlags = getFlagsFromAllowedIfds(ifdAllowedIfds) shl 24
-		mTagInfo !!.put(TAG_MAKE, ifdFlags or (ExifTag.TYPE_ASCII shl 16))
-		mTagInfo !!.put(
-			TAG_IMAGE_WIDTH,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_IMAGE_LENGTH,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_BITS_PER_SAMPLE,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 3
-		)
-		mTagInfo !!.put(
-			TAG_COMPRESSION,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_PHOTOMETRIC_INTERPRETATION,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_ORIENTATION,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_SAMPLES_PER_PIXEL,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_PLANAR_CONFIGURATION,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_Y_CB_CR_SUB_SAMPLING,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_Y_CB_CR_POSITIONING,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_X_RESOLUTION,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_Y_RESOLUTION,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_RESOLUTION_UNIT,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_STRIP_OFFSETS,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_LONG shl 16)
-		)
-		mTagInfo !!.put(
-			TAG_ROWS_PER_STRIP,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_STRIP_BYTE_COUNTS,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_LONG shl 16)
-		)
-		mTagInfo !!.put(
-			TAG_TRANSFER_FUNCTION,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 3 * 256
-		)
-		mTagInfo !!.put(
-			TAG_WHITE_POINT,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_PRIMARY_CHROMATICITIES,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 6
-		)
-		mTagInfo !!.put(
-			TAG_Y_CB_CR_COEFFICIENTS,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 3
-		)
-		mTagInfo !!.put(
-			TAG_REFERENCE_BLACK_WHITE,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 6
-		)
-		mTagInfo !!.put(TAG_DATE_TIME, ifdFlags or (ExifTag.TYPE_ASCII shl 16) or 20)
-		mTagInfo !!.put(
-			TAG_IMAGE_DESCRIPTION,
-			ifdFlags or (ExifTag.TYPE_ASCII shl 16)
-		)
-		mTagInfo !!.put(TAG_MODEL, ifdFlags or (ExifTag.TYPE_ASCII shl 16))
-		mTagInfo !!.put(TAG_SOFTWARE, ifdFlags or (ExifTag.TYPE_ASCII shl 16))
-		mTagInfo !!.put(TAG_ARTIST, ifdFlags or (ExifTag.TYPE_ASCII shl 16))
-		mTagInfo !!.put(TAG_COPYRIGHT, ifdFlags or (ExifTag.TYPE_ASCII shl 16))
-		mTagInfo !!.put(
-			TAG_EXIF_IFD,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_GPS_IFD,
-			ifdFlags or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1
-		)
-		// IFD1 tags
-		val ifd1AllowedIfds = intArrayOf(IfdId.TYPE_IFD_1)
-		val ifdFlags1 = getFlagsFromAllowedIfds(ifd1AllowedIfds) shl 24
-		mTagInfo !!.put(
-			TAG_JPEG_INTERCHANGE_FORMAT,
-			ifdFlags1 or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_JPEG_INTERCHANGE_FORMAT_LENGTH,
-			ifdFlags1 or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1
-		)
-		// Exif tags
-		val exifAllowedIfds = intArrayOf(IfdId.TYPE_IFD_EXIF)
-		val exifFlags = getFlagsFromAllowedIfds(exifAllowedIfds) shl 24
-		mTagInfo !!.put(
-			TAG_EXIF_VERSION,
-			exifFlags or (ExifTag.TYPE_UNDEFINED shl 16) or 4
-		)
-		mTagInfo !!.put(
-			TAG_FLASHPIX_VERSION,
-			exifFlags or (ExifTag.TYPE_UNDEFINED shl 16) or 4
-		)
-		mTagInfo !!.put(
-			TAG_COLOR_SPACE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_COMPONENTS_CONFIGURATION,
-			exifFlags or (ExifTag.TYPE_UNDEFINED shl 16) or 4
-		)
-		mTagInfo !!.put(
-			TAG_COMPRESSED_BITS_PER_PIXEL,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_PIXEL_X_DIMENSION,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_PIXEL_Y_DIMENSION,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1
-		)
-		mTagInfo !!.put(TAG_MAKER_NOTE, exifFlags or (ExifTag.TYPE_UNDEFINED shl 16))
-		mTagInfo !!.put(
-			TAG_USER_COMMENT,
-			exifFlags or (ExifTag.TYPE_UNDEFINED shl 16)
-		)
-		mTagInfo !!.put(
-			TAG_RELATED_SOUND_FILE,
-			exifFlags or (ExifTag.TYPE_ASCII shl 16) or 13
-		)
-		mTagInfo !!.put(
-			TAG_DATE_TIME_ORIGINAL,
-			exifFlags or (ExifTag.TYPE_ASCII shl 16) or 20
-		)
-		mTagInfo !!.put(
-			TAG_DATE_TIME_DIGITIZED,
-			exifFlags or (ExifTag.TYPE_ASCII shl 16) or 20
-		)
-		mTagInfo !!.put(TAG_SUB_SEC_TIME, exifFlags or (ExifTag.TYPE_ASCII shl 16))
-		mTagInfo !!.put(
-			TAG_SUB_SEC_TIME_ORIGINAL,
-			exifFlags or (ExifTag.TYPE_ASCII shl 16)
-		)
-		mTagInfo !!.put(
-			TAG_SUB_SEC_TIME_DIGITIZED,
-			exifFlags or (ExifTag.TYPE_ASCII shl 16)
-		)
-		mTagInfo !!.put(
-			TAG_IMAGE_UNIQUE_ID,
-			exifFlags or (ExifTag.TYPE_ASCII shl 16) or 33
-		)
-		mTagInfo !!.put(
-			TAG_LENS_SPECS,
-			exifFlags or (ExifTag.TYPE_RATIONAL shl 16) or 4
-		)
-		mTagInfo !!.put(TAG_LENS_MAKE, exifFlags or (ExifTag.TYPE_ASCII shl 16))
-		mTagInfo !!.put(TAG_LENS_MODEL, exifFlags or (ExifTag.TYPE_ASCII shl 16))
-		mTagInfo !!.put(
-			TAG_SENSITIVITY_TYPE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_EXPOSURE_TIME,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_F_NUMBER,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_EXPOSURE_PROGRAM,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_SPECTRAL_SENSITIVITY,
-			exifFlags or (ExifTag.TYPE_ASCII shl 16)
-		)
-		mTagInfo !!.put(
-			TAG_ISO_SPEED_RATINGS,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16)
-		)
-		mTagInfo !!.put(TAG_OECF, exifFlags or (ExifTag.TYPE_UNDEFINED shl 16))
-		mTagInfo !!.put(
-			TAG_SHUTTER_SPEED_VALUE,
-			exifFlags or (ExifTag.TYPE_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_APERTURE_VALUE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_BRIGHTNESS_VALUE,
-			exifFlags or (ExifTag.TYPE_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_EXPOSURE_BIAS_VALUE,
-			exifFlags or (ExifTag.TYPE_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_MAX_APERTURE_VALUE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_SUBJECT_DISTANCE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_METERING_MODE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_LIGHT_SOURCE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_FLASH,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_FOCAL_LENGTH,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_SUBJECT_AREA,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16)
-		)
-		mTagInfo !!.put(
-			TAG_FLASH_ENERGY,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_SPATIAL_FREQUENCY_RESPONSE,
-			exifFlags or (ExifTag.TYPE_UNDEFINED shl 16)
-		)
-		mTagInfo !!.put(
-			TAG_FOCAL_PLANE_X_RESOLUTION,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_FOCAL_PLANE_Y_RESOLUTION,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_FOCAL_PLANE_RESOLUTION_UNIT,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_SUBJECT_LOCATION,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_EXPOSURE_INDEX,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_SENSING_METHOD,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_FILE_SOURCE,
-			exifFlags or (ExifTag.TYPE_UNDEFINED shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_SCENE_TYPE,
-			exifFlags or (ExifTag.TYPE_UNDEFINED shl 16) or 1
-		)
-		mTagInfo !!.put(TAG_CFA_PATTERN, exifFlags or (ExifTag.TYPE_UNDEFINED shl 16))
-		mTagInfo !!.put(
-			TAG_CUSTOM_RENDERED,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_EXPOSURE_MODE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_WHITE_BALANCE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_DIGITAL_ZOOM_RATIO,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_FOCAL_LENGTH_IN_35_MM_FILE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_SCENE_CAPTURE_TYPE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_GAIN_CONTROL,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_CONTRAST,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_SATURATION,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_SHARPNESS,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_DEVICE_SETTING_DESCRIPTION,
-			exifFlags or (ExifTag.TYPE_UNDEFINED shl 16)
-		)
-		mTagInfo !!.put(
-			TAG_SUBJECT_DISTANCE_RANGE,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_INTEROPERABILITY_IFD,
-			exifFlags or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1
-		)
-		// GPS tag
-		val gpsAllowedIfds = intArrayOf(IfdId.TYPE_IFD_GPS)
-		val gpsFlags = getFlagsFromAllowedIfds(gpsAllowedIfds) shl 24
-		mTagInfo !!.put(
-			TAG_GPS_VERSION_ID,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_BYTE shl 16) or 4
-		)
-		mTagInfo !!.put(
-			TAG_GPS_LATITUDE_REF,
-			gpsFlags or (ExifTag.TYPE_ASCII shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_GPS_LONGITUDE_REF,
-			gpsFlags or (ExifTag.TYPE_ASCII shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_GPS_LATITUDE,
-			gpsFlags or (ExifTag.TYPE_RATIONAL shl 16) or 3
-		)
-		mTagInfo !!.put(
-			TAG_GPS_LONGITUDE,
-			gpsFlags or (ExifTag.TYPE_RATIONAL shl 16) or 3
-		)
-		mTagInfo !!.put(
-			TAG_GPS_ALTITUDE_REF,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_BYTE shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_GPS_ALTITUDE,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_GPS_TIME_STAMP,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 3
-		)
-		mTagInfo !!.put(TAG_GPS_SATTELLITES, gpsFlags or (ExifTag.TYPE_ASCII shl 16))
-		mTagInfo !!.put(TAG_GPS_STATUS, gpsFlags or (ExifTag.TYPE_ASCII shl 16) or 2)
-		mTagInfo !!.put(
-			TAG_GPS_MEASURE_MODE,
-			gpsFlags or (ExifTag.TYPE_ASCII shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_GPS_DOP,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_GPS_SPEED_REF,
-			gpsFlags or (ExifTag.TYPE_ASCII shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_GPS_SPEED,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_GPS_TRACK_REF,
-			gpsFlags or (ExifTag.TYPE_ASCII shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_GPS_TRACK,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_GPS_IMG_DIRECTION_REF,
-			gpsFlags or (ExifTag.TYPE_ASCII shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_GPS_IMG_DIRECTION,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(TAG_GPS_MAP_DATUM, gpsFlags or (ExifTag.TYPE_ASCII shl 16))
-		mTagInfo !!.put(
-			TAG_GPS_DEST_LATITUDE_REF,
-			gpsFlags or (ExifTag.TYPE_ASCII shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_GPS_DEST_LATITUDE,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_GPS_DEST_BEARING_REF,
-			gpsFlags or (ExifTag.TYPE_ASCII shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_GPS_DEST_BEARING,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_GPS_DEST_DISTANCE_REF,
-			gpsFlags or (ExifTag.TYPE_ASCII shl 16) or 2
-		)
-		mTagInfo !!.put(
-			TAG_GPS_DEST_DISTANCE,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1
-		)
-		mTagInfo !!.put(
-			TAG_GPS_PROCESSING_METHOD,
-			gpsFlags or (ExifTag.TYPE_UNDEFINED shl 16)
-		)
-		mTagInfo !!.put(
-			TAG_GPS_AREA_INFORMATION,
-			gpsFlags or (ExifTag.TYPE_UNDEFINED shl 16)
-		)
-		mTagInfo !!.put(
-			TAG_GPS_DATE_STAMP,
-			gpsFlags or (ExifTag.TYPE_ASCII shl 16) or 11
-		)
-		mTagInfo !!.put(
-			TAG_GPS_DIFFERENTIAL,
-			gpsFlags or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 11
-		)
-		// Interoperability tag
-		val interopAllowedIfds = intArrayOf(IfdId.TYPE_IFD_INTEROPERABILITY)
-		val interopFlags = getFlagsFromAllowedIfds(interopAllowedIfds) shl 24
-		mTagInfo !!.put(TAG_INTEROPERABILITY_INDEX, interopFlags or (ExifTag.TYPE_ASCII shl 16))
-		mTagInfo !!.put(TAG_INTEROP_VERSION, interopFlags or (ExifTag.TYPE_UNDEFINED shl 16) or 4)
 	}
 	
 	/**
@@ -1419,12 +942,12 @@ class ExifInterface {
 		tagInfo.delete(tagId)
 	}
 	
-	/**
-	 * Resets tag definitions to the default ones.
-	 */
-	fun resetTagDefinitions() {
-		mTagInfo = null
-	}
+//	/**
+//	 * Resets tag definitions to the default ones.
+//	 */
+//	fun resetTagDefinitions() {
+//		mTagInfo = null
+//	}
 	
 	/**
 	 * Check if thumbnail exists.
@@ -1646,8 +1169,6 @@ class ExifInterface {
 		const val UNCOMPRESSION : Short = 1
 		const val JPEG : Short = 6
 	}
-	
-	// TODO: uncompressed thumbnail setters
 	
 	/**
 	 * Constants for [.TAG_RESOLUTION_UNIT]
@@ -2121,9 +1642,9 @@ class ExifInterface {
 		 */
 		
 		// IFD 0
-		val TAG_IMAGE_WIDTH = defineTag(IfdId.TYPE_IFD_0, 0x0100.toShort())
-		val TAG_IMAGE_LENGTH = defineTag(IfdId.TYPE_IFD_0, 0x0101.toShort()) // Image height
-		val TAG_BITS_PER_SAMPLE = defineTag(IfdId.TYPE_IFD_0, 0x0102.toShort())
+		private val TAG_IMAGE_WIDTH = defineTag(IfdId.TYPE_IFD_0, 0x0100.toShort())
+		private val TAG_IMAGE_LENGTH = defineTag(IfdId.TYPE_IFD_0, 0x0101.toShort()) // Image height
+		private val TAG_BITS_PER_SAMPLE = defineTag(IfdId.TYPE_IFD_0, 0x0102.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -2134,23 +1655,23 @@ class ExifInterface {
 		 *  * 6 = JPEG compression (thumbnails only)
 		 *  * Other = reserved
 		 */
-		val TAG_COMPRESSION = defineTag(IfdId.TYPE_IFD_0, 0x0103.toShort())
-		val TAG_PHOTOMETRIC_INTERPRETATION = defineTag(IfdId.TYPE_IFD_0, 0x0106.toShort())
-		val TAG_IMAGE_DESCRIPTION = defineTag(IfdId.TYPE_IFD_0, 0x010E.toShort())
+		private val TAG_COMPRESSION = defineTag(IfdId.TYPE_IFD_0, 0x0103.toShort())
+		private val TAG_PHOTOMETRIC_INTERPRETATION = defineTag(IfdId.TYPE_IFD_0, 0x0106.toShort())
+		private val TAG_IMAGE_DESCRIPTION = defineTag(IfdId.TYPE_IFD_0, 0x010E.toShort())
 		
 		/**
 		 * Value is ascii string<br></br>
 		 * The manufacturer of the recording equipment. This is the manufacturer of the DSC, scanner, video digitizer or other equipment
 		 * that generated the image. When the field is left blank, it is treated as unknown.
 		 */
-		val TAG_MAKE = defineTag(IfdId.TYPE_IFD_0, 0x010F.toShort())
+		private val TAG_MAKE = defineTag(IfdId.TYPE_IFD_0, 0x010F.toShort())
 		
 		/**
 		 * Value is ascii string<br></br>
 		 * The model name or model number of the equipment. This is the model name of number of the DSC, scanner, video digitizer or
 		 * other equipment that generated the image. When the field is left blank, it is treated as unknown.
 		 */
-		val TAG_MODEL = defineTag(IfdId.TYPE_IFD_0, 0x0110.toShort())
+		private val TAG_MODEL = defineTag(IfdId.TYPE_IFD_0, 0x0110.toShort())
 		val TAG_STRIP_OFFSETS = defineTag(IfdId.TYPE_IFD_0, 0x0111.toShort())
 		
 		/**
@@ -2170,24 +1691,24 @@ class ExifInterface {
 		 *
 		 */
 		val TAG_ORIENTATION = defineTag(IfdId.TYPE_IFD_0, 0x0112.toShort())
-		val TAG_SAMPLES_PER_PIXEL = defineTag(IfdId.TYPE_IFD_0, 0x0115.toShort())
-		val TAG_ROWS_PER_STRIP = defineTag(IfdId.TYPE_IFD_0, 0x0116.toShort())
+		private val TAG_SAMPLES_PER_PIXEL = defineTag(IfdId.TYPE_IFD_0, 0x0115.toShort())
+		private val TAG_ROWS_PER_STRIP = defineTag(IfdId.TYPE_IFD_0, 0x0116.toShort())
 		val TAG_STRIP_BYTE_COUNTS = defineTag(IfdId.TYPE_IFD_0, 0x0117.toShort())
 		
-		val TAG_INTEROP_VERSION = defineTag(IfdId.TYPE_IFD_INTEROPERABILITY, 0x0002.toShort())
+		private val TAG_INTEROP_VERSION = defineTag(IfdId.TYPE_IFD_INTEROPERABILITY, 0x0002.toShort())
 		
 		/**
 		 * Value is unsigned double.<br></br>
 		 * Display/Print resolution of image. Large number of digicam uses 1/72inch, but it has no mean because personal computer doesn't
 		 * use this value to display/print out.
 		 */
-		val TAG_X_RESOLUTION = defineTag(IfdId.TYPE_IFD_0, 0x011A.toShort())
+		private val TAG_X_RESOLUTION = defineTag(IfdId.TYPE_IFD_0, 0x011A.toShort())
 		
 		/**
 		 * @see .TAG_X_RESOLUTION
 		 */
-		val TAG_Y_RESOLUTION = defineTag(IfdId.TYPE_IFD_0, 0x011B.toShort())
-		val TAG_PLANAR_CONFIGURATION = defineTag(IfdId.TYPE_IFD_0, 0x011C.toShort())
+		private val TAG_Y_RESOLUTION = defineTag(IfdId.TYPE_IFD_0, 0x011B.toShort())
+		private val TAG_PLANAR_CONFIGURATION = defineTag(IfdId.TYPE_IFD_0, 0x011C.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -2200,14 +1721,14 @@ class ExifInterface {
 		 *  * '5' micrometer
 		 *
 		 */
-		val TAG_RESOLUTION_UNIT = defineTag(IfdId.TYPE_IFD_0, 0x0128.toShort())
-		val TAG_TRANSFER_FUNCTION = defineTag(IfdId.TYPE_IFD_0, 0x012D.toShort())
+		private val TAG_RESOLUTION_UNIT = defineTag(IfdId.TYPE_IFD_0, 0x0128.toShort())
+		private val TAG_TRANSFER_FUNCTION = defineTag(IfdId.TYPE_IFD_0, 0x012D.toShort())
 		
 		/**
 		 * Value is ascii string<br></br>
 		 * Shows firmware(internal software of digicam) version number.
 		 */
-		val TAG_SOFTWARE = defineTag(IfdId.TYPE_IFD_0, 0x0131.toShort())
+		private val TAG_SOFTWARE = defineTag(IfdId.TYPE_IFD_0, 0x0131.toShort())
 		
 		/**
 		 * Value is ascii string (20)<br></br>
@@ -2222,19 +1743,19 @@ class ExifInterface {
 		 * recommended that the information be written as in the example below for ease of Interoperability. When the field is left
 		 * blank, it is treated as unknown.
 		 */
-		val TAG_ARTIST = defineTag(IfdId.TYPE_IFD_0, 0x013B.toShort())
-		val TAG_WHITE_POINT = defineTag(IfdId.TYPE_IFD_0, 0x013E.toShort())
-		val TAG_PRIMARY_CHROMATICITIES = defineTag(IfdId.TYPE_IFD_0, 0x013F.toShort())
-		val TAG_Y_CB_CR_COEFFICIENTS = defineTag(IfdId.TYPE_IFD_0, 0x0211.toShort())
-		val TAG_Y_CB_CR_SUB_SAMPLING = defineTag(IfdId.TYPE_IFD_0, 0x0212.toShort())
-		val TAG_Y_CB_CR_POSITIONING = defineTag(IfdId.TYPE_IFD_0, 0x0213.toShort())
-		val TAG_REFERENCE_BLACK_WHITE = defineTag(IfdId.TYPE_IFD_0, 0x0214.toShort())
+		private val TAG_ARTIST = defineTag(IfdId.TYPE_IFD_0, 0x013B.toShort())
+		private val TAG_WHITE_POINT = defineTag(IfdId.TYPE_IFD_0, 0x013E.toShort())
+		private val TAG_PRIMARY_CHROMATICITIES = defineTag(IfdId.TYPE_IFD_0, 0x013F.toShort())
+		private val TAG_Y_CB_CR_COEFFICIENTS = defineTag(IfdId.TYPE_IFD_0, 0x0211.toShort())
+		private val TAG_Y_CB_CR_SUB_SAMPLING = defineTag(IfdId.TYPE_IFD_0, 0x0212.toShort())
+		private val TAG_Y_CB_CR_POSITIONING = defineTag(IfdId.TYPE_IFD_0, 0x0213.toShort())
+		private val TAG_REFERENCE_BLACK_WHITE = defineTag(IfdId.TYPE_IFD_0, 0x0214.toShort())
 		
 		/**
 		 * Values is ascii string<br></br>
 		 * Shows copyright information
 		 */
-		val TAG_COPYRIGHT = defineTag(IfdId.TYPE_IFD_0, 0x8298.toShort())
+		private val TAG_COPYRIGHT = defineTag(IfdId.TYPE_IFD_0, 0x8298.toShort())
 		val TAG_EXIF_IFD = defineTag(IfdId.TYPE_IFD_0, 0x8769.toShort())
 		val TAG_GPS_IFD = defineTag(IfdId.TYPE_IFD_0, 0x8825.toShort())
 		// IFD 1
@@ -2246,7 +1767,7 @@ class ExifInterface {
 		 * Value is unsigned double<br></br>
 		 * Exposure time (reciprocal of shutter speed). Unit is second
 		 */
-		val TAG_EXPOSURE_TIME = defineTag(IfdId.TYPE_IFD_EXIF, 0x829A.toShort())
+		private val TAG_EXPOSURE_TIME = defineTag(IfdId.TYPE_IFD_EXIF, 0x829A.toShort())
 		
 		/**
 		 * Value is unsigned double<br></br>
@@ -2270,23 +1791,23 @@ class ExifInterface {
 		 *  * '8' landscape mode.
 		 *
 		 */
-		val TAG_EXPOSURE_PROGRAM = defineTag(IfdId.TYPE_IFD_EXIF, 0x8822.toShort())
-		val TAG_SPECTRAL_SENSITIVITY = defineTag(IfdId.TYPE_IFD_EXIF, 0x8824.toShort())
+		private val TAG_EXPOSURE_PROGRAM = defineTag(IfdId.TYPE_IFD_EXIF, 0x8822.toShort())
+		private val TAG_SPECTRAL_SENSITIVITY = defineTag(IfdId.TYPE_IFD_EXIF, 0x8824.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
 		 * CCD sensitivity equivalent to Ag-Hr film speedrate.<br></br>
 		 * Indicates the ISO Speed and ISO Latitude of the camera or input device as specified in ISO 12232
 		 */
-		val TAG_ISO_SPEED_RATINGS = defineTag(IfdId.TYPE_IFD_EXIF, 0x8827.toShort())
-		val TAG_OECF = defineTag(IfdId.TYPE_IFD_EXIF, 0x8828.toShort())
+		private val TAG_ISO_SPEED_RATINGS = defineTag(IfdId.TYPE_IFD_EXIF, 0x8827.toShort())
+		private val TAG_OECF = defineTag(IfdId.TYPE_IFD_EXIF, 0x8828.toShort())
 		
 		/**
 		 * ASCII string (4).<br></br>
 		 * The version of this standard supported. Nonexistence of this field is taken to mean nonconformance to the standard (see
 		 * section 4.2). Conformance to this standard is indicated by recording "0220" as 4-byte ASCII
 		 */
-		val TAG_EXIF_VERSION = defineTag(IfdId.TYPE_IFD_EXIF, 0x9000.toShort())
+		private val TAG_EXIF_VERSION = defineTag(IfdId.TYPE_IFD_EXIF, 0x9000.toShort())
 		
 		/**
 		 * Value is ascii string (20)<br></br>
@@ -2299,15 +1820,15 @@ class ExifInterface {
 		 * Date/Time of image digitized. Usually, it contains the same value of DateTimeOriginal(0x9003).
 		 */
 		val TAG_DATE_TIME_DIGITIZED = defineTag(IfdId.TYPE_IFD_EXIF, 0x9004.toShort())
-		val TAG_COMPONENTS_CONFIGURATION = defineTag(IfdId.TYPE_IFD_EXIF, 0x9101.toShort())
-		val TAG_COMPRESSED_BITS_PER_PIXEL = defineTag(IfdId.TYPE_IFD_EXIF, 0x9102.toShort())
+		private val TAG_COMPONENTS_CONFIGURATION = defineTag(IfdId.TYPE_IFD_EXIF, 0x9101.toShort())
+		private val TAG_COMPRESSED_BITS_PER_PIXEL = defineTag(IfdId.TYPE_IFD_EXIF, 0x9102.toShort())
 		
 		/**
 		 * Value is signed double.<br></br>
 		 * Shutter speed. To convert this value to ordinary 'Shutter Speed'; calculate this value's power of 2, then reciprocal. For
 		 * example, if value is '4', shutter speed is 1/(2^4)=1/16 second.
 		 */
-		val TAG_SHUTTER_SPEED_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9201.toShort())
+		private val TAG_SHUTTER_SPEED_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9201.toShort())
 		
 		/**
 		 * Value is unsigned double<br></br>
@@ -2328,13 +1849,13 @@ class ExifInterface {
 		 * Value is signed double<br></br>
 		 * Brightness of taken subject, unit is EV.
 		 */
-		val TAG_BRIGHTNESS_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9203.toShort())
+		private val TAG_BRIGHTNESS_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9203.toShort())
 		
 		/**
 		 * Value is signed double.<br></br>
 		 * The exposure bias. The unit is the APEX value. Ordinarily it is given in the range of -99.99 to 99.99
 		 */
-		val TAG_EXPOSURE_BIAS_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9204.toShort())
+		private val TAG_EXPOSURE_BIAS_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9204.toShort())
 		
 		/**
 		 * Value is unsigned double.<br></br>
@@ -2346,13 +1867,13 @@ class ExifInterface {
 		 * FNumber = Math.exp( MaxApertureValue * Math.log( 2 ) * 0.5 )
 		</pre> *
 		 */
-		val TAG_MAX_APERTURE_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9205.toShort())
+		private val TAG_MAX_APERTURE_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9205.toShort())
 		
 		/**
 		 * Value if signed double.<br></br>
 		 * Distance to focus point, unit is meter. If value < 0 then focus point is infinite
 		 */
-		val TAG_SUBJECT_DISTANCE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9206.toShort())
+		private val TAG_SUBJECT_DISTANCE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9206.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -2369,7 +1890,7 @@ class ExifInterface {
 		 *  * 255 = other
 		 *
 		 */
-		val TAG_METERING_MODE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9207.toShort())
+		private val TAG_METERING_MODE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9207.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -2399,7 +1920,7 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		val TAG_LIGHT_SOURCE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9208.toShort())
+		private val TAG_LIGHT_SOURCE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9208.toShort())
 		
 		/**
 		 * Value is unsigned integer<br></br>
@@ -2443,20 +1964,20 @@ class ExifInterface {
 		 *
 		 * @see [http://www.exif.org/Exif2-2.PDF](http://www.exif.org/Exif2-2.PDF)
 		 */
-		val TAG_FLASH = defineTag(IfdId.TYPE_IFD_EXIF, 0x9209.toShort())
+		private val TAG_FLASH = defineTag(IfdId.TYPE_IFD_EXIF, 0x9209.toShort())
 		
 		/**
 		 * Value is unsigned double<br></br>
 		 * Focal length of lens used to take image. Unit is millimeter.
 		 */
-		val TAG_FOCAL_LENGTH = defineTag(IfdId.TYPE_IFD_EXIF, 0x920A.toShort())
-		val TAG_SUBJECT_AREA = defineTag(IfdId.TYPE_IFD_EXIF, 0x9214.toShort())
-		val TAG_MAKER_NOTE = defineTag(IfdId.TYPE_IFD_EXIF, 0x927C.toShort())
+		private val TAG_FOCAL_LENGTH = defineTag(IfdId.TYPE_IFD_EXIF, 0x920A.toShort())
+		private val TAG_SUBJECT_AREA = defineTag(IfdId.TYPE_IFD_EXIF, 0x9214.toShort())
+		private val TAG_MAKER_NOTE = defineTag(IfdId.TYPE_IFD_EXIF, 0x927C.toShort())
 		val TAG_USER_COMMENT = defineTag(IfdId.TYPE_IFD_EXIF, 0x9286.toShort())
-		val TAG_SUB_SEC_TIME = defineTag(IfdId.TYPE_IFD_EXIF, 0x9290.toShort())
-		val TAG_SUB_SEC_TIME_ORIGINAL = defineTag(IfdId.TYPE_IFD_EXIF, 0x9291.toShort())
-		val TAG_SUB_SEC_TIME_DIGITIZED = defineTag(IfdId.TYPE_IFD_EXIF, 0x9292.toShort())
-		val TAG_FLASHPIX_VERSION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA000.toShort())
+		private val TAG_SUB_SEC_TIME = defineTag(IfdId.TYPE_IFD_EXIF, 0x9290.toShort())
+		private val TAG_SUB_SEC_TIME_ORIGINAL = defineTag(IfdId.TYPE_IFD_EXIF, 0x9291.toShort())
+		private val TAG_SUB_SEC_TIME_DIGITIZED = defineTag(IfdId.TYPE_IFD_EXIF, 0x9292.toShort())
+		private val TAG_FLASHPIX_VERSION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA000.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2469,7 +1990,7 @@ class ExifInterface {
 		 *  * 'other' = Reserved
 		 *
 		 */
-		val TAG_COLOR_SPACE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA001.toShort())
+		private val TAG_COLOR_SPACE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA001.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -2477,16 +1998,16 @@ class ExifInterface {
 		 * the meaningful image shall be recorded in this tag, whether or not there is padding data or a restart marker. This tag should
 		 * not exist in an uncompressed file.
 		 */
-		val TAG_PIXEL_X_DIMENSION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA002.toShort())
+		private val TAG_PIXEL_X_DIMENSION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA002.toShort())
 		
 		/**
 		 * @see .TAG_PIXEL_X_DIMENSION
 		 */
-		val TAG_PIXEL_Y_DIMENSION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA003.toShort())
-		val TAG_RELATED_SOUND_FILE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA004.toShort())
+		private val TAG_PIXEL_Y_DIMENSION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA003.toShort())
+		private val TAG_RELATED_SOUND_FILE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA004.toShort())
 		val TAG_INTEROPERABILITY_IFD = defineTag(IfdId.TYPE_IFD_EXIF, 0xA005.toShort())
-		val TAG_FLASH_ENERGY = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20B.toShort())
-		val TAG_SPATIAL_FREQUENCY_RESPONSE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20C.toShort())
+		private val TAG_FLASH_ENERGY = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20B.toShort())
+		private val TAG_SPATIAL_FREQUENCY_RESPONSE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20C.toShort())
 		
 		/**
 		 * Value is unsigned double.<br></br>
@@ -2495,12 +2016,12 @@ class ExifInterface {
 		 *
 		 * @see .TAG_FOCAL_PLANE_RESOLUTION_UNIT
 		 */
-		val TAG_FOCAL_PLANE_X_RESOLUTION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20E.toShort())
+		private val TAG_FOCAL_PLANE_X_RESOLUTION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20E.toShort())
 		
 		/**
 		 * @see .TAG_FOCAL_PLANE_X_RESOLUTION
 		 */
-		val TAG_FOCAL_PLANE_Y_RESOLUTION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20F.toShort())
+		private val TAG_FOCAL_PLANE_Y_RESOLUTION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20F.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -2521,9 +2042,9 @@ class ExifInterface {
 		 * CCDWidth = ( PixelXDimension * FocalPlaneResolutionUnit / FocalPlaneXResolution )
 		</pre> *
 		 */
-		val TAG_FOCAL_PLANE_RESOLUTION_UNIT = defineTag(IfdId.TYPE_IFD_EXIF, 0xA210.toShort())
-		val TAG_SUBJECT_LOCATION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA214.toShort())
-		val TAG_EXPOSURE_INDEX = defineTag(IfdId.TYPE_IFD_EXIF, 0xA215.toShort())
+		private val TAG_FOCAL_PLANE_RESOLUTION_UNIT = defineTag(IfdId.TYPE_IFD_EXIF, 0xA210.toShort())
+		private val TAG_SUBJECT_LOCATION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA214.toShort())
+		private val TAG_EXPOSURE_INDEX = defineTag(IfdId.TYPE_IFD_EXIF, 0xA215.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -2539,11 +2060,11 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		val TAG_SENSING_METHOD = defineTag(IfdId.TYPE_IFD_EXIF, 0xA217.toShort())
-		val TAG_FILE_SOURCE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA300.toShort())
-		val TAG_SCENE_TYPE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA301.toShort())
-		val TAG_CFA_PATTERN = defineTag(IfdId.TYPE_IFD_EXIF, 0xA302.toShort())
-		val TAG_CUSTOM_RENDERED = defineTag(IfdId.TYPE_IFD_EXIF, 0xA401.toShort())
+		private val TAG_SENSING_METHOD = defineTag(IfdId.TYPE_IFD_EXIF, 0xA217.toShort())
+		private val TAG_FILE_SOURCE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA300.toShort())
+		private val TAG_SCENE_TYPE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA301.toShort())
+		private val TAG_CFA_PATTERN = defineTag(IfdId.TYPE_IFD_EXIF, 0xA302.toShort())
+		private val TAG_CUSTOM_RENDERED = defineTag(IfdId.TYPE_IFD_EXIF, 0xA401.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2556,15 +2077,15 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		val TAG_EXPOSURE_MODE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA402.toShort())
-		val TAG_WHITE_BALANCE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA403.toShort())
+		private val TAG_EXPOSURE_MODE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA402.toShort())
+		private val TAG_WHITE_BALANCE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA403.toShort())
 		
 		/**
 		 * Value is double.<br></br>
 		 * This tag indicates the digital zoom ratio when the image was shot. If the numerator of the recorded value is 0, this indicates
 		 * that digital zoom was not used
 		 */
-		val TAG_DIGITAL_ZOOM_RATIO = defineTag(IfdId.TYPE_IFD_EXIF, 0xA404.toShort())
+		private val TAG_DIGITAL_ZOOM_RATIO = defineTag(IfdId.TYPE_IFD_EXIF, 0xA404.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -2577,7 +2098,7 @@ class ExifInterface {
 		 * FocalLengthIn35mmFilm = ( FocalLength / CCDWidth * 36 + 0.5 );
 		</pre> *
 		 */
-		val TAG_FOCAL_LENGTH_IN_35_MM_FILE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA405.toShort())
+		private val TAG_FOCAL_LENGTH_IN_35_MM_FILE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA405.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2591,7 +2112,7 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		val TAG_SCENE_CAPTURE_TYPE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA406.toShort())
+		private val TAG_SCENE_CAPTURE_TYPE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA406.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2605,7 +2126,7 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		val TAG_GAIN_CONTROL = defineTag(IfdId.TYPE_IFD_EXIF, 0xA407.toShort())
+		private val TAG_GAIN_CONTROL = defineTag(IfdId.TYPE_IFD_EXIF, 0xA407.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2617,7 +2138,7 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		val TAG_CONTRAST = defineTag(IfdId.TYPE_IFD_EXIF, 0xA408.toShort())
+		private val TAG_CONTRAST = defineTag(IfdId.TYPE_IFD_EXIF, 0xA408.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2629,7 +2150,7 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		val TAG_SATURATION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA409.toShort())
+		private val TAG_SATURATION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA409.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2641,8 +2162,8 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		val TAG_SHARPNESS = defineTag(IfdId.TYPE_IFD_EXIF, 0xA40A.toShort())
-		val TAG_DEVICE_SETTING_DESCRIPTION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA40B.toShort())
+		private val TAG_SHARPNESS = defineTag(IfdId.TYPE_IFD_EXIF, 0xA40A.toShort())
+		private val TAG_DEVICE_SETTING_DESCRIPTION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA40B.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2655,12 +2176,12 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		val TAG_SUBJECT_DISTANCE_RANGE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA40C.toShort())
+		private val TAG_SUBJECT_DISTANCE_RANGE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA40C.toShort())
 		
 		/**
 		 * [ExifTag.TYPE_ASCII]
 		 */
-		val TAG_IMAGE_UNIQUE_ID = defineTag(IfdId.TYPE_IFD_EXIF, 0xA420.toShort())
+		private val TAG_IMAGE_UNIQUE_ID = defineTag(IfdId.TYPE_IFD_EXIF, 0xA420.toShort())
 		
 		/**
 		 * Lens Specifications. The value it's a 4 rational containing:
@@ -2685,7 +2206,7 @@ class ExifInterface {
 		 *
 		 * @since EXIF 2.3
 		 */
-		val TAG_LENS_MAKE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA433.toShort())
+		private val TAG_LENS_MAKE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA433.toShort())
 		/**
 		 * Lens model name and number
 		 * [ExifTag.TYPE_ASCII]
@@ -2720,10 +2241,10 @@ class ExifInterface {
 		 *
 		 * @since EXIF 2.3
 		 */
-		val TAG_SENSITIVITY_TYPE = defineTag(IfdId.TYPE_IFD_EXIF, 0x8830.toShort())
+		private val TAG_SENSITIVITY_TYPE = defineTag(IfdId.TYPE_IFD_EXIF, 0x8830.toShort())
 		
 		// IFD GPS tags
-		val TAG_GPS_VERSION_ID = defineTag(IfdId.TYPE_IFD_GPS, 0.toShort())
+		private val TAG_GPS_VERSION_ID = defineTag(IfdId.TYPE_IFD_GPS, 0.toShort())
 		
 		/**
 		 * Value is string(1)<br></br>
@@ -2769,41 +2290,41 @@ class ExifInterface {
 		 */
 		val TAG_GPS_ALTITUDE = defineTag(IfdId.TYPE_IFD_GPS, 6.toShort())
 		val TAG_GPS_TIME_STAMP = defineTag(IfdId.TYPE_IFD_GPS, 7.toShort())
-		val TAG_GPS_SATTELLITES = defineTag(IfdId.TYPE_IFD_GPS, 8.toShort())
-		val TAG_GPS_STATUS = defineTag(IfdId.TYPE_IFD_GPS, 9.toShort())
-		val TAG_GPS_MEASURE_MODE = defineTag(IfdId.TYPE_IFD_GPS, 10.toShort())
-		val TAG_GPS_DOP = defineTag(IfdId.TYPE_IFD_GPS, 11.toShort())
+		private val TAG_GPS_SATTELLITES = defineTag(IfdId.TYPE_IFD_GPS, 8.toShort())
+		private val TAG_GPS_STATUS = defineTag(IfdId.TYPE_IFD_GPS, 9.toShort())
+		private val TAG_GPS_MEASURE_MODE = defineTag(IfdId.TYPE_IFD_GPS, 10.toShort())
+		private val TAG_GPS_DOP = defineTag(IfdId.TYPE_IFD_GPS, 11.toShort())
 		
 		/**
 		 * Value is string(1).<br></br>
 		 * Indicates the unit used to express the GPS receiver speed of movement. 'K' 'M' and 'N' represents kilometers per  hour, miles per hour, and knots.
 		 */
-		val TAG_GPS_SPEED_REF = defineTag(IfdId.TYPE_IFD_GPS, 12.toShort())
+		private val TAG_GPS_SPEED_REF = defineTag(IfdId.TYPE_IFD_GPS, 12.toShort())
 		
 		/**
 		 * Value is string.<br></br>
 		 * Indicates the speed of GPS receiver movement
 		 */
-		val TAG_GPS_SPEED = defineTag(IfdId.TYPE_IFD_GPS, 13.toShort())
-		val TAG_GPS_TRACK_REF = defineTag(IfdId.TYPE_IFD_GPS, 14.toShort())
-		val TAG_GPS_TRACK = defineTag(IfdId.TYPE_IFD_GPS, 15.toShort())
-		val TAG_GPS_IMG_DIRECTION_REF = defineTag(IfdId.TYPE_IFD_GPS, 16.toShort())
-		val TAG_GPS_IMG_DIRECTION = defineTag(IfdId.TYPE_IFD_GPS, 17.toShort())
-		val TAG_GPS_MAP_DATUM = defineTag(IfdId.TYPE_IFD_GPS, 18.toShort())
-		val TAG_GPS_DEST_LATITUDE_REF = defineTag(IfdId.TYPE_IFD_GPS, 19.toShort())
-		val TAG_GPS_DEST_LATITUDE = defineTag(IfdId.TYPE_IFD_GPS, 20.toShort())
+		private val TAG_GPS_SPEED = defineTag(IfdId.TYPE_IFD_GPS, 13.toShort())
+		private val TAG_GPS_TRACK_REF = defineTag(IfdId.TYPE_IFD_GPS, 14.toShort())
+		private val TAG_GPS_TRACK = defineTag(IfdId.TYPE_IFD_GPS, 15.toShort())
+		private val TAG_GPS_IMG_DIRECTION_REF = defineTag(IfdId.TYPE_IFD_GPS, 16.toShort())
+		private val TAG_GPS_IMG_DIRECTION = defineTag(IfdId.TYPE_IFD_GPS, 17.toShort())
+		private val TAG_GPS_MAP_DATUM = defineTag(IfdId.TYPE_IFD_GPS, 18.toShort())
+		private val TAG_GPS_DEST_LATITUDE_REF = defineTag(IfdId.TYPE_IFD_GPS, 19.toShort())
+		private val TAG_GPS_DEST_LATITUDE = defineTag(IfdId.TYPE_IFD_GPS, 20.toShort())
 		val TAG_GPS_DEST_LONGITUDE_REF = defineTag(IfdId.TYPE_IFD_GPS, 21.toShort())
 		val TAG_GPS_DEST_LONGITUDE = defineTag(IfdId.TYPE_IFD_GPS, 22.toShort())
-		val TAG_GPS_DEST_BEARING_REF = defineTag(IfdId.TYPE_IFD_GPS, 23.toShort())
-		val TAG_GPS_DEST_BEARING = defineTag(IfdId.TYPE_IFD_GPS, 24.toShort())
-		val TAG_GPS_DEST_DISTANCE_REF = defineTag(IfdId.TYPE_IFD_GPS, 25.toShort())
-		val TAG_GPS_DEST_DISTANCE = defineTag(IfdId.TYPE_IFD_GPS, 26.toShort())
-		val TAG_GPS_PROCESSING_METHOD = defineTag(IfdId.TYPE_IFD_GPS, 27.toShort())
-		val TAG_GPS_AREA_INFORMATION = defineTag(IfdId.TYPE_IFD_GPS, 28.toShort())
+		private val TAG_GPS_DEST_BEARING_REF = defineTag(IfdId.TYPE_IFD_GPS, 23.toShort())
+		private val TAG_GPS_DEST_BEARING = defineTag(IfdId.TYPE_IFD_GPS, 24.toShort())
+		private val TAG_GPS_DEST_DISTANCE_REF = defineTag(IfdId.TYPE_IFD_GPS, 25.toShort())
+		private val TAG_GPS_DEST_DISTANCE = defineTag(IfdId.TYPE_IFD_GPS, 26.toShort())
+		private val TAG_GPS_PROCESSING_METHOD = defineTag(IfdId.TYPE_IFD_GPS, 27.toShort())
+		private val TAG_GPS_AREA_INFORMATION = defineTag(IfdId.TYPE_IFD_GPS, 28.toShort())
 		val TAG_GPS_DATE_STAMP = defineTag(IfdId.TYPE_IFD_GPS, 29.toShort())
-		val TAG_GPS_DIFFERENTIAL = defineTag(IfdId.TYPE_IFD_GPS, 30.toShort())
+		private val TAG_GPS_DIFFERENTIAL = defineTag(IfdId.TYPE_IFD_GPS, 30.toShort())
 		// IFD Interoperability tags
-		val TAG_INTEROPERABILITY_INDEX = defineTag(IfdId.TYPE_IFD_INTEROPERABILITY, 1.toShort())
+		private val TAG_INTEROPERABILITY_INDEX = defineTag(IfdId.TYPE_IFD_INTEROPERABILITY, 1.toShort())
 		
 		val DEFAULT_BYTE_ORDER : ByteOrder = ByteOrder.BIG_ENDIAN
 		private const val NULL_ARGUMENT_STRING = "Argument is null"
@@ -3142,5 +2663,158 @@ class ExifInterface {
 		infix fun Short.shl(bits : Int) : Int = (this.toInt() and 0xffff) shl bits
 		infix fun Short.shr(bits : Int) : Int = (this.toInt() and 0xffff) shr bits
 		infix fun Short.or(bits : Int) : Int = (this.toInt() and 0xffff) or bits
+		
+		private fun SparseIntArray.initTagInfo() {
+			
+			var f : Int
+			
+			/*
+			 * We put tag information in a 4-bytes integer. The first byte a bitmask
+			 * representing the allowed IFDs of the tag, the second byte is the data
+			 * type, and the last two byte are a short value indicating the default
+			 * component count of this tag.
+			 */
+			
+			// IFD0 tags
+			f = getFlagsFromAllowedIfds(intArrayOf(IfdId.TYPE_IFD_0, IfdId.TYPE_IFD_1)) shl 24
+			
+			put(TAG_MAKE, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_IMAGE_WIDTH, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
+			put(TAG_IMAGE_LENGTH, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
+			put(TAG_BITS_PER_SAMPLE, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 3)
+			put(TAG_COMPRESSION, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_PHOTOMETRIC_INTERPRETATION, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_ORIENTATION, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_SAMPLES_PER_PIXEL, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_PLANAR_CONFIGURATION, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_Y_CB_CR_SUB_SAMPLING, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 2)
+			put(TAG_Y_CB_CR_POSITIONING, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_X_RESOLUTION, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_Y_RESOLUTION, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_RESOLUTION_UNIT, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_STRIP_OFFSETS, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16))
+			put(TAG_ROWS_PER_STRIP, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
+			put(TAG_STRIP_BYTE_COUNTS, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16))
+			put(TAG_TRANSFER_FUNCTION, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 3 * 256)
+			put(TAG_WHITE_POINT, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 2)
+			put(TAG_PRIMARY_CHROMATICITIES, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 6)
+			put(TAG_Y_CB_CR_COEFFICIENTS, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 3)
+			put(TAG_REFERENCE_BLACK_WHITE, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 6)
+			put(TAG_DATE_TIME, f or (ExifTag.TYPE_ASCII shl 16) or 20)
+			put(TAG_IMAGE_DESCRIPTION, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_MODEL, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_SOFTWARE, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_ARTIST, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_COPYRIGHT, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_EXIF_IFD, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
+			put(TAG_GPS_IFD, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
+			
+			// IFD1 tags
+			f = getFlagsFromAllowedIfds(intArrayOf(IfdId.TYPE_IFD_1)) shl 24
+			put(TAG_JPEG_INTERCHANGE_FORMAT, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
+			put(TAG_JPEG_INTERCHANGE_FORMAT_LENGTH, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
+			
+			// Exif tags
+			f = getFlagsFromAllowedIfds(intArrayOf(IfdId.TYPE_IFD_EXIF)) shl 24
+			put(TAG_EXIF_VERSION, f or (ExifTag.TYPE_UNDEFINED shl 16) or 4)
+			put(TAG_FLASHPIX_VERSION, f or (ExifTag.TYPE_UNDEFINED shl 16) or 4)
+			put(TAG_COLOR_SPACE, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_COMPONENTS_CONFIGURATION, f or (ExifTag.TYPE_UNDEFINED shl 16) or 4)
+			put(TAG_COMPRESSED_BITS_PER_PIXEL, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_PIXEL_X_DIMENSION, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
+			put(TAG_PIXEL_Y_DIMENSION, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
+			put(TAG_MAKER_NOTE, f or (ExifTag.TYPE_UNDEFINED shl 16))
+			put(TAG_USER_COMMENT, f or (ExifTag.TYPE_UNDEFINED shl 16))
+			put(TAG_RELATED_SOUND_FILE, f or (ExifTag.TYPE_ASCII shl 16) or 13)
+			put(TAG_DATE_TIME_ORIGINAL, f or (ExifTag.TYPE_ASCII shl 16) or 20)
+			put(TAG_DATE_TIME_DIGITIZED, f or (ExifTag.TYPE_ASCII shl 16) or 20)
+			put(TAG_SUB_SEC_TIME, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_SUB_SEC_TIME_ORIGINAL, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_SUB_SEC_TIME_DIGITIZED, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_IMAGE_UNIQUE_ID, f or (ExifTag.TYPE_ASCII shl 16) or 33)
+			put(TAG_LENS_SPECS, f or (ExifTag.TYPE_RATIONAL shl 16) or 4)
+			put(TAG_LENS_MAKE, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_LENS_MODEL, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_SENSITIVITY_TYPE, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_EXPOSURE_TIME, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_F_NUMBER, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_EXPOSURE_PROGRAM, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_SPECTRAL_SENSITIVITY, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_ISO_SPEED_RATINGS, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16))
+			put(TAG_OECF, f or (ExifTag.TYPE_UNDEFINED shl 16))
+			put(TAG_SHUTTER_SPEED_VALUE, f or (ExifTag.TYPE_RATIONAL shl 16) or 1)
+			put(TAG_APERTURE_VALUE, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_BRIGHTNESS_VALUE, f or (ExifTag.TYPE_RATIONAL shl 16) or 1)
+			put(TAG_EXPOSURE_BIAS_VALUE, f or (ExifTag.TYPE_RATIONAL shl 16) or 1)
+			put(TAG_MAX_APERTURE_VALUE, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_SUBJECT_DISTANCE, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_METERING_MODE, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_LIGHT_SOURCE, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_FLASH, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_FOCAL_LENGTH, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_SUBJECT_AREA, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16))
+			put(TAG_FLASH_ENERGY, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_SPATIAL_FREQUENCY_RESPONSE, f or (ExifTag.TYPE_UNDEFINED shl 16))
+			put(TAG_FOCAL_PLANE_X_RESOLUTION, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_FOCAL_PLANE_Y_RESOLUTION, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_FOCAL_PLANE_RESOLUTION_UNIT, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_SUBJECT_LOCATION, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 2)
+			put(TAG_EXPOSURE_INDEX, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_SENSING_METHOD, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_FILE_SOURCE, f or (ExifTag.TYPE_UNDEFINED shl 16) or 1)
+			put(TAG_SCENE_TYPE, f or (ExifTag.TYPE_UNDEFINED shl 16) or 1)
+			put(TAG_CFA_PATTERN, f or (ExifTag.TYPE_UNDEFINED shl 16))
+			put(TAG_CUSTOM_RENDERED, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_EXPOSURE_MODE, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_WHITE_BALANCE, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_DIGITAL_ZOOM_RATIO, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_FOCAL_LENGTH_IN_35_MM_FILE, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_SCENE_CAPTURE_TYPE, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_GAIN_CONTROL, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_CONTRAST, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_SATURATION, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_SHARPNESS, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_DEVICE_SETTING_DESCRIPTION, f or (ExifTag.TYPE_UNDEFINED shl 16))
+			put(TAG_SUBJECT_DISTANCE_RANGE, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
+			put(TAG_INTEROPERABILITY_IFD, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
+			
+			// GPS tag
+			f = getFlagsFromAllowedIfds(intArrayOf(IfdId.TYPE_IFD_GPS)) shl 24
+			put(TAG_GPS_VERSION_ID, f or (ExifTag.TYPE_UNSIGNED_BYTE shl 16) or 4)
+			put(TAG_GPS_LATITUDE_REF, f or (ExifTag.TYPE_ASCII shl 16) or 2)
+			put(TAG_GPS_LONGITUDE_REF, f or (ExifTag.TYPE_ASCII shl 16) or 2)
+			put(TAG_GPS_LATITUDE, f or (ExifTag.TYPE_RATIONAL shl 16) or 3)
+			put(TAG_GPS_LONGITUDE, f or (ExifTag.TYPE_RATIONAL shl 16) or 3)
+			put(TAG_GPS_ALTITUDE_REF, f or (ExifTag.TYPE_UNSIGNED_BYTE shl 16) or 1)
+			put(TAG_GPS_ALTITUDE, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_GPS_TIME_STAMP, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 3)
+			put(TAG_GPS_SATTELLITES, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_GPS_STATUS, f or (ExifTag.TYPE_ASCII shl 16) or 2)
+			put(TAG_GPS_MEASURE_MODE, f or (ExifTag.TYPE_ASCII shl 16) or 2)
+			put(TAG_GPS_DOP, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_GPS_SPEED_REF, f or (ExifTag.TYPE_ASCII shl 16) or 2)
+			put(TAG_GPS_SPEED, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_GPS_TRACK_REF, f or (ExifTag.TYPE_ASCII shl 16) or 2)
+			put(TAG_GPS_TRACK, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_GPS_IMG_DIRECTION_REF, f or (ExifTag.TYPE_ASCII shl 16) or 2)
+			put(TAG_GPS_IMG_DIRECTION, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_GPS_MAP_DATUM, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_GPS_DEST_LATITUDE_REF, f or (ExifTag.TYPE_ASCII shl 16) or 2)
+			put(TAG_GPS_DEST_LATITUDE, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_GPS_DEST_BEARING_REF, f or (ExifTag.TYPE_ASCII shl 16) or 2)
+			put(TAG_GPS_DEST_BEARING, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_GPS_DEST_DISTANCE_REF, f or (ExifTag.TYPE_ASCII shl 16) or 2)
+			put(TAG_GPS_DEST_DISTANCE, f or (ExifTag.TYPE_UNSIGNED_RATIONAL shl 16) or 1)
+			put(TAG_GPS_PROCESSING_METHOD, f or (ExifTag.TYPE_UNDEFINED shl 16))
+			put(TAG_GPS_AREA_INFORMATION, f or (ExifTag.TYPE_UNDEFINED shl 16))
+			put(TAG_GPS_DATE_STAMP, f or (ExifTag.TYPE_ASCII shl 16) or 11)
+			put(TAG_GPS_DIFFERENTIAL, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 11)
+			
+			// Interoperability tag
+			f = getFlagsFromAllowedIfds(intArrayOf(IfdId.TYPE_IFD_INTEROPERABILITY)) shl 24
+			put(TAG_INTEROPERABILITY_INDEX, f or (ExifTag.TYPE_ASCII shl 16))
+			put(TAG_INTEROP_VERSION, f or (ExifTag.TYPE_UNDEFINED shl 16) or 4)
+		}
+		
 	}
 }

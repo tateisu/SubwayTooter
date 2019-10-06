@@ -5,27 +5,43 @@ import android.graphics.*
 import android.net.Uri
 import it.sephiroth.android.library.exif2.ExifInterface
 import java.io.FileNotFoundException
+import java.io.InputStream
 import kotlin.math.max
 import kotlin.math.sqrt
 
 private val log = LogCategory("BitmapUtils")
 
+val InputStream.imageOrientation : Int?
+	get() = try {
+		ExifInterface().apply {
+			readExif(
+				this@imageOrientation,
+				ExifInterface.Options.OPTION_IFD_0
+					or ExifInterface.Options.OPTION_IFD_1
+					or ExifInterface.Options.OPTION_IFD_EXIF
+			)
+		}.getTagIntValue(ExifInterface.TAG_ORIENTATION)
+	} catch(ex : Throwable) {
+		log.w(ex, "imageOrientation: exif parse failed.")
+		null
+	}
+
 // EXIFのorientationが特定の値ならwとhを入れ替える
-private fun rotateSize(orientation:Int? ,w:Float,h:Float):PointF =
+private fun rotateSize(orientation : Int?, w : Float, h : Float) : PointF =
 	when(orientation) {
 		5, 6, 7, 8 -> PointF(h, w)
 		else -> PointF(w, h)
 	}
 
-enum class ResizeType{
+enum class ResizeType {
 	None,
 	LongSide,
 	SquarePixel,
 }
 
 class ResizeConfig(
-	val type: ResizeType,
-	val size: Int
+	val type : ResizeType,
+	val size : Int
 )
 
 fun createResizedBitmap(
@@ -33,12 +49,16 @@ fun createResizedBitmap(
 	uri : Uri,
 	sizeLongSide : Int,
 	skipIfNoNeedToResizeAndRotate : Boolean = false
-) = createResizedBitmap(
-	context,
-	uri,
-	if(sizeLongSide<=0) ResizeConfig(ResizeType.None,0) else ResizeConfig(ResizeType.LongSide,sizeLongSide),
-	skipIfNoNeedToResizeAndRotate = skipIfNoNeedToResizeAndRotate
-)
+) =
+	createResizedBitmap(
+		context,
+		uri,
+		if(sizeLongSide <= 0)
+			ResizeConfig(ResizeType.None, 0)
+		else
+			ResizeConfig(ResizeType.LongSide, sizeLongSide),
+		skipIfNoNeedToResizeAndRotate = skipIfNoNeedToResizeAndRotate
+	)
 
 fun createResizedBitmap(
 	context : Context,
@@ -49,20 +69,8 @@ fun createResizedBitmap(
 	
 	try {
 		
-		// EXIF回転情報の取得
-		val orientation : Int? = context.contentResolver.openInputStream(uri)?.use { inStream ->
-			try {
-				val exif = ExifInterface()
-				exif.readExif(
-					inStream,
-					ExifInterface.Options.OPTION_IFD_0 or ExifInterface.Options.OPTION_IFD_1 or ExifInterface.Options.OPTION_IFD_EXIF
-				)
-				exif.getTagIntValue(ExifInterface.TAG_ORIENTATION)
-			}catch(ex:Throwable){
-				log.w(ex,"createResizedBitmap: exif parse failed." )
-				null
-			}
-		}
+		val orientation : Int? = context.contentResolver
+			.openInputStream(uri)?.use { it.imageOrientation }
 		
 		// 画像のサイズを調べる
 		val options = BitmapFactory.Options()
@@ -79,18 +87,17 @@ fun createResizedBitmap(
 			showToast(context, false, "could not get image bounds.")
 			return null
 		}
-
+		
 		// 回転後のサイズ
-		val srcSize = rotateSize(orientation,src_width.toFloat(),src_height.toFloat())
+		val srcSize = rotateSize(orientation, src_width.toFloat(), src_height.toFloat())
 		val aspect = srcSize.x / srcSize.y
-
 		
 		/// 出力サイズの計算
 		val sizeSpec = resizeConfig.size.toFloat()
-		val dstSize:PointF = when(resizeConfig.type){
+		val dstSize : PointF = when(resizeConfig.type) {
 			ResizeType.None ->
 				srcSize
-			ResizeType.LongSide->
+			ResizeType.LongSide ->
 				if(max(srcSize.x, srcSize.y) <= resizeConfig.size) {
 					srcSize
 				} else {
@@ -106,42 +113,43 @@ fun createResizedBitmap(
 						)
 					}
 				}
-			ResizeType.SquarePixel->{
+			
+			ResizeType.SquarePixel -> {
 				val maxPixels = sizeSpec * sizeSpec
 				val currentPixels = srcSize.x * srcSize.y
-				if( currentPixels <= maxPixels ) {
+				if(currentPixels <= maxPixels) {
 					srcSize
-				}else {
-					val y = sqrt( maxPixels / aspect)
+				} else {
+					val y = sqrt(maxPixels / aspect)
 					val x = aspect * y
-					PointF( x,y)
+					PointF(x, y)
 				}
 			}
 		}
 		
 		val dstSizeInt = Point(
-			max(1,(dstSize.x+0.5f).toInt()),
-			max(1,(dstSize.y+0.5f).toInt())
+			max(1, (dstSize.x + 0.5f).toInt()),
+			max(1, (dstSize.y + 0.5f).toInt())
 		)
-
+		
 		val reSizeRequired = dstSizeInt.x != srcSize.x.toInt() || dstSizeInt.y != srcSize.y.toInt()
 		
 		// リサイズも回転も必要がない場合
 		if(skipIfNoNeedToResizeAndRotate
 			&& (orientation == null || orientation == 1)
-			&& !reSizeRequired
+			&& ! reSizeRequired
 		) {
 			log.d("createOpener: no need to resize & rotate")
 			return null
 		}
 		
 		// 長辺
-		val dstMax = max( dstSize.x, dstSize.y).toInt()
-
+		val dstMax = max(dstSize.x, dstSize.y).toInt()
+		
 		// inSampleSizeを計算
 		var bits = 0
-		var x = max( srcSize.x,srcSize.y).toInt()
-		while( x > 512 && x > dstMax * 2 ){
+		var x = max(srcSize.x, srcSize.y).toInt()
+		while(x > 512 && x > dstMax * 2) {
 			++ bits
 			x = x shr 1
 		}
@@ -161,7 +169,7 @@ fun createResizedBitmap(
 			// サンプル数が変化している
 			src_width = options.outWidth
 			src_height = options.outHeight
-			val scale = dstMax.toFloat() / max(src_width,src_height)
+			val scale = dstMax.toFloat() / max(src_width, src_height)
 			
 			val matrix = Matrix()
 			matrix.reset()
@@ -170,35 +178,34 @@ fun createResizedBitmap(
 			matrix.postTranslate(src_width * - 0.5f, src_height * - 0.5f)
 			// スケーリング
 			matrix.postScale(scale, scale)
-
+			
 			// 回転情報があれば回転
-				when(orientation) {
-					2 -> matrix.postScale(1f, - 1f)  // 上下反転
-					3 -> matrix.postRotate(180f) // 180度回転
-					4 -> matrix.postScale(- 1f, 1f) // 左右反転
-					
-					5 ->{
-						matrix.postScale(1f, - 1f)
-						matrix.postRotate(- 90f)
-					}
-					
-					6 -> matrix.postRotate(90f)
-					
-					7 -> {
-						matrix.postScale(1f, - 1f)
-						matrix.postRotate(90f)
-					}
-					
-					8 -> matrix.postRotate(- 90f)
+			when(orientation) {
+				2 -> matrix.postScale(1f, - 1f)  // 上下反転
+				3 -> matrix.postRotate(180f) // 180度回転
+				4 -> matrix.postScale(- 1f, 1f) // 左右反転
+				
+				5 -> {
+					matrix.postScale(1f, - 1f)
+					matrix.postRotate(- 90f)
 				}
+				
+				6 -> matrix.postRotate(90f)
+				
+				7 -> {
+					matrix.postScale(1f, - 1f)
+					matrix.postRotate(90f)
+				}
+				
+				8 -> matrix.postRotate(- 90f)
+			}
 			
-			
-
 			// 表示領域に埋まるように平行移動
 			matrix.postTranslate(dstSizeInt.x.toFloat() * 0.5f, dstSizeInt.y.toFloat() * 0.5f)
 			
 			// 出力用Bitmap作成
-			var dst : Bitmap? = Bitmap.createBitmap(dstSizeInt.x,dstSizeInt.y, Bitmap.Config.ARGB_8888)
+			var dst : Bitmap? =
+				Bitmap.createBitmap(dstSizeInt.x, dstSizeInt.y, Bitmap.Config.ARGB_8888)
 			try {
 				return if(dst == null) {
 					showToast(context, false, "bitmap creation failed.")

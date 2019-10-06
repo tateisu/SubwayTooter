@@ -21,21 +21,19 @@ package it.sephiroth.android.library.exif2
  * numerator and denominator of a Rational number.
  */
 class Rational(
-	val numerator : Long=0,//the numerator of the rational.
-	val denominator : Long =1//the denominator of the rational
 	
+	//the numerator of the rational.
+	val numerator : Long = 0,
+	
+	//the denominator of the rational
+	val denominator : Long = 1
 ) {
+	
 	// copy from a Rational.
-	constructor(r : Rational) :this(
+	constructor(r : Rational) : this(
 		numerator = r.numerator,
 		denominator = r.denominator
 	)
-
-	// Gets the rational value as type double.
-	// Will cause a divide-by-zero error if the denominator is 0.
-	fun toDouble() : Double = numerator.toDouble() / denominator.toDouble()
-	
-	override fun toString() : String = "$numerator/$denominator"
 	
 	override fun equals(other : Any?) : Boolean {
 		return when {
@@ -46,7 +44,12 @@ class Rational(
 		}
 	}
 	
-	
 	override fun hashCode() : Int =
 		31 * numerator.hashCode() + denominator.hashCode()
+	
+	override fun toString() : String = "$numerator/$denominator"
+	
+	// Gets the rational value as type double.
+	// Will cause a divide-by-zero error if the denominator is 0.
+	fun toDouble() : Double = numerator.toDouble() / denominator.toDouble()
 }

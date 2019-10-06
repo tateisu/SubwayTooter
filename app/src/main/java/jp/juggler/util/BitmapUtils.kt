@@ -58,8 +58,11 @@ private fun Matrix.resolveOrientation(orientation : Int?) : Matrix {
 }
 
 enum class ResizeType {
+	// リサイズなし
 	None,
+	// 長辺がsize以下になるようリサイズ
 	LongSide,
+	// 平方ピクセルが size*size 以下になるようリサイズ
 	SquarePixel,
 }
 
@@ -86,15 +89,23 @@ fun createResizedBitmap(
 
 fun createResizedBitmap(
 	context : Context,
+	
+	// contentResolver.openInputStream に渡すUri
 	uri : Uri,
+	
+	// リサイズ指定
 	resizeConfig : ResizeConfig,
+	
+	// 真の場合、リサイズも回転も必要ないならnullを返す
 	skipIfNoNeedToResizeAndRotate : Boolean = false
+
 ) : Bitmap? {
 	
 	try {
 		
-		val orientation : Int? = context.contentResolver
-			.openInputStream(uri)?.use { it.imageOrientation }
+		val orientation : Int? = context.contentResolver.openInputStream(uri)?.use {
+			it.imageOrientation
+		}
 		
 		// 画像のサイズを調べる
 		val options = BitmapFactory.Options()
@@ -102,9 +113,10 @@ fun createResizedBitmap(
 		options.inScaled = false
 		options.outWidth = 0
 		options.outHeight = 0
-		context.contentResolver.openInputStream(uri)?.use { inStream ->
-			BitmapFactory.decodeStream(inStream, null, options)
+		context.contentResolver.openInputStream(uri)?.use {
+			BitmapFactory.decodeStream(it, null, options)
 		}
+		
 		var src_width = options.outWidth
 		var src_height = options.outHeight
 		if(src_width <= 0 || src_height <= 0) {
@@ -119,8 +131,10 @@ fun createResizedBitmap(
 		/// 出力サイズの計算
 		val sizeSpec = resizeConfig.size.toFloat()
 		val dstSize : PointF = when(resizeConfig.type) {
+			
 			ResizeType.None ->
 				srcSize
+			
 			ResizeType.LongSide ->
 				if(max(srcSize.x, srcSize.y) <= resizeConfig.size) {
 					srcSize
@@ -156,14 +170,14 @@ fun createResizedBitmap(
 			max(1, (dstSize.y + 0.5f).toInt())
 		)
 		
-		val reSizeRequired = dstSizeInt.x != srcSize.x.toInt() || dstSizeInt.y != srcSize.y.toInt()
+		val resizeRequired = dstSizeInt.x != srcSize.x.toInt() || dstSizeInt.y != srcSize.y.toInt()
 		
 		// リサイズも回転も必要がない場合
 		if(skipIfNoNeedToResizeAndRotate
 			&& (orientation == null || orientation == 1)
-			&& ! reSizeRequired
+			&& ! resizeRequired
 		) {
-			log.d("createOpener: no need to resize & rotate")
+			log.d("createResizedBitmap: no need to resize or rotate")
 			return null
 		}
 		
@@ -181,8 +195,8 @@ fun createResizedBitmap(
 		options.inSampleSize = 1 shl bits
 		
 		val sourceBitmap : Bitmap? =
-			context.contentResolver.openInputStream(uri)?.use { inStream ->
-				BitmapFactory.decodeStream(inStream, null, options)
+			context.contentResolver.openInputStream(uri)?.use {
+				BitmapFactory.decodeStream(it, null, options)
 			}
 		
 		if(sourceBitmap == null) {

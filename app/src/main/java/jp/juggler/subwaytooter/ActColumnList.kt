@@ -47,7 +47,7 @@ class ActColumnList : AppCompatActivity() {
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		initUI()
 		
 		if(savedInstanceState != null) {

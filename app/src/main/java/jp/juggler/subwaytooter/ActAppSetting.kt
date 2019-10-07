@@ -44,7 +44,7 @@ class ActAppSetting : AppCompatActivity() {
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		
 		setContentView(R.layout.act_app_setting)
 		App1.initEdgeToEdge(this)

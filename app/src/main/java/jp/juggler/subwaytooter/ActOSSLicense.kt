@@ -13,7 +13,7 @@ class ActOSSLicense : AppCompatActivity() {
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, true)
+		App1.setActivityTheme(this, noActionBar = true)
 		setContentView(R.layout.act_oss_license)
 		App1.initEdgeToEdge(this)
 		

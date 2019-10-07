@@ -32,12 +32,12 @@ class ActKeywordFilter
 		fun open(
 			activity : Activity,
 			ai : SavedAccount,
-			filter_id : EntityId? =null,
+			filter_id : EntityId? = null,
 			initial_phrase : String? = null
 		) {
 			val intent = Intent(activity, ActKeywordFilter::class.java)
 			intent.putExtra(EXTRA_ACCOUNT_DB_ID, ai.db_id)
-			filter_id?.putTo(intent,EXTRA_FILTER_ID)
+			filter_id?.putTo(intent, EXTRA_FILTER_ID)
 			if(initial_phrase != null) intent.putExtra(EXTRA_INITIAL_PHRASE, initial_phrase)
 			activity.startActivity(intent)
 		}
@@ -80,12 +80,12 @@ class ActKeywordFilter
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
 		
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		
 		val intent = this.intent
 		
 		// filter ID の有無はUIに影響するのでinitUIより先に初期化する
-		this.filter_id = EntityId.from(intent,EXTRA_FILTER_ID)
+		this.filter_id = EntityId.from(intent, EXTRA_FILTER_ID)
 		
 		val a = SavedAccount.loadAccount(this, intent.getLongExtra(EXTRA_ACCOUNT_DB_ID, - 1L))
 		if(a == null) {
@@ -97,11 +97,11 @@ class ActKeywordFilter
 		initUI()
 		
 		if(savedInstanceState == null) {
-			if(filter_id != null ) {
+			if(filter_id != null) {
 				startLoading()
 			} else {
 				spExpire.setSelection(1)
-				etPhrase.setText( intent.getStringExtra(EXTRA_INITIAL_PHRASE) ?: "" )
+				etPhrase.setText(intent.getStringExtra(EXTRA_INITIAL_PHRASE) ?: "")
 			}
 		} else {
 			val iv = savedInstanceState.getInt(STATE_EXPIRE_SPINNER, - 1)
@@ -116,13 +116,13 @@ class ActKeywordFilter
 		super.onSaveInstanceState(outState)
 		if(! loading) {
 			outState.putInt(STATE_EXPIRE_SPINNER, spExpire.selectedItemPosition)
-			outState.putLong(STATE_EXPIRE_AT,filter_expire)
+			outState.putLong(STATE_EXPIRE_AT, filter_expire)
 		}
 	}
 	
 	private fun initUI() {
 		title =
-			getString(if(filter_id ==null ) R.string.keyword_filter_new else R.string.keyword_filter_edit)
+			getString(if(filter_id == null) R.string.keyword_filter_new else R.string.keyword_filter_edit)
 		
 		this.density = resources.displayMetrics.density
 		setContentView(R.layout.act_keyword_filter)
@@ -245,19 +245,20 @@ class ActKeywordFilter
 			}
 			
 			when(seconds) {
-			
-			// dont change
-				- 1 -> {}
-			
-			// unlimited
-				0 -> if( filter_expire <= 0L ) {
+				
+				// dont change
+				- 1 -> {
+				}
+				
+				// unlimited
+				0 -> if(filter_expire <= 0L) {
 					// already unlimited. don't change.
 				} else {
 					// FIXME: currently there is no way to remove expires from existing filter.
-					put("expires_in", Int.MAX_VALUE )
+					put("expires_in", Int.MAX_VALUE)
 				}
-			
-			// set seconds
+				
+				// set seconds
 				else -> put("expires_in", seconds)
 			}
 			

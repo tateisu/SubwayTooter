@@ -27,7 +27,7 @@ class ActMutedPseudoAccount : AppCompatActivity() {
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		initUI()
 		loadData()
 	}
@@ -105,7 +105,7 @@ class ActMutedPseudoAccount : AppCompatActivity() {
 		
 		val tmp_list = ArrayList<MyItem>()
 		try {
-			UserRelation.createCursorPseudo().use{ cursor->
+			UserRelation.createCursorPseudo().use { cursor ->
 				val idx_id = cursor.getColumnIndex(UserRelation.COL_ID)
 				val idx_name = cursor.getColumnIndex(UserRelation.COL_WHO_ID)
 				while(cursor.moveToNext()) {

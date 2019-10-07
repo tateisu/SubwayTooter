@@ -590,7 +590,7 @@ class ActPost : AppCompatActivity(),
 		var sv : String?
 		
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, true)
+		App1.setActivityTheme(this, noActionBar = true)
 		
 		app_state = App1.getAppState(this)
 		pref = app_state.pref

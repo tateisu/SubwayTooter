@@ -28,7 +28,7 @@ class ActMutedWord : AppCompatActivity() {
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		initUI()
 		loadData()
 	}
@@ -83,13 +83,16 @@ class ActMutedWord : AppCompatActivity() {
 				// mRefreshLayout.setEnabled( false );
 			}
 			
-			override fun onItemSwipeEnded(item : ListSwipeItem?, swipedDirection : ListSwipeItem.SwipeDirection?) {
+			override fun onItemSwipeEnded(
+				item : ListSwipeItem?,
+				swipedDirection : ListSwipeItem.SwipeDirection?
+			) {
 				// 操作完了でリフレッシュ許可
 				// mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
 				
 				// 左にスワイプした(右端に青が見えた) なら要素を削除する
 				if(swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
-					val o = item ?.tag
+					val o = item?.tag
 					if(o is MyItem) {
 						MutedWord.delete(o.name)
 						listAdapter.removeItem(listAdapter.getPositionForItem(o))
@@ -124,7 +127,8 @@ class ActMutedWord : AppCompatActivity() {
 	internal class MyItem(val id : Long, val name : String)
 	
 	// リスト要素のViewHolder
-	internal class MyViewHolder(viewRoot : View) : DragItemAdapter.ViewHolder(viewRoot, R.id.ivDragHandle, false) {
+	internal class MyViewHolder(viewRoot : View) :
+		DragItemAdapter.ViewHolder(viewRoot, R.id.ivDragHandle, false) {
 		
 		val tvName : TextView
 		
@@ -157,10 +161,12 @@ class ActMutedWord : AppCompatActivity() {
 	}
 	
 	// ドラッグ操作中のデータ
-	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) : DragItem(context, layoutId) {
+	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) :
+		DragItem(context, layoutId) {
 		
 		override fun onBindDragView(clickedView : View, dragView : View) {
-			dragView.findViewById<TextView>(R.id.tvName).text = clickedView.findViewById<TextView>(R.id.tvName).text
+			dragView.findViewById<TextView>(R.id.tvName).text =
+				clickedView.findViewById<TextView>(R.id.tvName).text
 			
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
 				getAttributeColor(this@ActMutedWord, R.attr.list_item_bg_pressed_dragged)
@@ -168,7 +174,8 @@ class ActMutedWord : AppCompatActivity() {
 		}
 	}
 	
-	private inner class MyListAdapter internal constructor() : DragItemAdapter<MyItem, MyViewHolder>() {
+	private inner class MyListAdapter internal constructor() :
+		DragItemAdapter<MyItem, MyViewHolder>() {
 		
 		init {
 			setHasStableIds(true)

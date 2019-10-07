@@ -90,7 +90,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		initUI()
 		
 		app_state = App1.getAppState(this)
@@ -245,7 +245,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			override fun background(client : TootApiClient) : TootApiResult? {
 				try {
 					val backgroundDir = Column.getBackgroundImageDir(this@ActColumnCustomize)
-					val file = File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
+					val file =
+						File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
 					val fileUri = Uri.fromFile(file)
 					
 					client.publishApiProgress("loading image from ${uriArg}")

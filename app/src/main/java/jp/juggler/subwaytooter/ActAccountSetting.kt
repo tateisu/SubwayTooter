@@ -163,7 +163,7 @@ class ActAccountSetting
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
 		
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		this.pref = App1.pref
 		
 		initUI()

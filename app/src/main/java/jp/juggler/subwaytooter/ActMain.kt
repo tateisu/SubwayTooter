@@ -393,7 +393,7 @@ class ActMain : AppCompatActivity()
 		log.d("onCreate")
 		super.onCreate(savedInstanceState)
 		requestWindowFeature(Window.FEATURE_NO_TITLE)
-		App1.setActivityTheme(this, true)
+		App1.setActivityTheme(this, noActionBar = true)
 		
 		handler = Handler()
 		app_state = App1.getAppState(this)

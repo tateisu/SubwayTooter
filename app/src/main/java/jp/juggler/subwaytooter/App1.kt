@@ -482,21 +482,22 @@ class App1 : Application() {
 		
 		fun setActivityTheme(
 			activity : Activity,
-			bNoActionBar : Boolean,
-			forceThemeId : Int? = null
+			noActionBar : Boolean = false,
+			forceDark :Boolean = false
 		) {
 			
 			prepare(activity.applicationContext)
 			
 			val theme_idx = Pref.ipUiTheme(pref)
 			activity.setTheme(
-				forceThemeId ?: when(theme_idx) {
-					1 -> if(bNoActionBar) R.style.AppTheme_Dark_NoActionBar else R.style.AppTheme_Dark
-					else -> if(bNoActionBar) R.style.AppTheme_Light_NoActionBar else R.style.AppTheme_Light
+				if( forceDark || theme_idx ==1){
+					if(noActionBar) R.style.AppTheme_Dark_NoActionBar else R.style.AppTheme_Dark
+				}else{
+					if(noActionBar) R.style.AppTheme_Light_NoActionBar else R.style.AppTheme_Light
 				}
 			)
 			
-			setStatusBarColor(activity)
+			setStatusBarColor(activity,forceDark=forceDark)
 		}
 		
 		internal val CACHE_CONTROL = CacheControl.Builder()
@@ -680,18 +681,23 @@ class App1 : Application() {
 			)
 		}
 		
-		fun setStatusBarColor(activity : Activity) {
+		fun setStatusBarColor(activity : Activity,forceDark:Boolean=false ) {
 			
 			activity.window?.apply {
 				
+				// 古い端末ではナビゲーションバーのアイコン色を設定できないため
+				// メディアビューア画面ではステータスバーやナビゲーションバーの色を設定しない…
+				if( forceDark && Build.VERSION.SDK_INT < 26 ) return
+
 				clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
 				clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
 				addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 				
-				var c = Pref.ipStatusBarColor(pref).notZero() ?: getAttributeColor(
-					activity,
-					R.attr.colorPrimaryDark
-				)
+				var c = when {
+					forceDark -> Color.BLACK
+					else -> Pref.ipStatusBarColor(pref).notZero()
+						?: getAttributeColor(activity,R.attr.colorPrimaryDark)
+				}
 				statusBarColor = c or Color.BLACK
 				
 				if(Build.VERSION.SDK_INT >= 23) {
@@ -705,7 +711,11 @@ class App1 : Application() {
 						}
 				}
 				
-				c = Pref.ipNavigationBarColor(pref)
+				c = when {
+					forceDark -> Color.BLACK
+					else -> Pref.ipNavigationBarColor(pref)
+				}
+				
 				if(c != 0) {
 					navigationBarColor = c or Color.BLACK
 					

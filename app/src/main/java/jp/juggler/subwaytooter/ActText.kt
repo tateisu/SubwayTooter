@@ -75,7 +75,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		
 		val intent = intent
 		
@@ -86,7 +86,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		if(savedInstanceState == null) {
 			val sv = intent.getStringExtra(EXTRA_TEXT) ?: ""
 			val content_start = intent.getIntExtra(EXTRA_CONTENT_START, 0)
-			val content_end = intent.getIntExtra(EXTRA_CONTENT_END, sv.length )
+			val content_end = intent.getIntExtra(EXTRA_CONTENT_END, sv.length)
 			etText.setText(sv)
 			
 			// Android 9 以降ではフォーカスがないとsetSelectionできない

@@ -44,7 +44,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		initUI()
 		loadData()
 	}
@@ -265,7 +265,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 				} catch(ex : Throwable) {
 					throw RuntimeException("can't load data", ex)
 				}
-
+			
 			else -> super.onActivityResult(requestCode, resultCode, data)
 		}
 	}

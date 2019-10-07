@@ -38,7 +38,7 @@ class ActAbout : AppCompatActivity() {
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		setContentView(R.layout.act_about)
 		App1.initEdgeToEdge(this)
 		
@@ -89,17 +89,17 @@ class ActAbout : AppCompatActivity() {
 		val margin_top = (0.5f + density * 8).toInt()
 		val padding = (0.5f + density * 8).toInt()
 		
-		for( pair in contributors){
-			ll.addView(Button(this).apply{
+		for(pair in contributors) {
+			ll.addView(Button(this).apply {
 				val acct = pair.first
 				val works = pair.second
-
+				
 				//
 				layoutParams = LinearLayout.LayoutParams(
 					LinearLayout.LayoutParams.WRAP_CONTENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT
-				).apply{
-					if( ll.childCount != 0 ) topMargin = margin_top
+				).apply {
+					if(ll.childCount != 0) topMargin = margin_top
 				}
 				//
 				setBackgroundResource(R.drawable.btn_bg_transparent)

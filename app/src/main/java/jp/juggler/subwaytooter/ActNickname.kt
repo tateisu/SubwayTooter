@@ -70,10 +70,10 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		
 		val intent = intent
-		this.acct = intent.getStringExtra(EXTRA_ACCT)!!
+		this.acct = intent.getStringExtra(EXTRA_ACCT) !!
 		this.show_notification_sound = intent.getBooleanExtra(EXTRA_SHOW_NOTIFICATION_SOUND, false)
 		
 		initUI()

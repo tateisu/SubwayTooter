@@ -324,7 +324,7 @@ class ActAppSettingChild : AppCompatActivity()
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
 		
-		App1.setActivityTheme(this, false)
+		App1.setActivityTheme(this)
 		
 		pref = Pref.pref(this)
 		
@@ -412,15 +412,19 @@ class ActAppSettingChild : AppCompatActivity()
 			, getString(R.string.theme_dark)
 		)
 		
-		val resizeList = ActPost.resizeConfigList.map{
-			when(it.type){
-				ResizeType.None->getString(R.string.dont_resize)
-				ResizeType.LongSide->getString(R.string.long_side_pixel, it.size)
-				ResizeType.SquarePixel->getString(R.string.resize_square_pixels, it.size*it.size,it.size)
+		val resizeList = ActPost.resizeConfigList.map {
+			when(it.type) {
+				ResizeType.None -> getString(R.string.dont_resize)
+				ResizeType.LongSide -> getString(R.string.long_side_pixel, it.size)
+				ResizeType.SquarePixel -> getString(
+					R.string.resize_square_pixels,
+					it.size * it.size,
+					it.size
+				)
 			}
 		}.toTypedArray()
 		
-		spResizeImage = initSpinner(R.id.spResizeImage ,*resizeList )
+		spResizeImage = initSpinner(R.id.spResizeImage, *resizeList)
 		
 		spRefreshAfterToot = initSpinner(
 			R.id.spRefreshAfterToot
@@ -566,7 +570,7 @@ class ActAppSettingChild : AppCompatActivity()
 		etMovieSizeMax = findViewById(R.id.etMovieSizeMax)
 		etMovieSizeMax?.addTextChangedListener(this)
 		
-		etMediaSizeMaxPixelfed= findViewById(R.id.etMediaSizeMaxPixelfed)
+		etMediaSizeMaxPixelfed = findViewById(R.id.etMediaSizeMaxPixelfed)
 		etMediaSizeMaxPixelfed?.addTextChangedListener(this)
 		
 		etRoundRatio = findViewById(R.id.etRoundRatio)
@@ -648,9 +652,7 @@ class ActAppSettingChild : AppCompatActivity()
 		
 	}
 	
-
-
-	private fun initSpinner(@IdRes viewId : Int,vararg captions : String) : Spinner? =
+	private fun initSpinner(@IdRes viewId : Int, vararg captions : String) : Spinner? =
 		findViewById<Spinner>(viewId)?.apply {
 			adapter = ArrayAdapter(
 				this@ActAppSettingChild,

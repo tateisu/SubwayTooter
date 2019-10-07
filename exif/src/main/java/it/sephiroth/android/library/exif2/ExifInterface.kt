@@ -49,7 +49,7 @@ import kotlin.math.ln
 @Suppress("unused", "unused")
 class ExifInterface {
 	
-	private var mData = ExifData(DEFAULT_BYTE_ORDER)
+	private var mData = ExifData()
 	
 	private val mGPSTimeStampCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 	
@@ -58,7 +58,7 @@ class ExifInterface {
 	 *
 	 * @return a List of [ExifTag]s.
 	 */
-	val allTags : List<ExifTag>?
+	val allTags : List<ExifTag>
 		get() = mData.allTags
 	
 	val tagInfo : SparseIntArray by lazy { SparseIntArray().also { it.initTagInfo() } }
@@ -69,16 +69,19 @@ class ExifInterface {
 	 * @return the thumbnail as a bitmap.
 	 */
 	val thumbnailBitmap : Bitmap?
-		get() = when {
-			mData.hasCompressedThumbnail() -> {
-				val thumb = mData.compressedThumbnail
-				BitmapFactory.decodeByteArray(thumb, 0, thumb !!.size)
+		get() {
+			val compressedThumbnail = mData.compressedThumbnail
+			if(compressedThumbnail != null) {
+				return BitmapFactory
+					.decodeByteArray(compressedThumbnail, 0, compressedThumbnail.size)
+			}
+			val stripList = mData.stripList
+			if(stripList != null) {
+				// TODO: decoding uncompressed thumbnail is not implemented.
+				return null
 			}
 			
-			// TODO: implement uncompressed
-			mData.hasUncompressedStrip() -> null
-			
-			else -> null
+			return null
 		}
 	
 	/**
@@ -270,18 +273,8 @@ class ExifInterface {
 	 * @see .readExif
 	 */
 	@Throws(IOException::class)
-	fun readExif(inFileName : String?, options : Int) {
-		requireNotNull(inFileName) { NULL_ARGUMENT_STRING }
-		var `is` : InputStream? = null
-		try {
-			`is` = BufferedInputStream(FileInputStream(inFileName))
-			readExif(`is`, options)
-		} catch(e : IOException) {
-			closeSilently(`is`)
-			throw e
-		}
-		
-		`is`.close()
+	fun readExif(inFileName : String, options : Int) {
+		BufferedInputStream(FileInputStream(inFileName)).use { readExif(it, options) }
 	}
 	
 	/**
@@ -301,11 +294,7 @@ class ExifInterface {
 	 */
 	@Throws(IOException::class)
 	fun readExif(inStream : InputStream, options : Int) {
-		try {
-			mData = ExifReader(this).read(inStream, options)
-		} catch(e : ExifInvalidFormatException) {
-			throw IOException("Invalid exif format : $e")
-		}
+		mData = ExifReader(this).read(inStream, options)
 	}
 	
 	/**
@@ -323,7 +312,7 @@ class ExifInterface {
 	 * Clears this ExifInterface object's existing exif tags.
 	 */
 	private fun clearExif() {
-		mData = ExifData(DEFAULT_BYTE_ORDER)
+		mData = ExifData()
 	}
 	
 	/**
@@ -333,8 +322,7 @@ class ExifInterface {
 	 * @param tags a Collection of ExifTags.
 	 * @see .setTag
 	 */
-	private fun setTags(tags : Collection<ExifTag>?) {
-		if(null == tags) return
+	private fun setTags(tags : Collection<ExifTag>) {
 		for(t in tags) {
 			setTag(t)
 		}
@@ -399,19 +387,17 @@ class ExifInterface {
 		// exif tags are not used here
 		
 		// 3. rename dst file into backup file
-		val input = FileInputStream(srcFilename)
-		val output = FileOutputStream(dstFilename)
-		
-		val position = writeExif_internal(input, output, mData)
-		
-		// 7. write the rest of the image..
-		val in_channel = input.channel
-		val out_channel = output.channel
-		in_channel.transferTo(position.toLong(), in_channel.size() - position, out_channel)
-		output.flush()
-		
-		closeQuietly(input)
-		closeQuietly(output)
+		FileInputStream(srcFilename).use { input ->
+			FileOutputStream(dstFilename).use { output ->
+				val position = writeExif_internal(input, output, mData)
+				
+				// 7. write the rest of the image..
+				val in_channel = input.channel
+				val out_channel = output.channel
+				in_channel.transferTo(position.toLong(), in_channel.size() - position, out_channel)
+				output.flush()
+			}
+		}
 	}
 	
 	@Throws(IOException::class)
@@ -435,7 +421,7 @@ class ExifInterface {
 	fun writeExif(input : Bitmap, dstFilename : String, quality : Int) {
 		Log.i(TAG, "writeExif: $dstFilename")
 		
-		// inpur is used *ONLY* to read the image uncompressed data
+		// input is used *ONLY* to read the image uncompressed data
 		// exif tags are not used here
 		
 		val out = ByteArrayOutputStream()
@@ -547,162 +533,54 @@ class ExifInterface {
 		return t?.getValue()
 	}
 	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagStringValue(tagId : Int, ifdId : Int) : String? {
-		val t = getTag(tagId, ifdId) ?: return null
-		return t.valueAsString
-	}
+	private fun getTagStringValue(
+		tagId : Int,
+		ifdId : Int = getDefinedTagDefaultIfd(tagId)
+	) : String? =
+		getTag(tagId, ifdId)?.valueAsString
 	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagStringValue(tagId : Int) : String? {
-		val ifdId = getDefinedTagDefaultIfd(tagId)
-		return getTagStringValue(tagId, ifdId)
-	}
+	// array
 	
-	/**
-	 * @see .getTagValue
-	 */
-	fun getTagLongValue(tagId : Int) : Long? {
-		val ifdId = getDefinedTagDefaultIfd(tagId)
-		return getTagLongValue(tagId, ifdId)
-	}
+	private fun getTagLongValues(
+		tagId : Int,
+		ifdId : Int = getDefinedTagDefaultIfd(tagId)
+	) : LongArray? =
+		getTag(tagId, ifdId)?.valueAsLongs
 	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagLongValue(tagId : Int, ifdId : Int) : Long? {
-		val l = getTagLongValues(tagId, ifdId)
-		return if(l == null || l.isEmpty()) {
-			null
-		} else l[0]
-	}
+	private fun getTagIntValues(
+		tagId : Int,
+		ifdId : Int = getDefinedTagDefaultIfd(tagId)
+	) : IntArray? =
+		getTag(tagId, ifdId)?.valueAsInts
 	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagLongValues(tagId : Int, ifdId : Int) : LongArray? {
-		val t = getTag(tagId, ifdId) ?: return null
-		return t.valueAsLongs
-	}
+	private fun getTagByteValues(
+		tagId : Int,
+		ifdId : Int = getDefinedTagDefaultIfd(tagId)
+	) : ByteArray? =
+		getTag(tagId, ifdId)?.valueAsBytes
 	
-	/**
-	 * @see .getTagValue
-	 */
-	fun getTagIntValue(tagId : Int) : Int? {
-		val ifdId = getDefinedTagDefaultIfd(tagId)
-		return getTagIntValue(tagId, ifdId)
-	}
+	private fun getTagRationalValues(
+		tagId : Int,
+		ifdId : Int = getDefinedTagDefaultIfd(tagId)
+	) : Array<Rational>? =
+		getTag(tagId, ifdId)?.valueAsRationals
 	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagIntValue(tagId : Int, ifdId : Int) : Int? {
-		val l = getTagIntValues(tagId, ifdId)
-		return if(l == null || l.isEmpty()) {
-			null
-		} else l[0]
-	}
+	// single value
 	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagIntValues(tagId : Int, ifdId : Int) : IntArray? {
-		val t = getTag(tagId, ifdId) ?: return null
-		return t.valueAsInts
-	}
+	fun getTagLongValue(tagId : Int, ifdId : Int = getDefinedTagDefaultIfd(tagId)) : Long? =
+		getTagLongValues(tagId, ifdId)?.firstOrNull()
 	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagByteValue(tagId : Int) : Byte? {
-		val ifdId = getDefinedTagDefaultIfd(tagId)
-		return getTagByteValue(tagId, ifdId)
-	}
+	fun getTagIntValue(tagId : Int, ifdId : Int = getDefinedTagDefaultIfd(tagId)) : Int? =
+		getTagIntValues(tagId, ifdId)?.firstOrNull()
 	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagByteValue(tagId : Int, ifdId : Int) : Byte? {
-		val l = getTagByteValues(tagId, ifdId)
-		return if(l == null || l.isEmpty()) {
-			null
-		} else l[0]
-	}
+	private fun getTagByteValue(tagId : Int, ifdId : Int = getDefinedTagDefaultIfd(tagId)) : Byte? =
+		getTagByteValues(tagId, ifdId)?.firstOrNull()
 	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagByteValues(tagId : Int, ifdId : Int) : ByteArray? {
-		val t = getTag(tagId, ifdId) ?: return null
-		return t.valueAsBytes
-	}
-	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagRationalValue(tagId : Int) : Rational? {
-		val ifdId = getDefinedTagDefaultIfd(tagId)
-		return getTagRationalValue(tagId, ifdId)
-	}
-	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagRationalValue(tagId : Int, ifdId : Int) : Rational? {
-		val l = getTagRationalValues(tagId, ifdId)
-		return if(l == null || l.isEmpty()) {
-			null
-		} else Rational(l[0])
-	}
-	
-	/*
-	 * Getter methods that are similar to getTagValue. Null is returned if the
-	 * tag value cannot be cast into the return type.
-	 */
-	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagRationalValues(tagId : Int, ifdId : Int) : Array<Rational>? {
-		val t = getTag(tagId, ifdId) ?: return null
-		return t.valueAsRationals
-	}
-	
-	/**
-	 * @see .getTagValue
-	 */
-	fun getTagLongValues(tagId : Int) : LongArray? {
-		val ifdId = getDefinedTagDefaultIfd(tagId)
-		return getTagLongValues(tagId, ifdId)
-	}
-	
-	/**
-	 * @see .getTagValue
-	 */
-	fun getTagIntValues(tagId : Int) : IntArray? {
-		val ifdId = getDefinedTagDefaultIfd(tagId)
-		return getTagIntValues(tagId, ifdId)
-	}
-	
-	/**
-	 * @see .getTagValue
-	 */
-	fun getTagByteValues(tagId : Int) : ByteArray? {
-		val ifdId = getDefinedTagDefaultIfd(tagId)
-		return getTagByteValues(tagId, ifdId)
-	}
-	
-	/**
-	 * @see .getTagValue
-	 */
-	private fun getTagRationalValues(tagId : Int) : Array<Rational>? {
-		val ifdId = getDefinedTagDefaultIfd(tagId)
-		return getTagRationalValues(tagId, ifdId)
-	}
+	private fun getTagRationalValue(
+		tagId : Int,
+		ifdId : Int = getDefinedTagDefaultIfd(tagId)
+	) : Rational? =
+		getTagRationalValues(tagId, ifdId)?.firstOrNull()
 	
 	/**
 	 * Checks whether a tag has a defined number of elements.
@@ -881,7 +759,7 @@ class ExifInterface {
 	}
 	
 	private fun getTagDefinitionsForTagId(tagId : Short) : IntArray? {
-		val ifds = IfdId.list
+		val ifds = IfdData.list
 		val defs = IntArray(ifds.size)
 		var counter = 0
 		val infos = tagInfo
@@ -942,12 +820,12 @@ class ExifInterface {
 		tagInfo.delete(tagId)
 	}
 	
-//	/**
-//	 * Resets tag definitions to the default ones.
-//	 */
-//	fun resetTagDefinitions() {
-//		mTagInfo = null
-//	}
+	//	/**
+	//	 * Resets tag definitions to the default ones.
+	//	 */
+	//	fun resetTagDefinitions() {
+	//		mTagInfo = null
+	//	}
 	
 	/**
 	 * Check if thumbnail exists.
@@ -1642,9 +1520,10 @@ class ExifInterface {
 		 */
 		
 		// IFD 0
-		private val TAG_IMAGE_WIDTH = defineTag(IfdId.TYPE_IFD_0, 0x0100.toShort())
-		private val TAG_IMAGE_LENGTH = defineTag(IfdId.TYPE_IFD_0, 0x0101.toShort()) // Image height
-		private val TAG_BITS_PER_SAMPLE = defineTag(IfdId.TYPE_IFD_0, 0x0102.toShort())
+		private val TAG_IMAGE_WIDTH = defineTag(IfdData.TYPE_IFD_0, 0x0100.toShort())
+		private val TAG_IMAGE_LENGTH =
+			defineTag(IfdData.TYPE_IFD_0, 0x0101.toShort()) // Image height
+		private val TAG_BITS_PER_SAMPLE = defineTag(IfdData.TYPE_IFD_0, 0x0102.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -1655,24 +1534,24 @@ class ExifInterface {
 		 *  * 6 = JPEG compression (thumbnails only)
 		 *  * Other = reserved
 		 */
-		private val TAG_COMPRESSION = defineTag(IfdId.TYPE_IFD_0, 0x0103.toShort())
-		private val TAG_PHOTOMETRIC_INTERPRETATION = defineTag(IfdId.TYPE_IFD_0, 0x0106.toShort())
-		private val TAG_IMAGE_DESCRIPTION = defineTag(IfdId.TYPE_IFD_0, 0x010E.toShort())
+		private val TAG_COMPRESSION = defineTag(IfdData.TYPE_IFD_0, 0x0103.toShort())
+		private val TAG_PHOTOMETRIC_INTERPRETATION = defineTag(IfdData.TYPE_IFD_0, 0x0106.toShort())
+		private val TAG_IMAGE_DESCRIPTION = defineTag(IfdData.TYPE_IFD_0, 0x010E.toShort())
 		
 		/**
 		 * Value is ascii string<br></br>
 		 * The manufacturer of the recording equipment. This is the manufacturer of the DSC, scanner, video digitizer or other equipment
 		 * that generated the image. When the field is left blank, it is treated as unknown.
 		 */
-		private val TAG_MAKE = defineTag(IfdId.TYPE_IFD_0, 0x010F.toShort())
+		private val TAG_MAKE = defineTag(IfdData.TYPE_IFD_0, 0x010F.toShort())
 		
 		/**
 		 * Value is ascii string<br></br>
 		 * The model name or model number of the equipment. This is the model name of number of the DSC, scanner, video digitizer or
 		 * other equipment that generated the image. When the field is left blank, it is treated as unknown.
 		 */
-		private val TAG_MODEL = defineTag(IfdId.TYPE_IFD_0, 0x0110.toShort())
-		val TAG_STRIP_OFFSETS = defineTag(IfdId.TYPE_IFD_0, 0x0111.toShort())
+		private val TAG_MODEL = defineTag(IfdData.TYPE_IFD_0, 0x0110.toShort())
+		val TAG_STRIP_OFFSETS = defineTag(IfdData.TYPE_IFD_0, 0x0111.toShort())
 		
 		/**
 		 * Value is int<br></br>
@@ -1690,25 +1569,26 @@ class ExifInterface {
 		 *  * '9' undefined
 		 *
 		 */
-		val TAG_ORIENTATION = defineTag(IfdId.TYPE_IFD_0, 0x0112.toShort())
-		private val TAG_SAMPLES_PER_PIXEL = defineTag(IfdId.TYPE_IFD_0, 0x0115.toShort())
-		private val TAG_ROWS_PER_STRIP = defineTag(IfdId.TYPE_IFD_0, 0x0116.toShort())
-		val TAG_STRIP_BYTE_COUNTS = defineTag(IfdId.TYPE_IFD_0, 0x0117.toShort())
+		val TAG_ORIENTATION = defineTag(IfdData.TYPE_IFD_0, 0x0112.toShort())
+		private val TAG_SAMPLES_PER_PIXEL = defineTag(IfdData.TYPE_IFD_0, 0x0115.toShort())
+		private val TAG_ROWS_PER_STRIP = defineTag(IfdData.TYPE_IFD_0, 0x0116.toShort())
+		val TAG_STRIP_BYTE_COUNTS = defineTag(IfdData.TYPE_IFD_0, 0x0117.toShort())
 		
-		private val TAG_INTEROP_VERSION = defineTag(IfdId.TYPE_IFD_INTEROPERABILITY, 0x0002.toShort())
+		private val TAG_INTEROP_VERSION =
+			defineTag(IfdData.TYPE_IFD_INTEROPERABILITY, 0x0002.toShort())
 		
 		/**
 		 * Value is unsigned double.<br></br>
 		 * Display/Print resolution of image. Large number of digicam uses 1/72inch, but it has no mean because personal computer doesn't
 		 * use this value to display/print out.
 		 */
-		private val TAG_X_RESOLUTION = defineTag(IfdId.TYPE_IFD_0, 0x011A.toShort())
+		private val TAG_X_RESOLUTION = defineTag(IfdData.TYPE_IFD_0, 0x011A.toShort())
 		
 		/**
 		 * @see .TAG_X_RESOLUTION
 		 */
-		private val TAG_Y_RESOLUTION = defineTag(IfdId.TYPE_IFD_0, 0x011B.toShort())
-		private val TAG_PLANAR_CONFIGURATION = defineTag(IfdId.TYPE_IFD_0, 0x011C.toShort())
+		private val TAG_Y_RESOLUTION = defineTag(IfdData.TYPE_IFD_0, 0x011B.toShort())
+		private val TAG_PLANAR_CONFIGURATION = defineTag(IfdData.TYPE_IFD_0, 0x011C.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -1721,21 +1601,21 @@ class ExifInterface {
 		 *  * '5' micrometer
 		 *
 		 */
-		private val TAG_RESOLUTION_UNIT = defineTag(IfdId.TYPE_IFD_0, 0x0128.toShort())
-		private val TAG_TRANSFER_FUNCTION = defineTag(IfdId.TYPE_IFD_0, 0x012D.toShort())
+		private val TAG_RESOLUTION_UNIT = defineTag(IfdData.TYPE_IFD_0, 0x0128.toShort())
+		private val TAG_TRANSFER_FUNCTION = defineTag(IfdData.TYPE_IFD_0, 0x012D.toShort())
 		
 		/**
 		 * Value is ascii string<br></br>
 		 * Shows firmware(internal software of digicam) version number.
 		 */
-		private val TAG_SOFTWARE = defineTag(IfdId.TYPE_IFD_0, 0x0131.toShort())
+		private val TAG_SOFTWARE = defineTag(IfdData.TYPE_IFD_0, 0x0131.toShort())
 		
 		/**
 		 * Value is ascii string (20)<br></br>
 		 * Date/Time of image was last modified. Data format is "YYYY:MM:DD HH:MM:SS"+0x00, total 20bytes. In usual, it has the same
 		 * value of DateTimeOriginal(0x9003)
 		 */
-		val TAG_DATE_TIME = defineTag(IfdId.TYPE_IFD_0, 0x0132.toShort())
+		val TAG_DATE_TIME = defineTag(IfdData.TYPE_IFD_0, 0x0132.toShort())
 		
 		/**
 		 * Vallue is ascii String<br></br>
@@ -1743,31 +1623,31 @@ class ExifInterface {
 		 * recommended that the information be written as in the example below for ease of Interoperability. When the field is left
 		 * blank, it is treated as unknown.
 		 */
-		private val TAG_ARTIST = defineTag(IfdId.TYPE_IFD_0, 0x013B.toShort())
-		private val TAG_WHITE_POINT = defineTag(IfdId.TYPE_IFD_0, 0x013E.toShort())
-		private val TAG_PRIMARY_CHROMATICITIES = defineTag(IfdId.TYPE_IFD_0, 0x013F.toShort())
-		private val TAG_Y_CB_CR_COEFFICIENTS = defineTag(IfdId.TYPE_IFD_0, 0x0211.toShort())
-		private val TAG_Y_CB_CR_SUB_SAMPLING = defineTag(IfdId.TYPE_IFD_0, 0x0212.toShort())
-		private val TAG_Y_CB_CR_POSITIONING = defineTag(IfdId.TYPE_IFD_0, 0x0213.toShort())
-		private val TAG_REFERENCE_BLACK_WHITE = defineTag(IfdId.TYPE_IFD_0, 0x0214.toShort())
+		private val TAG_ARTIST = defineTag(IfdData.TYPE_IFD_0, 0x013B.toShort())
+		private val TAG_WHITE_POINT = defineTag(IfdData.TYPE_IFD_0, 0x013E.toShort())
+		private val TAG_PRIMARY_CHROMATICITIES = defineTag(IfdData.TYPE_IFD_0, 0x013F.toShort())
+		private val TAG_Y_CB_CR_COEFFICIENTS = defineTag(IfdData.TYPE_IFD_0, 0x0211.toShort())
+		private val TAG_Y_CB_CR_SUB_SAMPLING = defineTag(IfdData.TYPE_IFD_0, 0x0212.toShort())
+		private val TAG_Y_CB_CR_POSITIONING = defineTag(IfdData.TYPE_IFD_0, 0x0213.toShort())
+		private val TAG_REFERENCE_BLACK_WHITE = defineTag(IfdData.TYPE_IFD_0, 0x0214.toShort())
 		
 		/**
 		 * Values is ascii string<br></br>
 		 * Shows copyright information
 		 */
-		private val TAG_COPYRIGHT = defineTag(IfdId.TYPE_IFD_0, 0x8298.toShort())
-		val TAG_EXIF_IFD = defineTag(IfdId.TYPE_IFD_0, 0x8769.toShort())
-		val TAG_GPS_IFD = defineTag(IfdId.TYPE_IFD_0, 0x8825.toShort())
+		private val TAG_COPYRIGHT = defineTag(IfdData.TYPE_IFD_0, 0x8298.toShort())
+		val TAG_EXIF_IFD = defineTag(IfdData.TYPE_IFD_0, 0x8769.toShort())
+		val TAG_GPS_IFD = defineTag(IfdData.TYPE_IFD_0, 0x8825.toShort())
 		// IFD 1
-		val TAG_JPEG_INTERCHANGE_FORMAT = defineTag(IfdId.TYPE_IFD_1, 0x0201.toShort())
-		val TAG_JPEG_INTERCHANGE_FORMAT_LENGTH = defineTag(IfdId.TYPE_IFD_1, 0x0202.toShort())
+		val TAG_JPEG_INTERCHANGE_FORMAT = defineTag(IfdData.TYPE_IFD_1, 0x0201.toShort())
+		val TAG_JPEG_INTERCHANGE_FORMAT_LENGTH = defineTag(IfdData.TYPE_IFD_1, 0x0202.toShort())
 		// IFD Exif Tags
 		
 		/**
 		 * Value is unsigned double<br></br>
 		 * Exposure time (reciprocal of shutter speed). Unit is second
 		 */
-		private val TAG_EXPOSURE_TIME = defineTag(IfdId.TYPE_IFD_EXIF, 0x829A.toShort())
+		private val TAG_EXPOSURE_TIME = defineTag(IfdData.TYPE_IFD_EXIF, 0x829A.toShort())
 		
 		/**
 		 * Value is unsigned double<br></br>
@@ -1775,7 +1655,7 @@ class ExifInterface {
 		 *
 		 * @see .TAG_APERTURE_VALUE
 		 */
-		val TAG_F_NUMBER = defineTag(IfdId.TYPE_IFD_EXIF, 0x829D.toShort())
+		val TAG_F_NUMBER = defineTag(IfdData.TYPE_IFD_EXIF, 0x829D.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -1791,44 +1671,46 @@ class ExifInterface {
 		 *  * '8' landscape mode.
 		 *
 		 */
-		private val TAG_EXPOSURE_PROGRAM = defineTag(IfdId.TYPE_IFD_EXIF, 0x8822.toShort())
-		private val TAG_SPECTRAL_SENSITIVITY = defineTag(IfdId.TYPE_IFD_EXIF, 0x8824.toShort())
+		private val TAG_EXPOSURE_PROGRAM = defineTag(IfdData.TYPE_IFD_EXIF, 0x8822.toShort())
+		private val TAG_SPECTRAL_SENSITIVITY = defineTag(IfdData.TYPE_IFD_EXIF, 0x8824.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
 		 * CCD sensitivity equivalent to Ag-Hr film speedrate.<br></br>
 		 * Indicates the ISO Speed and ISO Latitude of the camera or input device as specified in ISO 12232
 		 */
-		private val TAG_ISO_SPEED_RATINGS = defineTag(IfdId.TYPE_IFD_EXIF, 0x8827.toShort())
-		private val TAG_OECF = defineTag(IfdId.TYPE_IFD_EXIF, 0x8828.toShort())
+		private val TAG_ISO_SPEED_RATINGS = defineTag(IfdData.TYPE_IFD_EXIF, 0x8827.toShort())
+		private val TAG_OECF = defineTag(IfdData.TYPE_IFD_EXIF, 0x8828.toShort())
 		
 		/**
 		 * ASCII string (4).<br></br>
 		 * The version of this standard supported. Nonexistence of this field is taken to mean nonconformance to the standard (see
 		 * section 4.2). Conformance to this standard is indicated by recording "0220" as 4-byte ASCII
 		 */
-		private val TAG_EXIF_VERSION = defineTag(IfdId.TYPE_IFD_EXIF, 0x9000.toShort())
+		private val TAG_EXIF_VERSION = defineTag(IfdData.TYPE_IFD_EXIF, 0x9000.toShort())
 		
 		/**
 		 * Value is ascii string (20)<br></br>
 		 * Date/Time of original image taken. This value should not be modified by user program.
 		 */
-		val TAG_DATE_TIME_ORIGINAL = defineTag(IfdId.TYPE_IFD_EXIF, 0x9003.toShort())
+		val TAG_DATE_TIME_ORIGINAL = defineTag(IfdData.TYPE_IFD_EXIF, 0x9003.toShort())
 		
 		/**
 		 * Value is ascii string (20)<br></br>
 		 * Date/Time of image digitized. Usually, it contains the same value of DateTimeOriginal(0x9003).
 		 */
-		val TAG_DATE_TIME_DIGITIZED = defineTag(IfdId.TYPE_IFD_EXIF, 0x9004.toShort())
-		private val TAG_COMPONENTS_CONFIGURATION = defineTag(IfdId.TYPE_IFD_EXIF, 0x9101.toShort())
-		private val TAG_COMPRESSED_BITS_PER_PIXEL = defineTag(IfdId.TYPE_IFD_EXIF, 0x9102.toShort())
+		val TAG_DATE_TIME_DIGITIZED = defineTag(IfdData.TYPE_IFD_EXIF, 0x9004.toShort())
+		private val TAG_COMPONENTS_CONFIGURATION =
+			defineTag(IfdData.TYPE_IFD_EXIF, 0x9101.toShort())
+		private val TAG_COMPRESSED_BITS_PER_PIXEL =
+			defineTag(IfdData.TYPE_IFD_EXIF, 0x9102.toShort())
 		
 		/**
 		 * Value is signed double.<br></br>
 		 * Shutter speed. To convert this value to ordinary 'Shutter Speed'; calculate this value's power of 2, then reciprocal. For
 		 * example, if value is '4', shutter speed is 1/(2^4)=1/16 second.
 		 */
-		private val TAG_SHUTTER_SPEED_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9201.toShort())
+		private val TAG_SHUTTER_SPEED_VALUE = defineTag(IfdData.TYPE_IFD_EXIF, 0x9201.toShort())
 		
 		/**
 		 * Value is unsigned double<br></br>
@@ -1843,19 +1725,19 @@ class ExifInterface {
 		 *
 		 * @see .TAG_F_NUMBER
 		 */
-		val TAG_APERTURE_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9202.toShort())
+		val TAG_APERTURE_VALUE = defineTag(IfdData.TYPE_IFD_EXIF, 0x9202.toShort())
 		
 		/**
 		 * Value is signed double<br></br>
 		 * Brightness of taken subject, unit is EV.
 		 */
-		private val TAG_BRIGHTNESS_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9203.toShort())
+		private val TAG_BRIGHTNESS_VALUE = defineTag(IfdData.TYPE_IFD_EXIF, 0x9203.toShort())
 		
 		/**
 		 * Value is signed double.<br></br>
 		 * The exposure bias. The unit is the APEX value. Ordinarily it is given in the range of -99.99 to 99.99
 		 */
-		private val TAG_EXPOSURE_BIAS_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9204.toShort())
+		private val TAG_EXPOSURE_BIAS_VALUE = defineTag(IfdData.TYPE_IFD_EXIF, 0x9204.toShort())
 		
 		/**
 		 * Value is unsigned double.<br></br>
@@ -1867,13 +1749,13 @@ class ExifInterface {
 		 * FNumber = Math.exp( MaxApertureValue * Math.log( 2 ) * 0.5 )
 		</pre> *
 		 */
-		private val TAG_MAX_APERTURE_VALUE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9205.toShort())
+		private val TAG_MAX_APERTURE_VALUE = defineTag(IfdData.TYPE_IFD_EXIF, 0x9205.toShort())
 		
 		/**
 		 * Value if signed double.<br></br>
 		 * Distance to focus point, unit is meter. If value < 0 then focus point is infinite
 		 */
-		private val TAG_SUBJECT_DISTANCE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9206.toShort())
+		private val TAG_SUBJECT_DISTANCE = defineTag(IfdData.TYPE_IFD_EXIF, 0x9206.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -1890,7 +1772,7 @@ class ExifInterface {
 		 *  * 255 = other
 		 *
 		 */
-		private val TAG_METERING_MODE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9207.toShort())
+		private val TAG_METERING_MODE = defineTag(IfdData.TYPE_IFD_EXIF, 0x9207.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -1920,7 +1802,7 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		private val TAG_LIGHT_SOURCE = defineTag(IfdId.TYPE_IFD_EXIF, 0x9208.toShort())
+		private val TAG_LIGHT_SOURCE = defineTag(IfdData.TYPE_IFD_EXIF, 0x9208.toShort())
 		
 		/**
 		 * Value is unsigned integer<br></br>
@@ -1964,20 +1846,20 @@ class ExifInterface {
 		 *
 		 * @see [http://www.exif.org/Exif2-2.PDF](http://www.exif.org/Exif2-2.PDF)
 		 */
-		private val TAG_FLASH = defineTag(IfdId.TYPE_IFD_EXIF, 0x9209.toShort())
+		private val TAG_FLASH = defineTag(IfdData.TYPE_IFD_EXIF, 0x9209.toShort())
 		
 		/**
 		 * Value is unsigned double<br></br>
 		 * Focal length of lens used to take image. Unit is millimeter.
 		 */
-		private val TAG_FOCAL_LENGTH = defineTag(IfdId.TYPE_IFD_EXIF, 0x920A.toShort())
-		private val TAG_SUBJECT_AREA = defineTag(IfdId.TYPE_IFD_EXIF, 0x9214.toShort())
-		private val TAG_MAKER_NOTE = defineTag(IfdId.TYPE_IFD_EXIF, 0x927C.toShort())
-		val TAG_USER_COMMENT = defineTag(IfdId.TYPE_IFD_EXIF, 0x9286.toShort())
-		private val TAG_SUB_SEC_TIME = defineTag(IfdId.TYPE_IFD_EXIF, 0x9290.toShort())
-		private val TAG_SUB_SEC_TIME_ORIGINAL = defineTag(IfdId.TYPE_IFD_EXIF, 0x9291.toShort())
-		private val TAG_SUB_SEC_TIME_DIGITIZED = defineTag(IfdId.TYPE_IFD_EXIF, 0x9292.toShort())
-		private val TAG_FLASHPIX_VERSION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA000.toShort())
+		private val TAG_FOCAL_LENGTH = defineTag(IfdData.TYPE_IFD_EXIF, 0x920A.toShort())
+		private val TAG_SUBJECT_AREA = defineTag(IfdData.TYPE_IFD_EXIF, 0x9214.toShort())
+		private val TAG_MAKER_NOTE = defineTag(IfdData.TYPE_IFD_EXIF, 0x927C.toShort())
+		val TAG_USER_COMMENT = defineTag(IfdData.TYPE_IFD_EXIF, 0x9286.toShort())
+		private val TAG_SUB_SEC_TIME = defineTag(IfdData.TYPE_IFD_EXIF, 0x9290.toShort())
+		private val TAG_SUB_SEC_TIME_ORIGINAL = defineTag(IfdData.TYPE_IFD_EXIF, 0x9291.toShort())
+		private val TAG_SUB_SEC_TIME_DIGITIZED = defineTag(IfdData.TYPE_IFD_EXIF, 0x9292.toShort())
+		private val TAG_FLASHPIX_VERSION = defineTag(IfdData.TYPE_IFD_EXIF, 0xA000.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -1990,7 +1872,7 @@ class ExifInterface {
 		 *  * 'other' = Reserved
 		 *
 		 */
-		private val TAG_COLOR_SPACE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA001.toShort())
+		private val TAG_COLOR_SPACE = defineTag(IfdData.TYPE_IFD_EXIF, 0xA001.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -1998,16 +1880,17 @@ class ExifInterface {
 		 * the meaningful image shall be recorded in this tag, whether or not there is padding data or a restart marker. This tag should
 		 * not exist in an uncompressed file.
 		 */
-		private val TAG_PIXEL_X_DIMENSION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA002.toShort())
+		private val TAG_PIXEL_X_DIMENSION = defineTag(IfdData.TYPE_IFD_EXIF, 0xA002.toShort())
 		
 		/**
 		 * @see .TAG_PIXEL_X_DIMENSION
 		 */
-		private val TAG_PIXEL_Y_DIMENSION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA003.toShort())
-		private val TAG_RELATED_SOUND_FILE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA004.toShort())
-		val TAG_INTEROPERABILITY_IFD = defineTag(IfdId.TYPE_IFD_EXIF, 0xA005.toShort())
-		private val TAG_FLASH_ENERGY = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20B.toShort())
-		private val TAG_SPATIAL_FREQUENCY_RESPONSE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20C.toShort())
+		private val TAG_PIXEL_Y_DIMENSION = defineTag(IfdData.TYPE_IFD_EXIF, 0xA003.toShort())
+		private val TAG_RELATED_SOUND_FILE = defineTag(IfdData.TYPE_IFD_EXIF, 0xA004.toShort())
+		val TAG_INTEROPERABILITY_IFD = defineTag(IfdData.TYPE_IFD_EXIF, 0xA005.toShort())
+		private val TAG_FLASH_ENERGY = defineTag(IfdData.TYPE_IFD_EXIF, 0xA20B.toShort())
+		private val TAG_SPATIAL_FREQUENCY_RESPONSE =
+			defineTag(IfdData.TYPE_IFD_EXIF, 0xA20C.toShort())
 		
 		/**
 		 * Value is unsigned double.<br></br>
@@ -2016,12 +1899,14 @@ class ExifInterface {
 		 *
 		 * @see .TAG_FOCAL_PLANE_RESOLUTION_UNIT
 		 */
-		private val TAG_FOCAL_PLANE_X_RESOLUTION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20E.toShort())
+		private val TAG_FOCAL_PLANE_X_RESOLUTION =
+			defineTag(IfdData.TYPE_IFD_EXIF, 0xA20E.toShort())
 		
 		/**
 		 * @see .TAG_FOCAL_PLANE_X_RESOLUTION
 		 */
-		private val TAG_FOCAL_PLANE_Y_RESOLUTION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA20F.toShort())
+		private val TAG_FOCAL_PLANE_Y_RESOLUTION =
+			defineTag(IfdData.TYPE_IFD_EXIF, 0xA20F.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -2042,9 +1927,10 @@ class ExifInterface {
 		 * CCDWidth = ( PixelXDimension * FocalPlaneResolutionUnit / FocalPlaneXResolution )
 		</pre> *
 		 */
-		private val TAG_FOCAL_PLANE_RESOLUTION_UNIT = defineTag(IfdId.TYPE_IFD_EXIF, 0xA210.toShort())
-		private val TAG_SUBJECT_LOCATION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA214.toShort())
-		private val TAG_EXPOSURE_INDEX = defineTag(IfdId.TYPE_IFD_EXIF, 0xA215.toShort())
+		private val TAG_FOCAL_PLANE_RESOLUTION_UNIT =
+			defineTag(IfdData.TYPE_IFD_EXIF, 0xA210.toShort())
+		private val TAG_SUBJECT_LOCATION = defineTag(IfdData.TYPE_IFD_EXIF, 0xA214.toShort())
+		private val TAG_EXPOSURE_INDEX = defineTag(IfdData.TYPE_IFD_EXIF, 0xA215.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -2060,11 +1946,11 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		private val TAG_SENSING_METHOD = defineTag(IfdId.TYPE_IFD_EXIF, 0xA217.toShort())
-		private val TAG_FILE_SOURCE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA300.toShort())
-		private val TAG_SCENE_TYPE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA301.toShort())
-		private val TAG_CFA_PATTERN = defineTag(IfdId.TYPE_IFD_EXIF, 0xA302.toShort())
-		private val TAG_CUSTOM_RENDERED = defineTag(IfdId.TYPE_IFD_EXIF, 0xA401.toShort())
+		private val TAG_SENSING_METHOD = defineTag(IfdData.TYPE_IFD_EXIF, 0xA217.toShort())
+		private val TAG_FILE_SOURCE = defineTag(IfdData.TYPE_IFD_EXIF, 0xA300.toShort())
+		private val TAG_SCENE_TYPE = defineTag(IfdData.TYPE_IFD_EXIF, 0xA301.toShort())
+		private val TAG_CFA_PATTERN = defineTag(IfdData.TYPE_IFD_EXIF, 0xA302.toShort())
+		private val TAG_CUSTOM_RENDERED = defineTag(IfdData.TYPE_IFD_EXIF, 0xA401.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2077,15 +1963,15 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		private val TAG_EXPOSURE_MODE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA402.toShort())
-		private val TAG_WHITE_BALANCE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA403.toShort())
+		private val TAG_EXPOSURE_MODE = defineTag(IfdData.TYPE_IFD_EXIF, 0xA402.toShort())
+		private val TAG_WHITE_BALANCE = defineTag(IfdData.TYPE_IFD_EXIF, 0xA403.toShort())
 		
 		/**
 		 * Value is double.<br></br>
 		 * This tag indicates the digital zoom ratio when the image was shot. If the numerator of the recorded value is 0, this indicates
 		 * that digital zoom was not used
 		 */
-		private val TAG_DIGITAL_ZOOM_RATIO = defineTag(IfdId.TYPE_IFD_EXIF, 0xA404.toShort())
+		private val TAG_DIGITAL_ZOOM_RATIO = defineTag(IfdData.TYPE_IFD_EXIF, 0xA404.toShort())
 		
 		/**
 		 * Value is unsigned int.<br></br>
@@ -2098,7 +1984,8 @@ class ExifInterface {
 		 * FocalLengthIn35mmFilm = ( FocalLength / CCDWidth * 36 + 0.5 );
 		</pre> *
 		 */
-		private val TAG_FOCAL_LENGTH_IN_35_MM_FILE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA405.toShort())
+		private val TAG_FOCAL_LENGTH_IN_35_MM_FILE =
+			defineTag(IfdData.TYPE_IFD_EXIF, 0xA405.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2112,7 +1999,7 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		private val TAG_SCENE_CAPTURE_TYPE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA406.toShort())
+		private val TAG_SCENE_CAPTURE_TYPE = defineTag(IfdData.TYPE_IFD_EXIF, 0xA406.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2126,7 +2013,7 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		private val TAG_GAIN_CONTROL = defineTag(IfdId.TYPE_IFD_EXIF, 0xA407.toShort())
+		private val TAG_GAIN_CONTROL = defineTag(IfdData.TYPE_IFD_EXIF, 0xA407.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2138,7 +2025,7 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		private val TAG_CONTRAST = defineTag(IfdId.TYPE_IFD_EXIF, 0xA408.toShort())
+		private val TAG_CONTRAST = defineTag(IfdData.TYPE_IFD_EXIF, 0xA408.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2150,7 +2037,7 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		private val TAG_SATURATION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA409.toShort())
+		private val TAG_SATURATION = defineTag(IfdData.TYPE_IFD_EXIF, 0xA409.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2162,8 +2049,9 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		private val TAG_SHARPNESS = defineTag(IfdId.TYPE_IFD_EXIF, 0xA40A.toShort())
-		private val TAG_DEVICE_SETTING_DESCRIPTION = defineTag(IfdId.TYPE_IFD_EXIF, 0xA40B.toShort())
+		private val TAG_SHARPNESS = defineTag(IfdData.TYPE_IFD_EXIF, 0xA40A.toShort())
+		private val TAG_DEVICE_SETTING_DESCRIPTION =
+			defineTag(IfdData.TYPE_IFD_EXIF, 0xA40B.toShort())
 		
 		/**
 		 * Value is int.<br></br>
@@ -2176,12 +2064,12 @@ class ExifInterface {
 		 *  * Other = reserved
 		 *
 		 */
-		private val TAG_SUBJECT_DISTANCE_RANGE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA40C.toShort())
+		private val TAG_SUBJECT_DISTANCE_RANGE = defineTag(IfdData.TYPE_IFD_EXIF, 0xA40C.toShort())
 		
 		/**
 		 * [ExifTag.TYPE_ASCII]
 		 */
-		private val TAG_IMAGE_UNIQUE_ID = defineTag(IfdId.TYPE_IFD_EXIF, 0xA420.toShort())
+		private val TAG_IMAGE_UNIQUE_ID = defineTag(IfdData.TYPE_IFD_EXIF, 0xA420.toShort())
 		
 		/**
 		 * Lens Specifications. The value it's a 4 rational containing:
@@ -2198,7 +2086,7 @@ class ExifInterface {
 		 * @see it.sephiroth.android.library.exif2.ExifUtil.processLensSpecifications
 		 * @since EXIF 2.3
 		 */
-		val TAG_LENS_SPECS = defineTag(IfdId.TYPE_IFD_EXIF, 0xA432.toShort())
+		val TAG_LENS_SPECS = defineTag(IfdData.TYPE_IFD_EXIF, 0xA432.toShort())
 		
 		/**
 		 * Lens maker
@@ -2206,14 +2094,14 @@ class ExifInterface {
 		 *
 		 * @since EXIF 2.3
 		 */
-		private val TAG_LENS_MAKE = defineTag(IfdId.TYPE_IFD_EXIF, 0xA433.toShort())
+		private val TAG_LENS_MAKE = defineTag(IfdData.TYPE_IFD_EXIF, 0xA433.toShort())
 		/**
 		 * Lens model name and number
 		 * [ExifTag.TYPE_ASCII]
 		 *
 		 * @since EXIF 2.3
 		 */
-		val TAG_LENS_MODEL = defineTag(IfdId.TYPE_IFD_EXIF, 0xA434.toShort())
+		val TAG_LENS_MODEL = defineTag(IfdData.TYPE_IFD_EXIF, 0xA434.toShort())
 		
 		/**
 		 * The SensitivityType tag indicates which one of the parameters of ISO12232 is the
@@ -2241,16 +2129,16 @@ class ExifInterface {
 		 *
 		 * @since EXIF 2.3
 		 */
-		private val TAG_SENSITIVITY_TYPE = defineTag(IfdId.TYPE_IFD_EXIF, 0x8830.toShort())
+		private val TAG_SENSITIVITY_TYPE = defineTag(IfdData.TYPE_IFD_EXIF, 0x8830.toShort())
 		
 		// IFD GPS tags
-		private val TAG_GPS_VERSION_ID = defineTag(IfdId.TYPE_IFD_GPS, 0.toShort())
+		private val TAG_GPS_VERSION_ID = defineTag(IfdData.TYPE_IFD_GPS, 0.toShort())
 		
 		/**
 		 * Value is string(1)<br></br>
 		 * Indicates whether the latitude is north or south latitude. The ASCII value 'N' indicates north latitude, and 'S' is south latitude.
 		 */
-		val TAG_GPS_LATITUDE_REF = defineTag(IfdId.TYPE_IFD_GPS, 1.toShort())
+		val TAG_GPS_LATITUDE_REF = defineTag(IfdData.TYPE_IFD_GPS, 1.toShort())
 		
 		/**
 		 * Value is string.<br></br>
@@ -2259,13 +2147,13 @@ class ExifInterface {
 		 * dd/1,mm/1,ss/1. When degrees and minutes are used and, for example, fractions of minutes are given up to two
 		 * decimal places, the format would be dd/1,mmmm/100,0/1.
 		 */
-		val TAG_GPS_LATITUDE = defineTag(IfdId.TYPE_IFD_GPS, 2.toShort())
+		val TAG_GPS_LATITUDE = defineTag(IfdData.TYPE_IFD_GPS, 2.toShort())
 		
 		/**
 		 * Value is string(1)<br></br>
 		 * Indicates whether the longitude is east or west longitude. ASCII 'E' indicates east longitude, and 'W' is west longitude.
 		 */
-		val TAG_GPS_LONGITUDE_REF = defineTag(IfdId.TYPE_IFD_GPS, 3.toShort())
+		val TAG_GPS_LONGITUDE_REF = defineTag(IfdData.TYPE_IFD_GPS, 3.toShort())
 		
 		/**
 		 * Value is string.<br></br>
@@ -2274,7 +2162,7 @@ class ExifInterface {
 		 * ddd/1,mm/1,ss/1. When degrees and minutes are used and, for example, fractions of minutes are given up to two
 		 * decimal places, the format would be ddd/1,mmmm/100,0/1.
 		 */
-		val TAG_GPS_LONGITUDE = defineTag(IfdId.TYPE_IFD_GPS, 4.toShort())
+		val TAG_GPS_LONGITUDE = defineTag(IfdData.TYPE_IFD_GPS, 4.toShort())
 		
 		/**
 		 * Value is byte<br></br>
@@ -2282,49 +2170,50 @@ class ExifInterface {
 		 * 0 is given. If the altitude is below sea level, a value of 1 is given and the altitude is indicated as an absolute value in
 		 * the GPSAltitude tag. The reference unit is meters. Note that this tag is BYTE type, unlike other reference tags
 		 */
-		val TAG_GPS_ALTITUDE_REF = defineTag(IfdId.TYPE_IFD_GPS, 5.toShort())
+		val TAG_GPS_ALTITUDE_REF = defineTag(IfdData.TYPE_IFD_GPS, 5.toShort())
 		
 		/**
 		 * Value is string.<br></br>
 		 * Indicates the altitude based on the reference in GPSAltitudeRef. Altitude is expressed as one RATIONAL value. The reference unit is meters.
 		 */
-		val TAG_GPS_ALTITUDE = defineTag(IfdId.TYPE_IFD_GPS, 6.toShort())
-		val TAG_GPS_TIME_STAMP = defineTag(IfdId.TYPE_IFD_GPS, 7.toShort())
-		private val TAG_GPS_SATTELLITES = defineTag(IfdId.TYPE_IFD_GPS, 8.toShort())
-		private val TAG_GPS_STATUS = defineTag(IfdId.TYPE_IFD_GPS, 9.toShort())
-		private val TAG_GPS_MEASURE_MODE = defineTag(IfdId.TYPE_IFD_GPS, 10.toShort())
-		private val TAG_GPS_DOP = defineTag(IfdId.TYPE_IFD_GPS, 11.toShort())
+		val TAG_GPS_ALTITUDE = defineTag(IfdData.TYPE_IFD_GPS, 6.toShort())
+		val TAG_GPS_TIME_STAMP = defineTag(IfdData.TYPE_IFD_GPS, 7.toShort())
+		private val TAG_GPS_SATTELLITES = defineTag(IfdData.TYPE_IFD_GPS, 8.toShort())
+		private val TAG_GPS_STATUS = defineTag(IfdData.TYPE_IFD_GPS, 9.toShort())
+		private val TAG_GPS_MEASURE_MODE = defineTag(IfdData.TYPE_IFD_GPS, 10.toShort())
+		private val TAG_GPS_DOP = defineTag(IfdData.TYPE_IFD_GPS, 11.toShort())
 		
 		/**
 		 * Value is string(1).<br></br>
 		 * Indicates the unit used to express the GPS receiver speed of movement. 'K' 'M' and 'N' represents kilometers per  hour, miles per hour, and knots.
 		 */
-		private val TAG_GPS_SPEED_REF = defineTag(IfdId.TYPE_IFD_GPS, 12.toShort())
+		private val TAG_GPS_SPEED_REF = defineTag(IfdData.TYPE_IFD_GPS, 12.toShort())
 		
 		/**
 		 * Value is string.<br></br>
 		 * Indicates the speed of GPS receiver movement
 		 */
-		private val TAG_GPS_SPEED = defineTag(IfdId.TYPE_IFD_GPS, 13.toShort())
-		private val TAG_GPS_TRACK_REF = defineTag(IfdId.TYPE_IFD_GPS, 14.toShort())
-		private val TAG_GPS_TRACK = defineTag(IfdId.TYPE_IFD_GPS, 15.toShort())
-		private val TAG_GPS_IMG_DIRECTION_REF = defineTag(IfdId.TYPE_IFD_GPS, 16.toShort())
-		private val TAG_GPS_IMG_DIRECTION = defineTag(IfdId.TYPE_IFD_GPS, 17.toShort())
-		private val TAG_GPS_MAP_DATUM = defineTag(IfdId.TYPE_IFD_GPS, 18.toShort())
-		private val TAG_GPS_DEST_LATITUDE_REF = defineTag(IfdId.TYPE_IFD_GPS, 19.toShort())
-		private val TAG_GPS_DEST_LATITUDE = defineTag(IfdId.TYPE_IFD_GPS, 20.toShort())
-		val TAG_GPS_DEST_LONGITUDE_REF = defineTag(IfdId.TYPE_IFD_GPS, 21.toShort())
-		val TAG_GPS_DEST_LONGITUDE = defineTag(IfdId.TYPE_IFD_GPS, 22.toShort())
-		private val TAG_GPS_DEST_BEARING_REF = defineTag(IfdId.TYPE_IFD_GPS, 23.toShort())
-		private val TAG_GPS_DEST_BEARING = defineTag(IfdId.TYPE_IFD_GPS, 24.toShort())
-		private val TAG_GPS_DEST_DISTANCE_REF = defineTag(IfdId.TYPE_IFD_GPS, 25.toShort())
-		private val TAG_GPS_DEST_DISTANCE = defineTag(IfdId.TYPE_IFD_GPS, 26.toShort())
-		private val TAG_GPS_PROCESSING_METHOD = defineTag(IfdId.TYPE_IFD_GPS, 27.toShort())
-		private val TAG_GPS_AREA_INFORMATION = defineTag(IfdId.TYPE_IFD_GPS, 28.toShort())
-		val TAG_GPS_DATE_STAMP = defineTag(IfdId.TYPE_IFD_GPS, 29.toShort())
-		private val TAG_GPS_DIFFERENTIAL = defineTag(IfdId.TYPE_IFD_GPS, 30.toShort())
+		private val TAG_GPS_SPEED = defineTag(IfdData.TYPE_IFD_GPS, 13.toShort())
+		private val TAG_GPS_TRACK_REF = defineTag(IfdData.TYPE_IFD_GPS, 14.toShort())
+		private val TAG_GPS_TRACK = defineTag(IfdData.TYPE_IFD_GPS, 15.toShort())
+		private val TAG_GPS_IMG_DIRECTION_REF = defineTag(IfdData.TYPE_IFD_GPS, 16.toShort())
+		private val TAG_GPS_IMG_DIRECTION = defineTag(IfdData.TYPE_IFD_GPS, 17.toShort())
+		private val TAG_GPS_MAP_DATUM = defineTag(IfdData.TYPE_IFD_GPS, 18.toShort())
+		private val TAG_GPS_DEST_LATITUDE_REF = defineTag(IfdData.TYPE_IFD_GPS, 19.toShort())
+		private val TAG_GPS_DEST_LATITUDE = defineTag(IfdData.TYPE_IFD_GPS, 20.toShort())
+		val TAG_GPS_DEST_LONGITUDE_REF = defineTag(IfdData.TYPE_IFD_GPS, 21.toShort())
+		val TAG_GPS_DEST_LONGITUDE = defineTag(IfdData.TYPE_IFD_GPS, 22.toShort())
+		private val TAG_GPS_DEST_BEARING_REF = defineTag(IfdData.TYPE_IFD_GPS, 23.toShort())
+		private val TAG_GPS_DEST_BEARING = defineTag(IfdData.TYPE_IFD_GPS, 24.toShort())
+		private val TAG_GPS_DEST_DISTANCE_REF = defineTag(IfdData.TYPE_IFD_GPS, 25.toShort())
+		private val TAG_GPS_DEST_DISTANCE = defineTag(IfdData.TYPE_IFD_GPS, 26.toShort())
+		private val TAG_GPS_PROCESSING_METHOD = defineTag(IfdData.TYPE_IFD_GPS, 27.toShort())
+		private val TAG_GPS_AREA_INFORMATION = defineTag(IfdData.TYPE_IFD_GPS, 28.toShort())
+		val TAG_GPS_DATE_STAMP = defineTag(IfdData.TYPE_IFD_GPS, 29.toShort())
+		private val TAG_GPS_DIFFERENTIAL = defineTag(IfdData.TYPE_IFD_GPS, 30.toShort())
 		// IFD Interoperability tags
-		private val TAG_INTEROPERABILITY_INDEX = defineTag(IfdId.TYPE_IFD_INTEROPERABILITY, 1.toShort())
+		private val TAG_INTEROPERABILITY_INDEX =
+			defineTag(IfdData.TYPE_IFD_INTEROPERABILITY, 1.toShort())
 		
 		val DEFAULT_BYTE_ORDER : ByteOrder = ByteOrder.BIG_ENDIAN
 		private const val NULL_ARGUMENT_STRING = "Argument is null"
@@ -2438,9 +2327,9 @@ class ExifInterface {
 		
 		fun getAllowedIfdsFromInfo(info : Int) : IntArray? {
 			val ifdFlags = getAllowedIfdFlagsFromInfo(info)
-			val ifds = IfdId.list
+			val ifds = IfdData.list
 			val l = ArrayList<Int>()
-			for(i in 0 until IfdId.TYPE_IFD_COUNT) {
+			for(i in 0 until IfdData.TYPE_IFD_COUNT) {
 				val flag = ifdFlags shr i and 1
 				if(flag == 1) {
 					l.add(ifds[i])
@@ -2455,27 +2344,6 @@ class ExifInterface {
 				ret[j ++] = i
 			}
 			return ret
-		}
-		
-		fun closeSilently(c : Closeable?) {
-			if(c != null) {
-				try {
-					c.close()
-				} catch(e : Throwable) {
-					// ignored
-				}
-				
-			}
-		}
-		
-		fun closeQuietly(input : InputStream) {
-			@Suppress("DEPRECATION")
-			IOUtils.closeQuietly(input)
-		}
-		
-		fun closeQuietly(output : OutputStream) {
-			@Suppress("DEPRECATION")
-			IOUtils.closeQuietly(output)
 		}
 		
 		@Throws(IOException::class)
@@ -2495,26 +2363,24 @@ class ExifInterface {
 			output.write(0xFF)
 			output.write(JpegHeader.TAG_SOI)
 			
-			val sections = src_exif.mData.sections !!
+			val sections = src_exif.mData.sections
 			
 			// 6. write all the sections from the srcFilename
-			if(sections[0].type != JpegHeader.TAG_M_JFIF) {
+			if(sections.firstOrNull()?.type != JpegHeader.TAG_M_JFIF) {
 				Log.w(TAG, "first section is not a JFIF or EXIF tag")
 				output.write(JpegHeader.JFIF_HEADER)
 			}
 			
 			// 6.1 write the *new* EXIF tag
-			val eo = ExifOutputStream(src_exif)
-			eo.exifData = exifData
+			val eo = ExifOutputStream(src_exif, exifData)
 			eo.writeExifData(output)
 			
 			// 6.2 write all the sections except for the SOS ( start of scan )
-			for(a in 0 until sections.size - 1) {
-				val current = sections[a]
+			sections.forEach {
 				// Log.v( TAG, "writing section.. " + String.format( "0x%2X", current.type ) );
 				output.write(0xFF)
-				output.write(current.type)
-				output.write(current.data !!)
+				output.write(it.type)
+				output.write(it.data)
 			}
 			
 			// 6.3 write the last SOS marker
@@ -2522,7 +2388,7 @@ class ExifInterface {
 			// Log.v( TAG, "writing last section.. " + String.format( "0x%2X", current.type ) );
 			output.write(0xFF)
 			output.write(current.type)
-			output.write(current.data !!)
+			output.write(current.data)
 			
 			// return the position where the input stream should be copied
 			return src_exif.mData.mUncompressedDataPosition
@@ -2548,8 +2414,8 @@ class ExifInterface {
 				return 0
 			}
 			var flags = 0
-			val ifds = IfdId.list
-			for(i in 0 until IfdId.TYPE_IFD_COUNT) {
+			val ifds = IfdData.list
+			for(i in 0 until IfdData.TYPE_IFD_COUNT) {
 				for(j in allowedIfds) {
 					if(ifds[i] == j) {
 						flags = flags or (1 shl i)
@@ -2623,7 +2489,7 @@ class ExifInterface {
 		}
 		
 		fun isIfdAllowed(info : Int, ifd : Int) : Boolean {
-			val ifds = IfdId.list
+			val ifds = IfdData.list
 			val ifdFlags = getAllowedIfdFlagsFromInfo(info)
 			for(i in ifds.indices) {
 				if(ifd == ifds[i] && ifdFlags shr i and 1 == 1) {
@@ -2676,7 +2542,7 @@ class ExifInterface {
 			 */
 			
 			// IFD0 tags
-			f = getFlagsFromAllowedIfds(intArrayOf(IfdId.TYPE_IFD_0, IfdId.TYPE_IFD_1)) shl 24
+			f = getFlagsFromAllowedIfds(intArrayOf(IfdData.TYPE_IFD_0, IfdData.TYPE_IFD_1)) shl 24
 			
 			put(TAG_MAKE, f or (ExifTag.TYPE_ASCII shl 16))
 			put(TAG_IMAGE_WIDTH, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
@@ -2710,12 +2576,12 @@ class ExifInterface {
 			put(TAG_GPS_IFD, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
 			
 			// IFD1 tags
-			f = getFlagsFromAllowedIfds(intArrayOf(IfdId.TYPE_IFD_1)) shl 24
+			f = getFlagsFromAllowedIfds(intArrayOf(IfdData.TYPE_IFD_1)) shl 24
 			put(TAG_JPEG_INTERCHANGE_FORMAT, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
 			put(TAG_JPEG_INTERCHANGE_FORMAT_LENGTH, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
 			
 			// Exif tags
-			f = getFlagsFromAllowedIfds(intArrayOf(IfdId.TYPE_IFD_EXIF)) shl 24
+			f = getFlagsFromAllowedIfds(intArrayOf(IfdData.TYPE_IFD_EXIF)) shl 24
 			put(TAG_EXIF_VERSION, f or (ExifTag.TYPE_UNDEFINED shl 16) or 4)
 			put(TAG_FLASHPIX_VERSION, f or (ExifTag.TYPE_UNDEFINED shl 16) or 4)
 			put(TAG_COLOR_SPACE, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 1)
@@ -2779,7 +2645,7 @@ class ExifInterface {
 			put(TAG_INTEROPERABILITY_IFD, f or (ExifTag.TYPE_UNSIGNED_LONG shl 16) or 1)
 			
 			// GPS tag
-			f = getFlagsFromAllowedIfds(intArrayOf(IfdId.TYPE_IFD_GPS)) shl 24
+			f = getFlagsFromAllowedIfds(intArrayOf(IfdData.TYPE_IFD_GPS)) shl 24
 			put(TAG_GPS_VERSION_ID, f or (ExifTag.TYPE_UNSIGNED_BYTE shl 16) or 4)
 			put(TAG_GPS_LATITUDE_REF, f or (ExifTag.TYPE_ASCII shl 16) or 2)
 			put(TAG_GPS_LONGITUDE_REF, f or (ExifTag.TYPE_ASCII shl 16) or 2)
@@ -2811,7 +2677,7 @@ class ExifInterface {
 			put(TAG_GPS_DIFFERENTIAL, f or (ExifTag.TYPE_UNSIGNED_SHORT shl 16) or 11)
 			
 			// Interoperability tag
-			f = getFlagsFromAllowedIfds(intArrayOf(IfdId.TYPE_IFD_INTEROPERABILITY)) shl 24
+			f = getFlagsFromAllowedIfds(intArrayOf(IfdData.TYPE_IFD_INTEROPERABILITY)) shl 24
 			put(TAG_INTEROPERABILITY_INDEX, f or (ExifTag.TYPE_ASCII shl 16))
 			put(TAG_INTEROP_VERSION, f or (ExifTag.TYPE_UNDEFINED shl 16) or 4)
 		}

@@ -52,11 +52,11 @@ open class ExifTag internal constructor(
 	
 	// The ifd that this tag should be put in. the ID of the IFD this tag belongs to.
 	/*
-	 * @see IfdId.TYPE_IFD_0
-	 * @see IfdId.TYPE_IFD_1
-	 * @see IfdId.TYPE_IFD_EXIF
-	 * @see IfdId.TYPE_IFD_GPS
-	 * @see IfdId.TYPE_IFD_INTEROPERABILITY
+	 * @see IfdData.TYPE_IFD_0
+	 * @see IfdData.TYPE_IFD_1
+	 * @see IfdData.TYPE_IFD_EXIF
+	 * @see IfdData.TYPE_IFD_GPS
+	 * @see IfdData.TYPE_IFD_INTEROPERABILITY
 	 */
 	var ifd : Int,
 	
@@ -69,7 +69,7 @@ open class ExifTag internal constructor(
 	 */
 	
 	// TODO: fix integer overflows with this
-	var componentCount : Int = 0
+	var componentCount : Int = componentCount
 		private set
 	
 	// The value (array of elements of type Tag Type)
@@ -83,7 +83,6 @@ open class ExifTag internal constructor(
 	val dataSize : Int
 		get() = componentCount * getElementSize(dataType)
 	
-
 	/**
 	 * Gets the value as a byte array. This method should be used for tags of
 	 * type [.TYPE_UNDEFINED] or [.TYPE_UNSIGNED_BYTE].
@@ -124,9 +123,9 @@ open class ExifTag internal constructor(
 	 */
 	// Truncates
 	val valueAsInts : IntArray?
-		get() = when(val v = mValue){
-			is LongArray-> IntArray(v.size){ v[it].toInt()}
-			else ->null
+		get() = when(val v = mValue) {
+			is LongArray -> IntArray(v.size) { v[it].toInt() }
+			else -> null
 		}
 	
 	/**
@@ -143,7 +142,6 @@ open class ExifTag internal constructor(
 			else -> null
 		}
 	
-	
 	/**
 	 * Gets the [.TYPE_ASCII] data.
 	 *
@@ -159,11 +157,6 @@ open class ExifTag internal constructor(
 	val stringByte : ByteArray?
 		get() = mValue as? ByteArray
 	
-	init {
-		this.componentCount = componentCount
-		mValue = null
-	}
-	
 	/**
 	 * Sets the component count of this tag. Call this function before
 	 * setValue() if the length of value does not match the component count.
@@ -176,9 +169,8 @@ open class ExifTag internal constructor(
 	 * Returns true if this ExifTag contains value; otherwise, this tag will
 	 * contain an offset value that is determined when the tag is written.
 	 */
-	fun hasValue() : Boolean {
-		return mValue != null
-	}
+	val hasValue :Boolean
+		get() = mValue != null
 	
 	/**
 	 * Sets integer values into this tag. This method should be used for tags of
@@ -225,9 +217,7 @@ open class ExifTag internal constructor(
 	 *  * The component count in the definition of this tag is not 1.
 	 *
 	 */
-	fun setValue(value : Int) : Boolean {
-		return setValue(intArrayOf(value))
-	}
+	fun setValue(value : Int) = setValue(intArrayOf(value))
 	
 	/**
 	 * Sets long values into this tag. This method should be used for tags of
@@ -260,9 +250,7 @@ open class ExifTag internal constructor(
 	 *  * The component count in the definition for this tag is not 1.
 	 *
 	 */
-	fun setValue(value : Long) : Boolean {
-		return setValue(longArrayOf(value))
-	}
+	fun setValue(value : Long) = setValue(longArrayOf(value))
 	
 	/**
 	 * Sets Rational values into this tag. This method should be used for tags
@@ -309,8 +297,7 @@ open class ExifTag internal constructor(
 	 *
 	 * @see Rational
 	 */
-	fun setValue(value : Rational) : Boolean =
-		setValue(arrayOf(value))
+	fun setValue(value : Rational) =setValue(arrayOf(value))
 	
 	/**
 	 * Sets byte values into this tag. This method should be used for tags of
@@ -332,7 +319,7 @@ open class ExifTag internal constructor(
 			return false
 		}
 		componentCount = length
-		mValue = ByteArray(length).also{
+		mValue = ByteArray(length).also {
 			System.arraycopy(value, offset, it, 0, length)
 		}
 		return true
@@ -348,8 +335,7 @@ open class ExifTag internal constructor(
 	 *  * The component count in the definition for this tag is not 1.
 	 *
 	 */
-	fun setValue(value : Byte) : Boolean =
-		setValue(byteArrayOf(value))
+	fun setValue(value : Byte) = setValue(byteArrayOf(value))
 	
 	/**
 	 * Sets the value for this tag using an appropriate setValue method for the
@@ -375,31 +361,33 @@ open class ExifTag internal constructor(
 			is Int -> return setValue(obj.toInt())
 			is Long -> return setValue(obj.toLong())
 			
-			else ->{
-
+			else -> {
+				
 				@Suppress("UNCHECKED_CAST")
 				val ra = obj as? Array<Rational>
-				if(ra != null) return setValue( ra )
+				if(ra != null) return setValue(ra)
 				
 				// Nulls in this array are treated as zeroes.
 				@Suppress("UNCHECKED_CAST")
 				val sa = obj as? Array<Short?>
-				if( sa != null) return setValue(IntArray(sa.size){ (sa[it]?.toInt() ?: 0) and 0xffff})
+				if(sa != null) return setValue(IntArray(sa.size) {
+					(sa[it]?.toInt() ?: 0) and 0xffff
+				})
 				
 				// Nulls in this array are treated as zeroes.
 				@Suppress("UNCHECKED_CAST")
 				val ia = obj as? Array<Int?>
-				if( ia != null) return setValue(IntArray(ia.size){ ia[it] ?: 0 })
+				if(ia != null) return setValue(IntArray(ia.size) { ia[it] ?: 0 })
 				
 				// Nulls in this array are treated as zeroes.
 				@Suppress("UNCHECKED_CAST")
 				val la = obj as? Array<Long?>
-				if( la != null) return setValue(LongArray(la.size){ la[it] ?: 0L })
+				if(la != null) return setValue(LongArray(la.size) { la[it] ?: 0L })
 				
 				// Nulls in this array are treated as zeroes.
 				@Suppress("UNCHECKED_CAST")
 				val ba = obj as? Array<Byte?>
-				if( ba != null) return setValue(ByteArray(ba.size){ ba[it] ?: 0 })
+				if(ba != null) return setValue(ByteArray(ba.size) { ba[it] ?: 0 })
 				
 				return false
 			}
@@ -487,7 +475,7 @@ open class ExifTag internal constructor(
 	 */
 	fun getValueAsByte(defaultValue : Byte) : Byte {
 		val array = valueAsBytes
-		return if(array?.isNotEmpty()==true) array[0] else defaultValue
+		return if(array?.isNotEmpty() == true) array[0] else defaultValue
 	}
 	
 	/**
@@ -501,7 +489,7 @@ open class ExifTag internal constructor(
 	 * @return the tag's value as a Rational, or the defaultValue.
 	 */
 	fun getValueAsRational(defaultValue : Long) : Rational =
-		getValueAsRational( Rational(defaultValue, 1))
+		getValueAsRational(Rational(defaultValue, 1))
 	
 	/**
 	 * Gets the value as a Rational. If there are more than 1 Rationals in this
@@ -514,7 +502,7 @@ open class ExifTag internal constructor(
 	 */
 	private fun getValueAsRational(defaultValue : Rational) : Rational {
 		val array = valueAsRationals
-		return if(array?.isNotEmpty()==true) array[0] else defaultValue
+		return if(array?.isNotEmpty() == true) array[0] else defaultValue
 	}
 	
 	/**
@@ -528,7 +516,7 @@ open class ExifTag internal constructor(
 	 */
 	fun getValueAsInt(defaultValue : Int) : Int {
 		val array = valueAsInts
-		return if(array?.isNotEmpty()==true) array[0] else defaultValue
+		return if(array?.isNotEmpty() == true) array[0] else defaultValue
 	}
 	
 	/**
@@ -542,7 +530,7 @@ open class ExifTag internal constructor(
 	 */
 	fun getValueAsLong(defaultValue : Long) : Long {
 		val array = valueAsLongs
-		return if(array?.isNotEmpty()==true) array[0] else defaultValue
+		return if(array?.isNotEmpty() == true) array[0] else defaultValue
 	}
 	
 	/**
@@ -636,54 +624,24 @@ open class ExifTag internal constructor(
 	
 	var hasDefinedCount : Boolean
 		get() = mHasDefinedDefaultComponentCount
-		set(value){
+		set(value) {
 			mHasDefinedDefaultComponentCount = value
 		}
 	
-	private fun checkOverflowForUnsignedShort(value : IntArray) : Boolean {
-		for(v in value) {
-			if(v > UNSIGNED_SHORT_MAX || v < 0) {
-				return true
-			}
-		}
-		return false
-	}
+	private fun checkOverflowForUnsignedShort(value : IntArray) : Boolean =
+		null != value.find { it !in 0 .. UNSIGNED_SHORT_MAX }
 	
-	private fun checkOverflowForUnsignedLong(value : LongArray) : Boolean {
-		for(v in value) {
-			if(v < 0 || v > UNSIGNED_LONG_MAX) {
-				return true
-			}
-		}
-		return false
-	}
+	private fun checkOverflowForUnsignedLong(value : LongArray) : Boolean =
+		null != value.find { it !in 0 .. UNSIGNED_LONG_MAX }
 	
-	private fun checkOverflowForUnsignedLong(value : IntArray) : Boolean {
-		for(v in value) {
-			if(v < 0) {
-				return true
-			}
-		}
-		return false
-	}
+	private fun checkOverflowForUnsignedLong(value : IntArray) : Boolean =
+		null != value.find { it < 0 }
 	
-	private fun checkOverflowForUnsignedRational(value : Array<Rational>) : Boolean {
-		for(v in value) {
-			if(v.numerator < 0 || v.denominator < 0 || v.numerator > UNSIGNED_LONG_MAX || v.denominator > UNSIGNED_LONG_MAX) {
-				return true
-			}
-		}
-		return false
-	}
+	private fun checkOverflowForUnsignedRational(value : Array<Rational>) : Boolean =
+		null != value.find { it.numerator !in 0 .. UNSIGNED_LONG_MAX || it.denominator !in 0 .. UNSIGNED_LONG_MAX }
 	
-	private fun checkOverflowForRational(value : Array<Rational>) : Boolean {
-		for(v in value) {
-			if(v.numerator < LONG_MIN || v.denominator < LONG_MIN || v.numerator > LONG_MAX || v.denominator > LONG_MAX) {
-				return true
-			}
-		}
-		return false
-	}
+	private fun checkOverflowForRational(value : Array<Rational>) : Boolean =
+		null != value.find { it.numerator !in LONG_MIN .. LONG_MAX || it.denominator !in LONG_MIN .. LONG_MAX }
 	
 	override fun hashCode() : Int {
 		var result = tagId.toInt()
@@ -766,8 +724,6 @@ open class ExifTag internal constructor(
 		}
 	}
 	
-
-	
 	companion object {
 		/**
 		 * The BYTE type in the EXIF standard. An 8-bit unsigned integer.
@@ -832,11 +788,11 @@ open class ExifTag internal constructor(
 		 */
 		fun isValidIfd(ifdId : Int) : Boolean =
 			when(ifdId) {
-				IfdId.TYPE_IFD_0,
-				IfdId.TYPE_IFD_1,
-				IfdId.TYPE_IFD_EXIF,
-				IfdId.TYPE_IFD_INTEROPERABILITY,
-				IfdId.TYPE_IFD_GPS -> true
+				IfdData.TYPE_IFD_0,
+				IfdData.TYPE_IFD_1,
+				IfdData.TYPE_IFD_EXIF,
+				IfdData.TYPE_IFD_INTEROPERABILITY,
+				IfdData.TYPE_IFD_GPS -> true
 				else -> false
 			}
 		
@@ -883,11 +839,4 @@ open class ExifTag internal constructor(
 				else -> ""
 			}
 	}
-	
 }
-/**
- * Equivalent to setValue(value, 0, value.length).
- */
-/**
- * Equivalent to getBytes(buffer, 0, buffer.length).
- */

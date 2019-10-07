@@ -37,12 +37,13 @@ internal class ExifReader(private val mInterface : ExifInterface) {
 	@Throws(ExifInvalidFormatException::class, IOException::class)
 	fun read(inputStream : InputStream, options : Int) : ExifData {
 		val parser = ExifParser.parse(inputStream, options, mInterface)
-		val exifData = ExifData(parser.byteOrder )
-		exifData.sections = parser.sections
-		exifData.mUncompressedDataPosition = parser.uncompressedDataPosition
-		
-		exifData.qualityGuess = parser.qualityGuess
-		exifData.jpegProcess = parser.jpegProcess
+		val exifData = ExifData(
+			byteOrder = parser.byteOrder,
+			sections = parser.sections,
+			mUncompressedDataPosition = parser.uncompressedDataPosition,
+			qualityGuess = parser.qualityGuess,
+			jpegProcess = parser.jpegProcess
+		)
 		
 		val w = parser.imageWidth
 		val h = parser.imageLength
@@ -51,33 +52,34 @@ internal class ExifReader(private val mInterface : ExifInterface) {
 			exifData.setImageSize(w, h)
 		}
 		
-		var tag : ExifTag?
-		
 		var event = parser.next()
 		while(event != ExifParser.EVENT_END) {
 			when(event) {
-				ExifParser.EVENT_START_OF_IFD -> exifData.addIfdData(IfdData(parser.currentIfd))
+				
+				ExifParser.EVENT_START_OF_IFD ->
+					exifData.addIfdData(IfdData(parser.currentIfd))
 				
 				ExifParser.EVENT_NEW_TAG -> {
-					tag = parser.tag
-					
-					
-					
-					if(! tag !!.hasValue()) {
-						parser.registerForTagValue(tag)
-					} else {
-						// Log.v(TAG, "parsing id " + tag.getTagId() + " = " + tag);
-						if(parser.isDefinedTag(tag.ifd, tag.tagId.toInt())) {
-							exifData.getIfdData(tag.ifd) !!.setTag(tag)
-						} else {
+					val tag = parser.tag
+					when {
+						tag == null ->
+							Log.w(TAG, "parser.tag is null")
+						
+						! tag.hasValue ->
+							parser.registerForTagValue(tag)
+						
+						! parser.isDefinedTag(tag.ifd, tag.tagId) ->
 							Log.w(TAG, "skip tag because not registered in the tag table:$tag")
-						}
+						
+						else ->
+							exifData.getIfdData(tag.ifd)?.setTag(tag)
 					}
+					
 				}
 				
 				ExifParser.EVENT_VALUE_OF_REGISTERED_TAG -> {
-					tag = parser.tag
-					if(tag !!.dataType == ExifTag.TYPE_UNDEFINED) {
+					val tag = parser.tag !!
+					if(tag.dataType == ExifTag.TYPE_UNDEFINED) {
 						parser.readFullTagValue(tag)
 					}
 					exifData.getIfdData(tag.ifd) !!.setTag(tag)

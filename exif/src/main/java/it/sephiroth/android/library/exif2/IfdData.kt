@@ -18,35 +18,33 @@ package it.sephiroth.android.library.exif2
 
 import java.util.HashMap
 
-
-/**
- * The constants of the IFD ID defined in EXIF spec.
- */
-object IfdId {
-	const val TYPE_IFD_0 = 0
-	const val TYPE_IFD_1 = 1
-	const val TYPE_IFD_EXIF = 2
-	const val TYPE_IFD_INTEROPERABILITY = 3
-	const val TYPE_IFD_GPS = 4
-	/* This is used in ExifData to allocate enough IfdData */
-	const val TYPE_IFD_COUNT = 5
-	
-	val list = intArrayOf(
-		TYPE_IFD_0,
-		TYPE_IFD_1,
-		TYPE_IFD_EXIF,
-		TYPE_IFD_INTEROPERABILITY,
-		TYPE_IFD_GPS
-	)
-}
-
-
 // This class stores all the tags in an IFD.
 // an IfdData with given IFD ID.
 internal class IfdData(
-	// the ID of this IFD.
-	val id : Int
+	val id : Int // the ID of this IFD.
 ) {
+	
+	companion object {
+		/**
+		 * The constants of the IFD ID defined in EXIF spec.
+		 */
+		const val TYPE_IFD_0 = 0
+		const val TYPE_IFD_1 = 1
+		const val TYPE_IFD_EXIF = 2
+		const val TYPE_IFD_INTEROPERABILITY = 3
+		const val TYPE_IFD_GPS = 4
+		/* This is used in ExifData to allocate enough IfdData */
+		const val TYPE_IFD_COUNT = 5
+		
+		val list = intArrayOf(
+			TYPE_IFD_0,
+			TYPE_IFD_1,
+			TYPE_IFD_EXIF,
+			TYPE_IFD_INTEROPERABILITY,
+			TYPE_IFD_GPS
+		)
+	}
+	
 	private val mExifTags = HashMap<Short, ExifTag>()
 	
 	// the offset of next IFD.
@@ -56,9 +54,9 @@ internal class IfdData(
 	val tagCount : Int
 		get() = mExifTags.size
 	
-	// a array the contains all [ExifTag] in this IFD.
-	val allTags : Array<ExifTag>
-		get() = mExifTags.values.toTypedArray()
+	// Collection the contains all [ExifTag] in this IFD.
+	val allTagsCollection : Collection<ExifTag>
+		get() = mExifTags.values
 	
 	// checkCollision
 	fun contains(tagId : Short) : Boolean {
@@ -87,19 +85,12 @@ internal class IfdData(
 	 * IFDs offset or thumbnail offset will be ignored.
 	 */
 	override fun equals(other : Any?) : Boolean {
-		if(other === null) return false
-		if(other === this) return true
 		if(other is IfdData) {
+			if(other === this) return true
 			if(other.id == id && other.tagCount == tagCount) {
-				val tags = other.allTags
-				for(tag in tags) {
-					if(ExifInterface.isOffsetTag(tag.tagId)) {
-						continue
-					}
-					val tag2 = mExifTags[tag.tagId]
-					if(tag != tag2) {
-						return false
-					}
+				for(tag in other.allTagsCollection) {
+					if(ExifInterface.isOffsetTag(tag.tagId)) continue
+					if(tag != mExifTags[tag.tagId]) return false
 				}
 				return true
 			}

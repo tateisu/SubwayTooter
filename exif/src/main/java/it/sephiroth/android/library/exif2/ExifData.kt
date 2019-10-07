@@ -17,6 +17,7 @@
 package it.sephiroth.android.library.exif2
 
 import android.util.Log
+import it.sephiroth.android.library.exif2.utils.notEmpty
 
 import java.io.UnsupportedEncodingException
 import java.nio.ByteOrder
@@ -33,93 +34,73 @@ import java.util.Arrays
  * @see IfdData
  */
 @Suppress("unused")
-internal open class ExifData( val byteOrder : ByteOrder ) {
+internal class ExifData(
+	val byteOrder : ByteOrder = ExifInterface.DEFAULT_BYTE_ORDER,
+	val sections : List<ExifParser.Section> = ArrayList(),
+	val mUncompressedDataPosition : Int = 0,
+	val qualityGuess : Int = 0,
+	val jpegProcess : Short = 0
+) {
 	
-	var sections : List<ExifParser.Section>? = null
-	private val mIfdDatas = arrayOfNulls<IfdData>(IfdId.TYPE_IFD_COUNT)
-	/**
-	 * Gets the compressed thumbnail. Returns null if there is no compressed
-	 * thumbnail.
-	 *
-	 * @see .hasCompressedThumbnail
-	 */
-	/**
-	 * Sets the compressed thumbnail.
-	 */
-	var compressedThumbnail : ByteArray? = null
-	private val mStripBytes = ArrayList<ByteArray?>()
-	var qualityGuess = 0
 	private var imageLength = - 1
 	private var imageWidth = - 1
-	var jpegProcess : Short = 0
-	var mUncompressedDataPosition = 0
 	
-	/**
-	 * Gets the strip count.
-	 */
+	private val mIfdDatas = arrayOfNulls<IfdData>(IfdData.TYPE_IFD_COUNT)
+	
+	// the compressed thumbnail.
+	// null if there is no compressed thumbnail.
+	var compressedThumbnail : ByteArray? = null
+	
+	private val mStripBytes = ArrayList<ByteArray?>()
 	val stripCount : Int
 		get() = mStripBytes.size
 	
-	/**
-	 * Decodes the user comment tag into string as specified in the EXIF
-	 * standard. Returns null if decoding failed.
-	 */
+	// Decodes the user comment tag into string as specified in the EXIF standard.
+	// Returns null if decoding failed.
 	val userComment : String?
 		get() {
-			val ifdData = mIfdDatas[IfdId.TYPE_IFD_0] ?: return null
+			
+			val ifdData = mIfdDatas[IfdData.TYPE_IFD_0]
+				?: return null
+			
 			val tag = ifdData.getTag(ExifInterface.getTrueTagKey(ExifInterface.TAG_USER_COMMENT))
 				?: return null
-			if(tag.componentCount < 8) {
+			
+			if(tag.componentCount < 8)
 				return null
-			}
-			
-			val buf = ByteArray(tag.componentCount)
-			tag.getBytes(buf)
-			
-			val code = ByteArray(8)
-			System.arraycopy(buf, 0, code, 0, 8)
 			
 			return try {
-				when {
-					code.contentEquals(USER_COMMENT_ASCII) -> String(
-						buf,
-						8,
-						buf.size - 8,
-						Charsets.US_ASCII
-					)
-					code.contentEquals(USER_COMMENT_JIS) -> String(
-						buf,
-						8,
-						buf.size - 8,
-						Charset.forName("EUC-JP")
-					)
-					code.contentEquals(USER_COMMENT_UNICODE) -> String(
-						buf,
-						8,
-						buf.size - 8,
-						Charsets.UTF_16
-					)
+				
+				val buf = ByteArray(tag.componentCount)
+				tag.getBytes(buf)
+				
+				val code = ByteArray(8)
+				System.arraycopy(buf, 0, code, 0, 8)
+				
+				val charset = when {
+					code.contentEquals(USER_COMMENT_ASCII) -> Charsets.US_ASCII
+					code.contentEquals(USER_COMMENT_JIS) -> eucJp
+					code.contentEquals(USER_COMMENT_UNICODE) -> Charsets.UTF_16
 					else -> null
 				}
+				if(charset == null) null else String(buf, 8, buf.size - 8, charset)
 			} catch(e : UnsupportedEncodingException) {
 				Log.w(TAG, "Failed to decode the user comment")
 				null
 			}
 		}
 	
-	/**
-	 * Returns a list of all [ExifTag]s in the ExifData or null if there
-	 * are none.
-	 */
-	val allTags : List<ExifTag>?
-		get() {
-			val ret = ArrayList<ExifTag>()
-			mIfdDatas.forEach { it?.allTags?.forEach { tag -> ret.add(tag) } }
-			return if(ret.isEmpty()) null else ret
-		}
+	// list of all [ExifTag]s in the ExifData
+	// or null if there are none.
+	val allTags : List<ExifTag>
+		get() = ArrayList<ExifTag>()
+			.apply { mIfdDatas.forEach { if(it != null) addAll(it.allTagsCollection) } }
 	
 	val imageSize : IntArray
 		get() = intArrayOf(imageWidth, imageLength)
+	
+	val stripList : List<ByteArray>?
+		get() = mStripBytes.filterNotNull().notEmpty()
 	
 	/**
 	 * Returns true it this header contains a compressed thumbnail.
@@ -166,41 +147,36 @@ internal open class ExifData( val byteOrder : ByteOrder ) {
 	 * Returns the tag with a given TID in the given IFD if the tag exists.
 	 * Otherwise returns null.
 	 */
-	fun getTag(tag : Short, ifd : Int) : ExifTag? {
-		val ifdData = mIfdDatas[ifd]
-		return ifdData?.getTag(tag)
-	}
+	fun getTag(tag : Short, ifd : Int) : ExifTag? =
+		mIfdDatas[ifd]?.getTag(tag)
 	
 	/**
 	 * Adds the given ExifTag to its default IFD and returns an existing ExifTag
 	 * with the same TID or null if none exist.
 	 */
-	fun addTag(tag : ExifTag?) : ExifTag? {
-		if(tag != null) {
-			val ifd = tag.ifd
-			return addTag(tag, ifd)
+	fun addTag(tag : ExifTag?) : ExifTag? =
+		when(tag) {
+			null -> null
+			else -> addTag(tag, tag.ifd)
 		}
-		return null
-	}
 	
 	/**
 	 * Adds the given ExifTag to the given IFD and returns an existing ExifTag
 	 * with the same TID or null if none exist.
 	 */
-	private fun addTag(tag : ExifTag?, ifdId : Int) : ExifTag? {
-		if(tag != null && ExifTag.isValidIfd(ifdId)) {
-			val ifdData = getOrCreateIfdData(ifdId)
-			return ifdData.setTag(tag)
+	private fun addTag(tag : ExifTag?, ifdId : Int) : ExifTag? =
+		when {
+			tag == null -> null
+			! ExifTag.isValidIfd(ifdId) -> null
+			else -> getOrCreateIfdData(ifdId).setTag(tag)
 		}
-		return null
-	}
 	
 	/**
 	 * Returns the [IfdData] object corresponding to a given IFD or
 	 * generates one if none exist.
 	 */
 	private fun getOrCreateIfdData(ifdId : Int) : IfdData {
-		var ifdData : IfdData? = mIfdDatas[ifdId]
+		var ifdData = mIfdDatas[ifdId]
 		if(ifdData == null) {
 			ifdData = IfdData(ifdId)
 			mIfdDatas[ifdId] = ifdData
@@ -211,9 +187,9 @@ internal open class ExifData( val byteOrder : ByteOrder ) {
 	/**
 	 * Removes the thumbnail and its related tags. IFD1 will be removed.
 	 */
-	protected fun removeThumbnailData() {
+	fun removeThumbnailData() {
 		clearThumbnailAndStrips()
-		mIfdDatas[IfdId.TYPE_IFD_1] = null
+		mIfdDatas[IfdData.TYPE_IFD_1] = null
 	}
 	
 	fun clearThumbnailAndStrips() {
@@ -233,17 +209,8 @@ internal open class ExifData( val byteOrder : ByteOrder ) {
 	 * Returns a list of all [ExifTag]s in a given IFD or null if there
 	 * are none.
 	 */
-	fun getAllTagsForIfd(ifd : Int) : List<ExifTag>? {
-		val d = mIfdDatas[ifd] ?: return null
-		val tags = d.allTags
-		val ret = ArrayList<ExifTag>(tags.size)
-		for(t in tags) {
-			ret.add(t)
-		}
-		return if(ret.size == 0) {
-			null
-		} else ret
-	}
+	fun getAllTagsForIfd(ifd : Int) : List<ExifTag>? =
+		mIfdDatas[ifd]?.allTagsCollection?.notEmpty()?.toList()
 	
 	// Returns a list of all [ExifTag]s with a given TID
 	// or null if there are none.
@@ -280,7 +247,7 @@ internal open class ExifData( val byteOrder : ByteOrder ) {
 				}
 			}
 			
-			for(i in 0 until IfdId.TYPE_IFD_COUNT) {
+			for(i in 0 until IfdData.TYPE_IFD_COUNT) {
 				val ifd1 = other.getIfdData(i)
 				val ifd2 = getIfdData(i)
 				if(ifd1 != ifd2) return false
@@ -294,10 +261,9 @@ internal open class ExifData( val byteOrder : ByteOrder ) {
 	 * Returns the [IfdData] object corresponding to a given IFD if it
 	 * exists or null.
 	 */
-	fun getIfdData(ifdId : Int) : IfdData? {
-		return if(ExifTag.isValidIfd(ifdId)) {
-			mIfdDatas[ifdId]
-		} else null
+	fun getIfdData(ifdId : Int) = when {
+		! ExifTag.isValidIfd(ifdId) -> null
+		else -> mIfdDatas[ifdId]
 	}
 	
 	fun setImageSize(imageWidth : Int, imageLength : Int) {
@@ -307,7 +273,7 @@ internal open class ExifData( val byteOrder : ByteOrder ) {
 	
 	override fun hashCode() : Int {
 		var result = byteOrder.hashCode()
-		result = 31 * result + (sections?.hashCode() ?: 0)
+		result = 31 * result + (sections.hashCode())
 		result = 31 * result + mIfdDatas.contentHashCode()
 		result = 31 * result + (compressedThumbnail?.contentHashCode() ?: 0)
 		result = 31 * result + mStripBytes.hashCode()
@@ -330,5 +296,8 @@ internal open class ExifData( val byteOrder : ByteOrder ) {
 		
 		private val USER_COMMENT_UNICODE =
 			byteArrayOf(0x55, 0x4E, 0x49, 0x43, 0x4F, 0x44, 0x45, 0x00)
+		
+		private val eucJp = Charset.forName("EUC-JP")
+		
 	}
 }

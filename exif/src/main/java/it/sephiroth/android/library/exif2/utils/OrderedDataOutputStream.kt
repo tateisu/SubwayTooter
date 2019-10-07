@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package it.sephiroth.android.library.exif2
+package it.sephiroth.android.library.exif2.utils
 
+import it.sephiroth.android.library.exif2.Rational
 import java.io.FilterOutputStream
 import java.io.IOException
 import java.io.OutputStream

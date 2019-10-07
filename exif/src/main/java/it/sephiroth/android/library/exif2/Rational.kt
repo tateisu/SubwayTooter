@@ -30,6 +30,7 @@ class Rational(
 ) {
 	
 	// copy from a Rational.
+	@Suppress("unused")
 	constructor(r : Rational) : this(
 		numerator = r.numerator,
 		denominator = r.denominator

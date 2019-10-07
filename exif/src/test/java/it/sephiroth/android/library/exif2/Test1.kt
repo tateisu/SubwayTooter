@@ -2,8 +2,7 @@ package it.sephiroth.android.library.exif2
 
 import android.util.Log
 import android.util.SparseIntArray
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Test
 import java.io.File
 import java.io.FileInputStream
@@ -12,7 +11,7 @@ class Test1 {
 	
 	@Test
 	fun testLog() {
-		Log.v("TEST","test")
+		Log.v("TEST", "test")
 		assertTrue("using android.util.Log", true)
 	}
 	
@@ -32,29 +31,48 @@ class Test1 {
 		}
 	}
 	
-	private fun getOrientation(fileName : String) : Pair<Int?,Throwable?> =
-		try{
-		val o = FileInputStream(getFile(fileName)).use { inStream ->
-			ExifInterface()
-				.apply {
-					readExif(
-						inStream,
-						ExifInterface.Options.OPTION_IFD_0
-							or ExifInterface.Options.OPTION_IFD_1
-							or ExifInterface.Options.OPTION_IFD_EXIF
-					)
-				}
-				.getTagIntValue(ExifInterface.TAG_ORIENTATION)
+	private fun getOrientation(fileName : String) : Pair<Int?, Throwable?> =
+		try {
+			val o = FileInputStream(getFile(fileName)).use { inStream ->
+				ExifInterface()
+					.apply {
+						readExif(
+							inStream,
+							ExifInterface.Options.OPTION_IFD_0
+								or ExifInterface.Options.OPTION_IFD_1
+								or ExifInterface.Options.OPTION_IFD_EXIF
+						)
+					}
+					.getTagIntValue(ExifInterface.TAG_ORIENTATION)
+			}
+			Pair(o, null)
+		} catch(ex : Throwable) {
+			Pair(null, ex)
 		}
-		Pair(o,null)
-	}catch(ex:Throwable){
-		Pair(null,ex)
-	}
+	
+	private fun getThumbnailBytes(fileName : String) : Pair<ByteArray?, Throwable?> =
+		try {
+			val o = FileInputStream(getFile(fileName)).use { inStream ->
+				ExifInterface()
+					.apply {
+						readExif(
+							inStream,
+							ExifInterface.Options.OPTION_IFD_0
+								or ExifInterface.Options.OPTION_IFD_1
+								or ExifInterface.Options.OPTION_IFD_EXIF
+						)
+					}
+					.thumbnailBytes
+			}
+			Pair(o, null)
+		} catch(ex : Throwable) {
+			Pair(null, ex)
+		}
 	
 	private fun testNotJpegSub(fileName : String) {
-		val(o,ex) = getOrientation(fileName)
-		assertTrue("testNotJpegSub",o ==null && ex!=null)
-		if( ex!= null) println("exception raised: ${ex::class.java} ${ex.message}")
+		val (o, ex) = getOrientation(fileName)
+		assertTrue("testNotJpegSub", o == null && ex != null)
+		if(ex != null) println("exception raised: ${ex::class.java} ${ex.message}")
 	}
 	
 	@Test
@@ -66,23 +84,32 @@ class Test1 {
 	
 	@Test
 	fun testJpeg() {
-		var fileName :String
-		var rv : Pair<Int?,Throwable?>
-
-		// this file has orientation 1
-		fileName = "test1.jpg"
-		rv = getOrientation(fileName)
-		assertEquals(fileName,1,rv.first)
-		
-		// this file has no orientation, it raises exception.
-		fileName = "test2.jpg"
-		rv = getOrientation(fileName)
-		assertTrue(fileName,rv.second != null)
+		var fileName : String
+		var rvO : Pair<Int?, Throwable?>
+		var rvT : Pair<ByteArray?, Throwable?>
 		
 		// this file has orientation 6.
 		fileName = "test3.jpg"
-		rv = getOrientation(fileName)
-		assertEquals(fileName,rv.first , 6)
+		rvO = getOrientation(fileName)
+		assertEquals(fileName, 6, rvO.first)
+		rvT = getThumbnailBytes(fileName)
+		assertNull(fileName,rvT.first)
+		
+		// this file has orientation 1
+		fileName = "test1.jpg"
+		rvO = getOrientation(fileName)
+		assertEquals(fileName, 1, rvO.first)
+		rvT = getThumbnailBytes(fileName)
+		assertNull(fileName,rvT.first)
+		
+		// this file has no orientation, it raises exception.
+		fileName = "test2.jpg"
+		rvO = getOrientation(fileName)
+		assertNotNull(fileName, rvO.second) // <java.lang.IllegalStateException: stop before hitting compressed data>
+		
+		rvT = getThumbnailBytes(fileName)
+		assertNotNull(fileName,rvT.second) // <java.lang.IllegalStateException: stop before hitting compressed data>
+		
 	}
 	
 }

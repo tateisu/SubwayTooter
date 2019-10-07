@@ -17,6 +17,7 @@
 package it.sephiroth.android.library.exif2
 
 import android.util.Log
+import it.sephiroth.android.library.exif2.utils.CountedDataInputStream
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -40,15 +41,15 @@ private constructor(
 	/**
 	 * the ID of current IFD.
 	 *
-	 * @see IfdId.TYPE_IFD_0
-	 * @see IfdId.TYPE_IFD_1
-	 * @see IfdId.TYPE_IFD_GPS
-	 * @see IfdId.TYPE_IFD_INTEROPERABILITY
-	 * @see IfdId.TYPE_IFD_EXIF
+	 * @see IfdData.TYPE_IFD_0
+	 * @see IfdData.TYPE_IFD_1
+	 * @see IfdData.TYPE_IFD_GPS
+	 * @see IfdData.TYPE_IFD_INTEROPERABILITY
+	 * @see IfdData.TYPE_IFD_EXIF
 	 */
 	var currentIfd : Int = 0
 		private set
-
+	
 	/**
 	 * If [.next] return [.EVENT_NEW_TAG] or
 	 * [.EVENT_VALUE_OF_REGISTERED_TAG], call this function to get the
@@ -154,10 +155,10 @@ private constructor(
 			throw ExifInvalidFormatException("Invalid offset $offset")
 		}
 		mIfd0Position = offset.toInt()
-		currentIfd = IfdId.TYPE_IFD_0
+		currentIfd = IfdData.TYPE_IFD_0
 		
-		if(isIfdRequested(IfdId.TYPE_IFD_0) || needToParseOffsetsInCurrentIfd()) {
-			registerIfd(IfdId.TYPE_IFD_0, offset)
+		if(isIfdRequested(IfdData.TYPE_IFD_0) || needToParseOffsetsInCurrentIfd()) {
+			registerIfd(IfdData.TYPE_IFD_0, offset)
 			if(offset != DEFAULT_IFD0_OFFSET.toLong()) {
 				val ba = ByteArray(offset.toInt() - DEFAULT_IFD0_OFFSET)
 				mDataAboveIfd0 = ba
@@ -182,15 +183,16 @@ private constructor(
 	
 	@Throws(IOException::class, ExifInvalidFormatException::class)
 	private fun seekTiffData(inputStream : InputStream) : CountedDataInputStream {
-		val dataStream = CountedDataInputStream(inputStream)
+		val dataStream =
+			CountedDataInputStream(inputStream)
 		var tiffStream : CountedDataInputStream? = null
 		
 		var a = dataStream.readUnsignedByte()
 		val b = dataStream.readUnsignedByte()
 		
-
+		
 		if(a == 137 && b == 80) error("maybe PNG image")
-
+		
 		if(a != 0xFF || b != JpegHeader.TAG_SOI) error("invalid jpeg header")
 		
 		while(true) {
@@ -213,9 +215,6 @@ private constructor(
 				Log.w(TAG, "Extraneous ${a - 1} padding bytes before section $marker")
 			}
 			
-			val section = Section()
-			section.type = marker
-			
 			// Read the length of the section.
 			val lh = dataStream.readByte().toInt()
 			val ll = dataStream.readByte().toInt()
@@ -224,8 +223,6 @@ private constructor(
 			if(itemlen < 2) {
 				throw ExifInvalidFormatException("Invalid marker")
 			}
-			
-			section.size = itemlen
 			
 			data = ByteArray(itemlen)
 			data[0] = lh.toByte()
@@ -240,7 +237,7 @@ private constructor(
 				throw ExifInvalidFormatException("Premature end of file? Expecting " + (itemlen - 2) + ", received " + got)
 			}
 			
-			section.data = data
+			val section = Section(type = marker, size = itemlen, data = data)
 			
 			var ignore = false
 			
@@ -286,7 +283,9 @@ private constructor(
 					// header = Exif, headerTail=\0\0
 					if(header == EXIF_HEADER && headerTail == EXIF_HEADER_TAIL) {
 						tiffStream =
-							CountedDataInputStream(ByteArrayInputStream(data, 8, itemlen - 8))
+							CountedDataInputStream(
+								ByteArrayInputStream(data, 8, itemlen - 8)
+							)
 						tiffStream.end = itemlen - 6
 						ignore = false
 					} else {
@@ -428,11 +427,11 @@ private constructor(
 	
 	private fun isIfdRequested(ifdType : Int) : Boolean {
 		when(ifdType) {
-			IfdId.TYPE_IFD_0 -> return mOptions and ExifInterface.Options.OPTION_IFD_0 != 0
-			IfdId.TYPE_IFD_1 -> return mOptions and ExifInterface.Options.OPTION_IFD_1 != 0
-			IfdId.TYPE_IFD_EXIF -> return mOptions and ExifInterface.Options.OPTION_IFD_EXIF != 0
-			IfdId.TYPE_IFD_GPS -> return mOptions and ExifInterface.Options.OPTION_IFD_GPS != 0
-			IfdId.TYPE_IFD_INTEROPERABILITY -> return mOptions and ExifInterface.Options.OPTION_IFD_INTEROPERABILITY != 0
+			IfdData.TYPE_IFD_0 -> return mOptions and ExifInterface.Options.OPTION_IFD_0 != 0
+			IfdData.TYPE_IFD_1 -> return mOptions and ExifInterface.Options.OPTION_IFD_1 != 0
+			IfdData.TYPE_IFD_EXIF -> return mOptions and ExifInterface.Options.OPTION_IFD_EXIF != 0
+			IfdData.TYPE_IFD_GPS -> return mOptions and ExifInterface.Options.OPTION_IFD_GPS != 0
+			IfdData.TYPE_IFD_INTEROPERABILITY -> return mOptions and ExifInterface.Options.OPTION_IFD_INTEROPERABILITY != 0
 		}
 		return false
 	}
@@ -440,17 +439,17 @@ private constructor(
 	private fun needToParseOffsetsInCurrentIfd() : Boolean {
 		return when(currentIfd) {
 			
-			IfdId.TYPE_IFD_0 ->
-				isIfdRequested(IfdId.TYPE_IFD_EXIF) ||
-					isIfdRequested(IfdId.TYPE_IFD_GPS) ||
-					isIfdRequested(IfdId.TYPE_IFD_INTEROPERABILITY) ||
-					isIfdRequested(IfdId.TYPE_IFD_1)
+			IfdData.TYPE_IFD_0 ->
+				isIfdRequested(IfdData.TYPE_IFD_EXIF) ||
+					isIfdRequested(IfdData.TYPE_IFD_GPS) ||
+					isIfdRequested(IfdData.TYPE_IFD_INTEROPERABILITY) ||
+					isIfdRequested(IfdData.TYPE_IFD_1)
 			
-			IfdId.TYPE_IFD_1 -> isThumbnailRequested
+			IfdData.TYPE_IFD_1 -> isThumbnailRequested
 			
-			IfdId.TYPE_IFD_EXIF ->
+			IfdData.TYPE_IFD_EXIF ->
 				// The offset to interoperability IFD is located in Exif IFD
-				isIfdRequested(IfdId.TYPE_IFD_INTEROPERABILITY)
+				isIfdRequested(IfdData.TYPE_IFD_INTEROPERABILITY)
 			
 			else -> false
 		}
@@ -508,11 +507,11 @@ private constructor(
 			return EVENT_NEW_TAG
 		} else if(offset == endOfTags) {
 			// There is a link to ifd1 at the end of ifd0
-			if(currentIfd == IfdId.TYPE_IFD_0) {
+			if(currentIfd == IfdData.TYPE_IFD_0) {
 				val ifdOffset = readUnsignedLong()
-				if(isIfdRequested(IfdId.TYPE_IFD_1) || isThumbnailRequested) {
+				if(isIfdRequested(IfdData.TYPE_IFD_1) || isThumbnailRequested) {
 					if(ifdOffset != 0L) {
-						registerIfd(IfdId.TYPE_IFD_1, ifdOffset)
+						registerIfd(IfdData.TYPE_IFD_1, ifdOffset)
 					}
 				}
 			} else {
@@ -610,9 +609,9 @@ private constructor(
 		}
 		val ifdOffset = readUnsignedLong()
 		// For ifd0, there is a link to ifd1 in the end of all tags
-		if(currentIfd == IfdId.TYPE_IFD_0 && (isIfdRequested(IfdId.TYPE_IFD_1) || isThumbnailRequested)) {
+		if(currentIfd == IfdData.TYPE_IFD_0 && (isIfdRequested(IfdData.TYPE_IFD_1) || isThumbnailRequested)) {
 			if(ifdOffset > 0) {
-				registerIfd(IfdId.TYPE_IFD_1, ifdOffset)
+				registerIfd(IfdData.TYPE_IFD_1, ifdOffset)
 			}
 		}
 	}
@@ -720,19 +719,19 @@ private constructor(
 		val tid = tag.tagId
 		val ifd = tag.ifd
 		if(tid == TAG_EXIF_IFD && checkAllowed(ifd, ExifInterface.TAG_EXIF_IFD)) {
-			if(isIfdRequested(IfdId.TYPE_IFD_EXIF) || isIfdRequested(IfdId.TYPE_IFD_INTEROPERABILITY)) {
-				registerIfd(IfdId.TYPE_IFD_EXIF, tag.getValueAt(0))
+			if(isIfdRequested(IfdData.TYPE_IFD_EXIF) || isIfdRequested(IfdData.TYPE_IFD_INTEROPERABILITY)) {
+				registerIfd(IfdData.TYPE_IFD_EXIF, tag.getValueAt(0))
 			}
 		} else if(tid == TAG_GPS_IFD && checkAllowed(ifd, ExifInterface.TAG_GPS_IFD)) {
-			if(isIfdRequested(IfdId.TYPE_IFD_GPS)) {
-				registerIfd(IfdId.TYPE_IFD_GPS, tag.getValueAt(0))
+			if(isIfdRequested(IfdData.TYPE_IFD_GPS)) {
+				registerIfd(IfdData.TYPE_IFD_GPS, tag.getValueAt(0))
 			}
 		} else if(tid == TAG_INTEROPERABILITY_IFD && checkAllowed(
 				ifd,
 				ExifInterface.TAG_INTEROPERABILITY_IFD
 			)) {
-			if(isIfdRequested(IfdId.TYPE_IFD_INTEROPERABILITY)) {
-				registerIfd(IfdId.TYPE_IFD_INTEROPERABILITY, tag.getValueAt(0))
+			if(isIfdRequested(IfdData.TYPE_IFD_INTEROPERABILITY)) {
+				registerIfd(IfdData.TYPE_IFD_INTEROPERABILITY, tag.getValueAt(0))
 			}
 		} else if(tid == TAG_JPEG_INTERCHANGE_FORMAT && checkAllowed(
 				ifd,
@@ -750,7 +749,7 @@ private constructor(
 			}
 		} else if(tid == TAG_STRIP_OFFSETS && checkAllowed(ifd, ExifInterface.TAG_STRIP_OFFSETS)) {
 			if(isThumbnailRequested) {
-				if(tag.hasValue()) {
+				if(tag.hasValue) {
 					for(i in 0 until tag.componentCount) {
 						if(tag.dataType == ExifTag.TYPE_UNSIGNED_SHORT) {
 							registerUncompressedStrip(i, tag.getValueAt(i))
@@ -765,16 +764,16 @@ private constructor(
 		} else if(tid == TAG_STRIP_BYTE_COUNTS && checkAllowed(
 				ifd,
 				ExifInterface.TAG_STRIP_BYTE_COUNTS
-			) && isThumbnailRequested && tag.hasValue()) {
+			) && isThumbnailRequested && tag.hasValue) {
 			mStripSizeTag = tag
 		}
 	}
 	
-	fun isDefinedTag(ifdId : Int, tagId : Int) : Boolean {
+	fun isDefinedTag(ifdId : Int, tagId : Short) : Boolean {
 		return mInterface.tagInfo.get(
 			ExifInterface.defineTag(
 				ifdId,
-				tagId.toShort()
+				tagId
 			)
 		) != ExifInterface.DEFINITION_NULL
 	}
@@ -946,12 +945,8 @@ private constructor(
 		internal var isRequested : Boolean
 	)
 	
-	class Section {
-		internal var size : Int = 0
-		internal var type : Int = 0
-		internal var data : ByteArray? = null
-	}
-	
+	class Section(var size : Int, var type : Int, var data : ByteArray)
+
 	companion object {
 		private const val TAG = "ExifParser"
 		

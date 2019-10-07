@@ -934,4 +934,7 @@
     <string name="show_in_directory">Afficher dans l’annuaire</string>
     <string name="account_picker_quoted_renote">Compte pour « renote citée » \?</string>
     <string name="featured_hashtags">Hashtags populaires</string>
+    <string name="cross_account_actions">Actions inter-comptes</string>
+    <string name="extra_actions">Actions supplémentaires</string>
+    <string name="instance_actions_for">Actions pour le serveur «%1$s»</string>
 </resources>

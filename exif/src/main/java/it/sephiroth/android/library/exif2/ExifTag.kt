@@ -84,6 +84,13 @@ open class ExifTag internal constructor(
 		get() = componentCount * getElementSize(dataType)
 	
 	/**
+	 * Returns true if this ExifTag contains value; otherwise, this tag will
+	 * contain an offset value that is determined when the tag is written.
+	 */
+	val hasValue :Boolean
+		get() = mValue != null
+	
+	/**
 	 * Gets the value as a byte array. This method should be used for tags of
 	 * type [.TYPE_UNDEFINED] or [.TYPE_UNSIGNED_BYTE].
 	 *
@@ -164,13 +171,6 @@ open class ExifTag internal constructor(
 	fun forceSetComponentCount(count : Int) {
 		componentCount = count
 	}
-	
-	/**
-	 * Returns true if this ExifTag contains value; otherwise, this tag will
-	 * contain an offset value that is determined when the tag is written.
-	 */
-	val hasValue :Boolean
-		get() = mValue != null
 	
 	/**
 	 * Sets integer values into this tag. This method should be used for tags of

@@ -54,8 +54,9 @@ internal class ExifData(
 	var compressedThumbnail : ByteArray? = null
 	
 	private val mStripBytes = ArrayList<ByteArray?>()
-	val stripCount : Int
-		get() = mStripBytes.size
+	
+	val stripList : List<ByteArray>?
+		get() = mStripBytes.filterNotNull().notEmpty()
 	
 	// Decodes the user comment tag into string as specified in the EXIF standard.
 	// Returns null if decoding failed.
@@ -101,13 +102,10 @@ internal class ExifData(
 	val imageSize : IntArray
 		get() = intArrayOf(imageWidth, imageLength)
 	
-	val stripList : List<ByteArray>?
-		get() = mStripBytes.filterNotNull().notEmpty()
-	
 	val thumbnailBytes : ByteArray?
 		get() = when {
 			compressedThumbnail != null -> compressedThumbnail
-			hasUncompressedStrip() -> null // TODO: implement this
+			stripList != null -> null // TODO: implement this
 			else -> null
 		}
 	
@@ -131,7 +129,7 @@ internal class ExifData(
 	 * Adds an uncompressed strip.
 	 */
 	fun setStripBytes(index : Int, strip : ByteArray) {
-		if(index < mStripBytes.size) {
+		if(index in mStripBytes.indices) {
 			mStripBytes[index] = strip
 		} else {
 			for(i in mStripBytes.size until index) {
@@ -142,16 +140,17 @@ internal class ExifData(
 	}
 	
 	/**
-	 * Gets the strip at the specified index.
-	 *
-	 * @exceptions #IndexOutOfBoundException
+	 * Returns the [IfdData] object corresponding to a given IFD or
+	 * generates one if none exist.
 	 */
-	fun getStrip(index : Int) : ByteArray? = mStripBytes[index]
-	
-	/**
-	 * Returns true if this header contains uncompressed strip.
-	 */
-	fun hasUncompressedStrip() : Boolean = mStripBytes.isNotEmpty()
+	private fun prepareIfdData(ifdId : Int) : IfdData {
+		var ifdData = mIfdDatas[ifdId]
+		if(ifdData == null) {
+			ifdData = IfdData(ifdId)
+			mIfdDatas[ifdId] = ifdData
+		}
+		return ifdData
+	}
 	
 	/**
 	 * Adds IFD data. If IFD data of the same type already exists, it will be
@@ -186,20 +185,14 @@ internal class ExifData(
 		when {
 			tag == null -> null
 			! ExifTag.isValidIfd(ifdId) -> null
-			else -> getOrCreateIfdData(ifdId).setTag(tag)
+			else -> prepareIfdData(ifdId).setTag(tag)
 		}
 	
 	/**
-	 * Returns the [IfdData] object corresponding to a given IFD or
-	 * generates one if none exist.
+	 * Removes the tag with a given TID and IFD.
 	 */
-	private fun getOrCreateIfdData(ifdId : Int) : IfdData {
-		var ifdData = mIfdDatas[ifdId]
-		if(ifdData == null) {
-			ifdData = IfdData(ifdId)
-			mIfdDatas[ifdId] = ifdData
-		}
-		return ifdData
+	fun removeTag(tagId : Short, ifdId : Int) {
+		mIfdDatas[ifdId]?.removeTag(tagId)
 	}
 	
 	/**
@@ -216,14 +209,6 @@ internal class ExifData(
 	}
 	
 	/**
-	 * Removes the tag with a given TID and IFD.
-	 */
-	fun removeTag(tagId : Short, ifdId : Int) {
-		val ifdData = mIfdDatas[ifdId] ?: return
-		ifdData.removeTag(tagId)
-	}
-	
-	/**
 	 * Returns a list of all [ExifTag]s in a given IFD or null if there
 	 * are none.
 	 */
@@ -232,18 +217,10 @@ internal class ExifData(
 	
 	// Returns a list of all [ExifTag]s with a given TID
 	// or null if there are none.
-	fun getAllTagsForTagId(tag : Short) : List<ExifTag>? {
-		val ret = ArrayList<ExifTag>()
-		for(d in mIfdDatas) {
-			if(d != null) {
-				val t = d.getTag(tag)
-				if(t != null) {
-					ret.add(t)
-				}
-			}
-		}
-		return if(ret.isEmpty()) null else ret
-	}
+	fun getAllTagsForTagId(tag : Short) : List<ExifTag>? =
+		ArrayList<ExifTag>()
+			.apply { mIfdDatas.forEach { it?.getTag(tag)?.let { t -> add(t) } } }
+			.notEmpty()
 	
 	override fun equals(other : Any?) : Boolean {
 		if(this === other) return true

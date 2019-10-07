@@ -17,7 +17,6 @@
 package it.sephiroth.android.library.exif2
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Log
 import android.util.SparseIntArray
 import org.apache.commons.io.IOUtils
@@ -46,12 +45,18 @@ import kotlin.math.ln
  *
  * @see ExifTag
  */
-@Suppress("unused", "unused")
+@Suppress("unused")
 class ExifInterface {
 	
-	private var mData = ExifData()
+	private val mGPSTimeStampCalendar : Calendar by lazy {
+		Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+	}
 	
-	private val mGPSTimeStampCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+	val tagInfo : SparseIntArray by lazy {
+		SparseIntArray().initTagInfo()
+	}
+	
+	private var mData = ExifData()
 	
 	/**
 	 * Get the exif tags in this ExifInterface object or null if none exist.
@@ -61,28 +66,14 @@ class ExifInterface {
 	val allTags : List<ExifTag>
 		get() = mData.allTags
 	
-	val tagInfo : SparseIntArray by lazy { SparseIntArray().also { it.initTagInfo() } }
-	
 	/**
-	 * Returns the thumbnail from IFD1 as a bitmap, or null if none exists.
+	 * Returns the JPEG quality used to generate the image
+	 * or 0 if not found
 	 *
-	 * @return the thumbnail as a bitmap.
+	 * @return qualityGuess
 	 */
-	val thumbnailBitmap : Bitmap?
-		get() {
-			val compressedThumbnail = mData.compressedThumbnail
-			if(compressedThumbnail != null) {
-				return BitmapFactory
-					.decodeByteArray(compressedThumbnail, 0, compressedThumbnail.size)
-			}
-			val stripList = mData.stripList
-			if(stripList != null) {
-				// TODO: decoding uncompressed thumbnail is not implemented.
-				return null
-			}
-			
-			return null
-		}
+	val qualityGuess : Int
+		get() = mData.qualityGuess
 	
 	/**
 	 * Returns the thumbnail from IFD1 as a byte array, or null if none exists.
@@ -92,28 +83,15 @@ class ExifInterface {
 	 * @return the thumbnail as a byte array.
 	 */
 	val thumbnailBytes : ByteArray?
-		get() = when {
-			mData.hasCompressedThumbnail() -> mData.compressedThumbnail
-			mData.hasUncompressedStrip() -> null // TODO: implement this
-			else -> null
-		}
+		get() = mData.thumbnailBytes
 	
 	/**
-	 * Returns the thumbnail if it is jpeg compressed, or null if none exists.
+	 * Returns the thumbnail from IFD1 as a bitmap, or null if none exists.
 	 *
-	 * @return the thumbnail as a byte array.
+	 * @return the thumbnail as a bitmap.
 	 */
-	val thumbnail : ByteArray?
-		get() = mData.compressedThumbnail
-	
-	/**
-	 * Returns the JPEG quality used to generate the image
-	 * or 0 if not found
-	 *
-	 * @return qualityGuess
-	 */
-	val qualityGuess : Int
-		get() = mData.qualityGuess
+	val thumbnailBitmap : Bitmap?
+		get() = mData.thumbnailBitmap
 	
 	/**
 	 * this gives information about the process used to create the JPEG file.
@@ -150,7 +128,7 @@ class ExifInterface {
 	 * @return true if the thumbnail is compressed.
 	 */
 	val isThumbnailCompressed : Boolean
-		get() = mData.hasCompressedThumbnail()
+		get() = mData.compressedThumbnail != null
 	
 	/**
 	 * Decodes the user comment tag into string as specified in the EXIF
@@ -173,13 +151,21 @@ class ExifInterface {
 			val latitudeRef = getTagStringValue(TAG_GPS_LATITUDE_REF)
 			val longitude = getTagRationalValues(TAG_GPS_LONGITUDE)
 			val longitudeRef = getTagStringValue(TAG_GPS_LONGITUDE_REF)
-			if(latitude == null || longitude == null || latitudeRef == null || longitudeRef == null || latitude.size < 3 || longitude.size < 3) {
-				return null
+			
+			return when {
+				
+				latitude == null
+					|| longitude == null
+					|| latitudeRef == null
+					|| longitudeRef == null
+					|| latitude.size < 3
+					|| longitude.size < 3 -> null
+				
+				else -> doubleArrayOf(
+					convertLatOrLongToDouble(latitude, latitudeRef),
+					convertLatOrLongToDouble(longitude, longitudeRef)
+				)
 			}
-			val latLon = DoubleArray(2)
-			latLon[0] = convertLatOrLongToDouble(latitude, latitudeRef)
-			latLon[1] = convertLatOrLongToDouble(longitude, longitudeRef)
-			return latLon
 		}
 	
 	/**
@@ -191,10 +177,10 @@ class ExifInterface {
 			val latitude = getTagRationalValues(TAG_GPS_LATITUDE)
 			val latitudeRef = getTagStringValue(TAG_GPS_LATITUDE_REF)
 			
-			return if(null == latitude || null == latitudeRef)
-				null
-			else
-				convertRationalLatLonToString(latitude, latitudeRef)
+			return when {
+				null == latitude || null == latitudeRef -> null
+				else -> convertRationalLatLonToString(latitude, latitudeRef)
+			}
 		}
 	
 	/**
@@ -206,10 +192,23 @@ class ExifInterface {
 			val longitude = getTagRationalValues(TAG_GPS_LONGITUDE)
 			val longitudeRef = getTagStringValue(TAG_GPS_LONGITUDE_REF)
 			
-			return if(null == longitude || null == longitudeRef)
-				null
-			else
-				convertRationalLatLonToString(longitude, longitudeRef)
+			return when {
+				null == longitude || null == longitudeRef -> null
+				else -> convertRationalLatLonToString(longitude, longitudeRef)
+			}
+		}
+	
+	val altitude : Double? // may null
+		get() = when(val gpsAltitude = getTagRationalValue(TAG_GPS_ALTITUDE)) {
+			null -> null
+			
+			else -> {
+				val seaLevel = when(getTagByteValue(TAG_GPS_ALTITUDE_REF)) {
+					1.toByte() -> - 1
+					else -> 1
+				}
+				gpsAltitude.toDouble() * seaLevel
+			}
 		}
 	
 	/**
@@ -243,10 +242,6 @@ class ExifInterface {
 			return null
 		}
 	
-	init {
-		mGPSDateStampFormat.timeZone = TimeZone.getTimeZone("UTC")
-	}
-	
 	/**
 	 * Given the value from [.TAG_FOCAL_PLANE_RESOLUTION_UNIT] or [.TAG_RESOLUTION_UNIT]
 	 * this method will return the corresponding value in millimeters
@@ -264,17 +259,11 @@ class ExifInterface {
 		}
 	
 	/**
-	 * Reads the exif tags from a file, clearing this ExifInterface object's
-	 * existing exif tags.
-	 *
-	 * @param inFileName a string representing the filepath to jpeg file.
-	 * @param options    bit flag which defines which type of tags to process, see [it.sephiroth.android.library.exif2.ExifInterface.Options]
-	 * @throws java.io.IOException for I/O error
-	 * @see .readExif
+	 * Clears this ExifInterface object's existing exif tags.
 	 */
-	@Throws(IOException::class)
-	fun readExif(inFileName : String, options : Int) {
-		BufferedInputStream(FileInputStream(inFileName)).use { readExif(it, options) }
+	private fun clearExif() : ExifInterface {
+		mData = ExifData()
+		return this
 	}
 	
 	/**
@@ -293,9 +282,36 @@ class ExifInterface {
 	 * @throws java.io.IOException for I/O error
 	 */
 	@Throws(IOException::class)
-	fun readExif(inStream : InputStream, options : Int) {
+	fun readExif(inStream : InputStream, options : Int) : ExifInterface {
 		mData = ExifReader(this).read(inStream, options)
+		return this
 	}
+	
+	/**
+	 * Reads the exif tags from a file, clearing this ExifInterface object's
+	 * existing exif tags.
+	 *
+	 * @param inFileName a string representing the filepath to jpeg file.
+	 * @param options    bit flag which defines which type of tags to process, see [it.sephiroth.android.library.exif2.ExifInterface.Options]
+	 * @throws java.io.IOException for I/O error
+	 * @see .readExif
+	 */
+	@Throws(IOException::class)
+	fun readExif(inFileName : String, options : Int) : ExifInterface =
+		BufferedInputStream(FileInputStream(inFileName)).use { readExif(it, options) }
+	
+	/**
+	 * Reads the exif tags from a byte array, clearing this ExifInterface
+	 * object's existing exif tags.
+	 *
+	 * @param jpeg    a byte array containing a jpeg compressed image.
+	 * @param options bit flag which defines which type of tags to process, see [it.sephiroth.android.library.exif2.ExifInterface.Options]
+	 * @throws java.io.IOException for I/O error
+	 * @see .readExif
+	 */
+	@Throws(IOException::class)
+	fun readExif(jpeg : ByteArray, options : Int) =
+		ByteArrayInputStream(jpeg).use { readExif(it, options) }
 	
 	/**
 	 * Sets the exif tags, clearing this ExifInterface object's existing exif
@@ -303,29 +319,10 @@ class ExifInterface {
 	 *
 	 * @param tags a collection of exif tags to set.
 	 */
-	fun setExif(tags : Collection<ExifTag>) {
+	fun setExif(tags : Collection<ExifTag>) : ExifInterface {
 		clearExif()
 		setTags(tags)
-	}
-	
-	/**
-	 * Clears this ExifInterface object's existing exif tags.
-	 */
-	private fun clearExif() {
-		mData = ExifData()
-	}
-	
-	/**
-	 * Puts a collection of ExifTags into this ExifInterface objects's tags. Any
-	 * previous ExifTags with the same TID and IFDs will be removed.
-	 *
-	 * @param tags a Collection of ExifTags.
-	 * @see .setTag
-	 */
-	private fun setTags(tags : Collection<ExifTag>) {
-		for(t in tags) {
-			setTag(t)
-		}
+		return this
 	}
 	
 	/**
@@ -337,8 +334,19 @@ class ExifInterface {
 	 * @return the previous ExifTag with the same TID and IFD or null if none
 	 * exists.
 	 */
-	private fun setTag(tag : ExifTag) : ExifTag? {
-		return mData.addTag(tag)
+	private fun setTag(tag : ExifTag) : ExifTag? =
+		mData.addTag(tag)
+	
+	/**
+	 * Puts a collection of ExifTags into this ExifInterface objects's tags. Any
+	 * previous ExifTags with the same TID and IFDs will be removed.
+	 *
+	 * @param tags a Collection of ExifTags.
+	 * @see .setTag
+	 */
+	private fun setTags(tags : Collection<ExifTag>) : ExifInterface {
+		for(t in tags) setTag(t)
+		return this
 	}
 	
 	@Throws(IOException::class)
@@ -417,34 +425,17 @@ class ExifInterface {
 		output.close()
 	}
 	
+	// input is used *ONLY* to read the image uncompressed data
+	// exif tags are not used here
 	@Throws(IOException::class)
 	fun writeExif(input : Bitmap, dstFilename : String, quality : Int) {
 		Log.i(TAG, "writeExif: $dstFilename")
-		
-		// input is used *ONLY* to read the image uncompressed data
-		// exif tags are not used here
-		
-		val out = ByteArrayOutputStream()
-		input.compress(Bitmap.CompressFormat.JPEG, quality, out)
-		
-		val `in` = ByteArrayInputStream(out.toByteArray())
-		out.close()
-		
-		writeExif(`in`, dstFilename)
-	}
-	
-	/**
-	 * Reads the exif tags from a byte array, clearing this ExifInterface
-	 * object's existing exif tags.
-	 *
-	 * @param jpeg    a byte array containing a jpeg compressed image.
-	 * @param options bit flag which defines which type of tags to process, see [it.sephiroth.android.library.exif2.ExifInterface.Options]
-	 * @throws java.io.IOException for I/O error
-	 * @see .readExif
-	 */
-	@Throws(IOException::class)
-	fun readExif(jpeg : ByteArray, options : Int) {
-		readExif(ByteArrayInputStream(jpeg), options)
+		ByteArrayOutputStream().use { out ->
+			input.compress(Bitmap.CompressFormat.JPEG, quality, out)
+			ByteArrayInputStream(out.toByteArray()).use { inStream ->
+				writeExif(inStream, dstFilename)
+			}
+		}
 	}
 	
 	/**
@@ -641,20 +632,6 @@ class ExifInterface {
 	}
 	
 	/**
-	 * Sets the value of an ExifTag if it exists it's default IFD. The value
-	 * must be the correct type and length for that ExifTag.
-	 *
-	 * @param tagId a tag constant, e.g. [.TAG_IMAGE_WIDTH].
-	 * @param val   the value to set.
-	 * @return true if success, false if the ExifTag doesn't exist or the value
-	 * is the wrong type/length.
-	 */
-	fun setTagValue(tagId : Int, `val` : Any) : Boolean {
-		val ifdId = getDefinedTagDefaultIfd(tagId)
-		return setTagValue(tagId, ifdId, `val`)
-	}
-	
-	/**
 	 * Sets the value of an ExifTag if it exists in the given IFD. The value
 	 * must be the correct type and length for that ExifTag.
 	 *
@@ -665,19 +642,12 @@ class ExifInterface {
 	 * is the wrong type/length.
 	 * @see .setTagValue
 	 */
-	private fun setTagValue(tagId : Int, ifdId : Int, tagValue : Any) : Boolean {
-		return getTag(tagId, ifdId)?.setValueAny(tagValue) ?: false
-	}
-	
-	/**
-	 * Removes the ExifTag for a tag constant from that tag's default IFD.
-	 *
-	 * @param tagId a tag constant, e.g. [.TAG_IMAGE_WIDTH].
-	 */
-	fun deleteTag(tagId : Int) {
-		val ifdId = getDefinedTagDefaultIfd(tagId)
-		deleteTag(tagId, ifdId)
-	}
+	private fun setTagValue(
+		tagId : Int,
+		tagValue : Any,
+		ifdId : Int = getDefinedTagDefaultIfd(tagId)
+	) : Boolean =
+		getTag(tagId, ifdId)?.setValueAny(tagValue) ?: false
 	
 	/**
 	 * Removes the ExifTag for a tag constant from the given IFD.
@@ -685,8 +655,12 @@ class ExifInterface {
 	 * @param tagId a tag constant, e.g. [.TAG_IMAGE_WIDTH].
 	 * @param ifdId the IFD of the ExifTag to remove.
 	 */
-	private fun deleteTag(tagId : Int, ifdId : Int) {
+	private fun deleteTag(
+		tagId : Int,
+		ifdId : Int = getDefinedTagDefaultIfd(tagId)
+	) : ExifInterface {
 		mData.removeTag(getTrueTagKey(tagId), ifdId)
+		return this
 	}
 	
 	/**
@@ -754,18 +728,16 @@ class ExifInterface {
 		return TAG_NULL
 	}
 	
-	fun getTagDefinition(tagId : Short, defaultIfd : Int) : Int {
-		return tagInfo.get(defineTag(defaultIfd, tagId))
-	}
+	fun getTagDefinition(tagId : Short, defaultIfd : Int) : Int =
+		tagInfo.get(defineTag(defaultIfd, tagId))
 	
 	private fun getTagDefinitionsForTagId(tagId : Short) : IntArray? {
 		val ifds = IfdData.list
 		val defs = IntArray(ifds.size)
 		var counter = 0
-		val infos = tagInfo
 		for(i in ifds) {
 			val def = defineTag(i, tagId)
-			if(infos.get(def) != DEFINITION_NULL) {
+			if(tagInfo.get(def) != DEFINITION_NULL) {
 				defs[counter ++] = def
 			}
 		}
@@ -773,12 +745,8 @@ class ExifInterface {
 		
 	}
 	
-	fun getTagDefinitionForTag(tag : ExifTag) : Int {
-		val type = tag.dataType
-		val count = tag.componentCount
-		val ifd = tag.ifd
-		return getTagDefinitionForTag(tag.tagId, type, count, ifd)
-	}
+	fun getTagDefinitionForTag(tag : ExifTag) : Int =
+		getTagDefinitionForTag(tag.tagId, tag.dataType, tag.componentCount, tag.ifd)
 	
 	private fun getTagDefinitionForTag(
 		tagId : Short,
@@ -786,11 +754,8 @@ class ExifInterface {
 		count : Int,
 		ifd : Int
 	) : Int {
-		val defs = getTagDefinitionsForTagId(tagId) ?: return TAG_NULL
-		val infos = tagInfo
-		var ret = TAG_NULL
-		for(i in defs) {
-			val info = infos.get(i)
+		getTagDefinitionsForTagId(tagId)?.forEach { i ->
+			val info = tagInfo.get(i)
 			val def_type = getTypeFromInfo(info)
 			val def_count = getComponentCountFromInfo(info)
 			val def_ifds = getAllowedIfdsFromInfo(info)
@@ -803,12 +768,14 @@ class ExifInterface {
 					}
 				}
 			}
-			if(valid_ifd && type == def_type && (count == def_count || def_count == ExifTag.SIZE_UNDEFINED)) {
-				ret = i
-				break
+			if(valid_ifd
+				&& type == def_type
+				&& (count == def_count || def_count == ExifTag.SIZE_UNDEFINED)
+			) {
+				return i
 			}
 		}
-		return ret
+		return TAG_NULL
 	}
 	
 	/**
@@ -826,16 +793,6 @@ class ExifInterface {
 	//	fun resetTagDefinitions() {
 	//		mTagInfo = null
 	//	}
-	
-	/**
-	 * Check if thumbnail exists.
-	 *
-	 * @return true if a compressed thumbnail exists.
-	 */
-	fun hasThumbnail() : Boolean {
-		// TODO: add back in uncompressed strip
-		return mData.hasCompressedThumbnail()
-	}
 	
 	/**
 	 * Sets the thumbnail to be a jpeg compressed bitmap. Clears any prior
@@ -915,18 +872,6 @@ class ExifInterface {
 	}
 	
 	/**
-	 * Creates a tag for a defined tag constant in the tag's default IFD.
-	 *
-	 * @param tagId a tag constant, e.g. [.TAG_IMAGE_WIDTH].
-	 * @param val   the tag's value.
-	 * @return an ExifTag object.
-	 */
-	fun buildTag(tagId : Int, `val` : Any) : ExifTag? {
-		val ifdId = getTrueIfd(tagId)
-		return buildTag(tagId, ifdId, `val`)
-	}
-	
-	/**
 	 * Creates a tag for a defined tag constant in a given IFD if that IFD is
 	 * allowed for the tag.  This method will fail anytime the appropriate
 	 * [ExifTag.setValue] for this tag's datatype would fail.
@@ -937,21 +882,24 @@ class ExifInterface {
 	 * @return an ExifTag object or null if one could not be constructed.
 	 * @see .buildTag
 	 */
-	fun buildTag(tagId : Int, ifdId : Int, tagValue : Any?) : ExifTag? {
+	fun buildTag(tagId : Int, tagValue : Any, ifdId : Int = getTrueIfd(tagId)) : ExifTag? {
 		val info = tagInfo.get(tagId)
-		if(info == 0 || tagValue == null) {
-			return null
-		}
-		val type = getTypeFromInfo(info)
+		if(info == 0 || ! isIfdAllowed(info, ifdId)) return null
+		
 		val definedCount = getComponentCountFromInfo(info)
-		val hasDefinedCount = definedCount != ExifTag.SIZE_UNDEFINED
-		if(! isIfdAllowed(info, ifdId)) {
-			return null
+		
+		val t = ExifTag(
+			tagId = getTrueTagKey(tagId),
+			dataType = getTypeFromInfo(info),
+			componentCount = definedCount,
+			ifd = ifdId,
+			mHasDefinedDefaultComponentCount = definedCount != ExifTag.SIZE_UNDEFINED
+		)
+		
+		return when {
+			t.setValueAny(tagValue) -> t
+			else -> null
 		}
-		val t = ExifTag(getTrueTagKey(tagId), type, definedCount, ifdId, hasDefinedCount)
-		return if(! t.setValueAny(tagValue)) {
-			null
-		} else t
 	}
 	
 	/**
@@ -2220,6 +2168,8 @@ class ExifInterface {
 		
 		private const val GPS_DATE_FORMAT_STR = "yyyy:MM:dd"
 		private val mGPSDateStampFormat = SimpleDateFormat(GPS_DATE_FORMAT_STR, Locale.ENGLISH)
+			.apply { timeZone = TimeZone.getTimeZone("UTC") }
+		
 		private const val DATETIME_FORMAT_STR = "yyyy:MM:dd kk:mm:ss"
 		private val mDateTimeStampFormat = SimpleDateFormat(DATETIME_FORMAT_STR, Locale.ENGLISH)
 		
@@ -2227,25 +2177,21 @@ class ExifInterface {
 		 * Tags that contain offset markers. These are included in the banned
 		 * defines.
 		 */
-		private val sOffsetTags = HashSet<Short>()
-		
-		init {
-			sOffsetTags.add(getTrueTagKey(TAG_GPS_IFD))
-			sOffsetTags.add(getTrueTagKey(TAG_EXIF_IFD))
-			sOffsetTags.add(getTrueTagKey(TAG_JPEG_INTERCHANGE_FORMAT))
-			sOffsetTags.add(getTrueTagKey(TAG_INTEROPERABILITY_IFD))
-			sOffsetTags.add(getTrueTagKey(TAG_STRIP_OFFSETS))
+		private val sOffsetTags = HashSet<Short>().apply {
+			add(getTrueTagKey(TAG_GPS_IFD))
+			add(getTrueTagKey(TAG_EXIF_IFD))
+			add(getTrueTagKey(TAG_JPEG_INTERCHANGE_FORMAT))
+			add(getTrueTagKey(TAG_INTEROPERABILITY_IFD))
+			add(getTrueTagKey(TAG_STRIP_OFFSETS))
 		}
 		
 		/**
 		 * Tags with definitions that cannot be overridden (banned defines).
 		 */
-		var sBannedDefines = HashSet(sOffsetTags)
-		
-		init {
-			sBannedDefines.add(getTrueTagKey(TAG_NULL))
-			sBannedDefines.add(getTrueTagKey(TAG_JPEG_INTERCHANGE_FORMAT_LENGTH))
-			sBannedDefines.add(getTrueTagKey(TAG_STRIP_BYTE_COUNTS))
+		var sBannedDefines = HashSet(sOffsetTags).apply {
+			add(getTrueTagKey(TAG_NULL))
+			add(getTrueTagKey(TAG_JPEG_INTERCHANGE_FORMAT_LENGTH))
+			add(getTrueTagKey(TAG_STRIP_BYTE_COUNTS))
 		}
 		
 		/**
@@ -2260,9 +2206,8 @@ class ExifInterface {
 		 * [.getTrueTagKey]).
 		 * @return true if the TID is that of an offset tag.
 		 */
-		fun isOffsetTag(tag : Short) : Boolean {
-			return sOffsetTags.contains(tag)
-		}
+		fun isOffsetTag(tag : Short) : Boolean =
+			sOffsetTags.contains(tag)
 		
 		/**
 		 * Returns the Orientation ExifTag value for a given number of degrees.
@@ -2311,18 +2256,14 @@ class ExifInterface {
 		 * seconds/3600
 		 */
 		fun convertLatOrLongToDouble(coordinate : Array<Rational>, reference : String) : Double {
-			try {
-				val degrees = coordinate[0].toDouble()
-				val minutes = coordinate[1].toDouble()
-				val seconds = coordinate[2].toDouble()
-				val result = degrees + minutes / 60.0 + seconds / 3600.0
-				return if(reference.startsWith("S") || reference.startsWith("W")) {
-					- result
-				} else result
-			} catch(e : ArrayIndexOutOfBoundsException) {
-				throw IllegalArgumentException()
+			val degrees = coordinate[0].toDouble()
+			val minutes = coordinate[1].toDouble()
+			val seconds = coordinate[2].toDouble()
+			val result = degrees + minutes / 60.0 + seconds / 3600.0
+			return when {
+				reference.startsWith("S") || reference.startsWith("W") -> - result
+				else -> result
 			}
-			
 		}
 		
 		fun getAllowedIfdsFromInfo(info : Int) : IntArray? {
@@ -2397,22 +2338,15 @@ class ExifInterface {
 		/**
 		 * Returns the default IFD for a tag constant.
 		 */
-		fun getTrueIfd(tag : Int) : Int {
-			return tag.ushr(16)
-		}
+		fun getTrueIfd(tag : Int) : Int = tag.ushr(16)
 		
 		/**
 		 * Returns the TID for a tag constant.
 		 */
-		fun getTrueTagKey(tag : Int) : Short {
-			// Truncate
-			return tag.toShort()
-		}
+		fun getTrueTagKey(tag : Int) : Short = tag.toShort()
 		
-		private fun getFlagsFromAllowedIfds(allowedIfds : IntArray?) : Int {
-			if(allowedIfds == null || allowedIfds.isEmpty()) {
-				return 0
-			}
+		private fun getFlagsFromAllowedIfds(allowedIfds : IntArray) : Int {
+			if(allowedIfds.isEmpty()) return 0
 			var flags = 0
 			val ifds = IfdData.list
 			for(i in 0 until IfdData.TYPE_IFD_COUNT) {
@@ -2426,20 +2360,14 @@ class ExifInterface {
 			return flags
 		}
 		
-		private fun getComponentCountFromInfo(info : Int) : Int {
-			return info and 0x0ffff
-		}
+		private fun getComponentCountFromInfo(info : Int) : Int = info and 0x0ffff
 		
-		private fun getTypeFromInfo(info : Int) : Short {
-			return (info shr 16 and 0x0ff).toShort()
-		}
+		private fun getTypeFromInfo(info : Int) : Short = (info shr 16 and 0x0ff).toShort()
 		
 		/**
 		 * Returns the constant representing a tag with a given TID and default IFD.
 		 */
-		fun defineTag(ifdId : Int, tagId : Short) : Int {
-			return tagId or (ifdId shl 16)
-		}
+		fun defineTag(ifdId : Int, tagId : Short) : Int = tagId or (ifdId shl 16)
 		
 		private fun convertRationalLatLonToString(
 			coord : Array<Rational>,
@@ -2475,8 +2403,7 @@ class ExifInterface {
 		 * @param timeZone       the target timezone
 		 * @return the parsed date
 		 */
-		fun getDateTime(dateTimeString : String?, timeZone : TimeZone) : Date? {
-			dateTimeString ?: return null
+		fun getDateTime(dateTimeString : String, timeZone : TimeZone) : Date? {
 			
 			return try {
 				val formatter = SimpleDateFormat(DATETIME_FORMAT_STR, Locale.ENGLISH)
@@ -2489,19 +2416,14 @@ class ExifInterface {
 		}
 		
 		fun isIfdAllowed(info : Int, ifd : Int) : Boolean {
-			val ifds = IfdData.list
 			val ifdFlags = getAllowedIfdFlagsFromInfo(info)
-			for(i in ifds.indices) {
-				if(ifd == ifds[i] && ifdFlags shr i and 1 == 1) {
-					return true
-				}
+			IfdData.list.forEachIndexed { itemIndex, itemId ->
+				if(ifd == itemId && ifdFlags shr itemIndex and 1 == 1) return true
 			}
 			return false
 		}
 		
-		private fun getAllowedIfdFlagsFromInfo(info : Int) : Int {
-			return info.ushr(24)
-		}
+		private fun getAllowedIfdFlagsFromInfo(info : Int) : Int = info.ushr(24)
 		
 		private fun toExifLatLong(valueArg : Double) : Array<Rational> {
 			// convert to the format dd/1 mm/1 ssss/100
@@ -2530,7 +2452,7 @@ class ExifInterface {
 		infix fun Short.shr(bits : Int) : Int = (this.toInt() and 0xffff) shr bits
 		infix fun Short.or(bits : Int) : Int = (this.toInt() and 0xffff) or bits
 		
-		private fun SparseIntArray.initTagInfo() {
+		private fun SparseIntArray.initTagInfo() : SparseIntArray {
 			
 			var f : Int
 			
@@ -2680,6 +2602,8 @@ class ExifInterface {
 			f = getFlagsFromAllowedIfds(intArrayOf(IfdData.TYPE_IFD_INTEROPERABILITY)) shl 24
 			put(TAG_INTEROPERABILITY_INDEX, f or (ExifTag.TYPE_ASCII shl 16))
 			put(TAG_INTEROP_VERSION, f or (ExifTag.TYPE_UNDEFINED shl 16) or 4)
+			
+			return this
 		}
 		
 	}

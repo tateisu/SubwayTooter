@@ -16,6 +16,8 @@
 
 package it.sephiroth.android.library.exif2
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import it.sephiroth.android.library.exif2.utils.notEmpty
 
@@ -102,12 +104,28 @@ internal class ExifData(
 	val stripList : List<ByteArray>?
 		get() = mStripBytes.filterNotNull().notEmpty()
 	
-	/**
-	 * Returns true it this header contains a compressed thumbnail.
-	 */
-	fun hasCompressedThumbnail() : Boolean {
-		return compressedThumbnail != null
-	}
+	val thumbnailBytes : ByteArray?
+		get() = when {
+			compressedThumbnail != null -> compressedThumbnail
+			hasUncompressedStrip() -> null // TODO: implement this
+			else -> null
+		}
+	
+	val thumbnailBitmap : Bitmap?
+		get() {
+			val compressedThumbnail = this.compressedThumbnail
+			if(compressedThumbnail != null) {
+				return BitmapFactory
+					.decodeByteArray(compressedThumbnail, 0, compressedThumbnail.size)
+			}
+			val stripList = this.stripList
+			if(stripList != null) {
+				// TODO: decoding uncompressed thumbnail is not implemented.
+				return null
+			}
+			
+			return null
+		}
 	
 	/**
 	 * Adds an uncompressed strip.

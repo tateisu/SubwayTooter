@@ -13,14 +13,14 @@ private val log = LogCategory("BitmapUtils")
 
 val InputStream.imageOrientation : Int?
 	get() = try {
-		ExifInterface().apply {
-			readExif(
+		ExifInterface()
+			.readExif(
 				this@imageOrientation,
 				ExifInterface.Options.OPTION_IFD_0
 					or ExifInterface.Options.OPTION_IFD_1
 					or ExifInterface.Options.OPTION_IFD_EXIF
 			)
-		}.getTagIntValue(ExifInterface.TAG_ORIENTATION)
+			.getTagIntValue(ExifInterface.TAG_ORIENTATION)
 	} catch(ex : Throwable) {
 		log.w(ex, "imageOrientation: exif parse failed.")
 		null

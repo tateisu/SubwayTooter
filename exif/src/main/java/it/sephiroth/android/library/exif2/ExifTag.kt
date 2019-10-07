@@ -347,9 +347,9 @@ open class ExifTag internal constructor(
 	 * type.
 	 *
 	 */
-	inline fun <reified T : Any?> setValueAny(obj : T) : Boolean {
+	inline fun <reified T : Any> setValueAny(obj : T) : Boolean {
 		when(obj) {
-			null -> return false
+			// null -> return false
 			
 			is String -> return setValue(obj)
 			is ByteArray -> return setValue(obj)

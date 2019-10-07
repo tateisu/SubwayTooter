@@ -35,14 +35,12 @@ class Test1 {
 		try {
 			val o = FileInputStream(getFile(fileName)).use { inStream ->
 				ExifInterface()
-					.apply {
-						readExif(
-							inStream,
-							ExifInterface.Options.OPTION_IFD_0
-								or ExifInterface.Options.OPTION_IFD_1
-								or ExifInterface.Options.OPTION_IFD_EXIF
-						)
-					}
+					.readExif(
+						inStream,
+						ExifInterface.Options.OPTION_IFD_0
+							or ExifInterface.Options.OPTION_IFD_1
+							or ExifInterface.Options.OPTION_IFD_EXIF
+					)
 					.getTagIntValue(ExifInterface.TAG_ORIENTATION)
 			}
 			Pair(o, null)
@@ -54,14 +52,12 @@ class Test1 {
 		try {
 			val o = FileInputStream(getFile(fileName)).use { inStream ->
 				ExifInterface()
-					.apply {
-						readExif(
-							inStream,
-							ExifInterface.Options.OPTION_IFD_0
-								or ExifInterface.Options.OPTION_IFD_1
-								or ExifInterface.Options.OPTION_IFD_EXIF
-						)
-					}
+					.readExif(
+						inStream,
+						ExifInterface.Options.OPTION_IFD_0
+							or ExifInterface.Options.OPTION_IFD_1
+							or ExifInterface.Options.OPTION_IFD_EXIF
+					)
 					.thumbnailBytes
 			}
 			Pair(o, null)
@@ -69,14 +65,12 @@ class Test1 {
 			Pair(null, ex)
 		}
 	
-	private fun testNotJpegSub(fileName : String) {
-		val (o, ex) = getOrientation(fileName)
-		assertTrue("testNotJpegSub", o == null && ex != null)
-		if(ex != null) println("exception raised: ${ex::class.java} ${ex.message}")
-	}
-	
 	@Test
 	fun testNotJpeg() {
+		fun testNotJpegSub(fileName : String) {
+			val (o, ex) = getOrientation(fileName)
+			assertTrue("testNotJpegSub", o == null && ex != null)
+		}
 		testNotJpegSub("test.gif")
 		testNotJpegSub("test.png")
 		testNotJpegSub("test.webp")
@@ -93,22 +87,28 @@ class Test1 {
 		rvO = getOrientation(fileName)
 		assertEquals(fileName, 6, rvO.first)
 		rvT = getThumbnailBytes(fileName)
-		assertNull(fileName,rvT.first)
+		assertNull(fileName, rvT.first)
 		
 		// this file has orientation 1
 		fileName = "test1.jpg"
 		rvO = getOrientation(fileName)
 		assertEquals(fileName, 1, rvO.first)
 		rvT = getThumbnailBytes(fileName)
-		assertNull(fileName,rvT.first)
+		assertNull(fileName, rvT.first)
 		
 		// this file has no orientation, it raises exception.
 		fileName = "test2.jpg"
 		rvO = getOrientation(fileName)
-		assertNotNull(fileName, rvO.second) // <java.lang.IllegalStateException: stop before hitting compressed data>
+		assertNotNull(
+			fileName,
+			rvO.second
+		) // <java.lang.IllegalStateException: stop before hitting compressed data>
 		
 		rvT = getThumbnailBytes(fileName)
-		assertNotNull(fileName,rvT.second) // <java.lang.IllegalStateException: stop before hitting compressed data>
+		assertNotNull(
+			fileName,
+			rvT.second
+		) // <java.lang.IllegalStateException: stop before hitting compressed data>
 		
 	}
 	

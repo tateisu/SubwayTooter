@@ -1569,10 +1569,7 @@ class ColumnViewHolder(
 				lp.width = matchParent
 				lp.height = matchParent
 				if(lp is ViewGroup.MarginLayoutParams) {
-					lp.marginStart = dip(8)
-					lp.marginEnd = dip(8)
-					lp.topMargin = dip(2f)
-					lp.bottomMargin = dip(1f)
+					lp.setMargins(0,0,0,0)
 				}
 				layoutParams = lp
 			}

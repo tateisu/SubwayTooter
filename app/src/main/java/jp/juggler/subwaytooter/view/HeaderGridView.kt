@@ -180,7 +180,15 @@ class HeaderGridView : GridView {
 				itemHeight = itemHeight,
 				view = v,
 				viewContainer = FullWidthFixedViewLayout(context)
-					.apply { addView(v) },
+					.apply {
+						try {
+							// remove from old parent
+							(v.parent as? ViewGroup)?.removeView(v)
+						}catch(ex:Throwable){
+							Log.w(TAG,"can't remove from old parent",ex)
+						}
+						addView(v)
+					},
 				data = data,
 				isSelectable = isSelectable
 			)

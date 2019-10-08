@@ -154,7 +154,7 @@ dependencies {
     kapt "com.github.bumptech.glide:compiler:$glide_version"
 
 
-    implementation "org.conscrypt:conscrypt-android:2.1.0"
+    implementation "org.conscrypt:conscrypt-android:2.2.1"
 
     implementation 'io.github.inflationx:calligraphy3:3.1.1'
     implementation 'io.github.inflationx:viewpump:2.0.3'

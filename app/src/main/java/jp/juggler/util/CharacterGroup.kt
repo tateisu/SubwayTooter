@@ -1,80 +1,125 @@
 package jp.juggler.util
 
+import android.text.SpannableStringBuilder
 import android.util.SparseBooleanArray
 import android.util.SparseIntArray
+import java.util.ArrayList
 import java.util.regex.Pattern
 
-class CharacterGroup {
+object CharacterGroup {
 	
-	companion object {
-		
-		// Tokenizerが終端に達したことを示す
-		const val END = - 1
-		
-		// 文字コードから文字列を作る
-		fun c2s(tmp : CharArray, c : Char) : String {
-			tmp[0] = c
-			return String(tmp, 0, 1)
+	// Tokenizerが終端に達したことを示す
+	const val END = - 1
+	
+	// 文字コードから文字列を作る
+	private fun c2s(tmp : CharArray, c : Char) : String {
+		tmp[0] = c
+		return String(tmp, 0, 1)
+	}
+	
+	private fun i2s(tmp : CharArray, c : Int) : String {
+		tmp[0] = c.toChar()
+		return String(tmp, 0, 1)
+	}
+	
+	private val mapWhitespace = SparseBooleanArray().apply {
+		intArrayOf(
+			0x0009 // HORIZONTAL TABULATION
+			,
+			0x000A // LINE FEED
+			,
+			0x000B // VERTICAL TABULATION
+			,
+			0x000C // FORM FEED
+			,
+			0x000D // CARRIAGE RETURN
+			,
+			0x001C // FILE SEPARATOR
+			,
+			0x001D // GROUP SEPARATOR
+			,
+			0x001E // RECORD SEPARATOR
+			,
+			0x001F // UNIT SEPARATOR
+			,
+			0x0020,
+			0x0085 // next line (latin-1)
+			,
+			0x00A0 //非区切りスペース
+			,
+			0x1680,
+			0x180E,
+			0x2000,
+			0x2001,
+			0x2002,
+			0x2003,
+			0x2004,
+			0x2005,
+			0x2006,
+			0x2007 //非区切りスペース
+			,
+			0x2008,
+			0x2009,
+			0x200A,
+			0x200B,
+			0x200C,
+			0x200D,
+			0x2028 // line separator
+			,
+			0x2029 // paragraph separator
+			,
+			0x202F //非区切りスペース
+			,
+			0x205F,
+			0x2060,
+			0x3000,
+			0x3164,
+			0xFEFF
+		).forEach {
+			put(it, true)
 		}
-		
-		fun i2s(tmp : CharArray, c : Int) : String {
-			tmp[0] = c.toChar()
-			return String(tmp, 0, 1)
-		}
-		
-		private val mapWhitespace = SparseBooleanArray().apply {
-			intArrayOf(
-				0x0009 // HORIZONTAL TABULATION
-				, 0x000A // LINE FEED
-				, 0x000B // VERTICAL TABULATION
-				, 0x000C // FORM FEED
-				, 0x000D // CARRIAGE RETURN
-				, 0x001C // FILE SEPARATOR
-				, 0x001D // GROUP SEPARATOR
-				, 0x001E // RECORD SEPARATOR
-				, 0x001F // UNIT SEPARATOR
-				, 0x0020, 0x0085 // next line (latin-1)
-				, 0x00A0 //非区切りスペース
-				, 0x1680, 0x180E, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007 //非区切りスペース
-				, 0x2008, 0x2009, 0x200A, 0x200B, 0x200C, 0x200D, 0x2028 // line separator
-				, 0x2029 // paragraph separator
-				, 0x202F //非区切りスペース
-				, 0x205F, 0x2060, 0x3000, 0x3164, 0xFEFF
-			).forEach {
-				put(it,true)
-			}
-		}
-		
-		// 空白とみなす文字なら真
-		fun isWhitespace(cp : Int) : Boolean  = mapWhitespace.get(cp,false)
-
-		internal val reWhitespace =Pattern.compile(
-			StringBuilder().apply{
-				 append("[\\s\\t\\x0d\\x0a")
-				 for(i in 0 until mapWhitespace.size()){
-					 val k = mapWhitespace.keyAt(i)
-					 if( k > 0x20 ) append(k.toChar())
-				 }
-				 append("]+")
-			 }.toString()
-		)
-		
-		
-		// 文字列のリストからグループIDを決定する
-		private fun findGroupId(list : Array<String>) : Int {
-			// グループのIDは、グループ中の文字(長さ1)のunicode値の最小
-			var id = Integer.MAX_VALUE
-			for(s in list) {
-				if(s.length == 1) {
-					val c = s[0].toInt()
-					if(c < id) id = c
+	}
+	
+	// 空白とみなす文字なら真
+	fun isWhitespace(cp : Int) : Boolean = mapWhitespace.get(cp, false)
+	
+	internal val reWhitespace by lazy {
+		Pattern.compile(
+			StringBuilder().apply {
+				append("[\\s\\t\\x0d\\x0a")
+				for(i in 0 until mapWhitespace.size()) {
+					val k = mapWhitespace.keyAt(i)
+					if(k > 0x20) append(k.toChar())
 				}
+				append("]+")
+			}.toString()
+		)
+	}
+	
+	private fun SparseBooleanArray.keys() = (0 until size()).map { keyAt(it) }
+	
+	internal val reWhitespaceBeforeLineFeed by lazy {
+		val whitespaces = mapWhitespace.keys()
+			.map { it.toChar() }
+			.filter { it != '\n' }
+			.joinToString("")
+		Pattern.compile("[${whitespaces}]+\n")
+	}
+	
+	// 文字列のリストからグループIDを決定する
+	private fun findGroupId(list : Array<String>) : Int {
+		// グループのIDは、グループ中の文字(長さ1)のunicode値の最小
+		var id = Integer.MAX_VALUE
+		for(s in list) {
+			if(s.length == 1) {
+				val c = s[0].toInt()
+				if(c < id) id = c
 			}
-			if(id == Integer.MAX_VALUE) {
-				throw RuntimeException("missing group id")
-			}
-			return id
 		}
+		if(id == Integer.MAX_VALUE) {
+			throw RuntimeException("missing group id")
+		}
+		return id
 	}
 	
 	// 文字列からグループIDを調べるマップ
@@ -84,12 +129,12 @@ class CharacterGroup {
 	
 	// 文字数2: unicode 二つを合成した数値 => group_id。半角カナ＋濁音など
 	private val map2 = SparseIntArray()
-
+	
 	// ユニコード文字を正規化する。
 	// 簡易版なので全ての文字には対応していない
-	fun getUnifiedCharacter(c:Char):Char{
+	fun getUnifiedCharacter(c : Char) : Char {
 		val v1 = map1[c.toInt()]
-		return if( v1 != 0 ) v1.toChar() else c
+		return if(v1 != 0) v1.toChar() else c
 	}
 	
 	// グループをmapに登録する
@@ -122,7 +167,7 @@ class CharacterGroup {
 	}
 	
 	// 入力された文字列から 文字,グループ,終端 のどれかを順に列挙する
-	inner class Tokenizer {
+	class Tokenizer {
 		
 		internal var text : CharSequence = ""
 		internal var end : Int = 0
@@ -172,10 +217,7 @@ class CharacterGroup {
 		}
 	}
 	
-	fun tokenizer() : Tokenizer {
-		return Tokenizer()
-	}
-	
+
 	init {
 		val tmp = CharArray(1)
 		val array2 = arrayOf("", "")
@@ -248,10 +290,13 @@ class CharacterGroup {
 		addGroup(arrayOf("」", "｣", "」"))
 		
 		// チルダ
-		addGroup(arrayOf("~",
-			i2s(tmp, 0x301C),
-			i2s(tmp, 0xFF5E)
-		))
+		addGroup(
+			arrayOf(
+				"~",
+				i2s(tmp, 0x301C),
+				i2s(tmp, 0xFF5E)
+			)
+		)
 		
 		// 半角カナの濁音,半濁音は2文字になる
 		addGroup(arrayOf("ガ", "が", "ｶﾞ"))
@@ -329,3 +374,42 @@ class CharacterGroup {
 		addGroup(arrayOf("ん", "ﾝ", "ン"))
 	}
 }
+
+// 末尾の空白や開業を取り除く
+fun SpannableStringBuilder.removeEndWhitespaces():SpannableStringBuilder{
+	var pos = length
+	while( pos >0 && CharacterGroup.isWhitespace( codePointBefore(pos)) ){
+		// whitespaces are always 1 == Character.charCount(c)
+		--pos
+	}
+	if(pos < length) delete(pos, length)
+	
+	return this
+}
+
+// 行末の空白を除去。連続する改行を2つまでに制限する。
+fun SpannableStringBuilder.neatSpaces(): SpannableStringBuilder {
+	// 行末の空白を除去
+	val m = CharacterGroup.reWhitespaceBeforeLineFeed.matcher(this)
+	val matchList = ArrayList<Pair<Int, Int>>()
+	while(m.find()) {
+		matchList.add(Pair(m.start(), m.end()))
+	}
+	for(pair in matchList.reversed()) {
+		delete(pair.first, pair.second - 1)
+	}
+	
+	// 連続する改行をまとめる
+	var previous_br_count = 0
+	for( i in this.indices.reversed()){
+		val c = this[i]
+		if( c != '\n'){
+			previous_br_count = 0
+		}else if(++ previous_br_count >= 3) {
+			delete(i, i + 1)
+		}
+	}
+	
+	return this
+}
+

@@ -14,6 +14,7 @@
       <w>autofill</w>
       <w>basi</w>
       <w>blockee</w>
+      <w>blockquote</w>
       <w>blurhash</w>
       <w>bpixelfed</w>
       <w>buggie</w>
@@ -34,6 +35,8 @@
       <w>favorited</w>
       <w>favourited</w>
       <w>fediverse</w>
+      <w>fieldset</w>
+      <w>figcaption</w>
       <w>firebase</w>
       <w>flac</w>
       <w>flexbox</w>
@@ -67,6 +70,7 @@
       <w>nicodic</w>
       <w>nicoru</w>
       <w>nicovideo</w>
+      <w>noscript</w>
       <w>noto</w>
       <w>nsfw</w>
       <w>okhttp</w>
@@ -93,6 +97,7 @@
       <w>swipy</w>
       <w>taisaku</w>
       <w>tateisu</w>
+      <w>tfoot</w>
       <w>thru</w>
       <w>timelines</w>
       <w>tissot</w>

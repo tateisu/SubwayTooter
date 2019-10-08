@@ -22,9 +22,11 @@ object HTMLDecoder {
 	
 	private const val DEBUG_HTML_PARSER = false
 	
-	private const val OPEN_TYPE_OPEN_CLOSE = 1
-	private const val OPEN_TYPE_OPEN = 2
-	private const val OPEN_TYPE_CLOSE = 3
+	private enum class OpenType {
+		Open,
+		Close,
+		OpenClose,
+	}
 	
 	private const val TAG_TEXT = "<>text"
 	private const val TAG_END = "<>end"
@@ -35,26 +37,71 @@ object HTMLDecoder {
 	private val reAttribute = Pattern.compile("\\s+([A-Za-z0-9:_-]+)\\s*=([\"'])([^>]*?)\\2")
 	private val reShortcode = Pattern.compile(":[A-Za-z0-9_-]+:")
 	
-	private val block_tag : HashSet<String> by lazy {
-		val set = HashSet<String>()
-		set.add("div")
-		set.add("p")
-		set.add("li")
-		set.add("h1")
-		set.add("h2")
-		set.add("h3")
-		set.add("h4")
-		set.add("h5")
-		set.add("body")
-		set
-	}
+	// Block-level Elements
+	// https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements
+	// https://www.w3schools.com/html/html_blocks.asp
+	private val blockLevelElements = arrayOf(
+		"address",
+		"article",
+		"aside",
+		"blockquote",
+		"body",
+		"canvas",
+		"dd",
+		"div",
+		"div",
+		"dl",
+		"dt",
+		"fieldset",
+		"figcaption",
+		"figure",
+		"footer",
+		"form",
+		"h1",
+		"h2",
+		"h3",
+		"h4",
+		"h5",
+		"h6",
+		"header",
+		"hr",
+		"li",
+		"li",
+		"main",
+		"nav",
+		"noscript",
+		"ol",
+		"p",
+		"p",
+		"pre",
+		"section",
+		"table",
+		"tfoot",
+		"ul",
+		"video"
+	).toHashSet()
 	
-	fun isWhitespaceOrLineFeed(codepoint : Int) : Boolean {
-		return CharacterGroup.isWhitespace(codepoint) || when(codepoint) {
-			0x0a, 0x0d -> true
-			else -> false
-		}
-	}
+	// Empty element
+	// https://developer.mozilla.org/en-US/docs/Glossary/Empty_element
+	// elements that cannot have any child nodes (i.e., nested elements or text nodes).
+	// In HTML, using a closing tag on an empty element is usually invalid.
+	private val emptyElements = arrayOf(
+		"area",
+		"base",
+		"br",
+		"col",
+		"embed",
+		"hr",
+		"img",
+		"input",
+		"keygen", //(HTML 5.2 Draft removed)
+		"link",
+		"meta",
+		"param",
+		"source",
+		"track",
+		"wbr"
+	).toHashSet()
 	
 	private val reEntity = Pattern.compile("&(#?)(\\w+);")
 	private val entity_map = HashMap<String, Char>()
@@ -146,29 +193,29 @@ object HTMLDecoder {
 	private val reDoctype = Pattern.compile("\\A\\s*<!doctype[^>]*>", Pattern.CASE_INSENSITIVE)
 	private val reComment = Pattern.compile("<!--.*?-->", Pattern.DOTALL)
 	
+	private fun String.quoteMeta() = Pattern.quote(this)
+	
 	private class TokenParser(srcArg : String) {
 		
 		internal val src : String
 		internal var next : Int = 0
 		
-		internal var tag : String = ""
-		internal var open_type : Int = 0
-		internal var text : String = ""
+		internal var open_type = OpenType.OpenClose
+		internal var tag = ""
+		internal var text = ""
 		
 		init {
 			this.src = srcArg
 				.replaceFirst(reDoctype, "")
 				.replaceAll(reComment, " ")
-			
 			eat()
 		}
 		
 		internal fun eat() {
-			
 			// end?
 			if(next >= src.length) {
 				tag = TAG_END
-				open_type = OPEN_TYPE_OPEN_CLOSE
+				open_type = OpenType.OpenClose
 				return
 			}
 			
@@ -178,7 +225,7 @@ object HTMLDecoder {
 			if(end > next) {
 				this.text = src.substring(next, end)
 				this.tag = TAG_TEXT
-				this.open_type = OPEN_TYPE_OPEN_CLOSE
+				this.open_type = OpenType.OpenClose
 				next = end
 				return
 			}
@@ -200,23 +247,22 @@ object HTMLDecoder {
 				tag = m.groupEx(2) !!.toLowerCase(Locale.JAPAN)
 				
 				val m2 = reTagEnd.matcher(text)
-				val is_openclose = if(m2.find()) {
-					m2.groupEx(1) !!.isNotEmpty()
-				} else {
-					false
+				val is_openclose = when {
+					m2.find() -> m2.groupEx(1) !!.isNotEmpty()
+					else -> false
 				}
+				
 				open_type = when {
-					is_close -> OPEN_TYPE_CLOSE
-					is_openclose -> OPEN_TYPE_OPEN_CLOSE
-					else -> OPEN_TYPE_OPEN
+					is_close -> OpenType.Close
+					is_openclose || emptyElements.contains(tag) -> OpenType.OpenClose
+					else -> OpenType.Open
 				}
-				if(tag == "br") open_type = OPEN_TYPE_OPEN_CLOSE
+				
 			} else {
 				tag = TAG_TEXT
-				this.open_type = OPEN_TYPE_OPEN_CLOSE
+				this.open_type = OpenType.OpenClose
 			}
 		}
-		
 	}
 	
 	private class Node {
@@ -248,26 +294,35 @@ object HTMLDecoder {
 		}
 		
 		internal fun addChild(t : TokenParser, indent : String) {
-			if(DEBUG_HTML_PARSER) log.d("parseChild: %s(%s", indent, tag)
-			while(true) {
-				if(TAG_END == t.tag) break
-				if(OPEN_TYPE_CLOSE == t.open_type) {
+			if(DEBUG_HTML_PARSER) log.d("addChild: $indent($tag")
+			while(t.tag != TAG_END) {
+				
+				// 閉じるタグ
+				if(t.open_type == OpenType.Close) {
+					if(t.tag != this.tag) {
+						// 閉じるタグが現在の階層とマッチしないなら無視する
+						log.w("unexpected close tag! ${t.tag}")
+						t.eat()
+						continue
+					}
+					// この階層の終端
 					t.eat()
 					break
 				}
+				
 				val open_type = t.open_type
 				val child = Node(t)
 				child_nodes.add(child)
 				t.eat()
 				
 				if(DEBUG_HTML_PARSER)
-					log.d("parseChild: %s|%s %s [%s]", indent, child.tag, open_type, child.text)
+					log.d("addChild: $indent|${child.tag} $open_type [${child.text.quoteMeta()}]")
 				
-				if(OPEN_TYPE_OPEN == open_type) {
+				if(open_type == OpenType.Open) {
 					child.addChild(t, "$indent--")
 				}
 			}
-			if(DEBUG_HTML_PARSER) log.d("parseChild: %s)%s", indent, tag)
+			if(DEBUG_HTML_PARSER) log.d("addChild: $indent)$tag")
 		}
 		
 		internal fun encodeSpan(
@@ -282,7 +337,6 @@ object HTMLDecoder {
 				}
 				return
 			}
-			if(DEBUG_HTML_PARSER) sb.append("(start ").append(tag).append(")")
 			
 			val sb_tmp = when(tag) {
 				"a", "style", "script" -> SpannableStringBuilder()
@@ -360,33 +414,38 @@ object HTMLDecoder {
 						}
 					}
 				}
-				
 			}
 			
-			if(DEBUG_HTML_PARSER) sb.append("(end ").append(tag).append(")")
-			
-			if("br" == tag) sb.append('\n')
-			
-			if(block_tag.contains(tag)) {
-				if(sb.isNotEmpty()) {
+			when {
+				// 空のテキストには改行を追加しない
+				sb.isEmpty() -> {
+				}
+				
+				// 改行タグ
+				"br" == tag -> sb.append('\n')
+				
+				// ブロック要素
+				blockLevelElements.contains(tag) -> {
 					// 末尾の改行を数える
 					var last_br_count = 0
 					var last = sb.length - 1
-					while(last >= 0) {
+					loop@ while(last > 0) {
 						val c = sb[last --]
-						if(c == '\n') {
-							++ last_br_count
-							continue
+						when {
+							c == '\n' -> {
+								++ last_br_count
+								continue@loop
+							}
+							
+							Character.isWhitespace(c) -> continue@loop
+							else -> break@loop
 						}
-						if(Character.isWhitespace(c)) continue
-						break
 					}
 					// 末尾の改行が２文字未満なら改行を追加する
 					while(last_br_count ++ < 2) sb.append('\n')
 				}
 			}
 		}
-		
 	}
 	
 	// split attributes
@@ -411,18 +470,18 @@ object HTMLDecoder {
 		
 		try {
 			if(src != null) {
+				// parse HTML node tree
 				val tracker = TokenParser(src)
 				val rootNode = Node()
 				while(TAG_END != tracker.tag) {
 					rootNode.addChild(tracker, "")
 				}
 				
+				// encode to SpannableStringBuilder
 				rootNode.encodeSpan(options, sb)
 				
 				// 末尾の空白を取り除く
-				var end = sb.length
-				while(end > 0 && isWhitespaceOrLineFeed(sb[end - 1].toInt())) -- end
-				if(end < sb.length) sb.delete(end, sb.length)
+				sb.removeEndWhitespaces()
 			}
 		} catch(ex : Throwable) {
 			log.trace(ex)

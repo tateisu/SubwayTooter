@@ -8,6 +8,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.util.Base64
+import android.util.SparseBooleanArray
 import java.security.MessageDigest
 import java.util.*
 import java.util.regex.Matcher
@@ -140,7 +141,9 @@ inline fun <S : CharSequence, Z : Any?> S?.letNotEmpty(block : (S) -> Z?) : Z? =
 // equivalent: if(this.isNotEmpty() ) this else null
 fun <S : CharSequence> S?.notEmpty() : S? = if(this?.isNotEmpty() == true) this else null
 
-fun CharSequence.toUri() :Uri = Uri.parse(toString())
+fun <S : CharSequence> S?.notBlank() : S? = if(this?.isNotBlank() == true) this else null
+
+fun CharSequence.toUri() : Uri = Uri.parse(toString())
 
 fun CharSequence?.mayUri() : Uri? = try {
 	if(this?.isNotEmpty() == true)
@@ -287,8 +290,6 @@ fun String.digestSHA256Base64Url() : String {
 	return this.encodeUTF8().digestSHA256().encodeBase64Url()
 }
 
-
-
 // Uri.encode(s:Nullable) だと nullチェックができないので、簡単なラッパーを用意する
 fun String.encodePercent(allow : String? = null) : String = Uri.encode(this, allow)
 
@@ -326,8 +327,11 @@ fun Bundle.parseString(key : String) : String? {
 ////////////////////////////////////////////////////////////////
 // Pattern
 
-fun Matcher.groupEx(g : Int) : String? = try{
-	group(g)
-}catch(ex:Throwable){
-	null
-}
+fun Matcher.groupEx(g : Int) : String? =
+	try { group(g) } catch(ex : Throwable) { null }
+
+// make Array<String> to HashSet<String>
+fun <T> Array<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
+//fun <T> Collection<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
+//fun <T> Iterable<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
+//fun <T> Sequence<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }

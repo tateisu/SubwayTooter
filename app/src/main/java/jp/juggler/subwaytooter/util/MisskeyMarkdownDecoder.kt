@@ -18,13 +18,11 @@ import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.util.HTMLDecoder.shortenUrl
-import jp.juggler.util.LogCategory
-import jp.juggler.util.encodePercent
-import jp.juggler.util.fontSpan
-import jp.juggler.util.groupEx
+import jp.juggler.util.*
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import kotlin.text.codePointBefore
 
 private val brackets = arrayOf(
 	"()",
@@ -1770,10 +1768,7 @@ object MisskeyMarkdownDecoder {
 				}
 				
 				// 末尾の空白を取り除く
-				val end = length
-				var pos = end
-				while(pos > 0 && HTMLDecoder.isWhitespaceOrLineFeed(get(pos - 1).toInt())) -- pos
-				if(pos < end) delete(pos, end)
+				this.removeEndWhitespaces()
 				
 			} catch(ex : Throwable) {
 				log.trace(ex)

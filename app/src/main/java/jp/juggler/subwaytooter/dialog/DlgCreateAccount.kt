@@ -12,9 +12,9 @@ import android.widget.TextView
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.util.LogCategory
-import jp.juggler.util.showToast
-import jp.juggler.util.vg
+import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.LinkHelper
+import jp.juggler.util.*
 
 object DlgCreateAccount {
 	private val log = LogCategory("DlgCreateAccount")
@@ -48,7 +48,15 @@ object DlgCreateAccount {
 		dialog.setContentView(view)
 		
 		val instanceInfo = TootInstance.getCached(instance)
-		tvDescription.text = instanceInfo?.short_description ?: TootInstance.DESCRIPTION_DEFAULT
+		val options = DecodeOptions(
+			activity,
+			LinkHelper.newLinkHelper(instance, misskeyVersion = instanceInfo?.misskeyVersion ?: 0)
+		)
+		tvDescription.text = options.decodeHTML(
+			instanceInfo?.short_description?.notBlank()
+				?: instanceInfo?.description?.notBlank()
+				?: TootInstance.DESCRIPTION_DEFAULT
+		).neatSpaces()
 		
 		val showReason = instanceInfo?.approval_required ?: false
 		vg(tvReasonCaption, showReason)

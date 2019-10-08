@@ -4,6 +4,7 @@ package jp.juggler.subwaytooter.api
 
 import androidx.test.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.CurrentCallCallback
 import jp.juggler.subwaytooter.util.SimpleHttpClient
@@ -1075,11 +1076,11 @@ class TestTootApiClient {
 		)
 		val instance = "unit-test"
 		client.instance = instance
-		val result = client.getInstanceInformation()
-		val jsonObject = result?.jsonObject
-		assertNotNull(jsonObject)
-		if(jsonObject == null) return
-		println(jsonObject.toString())
+		val(instanceInfo,instanceResult) = TootInstance.get(client)
+		assertNotNull(instanceInfo)
+		assertNull(instanceResult)
+		val json = instanceResult?.jsonObject
+		if( json != null) println(json.toString())
 		
 	}
 	

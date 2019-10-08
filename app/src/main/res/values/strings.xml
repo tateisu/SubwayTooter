@@ -447,6 +447,7 @@
     <string name="title">Title</string>
     <string name="email">E-mail</string>
     <string name="description">Description</string>
+    <string name="short_description">Short description</string>
     <string name="version">Version</string>
     <string name="instance_information_of">Server information of \"%1$s\"</string>
     <string name="instance_information">Server information</string>

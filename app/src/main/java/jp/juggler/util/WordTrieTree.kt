@@ -6,8 +6,6 @@ class WordTrieTree {
 	
 	companion object {
 		
-		private val grouper = CharacterGroup()
-		
 		val EMPTY_VALIDATOR = { _ : CharSequence, _ : Int, _ : Int -> true }
 		
 		// マストドン2.4.3rc2でキーワードフィルタは単語の前後に 正規表現 \b を仮定するようになった
@@ -17,7 +15,7 @@ class WordTrieTree {
 			// 文字種を正規化してから正規表現の単語構成文字 \w [A-Za-z0-9_] にマッチするか調べる
 			// 全角半角大文字小文字の違いは吸収されるが、英字数字アンダーバー以外にはマッチしない
 			fun isWordCharacter(c : Char) : Boolean {
-				val uc = grouper.getUnifiedCharacter(c)
+				val uc = CharacterGroup.getUnifiedCharacter(c)
 				return when {
 					'A' <= uc && uc <= 'Z' -> true
 					'a' <= uc && uc <= 'z' -> true
@@ -69,7 +67,7 @@ class WordTrieTree {
 		s : String,
 		validator : (src : CharSequence, start : Int, end : Int) -> Boolean = EMPTY_VALIDATOR
 	) {
-		val t = grouper.tokenizer().reset(s, 0, s.length)
+		val t = CharacterGroup.Tokenizer().reset(s, 0, s.length)
 		
 		var token_count = 0
 		var node = node_root
@@ -145,9 +143,13 @@ class WordTrieTree {
 		return null != src && null != matchShort(src, 0, src.length)
 	}
 	
-	private fun matchShort(src : CharSequence, start : Int, end : Int) : Match? {
+	private fun matchShort(
+		src : CharSequence,
+		@Suppress("SameParameterValue") start : Int,
+		end : Int
+	) : Match? {
 		
-		val t = grouper.tokenizer()
+		val t = CharacterGroup.Tokenizer()
 		
 		for(i in start until end) {
 			if(! CharacterGroup.isWhitespace(src[i].toInt())) {
@@ -168,7 +170,7 @@ class WordTrieTree {
 		
 		var dst : ArrayList<Match>? = null
 		
-		val t = grouper.tokenizer()
+		val t = CharacterGroup.Tokenizer()
 		
 		var i = start
 		while(i < end) {

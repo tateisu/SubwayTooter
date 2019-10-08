@@ -31,7 +31,13 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 	val title : String?
 	
 	//	A description for the instance
+	// (HTML)
+	// (Mastodon: 3.0.0より後のWebUIでは全く使われなくなる見込み。 https://github.com/tootsuite/mastodon/pull/12119)
 	val description : String?
+	
+	// (Mastodon 3.0.0以降)
+	// (HTML)
+	val short_description : String?
 	
 	// An email address which can be used to contact the instance administrator
 	// misskeyの場合はURLらしい
@@ -57,9 +63,6 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 	val max_toot_chars : Int?
 	
 	// (Mastodon 3.0.0)
-	val short_description : String
-	
-	// (Mastodon 3.0.0)
 	val approval_required : Boolean
 	
 	// インスタンスの種別
@@ -80,7 +83,6 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			
 			this.uri = parser.accessHost
 			this.title = parser.accessHost
-			this.description = src.parseString("description") ?: "(Misskey instance)"
 			val sv = src.optJSONObject("maintainer")?.parseString("url")
 			this.email = when {
 				sv?.startsWith("mailto:") == true -> sv.substring(7)
@@ -96,13 +98,13 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			this.languages = src.optJSONArray("langs")?.toStringArrayList() ?: ArrayList()
 			this.contact_account = null
 			
-			this.short_description = description
+			this.description = src.parseString("description")
+			this.short_description = null
 			this.approval_required = false
 			
 		} else {
 			this.uri = src.parseString("uri")
 			this.title = src.parseString("title")
-			this.description = src.parseString("description")
 			
 			val sv = src.parseString("email")
 			this.email = when {
@@ -132,7 +134,8 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			contact_account =
 				parseItem(::TootAccount, parser2, src.optJSONObject("contact_account"))
 			
-			this.short_description = src.parseString("short_description") ?: DESCRIPTION_DEFAULT
+			this.description = src.parseString("description")
+			this.short_description = src.parseString("short_description")
 			this.approval_required = src.parseBoolean("approval_required") ?: false
 		}
 	}
@@ -270,23 +273,23 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			host : String? = client.instance,
 			account : SavedAccount? = if(host == client.instance) client.account else null,
 			allowPixelfed : Boolean = false,
-			forceUpdate :Boolean = false
-		) : Pair<TootInstance?,TootApiResult?> {
+			forceUpdate : Boolean = false
+		) : Pair<TootInstance?, TootApiResult?> {
 			
 			val tmpInstance = client.instance
 			val tmpAccount = client.account
 			try {
 				client.account = account
 				if(host != null) client.instance = host
-				val instanceName = client.instance !! .toLowerCase(Locale.JAPAN)
+				val instanceName = client.instance !!.toLowerCase(Locale.JAPAN)
 				
 				// ホスト名ごとに用意したオブジェクトで同期する
 				val cacheEntry = getCacheEntry(instanceName)
 				synchronized(cacheEntry) {
-
-					var item: TootInstance?
-
-					if(!forceUpdate) {
+					
+					var item : TootInstance?
+					
+					if(! forceUpdate) {
 						// re-use cached item.
 						val now = SystemClock.elapsedRealtime()
 						item = cacheEntry.data
@@ -302,7 +305,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 								)
 							}
 							
-							return Pair(item,TootApiResult() )
+							return Pair(item, TootApiResult())
 						}
 					}
 					
@@ -320,7 +323,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 						client.getInstanceInformation()
 					}
 					
-					val json = result?.jsonObject ?: return Pair(null,result)
+					val json = result?.jsonObject ?: return Pair(null, result)
 					
 					item = parseItem(
 						::TootInstance,
@@ -355,7 +358,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 						
 						else -> {
 							cacheEntry.data = item
-							Pair(item,result)
+							Pair(item, result)
 						}
 					}
 				}

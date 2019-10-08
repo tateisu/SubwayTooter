@@ -189,6 +189,7 @@
     <string name="delete_this_notification">この通知を削除</string>
     <string name="deleted_at">%1$sに削除されました</string>
     <string name="description">説明</string>
+    <string name="short_description">短い説明</string>
     <string name="description_empty">説明文が指定されてません</string>
     <string name="developer">開発者</string>
     <string name="direct_messages">ダイレクトメッセージ</string>

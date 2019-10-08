@@ -166,6 +166,18 @@
 
     <TextView
         style="@style/setting_row_label"
+        android:text="@string/short_description"
+        />
+
+    <jp.juggler.subwaytooter.view.MyTextView
+        android:id="@+id/tvShortDescription"
+        style="@style/setting_row_form"
+        />
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
         android:text="@string/description"
         />
 

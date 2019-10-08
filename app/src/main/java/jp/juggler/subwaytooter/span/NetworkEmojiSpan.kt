@@ -133,9 +133,24 @@ class NetworkEmojiSpan internal constructor(
 		rect_dst.set(dstX, dstY, dstX + dstWidth, dstY + dstHeight)
 		
 		canvas.save()
-		canvas.translate(x, transY)
-		canvas.drawBitmap(b, rect_src, rect_dst, mPaint)
-		canvas.restore()
+		try {
+			canvas.translate(x, transY)
+			canvas.drawBitmap(b, rect_src, rect_dst, mPaint)
+		} catch(ex : Throwable) {
+			log.w(ex, "drawBitmap failed.")
+
+			// 10月6日 18:18（アプリのバージョン: 378） Sony Xperia X Compact（F5321）, Android 8.0
+			// 10月6日 11:35（アプリのバージョン: 380） Samsung Galaxy S7 Edge（hero2qltetmo）, Android 8.0
+			// 10月2日 21:56（アプリのバージョン: 376） Google Pixel 3（blueline）, Android 9
+			//	java.lang.RuntimeException:
+			//			at android.graphics.BaseCanvas.throwIfCannotDraw (BaseCanvas.java:55)
+			//			at android.view.DisplayListCanvas.throwIfCannotDraw (DisplayListCanvas.java:226)
+			//			at android.view.RecordingCanvas.drawBitmap (RecordingCanvas.java:123)
+			//			at jp.juggler.subwaytooter.span.NetworkEmojiSpan.draw (NetworkEmojiSpan.kt:137)
+
+		} finally {
+			canvas.restore()
+		}
 		
 		// 少し後に描画しなおす
 		val delay = mFrameFindResult.delay

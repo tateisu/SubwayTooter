@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter
 
+import jp.juggler.subwaytooter.Column.Companion.log
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
@@ -107,12 +108,15 @@ internal fun JSONObject.putMisskeyParamsTimeline(column : Column) : JSONObject {
 internal fun Column.makeHashtagAcctUrl(client : TootApiClient) : String? {
 	return if(isMisskey) {
 		// currently not supported
-		"/api/notes/search_by_tag"
+		null
 	} else {
 		if(profile_id == null) {
 			val (result, whoRef) = client.syncAccountByAcct(access_info, hashtag_acct)
 			result ?: return null // cancelled.
-			whoRef ?: error(result.error ?: "unknown error")
+			if( whoRef == null){
+				log.w("makeHashtagAcctUrl: ${result.error ?: "?"}")
+				return null
+			}
 			profile_id = whoRef.get().id
 		}
 		

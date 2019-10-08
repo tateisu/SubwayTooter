@@ -256,13 +256,13 @@ class EmojiPicker(
 					)
 					padding = (resources.displayMetrics.density * 2f + 0.5f).toInt()
 					gravity = Gravity.START or Gravity.CENTER_VERTICAL
-
+					
 					setTypeface(typeface, Typeface.BOLD)
-
+					
 					textColor =
 						getAttributeColor(this@EmojiPicker.activity, R.attr.colorContentText)
 					textSize = 16f // SP単位
-
+					
 					text = when(val name = it.key) {
 						"" -> this@EmojiPicker.activity.getString(R.string.custom_emoji)
 						else -> name
@@ -458,7 +458,7 @@ class EmojiPicker(
 					view = viewOld
 				}
 				view.setTag(R.id.btnAbout, item)
-				if(view is ImageView && view.activity?.isDestroyed == false ) {
+				if(view is ImageView && view.activity?.isDestroyed == false) {
 					
 					val name = if(page.hasSkinTone) {
 						applySkinTone(item.name)

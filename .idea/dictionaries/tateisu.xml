@@ -20,6 +20,7 @@
       <w>buggie</w>
       <w>bumptech</w>
       <w>codepoint</w>
+      <w>colgroup</w>
       <w>coord</w>
       <w>coroutine</w>
       <w>coroutines</w>
@@ -48,6 +49,7 @@
       <w>hansshake</w>
       <w>hashtag</w>
       <w>hashtags</w>
+      <w>hgroup</w>
       <w>hhmm</w>
       <w>hohoemi</w>
       <w>idat</w>
@@ -97,7 +99,10 @@
       <w>swipy</w>
       <w>taisaku</w>
       <w>tateisu</w>
+      <w>tbody</w>
+      <w>textarea</w>
       <w>tfoot</w>
+      <w>thead</w>
       <w>thru</w>
       <w>timelines</w>
       <w>tissot</w>

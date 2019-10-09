@@ -253,7 +253,7 @@ object Action_Account {
 	) {
 		activity.post_helper.closeAcctPopup()
 		
-		val db_id = activity.currentPostTargetId
+		val db_id = activity.currentPostTarget?.db_id ?: -1L
 		if(db_id != - 1L) {
 			ActPost.open(activity, ActMain.REQUEST_CODE_POST, db_id, initial_text = initial_text)
 		} else {

@@ -23,7 +23,6 @@ import org.json.JSONObject
 import java.io.File
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean

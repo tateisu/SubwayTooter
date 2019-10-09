@@ -53,6 +53,7 @@ import java.lang.ref.WeakReference
 import java.util.*
 import java.util.zip.ZipInputStream
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 class ActMain : AppCompatActivity()
@@ -60,6 +61,18 @@ class ActMain : AppCompatActivity()
 	, View.OnClickListener
 	, ViewPager.OnPageChangeListener
 	, DrawerLayout.DrawerListener {
+	
+	class PhoneEnv {
+		internal lateinit var pager : MyViewPager
+		internal lateinit var pager_adapter : ColumnPagerAdapter
+	}
+	
+	class TabletEnv {
+		internal lateinit var tablet_pager : RecyclerView
+		internal lateinit var tablet_pager_adapter : TabletColumnPagerAdapter
+		internal lateinit var tablet_layout_manager : LinearLayoutManager
+		internal lateinit var tablet_snap_helper : GravitySnapHelper
+	}
 	
 	companion object {
 		
@@ -85,6 +98,7 @@ class ActMain : AppCompatActivity()
 		// 外部からインテントを受信した後、アカウント選択中に画面回転したらアカウント選択からやり直す
 		internal var sent_intent2 : Intent? = null
 		
+		// アプリ設定のキャッシュ
 		var boostButtonSize = 1
 		var replyIconSize = 1
 		var headerIconSize = 1
@@ -92,19 +106,25 @@ class ActMain : AppCompatActivity()
 		var timeline_font : Typeface = Typeface.DEFAULT
 		var timeline_font_bold : Typeface = Typeface.DEFAULT_BOLD
 		
+		private fun Float.clipFontSize() : Float =
+			if(isNaN()) this else max(1f, this)
 	}
 	
-	//	@Override
-	//	protected void attachBaseContext(Context newBase) {
-	//		super.attachBaseContext( CalligraphyContextWrapper.wrap(newBase));
-	//	}
+	// アプリ設定のキャッシュ
+	var density = 0f
+	var acct_pad_lr = 0
+	var timeline_font_size_sp = Float.NaN
+	var acct_font_size_sp = Float.NaN
+	var notification_tl_font_size_sp = Float.NaN
+	var header_text_size_sp = Float.NaN
+	var avatarIconSize : Int = 0
+	var notificationTlIconSize : Int = 0
 	
-	var density : Float = 0.toFloat()
-	var acct_pad_lr : Int = 0
+	// onResume() .. onPause() の間なら真
+	private var isResumed = false
 	
-	lateinit var pref : SharedPreferences
-	lateinit var handler : Handler
-	lateinit var app_state : AppState
+	// onStart() .. onStop() の間なら真
+	private var isStart_ = false
 	
 	// onActivityResultで設定されてonResumeで消化される
 	// 状態保存の必要なし
@@ -113,20 +133,32 @@ class ActMain : AppCompatActivity()
 	private var posted_reply_id : EntityId? = null
 	private var posted_redraft_id : EntityId? = null
 	
-	var timeline_font_size_sp = Float.NaN
-	var acct_font_size_sp = Float.NaN
-	var notification_tl_font_size_sp = Float.NaN
-	var header_text_size_sp = Float.NaN
-	
-	internal var bStart : Boolean = false
-	
 	// 画面上のUI操作で生成されて
 	// onPause,onPageDestroy 等のタイミングで閉じられる
 	// 状態保存の必要なし
 	internal var listItemPopup : StatusButtonsPopup? = null
 	
+	private var phoneEnv : PhoneEnv? = null
+	private var tabletEnv : TabletEnv? = null
+	
+	private var nScreenColumn : Int = 0
+	private var nColumnWidth : Int = 0 // dividerの幅を含む
+	
+	private var nAutoCwCellWidth = 0
+	private var nAutoCwLines = 0
+	
+	private var dlgPrivacyPolicy : WeakReference<Dialog>? = null
+	
+	private var quickTootVisibility : TootVisibility = TootVisibility.AccountSetting
+	
+	//////////////////////////////////////////////////////////////////
+	// 変更しない変数(lateinit)
+	
+	private lateinit var llQuickTootBar : View
+	private lateinit var etQuickToot : MyEditText
+	private lateinit var btnQuickToot : ImageButton
+	private lateinit var btnQuickTootMenu : ImageButton
 	private lateinit var llEmpty : View
-	internal lateinit var drawer : DrawerLayout
 	private lateinit var llColumnStrip : ColumnStripLinearLayout
 	private lateinit var svColumnStrip : HorizontalScrollView
 	private lateinit var btnMenu : ImageButton
@@ -134,75 +166,60 @@ class ActMain : AppCompatActivity()
 	private lateinit var vFooterDivider1 : View
 	private lateinit var vFooterDivider2 : View
 	
-	val viewPool = RecyclerView.RecycledViewPool()
+	lateinit var drawer : DrawerLayout
 	
-	var avatarIconSize : Int = 0
-	var notificationTlIconSize : Int = 0
-	
-	private lateinit var llQuickTootBar : View
-	private lateinit var etQuickToot : MyEditText
-	private lateinit var btnQuickToot : ImageButton
-	private lateinit var btnQuickTootMenu : ImageButton
 	lateinit var post_helper : PostHelper
 	
-	private var quickTootVisibility : TootVisibility = TootVisibility.AccountSetting
+	lateinit var pref : SharedPreferences
+	lateinit var handler : Handler
+	lateinit var app_state : AppState
 	
-	class PhoneEnv {
-		internal lateinit var pager : MyViewPager
-		internal lateinit var pager_adapter : ColumnPagerAdapter
+	//////////////////////////////////////////////////////////////////
+	// 変更しない変数
+	
+	val follow_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.follow_succeeded)
 	}
 	
-	class TabletEnv {
-		internal lateinit var tablet_pager : RecyclerView
-		internal lateinit var tablet_pager_adapter : TabletColumnPagerAdapter
-		internal lateinit var tablet_layout_manager : LinearLayoutManager
-		internal lateinit var tablet_snap_helper : GravitySnapHelper
-		
+	val unfollow_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.unfollow_succeeded)
+	}
+	val cancel_follow_request_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.follow_request_cancelled)
+	}
+	val favourite_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.favourite_succeeded)
 	}
 	
-	private val TabletEnv.visibleRange : IntRange
-		get() {
-			val vs = tablet_layout_manager.findFirstVisibleItemPosition()
-			val ve = tablet_layout_manager.findLastVisibleItemPosition()
-			return if(vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
-				IntRange(- 1, - 2) // empty and less than zero
-			} else {
-				IntRange(vs, min(ve, vs + nScreenColumn - 1))
+	val unfavourite_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.unfavourite_succeeded)
+	}
+	
+	val boost_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.boost_succeeded)
+	}
+	
+	val unboost_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.unboost_succeeded)
+	}
+	
+	val reaction_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.reaction_succeeded)
+	}
+	
+	// 相対時刻の表記を定期的に更新する
+	private val proc_updateRelativeTime = object : Runnable {
+		override fun run() {
+			handler.removeCallbacks(this)
+			if(! isStart_) return
+			if(Pref.bpRelativeTimestamp(pref)) {
+				for(c in app_state.column_list) {
+					c.fireRelativeTime()
+				}
+				handler.postDelayed(this, 10000L)
 			}
 		}
-	
-	private var phoneEnv : PhoneEnv? = null
-	private var tabletEnv : TabletEnv? = null
-	
-	// スマホモードとタブレットモードでコードを切り替える
-	private inline fun <R> phoneTab(
-		codePhone : (PhoneEnv) -> R,
-		codeTablet : (TabletEnv) -> R
-	) : R {
-		
-		val pe = phoneEnv
-		if(pe != null) return codePhone(pe)
-		
-		val te = tabletEnv
-		if(te != null) return codeTablet(te)
-		
-		throw RuntimeException("missing phoneEnv or tabletEnv")
 	}
-	
-	// スマホモードならラムダを実行する。タブレットモードならnullを返す
-	private inline fun <R> phoneOnly(code : (PhoneEnv) -> R) : R? {
-		val pe = phoneEnv
-		return if(pe != null) code(pe) else null
-	}
-	
-	// タブレットモードならラムダを実行する。スマホモードならnullを返す
-	@Suppress("unused")
-	private inline fun <R> tabOnly(code : (TabletEnv) -> R) : R? {
-		val te = tabletEnv
-		return if(te != null) code(te) else null
-	}
-	
-	///////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private val link_click_listener : MyClickableSpanClickCallback = { viewClicked, span ->
 		
@@ -268,98 +285,40 @@ class ActMain : AppCompatActivity()
 		).open()
 	}
 	
-	////////////////////////////////////////////////////////////////////////////
-	
-	val follow_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.follow_succeeded)
-	}
-	
-	val unfollow_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.unfollow_succeeded)
-	}
-	val cancel_follow_request_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.follow_request_cancelled)
-	}
-	val favourite_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.favourite_succeeded)
-	}
-	
-	val unfavourite_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.unfavourite_succeeded)
-	}
-	
-	val boost_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.boost_succeeded)
-	}
-	
-	val unboost_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.unboost_succeeded)
-	}
-	
-	val reaction_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.reaction_succeeded)
-	}
-	
-	private var nScreenColumn : Int = 0
-	private var nColumnWidth : Int = 0 // dividerの幅を含む
-	
-	// 相対時刻の表記を定期的に更新する
-	private val proc_updateRelativeTime = object : Runnable {
-		override fun run() {
-			handler.removeCallbacks(this)
-			if(! bStart) return
-			if(Pref.bpRelativeTimestamp(pref)) {
-				for(c in app_state.column_list) {
-					c.fireRelativeTime()
+	private val dlgQuickTootMenu = DlgQuickTootMenu(this, object : DlgQuickTootMenu.Callback {
+		
+		override var visibility : TootVisibility
+			get() = quickTootVisibility
+			set(value) {
+				if(value != quickTootVisibility) {
+					quickTootVisibility = value
+					pref.edit().put(Pref.spQuickTootVisibility, value.id.toString()).apply()
 				}
-				handler.postDelayed(this, 10000L)
+			}
+		
+		override fun onMacro(text : String) {
+			val editable = etQuickToot.text
+			if(editable?.isNotEmpty() == true) {
+				val start = etQuickToot.selectionStart
+				val end = etQuickToot.selectionEnd
+				editable.replace(start, end, text)
+				etQuickToot.requestFocus()
+				etQuickToot.setSelection(start + text.length)
+			} else {
+				etQuickToot.setText(text)
+				etQuickToot.requestFocus()
+				etQuickToot.setSelection(text.length)
 			}
 		}
-	}
+	})
 	
-	private var nAutoCwCellWidth = 0
-	private var nAutoCwLines = 0
+	val viewPool = RecyclerView.RecycledViewPool()
 	
-	// 簡易投稿入力のテキストを取得
-	val quickTootText : String
-		get() = etQuickToot.text.toString()
+	//////////////////////////////////////////////////////////////////
+	// 読み取り専用のプロパティ
 	
-	// デフォルトの投稿先アカウントのdb_idを返す
-	val currentPostTargetId : Long
-		get() = phoneTab(
-			{ pe ->
-				val c = pe.pager_adapter.getColumn(pe.pager.currentItem)
-				if(c != null && ! c.access_info.isPseudo) {
-					return c.access_info.db_id
-				}
-				return - 1L
-			}
-		) { env ->
-			
-			val db_id = Pref.lpTabletTootDefaultAccount(App1.pref)
-			SavedAccount.loadAccount(this@ActMain, db_id)?.let {
-				return it.db_id
-			}
-			
-			val accounts = ArrayList<SavedAccount>()
-			for(i in env.visibleRange) {
-				try {
-					val a = app_state.column_list[i].access_info
-					if(a.isPseudo) {
-						accounts.clear()
-						break
-					} else if(null == accounts.find { it.acct == a.acct }) {
-						accounts.add(a)
-					}
-				} catch(ex : Throwable) {
-				
-				}
-			}
-			if(accounts.size == 1) {
-				return accounts.first().db_id
-			}
-			return - 1L
-		}
+	override val isActivityStart : Boolean
+		get() = isStart_
 	
 	// スマホモードなら現在のカラムを、タブレットモードなら-1Lを返す
 	// (カラム一覧画面のデフォルト選択位置に使われる)
@@ -370,24 +329,89 @@ class ActMain : AppCompatActivity()
 		)
 	
 	// 新しいカラムをどこに挿入するか
-	fun nextPosition(column : Column?) : Int {
-		if(column != null) {
-			val pos = app_state.column_list.indexOf(column)
-			if(pos != - 1) return pos + 1
-		}
-		return defaultInsertPosition
-	}
-	
-	// 新しいカラムをどこに挿入するか
+	// 現在のページの次の位置か、終端
 	val defaultInsertPosition : Int
 		get() = phoneTab(
 			{ it.pager.currentItem + 1 },
 			{ Integer.MAX_VALUE }
 		)
 	
-	private fun validateFloat(fv : Float) : Float {
-		return if(fv.isNaN()) fv else if(fv < 1f) 1f else fv
-	}
+	private val TabletEnv.visibleColumnsIndices : IntRange
+		get(){
+			var vs = tablet_layout_manager.findFirstVisibleItemPosition()
+			var ve = tablet_layout_manager.findLastVisibleItemPosition()
+			if(vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
+				return IntRange(- 1, - 2) // empty and less than zero
+			}
+			
+			val child = tablet_layout_manager.findViewByPosition(vs)
+			val slide_ratio =
+				clipRange(0f, 1f, abs((child?.left ?: 0) / nColumnWidth.toFloat()))
+			if(slide_ratio >= 0.95f) {
+				++ vs
+				++ ve
+			}
+			return IntRange(vs, min(ve, vs + nScreenColumn - 1))
+		}
+	
+	private val TabletEnv.visibleColumns : List<Column>
+		get() = visibleColumnsIndices
+			.mapNotNull{
+				try{
+					app_state.column_list[it]
+				} catch(ex:Throwable){
+					null
+				}
+			}
+	
+	// デフォルトの投稿先アカウントを探す。アカウント選択が必要な状況ならnull
+	val currentPostTarget : SavedAccount?
+		get() = phoneTab(
+			{ env ->
+				val c = env.pager_adapter.getColumn(env.pager.currentItem)
+				return when {
+					c == null || c.access_info.isPseudo -> null
+					else -> c.access_info
+				}
+			},
+			{ env ->
+				
+				val db_id = Pref.lpTabletTootDefaultAccount(App1.pref)
+				if(db_id != - 1L) {
+					val a = SavedAccount.loadAccount(this@ActMain, db_id)
+					if(a != null && ! a.isPseudo) return a
+				}
+				
+				val accounts = ArrayList<SavedAccount>()
+				for(c in env.visibleColumns) {
+					try {
+						val a = c.access_info
+						// 画面内に疑似アカウントがあれば常にアカウント選択が必要
+						if(a.isPseudo) {
+							accounts.clear()
+							break
+						}
+						// 既出でなければ追加する
+						if(null == accounts.find { it.acct == a.acct }) accounts.add(a)
+					} catch(ex : Throwable) {
+					
+					}
+				}
+				
+				return when {
+					// 候補が1つだけならアカウント選択は不要
+					accounts.size == 1 -> accounts.first()
+					// 候補が2つ以上ならアカウント選択は必要
+					else -> null
+				}
+			})
+	
+	// 簡易投稿入力のテキスト
+	val quickTootText : String
+		get() = etQuickToot.text.toString()
+	
+	//////////////////////////////////////////////////////////////////
+	// アクティビティイベント
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		log.d("onCreate")
@@ -399,13 +423,13 @@ class ActMain : AppCompatActivity()
 		app_state = App1.getAppState(this)
 		pref = App1.pref
 		
-		this.density = app_state.density
-		this.acct_pad_lr = (0.5f + 4f * density).toInt()
+		density = app_state.density
+		acct_pad_lr = (0.5f + 4f * density).toInt()
 		
-		timeline_font_size_sp = validateFloat(Pref.fpTimelineFontSize(pref))
-		acct_font_size_sp = validateFloat(Pref.fpAcctFontSize(pref))
-		notification_tl_font_size_sp = validateFloat(Pref.fpNotificationTlFontSize(pref))
-		header_text_size_sp = validateFloat(Pref.fpHeaderTextSize(pref))
+		timeline_font_size_sp = Pref.fpTimelineFontSize(pref).clipFontSize()
+		acct_font_size_sp = Pref.fpAcctFontSize(pref).clipFontSize()
+		notification_tl_font_size_sp = Pref.fpNotificationTlFontSize(pref).clipFontSize()
+		header_text_size_sp = Pref.fpHeaderTextSize(pref).clipFontSize()
 		
 		initUI()
 		
@@ -486,14 +510,11 @@ class ActMain : AppCompatActivity()
 		}
 	}
 	
-	override val isActivityStart : Boolean
-		get() = bStart
-	
 	override fun onStart() {
 		val tsTotal = SystemClock.elapsedRealtime()
 		super.onStart()
 		
-		bStart = true
+		isStart_ = true
 		log.d("onStart")
 		
 		var ts = SystemClock.elapsedRealtime()
@@ -622,7 +643,7 @@ class ActMain : AppCompatActivity()
 		
 		log.d("onStop")
 		
-		bStart = false
+		isStart_ = false
 		
 		handler.removeCallbacks(proc_updateRelativeTime)
 		
@@ -640,8 +661,6 @@ class ActMain : AppCompatActivity()
 		super.onStop()
 		
 	}
-	
-	private var isResumed = false
 	
 	override fun onResume() {
 		super.onResume()
@@ -688,6 +707,93 @@ class ActMain : AppCompatActivity()
 		app_state.saveColumnList(bEnableSpeech = false)
 		
 		super.onPause()
+	}
+	
+	//////////////////////////////////////////////////////////////////
+	// UIイベント
+	
+	override fun onPageScrollStateChanged(state : Int) {
+	}
+	
+	override fun onPageScrolled(
+		position : Int,
+		positionOffset : Float,
+		positionOffsetPixels : Int
+	) {
+		updateColumnStripSelection(position, positionOffset)
+	}
+	
+	override fun onPageSelected(position : Int) {
+		handler.post {
+			if(position >= 0 && position < app_state.column_list.size) {
+				val column = app_state.column_list[position]
+				if(! column.bFirstInitialized) {
+					column.startLoading()
+				}
+				scrollColumnStrip(position)
+				when {
+					column.access_info.isNA -> post_helper.setInstance(null, false)
+					else -> post_helper.setInstance(
+						column.access_info.host,
+						column.access_info.isMisskey
+					)
+				}
+			}
+		}
+	}
+	
+	override fun onClick(v : View) {
+		when(v.id) {
+			R.id.btnMenu -> if(! drawer.isDrawerOpen(GravityCompat.START)) {
+				drawer.openDrawer(GravityCompat.START)
+			}
+			
+			R.id.btnToot -> Action_Account.openPost(this@ActMain)
+			
+			R.id.btnQuickToot -> performQuickPost(null)
+			
+			R.id.btnQuickTootMenu -> performQuickTootMenu()
+		}
+	}
+	
+	////////////////////////////////////////////////////////////////////
+	
+	// スマホモードとタブレットモードでコードを切り替える
+	private inline fun <R> phoneTab(
+		codePhone : (PhoneEnv) -> R,
+		codeTablet : (TabletEnv) -> R
+	) : R {
+		
+		val pe = phoneEnv
+		if(pe != null) return codePhone(pe)
+		
+		val te = tabletEnv
+		if(te != null) return codeTablet(te)
+		
+		throw RuntimeException("missing phoneEnv or tabletEnv")
+	}
+	
+	// スマホモードならラムダを実行する。タブレットモードならnullを返す
+	private inline fun <R> phoneOnly(code : (PhoneEnv) -> R) : R? {
+		val pe = phoneEnv
+		return if(pe != null) code(pe) else null
+	}
+	
+	// タブレットモードならラムダを実行する。スマホモードならnullを返す
+	@Suppress("unused")
+	private inline fun <R> tabOnly(code : (TabletEnv) -> R) : R? {
+		val te = tabletEnv
+		return if(te != null) code(te) else null
+	}
+	
+	// 新しいカラムをどこに挿入するか
+	// カラムの次の位置か、現在のページの次の位置か、終端
+	fun nextPosition(column : Column?) : Int {
+		if(column != null) {
+			val pos = app_state.column_list.indexOf(column)
+			if(pos != - 1) return pos + 1
+		}
+		return defaultInsertPosition
 	}
 	
 	private fun refreshAfterPost() {
@@ -760,83 +866,24 @@ class ActMain : AppCompatActivity()
 		listItemPopup = null
 	}
 	
-	override fun onClick(v : View) {
-		when(v.id) {
-			R.id.btnMenu -> if(! drawer.isDrawerOpen(GravityCompat.START)) {
-				drawer.openDrawer(GravityCompat.START)
-			}
-			
-			R.id.btnToot -> Action_Account.openPost(this@ActMain)
-			
-			R.id.btnQuickToot -> performQuickPost(null)
-			
-			R.id.btnQuickTootMenu -> performQuickTootMenu()
-		}
-	}
-	
-	private val dlgQuickTootMenu = DlgQuickTootMenu(this, object : DlgQuickTootMenu.Callback {
-		
-		override var visibility : TootVisibility
-			get() = quickTootVisibility
-			set(value) {
-				if(value != quickTootVisibility) {
-					quickTootVisibility = value
-					pref.edit().put(Pref.spQuickTootVisibility, value.id.toString()).apply()
-				}
-			}
-		
-		override fun onMacro(text : String) {
-			val editable = etQuickToot.text
-			if(editable?.isNotEmpty() == true) {
-				val start = etQuickToot.selectionStart
-				val end = etQuickToot.selectionEnd
-				editable.replace(start, end, text)
-				etQuickToot.requestFocus()
-				etQuickToot.setSelection(start + text.length)
-			} else {
-				etQuickToot.setText(text)
-				etQuickToot.requestFocus()
-				etQuickToot.setSelection(text.length)
-			}
-		}
-	})
-	
 	private fun performQuickTootMenu() {
 		dlgQuickTootMenu.toggle()
 	}
 	
 	private fun performQuickPost(account : SavedAccount?) {
 		if(account == null) {
-			phoneTab({ env ->
-				
-				// スマホモードなら表示中のカラムがあればそれで
-				val c = try {
-					app_state.column_list[env.pager.currentItem]
-				} catch(ex : Throwable) {
-					null
-				}
-				
-				if(c?.access_info?.isPseudo == false) {
-					// 疑似アカウントではない
-					performQuickPost(c.access_info)
-				} else {
-					// アカウント選択してやり直し
-					AccountPicker.pick(
-						this,
-						bAllowPseudo = false,
-						bAuto = true,
-						message = getString(R.string.account_picker_toot)
-					) { ai -> performQuickPost(ai) }
-				}
-			}, {
-				// アカウント選択してやり直し
+			val a = currentPostTarget
+			if(a != null && ! a.isPseudo) {
+				performQuickPost(a)
+			} else {
+				// アカウントを選択してやり直し
 				AccountPicker.pick(
 					this,
 					bAllowPseudo = false,
 					bAuto = true,
 					message = getString(R.string.account_picker_toot)
 				) { ai -> performQuickPost(ai) }
-			})
+			}
 			return
 		}
 		
@@ -873,36 +920,6 @@ class ActMain : AppCompatActivity()
 			override fun onScheduledPostComplete(target_account : SavedAccount) {
 			}
 		})
-	}
-	
-	override fun onPageScrolled(
-		position : Int,
-		positionOffset : Float,
-		positionOffsetPixels : Int
-	) {
-		updateColumnStripSelection(position, positionOffset)
-	}
-	
-	override fun onPageSelected(position : Int) {
-		handler.post {
-			if(position >= 0 && position < app_state.column_list.size) {
-				val column = app_state.column_list[position]
-				if(! column.bFirstInitialized) {
-					column.startLoading()
-				}
-				scrollColumnStrip(position)
-				when {
-					column.access_info.isNA -> post_helper.setInstance(null, false)
-					else -> post_helper.setInstance(
-						column.access_info.host,
-						column.access_info.isMisskey
-					)
-				}
-			}
-		}
-	}
-	
-	override fun onPageScrollStateChanged(state : Int) {
 	}
 	
 	private fun isOrderChanged(new_order : ArrayList<Int>) : Boolean {
@@ -1067,12 +1084,7 @@ class ActMain : AppCompatActivity()
 				} catch(ex : Throwable) {
 				}
 			}, { env ->
-				for(i in env.visibleRange) {
-					try {
-						visibleColumnList.add(app_state.column_list[i])
-					} catch(ex : Throwable) {
-					}
-				}
+				visibleColumnList.addAll( env.visibleColumns )
 			})
 			
 			return visibleColumnList.filter { ! it.dont_close }
@@ -1406,13 +1418,14 @@ class ActMain : AppCompatActivity()
 			})
 	}
 	
-	private fun isVisibleColumn(idx : Int) = phoneTab({ env ->
-		val c = env.pager.currentItem
-		c == idx
-	}, { env ->
-		idx >= 0 && idx in env.visibleRange
-		
-	})
+	private fun isVisibleColumn(idx : Int) = phoneTab(
+		{ env ->
+			val c = env.pager.currentItem
+			c == idx
+		}, { env ->
+			idx >= 0 && idx in env.visibleColumnsIndices
+		}
+	)
 	
 	internal fun updateColumnStrip() {
 		vg(llEmpty, app_state.column_list.isEmpty())
@@ -1505,7 +1518,13 @@ class ActMain : AppCompatActivity()
 					}
 					
 				}, { env ->
-					val vr = env.visibleRange
+					val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
+					val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
+					val vr = if(vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
+						IntRange(- 1, - 2) // empty and less than zero
+					}else{
+						IntRange(vs, min(ve, vs + nScreenColumn - 1))
+					}
 					var slide_ratio = 0f
 					if(vr.first <= vr.last) {
 						val child = env.tablet_layout_manager.findViewByPosition(vr.first)
@@ -2817,8 +2836,6 @@ class ActMain : AppCompatActivity()
 			}
 		}
 	}
-	
-	private var dlgPrivacyPolicy : WeakReference<Dialog>? = null
 	
 	private fun checkPrivacyPolicy() {
 		

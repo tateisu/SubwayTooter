@@ -949,4 +949,5 @@
     <string name="extra_actions">Extra actions</string>
     <string name="block_domain">Block whole domain</string>
     <string name="instance_actions_for">Actions for the server \"%1$s\"</string>
+    <string name="quick_toot_omit_account_selection">When using quick toot, omit account selection if possible</string>
 </resources>

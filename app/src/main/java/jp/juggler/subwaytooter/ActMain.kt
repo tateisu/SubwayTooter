@@ -337,7 +337,7 @@ class ActMain : AppCompatActivity()
 		)
 	
 	private val TabletEnv.visibleColumnsIndices : IntRange
-		get(){
+		get() {
 			var vs = tablet_layout_manager.findFirstVisibleItemPosition()
 			var ve = tablet_layout_manager.findLastVisibleItemPosition()
 			if(vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
@@ -356,10 +356,10 @@ class ActMain : AppCompatActivity()
 	
 	private val TabletEnv.visibleColumns : List<Column>
 		get() = visibleColumnsIndices
-			.mapNotNull{
-				try{
+			.mapNotNull {
+				try {
 					app_state.column_list[it]
-				} catch(ex:Throwable){
+				} catch(ex : Throwable) {
 					null
 				}
 			}
@@ -872,7 +872,14 @@ class ActMain : AppCompatActivity()
 	
 	private fun performQuickPost(account : SavedAccount?) {
 		if(account == null) {
-			val a = currentPostTarget
+			val a = if(tabletEnv != null && ! Pref.bpQuickTootOmitAccountSelection(pref)) {
+				// タブレットモードでオプションが無効なら
+				// 簡易投稿は常にアカウント選択する
+				null
+			} else {
+				currentPostTarget
+			}
+			
 			if(a != null && ! a.isPseudo) {
 				performQuickPost(a)
 			} else {
@@ -1084,7 +1091,7 @@ class ActMain : AppCompatActivity()
 				} catch(ex : Throwable) {
 				}
 			}, { env ->
-				visibleColumnList.addAll( env.visibleColumns )
+				visibleColumnList.addAll(env.visibleColumns)
 			})
 			
 			return visibleColumnList.filter { ! it.dont_close }
@@ -1522,7 +1529,7 @@ class ActMain : AppCompatActivity()
 					val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
 					val vr = if(vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
 						IntRange(- 1, - 2) // empty and less than zero
-					}else{
+					} else {
 						IntRange(vs, min(ve, vs + nScreenColumn - 1))
 					}
 					var slide_ratio = 0f

@@ -436,6 +436,12 @@ object Pref {
 		R.id.swEnablePixelfed
 	)
 	
+	val bpQuickTootOmitAccountSelection = BooleanPref(
+		"QuickTootOmitAccountSelection",
+		false,
+		R.id.swQuickTootOmitAccountSelection
+	)
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

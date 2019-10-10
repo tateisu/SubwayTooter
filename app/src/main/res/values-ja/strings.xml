@@ -134,7 +134,7 @@
     <string name="color_and_background">色と背景</string>
     <string name="column">カラム</string>
     <string name="column_background">カラム背景</string>
-    <string name="column_empty">左下の"+"ボタンを押してアカウントまたはカラムを追加してください</string>
+    <string name="column_empty">左下の\"+\"ボタンを押してアカウントまたはカラムを追加してください</string>
     <string name="column_has_dont_close_option">保護されたカラムは閉じられません</string>
     <string name="column_header">カラムヘッダ</string>
     <string name="column_index">%1$d/%2$d</string>

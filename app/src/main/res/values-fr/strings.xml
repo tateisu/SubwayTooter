@@ -66,7 +66,7 @@
     <string name="color_and_background">Couleurs et arrière plan…</string>
     <string name="column">Colonne</string>
     <string name="column_background">Arrière plan de colonne</string>
-    <string name="column_empty">Veuillez ajouter une colonne à partir du bouton de "+" en bas à gauche</string>
+    <string name="column_empty">Veuillez ajouter une colonne à partir du bouton de \"+\" en bas à gauche</string>
     <string name="column_has_dont_close_option">Vous ne pouvez pas fermer cette colonne (vérifiez les options).</string>
     <string name="column_header">Entête de colonne</string>
     <string name="column_index">%1$d/%2$d</string>

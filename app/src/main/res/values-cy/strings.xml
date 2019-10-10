@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="column_empty">Use the left-bottom "+" button to add a column</string>
+    <string name="column_empty">Use the left-bottom \"+\" button to add a column</string>
     <string name="instance">Achos</string>
     <string name="user_mail_address">E-bost</string>
     <string name="user_password">Cyfrinair</string>

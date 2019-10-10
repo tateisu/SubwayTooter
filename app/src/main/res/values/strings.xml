@@ -18,7 +18,7 @@
     <string name="request_access_token">Requesting access token…</string>
     <string name="request_api">Acquiring: %1$s %2$s</string>
     <string name="reading_api">Reading: %1$s %2$s</string>
-    <string name="column_empty">Use the left-bottom "+" button to add a column</string>
+    <string name="column_empty">Use the left-bottom \"+\" button to add a column</string>
     <string name="home">Home</string>
     <string name="local_timeline">Local timeline</string>
     <string name="federate_timeline">Federated timeline</string>

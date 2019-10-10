@@ -439,7 +439,8 @@ class ActMain : AppCompatActivity()
 			
 			// 前回最後に表示していたカラムの位置にスクロールする
 			val column_pos = Pref.ipLastColumnPos(pref)
-			if(column_pos >= 0 && column_pos < app_state.column_list.size) {
+			log.d("ipLastColumnPos load $column_pos")
+			if(column_pos in 0 until app_state.column_list.size) {
 				scrollToColumn(column_pos, false)
 			}
 			
@@ -696,8 +697,8 @@ class ActMain : AppCompatActivity()
 		// 最後に表示していたカラムの位置
 		val last_pos = phoneTab(
 			{ env -> env.pager.currentItem },
-			{ env -> env.tablet_layout_manager.findFirstVisibleItemPosition() })
-		
+			{ env -> env.visibleColumnsIndices.first })
+		log.d("ipLastColumnPos save $last_pos")
 		pref.edit().put(Pref.ipLastColumnPos, last_pos).apply()
 		
 		for(column in app_state.column_list) {
@@ -2564,10 +2565,16 @@ class ActMain : AppCompatActivity()
 		phoneTab(
 			
 			// スマホはスムーススクロール基本ありだがたまにしない
-			{ env -> env.pager.setCurrentItem(index, smoothScroll) },
+			{ env ->
+				log.d("ipLastColumnPos beforeScroll=${env.pager.currentItem}")
+				env.pager.setCurrentItem(index, smoothScroll)
+			},
 			
 			// タブレットでスムーススクロールさせると頻繁にオーバーランするので絶対しない
-			{ env -> env.tablet_pager.scrollToPosition(index) }
+			{ env ->
+				log.d("ipLastColumnPos beforeScroll=${env.visibleColumnsIndices.first}")
+				env.tablet_pager.scrollToPosition(index)
+			}
 		)
 	}
 	

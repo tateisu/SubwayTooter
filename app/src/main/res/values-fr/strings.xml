@@ -78,7 +78,7 @@
     <string name="confirm_account_remove">Le compte sera supprimé. Toutes les colonnes seront également supprimées.\nÊtes-vous sûr de vouloir continuer ?</string>
     <string name="confirm_before_boost">Confirmer avant de booster</string>
     <string name="confirm_block_user">Bloquer « %1$s » \?</string>
-    <string name="confirm_boost_from">%1$s voulez-vous partager ce toot ?,\nil sera affiché chez vos abonnés et sur votre profil.</string>
+    <string name="confirm_boost_from">Voulez-vous partager ce pouet de %1$s \? Il sera affiché à vos abonné·e·s et sur votre profil.</string>
     <string name="confirm_unboost_from">Désamorcer ce statut de %1$s \?</string>
     <string name="confirm_favourite_from">Désirez-vous mettre en favoris la publication de %1$s \? Une notification sera envoyée à son auteur·rice.</string>
     <string name="confirm_unfavourite_from">Voulez-vous retirer ce statut des favoris de %1$s \?</string>
@@ -93,12 +93,12 @@
     <string name="confirm_post_from">Publier le pouet via %1$s \?</string>
     <string name="confirm_unfollow_who_from">Ne plus suivre %1$s depuis %2$s ?</string>
     <string name="confirmation">Confirmation</string>
-    <string name="content_hint">Veuillez saisir votre statut</string>
+    <string name="content_hint">Le contenu de votre pouet</string>
     <string name="content_warning">Avertissement de contenu</string>
     <string name="content_warning_hint">Saisissez ici votre texte d’avertissement</string>
     <string name="contributor">Contributeur·rice·s</string>
     <string name="conversation">conversation</string>
-    <string name="conversation_around">Conversation du statut: %1$s</string>
+    <string name="conversation_around">Conversation autour du pouet : %1$s</string>
     <string name="conversation_view">Visualiser la conversation</string>
     <string name="copy_st">Copier</string>
     <string name="copy_complete">Presse-papiers mis à jour.</string>
@@ -227,7 +227,7 @@
     <string name="open_web_page">Ouvrir la page Web</string>
     <string name="oss_license">Licence OSS</string>
     <string name="password_not_specified">Mot de passe non spécifié</string>
-    <string name="please_add_account">Compte manquant. Veuillez ajouter un compte avant de poster.</string>
+    <string name="please_add_account">Vous devez ajouter un compte avant de pouvoir publier un pouet.</string>
     <string name="please_donate">Merci de soutenir cette application.</string>
     <string name="please_rate">Veuillez prendre le temps de noter l’application.</string>
     <string name="post_error_contents_empty">Veuillez saisir quelque chose dans votre pouet.</string>
@@ -251,7 +251,7 @@
     <string name="reload">Rafraîchir</string>
     <string name="reply">Répondre</string>
     <string name="reply_from_another_account">Répondre avec un autre compte</string>
-    <string name="reply_to_this_status">Répondre à ce statut :</string>
+    <string name="reply_to_this_status">Répondre à ce pouet :</string>
     <string name="report">Signaler</string>
     <string name="report_completed">Signalé</string>
     <string name="report_reason">Raison du signalement</string>
@@ -265,9 +265,9 @@
     <string name="response_not_json">La réponse de l’API n\'est pas JSON.</string>
     <string name="save">Sauvegarder</string>
     <string name="search">Rechercher</string>
-    <string name="search_for">Rechercher %1$s</string>
+    <string name="search_for">Chercher %1$s</string>
     <string name="search_of">Rechercher \"%1$s\"</string>
-    <string name="search_web">Rechercher sur internet</string>
+    <string name="search_web">Recherche Web</string>
     <string name="select_and_copy">Sélectionner et copier</string>
     <string name="send">Envoyer</string>
     <string name="send_header_content_warning">Contenu délicat (masqué)</string>
@@ -286,7 +286,7 @@
     <string name="simple_list">Liste simple (redémarrage nécessaire)</string>
     <string name="sound">Émettre un son</string>
     <string name="spoil_visibility_for_account">Mauvaise visibilité pour ce compte.</string>
-    <string name="status">Statut</string>
+    <string name="status">Pouet</string>
     <string name="status_id_conversion_failed">Impossible de convertir l\'ID du statut.</string>
     <string name="statuses">Statut</string>
     <string name="statuses_of">Statut de %1$s</string>
@@ -331,7 +331,7 @@
 \nPlus de détails ici : https://code.google.com/p/android/issues/detail\?id=224438</string>
     <string name="timeline_font">Police de caractères des fils (redémarrage nécessaire)</string>
     <string name="timeline_font_bold">Police de caractères des fils (grasse) (redémarrage nécessaire)</string>
-    <string name="account_in_draft_is_lost">Le compte utilisé pour la création de ce brouillon a été supprimé de cette application. Le lien avec le toot d’origine ne peut être restauré : in_reply_to, media attachment</string>
+    <string name="account_in_draft_is_lost">Le compte utilisé pour la création de ce brouillon a été supprimé de cette application. Le lien avec le pouet d’origine ne peut être restauré : in_reply_to, media joint</string>
     <string name="attachment_in_draft_is_lost">Une ou plusieurs pièces jointes à ce brouillon sont perdues.</string>
     <string name="reply_to_in_draft_is_lost">Le pouet auquel ce brouillon fait référence n’existe plus, vous ne pouvez plus y répondre a un contexte supprimé : in_reply_to</string>
     <string name="restore_draft">Restaurer un brouillon</string>
@@ -377,7 +377,7 @@
     <string name="toot_search">Recherche de pouets</string>
     <string name="mastodon_search_portal">MSP (JP)</string>
     <string name="search_desc_mastodon_api">Recherche de compte/étiquette à l’aide de l\'API Mastodon.</string>
-    <string name="toot_search_of">Toot Rechercher \"%1$s\"</string>
+    <string name="toot_search_of">Recherche du pouet \"%1$s\"</string>
     <string name="progress_synchronize_toot">Synchronisation du pouet…</string>
     <string name="send_header_account_name">Account-Name</string>
     <string name="send_header_account_acct">Account-Acct</string>
@@ -460,7 +460,7 @@
     <string name="choice3">choix 3 (facultatif)</string>
     <string name="choice4">choix 4 (facultatif)</string>
     <string name="make_enquete">Effectuer un sondage</string>
-    <string name="dont_use_action_button_with_quick_toot_bar">Désactive le bouton d’action IME lors de l-utilisation de la barre « Pouet rapide » (redémarrage de l\'application requis)</string>
+    <string name="dont_use_action_button_with_quick_toot_bar">Désactive le bouton d’action IME lors de l’utilisation de la barre « Pouet rapide » (redémarrage de l\'application requis)</string>
     <string name="auto_cw">Masquer automatiquement les longs textes (définir un nombre de lignes supérieur à 0. Redémarrage requis)</string>
     <string name="auto_cw_prefix">(CW automatique)</string>
     <string name="enquete_item_is_empty">Le choix du sondage %1$d est vide.</string>
@@ -670,7 +670,7 @@
     <string name="redraft_and_delete">Supprimer et reformuler</string>
     <string name="cant_sync_toot">Impossible de synchroniser le pouet.</string>
     <string name="cant_change_account_when_redraft">Impossible de changer de compte lors de la reformulation.</string>
-    <string name="delete_base_status_before_toot">Supprimer le statut de base avant l\'affichage. Tous les favoris et les boosts seront perdus. Les réponses seront déconnectées. Les pièces jointes des médias ne seront pas conservées sur Mastodon avant la version 2.4.1. Êtes-vous sûr·e \?</string>
+    <string name="delete_base_status_before_toot">Supprimer le statut de base avant l’affichage. Tous les favoris et les boosts seront perdus. Les réponses seront déconnectées. Les pièces jointes des médias ne seront pas conservées sur Mastodon avant la version 2.4.1. Êtes-vous sûr·e \?</string>
     <string name="notification_tl_font_size">Taille de police du fil de notifications (Unité : sp. laisser vide par défaut. Redémarrage requis)</string>
     <string name="notification_tl_icon_size">Taille de l’icône de notification sur le fil (Unité : dp. par défaut : 24. Redémarrage de l\'application requis)</string>
     <string name="post_button_tapped_repeatly">Le bouton Publier a été appuyé à plusieurs reprises</string>
@@ -709,7 +709,7 @@
     <string name="delete_suggestion">Enlever de vos suggestions d’abonnement …</string>
     <string name="delete_succeeded_confirm">Retirer l’utilisateur·rice \"%1$s\" de la liste des comptes recommandés \?</string>
     <string name="toot_context_parse_failed">Échec de l’analyse de la conversation.</string>
-    <string name="toot_default_text">Texte par défaut lors de la rédaction d’un pouet. (N\'affecte pas la barre de pouet rapide, ni le changement de compte dans l’écran de rédaction des pouets)</string>
+    <string name="toot_default_text">Texte par défaut lors de la rédaction d’un pouet. (N’affecte pas la barre de pouet rapide, ni le changement de compte dans l’écran de rédaction des pouets)</string>
     <string name="list_divider_color">Couleur du séparateur de listes</string>
     <string name="display_replies_count">Afficher le nombre de réponses</string>
     <string name="replies_count_simple">0/1/1+</string>
@@ -937,4 +937,13 @@
     <string name="cross_account_actions">Actions inter-comptes</string>
     <string name="extra_actions">Actions supplémentaires</string>
     <string name="instance_actions_for">Actions pour le serveur «%1$s»</string>
+    <string name="custom_emoji">Émoji personnalisé</string>
+    <string name="pixelfed_does_not_allow_reply_with_media">PixelFed ne permet pas les réponses ayant des médias attachés.</string>
+    <string name="enable_connect_to_pixelfed_server">Activer la connexion aux serveurs PixelFed (experimental. beaucoup de problèmes)</string>
+    <string name="reason_create_account">Raison pour laquelle vous désirez créer un compte sur ce serveur (optionnelle)</string>
+    <string name="account_timeline">Fil du compte</string>
+    <string name="around_this_toot">Autour de ce pouet</string>
+    <string name="your_toot">Votre pouet</string>
+    <string name="block_domain">Bloquer tout le domaine</string>
+    <string name="short_description">Courte description</string>
 </resources>

@@ -473,4 +473,18 @@
     <string name="copy_account_id">انسح معرّف الحساب %1$s</string>
     <string name="open_in_admin_ui">افتحه على واجهة الويب الإدارية</string>
     <string name="visibility_account_setting">تتبّع إعداد الحساب</string>
+    <string name="recommended_plugin">الإضافات المستحسَنة</string>
+    <string name="not_blocked">غير محجوب.</string>
+    <string name="profile_directory">دليل الحسابات</string>
+    <string name="unspecified">غير محدد</string>
+    <string name="official_account">الحساب الرسمي</string>
+    <string name="releases">الاصدارات</string>
+    <string name="poll_dont_make">بلا استطلاع رأي</string>
+    <string name="poll_make">القيام باستطلاع رأي</string>
+    <string name="last_active">آخر نشاط</string>
+    <string name="profile_directory_of">دليل حسابات ”%1$s“</string>
+    <string name="show_in_directory">اظهره في دليل الحسابات</string>
+    <string name="cross_account_actions">إجراءات عبر الحساب</string>
+    <string name="extra_actions">إجراءات إضافية</string>
+    <string name="block_domain">احجب كافة النطاق</string>
 </resources>

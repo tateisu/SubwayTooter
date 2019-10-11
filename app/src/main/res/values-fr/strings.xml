@@ -515,7 +515,7 @@
     <string name="card_header_card">Carte</string>
     <string name="card_header_author">Author</string>
     <string name="card_header_provider">Provider</string>
-    <string name="allow_non_space_before_emoji_code">Allow non-space character before emoji shortcode (Affect to display and post. to set display, please restart app and reload column. The emojis converted at posting can\'t be restored to shortcode.)</string>
+    <string name="allow_non_space_before_emoji_code">Autoriser le caractère non espace avant le shortcode emoji (pour définir l\'affichage, veuillez redémarrer l\'application et recharger la colonne Affect to display and post. L\'emojis converti lors de la publication ne peut pas être restauré en shortcode.)</string>
     <string name="emoji">Emoji</string>
     <string name="not_blocked">Non bloqué.</string>
     <string name="not_muted">Pas mis en sourdine.</string>
@@ -598,12 +598,12 @@
     <string name="always_show_application">Afficher (via) le nom de l\'application si possible</string>
     <string name="force_gap_when_refresh">Forcer l’ajout d\'un espace lors du rafraîchissement du dessus</string>
     <string name="avatar_icon_size">Taille de l’icône de l’avatar (Unité:dp. par défaut:48. Redémarrage de l’app requis)</string>
-    <string name="avatar_icon_round_ratio">Avatar icon round ratio (unit:%. default:33. app restart required)</string>
+    <string name="avatar_icon_round_ratio">Icône Avatar ratio d\'arrondi (Unité:%. défaut:33. redémarrage de l\'application requis)</string>
     <string name="avatar_icon_dont_round">Ne pas arrondir les coins de l’avatar (redémarrage requis)</string>
-    <string name="share_view_pool">Share view pool between columns</string>
+    <string name="share_view_pool">Partager le pool de vues entre les colonnes</string>
     <string name="rename">Renommer …</string>
     <string name="allow_column_duplication">Autoriser la duplication de colonnes</string>
-    <string name="system_notification_not_related">Not chosen when tapping system notification</string>
+    <string name="system_notification_not_related">Non sélectionné lors de l\'appel d\'une notification système</string>
     <string name="notification_type_mention">mention</string>
     <string name="notification_type_follow">abonnement</string>
     <string name="notification_type_boost">boosts</string>
@@ -621,7 +621,7 @@
     <string name="hide_favourite_notification_from_user">Désactiver les notifications Fav/Boosts de cet·te utilisateur·rice</string>
     <string name="show_favourite_notification_from_user">Activer les notifications Fav/Boosts provenant cet·te utilisateur·rice</string>
     <string name="fav_muted_user">Utilisateur·rice·s FBN désactivé·e·s</string>
-    <string name="fav_muted_user_long">Fav/Boost notification disabled users</string>
+    <string name="fav_muted_user_long">Fav/Foost utilisateur·rice·s désactivé·e·s</string>
     <string name="changed">Changé.</string>
     <string name="thumbnails_arrange_vertically">Réarranger les vignettes verticalement (redémarrage requis)</string>
     <string name="instance_local">Serveur local</string>
@@ -666,7 +666,7 @@
     <string name="follow_follower_list_may_restrict">Si l’utilisateur·rice distant·e choisit de masquer le graph social, seul·e·s les abonné·e·s/abonnements sur cette instance seront affichés.</string>
     <string name="trend_tag">Les tendances des tags</string>
     <string name="people_talking">%1$d (%2$d) personnes en parlent</string>
-    <string name="trend_tag_desc">The numbers indicate \'daily(weekly)\'.</string>
+    <string name="trend_tag_desc">Les chiffres indiquent \'daily(weekly)\'.</string>
     <string name="redraft_and_delete">Supprimer et reformuler</string>
     <string name="cant_sync_toot">Impossible de synchroniser le pouet.</string>
     <string name="cant_change_account_when_redraft">Impossible de changer de compte lors de la reformulation.</string>
@@ -946,4 +946,6 @@
     <string name="your_toot">Votre pouet</string>
     <string name="block_domain">Bloquer tout le domaine</string>
     <string name="short_description">Courte description</string>
+    <string name="media_attachment_max_byte_size_pixelfed">Taille limite de la pièce jointe (PixelFed) (par défaut 15. Unité: Mo)</string>
+    <string name="resize_square_pixels">Redimensionner en %1$d pixels carrés (équivalent %2$dx%2$d)</string>
 </resources>

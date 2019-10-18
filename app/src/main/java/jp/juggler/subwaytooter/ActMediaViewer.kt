@@ -478,7 +478,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			private fun decodeBitmap(
 				data : ByteArray,
 				@Suppress("SameParameterValue") pixel_max : Int
-			) : Bitmap? {
+			) : Pair<Bitmap?, String?> {
 				
 				val orientation : Int? = ByteArrayInputStream(data).imageOrientation
 				
@@ -491,8 +491,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				var w = options.outWidth
 				var h = options.outHeight
 				if(w <= 0 || h <= 0) {
-					log.e("can't decode bounds.")
-					return null
+					return Pair(null, "can't decode image bounds.")
 				}
 				
 				// calc bits to reduce size
@@ -507,97 +506,42 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				
 				// decode image
 				val bitmap1 = BitmapFactory.decodeByteArray(data, 0, data.size, options)
+					?: return Pair(null, "BitmapFactory.decodeByteArray returns null.")
 				
-				// デコード失敗、または回転情報がない
-				if(bitmap1 == null || orientation == null) return bitmap1
+				val srcWidth = bitmap1.width.toFloat()
+				val srcHeight = bitmap1.height.toFloat()
+				if(srcWidth <= 0f || srcHeight <= 0f) {
+					bitmap1.recycle()
+					return Pair(null, "image size <= 0")
+				}
 				
-				val src_width = bitmap1.width
-				val src_height = bitmap1.height
+				val dstSize = rotateSize(orientation,srcWidth,srcHeight)
+				val dstSizeInt = Point(
+					max(1, (dstSize.x + 0.5f).toInt()),
+					max(1, (dstSize.y + 0.5f).toInt())
+				)
 				
 				// 回転行列を作る
 				val matrix = Matrix()
 				matrix.reset()
 				
 				// 画像の中心が原点に来るようにして
-				matrix.postTranslate(src_width * - 0.5f, src_height * - 0.5f)
+				matrix.postTranslate(srcWidth * - 0.5f, srcHeight * - 0.5f)
 				
 				// orientationに合わせた回転指定
-				val flipWh = when(orientation) {
-					2 -> {
-						// 上下反転
-						matrix.postScale(1f, - 1f)
-						false
-					}
-					
-					3 -> {
-						// 180度回転
-						matrix.postRotate(180f)
-						false
-					}
-					
-					4 -> {
-						// 左右反転
-						matrix.postScale(- 1f, 1f)
-						false
-					}
-					
-					5 -> {
-						// 上下反転して反時計回りに90度
-						matrix.postScale(1f, - 1f)
-						matrix.postRotate(- 90f)
-						true
-					}
-					
-					6 -> {
-						// 時計回りに90度
-						matrix.postRotate(90f)
-						true
-					}
-					
-					7 -> {
-						// 上下反転して時計回りに90度
-						matrix.postScale(1f, - 1f)
-						matrix.postRotate(90f)
-						true
-					}
-					
-					8 -> {
-						// 上下反転して反時計回りに90度
-						matrix.postRotate(- 90f)
-						true
-					}
-					
-					else -> {
-						// 回転は不要
-						return bitmap
-					}
-				}
-				
-				// 出力サイズ
-				val dst_width : Int
-				val dst_height : Int
-				when(flipWh) {
-					true -> {
-						dst_width = src_height
-						dst_height = src_width
-					}
-					
-					else -> {
-						dst_width = src_width
-						dst_height = src_height
-					}
-				}
+				matrix.resolveOrientation(orientation)
 				
 				// 表示領域に埋まるように平行移動
-				matrix.postTranslate(dst_width * 0.5f, dst_height * 0.5f)
+				matrix.postTranslate(dstSize.x * 0.5f, dstSize.y * 0.5f)
 				
 				// 回転後の画像
 				val bitmap2 = try {
-					Bitmap.createBitmap(dst_width, dst_height, Bitmap.Config.ARGB_8888)
+					Bitmap.createBitmap(dstSizeInt.x, dstSizeInt.y, Bitmap.Config.ARGB_8888)
+						?: return Pair(bitmap1, "createBitmap returns null")
 				} catch(ex : Throwable) {
 					log.trace(ex)
-					null
-				} ?: return bitmap1
+					return Pair(bitmap1, ex.withCaption("createBitmap failed."))
+				}
 				
 				try {
 					Canvas(bitmap2).drawBitmap(
@@ -608,15 +552,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				} catch(ex : Throwable) {
 					log.trace(ex)
 					bitmap2.recycle()
-					return bitmap1
+					return Pair(bitmap1, ex.withCaption("drawBitmap failed."))
 				}
 				
 				try {
 					bitmap1.recycle()
 				} catch(ex : Throwable) {
-					log.trace(ex)
 				}
-				return bitmap2
+				return Pair(bitmap2, null)
 			}
 			
 			fun getHttpCached(
@@ -671,11 +614,13 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					lastResult = result
 					if(ba != null) {
 						client.publishApiProgress("decoding image…")
-						val bitmap = decodeBitmap(ba, 2048)
+						
+						val (bitmap, error) = decodeBitmap(ba, 2048)
 						if(bitmap != null) {
 							this.bitmap = bitmap
 							break
 						}
+						if(error != null) lastResult = TootApiResult(error)
 					}
 				}
 				return lastResult

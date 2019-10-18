@@ -27,14 +27,14 @@ val InputStream.imageOrientation : Int?
 	}
 
 // 回転情報の値に合わせて、wとhを入れ替える
-private fun rotateSize(orientation : Int?, w : Float, h : Float) : PointF =
+fun rotateSize(orientation : Int?, w : Float, h : Float) : PointF =
 	when(orientation) {
 		5, 6, 7, 8 -> PointF(h, w)
 		else -> PointF(w, h)
 	}
 
 // 回転情報を解決するようにmatrixに回転を加える
-private fun Matrix.resolveOrientation(orientation : Int?) : Matrix {
+fun Matrix.resolveOrientation(orientation : Int?) : Matrix {
 	when(orientation) {
 		2 -> postScale(1f, - 1f)
 		3 -> postRotate(180f)

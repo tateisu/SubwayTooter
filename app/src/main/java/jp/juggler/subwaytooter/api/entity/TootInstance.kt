@@ -15,6 +15,7 @@ import org.json.JSONObject
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.math.max
 
 class TootInstance(parser : TootParser, src : JSONObject) {
 	
@@ -229,7 +230,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 				result.jsonObject?.apply {
 					val m = reDigits.matcher(parseString("version") ?: "")
 					if(m.find()) {
-						put(TootApiClient.KEY_MISSKEY_VERSION, m.groupEx(1) !!.toInt())
+						put(TootApiClient.KEY_MISSKEY_VERSION, max(1,m.groupEx(1) !!.toInt()))
 					}
 				}
 			}

@@ -10,12 +10,14 @@ import jp.juggler.subwaytooter.PollingWorker
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
 import org.json.JSONObject
 import java.util.*
-import java.util.concurrent.atomic.AtomicReference
 import java.util.regex.Pattern
 
 class SavedAccount(
@@ -24,7 +26,7 @@ class SavedAccount(
 	hostArg : String? = null,
 	var token_info : JSONObject? = null,
 	var loginAccount : TootAccount? = null, // 疑似アカウントではnull
-	override val misskeyVersion: Int = 0
+	override val misskeyVersion : Int = 0
 ) : LinkHelper {
 	
 	override val isMisskey : Boolean
@@ -66,7 +68,7 @@ class SavedAccount(
 	
 	var max_toot_chars = 0
 	
-
+	var last_notification_error : String? = null
 	
 	init {
 		val pos = acct.indexOf('@')
@@ -122,7 +124,7 @@ class SavedAccount(
 		this.notification_follow = cursor.getBoolean(COL_NOTIFICATION_FOLLOW)
 		this.notification_reaction = cursor.getBoolean(COL_NOTIFICATION_REACTION)
 		this.notification_vote = cursor.getBoolean(COL_NOTIFICATION_VOTE)
-
+		
 		this.dont_hide_nsfw = cursor.getBoolean(COL_DONT_HIDE_NSFW)
 		this.dont_show_timeout = cursor.getBoolean(COL_DONT_SHOW_TIMEOUT)
 		
@@ -137,11 +139,12 @@ class SavedAccount(
 		this.sound_uri = cursor.getString(COL_SOUND_URI)
 		
 		this.default_text = cursor.getStringOrNull(COL_DEFAULT_TEXT) ?: ""
-
+		
 		this.default_sensitive = cursor.getBoolean(COL_DEFAULT_SENSITIVE)
 		this.expand_cw = cursor.getBoolean(COL_EXPAND_CW)
 		this.max_toot_chars = cursor.getInt(COL_MAX_TOOT_CHARS)
 		
+		this.last_notification_error = cursor.getStringOrNull(COL_LAST_NOTIFICATION_ERROR)
 	}
 	
 	val isNA : Boolean
@@ -202,7 +205,7 @@ class SavedAccount(
 		
 		cv.put(COL_DEFAULT_SENSITIVE, default_sensitive.b2i())
 		cv.put(COL_EXPAND_CW, expand_cw.b2i())
-		cv.put(COL_MAX_TOOT_CHARS,max_toot_chars)
+		cv.put(COL_MAX_TOOT_CHARS, max_toot_chars)
 		
 		// UIからは更新しない
 		// notification_tag
@@ -211,26 +214,26 @@ class SavedAccount(
 		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 	}
 	
-//	fun saveNotificationTag() {
-//		if(db_id == INVALID_DB_ID)
-//			throw RuntimeException("SavedAccount.saveNotificationTag missing db_id")
-//
-//		val cv = ContentValues()
-//		cv.put(COL_NOTIFICATION_TAG, notification_tag)
-//
-//		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
-//	}
-//
-//	fun saveRegisterKey() {
-//		if(db_id == INVALID_DB_ID)
-//			throw RuntimeException("SavedAccount.saveRegisterKey missing db_id")
-//
-//		val cv = ContentValues()
-//		cv.put(COL_REGISTER_KEY, register_key)
-//		cv.put(COL_REGISTER_TIME, register_time)
-//
-//		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
-//	}
+	//	fun saveNotificationTag() {
+	//		if(db_id == INVALID_DB_ID)
+	//			throw RuntimeException("SavedAccount.saveNotificationTag missing db_id")
+	//
+	//		val cv = ContentValues()
+	//		cv.put(COL_NOTIFICATION_TAG, notification_tag)
+	//
+	//		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+	//	}
+	//
+	//	fun saveRegisterKey() {
+	//		if(db_id == INVALID_DB_ID)
+	//			throw RuntimeException("SavedAccount.saveRegisterKey missing db_id")
+	//
+	//		val cv = ContentValues()
+	//		cv.put(COL_REGISTER_KEY, register_key)
+	//		cv.put(COL_REGISTER_TIME, register_time)
+	//
+	//		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+	//	}
 	
 	// onResumeの時に設定を読み直す
 	fun reloadSetting(context : Context) {
@@ -411,10 +414,13 @@ class SavedAccount(
 		// スキーマ33から
 		private const val COL_NOTIFICATION_REACTION = "notification_reaction"
 		private const val COL_NOTIFICATION_VOTE = "notification_vote"
-
+		
 		private const val COL_DEFAULT_SENSITIVE = "default_sensitive"
 		private const val COL_EXPAND_CW = "expand_cw"
 		private const val COL_MAX_TOOT_CHARS = "max_toot_chars"
+		
+		// スキーマ42から
+		private const val COL_LAST_NOTIFICATION_ERROR = "last_notification_error"
 		
 		/////////////////////////////////
 		// login information
@@ -489,6 +495,9 @@ class SavedAccount(
 					
 					// スキーマ39から
 					+ ",$COL_MAX_TOOT_CHARS integer default 0"
+					
+					// スキーマ42から
+					+ ",$COL_LAST_NOTIFICATION_ERROR text"
 					
 					+ ")"
 			)
@@ -654,6 +663,14 @@ class SavedAccount(
 			if(oldVersion < 39 && newVersion >= 39) {
 				try {
 					db.execSQL("alter table $table add column $COL_MAX_TOOT_CHARS integer default 0")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+			}
+			
+			if(oldVersion < 42 && newVersion >= 42) {
+				try {
+					db.execSQL("alter table $table add column $COL_LAST_NOTIFICATION_ERROR text")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
@@ -924,10 +941,10 @@ class SavedAccount(
 			Collections.sort(account_list, account_comparator)
 		}
 		
-		fun sweepBuggieData(){
+		fun sweepBuggieData() {
 			// https://github.com/tateisu/SubwayTooter/issues/107
 			// COL_ACCOUNTの内容がおかしければ削除する
-
+			
 			val list = ArrayList<Long>()
 			try {
 				App1.database.query(
@@ -947,10 +964,10 @@ class SavedAccount(
 				log.trace(ex)
 				log.e(ex, "sweepBuggieData failed.")
 			}
-
-			list.forEach{
+			
+			list.forEach {
 				try {
-					App1.database.delete(table,"$COL_ID=?",arrayOf(it.toString()))
+					App1.database.delete(table, "$COL_ID=?", arrayOf(it.toString()))
 				} catch(ex : Throwable) {
 					log.trace(ex)
 					log.e(ex, "sweepBuggieData failed.")
@@ -989,41 +1006,51 @@ class SavedAccount(
 		
 		TootNotification.TYPE_REACTION -> notification_reaction
 		
-		TootNotification.TYPE_VOTE,TootNotification.TYPE_POLL -> notification_vote
-		
+		TootNotification.TYPE_VOTE, TootNotification.TYPE_POLL -> notification_vote
 		
 		else -> false
 	}
 	
-	val isConfirmed :Boolean
-		get(){
+	val isConfirmed : Boolean
+		get() {
 			val myId = this.loginAccount?.id
 			return myId != EntityId.CONFIRMING
 		}
 	
-	fun checkConfirmed(context:Context,client : TootApiClient) : TootApiResult? {
+	fun checkConfirmed(context : Context, client : TootApiClient) : TootApiResult? {
 		try {
 			val myId = this.loginAccount?.id
-			if(db_id != INVALID_DB_ID && myId == EntityId.CONFIRMING ) {
+			if(db_id != INVALID_DB_ID && myId == EntityId.CONFIRMING) {
 				val accessToken = getAccessToken()
 				if(accessToken != null) {
 					val result = client.getUserCredential(accessToken)
-					if( result ==null || result.error!=null) return result
+					if(result == null || result.error != null) return result
 					val ta = TootParser(context, this).account(result.jsonObject)
 					if(ta != null) {
 						this.loginAccount = ta
 						val cv = ContentValues()
-						cv.put(COL_ACCOUNT, result.jsonObject.toString() )
+						cv.put(COL_ACCOUNT, result.jsonObject.toString())
 						App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 						PollingWorker.queueUpdateNotification(context)
 					}
 				}
 			}
 			return TootApiResult()
-		}catch(ex:Throwable){
+		} catch(ex : Throwable) {
 			log.trace(ex)
 			return TootApiResult(ex.withCaption("account confirmation failed."))
 		}
+	}
+	
+	fun updateNotificationError(text:String?) {
+		if(db_id == INVALID_DB_ID) throw RuntimeException("saveSetting: missing db_id")
+		
+		val cv = ContentValues()
+		when(text){
+			null -> cv.putNull(COL_LAST_NOTIFICATION_ERROR)
+			else -> cv.put(COL_LAST_NOTIFICATION_ERROR, text)
+		}
+		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 	}
 	
 }

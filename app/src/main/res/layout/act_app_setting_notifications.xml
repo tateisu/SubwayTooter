@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
 
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/svContent"
@@ -14,29 +13,25 @@
     android:paddingBottom="128dp"
     android:scrollbarStyle="outsideOverlay"
 
-    tools:ignore="Autofill"
-    >
+    tools:ignore="Autofill">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/notification_style_before_oreo"
-            />
+            android:text="@string/notification_style_before_oreo" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <CheckBox
                 android:id="@+id/cbNotificationSound"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/sound"
-                />
+                android:text="@string/sound" />
 
         </LinearLayout>
 
@@ -45,8 +40,7 @@
             <CheckBox
                 android:id="@+id/cbNotificationVibration"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/vibration"
-                />
+                android:text="@string/vibration" />
 
         </LinearLayout>
 
@@ -55,8 +49,7 @@
             <CheckBox
                 android:id="@+id/cbNotificationLED"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/led"
-                />
+                android:text="@string/led" />
 
         </LinearLayout>
 
@@ -64,48 +57,52 @@
 
             <TextView
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/notification_on_off_desc"
-                />
+                android:text="@string/notification_on_off_desc" />
         </LinearLayout>
 
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etPullNotificationCheckInterval"
-            android:text="@string/pull_notification_check_interval"
-            />
+            android:text="@string/pull_notification_check_interval" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <EditText
                 android:id="@+id/etPullNotificationCheckInterval"
                 style="@style/setting_horizontal_stretch"
-                android:inputType="number"
-                />
+                android:inputType="number" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
-
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/show_acct_in_system_notification"
-            />
+            android:text="@string/show_acct_in_system_notification" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <Switch
                 android:id="@+id/swShowAcctInSystemNotification"
                 style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
+                android:gravity="center" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/separate_notification_group_for_reply" />
+
+        <Switch
+            android:id="@+id/swSeparateReplyNotificationGroup"
+            style="@style/setting_row_form"
+            android:gravity="center" />
+
+        <View style="@style/setting_divider" />
 
     </LinearLayout>
 </ScrollView>

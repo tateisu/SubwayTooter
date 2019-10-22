@@ -1717,6 +1717,7 @@ class ActMain : AppCompatActivity()
 		if(dataIdString != null) {
 			try {
 				val dataId = dataIdString.toLong(10)
+				val type = uri.getQueryParameter("type")?:""
 				val account = SavedAccount.loadAccount(this@ActMain, dataId)
 				if(account != null) {
 					var column = app_state.column_list.firstOrNull {
@@ -1741,7 +1742,7 @@ class ActMain : AppCompatActivity()
 						column.startLoading()
 					}
 					
-					PollingWorker.queueNotificationClicked(this, dataId)
+					PollingWorker.queueNotificationClicked(this, dataId,type)
 					
 				}
 			} catch(ex : Throwable) {

@@ -14,24 +14,23 @@ class EventReceiver : BroadcastReceiver() {
 	}
 	
 	override fun onReceive(context : Context, intent : Intent?) {
-		if(intent != null) {
-			val action = intent.action
+		when(val action = intent?.action) {
+
+			Intent.ACTION_BOOT_COMPLETED ->
+				PollingWorker.queueBootCompleted(context)
+
+			Intent.ACTION_MY_PACKAGE_REPLACED ->
+				PollingWorker.queuePackageReplaced(context)
 			
-			when {
-				Intent.ACTION_BOOT_COMPLETED == action -> PollingWorker.queueBootCompleted(context)
-				Intent.ACTION_MY_PACKAGE_REPLACED == action -> PollingWorker.queuePackageReplaced(
-					context
+			ACTION_NOTIFICATION_DELETE -> {
+				PollingWorker.queueNotificationDeleted(
+					context,
+					intent.getLongExtra(PollingWorker.EXTRA_DB_ID, - 1L),
+					intent.getStringExtra(PollingWorker.EXTRA_NOTIFICATION_TYPE) ?: ""
 				)
-				
-				ACTION_NOTIFICATION_DELETE == action -> {
-					val db_id = intent.getLongExtra(PollingWorker.EXTRA_DB_ID, - 1L)
-					PollingWorker.queueNotificationDeleted(context, db_id)
-					
-				}
-				
-				else -> log.e("onReceive: unsupported action %s", action)
 			}
+			
+			else -> log.e("onReceive: unsupported action %s", action)
 		}
 	}
-	
 }

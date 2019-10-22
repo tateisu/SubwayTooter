@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/svContent"
     android:layout_width="match_parent"
@@ -11,54 +10,47 @@
     android:paddingTop="12dp"
     android:paddingBottom="128dp"
     android:scrollbarStyle="outsideOverlay"
-    tools:ignore="TooManyViews,Autofill"
-    >
+    tools:ignore="TooManyViews,Autofill">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/instance"
-            />
+            android:text="@string/instance" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <TextView
                 android:id="@+id/tvInstance"
-                style="@style/setting_horizontal_stretch"
-                />
+                style="@style/setting_horizontal_stretch" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/user"
-            />
+            android:text="@string/user" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <TextView
                 android:id="@+id/tvUser"
                 style="@style/setting_horizontal_stretch"
-                android:ellipsize="start"
-                />
+                android:ellipsize="start" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/nickname_label"
-            />
+            android:text="@string/nickname_label" />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -66,8 +58,7 @@
                 android:id="@+id/tvUserCustom"
                 style="@style/setting_horizontal_stretch"
                 android:layout_gravity="center_vertical"
-                android:padding="4dp"
-                />
+                android:padding="4dp" />
 
             <ImageButton
                 android:id="@+id/btnUserCustom"
@@ -77,17 +68,15 @@
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/edit"
                 android:src="@drawable/ic_edit"
-                android:tint="?attr/colorVectorDrawable"
-                />
+                android:tint="?attr/colorVectorDrawable" />
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etDefaultText"
-            android:text="@string/toot_default_text"
-            />
+            android:text="@string/toot_default_text" />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -96,38 +85,33 @@
                 style="@style/setting_horizontal_stretch"
                 android:layout_gravity="center_vertical"
                 android:inputType="textMultiLine"
-                android:padding="4dp"
-                />
+                android:padding="4dp" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/public_profile"
-            />
+            android:text="@string/public_profile" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <FrameLayout
                 style="@style/setting_horizontal_stretch"
-                android:layout_height="64dp"
-                >
+                android:layout_height="64dp">
 
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
                     android:id="@+id/ivProfileHeader"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    />
+                    android:layout_height="match_parent" />
 
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
                     android:id="@+id/ivProfileAvatar"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_gravity="center"
-                    android:scaleType="fitCenter"
-                    />
+                    android:scaleType="fitCenter" />
             </FrameLayout>
         </LinearLayout>
 
@@ -137,8 +121,7 @@
                 android:id="@+id/btnProfileAvatar"
                 style="@style/setting_horizontal_stretch"
                 android:text="@string/change_avatar"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -147,8 +130,7 @@
                 android:id="@+id/btnProfileHeader"
                 style="@style/setting_horizontal_stretch"
                 android:text="@string/change_header"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -156,8 +138,7 @@
             <TextView
                 style="@style/setting_row_label"
                 android:labelFor="@+id/etDisplayName"
-                android:text="@string/display_name"
-                />
+                android:text="@string/display_name" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -177,8 +158,7 @@
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/post"
                 android:src="@drawable/ic_send"
-                android:tint="?attr/colorVectorDrawable"
-                />
+                android:tint="?attr/colorVectorDrawable" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -186,8 +166,7 @@
             <TextView
                 style="@style/setting_row_label"
                 android:labelFor="@+id/etNote"
-                android:text="@string/note"
-                />
+                android:text="@string/note" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -195,8 +174,7 @@
             <EditText
                 android:id="@+id/etNote"
                 style="@style/setting_horizontal_stretch"
-                android:inputType="textMultiLine"
-                />
+                android:inputType="textMultiLine" />
 
             <ImageButton
                 android:id="@+id/btnNote"
@@ -206,8 +184,7 @@
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/post"
                 android:src="@drawable/ic_send"
-                android:tint="?attr/colorVectorDrawable"
-                />
+                android:tint="?attr/colorVectorDrawable" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -215,30 +192,26 @@
             <CheckBox
                 android:id="@+id/cbLocked"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/locked_account"
-                />
+                android:text="@string/locked_account" />
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/profile_metadata"
-            />
+            android:text="@string/profile_metadata" />
 
         <LinearLayout style="@style/setting_row_form_fields">
 
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldName1"
-                android:text="@string/field_name1"
-                />
+                android:text="@string/field_name1" />
 
             <EditText
                 android:id="@+id/etFieldName1"
                 style="@style/setting_horizontal_stretch"
-                android:inputType="text"
-                />
+                android:inputType="text" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
@@ -246,14 +219,12 @@
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldValue1"
-                android:text="@string/field_value1"
-                />
+                android:text="@string/field_value1" />
 
             <EditText
                 android:id="@+id/etFieldValue1"
                 style="@style/setting_horizontal_stretch"
-                android:inputType="textMultiLine"
-                />
+                android:inputType="textMultiLine" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
@@ -261,14 +232,12 @@
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldName2"
-                android:text="@string/field_name2"
-                />
+                android:text="@string/field_name2" />
 
             <EditText
                 android:id="@+id/etFieldName2"
                 style="@style/setting_horizontal_stretch"
-                android:inputType="text"
-                />
+                android:inputType="text" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
@@ -276,14 +245,12 @@
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldValue2"
-                android:text="@string/field_value2"
-                />
+                android:text="@string/field_value2" />
 
             <EditText
                 android:id="@+id/etFieldValue2"
                 style="@style/setting_horizontal_stretch"
-                android:inputType="textMultiLine"
-                />
+                android:inputType="textMultiLine" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
@@ -291,14 +258,12 @@
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldName3"
-                android:text="@string/field_name3"
-                />
+                android:text="@string/field_name3" />
 
             <EditText
                 android:id="@+id/etFieldName3"
                 style="@style/setting_horizontal_stretch"
-                android:inputType="text"
-                />
+                android:inputType="text" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
@@ -306,14 +271,12 @@
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldValue3"
-                android:text="@string/field_value3"
-                />
+                android:text="@string/field_value3" />
 
             <EditText
                 android:id="@+id/etFieldValue3"
                 style="@style/setting_horizontal_stretch"
-                android:inputType="textMultiLine"
-                />
+                android:inputType="textMultiLine" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
@@ -321,14 +284,12 @@
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldName4"
-                android:text="@string/field_name4"
-                />
+                android:text="@string/field_name4" />
 
             <EditText
                 android:id="@+id/etFieldName4"
                 style="@style/setting_horizontal_stretch"
-                android:inputType="text"
-                />
+                android:inputType="text" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form_fields">
@@ -336,14 +297,12 @@
             <TextView
                 style="@style/setting_wrap"
                 android:labelFor="@+id/etFieldValue4"
-                android:text="@string/field_value4"
-                />
+                android:text="@string/field_value4" />
 
             <EditText
                 android:id="@+id/etFieldValue4"
                 style="@style/setting_horizontal_stretch"
-                android:inputType="textMultiLine"
-                />
+                android:inputType="textMultiLine" />
 
         </LinearLayout>
 
@@ -353,8 +312,7 @@
                 style="@style/setting_horizontal_stretch"
                 android:layout_gravity="center_vertical"
                 android:gravity="end"
-                android:text="@string/available_mastodon_2_4_later"
-                />
+                android:text="@string/available_mastodon_2_4_later" />
 
             <ImageButton
                 android:id="@+id/btnFields"
@@ -364,171 +322,148 @@
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/post"
                 android:src="@drawable/ic_send"
-                android:tint="?attr/colorVectorDrawable"
-                />
+                android:tint="?attr/colorVectorDrawable" />
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/actions"
-            />
+            android:text="@string/actions" />
 
         <Button
             android:id="@+id/btnOpenBrowser"
             style="@style/setting_row_button"
             android:ellipsize="start"
             android:textAllCaps="false"
-            tools:text="open http://mastodon.juggler.jp/"
-            />
+            tools:text="open http://mastodon.juggler.jp/" />
 
         <Button
             android:id="@+id/btnAccessToken"
             style="@style/setting_row_button"
             android:ellipsize="start"
             android:text="@string/update_access_token"
-            android:textAllCaps="false"
-            />
+            android:textAllCaps="false" />
 
         <Button
             android:id="@+id/btnInputAccessToken"
             style="@style/setting_row_button"
             android:ellipsize="start"
             android:text="@string/input_access_token"
-            android:textAllCaps="false"
-            />
+            android:textAllCaps="false" />
 
         <Button
             android:id="@+id/btnLoadPreference"
             style="@style/setting_row_button"
             android:ellipsize="start"
             android:text="@string/load_preference_from_web_ui"
-            android:textAllCaps="false"
-            />
+            android:textAllCaps="false" />
 
         <Button
             android:id="@+id/btnAccountRemove"
             style="@style/setting_row_button"
             android:ellipsize="start"
             android:text="@string/account_remove"
-            android:textAllCaps="false"
-            />
+            android:textAllCaps="false" />
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/default_status_visibility"
-            />
+            android:text="@string/default_status_visibility" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <Button
                 android:id="@+id/btnVisibility"
-                style="@style/setting_horizontal_stretch"
-                />
+                style="@style/setting_horizontal_stretch" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/mark_sensitive_by_default"
-            />
+            android:text="@string/mark_sensitive_by_default" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <Switch
                 android:id="@+id/swMarkSensitive"
-                style="@style/setting_wrap"
-                />
+                style="@style/setting_wrap" />
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_weight="1"
-                />
+                android:layout_weight="1" />
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/sensitive_content_default_open"
-            />
+            android:text="@string/sensitive_content_default_open" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <Switch
                 android:id="@+id/swNSFWOpen"
-                style="@style/setting_wrap"
-                />
+                style="@style/setting_wrap" />
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_weight="1"
-                />
+                android:layout_weight="1" />
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/cw_default_open"
-            />
+            android:text="@string/cw_default_open" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <Switch
                 android:id="@+id/swExpandCW"
-                style="@style/setting_wrap"
-                />
+                style="@style/setting_wrap" />
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_weight="1"
-                />
+                android:layout_weight="1" />
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/dont_show_timeout"
-            />
+            android:text="@string/dont_show_timeout" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <Switch
                 android:id="@+id/swDontShowTimeout"
-                style="@style/setting_wrap"
-                />
+                style="@style/setting_wrap" />
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_weight="1"
-                />
+                android:layout_weight="1" />
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/confirmation"
-            />
+            android:text="@string/confirmation" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <CheckBox
                 android:id="@+id/cbConfirmFollow"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/follow"
-                />
+                android:text="@string/follow" />
 
         </LinearLayout>
 
@@ -537,8 +472,7 @@
             <CheckBox
                 android:id="@+id/cbConfirmFollowLockedUser"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/follow_locked_user"
-                />
+                android:text="@string/follow_locked_user" />
 
         </LinearLayout>
 
@@ -547,8 +481,7 @@
             <CheckBox
                 android:id="@+id/cbConfirmUnfollow"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/unfollow"
-                />
+                android:text="@string/unfollow" />
 
         </LinearLayout>
 
@@ -557,8 +490,7 @@
             <CheckBox
                 android:id="@+id/cbConfirmBoost"
                 style="@style/setting_wrap"
-                android:text="@string/boost"
-                />
+                android:text="@string/boost" />
 
         </LinearLayout>
 
@@ -567,8 +499,7 @@
             <CheckBox
                 android:id="@+id/cbConfirmUnboost"
                 style="@style/setting_wrap"
-                android:text="@string/unboost"
-                />
+                android:text="@string/unboost" />
 
         </LinearLayout>
 
@@ -577,8 +508,7 @@
             <CheckBox
                 android:id="@+id/cbConfirmFavourite"
                 style="@style/setting_wrap"
-                android:text="@string/favourite"
-                />
+                android:text="@string/favourite" />
 
         </LinearLayout>
 
@@ -587,8 +517,7 @@
             <CheckBox
                 android:id="@+id/cbConfirmUnfavourite"
                 style="@style/setting_wrap"
-                android:text="@string/unfavourite"
-                />
+                android:text="@string/unfavourite" />
 
         </LinearLayout>
 
@@ -597,25 +526,22 @@
             <CheckBox
                 android:id="@+id/cbConfirmToot"
                 style="@style/setting_wrap"
-                android:text="@string/act_post"
-                />
+                android:text="@string/act_post" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/notifications"
-            />
+            android:text="@string/notifications" />
 
         <LinearLayout style="@style/setting_row_form">
 
             <CheckBox
                 android:id="@+id/cbNotificationMention"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/mention2"
-                />
+                android:text="@string/mention2" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -623,8 +549,7 @@
             <CheckBox
                 android:id="@+id/cbNotificationBoost"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/boost"
-                />
+                android:text="@string/boost" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -632,8 +557,7 @@
             <CheckBox
                 android:id="@+id/cbNotificationFavourite"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/favourite"
-                />
+                android:text="@string/favourite" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -641,8 +565,7 @@
             <CheckBox
                 android:id="@+id/cbNotificationFollow"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/follow"
-                />
+                android:text="@string/follow" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -650,8 +573,7 @@
             <CheckBox
                 android:id="@+id/cbNotificationReaction"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/reaction"
-                />
+                android:text="@string/reaction" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -659,8 +581,7 @@
             <CheckBox
                 android:id="@+id/cbNotificationVote"
                 style="@style/setting_horizontal_stretch"
-                android:text="@string/vote_polls"
-                />
+                android:text="@string/vote_polls" />
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -670,17 +591,15 @@
                 style="@style/setting_horizontal_stretch"
                 android:ellipsize="start"
                 android:text="@string/update_push_subscription"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/notification_sound_before_oreo"
-            />
+            android:text="@string/notification_sound_before_oreo" />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -689,45 +608,45 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/edit"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnNotificationSoundReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reset"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/notification_style_after_oreo"
-            />
+            android:text="@string/notification_style_after_oreo" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Button
+            android:id="@+id/btnNotificationStyleEdit"
+            style="@style/setting_row_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/default_"
+            android:textAllCaps="false" />
 
-            <Button
-                android:id="@+id/btnNotificationStyleEdit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/edit"
-                android:textAllCaps="false"
-                />
+        <Button
+            android:id="@+id/btnNotificationStyleEditReply"
+            style="@style/setting_row_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reply"
+            android:textAllCaps="false" />
 
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/max_toot_chars"
             android:labelFor="@+id/etMaxTootChars"
-            />
+            android:text="@string/max_toot_chars" />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -735,12 +654,11 @@
                 android:id="@+id/etMaxTootChars"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number"
-                />
+                android:inputType="number" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <!--<View style="@style/setting_divider"/>-->
 

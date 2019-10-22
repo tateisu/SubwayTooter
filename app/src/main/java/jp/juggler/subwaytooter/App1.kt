@@ -124,7 +124,10 @@ class App1 : Application() {
 		// 2019/6/4 v351 36 => 37 SavedAccount テーブルに項目追加。
 		// 2019/6/4 v351 37 => 38 SavedAccount テーブルに項目追加。
 		// 2019/8/12 v362 38 => 39 SavedAccount テーブルに項目追加。
-		internal const val DB_VERSION = 39
+		// 2019/10/22 39 => 40 NotificationTracking テーブルに項目追加。
+		// 2019/10/22 40 => 41 NotificationCache テーブルに項目追加。
+		// 2019/10/23 41=> 42 SavedAccount テーブルに項目追加。
+		internal const val DB_VERSION = 42
 		
 		private val tableList = arrayOf(
 			LogData,
@@ -133,6 +136,7 @@ class App1 : Application() {
 			MediaShown,
 			ContentWarning,
 			NotificationTracking,
+			NotificationCache,
 			MutedApp,
 			UserRelation,
 			AcctSet,

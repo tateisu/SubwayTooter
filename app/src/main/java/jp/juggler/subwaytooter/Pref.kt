@@ -442,6 +442,12 @@ object Pref {
 		R.id.swQuickTootOmitAccountSelection
 	)
 	
+	val bpSeparateReplyNotificationGroup = BooleanPref(
+		"SeparateReplyNotificationGroup",
+		false,
+		R.id.swSeparateReplyNotificationGroup
+	)
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

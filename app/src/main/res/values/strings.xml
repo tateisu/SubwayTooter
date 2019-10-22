@@ -27,6 +27,7 @@
     <string name="account_pick">Select an account</string>
     <string name="account_confirmed">Account confirmed.</string>
     <string name="reply">Reply</string>
+    <string name="default_">Default</string>
     <string name="more">More</string>
     <string name="close_column">Close the column</string>
     <string name="thumbnail">Thumbnail</string>
@@ -950,4 +951,5 @@
     <string name="block_domain">Block whole domain</string>
     <string name="instance_actions_for">Actions for the server \"%1$s\"</string>
     <string name="quick_toot_omit_account_selection">When using quick toot, omit account selection if possible</string>
+    <string name="separate_notification_group_for_reply">Separate notification groups for reply (Android 8+)</string>
 </resources>

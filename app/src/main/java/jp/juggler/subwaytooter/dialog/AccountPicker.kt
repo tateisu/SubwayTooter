@@ -2,6 +2,9 @@ package jp.juggler.subwaytooter.dialog
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.RelativeSizeSpan
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Gravity
 import android.view.View
@@ -142,7 +145,16 @@ object AccountPicker {
 			b.isAllCaps = false
 			b.layoutParams = lp
 			b.minHeight = (0.5f + 32f * density).toInt()
-			b.text = if(AcctColor.hasNickname(ac)) ac.nickname else a.acct
+			
+			val sb = SpannableStringBuilder(if(AcctColor.hasNickname(ac)) ac.nickname else a.acct)
+			if( a.last_notification_error?.isNotEmpty() == true) {
+				sb.append("\n")
+				val start = sb.length
+				sb.append(a.last_notification_error)
+				val end = sb.length
+				sb.setSpan(RelativeSizeSpan(0.7f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+			}
+			b.text = sb
 			
 			b.setOnClickListener {
 				isDialogClosed.set(true)

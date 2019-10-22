@@ -13,9 +13,25 @@ object NotificationHelper {
 	
 	private val log = LogCategory("NotificationHelper")
 	
+	internal const val TRACKING_NAME_DEFAULT = ""
+	internal const val TRACKING_NAME_REPLY = "reply"
+	
 	@TargetApi(26)
-	fun createNotificationChannel(context : Context, account : SavedAccount) : NotificationChannel {
-		return createNotificationChannel(context, account.acct, account.acct, context.getString(R.string.notification_channel_description, account.acct), NotificationManager.IMPORTANCE_DEFAULT // : NotificationManager.IMPORTANCE_LOW;
+	fun createNotificationChannel(context : Context, account : SavedAccount,trackingName:String) =when(trackingName) {
+		"" -> createNotificationChannel(
+			context,
+			account.acct, // id
+			account.acct, // name
+			context.getString(R.string.notification_channel_description, account.acct),
+			NotificationManager.IMPORTANCE_DEFAULT // : NotificationManager.IMPORTANCE_LOW;
+		)
+		
+		else-> createNotificationChannel(
+			context,
+			"${account.acct}/$trackingName", // id
+			"${account.acct}/$trackingName", // name
+			context.getString(R.string.notification_channel_description, account.acct),
+			NotificationManager.IMPORTANCE_DEFAULT // : NotificationManager.IMPORTANCE_LOW;
 		)
 	}
 	

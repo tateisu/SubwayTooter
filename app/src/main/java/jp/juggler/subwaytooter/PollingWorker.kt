@@ -27,13 +27,13 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.*
+import jp.juggler.subwaytooter.table.NotificationCache.Companion.getEntityOrderId
+import jp.juggler.subwaytooter.table.NotificationCache.Companion.parseNotificationType
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import okhttp3.Call
 import okhttp3.Request
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
@@ -42,11 +42,28 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.max
+import kotlin.math.min
 
 class PollingWorker private constructor(contextArg : Context) {
 	
 	interface JobStatusCallback {
 		fun onStatus(sv : String)
+	}
+	
+	enum class TrackingType(val str:String) {
+		All("all"),
+		Reply("reply"),
+		NotReply("notReply");
+		
+		companion object{
+			fun parseStr(str:String?):TrackingType{
+				for( v in values()){
+					if(v.str == str) return v
+				}
+				return All
+			}
+		}
+		
 	}
 	
 	companion object {
@@ -58,19 +75,16 @@ class PollingWorker private constructor(contextArg : Context) {
 		const val NOTIFICATION_ID = 1
 		const val NOTIFICATION_ID_ERROR = 3
 		
-		// Notification のJSONObject を日時でソートするためにデータを追加する
-		const val KEY_TIME = "<>time"
-		
 		val mBusyAppDataImportBefore = AtomicBoolean(false)
 		val mBusyAppDataImportAfter = AtomicBoolean(false)
 		
 		const val EXTRA_DB_ID = "db_id"
 		const val EXTRA_TAG = "tag"
 		const val EXTRA_TASK_ID = "task_id"
+		const val EXTRA_NOTIFICATION_TYPE ="notification_type"
+		
 		
 		const val APP_SERVER = "https://mastodon-msg.juggler.jp"
-		
-		const val PATH_NOTIFICATIONS = "/api/v1/notifications"
 		
 		internal val inject_queue = ConcurrentLinkedQueue<InjectData>()
 		
@@ -286,10 +300,11 @@ class PollingWorker private constructor(contextArg : Context) {
 			
 		}
 		
-		fun queueNotificationDeleted(context : Context, db_id : Long) {
+		fun queueNotificationDeleted(context : Context, db_id : Long,trackingType:String) {
 			try {
 				val data = JSONObject()
 				data.putOpt(EXTRA_DB_ID, db_id)
+				data.putOpt(EXTRA_NOTIFICATION_TYPE,trackingType)
 				addTask(context, true, TASK_NOTIFICATION_DELETE, data)
 			} catch(ex : JSONException) {
 				log.trace(ex)
@@ -297,15 +312,15 @@ class PollingWorker private constructor(contextArg : Context) {
 			
 		}
 		
-		fun queueNotificationClicked(context : Context, db_id : Long) {
+		fun queueNotificationClicked(context : Context, db_id : Long,trackingType:String) {
 			try {
 				val data = JSONObject()
 				data.putOpt(EXTRA_DB_ID, db_id)
+				data.putOpt(EXTRA_NOTIFICATION_TYPE,trackingType)
 				addTask(context, true, TASK_NOTIFICATION_CLICK, data)
 			} catch(ex : JSONException) {
 				log.trace(ex)
 			}
-			
 		}
 		
 		fun queueAppDataImportBefore(context : Context) {
@@ -380,21 +395,6 @@ class PollingWorker private constructor(contextArg : Context) {
 				
 			}
 		}
-		
-		private fun EntityId.isLatestThan(previous : EntityId?) = when(previous) {
-			null -> true
-			else -> this > previous
-		}
-		
-		private fun getEntityOrderId(account : SavedAccount, src : JSONObject) : EntityId =
-			if(account.isMisskey) {
-				when(val created_at = src.parseString("createdAt")) {
-					null -> EntityId.DEFAULT
-					else -> EntityId(TootStatus.parseTime(created_at).toString())
-				}
-			} else {
-				EntityId.mayDefault(src.parseString("id"))
-			}
 	}
 	
 	internal val context : Context
@@ -875,14 +875,14 @@ class PollingWorker private constructor(contextArg : Context) {
 								val acct = tag.substring(6)
 								val sa = SavedAccount.loadAccountByAcct(context, acct)
 								if(sa != null) {
-									NotificationTracking.resetLastLoad(sa.db_id)
+									NotificationCache.resetLastLoad(sa.db_id)
 									process_db_id = sa.db_id
 									bDone = true
 								}
 							}
 							if(! bDone) {
 								for(sa in SavedAccount.loadByTag(context, tag)) {
-									NotificationTracking.resetLastLoad(sa.db_id)
+									NotificationCache.resetLastLoad(sa.db_id)
 									process_db_id = sa.db_id
 									bDone = true
 								}
@@ -890,7 +890,7 @@ class PollingWorker private constructor(contextArg : Context) {
 						}
 						if(! bDone) {
 							// タグにマッチする情報がなかった場合、全部読み直す
-							NotificationTracking.resetLastLoad()
+							NotificationCache.resetLastLoad()
 						}
 					}
 					
@@ -904,21 +904,29 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					TASK_NOTIFICATION_DELETE -> {
 						val db_id = taskData.parseLong(EXTRA_DB_ID)
-						log.d("Notification deleted! db_id=$db_id")
+						val type =  when(TrackingType.parseStr(taskData.parseString(EXTRA_NOTIFICATION_TYPE))){
+							TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
+							else ->NotificationHelper.TRACKING_NAME_DEFAULT
+						}
+						log.d("Notification deleted! db_id=$db_id,type=$type")
 						if(db_id != null) {
-							NotificationTracking.updateRead(db_id)
+							NotificationTracking.updateRead(db_id,type)
 						}
 						return
 					}
 					
 					TASK_NOTIFICATION_CLICK -> {
 						val db_id = taskData.parseLong(EXTRA_DB_ID)
-						log.d("Notification clicked! db_id=$db_id")
+						val type =  when(TrackingType.parseStr(taskData.parseString(EXTRA_NOTIFICATION_TYPE))){
+							TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
+							else ->NotificationHelper.TRACKING_NAME_DEFAULT
+						}
+						log.d("Notification clicked! db_id=$db_id,type=$type")
 						if(db_id != null) {
 							// 通知をキャンセル
 							notification_manager.cancel(db_id.toString(), NOTIFICATION_ID)
 							// DB更新処理
-							NotificationTracking.updateRead(db_id)
+							NotificationTracking.updateRead(db_id,type)
 							
 						}
 						return
@@ -973,70 +981,6 @@ class PollingWorker private constructor(contextArg : Context) {
 			}
 		}
 		
-		private fun createErrorNotification(error_instance : ArrayList<String>) {
-			if(error_instance.isEmpty()) {
-				return
-			}
-			
-			// 通知タップ時のPendingIntent
-			val intent_click = Intent(context, ActCallback::class.java)
-			// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
-			intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-			val pi_click = PendingIntent.getActivity(
-				context,
-				3,
-				intent_click,
-				PendingIntent.FLAG_UPDATE_CURRENT
-			)
-			
-			val builder = if(Build.VERSION.SDK_INT >= 26) {
-				// Android 8 から、通知のスタイルはユーザが管理することになった
-				// NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
-				val channel = NotificationHelper.createNotificationChannel(
-					context,
-					"ErrorNotification",
-					"Error",
-					null,
-					2 /* NotificationManager.IMPORTANCE_LOW */
-				)
-				NotificationCompat.Builder(context, channel.id)
-			} else {
-				NotificationCompat.Builder(context, "not_used")
-			}
-			
-			builder
-				.setContentIntent(pi_click)
-				.setAutoCancel(true)
-				.setSmallIcon(R.drawable.ic_notification) // ここは常に白テーマのアイコンを使う
-				.setColor(
-					ContextCompat.getColor(
-						context,
-						R.color.Light_colorAccent
-					)
-				) // ここは常に白テーマの色を使う
-				.setWhen(System.currentTimeMillis())
-				.setGroup(context.packageName + ":" + "Error")
-			
-			run {
-				val header = context.getString(R.string.error_notification_title)
-				val summary = context.getString(R.string.error_notification_summary)
-				
-				builder
-					.setContentTitle(header)
-					.setContentText(summary + ": " + error_instance[0])
-				
-				val style = NotificationCompat.InboxStyle()
-					.setBigContentTitle(header)
-					.setSummaryText(summary)
-				for(i in 0 .. 4) {
-					if(i >= error_instance.size) break
-					style.addLine(error_instance[i])
-				}
-				builder.setStyle(style)
-			}
-			notification_manager.notify(NOTIFICATION_ID_ERROR, builder.build())
-		}
-		
 		internal inner class AccountThread(
 			val account : SavedAccount
 		) : Thread(), CurrentCallCallback {
@@ -1048,14 +992,9 @@ class PollingWorker private constructor(contextArg : Context) {
 					get() = job.isJobCancelled
 			})
 			
-			private val duplicate_check = HashSet<EntityId>()
-			private val dstListJson = ArrayList<JSONObject>()
-			private val dstListData = ArrayList<Data>()
 			private val favMuteSet : HashSet<String> get() = job.favMuteSet
-			private lateinit var nr : NotificationTracking
 			private lateinit var parser : TootParser
-			
-			private var nid_last_show : EntityId? = null
+			private lateinit var cache : NotificationCache
 			
 			init {
 				client.currentCallCallback = this
@@ -1091,7 +1030,10 @@ class PollingWorker private constructor(contextArg : Context) {
 						
 						val (instance, instanceResult) = TootInstance.get(client)
 						if(instance == null) {
-							if(instanceResult != null) log.e("${instanceResult.error} ${instanceResult.requestInfo}".trim())
+							if(instanceResult != null){
+								log.e("${instanceResult.error} ${instanceResult.requestInfo}".trim())
+								account.updateNotificationError("${instanceResult.error} ${instanceResult.requestInfo}".trim())
+							}
 							return
 						}
 						
@@ -1106,13 +1048,71 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					if(job.isJobCancelled) return
 					
-					if(wps.flags == 0) return
+					if(wps.flags == 0){
+						if(account.last_notification_error != null){
+							account.updateNotificationError(null)
+						}
+						return
+					}
 					
-					checkAccount()
-					
+					this.cache = NotificationCache(account.db_id).apply {
+						load()
+						request(
+							client,
+							account,
+							wps.flags,
+							onError = { result ->
+								val sv = result.error
+								if(sv?.contains("Timeout") == true && ! account.dont_show_timeout) {
+									synchronized(error_instance) {
+										var bFound = false
+										for(x in error_instance) {
+											if(x == sv) {
+												bFound = true
+												break
+											}
+										}
+										if(! bFound) {
+											error_instance.add(sv)
+										}
+									}
+								}
+							},
+							isCancelled = {
+								job.isJobCancelled
+							}
+						)
+					}
 					if(job.isJobCancelled) return
 					
-					showNotification(dstListData)
+					this.parser = TootParser(context, account)
+					
+					if(! Pref.bpSeparateReplyNotificationGroup(pref)) {
+						val tr = TrackingRunner(
+							trackingType = TrackingType.All,
+							trackingName = NotificationHelper.TRACKING_NAME_DEFAULT
+						)
+						tr.checkAccount()
+						if(job.isJobCancelled) return
+						tr.updateNotification()
+						
+					} else {
+						var tr = TrackingRunner(
+							trackingType = TrackingType.NotReply,
+							trackingName = NotificationHelper.TRACKING_NAME_DEFAULT
+						)
+						tr.checkAccount()
+						if(job.isJobCancelled) return
+						tr.updateNotification()
+						//
+						tr = TrackingRunner(
+							trackingType = TrackingType.Reply,
+							trackingName = NotificationHelper.TRACKING_NAME_REPLY
+						)
+						tr.checkAccount()
+						if(job.isJobCancelled) return
+						tr.updateNotification()
+					}
 					
 				} catch(ex : Throwable) {
 					log.trace(ex)
@@ -1121,480 +1121,411 @@ class PollingWorker private constructor(contextArg : Context) {
 				}
 			}
 			
-			private fun checkAccount() {
-				this.nr = NotificationTracking.load(account.db_id)
-				this.parser = TootParser(context, account)
+			inner class TrackingRunner(
+				var trackingType : TrackingType = TrackingType.All,
+				var trackingName : String = ""
+			) {
 				
-				// まずキャッシュされたデータを処理する
-				try {
-					val last_data = nr.last_data
-					if(last_data != null) {
-						val array = last_data.toJsonArray()
-						for(i in array.length() - 1 downTo 0) {
-							if(job.isJobCancelled) return
-							val src = array.optJSONObject(i)
-							update_sub(src)
+				private lateinit var nr : NotificationTracking
+				private val duplicate_check = HashSet<EntityId>()
+				private val dstListData = LinkedList<Data>()
+				
+				internal fun checkAccount() {
+					
+					this.nr = NotificationTracking.load(account.db_id, trackingName)
+					
+					val jsonList = when(trackingType) {
+						TrackingType.All -> cache.data
+						TrackingType.Reply -> cache.data.filter {
+							when(parseNotificationType(account, it)) {
+								TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
+								else -> false
+							}
+						}
+						TrackingType.NotReply -> cache.data.filter {
+							! when(parseNotificationType(account, it)) {
+								TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
+								else -> false
+							}
 						}
 					}
-				} catch(ex : JSONException) {
-					log.trace(ex)
-				}
-				
-				
-				if(job.isJobCancelled) return
-				
-				// 前回の更新から一定時刻が経過したら新しいデータを読んでリストに追加する
-				val now = System.currentTimeMillis()
-				if(now - nr.last_load >= 60000L * 2) {
-					nr.last_load = now
 					
-					for(nTry in 0 .. 3) {
+					// 種別チェックより先に、cache中の最新のIDを「最後に表示した通知」に指定する
+					// nid_show は通知タップ時に参照されるので、通知を表示する際は必ず更新・保存する必要がある
+					// 種別チェックより優先する
+					if(cache.sinceId != null ) nr.nid_show = cache.sinceId
+					
+					// 新しい順に並んでいる。先頭から10件までを処理する。ただし処理順序は古い方から
+					val size = min(10, jsonList.size)
+					for(i in (0 until size).reversed()) {
 						if(job.isJobCancelled) return
-						
-						val result = if(account.isMisskey) {
-							val params = account.putMisskeyApiToken(JSONObject())
-							client.request("/api/i/notifications", params.toPostRequestBuilder())
-						} else {
-							val path = when {
-								nid_last_show != null -> "$PATH_NOTIFICATIONS?since_id=$nid_last_show"
-								else -> PATH_NOTIFICATIONS
+						update_sub(jsonList[i])
+					}
+					if(job.isJobCancelled) return
+					
+					nr.save()
+				}
+				
+				private fun update_sub(src : JSONObject) {
+					
+					// null値が残ってたらログをとる
+					if(nr.nid_read == null || nr.nid_show == null) {
+						log.d("update_sub[${account.db_id}], nid_read=${nr.nid_read}, nid_show=${nr.nid_show}")
+					}
+					
+					val id = getEntityOrderId(account, src)
+					
+					if(id.isDefault || duplicate_check.contains(id)) return
+					duplicate_check.add(id)
+					
+					// タップ・削除した通知のIDと同じか古いなら対象外
+					if(! id.isNewerThan(nr.nid_read)) return
+					
+					log.d("update_sub: found data that id=${id}, > read id ${nr.nid_read}")
+					
+					val notification = parser.notification(src) ?: return
+					
+					// アプリミュートと単語ミュート
+					if(notification.status?.checkMuted() == true) return
+					
+					// ふぁぼ魔ミュート
+					when(notification.type) {
+						TootNotification.TYPE_REBLOG,
+						TootNotification.TYPE_FAVOURITE,
+						TootNotification.TYPE_FOLLOW -> {
+							val who = notification.account
+							if(who != null && favMuteSet.contains(account.getFullAcct(who))) {
+								log.d("${account.getFullAcct(who)} is in favMuteSet.")
+								return
 							}
+						}
+					}
+					
+					// 後から処理したものが先頭に来る
+					dstListData.add(0, Data(account, notification))
+				}
+				
+				internal fun updateNotification() {
+					
+					val notification_tag = when(trackingName){
+						"" -> account.db_id.toString()
+						else-> "${account.db_id}/$trackingName"
+					}
+
+					val dataList = dstListData
+					val item = dataList.firstOrNull()
+					if(item == null) {
+						log.d("showNotification[${account.acct}] cancel notification.")
+						notification_manager.cancel(notification_tag, NOTIFICATION_ID)
+						return
+					}
+					
+					val nt = NotificationTracking.load(account.db_id,trackingName)
+					
+					if(item.notification.time_created_at == nt.post_time
+						&& item.notification.id == nt.post_id
+					) {
+						// 先頭にあるデータが同じなら、通知を更新しない
+						// このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
+						
+						log.d("showNotification[${account.acct}] id=${item.notification.id} is already shown.")
+						return
+					}
+					
+					nt.updatePost(item.notification.id, item.notification.time_created_at)
+					
+					createNotification(dataList, notification_tag)
+				}
+				
+				private fun createNotification(dataList : List<Data>, notification_tag : String) {
+					var item = dataList.first()
+					log.d("showNotification[${account.acct}] creating notification(1)")
+					
+					val midInt = Int.MAX_VALUE shr 1
+					
+					// 通知タップ時のPendingIntent
+					val intent_click = Intent(context, ActCallback::class.java)
+					intent_click.action = ActCallback.ACTION_NOTIFICATION_CLICK
+					intent_click.data =
+						"subwaytooter://notification_click/?db_id=${account.db_id}&type=${trackingType.str}"
+						.toUri()
+
+					// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
+					intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+					
+					val pi_click = PendingIntent.getActivity(
+						context,
+						when(trackingType){
+							TrackingType.Reply-> midInt + account.db_id.toInt()
+							else-> 256 + account.db_id.toInt()
+						},
+						intent_click,
+						PendingIntent.FLAG_UPDATE_CURRENT
+					)
+					
+					// 通知を消去した時のPendingIntent
+					val intent_delete = Intent(context, EventReceiver::class.java)
+					intent_delete.action = EventReceiver.ACTION_NOTIFICATION_DELETE
+					intent_delete.putExtra(EXTRA_DB_ID, account.db_id)
+					intent_delete.putExtra(EXTRA_NOTIFICATION_TYPE, trackingType.str)
+					val pi_delete = PendingIntent.getBroadcast(
+						context,
+						when(trackingType){
+							TrackingType.Reply->{
+								midInt - account.db_id.toInt()
+							}
+							else->{
+								Integer.MAX_VALUE - account.db_id.toInt()
+							}
+						},
+						intent_delete,
+						PendingIntent.FLAG_UPDATE_CURRENT
+					)
+					
+					log.d("showNotification[${account.acct}] creating notification(2)")
+					
+					val builder = if(Build.VERSION.SDK_INT >= 26) {
+						// Android 8 から、通知のスタイルはユーザが管理することになった
+						// NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
+						val channel = NotificationHelper.createNotificationChannel(context, account,trackingName)
+						NotificationCompat.Builder(context, channel.id)
+					} else {
+						NotificationCompat.Builder(context, "not_used")
+					}
+					
+					builder
+						.setContentIntent(pi_click)
+						.setDeleteIntent(pi_delete)
+						.setAutoCancel(true)
+						.setSmallIcon(R.drawable.ic_notification) // ここは常に白テーマのアイコンを使う
+						.setColor(
+							ContextCompat.getColor(
+								context,
+								R.color.Light_colorAccent
+							)
+						) // ここは常に白テーマの色を使う
+						.setWhen(item.notification.time_created_at)
+					
+					// Android 7.0 ではグループを指定しないと勝手に通知が束ねられてしまう。
+					// 束ねられた通知をタップしても pi_click が実行されないので困るため、
+					// アカウント別にグループキーを設定する
+					builder.setGroup(context.packageName + ":" + account.acct)
+					
+					log.d("showNotification[${account.acct}] creating notification(3)")
+					
+					if(Build.VERSION.SDK_INT < 26) {
+						
+						var iv = 0
+						
+						if(Pref.bpNotificationSound(pref)) {
 							
-							client.request(path)
-						}
-						if(result == null) {
-							log.d("cancelled.")
-							break
-						}
-						val array = result.jsonArray
-						if(array != null) {
+							var sound_uri : Uri? = null
+							
 							try {
-								for(i in array.length() - 1 downTo 0) {
-									update_sub(array.optJSONObject(i) ?: continue)
-								}
-							} catch(ex : JSONException) {
-								log.trace(ex)
-							}
-							
-							break
-						} else {
-							log.d("error. ${result.error}")
-							
-							val sv = result.error
-							if(sv?.contains("Timeout") == true && ! account.dont_show_timeout) {
-								synchronized(error_instance) {
-									var bFound = false
-									for(x in error_instance) {
-										if(x == sv) {
-											bFound = true
-											break
-										}
-									}
-									if(! bFound) {
-										error_instance.add(sv)
-									}
-								}
-							}
-						}
-					}
-				}
-				
-				if(job.isJobCancelled) return
-				
-				dstListJson.sortWith(Comparator { a, b ->
-					val la = a.parseLong(KEY_TIME) ?: 0
-					val lb = b.parseLong(KEY_TIME) ?: 0
-					// 新しい順
-					return@Comparator if(la < lb) 1 else if(la > lb) - 1 else 0
-				})
-				
-				if(job.isJobCancelled) return
-				
-				val d = JSONArray()
-				for(i in 0 .. 9) {
-					if(i >= dstListJson.size) break
-					d.put(dstListJson[i])
-				}
-				nr.last_data = d.toString()
-				nr.save()
-			}
-			
-			@Throws(JSONException::class)
-			private fun update_sub(src : JSONObject) {
-				
-				if(nr.nid_read == null || nr.nid_show == null) {
-					log.d("update_sub[${account.db_id}], nid_read=${nr.nid_read}, nid_show=${nr.nid_show}")
-				}
-				
-				val id = getEntityOrderId(account, src)
-				
-				if(id.isDefault || duplicate_check.contains(id)) return
-				duplicate_check.add(id)
-				
-				if(id.isLatestThan(nid_last_show)) {
-					nid_last_show = id
-				}
-				
-				if(! id.isLatestThan(nr.nid_read)) {
-					// 既読のID以下なら何もしない
-					return
-				}
-				
-				log.d("update_sub: found data that id=${id}, > read id ${nr.nid_read}")
-				
-				if(id.isLatestThan(nr.nid_show)) {
-					log.d("update_sub: found new data that id=${id}, greater than shown id ${nr.nid_show}")
-					// 種別チェックより先に「表示済み」idの更新を行う
-					nr.nid_show = id
-				}
-				
-				val type = src.parseString("type")
-				
-				if(! account.canNotificationShowing(type)) return
-				
-				val notification = parser.notification(src) ?: return
-				
-				// アプリミュートと単語ミュート
-				if(notification.status?.checkMuted() == true) {
-					return
-				}
-				
-				// ふぁぼ魔ミュート
-				when(type) {
-					TootNotification.TYPE_REBLOG, TootNotification.TYPE_FAVOURITE, TootNotification.TYPE_FOLLOW -> {
-						val who = notification.account
-						if(who != null && favMuteSet.contains(account.getFullAcct(who))) {
-							log.d("${account.getFullAcct(who)} is in favMuteSet.")
-							return
-						}
-					}
-				}
-				
-				//
-				val data = Data(account, notification)
-				dstListData.add(data)
-				//
-				src.put(KEY_TIME, data.notification.time_created_at)
-				dstListJson.add(src)
-			}
-			
-			private fun getNotificationLine(item : Data) : String {
-				val name = when(Pref.bpShowAcctInSystemNotification(pref)) {
-					false -> item.notification.accountRef?.decoded_display_name
-					
-					true -> {
-						val acct = item.notification.accountRef?.get()?.acct
-						if(acct?.isNotEmpty() == true) {
-							"@$acct"
-						} else {
-							null
-						}
-					}
-				} ?: "?"
-				return when(item.notification.type) {
-					TootNotification.TYPE_MENTION,
-					TootNotification.TYPE_REPLY ->
-						"- " + context.getString(R.string.display_name_replied_by, name)
-					
-					TootNotification.TYPE_RENOTE,
-					TootNotification.TYPE_REBLOG ->
-						"- " + context.getString(R.string.display_name_boosted_by, name)
-					
-					TootNotification.TYPE_QUOTE ->
-						"- " + context.getString(R.string.display_name_quoted_by, name)
-					
-					TootNotification.TYPE_FOLLOW ->
-						"- " + context.getString(R.string.display_name_followed_by, name)
-					
-					TootNotification.TYPE_UNFOLLOW ->
-						"- " + context.getString(R.string.display_name_unfollowed_by, name)
-					
-					TootNotification.TYPE_FAVOURITE ->
-						"- " + context.getString(R.string.display_name_favourited_by, name)
-					
-					TootNotification.TYPE_REACTION ->
-						"- " + context.getString(R.string.display_name_reaction_by, name)
-					
-					TootNotification.TYPE_VOTE ->
-						"- " + context.getString(R.string.display_name_voted_by, name)
-					
-					TootNotification.TYPE_FOLLOW_REQUEST ->
-						"- " + context.getString(
-							R.string.display_name_follow_request_by,
-							name
-						)
-					
-					TootNotification.TYPE_POLL ->
-						"- " + context.getString(R.string.end_of_polling_from, name)
-					
-					else -> "- " + "?"
-				}
-			}
-			
-			private fun showNotification(data_list : ArrayList<Data>) {
-				
-				val notification_tag = account.db_id.toString()
-				if(data_list.isEmpty()) {
-					log.d("showNotification[${account.acct}] cancel notification.")
-					notification_manager.cancel(notification_tag, NOTIFICATION_ID)
-					return
-				}
-				
-				Collections.sort(data_list, Comparator { a, b ->
-					val la = a.notification.time_created_at
-					val lb = b.notification.time_created_at
-					// 新しい順
-					if(la < lb) return@Comparator + 1
-					if(la > lb) - 1 else 0
-				})
-				var item = data_list[0]
-				
-				val nt = NotificationTracking.load(account.db_id)
-				
-				if(item.notification.time_created_at == nt.post_time
-					&& item.notification.id == nt.post_id
-				) {
-					// 先頭にあるデータが同じなら、通知を更新しない
-					// このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
-					
-					log.d("showNotification[${account.acct}] id=${item.notification.id} is already shown.")
-					
-					return
-				}
-				
-				nt.updatePost(item.notification.id, item.notification.time_created_at)
-				
-				log.d("showNotification[${account.acct}] creating notification(1)")
-				
-				// 通知タップ時のPendingIntent
-				val intent_click = Intent(context, ActCallback::class.java)
-				intent_click.action = ActCallback.ACTION_NOTIFICATION_CLICK
-				intent_click.data =
-					"subwaytooter://notification_click/?db_id=${account.db_id}".toUri()
-				// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
-				intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-				val pi_click = PendingIntent.getActivity(
-					context,
-					256 + account.db_id.toInt(),
-					intent_click,
-					PendingIntent.FLAG_UPDATE_CURRENT
-				)
-				
-				// 通知を消去した時のPendingIntent
-				val intent_delete = Intent(context, EventReceiver::class.java)
-				intent_delete.action = EventReceiver.ACTION_NOTIFICATION_DELETE
-				intent_delete.putExtra(EXTRA_DB_ID, account.db_id)
-				val pi_delete = PendingIntent.getBroadcast(
-					context,
-					Integer.MAX_VALUE - account.db_id.toInt(),
-					intent_delete,
-					PendingIntent.FLAG_UPDATE_CURRENT
-				)
-				
-				log.d("showNotification[${account.acct}] creating notification(2)")
-				
-				val builder = if(Build.VERSION.SDK_INT >= 26) {
-					// Android 8 から、通知のスタイルはユーザが管理することになった
-					// NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
-					val channel = NotificationHelper.createNotificationChannel(context, account)
-					NotificationCompat.Builder(context, channel.id)
-				} else {
-					NotificationCompat.Builder(context, "not_used")
-				}
-				
-				builder
-					.setContentIntent(pi_click)
-					.setDeleteIntent(pi_delete)
-					.setAutoCancel(true)
-					.setSmallIcon(R.drawable.ic_notification) // ここは常に白テーマのアイコンを使う
-					.setColor(
-						ContextCompat.getColor(
-							context,
-							R.color.Light_colorAccent
-						)
-					) // ここは常に白テーマの色を使う
-					.setWhen(item.notification.time_created_at)
-				
-				// Android 7.0 ではグループを指定しないと勝手に通知が束ねられてしまう。
-				// 束ねられた通知をタップしても pi_click が実行されないので困るため、
-				// アカウント別にグループキーを設定する
-				builder.setGroup(context.packageName + ":" + account.acct)
-				
-				log.d("showNotification[${account.acct}] creating notification(3)")
-				
-				if(Build.VERSION.SDK_INT < 26) {
-					
-					var iv = 0
-					
-					if(Pref.bpNotificationSound(pref)) {
-						
-						var sound_uri : Uri? = null
-						
-						try {
-							val acct = item.access_info.getFullAcct(item.notification.account)
-							sound_uri = AcctColor.getNotificationSound(acct).mayUri()
-						} catch(ex : Throwable) {
-							log.trace(ex)
-						}
-						
-						if(sound_uri == null) {
-							sound_uri = account.sound_uri.mayUri()
-						}
-						
-						var bSoundSet = false
-						if(sound_uri != null) {
-							try {
-								builder.setSound(sound_uri)
-								bSoundSet = true
+								val acct = item.access_info.getFullAcct(item.notification.account)
+								sound_uri = AcctColor.getNotificationSound(acct).mayUri()
 							} catch(ex : Throwable) {
 								log.trace(ex)
 							}
 							
-						}
-						if(! bSoundSet) {
-							iv = iv or NotificationCompat.DEFAULT_SOUND
-						}
-					}
-					
-					log.d("showNotification[${account.acct}] creating notification(4)")
-					
-					if(Pref.bpNotificationVibration(pref)) {
-						iv = iv or NotificationCompat.DEFAULT_VIBRATE
-					}
-					
-					log.d("showNotification[${account.acct}] creating notification(5)")
-					
-					if(Pref.bpNotificationLED(pref)) {
-						iv = iv or NotificationCompat.DEFAULT_LIGHTS
-					}
-					
-					log.d("showNotification[${account.acct}] creating notification(6)")
-					
-					builder.setDefaults(iv)
-				}
-				
-				log.d("showNotification[${account.acct}] creating notification(7)")
-				
-				var a = getNotificationLine(item)
-				
-				val acct = item.access_info.acct
-				
-				if(data_list.size == 1) {
-					builder.setContentTitle(a)
-					builder.setContentText(acct)
-				} else {
-					val header = context.getString(R.string.notification_count, data_list.size)
-					builder.setContentTitle(header)
-						.setContentText(a)
-					
-					val style = NotificationCompat.InboxStyle()
-						.setBigContentTitle(header)
-						.setSummaryText(acct)
-					for(i in 0 .. 4) {
-						if(i >= data_list.size) break
-						item = data_list[i]
-						a = getNotificationLine(item)
-						style.addLine(a)
-					}
-					builder.setStyle(style)
-				}
-				
-				log.d("showNotification[${account.acct}] set notification...")
-				
-				notification_manager.notify(notification_tag, NOTIFICATION_ID, builder.build())
-			}
-		}
-		
-		private fun processInjectedData() {
-			while(true) {
-				val data = inject_queue.poll() ?: break
-				
-				val account = SavedAccount.loadAccount(context, data.account_db_id) ?: continue
-				
-				val nr = NotificationTracking.load(data.account_db_id)
-				
-				val duplicate_check = HashSet<EntityId>()
-				
-				val dst_array = ArrayList<JSONObject>()
-				try {
-					// まずキャッシュされたデータを処理する
-					val last_data = nr.last_data
-					if(last_data != null) {
-						val array = last_data.toJsonArray()
-						for(i in array.length() - 1 downTo 0) {
-							val src = array.optJSONObject(i)
-							val id = getEntityOrderId(account, src)
-							if(id.notDefault) {
-								dst_array.add(src)
-								duplicate_check.add(id)
-								log.d("add old. id=${id}")
+							if(sound_uri == null) {
+								sound_uri = account.sound_uri.mayUri()
+							}
+							
+							var bSoundSet = false
+							if(sound_uri != null) {
+								try {
+									builder.setSound(sound_uri)
+									bSoundSet = true
+								} catch(ex : Throwable) {
+									log.trace(ex)
+								}
+								
+							}
+							if(! bSoundSet) {
+								iv = iv or NotificationCompat.DEFAULT_SOUND
 							}
 						}
-					}
-				} catch(ex : JSONException) {
-					log.trace(ex)
-				}
-				
-				for(item in data.list) {
-					try {
-						if(duplicate_check.contains(item.id)) {
-							log.d("skip duplicate. id=${item.id}")
-							continue
-						}
-						duplicate_check.add(item.id)
 						
-						val type = item.type
-						if(! account.canNotificationShowing(type)) {
-							log.d("skip by setting. id=${item.id}")
-							continue
+						if(Pref.bpNotificationVibration(pref)) {
+							iv = iv or NotificationCompat.DEFAULT_VIBRATE
 						}
 						
-						//
-						val src = item.json
-						src.put(KEY_TIME, item.time_created_at)
-						dst_array.add(src)
-					} catch(ex : JSONException) {
-						log.trace(ex)
+						if(Pref.bpNotificationLED(pref)) {
+							iv = iv or NotificationCompat.DEFAULT_LIGHTS
+						}
+						
+						builder.setDefaults(iv)
 					}
 					
-				}
-				
-				// 新しい順にソート
-				Collections.sort(dst_array, Comparator { a, b ->
-					val la = a.parseLong(KEY_TIME) ?: 0
-					val lb = b.parseLong(KEY_TIME) ?: 0
-					// 新しい順
-					if(la < lb) return@Comparator + 1
-					if(la > lb) - 1 else 0
-				})
-				
-				// 最新10件を保存
-				val d = JSONArray()
-				for(i in 0 .. 9) {
-					if(i >= dst_array.size) {
-						log.d("inject $i data.")
-						break
+					log.d("showNotification[${account.acct}] creating notification(7)")
+					
+					var a = getNotificationLine(item)
+					
+					val acct = item.access_info.acct
+					
+					if(dataList.size == 1) {
+						builder.setContentTitle(a)
+						builder.setContentText(acct)
+					} else {
+						val header = context.getString(R.string.notification_count, dataList.size)
+						builder.setContentTitle(header)
+							.setContentText(a)
+						
+						val style = NotificationCompat.InboxStyle()
+							.setBigContentTitle(header)
+							.setSummaryText(acct)
+						for(i in 0 .. 4) {
+							if(i >= dataList.size) break
+							item = dataList[i]
+							a = getNotificationLine(item)
+							style.addLine(a)
+						}
+						builder.setStyle(style)
 					}
-					d.put(dst_array[i])
+					
+					log.d("showNotification[${account.acct}] set notification...")
+					
+					notification_manager.notify(notification_tag, NOTIFICATION_ID, builder.build())
+					
 				}
-				nr.last_data = d.toString()
-				
-				nr.save()
 			}
 		}
-		
-		private fun deleteCacheData(db_id : Long) {
+	}
+	
+	private fun getNotificationLine(item : Data) : String {
+		val name = when(Pref.bpShowAcctInSystemNotification(pref)) {
+			false -> item.notification.accountRef?.decoded_display_name
 			
-			if(SavedAccount.loadAccount(context, db_id) == null) {
-				// 無効なdb_id
-				return
+			true -> {
+				val acct = item.notification.accountRef?.get()?.acct
+				if(acct?.isNotEmpty() == true) {
+					"@$acct"
+				} else {
+					null
+				}
 			}
+		} ?: "?"
+		return when(item.notification.type) {
+			TootNotification.TYPE_MENTION,
+			TootNotification.TYPE_REPLY ->
+				"- " + context.getString(R.string.display_name_replied_by, name)
 			
-			val nr = NotificationTracking.load(db_id)
-			nr.last_data = JSONArray().toString()
-			nr.save()
+			TootNotification.TYPE_RENOTE,
+			TootNotification.TYPE_REBLOG ->
+				"- " + context.getString(R.string.display_name_boosted_by, name)
+			
+			TootNotification.TYPE_QUOTE ->
+				"- " + context.getString(R.string.display_name_quoted_by, name)
+			
+			TootNotification.TYPE_FOLLOW ->
+				"- " + context.getString(R.string.display_name_followed_by, name)
+			
+			TootNotification.TYPE_UNFOLLOW ->
+				"- " + context.getString(R.string.display_name_unfollowed_by, name)
+			
+			TootNotification.TYPE_FAVOURITE ->
+				"- " + context.getString(R.string.display_name_favourited_by, name)
+			
+			TootNotification.TYPE_REACTION ->
+				"- " + context.getString(R.string.display_name_reaction_by, name)
+			
+			TootNotification.TYPE_VOTE ->
+				"- " + context.getString(R.string.display_name_voted_by, name)
+			
+			TootNotification.TYPE_FOLLOW_REQUEST ->
+				"- " + context.getString(
+					R.string.display_name_follow_request_by,
+					name
+				)
+			
+			TootNotification.TYPE_POLL ->
+				"- " + context.getString(R.string.end_of_polling_from, name)
+			
+			else -> "- " + "?"
+		}
+	}
+	
+	private fun processInjectedData() {
+		while(true) {
+			val data = inject_queue.poll() ?: break
+			val account = SavedAccount.loadAccount(context, data.account_db_id) ?: continue
+			val list = data.list
+			NotificationCache(data.account_db_id).apply {
+				load()
+				inject(account, list)
+			}
+		}
+	}
+	
+	private fun deleteCacheData(db_id : Long) {
+		SavedAccount.loadAccount(context,db_id) ?: return
+		NotificationCache.deleteCache(db_id)
+	}
+	
+	
+	private fun createErrorNotification(error_instance : ArrayList<String>) {
+		if(error_instance.isEmpty()) {
+			return
 		}
 		
+		// 通知タップ時のPendingIntent
+		val intent_click = Intent(context, ActCallback::class.java)
+		// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
+		intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+		val pi_click = PendingIntent.getActivity(
+			context,
+			3,
+			intent_click,
+			PendingIntent.FLAG_UPDATE_CURRENT
+		)
+		
+		val builder = if(Build.VERSION.SDK_INT >= 26) {
+			// Android 8 から、通知のスタイルはユーザが管理することになった
+			// NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
+			val channel = NotificationHelper.createNotificationChannel(
+				context,
+				"ErrorNotification",
+				"Error",
+				null,
+				2 /* NotificationManager.IMPORTANCE_LOW */
+			)
+			NotificationCompat.Builder(context, channel.id)
+		} else {
+			NotificationCompat.Builder(context, "not_used")
+		}
+		
+		builder
+			.setContentIntent(pi_click)
+			.setAutoCancel(true)
+			.setSmallIcon(R.drawable.ic_notification) // ここは常に白テーマのアイコンを使う
+			.setColor(
+				ContextCompat.getColor(
+					context,
+					R.color.Light_colorAccent
+				)
+			) // ここは常に白テーマの色を使う
+			.setWhen(System.currentTimeMillis())
+			.setGroup(context.packageName + ":" + "Error")
+		
+		run {
+			val header = context.getString(R.string.error_notification_title)
+			val summary = context.getString(R.string.error_notification_summary)
+			
+			builder
+				.setContentTitle(header)
+				.setContentText(summary + ": " + error_instance[0])
+			
+			val style = NotificationCompat.InboxStyle()
+				.setBigContentTitle(header)
+				.setSummaryText(summary)
+			for(i in 0 .. 4) {
+				if(i >= error_instance.size) break
+				style.addLine(error_instance[i])
+			}
+			builder.setStyle(style)
+		}
+		notification_manager.notify(NOTIFICATION_ID_ERROR, builder.build())
 	}
 	
 }

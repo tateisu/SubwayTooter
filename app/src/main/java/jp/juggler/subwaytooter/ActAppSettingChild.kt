@@ -650,6 +650,9 @@ class ActAppSettingChild : AppCompatActivity()
 		tvSampleAcct = findViewById(R.id.tvSampleAcct)
 		tvSampleContent = findViewById(R.id.tvSampleContent)
 		
+		if( Build.VERSION.SDK_INT < 26){
+			findViewById<Switch>(R.id.swSeparateReplyNotificationGroup)?.isEnabled = false
+		}
 	}
 	
 	private fun initSpinner(@IdRes viewId : Int, vararg captions : String) : Spinner? =

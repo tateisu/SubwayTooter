@@ -590,6 +590,7 @@
     <string name="replies_count_none">なし</string>
     <string name="replies_count_simple">0/1/1+</string>
     <string name="reply">返信</string>
+    <string name="default_">デフォルト</string>
     <string name="reply_from_another_account">別アカウントで返信</string>
     <string name="reply_to">%1$sへの返信</string>
     <string name="reply_to_in_draft_is_lost">下書きから参照されている返信元の投稿は失われました。以下の文脈を再現できません。in_reply_to</string>
@@ -955,5 +956,6 @@
     <string name="block_domain">ドメイン全体をブロック</string>
     <string name="instance_actions_for">\"%1$s\" サーバへのアクション</string>
     <string name="quick_toot_omit_account_selection">簡易投稿でも可能ならアカウント選択を省略する</string>
+    <string name="separate_notification_group_for_reply">返信の通知グループを分ける (Android 8+)</string>
 
 </resources>

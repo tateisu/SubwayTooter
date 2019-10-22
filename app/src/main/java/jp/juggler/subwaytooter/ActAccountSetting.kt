@@ -125,6 +125,7 @@ class ActAccountSetting
 	private lateinit var btnNotificationSoundEdit : Button
 	private lateinit var btnNotificationSoundReset : Button
 	private lateinit var btnNotificationStyleEdit : Button
+	private lateinit var btnNotificationStyleEditReply : Button
 	
 	private var notification_sound_uri : String? = null
 	
@@ -360,10 +361,14 @@ class ActAccountSetting
 		
 		btnNotificationSoundEdit = findViewById(R.id.btnNotificationSoundEdit)
 		btnNotificationSoundReset = findViewById(R.id.btnNotificationSoundReset)
-		btnNotificationStyleEdit = findViewById(R.id.btnNotificationStyleEdit)
 		btnNotificationSoundEdit.setOnClickListener(this)
 		btnNotificationSoundReset.setOnClickListener(this)
+
+		btnNotificationStyleEdit = findViewById(R.id.btnNotificationStyleEdit)
+		btnNotificationStyleEditReply = findViewById(R.id.btnNotificationStyleEditReply)
 		btnNotificationStyleEdit.setOnClickListener(this)
+		btnNotificationStyleEditReply.setOnClickListener(this)
+		vg(btnNotificationStyleEditReply,Pref.bpSeparateReplyNotificationGroup(pref) )
 		
 		name_invalidator = NetworkEmojiInvalidator(handler, etDisplayName)
 		note_invalidator = NetworkEmojiInvalidator(handler, etNote)
@@ -484,6 +489,7 @@ class ActAccountSetting
 		btnNotificationSoundEdit.isEnabled = Build.VERSION.SDK_INT < 26 && enabled
 		btnNotificationSoundReset.isEnabled = Build.VERSION.SDK_INT < 26 && enabled
 		btnNotificationStyleEdit.isEnabled = Build.VERSION.SDK_INT >= 26 && enabled
+		btnNotificationStyleEditReply.isEnabled = Build.VERSION.SDK_INT >= 26 && enabled
 		
 		cbNotificationMention.isEnabled = enabled
 		cbNotificationBoost.isEnabled = enabled
@@ -602,12 +608,18 @@ class ActAccountSetting
 			R.id.btnFields -> sendFields()
 			
 			R.id.btnNotificationStyleEdit -> if(Build.VERSION.SDK_INT >= 26) {
-				val channel = NotificationHelper.createNotificationChannel(this, account)
+				val channel = NotificationHelper.createNotificationChannel(this, account,NotificationHelper.TRACKING_NAME_DEFAULT)
 				val intent = Intent("android.settings.CHANNEL_NOTIFICATION_SETTINGS")
 				intent.putExtra(Settings.EXTRA_CHANNEL_ID, channel.id)
 				intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
 				startActivity(intent)
-				
+			}
+			R.id.btnNotificationStyleEditReply -> if(Build.VERSION.SDK_INT >= 26) {
+				val channel = NotificationHelper.createNotificationChannel(this, account,NotificationHelper.TRACKING_NAME_REPLY)
+				val intent = Intent("android.settings.CHANNEL_NOTIFICATION_SETTINGS")
+				intent.putExtra(Settings.EXTRA_CHANNEL_ID, channel.id)
+				intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+				startActivity(intent)
 			}
 		}
 	}

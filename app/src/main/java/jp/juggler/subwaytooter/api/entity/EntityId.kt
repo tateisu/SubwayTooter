@@ -83,6 +83,11 @@ class EntityId(
 	
 	override fun toString() = x
 	
+	
+	fun isNewerThan(previous : EntityId?) = when(previous) {
+		null -> true
+		else -> this > previous
+	}
 }
 
 fun EntityId?.putMayNull(cv : ContentValues, key : String) {

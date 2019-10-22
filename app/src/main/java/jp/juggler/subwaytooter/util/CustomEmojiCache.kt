@@ -66,6 +66,11 @@ class CustomEmojiCache(internal val context : Context) {
 			workers.add(worker)
 		}
 	}
+
+	// ネットワーク接続が切り替わったタイミングでエラーキャッシュをクリアする
+	fun onNetworkChanged() {
+		cache_error.clear()
+	}
 	
 	// カラムのリロードボタンを押したタイミングでエラーキャッシュをクリアする
 	fun clearErrorCache() {

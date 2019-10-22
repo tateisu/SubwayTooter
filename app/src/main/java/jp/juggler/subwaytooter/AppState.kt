@@ -141,7 +141,10 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		this.handler = Handler()
 		this.density = context.resources.displayMetrics.density
 		this.stream_reader = StreamReader(context, handler, pref)
-		this.networkTracker = NetworkStateTracker(context)
+		this.networkTracker = NetworkStateTracker(context){
+			App1.custom_emoji_cache.onNetworkChanged()
+			App1.custom_emoji_lister.onNetworkChanged()
+		}
 		loadColumnList()
 	}
 	

@@ -66,6 +66,11 @@ class CustomEmojiLister(internal val context : Context) {
 		worker.start()
 	}
 	
+	// ネットワーク接続が変化したらエラーキャッシュをクリア
+	fun onNetworkChanged() {
+		cache_error.clear()
+	}
+	
 	private fun getCached(now : Long, instance : String) : CacheItem? {
 		
 		// 成功キャッシュ
@@ -146,6 +151,8 @@ class CustomEmojiLister(internal val context : Context) {
 		}
 		return dst
 	}
+	
+
 	
 	private inner class Worker : WorkerBase() {
 		

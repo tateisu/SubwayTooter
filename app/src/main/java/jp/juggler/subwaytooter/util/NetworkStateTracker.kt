@@ -7,7 +7,8 @@ import jp.juggler.util.LogCategory
 import java.lang.RuntimeException
 
 class NetworkStateTracker(
-	val context : Context
+	val context : Context,
+	val onConnectionStateChanged:()->Unit
 
 ) : ConnectivityManager.NetworkCallback() {
 	
@@ -62,6 +63,7 @@ class NetworkStateTracker(
 			log.e(ex, "getNetworkCapabilities failed.")
 		}
 		log.d("onAvailable $network $nc")
+		onConnectionStateChanged()
 	}
 	
 	//	Called when the network the framework connected to for this request changes capabilities but still satisfies the stated need.
@@ -72,23 +74,27 @@ class NetworkStateTracker(
 	) {
 		super.onCapabilitiesChanged(network, networkCapabilities)
 		log.d("onCapabilitiesChanged $network, $networkCapabilities")
+		onConnectionStateChanged()
 	}
 	
 	//	Called when the network the framework connected to for this request changes LinkProperties.
 	override fun onLinkPropertiesChanged(network : Network, linkProperties : LinkProperties) {
 		super.onLinkPropertiesChanged(network, linkProperties)
 		log.d("onLinkPropertiesChanged $network, $linkProperties")
+		onConnectionStateChanged()
 	}
 	
 	override fun onLosing(network : Network, maxMsToLive : Int) {
 		super.onLosing(network, maxMsToLive)
 		log.d("onLosing $network, $maxMsToLive")
+		onConnectionStateChanged()
 	}
 	
 	//	Called when the framework has a hard loss of the network or when the graceful failure ends.
 	override fun onLost(network : Network) {
 		super.onLost(network)
 		log.d("onLost $network")
+		onConnectionStateChanged()
 	}
 	
 	////////////////////////////////////////////////////////////////

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
+import android.content.Context
 import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
@@ -368,5 +369,6 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 				client.instance = tmpInstance // must be last.
 			}
 		}
+		
 	}
 }

@@ -49,7 +49,7 @@ class ColumnTask_Refresh(
 			if(! bBottom) {
 				val filterList = column.loadFilter2(client)
 				if(filterList != null) {
-					column.muted_word2 = column.encodeFilterTree(filterList)
+					column.keywordFilterTrees = column.encodeFilterTree(filterList)
 					filterUpdated = true
 				}
 			}
@@ -81,7 +81,7 @@ class ColumnTask_Refresh(
 			column.bRefreshLoading = false
 			
 			if(filterUpdated) {
-				column.checkFiltersForListData(column.muted_word2)
+				column.checkFiltersForListData(column.keywordFilterTrees)
 			}
 			
 			val error = result.error

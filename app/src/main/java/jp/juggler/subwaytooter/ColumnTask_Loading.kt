@@ -46,7 +46,7 @@ class ColumnTask_Loading(
 			val result = access_info.checkConfirmed(context, client)
 			if(result == null || result.error != null) return result
 			
-			column.muted_word2 = column.encodeFilterTree(column.loadFilter2(client))
+			column.keywordFilterTrees = column.encodeFilterTree(column.loadFilter2(client))
 			
 			if(! access_info.isNA) {
 				val (instance, instanceResult) = TootInstance.get(client)

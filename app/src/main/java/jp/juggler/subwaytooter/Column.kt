@@ -482,7 +482,6 @@ class Column(
 	internal var hashtag_none : String = ""
 	internal var hashtag_acct : String = ""
 	
-	
 	// プロフカラムでのアカウント情報
 	@Volatile
 	internal var who_account : TootAccountRef? = null
@@ -554,7 +553,7 @@ class Column(
 	private var column_regex_filter = COLUMN_REGEX_FILTER_DEFAULT
 	
 	@Volatile
-	internal var muted_word2 : WordTrieTree? = null
+	internal var keywordFilterTrees : FilterTrees? = null
 	
 	@Volatile
 	private var favMuteSet : HashSet<String>? = null
@@ -655,8 +654,8 @@ class Column(
 			
 			ColumnType.INSTANCE_INFORMATION ->
 				instance_uri = getParamAt(params, 0)
-
-			ColumnType.PROFILE_DIRECTORY ->{
+			
+			ColumnType.PROFILE_DIRECTORY -> {
 				instance_uri = getParamAt(params, 0)
 				search_resolve = true
 			}
@@ -749,8 +748,8 @@ class Column(
 				src.optString(KEY_SEARCH_QUERY)
 			
 			ColumnType.INSTANCE_INFORMATION -> instance_uri = src.optString(KEY_INSTANCE_URI)
-
-			ColumnType.PROFILE_DIRECTORY ->{
+			
+			ColumnType.PROFILE_DIRECTORY -> {
 				instance_uri = src.optString(KEY_INSTANCE_URI)
 				search_query = src.optString(KEY_SEARCH_QUERY)
 				search_resolve = src.optBoolean(KEY_SEARCH_RESOLVE, false)
@@ -836,16 +835,16 @@ class Column(
 			
 			ColumnType.SEARCH -> dst
 				.put(KEY_SEARCH_QUERY, search_query)
-				.put(KEY_SEARCH_RESOLVE,search_resolve)
+				.put(KEY_SEARCH_RESOLVE, search_resolve)
 			
 			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> dst.put(KEY_SEARCH_QUERY, search_query)
 			
 			ColumnType.INSTANCE_INFORMATION -> dst.put(KEY_INSTANCE_URI, instance_uri)
-
+			
 			ColumnType.PROFILE_DIRECTORY -> dst
-					.put(KEY_SEARCH_QUERY, search_query)
-					.put(KEY_SEARCH_RESOLVE,search_resolve)
-					.put(KEY_INSTANCE_URI, instance_uri)
+				.put(KEY_SEARCH_QUERY, search_query)
+				.put(KEY_SEARCH_RESOLVE, search_resolve)
+				.put(KEY_INSTANCE_URI, instance_uri)
 			
 			else -> {
 				// no extra parameter
@@ -894,18 +893,18 @@ class Column(
 				}
 				
 				ColumnType.SEARCH ->
-					getParamAt<String>(params,0) == search_query &&
-						getParamAtNullable<Boolean>(params,1) == search_resolve
+					getParamAt<String>(params, 0) == search_query &&
+						getParamAtNullable<Boolean>(params, 1) == search_resolve
 				
 				ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS ->
-					getParamAt<String>(params,0) == search_query
+					getParamAt<String>(params, 0) == search_query
 				
-				ColumnType.INSTANCE_INFORMATION-> getParamAt<String>(params, 0) == instance_uri
+				ColumnType.INSTANCE_INFORMATION -> getParamAt<String>(params, 0) == instance_uri
 				
-				ColumnType.PROFILE_DIRECTORY->
+				ColumnType.PROFILE_DIRECTORY ->
 					getParamAt<String>(params, 0) == instance_uri &&
-					getParamAtNullable<String>(params,1) == search_query &&
-					getParamAtNullable<Boolean>(params,2) == search_resolve
+						getParamAtNullable<String>(params, 1) == search_query &&
+						getParamAtNullable<Boolean>(params, 2) == search_resolve
 				
 				else -> true
 			}
@@ -1419,8 +1418,16 @@ class Column(
 	
 	internal fun isFiltered(status : TootStatus) : Boolean {
 		
-		// word mute2
-		status.updateFiltered(muted_word2)
+		val filterTrees = keywordFilterTrees
+		if(filterTrees != null) {
+			if(status.isKeywordFiltered(access_info, filterTrees.treeIrreversible)) {
+				log.d("status filtered by treeIrreversible")
+				return true
+			}
+			
+			// just update _filtered flag for reversible filter
+			status.updateKeywordFilteredFlag(access_info, filterTrees)
+		}
 		
 		if(isFilteredByAttachment(status)) return true
 		
@@ -1498,11 +1505,19 @@ class Column(
 		}
 		
 		val status = item.status
-		
-		status?.updateFiltered(muted_word2)
+		val filterTrees = keywordFilterTrees
+		if(status !=null &&filterTrees != null) {
+			if(status.isKeywordFiltered(access_info, filterTrees.treeIrreversible)) {
+				log.d("isFiltered: status muted by treeIrreversible.")
+				return true
+			}
+			
+			// just update _filtered flag for reversible filter
+			status.updateKeywordFilteredFlag(access_info, filterTrees)
+		}
 		
 		if(status?.checkMuted() == true) {
-			log.d("isFiltered: status muted.")
+			log.d("isFiltered: status muted by in-app muted words.")
 			return true
 		}
 		
@@ -1846,7 +1861,7 @@ class Column(
 			} else {
 				val m = reMaxId.matcher(result.link_older ?: "")
 				if(m.find()) {
-					EntityId(m.groupEx(1)!!)
+					EntityId(m.groupEx(1) !!)
 				} else {
 					null
 				}
@@ -1858,12 +1873,12 @@ class Column(
 				var m = reMinId.matcher(result.link_newer ?: "")
 				if(m.find()) {
 					bMinIdMatched = true
-					EntityId(m.groupEx(1)!!)
+					EntityId(m.groupEx(1) !!)
 				} else {
 					m = reSinceId.matcher(result.link_newer ?: "")
 					if(m.find()) {
 						bMinIdMatched = false
-						EntityId(m.groupEx(1)!!)
+						EntityId(m.groupEx(1) !!)
 					} else {
 						null
 					}
@@ -2061,7 +2076,6 @@ class Column(
 		task.executeOnExecutor(App1.task_executor)
 		fireShowColumnStatus()
 	}
-	
 	
 	fun toAdapterIndex(listIndex : Int) : Int {
 		return if(type.headerType != null) listIndex + 1 else listIndex
@@ -2576,7 +2590,7 @@ class Column(
 			last_show_stream_data.set(now)
 			
 			val tmpList = ArrayList<TimelineItem>()
-			while(true) tmpList.add(stream_data_queue.poll()?:break)
+			while(true) tmpList.add(stream_data_queue.poll() ?: break)
 			if(tmpList.isEmpty()) return
 			
 			// キューから読めた件数が0の場合を除き、少し後に再処理させることでマージ漏れを防ぐ
@@ -2721,12 +2735,12 @@ class Column(
 			} else {
 				val scroll_save = this@Column.scroll_save
 				when {
-
+					
 					// スクロール位置が先頭なら先頭のまま
 					scroll_save == null || scroll_save.isHead -> {
 					
 					}
-
+					
 					// 現在の要素が表示され続けるようにしたい
 					else -> scroll_save.adapterIndex += added
 				}
@@ -2803,6 +2817,7 @@ class Column(
 		}
 	}
 	
+	// フィルタを読み直してリストを返す。またはnull
 	internal fun loadFilter2(client : TootApiClient) : ArrayList<TootFilter>? {
 		if(access_info.isPseudo || access_info.isMisskey) return null
 		val column_context = getFilterContext()
@@ -2813,35 +2828,41 @@ class Column(
 		return TootFilter.parseList(jsonArray)
 	}
 	
-	internal fun encodeFilterTree(filterList : ArrayList<TootFilter>?) : WordTrieTree? {
+	internal fun encodeFilterTree(filterList : ArrayList<TootFilter>?) : FilterTrees? {
 		val column_context = getFilterContext()
 		if(column_context == 0 || filterList == null) return null
-		val tree = WordTrieTree()
+		val result = FilterTrees()
 		val now = System.currentTimeMillis()
 		for(filter in filterList) {
 			if(filter.time_expires_at > 0L && now >= filter.time_expires_at) continue
 			if((filter.context and column_context) != 0) {
-				tree.add(
-					filter.phrase,
-					validator = when(filter.whole_word) {
-						true -> WordTrieTree.WORD_VALIDATOR
-						else -> WordTrieTree.EMPTY_VALIDATOR
-					}
-				)
+				
+				val validator = when(filter.whole_word) {
+					true -> WordTrieTree.WORD_VALIDATOR
+					else -> WordTrieTree.EMPTY_VALIDATOR
+				}
+				
+				if(filter.irreversible) {
+					result.treeIrreversible
+				} else {
+					result.treeReversible
+				}.add(filter.phrase, validator = validator)
+				
+				result.treeAll.add(filter.phrase, validator = validator)
 			}
 		}
-		return tree
+		return result
 	}
 	
-	internal fun checkFiltersForListData(tree : WordTrieTree?) {
-		tree ?: return
+	internal fun checkFiltersForListData(trees : FilterTrees?) {
+		trees ?: return
 		
 		val changeList = ArrayList<AdapterChange>()
 		list_data.forEachIndexed { idx, item ->
 			when(item) {
 				is TootStatus -> {
 					val old_filtered = item.filtered
-					item.updateFiltered(tree)
+					item.updateKeywordFilteredFlag(access_info, trees, checkIrreversible = true)
 					if(old_filtered != item.filtered) {
 						changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
 					}
@@ -2851,7 +2872,7 @@ class Column(
 					val s = item.status
 					if(s != null) {
 						val old_filtered = s.filtered
-						s.updateFiltered(tree)
+						s.updateKeywordFilteredFlag(access_info, trees, checkIrreversible = true)
 						if(old_filtered != s.filtered) {
 							changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
 						}
@@ -2866,7 +2887,7 @@ class Column(
 	
 	private fun onFiltersChanged2(filterList : ArrayList<TootFilter>) {
 		val newFilter = encodeFilterTree(filterList) ?: return
-		this.muted_word2 = newFilter
+		this.keywordFilterTrees = newFilter
 		checkFiltersForListData(newFilter)
 	}
 	

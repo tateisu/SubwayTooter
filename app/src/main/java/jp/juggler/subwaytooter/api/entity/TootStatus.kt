@@ -24,6 +24,12 @@ import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.math.abs
 
+class FilterTrees(
+	val treeIrreversible : WordTrieTree = WordTrieTree(),
+	val treeReversible : WordTrieTree = WordTrieTree(),
+	val treeAll : WordTrieTree = WordTrieTree()
+)
+
 @Suppress("MemberVisibilityCanPrivate")
 class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
@@ -291,9 +297,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			}
 			
 			// Markdownのデコード結果からmentionsを読むのだった
-			val mentions1 = (decoded_content as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
-
-		
+			val mentions1 =
+				(decoded_content as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
+			
 			val sv = src.parseString("cw")?.cleanCW()
 			this.spoiler_text = when {
 				sv == null -> "" // CWなし
@@ -319,10 +325,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			if(options.highlight_sound != null && this.highlight_sound == null) {
 				this.highlight_sound = options.highlight_sound
 			}
-
-			val mentions2 = (decoded_spoiler_text as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
 			
-			this.mentions = mergeMentions(mentions1,mentions2)
+			val mentions2 =
+				(decoded_spoiler_text as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
+			
+			this.mentions = mergeMentions(mentions1, mentions2)
 			this.decoded_mentions = HTMLDecoder.decodeMentions(
 				parser.linkHelper,
 				this.mentions,
@@ -372,7 +379,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			this.profile_emojis = when(val o = src.opt("profile_emojis")) {
 				is JSONArray -> parseMapOrNull(::NicoProfileEmoji, o, log)
-				is JSONObject ->parseProfileEmoji2(::NicoProfileEmoji, o, log)
+				is JSONObject -> parseProfileEmoji2(::NicoProfileEmoji, o, log)
 				else -> null
 			}
 			
@@ -547,11 +554,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		mentions1 : java.util.ArrayList<TootMention>?,
 		mentions2 : java.util.ArrayList<TootMention>?
 	) : java.util.ArrayList<TootMention>? {
-		val size = (mentions1?.size?:0) + (mentions2?.size?:0)
-		if( size == 0) return null
+		val size = (mentions1?.size ?: 0) + (mentions2?.size ?: 0)
+		if(size == 0) return null
 		val dst = ArrayList<TootMention>(size)
-		if(mentions1!=null) dst.addAll(mentions1)
-		if(mentions2!=null) dst.addAll(mentions2)
+		if(mentions1 != null) dst.addAll(mentions1)
+		if(mentions2 != null) dst.addAll(mentions2)
 		return dst
 	}
 	
@@ -629,20 +636,46 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			else -> visibility
 		}
 	
-	fun updateFiltered(muted_words : WordTrieTree?) {
-		_filtered = checkFiltered(muted_words)
-		reblog?.updateFiltered(muted_words)
+	fun updateKeywordFilteredFlag(
+		accessInfo : SavedAccount,
+		trees : FilterTrees?,
+		checkIrreversible : Boolean = false
+	) {
+		
+		trees ?: return
+		
+		// status from me or boosted by me is not filtered.
+		if(accessInfo.isMe(account)) {
+			_filtered = false
+			return
+		}
+		
+		_filtered =
+			isKeywordFilteredSub(if(checkIrreversible) trees.treeAll else trees.treeReversible)
+		
+		reblog?.updateKeywordFilteredFlag(accessInfo, trees, checkIrreversible)
 	}
 	
-	private fun checkFiltered(filter_tree : WordTrieTree?) : Boolean {
-		filter_tree ?: return false
-		//
+	fun isKeywordFiltered(accessInfo : SavedAccount, tree : WordTrieTree?) : Boolean {
+		tree ?: return false
+		
+		// status from me or boosted by me is not filtered.
+		if(accessInfo.isMe(account)) return false
+		
+		if(isKeywordFilteredSub(tree)) return true
+		if(reblog?.isKeywordFilteredSub(tree) == true) return true
+		
+		return false
+	}
+	
+	private fun isKeywordFilteredSub(tree : WordTrieTree) : Boolean {
+
 		var t = decoded_spoiler_text
-		if(t.isNotEmpty() && filter_tree.matchShort(t)) return true
-		//
+		if(t.isNotEmpty() && tree.matchShort(t)) return true
+
 		t = decoded_content
-		if(t.isNotEmpty() && filter_tree.matchShort(t)) return true
-		//
+		if(t.isNotEmpty() && tree.matchShort(t)) return true
+
 		return false
 	}
 	
@@ -733,11 +766,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		return true
 	}
 	
-	
 	class FindStatusIdFromUrlResult(
 		val statusId : EntityId?, // may null
-		val host:String,
-		val url :String
+		val host : String,
+		val url : String
 	)
 	
 	companion object {
@@ -783,24 +815,24 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		// PleromaのStatusの公開ページ
 		private val reStatusPageNotice =
 			Pattern.compile("""\Ahttps://([^/]+)/notice/([^?#/\s]+)(?:\z|[?#])""")
-
+		
 		// PixelfedのStatusの公開ページ
 		// https://pixelfed.tokyo/p/tateisu/84169185147621376
 		private val reStatusPagePixelfed =
 			Pattern.compile("""\Ahttps://([^/]+)/p/([A-Za-z0-9_]+)/([^?#/\s]+)(?:\z|[?#])""")
 		
 		// returns null or pair( status_id, host ,url )
-		fun String.findStatusIdFromUrl():FindStatusIdFromUrlResult?{
+		fun String.findStatusIdFromUrl() : FindStatusIdFromUrlResult? {
 			// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 			var m = reStatusPage.matcher(this)
 			if(m.find()) {
-				return FindStatusIdFromUrlResult( EntityId(m.groupEx(3) !!), m.groupEx(1) !! ,this)
+				return FindStatusIdFromUrlResult(EntityId(m.groupEx(3) !!), m.groupEx(1) !!, this)
 			}
-
+			
 			// https://misskey.xyz/notes/(id)
 			m = reStatusPageMisskey.matcher(this)
 			if(m.find()) {
-				return FindStatusIdFromUrlResult( EntityId(m.groupEx(2) !!), m.groupEx(1) !! ,this)
+				return FindStatusIdFromUrlResult(EntityId(m.groupEx(2) !!), m.groupEx(1) !!, this)
 			}
 			
 			// https://misskey.xyz/objects/(id)
@@ -808,7 +840,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			if(m.find()) {
 				return FindStatusIdFromUrlResult(
 					null, // ステータスIDではないのでどのタンスで開くにせよ検索APIを通すことになる
-					m.groupEx(1) !! ,
+					m.groupEx(1) !!,
 					this
 				)
 			}
@@ -818,23 +850,22 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			if(m.find()) {
 				return FindStatusIdFromUrlResult(
 					EntityId(m.groupEx(2) !!),
-					m.groupEx(1) !! ,
+					m.groupEx(1) !!,
 					this
 				)
 			}
 			
 			m = reStatusPagePixelfed.matcher(this)
-			if(m.find()){
+			if(m.find()) {
 				return FindStatusIdFromUrlResult(
 					EntityId(m.groupEx(3) !!),
-					m.groupEx(1) !! ,
+					m.groupEx(1) !!,
 					this
 				)
 			}
 			
 			return null
 		}
-		
 		
 		fun parseListTootsearch(
 			parser : TootParser,
@@ -1052,15 +1083,15 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				if(uri?.isNotEmpty() == true) {
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(uri)
-					if(m.find()) return EntityId(m.groupEx(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2) !!)
 					
 					// https://server/@user/(status_id)
 					m = reTootUriAP2.matcher(uri)
-					if(m.find()) return EntityId(m.groupEx(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2) !!)
 					
 					// https://misskey.xyz/notes/5b802367744b650030a13640
 					m = reStatusPageMisskey.matcher(uri)
-					if(m.find()) return EntityId(m.groupEx(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2) !!)
 					
 					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
 					// tootsearch中の投稿からIDを読めるようにしたい
@@ -1070,11 +1101,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
 					m = reStatusPageNotice.matcher(uri)
-					if(m.find()) return EntityId(m.groupEx(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2) !!)
 					
 					// tag:mstdn.osaka,2017-12-19:objectId=5672321:objectType=Status
 					m = reTootUriOS.matcher(uri)
-					if(m.find()) return EntityId(m.groupEx(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2) !!)
 					
 					log.w("findStatusIdFromUri: unsupported uri. $uri")
 				}
@@ -1083,15 +1114,15 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(url)
-					if(m.find()) return EntityId(m.groupEx(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2) !!)
 					
 					// https://friends.nico/@(who)/(status_id)
 					m = reTootUriAP2.matcher(url)
-					if(m.find()) return EntityId(m.groupEx(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2) !!)
 					
 					// https://misskey.xyz/notes/5b802367744b650030a13640
 					m = reStatusPageMisskey.matcher(url)
-					if(m.find()) return EntityId(m.groupEx(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2) !!)
 					
 					// https://pl.at7s.me/objects/feeb4399-cd7a-48c8-8999-b58868daaf43
 					// tootsearch中の投稿からIDを読めるようにしたい
@@ -1101,7 +1132,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					// https://pl.telteltel.com/notice/9fGFPu4LAgbrTby0xc
 					m = reStatusPageNotice.matcher(url)
-					if(m.find()) return EntityId(m.groupEx(2)!!)
+					if(m.find()) return EntityId(m.groupEx(2) !!)
 					
 					
 					log.w("findStatusIdFromUri: unsupported url. $url")

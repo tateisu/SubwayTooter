@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -257,6 +258,7 @@ class ActAppSettingChild : AppCompatActivity()
 	private var etAcctFontSize : EditText? = null
 	private var tvTimelineFontSize : TextView? = null
 	private var tvAcctFontSize : TextView? = null
+	private var etTimelineSpacing : EditText? = null
 	
 	private var etHeaderTextSize : EditText? = null
 	private var tvHeaderTextSize : TextView? = null
@@ -591,14 +593,18 @@ class ActAppSettingChild : AppCompatActivity()
 		tvAcctFontSize = findViewById(R.id.tvAcctFontSize)
 		tvNotificationTlFontSize = findViewById(R.id.tvNotificationTlFontSize)
 		
+		etTimelineSpacing = findViewById(R.id.etTimelineSpacing)
 		etTimelineFontSize = findViewById(R.id.etTimelineFontSize)
+
 		etTimelineFontSize?.addTextChangedListener(
 			SizeCheckTextWatcher(
 				tvTimelineFontSize !!,
 				etTimelineFontSize !!,
-				Pref.default_timeline_font_size
+				Pref.default_timeline_font_size,
+				etSpacing = etTimelineSpacing !!
 			)
 		)
+		
 		
 		etAcctFontSize = findViewById(R.id.etAcctFontSize)
 		etAcctFontSize?.addTextChangedListener(
@@ -625,9 +631,29 @@ class ActAppSettingChild : AppCompatActivity()
 			SizeCheckTextWatcher(
 				tvNotificationTlFontSize !!,
 				etNotificationTlFontSize !!,
-				Pref.default_notification_tl_font_size
+				Pref.default_notification_tl_font_size,
+				etSpacing = etTimelineSpacing !!
 			)
 		)
+		
+		etTimelineSpacing?.addTextChangedListener(
+			SizeCheckTextWatcher(
+				tvTimelineFontSize !!,
+				etTimelineFontSize !!,
+				Pref.default_timeline_font_size,
+				etSpacing = etTimelineSpacing !!
+			)
+		)
+		
+		etTimelineSpacing?.addTextChangedListener(
+			SizeCheckTextWatcher(
+				tvNotificationTlFontSize !!,
+				etNotificationTlFontSize !!,
+				Pref.default_notification_tl_font_size,
+				etSpacing = etTimelineSpacing !!
+			)
+		)
+		
 		
 		etAvatarIconSize = findViewById(R.id.etAvatarIconSize)
 		etNotificationTlIconSize = findViewById(R.id.etNotificationTlIconSize)
@@ -650,7 +676,7 @@ class ActAppSettingChild : AppCompatActivity()
 		tvSampleAcct = findViewById(R.id.tvSampleAcct)
 		tvSampleContent = findViewById(R.id.tvSampleContent)
 		
-		if( Build.VERSION.SDK_INT < 26){
+		if(Build.VERSION.SDK_INT < 26) {
 			findViewById<Switch>(R.id.swSeparateReplyNotificationGroup)?.isEnabled = false
 		}
 	}
@@ -761,6 +787,7 @@ class ActAppSettingChild : AppCompatActivity()
 		etAcctFontSize?.setText(formatFontSize(Pref.fpAcctFontSize(pref)))
 		etNotificationTlFontSize?.setText(formatFontSize(Pref.fpNotificationTlFontSize(pref)))
 		etHeaderTextSize?.setText(formatFontSize(Pref.fpHeaderTextSize(pref)))
+		etTimelineSpacing?.setText(Pref.spTimelineSpacing(pref))
 		
 		etUserAgent?.hint = App1.userAgentDefault
 		
@@ -770,12 +797,18 @@ class ActAppSettingChild : AppCompatActivity()
 		showTimelineFont(tvTimelineFontUrl, timeline_font)
 		showTimelineFont(tvTimelineFontBoldUrl, timeline_font_bold)
 		
-		showFontSize(tvTimelineFontSize, etTimelineFontSize, Pref.default_timeline_font_size)
+		showFontSize(
+			tvTimelineFontSize,
+			etTimelineFontSize,
+			Pref.default_timeline_font_size,
+			etSpacing = etTimelineSpacing
+		)
 		showFontSize(tvAcctFontSize, etAcctFontSize, Pref.default_acct_font_size)
 		showFontSize(
 			tvNotificationTlFontSize,
 			etNotificationTlFontSize,
-			Pref.default_notification_tl_font_size
+			Pref.default_notification_tl_font_size,
+			etSpacing = etTimelineSpacing
 		)
 		showFontSize(tvHeaderTextSize, etHeaderTextSize, Pref.default_header_font_size)
 		
@@ -844,6 +877,7 @@ class ActAppSettingChild : AppCompatActivity()
 		putText(Pref.spRoundRatio, etRoundRatio)
 		putText(Pref.spBoostAlpha, etBoostAlpha)
 		putText(Pref.spMediaReadTimeout, etMediaReadTimeout)
+		putText(Pref.spTimelineSpacing, etTimelineSpacing)
 		
 		fun putIf(hasUi : Boolean, sp : StringPref, value : String) {
 			if(! hasUi) return
@@ -1586,7 +1620,8 @@ class ActAppSettingChild : AppCompatActivity()
 	private inner class SizeCheckTextWatcher internal constructor(
 		internal val sample : TextView,
 		internal val et : EditText,
-		internal val default_size_sp : Float
+		internal val default_size_sp : Float,
+		internal val etSpacing : EditText? = null
 	) : TextWatcher {
 		
 		override fun beforeTextChanged(s : CharSequence, start : Int, count : Int, after : Int) {
@@ -1599,7 +1634,7 @@ class ActAppSettingChild : AppCompatActivity()
 		
 		override fun afterTextChanged(s : Editable) {
 			saveUIToData()
-			showFontSize(sample, et, default_size_sp)
+			showFontSize(sample, et, default_size_sp, etSpacing)
 		}
 	}
 	
@@ -1630,10 +1665,15 @@ class ActAppSettingChild : AppCompatActivity()
 		return Float.NaN
 	}
 	
+	private val defaultLineSpacingExtra = SparseArray<Float>()
+	private val defaultLineSpacingMultiplier = SparseArray<Float>()
+	
+	
 	private fun showFontSize(
 		sample : TextView?,
 		et : EditText?,
-		default_sp : Float
+		default_sp : Float,
+		etSpacing : EditText? =null
 	) {
 		sample ?: return
 		et ?: return
@@ -1643,6 +1683,25 @@ class ActAppSettingChild : AppCompatActivity()
 		} else {
 			if(fv < 1f) fv = 1f
 			sample.textSize = fv
+		}
+		if( etSpacing != null){
+			var defaultExtra = defaultLineSpacingExtra[sample.id]
+			if(defaultExtra == null){
+				defaultExtra = sample.lineSpacingExtra
+				defaultLineSpacingExtra.put(sample.id, defaultExtra)
+			}
+			var defaultMultiplier = defaultLineSpacingMultiplier[sample.id]
+			if(defaultMultiplier == null){
+				defaultMultiplier = sample.lineSpacingMultiplier
+				defaultLineSpacingMultiplier.put(sample.id, defaultMultiplier)
+			}
+			
+			val spacing = etSpacing.text.toString().toFloatOrNull()
+			if( spacing ==null || !spacing.isFinite()){
+				sample.setLineSpacing(defaultExtra,defaultMultiplier)
+			}else{
+				sample.setLineSpacing(0f,spacing)
+			}
 		}
 	}
 	

@@ -29,6 +29,9 @@ internal abstract class ViewHolderHeaderBase(val activity : ActMain, val viewRoo
 					if(! activity.timeline_font_size_sp.isNaN()) {
 						v.textSize = activity.timeline_font_size_sp
 					}
+					
+					val fv = activity.timeline_spacing
+					if( fv != null) v.setLineSpacing(0f,fv)
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)

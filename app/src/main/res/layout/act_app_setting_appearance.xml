@@ -383,6 +383,25 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:labelFor="@+id/etTimelineSpacing"
+            android:text="@string/timeline_line_spacing"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etTimelineSpacing"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:labelFor="@+id/etBoostButtonSize"
             android:text="@string/boost_button_size"
             />

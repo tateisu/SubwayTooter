@@ -566,6 +566,8 @@ object Pref {
 	val spCustomShare2 = StringPref("CustomShare2","")
 	val spCustomShare3 = StringPref("CustomShare3","")
 	
+	val spTimelineSpacing = StringPref("TimelineSpacing","")
+	
 	// long
 	val lpTabletTootDefaultAccount = LongPref("tablet_toot_default_account", - 1L)
 	

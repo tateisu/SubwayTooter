@@ -266,6 +266,29 @@ internal class ItemViewHolder(
 			tvFilterDetail.textSize = f
 		}
 		
+		val spacing = activity.timeline_spacing
+		if( spacing != null){
+			tvFollowerName.setLineSpacing(0f,spacing)
+			tvName.setLineSpacing(0f,spacing)
+			tvMentions.setLineSpacing(0f,spacing)
+			tvContentWarning.setLineSpacing(0f,spacing)
+			tvContent.setLineSpacing(0f,spacing)
+			btnShowMedia.setLineSpacing(0f,spacing)
+			tvApplication.setLineSpacing(0f,spacing)
+			tvMessageHolder.setLineSpacing(0f,spacing)
+			btnListTL.setLineSpacing(0f,spacing)
+			tvTrendTagName.setLineSpacing(0f,spacing)
+			tvTrendTagCount.setLineSpacing(0f,spacing)
+			tvFilterPhrase.setLineSpacing(0f,spacing)
+			tvMediaDescription.setLineSpacing(0f,spacing)
+			tvCardText.setLineSpacing(0f,spacing)
+			tvConversationIconsMore.setLineSpacing(0f,spacing)
+			tvConversationParticipants.setLineSpacing(0f,spacing)
+			tvBoosted.setLineSpacing(0f,spacing)
+			tvReply.setLineSpacing(0f,spacing)
+		}
+		
+		
 		var s = activity.avatarIconSize
 		ivThumbnail.layoutParams.height = s
 		ivThumbnail.layoutParams.width = s

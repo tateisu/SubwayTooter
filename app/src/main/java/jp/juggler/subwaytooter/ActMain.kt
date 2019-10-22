@@ -117,6 +117,7 @@ class ActMain : AppCompatActivity()
 	var acct_font_size_sp = Float.NaN
 	var notification_tl_font_size_sp = Float.NaN
 	var header_text_size_sp = Float.NaN
+	var timeline_spacing:Float? = null
 	var avatarIconSize : Int = 0
 	var notificationTlIconSize : Int = 0
 	
@@ -430,6 +431,9 @@ class ActMain : AppCompatActivity()
 		acct_font_size_sp = Pref.fpAcctFontSize(pref).clipFontSize()
 		notification_tl_font_size_sp = Pref.fpNotificationTlFontSize(pref).clipFontSize()
 		header_text_size_sp = Pref.fpHeaderTextSize(pref).clipFontSize()
+		
+		val fv =  Pref.spTimelineSpacing(pref).toFloatOrNull()
+		timeline_spacing = if(fv!=null && fv.isFinite() && fv!=0f) fv else null
 		
 		initUI()
 		
@@ -2816,6 +2820,10 @@ class ActMain : AppCompatActivity()
 		if(! timeline_font_size_sp.isNaN()) {
 			tv.textSize = timeline_font_size_sp
 		}
+
+		val fv = timeline_spacing
+		if( fv != null) tv.setLineSpacing(0f,fv)
+
 		tv.typeface = timeline_font
 		tv.text = text
 		tv.measure(

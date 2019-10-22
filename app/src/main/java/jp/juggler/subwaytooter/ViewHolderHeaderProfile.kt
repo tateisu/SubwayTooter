@@ -149,6 +149,12 @@ internal class ViewHolderHeaderProfile(
 			tvLastStatusAt.textSize = f
 		}
 		
+		val spacing = activity.timeline_spacing
+		if( spacing != null) {
+			tvMovedName.setLineSpacing(0f, spacing)
+			tvMoved.setLineSpacing(0f, spacing)
+		}
+		
 		val contentColor = column.getContentColor()
 		this.contentColor = contentColor
 		

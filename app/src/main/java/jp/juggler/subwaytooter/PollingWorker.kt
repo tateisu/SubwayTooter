@@ -50,14 +50,14 @@ class PollingWorker private constructor(contextArg : Context) {
 		fun onStatus(sv : String)
 	}
 	
-	enum class TrackingType(val str:String) {
+	enum class TrackingType(val str : String) {
 		All("all"),
 		Reply("reply"),
 		NotReply("notReply");
 		
-		companion object{
-			fun parseStr(str:String?):TrackingType{
-				for( v in values()){
+		companion object {
+			fun parseStr(str : String?) : TrackingType {
+				for(v in values()) {
 					if(v.str == str) return v
 				}
 				return All
@@ -81,8 +81,7 @@ class PollingWorker private constructor(contextArg : Context) {
 		const val EXTRA_DB_ID = "db_id"
 		const val EXTRA_TAG = "tag"
 		const val EXTRA_TASK_ID = "task_id"
-		const val EXTRA_NOTIFICATION_TYPE ="notification_type"
-		
+		const val EXTRA_NOTIFICATION_TYPE = "notification_type"
 		
 		const val APP_SERVER = "https://mastodon-msg.juggler.jp"
 		
@@ -300,11 +299,11 @@ class PollingWorker private constructor(contextArg : Context) {
 			
 		}
 		
-		fun queueNotificationDeleted(context : Context, db_id : Long,trackingType:String) {
+		fun queueNotificationDeleted(context : Context, db_id : Long, trackingType : String) {
 			try {
 				val data = JSONObject()
 				data.putOpt(EXTRA_DB_ID, db_id)
-				data.putOpt(EXTRA_NOTIFICATION_TYPE,trackingType)
+				data.putOpt(EXTRA_NOTIFICATION_TYPE, trackingType)
 				addTask(context, true, TASK_NOTIFICATION_DELETE, data)
 			} catch(ex : JSONException) {
 				log.trace(ex)
@@ -312,11 +311,11 @@ class PollingWorker private constructor(contextArg : Context) {
 			
 		}
 		
-		fun queueNotificationClicked(context : Context, db_id : Long,trackingType:String) {
+		fun queueNotificationClicked(context : Context, db_id : Long, trackingType : String) {
 			try {
 				val data = JSONObject()
 				data.putOpt(EXTRA_DB_ID, db_id)
-				data.putOpt(EXTRA_NOTIFICATION_TYPE,trackingType)
+				data.putOpt(EXTRA_NOTIFICATION_TYPE, trackingType)
 				addTask(context, true, TASK_NOTIFICATION_CLICK, data)
 			} catch(ex : JSONException) {
 				log.trace(ex)
@@ -904,29 +903,31 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					TASK_NOTIFICATION_DELETE -> {
 						val db_id = taskData.parseLong(EXTRA_DB_ID)
-						val type =  when(TrackingType.parseStr(taskData.parseString(EXTRA_NOTIFICATION_TYPE))){
-							TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
-							else ->NotificationHelper.TRACKING_NAME_DEFAULT
-						}
+						val type =
+							when(TrackingType.parseStr(taskData.parseString(EXTRA_NOTIFICATION_TYPE))) {
+								TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
+								else -> NotificationHelper.TRACKING_NAME_DEFAULT
+							}
 						log.d("Notification deleted! db_id=$db_id,type=$type")
 						if(db_id != null) {
-							NotificationTracking.updateRead(db_id,type)
+							NotificationTracking.updateRead(db_id, type)
 						}
 						return
 					}
 					
 					TASK_NOTIFICATION_CLICK -> {
 						val db_id = taskData.parseLong(EXTRA_DB_ID)
-						val type =  when(TrackingType.parseStr(taskData.parseString(EXTRA_NOTIFICATION_TYPE))){
-							TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
-							else ->NotificationHelper.TRACKING_NAME_DEFAULT
-						}
+						val type =
+							when(TrackingType.parseStr(taskData.parseString(EXTRA_NOTIFICATION_TYPE))) {
+								TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
+								else -> NotificationHelper.TRACKING_NAME_DEFAULT
+							}
 						log.d("Notification clicked! db_id=$db_id,type=$type")
 						if(db_id != null) {
 							// 通知をキャンセル
 							notification_manager.cancel(db_id.toString(), NOTIFICATION_ID)
 							// DB更新処理
-							NotificationTracking.updateRead(db_id,type)
+							NotificationTracking.updateRead(db_id, type)
 							
 						}
 						return
@@ -1030,7 +1031,7 @@ class PollingWorker private constructor(contextArg : Context) {
 						
 						val (instance, instanceResult) = TootInstance.get(client)
 						if(instance == null) {
-							if(instanceResult != null){
+							if(instanceResult != null) {
 								log.e("${instanceResult.error} ${instanceResult.requestInfo}".trim())
 								account.updateNotificationError("${instanceResult.error} ${instanceResult.requestInfo}".trim())
 							}
@@ -1048,8 +1049,8 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					if(job.isJobCancelled) return
 					
-					if(wps.flags == 0){
-						if(account.last_notification_error != null){
+					if(wps.flags == 0) {
+						if(account.last_notification_error != null) {
 							account.updateNotificationError(null)
 						}
 						return
@@ -1150,11 +1151,6 @@ class PollingWorker private constructor(contextArg : Context) {
 						}
 					}
 					
-					// 種別チェックより先に、cache中の最新のIDを「最後に表示した通知」に指定する
-					// nid_show は通知タップ時に参照されるので、通知を表示する際は必ず更新・保存する必要がある
-					// 種別チェックより優先する
-					if(cache.sinceId != null ) nr.nid_show = cache.sinceId
-					
 					// 新しい順に並んでいる。先頭から10件までを処理する。ただし処理順序は古い方から
 					val size = min(10, jsonList.size)
 					for(i in (0 until size).reversed()) {
@@ -1163,18 +1159,16 @@ class PollingWorker private constructor(contextArg : Context) {
 					}
 					if(job.isJobCancelled) return
 					
+					// 種別チェックより先に、cache中の最新のIDを「最後に表示した通知」に指定する
+					// nid_show は通知タップ時に参照されるので、通知を表示する際は必ず更新・保存する必要がある
+					// 種別チェックより優先する
+					if(cache.sinceId != null) nr.nid_show = cache.sinceId
 					nr.save()
 				}
 				
 				private fun update_sub(src : JSONObject) {
 					
-					// null値が残ってたらログをとる
-					if(nr.nid_read == null || nr.nid_show == null) {
-						log.d("update_sub[${account.db_id}], nid_read=${nr.nid_read}, nid_show=${nr.nid_show}")
-					}
-					
 					val id = getEntityOrderId(account, src)
-					
 					if(id.isDefault || duplicate_check.contains(id)) return
 					duplicate_check.add(id)
 					
@@ -1207,11 +1201,11 @@ class PollingWorker private constructor(contextArg : Context) {
 				
 				internal fun updateNotification() {
 					
-					val notification_tag = when(trackingName){
+					val notification_tag = when(trackingName) {
 						"" -> account.db_id.toString()
-						else-> "${account.db_id}/$trackingName"
+						else -> "${account.db_id}/$trackingName"
 					}
-
+					
 					val dataList = dstListData
 					val item = dataList.firstOrNull()
 					if(item == null) {
@@ -1220,7 +1214,7 @@ class PollingWorker private constructor(contextArg : Context) {
 						return
 					}
 					
-					val nt = NotificationTracking.load(account.db_id,trackingName)
+					val nt = NotificationTracking.load(account.db_id, trackingName)
 					
 					if(item.notification.time_created_at == nt.post_time
 						&& item.notification.id == nt.post_id
@@ -1248,16 +1242,16 @@ class PollingWorker private constructor(contextArg : Context) {
 					intent_click.action = ActCallback.ACTION_NOTIFICATION_CLICK
 					intent_click.data =
 						"subwaytooter://notification_click/?db_id=${account.db_id}&type=${trackingType.str}"
-						.toUri()
-
+							.toUri()
+					
 					// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
 					intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 					
 					val pi_click = PendingIntent.getActivity(
 						context,
-						when(trackingType){
-							TrackingType.Reply-> midInt + account.db_id.toInt()
-							else-> 256 + account.db_id.toInt()
+						when(trackingType) {
+							TrackingType.Reply -> midInt + account.db_id.toInt()
+							else -> 256 + account.db_id.toInt()
 						},
 						intent_click,
 						PendingIntent.FLAG_UPDATE_CURRENT
@@ -1270,11 +1264,12 @@ class PollingWorker private constructor(contextArg : Context) {
 					intent_delete.putExtra(EXTRA_NOTIFICATION_TYPE, trackingType.str)
 					val pi_delete = PendingIntent.getBroadcast(
 						context,
-						when(trackingType){
-							TrackingType.Reply->{
+						when(trackingType) {
+							TrackingType.Reply -> {
 								midInt - account.db_id.toInt()
 							}
-							else->{
+							
+							else -> {
 								Integer.MAX_VALUE - account.db_id.toInt()
 							}
 						},
@@ -1287,7 +1282,11 @@ class PollingWorker private constructor(contextArg : Context) {
 					val builder = if(Build.VERSION.SDK_INT >= 26) {
 						// Android 8 から、通知のスタイルはユーザが管理することになった
 						// NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
-						val channel = NotificationHelper.createNotificationChannel(context, account,trackingName)
+						val channel = NotificationHelper.createNotificationChannel(
+							context,
+							account,
+							trackingName
+						)
 						NotificationCompat.Builder(context, channel.id)
 					} else {
 						NotificationCompat.Builder(context, "not_used")
@@ -1459,10 +1458,9 @@ class PollingWorker private constructor(contextArg : Context) {
 	}
 	
 	private fun deleteCacheData(db_id : Long) {
-		SavedAccount.loadAccount(context,db_id) ?: return
+		SavedAccount.loadAccount(context, db_id) ?: return
 		NotificationCache.deleteCache(db_id)
 	}
-	
 	
 	private fun createErrorNotification(error_instance : ArrayList<String>) {
 		if(error_instance.isEmpty()) {

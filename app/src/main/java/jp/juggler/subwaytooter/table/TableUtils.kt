@@ -9,17 +9,15 @@ import android.database.sqlite.SQLiteDatabase
 fun Boolean.b2i() = if(this) 1 else 0
 
 // integer to boolean
-fun Int.i2b() = this!=0
+fun Int.i2b() = this != 0
 
-
-fun Cursor.getBoolean(keyIdx:Int) =
+fun Cursor.getBoolean(keyIdx : Int) =
 	getInt(keyIdx).i2b()
 
-fun Cursor.getBoolean(key:String) =
+fun Cursor.getBoolean(key : String) =
 	getBoolean(getColumnIndex(key))
 
-
-interface TableCompanion{
+interface TableCompanion {
 	fun onDBCreate(db : SQLiteDatabase)
 	fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int)
 }

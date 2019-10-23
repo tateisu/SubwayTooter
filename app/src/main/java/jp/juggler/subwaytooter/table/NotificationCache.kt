@@ -26,6 +26,7 @@ class NotificationCache(private val account_db_id : Long) {
 	// 通知のリスト
 	var data = ArrayList<JSONObject>()
 	
+	// 次回以降の読み込み位置
 	var sinceId : EntityId? = null
 	
 	companion object : TableCompanion {
@@ -76,58 +77,6 @@ class NotificationCache(private val account_db_id : Long) {
 		private const val WHERE_AID = "$COL_ACCOUNT_DB_ID=?"
 		
 		private const val KEY_TIME_CREATED_AT = "<>KEY_TIME_CREATED_AT"
-		
-		//		fun updateRead(account_db_id : Long) {
-		//			try {
-		//				val where_args = arrayOf(account_db_id.toString())
-		//				App1.database.query(
-		//					table,
-		//					arrayOf(COL_NID_SHOW, COL_NID_READ),
-		//					WHERE_AID,
-		//					where_args,
-		//					null,
-		//					null,
-		//					null
-		//				)?.use { cursor ->
-		//					when {
-		//						! cursor.moveToFirst() -> log.e("updateRead[${account_db_id}]: can't find the data row.")
-		//
-		//						else -> {
-		//							val nid_show = EntityId.from(cursor, COL_NID_SHOW)
-		//							val nid_read = EntityId.from(cursor, COL_NID_READ)
-		//							when {
-		//								nid_show == null ->
-		//									log.w("updateRead[${account_db_id}]: nid_show is null.")
-		//								nid_read != null && nid_read >= nid_show ->
-		//									log.d("updateRead[${account_db_id}]: nid_read already updated.")
-		//
-		//								else -> {
-		//									log.w("updateRead[${account_db_id}]: update nid_read as ${nid_show}...")
-		//									val cv = ContentValues()
-		//									nid_show.putTo(cv, COL_NID_READ) //変数名とキー名が異なるのに注意
-		//									App1.database.update(table, cv, WHERE_AID, where_args)
-		//								}
-		//							}
-		//						}
-		//					}
-		//				}
-		//			} catch(ex : Throwable) {
-		//				log.e(ex, "updateRead[${account_db_id}] failed.")
-		//			}
-		//		}
-		//
-		//		fun resetPostAll() {
-		//			try {
-		//				val cv = ContentValues()
-		//				cv.putNull(COL_POST_ID)
-		//				cv.put(COL_POST_TIME, 0)
-		//				App1.database.update(table, cv, null, null)
-		//
-		//			} catch(ex : Throwable) {
-		//				log.e(ex, "resetPostAll failed.")
-		//			}
-		//
-		//		}
 		
 		fun resetLastLoad(db_id : Long) {
 			try {
@@ -251,11 +200,9 @@ class NotificationCache(private val account_db_id : Long) {
 			cv.put(COL_LAST_LOAD, last_load)
 			cv.put(COL_DATA, data.toJsonArray().toString())
 			
-			val sinceId = sinceId
-			if(sinceId == null) {
-				cv.putNull(COL_SINCE_ID)
-			} else {
-				sinceId.putTo(cv, COL_SINCE_ID)
+			when(val sinceId = sinceId) {
+				null -> cv.putNull(COL_SINCE_ID)
+				else -> sinceId.putTo(cv, COL_SINCE_ID)
 			}
 			
 			val rv = App1.database.replaceOrThrow(table, null, cv)

@@ -4,6 +4,9 @@ import android.annotation.TargetApi
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
 
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -17,7 +20,11 @@ object NotificationHelper {
 	internal const val TRACKING_NAME_REPLY = "reply"
 	
 	@TargetApi(26)
-	fun createNotificationChannel(context : Context, account : SavedAccount,trackingName:String) =when(trackingName) {
+	fun createNotificationChannel(
+		context : Context,
+		account : SavedAccount,
+		trackingName : String
+	) = when(trackingName) {
 		"" -> createNotificationChannel(
 			context,
 			account.acct, // id
@@ -26,7 +33,7 @@ object NotificationHelper {
 			NotificationManager.IMPORTANCE_DEFAULT // : NotificationManager.IMPORTANCE_LOW;
 		)
 		
-		else-> createNotificationChannel(
+		else -> createNotificationChannel(
 			context,
 			"${account.acct}/$trackingName", // id
 			"${account.acct}/$trackingName", // name
@@ -42,9 +49,10 @@ object NotificationHelper {
 		, description : String? // The user-visible description of the channel.
 		, importance : Int
 	) : NotificationChannel {
-		val notification_manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
-			?: throw NotImplementedError("missing NotificationManager system service")
-
+		val notification_manager =
+			context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
+				?: throw NotImplementedError("missing NotificationManager system service")
+		
 		var channel : NotificationChannel? = null
 		try {
 			channel = notification_manager.getNotificationChannel(channel_id)
@@ -61,5 +69,19 @@ object NotificationHelper {
 		notification_manager.createNotificationChannel(channel)
 		return channel
 		
+	}
+	
+	fun openNotificationChannelSetting(
+		context : Context,
+		account : SavedAccount,
+		trackingName : String
+	) {
+		if(Build.VERSION.SDK_INT >= 26) {
+			val channel = createNotificationChannel(context, account, trackingName)
+			val intent = Intent("android.settings.CHANNEL_NOTIFICATION_SETTINGS")
+			intent.putExtra(Settings.EXTRA_CHANNEL_ID, channel.id)
+			intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+			context.startActivity(intent)
+		}
 	}
 }

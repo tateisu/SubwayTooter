@@ -15,7 +15,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.MediaStore
-import android.provider.Settings
 import android.text.Editable
 import android.text.SpannableString
 import android.text.TextWatcher
@@ -363,12 +362,12 @@ class ActAccountSetting
 		btnNotificationSoundReset = findViewById(R.id.btnNotificationSoundReset)
 		btnNotificationSoundEdit.setOnClickListener(this)
 		btnNotificationSoundReset.setOnClickListener(this)
-
+		
 		btnNotificationStyleEdit = findViewById(R.id.btnNotificationStyleEdit)
 		btnNotificationStyleEditReply = findViewById(R.id.btnNotificationStyleEditReply)
 		btnNotificationStyleEdit.setOnClickListener(this)
 		btnNotificationStyleEditReply.setOnClickListener(this)
-		vg(btnNotificationStyleEditReply,Pref.bpSeparateReplyNotificationGroup(pref) )
+		vg(btnNotificationStyleEditReply, Pref.bpSeparateReplyNotificationGroup(pref))
 		
 		name_invalidator = NetworkEmojiInvalidator(handler, etDisplayName)
 		note_invalidator = NetworkEmojiInvalidator(handler, etNote)
@@ -607,20 +606,19 @@ class ActAccountSetting
 			
 			R.id.btnFields -> sendFields()
 			
-			R.id.btnNotificationStyleEdit -> if(Build.VERSION.SDK_INT >= 26) {
-				val channel = NotificationHelper.createNotificationChannel(this, account,NotificationHelper.TRACKING_NAME_DEFAULT)
-				val intent = Intent("android.settings.CHANNEL_NOTIFICATION_SETTINGS")
-				intent.putExtra(Settings.EXTRA_CHANNEL_ID, channel.id)
-				intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-				startActivity(intent)
-			}
-			R.id.btnNotificationStyleEditReply -> if(Build.VERSION.SDK_INT >= 26) {
-				val channel = NotificationHelper.createNotificationChannel(this, account,NotificationHelper.TRACKING_NAME_REPLY)
-				val intent = Intent("android.settings.CHANNEL_NOTIFICATION_SETTINGS")
-				intent.putExtra(Settings.EXTRA_CHANNEL_ID, channel.id)
-				intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-				startActivity(intent)
-			}
+			R.id.btnNotificationStyleEdit ->
+				NotificationHelper.openNotificationChannelSetting(
+					this,
+					account,
+					NotificationHelper.TRACKING_NAME_DEFAULT
+				)
+			
+			R.id.btnNotificationStyleEditReply ->
+				NotificationHelper.openNotificationChannelSetting(
+					this,
+					account,
+					NotificationHelper.TRACKING_NAME_REPLY
+				)
 		}
 	}
 	

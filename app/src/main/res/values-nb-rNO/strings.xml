@@ -746,4 +746,5 @@
     <string name="location">Plassering</string>
     <string name="password">Passord</string>
     <string name="scheduled_post_deleted">Slettet.</string>
+    <string name="default_">Forvalg</string>
 </resources>

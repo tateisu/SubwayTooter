@@ -144,7 +144,7 @@
     <string name="follow_from_another_account">Suivre (sélection du compte)</string>
     <string name="follow_locked_user">Suivre un utilisateur verrouillé</string>
     <string name="follow_request_authorized">Demande de suivi de %1$s acceptée.</string>
-    <string name="follow_request_cant_remove_by_sender">Il semble que la demande de suivi ne puisse pas être supprimée par son expéditeur …</string>
+    <string name="follow_request_cant_remove_by_sender">Il semble que la demande d’abonnement ne puisse pas être supprimée par son expéditeur …</string>
     <string name="follow_request_ng">Demande de suivi rejeté</string>
     <string name="follow_request_ok">Autoriser demande de suivi</string>
     <string name="follow_request_rejected">Vous venez de rejeter la demande d’abonnement venant de %1$s.</string>
@@ -352,7 +352,7 @@
     <string name="select_plugin">Sélection du plugin</string>
     <string name="plugin_not_installed">Plugin non installé.</string>
     <string name="language_code">fr</string>
-    <string name="recommended_plugin">Plugins Mushroom recommandés</string>
+    <string name="recommended_plugin">Plugins recommandés</string>
     <string name="appearance">Apparence</string>
     <string name="behavior">Comportement</string>
     <string name="notification_on_off_desc">Il existe également un paramètre de compte pour activer ou désactiver les notifications.</string>
@@ -393,7 +393,10 @@
     <string name="open_local_timeline_for">Ouvrir le fil de \"%1$s\"</string>
     <string name="send_header_account_url">Account-Url</string>
     <string name="notification_sound">Notification sonore</string>
-    <string name="timeline_font_size">Taille de police du fil (Unit:sp. laisser vide à la valeur par défaut. Redémarrage requis)</string>
+    <string name="timeline_font_size">Taille de police du fil
+\n(Unit:sp. laisser vide pour la valeur par défaut. Redémarrage de l’app requis)
+\n…
+\n…</string>
     <string name="acct_font_size">Taille de police du compte (Unité : sp. laisser vide pour utiliser la valeur par défaut. Redémarrage de l\'app est nécessaire)</string>
     <string name="dont_add_duplication_check_header">Ne pas ajouter d’en-tête de vérification de duplication</string>
     <string name="show_quick_toot_bar">Afficher la barre \"Pouet rapide\" (redémarrage de l’app. requis.)</string>
@@ -549,8 +552,8 @@
     <string name="cant_access_list">Impossible d’accéder aux listes</string>
     <string name="account_sync_failed">Échec de la synchronisation du compte.</string>
     <string name="list_retry_with_follow">Vous ne suivez pas encore %1$s. Souhaitez-vous le·a suivre et l’ajouter à la liste \?</string>
-    <string name="cant_add_list_follow_requesting">Impossible d\'ajouter l’utilisateur·rice à la liste :
-\nVeuillez réessayer 2 à 3 fois. Si l\'utilisateur est «verrouillé·e», veuillez attendre l\'approbation de la demande d’abonnement.</string>
+    <string name="cant_add_list_follow_requesting">Impossible d’ajouter l’utilisateur·rice à la liste : 
+\nVeuillez réessayer 2 à 3 fois. Si l’utilisateur·rice est «verrouillé·e», veuillez attendre l’approbation de la demande d’abonnement.</string>
     <string name="cant_add_list_follow_failed">Impossible d\'ajouter l’utilisateur à la liste :
 \nÉchec de l’abonnement.</string>
     <string name="list_member_added">Ajouté·e.</string>
@@ -621,7 +624,7 @@
     <string name="hide_favourite_notification_from_user">Désactiver les notifications Fav/Boosts de cet·te utilisateur·rice</string>
     <string name="show_favourite_notification_from_user">Activer les notifications Fav/Boosts provenant cet·te utilisateur·rice</string>
     <string name="fav_muted_user">Utilisateur·rice·s FBN désactivé·e·s</string>
-    <string name="fav_muted_user_long">Fav/Foost utilisateur·rice·s désactivé·e·s</string>
+    <string name="fav_muted_user_long">Fav/Boost utilisateur·rice·s désactivé·e·s</string>
     <string name="changed">Changé.</string>
     <string name="thumbnails_arrange_vertically">Réarranger les vignettes verticalement (redémarrage requis)</string>
     <string name="instance_local">Serveur local</string>
@@ -664,7 +667,7 @@
     <string name="none_or_hidden_followers">Aucun abonné·e, ou cachés via les paramètres.</string>
     <string name="yourself_can_see_your_network">Même si vous choisissez de cacher les graphiques sociaux, vous pouvez les voir.</string>
     <string name="follow_follower_list_may_restrict">Si l’utilisateur·rice distant·e choisit de masquer le graph social, seul·e·s les abonné·e·s/abonnements sur cette instance seront affichés.</string>
-    <string name="trend_tag">Les tendances des tags</string>
+    <string name="trend_tag">Tags en tendance</string>
     <string name="people_talking">%1$d (%2$d) personnes en parlent</string>
     <string name="trend_tag_desc">Les chiffres indiquent \'daily(weekly)\'.</string>
     <string name="redraft_and_delete">Supprimer et reformuler</string>
@@ -732,9 +735,9 @@
     <string name="dont_show_vote">Don\'t show enquête</string>
     <string name="boost_button_size">Taille du bouton Boost (Unité:dp, par défaut=40, redémarrage requis)</string>
     <string name="boost_button_alignment">Alignement du bouton Boost (redémarrage requis)</string>
-    <string name="start">Start</string>
+    <string name="start">Au début</string>
     <string name="center">Centrer</string>
-    <string name="end">End</string>
+    <string name="end">À la fin</string>
     <string name="misskey_hybrid_timeline">Fil social</string>
     <string name="misskey_hybrid_timeline_long">Fil Social (Misskey)</string>
     <string name="renote_to">Republier vers %1$s</string>
@@ -848,7 +851,7 @@
     <string name="show_acct_in_system_notification">Afficher le compte (au lieu du nom d’utilisateur) dans les notifications système</string>
     <string name="account_tl_around">Fil public autour …</string>
     <string name="boost_button_alpha">Transparence du bouton Boost (Unité:%. redémarrage de l’app nécessaire. Affecte également la transparence du contenu texte.)</string>
-    <string name="move_notifications_quick_filter_to_column_setting">Afficher le filtre rapide des notifications dans la configuration de la colonne (redémarrage de l’application requis)</string>
+    <string name="move_notifications_quick_filter_to_column_setting">Afficher le filtre rapide des notifications dans la configuration de la colonne (redémarrage de l’app requis)</string>
     <string name="official_account">Compte officiel</string>
     <string name="releases">Sorties</string>
     <string name="timezone">Fuseau horaire (redémarrage requis)</string>
@@ -913,7 +916,7 @@
     <string name="custom_share_button_2">Bouton de partage personnalisé 2</string>
     <string name="custom_share_button_3">Bouton de partage personnalisé 3</string>
     <string name="custom_share_app_not_found">l’application cible de partage n’est pas installée. Veuillez la configurer dans \"Paramètres/comportement\".</string>
-    <string name="additional_buttons_position">Position des boutons supplémentaires (redémarrage de l’application requis)</string>
+    <string name="additional_buttons_position">Position des boutons supplémentaires (redémarrage de l’app requis)</string>
     <string name="top">En haut</string>
     <string name="bottom">En bas</string>
     <string name="max_toot_chars">nombre maximum de caractères dans le statut (0:par défaut. si le serveur fournit max_toot_chars, ce paramètre est ignoré.)</string>
@@ -946,6 +949,10 @@
     <string name="your_toot">Votre pouet</string>
     <string name="block_domain">Bloquer tout le domaine</string>
     <string name="short_description">Courte description</string>
-    <string name="media_attachment_max_byte_size_pixelfed">Taille limite de la pièce jointe (PixelFed) (par défaut 15. Unité: Mo)</string>
+    <string name="media_attachment_max_byte_size_pixelfed">Taille limite de la pièce jointe (PixelFed) (Unité : Mo. Par défaut 15)</string>
     <string name="resize_square_pixels">Redimensionner en %1$d pixels carrés (équivalent %2$dx%2$d)</string>
+    <string name="status_bar_color">Couleur de la barre d’état (redémarrage de l\'app requis. pre-Android 6 ne peut pas ajuster l’icône et la couleur du texte)</string>
+    <string name="navigation_bar_color">Couleur de la barre de navigation (redémarrage de l’app requis. pre-Android 8 ne peut pas ajuster la couleur des icônes)</string>
+    <string name="quick_toot_omit_account_selection">Lorsque vous utilisez le pouet rapide, omettez la sélection de compte si possible</string>
+    <string name="default_">Par défaut</string>
 </resources>

@@ -23,7 +23,9 @@
         android:largeHeap="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.Light"
-        >
+        android:resizeableActivity="true"
+        android:maxAspectRatio="100"
+        tools:ignore="UnusedAttribute">
 
         <receiver android:name=".EventReceiver">
             <intent-filter>

@@ -1893,14 +1893,14 @@ internal class ItemViewHolder(
 				
 				is TootScheduled -> {
 					ActionsDialog()
-						.addAction(activity.getString(R.string.redraft_and_delete)) {
+						.addAction(activity.getString(R.string.edit)) {
+							Action_Toot.editScheduledPost(activity, access_info, item)
+						}
+						.addAction(activity.getString(R.string.delete)) {
 							Action_Toot.deleteScheduledPost(activity, access_info, item) {
 								column.onScheduleDeleted(item)
 								showToast(activity, false, R.string.scheduled_post_deleted)
 							}
-						}
-						.addAction(activity.getString(R.string.edit)) {
-							Action_Toot.editScheduledPost(activity, access_info, item)
 						}
 						.show(activity)
 				}

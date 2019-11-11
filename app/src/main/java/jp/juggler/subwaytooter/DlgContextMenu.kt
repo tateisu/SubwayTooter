@@ -220,13 +220,6 @@ internal class DlgContextMenu(
 			btnBoostedBy,
 			btnFavouritedBy,
 			
-			btnCrossAccountActionsForStatus,
-			btnCrossAccountActionsForAccount,
-			btnAroundThisToot,
-			btnYourToot,
-			btnStatusExtraAction,
-			btnAccountExtraAction,
-			
 			viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus),
 			viewRoot.findViewById<View>(R.id.btnTranslate),
 			viewRoot.findViewById<View>(R.id.btnQuoteUrlAccount),
@@ -511,6 +504,7 @@ internal class DlgContextMenu(
 		updateGroup(btnYourToot, llYourToot)
 		updateGroup(btnStatusExtraAction, llStatusExtraAction)
 		updateGroup(btnAccountExtraAction, llAccountExtraAction)
+		
 	}
 	
 	fun show() {
@@ -533,12 +527,20 @@ internal class DlgContextMenu(
 	}
 	
 	private fun updateGroup(btn : Button, group : View, toggle : Boolean = false) {
+		
 		if(btn.visibility != View.VISIBLE) {
 			vg(group, false)
 			return
 		}
 		
-		if(toggle) vg(group, group.visibility != View.VISIBLE)
+		when {
+			Pref.bpAlwaysExpandContextMenuItems(activity.pref) ->{
+				vg(group, true)
+				btn.background = null
+			}
+			toggle -> vg(group, group.visibility != View.VISIBLE)
+			else -> btn.setOnClickListener(this)
+		}
 		
 		val iconId = if(group.visibility == View.VISIBLE) {
 			R.drawable.ic_arrow_drop_up

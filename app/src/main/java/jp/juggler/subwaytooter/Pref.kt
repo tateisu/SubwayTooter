@@ -448,6 +448,14 @@ object Pref {
 		R.id.swSeparateReplyNotificationGroup
 	)
 	
+	val bpAlwaysExpandContextMenuItems = BooleanPref(
+		"AlwaysExpandContextMenuItems",
+		false,
+		R.id.swAlwaysExpandContextMenuItems
+	)
+	
+	
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)
@@ -549,6 +557,7 @@ object Pref {
 	val spEmojiPickerRecent = StringPref("emoji_picker_recent", "")
 	val spRoundRatio = StringPref("round_ratio", "33")
 	val spBoostAlpha = StringPref("BoostAlpha", "60")
+	
 	
 	val spPullNotificationCheckInterval = StringPref("PullNotificationCheckInterval", "15")
 	val spUserAgent = StringPref("UserAgent", "")

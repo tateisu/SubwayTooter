@@ -272,7 +272,7 @@ object Action_Instance {
 				accountListArg = account_list1
 			) { ai ->
 				if(! ai.isNA && ai.host.equals(access_info.host, ignoreCase = true)) {
-					timelinePublicAround2(activity, account_list1[0], pos, status.id, type)
+					timelinePublicAround2(activity, ai, pos, status.id, type)
 				} else {
 					timelinePublicAround3(activity, ai, pos, status, type)
 				}

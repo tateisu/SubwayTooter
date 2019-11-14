@@ -558,6 +558,7 @@ object Pref {
 	val spRoundRatio = StringPref("round_ratio", "33")
 	val spBoostAlpha = StringPref("BoostAlpha", "60")
 	
+	val spVersionNameWhenReleaseNoteTap = StringPref("VersionNameWhenReleaseNoteTap", "")
 	
 	val spPullNotificationCheckInterval = StringPref("PullNotificationCheckInterval", "15")
 	val spUserAgent = StringPref("UserAgent", "")

@@ -964,4 +964,6 @@
     <string name="separate_notification_group_for_reply">Separate notification groups for reply (Android 8+)</string>
     <string name="timeline_line_spacing">Timeline line spacing (floating number is used as line spacing multiplier. leave empty to default. app restart required)</string>
     <string name="always_expand_context_menu_sub_items" >Always expand sub-items of context menu</string>
+    <string name="release_notes_latest">Release notes (v%1$s)</string>
+    <string name="release_notes_updated">Release notes (v%1$s→v%2$s)</string>
 </resources>

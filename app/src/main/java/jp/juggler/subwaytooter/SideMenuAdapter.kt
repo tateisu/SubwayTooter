@@ -104,6 +104,10 @@ class SideMenuAdapter(
 			Action_Account.timeline(this, defaultInsertPosition, ColumnType.FAVOURITES)
 		},
 		
+		Item(icon = R.drawable.ic_bookmark, title = R.string.bookmarks) {
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.BOOKMARKS)
+		},
+		
 		Item(icon = R.drawable.ic_account_box, title = R.string.profile) {
 			Action_Account.timeline(this, defaultInsertPosition, ColumnType.PROFILE)
 		},

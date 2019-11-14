@@ -188,12 +188,19 @@ class ActMain : AppCompatActivity()
 	val cancel_follow_request_complete_callback : EmptyCallback = {
 		showToast(this@ActMain, false, R.string.follow_request_cancelled)
 	}
+
 	val favourite_complete_callback : EmptyCallback = {
 		showToast(this@ActMain, false, R.string.favourite_succeeded)
 	}
-	
 	val unfavourite_complete_callback : EmptyCallback = {
 		showToast(this@ActMain, false, R.string.unfavourite_succeeded)
+	}
+
+	val bookmark_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.bookmark_succeeded)
+	}
+	val unbookmark_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.unbookmark_succeeded)
 	}
 	
 	val boost_complete_callback : EmptyCallback = {

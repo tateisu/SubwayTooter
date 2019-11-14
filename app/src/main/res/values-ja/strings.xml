@@ -14,6 +14,7 @@
     <string name="account_picker_boost">どのアカウントでブーストしますか？</string>
     <string name="account_picker_reaction">どのアカウントでリアクションしますか？</string>
     <string name="account_picker_favourite">どのアカウントでお気に入りしますか？</string>
+    <string name="account_picker_bookmark">どのアカウントでブックマークしますか？</string>
     <string name="account_picker_follow">どのアカウントでフォローしますか？</string>
     <string name="account_picker_open_setting">どのアカウントの設定を開きますか？</string>
     <string name="account_picker_open_user_who">どのアカウントでユーザ %1$s のプロフィールを確認しますか？</string>
@@ -39,6 +40,7 @@
     <string name="already_boosted">既にブースト済みです</string>
     <string name="already_exist">既に存在します</string>
     <string name="already_favourited">既にお気に入り済みです</string>
+    <string name="already_bookmarked">既にブックマーク済みです</string>
     <string name="already_followed">既にフォローしてます</string>
     <string name="already_reactioned">リアクション済みです</string>
     <string name="not_reactioned">まだリアクションしてません</string>
@@ -278,6 +280,13 @@
     <string name="favourite_succeeded">お気に入りにしました</string>
     <string name="favourited_by">トゥートをお気に入りした人</string>
     <string name="favourites">お気に入り</string>
+
+    <string name="bookmark">ブックマーク</string>
+    <string name="bookmark_from_another_account">別アカウントでブックマーク</string>
+    <string name="bookmark_succeeded">ブックマークしました</string>
+    <string name="bookmarks">ブックマーク</string>
+    <string name="unbookmark_succeeded">ブックマークを解除しました</string>
+
     <string name="federate_timeline">連合タイムライン</string>
     <string name="field_name1">ラベル1</string>
     <string name="field_name2">ラベル2</string>

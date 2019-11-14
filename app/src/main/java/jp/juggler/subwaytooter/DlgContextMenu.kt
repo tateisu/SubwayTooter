@@ -102,6 +102,8 @@ internal class DlgContextMenu(
 		val btnText : View = viewRoot.findViewById(R.id.btnText)
 		val btnFavouriteAnotherAccount : View =
 			viewRoot.findViewById(R.id.btnFavouriteAnotherAccount)
+		val btnBookmarkAnotherAccount : View =
+			viewRoot.findViewById(R.id.btnBookmarkAnotherAccount)
 		val btnBoostAnotherAccount : View = viewRoot.findViewById(R.id.btnBoostAnotherAccount)
 		val btnReactionAnotherAccount : View = viewRoot.findViewById(R.id.btnReactionAnotherAccount)
 		val btnReplyAnotherAccount : View = viewRoot.findViewById(R.id.btnReplyAnotherAccount)
@@ -176,6 +178,7 @@ internal class DlgContextMenu(
 			btnStatusWebPage,
 			btnText,
 			btnFavouriteAnotherAccount,
+			btnBookmarkAnotherAccount,
 			btnBoostAnotherAccount,
 			btnReactionAnotherAccount,
 			btnReplyAnotherAccount,
@@ -494,8 +497,6 @@ internal class DlgContextMenu(
 			}
 		}
 		
-		
-		
 		btnListMemberAddRemove.visibility = View.VISIBLE
 		
 		updateGroup(btnCrossAccountActionsForStatus, llCrossAccountActionsForStatus)
@@ -534,10 +535,11 @@ internal class DlgContextMenu(
 		}
 		
 		when {
-			Pref.bpAlwaysExpandContextMenuItems(activity.pref) ->{
+			Pref.bpAlwaysExpandContextMenuItems(activity.pref) -> {
 				vg(group, true)
 				btn.background = null
 			}
+			
 			toggle -> vg(group, group.visibility != View.VISIBLE)
 			else -> btn.setOnClickListener(this)
 		}
@@ -978,6 +980,12 @@ internal class DlgContextMenu(
 			}
 			
 			R.id.btnFavouriteAnotherAccount -> Action_Toot.favouriteFromAnotherAccount(
+				activity,
+				access_info,
+				status
+			)
+			
+			R.id.btnBookmarkAnotherAccount -> Action_Toot.bookmarkFromAnotherAccount(
 				activity,
 				access_info,
 				status

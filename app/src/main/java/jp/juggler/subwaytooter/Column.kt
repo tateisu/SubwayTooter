@@ -87,6 +87,7 @@ class Column(
 		internal const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=true"
 		internal const val PATH_TL_FEDERATE = "/api/v1/timelines/public?limit=$READ_LIMIT"
 		internal const val PATH_FAVOURITES = "/api/v1/favourites?limit=$READ_LIMIT"
+		internal const val PATH_BOOKMARKS = "/api/v1/bookmarks?limit=$READ_LIMIT"
 		
 		internal const val PATH_LIST_TL = "/api/v1/timelines/list/%s?limit=$READ_LIMIT"
 		

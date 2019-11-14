@@ -204,6 +204,20 @@
                         android:textAllCaps="false" />
 
                     <Button
+                        android:id="@+id/btnBookmarkAnotherAccount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/btn_bg_transparent"
+                        android:gravity="start|center_vertical"
+                        android:minHeight="32dp"
+                        android:paddingStart="8dp"
+                        android:paddingTop="4dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="4dp"
+                        android:text="@string/bookmark"
+                        android:textAllCaps="false" />
+
+                    <Button
                         android:id="@+id/btnReactionAnotherAccount"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

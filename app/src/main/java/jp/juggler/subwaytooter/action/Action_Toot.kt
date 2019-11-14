@@ -222,6 +222,140 @@ object Action_Toot {
 		activity.showColumnMatchAccount(access_info)
 	}
 	
+	// アカウントを選んでお気に入り
+	fun bookmarkFromAnotherAccount(
+		activity : ActMain,
+		timeline_account : SavedAccount,
+		status : TootStatus?
+	) {
+		if(status == null) return
+		val who_host = timeline_account.host
+		
+		AccountPicker.pick(
+			activity,
+			bAllowPseudo = false,
+			bAuto = false,
+			message = activity.getString(R.string.account_picker_bookmark),
+			accountListArg = makeAccountListNonPseudo(activity, who_host)
+		) { action_account ->
+			bookmark(
+				activity,
+				action_account,
+				status,
+				calcCrossAccountMode(timeline_account, action_account),
+				callback = activity.bookmark_complete_callback
+			)
+		}
+	}
+	
+	// お気に入りの非同期処理
+	fun bookmark(
+		activity : ActMain,
+		access_info : SavedAccount,
+		arg_status : TootStatus,
+		nCrossAccountMode : Int,
+		callback : EmptyCallback?,
+		bSet : Boolean = true,
+		bConfirmed : Boolean = false
+	) {
+		if(App1.getAppState(activity).isBusyFav(access_info, arg_status)) {
+			showToast(activity, false, R.string.wait_previous_operation)
+			return
+		}
+		if( access_info.isMisskey ){
+			showToast(activity, false, R.string.misskey_account_not_supported)
+			return
+		}
+		
+		
+		// 必要なら確認を出す
+		// ブックマークは解除する時だけ確認する
+		if(! bConfirmed && !bSet ) {
+			DlgConfirm.openSimple(
+				activity,
+				activity.getString(
+					R.string.confirm_unfavourite_from,
+					AcctColor.getNickname(access_info.acct)
+				)
+			){
+				bookmark(
+					activity,
+					access_info,
+					arg_status,
+					nCrossAccountMode,
+					callback,
+					bSet = bSet,
+					bConfirmed = true
+				)
+			}
+			return
+		}
+		
+		//
+		App1.getAppState(activity).setBusyBookmark(access_info, arg_status)
+		
+		//
+		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
+			
+			var new_status : TootStatus? = null
+			override fun background(client : TootApiClient) : TootApiResult? {
+				
+				val target_status = if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
+					val (result, status) = client.syncStatus(access_info, arg_status)
+					status ?: return result
+					if(status.bookmarked) {
+						return TootApiResult(activity.getString(R.string.already_bookmarked))
+					}
+					status
+				} else {
+					arg_status
+				}
+				
+				return client.request(
+					"/api/v1/statuses/${target_status.id}/${if(bSet) "bookmark" else "unbookmark"}",
+					"".toFormRequestBody().toPost()
+				)?.also { result ->
+					new_status = TootParser(activity, access_info).status(result.jsonObject)
+				}
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				
+				App1.getAppState(activity).resetBusyBookmark(access_info, arg_status)
+				
+				val new_status = this.new_status
+				when {
+					result == null -> {
+					} // cancelled.
+
+					new_status != null -> {
+						for(column in App1.getAppState(activity).column_list) {
+							column.findStatus(access_info.host, new_status.id) { account, status ->
+								
+								// 同アカウントならブックマーク状態を伝播する
+								if(access_info.acct == account.acct) {
+									status.bookmarked = new_status.bookmarked
+								}
+								
+								true
+							}
+						}
+						if(callback != null) callback()
+					}
+					
+					else -> showToast(activity, true, result.error)
+				}
+				
+				// 結果に関わらず、更新中状態から復帰させる
+				activity.showColumnMatchAccount(access_info)
+			}
+		})
+		
+		// ファボ表示を更新中にする
+		activity.showColumnMatchAccount(access_info)
+	}
+	
+	
 	fun boostFromAnotherAccount(
 		activity : ActMain,
 		timeline_account : SavedAccount,

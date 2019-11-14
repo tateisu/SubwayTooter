@@ -79,6 +79,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	//	Whether the authenticated user has favourited the status
 	var favourited : Boolean = false  // アプリから変更する
 	
+	//	Whether the authenticated user has bookmarked the status
+	var bookmarked : Boolean = false  // アプリから変更する
+	
+	
 	// Whether the authenticated user has muted the conversation this status from
 	var muted : Boolean = false // アプリから変更する
 	
@@ -401,6 +405,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					this.reblogged = src.optBoolean("reblogged")
 					this.favourited = src.optBoolean("favourited")
+					this.bookmarked = src.optBoolean("bookmarked")
 					
 					this.time_created_at = parseTime(this.created_at)
 					this.media_attachments =

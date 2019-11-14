@@ -81,6 +81,7 @@
     <string name="confirm_unboost_from">Unboost this status from %1$s ?</string>
     <string name="confirm_favourite_from">Favourite this status from %1$s ? Notification will be sent to its author.</string>
     <string name="confirm_unfavourite_from">Unfavourite this status from %1$s ?</string>
+    <string name="confirm_unbookmark_from">Unbookmark this status from %1$s ?</string>
     <string name="display_name_favourited_by">%1$s favourited</string>
     <string name="display_name_boosted_by">%1$s boosted</string>
     <string name="display_name_replied_by">%1$s replied</string>
@@ -209,6 +210,13 @@
     <string name="app_was_muted">App was muted.</string>
     <string name="favourite_succeeded">Favourited</string>
     <string name="unfavourite_succeeded">Unfavourited</string>
+
+    <string name="bookmark">Bookmark</string>
+    <string name="bookmark_from_another_account">Bookmark from another account</string>
+    <string name="bookmark_succeeded">Bookmarked</string>
+    <string name="bookmarks">Bookmarks</string>
+    <string name="unbookmark_succeeded">Unbookmarked</string>
+
     <string name="boost_succeeded">Boosted</string>
     <string name="unboost_succeeded">Unboosted</string>
     <string name="reaction_succeeded">Reacted</string>
@@ -287,6 +295,7 @@
     <string name="account_picker_add_timeline_of">Account to open %1$s?</string>
     <string name="account_picker_open_setting">Account to open setting?</string>
     <string name="account_picker_favourite">Account to favourite?</string>
+    <string name="account_picker_bookmark">Account to bookmark?</string>
     <string name="account_picker_boost">Account to boost?</string>
     <string name="account_picker_reaction">Account to react?</string>
     <string name="account_picker_follow">Account to follow?</string>
@@ -331,6 +340,7 @@
     <string name="dont_refresh_on_activity_resume">Disable auto-refresh when returning to the app.</string>
     <string name="status_id_conversion_failed">Could not convert status ID.</string>
     <string name="already_favourited">Already favourited.</string>
+    <string name="already_bookmarked">Already bookmarked.</string>
     <string name="already_boosted">Already boosted.</string>
     <string name="dont_screen_off">Keep the screen on when using the app.</string>
     <string name="hide_media_default">Hide all media</string>

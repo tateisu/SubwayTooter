@@ -114,6 +114,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	val column_list = ArrayList<Column>()
 	
 	private val map_busy_fav = HashSet<String>()
+	private val map_busy_bookmark = HashSet<String>()
 	private val map_busy_boost = HashSet<String>()
 	internal var attachment_list : ArrayList<PostAttachment>? = null
 	
@@ -328,6 +329,23 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		val key = account.acct + ":" + status.busyKey
 		map_busy_fav.remove(key)
 	}
+	
+	fun isBusyBookmark(account : SavedAccount, status : TootStatus) : Boolean {
+		val key = account.acct + ":" + status.busyKey
+		return map_busy_bookmark.contains(key)
+	}
+	
+	fun setBusyBookmark(account : SavedAccount, status : TootStatus) {
+		val key = account.acct + ":" + status.busyKey
+		map_busy_bookmark.add(key)
+	}
+	
+	fun resetBusyBookmark(account : SavedAccount, status : TootStatus) {
+		val key = account.acct + ":" + status.busyKey
+		map_busy_bookmark.remove(key)
+	}
+	
+	
 	
 	fun isBusyBoost(account : SavedAccount, status : TootStatus) : Boolean {
 		val key = account.acct + ":" + status.busyKey

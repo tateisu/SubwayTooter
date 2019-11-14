@@ -565,6 +565,37 @@ enum class ColumnType(
 		}
 	),
 	
+	BOOKMARKS(37,
+		iconId = { R.drawable.ic_bookmark },
+		name1 = { it.getString(R.string.bookmarks) },
+		bAllowPseudo = false,
+		
+		loading = { client ->
+			if(isMisskey) {
+				TootApiResult("Misskey has no bookmarks feature.")
+			} else {
+				getStatusList(client, Column.PATH_BOOKMARKS)
+			}
+		},
+		
+		refresh = { client ->
+			if(isMisskey) {
+				TootApiResult("Misskey has no bookmarks feature.")
+			} else {
+				getStatusList(client, Column.PATH_BOOKMARKS)
+			}
+		},
+		
+		gap = { client ->
+			if(isMisskey) {
+				TootApiResult("Misskey has no bookmarks feature.")
+			} else {
+				getStatusList(client, Column.PATH_BOOKMARKS)
+			}
+		}
+	),
+	
+	
 	NOTIFICATIONS(
 		7,
 		iconId = { R.drawable.ic_announcement },

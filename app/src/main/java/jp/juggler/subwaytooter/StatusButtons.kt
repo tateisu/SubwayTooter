@@ -47,6 +47,7 @@ internal class StatusButtons(
 	private val btnReply = holder.btnReply
 	private val btnBoost = holder.btnBoost
 	private val btnFavourite = holder.btnFavourite
+	private val btnBookmark = holder.btnBookmark
 	private val llFollow2 = holder.llFollow2
 	private val btnFollow2 = holder.btnFollow2
 	private val ivFollowedBy2 = holder.ivFollowedBy2
@@ -68,6 +69,8 @@ internal class StatusButtons(
 		btnBoost.setOnLongClickListener(this)
 		btnFavourite.setOnClickListener(this)
 		btnFavourite.setOnLongClickListener(this)
+		btnBookmark.setOnClickListener(this)
+		btnBookmark.setOnLongClickListener(this)
 		btnFollow2.setOnClickListener(this)
 		btnFollow2.setOnLongClickListener(this)
 		btnTranslate.setOnClickListener(this)
@@ -89,11 +92,6 @@ internal class StatusButtons(
 		holder.viewRoot.visibility = View.VISIBLE
 		this.status = status
 		this.notification = notification
-		
-		val fav_icon_drawable = when {
-			access_info.isNicoru(status.account) -> R.drawable.ic_nicoru
-			else -> R.drawable.ic_star
-		}
 		
 		val replies_count = status.replies_count
 		
@@ -175,6 +173,11 @@ internal class StatusButtons(
 			)
 		}
 		
+		// お気に入りボタン
+		val fav_icon_drawable = when {
+			access_info.isNicoru(status.account) -> R.drawable.ic_nicoru
+			else -> R.drawable.ic_star
+		}
 		when {
 			activity.app_state.isBusyFav(access_info, status) -> setButton(
 				btnFavourite,
@@ -192,6 +195,25 @@ internal class StatusButtons(
 				fav_icon_drawable,
 				status.favourites_count?.toString() ?: "",
 				activity.getString(R.string.favourite)
+			)
+		}
+		
+		// ブックマークボタン
+		when {
+			activity.app_state.isBusyBookmark(access_info, status) -> setButton(
+				btnBookmark,
+				false,
+				color_normal,
+				R.drawable.ic_refresh,
+				activity.getString(R.string.bookmark)
+			)
+			
+			else -> setButton(
+				btnBookmark,
+				true,
+				if(status.bookmarked) color_accent else color_normal,
+				R.drawable.ic_bookmark,
+				activity.getString(R.string.bookmark)
 			)
 		}
 		
@@ -343,24 +365,24 @@ internal class StatusButtons(
 		b.isEnabled = enabled
 	}
 	
-	//	private fun setButton(
-	//		b : ImageButton,
-	//		enabled : Boolean,
-	//		color : Int,
-	//		drawableId : Int,
-	//		contentDescription : String
-	//	) {
-	//		val alpha = Styler.boost_alpha
-	//		val d = createColoredDrawable(
-	//			activity,
-	//			drawableId,
-	//			color,
-	//			alpha
-	//		)
-	//		b.setImageDrawable(d)
-	//		b.contentDescription = contentDescription
-	//		b.isEnabled = enabled
-	//	}
+	private fun setButton(
+		b : ImageButton,
+		enabled : Boolean,
+		color : Int,
+		drawableId : Int,
+		contentDescription : String
+	) {
+		val alpha = Styler.boost_alpha
+		val d = createColoredDrawable(
+			activity,
+			drawableId,
+			color,
+			alpha
+		)
+		b.setImageDrawable(d)
+		b.contentDescription = contentDescription
+		b.isEnabled = enabled
+	}
 	
 	override fun onClick(v : View) {
 		
@@ -446,6 +468,30 @@ internal class StatusButtons(
 							// 簡略表示なら結果をトースト表示
 							bSet -> activity.favourite_complete_callback
 							else -> activity.unfavourite_complete_callback
+						},
+						bSet = bSet
+					)
+				}
+			}
+			
+			btnBookmark -> {
+				if(access_info.isPseudo) {
+					Action_Toot.bookmarkFromAnotherAccount(activity, access_info, status)
+				} else {
+					
+					// トグル動作
+					val bSet = ! status.bookmarked
+					
+					Action_Toot.bookmark(
+						activity,
+						access_info,
+						status,
+						NOT_CROSS_ACCOUNT,
+						when {
+							! bSimpleList -> null
+							// 簡略表示なら結果をトースト表示
+							bSet -> activity.bookmark_complete_callback
+							else -> activity.unbookmark_complete_callback
 						},
 						bSet = bSet
 					)
@@ -568,6 +614,10 @@ internal class StatusButtons(
 				activity, access_info, status
 			)
 			
+			btnBookmark -> Action_Toot.bookmarkFromAnotherAccount(
+				activity, access_info, status
+			)
+			
 			btnReply -> Action_Toot.replyFromAnotherAccount(
 				activity, access_info, status
 			)
@@ -616,6 +666,7 @@ class StatusButtonsViewHolder(
 	lateinit var btnReply : CountImageButton
 	lateinit var btnBoost : CountImageButton
 	lateinit var btnFavourite : CountImageButton
+	lateinit var btnBookmark : ImageButton
 	lateinit var llFollow2 : View
 	lateinit var btnFollow2 : ImageButton
 	lateinit var ivFollowedBy2 : ImageView
@@ -678,6 +729,19 @@ class StatusButtonsViewHolder(
 					}
 					
 					btnFavourite = customView<CountImageButton> {
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						minimumWidth = buttonHeight
+						
+					}.lparams(wrapContent, buttonHeight) {
+						startMargin = marginBetween
+					}
+					
+					btnBookmark = imageButton {
 						background = ContextCompat.getDrawable(
 							context,
 							R.drawable.btn_bg_transparent

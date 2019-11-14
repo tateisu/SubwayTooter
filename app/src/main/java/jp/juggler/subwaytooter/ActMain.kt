@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.*
@@ -485,6 +486,14 @@ class ActMain : AppCompatActivity()
 	override fun onNewIntent(intent : Intent?) {
 		super.onNewIntent(intent)
 		log.w("onNewIntent: isResumed = isResumed")
+	}
+	
+	override fun onConfigurationChanged(newConfig : Configuration) {
+		log.d("onConfigurationChanged")
+		super.onConfigurationChanged(newConfig)
+		if(newConfig.screenHeightDp > 0 || newConfig.screenHeightDp >0){
+			tabOnly { env -> resizeColumnWidth(env) }
+		}
 	}
 	
 	override fun onSaveInstanceState(outState : Bundle) {
@@ -2535,6 +2544,7 @@ class ActMain : AppCompatActivity()
 		
 		if(screen_width < column_w_min * 2) {
 			// 最小幅で2つ表示できないのなら1カラム表示
+			nScreenColumn = 1
 			column_w = screen_width
 		} else {
 			

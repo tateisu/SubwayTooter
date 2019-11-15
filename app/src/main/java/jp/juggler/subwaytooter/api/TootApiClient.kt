@@ -1000,18 +1000,16 @@ class TootApiClient(
 		if(client_credential?.isEmpty() != false) {
 			val resultSub = getClientCredential(client_info)
 			client_credential = resultSub?.string
-			if(client_credential?.isNotEmpty() == true) {
-				try {
-					client_info.put(KEY_CLIENT_CREDENTIAL, client_credential)
-					ClientInfo.save(instance, client_name, client_info.toString())
-				} catch(ignored : JSONException) {
-				}
-			}
+			if(client_credential?.isEmpty() != false) return resultSub
+
+			client_info.put(KEY_CLIENT_CREDENTIAL, client_credential)
 		}
 		
-		ClientInfo.save(instance, client_name, client_info.toString())
+		try {
+			ClientInfo.save(instance, client_name, client_info.toString())
+		} catch(ignored : JSONException) {
+		}
 		result.data = client_info
-		
 		return result
 	}
 	
@@ -1174,14 +1172,13 @@ class TootApiClient(
 		reason : String?
 	) : TootApiResult? {
 		
-		val client_credential = client_info.parseString(KEY_CLIENT_CREDENTIAL)
-			?: error("missing client credential")
-		
 		val result = TootApiResult.makeWithCaption(this.instance)
 		if(result.error != null) return result
 		
 		log.d("createUser2Mastodon: client is : ${client_info}")
 		
+		val client_credential = client_info.parseString(KEY_CLIENT_CREDENTIAL)
+			?: return result.setError("createUser2Mastodon(): missing client credential")
 		
 		if(! sendRequest(result) {
 				

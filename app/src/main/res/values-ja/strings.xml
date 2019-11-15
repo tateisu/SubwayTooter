@@ -970,5 +970,6 @@
     <string name="always_expand_context_menu_sub_items" >コンテキストメニューの副項目を常に展開する</string>
     <string name="release_notes_latest">更新履歴 (v%1$s)</string>
     <string name="release_notes_updated">更新履歴 (v%1$s→v%2$s)</string>
+    <string name="test">Test</string>
 
 </resources>

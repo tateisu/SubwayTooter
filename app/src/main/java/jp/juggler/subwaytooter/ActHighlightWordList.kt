@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import com.woxthebox.draglistview.DragItem
 import com.woxthebox.draglistview.DragItemAdapter
@@ -95,7 +96,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 				if(swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
 					val o = item.tag
 					if(o is HighlightWord) {
-						o.delete()
+						o.delete(this@ActHighlightWordList)
 						listAdapter.removeItem(listAdapter.getPositionForItem(o))
 					}
 				}
@@ -135,11 +136,13 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		
 		val tvName : TextView
 		private val btnSound : View
+		val ivSpeech: ImageButton
 		
 		init {
 			
 			tvName = viewRoot.findViewById(R.id.tvName)
 			btnSound = viewRoot.findViewById(R.id.btnSound)
+			ivSpeech = viewRoot.findViewById(R.id.ivSpeech)
 			
 			// リスト要素のビューが ListSwipeItem だった場合、Swipe操作を制御できる
 			if(viewRoot is ListSwipeItem) {
@@ -163,6 +166,10 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 			vg(btnSound, item.sound_type != HighlightWord.SOUND_TYPE_NONE)
 			btnSound.setOnClickListener(this)
 			btnSound.tag = item
+			
+			vg(ivSpeech,item.speech != 0 )
+			ivSpeech.setOnClickListener(this)
+			ivSpeech.tag = item
 		}
 		
 		//		@Override
@@ -180,9 +187,15 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		override fun onClick(v : View) {
 			val o = v.tag
 			if(o is HighlightWord) {
-				sound(o)
+				when(v.id){
+					R.id.btnSound->{
+						sound(o)
+					}
+					R.id.ivSpeech->{
+						App1.getAppState(this@ActHighlightWordList).addSpeech(o.name,allowRepeat = true)
+					}
+				}
 			}
-			
 		}
 	}
 	
@@ -191,10 +204,16 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		DragItem(context, layoutId) {
 		
 		override fun onBindDragView(clickedView : View, dragView : View) {
+
 			dragView.findViewById<TextView>(R.id.tvName).text =
 				clickedView.findViewById<TextView>(R.id.tvName).text
+
 			dragView.findViewById<View>(R.id.btnSound).visibility =
 				clickedView.findViewById<View>(R.id.btnSound).visibility
+
+			dragView.findViewById<View>(R.id.ivSpeech).visibility=
+				clickedView.findViewById<View>(R.id.ivSpeech).visibility
+
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
 				getAttributeColor(
 					this@ActHighlightWordList,
@@ -238,7 +257,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 				var item = HighlightWord.load(text)
 				if(item == null) {
 					item = HighlightWord(text)
-					item.save()
+					item.save(this@ActHighlightWordList)
 					loadData()
 				}
 				edit(item)
@@ -260,7 +279,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 				try {
 					val sv = data.getStringExtra(ActHighlightWordEdit.EXTRA_ITEM) ?: return
 					val item = HighlightWord(sv.toJsonObject())
-					item.save()
+					item.save(this@ActHighlightWordList)
 					loadData()
 				} catch(ex : Throwable) {
 					throw RuntimeException("can't load data", ex)

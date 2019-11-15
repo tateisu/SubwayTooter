@@ -107,19 +107,23 @@ object EmojiDecoder {
 		private fun applyHighlight(start : Int, end : Int) {
 			val list = options.highlightTrie?.matchList(sb, start, end) ?: return
 			for(range in list) {
-				val word = HighlightWord.load(range.word)
-				if(word != null) {
-					options.hasHighlight = true
-					sb.setSpan(
-						HighlightSpan(word.color_fg, word.color_bg),
-						range.start,
-						range.end,
-						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-					)
-					if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
-						options.highlight_sound = word
-					}
+				val word = HighlightWord.load(range.word) ?: continue
+				sb.setSpan(
+					HighlightSpan(word.color_fg, word.color_bg),
+					range.start,
+					range.end,
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+
+				if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
+					if(options.highlightSound == null) options.highlightSound = word
 				}
+
+				if( word.speech != 0 ) {
+					if(options.highlightSpeech == null) options.highlightSpeech = word
+				}
+				
+				if(options.highlightAny == null) options.highlightAny = word
 			}
 		}
 		

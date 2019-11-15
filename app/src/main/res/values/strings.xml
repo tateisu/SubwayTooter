@@ -966,4 +966,5 @@
     <string name="always_expand_context_menu_sub_items" >Always expand sub-items of context menu</string>
     <string name="release_notes_latest">Release notes (v%1$s)</string>
     <string name="release_notes_updated">Release notes (v%1$s→v%2$s)</string>
+    <string name="test">Test</string>
 </resources>

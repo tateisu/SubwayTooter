@@ -123,6 +123,23 @@
 
         </LinearLayout>
 
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/enable_speech"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swSpeech"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
     </LinearLayout>
 </ScrollView>
 

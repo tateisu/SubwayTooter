@@ -1411,7 +1411,7 @@ class Column(
 		if(! (with_attachment || with_highlight)) return false
 		
 		val matchMedia = with_attachment && status.reblog?.hasMedia() ?: status.hasMedia()
-		val matchHighlight = with_highlight && status.reblog?.hasHighlight ?: status.hasHighlight
+		val matchHighlight = with_highlight && null != (status.reblog?.highlightAny ?: status.highlightAny)
 		
 		// どれかの条件を満たすならフィルタしない(false)、どれも満たさないならフィルタする(true)
 		return ! (matchMedia || matchHighlight)
@@ -2690,15 +2690,17 @@ class Column(
 			
 			val added = list_new.size  // may 0
 			
-			loop@ for(o in list_new) {
-				when(o) {
-					
-					is TootStatus -> {
-						val highlight_sound = o.highlight_sound
-						if(highlight_sound != null) {
-							App1.sound(highlight_sound)
-							break@loop
+			var doneSound = false
+			for(o in list_new) {
+				if( o is TootStatus ){
+					o.highlightSound?.let{
+						if(!doneSound){
+							doneSound = true
+							App1.sound(it)
 						}
+					}
+					o.highlightSpeech?.let{
+						App1.getAppState(context).addSpeech(it.name,allowRepeat = true)
 					}
 				}
 			}

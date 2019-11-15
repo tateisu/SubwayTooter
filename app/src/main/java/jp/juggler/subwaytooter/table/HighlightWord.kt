@@ -1,17 +1,20 @@
 package jp.juggler.subwaytooter.table
 
 import android.content.ContentValues
+import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
 
 import org.json.JSONObject
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.*
+import java.util.concurrent.atomic.AtomicReference
 
 class HighlightWord {
 	
-	companion object :TableCompanion{
+	companion object : TableCompanion {
 		
 		private val log = LogCategory("HighlightWord")
 		
@@ -20,40 +23,50 @@ class HighlightWord {
 		const val SOUND_TYPE_CUSTOM = 2
 		
 		const val table = "highlight_word"
-		const val COL_ID = "_id"
+		const val COL_ID = BaseColumns._ID
 		const val COL_NAME = "name"
 		private const val COL_TIME_SAVE = "time_save"
 		private const val COL_COLOR_BG = "color_bg"
 		private const val COL_COLOR_FG = "color_fg"
 		private const val COL_SOUND_TYPE = "sound_type"
 		private const val COL_SOUND_URI = "sound_uri"
+		private const val COL_SPEECH = "speech"
 		
-		private const val selection_name = COL_NAME + "=?"
-		private const val selection_id = COL_ID + "=?"
+		private const val selection_name = "$COL_NAME=?"
+		private const val selection_speech = "$COL_SPEECH<>0"
+		private const val selection_id = "$COL_ID=?"
 		
 		private val columns_name = arrayOf(COL_NAME)
 		
 		override fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
 			db.execSQL(
-				"create table if not exists " + table
-					+ "(_id INTEGER PRIMARY KEY"
-					+ ",name text not null"
-					+ ",time_save integer not null"
-					+ ",color_bg integer not null default 0"
-					+ ",color_fg integer not null default 0"
-					+ ",sound_type integer not null default 1"
-					+ ",sound_uri text default null"
-					+ ")"
+				"""create table if not exists $table
+					($COL_ID INTEGER PRIMARY KEY
+					,$COL_NAME text not null
+					,$COL_TIME_SAVE integer not null
+					,$COL_COLOR_BG integer not null default 0
+					,$COL_COLOR_FG integer not null default 0
+					,$COL_SOUND_TYPE integer not null default 1
+					,$COL_SOUND_URI text default null
+					,$COL_SPEECH integer default 0
+					)"""
 			)
 			db.execSQL(
-				"create unique index if not exists " + table + "_name on " + table + "(name)"
+				"create unique index if not exists ${table}_name on $table(name)"
 			)
 		}
 		
 		override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 			if(oldVersion < 21 && newVersion >= 21) {
 				onDBCreate(db)
+			}
+			if(oldVersion < 43 && newVersion >= 43) {
+				try {
+					db.execSQL("alter table $table add column $COL_SPEECH integer default 0")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
 			}
 		}
 		
@@ -73,7 +86,7 @@ class HighlightWord {
 		}
 		
 		fun createCursor() : Cursor {
-			return App1.database.query(table, null, null, null, null, null, COL_NAME + " asc")
+			return App1.database.query(table, null, null, null, null, null, "$COL_NAME asc")
 		}
 		
 		val nameSet : WordTrieTree?
@@ -95,14 +108,46 @@ class HighlightWord {
 				
 				return if(dst.isEmpty) null else dst
 			}
+		
+		private val hasTextToSpeechHighlightWordCache = AtomicReference<Boolean>(null)
+		
+		fun hasTextToSpeechHighlightWord() : Boolean {
+			synchronized(this) {
+				var cached = hasTextToSpeechHighlightWordCache.get()
+				if(cached == null) {
+					cached = false
+					try {
+						App1.database.query(
+							table,
+							columns_name,
+							selection_speech,
+							null,
+							null,
+							null,
+							null
+						)
+							.use { cursor ->
+								while(cursor.moveToNext()) {
+									cached = true
+								}
+							}
+					} catch(ex : Throwable) {
+						log.trace(ex)
+					}
+					hasTextToSpeechHighlightWordCache.set(cached)
+				}
+				return cached
+			}
+		}
 	}
 	
 	var id = - 1L
 	var name : String
-	var color_bg : Int = 0
-	var color_fg : Int = 0
-	var sound_type : Int = 0
+	var color_bg = 0
+	var color_fg = 0
+	var sound_type = 0
 	var sound_uri : String? = null
+	var speech = 0
 	
 	fun encodeJson() : JSONObject {
 		val dst = JSONObject()
@@ -111,17 +156,19 @@ class HighlightWord {
 		dst.put(COL_COLOR_BG, color_bg)
 		dst.put(COL_COLOR_FG, color_fg)
 		dst.put(COL_SOUND_TYPE, sound_type)
+		dst.put(COL_SPEECH, speech)
 		if(sound_uri != null) dst.put(COL_SOUND_URI, sound_uri)
 		return dst
 	}
 	
 	constructor(src : JSONObject) {
-		this.id = src.parseLong( COL_ID) ?: -1L
+		this.id = src.parseLong(COL_ID) ?: - 1L
 		this.name = src.notEmptyOrThrow(COL_NAME)
 		this.color_bg = src.optInt(COL_COLOR_BG)
 		this.color_fg = src.optInt(COL_COLOR_FG)
 		this.sound_type = src.optInt(COL_SOUND_TYPE)
-		this.sound_uri = src.parseString( COL_SOUND_URI)
+		this.sound_uri = src.parseString(COL_SOUND_URI)
+		this.speech = src.optInt(COL_SPEECH)
 	}
 	
 	constructor(name : String) {
@@ -137,9 +184,10 @@ class HighlightWord {
 		this.color_fg = cursor.getInt(COL_COLOR_FG)
 		this.sound_type = cursor.getInt(COL_SOUND_TYPE)
 		this.sound_uri = cursor.getStringOrNull(COL_SOUND_URI)
+		this.speech = cursor.getInt(COL_SPEECH)
 	}
 	
-	fun save() {
+	fun save(context : Context) {
 		if(name.isEmpty()) throw RuntimeException("HighlightWord.save(): name is empty")
 		
 		try {
@@ -149,12 +197,15 @@ class HighlightWord {
 			cv.put(COL_COLOR_BG, color_bg)
 			cv.put(COL_COLOR_FG, color_fg)
 			cv.put(COL_SOUND_TYPE, sound_type)
+			
 			val sound_uri = this.sound_uri
 			if(sound_uri?.isEmpty() != false) {
 				cv.putNull(COL_SOUND_URI)
 			} else {
 				cv.put(COL_SOUND_URI, sound_uri)
 			}
+			cv.put(COL_SPEECH, speech)
+			
 			if(id == - 1L) {
 				id = App1.database.replace(table, null, cv)
 			} else {
@@ -164,14 +215,22 @@ class HighlightWord {
 			log.e(ex, "save failed.")
 		}
 		
+		synchronized(Companion) {
+			hasTextToSpeechHighlightWordCache.set(null)
+		}
+		App1.getAppState(context).enableSpeech()
 	}
 	
-	fun delete() {
+	fun delete(context : Context) {
 		try {
 			App1.database.delete(table, selection_id, arrayOf(id.toString()))
 		} catch(ex : Throwable) {
 			log.e(ex, "delete failed.")
 		}
+		synchronized(Companion) {
+			hasTextToSpeechHighlightWordCache.set(null)
+		}
+		App1.getAppState(context).enableSpeech()
 	}
 	
 }

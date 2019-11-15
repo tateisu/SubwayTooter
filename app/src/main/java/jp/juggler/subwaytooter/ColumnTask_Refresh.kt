@@ -134,12 +134,17 @@ class ColumnTask_Refresh(
 					column.list_data.removeAt(0)
 				}
 				
+				var doneSound = false
 				for(o in list_new) {
-					if(o is TootStatus) {
-						val highlight_sound = o.highlight_sound
-						if(highlight_sound != null) {
-							App1.sound(highlight_sound)
-							break
+					if( o is TootStatus ){
+						o.highlightSound?.let{
+							if(!doneSound){
+								doneSound = true
+								App1.sound(it)
+							}
+						}
+						o.highlightSpeech?.let{
+							App1.getAppState(context).addSpeech(it.name,allowRepeat = true)
 						}
 					}
 				}

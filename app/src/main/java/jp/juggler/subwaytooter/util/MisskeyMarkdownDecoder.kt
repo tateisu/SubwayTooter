@@ -732,18 +732,22 @@ object MisskeyMarkdownDecoder {
 			val list = options.highlightTrie?.matchList(sb, start, end)
 			if(list != null) {
 				for(range in list) {
-					val word = HighlightWord.load(range.word)
-					if(word != null) {
-						options.hasHighlight = true
-						spanList.addLast(
-							range.start,
-							range.end,
-							HighlightSpan(word.color_fg, word.color_bg)
-						)
-						if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
-							options.highlight_sound = word
-						}
+					val word = HighlightWord.load(range.word) ?: continue
+					spanList.addLast(
+						range.start,
+						range.end,
+						HighlightSpan(word.color_fg, word.color_bg)
+					)
+					
+					if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
+						if(options.highlightSound == null) options.highlightSound = word
 					}
+					
+					if( word.speech != 0 ) {
+						if(options.highlightSpeech == null) options.highlightSpeech = word
+					}
+					
+					if(options.highlightAny == null) options.highlightAny = word
 				}
 			}
 		}

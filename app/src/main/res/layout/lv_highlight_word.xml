@@ -66,6 +66,15 @@
             android:gravity="center_vertical|start"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
+            android:layout_marginEnd="4dp"
+            />
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/ivSpeech"
+            android:src="@drawable/ic_comment"
+            android:tint="?attr/colorVectorDrawable"
+            android:layout_marginEnd="4dp"
             />
         <ImageButton
             android:layout_width="wrap_content"
@@ -74,6 +83,7 @@
             android:src="@drawable/ic_volume_up"
             android:contentDescription="@string/check_sound"
             android:tint="?attr/colorVectorDrawable"
+            android:layout_marginEnd="4dp"
             />
     </LinearLayout>
 

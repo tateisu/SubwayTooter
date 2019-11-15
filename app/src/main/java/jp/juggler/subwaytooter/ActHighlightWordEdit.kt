@@ -49,6 +49,8 @@ class ActHighlightWordEdit
 	
 	private lateinit var tvName : TextView
 	private lateinit var swSound : Switch
+	private lateinit var swSpeech : Switch
+	
 	
 	private var bBusy = false
 	
@@ -60,7 +62,6 @@ class ActHighlightWordEdit
 		} catch(ex : JSONException) {
 			throw RuntimeException(ex)
 		}
-		
 	}
 	
 	override fun onBackPressed() {
@@ -110,12 +111,19 @@ class ActHighlightWordEdit
 		swSound = findViewById(R.id.swSound)
 		swSound.setOnCheckedChangeListener(this)
 		
-		findViewById<View>(R.id.btnTextColorEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnTextColorReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnBackgroundColorEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnBackgroundColorReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnNotificationSoundEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnNotificationSoundReset).setOnClickListener(this)
+		swSpeech = findViewById(R.id.swSpeech)
+		swSpeech.setOnCheckedChangeListener(this)
+		
+		intArrayOf(
+			R.id.btnTextColorEdit,
+			R.id.btnTextColorReset,
+			R.id.btnBackgroundColorEdit,
+			R.id.btnBackgroundColorReset,
+			R.id.btnNotificationSoundEdit,
+			R.id.btnNotificationSoundReset
+		).forEach {
+			findViewById<View>(it)?.setOnClickListener(this)
+		}
 	}
 	
 	private fun showSampleText() {
@@ -123,6 +131,8 @@ class ActHighlightWordEdit
 		try {
 			
 			swSound.isChecked = item.sound_type != HighlightWord.SOUND_TYPE_NONE
+			
+			swSpeech.isChecked = item.speech != 0
 			
 			tvName.text = item.name
 			tvName.setBackgroundColor(item.color_bg) // may 0
@@ -169,12 +179,21 @@ class ActHighlightWordEdit
 	override fun onCheckedChanged(buttonView : CompoundButton, isChecked : Boolean) {
 		if(bBusy) return
 		
-		if(! isChecked) {
-			item.sound_type = HighlightWord.SOUND_TYPE_NONE
-		} else {
-			
-			item.sound_type =
-				if(item.sound_uri?.isEmpty() != false) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_CUSTOM
+		when(buttonView.id){
+			R.id.swSound ->{
+				if(! isChecked) {
+					item.sound_type = HighlightWord.SOUND_TYPE_NONE
+				} else {
+					item.sound_type =
+						if(item.sound_uri?.isEmpty() != false) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_CUSTOM
+				}
+			}
+			R.id.swSpeech->{
+				item.speech = when(isChecked){
+					false->0
+					else->1
+				}
+			}
 		}
 	}
 	

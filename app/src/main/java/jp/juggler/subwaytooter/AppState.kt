@@ -142,7 +142,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		this.handler = Handler()
 		this.density = context.resources.displayMetrics.density
 		this.stream_reader = StreamReader(context, handler, pref)
-		this.networkTracker = NetworkStateTracker(context){
+		this.networkTracker = NetworkStateTracker(context) {
 			App1.custom_emoji_cache.onNetworkChanged()
 			App1.custom_emoji_lister.onNetworkChanged()
 		}
@@ -153,16 +153,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	// TextToSpeech
 	
 	private val isTextToSpeechRequired : Boolean
-		get() {
-			var b = false
-			for(c in column_list) {
-				if(c.enable_speech) {
-					b = true
-					break
-				}
-			}
-			return b
-		}
+		get() = column_list.any { it.enable_speech } || HighlightWord.hasTextToSpeechHighlightWord()
 	
 	private val tts_receiver = object : BroadcastReceiver() {
 		override fun onReceive(context : Context, intent : Intent?) {
@@ -345,8 +336,6 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		map_busy_bookmark.remove(key)
 	}
 	
-	
-	
 	fun isBusyBoost(account : SavedAccount, status : TootStatus) : Boolean {
 		val key = account.acct + ":" + status.busyKey
 		return map_busy_boost.contains(key)
@@ -363,7 +352,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	}
 	
 	@SuppressLint("StaticFieldLeak")
-	private fun enableSpeech() {
+	fun enableSpeech() {
 		this.willSpeechEnabled = isTextToSpeechRequired
 		
 		if(willSpeechEnabled && tts == null && tts_status == TTS_STATUS_NONE) {
@@ -526,19 +515,21 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		addSpeech(sb.toString())
 	}
 	
-	private fun addSpeech(text : String) {
+	internal fun addSpeech(text : String,allowRepeat:Boolean = false) {
 		
 		if(tts == null) return
 		
 		val sv = reSpaces.matcher(text).replaceAll(" ").trim { it <= ' ' }
 		if(sv.isEmpty()) return
 		
-		for(check in duplication_check) {
-			if(check == sv) return
-		}
-		duplication_check.addLast(sv)
-		if(duplication_check.size >= 60) {
-			duplication_check.removeFirst()
+		if(!allowRepeat) {
+			for(check in duplication_check) {
+				if(check == sv) return
+			}
+			duplication_check.addLast(sv)
+			if(duplication_check.size >= 60) {
+				duplication_check.removeFirst()
+			}
 		}
 		
 		tts_queue.add(sv)

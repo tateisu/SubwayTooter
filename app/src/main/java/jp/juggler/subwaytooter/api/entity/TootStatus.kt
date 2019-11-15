@@ -181,9 +181,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	// 会話の流れビューで後から追加する
 	var card : TootCard? = null
 	
-	var highlight_sound : HighlightWord? = null
-	
-	var hasHighlight : Boolean = false
+	var highlightSound: HighlightWord? = null
+	var highlightSpeech: HighlightWord? = null
+	var highlightAny: HighlightWord? = null
 	
 	val time_created_at : Long
 	
@@ -295,10 +295,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			)
 			
 			this.decoded_content = options.decodeHTML(content)
-			this.hasHighlight = this.hasHighlight || options.hasHighlight
-			if(options.highlight_sound != null && this.highlight_sound == null) {
-				this.highlight_sound = options.highlight_sound
-			}
+			if(this.highlightSound==null) this.highlightSound = options.highlightSound
+			if(this.highlightSpeech==null) this.highlightSpeech = options.highlightSpeech
+			if(this.highlightAny==null) this.highlightAny = options.highlightAny
 			
 			// Markdownのデコード結果からmentionsを読むのだった
 			val mentions1 =
@@ -325,10 +324,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			)
 			this.decoded_spoiler_text = options.decodeHTML(spoiler_text)
 			
-			this.hasHighlight = this.hasHighlight || options.hasHighlight
-			if(options.highlight_sound != null && this.highlight_sound == null) {
-				this.highlight_sound = options.highlight_sound
-			}
+			if(this.highlightSound==null) this.highlightSound = options.highlightSound
+			if(this.highlightSpeech==null) this.highlightSpeech = options.highlightSpeech
+			if(this.highlightAny==null) this.highlightAny = options.highlightAny
 			
 			val mentions2 =
 				(decoded_spoiler_text as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
@@ -494,10 +492,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			)
 			
 			this.decoded_content = options.decodeHTML(content)
-			this.hasHighlight = this.hasHighlight || options.hasHighlight
-			if(options.highlight_sound != null && this.highlight_sound == null) {
-				this.highlight_sound = options.highlight_sound
-			}
+			if(this.highlightSound==null) this.highlightSound = options.highlightSound
+			if(this.highlightSpeech==null) this.highlightSpeech = options.highlightSpeech
+			if(this.highlightAny==null) this.highlightAny = options.highlightAny
 			
 			var sv = (src.parseString("spoiler_text") ?: "").cleanCW()
 			this.spoiler_text = when {
@@ -517,10 +514,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
 			
-			this.hasHighlight = this.hasHighlight || options.hasHighlight
-			if(options.highlight_sound != null && this.highlight_sound == null) {
-				this.highlight_sound = options.highlight_sound
-			}
+			if(this.highlightSound==null) this.highlightSound = options.highlightSound
+			if(this.highlightSpeech==null) this.highlightSpeech = options.highlightSpeech
+			if(this.highlightAny==null) this.highlightAny = options.highlightAny
 			
 			this.enquete = try {
 				sv = src.parseString("enquete") ?: ""

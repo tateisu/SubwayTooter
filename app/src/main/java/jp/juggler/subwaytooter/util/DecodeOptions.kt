@@ -36,11 +36,10 @@ class DecodeOptions(
 		return false
 	}
 	
-	// OUTPUT: true if found highlight
-	var hasHighlight : Boolean = false
-	
-	// OUTPUT: found highlight with sound
-	var highlight_sound : HighlightWord? = null
+	// OUTPUT
+	var highlightSound: HighlightWord? = null
+	var highlightSpeech: HighlightWord? = null
+	var highlightAny: HighlightWord? = null
 	
 	////////////////////////
 	// decoder

@@ -1,62 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <ScrollView
         android:id="@+id/svDescription"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:clipToPadding="false"
-        android:paddingBottom="6dp"
-        android:paddingEnd="12dp"
         android:paddingStart="12dp"
         android:paddingTop="6dp"
-        >
+        android:paddingEnd="12dp"
+        android:paddingBottom="6dp">
 
         <TextView
             android:id="@+id/tvDescription"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            />
+            android:layout_height="wrap_content" />
     </ScrollView>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        >
+        android:layout_weight="1">
 
         <jp.juggler.subwaytooter.view.PinchBitmapView
             android:id="@+id/pbvImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/media_background"
-            />
+            android:background="@drawable/media_background" />
 
         <com.google.android.exoplayer2.ui.SimpleExoPlayerView
             android:id="@+id/exoView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
+            android:layout_height="match_parent" />
 
         <TextView
             android:id="@+id/tvError"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:padding="12dp"
-            />
+            android:padding="12dp" />
     </FrameLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        >
+        android:layout_height="wrap_content">
 
         <com.google.android.flexbox.FlexboxLayout
 
@@ -65,8 +56,7 @@
             android:layout_height="wrap_content"
             app:alignItems="center"
             app:flexWrap="wrap"
-            app:justifyContent="center"
-            >
+            app:justifyContent="center">
 
             <ImageButton
                 android:id="@+id/btnPrevious"
@@ -75,8 +65,7 @@
                 android:contentDescription="@string/previous"
                 android:minWidth="48dp"
                 android:src="@drawable/ic_left"
-                android:tint="?attr/colorVectorDrawable"
-                />
+                android:tint="?attr/colorVectorDrawable" />
 
             <ImageButton
                 android:id="@+id/btnNext"
@@ -85,8 +74,7 @@
                 android:contentDescription="@string/next"
                 android:minWidth="48dp"
                 android:src="@drawable/ic_right"
-                android:tint="?attr/colorVectorDrawable"
-                />
+                android:tint="?attr/colorVectorDrawable" />
 
             <ImageButton
                 android:id="@+id/btnDownload"
@@ -95,8 +83,7 @@
                 android:contentDescription="@string/download"
                 android:minWidth="48dp"
                 android:src="@drawable/ic_download"
-                android:tint="?attr/colorVectorDrawable"
-                />
+                android:tint="?attr/colorVectorDrawable" />
 
             <ImageButton
                 android:id="@+id/btnMore"
@@ -105,7 +92,13 @@
                 android:contentDescription="@string/more"
                 android:minWidth="48dp"
                 android:src="@drawable/ic_more"
-                android:tint="?attr/colorVectorDrawable"
+                android:tint="?attr/colorVectorDrawable" />
+
+            <CheckBox
+                android:id="@+id/cbMute"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="@string/mute"
                 />
 
         </com.google.android.flexbox.FlexboxLayout>
@@ -115,13 +108,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="start|bottom"
-            android:layout_marginBottom="6dp"
-            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
-            android:gravity="start|bottom"
-            android:textSize="12sp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="6dp"
             android:alpha="0.5"
+            android:gravity="start|bottom"
             android:textColor="#ffffff"
-            />
+            android:textSize="12sp" />
     </FrameLayout>
 </LinearLayout>

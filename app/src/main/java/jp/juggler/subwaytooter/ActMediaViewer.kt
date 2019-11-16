@@ -15,6 +15,7 @@ import android.os.Environment
 import android.os.SystemClock
 import android.view.View
 import android.view.Window
+import android.widget.CheckBox
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -66,6 +67,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		internal const val STATE_PLAYER_POS = "playerPos"
 		internal const val STATE_PLAYER_PLAY_WHEN_READY = "playerPlayWhenReady"
+		internal const val STATE_LAST_VOLUME = "lastVolume"
 		
 		internal fun <T : TootAttachmentLike> encodeMediaList(list : ArrayList<T>?) =
 			list?.encodeJson()?.toString() ?: "[]"
@@ -106,6 +108,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	private lateinit var svDescription : View
 	private lateinit var tvDescription : TextView
 	private lateinit var tvStatus : TextView
+	private lateinit var cbMute: CheckBox
+	private var lastVolume  = Float.NaN
+	
 	
 	internal var buffering_last_shown : Long = 0
 	
@@ -183,6 +188,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		outState.putLong(STATE_PLAYER_POS, exoPlayer.currentPosition)
 		outState.putBoolean(STATE_PLAYER_PLAY_WHEN_READY, exoPlayer.playWhenReady)
+		outState.putFloat(STATE_LAST_VOLUME,lastVolume)
 	}
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
@@ -234,6 +240,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		svDescription = findViewById(R.id.svDescription)
 		tvDescription = findViewById(R.id.tvDescription)
 		tvStatus = findViewById(R.id.tvStatus)
+		cbMute = findViewById(R.id.cbMute)
 		
 		val enablePaging = media_list.size > 1
 		btnPrevious.isEnabled = enablePaging
@@ -245,6 +252,22 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		btnNext.setOnClickListener(this)
 		findViewById<View>(R.id.btnDownload).setOnClickListener(this)
 		findViewById<View>(R.id.btnMore).setOnClickListener(this)
+		
+		cbMute.setOnCheckedChangeListener{_,isChecked->
+			if(isChecked) {
+				// mute
+				lastVolume = exoPlayer.volume
+				exoPlayer.volume = 0f
+			}else{
+				// unmute
+				exoPlayer.volume = when{
+					lastVolume.isNaN() -> 1f
+					lastVolume <= 0f -> 1f
+					else -> lastVolume
+				}
+				lastVolume = Float.NaN
+			}
+		}
 		
 		pbvImage.setCallback(object : PinchBitmapView.Callback {
 			override fun onSwipe(deltaX : Int, deltaY : Int) {
@@ -338,6 +361,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	@SuppressLint("StaticFieldLeak")
 	private fun loadVideo(ta : TootAttachment, state : Bundle? = null) {
 		
+		vg(cbMute,true)
+		if(cbMute.isChecked && lastVolume.isFinite() ) {
+			exoPlayer.volume = 0f
+		}
+		
 		val url = ta.getLargeUrl(App1.pref)
 		if(url == null) {
 			showError("missing media attachment url.")
@@ -372,6 +400,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		} else {
 			exoPlayer.playWhenReady = state.getBoolean(STATE_PLAYER_PLAY_WHEN_READY, true)
 			exoPlayer.seekTo(max(0L, state.getLong(STATE_PLAYER_POS, 0L)))
+			lastVolume = state.getFloat(STATE_LAST_VOLUME,1f)
 		}
 	}
 	
@@ -457,6 +486,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
 	@SuppressLint("StaticFieldLeak")
 	private fun loadBitmap(ta : TootAttachment) {
+		
+		vg(cbMute,false)
+		
 		val urlList = ta.getLargeUrlList(App1.pref)
 		if(urlList.isEmpty()) {
 			showError("missing media attachment url.")

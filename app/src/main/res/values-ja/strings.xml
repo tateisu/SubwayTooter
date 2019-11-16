@@ -166,6 +166,7 @@
     <string name="confirm_unblock_domain">ドメイン \"%1$s\" の非表示を解除しますか？</string>
     <string name="confirm_unboost_from">このトゥートを %1$s からブースト解除しますか?</string>
     <string name="confirm_unfavourite_from">このトゥートを %1$s からお気に入り解除しますか?</string>
+    <string name="confirm_unbookmark_from">このトゥートを %1$s からブックマーク解除しますか?</string>
     <string name="confirm_unfollow_who_from">%2$s で %1$s をフォロー解除しますか？</string>
     <string name="confirmation">確認</string>
     <string name="contact">連絡先アカウント</string>

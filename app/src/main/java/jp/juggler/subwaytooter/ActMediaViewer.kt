@@ -487,7 +487,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	@SuppressLint("StaticFieldLeak")
 	private fun loadBitmap(ta : TootAttachment) {
 		
-		vg(cbMute,false)
+		cbMute.visibility=View.INVISIBLE
 		
 		val urlList = ta.getLargeUrlList(App1.pref)
 		if(urlList.isEmpty()) {

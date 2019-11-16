@@ -267,14 +267,13 @@ object Action_Toot {
 			return
 		}
 		
-		
 		// 必要なら確認を出す
 		// ブックマークは解除する時だけ確認する
 		if(! bConfirmed && !bSet ) {
 			DlgConfirm.openSimple(
 				activity,
 				activity.getString(
-					R.string.confirm_unfavourite_from,
+					R.string.confirm_unbookmark_from,
 					AcctColor.getNickname(access_info.acct)
 				)
 			){

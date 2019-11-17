@@ -1,2 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="app_name">Subway Tooter</string>
+    <string name="action_settings">Configuració</string>
+    <string name="account_add">Afegir un compte</string>
+    <string name="instance">Servidor</string>
+    <string name="user_mail_address">Correu-e</string>
+    <string name="user_password">Contrasenya</string>
+    <string name="ok">Bé</string>
+    <string name="cancel">Cancel·la</string>
+    <string name="instance_not_specified">No s\'ha especificat el servidor</string>
+    <string name="mail_not_specified">No s\'ha especificat el correu-e</string>
+    <string name="password_not_specified">No s\'ha especificat la contrasenya</string>
+    <string name="network_error">Error de xarxa.</string>
+    <string name="error_response">Error de resposta.</string>
+    <string name="api_error">Error d\'API. %1$s</string>
+    <string name="register_app_to_server">S\'està registrant l\'aplicació a %1$s…</string>
+    <string name="request_access_token">Sol·licitant credencial d\'accés…</string>
+    <string name="request_api">Adquirint: %1$s %2$s</string>
+    <string name="reading_api">Llegint: %1$s %2$s</string>
+    <string name="column_empty">Fes servir el botó inferior esquerre del menú per afegir columna</string>
+    <string name="home">Inici</string>
+    <string name="local_timeline">Pissarra local</string>
+    <string name="federate_timeline">Pissarra federada</string>
+    <string name="login_required">Sisplau crea la credencial d\'accés a partir de la configuració del compte.</string>
+    <string name="cancelled">Cancel·lat</string>
+    <string name="account_pick">Selecciona un compte</string>
+    <string name="account_confirmed">Compte confirmat.</string>
+    <string name="reply">Resposta</string>
+    <string name="default_">Per defecte</string>
+    <string name="more">Més</string>
+    <string name="close_column">Tanca la columna</string>
+    <string name="thumbnail">Minigrafia</string>
+    <string name="reload">Recarrega</string>
+    <string name="favourites">Preferits</string>
+    <string name="notifications">Notificacions</string>
+    <string name="reports">Denúncies</string>
+    <string name="your_statuses">El teu perfil</string>
+    <string name="statuses_of">Perfil de %1$s</string>
+    <string name="follow">Segueix</string>
+    <string name="following">Seguint</string>
+    <string name="followers">Seguidores</string>
+    <string name="statuses">Missatges</string>
+    <string name="hide">Amaga</string>
+    <string name="nsfw">Reservat</string>
+    <string name="tap_to_show">Toca per veure-ho</string>
+    <string name="show">Mostra</string>
+    <string name="act_post">Publicant el bram</string>
+    <string name="content_warning">Avís de contingut</string>
+    <string name="please_add_account">Si vols bramular has de crear un compte.</string>
+    <string name="not_selected">(no seleccionat)</string>
+    <string name="content_warning_hint">Escriu aquí l\'advertiment</string>
+    <string name="content_hint">Contingut del teu bram</string>
+    <string name="status">Bramula</string>
+    <string name="list_empty">Llista buida</string>
+</resources>

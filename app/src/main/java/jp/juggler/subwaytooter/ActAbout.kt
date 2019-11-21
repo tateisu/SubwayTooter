@@ -4,12 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.Gravity
-import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.util.LogCategory
 
 class ActAbout : AppCompatActivity() {
@@ -32,9 +31,10 @@ class ActAbout : AppCompatActivity() {
 		const val url_weblate = "https://hosted.weblate.org/projects/subway-tooter/"
 		
 		val contributors = arrayOf(
-			Pair("@ButterflyOfFire@mstdn.fr", "update arabic & french language")
+			Pair("@ButterflyOfFire@mstdn.fr", "arabic & french")
 		)
 	}
+	
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -92,7 +92,7 @@ class ActAbout : AppCompatActivity() {
 		for(pair in contributors) {
 			ll.addView(Button(this).apply {
 				val acct = pair.first
-				val works = pair.second
+				val languages = pair.second
 				
 				//
 				layoutParams = LinearLayout.LayoutParams(
@@ -105,9 +105,10 @@ class ActAbout : AppCompatActivity() {
 				setBackgroundResource(R.drawable.btn_bg_transparent)
 				setPadding(padding, padding, padding, padding)
 				isAllCaps = false
+
 				//
 				text = getString(R.string.search_for, acct) + "\n" +
-					getString(R.string.thanks_for, works)
+					getString(R.string.thanks_for, languages)
 				
 				gravity = Gravity.START or Gravity.CENTER_VERTICAL
 				

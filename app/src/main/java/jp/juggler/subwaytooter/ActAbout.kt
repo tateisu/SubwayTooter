@@ -38,6 +38,7 @@ class ActAbout : AppCompatActivity() {
 		
 		const val url_weblate = "https://hosted.weblate.org/projects/subway-tooter/"
 		
+		// git log --pretty=format:"%an %s" |grep "Translated using Weblate"|sort|uniq
 		val translators = arrayOf(
 			Translators("Allan Nordhøy",null,"English & Norwegian Bokmål"),
 			Translators("ButterflyOfFire","@ButterflyOfFire@mstdn.fr", "Arabic & French"),

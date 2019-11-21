@@ -23,6 +23,8 @@ object CustomShare {
 	
 	private val log = LogCategory("CustomShare")
 	
+	private const val translate_app_component_default = "com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity"
+	
 	// convert "pkgName/className" string to ComponentName object.
 	private fun String.cn() : ComponentName? {
 		try {
@@ -35,7 +37,6 @@ object CustomShare {
 	}
 	
 	fun getCustomShareComponentName(
-		context : Context,
 		pref : SharedPreferences,
 		target : CustomShareTarget
 	) : ComponentName? {
@@ -44,7 +45,7 @@ object CustomShare {
 		when(target) {
 			CustomShareTarget.Translate -> {
 				src = Pref.spTranslateAppComponent(pref)
-				defaultComponentName = context.getString(R.string.translate_app_component_default)
+				defaultComponentName = translate_app_component_default
 			}
 			
 			CustomShareTarget.CustomShare1 -> {
@@ -100,7 +101,7 @@ object CustomShare {
 		
 		try {
 			// convert "pkgName/className" string to ComponentName object.
-			val cn = getCustomShareComponentName(activity, activity.pref, target)
+			val cn = getCustomShareComponentName(activity.pref, target)
 			if(cn == null) {
 				showToast(activity,true,R.string.custom_share_app_not_found)
 				return
@@ -130,7 +131,7 @@ object CustomShare {
 	fun reloadCache(context : Context, pref : SharedPreferences) {
 		val pm = context.packageManager
 		CustomShareTarget.values().forEach { target ->
-			val cn = getCustomShareComponentName(context, pref, target)
+			val cn = getCustomShareComponentName(pref, target)
 			val pair = getInfo(pm, cn)
 			cache[target] = pair
 		}

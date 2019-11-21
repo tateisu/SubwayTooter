@@ -2033,7 +2033,7 @@ class ActAppSettingChild : AppCompatActivity()
 		
 		tv ?: return
 		
-		val cn = CustomShare.getCustomShareComponentName(this, pref, target)
+		val cn = CustomShare.getCustomShareComponentName(pref, target)
 		val (label, icon) = CustomShare.getInfo(packageManager, cn)
 		
 		tv.text = label ?: getString(R.string.not_selected)

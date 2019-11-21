@@ -13,6 +13,14 @@ import jp.juggler.util.LogCategory
 
 class ActAbout : AppCompatActivity() {
 	
+	class Translators(
+		val name:String,
+		_search:String?,
+		val lang:String
+	){
+		val search :String = _search ?: name
+	}
+	
 	companion object {
 		val log = LogCategory("ActAbout")
 		
@@ -30,8 +38,22 @@ class ActAbout : AppCompatActivity() {
 		
 		const val url_weblate = "https://hosted.weblate.org/projects/subway-tooter/"
 		
-		val contributors = arrayOf(
-			Pair("@ButterflyOfFire@mstdn.fr", "arabic & french")
+		val translators = arrayOf(
+			Translators("Allan Nordhøy",null,"English & Norwegian Bokmål"),
+			Translators("ButterflyOfFire","@ButterflyOfFire@mstdn.fr", "Arabic & French"),
+			Translators("Ch",null,"Korean"),
+			Translators("Elizabeth Sherrock",null,"Chinese (Simplified)"),
+			Translators("Gennady Archangorodsky",null,"Hebrew"),
+			Translators("inqbs Siina",null,"Korean"),
+			Translators("Jeong Arm","jarm@qdon.space","Korean"),
+			Translators("Kai Zhang",null,"Chinese (Simplified)"),
+			Translators("lptprjh",null,"Korean"),
+			Translators("mynameismonkey",null,"Welsh"),
+			Translators("Nathan",null,"French"),
+			Translators("Owain Rhys Lewis",null,"Welsh"),
+			Translators("Swann Martinet",null,"French"),
+			Translators("takubunn",null,"Chinese (Simplified)"),
+			Translators("배태길",null,"Korea")
 		)
 	}
 	
@@ -89,11 +111,8 @@ class ActAbout : AppCompatActivity() {
 		val margin_top = (0.5f + density * 8).toInt()
 		val padding = (0.5f + density * 8).toInt()
 		
-		for(pair in contributors) {
+		for(who in translators) {
 			ll.addView(Button(this).apply {
-				val acct = pair.first
-				val languages = pair.second
-				
 				//
 				layoutParams = LinearLayout.LayoutParams(
 					LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -107,14 +126,13 @@ class ActAbout : AppCompatActivity() {
 				isAllCaps = false
 
 				//
-				text = getString(R.string.search_for, acct) + "\n" +
-					getString(R.string.thanks_for, languages)
+				text = who.name + "\n" + getString(R.string.thanks_for, who.lang)
 				
 				gravity = Gravity.START or Gravity.CENTER_VERTICAL
 				
 				setOnClickListener {
 					val data = Intent()
-					data.putExtra(EXTRA_SEARCH, acct)
+					data.putExtra(EXTRA_SEARCH, who.search)
 					setResult(Activity.RESULT_OK, data)
 					finish()
 				}

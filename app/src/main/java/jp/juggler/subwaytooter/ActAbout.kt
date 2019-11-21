@@ -82,7 +82,7 @@ class ActAbout : AppCompatActivity() {
 		setButton(R.id.btnRate, url_store) { openUrl(url_store) }
 		setButton(R.id.btnReleaseNote, url_release) { openUrl(url_release) }
 		setButton(R.id.btnIconDesign, url_futaba) { openUrl(url_futaba) }
-		setButton(R.id.btnWeblate, "Please help translation!") { openUrl(url_weblate) }
+		setButton(R.id.btnWeblate, getString(R.string.please_help_translation) ) { openUrl(url_weblate) }
 		
 		val ll = findViewById<LinearLayout>(R.id.llContributors)
 		val density = resources.displayMetrics.density

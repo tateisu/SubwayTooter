@@ -972,5 +972,6 @@
     <string name="release_notes_latest">更新履歴 (v%1$s)</string>
     <string name="release_notes_updated">更新履歴 (v%1$s→v%2$s)</string>
     <string name="test">Test</string>
+    <string name="please_help_translation">Please help translation!</string>
 
 </resources>

@@ -955,4 +955,12 @@
     <string name="navigation_bar_color">Couleur de la barre de navigation (redémarrage de l’app requis. pre-Android 8 ne peut pas ajuster la couleur des icônes)</string>
     <string name="quick_toot_omit_account_selection">Lorsque vous utilisez le pouet rapide, omettez la sélection de compte si possible</string>
     <string name="default_">Par défaut</string>
+    <string name="confirm_unbookmark_from">Retirer ce statut comme un signet à partir de %1$s \?</string>
+    <string name="bookmark">Ajouter aux signets</string>
+    <string name="bookmark_from_another_account">Marquer comme un signet à partir d’un autre compte</string>
+    <string name="bookmark_succeeded">Ajouté aux signets</string>
+    <string name="bookmarks">Signets</string>
+    <string name="unbookmark_succeeded">N’est plus marqué comme un signet</string>
+    <string name="account_picker_bookmark">Compte avec lequel marquer comme un signet \?</string>
+    <string name="already_bookmarked">Déjà mis en signet.</string>
 </resources>

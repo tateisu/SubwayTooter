@@ -487,4 +487,8 @@
     <string name="cross_account_actions">إجراءات عبر الحساب</string>
     <string name="extra_actions">إجراءات إضافية</string>
     <string name="block_domain">احجب كافة النطاق</string>
+    <string name="cant_follow_locked_user">لا يمكن متابعة المستخدم غير العام</string>
+    <string name="domain_count">عدد النطاقات المتصلة</string>
+    <string name="dont_show_timeout">لا تُظهر إشعار \"انتهاء مهلة الخادم\"</string>
+    <string name="default_">افتراضي</string>
 </resources>

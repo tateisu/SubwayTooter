@@ -45,6 +45,7 @@ class ActAbout : AppCompatActivity() {
 			Translators("Gennady Archangorodsky",null,"Hebrew"),
 			Translators("inqbs Siina",null,"Korean"),
 			Translators("Jeong Arm","@jarm@qdon.space","Korean"),
+			Translators("Joan Pujolar","@jpujolar@mastodont.cat","Catalan"),
 			Translators("Kai Zhang","@bearzk@mastodon.social","Chinese (Simplified)"),
 			Translators("lptprjh",null,"Korean"),
 			Translators("mynameismonkey",null,"Welsh"),

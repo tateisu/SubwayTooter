@@ -924,7 +924,7 @@
     <string name="hashtag_from_acct">Hashtag de compte</string>
     <string name="hashtag_of_from">Hashtag #%1$s de %2$s</string>
     <string name="boost_with_visibility">Difon amb visibilitat</string>
-    <string name="confirm_private_boost_from">Vols difondre aquest missatge de %1$a) Es mostrarà a totes les seguidores.</string>
+    <string name="confirm_private_boost_from">Vols difondre aquest missatge de %1$s) Es mostrarà a totes les seguidores.</string>
     <string name="quick_toot_menu">Menú de brams ràpids</string>
     <string name="input">Input</string>
     <string name="polls_choice_not_selected">Cal seleccionar 1 opció o més.</string>

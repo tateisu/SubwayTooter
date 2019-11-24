@@ -23,14 +23,18 @@ import kotlin.math.min
 class MyAppGlideModule : AppGlideModule() {
 	
 	companion object{
+
 		private val svgSig = "<svg".toByteArray(Charsets.UTF_8)
+
 		private fun findBytes(data:ByteArray,dataSize:Int = data.size,key:ByteArray):Int{
+
 			fun check(start:Int):Boolean{
 				for(j in key.indices){
 					if( data[start+j] != key[j] ) return false
 				}
 				return true
 			}
+
 			for(i in 0 .. dataSize - key.size){
 				if(check(i)) return i
 			}
@@ -41,13 +45,13 @@ class MyAppGlideModule : AppGlideModule() {
 	// Decodes an SVG internal representation from an [InputStream].
 	inner class SvgDecoder : ResourceDecoder<InputStream, SVG> {
 		
+		@Throws(IOException::class)
 		override fun handles(source : InputStream, options : Options) : Boolean {
 			val size = min(source.available(),1024)
 			if(size<=0) return false
 			val buf = ByteArray(size)
 			val nRead = source.read(buf,0,size)
-			val isSvg = -1 != findBytes(buf,nRead,svgSig)
-			return isSvg
+			return -1 != findBytes(buf,nRead, svgSig)
 			
 		}
 		

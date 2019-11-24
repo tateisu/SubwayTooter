@@ -57,7 +57,6 @@ class ActAbout : AppCompatActivity() {
 		)
 	}
 	
-	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
 		App1.setActivityTheme(this)

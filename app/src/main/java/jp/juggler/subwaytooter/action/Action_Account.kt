@@ -31,14 +31,37 @@ object Action_Account {
 		) { dialog, instance, action ->
 			TootTaskRunner(activity).run(instance, object : TootTask {
 				
-				override fun background(client : TootApiClient) : TootApiResult? = when(action) {
-					LoginForm.Action.Existing -> client.authentication1(Pref.spClientName(activity))
-					LoginForm.Action.Create -> client.createUser1(Pref.spClientName(activity))
-					
-					LoginForm.Action.Pseudo, LoginForm.Action.Token -> {
-						val (ti, ri) = TootInstance.get(client)
-						if(ti != null) ri?.data = ti
-						ri
+				override fun background(client : TootApiClient) : TootApiResult? {
+					return when(action) {
+						LoginForm.Action.Existing -> client.authentication1(
+							Pref.spClientName(
+								activity
+							)
+						)
+						LoginForm.Action.Create -> client.createUser1(Pref.spClientName(activity))
+						
+						LoginForm.Action.Pseudo, LoginForm.Action.Token -> {
+							val (ti, ri) = TootInstance.get(client)
+							if(ti != null) ri?.data = ti
+							ri
+						}
+					}
+				}
+				
+				private fun handleError(result : TootApiResult) {
+					val error = result.error ?: "(no error information)"
+					if(error.contains("SSLHandshakeException")
+						&& (Build.VERSION.RELEASE.startsWith("7.0")
+							|| Build.VERSION.RELEASE.startsWith("7.1")
+							&& ! Build.VERSION.RELEASE.startsWith("7.1.")
+							)
+					) {
+						AlertDialog.Builder(activity)
+							.setMessage(error + "\n\n" + activity.getString(R.string.ssl_bug_7_0))
+							.setNeutralButton(R.string.close, null)
+							.show()
+					} else {
+						showToast(activity, true, "$error ${result.requestInfo}".trim())
 					}
 				}
 				
@@ -46,31 +69,32 @@ object Action_Account {
 					
 					result ?: return  // cancelled.
 					
-					when(val data = result.data) {
-						
-						// ブラウザ用URLが生成された (LoginForm.Action.Existing)
-						is String -> {
-							val intent = Intent()
-							intent.data = data.toUri()
-							activity.startAccessTokenUpdate(intent)
-							dialog.dismissSafe()
-						}
-						
-						// インスタンスを確認できた (LoginForm.Action.Create)
-						is JSONObject -> {
-							createAccount(
-								activity,
-								instance,
-								data,
-								dialog
-							)
-						}
-						
-						// インスタンス情報を取得した( Pseudo, Token )
-						is TootInstance -> {
-							when(action) {
-								
-								LoginForm.Action.Pseudo -> addPseudoAccount(
+					val error = result.error
+					val data = result.data
+					if(error == null && data != null) {
+						when(action) {
+							LoginForm.Action.Existing -> if(data is String) {
+								// ブラウザ用URLが生成された (LoginForm.Action.Existing)
+								val intent = Intent()
+								intent.data = data.toUri()
+								activity.startAccessTokenUpdate(intent)
+								dialog.dismissSafe()
+								return
+							}
+							
+							LoginForm.Action.Create -> if(data is JSONObject) {
+								// インスタンスを確認できた
+								createAccount(
+									activity,
+									instance,
+									data,
+									dialog
+								)
+								return
+							}
+							
+							LoginForm.Action.Pseudo -> if(data is TootInstance) {
+								addPseudoAccount(
 									activity,
 									instance,
 									instanceInfo = data
@@ -80,8 +104,10 @@ object Action_Account {
 									activity.addColumn(pos, a, ColumnType.LOCAL)
 									dialog.dismissSafe()
 								}
-								
-								LoginForm.Action.Token -> DlgTextInput.show(
+							}
+							
+							LoginForm.Action.Token -> if(data is TootInstance) {
+								DlgTextInput.show(
 									activity,
 									activity.getString(R.string.access_token_or_api_token),
 									null,
@@ -109,30 +135,10 @@ object Action_Account {
 										}
 									}
 								)
-								
-								// never happen
-								else -> {
-								}
-							}
-						}
-						
-						else -> {
-							val error = result.error ?: "(no error information)"
-							if(error.contains("SSLHandshakeException")
-								&& (Build.VERSION.RELEASE.startsWith("7.0")
-									|| Build.VERSION.RELEASE.startsWith("7.1")
-									&& ! Build.VERSION.RELEASE.startsWith("7.1.")
-									)
-							) {
-								AlertDialog.Builder(activity)
-									.setMessage(error + "\n\n" + activity.getString(R.string.ssl_bug_7_0))
-									.setNeutralButton(R.string.close, null)
-									.show()
-							} else {
-								showToast(activity, true, "$error ${result.requestInfo}".trim())
 							}
 						}
 					}
+					handleError(result)
 				}
 			})
 		}
@@ -253,7 +259,7 @@ object Action_Account {
 	) {
 		activity.post_helper.closeAcctPopup()
 		
-		val db_id = activity.currentPostTarget?.db_id ?: -1L
+		val db_id = activity.currentPostTarget?.db_id ?: - 1L
 		if(db_id != - 1L) {
 			ActPost.open(activity, ActMain.REQUEST_CODE_POST, db_id, initial_text = initial_text)
 		} else {

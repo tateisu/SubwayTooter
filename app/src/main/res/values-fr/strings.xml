@@ -270,7 +270,7 @@
     <string name="search_web">Recherche Web</string>
     <string name="select_and_copy">Sélectionner et copier</string>
     <string name="send">Envoyer</string>
-    <string name="send_header_content_warning">Contenu délicat (masqué)</string>
+    <string name="send_header_content_warning">Contenu sensible</string>
     <string name="send_header_date">Date</string>
     <string name="send_header_from_acct">Envoyer l’entête du compte</string>
     <string name="send_header_from_name">Envoyer l’entête du Nom</string>
@@ -294,7 +294,7 @@
     <string name="tab_divider_color">Couleur des lignes de séparation des onglets</string>
     <string name="tap_to_show">Appuyez pour afficher</string>
     <string name="text_color">Couleur du texte</string>
-    <string name="thanks_for">Merci pour %1$s</string>
+    <string name="thanks_for">Merci pour %1$s.</string>
     <string name="theme_dark">Sombre</string>
     <string name="theme_light">Clair</string>
     <string name="thumbnail">vignette</string>
@@ -601,12 +601,12 @@
     <string name="always_show_application">Afficher (via) le nom de l\'application si possible</string>
     <string name="force_gap_when_refresh">Forcer l’ajout d\'un espace lors du rafraîchissement du dessus</string>
     <string name="avatar_icon_size">Taille de l’icône de l’avatar (Unité:dp. par défaut:48. Redémarrage de l’app requis)</string>
-    <string name="avatar_icon_round_ratio">Icône Avatar ratio d\'arrondi (Unité:%. défaut:33. redémarrage de l\'application requis)</string>
+    <string name="avatar_icon_round_ratio">Ratio de l’arrondi de l’icône de l’avatar (Unité:%. défaut:33. redémarrage de l\'application requis)</string>
     <string name="avatar_icon_dont_round">Ne pas arrondir les coins de l’avatar (redémarrage requis)</string>
     <string name="share_view_pool">Partager le pool de vues entre les colonnes</string>
     <string name="rename">Renommer …</string>
     <string name="allow_column_duplication">Autoriser la duplication de colonnes</string>
-    <string name="system_notification_not_related">Non sélectionné lors de l\'appel d\'une notification système</string>
+    <string name="system_notification_not_related">Non sélectionné lors de l\'appel d’une notification système</string>
     <string name="notification_type_mention">mention</string>
     <string name="notification_type_follow">abonnement</string>
     <string name="notification_type_boost">boosts</string>
@@ -674,7 +674,8 @@
     <string name="cant_sync_toot">Impossible de synchroniser le pouet.</string>
     <string name="cant_change_account_when_redraft">Impossible de changer de compte lors de la reformulation.</string>
     <string name="delete_base_status_before_toot">Supprimer le statut de base avant l’affichage. Tous les favoris et les boosts seront perdus. Les réponses seront déconnectées. Les pièces jointes des médias ne seront pas conservées sur Mastodon avant la version 2.4.1. Êtes-vous sûr·e \?</string>
-    <string name="notification_tl_font_size">Taille de police du fil de notifications (Unité : sp. laisser vide par défaut. Redémarrage requis)</string>
+    <string name="notification_tl_font_size">Taille de police du fil
+\n(Unité : sp. laisser vide par défaut. Redémarrage requis)</string>
     <string name="notification_tl_icon_size">Taille de l’icône de notification sur le fil (Unité : dp. par défaut : 24. Redémarrage de l\'application requis)</string>
     <string name="post_button_tapped_repeatly">Le bouton Publier a été appuyé à plusieurs reprises</string>
     <string name="regex_filter_matches_empty_string">Le filtre regex correspond à une chaîne vide.</string>

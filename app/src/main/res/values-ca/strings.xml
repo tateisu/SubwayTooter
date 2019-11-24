@@ -108,7 +108,7 @@
     <string name="confirm_account_remove">Aquest compte s\'eliminarà i es desfaran totes les pissarres.
 \nN\'estàs segura\?</string>
     <string name="user_name_not_match">El nom d\'usuària no coincideix</string>
-    <string name="access_token_updated_for">"la credencial d\'accés de %1$s  s\'ha actualitzat."</string>
+    <string name="access_token_updated_for">la credencial d\'accés de %1$s  s\'ha actualitzat.</string>
     <string name="back_to_column_list">Ves a la llista de pissarres en pitjar \"Enrera\"</string>
     <string name="account_empty">No s\'ha configurat cap compte. Sisplau afegeix-hi un compte.</string>
     <string name="dont_confirm_before_close_column">Tanca la pissarra sense confirmació</string>
@@ -166,7 +166,7 @@
     <string name="boost">Difon</string>
     <string name="favourite">Marcar com a preferit</string>
     <string name="mention2">Mencionar</string>
-    <string name="notification_count">notificacions %1$s</string>
+    <string name="notification_count">notificacions %1$d</string>
     <string name="app_exit">Tanca l\'aplicació</string>
     <string name="ask_always">Sempre preguntar</string>
     <string name="open_column_list">Obre la llista de pissarres</string>

@@ -2,9 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.graphics.drawable.PictureDrawable
-import androidx.annotation.NonNull
 import androidx.annotation.Nullable
-
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
 import com.bumptech.glide.Registry
@@ -19,16 +17,38 @@ import com.caverock.androidsvg.SVG
 import com.caverock.androidsvg.SVGParseException
 import java.io.IOException
 import java.io.InputStream
+import kotlin.math.min
 
 @GlideModule
 class MyAppGlideModule : AppGlideModule() {
+	
+	companion object{
+		private val svgSig = "<svg".toByteArray(Charsets.UTF_8)
+		private fun findBytes(data:ByteArray,dataSize:Int = data.size,key:ByteArray):Int{
+			fun check(start:Int):Boolean{
+				for(j in key.indices){
+					if( data[start+j] != key[j] ) return false
+				}
+				return true
+			}
+			for(i in 0 .. dataSize - key.size){
+				if(check(i)) return i
+			}
+			return -1
+		}
+	}
 	
 	// Decodes an SVG internal representation from an [InputStream].
 	inner class SvgDecoder : ResourceDecoder<InputStream, SVG> {
 		
 		override fun handles(source : InputStream, options : Options) : Boolean {
-			// TODO: Can we tell?
-			return true
+			val size = min(source.available(),1024)
+			if(size<=0) return false
+			val buf = ByteArray(size)
+			val nRead = source.read(buf,0,size)
+			val isSvg = -1 != findBytes(buf,nRead,svgSig)
+			return isSvg
+			
 		}
 		
 		@Throws(IOException::class)

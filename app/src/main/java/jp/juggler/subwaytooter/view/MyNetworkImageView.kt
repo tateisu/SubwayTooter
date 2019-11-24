@@ -8,6 +8,7 @@ import android.graphics.Matrix
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.PictureDrawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
@@ -250,19 +251,29 @@ class MyNetworkImageView : AppCompatImageView {
 	) : ImageViewTarget<Drawable>(this@MyNetworkImageView), UrlTarget {
 		
 		// errorDrawable The error drawable to optionally show, or null.
-		override fun onLoadFailed(errorDrawable : Drawable?) = onLoadFailed(urlLoading)
+		override fun onLoadFailed(errorDrawable : Drawable?) {
+			onLoadFailed(urlLoading)
+		}
 		
 		override fun setResource(resource : Drawable?) {
 			try {
 				// 別の画像を表示するよう指定が変化していたなら何もしない
 				if(urlLoading != mUrl) return
-				if(resource !is BitmapDrawable) return
 				
-				if(mCornerRadius <= 0f) {
-					setImageDrawable(resource)
-				} else {
-					setImageDrawable(replaceBitmapDrawable(resource.bitmap))
+				if(mCornerRadius > 0f) {
+					if(resource is BitmapDrawable) {
+						// BitmapDrawableは角丸処理が可能。
+						setImageDrawable(replaceBitmapDrawable(resource.bitmap))
+						return
+					}
+					// その他のDrawable
+					// たとえばInstanceTickerのアイコンにSVGが使われていたらPictureDrawableになる
+					log.w("cornerRadius=$mCornerRadius,drawable=$resource,url=$urlLoading")
 				}
+				
+				setImageDrawable(resource)
+				return
+				
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}

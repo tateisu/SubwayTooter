@@ -15,11 +15,9 @@ class ActAbout : AppCompatActivity() {
 	
 	class Translators(
 		val name:String,
-		_search:String?,
+		val acct:String?,
 		val lang:String
-	){
-		val search :String = _search ?: name
-	}
+	)
 	
 	companion object {
 		val log = LogCategory("ActAbout")
@@ -46,8 +44,8 @@ class ActAbout : AppCompatActivity() {
 			Translators("Elizabeth Sherrock",null,"Chinese (Simplified)"),
 			Translators("Gennady Archangorodsky",null,"Hebrew"),
 			Translators("inqbs Siina",null,"Korean"),
-			Translators("Jeong Arm","jarm@qdon.space","Korean"),
-			Translators("Kai Zhang",null,"Chinese (Simplified)"),
+			Translators("Jeong Arm","@jarm@qdon.space","Korean"),
+			Translators("Kai Zhang","@bearzk@mastodon.social","Chinese (Simplified)"),
 			Translators("lptprjh",null,"Korean"),
 			Translators("mynameismonkey",null,"Welsh"),
 			Translators("Nathan",null,"French"),
@@ -127,13 +125,13 @@ class ActAbout : AppCompatActivity() {
 				isAllCaps = false
 
 				//
-				text = who.name + "\n" + getString(R.string.thanks_for, who.lang)
-				
+				val acct = who.acct ?: "@?@?"
+				text = "${who.name}\n$acct\n${getString(R.string.thanks_for, who.lang)}"
 				gravity = Gravity.START or Gravity.CENTER_VERTICAL
 				
 				setOnClickListener {
 					val data = Intent()
-					data.putExtra(EXTRA_SEARCH, who.search)
+					data.putExtra(EXTRA_SEARCH, who.acct ?: who.name)
 					setResult(Activity.RESULT_OK, data)
 					finish()
 				}

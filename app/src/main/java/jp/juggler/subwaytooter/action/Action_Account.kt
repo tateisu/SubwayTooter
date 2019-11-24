@@ -33,14 +33,15 @@ object Action_Account {
 				
 				override fun background(client : TootApiClient) : TootApiResult? {
 					return when(action) {
-						LoginForm.Action.Existing -> client.authentication1(
-							Pref.spClientName(
-								activity
-							)
-						)
-						LoginForm.Action.Create -> client.createUser1(Pref.spClientName(activity))
 						
-						LoginForm.Action.Pseudo, LoginForm.Action.Token -> {
+						LoginForm.Action.Existing ->
+							client.authentication1(Pref.spClientName(activity))
+						
+						LoginForm.Action.Create ->
+							client.createUser1(Pref.spClientName(activity))
+						
+						LoginForm.Action.Pseudo,
+						LoginForm.Action.Token -> {
 							val (ti, ri) = TootInstance.get(client)
 							if(ti != null) ri?.data = ti
 							ri
@@ -48,33 +49,15 @@ object Action_Account {
 					}
 				}
 				
-				private fun handleError(result : TootApiResult) {
-					val error = result.error ?: "(no error information)"
-					if(error.contains("SSLHandshakeException")
-						&& (Build.VERSION.RELEASE.startsWith("7.0")
-							|| Build.VERSION.RELEASE.startsWith("7.1")
-							&& ! Build.VERSION.RELEASE.startsWith("7.1.")
-							)
-					) {
-						AlertDialog.Builder(activity)
-							.setMessage(error + "\n\n" + activity.getString(R.string.ssl_bug_7_0))
-							.setNeutralButton(R.string.close, null)
-							.show()
-					} else {
-						showToast(activity, true, "$error ${result.requestInfo}".trim())
-					}
-				}
-				
 				override fun handleResult(result : TootApiResult?) {
 					
 					result ?: return  // cancelled.
 					
-					val error = result.error
 					val data = result.data
-					if(error == null && data != null) {
+					if(result.error == null && data != null) {
 						when(action) {
 							LoginForm.Action.Existing -> if(data is String) {
-								// ブラウザ用URLが生成された (LoginForm.Action.Existing)
+								// ブラウザ用URLが生成された
 								val intent = Intent()
 								intent.data = data.toUri()
 								activity.startAccessTokenUpdate(intent)
@@ -138,7 +121,21 @@ object Action_Account {
 							}
 						}
 					}
-					handleError(result)
+					
+					val errorText = result.error ?: "(no error information)"
+					if(errorText.contains("SSLHandshakeException")
+						&& (Build.VERSION.RELEASE.startsWith("7.0")
+							|| Build.VERSION.RELEASE.startsWith("7.1")
+							&& ! Build.VERSION.RELEASE.startsWith("7.1.")
+							)
+					) {
+						AlertDialog.Builder(activity)
+							.setMessage(errorText + "\n\n" + activity.getString(R.string.ssl_bug_7_0))
+							.setNeutralButton(R.string.close, null)
+							.show()
+					} else {
+						showToast(activity, true, "$errorText ${result.requestInfo}".trim())
+					}
 				}
 			})
 		}

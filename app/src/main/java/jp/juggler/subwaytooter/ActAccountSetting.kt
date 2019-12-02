@@ -941,6 +941,9 @@ class ActAccountSetting
 	var profile_busy : Boolean = false
 	
 	internal fun showProfile(src : TootAccount) {
+
+		if( isDestroyed ) return
+
 		profile_busy = true
 		try {
 			ivProfileAvatar.setImageUrl(
@@ -997,63 +1000,76 @@ class ActAccountSetting
 			if(src.source?.fields != null) {
 				val fields = src.source.fields
 				listEtFieldName.forEachIndexed { i, et ->
-					// いつからかfields name にもカスタム絵文字が使えるようになった
-					// https://github.com/tootsuite/mastodon/pull/11350
-					// しかし
-					val text = decodeOptions.decodeEmoji(
-						when {
-							i >= fields.size -> ""
-							else -> fields[i].name
-						}
-					)
-					et.setText(text)
-					et.isEnabled = true
-					val invalidator = NetworkEmojiInvalidator(et.handler, et)
-					invalidator.register(text)
+					val handler =et.handler // may null
+					if( handler != null){
+						// いつからかfields name にもカスタム絵文字が使えるようになった
+						// https://github.com/tootsuite/mastodon/pull/11350
+						// しかし
+						val text = decodeOptions.decodeEmoji(
+							when {
+								i >= fields.size -> ""
+								else -> fields[i].name
+							}
+						)
+						et.setText(text)
+						et.isEnabled = true
+						val invalidator = NetworkEmojiInvalidator(handler, et)
+						invalidator.register(text)
+					}
 				}
 				
 				listEtFieldValue.forEachIndexed { i, et ->
-					val text = decodeOptions.decodeEmoji(
-						when {
-							i >= fields.size -> ""
-							else -> fields[i].value
-						}
-					)
-					et.setText(text)
-					et.isEnabled = true
-					val invalidator = NetworkEmojiInvalidator(et.handler, et)
-					invalidator.register(text)
+					val handler =et.handler // may null
+					if( handler != null){
+						val text = decodeOptions.decodeEmoji(
+							when {
+								i >= fields.size -> ""
+								else -> fields[i].value
+							}
+						)
+						et.setText(text)
+						et.isEnabled = true
+						val invalidator = NetworkEmojiInvalidator(handler, et)
+						invalidator.register(text)
+					}
 				}
 				
 			} else {
 				val fields = src.fields
 				
 				listEtFieldName.forEachIndexed { i, et ->
-					// いつからかfields name にもカスタム絵文字が使えるようになった
-					// https://github.com/tootsuite/mastodon/pull/11350
-					val text = decodeOptions.decodeEmoji(
-						when {
-							fields == null || i >= fields.size -> ""
-							else -> fields[i].name
-						}
-					)
-					et.setText(text)
-					et.isEnabled = true
-					val invalidator = NetworkEmojiInvalidator(et.handler, et)
-					invalidator.register(text)
+					val handler =et.handler // may null
+					if( handler != null){
+						// いつからかfields name にもカスタム絵文字が使えるようになった
+						// https://github.com/tootsuite/mastodon/pull/11350
+						val text = decodeOptions.decodeEmoji(
+							when {
+								fields == null || i >= fields.size -> ""
+								else -> fields[i].name
+							}
+						)
+						et.setText(text)
+						et.isEnabled = true
+						val invalidator = NetworkEmojiInvalidator(handler, et)
+						invalidator.register(text)
+					}
+					
 				}
 				
 				listEtFieldValue.forEachIndexed { i, et ->
-					val text = decodeOptions.decodeHTML(
-						when {
-							fields == null || i >= fields.size -> ""
-							else -> fields[i].value
-						}
-					)
-					et.text = text
-					et.isEnabled = true
-					val invalidator = NetworkEmojiInvalidator(et.handler, et)
-					invalidator.register(text)
+					val handler =et.handler // may null
+					if( handler != null){
+						val text = decodeOptions.decodeHTML(
+							when {
+								fields == null || i >= fields.size -> ""
+								else -> fields[i].value
+							}
+						)
+						et.text = text
+						et.isEnabled = true
+						val invalidator = NetworkEmojiInvalidator(handler, et)
+						invalidator.register(text)
+					}
 				}
 			}
 			

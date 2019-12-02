@@ -454,8 +454,12 @@ object Pref {
 		R.id.swAlwaysExpandContextMenuItems
 	)
 	
-	
-	
+	val bpShowBookmarkButton = BooleanPref(
+		"ShowBookmarkButton",
+		false,
+		R.id.swShowBookmarkButton
+	)
+
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

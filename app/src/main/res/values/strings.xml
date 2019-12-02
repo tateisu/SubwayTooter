@@ -967,4 +967,5 @@
     <string name="release_notes_updated">Release notes (v%1$s→v%2$s)</string>
     <string name="test">Test</string>
     <string name="please_help_translation">Please help translation!</string>
+    <string name="show_bookmark_button">Show bookmark button (app restart required)</string>
 </resources>

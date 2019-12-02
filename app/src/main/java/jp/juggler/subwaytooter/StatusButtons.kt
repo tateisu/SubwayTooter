@@ -200,6 +200,8 @@ internal class StatusButtons(
 		
 		// ブックマークボタン
 		when {
+			!Pref.bpShowBookmarkButton(activity.pref) -> vg(btnBookmark,false)
+
 			activity.app_state.isBusyBookmark(access_info, status) -> setButton(
 				btnBookmark,
 				false,

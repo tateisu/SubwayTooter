@@ -111,13 +111,13 @@ dependencies {
     implementation "androidx.browser:browser:1.0.0"
 
     // Recyclerview
-    implementation "androidx.recyclerview:recyclerview:1.1.0-beta04"
+    implementation "androidx.recyclerview:recyclerview:1.1.0"
 
     kapt 'androidx.annotation:annotation:1.1.0'
 
     // https://firebase.google.com/support/release-notes/android
-    implementation "com.google.firebase:firebase-core:17.2.0"
-    implementation "com.google.firebase:firebase-messaging:20.0.0"
+    implementation "com.google.firebase:firebase-core:17.2.1"
+    implementation "com.google.firebase:firebase-messaging:20.0.1"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"

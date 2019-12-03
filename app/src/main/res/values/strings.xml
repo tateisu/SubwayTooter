@@ -749,6 +749,7 @@
     <string name="visibility_home">Home</string>
     <string name="visibility_followers">Followers</string>
     <string name="vote_count_text">%1$d votes</string>
+
     <string name="reaction_add">Add reaction</string>
     <string name="reaction_remove">Remove reaction</string>
     <string name="unknown_notification_from">unknown notification from %1$s</string>

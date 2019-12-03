@@ -267,27 +267,26 @@ internal class ItemViewHolder(
 		}
 		
 		val spacing = activity.timeline_spacing
-		if( spacing != null){
-			tvFollowerName.setLineSpacing(0f,spacing)
-			tvName.setLineSpacing(0f,spacing)
-			tvMentions.setLineSpacing(0f,spacing)
-			tvContentWarning.setLineSpacing(0f,spacing)
-			tvContent.setLineSpacing(0f,spacing)
-			btnShowMedia.setLineSpacing(0f,spacing)
-			tvApplication.setLineSpacing(0f,spacing)
-			tvMessageHolder.setLineSpacing(0f,spacing)
-			btnListTL.setLineSpacing(0f,spacing)
-			tvTrendTagName.setLineSpacing(0f,spacing)
-			tvTrendTagCount.setLineSpacing(0f,spacing)
-			tvFilterPhrase.setLineSpacing(0f,spacing)
-			tvMediaDescription.setLineSpacing(0f,spacing)
-			tvCardText.setLineSpacing(0f,spacing)
-			tvConversationIconsMore.setLineSpacing(0f,spacing)
-			tvConversationParticipants.setLineSpacing(0f,spacing)
-			tvBoosted.setLineSpacing(0f,spacing)
-			tvReply.setLineSpacing(0f,spacing)
+		if(spacing != null) {
+			tvFollowerName.setLineSpacing(0f, spacing)
+			tvName.setLineSpacing(0f, spacing)
+			tvMentions.setLineSpacing(0f, spacing)
+			tvContentWarning.setLineSpacing(0f, spacing)
+			tvContent.setLineSpacing(0f, spacing)
+			btnShowMedia.setLineSpacing(0f, spacing)
+			tvApplication.setLineSpacing(0f, spacing)
+			tvMessageHolder.setLineSpacing(0f, spacing)
+			btnListTL.setLineSpacing(0f, spacing)
+			tvTrendTagName.setLineSpacing(0f, spacing)
+			tvTrendTagCount.setLineSpacing(0f, spacing)
+			tvFilterPhrase.setLineSpacing(0f, spacing)
+			tvMediaDescription.setLineSpacing(0f, spacing)
+			tvCardText.setLineSpacing(0f, spacing)
+			tvConversationIconsMore.setLineSpacing(0f, spacing)
+			tvConversationParticipants.setLineSpacing(0f, spacing)
+			tvBoosted.setLineSpacing(0f, spacing)
+			tvReply.setLineSpacing(0f, spacing)
 		}
-		
 		
 		var s = activity.avatarIconSize
 		ivThumbnail.layoutParams.height = s
@@ -1830,14 +1829,14 @@ internal class ItemViewHolder(
 			
 			llReply -> {
 				val s = status_reply
-
+				
 				when {
 					s != null -> Action_Toot.conversation(activity, pos, access_info, s)
 					
 					// tootsearchは返信元のIDを取得するのにひと手間必要
 					column.type == ColumnType.SEARCH_TS ->
 						Action_Toot.showReplyTootsearch(activity, pos, status_showing)
-
+					
 					else -> {
 						val id = status_showing?.in_reply_to_id
 						if(id != null) {
@@ -2026,7 +2025,7 @@ internal class ItemViewHolder(
 			llReply -> {
 				val s = status_reply
 				when {
-
+					
 					// 返信元のstatusがあるならコンテキストメニュー
 					s != null -> DlgContextMenu(
 						activity,
@@ -2038,7 +2037,7 @@ internal class ItemViewHolder(
 					).show()
 					
 					// それ以外はコンテキストメニューではなく会話を開く
-
+					
 					// tootsearchは返信元のIDを取得するのにひと手間必要
 					column.type == ColumnType.SEARCH_TS ->
 						Action_Toot.showReplyTootsearch(
@@ -2641,11 +2640,16 @@ internal class ItemViewHolder(
 				val sb = SpannableStringBuilder()
 					.append(item.decoded_text)
 				if(! canVote) {
+					val v = item.votes
+					
 					sb.append(" / ")
 					sb.append(
-						when(val v = item.votes) {
-							null -> activity.getString(R.string.vote_count_unavailable)
-							else -> activity.getString(R.string.vote_count_text, v)
+						when {
+							v == null ||
+								(column.isSearchColumn && column.access_info.isNA) ->
+								activity.getString(R.string.vote_count_unavailable)
+							else ->
+								activity.getString(R.string.vote_count_text, v)
 						}
 					)
 					if(item.isVoted) sb.append(' ').append(0x2713.toChar())

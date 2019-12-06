@@ -71,8 +71,7 @@ object TootTextEncoder {
 		
 		dumpAttachment(sb, status.media_attachments)
 		
-		sb.addAfterLine( String.format(Locale.JAPAN, "Status-Source: %s", status.json))
-		
+		sb.addAfterLine( String.format(Locale.JAPAN, "Status-Source: %s", status.json.toString(2)))
 		sb.addAfterLine( "")
 		intent.putExtra(ActText.EXTRA_TEXT, sb.toString())
 	}
@@ -298,7 +297,9 @@ object TootTextEncoder {
 		)
 		addHeader(context, sb, R.string.send_header_account_locked, who.locked)
 		
-		sb.addAfterLine("")
+		sb.addAfterLine( String.format(Locale.JAPAN, "Account-Source: %s", who.json.toString(2)))
+		sb.addAfterLine( "")
+		
 		intent.putExtra(ActText.EXTRA_TEXT, sb.toString())
 	}
 	

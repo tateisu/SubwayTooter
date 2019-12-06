@@ -111,7 +111,11 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	// last_status_at : "2019-08-29T12:42:08.838Z" or null
 	var last_status_at = 0L
 	
+	val json : JSONObject
+	
 	init {
+		this.json = src
+
 		var sv : String?
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {

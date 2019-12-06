@@ -459,6 +459,14 @@ object Pref {
 		false,
 		R.id.swShowBookmarkButton
 	)
+	
+	val bpShowFilteredWord = BooleanPref(
+		"ShowFilteredWord",
+		false,
+		R.id.swShowFilteredWord
+	)
+	
+	
 
 	// int
 	

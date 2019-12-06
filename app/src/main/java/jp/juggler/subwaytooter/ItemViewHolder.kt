@@ -1171,8 +1171,15 @@ internal class ItemViewHolder(
 	
 	private fun showStatus(status : TootStatus, colorBg : Int = 0) {
 		
-		if(status.filtered) {
-			showMessageHolder(TootMessageHolder(activity.getString(R.string.filtered)))
+		val filteredWord = status.filteredWord
+		if(filteredWord != null ) {
+			showMessageHolder(TootMessageHolder(
+				if(Pref.bpShowFilteredWord(activity.pref)){
+					"${activity.getString(R.string.filtered)} / $filteredWord"
+				}else{
+					activity.getString(R.string.filtered)
+				}
+			))
 			return
 		}
 		

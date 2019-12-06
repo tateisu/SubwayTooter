@@ -604,10 +604,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	}
 	
 	// 内部で使う
-	private var _filtered = false
+	private var _filteredWord :String? = null
+	
+	val filteredWord :String?
+		get() = _filteredWord ?: reblog?._filteredWord
 	
 	val filtered : Boolean
-		get() = _filtered || reblog?._filtered == true
+		get() = filteredWord != null
 	
 	private fun hasReceipt(access_info : SavedAccount) : TootVisibility {
 		val fullAcctMe = access_info.getFullAcct(account)
@@ -647,12 +650,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		
 		// status from me or boosted by me is not filtered.
 		if(accessInfo.isMe(account)) {
-			_filtered = false
+			_filteredWord = null
 			return
 		}
 		
-		_filtered =
+		_filteredWord =
 			isKeywordFilteredSub(if(checkIrreversible) trees.treeAll else trees.treeReversible)
+				?.joinToString(", ")
 		
 		reblog?.updateKeywordFilteredFlag(accessInfo, trees, checkIrreversible)
 	}
@@ -663,21 +667,32 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		// status from me or boosted by me is not filtered.
 		if(accessInfo.isMe(account)) return false
 		
-		if(isKeywordFilteredSub(tree)) return true
-		if(reblog?.isKeywordFilteredSub(tree) == true) return true
+		if(isKeywordFilteredSub(tree)!=null ) return true
+		if(reblog?.isKeywordFilteredSub(tree) !=null) return true
 		
 		return false
 	}
 	
-	private fun isKeywordFilteredSub(tree : WordTrieTree) : Boolean {
+	private fun isKeywordFilteredSub(tree : WordTrieTree) : ArrayList<String>? {
 
-		var t = decoded_spoiler_text
-		if(t.isNotEmpty() && tree.matchShort(t)) return true
+		var list:ArrayList<String>? = null
+		
+		fun check(t:CharSequence?){
+			if(t?.isEmpty() != false ) return
+			val matches = tree.matchList(t) ?: return
+			var dst = list
+			if(dst==null){
+				dst = ArrayList()
+				list = dst
+			}
+			for( m in matches )
+				dst.add( m.word)
+		}
+		
+		check( decoded_spoiler_text)
+		check(decoded_content)
 
-		t = decoded_content
-		if(t.isNotEmpty() && tree.matchShort(t)) return true
-
-		return false
+		return list
 	}
 	
 	fun hasAnyContent() = when {

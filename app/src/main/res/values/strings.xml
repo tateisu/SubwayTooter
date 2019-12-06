@@ -969,4 +969,5 @@
     <string name="test">Test</string>
     <string name="please_help_translation">Please help translation!</string>
     <string name="show_bookmark_button">Show bookmark button (app restart required)</string>
+    <string name="show_filtered_word">Show filtered word</string>
 </resources>

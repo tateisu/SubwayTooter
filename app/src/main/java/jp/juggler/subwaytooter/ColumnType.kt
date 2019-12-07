@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.LogCategory
 import jp.juggler.util.ellipsizeDot3
+import jp.juggler.util.notEmpty
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
@@ -435,6 +436,23 @@ enum class ColumnType(
 		refresh = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
 		gap = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) }
 	),
+	
+	DOMAIN_TIMELINE(
+		id = 38,
+		iconId = { R.drawable.ic_domain },
+		name1 = { it.getString(R.string.domain_timeline) },
+		name2 = {
+			context.getString(
+				R.string.domain_timeline_of,
+				instance_uri.notEmpty() ?: "?"
+			)
+		},
+		bAllowPseudo = true, // サイドメニューから開けないのでこの値は参照されない
+		loading = { client -> getStatusList(client, column.makeDomainTimelineUrl()) },
+		refresh = { client -> getStatusList(client, column.makeDomainTimelineUrl()) },
+		gap = { client -> getStatusList(client, column.makeDomainTimelineUrl()) }
+	),
+	
 	
 	LOCAL_AROUND(29,
 		iconId = { R.drawable.ic_run },

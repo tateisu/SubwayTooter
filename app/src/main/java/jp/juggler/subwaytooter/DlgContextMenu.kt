@@ -169,6 +169,7 @@ internal class DlgContextMenu(
 		val btnBoostedBy = viewRoot.findViewById<View>(R.id.btnBoostedBy)
 		val btnFavouritedBy = viewRoot.findViewById<View>(R.id.btnFavouritedBy)
 		
+		val btnDomainTimeline = viewRoot.findViewById<View>(R.id.btnDomainTimeline)
 		
 		arrayOf(
 			btnNotificationFrom,
@@ -222,6 +223,7 @@ internal class DlgContextMenu(
 			btnProfileUnpin,
 			btnBoostedBy,
 			btnFavouritedBy,
+			btnDomainTimeline,
 			
 			viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus),
 			viewRoot.findViewById<View>(R.id.btnTranslate),
@@ -412,6 +414,13 @@ internal class DlgContextMenu(
 			vg(
 				btnDomainBlock,
 				! (access_info.isPseudo || access_info.host.equals(who_host, ignoreCase = true))
+			)
+			
+			vg(
+				btnDomainTimeline,
+				Pref.bpEnableDomainTimeline(activity.pref) &&
+					! access_info.isPseudo &&
+					! access_info.isMisskey
 			)
 		}
 		
@@ -801,6 +810,16 @@ internal class DlgContextMenu(
 						// 何もしない
 					} else {
 						Action_Instance.timelineLocal(activity, pos, who_host)
+					}
+				}
+				
+				R.id.btnDomainTimeline -> {
+					val who_host = who.host
+					@Suppress("ControlFlowWithEmptyBody")
+					if(who_host.isEmpty() || who_host == "?") {
+						// 何もしない
+					} else {
+						Action_Instance.timelineDomain(activity, pos, access_info, who_host)
 					}
 				}
 				

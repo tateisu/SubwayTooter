@@ -9,8 +9,8 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import java.util.*
 
 object TootTextEncoder {
-	private fun StringBuilder.addAfterLine( text : CharSequence) {
-		if( isNotEmpty() && this[length - 1] != '\n') {
+	private fun StringBuilder.addAfterLine(text : CharSequence) {
+		if(isNotEmpty() && this[length - 1] != '\n') {
 			append('\n')
 		}
 		append(text)
@@ -25,7 +25,7 @@ object TootTextEncoder {
 		if(sb.isNotEmpty() && sb[sb.length - 1] != '\n') {
 			sb.append('\n')
 		}
-		sb.addAfterLine( context.getString(key_str_id))
+		sb.addAfterLine(context.getString(key_str_id))
 		sb.append(": ")
 		sb.append(value?.toString() ?: "(null)")
 	}
@@ -60,28 +60,33 @@ object TootTextEncoder {
 			addHeader(context, sb, R.string.send_header_content_warning, sv)
 		}
 		
-		sb.addAfterLine( "\n")
+		sb.addAfterLine("\n")
 		
 		intent.putExtra(ActText.EXTRA_CONTENT_START, sb.length)
-		sb.append(DecodeOptions(context, access_info,mentions = status.mentions).decodeHTML(status.content))
+		sb.append(
+			DecodeOptions(
+				context,
+				access_info,
+				mentions = status.mentions
+			).decodeHTML(status.content)
+		)
 		
-		encodePolls(sb,context,status)
+		encodePolls(sb, context, status)
 		
 		intent.putExtra(ActText.EXTRA_CONTENT_END, sb.length)
 		
 		dumpAttachment(sb, status.media_attachments)
 		
-		sb.addAfterLine( String.format(Locale.JAPAN, "Status-Source: %s", status.json.toString(2)))
-		sb.addAfterLine( "")
+		sb.addAfterLine(String.format(Locale.JAPAN, "Status-Source: %s", status.json.toString(2)))
+		sb.addAfterLine("")
 		intent.putExtra(ActText.EXTRA_TEXT, sb.toString())
 	}
-	
 	
 	fun encodeStatusForTranslate(
 		context : Context,
 		access_info : SavedAccount,
 		status : TootStatus
-	) :String {
+	) : String {
 		val sb = StringBuilder()
 		
 		val sv : String? = status.spoiler_text
@@ -89,13 +94,18 @@ object TootTextEncoder {
 			sb.append(sv).append("\n\n")
 		}
 		
-		sb.append(DecodeOptions(context, access_info,mentions=status.mentions).decodeHTML(status.content))
+		sb.append(
+			DecodeOptions(
+				context,
+				access_info,
+				mentions = status.mentions
+			).decodeHTML(status.content)
+		)
 		
-		encodePolls(sb,context,status)
+		encodePolls(sb, context, status)
 		
 		return sb.toString()
 	}
-	
 	
 	private fun dumpAttachment(sb : StringBuilder, src : ArrayList<TootAttachmentLike>?) {
 		if(src == null) return
@@ -103,33 +113,30 @@ object TootTextEncoder {
 		for(ma in src) {
 			++ i
 			if(ma is TootAttachment) {
-				sb.addAfterLine( "\n")
-				sb.addAfterLine( String.format(Locale.JAPAN, "Media-%d-Url: %s", i, ma.url))
+				sb.addAfterLine("\n")
+				sb.addAfterLine(String.format(Locale.JAPAN, "Media-%d-Url: %s", i, ma.url))
 				sb.addAfterLine(
 					String.format(Locale.JAPAN, "Media-%d-Remote-Url: %s", i, ma.remote_url)
 				)
 				sb.addAfterLine(
 					String.format(Locale.JAPAN, "Media-%d-Preview-Url: %s", i, ma.preview_url)
 				)
-				sb.	addAfterLine(
+				sb.addAfterLine(
 					String.format(Locale.JAPAN, "Media-%d-Text-Url: %s", i, ma.text_url)
 				)
 			} else if(ma is TootAttachmentMSP) {
-				sb.addAfterLine( "\n")
-				sb.	addAfterLine(
+				sb.addAfterLine("\n")
+				sb.addAfterLine(
 					String.format(Locale.JAPAN, "Media-%d-Preview-Url: %s", i, ma.preview_url)
 				)
 			}
 		}
 	}
 	
-	
-	private fun encodePolls(sb :StringBuilder, context: Context, status : TootStatus) {
+	private fun encodePolls(sb : StringBuilder, context : Context, status : TootStatus) {
 		val enquete = status.enquete ?: return
 		val items = enquete.items ?: return
 		val now = System.currentTimeMillis()
-		
-		
 		
 		val canVote = when(enquete.pollType) {
 			
@@ -159,7 +166,8 @@ object TootTextEncoder {
 		when(enquete.pollType) {
 			TootPollsType.Mastodon -> encodePollFooterMastodon(sb, context, enquete)
 			
-			else->{}
+			else -> {
+			}
 		}
 	}
 	
@@ -174,10 +182,10 @@ object TootTextEncoder {
 		val text = when(enquete.pollType) {
 			TootPollsType.Misskey -> {
 				val sb2 = StringBuilder().append(item.decoded_text)
-				if( enquete.ownVoted ) {
+				if(enquete.ownVoted) {
 					sb2.append(" / ")
 					sb2.append(context.getString(R.string.vote_count_text, item.votes))
-					if(item.isVoted ) sb2.append(' ').append(0x2713.toChar())
+					if(item.isVoted) sb2.append(' ').append(0x2713.toChar())
 				}
 				sb2
 			}
@@ -256,11 +264,11 @@ object TootTextEncoder {
 		sb.append(who.url)
 		intent.putExtra(ActText.EXTRA_CONTENT_END, sb.length)
 		
-		sb.addAfterLine( "\n")
+		sb.addAfterLine("\n")
 		
 		sb.append(DecodeOptions(context, access_info).decodeHTML(who.note))
 		
-		sb.addAfterLine( "\n")
+		sb.addAfterLine("\n")
 		
 		addHeader(context, sb, R.string.send_header_account_name, who.display_name)
 		addHeader(context, sb, R.string.send_header_account_acct, access_info.getFullAcct(who))
@@ -297,11 +305,10 @@ object TootTextEncoder {
 		)
 		addHeader(context, sb, R.string.send_header_account_locked, who.locked)
 		
-		sb.addAfterLine( String.format(Locale.JAPAN, "Account-Source: %s", who.json.toString(2)))
-		sb.addAfterLine( "")
+		sb.addAfterLine(String.format(Locale.JAPAN, "Account-Source: %s", who.json.toString(2)))
+		sb.addAfterLine("")
 		
 		intent.putExtra(ActText.EXTRA_TEXT, sb.toString())
 	}
-	
 	
 }

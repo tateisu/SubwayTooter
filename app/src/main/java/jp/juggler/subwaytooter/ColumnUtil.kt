@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter
 
+import jp.juggler.subwaytooter.Column.Companion.READ_LIMIT
 import jp.juggler.subwaytooter.Column.Companion.log
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
@@ -161,6 +162,15 @@ internal fun Column.makePublicLocalUrl() : String {
 		access_info.isMisskey -> "/api/notes/local-timeline"
 		with_attachment -> "${Column.PATH_LOCAL}&only_media=true" // mastodon 2.3 or later
 		else -> Column.PATH_LOCAL
+	}
+}
+
+internal fun Column.makeDomainTimelineUrl() : String{
+	val base = "/api/v1/timelines/public?limit=$READ_LIMIT&domain=$instance_uri"
+	return when {
+		access_info.isMisskey -> "/api/notes/local-timeline"
+		with_attachment -> "$base&only_media=true"
+		else -> base
 	}
 }
 

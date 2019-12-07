@@ -466,8 +466,13 @@ object Pref {
 		R.id.swShowFilteredWord
 	)
 	
-	
+	val bpEnableDomainTimeline = BooleanPref(
+		"EnableDomainTimeline",
+		false,
+		R.id.swEnableDomainTimeline
+	)
 
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

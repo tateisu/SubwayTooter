@@ -376,28 +376,24 @@ class Column(
 	private val streamPath : String?
 		get() = if(isMisskey) {
 			val misskeyApiToken = access_info.misskeyApiToken
-			if(access_info.misskeyVersion >= 11) {
-				when {
+			when {
+				access_info.misskeyVersion >= 11 -> when {
 					makeMisskeyChannelArg() == null -> null
 					misskeyApiToken == null -> "/?_=$column_id" // 認証無し
 					else -> "/?_=$column_id&i=$misskeyApiToken"
 				}
-			} else {
-				if(misskeyApiToken == null) {
-					// Misskey 8.25 からLTLだけ認証なしでも見れるようになった
+				misskeyApiToken == null -> // Misskey 8.25 からLTLだけ認証なしでも見れるようになった
 					when(type) {
 						ColumnType.LOCAL -> "/local-timeline"
 						else -> null
 					}
-				} else {
-					when(type) {
-						ColumnType.HOME, ColumnType.NOTIFICATIONS -> "/?i=$misskeyApiToken"
-						ColumnType.LOCAL -> "/local-timeline?i=$misskeyApiToken"
-						ColumnType.MISSKEY_HYBRID -> "/hybrid-timeline?i=$misskeyApiToken"
-						ColumnType.FEDERATE -> "/global-timeline?i=$misskeyApiToken"
-						ColumnType.LIST_TL -> "/user-list?i=$misskeyApiToken&listId=$profile_id"
-						else -> null
-					}
+				else -> when(type) {
+					ColumnType.HOME, ColumnType.NOTIFICATIONS -> "/?i=$misskeyApiToken"
+					ColumnType.LOCAL -> "/local-timeline?i=$misskeyApiToken"
+					ColumnType.MISSKEY_HYBRID -> "/hybrid-timeline?i=$misskeyApiToken"
+					ColumnType.FEDERATE -> "/global-timeline?i=$misskeyApiToken"
+					ColumnType.LIST_TL -> "/user-list?i=$misskeyApiToken&listId=$profile_id"
+					else -> null
 				}
 			}
 		} else {
@@ -406,6 +402,7 @@ class Column(
 				ColumnType.LOCAL -> "/api/v1/streaming/?stream=public:local"
 				ColumnType.FEDERATE -> "/api/v1/streaming/?stream=public"
 				ColumnType.LIST_TL -> "/api/v1/streaming/?stream=list&list=$profile_id"
+				ColumnType.DOMAIN_TIMELINE -> "/api/v1/streaming/?stream=public:remote&domain=$instance_uri"
 				
 				ColumnType.DIRECT_MESSAGES -> "/api/v1/streaming/?stream=direct"
 				
@@ -427,7 +424,14 @@ class Column(
 	private val isPublicStream : Boolean
 		get() {
 			return when(type) {
-				ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND -> true
+				
+				ColumnType.LOCAL,
+				ColumnType.FEDERATE,
+				ColumnType.HASHTAG,
+				ColumnType.LOCAL_AROUND,
+				ColumnType.FEDERATED_AROUND,
+				ColumnType.DOMAIN_TIMELINE -> true
+				
 				else -> false
 			}
 		}
@@ -661,6 +665,10 @@ class Column(
 				search_resolve = true
 			}
 			
+			ColumnType.DOMAIN_TIMELINE -> {
+				instance_uri = getParamAt(params, 0)
+			}
+			
 			else -> {
 			
 			}
@@ -756,6 +764,10 @@ class Column(
 				search_resolve = src.optBoolean(KEY_SEARCH_RESOLVE, false)
 			}
 			
+			ColumnType.DOMAIN_TIMELINE -> {
+				instance_uri = src.optString(KEY_INSTANCE_URI)
+			}
+			
 			else -> {
 			
 			}
@@ -847,6 +859,9 @@ class Column(
 				.put(KEY_SEARCH_RESOLVE, search_resolve)
 				.put(KEY_INSTANCE_URI, instance_uri)
 			
+			ColumnType.DOMAIN_TIMELINE -> dst
+				.put(KEY_INSTANCE_URI, instance_uri)
+			
 			else -> {
 				// no extra parameter
 			}
@@ -906,6 +921,9 @@ class Column(
 					getParamAt<String>(params, 0) == instance_uri &&
 						getParamAtNullable<String>(params, 1) == search_query &&
 						getParamAtNullable<Boolean>(params, 2) == search_resolve
+				
+				ColumnType.DOMAIN_TIMELINE ->
+					getParamAt<String>(params, 0) == instance_uri
 				
 				else -> true
 			}
@@ -1411,7 +1429,8 @@ class Column(
 		if(! (with_attachment || with_highlight)) return false
 		
 		val matchMedia = with_attachment && status.reblog?.hasMedia() ?: status.hasMedia()
-		val matchHighlight = with_highlight && null != (status.reblog?.highlightAny ?: status.highlightAny)
+		val matchHighlight =
+			with_highlight && null != (status.reblog?.highlightAny ?: status.highlightAny)
 		
 		// どれかの条件を満たすならフィルタしない(false)、どれも満たさないならフィルタする(true)
 		return ! (matchMedia || matchHighlight)
@@ -1507,7 +1526,7 @@ class Column(
 		
 		val status = item.status
 		val filterTrees = keywordFilterTrees
-		if(status !=null &&filterTrees != null) {
+		if(status != null && filterTrees != null) {
 			if(status.isKeywordFiltered(access_info, filterTrees.treeIrreversible)) {
 				log.d("isFiltered: status muted by treeIrreversible.")
 				return true
@@ -2183,7 +2202,7 @@ class Column(
 		ColumnType.HOME, ColumnType.LIST_TL, ColumnType.MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
 		ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> TootFilter.CONTEXT_NOTIFICATIONS
 		ColumnType.CONVERSATION -> TootFilter.CONTEXT_THREAD
-		ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.HASHTAG_FROM_ACCT, ColumnType.PROFILE, ColumnType.SEARCH -> TootFilter.CONTEXT_PUBLIC
+		ColumnType.LOCAL,  ColumnType.DOMAIN_TIMELINE, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.HASHTAG_FROM_ACCT, ColumnType.PROFILE, ColumnType.SEARCH -> TootFilter.CONTEXT_PUBLIC
 		ColumnType.DIRECT_MESSAGES -> TootFilter.CONTEXT_PUBLIC
 		else -> TootFilter.CONTEXT_NONE
 		// ColumnType.MISSKEY_HYBRID はHOMEでもPUBLICでもある… Misskeyだし関係ないが、NONEにするとアプリ内で完結するフィルタも働かなくなる
@@ -2692,15 +2711,15 @@ class Column(
 			
 			var doneSound = false
 			for(o in list_new) {
-				if( o is TootStatus ){
-					o.highlightSound?.let{
-						if(!doneSound){
+				if(o is TootStatus) {
+					o.highlightSound?.let {
+						if(! doneSound) {
 							doneSound = true
 							App1.sound(it)
 						}
 					}
-					o.highlightSpeech?.let{
-						App1.getAppState(context).addSpeech(it.name,allowRepeat = true)
+					o.highlightSpeech?.let {
+						App1.getAppState(context).addSpeech(it.name, allowRepeat = true)
 					}
 				}
 			}

@@ -116,6 +116,17 @@ object Action_Instance {
 		)
 	}
 	
+	// 指定アカウントで指定タンスのドメインタイムラインを開く
+	// https://fedibird.com/@noellabo/103266814160117397
+	fun timelineDomain(
+		activity : ActMain,
+		pos : Int,
+		accessInfo: SavedAccount,
+		host : String
+	){
+		activity.addColumn(pos, accessInfo, ColumnType.DOMAIN_TIMELINE,host)
+	}
+	
 	// 指定タンスのローカルタイムラインを開く
 	fun timelineLocal(
 		activity : ActMain, pos : Int, host : String

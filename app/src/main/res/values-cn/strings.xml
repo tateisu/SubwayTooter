@@ -81,4 +81,14 @@
     <string name="user_mail_address">E-mail</string>
     <string name="api_error">API 错误 %1$s</string>
     <string name="request_access_token">获取访问令牌中…</string>
+    <string name="register_app_to_server">为 %1$s 注册此app …</string>
+    <string name="act_post">发布toot</string>
+    <string name="content_warning">内容警告</string>
+    <string name="please_add_account">需要设置账户才能发布toot。</string>
+    <string name="not_selected">(未选择)</string>
+    <string name="content_hint">你发布的toot内容</string>
+    <string name="list_empty">空列表</string>
+    <string name="choose_account">选择账户</string>
+    <string name="response_not_json">API 响应不是 JSON.</string>
+    <string name="default_">默认</string>
 </resources>

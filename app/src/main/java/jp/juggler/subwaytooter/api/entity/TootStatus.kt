@@ -165,6 +165,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	private var localOnly : Boolean = false
 	
+	var myRenoteId : EntityId? = null
+	
 	///////////////////////////////////////////////////////////////////
 	// 以下はentityから取得したデータではなく、アプリ内部で使う
 	
@@ -351,7 +353,22 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				src.optJSONObject("reactions") ?: src.optJSONObject("reactionCounts")
 			)
 			this.myReaction = src.parseString("myReaction")
-			this.reblog = parser.status(src.optJSONObject("renote"))
+			
+			val reblog = parser.status(src.optJSONObject("renote"))
+			this.reblog = reblog
+
+			// めいめいフォークでは myRenoteIdというものがあるらしい
+			// https://github.com/mei23/misskey/blob/mei-m544/src/models/note.ts#L384-L394
+			// 直近の一つのrenoteのIdを得られるらしい。
+			this.myRenoteId = EntityId.mayNull( src.parseString("myRenoteId"))
+			if(myRenoteId != null) reblogged = true
+			
+			// しかしTLにRenoteが露出してるならそのIDを使う方が賢明であろう
+			// 外側ステータスが自分なら、内側ステータスのmyRenoteIdを設定する
+			if( reblog != null && (parser.linkHelper as? SavedAccount)?.isMe( account) ==true ){
+				reblog.myRenoteId = id
+				reblog.reblogged = true
+			}
 			
 			this.deletedAt = src.parseString("deletedAt")
 			this.time_deleted_at = parseTime(deletedAt)

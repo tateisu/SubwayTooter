@@ -263,21 +263,21 @@ object Action_Toot {
 			showToast(activity, false, R.string.wait_previous_operation)
 			return
 		}
-		if( access_info.isMisskey ){
+		if(access_info.isMisskey) {
 			showToast(activity, false, R.string.misskey_account_not_supported)
 			return
 		}
 		
 		// 必要なら確認を出す
 		// ブックマークは解除する時だけ確認する
-		if(! bConfirmed && !bSet ) {
+		if(! bConfirmed && ! bSet) {
 			DlgConfirm.openSimple(
 				activity,
 				activity.getString(
 					R.string.confirm_unbookmark_from,
 					AcctColor.getNickname(access_info.acct)
 				)
-			){
+			) {
 				bookmark(
 					activity,
 					access_info,
@@ -327,7 +327,7 @@ object Action_Toot {
 				when {
 					result == null -> {
 					} // cancelled.
-
+					
 					new_status != null -> {
 						for(column in App1.getAppState(activity).column_list) {
 							column.findStatus(access_info.host, new_status.id) { account, status ->
@@ -354,7 +354,6 @@ object Action_Toot {
 		// ファボ表示を更新中にする
 		activity.showColumnMatchAccount(access_info)
 	}
-	
 	
 	fun boostFromAnotherAccount(
 		activity : ActMain,
@@ -431,11 +430,11 @@ object Action_Toot {
 			return
 		}
 		
-		
 		// Misskeyは非公開トゥートをブーストできない(しかしリクエストは投げてサーバからのエラーメッセージにまかせる)
 		// Mastodonは非公開トゥートをブーストできるのは本人だけ
-		val isPrivateToot = ! access_info.isMisskey && arg_status.visibility == TootVisibility.PrivateFollowers
-
+		val isPrivateToot =
+			! access_info.isMisskey && arg_status.visibility == TootVisibility.PrivateFollowers
+		
 		if(isPrivateToot && access_info.acct != status_owner_acct) {
 			showToast(activity, false, R.string.boost_private_toot_not_allowed)
 			return
@@ -512,7 +511,7 @@ object Action_Toot {
 					return if(! bSet) {
 						val myRenoteId = target_status.myRenoteId
 							?: return TootApiResult("missing renote id.")
-
+						
 						client.request(
 							"/api/notes/delete",
 							access_info.putMisskeyApiToken()
@@ -520,18 +519,18 @@ object Action_Toot {
 								.put("renoteId", target_status.id.toString())
 								.toPostRequestBuilder()
 						)
-							?.also{
-								if( it.response?.code == 204)
+							?.also {
+								if(it.response?.code == 204)
 									unrenoteId = myRenoteId
 							}
 					} else {
 						client.request(
-								"/api/notes/create",
-								access_info.putMisskeyApiToken()
-									.put("renoteId", target_status.id.toString())
-									.toPostRequestBuilder()
-							)
-							?.also{ result->
+							"/api/notes/create",
+							access_info.putMisskeyApiToken()
+								.put("renoteId", target_status.id.toString())
+								.toPostRequestBuilder()
+						)
+							?.also { result ->
 								val jsonObject = result.jsonObject
 								if(jsonObject != null) {
 									val outerStatus = parser.status(
@@ -539,7 +538,7 @@ object Action_Toot {
 											?: jsonObject
 									)
 									val innerStatus = outerStatus?.reblog ?: outerStatus
-									if( outerStatus != null && innerStatus != null && outerStatus != innerStatus ){
+									if(outerStatus != null && innerStatus != null && outerStatus != innerStatus) {
 										innerStatus.myRenoteId = outerStatus.id
 										innerStatus.reblogged = true
 									}
@@ -573,7 +572,6 @@ object Action_Toot {
 				val unrenoteId = this.unrenoteId
 				val new_status = this.new_status
 				
-				
 				when {
 					
 					// cancelled.
@@ -581,12 +579,12 @@ object Action_Toot {
 					}
 					
 					// Misskeyでunrenoteに成功した
-					unrenoteId != null ->{
+					unrenoteId != null -> {
 						
 						// 星を外したのにカウントが下がらないのは違和感あるので、表示をいじる
 						// 0未満にはならない
-						val count = max(0,(arg_status.reblogs_count?:1)-1)
-
+						val count = max(0, (arg_status.reblogs_count ?: 1) - 1)
+						
 						for(column in App1.getAppState(activity).column_list) {
 							column.findStatus(access_info.host, arg_status.id) { account, status ->
 								
@@ -596,7 +594,7 @@ object Action_Toot {
 								// 同アカウントならreblogged状態を変化させる
 								if(access_info.acct == account.acct &&
 									status.myRenoteId == unrenoteId
-									) {
+								) {
 									status.myRenoteId = null
 									status.reblogged = false
 								}
@@ -630,19 +628,18 @@ object Action_Toot {
 								status.reblogs_count = new_status.reblogs_count
 								
 								if(access_info.acct == account.acct) {
+									
 									// 同アカウントならreblog状態を変化させる
-
-									if( access_info.isMisskey ){
-										if( bSet && status.myRenoteId == null ) {
+									when {
+										! access_info.isMisskey ->
+											status.reblogged = new_status.reblogged
+										
+										bSet && status.myRenoteId == null -> {
 											status.myRenoteId = new_status.myRenoteId
 											status.reblogged = true
-										}else if( !bSet && status.myRenoteId == arg_status.myRenoteId){
-											status.myRenoteId = null
-											status.reblogged = false
 										}
-									}else{
-										status.reblogged = new_status.reblogged
 									}
+									// Misskey のunrenote時はここを通らない
 								}
 								true
 							}
@@ -1000,7 +997,7 @@ object Action_Toot {
 				when {
 					status == null -> showToast(activity, true, result.error ?: "?")
 					replyId == null -> showToast(
-						activity,true,
+						activity, true,
 						"showReplyTootsearch: in_reply_to_id is null"
 					)
 					else -> conversationLocal(activity, pos, a, replyId)

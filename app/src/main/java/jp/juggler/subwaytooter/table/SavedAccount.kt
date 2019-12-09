@@ -29,9 +29,6 @@ class SavedAccount(
 	override val misskeyVersion : Int = 0
 ) : LinkHelper {
 	
-	override val isMisskey : Boolean
-		get() = misskeyVersion > 0
-	
 	val username : String
 	
 	override val host : String

@@ -67,7 +67,7 @@ object Action_Toot {
 		}
 		
 		// 必要なら確認を出す
-		if(! bConfirmed && ! access_info.isMisskey) {
+		if(! bConfirmed && access_info.isMastodon) {
 			DlgConfirm.open(
 				activity,
 				activity.getString(
@@ -365,8 +365,9 @@ object Action_Toot {
 		val who_host = timeline_account.host
 		val status_owner = timeline_account.getFullAcct(status.account)
 		
-		val isPrivateToot =
-			! timeline_account.isMisskey && status.visibility == TootVisibility.PrivateFollowers
+		val isPrivateToot =timeline_account.isMastodon &&
+			status.visibility == TootVisibility.PrivateFollowers
+
 		if(isPrivateToot) {
 			val list = ArrayList<SavedAccount>()
 			for(a in SavedAccount.loadAccountList(activity)) {
@@ -430,11 +431,9 @@ object Action_Toot {
 			return
 		}
 		
-		// Misskeyは非公開トゥートをブーストできない(しかしリクエストは投げてサーバからのエラーメッセージにまかせる)
 		// Mastodonは非公開トゥートをブーストできるのは本人だけ
-		val isPrivateToot =
-			! access_info.isMisskey && arg_status.visibility == TootVisibility.PrivateFollowers
-		
+		val isPrivateToot = access_info.isMastodon &&
+			arg_status.visibility == TootVisibility.PrivateFollowers
 		if(isPrivateToot && access_info.acct != status_owner_acct) {
 			showToast(activity, false, R.string.boost_private_toot_not_allowed)
 			return
@@ -631,7 +630,7 @@ object Action_Toot {
 									
 									// 同アカウントならreblog状態を変化させる
 									when {
-										! access_info.isMisskey ->
+										access_info.isMastodon ->
 											status.reblogged = new_status.reblogged
 										
 										bSet && status.myRenoteId == null -> {
@@ -666,18 +665,18 @@ object Action_Toot {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return if(access_info.isMisskey) {
-					val params = access_info.putMisskeyApiToken()
-						.put("noteId", status_id)
-					
-					client.request("/api/notes/delete", params.toPostRequestBuilder())
-					
+					client.request(
+						"/api/notes/delete",
+						access_info.putMisskeyApiToken()
+							.put("noteId", status_id)
+							.toPostRequestBuilder()
+					)
 					// 204 no content
-					
 				} else {
-					val request_builder = Request.Builder().delete()
-					
-					client.request("/api/v1/statuses/$status_id", request_builder)
-					
+					client.request(
+						"/api/v1/statuses/$status_id",
+						Request.Builder().delete()
+					)
 				}
 			}
 			

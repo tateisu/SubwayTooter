@@ -25,6 +25,10 @@ interface LinkHelper {
 	val isMisskey :Boolean
 		get() = misskeyVersion > 0
 	
+	// FIXME もし将来別のサービスにも対応するなら、ここは書き直す必要がある
+	val isMastodon :Boolean
+		get() = misskeyVersion <=0
+	
 	companion object {
 		
 		fun newLinkHelper(host : String?, misskeyVersion : Int = 0) = object : LinkHelper {

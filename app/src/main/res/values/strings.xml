@@ -974,4 +974,18 @@
     <string name="fedibird_domain_timeline">(fedibird)Domain timeline</string>
     <string name="domain_timeline">Domain timeline</string>
     <string name="domain_timeline_of">%1$s domain timeline</string>
+    <string name="language_filter">Language filter</string>
+    <string name="export">Export</string>
+    <string name="import_">Import</string>
+    <string name="language_code_default">(default)</string>
+    <string name="language_code_unknown">(unknown)</string>
+    <string name="language_show">Show</string>
+    <string name="language_hide">Hide</string>
+    <string name="language">Language</string>
+    <string name="show_hide">Show/Hide</string>
+    <string name="language_filter_description">column reload required to apply filter.</string>
+    <string name="clear_all">Clear all</string>
+    <string name="presets">Presets</string>
+    <string name="custom">Custom</string>
+    <string name="language_code_hint">choose preset or input language code</string>
 </resources>

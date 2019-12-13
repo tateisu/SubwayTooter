@@ -91,6 +91,7 @@ class ActMain : AppCompatActivity()
 		const val REQUEST_CODE_COLUMN_COLOR = 6
 		const val REQUEST_CODE_APP_SETTING = 7
 		const val REQUEST_CODE_TEXT = 8
+		const val REQUEST_CODE_LANGUAGE_FILTER = 9
 		
 		const val COLUMN_WIDTH_MIN_DP = 300
 		
@@ -1018,7 +1019,7 @@ class ActMain : AppCompatActivity()
 				REQUEST_CODE_COLUMN_COLOR -> if(data != null) {
 					app_state.saveColumnList()
 					val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
-					if(idx >= 0 && idx < app_state.column_list.size) {
+					if(idx in app_state.column_list.indices ) {
 						app_state.column_list[idx].fireColumnColor()
 						app_state.column_list[idx].fireShowContent(
 							reason = "ActMain column color changed",
@@ -1026,6 +1027,14 @@ class ActMain : AppCompatActivity()
 						)
 					}
 					updateColumnStrip()
+				}
+
+				REQUEST_CODE_LANGUAGE_FILTER -> if(data != null) {
+					app_state.saveColumnList()
+					val idx = data.getIntExtra(ActLanguageFilter.EXTRA_COLUMN_INDEX, 0)
+					if(idx in app_state.column_list.indices ) {
+						app_state.column_list[idx].onLanguageFilterChanged()
+					}
 				}
 			}
 		}

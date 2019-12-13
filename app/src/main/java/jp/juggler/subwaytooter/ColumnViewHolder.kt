@@ -113,6 +113,7 @@ class ColumnViewHolder(
 	private lateinit var llRegexFilter : View
 	private lateinit var btnDeleteNotification : Button
 	private lateinit var btnColor : Button
+	private lateinit var btnLanguageFilter : Button
 	
 	private lateinit var svQuickFilter : HorizontalScrollView
 	private lateinit var btnQuickFilterAll : Button
@@ -309,6 +310,7 @@ class ColumnViewHolder(
 		btnDeleteNotification.setOnClickListener(this)
 		
 		btnColor.setOnClickListener(this)
+		btnLanguageFilter.setOnClickListener(this)
 		
 		refreshLayout.setOnRefreshListener(this)
 		refreshLayout.setDistanceToTriggerSync((0.5f + 20f * activity.density).toInt())
@@ -586,6 +588,7 @@ class ColumnViewHolder(
 			vg(cbWithHighlight, bAllowFilter)
 			vg(etRegexFilter, bAllowFilter)
 			vg(llRegexFilter, bAllowFilter)
+			vg(btnLanguageFilter,bAllowFilter)
 			
 			vg(cbDontShowBoost, column.canFilterBoost())
 			vg(cbDontShowReply, column.canFilterReply())
@@ -1028,6 +1031,11 @@ class ColumnViewHolder(
 			btnColor -> {
 				val idx = activity.app_state.column_list.indexOf(column)
 				ActColumnCustomize.open(activity, idx, ActMain.REQUEST_CODE_COLUMN_COLOR)
+			}
+			
+			btnLanguageFilter ->{
+				val idx = activity.app_state.column_list.indexOf(column)
+				ActLanguageFilter.open(activity, idx, ActMain.REQUEST_CODE_LANGUAGE_FILTER)
 			}
 			
 			btnListAdd -> {
@@ -1871,6 +1879,12 @@ class ColumnViewHolder(
 						isAllCaps = false
 						text = context.getString(R.string.color_and_background)
 					}.lparams(matchParent, wrapContent)
+					
+					btnLanguageFilter = button {
+						isAllCaps = false
+						text = context.getString(R.string.language_filter)
+					}.lparams(matchParent, wrapContent)
+
 				}
 				
 			} // end of column setting scroll view

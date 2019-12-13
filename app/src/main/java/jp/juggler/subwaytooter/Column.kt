@@ -162,6 +162,7 @@ class Column(
 		private const val KEY_QUICK_FILTER = "quickFilter"
 		
 		private const val KEY_REGEX_TEXT = "regex_text"
+		private const val KEY_LANGUAGE_FILTER = "language_filter"
 		
 		private const val KEY_HEADER_BACKGROUND_COLOR = "header_background_color"
 		private const val KEY_HEADER_TEXT_COLOR = "header_text_color"
@@ -487,6 +488,8 @@ class Column(
 	internal var hashtag_none : String = ""
 	internal var hashtag_acct : String = ""
 	
+	internal var language_filter : JSONObject? = null
+	
 	// プロフカラムでのアカウント情報
 	@Volatile
 	internal var who_account : TootAccountRef? = null
@@ -552,6 +555,7 @@ class Column(
 			|| dont_show_reply
 			|| dont_show_reaction
 			|| dont_show_vote
+			|| (language_filter?.length()?:0) >0
 			)
 	
 	@Volatile
@@ -705,6 +709,7 @@ class Column(
 		last_viewing_item_id = EntityId.from(src, KEY_LAST_VIEWING_ITEM)
 		
 		regex_text = src.parseString(KEY_REGEX_TEXT) ?: ""
+		language_filter = src.optJSONObject(KEY_LANGUAGE_FILTER)
 		
 		header_bg_color = src.optInt(KEY_HEADER_BACKGROUND_COLOR)
 		header_fg_color = src.optInt(KEY_HEADER_TEXT_COLOR)
@@ -806,6 +811,9 @@ class Column(
 		last_viewing_item_id?.putTo(dst, KEY_LAST_VIEWING_ITEM)
 		
 		dst.put(KEY_REGEX_TEXT, regex_text)
+		
+		val ov = language_filter
+		if( ov != null) dst.put(KEY_LANGUAGE_FILTER,ov)
 		
 		dst.put(KEY_HEADER_BACKGROUND_COLOR, header_bg_color)
 		dst.put(KEY_HEADER_TEXT_COLOR, header_fg_color)
@@ -1314,6 +1322,10 @@ class Column(
 		
 	}
 	
+	fun onLanguageFilterChanged() {
+		// TODO
+	}
+	
 	internal fun addColumnViewHolder(cvh : ColumnViewHolder) {
 		
 		// 現在のリストにあるなら削除する
@@ -1451,28 +1463,37 @@ class Column(
 		
 		if(isFilteredByAttachment(status)) return true
 		
+		val reblog = status.reblog
+		
 		if(dont_show_boost) {
-			if(status.reblog != null) return true
+			if(reblog != null) return true
 		}
 		
 		if(dont_show_reply) {
 			if(status.in_reply_to_id != null) return true
-			if(status.reblog?.in_reply_to_id != null) return true
+			if(reblog?.in_reply_to_id != null) return true
 		}
 		
 		if(dont_show_normal_toot) {
-			if(status.in_reply_to_id == null && status.reblog == null) return true
+			if(status.in_reply_to_id == null && reblog == null) return true
 		}
 		
 		if(column_regex_filter(status.decoded_content)) return true
-		if(column_regex_filter(status.reblog?.decoded_content)) return true
+		if(column_regex_filter(reblog?.decoded_content)) return true
 		if(column_regex_filter(status.decoded_spoiler_text)) return true
-		if(column_regex_filter(status.reblog?.decoded_spoiler_text)) return true
+		if(column_regex_filter(reblog?.decoded_spoiler_text)) return true
+
+		val languageFilter = language_filter
+		if(languageFilter != null ){
+			val bShow = languageFilter.parseBoolean(status.language ?: reblog?.language ?:TootStatus.LANGUAGE_CODE_UNKNOWN)
+				?: languageFilter.parseBoolean(TootStatus.LANGUAGE_CODE_DEFAULT)
+				?: true
+			if(!bShow) return true
+		}
 		
 		if(access_info.isPseudo) {
 			var r = UserRelation.loadPseudo(access_info.getFullAcct(status.account))
 			if(r.muting || r.blocking) return true
-			val reblog = status.reblog
 			if(reblog != null) {
 				r = UserRelation.loadPseudo(access_info.getFullAcct(reblog.account))
 				if(r.muting || r.blocking) return true
@@ -1535,7 +1556,16 @@ class Column(
 			// just update _filtered flag for reversible filter
 			status.updateKeywordFilteredFlag(access_info, filterTrees)
 		}
-		
+		if( status != null){
+			val languageFilter = language_filter
+			if(languageFilter != null ){
+				val bShow = languageFilter.parseBoolean(status.language ?: status.reblog?.language ?:TootStatus.LANGUAGE_CODE_UNKNOWN)
+					?: languageFilter.parseBoolean(TootStatus.LANGUAGE_CODE_DEFAULT)
+					?: true
+				if(!bShow) return true
+			}
+		}
+
 		if(status?.checkMuted() == true) {
 			log.d("isFiltered: status muted by in-app muted words.")
 			return true
@@ -3002,6 +3032,7 @@ class Column(
 			getHeaderNameColor()
 		)
 	}
+
 	
 	//	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
 	//		list_data.forEachIndexed { i, v ->

@@ -235,6 +235,12 @@
             />
 
         <activity
+            android:name=".ActLanguageFilter"
+            android:label="@string/language_filter"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
+            />
+
+        <activity
             android:name=".ActNickname"
             android:label="@string/nickname_and_color_and_notification_sound"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"

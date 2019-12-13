@@ -93,7 +93,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	val sensitive : Boolean
 	
 	// The detected language for the status, if detected
-	private val language : String?
+	val language : String?
 	
 	//If not empty, warning text that should be displayed before the actual content
 	// アプリ内部では空文字列はCWなしとして扱う
@@ -485,7 +485,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				parseItem(::TootApplication, parser, src.optJSONObject("application"), log)
 			this.pinned = parser.pinned || src.optBoolean("pinned")
 			this.muted = src.optBoolean("muted")
-			this.language = src.parseString("language")
+			this.language = src.parseString("language")?.notEmpty()
 			this.decoded_mentions = HTMLDecoder.decodeMentions(
 				parser.linkHelper,
 				this.mentions,
@@ -814,6 +814,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		
 		@Volatile
 		internal var muted_word : WordTrieTree? = null
+		
+		const val LANGUAGE_CODE_UNKNOWN="unknown"
+		const val LANGUAGE_CODE_DEFAULT="default"
 		
 		val EMPTY_SPANNABLE = SpannableString("")
 		

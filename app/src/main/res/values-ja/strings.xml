@@ -980,5 +980,19 @@
     <string name="fedibird_domain_timeline">(fedibird)ドメインタイムライン</string>
     <string name="domain_timeline">ドメインTL</string>
     <string name="domain_timeline_of">%1$sのドメインTL</string>
+    <string name="language_filter">言語フィルタ</string>
+    <string name="export">エクスポート</string>
+    <string name="import_">インポート</string>
+    <string name="language_code_default">(デフォルト)</string>
+    <string name="language_code_unknown">(不明)</string>
+    <string name="language_show">表示する</string>
+    <string name="language_hide">隠す</string>
+    <string name="language">言語</string>
+    <string name="show_hide">表示する/隠す</string>
+    <string name="language_filter_description">フィルタを適用するにはカラムをリロードしてください</string>
+    <string name="clear_all">全て消去</string>
+    <string name="presets">プリセット</string>
+    <string name="custom">カスタム</string>
+    <string name="language_code_hint">プリセットを選択または言語コードを入力</string>
 
 </resources>

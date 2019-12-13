@@ -302,7 +302,11 @@ object Pref {
 		false,
 		R.id.swShowAppName
 	)
-	
+	val bpShowLanguage = BooleanPref(
+		"ShowLanguage",
+		false,
+		R.id.swShowLanguage
+	)
 	val bpForceGap = BooleanPref(
 		"force_gap",
 		false,

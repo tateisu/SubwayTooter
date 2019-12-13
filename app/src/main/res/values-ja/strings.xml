@@ -58,7 +58,7 @@
     <string name="app_was_muted">アプリはミュートされます</string>
     <string name="appearance">見た目</string>
     <string name="append_attachment_url_to_content">添付メディアのURLを本文に記載する</string>
-    <string name="application_is">アプリ:  %1$s</string>
+    <string name="application_is">アプリ: %1$s</string>
     <string name="ask_always">毎回尋ねる</string>
     <string name="attachment_description">添付メディアの説明文</string>
     <string name="attachment_description_cant_edit_while_uploading">添付メディアのアップロード中は説明文を設定できません</string>
@@ -994,5 +994,7 @@
     <string name="presets">プリセット</string>
     <string name="custom">カスタム</string>
     <string name="language_code_hint">プリセットを選択または言語コードを入力</string>
+    <string name="language_is">言語: %1$s</string>
+    <string name="always_show_language">常に言語を表示する</string>
 
 </resources>

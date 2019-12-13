@@ -1365,17 +1365,41 @@ internal class ItemViewHolder(
 		makeReactionsView(status)
 		
 		buttons_for_status?.bind(status, (item as? TootNotification))
+
+		var sb :StringBuilder? = null
+		
+		fun prepareSb() :StringBuilder{
+			var x = sb
+			if( x == null){
+				x = StringBuilder()
+				sb = x
+			}else{
+				x.append(", ")
+			}
+			return x
+		}
+		
+		val language = status.language
+		if( language != null &&
+			(column.type == ColumnType.CONVERSATION || Pref.bpShowLanguage(activity.pref))
+		){
+			prepareSb().append(activity.getString(R.string.language_is,language))
+		}
 		
 		val application = status.application
-		if(application != null
-			&& (column.type == ColumnType.CONVERSATION || Pref.bpShowAppName(activity.pref))
+		if(application != null &&
+			(column.type == ColumnType.CONVERSATION || Pref.bpShowAppName(activity.pref))
 		) {
+			prepareSb().append(activity.getString(R.string.application_is, application.name ?: ""))
+		}
+		
+		if(sb != null) {
 			tvApplication.visibility = View.VISIBLE
-			tvApplication.text =
-				activity.getString(R.string.application_is, application.name ?: "")
-		} else {
+			tvApplication.text = sb
+		}else{
 			tvApplication.visibility = View.GONE
 		}
+
 	}
 	
 	private fun showInstanceTicker(who : TootAccount) {

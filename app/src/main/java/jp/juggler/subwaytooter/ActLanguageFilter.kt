@@ -122,7 +122,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 		column_index = intent.getIntExtra(EXTRA_COLUMN_INDEX, 0)
 		column = app_state.column_list[column_index]
 		
-		load(column.language_filter ?: JSONObject())
+		load(column.language_filter )
 	}
 	
 	private fun initUI() {
@@ -144,13 +144,15 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 		listView.onItemClickListener = adapter
 	}
 	
-	private fun load(src : JSONObject) {
+	private fun load(src : JSONObject?) {
 		loading_busy = true
 		try {
 			
 			languageList.clear()
-			for(key in src.keys()) {
-				languageList.add(MyItem(key, src.parseBoolean(key) ?: true))
+			if(src !=null) {
+				for(key in src.keys()) {
+					languageList.add(MyItem(key, src.parseBoolean(key) ?: true))
+				}
 			}
 			if(null == languageList.find { it.code == TootStatus.LANGUAGE_CODE_DEFAULT }) {
 				languageList.add(MyItem(TootStatus.LANGUAGE_CODE_DEFAULT, true))

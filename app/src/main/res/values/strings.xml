@@ -988,4 +988,6 @@
     <string name="presets">Presets</string>
     <string name="custom">Custom</string>
     <string name="language_code_hint">choose preset or input language code</string>
+    <string name="language_is">lang: %1$s</string>
+    <string name="always_show_language">Always show language</string>
 </resources>

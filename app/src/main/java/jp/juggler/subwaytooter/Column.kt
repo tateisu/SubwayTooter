@@ -1483,13 +1483,7 @@ class Column(
 		if(column_regex_filter(status.decoded_spoiler_text)) return true
 		if(column_regex_filter(reblog?.decoded_spoiler_text)) return true
 
-		val languageFilter = language_filter
-		if(languageFilter != null ){
-			val bShow = languageFilter.parseBoolean(status.language ?: reblog?.language ?:TootStatus.LANGUAGE_CODE_UNKNOWN)
-				?: languageFilter.parseBoolean(TootStatus.LANGUAGE_CODE_DEFAULT)
-				?: true
-			if(!bShow) return true
-		}
+		if(checkLanguageFilter(status)) return true
 		
 		if(access_info.isPseudo) {
 			var r = UserRelation.loadPseudo(access_info.getFullAcct(status.account))
@@ -1501,6 +1495,19 @@ class Column(
 		}
 		
 		return status.checkMuted()
+	}
+	
+	// true if the status will be hidden
+	private fun checkLanguageFilter(status : TootStatus?) : Boolean {
+		status?:return false
+		val languageFilter = language_filter ?: return false
+		
+		val allow = languageFilter.parseBoolean(status.language ?: status.reblog?.language  ?:TootStatus.LANGUAGE_CODE_UNKNOWN)
+			?: languageFilter.parseBoolean(TootStatus.LANGUAGE_CODE_DEFAULT)
+			?: true
+
+		return !allow
+		
 	}
 	
 	internal fun isFiltered(item : TootNotification) : Boolean {
@@ -1556,15 +1563,7 @@ class Column(
 			// just update _filtered flag for reversible filter
 			status.updateKeywordFilteredFlag(access_info, filterTrees)
 		}
-		if( status != null){
-			val languageFilter = language_filter
-			if(languageFilter != null ){
-				val bShow = languageFilter.parseBoolean(status.language ?: status.reblog?.language ?:TootStatus.LANGUAGE_CODE_UNKNOWN)
-					?: languageFilter.parseBoolean(TootStatus.LANGUAGE_CODE_DEFAULT)
-					?: true
-				if(!bShow) return true
-			}
-		}
+		if( checkLanguageFilter(status) )return true
 
 		if(status?.checkMuted() == true) {
 			log.d("isFiltered: status muted by in-app muted words.")

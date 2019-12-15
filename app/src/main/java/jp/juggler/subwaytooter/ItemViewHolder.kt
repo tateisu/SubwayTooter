@@ -171,6 +171,7 @@ internal class ItemViewHolder(
 	private val name_invalidator : NetworkEmojiInvalidator
 	private val content_invalidator : NetworkEmojiInvalidator
 	private val spoiler_invalidator : NetworkEmojiInvalidator
+	private val lastActive_invalidator : NetworkEmojiInvalidator
 	private val extra_invalidator_list = ArrayList<NetworkEmojiInvalidator>()
 	
 	init {
@@ -307,7 +308,8 @@ internal class ItemViewHolder(
 		this.reply_invalidator = NetworkEmojiInvalidator(activity.handler, tvReply)
 		this.follow_invalidator = NetworkEmojiInvalidator(activity.handler, tvFollowerName)
 		this.name_invalidator = NetworkEmojiInvalidator(activity.handler, tvName)
-		
+		this.lastActive_invalidator = NetworkEmojiInvalidator(activity.handler, tvLastStatusAt)
+
 		val cardBackground = llCardOuter.background
 		if(cardBackground is PreviewCardBorder) {
 			val density = activity.density
@@ -1149,7 +1151,8 @@ internal class ItemViewHolder(
 		
 		setAcct(tvFollowerAcct, access_info.getFullAcct(who), who.acct)
 		
-		who.setAccountExtra(tvLastStatusAt, access_info)
+		who.setAccountExtra(access_info,tvLastStatusAt,lastActive_invalidator )
+		
 		
 		val relation = UserRelation.load(access_info.db_id, who.id)
 		Styler.setFollowIcon(

@@ -12,6 +12,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.util.*
 import org.json.JSONArray
@@ -109,7 +110,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	
 	// mastodon 3.0.0-dev
 	// last_status_at : "2019-08-29T12:42:08.838Z" or null
-	var last_status_at = 0L
+	private var last_status_at = 0L
 	
 	val json : JSONObject
 	
@@ -383,10 +384,11 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	}
 	
 	fun setAccountExtra(
-		tv : TextView,
 		accessInfo : SavedAccount,
+		tv : TextView,
+		invalidator: NetworkEmojiInvalidator?,
 		fromProfileHeader : Boolean = false
-	) {
+	):SpannableStringBuilder? {
 		val pref = App1.pref
 		val context = tv.context
 		
@@ -416,8 +418,15 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 					.append(followers_count.toString())
 			
 			if(Pref.bpDirectoryNote(pref) && note?.isNotEmpty() == true) {
-				val decodedNote = DecodeOptions(context, accessInfo)
-					.decodeHTML(note)
+				val decodedNote = DecodeOptions(
+					context,
+					accessInfo,
+					short = true,
+					decodeEmoji = true,
+					emojiMapProfile = profile_emojis,
+					emojiMapCustom = custom_emojis,
+					unwrapEmojiImageTag = true
+				).decodeHTML(note)
 					.replaceAllEx(reNoteLineFeed, " ")
 					.trimEx()
 				if(decodedNote.isNotBlank()) {
@@ -435,7 +444,12 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		if(vg(tv, sb != null)) {
 			tv.text = sb
 			tv.movementMethod = MyLinkMovementMethod
+			invalidator?.register(sb)
+		}else{
+			invalidator?.clear()
 		}
+		
+		return sb
 	}
 	
 	companion object {

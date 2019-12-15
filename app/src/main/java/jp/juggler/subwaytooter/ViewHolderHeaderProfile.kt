@@ -223,8 +223,7 @@ internal class ViewHolderHeaderProfile(
 			tvCreated.text =
 				TootStatus.formatTime(tvCreated.context, (whoDetail ?: who).time_created_at, true)
 			
-			who.setAccountExtra(tvLastStatusAt,access_info,fromProfileHeader = true)
-			
+			who.setAccountExtra(access_info,tvLastStatusAt,invalidator = null,fromProfileHeader = true)
 			
 			ivBackground.setImageUrl(
 				activity.pref,

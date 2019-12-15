@@ -34,12 +34,16 @@ class NetworkEmojiInvalidator(internal val handler : Handler, internal val view 
 			return now - t_start
 		}
 	
-	// 装飾テキスト中のカスタム絵文字スパンにコールバックを登録する
-	fun register(dst : Spannable?) {
+	fun clear(){
 		for(o in draw_target_list) {
 			App1.custom_emoji_cache.cancelRequest(o)
 		}
 		draw_target_list.clear()
+	}
+	
+	// 装飾テキスト中のカスタム絵文字スパンにコールバックを登録する
+	fun register(dst : Spannable?) {
+		clear()
 		
 		if(dst != null) {
 			for(span in dst.getSpans(0, dst.length, AnimatableSpan::class.java)) {
@@ -48,7 +52,6 @@ class NetworkEmojiInvalidator(internal val handler : Handler, internal val view 
 				span.setInvalidateCallback(tag, this)
 			}
 		}
-		
 	}
 	
 	// 絵文字スパンを描画した直後に呼ばれる

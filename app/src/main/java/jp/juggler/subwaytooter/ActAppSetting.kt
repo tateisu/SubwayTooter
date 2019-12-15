@@ -49,7 +49,7 @@ class ActAppSetting : AppCompatActivity() {
 		setContentView(R.layout.act_app_setting)
 		App1.initEdgeToEdge(this)
 		
-		Styler.fixHorizontalPadding2(findViewById(R.id.llContent))
+		Styler.fixHorizontalPadding0(findViewById(R.id.llContent))
 		lvList = findViewById(R.id.lvList)
 		
 		val adapter = MyAdapter()

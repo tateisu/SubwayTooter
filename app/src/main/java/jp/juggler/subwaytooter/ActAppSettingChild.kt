@@ -192,6 +192,7 @@ class ActAppSettingChild : AppCompatActivity()
 	private var spVisibilityStyle : Spinner? = null
 	private var spBoostButtonJustify : Spinner? = null
 	private var spTimeZone : Spinner? = null
+	private var spJustifyWindowContentPortrait : Spinner? = null
 	
 	private var footer_button_bg_color : Int = 0
 	private var footer_button_fg_color : Int = 0
@@ -412,6 +413,12 @@ class ActAppSettingChild : AppCompatActivity()
 			R.id.spUITheme
 			, getString(R.string.theme_light)
 			, getString(R.string.theme_dark)
+		)
+		spJustifyWindowContentPortrait = initSpinner(
+			R.id.spJustifyWindowContentPortrait
+			, getString(R.string.default_)
+			, getString(R.string.start)
+			, getString(R.string.end)
 		)
 		
 		val resizeList = ActPost.resizeConfigList.map {
@@ -705,6 +712,9 @@ class ActAppSettingChild : AppCompatActivity()
 		spRepliesCount?.setSelection(Pref.ipRepliesCount(pref))
 		spVisibilityStyle?.setSelection(Pref.ipVisibilityStyle(pref))
 		spBoostButtonJustify?.setSelection(Pref.ipBoostButtonJustify(pref))
+		spJustifyWindowContentPortrait?.setSelection(Pref.ipJustifyWindowContentPortrait(pref))
+
+		
 		spUITheme?.setSelection(Pref.ipUiTheme(pref))
 		spResizeImage?.setSelection(Pref.ipResizeImage(pref))
 		spRefreshAfterToot?.setSelection(Pref.ipRefreshAfterToot(pref))
@@ -896,6 +906,8 @@ class ActAppSettingChild : AppCompatActivity()
 		putSpinner(Pref.ipRepliesCount, spRepliesCount)
 		putSpinner(Pref.ipVisibilityStyle, spVisibilityStyle)
 		putSpinner(Pref.ipBoostButtonJustify, spBoostButtonJustify)
+		putSpinner(Pref.ipJustifyWindowContentPortrait, spJustifyWindowContentPortrait)
+		
 		putSpinner(Pref.ipUiTheme, spUITheme)
 		putSpinner(Pref.ipResizeImage, spResizeImage)
 		putSpinner(Pref.ipRefreshAfterToot, spRefreshAfterToot)

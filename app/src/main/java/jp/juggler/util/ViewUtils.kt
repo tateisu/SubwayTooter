@@ -6,9 +6,7 @@ import android.content.ContextWrapper
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.CheckBox
 import android.widget.CompoundButton
-import jp.juggler.subwaytooter.ColumnViewHolder
 import jp.juggler.subwaytooter.R
 import org.xmlpull.v1.XmlPullParser
 

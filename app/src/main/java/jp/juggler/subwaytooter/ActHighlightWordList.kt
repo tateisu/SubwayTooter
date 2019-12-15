@@ -59,7 +59,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		setContentView(R.layout.act_highlight_list)
 		App1.initEdgeToEdge(this)
 		
-		Styler.fixHorizontalPadding2(findViewById(R.id.llContent))
+		Styler.fixHorizontalPadding0(findViewById(R.id.llContent))
 		
 		// リストのアダプター
 		listAdapter = MyListAdapter()

@@ -94,9 +94,25 @@
         </LinearLayout>
 
 
+
         <View style="@style/setting_divider"/>
 
-        <!-- =============================================== -->
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/justify_window_content_portrait"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Spinner
+                android:id="@+id/spJustifyWindowContentPortrait"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
 
     </LinearLayout>
 </ScrollView>

@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -84,7 +83,7 @@ class ActColumnList : AppCompatActivity() {
 		setContentView(R.layout.act_column_list)
 		App1.initEdgeToEdge(this)
 		
-		Styler.fixHorizontalPadding2(findViewById(R.id.llContent))
+		Styler.fixHorizontalPadding0(findViewById(R.id.llContent))
 		
 		// リストのアダプター
 		listAdapter = MyListAdapter()

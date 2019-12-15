@@ -15,10 +15,7 @@ import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.util.JsonReader
-import android.view.Gravity
-import android.view.View
-import android.view.Window
-import android.view.WindowManager
+import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -157,7 +154,7 @@ class ActMain : AppCompatActivity()
 	//////////////////////////////////////////////////////////////////
 	// 変更しない変数(lateinit)
 	
-	private lateinit var llQuickTootBar : View
+	private lateinit var llQuickTootBar : LinearLayout
 	private lateinit var etQuickToot : MyEditText
 	private lateinit var btnQuickToot : ImageButton
 	private lateinit var btnQuickTootMenu : ImageButton
@@ -1293,6 +1290,45 @@ class ActMain : AppCompatActivity()
 		btnQuickToot = findViewById(R.id.btnQuickToot)
 		btnQuickTootMenu = findViewById(R.id.btnQuickTootMenu)
 		
+		
+		when(Pref.ipJustifyWindowContentPortrait(pref)) {
+			Pref.JWCP_START -> {
+				val iconSize = stripIconSize
+				val iconW = (iconSize * 1.5f + 0.5f).toInt()
+				val padding = resources.displayMetrics.widthPixels /2 -iconW
+				
+				fun ViewGroup.addViewBeforeLast(v : View) = addView(v, childCount-1)
+				(svColumnStrip.parent as LinearLayout).addViewBeforeLast(
+					View(this).apply {
+						layoutParams = LinearLayout.LayoutParams(padding, 0)
+					}
+				)
+				llQuickTootBar.addViewBeforeLast(
+					View(this).apply {
+						layoutParams = LinearLayout.LayoutParams(padding, 0)
+					}
+				)
+			}
+			
+			Pref.JWCP_END -> {
+				val iconSize = stripIconSize
+				val iconW = (iconSize * 1.5f + 0.5f).toInt()
+				val padding = resources.displayMetrics.widthPixels /2 -iconW
+				
+				fun ViewGroup.addViewAfterFirst(v : View) = addView(v, 1)
+				(svColumnStrip.parent as LinearLayout).addViewAfterFirst(
+					View(this).apply {
+						layoutParams = LinearLayout.LayoutParams(padding, 0)
+					}
+				)
+				llQuickTootBar.addViewAfterFirst(
+					View(this).apply {
+						layoutParams = LinearLayout.LayoutParams(padding, 0)
+					}
+				)
+			}
+		}
+		
 		if(! Pref.bpQuickTootBar(pref)) {
 			llQuickTootBar.visibility = View.GONE
 		}
@@ -1476,13 +1512,12 @@ class ActMain : AppCompatActivity()
 		
 		// 両端のメニューと投稿ボタンの大きさ
 		val pad = (rootH - iconSize) shr 1
-		btnToot.layoutParams.width = rootH // not W
-		btnToot.layoutParams.height = rootH
-		btnToot.setPaddingRelative(pad, pad, pad, pad)
-		btnMenu.layoutParams.width = rootH // not W
-		btnMenu.layoutParams.height = rootH
-		btnMenu.setPaddingRelative(pad, pad, pad, pad)
-		
+		for(btn in  arrayOf(btnToot,btnMenu,btnQuickTootMenu,btnQuickToot)){
+			btn.layoutParams.width = rootH // not W
+			btn.layoutParams.height = rootH
+			btn.setPaddingRelative(pad, pad, pad, pad)
+		}
+
 		llColumnStrip.removeAllViews()
 		for(i in 0 until app_state.column_list.size) {
 			

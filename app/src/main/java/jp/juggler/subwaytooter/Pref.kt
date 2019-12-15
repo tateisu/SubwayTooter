@@ -524,6 +524,11 @@ object Pref {
 	val ipLastColumnPos = IntPref("last_column_pos", - 1)
 	val ipBoostButtonJustify = IntPref("ipBoostButtonJustify", 0) // 0=左,1=中央,2=右
 	
+	const val JWCP_DEFAULT = 0
+	const val JWCP_START = 1
+	const val JWCP_END = 2
+	val ipJustifyWindowContentPortrait = IntPref("JustifyWindowContentPortrait", 0) // 0=default,1=start,2=end
+	
 	val ipLinkColor = IntPref("LinkColor", 0)
 	
 	val ipSwitchOnColor = IntPref("SwitchOnColor", Color.BLACK or 0x0080ff)

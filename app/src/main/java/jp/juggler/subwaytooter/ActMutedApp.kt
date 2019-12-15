@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -42,7 +41,7 @@ class ActMutedApp : AppCompatActivity() {
 		setContentView(R.layout.act_word_list)
 		App1.initEdgeToEdge(this)
 		
-		Styler.fixHorizontalPadding2(findViewById(R.id.llContent))
+		Styler.fixHorizontalPadding0(findViewById(R.id.llContent))
 		
 		// リストのアダプター
 		listAdapter = MyListAdapter()

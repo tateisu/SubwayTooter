@@ -147,7 +147,7 @@ object Action_Account {
 		client_info : JSONObject,
 		dialog_host : Dialog
 	) {
-		DlgCreateAccount.showCreateAccountForm(
+		DlgCreateAccount(
 			activity,
 			instance
 		) { dialog_create, username, email, password, agreement, reason ->
@@ -201,7 +201,7 @@ object Action_Account {
 					}
 				}
 			})
-		}
+		}.show()
 	}
 	
 	// アカウント設定

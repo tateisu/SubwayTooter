@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
@@ -17,7 +18,11 @@ import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.*
+import kotlin.coroutines.Continuation
+import kotlin.math.max
 import kotlin.math.min
+
+private val log = LogCategory("Styler")
 
 object Styler {
 	
@@ -247,33 +252,76 @@ object Styler {
 		ibFollow.contentDescription = contentDescription
 	}
 	
-	private fun getHorizontalPadding(v : View, delta_dp : Float) : Int {
+	private fun getHorizontalPadding(v : View, delta_dp : Float ) : Int {
 		val form_width_max = 420f
 		val dm = v.resources.displayMetrics
 		val screen_w = dm.widthPixels
 		val content_w = (0.5f + form_width_max * dm.density).toInt()
-		val pad_lr = (screen_w - content_w) / 2
-		return (if(pad_lr < 0) 0 else pad_lr) + (0.5f + delta_dp * dm.density).toInt()
+		val pad_lr = max(0, (screen_w - content_w) / 2)
+		return pad_lr + (0.5f + delta_dp * dm.density).toInt()
 	}
 	
-	fun fixHorizontalPadding(v : View) {
-		val pad_lr = getHorizontalPadding(v, 12f)
+	private fun getOrientationString(orientation : Int?) = when(orientation) {
+		null -> "null"
+		Configuration.ORIENTATION_LANDSCAPE -> "landscape"
+		Configuration.ORIENTATION_PORTRAIT -> "portrait"
+		Configuration.ORIENTATION_UNDEFINED -> "undefined"
+		else -> orientation.toString()
+	}
+	
+	fun fixHorizontalPadding(v : View,delta_dp:Float = 12f) {
 		val pad_t = v.paddingTop
 		val pad_b = v.paddingBottom
+		
+		val dm = v.resources.displayMetrics
+		val widthDp = dm.widthPixels / dm.density
+		if(widthDp >= 640f && v.resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT) {
+			val pad_lr = (0.5f + delta_dp * dm.density).toInt()
+			when(Pref.ipJustifyWindowContentPortrait(App1.pref)) {
+				Pref.JWCP_START -> {
+					v.setPaddingRelative(pad_lr, pad_t, pad_lr+ dm.widthPixels / 2, pad_b)
+					return
+				}
+				
+				Pref.JWCP_END -> {
+					v.setPaddingRelative( pad_lr+dm.widthPixels / 2, pad_t,  pad_lr, pad_b)
+					return
+				}
+			}
+		}
+		
+		val pad_lr = getHorizontalPadding(v, delta_dp)
 		v.setPaddingRelative(pad_lr, pad_t, pad_lr, pad_b)
 	}
 	
-	fun fixHorizontalPadding2(v : View) {
-		val pad_lr = getHorizontalPadding(v, 0f)
-		val pad_t = v.paddingTop
-		val pad_b = v.paddingBottom
-		v.setPaddingRelative(pad_lr, pad_t, pad_lr, pad_b)
-	}
+	fun fixHorizontalPadding0(v : View)  = fixHorizontalPadding(v,0f)
 	
 	fun fixHorizontalMargin(v : View) {
-		val pad_lr = getHorizontalPadding(v, 0f)
 		val lp = v.layoutParams
 		if(lp is ViewGroup.MarginLayoutParams) {
+			
+			val dm = v.resources.displayMetrics
+			val orientationString = getOrientationString(v.resources?.configuration?.orientation)
+			val widthDp = dm.widthPixels / dm.density
+			log.d("fixHorizontalMargin: orientation=$orientationString, w=${widthDp}dp, h=${dm.heightPixels / dm.density}")
+			
+			if(widthDp >= 640f && v.resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT) {
+				when(Pref.ipJustifyWindowContentPortrait(App1.pref)) {
+					Pref.JWCP_START -> {
+						lp.marginStart = 0
+						lp.marginEnd = dm.widthPixels / 2
+						return
+					}
+					
+					Pref.JWCP_END -> {
+						lp.marginStart = dm.widthPixels / 2
+						lp.marginEnd = 0
+						return
+					}
+				}
+			}
+			
+			val pad_lr = getHorizontalPadding(v, 0f)
 			lp.leftMargin = pad_lr
 			lp.rightMargin = pad_lr
 		}

@@ -42,7 +42,7 @@ class ActMutedWord : AppCompatActivity() {
 		setContentView(R.layout.act_word_list)
 		App1.initEdgeToEdge(this)
 		
-		Styler.fixHorizontalPadding2(findViewById(R.id.llContent))
+		Styler.fixHorizontalPadding0(findViewById(R.id.llContent))
 		
 		// リストのアダプター
 		listAdapter = MyListAdapter()

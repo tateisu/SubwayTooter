@@ -406,23 +406,24 @@ internal class DlgContextMenu(
 		}
 		
 		val who_host = getUserHost()
-		val llInstance : View = viewRoot.findViewById(R.id.llInstance)
-		if(llInstance.vg(! (who_host.isEmpty() || who_host == "?")) != null) {
-			val tvInstanceActions : TextView = viewRoot.findViewById(R.id.tvInstanceActions)
-			tvInstanceActions.text = activity.getString(R.string.instance_actions_for, who_host)
-			
-			// 疑似アカウントではドメインブロックできない
-			// 自ドメインはブロックできない
-			btnDomainBlock.vg(
-				! (access_info.isPseudo || access_info.host.equals(who_host, ignoreCase = true))
-			)
-			
-			btnDomainTimeline.vg(
-				Pref.bpEnableDomainTimeline(activity.pref) &&
-					! access_info.isPseudo &&
-					! access_info.isMisskey
-			)
-		}
+		viewRoot.findViewById<View>(R.id.llInstance)
+			.vg(! (who_host.isEmpty() || who_host == "?"))
+			?.let {
+				val tvInstanceActions : TextView = viewRoot.findViewById(R.id.tvInstanceActions)
+				tvInstanceActions.text = activity.getString(R.string.instance_actions_for, who_host)
+				
+				// 疑似アカウントではドメインブロックできない
+				// 自ドメインはブロックできない
+				btnDomainBlock.vg(
+					! (access_info.isPseudo || access_info.host.equals(who_host, ignoreCase = true))
+				)
+				
+				btnDomainTimeline.vg(
+					Pref.bpEnableDomainTimeline(activity.pref) &&
+						! access_info.isPseudo &&
+						! access_info.isMisskey
+				)
+			}
 		
 		if(who == null) {
 			btnCopyAccountId.visibility = View.GONE

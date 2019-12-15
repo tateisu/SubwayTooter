@@ -611,7 +611,7 @@ class ColumnViewHolder(
 			
 			btnDeleteNotification.vg(column.isNotificationColumn)
 			
-			if(llSearch.vg(column.isSearchColumn) != null) {
+			llSearch.vg(column.isSearchColumn)?.let{
 				btnSearchClear.vg(Pref.bpShowSearchClear(activity.pref))
 			}
 			

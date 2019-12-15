@@ -367,7 +367,7 @@ class ActAccountSetting
 		btnNotificationStyleEditReply = findViewById(R.id.btnNotificationStyleEditReply)
 		btnNotificationStyleEdit.setOnClickListener(this)
 		btnNotificationStyleEditReply.setOnClickListener(this)
-		vg(btnNotificationStyleEditReply, Pref.bpSeparateReplyNotificationGroup(pref))
+		btnNotificationStyleEditReply.vg(Pref.bpSeparateReplyNotificationGroup(pref))
 		
 		name_invalidator = NetworkEmojiInvalidator(handler, etDisplayName)
 		note_invalidator = NetworkEmojiInvalidator(handler, etNote)
@@ -941,9 +941,9 @@ class ActAccountSetting
 	var profile_busy : Boolean = false
 	
 	internal fun showProfile(src : TootAccount) {
-
-		if( isDestroyed ) return
-
+		
+		if(isDestroyed) return
+		
 		profile_busy = true
 		try {
 			ivProfileAvatar.setImageUrl(
@@ -1000,8 +1000,8 @@ class ActAccountSetting
 			if(src.source?.fields != null) {
 				val fields = src.source.fields
 				listEtFieldName.forEachIndexed { i, et ->
-					val handler =et.handler // may null
-					if( handler != null){
+					val handler = et.handler // may null
+					if(handler != null) {
 						// いつからかfields name にもカスタム絵文字が使えるようになった
 						// https://github.com/tootsuite/mastodon/pull/11350
 						// しかし
@@ -1019,8 +1019,8 @@ class ActAccountSetting
 				}
 				
 				listEtFieldValue.forEachIndexed { i, et ->
-					val handler =et.handler // may null
-					if( handler != null){
+					val handler = et.handler // may null
+					if(handler != null) {
 						val text = decodeOptions.decodeEmoji(
 							when {
 								i >= fields.size -> ""
@@ -1038,8 +1038,8 @@ class ActAccountSetting
 				val fields = src.fields
 				
 				listEtFieldName.forEachIndexed { i, et ->
-					val handler =et.handler // may null
-					if( handler != null){
+					val handler = et.handler // may null
+					if(handler != null) {
 						// いつからかfields name にもカスタム絵文字が使えるようになった
 						// https://github.com/tootsuite/mastodon/pull/11350
 						val text = decodeOptions.decodeEmoji(
@@ -1057,8 +1057,8 @@ class ActAccountSetting
 				}
 				
 				listEtFieldValue.forEachIndexed { i, et ->
-					val handler =et.handler // may null
-					if( handler != null){
+					val handler = et.handler // may null
+					if(handler != null) {
 						val text = decodeOptions.decodeHTML(
 							when {
 								fields == null || i >= fields.size -> ""

@@ -584,41 +584,41 @@ class ColumnViewHolder(
 			etSearch.setText(column.search_query)
 			cbResolve.isCheckedNoAnime = column.search_resolve
 			
-			vg(cbWithAttachment, bAllowFilter)
-			vg(cbWithHighlight, bAllowFilter)
-			vg(etRegexFilter, bAllowFilter)
-			vg(llRegexFilter, bAllowFilter)
-			vg(btnLanguageFilter,bAllowFilter)
+			cbWithAttachment.vg(bAllowFilter)
+			cbWithHighlight.vg(bAllowFilter)
+			etRegexFilter.vg(bAllowFilter)
+			llRegexFilter.vg(bAllowFilter)
+			btnLanguageFilter.vg(bAllowFilter)
 			
-			vg(cbDontShowBoost, column.canFilterBoost())
-			vg(cbDontShowReply, column.canFilterReply())
-			vg(cbDontShowNormalToot, column.canFilterNormalToot())
-			vg(cbDontShowReaction, isNotificationColumn && column.isMisskey)
-			vg(cbDontShowVote, isNotificationColumn)
-			vg(cbDontShowFavourite, isNotificationColumn && ! column.isMisskey)
-			vg(cbDontShowFollow, isNotificationColumn)
+			cbDontShowBoost.vg(column.canFilterBoost())
+			cbDontShowReply.vg(column.canFilterReply())
+			cbDontShowNormalToot.vg(column.canFilterNormalToot())
+			cbDontShowReaction.vg(isNotificationColumn && column.isMisskey)
+			cbDontShowVote.vg(isNotificationColumn)
+			cbDontShowFavourite.vg(isNotificationColumn && ! column.isMisskey)
+			cbDontShowFollow.vg(isNotificationColumn)
 			
-			vg(cbInstanceLocal, column.type == ColumnType.HASHTAG)
-			
-			
-			vg(cbDontStreaming, column.canStreaming())
-			vg(cbDontAutoRefresh, column.canAutoRefresh())
-			vg(cbHideMediaDefault, column.canNSFWDefault())
-			vg(cbSystemNotificationNotRelated, column.isNotificationColumn)
-			vg(cbEnableSpeech, column.canSpeech())
-			vg(cbOldApi, column.type == ColumnType.DIRECT_MESSAGES)
+			cbInstanceLocal.vg(column.type == ColumnType.HASHTAG)
 			
 			
-			vg(btnDeleteNotification, column.isNotificationColumn)
+			cbDontStreaming.vg(column.canStreaming())
+			cbDontAutoRefresh.vg(column.canAutoRefresh())
+			cbHideMediaDefault.vg(column.canNSFWDefault())
+			cbSystemNotificationNotRelated.vg(column.isNotificationColumn)
+			cbEnableSpeech.vg(column.canSpeech())
+			cbOldApi.vg(column.type == ColumnType.DIRECT_MESSAGES)
 			
-			if(vg(llSearch, column.isSearchColumn)) {
-				vg(btnSearchClear, Pref.bpShowSearchClear(activity.pref))
+			
+			btnDeleteNotification.vg(column.isNotificationColumn)
+			
+			if(llSearch.vg(column.isSearchColumn) != null) {
+				btnSearchClear.vg(Pref.bpShowSearchClear(activity.pref))
 			}
 			
-			vg(llListList, column.type == ColumnType.LIST_LIST)
-			vg(cbResolve, column.type == ColumnType.SEARCH)
+			llListList.vg(column.type == ColumnType.LIST_LIST)
+			cbResolve.vg(column.type == ColumnType.SEARCH)
 			
-			vg(llHashtagExtra, column.hasHashtagExtra())
+			llHashtagExtra.vg(column.hasHashtagExtra())
 			etHashtagExtraAny.setText(column.hashtag_any)
 			etHashtagExtraAll.setText(column.hashtag_all)
 			etHashtagExtraNone.setText(column.hashtag_none)
@@ -1033,7 +1033,7 @@ class ColumnViewHolder(
 				ActColumnCustomize.open(activity, idx, ActMain.REQUEST_CODE_COLUMN_COLOR)
 			}
 			
-			btnLanguageFilter ->{
+			btnLanguageFilter -> {
 				val idx = activity.app_state.column_list.indexOf(column)
 				ActLanguageFilter.open(activity, idx, ActMain.REQUEST_CODE_LANGUAGE_FILTER)
 			}
@@ -1459,12 +1459,10 @@ class ColumnViewHolder(
 	private fun showQuickFilter() {
 		val column = this.column ?: return
 		
-		val isNotificationColumn = column.isNotificationColumn
-		vg(svQuickFilter, isNotificationColumn)
-		if(! isNotificationColumn) return
+		svQuickFilter.vg(column.isNotificationColumn) ?: return
 		
-		vg(btnQuickFilterReaction, column.isMisskey)
-		vg(btnQuickFilterFavourite, ! column.isMisskey)
+		btnQuickFilterReaction.vg(column.isMisskey)
+		btnQuickFilterFavourite.vg(! column.isMisskey)
 		
 		val insideColumnSetting = Pref.bpMoveNotificationsQuickFilter(activity.pref)
 		
@@ -1577,7 +1575,7 @@ class ColumnViewHolder(
 				lp.width = matchParent
 				lp.height = matchParent
 				if(lp is ViewGroup.MarginLayoutParams) {
-					lp.setMargins(0,0,0,0)
+					lp.setMargins(0, 0, 0, 0)
 				}
 				layoutParams = lp
 			}
@@ -1884,7 +1882,7 @@ class ColumnViewHolder(
 						isAllCaps = false
 						text = context.getString(R.string.language_filter)
 					}.lparams(matchParent, wrapContent)
-
+					
 				}
 				
 			} // end of column setting scroll view

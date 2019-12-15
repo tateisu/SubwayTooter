@@ -116,7 +116,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	
 	init {
 		this.json = src
-
+		
 		var sv : String?
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
@@ -386,9 +386,9 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	fun setAccountExtra(
 		accessInfo : SavedAccount,
 		tv : TextView,
-		invalidator: NetworkEmojiInvalidator?,
+		invalidator : NetworkEmojiInvalidator?,
 		fromProfileHeader : Boolean = false
-	):SpannableStringBuilder? {
+	) : SpannableStringBuilder? {
 		val pref = App1.pref
 		val context = tv.context
 		
@@ -441,13 +441,13 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			}
 		}
 		
-		if(vg(tv, sb != null)) {
-			tv.text = sb
-			tv.movementMethod = MyLinkMovementMethod
-			invalidator?.register(sb)
-		}else{
-			invalidator?.clear()
-		}
+		tv.vg(sb != null)
+			?.apply {
+				text = sb
+				movementMethod = MyLinkMovementMethod
+				invalidator?.register(sb)
+			}
+			?: invalidator?.clear()
 		
 		return sb
 	}
@@ -496,10 +496,9 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				
 				return "$user@$host"
 			}
-
+			
 			return null
 		}
-		
 		
 		private fun parseSource(src : JSONObject?) : Source? {
 			src ?: return null

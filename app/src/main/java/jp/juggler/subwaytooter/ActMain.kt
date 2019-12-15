@@ -119,7 +119,7 @@ class ActMain : AppCompatActivity()
 	var acct_font_size_sp = Float.NaN
 	var notification_tl_font_size_sp = Float.NaN
 	var header_text_size_sp = Float.NaN
-	var timeline_spacing:Float? = null
+	var timeline_spacing : Float? = null
 	var avatarIconSize : Int = 0
 	var notificationTlIconSize : Int = 0
 	
@@ -190,14 +190,14 @@ class ActMain : AppCompatActivity()
 	val cancel_follow_request_complete_callback : EmptyCallback = {
 		showToast(this@ActMain, false, R.string.follow_request_cancelled)
 	}
-
+	
 	val favourite_complete_callback : EmptyCallback = {
 		showToast(this@ActMain, false, R.string.favourite_succeeded)
 	}
 	val unfavourite_complete_callback : EmptyCallback = {
 		showToast(this@ActMain, false, R.string.unfavourite_succeeded)
 	}
-
+	
 	val bookmark_complete_callback : EmptyCallback = {
 		showToast(this@ActMain, false, R.string.bookmark_succeeded)
 	}
@@ -441,8 +441,8 @@ class ActMain : AppCompatActivity()
 		notification_tl_font_size_sp = Pref.fpNotificationTlFontSize(pref).clipFontSize()
 		header_text_size_sp = Pref.fpHeaderTextSize(pref).clipFontSize()
 		
-		val fv =  Pref.spTimelineSpacing(pref).toFloatOrNull()
-		timeline_spacing = if(fv!=null && fv.isFinite() && fv!=0f) fv else null
+		val fv = Pref.spTimelineSpacing(pref).toFloatOrNull()
+		timeline_spacing = if(fv != null && fv.isFinite() && fv != 0f) fv else null
 		
 		initUI()
 		
@@ -492,7 +492,7 @@ class ActMain : AppCompatActivity()
 	override fun onConfigurationChanged(newConfig : Configuration) {
 		log.d("onConfigurationChanged")
 		super.onConfigurationChanged(newConfig)
-		if(newConfig.screenHeightDp > 0 || newConfig.screenHeightDp >0){
+		if(newConfig.screenHeightDp > 0 || newConfig.screenHeightDp > 0) {
 			tabOnly { env -> resizeColumnWidth(env) }
 		}
 	}
@@ -1019,7 +1019,7 @@ class ActMain : AppCompatActivity()
 				REQUEST_CODE_COLUMN_COLOR -> if(data != null) {
 					app_state.saveColumnList()
 					val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
-					if(idx in app_state.column_list.indices ) {
+					if(idx in app_state.column_list.indices) {
 						app_state.column_list[idx].fireColumnColor()
 						app_state.column_list[idx].fireShowContent(
 							reason = "ActMain column color changed",
@@ -1028,11 +1028,11 @@ class ActMain : AppCompatActivity()
 					}
 					updateColumnStrip()
 				}
-
+				
 				REQUEST_CODE_LANGUAGE_FILTER -> if(data != null) {
 					app_state.saveColumnList()
 					val idx = data.getIntExtra(ActLanguageFilter.EXTRA_COLUMN_INDEX, 0)
-					if(idx in app_state.column_list.indices ) {
+					if(idx in app_state.column_list.indices) {
 						app_state.column_list[idx].onLanguageFilterChanged()
 					}
 				}
@@ -1465,7 +1465,7 @@ class ActMain : AppCompatActivity()
 	)
 	
 	internal fun updateColumnStrip() {
-		vg(llEmpty, app_state.column_list.isEmpty())
+		llEmpty.vg(app_state.column_list.isEmpty())
 		
 		val iconSize = stripIconSize
 		val rootW = (iconSize * 1.25f + 0.5f).toInt()
@@ -1746,7 +1746,7 @@ class ActMain : AppCompatActivity()
 		if(dataIdString != null) {
 			try {
 				val dataId = dataIdString.toLong(10)
-				val type = uri.getQueryParameter("type")?:""
+				val type = uri.getQueryParameter("type") ?: ""
 				val account = SavedAccount.loadAccount(this@ActMain, dataId)
 				if(account != null) {
 					var column = app_state.column_list.firstOrNull {
@@ -1771,7 +1771,7 @@ class ActMain : AppCompatActivity()
 						column.startLoading()
 					}
 					
-					PollingWorker.queueNotificationClicked(this, dataId,type)
+					PollingWorker.queueNotificationClicked(this, dataId, type)
 					
 				}
 			} catch(ex : Throwable) {
@@ -2846,10 +2846,10 @@ class ActMain : AppCompatActivity()
 		if(! timeline_font_size_sp.isNaN()) {
 			tv.textSize = timeline_font_size_sp
 		}
-
+		
 		val fv = timeline_spacing
-		if( fv != null) tv.setLineSpacing(0f,fv)
-
+		if(fv != null) tv.setLineSpacing(0f, fv)
+		
 		tv.typeface = timeline_font
 		tv.text = text
 		tv.measure(

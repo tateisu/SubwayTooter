@@ -59,8 +59,8 @@ object DlgCreateAccount {
 		).neatSpaces()
 		
 		val showReason = instanceInfo?.approval_required ?: false
-		vg(tvReasonCaption, showReason)
-		vg(etReason, showReason)
+		tvReasonCaption.vg(showReason)
+		etReason.vg(showReason)
 		
 		val listener : View.OnClickListener = View.OnClickListener { v ->
 			when(v.id) {

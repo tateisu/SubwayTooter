@@ -304,16 +304,15 @@ internal class DlgContextMenu(
 						addLinkButton(tag, href)
 				}
 			}
-			vg(llLinks, llLinks.childCount > 1)
+			llLinks.vg(llLinks.childCount > 1)
 			
-			vg(btnYourToot, status_by_me)
+			btnYourToot.vg(status_by_me)
 			
 			
 			
-			vg(btnBoostWithVisibility, ! access_info.isPseudo && ! access_info.isMisskey)
+			btnBoostWithVisibility.vg(! access_info.isPseudo && ! access_info.isMisskey)
 			
-			btnReportStatus.visibility =
-				if(status_by_me || access_info.isPseudo) View.GONE else View.VISIBLE
+			btnReportStatus.vg(! (status_by_me || access_info.isPseudo))
 			
 			val application_name = status.application?.name
 			if(status_by_me || application_name == null || application_name.isEmpty()) {
@@ -323,8 +322,8 @@ internal class DlgContextMenu(
 			}
 			
 			val canPin = status.canPin(access_info)
-			vg(btnProfileUnpin, canPin && status.pinned)
-			vg(btnProfilePin, canPin && ! status.pinned)
+			btnProfileUnpin.vg(canPin && status.pinned)
+			btnProfilePin.vg(canPin && ! status.pinned)
 		}
 		
 		val bShowConversationMute = when {
@@ -334,17 +333,20 @@ internal class DlgContextMenu(
 			else -> false
 		}
 		
-		if(vg(btnConversationMute, bShowConversationMute)) {
-			val muted = status?.muted ?: false
-			btnConversationMute.setText(if(muted) R.string.unmute_this_conversation else R.string.mute_this_conversation)
-		}
+		val muted = status?.muted ?: false
+		btnConversationMute.vg(bShowConversationMute)
+			?.setText(
+				if(muted)
+					R.string.unmute_this_conversation
+				else R.string.mute_this_conversation
+			)
 		
-		vg(llNotification, notification != null)
+		llNotification.vg(notification != null)
 		
 		fun showRelation(relation : UserRelation) {
 			// 被フォロー状態
 			// Styler.setFollowIconとは異なり細かい状態を表示しない
-			vg(ivFollowedBy, relation.followed_by)
+			ivFollowedBy.vg(relation.followed_by)
 			
 			// フォロー状態
 			// Styler.setFollowIconとは異なりミュートやブロックを表示しない
@@ -393,7 +395,7 @@ internal class DlgContextMenu(
 			// 疑似アカミュートができたのでアカウントアクションを表示する
 			showRelation(UserRelation())
 			llAccountActionBar.visibility = View.VISIBLE
-			vg(ivFollowedBy, false)
+			ivFollowedBy.vg(false)
 			btnFollow.setImageResource(R.drawable.ic_follow_plus)
 			btnFollow.imageTintList =
 				ColorStateList.valueOf(getAttributeColor(activity, R.attr.colorImageButton))
@@ -405,19 +407,17 @@ internal class DlgContextMenu(
 		
 		val who_host = getUserHost()
 		val llInstance : View = viewRoot.findViewById(R.id.llInstance)
-		if(vg(llInstance, ! (who_host.isEmpty() || who_host == "?"))) {
+		if(llInstance.vg(! (who_host.isEmpty() || who_host == "?")) != null) {
 			val tvInstanceActions : TextView = viewRoot.findViewById(R.id.tvInstanceActions)
 			tvInstanceActions.text = activity.getString(R.string.instance_actions_for, who_host)
 			
 			// 疑似アカウントではドメインブロックできない
 			// 自ドメインはブロックできない
-			vg(
-				btnDomainBlock,
+			btnDomainBlock.vg(
 				! (access_info.isPseudo || access_info.host.equals(who_host, ignoreCase = true))
 			)
 			
-			vg(
-				btnDomainTimeline,
+			btnDomainTimeline.vg(
 				Pref.bpEnableDomainTimeline(activity.pref) &&
 					! access_info.isPseudo &&
 					! access_info.isMisskey
@@ -436,12 +436,10 @@ internal class DlgContextMenu(
 			btnCopyAccountId.visibility = View.VISIBLE
 			btnCopyAccountId.text = activity.getString(R.string.copy_account_id, who.id.toString())
 			
-			vg(btnOpenAccountInAdminWebUi, ! access_info.isPseudo)
-			vg(btnOpenInstanceInAdminWebUi, ! access_info.isPseudo)
+			btnOpenAccountInAdminWebUi.vg(! access_info.isPseudo)
+			btnOpenInstanceInAdminWebUi.vg(! access_info.isPseudo)
 			
-			btnReportUser.visibility =
-				if(access_info.isPseudo || access_info.isMe(who)) View.GONE else View.VISIBLE
-			
+			btnReportUser.vg(! (access_info.isPseudo || access_info.isMe(who)))
 		}
 		
 		viewRoot.findViewById<View>(R.id.btnAccountText).setOnClickListener(this)
@@ -539,17 +537,17 @@ internal class DlgContextMenu(
 	private fun updateGroup(btn : Button, group : View, toggle : Boolean = false) {
 		
 		if(btn.visibility != View.VISIBLE) {
-			vg(group, false)
+			group.vg(false)
 			return
 		}
 		
 		when {
 			Pref.bpAlwaysExpandContextMenuItems(activity.pref) -> {
-				vg(group, true)
+				group.vg(true)
 				btn.background = null
 			}
 			
-			toggle -> vg(group, group.visibility != View.VISIBLE)
+			toggle -> group.vg(group.visibility != View.VISIBLE)
 			else -> btn.setOnClickListener(this)
 		}
 		

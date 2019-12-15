@@ -1394,13 +1394,13 @@ class ActPost : AppCompatActivity(),
 		
 		val account = account
 		if(account == null || account.isPseudo) {
-			vg(btnFeaturedTag, false)
+			btnFeaturedTag.vg(false)
 			return
 		}
 		
 		val cache = featuredTagCache[account.acct]
 		
-		vg(btnFeaturedTag, cache?.list?.isNotEmpty() == true)
+		btnFeaturedTag.vg(cache?.list?.isNotEmpty() == true)
 		
 		val now = SystemClock.elapsedRealtime()
 		if(cache != null && now - cache.time <= 300000L) return
@@ -1611,7 +1611,7 @@ class ActPost : AppCompatActivity(),
 		
 		if(isFinishing) return
 		
-		vg(llAttachment, attachment_list.isNotEmpty())
+		llAttachment.vg(attachment_list.isNotEmpty())
 		ivMedia.forEachIndexed { i, v -> showAttachment_sub(v, i) }
 	}
 	
@@ -3058,10 +3058,10 @@ class ActPost : AppCompatActivity(),
 	
 	private fun showEnquete() {
 		val i = spEnquete.selectedItemPosition
-		vg(llEnquete, i != 0)
-		vg(llExpire, i == 1)
-		vg(cbHideTotals, i == 1)
-		vg(cbMultipleChoice, i == 1)
+		llEnquete.vg(i != 0)
+		llExpire.vg(i == 1)
+		cbHideTotals.vg(i == 1)
+		cbMultipleChoice.vg(i == 1)
 	}
 	
 	private val commitContentListener =

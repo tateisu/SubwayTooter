@@ -163,13 +163,15 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 					?: getAttributeColor(this@ActHighlightWordList, android.R.attr.textColorPrimary)
 			)
 			
-			vg(btnSound, item.sound_type != HighlightWord.SOUND_TYPE_NONE)
-			btnSound.setOnClickListener(this)
-			btnSound.tag = item
+			btnSound.vg(item.sound_type != HighlightWord.SOUND_TYPE_NONE)?.apply{
+				setOnClickListener(this@MyViewHolder)
+				tag = item
+			}
 			
-			vg(ivSpeech,item.speech != 0 )
-			ivSpeech.setOnClickListener(this)
-			ivSpeech.tag = item
+			ivSpeech.vg(item.speech != 0 )?.apply{
+				setOnClickListener(this@MyViewHolder)
+				tag = item
+			}
 		}
 		
 		//		@Override

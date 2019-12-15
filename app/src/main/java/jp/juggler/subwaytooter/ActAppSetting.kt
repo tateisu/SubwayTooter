@@ -163,8 +163,8 @@ class ActAppSetting : AppCompatActivity() {
 		
 		fun bind(item : Item) {
 			tvTitle.setText(item.titleId)
-			vg(tvDesc, item.descId != null)
-			item.descId?.let { tvDesc.setText(it) }
+			val descId = item.descId ?: 0
+			tvDesc.vg(descId != 0)?.setText(descId)
 		}
 	}
 	

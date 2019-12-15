@@ -62,9 +62,9 @@ fun View.showKeyboard() {
 
 // set visibility VISIBLE or GONE
 // return true if visible
-fun vg(v : View, visible : Boolean) : Boolean {
-	v.visibility = if(visible) View.VISIBLE else View.GONE
-	return visible
+fun <T : View> T?.vg(visible : Boolean) : T? {
+	this?.visibility = if(visible) View.VISIBLE else View.GONE
+	return if(visible) this else null
 }
 
 fun ViewGroup.generateLayoutParamsEx() : ViewGroup.LayoutParams? =

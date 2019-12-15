@@ -71,7 +71,7 @@ internal class ViewHolderHeaderProfile(
 		ivBackground = viewRoot.findViewById(R.id.ivBackground)
 		llProfile = viewRoot.findViewById(R.id.llProfile)
 		tvCreated = viewRoot.findViewById(R.id.tvCreated)
-		tvLastStatusAt= viewRoot.findViewById(R.id.tvLastStatusAt)
+		tvLastStatusAt = viewRoot.findViewById(R.id.tvLastStatusAt)
 		ivAvatar = viewRoot.findViewById(R.id.ivAvatar)
 		tvDisplayName = viewRoot.findViewById(R.id.tvDisplayName)
 		tvAcct = viewRoot.findViewById(R.id.tvAcct)
@@ -150,7 +150,7 @@ internal class ViewHolderHeaderProfile(
 		}
 		
 		val spacing = activity.timeline_spacing
-		if( spacing != null) {
+		if(spacing != null) {
 			tvMovedName.setLineSpacing(0f, spacing)
 			tvMoved.setLineSpacing(0f, spacing)
 		}
@@ -200,7 +200,7 @@ internal class ViewHolderHeaderProfile(
 		
 		if(who == null) {
 			tvCreated.text = ""
-			vg(tvLastStatusAt,false)
+			tvLastStatusAt.vg(false)
 			ivBackground.setImageDrawable(null)
 			ivAvatar.setImageDrawable(null)
 			
@@ -223,7 +223,12 @@ internal class ViewHolderHeaderProfile(
 			tvCreated.text =
 				TootStatus.formatTime(tvCreated.context, (whoDetail ?: who).time_created_at, true)
 			
-			who.setAccountExtra(access_info,tvLastStatusAt,invalidator = null,fromProfileHeader = true)
+			who.setAccountExtra(
+				access_info,
+				tvLastStatusAt,
+				invalidator = null,
+				fromProfileHeader = true
+			)
 			
 			ivBackground.setImageUrl(
 				activity.pref,
@@ -266,7 +271,7 @@ internal class ViewHolderHeaderProfile(
 					append(" ")
 					val info = EmojiMap.sShortNameToEmojiInfo["lock"]
 					if(info != null) {
-						appendSpan("locked",info.er.createSpan(activity))
+						appendSpan("locked", info.er.createSpan(activity))
 					} else {
 						append("locked")
 					}
@@ -317,14 +322,17 @@ internal class ViewHolderHeaderProfile(
 					append(s)
 				}
 			}
-			vg(tvMisskeyExtra, tvMisskeyExtra.text.isNotEmpty())
+			tvMisskeyExtra.vg(tvMisskeyExtra.text.isNotEmpty())
 			
-			btnStatusCount.text = activity.getString(R.string.statuses) + "\n" +
-				(whoDetail?.statuses_count ?: who.statuses_count)
-			btnFollowing.text = activity.getString(R.string.following) + "\n" +
-				(whoDetail?.following_count ?: who.following_count)
-			btnFollowers.text = activity.getString(R.string.followers) + "\n" +
-				(whoDetail?.followers_count ?: who.followers_count)
+			btnStatusCount.text =
+				"${activity.getString(R.string.statuses)}\n${whoDetail?.statuses_count
+					?: who.statuses_count}"
+			btnFollowing.text =
+				"${activity.getString(R.string.following)}\n${whoDetail?.following_count
+					?: who.following_count}"
+			btnFollowers.text =
+				"${activity.getString(R.string.followers)}\n${whoDetail?.followers_count
+					?: who.followers_count}"
 			
 			val relation = UserRelation.load(access_info.db_id, who.id)
 			Styler.setFollowIcon(

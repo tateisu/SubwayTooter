@@ -309,7 +309,7 @@ internal class ItemViewHolder(
 		this.follow_invalidator = NetworkEmojiInvalidator(activity.handler, tvFollowerName)
 		this.name_invalidator = NetworkEmojiInvalidator(activity.handler, tvName)
 		this.lastActive_invalidator = NetworkEmojiInvalidator(activity.handler, tvLastStatusAt)
-
+		
 		val cardBackground = llCardOuter.background
 		if(cardBackground is PreviewCardBorder) {
 			val density = activity.density
@@ -1151,8 +1151,7 @@ internal class ItemViewHolder(
 		
 		setAcct(tvFollowerAcct, access_info.getFullAcct(who), who.acct)
 		
-		who.setAccountExtra(access_info,tvLastStatusAt,lastActive_invalidator )
-		
+		who.setAccountExtra(access_info, tvLastStatusAt, lastActive_invalidator)
 		
 		val relation = UserRelation.load(access_info.db_id, who.id)
 		Styler.setFollowIcon(
@@ -1175,14 +1174,16 @@ internal class ItemViewHolder(
 	private fun showStatus(status : TootStatus, colorBg : Int = 0) {
 		
 		val filteredWord = status.filteredWord
-		if(filteredWord != null ) {
-			showMessageHolder(TootMessageHolder(
-				if(Pref.bpShowFilteredWord(activity.pref)){
-					"${activity.getString(R.string.filtered)} / $filteredWord"
-				}else{
-					activity.getString(R.string.filtered)
-				}
-			))
+		if(filteredWord != null) {
+			showMessageHolder(
+				TootMessageHolder(
+					if(Pref.bpShowFilteredWord(activity.pref)) {
+						"${activity.getString(R.string.filtered)} / $filteredWord"
+					} else {
+						activity.getString(R.string.filtered)
+					}
+				)
+			)
 			return
 		}
 		
@@ -1368,26 +1369,11 @@ internal class ItemViewHolder(
 		makeReactionsView(status)
 		
 		buttons_for_status?.bind(status, (item as? TootNotification))
-
-		var sb :StringBuilder? = null
 		
-		fun prepareSb() :StringBuilder{
-			var x = sb
-			if( x == null){
-				x = StringBuilder()
-				sb = x
-			}else{
-				x.append(", ")
-			}
-			return x
-		}
+		var sb : StringBuilder? = null
 		
-		val language = status.language
-		if( language != null &&
-			(column.type == ColumnType.CONVERSATION || Pref.bpShowLanguage(activity.pref))
-		){
-			prepareSb().append(activity.getString(R.string.language_is,language))
-		}
+		fun prepareSb() : StringBuilder =
+			sb?.append(", ") ?: StringBuilder().also { sb = it }
 		
 		val application = status.application
 		if(application != null &&
@@ -1396,13 +1382,14 @@ internal class ItemViewHolder(
 			prepareSb().append(activity.getString(R.string.application_is, application.name ?: ""))
 		}
 		
-		if(sb != null) {
-			tvApplication.visibility = View.VISIBLE
-			tvApplication.text = sb
-		}else{
-			tvApplication.visibility = View.GONE
+		val language = status.language
+		if(language != null &&
+			(column.type == ColumnType.CONVERSATION || Pref.bpShowLanguage(activity.pref))
+		) {
+			prepareSb().append(activity.getString(R.string.language_is, language))
 		}
-
+		
+		tvApplication.vg(sb != null)?.text = sb
 	}
 	
 	private fun showInstanceTicker(who : TootAccount) {

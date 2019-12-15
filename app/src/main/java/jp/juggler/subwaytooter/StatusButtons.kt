@@ -200,8 +200,8 @@ internal class StatusButtons(
 		
 		// ブックマークボタン
 		when {
-			!Pref.bpShowBookmarkButton(activity.pref) -> vg(btnBookmark,false)
-
+			! Pref.bpShowBookmarkButton(activity.pref) -> btnBookmark.vg(false)
+			
 			activity.app_state.isBusyBookmark(access_info, status) -> setButton(
 				btnBookmark,
 				false,
@@ -242,16 +242,16 @@ internal class StatusButtons(
 		var optionalButtonFirst : View? = null
 		var optionalButtonCount = 0
 		
-		fun showCustomShare(target : CustomShareTarget, b : ImageButton) {
+		fun ImageButton.showCustomShare(target : CustomShareTarget) {
 			val (label, icon) = CustomShare.getCache(target)
 				?: error("showCustomShare: invalid target")
 			
-			if(vg(b, label != null || icon != null)) {
-				b.isEnabled = true
-				b.contentDescription = label ?: "?"
-				b.setImageDrawable(
+			vg(label != null || icon != null)?.apply {
+				isEnabled = true
+				contentDescription = label ?: "?"
+				setImageDrawable(
 					icon ?: createColoredDrawable(
-						activity,
+						this@StatusButtons.activity,
 						R.drawable.ic_question,
 						color_normal,
 						Styler.boost_alpha
@@ -259,18 +259,17 @@ internal class StatusButtons(
 				)
 				++ optionalButtonCount
 				if(optionalButtonFirst == null) {
-					optionalButtonFirst = b
+					optionalButtonFirst = this
 				}
 			}
 		}
 		
+		btnTranslate.vg(Pref.bpShowTranslateButton(activity.pref))
+			?.showCustomShare(CustomShareTarget.Translate)
 		
-		if(vg(btnTranslate, Pref.bpShowTranslateButton(activity.pref))) {
-			showCustomShare(CustomShareTarget.Translate, btnTranslate)
-		}
-		showCustomShare(CustomShareTarget.CustomShare1, btnCustomShare1)
-		showCustomShare(CustomShareTarget.CustomShare2, btnCustomShare2)
-		showCustomShare(CustomShareTarget.CustomShare3, btnCustomShare3)
+		btnCustomShare1.showCustomShare(CustomShareTarget.CustomShare1)
+		btnCustomShare2.showCustomShare(CustomShareTarget.CustomShare2)
+		btnCustomShare3.showCustomShare(CustomShareTarget.CustomShare3)
 		
 		val lpConversation = btnConversation.layoutParams as? FlexboxLayout.LayoutParams
 		val updateAdditionalButton : (btn : ImageButton) -> Unit

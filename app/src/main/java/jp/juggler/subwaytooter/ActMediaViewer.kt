@@ -361,7 +361,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	@SuppressLint("StaticFieldLeak")
 	private fun loadVideo(ta : TootAttachment, state : Bundle? = null) {
 		
-		vg(cbMute,true)
+		cbMute.vg(true)
 		if(cbMute.isChecked && lastVolume.isFinite() ) {
 			exoPlayer.volume = 0f
 		}

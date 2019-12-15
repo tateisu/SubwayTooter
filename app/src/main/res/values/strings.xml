@@ -990,4 +990,6 @@
     <string name="language_code_hint">choose preset or input language code</string>
     <string name="language_is">lang: %1$s</string>
     <string name="always_show_language">Always show language</string>
+    <string name="drawable_list" translatable="false">Drawable list</string>
+    <string name="developer_options" translatable="false">Developer options</string>
 </resources>

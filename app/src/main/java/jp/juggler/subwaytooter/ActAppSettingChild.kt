@@ -526,6 +526,7 @@ class ActAppSettingChild : AppCompatActivity()
 			, R.id.btnStatusBarColorReset
 			, R.id.btnNavigationBarColorEdit
 			, R.id.btnNavigationBarColorReset
+		,R.id.btnDrawableList
 		
 		).forEach {
 			findViewById<View>(it)?.setOnClickListener(this)
@@ -1369,6 +1370,8 @@ class ActAppSettingChild : AppCompatActivity()
 			R.id.btnCustomShare1Reset -> setCustomShare(CustomShareTarget.CustomShare1, "")
 			R.id.btnCustomShare2Reset -> setCustomShare(CustomShareTarget.CustomShare2, "")
 			R.id.btnCustomShare3Reset -> setCustomShare(CustomShareTarget.CustomShare3, "")
+			
+			R.id.btnDrawableList -> startActivity(Intent(this,ActDrawableList::class.java))
 		}
 	}
 	

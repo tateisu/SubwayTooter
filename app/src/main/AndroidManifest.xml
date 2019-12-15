@@ -241,6 +241,12 @@
             />
 
         <activity
+            android:name=".ActDrawableList"
+            android:label="@string/drawable_list"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
+            />
+
+        <activity
             android:name=".ActNickname"
             android:label="@string/nickname_and_color_and_notification_sound"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"

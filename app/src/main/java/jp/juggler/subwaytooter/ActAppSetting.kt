@@ -114,6 +114,10 @@ class ActAppSetting : AppCompatActivity() {
 				openChild(it, R.layout.act_app_setting_performance)
 			},
 			
+			Item(R.string.developer_options) {
+				openChild(it, R.layout.act_app_setting_developer)
+			},
+			
 			Item(R.string.app_data_export) {
 				exportAppData()
 			},

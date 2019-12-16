@@ -1293,8 +1293,7 @@ class ActMain : AppCompatActivity()
 		
 		when(Pref.ipJustifyWindowContentPortrait(pref)) {
 			Pref.JWCP_START -> {
-				val iconSize = stripIconSize
-				val iconW = (iconSize * 1.5f + 0.5f).toInt()
+				val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
 				val padding = resources.displayMetrics.widthPixels /2 -iconW
 				
 				fun ViewGroup.addViewBeforeLast(v : View) = addView(v, childCount-1)
@@ -1311,9 +1310,9 @@ class ActMain : AppCompatActivity()
 			}
 			
 			Pref.JWCP_END -> {
-				val iconSize = stripIconSize
-				val iconW = (iconSize * 1.5f + 0.5f).toInt()
-				val padding = resources.displayMetrics.widthPixels /2 -iconW
+				val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
+				val borderWidth = (1f * density + 0.5f).toInt()
+				val padding = resources.displayMetrics.widthPixels /2 -iconW -borderWidth
 				
 				fun ViewGroup.addViewAfterFirst(v : View) = addView(v, 1)
 				(svColumnStrip.parent as LinearLayout).addViewAfterFirst(

@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.util.LogCategory
 import jp.juggler.util.notEmptyOrThrow
 import jp.juggler.util.parseString
 import org.json.JSONObject
@@ -8,6 +9,8 @@ import org.json.JSONObject
 class TootNotification(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	companion object {
+		private val log = LogCategory("TootNotification")
+		
 		// 言及と返信
 		const val TYPE_MENTION = "mention" // Mastodon,Misskey
 		const val TYPE_REPLY = "reply" // Misskey (メンションとReplyは別の物らしい
@@ -23,10 +26,12 @@ class TootNotification(parser : TootParser, src : JSONObject) : TimelineItem() {
 		
 		const val TYPE_FAVOURITE = "favourite"
 		const val TYPE_REACTION = "reaction"
-
+		
+		const val TYPE_FOLLOW_REQUEST = "follow_request"
+		const val TYPE_FOLLOW_REQUEST_MISSKEY = "receiveFollowRequest"
+		
 		// 投票
 		const val TYPE_VOTE = "poll_vote"
-		const val TYPE_FOLLOW_REQUEST = "receiveFollowRequest"
 	
 		// (Mastodon 2.8)投票完了
 		const val TYPE_POLL = "poll"
@@ -71,6 +76,7 @@ class TootNotification(parser : TootParser, src : JSONObject) : TimelineItem() {
 			id = EntityId.mayDefault(src.parseString("id"))
 			
 			type = src.notEmptyOrThrow("type")
+
 			created_at = src.parseString("created_at")
 			time_created_at = TootStatus.parseTime(created_at)
 			accountRef = TootAccountRef.mayNull(parser, parser.account(src.optJSONObject("account")))

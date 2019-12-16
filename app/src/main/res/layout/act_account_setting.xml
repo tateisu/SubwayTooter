@@ -571,6 +571,14 @@
         <LinearLayout style="@style/setting_row_form">
 
             <CheckBox
+                android:id="@+id/cbNotificationFollowRequest"
+                style="@style/setting_horizontal_stretch"
+                android:text="@string/follow_request" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <CheckBox
                 android:id="@+id/cbNotificationReaction"
                 style="@style/setting_horizontal_stretch"
                 android:text="@string/reaction" />

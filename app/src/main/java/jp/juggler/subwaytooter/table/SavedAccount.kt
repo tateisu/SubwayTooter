@@ -46,6 +46,7 @@ class SavedAccount(
 	var notification_boost : Boolean = false
 	var notification_favourite : Boolean = false
 	var notification_follow : Boolean = false
+	var notification_follow_request : Boolean = false
 	var notification_reaction : Boolean = false
 	var notification_vote : Boolean = false
 	var sound_uri = ""
@@ -119,6 +120,7 @@ class SavedAccount(
 		this.notification_boost = cursor.getBoolean(COL_NOTIFICATION_BOOST)
 		this.notification_favourite = cursor.getBoolean(COL_NOTIFICATION_FAVOURITE)
 		this.notification_follow = cursor.getBoolean(COL_NOTIFICATION_FOLLOW)
+		this.notification_follow_request = cursor.getBoolean(COL_NOTIFICATION_FOLLOW_REQUEST)
 		this.notification_reaction = cursor.getBoolean(COL_NOTIFICATION_REACTION)
 		this.notification_vote = cursor.getBoolean(COL_NOTIFICATION_VOTE)
 		
@@ -189,6 +191,7 @@ class SavedAccount(
 		cv.put(COL_NOTIFICATION_BOOST, notification_boost.b2i())
 		cv.put(COL_NOTIFICATION_FAVOURITE, notification_favourite.b2i())
 		cv.put(COL_NOTIFICATION_FOLLOW, notification_follow.b2i())
+		cv.put(COL_NOTIFICATION_FOLLOW_REQUEST, notification_follow_request.b2i())
 		cv.put(COL_NOTIFICATION_REACTION, notification_reaction.b2i())
 		cv.put(COL_NOTIFICATION_VOTE, notification_vote.b2i())
 		
@@ -254,6 +257,7 @@ class SavedAccount(
 		this.notification_boost = b.notification_boost
 		this.notification_favourite = b.notification_favourite
 		this.notification_follow = b.notification_follow
+		this.notification_follow_request = b.notification_follow_request
 		this.notification_reaction = b.notification_reaction
 		this.notification_vote = b.notification_vote
 		this.notification_tag = b.notification_tag
@@ -419,6 +423,10 @@ class SavedAccount(
 		// スキーマ42から
 		private const val COL_LAST_NOTIFICATION_ERROR = "last_notification_error"
 		
+		// スキーマ44から
+		private const val COL_NOTIFICATION_FOLLOW_REQUEST = "notification_follow_request"
+		
+		
 		/////////////////////////////////
 		// login information
 		const val INVALID_DB_ID = - 1L
@@ -495,6 +503,9 @@ class SavedAccount(
 					
 					// スキーマ42から
 					+ ",$COL_LAST_NOTIFICATION_ERROR text"
+					
+					// スキーマ44から
+					+ ",$COL_NOTIFICATION_FOLLOW_REQUEST integer default 1"
 					
 					+ ")"
 			)
@@ -672,6 +683,14 @@ class SavedAccount(
 					log.trace(ex)
 				}
 			}
+			
+			if(oldVersion < 44 && newVersion >= 44) {
+				try {
+					db.execSQL("alter table $table add column $COL_NOTIFICATION_FOLLOW_REQUEST integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+			}
 		}
 		
 		// 横断検索用の、何とも紐ついていないアカウント
@@ -679,6 +698,7 @@ class SavedAccount(
 		val na : SavedAccount by lazy {
 			val dst = SavedAccount(- 1L, "?@?")
 			dst.notification_follow = false
+			dst.notification_follow_request = false
 			dst.notification_favourite = false
 			dst.notification_boost = false
 			dst.notification_mention = false
@@ -997,9 +1017,12 @@ class SavedAccount(
 		
 		TootNotification.TYPE_FAVOURITE -> notification_favourite
 		
-		TootNotification.TYPE_FOLLOW_REQUEST,
+		
 		TootNotification.TYPE_FOLLOW,
 		TootNotification.TYPE_UNFOLLOW -> notification_follow
+		
+		TootNotification.TYPE_FOLLOW_REQUEST,
+		TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY ->notification_follow_request
 		
 		TootNotification.TYPE_REACTION -> notification_reaction
 		

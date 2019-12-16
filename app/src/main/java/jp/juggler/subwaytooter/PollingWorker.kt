@@ -1186,7 +1186,9 @@ class PollingWorker private constructor(contextArg : Context) {
 					when(notification.type) {
 						TootNotification.TYPE_REBLOG,
 						TootNotification.TYPE_FAVOURITE,
-						TootNotification.TYPE_FOLLOW -> {
+						TootNotification.TYPE_FOLLOW,
+						TootNotification.TYPE_FOLLOW_REQUEST,
+						TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> {
 							val who = notification.account
 							if(who != null && favMuteSet.contains(account.getFullAcct(who))) {
 								log.d("${account.getFullAcct(who)} is in favMuteSet.")
@@ -1432,7 +1434,8 @@ class PollingWorker private constructor(contextArg : Context) {
 			TootNotification.TYPE_VOTE ->
 				"- " + context.getString(R.string.display_name_voted_by, name)
 			
-			TootNotification.TYPE_FOLLOW_REQUEST ->
+			TootNotification.TYPE_FOLLOW_REQUEST,
+			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY ->
 				"- " + context.getString(
 					R.string.display_name_follow_request_by,
 					name

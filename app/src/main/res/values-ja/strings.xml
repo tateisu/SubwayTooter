@@ -997,5 +997,6 @@
     <string name="language_is">言語: %1$s</string>
     <string name="always_show_language">常に言語を表示する</string>
     <string name="justify_window_content_portrait">ウィンドウ内容を揃える(縦画面)(アプリ再起動が必要)</string>
+    <string name="follow_request">フォローリクエスト</string>
 
 </resources>

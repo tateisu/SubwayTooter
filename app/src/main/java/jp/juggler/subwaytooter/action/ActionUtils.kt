@@ -70,6 +70,7 @@ internal fun addPseudoAccount(
 			throw RuntimeException("loadAccount returns null.")
 		}
 		account.notification_follow = false
+		account.notification_follow_request = false
 		account.notification_favourite = false
 		account.notification_boost = false
 		account.notification_mention = false

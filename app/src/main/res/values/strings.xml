@@ -993,4 +993,5 @@
     <string name="drawable_list" translatable="false">Drawable list</string>
     <string name="developer_options" translatable="false">Developer options</string>
     <string name="justify_window_content_portrait">Justify window content (Portrait)(app restart required)</string>
+    <string name="follow_request">Follow request</string>
 </resources>

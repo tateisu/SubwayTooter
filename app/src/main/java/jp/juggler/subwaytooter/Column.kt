@@ -555,7 +555,7 @@ class Column(
 			|| dont_show_reply
 			|| dont_show_reaction
 			|| dont_show_vote
-			|| (language_filter?.length()?:0) >0
+			|| (language_filter?.length() ?: 0) > 0
 			)
 	
 	@Volatile
@@ -813,7 +813,7 @@ class Column(
 		dst.put(KEY_REGEX_TEXT, regex_text)
 		
 		val ov = language_filter
-		if( ov != null) dst.put(KEY_LANGUAGE_FILTER,ov)
+		if(ov != null) dst.put(KEY_LANGUAGE_FILTER, ov)
 		
 		dst.put(KEY_HEADER_BACKGROUND_COLOR, header_bg_color)
 		dst.put(KEY_HEADER_TEXT_COLOR, header_fg_color)
@@ -1482,7 +1482,7 @@ class Column(
 		if(column_regex_filter(reblog?.decoded_content)) return true
 		if(column_regex_filter(status.decoded_spoiler_text)) return true
 		if(column_regex_filter(reblog?.decoded_spoiler_text)) return true
-
+		
 		if(checkLanguageFilter(status)) return true
 		
 		if(access_info.isPseudo) {
@@ -1499,14 +1499,16 @@ class Column(
 	
 	// true if the status will be hidden
 	private fun checkLanguageFilter(status : TootStatus?) : Boolean {
-		status?:return false
+		status ?: return false
 		val languageFilter = language_filter ?: return false
 		
-		val allow = languageFilter.parseBoolean(status.language ?: status.reblog?.language  ?:TootStatus.LANGUAGE_CODE_UNKNOWN)
+		val allow = languageFilter.parseBoolean(
+			status.language ?: status.reblog?.language ?: TootStatus.LANGUAGE_CODE_UNKNOWN
+		)
 			?: languageFilter.parseBoolean(TootStatus.LANGUAGE_CODE_DEFAULT)
 			?: true
-
-		return !allow
+		
+		return ! allow
 		
 	}
 	
@@ -1520,8 +1522,10 @@ class Column(
 					TootNotification.TYPE_RENOTE,
 					TootNotification.TYPE_QUOTE -> dont_show_boost
 					
+					TootNotification.TYPE_FOLLOW,
+					TootNotification.TYPE_UNFOLLOW,
 					TootNotification.TYPE_FOLLOW_REQUEST,
-					TootNotification.TYPE_FOLLOW -> dont_show_follow
+					TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> dont_show_follow
 					
 					TootNotification.TYPE_MENTION,
 					TootNotification.TYPE_REPLY -> dont_show_reply
@@ -1538,8 +1542,12 @@ class Column(
 					TootNotification.TYPE_REBLOG,
 					TootNotification.TYPE_RENOTE,
 					TootNotification.TYPE_QUOTE -> quick_filter != QUICK_FILTER_BOOST
+					
+					TootNotification.TYPE_FOLLOW,
+					TootNotification.TYPE_UNFOLLOW,
 					TootNotification.TYPE_FOLLOW_REQUEST,
-					TootNotification.TYPE_FOLLOW -> quick_filter != QUICK_FILTER_FOLLOW
+					TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> quick_filter != QUICK_FILTER_FOLLOW
+					
 					TootNotification.TYPE_MENTION,
 					TootNotification.TYPE_REPLY -> quick_filter != QUICK_FILTER_MENTION
 					TootNotification.TYPE_REACTION -> quick_filter != QUICK_FILTER_REACTION
@@ -1563,8 +1571,8 @@ class Column(
 			// just update _filtered flag for reversible filter
 			status.updateKeywordFilteredFlag(access_info, filterTrees)
 		}
-		if( checkLanguageFilter(status) )return true
-
+		if(checkLanguageFilter(status)) return true
+		
 		if(status?.checkMuted() == true) {
 			log.d("isFiltered: status muted by in-app muted words.")
 			return true
@@ -1578,7 +1586,9 @@ class Column(
 			TootNotification.TYPE_FAVOURITE,
 			TootNotification.TYPE_REACTION,
 			TootNotification.TYPE_VOTE,
-			TootNotification.TYPE_FOLLOW -> {
+			TootNotification.TYPE_FOLLOW ,
+			TootNotification.TYPE_FOLLOW_REQUEST,
+			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> {
 				val who = item.account
 				if(who != null && favMuteSet?.contains(access_info.getFullAcct(who)) == true) {
 					log.d("%s is in favMuteSet.", access_info.getFullAcct(who))
@@ -2231,7 +2241,7 @@ class Column(
 		ColumnType.HOME, ColumnType.LIST_TL, ColumnType.MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
 		ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> TootFilter.CONTEXT_NOTIFICATIONS
 		ColumnType.CONVERSATION -> TootFilter.CONTEXT_THREAD
-		ColumnType.LOCAL,  ColumnType.DOMAIN_TIMELINE, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.HASHTAG_FROM_ACCT, ColumnType.PROFILE, ColumnType.SEARCH -> TootFilter.CONTEXT_PUBLIC
+		ColumnType.LOCAL, ColumnType.DOMAIN_TIMELINE, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.HASHTAG_FROM_ACCT, ColumnType.PROFILE, ColumnType.SEARCH -> TootFilter.CONTEXT_PUBLIC
 		ColumnType.DIRECT_MESSAGES -> TootFilter.CONTEXT_PUBLIC
 		else -> TootFilter.CONTEXT_NONE
 		// ColumnType.MISSKEY_HYBRID はHOMEでもPUBLICでもある… Misskeyだし関係ないが、NONEにするとアプリ内で完結するフィルタも働かなくなる
@@ -3031,7 +3041,6 @@ class Column(
 			getHeaderNameColor()
 		)
 	}
-
 	
 	//	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
 	//		list_data.forEachIndexed { i, v ->

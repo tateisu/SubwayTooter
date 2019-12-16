@@ -930,7 +930,8 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			TootNotification.TYPE_FOLLOW_REQUEST -> {
+			TootNotification.TYPE_FOLLOW_REQUEST,
+			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> {
 				val colorBg = Pref.ipEventBgColorFollowRequest(activity.pref)
 				if(n_account != null) showBoost(
 					n_accountRef,

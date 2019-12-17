@@ -28,17 +28,16 @@ class PushSubscriptionHelper(
 		
 		const val ERROR_PREVENT_FREQUENTLY_CHECK =
 			"prevent frequently subscription check."
-
+		
 		const val ERROR_MISSKEY_LACK_UNSUBSCRIBE_API =
 			"Misskey has no API to unsubscribe or check current subscription status"
 		
-		fun clearLastCheck(account : SavedAccount){
-			synchronized(lastCheckedMap){
+		fun clearLastCheck(account : SavedAccount) {
+			synchronized(lastCheckedMap) {
 				lastCheckedMap.remove(account.acct)
 			}
 		}
 	}
-	
 	
 	private fun preventRapid() : Boolean {
 		if(verbose) return true
@@ -127,340 +126,337 @@ class PushSubscriptionHelper(
 		return TootApiResult()
 	}
 	
-	private fun updateSubscription_sub(client : TootApiClient) : TootApiResult? {
-		try {
-			if(! preventRapid()) return TootApiResult(ERROR_PREVENT_FREQUENTLY_CHECK)
-			
-			// 疑似アカウントの確認
-			if(account.isPseudo) {
-				return TootApiResult(error = context.getString(R.string.pseudo_account_not_supported))
+	private fun updateSubscriptionMisskey(client : TootApiClient) : TootApiResult? {
+		// 現在の購読状態を取得できない
+		// 購読を解除できない
+		if(flags == 0) return TootApiResult(error = ERROR_MISSKEY_LACK_UNSUBSCRIBE_API)
+		
+		// 現在の購読状態を取得できないので、毎回購読の更新を行う
+		// FCMのデバイスIDを取得
+		val device_id = PollingWorker.getDeviceId(context)
+			?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
+		
+		//				// アクセストークン
+		//				val accessToken = account.misskeyApiToken
+		//					?: return TootApiResult(error = "missing misskeyApiToken.")
+		//
+		//				// インストールIDを取得
+		//				val install_id = PollingWorker.prepareInstallId(context)
+		//					?: return TootApiResult(error = context.getString(R.string.missing_install_id))
+		//
+		//				// アクセストークンのダイジェスト
+		//				val tokenDigest = accessToken.digestSHA256Base64Url()
+		//
+		//				// クライアント識別子
+		//				val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
+		//
+		val endpoint =
+			"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags"
+		// FIXME 現時点ではサーバキーの検証を行えないので clientIdentifier を指定しない
+		// "${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags/$clientIdentifier"
+		
+		// 購読
+		return client.request(
+			"/api/sw/register",
+			account.putMisskeyApiToken()
+				.put("endpoint", endpoint)
+				.put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
+				.put(
+					"publickey",
+					"BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
+				)
+				.toPostRequestBuilder()
+		)?.also { result ->
+			if(result.jsonObject == null) {
+				addLog("API error.")
+			} else {
+				subscribed = true
+				
+				// Misskeyのプッシュ購読APIはサーバーキーを返さないので
+				// プッシュ通知を受け取るendpointはそれが正しいサーバからのものなのか
+				// 悪意のある第三者からのものなのか区別できない
+				
+				if(verbose) {
+					addLog(context.getString(R.string.push_subscription_updated))
+				}
+			}
+		}
+	}
+	
+	private fun updateSubscriptionMastodon(client : TootApiClient) : TootApiResult? {
+		// 現在の購読状態を取得
+		// https://github.com/tootsuite/mastodon/pull/7471
+		// https://github.com/tootsuite/mastodon/pull/7472
+		var r = client.request("/api/v1/push/subscription")
+		var res = r?.response ?: return r // cancelled or missing response
+		var subscription404 = false
+		when(res.code) {
+			200 -> {
+				if(r.error?.isNotEmpty() == true && r.jsonObject == null) {
+					// Pleromaが200応用でエラーHTMLを返す
+					return r.setError(
+						"${context.getString(
+							R.string.instance_does_not_support_push_api_pleroma
+						)} : ${r.error}"
+					)
+				}
+				// たぶん購読が存在する
 			}
 			
-			if(account.isMisskey) {
-				
-				// 現在の購読状態を取得できない
-				// 購読を解除できない
-				if(flags == 0) return TootApiResult(error = ERROR_MISSKEY_LACK_UNSUBSCRIBE_API)
-				
-				// 現在の購読状態を取得できないので、毎回購読の更新を行う
-				// FCMのデバイスIDを取得
-				val device_id = PollingWorker.getDeviceId(context)
-					?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
-				
-				//				// アクセストークン
-				//				val accessToken = account.misskeyApiToken
-				//					?: return TootApiResult(error = "missing misskeyApiToken.")
-				//
-				//				// インストールIDを取得
-				//				val install_id = PollingWorker.prepareInstallId(context)
-				//					?: return TootApiResult(error = context.getString(R.string.missing_install_id))
-				//
-				//				// アクセストークンのダイジェスト
-				//				val tokenDigest = accessToken.digestSHA256Base64Url()
-				//
-				//				// クライアント識別子
-				//				val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
-				//
-				val endpoint =
-					"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags"
-				// FIXME 現時点ではサーバキーの検証を行えないので clientIdentifier を指定しない
-				// "${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags/$clientIdentifier"
-				
-				// 購読
-				val params = account.putMisskeyApiToken(JSONObject())
-					.put("endpoint", endpoint)
-					.put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
-					.put(
-						"publickey",
-						"BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
+			404 -> {
+				subscription404 = true
+			}
+			
+			403 -> {
+				// アクセストークンにpushスコープがない
+				return if(verbose) {
+					addLog(context.getString(R.string.missing_push_scope))
+					r
+				} else {
+					if(flags != 0) addLog(context.getString(R.string.missing_push_scope))
+					r
+				}
+			}
+			
+			in 400 until 500 -> {
+				addLog(context.getString(R.string.instance_does_not_support_push_api_pleroma))
+				return r
+			}
+			
+			else -> {
+				addLog("${res.request}")
+				addLog("${res.code} ${res.message}")
+			}
+		}
+		
+		val oldSubscription = parseItem(::TootPushSubscription, r.jsonObject)
+		
+		if(oldSubscription == null) {
+			
+			// 現在の購読状況が分からない場合はインスタンスのバージョンを調べる必要がある
+			val (ti, result) = TootInstance.get(client)
+			ti ?: return result
+			
+			if(! ti.versionGE(TootInstance.VERSION_2_4_0_rc1)) {
+				// 2.4.0rc1 未満にはプッシュ購読APIはない
+				return TootApiResult(
+					error = context.getString(
+						R.string.instance_does_not_support_push_api,
+						ti.version
 					)
-				
-				val result = client.request("/api/sw/register", params.toPostRequestBuilder())
-				if(result?.jsonObject != null) {
-					subscribed = true
+				)
+			}
+			
+			if(subscription404 && flags == 0) {
+				when {
+					ti.versionGE(TootInstance.VERSION_2_4_0_rc2) -> {
+						// 購読が不要で現在の状況が404だった場合
+						// 2.4.0rc2以降では「購読が存在しない」を示すので何もしなくてよい
+						if(verbose) addLog(context.getString(R.string.push_subscription_not_exists))
+						return TootApiResult()
+					}
 					
-					// Misskeyのプッシュ購読APIはサーバーキーを返さないので
-					// プッシュ通知を受け取るendpointはそれが正しいサーバからのものなのか
-					// 悪意のある第三者からのものなのか区別できない
+					else -> {
+						// 2.4.0rc1では「APIが存在しない」と「購読が存在しない」を判別できない
+					}
+				}
+			}
+		}
+		
+		// FCMのデバイスIDを取得
+		val device_id = PollingWorker.getDeviceId(context)
+			?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
+		
+		// アクセストークン
+		val accessToken = account.getAccessToken()
+			?: return TootApiResult(error = "missing access token.")
+		
+		// インストールIDを取得
+		val install_id = PollingWorker.prepareInstallId(context)
+			?: return TootApiResult(error = context.getString(R.string.missing_install_id))
+		
+		// アクセストークンのダイジェスト
+		val tokenDigest = accessToken.digestSHA256Base64Url()
+		
+		// クライアント識別子
+		val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
+		
+		val endpoint =
+			"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags/$clientIdentifier"
+		
+		if(oldSubscription != null) {
+			if(oldSubscription.endpoint == endpoint) {
+				// 既に登録済みで、endpointも一致している
+				subscribed = true
+				if(verbose) addLog(context.getString(R.string.push_subscription_already_exists))
+				return updateServerKey(client, clientIdentifier, oldSubscription.server_key)
+			}
+		}
+		
+		// アクセストークンの優先権を取得
+		r = client.http(
+			JSONObject()
+				.put("token_digest", tokenDigest)
+				.put("install_id", install_id)
+				.toPostRequestBuilder()
+				.url("${PollingWorker.APP_SERVER}/webpushtokencheck")
+				.build()
+		)
+		r ?: return r
+		
+		res = r.response ?: return r
+		if(res.code != 200) {
+			if(res.code == 403) addLog(context.getString(R.string.token_exported))
+			r.caption = "(SubwayTooter App server)"
+			client.readBodyString(r)
+			return r
+		}
+		
+		if(flags == 0) {
+			// 通知設定が全てカラなので、購読を取り消したい
+			
+			r = client.request(
+				"/api/v1/push/subscription",
+				Request.Builder().delete()
+			)
+			res = r?.response ?: return r
+			
+			return when(res.code) {
+				200 -> {
+					if(! verbose) {
+						TootApiResult()
+					} else {
+						addLog(context.getString(R.string.push_subscription_deleted))
+						r
+					}
+				}
+				
+				404 -> {
+					if(! verbose) {
+						TootApiResult()
+					} else {
+						addLog(context.getString(R.string.missing_push_api))
+						r
+					}
+				}
+				
+				403 -> {
+					addLog(context.getString(R.string.missing_push_scope))
+					r
+				}
+				
+				else -> {
+					addLog("${res.request}")
+					addLog("${res.code} ${res.message}")
+					r
+				}
+			}
+			
+		} else {
+			// 通知設定が空ではないので購読を行いたい
+			
+			val json = JSONObject().apply {
+				put("subscription", JSONObject().apply {
+					put("endpoint", endpoint)
+					put("keys", JSONObject().apply {
+						put(
+							"p256dh",
+							"BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
+						)
+						put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
+					})
+				})
+				put("data", JSONObject().apply {
+					put("alerts", JSONObject().apply {
+						put("follow", account.notification_follow)
+						put("favourite", account.notification_favourite)
+						put("reblog", account.notification_boost)
+						put("mention", account.notification_mention)
+						put("poll", account.notification_vote)
+						put("follow_request", account.notification_follow_request)
+					})
+				})
+			}
+			
+			r = client.request(
+				"/api/v1/push/subscription",
+				json.toPostRequestBuilder()
+			)
+			
+			res = r?.response ?: return r
+			
+			return when(res.code) {
+				404 -> {
+					addLog(context.getString(R.string.missing_push_api))
+					r
+				}
+				
+				403 -> {
+					addLog(context.getString(R.string.missing_push_scope))
+					r
+				}
+				
+				200 -> {
+					subscribed = true
 					
 					if(verbose) {
 						addLog(context.getString(R.string.push_subscription_updated))
 					}
-				} else if(result != null) {
-					addLog("subscription API returns error : ${result.error}")
-				}
-				return result
-			} else {
-				
-				// 現在の購読状態を取得
-				// https://github.com/tootsuite/mastodon/pull/7471
-				// https://github.com/tootsuite/mastodon/pull/7472
-				var r = client.request("/api/v1/push/subscription")
-				var res = r?.response ?: return r // cancelled or missing response
-				var subscription404 = false
-				when(res.code) {
-					200 -> {
-						if(r.error?.isNotEmpty() == true && r.jsonObject == null) {
-							// Pleromaが200応用でエラーHTMLを返す
-							return TootApiResult(
-								error = context.getString(
-									R.string.instance_does_not_support_push_api_pleroma
-								)
-							)
-						}
-						
-						// たぶん購読が存在する
-					}
 					
-					404 -> {
-						subscription404 = true
-					}
-					
-					403 -> {
-						// アクセストークンにpushスコープがない
-						return if(verbose) {
-							addLog(context.getString(R.string.missing_push_scope))
-							r
-						} else {
-							if(flags != 0) addLog(context.getString(R.string.missing_push_scope))
-							TootApiResult()
-						}
-					}
-					
-					in 400 until 500 -> {
-						return TootApiResult(
-							error = context.getString(
-								R.string.instance_does_not_support_push_api_pleroma
-							)
+					val newSubscription = parseItem(::TootPushSubscription, r?.jsonObject)
+					if(newSubscription != null) {
+						return updateServerKey(
+							client,
+							clientIdentifier,
+							newSubscription.server_key
 						)
 					}
 					
-					else -> {
-						addLog("${res.request}")
-						addLog("${res.code} ${res.message}")
-					}
+					TootApiResult()
 				}
 				
-				val oldSubscription = parseItem(::TootPushSubscription, r.jsonObject)
-				
-				if(oldSubscription == null) {
-					
-					// 現在の購読状況が分からない場合はインスタンスのバージョンを調べる必要がある
-					val (ti, result) = TootInstance.get(client)
-					ti ?: return result
-					
-					if(! ti.versionGE(TootInstance.VERSION_2_4_0_rc1)) {
-						// 2.4.0rc1 未満にはプッシュ購読APIはない
-						return TootApiResult(
-							error = context.getString(
-								R.string.instance_does_not_support_push_api,
-								ti.version
-							)
-						)
-					}
-					
-					if(subscription404 && flags == 0) {
-						when {
-							ti.versionGE(TootInstance.VERSION_2_4_0_rc2) -> {
-								// 購読が不要で現在の状況が404だった場合
-								// 2.4.0rc2以降では「購読が存在しない」を示すので何もしなくてよい
-								if(verbose) addLog(context.getString(R.string.push_subscription_not_exists))
-								return TootApiResult()
-							}
-							
-							else -> {
-								// 2.4.0rc1では「APIが存在しない」と「購読が存在しない」を判別できない
-							}
-						}
-					}
-				}
-				
-				// FCMのデバイスIDを取得
-				val device_id = PollingWorker.getDeviceId(context)
-					?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
-				
-				// アクセストークン
-				val accessToken = account.getAccessToken()
-					?: return TootApiResult(error = "missing access token.")
-				
-				// インストールIDを取得
-				val install_id = PollingWorker.prepareInstallId(context)
-					?: return TootApiResult(error = context.getString(R.string.missing_install_id))
-				
-				// アクセストークンのダイジェスト
-				val tokenDigest = accessToken.digestSHA256Base64Url()
-				
-				// クライアント識別子
-				val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
-				
-				val endpoint =
-					"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags/$clientIdentifier"
-				
-				if(oldSubscription != null) {
-					if(oldSubscription.endpoint == endpoint) {
-						// 既に登録済みで、endpointも一致している
-						subscribed = true
-						if(verbose) addLog(context.getString(R.string.push_subscription_already_exists))
-						return updateServerKey(client, clientIdentifier, oldSubscription.server_key)
-					}
-				}
-				
-				// アクセストークンの優先権を取得
-				r = client.http(
-					JSONObject()
-						.put("token_digest", tokenDigest)
-						.put("install_id", install_id)
-						.toPostRequestBuilder()
-						.url("${PollingWorker.APP_SERVER}/webpushtokencheck")
-						.build()
-				)
-				
-				res = r?.response ?: return r
-				if(res.code != 200) {
-					return TootApiResult(error = context.getString(R.string.token_exported))
-				}
-				
-				if(flags == 0) {
-					// 通知設定が全てカラなので、購読を取り消したい
-					
-					r = client.request(
-						"/api/v1/push/subscription",
-						Request.Builder().delete()
-					)
-					res = r?.response ?: return r
-					
-					return when(res.code) {
-						200 -> {
-							if(! verbose) {
-								TootApiResult()
-							} else {
-								addLog(context.getString(R.string.push_subscription_deleted))
-								r
-							}
-						}
-						
-						404 -> {
-							if(! verbose) {
-								TootApiResult()
-							} else {
-								addLog(context.getString(R.string.missing_push_api))
-								r
-							}
-						}
-						
-						403 -> {
-							if(! verbose) {
-								TootApiResult()
-							} else {
-								addLog(context.getString(R.string.missing_push_scope))
-								r
-							}
-						}
-						
-						else -> {
-							addLog("${res.request}")
-							addLog("${res.code} ${res.message}")
-							r
-						}
-					}
-					
-				} else {
-					// 通知設定が空ではないので購読を行いたい
-					
-					val json = JSONObject().apply {
-						put("subscription", JSONObject().apply {
-							put("endpoint", endpoint)
-							put("keys", JSONObject().apply {
-								put(
-									"p256dh",
-									"BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
-								)
-								put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
-							})
-						})
-						put("data", JSONObject().apply {
-							put("alerts", JSONObject().apply {
-								put("follow", account.notification_follow)
-								put("favourite", account.notification_favourite)
-								put("reblog", account.notification_boost)
-								put("mention", account.notification_mention)
-								put("poll", account.notification_vote)
-								put("follow_request", account.notification_follow_request)
-							})
-						})
-					}
-					
-					r = client.request(
-						"/api/v1/push/subscription",
-						json.toPostRequestBuilder()
-					)
-					
-					res = r?.response ?: return r
-					
-					return when(res.code) {
-						404 -> {
-							if(! verbose) {
-								TootApiResult()
-							} else {
-								addLog(context.getString(R.string.missing_push_api))
-								r
-							}
-						}
-						
-						403 -> {
-							if(! verbose) {
-								TootApiResult()
-							} else {
-								addLog(context.getString(R.string.missing_push_scope))
-								r
-							}
-						}
-						
-						200 -> {
-							subscribed = true
-							
-							if(verbose) {
-								addLog(context.getString(R.string.push_subscription_updated))
-							}
-							
-							val newSubscription = parseItem(::TootPushSubscription, r?.jsonObject)
-							if(newSubscription != null) {
-								return updateServerKey(
-									client,
-									clientIdentifier,
-									newSubscription.server_key
-								)
-							}
-							
-							TootApiResult()
-						}
-						
-						else -> {
-							addLog(r?.jsonObject?.toString())
-							r
-						}
-					}
+				else -> {
+					addLog(r?.jsonObject?.toString())
+					r
 				}
 			}
-		} catch(ex : Throwable) {
-			return TootApiResult(error = ex.withCaption("error."))
 		}
+		
 	}
+	
+	private fun updateSubscription_sub(client : TootApiClient) : TootApiResult? =
+		try {
+			when {
+				! preventRapid() ->
+					TootApiResult(ERROR_PREVENT_FREQUENTLY_CHECK)
+				
+				account.isPseudo ->
+					TootApiResult(context.getString(R.string.pseudo_account_not_supported))
+				
+				account.isMisskey ->
+					updateSubscriptionMisskey(client)
+				
+				else ->
+					updateSubscriptionMastodon(client)
+			}
+		} catch(ex : Throwable) {
+			TootApiResult(ex.withCaption("error."))
+		}
 	
 	fun updateSubscription(client : TootApiClient) : TootApiResult? =
 		updateSubscription_sub(client)?.apply {
-			error?.let { addLog(it) }
+			if(error != null) addLog("$error $requestInfo".trimEnd())
 			
-			val wps_log = log
+			val log = log
 			when {
-				wps_log.contains(ERROR_PREVENT_FREQUENTLY_CHECK) -> {
+				log.contains(ERROR_PREVENT_FREQUENTLY_CHECK) -> {
 					// don't update error info.
 				}
 				
-				subscribed || wps_log.isEmpty() ->
+				subscribed || log.isEmpty() ->
 					account.updateSubscriptionError(null)
 				
-				else -> account.updateSubscriptionError(wps_log)
+				else -> account.updateSubscriptionError(log)
 			}
 		}
 }

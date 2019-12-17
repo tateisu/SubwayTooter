@@ -153,6 +153,12 @@ object AccountPicker {
 				sb.append(a.last_notification_error)
 				val end = sb.length
 				sb.setSpan(RelativeSizeSpan(0.7f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+			}else if(a.last_subscription_error?.isNotEmpty() == true) {
+				sb.append("\n")
+				val start = sb.length
+				sb.append(a.last_subscription_error)
+				val end = sb.length
+				sb.setSpan(RelativeSizeSpan(0.7f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 			}
 			b.text = sb
 			

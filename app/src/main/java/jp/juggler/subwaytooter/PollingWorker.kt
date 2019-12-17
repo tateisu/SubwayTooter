@@ -1043,9 +1043,10 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					wps.updateSubscription(client)
 					val wps_log = wps.log
-					if(wps_log.isNotEmpty()) {
+					if(wps_log.isNotEmpty())
 						log.d("PushSubscriptionHelper: ${account.acct} $wps_log")
-					}
+					
+					
 					
 					if(job.isJobCancelled) return
 					

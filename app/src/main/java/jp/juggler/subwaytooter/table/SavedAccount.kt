@@ -67,6 +67,7 @@ class SavedAccount(
 	var max_toot_chars = 0
 	
 	var last_notification_error : String? = null
+	var last_subscription_error : String? = null
 	
 	init {
 		val pos = acct.indexOf('@')
@@ -94,7 +95,8 @@ class SavedAccount(
 	) {
 		val strAccount = cursor.getString(COL_ACCOUNT)
 		val jsonAccount = strAccount.toJsonObject()
-		this.loginAccount = if(jsonAccount.opt("id") == null) {
+		
+		loginAccount = if(jsonAccount.opt("id") == null) {
 			null // 疑似アカウント
 		} else {
 			TootParser(
@@ -105,45 +107,46 @@ class SavedAccount(
 		}
 		
 		val sv = cursor.getStringOrNull(COL_VISIBILITY)
-		this.visibility = TootVisibility.parseSavedVisibility(sv) ?: TootVisibility.Public
+		visibility = TootVisibility.parseSavedVisibility(sv) ?: TootVisibility.Public
 		
-		this.confirm_boost = cursor.getBoolean(COL_CONFIRM_BOOST)
-		this.confirm_favourite = cursor.getBoolean(COL_CONFIRM_FAVOURITE)
-		this.confirm_unboost = cursor.getBoolean(COL_CONFIRM_UNBOOST)
-		this.confirm_unfavourite = cursor.getBoolean(COL_CONFIRM_UNFAVOURITE)
-		this.confirm_follow = cursor.getBoolean(COL_CONFIRM_FOLLOW)
-		this.confirm_follow_locked = cursor.getBoolean(COL_CONFIRM_FOLLOW_LOCKED)
-		this.confirm_unfollow = cursor.getBoolean(COL_CONFIRM_UNFOLLOW)
-		this.confirm_post = cursor.getBoolean(COL_CONFIRM_POST)
+		confirm_boost = cursor.getBoolean(COL_CONFIRM_BOOST)
+		confirm_favourite = cursor.getBoolean(COL_CONFIRM_FAVOURITE)
+		confirm_unboost = cursor.getBoolean(COL_CONFIRM_UNBOOST)
+		confirm_unfavourite = cursor.getBoolean(COL_CONFIRM_UNFAVOURITE)
+		confirm_follow = cursor.getBoolean(COL_CONFIRM_FOLLOW)
+		confirm_follow_locked = cursor.getBoolean(COL_CONFIRM_FOLLOW_LOCKED)
+		confirm_unfollow = cursor.getBoolean(COL_CONFIRM_UNFOLLOW)
+		confirm_post = cursor.getBoolean(COL_CONFIRM_POST)
 		
-		this.notification_mention = cursor.getBoolean(COL_NOTIFICATION_MENTION)
-		this.notification_boost = cursor.getBoolean(COL_NOTIFICATION_BOOST)
-		this.notification_favourite = cursor.getBoolean(COL_NOTIFICATION_FAVOURITE)
-		this.notification_follow = cursor.getBoolean(COL_NOTIFICATION_FOLLOW)
-		this.notification_follow_request = cursor.getBoolean(COL_NOTIFICATION_FOLLOW_REQUEST)
-		this.notification_reaction = cursor.getBoolean(COL_NOTIFICATION_REACTION)
-		this.notification_vote = cursor.getBoolean(COL_NOTIFICATION_VOTE)
+		notification_mention = cursor.getBoolean(COL_NOTIFICATION_MENTION)
+		notification_boost = cursor.getBoolean(COL_NOTIFICATION_BOOST)
+		notification_favourite = cursor.getBoolean(COL_NOTIFICATION_FAVOURITE)
+		notification_follow = cursor.getBoolean(COL_NOTIFICATION_FOLLOW)
+		notification_follow_request = cursor.getBoolean(COL_NOTIFICATION_FOLLOW_REQUEST)
+		notification_reaction = cursor.getBoolean(COL_NOTIFICATION_REACTION)
+		notification_vote = cursor.getBoolean(COL_NOTIFICATION_VOTE)
 		
-		this.dont_hide_nsfw = cursor.getBoolean(COL_DONT_HIDE_NSFW)
-		this.dont_show_timeout = cursor.getBoolean(COL_DONT_SHOW_TIMEOUT)
+		dont_hide_nsfw = cursor.getBoolean(COL_DONT_HIDE_NSFW)
+		dont_show_timeout = cursor.getBoolean(COL_DONT_SHOW_TIMEOUT)
 		
-		this.notification_tag = cursor.getStringOrNull(COL_NOTIFICATION_TAG)
+		notification_tag = cursor.getStringOrNull(COL_NOTIFICATION_TAG)
 		
-		this.register_key = cursor.getStringOrNull(COL_REGISTER_KEY)
+		register_key = cursor.getStringOrNull(COL_REGISTER_KEY)
 		
-		this.register_time = cursor.getLong(COL_REGISTER_TIME)
+		register_time = cursor.getLong(COL_REGISTER_TIME)
 		
-		this.token_info = cursor.getString(COL_TOKEN).toJsonObject()
+		token_info = cursor.getString(COL_TOKEN).toJsonObject()
 		
-		this.sound_uri = cursor.getString(COL_SOUND_URI)
+		sound_uri = cursor.getString(COL_SOUND_URI)
 		
-		this.default_text = cursor.getStringOrNull(COL_DEFAULT_TEXT) ?: ""
+		default_text = cursor.getStringOrNull(COL_DEFAULT_TEXT) ?: ""
 		
-		this.default_sensitive = cursor.getBoolean(COL_DEFAULT_SENSITIVE)
-		this.expand_cw = cursor.getBoolean(COL_EXPAND_CW)
-		this.max_toot_chars = cursor.getInt(COL_MAX_TOOT_CHARS)
+		default_sensitive = cursor.getBoolean(COL_DEFAULT_SENSITIVE)
+		expand_cw = cursor.getBoolean(COL_EXPAND_CW)
+		max_toot_chars = cursor.getInt(COL_MAX_TOOT_CHARS)
 		
-		this.last_notification_error = cursor.getStringOrNull(COL_LAST_NOTIFICATION_ERROR)
+		last_notification_error = cursor.getStringOrNull(COL_LAST_NOTIFICATION_ERROR)
+		last_subscription_error = cursor.getStringOrNull(COL_LAST_SUBSCRIPTION_ERROR)
 	}
 	
 	val isNA : Boolean
@@ -372,16 +375,22 @@ class SavedAccount(
 		private const val COL_VISIBILITY = "visibility"
 		private const val COL_CONFIRM_BOOST = "confirm_boost"
 		private const val COL_DONT_HIDE_NSFW = "dont_hide_nsfw"
-		// スキーマ2から
-		private const val COL_NOTIFICATION_MENTION = "notification_mention"
-		private const val COL_NOTIFICATION_BOOST = "notification_boost"
-		private const val COL_NOTIFICATION_FAVOURITE = "notification_favourite"
-		private const val COL_NOTIFICATION_FOLLOW = "notification_follow"
-		// スキーマ10から
-		private const val COL_CONFIRM_FOLLOW = "confirm_follow"
-		private const val COL_CONFIRM_FOLLOW_LOCKED = "confirm_follow_locked"
-		private const val COL_CONFIRM_UNFOLLOW = "confirm_unfollow"
-		private const val COL_CONFIRM_POST = "confirm_post"
+		
+		private const val COL_NOTIFICATION_MENTION = "notification_mention" // スキーマ2
+		private const val COL_NOTIFICATION_BOOST = "notification_boost" // スキーマ2
+		private const val COL_NOTIFICATION_FAVOURITE = "notification_favourite" // スキーマ2
+		private const val COL_NOTIFICATION_FOLLOW = "notification_follow" // スキーマ2
+		private const val COL_NOTIFICATION_FOLLOW_REQUEST = "notification_follow_request" // スキーマ44
+		private const val COL_NOTIFICATION_REACTION = "notification_reaction" // スキーマ33
+		private const val COL_NOTIFICATION_VOTE = "notification_vote" // スキーマ33
+		
+		private const val COL_CONFIRM_FOLLOW = "confirm_follow" // スキーマ10
+		private const val COL_CONFIRM_FOLLOW_LOCKED = "confirm_follow_locked" // スキーマ10
+		private const val COL_CONFIRM_UNFOLLOW = "confirm_unfollow" // スキーマ10
+		private const val COL_CONFIRM_POST = "confirm_post" // スキーマ10
+		private const val COL_CONFIRM_FAVOURITE = "confirm_favourite" // スキーマ23
+		private const val COL_CONFIRM_UNBOOST = "confirm_unboost" // スキーマ24
+		private const val COL_CONFIRM_UNFAVOURITE = "confirm_unfavourite" // スキーマ24
 		
 		// スキーマ13から
 		const val COL_NOTIFICATION_TAG = "notification_server"
@@ -396,13 +405,6 @@ class SavedAccount(
 		// スキーマ18から
 		private const val COL_DONT_SHOW_TIMEOUT = "dont_show_timeout"
 		
-		// スキーマ23から
-		private const val COL_CONFIRM_FAVOURITE = "confirm_favourite"
-		
-		// スキーマ24から
-		private const val COL_CONFIRM_UNBOOST = "confirm_unboost"
-		private const val COL_CONFIRM_UNFAVOURITE = "confirm_unfavourite"
-		
 		// スキーマ27から
 		private const val COL_DEFAULT_TEXT = "default_text"
 		
@@ -412,20 +414,12 @@ class SavedAccount(
 		// 1: old(v10) misskey
 		// 11: misskey v11
 		
-		// スキーマ33から
-		private const val COL_NOTIFICATION_REACTION = "notification_reaction"
-		private const val COL_NOTIFICATION_VOTE = "notification_vote"
-		
 		private const val COL_DEFAULT_SENSITIVE = "default_sensitive"
 		private const val COL_EXPAND_CW = "expand_cw"
 		private const val COL_MAX_TOOT_CHARS = "max_toot_chars"
 		
-		// スキーマ42から
-		private const val COL_LAST_NOTIFICATION_ERROR = "last_notification_error"
-		
-		// スキーマ44から
-		private const val COL_NOTIFICATION_FOLLOW_REQUEST = "notification_follow_request"
-		
+		private const val COL_LAST_NOTIFICATION_ERROR = "last_notification_error" // スキーマ42
+		private const val COL_LAST_SUBSCRIPTION_ERROR = "last_subscription_error" // スキーマ45
 		
 		/////////////////////////////////
 		// login information
@@ -506,6 +500,9 @@ class SavedAccount(
 					
 					// スキーマ44から
 					+ ",$COL_NOTIFICATION_FOLLOW_REQUEST integer default 1"
+					
+					// スキーマ45から
+					+ ",$COL_LAST_SUBSCRIPTION_ERROR text"
 					
 					+ ")"
 			)
@@ -691,6 +688,15 @@ class SavedAccount(
 					log.trace(ex)
 				}
 			}
+			
+			if(oldVersion < 45 && newVersion >= 45) {
+				try {
+					db.execSQL("alter table $table add column $COL_LAST_SUBSCRIPTION_ERROR text")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+			}
+			
 		}
 		
 		// 横断検索用の、何とも紐ついていないアカウント
@@ -1017,12 +1023,11 @@ class SavedAccount(
 		
 		TootNotification.TYPE_FAVOURITE -> notification_favourite
 		
-		
 		TootNotification.TYPE_FOLLOW,
 		TootNotification.TYPE_UNFOLLOW -> notification_follow
 		
 		TootNotification.TYPE_FOLLOW_REQUEST,
-		TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY ->notification_follow_request
+		TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> notification_follow_request
 		
 		TootNotification.TYPE_REACTION -> notification_reaction
 		
@@ -1062,13 +1067,25 @@ class SavedAccount(
 		}
 	}
 	
-	fun updateNotificationError(text:String?) {
+	fun updateNotificationError(text : String?) {
 		if(db_id == INVALID_DB_ID) throw RuntimeException("saveSetting: missing db_id")
 		
 		val cv = ContentValues()
-		when(text){
+		when(text) {
 			null -> cv.putNull(COL_LAST_NOTIFICATION_ERROR)
 			else -> cv.put(COL_LAST_NOTIFICATION_ERROR, text)
+		}
+		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+	}
+	
+	
+	fun updateSubscriptionError(text : String?) {
+		if(db_id == INVALID_DB_ID) throw RuntimeException("saveSetting: missing db_id")
+		
+		val cv = ContentValues()
+		when(text) {
+			null -> cv.putNull(COL_LAST_SUBSCRIPTION_ERROR)
+			else -> cv.put(COL_LAST_SUBSCRIPTION_ERROR, text)
 		}
 		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 	}

@@ -25,6 +25,11 @@ class PushSubscriptionHelper(
 	
 	companion object {
 		private val lastCheckedMap : HashMap<String, Long> = HashMap()
+		
+		const val ERROR_SUBSCRIPTION_NOT_NEED =
+			"Push subscription is not needed. we can't do check current subscription state, and unsubscribe it."
+		const val ERROR_PREVENT_FREQUENTLY_CHECK = "prevent frequently subscription check."
+		
 	}
 	
 	private fun preventRapid() : Boolean {
@@ -73,9 +78,9 @@ class PushSubscriptionHelper(
 	) : TootApiResult? {
 		
 		if(serverKey == null) {
-			return TootApiResult(error = "!! Server public key is missing. There is server misconfiguration , push notification will not work.")
+			return TootApiResult(error = context.getString(R.string.push_notification_server_key_missing))
 		} else if(serverKey.isEmpty()) {
-			return TootApiResult(error = "!! Server public key is empty. There is server misconfiguration, push notification will not work.")
+			return TootApiResult(error = context.getString(R.string.push_notification_server_key_empty))
 		}
 		
 		// 既に登録済みの値と同じなら何もしない
@@ -116,7 +121,7 @@ class PushSubscriptionHelper(
 	
 	private fun updateSubscription_sub(client : TootApiClient) : TootApiResult? {
 		try {
-			if(! preventRapid()) return TootApiResult("updateSubscription: prevent frequently subscription check.")
+			if(! preventRapid()) return TootApiResult(ERROR_PREVENT_FREQUENTLY_CHECK)
 			
 			// 疑似アカウントの確認
 			if(account.isPseudo) {
@@ -124,14 +129,12 @@ class PushSubscriptionHelper(
 			}
 			
 			if(account.isMisskey) {
-				if(flags == 0) {
-					// 現在の購読状態を取得できない
-					// 購読を解除できない
-					return TootApiResult("Push subscription is not needed. we can't do check current subscription state, and unsubscribe it.")
-				}
+				
+				// 現在の購読状態を取得できない
+				// 購読を解除できない
+				if(flags == 0) return TootApiResult(error = ERROR_SUBSCRIPTION_NOT_NEED)
 				
 				// 現在の購読状態を取得できないので、毎回購読の更新を行う
-				
 				// FCMのデバイスIDを取得
 				val device_id = PollingWorker.getDeviceId(context)
 					?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
@@ -374,7 +377,7 @@ class PushSubscriptionHelper(
 								put("reblog", account.notification_boost)
 								put("mention", account.notification_mention)
 								put("poll", account.notification_vote)
-								put( "follow_request",account.notification_follow_request)
+								put("follow_request", account.notification_follow_request)
 							})
 						})
 					}
@@ -436,11 +439,22 @@ class PushSubscriptionHelper(
 		}
 	}
 	
-	fun updateSubscription(client : TootApiClient) : TootApiResult? {
-		
-		val result = updateSubscription_sub(client)
-		val e = result?.error
-		if(e != null) addLog(e)
-		return result
-	}
+	fun updateSubscription(client : TootApiClient) : TootApiResult? =
+		updateSubscription_sub(client)?.apply {
+			error?.let { addLog(it) }
+			
+			val wps_log = log
+			when {
+				wps_log.contains(ERROR_PREVENT_FREQUENTLY_CHECK) -> {
+					// don't update error info.
+				}
+				
+				subscribed ||
+					wps_log.isEmpty() ||
+					wps_log.contains(ERROR_SUBSCRIPTION_NOT_NEED) ->
+					account.updateSubscriptionError(null)
+				
+				else -> account.updateSubscriptionError(wps_log)
+			}
+		}
 }

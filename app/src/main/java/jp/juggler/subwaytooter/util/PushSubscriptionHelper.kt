@@ -30,7 +30,13 @@ class PushSubscriptionHelper(
 			"Push subscription is not needed. we can't do check current subscription state, and unsubscribe it."
 		const val ERROR_PREVENT_FREQUENTLY_CHECK = "prevent frequently subscription check."
 		
+		fun clearLastCheck(account : SavedAccount){
+			synchronized(lastCheckedMap){
+				lastCheckedMap.remove(account.acct)
+			}
+		}
 	}
+	
 	
 	private fun preventRapid() : Boolean {
 		if(verbose) return true

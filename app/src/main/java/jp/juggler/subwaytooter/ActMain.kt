@@ -35,10 +35,7 @@ import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.ChromeTabOpener
-import jp.juggler.subwaytooter.util.EmptyCallback
-import jp.juggler.subwaytooter.util.LinkHelper
-import jp.juggler.subwaytooter.util.PostHelper
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
@@ -2005,6 +2002,7 @@ class ActMain : AppCompatActivity()
 					}
 					
 					// 通知の更新が必要かもしれない
+					PushSubscriptionHelper.clearLastCheck(sa)
 					PollingWorker.queueUpdateNotification(this@ActMain)
 					return true
 				}

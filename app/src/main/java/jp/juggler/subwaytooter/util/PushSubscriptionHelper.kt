@@ -26,9 +26,11 @@ class PushSubscriptionHelper(
 	companion object {
 		private val lastCheckedMap : HashMap<String, Long> = HashMap()
 		
-		const val ERROR_SUBSCRIPTION_NOT_NEED =
-			"Push subscription is not needed. we can't do check current subscription state, and unsubscribe it."
-		const val ERROR_PREVENT_FREQUENTLY_CHECK = "prevent frequently subscription check."
+		const val ERROR_PREVENT_FREQUENTLY_CHECK =
+			"prevent frequently subscription check."
+
+		const val ERROR_MISSKEY_LACK_UNSUBSCRIBE_API =
+			"Misskey has no API to unsubscribe or check current subscription status"
 		
 		fun clearLastCheck(account : SavedAccount){
 			synchronized(lastCheckedMap){
@@ -138,7 +140,7 @@ class PushSubscriptionHelper(
 				
 				// 現在の購読状態を取得できない
 				// 購読を解除できない
-				if(flags == 0) return TootApiResult(error = ERROR_SUBSCRIPTION_NOT_NEED)
+				if(flags == 0) return TootApiResult(error = ERROR_MISSKEY_LACK_UNSUBSCRIBE_API)
 				
 				// 現在の購読状態を取得できないので、毎回購読の更新を行う
 				// FCMのデバイスIDを取得
@@ -455,9 +457,7 @@ class PushSubscriptionHelper(
 					// don't update error info.
 				}
 				
-				subscribed ||
-					wps_log.isEmpty() ||
-					wps_log.contains(ERROR_SUBSCRIPTION_NOT_NEED) ->
+				subscribed || wps_log.isEmpty() ->
 					account.updateSubscriptionError(null)
 				
 				else -> account.updateSubscriptionError(wps_log)

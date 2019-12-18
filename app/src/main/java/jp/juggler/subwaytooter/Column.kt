@@ -1744,13 +1744,16 @@ class Column(
 						}
 						if(userIdList.isEmpty()) continue
 						
-						val params = access_info.putMisskeyApiToken()
-							.put("userId", JSONArray().apply {
-								for(id in userIdList) put(id.toString())
-							})
-						
-						val result =
-							client.request("/api/users/relation", params.toPostRequestBuilder())
+						val result = client.request(
+							"/api/users/relation",
+							access_info.putMisskeyApiToken()
+							.put(
+								"userId",
+								JSONArray().apply {
+									for(id in userIdList) put(id.toString())
+								}
+							).toPostRequestBuilder()
+						)
 						
 						if(result == null || result.response?.code in 400 until 500) break
 						

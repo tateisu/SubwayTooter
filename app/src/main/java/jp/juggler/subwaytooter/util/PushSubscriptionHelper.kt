@@ -10,10 +10,7 @@ import jp.juggler.subwaytooter.api.entity.TootPushSubscription
 import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.SubscriptionServerKey
-import jp.juggler.util.digestSHA256Base64Url
-import jp.juggler.util.encodePercent
-import jp.juggler.util.toPostRequestBuilder
-import jp.juggler.util.withCaption
+import jp.juggler.util.*
 import okhttp3.Request
 import org.json.JSONObject
 
@@ -24,28 +21,30 @@ class PushSubscriptionHelper(
 ) {
 	
 	companion object {
-		private val lastCheckedMap : HashMap<String, Long> = HashMap()
-		
 		private const val ERROR_PREVENT_FREQUENTLY_CHECK =
 			"prevent frequently subscription check."
 		
-		private const val ERROR_MISSKEY_LACK_UNSUBSCRIBE_API =
-			"Misskey has no API to unsubscribe or check current subscription status"
+		private val lastCheckedMap : HashMap<String, Long> = HashMap()
 		
 		fun clearLastCheck(account : SavedAccount) {
 			synchronized(lastCheckedMap) {
 				lastCheckedMap.remove(account.acct)
 			}
 		}
+		
+		private fun Boolean.booleanToInt(trueValue : Int, falseValue : Int = 0) =
+			if(this) trueValue else falseValue
 	}
 	
-	private fun preventRapid() : Boolean {
-		if(verbose) return true
+	private fun isRecentlyChecked() : Boolean {
+		if(verbose) return false
 		val now = System.currentTimeMillis()
+		val acct = account.acct
 		synchronized(lastCheckedMap) {
-			val lastChecked = lastCheckedMap[account.acct]
-			lastCheckedMap[account.acct] = now
-			return (lastChecked == null || now - lastChecked >= 600000L)
+			val lastChecked = lastCheckedMap[acct]
+			val rv = lastChecked != null && now - lastChecked < 3600000L
+			if(! rv) lastCheckedMap[acct] = now
+			return rv
 		}
 	}
 	
@@ -54,15 +53,13 @@ class PushSubscriptionHelper(
 	private var subscribed : Boolean = false
 	
 	init {
-		var n = 0
-		if(account.notification_boost) n += 1
-		if(account.notification_favourite) n += 2
-		if(account.notification_follow) n += 4
-		if(account.notification_mention) n += 8
-		if(account.isMisskey && account.notification_reaction) n += 16
-		if(account.notification_vote) n += 32
-		if(account.notification_follow_request) n += 64
-		this.flags = n
+		this.flags = account.notification_boost.booleanToInt(1) +
+			account.notification_favourite.booleanToInt(2) +
+			account.notification_follow.booleanToInt(4) +
+			account.notification_mention.booleanToInt(8) +
+			(account.isMisskey && account.notification_reaction).booleanToInt(16) +
+			account.notification_vote.booleanToInt(32) +
+			account.notification_follow_request.booleanToInt(64)
 	}
 	
 	val log : String
@@ -77,7 +74,6 @@ class PushSubscriptionHelper(
 		}
 	}
 	
-	// returns error string or null
 	private fun updateServerKey(
 		client : TootApiClient,
 		clientIdentifier : String,
@@ -85,9 +81,9 @@ class PushSubscriptionHelper(
 	) : TootApiResult? {
 		
 		if(serverKey == null) {
-			return TootApiResult(error = context.getString(R.string.push_notification_server_key_missing))
+			return TootApiResult(context.getString(R.string.push_notification_server_key_missing))
 		} else if(serverKey.isEmpty()) {
-			return TootApiResult(error = context.getString(R.string.push_notification_server_key_empty))
+			return TootApiResult(context.getString(R.string.push_notification_server_key_empty))
 		}
 		
 		// 既に登録済みの値と同じなら何もしない
@@ -108,7 +104,6 @@ class PushSubscriptionHelper(
 			when(res?.code) {
 				
 				null -> {
-				
 				}
 				
 				200 -> {
@@ -127,33 +122,42 @@ class PushSubscriptionHelper(
 	}
 	
 	private fun updateSubscriptionMisskey(client : TootApiClient) : TootApiResult? {
-		// 現在の購読状態を取得できない
-		// 購読を解除できない
-		if(flags == 0) return TootApiResult(error = ERROR_MISSKEY_LACK_UNSUBSCRIBE_API)
+		// 購読が不要な場合、MisskeyのAPIの不足により出来ることは何もない
+		if(flags == 0) return TootApiResult(
+			"Misskey has no API to unsubscribe or check current subscription status"
+		)
+		
+		/*
+		   https://github.com/syuilo/misskey/blob/master/src/services/create-notification.ts#L46
+		   Misskeyは通知に既読の概念があり、イベント発生後2秒たっても未読の時だけプッシュ通知が発生する。
+		   STでプッシュ通知を試すにはSTの画面を非表示にする必要があるのでWebUIを使って投稿していたが、
+		   WebUIを開いていると通知はすぐ既読になるのでプッシュ通知は発生しない。
+		   プッシュ通知のテスト時はST2台を使い、片方をプッシュ通知の受信チェック、もう片方を投稿などの作業に使うことになる。
+		*/
+		
+		// https://github.com/syuilo/misskey/issues/2541
+		// https://github.com/syuilo/misskey/commit/4c6fb60dd25d7e2865fc7c4d97728593ffc3c902
+		// 2018/9/1 の上記コミット以降、Misskeyでもサーバ公開鍵を得られるようになった
+		// アプリサーバ側での clientIdentifier の取り扱い上、公開鍵を得られないバージョンと得られるバージョンの両方に対応するのは困難。
 		
 		// 現在の購読状態を取得できないので、毎回購読の更新を行う
 		// FCMのデバイスIDを取得
 		val device_id = PollingWorker.getDeviceId(context)
 			?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
 		
-		//				// アクセストークン
-		//				val accessToken = account.misskeyApiToken
-		//					?: return TootApiResult(error = "missing misskeyApiToken.")
-		//
-		//				// インストールIDを取得
-		//				val install_id = PollingWorker.prepareInstallId(context)
-		//					?: return TootApiResult(error = context.getString(R.string.missing_install_id))
-		//
-		//				// アクセストークンのダイジェスト
-		//				val tokenDigest = accessToken.digestSHA256Base64Url()
-		//
-		//				// クライアント識別子
-		//				val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
-		//
+		// アクセストークン
+		val accessToken = account.misskeyApiToken
+			?: return TootApiResult(error = "missing misskeyApiToken.")
+		
+		// インストールIDを取得
+		val install_id = PollingWorker.prepareInstallId(context)
+			?: return TootApiResult(error = context.getString(R.string.missing_install_id))
+		
+		// クライアント識別子
+		val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
+		
 		val endpoint =
-			"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags"
-		// FIXME 現時点ではサーバキーの検証を行えないので clientIdentifier を指定しない
-		// "${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags/$clientIdentifier"
+			"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags/$clientIdentifier"
 		
 		// 購読
 		return client.request(
@@ -167,18 +171,17 @@ class PushSubscriptionHelper(
 				)
 				.toPostRequestBuilder()
 		)?.also { result ->
-			if(result.jsonObject == null) {
+			val jsonObject = result.jsonObject
+			if(jsonObject == null) {
 				addLog("API error.")
 			} else {
+				if(verbose) addLog(context.getString(R.string.push_subscription_updated))
 				subscribed = true
-				
-				// Misskeyのプッシュ購読APIはサーバーキーを返さないので
-				// プッシュ通知を受け取るendpointはそれが正しいサーバからのものなのか
-				// 悪意のある第三者からのものなのか区別できない
-				
-				if(verbose) {
-					addLog(context.getString(R.string.push_subscription_updated))
-				}
+				return updateServerKey(
+					client,
+					clientIdentifier,
+					jsonObject.parseString("key") ?: "3q2+rw"
+				)
 			}
 		}
 	}
@@ -400,7 +403,7 @@ class PushSubscriptionHelper(
 	fun updateSubscription(client : TootApiClient) : TootApiResult? =
 		try {
 			when {
-				! preventRapid() ->
+				isRecentlyChecked() ->
 					TootApiResult(ERROR_PREVENT_FREQUENTLY_CHECK)
 				
 				account.isPseudo ->
@@ -418,11 +421,12 @@ class PushSubscriptionHelper(
 			
 			if(error != null) addLog("$error $requestInfo".trimEnd())
 			
+			// update error text on account table
 			val log = log
 			when {
 				
 				log.contains(ERROR_PREVENT_FREQUENTLY_CHECK) -> {
-					// don't update error text if check is skipped.
+					// don't update if check was skipped.
 				}
 				
 				subscribed || log.isEmpty() ->

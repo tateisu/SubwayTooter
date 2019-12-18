@@ -121,24 +121,38 @@ class PushSubscriptionHelper(
 		return TootApiResult()
 	}
 	
+	// アプリサーバにendpoint URLの変更を伝える
+	private fun registerEndpoint(
+		client : TootApiClient,
+		deviceId : String,
+		endpoint : String
+	) : TootApiResult? {
+		
+		if( account.last_push_endpoint == endpoint) return TootApiResult()
+		
+		return client.http(
+			JSONObject()
+				.put("acct", account.acct)
+				.put("deviceId", deviceId)
+				.put("endpoint", endpoint)
+				.toPostRequestBuilder()
+				.url("${PollingWorker.APP_SERVER}/webpushendpoint")
+				.build()
+		)?.also{ result ->
+			val res = result.response
+			if(res!=null){
+				val code = res.code
+				if( code in 200 until 300 ) {
+					account.updateLastPushEndpoint(endpoint)
+				}else{
+					result.caption = "(SubwayTooter App server)"
+					client.readBodyString(result)
+				}
+			}
+		}
+	}
+	
 	private fun updateSubscriptionMisskey(client : TootApiClient) : TootApiResult? {
-		// 購読が不要な場合、MisskeyのAPIの不足により出来ることは何もない
-		if(flags == 0) return TootApiResult(
-			"Misskey has no API to unsubscribe or check current subscription status"
-		)
-		
-		/*
-		   https://github.com/syuilo/misskey/blob/master/src/services/create-notification.ts#L46
-		   Misskeyは通知に既読の概念があり、イベント発生後2秒たっても未読の時だけプッシュ通知が発生する。
-		   STでプッシュ通知を試すにはSTの画面を非表示にする必要があるのでWebUIを使って投稿していたが、
-		   WebUIを開いていると通知はすぐ既読になるのでプッシュ通知は発生しない。
-		   プッシュ通知のテスト時はST2台を使い、片方をプッシュ通知の受信チェック、もう片方を投稿などの作業に使うことになる。
-		*/
-		
-		// https://github.com/syuilo/misskey/issues/2541
-		// https://github.com/syuilo/misskey/commit/4c6fb60dd25d7e2865fc7c4d97728593ffc3c902
-		// 2018/9/1 の上記コミット以降、Misskeyでもサーバ公開鍵を得られるようになった
-		// アプリサーバ側での clientIdentifier の取り扱い上、公開鍵を得られないバージョンと得られるバージョンの両方に対応するのは困難。
 		
 		// 現在の購読状態を取得できないので、毎回購読の更新を行う
 		// FCMのデバイスIDを取得
@@ -156,8 +170,30 @@ class PushSubscriptionHelper(
 		// クライアント識別子
 		val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
 		
+		// 購読が不要な場合
+		// アプリサーバが410を返せるように状態を通知する
+		if(flags == 0) return registerEndpoint(client,device_id,"none")?.also{
+			if(it.error ==null && verbose ) addLog(context.getString(R.string.push_subscription_updated))
+		}
+
+		/*
+		   https://github.com/syuilo/misskey/blob/master/src/services/create-notification.ts#L46
+		   Misskeyは通知に既読の概念があり、イベント発生後2秒たっても未読の時だけプッシュ通知が発生する。
+		   STでプッシュ通知を試すにはSTの画面を非表示にする必要があるのでWebUIを使って投稿していたが、
+		   WebUIを開いていると通知はすぐ既読になるのでプッシュ通知は発生しない。
+		   プッシュ通知のテスト時はST2台を使い、片方をプッシュ通知の受信チェック、もう片方を投稿などの作業に使うことになる。
+		*/
+		
+		// https://github.com/syuilo/misskey/issues/2541
+		// https://github.com/syuilo/misskey/commit/4c6fb60dd25d7e2865fc7c4d97728593ffc3c902
+		// 2018/9/1 の上記コミット以降、Misskeyでもサーバ公開鍵を得られるようになった
+		
 		val endpoint =
-			"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags/$clientIdentifier"
+			"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags/$clientIdentifier/misskey"
+
+		// アプリサーバが過去のendpoint urlに410を返せるよう、状態を通知する
+		val r = registerEndpoint(client,device_id,endpoint.toUri().encodedPath!!)
+		if(r==null || r.error!=null) return r
 		
 		// 購読
 		return client.request(

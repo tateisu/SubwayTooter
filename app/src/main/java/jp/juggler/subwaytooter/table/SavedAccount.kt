@@ -68,6 +68,7 @@ class SavedAccount(
 	
 	var last_notification_error : String? = null
 	var last_subscription_error : String? = null
+	var last_push_endpoint : String? = null
 	
 	init {
 		val pos = acct.indexOf('@')
@@ -147,6 +148,7 @@ class SavedAccount(
 		
 		last_notification_error = cursor.getStringOrNull(COL_LAST_NOTIFICATION_ERROR)
 		last_subscription_error = cursor.getStringOrNull(COL_LAST_SUBSCRIPTION_ERROR)
+		last_push_endpoint = cursor.getStringOrNull(COL_LAST_PUSH_ENDPOINT)
 	}
 	
 	val isNA : Boolean
@@ -420,6 +422,7 @@ class SavedAccount(
 		
 		private const val COL_LAST_NOTIFICATION_ERROR = "last_notification_error" // スキーマ42
 		private const val COL_LAST_SUBSCRIPTION_ERROR = "last_subscription_error" // スキーマ45
+		private const val COL_LAST_PUSH_ENDPOINT = "last_push_endpoint" // スキーマ46
 		
 		/////////////////////////////////
 		// login information
@@ -503,6 +506,9 @@ class SavedAccount(
 					
 					// スキーマ45から
 					+ ",$COL_LAST_SUBSCRIPTION_ERROR text"
+					
+					// スキーマ46から
+					+ ",$COL_LAST_PUSH_ENDPOINT text"
 					
 					+ ")"
 			)
@@ -692,6 +698,13 @@ class SavedAccount(
 			if(oldVersion < 45 && newVersion >= 45) {
 				try {
 					db.execSQL("alter table $table add column $COL_LAST_SUBSCRIPTION_ERROR text")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+			}
+			if(oldVersion < 46 && newVersion >= 46) {
+				try {
+					db.execSQL("alter table $table add column $COL_LAST_PUSH_ENDPOINT text")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
@@ -1068,26 +1081,39 @@ class SavedAccount(
 	}
 	
 	fun updateNotificationError(text : String?) {
-		if(db_id == INVALID_DB_ID) throw RuntimeException("saveSetting: missing db_id")
-		
-		val cv = ContentValues()
-		when(text) {
-			null -> cv.putNull(COL_LAST_NOTIFICATION_ERROR)
-			else -> cv.put(COL_LAST_NOTIFICATION_ERROR, text)
+		this.last_notification_error = text
+		if(db_id != INVALID_DB_ID){
+			val cv = ContentValues()
+			when(text) {
+				null -> cv.putNull(COL_LAST_NOTIFICATION_ERROR)
+				else -> cv.put(COL_LAST_NOTIFICATION_ERROR, text)
+			}
+			App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 		}
-		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 	}
 	
-	
 	fun updateSubscriptionError(text : String?) {
-		if(db_id == INVALID_DB_ID) throw RuntimeException("saveSetting: missing db_id")
-		
-		val cv = ContentValues()
-		when(text) {
-			null -> cv.putNull(COL_LAST_SUBSCRIPTION_ERROR)
-			else -> cv.put(COL_LAST_SUBSCRIPTION_ERROR, text)
+		this.last_subscription_error = text
+		if(db_id != INVALID_DB_ID){
+			val cv = ContentValues()
+			when(text) {
+				null -> cv.putNull(COL_LAST_SUBSCRIPTION_ERROR)
+				else -> cv.put(COL_LAST_SUBSCRIPTION_ERROR, text)
+			}
+			App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 		}
-		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+	}
+	
+	fun updateLastPushEndpoint(text : String?) {
+		this.last_push_endpoint = text
+		if(db_id != INVALID_DB_ID){
+			val cv = ContentValues()
+			when(text) {
+				null -> cv.putNull(COL_LAST_PUSH_ENDPOINT)
+				else -> cv.put(COL_LAST_PUSH_ENDPOINT, text)
+			}
+			App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
+		}
 	}
 	
 }

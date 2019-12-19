@@ -114,12 +114,12 @@ object EmojiDecoder {
 					range.end,
 					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 				)
-
+				
 				if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
 					if(options.highlightSound == null) options.highlightSound = word
 				}
-
-				if( word.speech != 0 ) {
+				
+				if(word.speech != 0) {
 					if(options.highlightSpeech == null) options.highlightSpeech = word
 				}
 				
@@ -159,7 +159,7 @@ object EmojiDecoder {
 			}
 		}
 		
-		internal fun addImageSpan(text : String, er: EmojiMap.EmojiResource) {
+		internal fun addImageSpan(text : String, er : EmojiMap.EmojiResource) {
 			val context = options.context
 			if(context == null) {
 				openNormalText()
@@ -177,6 +177,7 @@ object EmojiDecoder {
 				)
 			}
 		}
+		
 		val evs = EmojiMap.EmojiResource(0)
 		
 		internal fun addUnicodeString(s : String) {
@@ -239,15 +240,20 @@ object EmojiDecoder {
 	}
 	
 	private const val codepointColon = ':'.toInt()
+	private const val codepointAtmark = '@'.toInt()
 	
-	private val shortCodeCharacterSet : SparseBooleanArray by lazy {
-		val set = SparseBooleanArray()
-		for(c in 'A' .. 'Z') set.put(c.toInt(), true)
-		for(c in 'a' .. 'z') set.put(c.toInt(), true)
-		for(c in '0' .. '9') set.put(c.toInt(), true)
-		for(c in "+-_@:") set.put(c.toInt(), true)
-		set
-	}
+	private val shortCodeCharacterSet =
+		SparseBooleanArray().apply {
+			for(c in 'A' .. 'Z') put(c.toInt(), true)
+			for(c in 'a' .. 'z') put(c.toInt(), true)
+			for(c in '0' .. '9') put(c.toInt(), true)
+			for(c in "+-_@:") put(c.toInt(), true)
+		}
+	
+	private val profileEmojiCharacterSet =
+		shortCodeCharacterSet.clone().apply {
+			for(c in ".") put(c.toInt(), true)
+		}
 	
 	private interface ShortCodeSplitterCallback {
 		fun onString(part : String) // shortcode以外の文字列
@@ -260,28 +266,21 @@ object EmojiDecoder {
 	
 	private fun splitShortCode(
 		s : String,
-		@Suppress("SameParameterValue") startArg : Int,
-		end : Int,
+		startArg:Int = 0,
+		end :Int = s.length,
 		callback : ShortCodeSplitterCallback
 	) {
-		var start = startArg
-		var i = start
+		var i = startArg
 		while(i < end) {
 			
-			// 絵文字パターンの開始位置を探索する
-			start = i
+			// ":"以外を読み飛ばす
+			var start = i
 			loop@ while(i < end) {
 				val c = s.codePointAt(i)
-				val width = Character.charCount(c)
-				if(c == codepointColon) {
-					break@loop
-				}
-				i += width
+				if(c == codepointColon) break@loop
+				i += Character.charCount(c)
 			}
-			
-			if(i > start) {
-				callback.onString(s.substring(start, i))
-			}
+			if(i > start) callback.onString(s.substring(start, i))
 			
 			if(i >= end) break
 			
@@ -289,30 +288,36 @@ object EmojiDecoder {
 			
 			// 閉じるコロンを探す
 			var posEndColon = - 1
+			var countAtmark = 0
 			while(i < end) {
 				val cp = s.codePointAt(i)
 				if(cp == codepointColon) {
 					posEndColon = i
 					break
 				}
-				if(! shortCodeCharacterSet.get(cp, false)) {
-					break
+				
+				// ベスフレの @user@host 絵文字は . を考慮する必要がある
+				if(cp == codepointAtmark) ++ countAtmark
+				val allowedCodepointMap = when {
+					countAtmark >= 2 -> profileEmojiCharacterSet
+					else -> shortCodeCharacterSet
 				}
+				if(! allowedCodepointMap.get(cp, false)) break
+				
 				i += Character.charCount(cp)
 			}
 			
 			// 閉じるコロンが見つからないか、shortcodeが短すぎるなら
 			// startの位置のコロンだけを処理して残りは次のループで処理する
-			if(posEndColon == - 1 || posEndColon - start < 3) {
+			if(posEndColon == - 1 || posEndColon - start < 2) {
 				callback.onString(":")
 				i = start + 1
 				continue
 			}
 			
-			val prevCodePoint = if(start > 0) {
-				s.codePointBefore(start)
-			} else {
-				0x20
+			val prevCodePoint = when {
+				start <= 0 -> 0x20
+				else -> s.codePointBefore(start)
 			}
 			
 			callback.onShortCode(
@@ -335,7 +340,7 @@ object EmojiDecoder {
 		val emojiMapCustom = options.emojiMapCustom
 		val emojiMapProfile = options.emojiMapProfile
 		
-		splitShortCode(s, 0, s.length, object : ShortCodeSplitterCallback {
+		splitShortCode(s, callback = object : ShortCodeSplitterCallback {
 			override fun onString(part : String) {
 				builder.addUnicodeString(part)
 			}
@@ -402,7 +407,7 @@ object EmojiDecoder {
 		
 		val sb = StringBuilder()
 		
-		splitShortCode(s, 0, s.length, object : ShortCodeSplitterCallback {
+		splitShortCode(s, callback = object : ShortCodeSplitterCallback {
 			override fun onString(part : String) {
 				sb.append(part)
 			}
@@ -417,7 +422,8 @@ object EmojiDecoder {
 				}
 				
 				// カスタム絵文字ではなく通常の絵文字のショートコードなら絵文字に変換する
-				val info = EmojiMap.sShortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
+				val info =
+					EmojiMap.sShortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
 				sb.append(info?.unified ?: part)
 			}
 		})

@@ -1660,12 +1660,8 @@ class ActPost : AppCompatActivity(),
 				editAttachmentDescription(pa)
 			}
 		
-		when {
-			pa.attachment?.isAudio == true -> {
-				// can't set focus
-			}
-			
-			else -> a.addAction(getString(R.string.set_focus_point)) {
+		if( pa.attachment?.canFocus == true){
+			a.addAction(getString(R.string.set_focus_point)) {
 				openFocusPoint(pa)
 			}
 		}

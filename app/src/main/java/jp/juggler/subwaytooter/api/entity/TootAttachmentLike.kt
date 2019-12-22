@@ -12,22 +12,21 @@ interface TootAttachmentLike{
 
 	val type : TootAttachmentType
 	val description : String?
+	
+	// url for thumbnail, or null or empty
 	val urlForThumbnail : String?
+	
+	// url for description, or null or empty
+	val urlForDescription :String?
 	
 	val focusX : Float
 	val focusY : Float
-	
+
+	// true if argument url is included in this attachment.
 	fun hasUrl(url:String):Boolean
-	
-	fun getUrlString() :String?
-	
-	
-	val isAudio : Boolean
-		get()= type == TootAttachmentType.Audio
-	
-	// GIFVの考慮漏れに注意？
-	val isVideo : Boolean
-		get()= type == TootAttachmentType.Video
+
+	// true if the attachment can be set focus point.
+	val canFocus : Boolean
+		get()= type != TootAttachmentType.Audio
 	
 }
-

@@ -1744,14 +1744,9 @@ internal class ItemViewHolder(
 			sbDesc.append(desc)
 		}
 		
-		val description = ta.description
-		if(description?.isNotEmpty() == true) {
-			appendDescription(description)
-		} else {
-			val urlString = ta.getUrlString()
-			if(showUrl && urlString?.isNotEmpty() == true) {
-				appendDescription(urlString)
-			}
+		when(val description = ta.description.notEmpty()) {
+			null -> if(showUrl) ta.urlForDescription.notEmpty()?.let { appendDescription(it) }
+			else -> appendDescription(description)
 		}
 	}
 	
@@ -2168,8 +2163,15 @@ internal class ItemViewHolder(
 				is TootAttachment -> when {
 					
 					// unknownが1枚だけなら内蔵ビューアを使わずにインテントを投げる
-					item.type == TootAttachmentType.Unknown && media_attachments.size == 1 ->
-						App1.openCustomTab(activity, item.remote_url!!)
+					item.type == TootAttachmentType.Unknown && media_attachments.size == 1 -> {
+						// https://github.com/tateisu/SubwayTooter/pull/119
+						// メディアタイプがunknownの場合、そのほとんどはリモートから来たURLである
+						// Pref.bpPriorLocalURL の状態に関わらずリモートURLがあればそれをブラウザで開く
+						when(val remoteUrl = item.remote_url.notEmpty()) {
+							null -> App1.openCustomTab(activity, item)
+							else -> App1.openCustomTab(activity, remoteUrl)
+						}
+					}
 					
 					// 内蔵メディアビューアを使う
 					Pref.bpUseInternalMediaViewer(App1.pref) ->

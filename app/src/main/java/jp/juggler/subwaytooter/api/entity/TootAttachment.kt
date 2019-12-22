@@ -94,12 +94,11 @@ class TootAttachment : TootAttachmentLike {
 		else -> false
 	}
 	
-	override fun getUrlString() : String? =
-		if(remote_url?.isNotEmpty() == true) {
-			remote_url
-		} else {
-			url
-		}
+	override val urlForDescription: String?
+		get() = remote_url.notEmpty() ?: url
+	
+	override val urlForThumbnail : String?
+		get() = preview_url.notEmpty() ?: remote_url.notEmpty() ?: url
 	
 	constructor(serviceType : ServiceType, src : JSONObject) {
 		
@@ -166,33 +165,24 @@ class TootAttachment : TootAttachmentLike {
 	private fun parseType(src : String?) =
 		TootAttachmentType.values().find { it.id == src }
 	
-	override val urlForThumbnail : String?
-		get() = when {
-			preview_url?.isNotEmpty() == true -> preview_url
-			remote_url?.isNotEmpty() == true -> remote_url
-			url?.isNotEmpty() == true -> url
-			else -> null
-		}
 	
-	fun getLargeUrl(pref : SharedPreferences) : String? {
-		return if(Pref.bpPriorLocalURL(pref)) {
-			if(url?.isNotEmpty() == true) url else remote_url
-		} else {
-			if(remote_url?.isNotEmpty() == true) remote_url else url
-		}
-	}
-	
-	fun getLargeUrlList(pref : SharedPreferences) : ArrayList<String> {
-		val result = ArrayList<String>()
+	fun getLargeUrl(pref : SharedPreferences) =
 		if(Pref.bpPriorLocalURL(pref)) {
-			if(url?.isNotEmpty() == true) result.add(url)
-			if(remote_url?.isNotEmpty() == true) result.add(remote_url)
+			url.notEmpty() ?: remote_url
 		} else {
-			if(remote_url?.isNotEmpty() == true) result.add(remote_url)
-			if(url?.isNotEmpty() == true) result.add(url)
+			remote_url.notEmpty() ?: url
 		}
-		return result
-	}
+	
+	fun getLargeUrlList(pref : SharedPreferences) =
+		ArrayList<String>().apply {
+			if(Pref.bpPriorLocalURL(pref)) {
+				url.notEmpty()?.addTo(this)
+				remote_url.notEmpty()?.addTo(this)
+			} else {
+				remote_url.notEmpty()?.addTo(this)
+				url.notEmpty()?.addTo(this)
+			}
+		}
 	
 	fun encodeJson() = jsonObject {
 		put(KEY_IS_STRING_ID, true)

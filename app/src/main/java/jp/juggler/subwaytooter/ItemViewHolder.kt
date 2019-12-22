@@ -2169,7 +2169,7 @@ internal class ItemViewHolder(
 					
 					// unknownが1枚だけなら内蔵ビューアを使わずにインテントを投げる
 					item.type == TootAttachmentType.Unknown && media_attachments.size == 1 ->
-						App1.openCustomTab(activity, item)
+						App1.openCustomTab(activity, item.remote_url!!)
 					
 					// 内蔵メディアビューアを使う
 					Pref.bpUseInternalMediaViewer(App1.pref) ->

@@ -16,6 +16,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.span.*
+import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.util.HTMLDecoder.shortenUrl
 import jp.juggler.util.*
@@ -743,7 +744,7 @@ object MisskeyMarkdownDecoder {
 						if(options.highlightSound == null) options.highlightSound = word
 					}
 					
-					if( word.speech != 0 ) {
+					if(word.speech != 0) {
 						if(options.highlightSpeech == null) options.highlightSpeech = word
 					}
 					
@@ -789,18 +790,16 @@ object MisskeyMarkdownDecoder {
 				else -> appendText(text)
 			}
 			
-			val linkHelper = options.linkHelper
-			if(linkHelper != null) {
-				// リンクの一部にハイライトがある場合、リンクをセットしてからハイライトをセットしないとクリック判定がおかしくなる。
-				spanList.addFirst(
-					start, sb.length, MyClickableSpan(
-						text
-						, url
-						, linkHelper.findAcctColor(url)
-						, options.linkTag
-					)
-				)
-			}
+			val fullAcct = getFullAcctFromMention(options.linkHelper, text, url)
+			
+			val linkInfo = LinkInfo(
+				caption = text,
+				url = url,
+				ac = fullAcct?.let { AcctColor.load(it) },
+				tag = options.linkTag
+			)
+			// リンクの一部にハイライトがある場合、リンクをセットしてからハイライトをセットしないとクリック判定がおかしくなる。
+			spanList.addFirst(start, sb.length, MyClickableSpan(linkInfo))
 		}
 	}
 	
@@ -879,6 +878,9 @@ object MisskeyMarkdownDecoder {
 					}
 					
 					else -> {
+						// MFMはメンションからユーザのURIを調べる正式な方法がない
+						// たとえば @group_dev_jp@gup.pe の正式なURLは https://gup.pe/u/group_dev_jp
+						// だが、 misskey.io ではメンションのリンク先は https://misskey.io/@group_dev_jp@gup.pe になる
 						val userUrl = "https://$userHost/@$username"
 						
 						val shortAcct = when {
@@ -1037,15 +1039,13 @@ object MisskeyMarkdownDecoder {
 				fireRenderChildNodes(it)
 				val linkHelper = options.linkHelper
 				if(linkHelper != null) {
-					spanList.addFirst(
-						start, sb.length,
-						MyClickableSpan(
-							sb.substring(start, sb.length)
-							, url
-							, linkHelper.findAcctColor(url)
-							, options.linkTag
-						)
+					val linkInfo = LinkInfo(
+						url = url,
+						tag = options.linkTag,
+						ac = TootAccount.getAcctFromUrl(url)?.let { acct -> AcctColor.load(acct) },
+						caption = sb.substring(start, sb.length)
 					)
+					spanList.addFirst(start, sb.length, MyClickableSpan(linkInfo))
 				}
 			}
 		}),

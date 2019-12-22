@@ -32,7 +32,6 @@ import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromU
 import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
 import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.span.MyClickableSpan
-import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
@@ -225,8 +224,9 @@ class ActMain : AppCompatActivity()
 		}
 	}
 	
-	private val link_click_listener : MyClickableSpanClickCallback = { viewClicked, span ->
+	private val link_click_listener : (View, MyClickableSpan) -> Unit = { viewClicked, span ->
 		
+		val linkInfo = span.linkInfo
 		var view = viewClicked
 		var column : Column? = null
 		var whoRef : TootAccountRef? = null
@@ -264,14 +264,14 @@ class ActMain : AppCompatActivity()
 		var tag_list : ArrayList<String>? = null
 		
 		try {
-			
 			val cs = (viewClicked as TextView).text
 			if(cs is Spannable) {
 				for(s in cs.getSpans(0, cs.length, MyClickableSpan::class.java)) {
-					val pair = s.url.findHashtagFromUrl()
+					val li = s.linkInfo
+					val pair = li.url.findHashtagFromUrl()
 					if(pair != null) {
 						if(tag_list == null) tag_list = ArrayList()
-						tag_list.add(if(s.text.startsWith('#')) s.text else "#${pair.first}")
+						tag_list.add(if(li.text.startsWith('#')) li.text else "#${pair.first}")
 					}
 				}
 			}
@@ -282,10 +282,11 @@ class ActMain : AppCompatActivity()
 		ChromeTabOpener(
 			this@ActMain,
 			pos,
-			span.url,
+			linkInfo.url,
 			accessInfo = access_info,
 			tagList = tag_list,
-			whoRef = whoRef
+			whoRef = whoRef,
+			linkInfo = linkInfo
 		).open()
 	}
 	
@@ -2289,15 +2290,15 @@ class ActMain : AppCompatActivity()
 		try {
 			log.d("openChromeTab url=%s", opener.url)
 			
-			val accessInto = opener.accessInfo
+			val accessInfo = opener.accessInfo
 			val whoRef = opener.whoRef
 			val whoAcct = if(whoRef != null) {
-				accessInto?.getFullAcct(whoRef.get())
+				accessInfo?.getFullAcct(whoRef.get())
 			} else {
 				null
 			}
 			
-			if(opener.allowIntercept && accessInto != null) {
+			if(opener.allowIntercept && accessInfo != null) {
 				
 				// ハッシュタグはいきなり開くのではなくメニューがある
 				val tagInfo = opener.url.findHashtagFromUrl()
@@ -2316,9 +2317,9 @@ class ActMain : AppCompatActivity()
 				
 				val statusInfo = opener.url.findStatusIdFromUrl()
 				if(statusInfo != null) {
-					if(accessInto.isNA ||
+					if(accessInfo.isNA ||
 						statusInfo.statusId == null ||
-						! statusInfo.host.equals(accessInto.host, ignoreCase = true)
+						! statusInfo.host.equals(accessInfo.host, ignoreCase = true)
 					) {
 						Action_Toot.conversationOtherInstance(
 							this@ActMain,
@@ -2332,13 +2333,43 @@ class ActMain : AppCompatActivity()
 						Action_Toot.conversationLocal(
 							this@ActMain,
 							opener.pos,
-							accessInto,
+							accessInfo,
 							statusInfo.statusId
 						)
 					}
 					return
 				}
 				
+				// opener.linkInfo をチェックしてメンションを判別する
+				val mention = opener.linkInfo?.mention
+				if( mention != null ){
+					val fullAcct = getFullAcctOrNull(accessInfo,mention.acct,mention.url)
+					if( fullAcct != null){
+						val(user,host) = fullAcct.splitFullAcct()
+						if(host != null ) {
+							when(host.toLowerCase(Locale.JAPAN)) {
+								"github.com",
+								"twitter.com" ->
+									App1.openCustomTab(this, mention.url)
+								"gmail.com" ->
+									App1.openBrowser(this, "mailto:$user@$host")
+								
+								else ->
+									Action_User.profile(
+										this@ActMain,
+										opener.pos,
+										accessInfo, // FIXME nullが必要なケースがあったっけなかったっけ…
+										mention.url,
+										host,
+										user,
+										original_url = opener.url
+									)
+							}
+							return
+						}
+					}
+				}
+
 				// ユーザページをアプリ内で開く
 				var m = TootAccount.reAccountUrl.matcher(opener.url)
 				if(m.find()) {
@@ -2362,7 +2393,7 @@ class ActMain : AppCompatActivity()
 								Action_User.profile(
 									this@ActMain,
 									opener.pos,
-									null,
+									null, // Misskeyだと疑似アカが必要なんだっけ…？
 									"https://$instance/@$user",
 									instance,
 									user,
@@ -2374,7 +2405,7 @@ class ActMain : AppCompatActivity()
 						Action_User.profile(
 							this@ActMain,
 							opener.pos,
-							accessInto,
+							accessInfo,
 							opener.url,
 							host,
 							user
@@ -2391,13 +2422,15 @@ class ActMain : AppCompatActivity()
 					Action_User.profile(
 						this@ActMain,
 						opener.pos,
-						accessInto,
+						accessInfo,
 						opener.url,
 						host,
 						user
 					)
 					return
 				}
+				
+				
 			}
 			
 			App1.openCustomTab(this, opener.url)

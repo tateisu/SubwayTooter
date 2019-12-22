@@ -464,6 +464,9 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		// (Mastodonのカラムでは使われていない)
 		internal val reMention = Pattern.compile("""\A@(\w+(?:[\w-]*\w)?)(?:@(\w[\w.-]*\w))?""")
 		
+		internal val reUrlHost : Pattern =
+			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/""")
+		
 		// host, user ,(instance)
 		// Misskeyだけではないのでusernameの定義が違う
 		internal val reAccountUrl : Pattern =

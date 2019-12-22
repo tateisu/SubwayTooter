@@ -345,11 +345,12 @@ object Action_User {
 	//////////////////////////////////////////////////////////////////////////////////////
 	
 	// URLからユーザを検索してプロフを開く
-	private fun profileFromUrl(
+	private fun profileFromUrlOrAcct(
 		activity : ActMain,
 		pos : Int,
 		access_info : SavedAccount,
-		who_url : String
+		who_url : String,
+		acct:String
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
@@ -357,8 +358,13 @@ object Action_User {
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val (result, ar) = client.syncAccountByUrl(access_info, who_url)
+				if( result == null) return null
 				who = ar?.get()
-				return result
+				if( who != null ) return result
+
+				val(r2, ar2) = client.syncAccountByAcct(access_info, acct)
+				who = ar2?.get()
+				return r2
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -400,7 +406,7 @@ object Action_User {
 			if(ai.host.equals(access_info.host, ignoreCase = true)) {
 				activity.addColumn(pos, ai, ColumnType.PROFILE, who.id)
 			} else {
-				profileFromUrl(activity, pos, ai, who.url)
+				profileFromUrlOrAcct(activity, pos, ai, who.url,access_info.getFullAcct(who))
 			}
 		}
 	}
@@ -429,14 +435,14 @@ object Action_User {
 		user : String,
 		original_url : String = url
 	) {
+		val acct = "$user@$host"
+
 		if(access_info?.isPseudo == false) {
 			// 文脈のアカウントがあり、疑似アカウントではない
-			
+
 			if(access_info.host.equals(host, ignoreCase = true)) {
-				
+
 				// 文脈のアカウントと同じインスタンスなら、アカウントIDを探して開いてしまう
-				
-				val acct = "$user@$host"
 				TootTaskRunner(activity).run(access_info, object : TootTask {
 					
 					var who : TootAccount? = null
@@ -461,7 +467,7 @@ object Action_User {
 				})
 			} else {
 				// 文脈のアカウントと異なるインスタンスなら、別アカウントで開く
-				profileFromUrl(activity, pos, access_info, url)
+				profileFromUrlOrAcct(activity, pos, access_info, url,acct)
 			}
 			return
 		}
@@ -506,7 +512,7 @@ object Action_User {
 					ll.addView(b, 0)
 				}
 			) {
-				profileFromUrl(activity, pos, it, url)
+				profileFromUrlOrAcct(activity, pos, it, url,acct)
 			}
 		}
 	}

@@ -350,16 +350,20 @@ class SavedAccount(
 		return host_match(strNicoruHost, 0, host, host_start)
 	}
 	
-	// implements LinkHelper
-	override fun findAcctColor(url : String?) : AcctColor? {
-		if(url != null) {
-			val acct = TootAccount.getAcctFromUrl(url)
-			if(acct != null) {
-				return AcctColor.load(acct)
-			}
-		}
-		return null
-	}
+//	// implements LinkHelper
+//	override fun findAcctColor(url : String?) : AcctColor? {
+//		if(url != null) {
+//			val acct = TootAccount.getAcctFromUrl(url)
+//			if(acct != null) {
+//				return AcctColor.load(acct)
+//			}
+//		}
+//		return null
+//	}
+//
+//	override fun findAcct(url : String?) : String? {
+//		return TootAccount.getAcctFromUrl(url)
+//	}
 	
 	companion object : TableCompanion {
 		private val log = LogCategory("SavedAccount")

@@ -30,7 +30,6 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.span.MyClickableSpan
-import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -489,8 +488,8 @@ class ActPost : AppCompatActivity(),
 	private var mushroom_start : Int = 0
 	private var mushroom_end : Int = 0
 	
-	private val link_click_listener : MyClickableSpanClickCallback = { _, span ->
-		App1.openBrowser(this@ActPost, span.url)
+	private val link_click_listener : (View, MyClickableSpan) -> Unit = { _, span ->
+		App1.openBrowser(this@ActPost, span.linkInfo.url)
 	}
 	
 	////////////////////////////////////////////////////////////////

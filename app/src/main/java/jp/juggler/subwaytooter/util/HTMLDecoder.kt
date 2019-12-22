@@ -7,11 +7,13 @@ import android.text.Spanned
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
+import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.*
 import java.util.*
@@ -381,27 +383,15 @@ object HTMLDecoder {
 			
 			if("a" == tag) {
 				
-				val start = sb.length
-				
-				sb.append(formatLinkCaption(options, sb_tmp, href))
-				
-				val end = sb.length
-				
-				if(end > start) {
-					val linkHelper = options.linkHelper
-					if(linkHelper != null) {
-						val href = href
-						if(href != null) {
-							val link_text = sb.subSequence(start, end).toString()
-							val span = MyClickableSpan(
-								link_text,
-								href,
-								linkHelper.findAcctColor(href),
-								options.linkTag
-							)
-							sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-							
-						}
+				val linkInfo = formatLinkCaption(options, sb_tmp, href ?: "")
+				val caption = linkInfo.caption
+				if(caption.isNotEmpty()) {
+					val start = sb.length
+					sb.append(linkInfo.caption)
+					val end = sb.length
+					if(linkInfo.url.isNotEmpty()) {
+						val span = MyClickableSpan(linkInfo)
+						sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 					}
 					
 					// リンクスパンを設定した後に色をつける
@@ -420,7 +410,7 @@ object HTMLDecoder {
 								if(options.highlightSound == null) options.highlightSound = word
 							}
 							
-							if( word.speech != 0 ) {
+							if(word.speech != 0) {
 								if(options.highlightSpeech == null) options.highlightSpeech = word
 							}
 							
@@ -506,35 +496,38 @@ object HTMLDecoder {
 	
 	fun decodeMentions(
 		linkHelper : LinkHelper,
-		src_list : ArrayList<TootMention>?,
+		mentionList : List<TootMention>?,
 		link_tag : Any?
 	) : Spannable? {
-		if(src_list == null || src_list.isEmpty()) return null
+		if(mentionList == null || mentionList.isEmpty()) return null
 		val sb = SpannableStringBuilder()
-		for(item in src_list) {
+		for(item in mentionList) {
 			if(sb.isNotEmpty()) sb.append(" ")
-			val start = sb.length
 			
-			sb.append('@')
-				.append(
-					if(Pref.bpMentionFullAcct(App1.pref)) {
-						linkHelper.getFullAcct(item.acct)
-					} else {
-						item.acct
-					}
-				)
+			val rawAcct = item.acct
+			val fullAcct = getFullAcctOrNull(linkHelper, rawAcct,item.url)
+			
+			val linkInfo = LinkInfo(
+				url = item.url,
+				caption = "@" + if(fullAcct != null && Pref.bpMentionFullAcct(App1.pref)) {
+					fullAcct
+				} else {
+					rawAcct
+				},
+				ac = if(fullAcct != null) AcctColor.load(fullAcct) else null,
+				mention = item,
+				tag = link_tag
+			)
+			val start = sb.length
+			sb.append(linkInfo.caption)
 			val end = sb.length
-			val url = item.url
-			if(end > start) {
-				val link_text = sb.subSequence(start, end).toString()
-				val span = MyClickableSpan(
-					link_text,
-					url,
-					linkHelper.findAcctColor(item.url),
-					link_tag
+			if(end > start)
+				sb.setSpan(
+					MyClickableSpan(linkInfo),
+					start,
+					end,
+					Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
 				)
-				sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-			}
 		}
 		return sb
 	}
@@ -584,74 +577,94 @@ object HTMLDecoder {
 	private fun formatLinkCaption(
 		options : DecodeOptions,
 		originalCaption : CharSequence,
-		href : String?
-	) : CharSequence {
-		
-		if(originalCaption.isNotEmpty()) {
-			when(originalCaption[0]) {
-				'@' -> {
-					// @mention
-					if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
-						
-						// https://github.com/tateisu/SubwayTooter/issues/108
-						// check mentions to skip getAcctFromUrl
-						val mentions = options.mentions
-						if(mentions != null) {
-							for(it in mentions) {
-								if(it.url == href) {
-									val acct = it.acct
-									if(acct.contains('@')) return "@$acct"
-								}
-							}
-						}
-						
-						// Account.note does not have mentions metadata. we can't drop resolving by mention URL.
-						val acct = TootAccount.getAcctFromUrl(href)
-						if(acct != null) return "@$acct"
+		href : String
+	) = LinkInfo(
+		caption = originalCaption,
+		url = href,
+		tag = options.linkTag
+	).also { linkInfo ->
+		when(originalCaption.firstOrNull()) {
+			
+			// #hashtag は変更しない
+			'#' -> {
+			}
+			
+			// @mention
+			'@' -> {
+				// https://github.com/tateisu/SubwayTooter/issues/108
+				// check mentions to skip getAcctFromUrl
+				val mention = options.mentions?.find { it.url == href }
+				linkInfo.mention = mention
+				
+				// Account.note does not have mentions metadata.
+				// fallback to resolve acct by mention URL.
+				val rawAcct = mention?.acct ?: originalCaption.toString().substring(1)
+				val fullAcct = getFullAcctOrNull(options.linkHelper, rawAcct,href)
+				
+				if(fullAcct != null) {
+					
+					// リモートの投稿の一部で、mentionsメタデータに情報が含まれない場合がある
+					if(mention==null){
+						linkInfo.mention = TootMention(
+							id = EntityId.DEFAULT,
+							url = href,
+							acct = fullAcct ,
+							username = rawAcct.splitFullAcct().first
+						)
 					}
 					
-					return originalCaption
+					linkInfo.ac = AcctColor.load(fullAcct)
+					if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
+						linkInfo.caption = "@$fullAcct"
+					}
 				}
+			}
+			
+			else -> {
 				
-				'#' -> {
-					// #hashtag
-					return originalCaption
+				val context = options.context
+				
+				when {
+					
+					context == null || ! options.short || href.isEmpty() -> {
+					}
+					
+					options.isMediaAttachment(href) -> {
+						// 添付メディアのURLなら絵文字に変換する
+						linkInfo.caption = SpannableString(href).apply {
+							setSpan(
+								EmojiImageSpan(context, R.drawable.emj_1f5bc_fe0f),
+								0,
+								length,
+								Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+							)
+						}
+						return@also
+					}
+					
+					else -> {
+						// ニコニコ大百科のURLを変える
+						val m = reNicodic.matcher(href)
+						when {
+							m.find() -> {
+								linkInfo.caption =
+									SpannableString("${m.groupEx(1) !!.decodePercent()}:nicodic:").apply {
+										setSpan(
+											EmojiImageSpan(context, R.drawable.nicodic),
+											length - 9,
+											length,
+											Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+										)
+									}
+								return@also
+							}
+							
+							else -> linkInfo.caption = shortenUrl(originalCaption)
+						}
+					}
 				}
 			}
 		}
-		
-		val context = options.context
-		
-		if(context == null || ! options.short || href?.isEmpty() != false) {
-			return originalCaption
-		}
-		
-		// 添付メディアのURLなら絵文字に変換する
-		if(options.isMediaAttachment(href)) {
-			return SpannableString(href).apply {
-				setSpan(
-					EmojiImageSpan(context, R.drawable.emj_1f5bc_fe0f),
-					0,
-					length,
-					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				)
-			}
-		}
-		
-		// ニコニコ大百科のURLを変える
-		val m = reNicodic.matcher(href)
-		if(m.find()) {
-			return SpannableString("${m.groupEx(1) !!.decodePercent()}:nicodic:").apply {
-				setSpan(
-					EmojiImageSpan(context, R.drawable.nicodic),
-					length - 9,
-					length,
-					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				)
-			}
-		}
-		
-		return shortenUrl(originalCaption)
 	}
 	
 	private fun init1() {

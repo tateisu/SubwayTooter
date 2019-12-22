@@ -292,16 +292,12 @@ internal class DlgContextMenu(
 				}
 				
 				val dc = status.decoded_content
-				for(tag in dc.getSpans(0, dc.length, MyClickableSpan::class.java)) {
-					val start = dc.getSpanStart(tag)
-					val end = dc.getSpanEnd(tag)
-					val href = tag?.url ?: continue
-					val caption = dc.substring(start, end)
-					val head = caption[0]
-					if(head == '@' || head == '#')
-						addLinkButton(tag, caption)
-					else
-						addLinkButton(tag, href)
+				for(span in dc.getSpans(0, dc.length, MyClickableSpan::class.java)) {
+					val caption = span.linkInfo.text
+					when(caption.firstOrNull()) {
+						'@', '#' -> addLinkButton(span, caption)
+						else -> addLinkButton(span, span.linkInfo.url)
+					}
 				}
 			}
 			llLinks.vg(llLinks.childCount > 1)

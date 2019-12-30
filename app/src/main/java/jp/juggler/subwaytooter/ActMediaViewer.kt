@@ -698,8 +698,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			return
 		}
 		
-		val downLoadManager = getSystemService(DOWNLOAD_SERVICE) as? DownloadManager
-			?: throw NotImplementedError("missing DownloadManager system service")
+		val downLoadManager :DownloadManager = systemService(this)
+			?: error("missing DownloadManager system service")
 		
 		val url = if(ta is TootAttachment) {
 			ta.getLargeUrl(App1.pref)

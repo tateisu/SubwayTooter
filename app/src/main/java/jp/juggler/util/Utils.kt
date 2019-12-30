@@ -1,7 +1,18 @@
-//package jp.juggler.util
-//
-//import android.util.SparseBooleanArray
-//import kotlin.collections.set
+package jp.juggler.util
+
+import android.content.Context
+import androidx.core.content.ContextCompat
+
+// 型推論できる文脈だと型名を書かずにすむ
+@Suppress("unused")
+inline fun <reified T : Any> Any?.cast(): T = this as T
+
+inline fun <reified T : Any> Any?.castOrNull(): T? = this as? T
+
+// 型推論できる文脈だと型名を書かずにすむ
+inline fun <reified T> systemService(context: Context): T? =
+	/* ContextCompat. */ ContextCompat.getSystemService(context, T::class.java)
+
 //
 //object Utils {
 //

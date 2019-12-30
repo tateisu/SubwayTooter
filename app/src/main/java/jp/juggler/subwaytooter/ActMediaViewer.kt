@@ -758,10 +758,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		request.setTitle(fileName)
 		request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
 		
-		@Suppress("ControlFlowWithEmptyBody")
-		if(Build.VERSION.SDK_INT >= 29) {
-			// Android 10 以降では allowScanningByMediaScanner は無視される
-		} else {
+		// Android 10 以降では allowScanningByMediaScanner は無視される
+		if(Build.VERSION.SDK_INT < 29) {
 			//メディアスキャンを許可する
 			@Suppress("DEPRECATION")
 			request.allowScanningByMediaScanner()

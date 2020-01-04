@@ -11,10 +11,10 @@ import jp.juggler.emoji.EmojiMap
 import jp.juggler.util.LogCategory
 
 // 絵文字リソースの種類によって異なるスパンを作る
-fun EmojiMap.EmojiResource.createSpan(context : Context) = if(isSvg) {
-	SvgEmojiSpan(context, assetsName !!)
+fun EmojiMap.EmojiResource.createSpan(context : Context,scale:Float=1f) = if(isSvg) {
+	SvgEmojiSpan(context, assetsName !!,scale=scale)
 } else {
-	EmojiImageSpan(context, drawableId)
+	EmojiImageSpan(context, drawableId,scale = scale)
 }
 
 // SVG絵文字スパン

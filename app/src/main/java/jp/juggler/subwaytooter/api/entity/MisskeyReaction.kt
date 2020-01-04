@@ -10,69 +10,65 @@ private fun findSvgFile(utf16 : String):EmojiMap.EmojiResource{
 	return EmojiMap.sUTF16ToEmojiResource[utf16]!!
 }
 
-enum class MisskeyReaction(
+class MisskeyReaction(
 	val shortcode : String,
 	val emojiUtf16 : String,
 	private val emojiResource : EmojiMap.EmojiResource = findSvgFile(emojiUtf16),
 	val showOnPicker : Boolean = true
 ) {
-	
-	Like(
-		"like",
-		"\ud83d\udc4d"
-	),
-	Love(
-		"love",
-		"\u2665"
-	),
-	Laugh(
-		"laugh",
-		"\ud83d\ude06"
-	),
-	Hmm(
-		"hmm",
-		"\ud83e\udd14"
-	),
-	Surprise(
-		"surprise",
-		"\ud83d\ude2e"
-	),
-	Congrats(
-		"congrats",
-		"\ud83c\udf89"
-	),
-	Angry(
-		"angry",
-		"\ud83d\udca2"
-	),
-	Confused(
-		"confused",
-		"\ud83d\ude25"
-	),
-	Rip(
-		"rip",
-		"\ud83d\ude07"
-	),
-	Pudding(
-		"pudding",
-		"\ud83c\udf6e"
-	),
-	Star(
-		"star",
-		"\u2B50",
-		showOnPicker = false
-	)
-	
-	;
-	
-	
-	companion object {
-		val shortcodeMap : HashMap<String, MisskeyReaction> by lazy {
-			HashMap<String, MisskeyReaction>().apply {
-				for(e in values()) {
-					put(e.shortcode, e)
-				}
-			}
+	companion object{
+		private val LIST = listOf(
+			MisskeyReaction(
+				"like",
+				"\ud83d\udc4d"
+			),
+			MisskeyReaction(
+				"love",
+				"\u2665"
+			),
+			MisskeyReaction(
+				"laugh",
+				"\ud83d\ude06"
+			),
+			MisskeyReaction(
+				"hmm",
+				"\ud83e\udd14"
+			),
+			MisskeyReaction(
+				"surprise",
+				"\ud83d\ude2e"
+			),
+			MisskeyReaction(
+				"congrats",
+				"\ud83c\udf89"
+			),
+			MisskeyReaction(
+				"angry",
+				"\ud83d\udca2"
+			),
+			MisskeyReaction(
+				"confused",
+				"\ud83d\ude25"
+			),
+			MisskeyReaction(
+				"rip",
+				"\ud83d\ude07"
+			),
+			MisskeyReaction(
+				"pudding",
+				"\ud83c\udf6e"
+			),
+			MisskeyReaction(
+				"star",
+				"\u2B50",
+				showOnPicker = false
+			)
+		)
+		
+		fun values() =LIST
+		
+		val shortcodeMap = HashMap<String, MisskeyReaction>().apply{
+			LIST.forEach { put(it.shortcode,it) }
 		}
 	}
 	
@@ -88,5 +84,4 @@ enum class MisskeyReaction(
 				.into(view)
 		}
 	}
-
 }

@@ -22,6 +22,7 @@ class DecodeOptions(
 	var highlightTrie : WordTrieTree? = null,
 	var unwrapEmojiImageTag : Boolean = false,
 	var enlargeCustomEmoji : Float = 1f,
+	var enlargeEmoji : Float = 1f,
 	var forceHtml : Boolean = false, // force use HTML instead of Misskey Markdown
 	var mentionFullAcct : Boolean = false,
 	var mentions: ArrayList<TootMention>? = null

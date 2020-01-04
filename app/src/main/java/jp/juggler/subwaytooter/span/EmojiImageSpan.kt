@@ -12,7 +12,8 @@ class EmojiImageSpan(
 	context : Context,
 	private val res_id : Int,
 	private val useColorShader : Boolean = false,
-	private val color : Int? = null
+	private val color : Int? = null,
+	private val scale: Float = 1f
 ) : ReplacementSpan() {
 	
 	companion object {
@@ -43,8 +44,8 @@ class EmojiImageSpan(
 		this.context = context.applicationContext
 	}
 	
-	private fun getImageSize(paint : Paint) = (0.5f + scale_ratio * paint.textSize).toInt()
-	
+	private fun getImageSize(paint : Paint) = (0.5f + scale_ratio * scale * paint.textSize).toInt()
+
 	override fun getSize(
 		paint : Paint,
 		text : CharSequence,
@@ -52,6 +53,7 @@ class EmojiImageSpan(
 		@IntRange(from = 0) end : Int,
 		fm : Paint.FontMetricsInt?
 	) : Int {
+
 		val size = getImageSize(paint)
 		
 		if(fm != null) {

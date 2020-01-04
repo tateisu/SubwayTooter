@@ -151,7 +151,7 @@ object EmojiDecoder {
 				sb.append(text)
 				val end = sb.length
 				sb.setSpan(
-					EmojiImageSpan(context, res_id),
+					EmojiImageSpan(context, res_id ,scale=options.enlargeEmoji),
 					start,
 					end,
 					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -170,7 +170,7 @@ object EmojiDecoder {
 				sb.append(text)
 				val end = sb.length
 				sb.setSpan(
-					er.createSpan(context),
+					er.createSpan(context,scale=options.enlargeEmoji),
 					start,
 					end,
 					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE

@@ -11,9 +11,8 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.TimePicker
 import jp.juggler.subwaytooter.R
-import java.util.*
-import android.provider.Settings.System.TIME_12_24
 import jp.juggler.util.dismissSafe
+import java.util.*
 
 class DlgDateTime(
 	val activity : Activity

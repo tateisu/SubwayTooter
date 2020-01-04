@@ -1,33 +1,92 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.subwaytooter.R
+import android.graphics.drawable.PictureDrawable
+import android.widget.ImageView
+import com.bumptech.glide.Glide
+import jp.juggler.emoji.EmojiMap
+import jp.juggler.subwaytooter.ActMain
+
+private fun findSvgFile(utf16 : String):EmojiMap.EmojiResource{
+	return EmojiMap.sUTF16ToEmojiResource[utf16]!!
+}
 
 enum class MisskeyReaction(
 	val shortcode : String,
 	val emojiUtf16 : String,
-	val btnDrawableId : Int
+	private val emojiResource : EmojiMap.EmojiResource = findSvgFile(emojiUtf16),
+	val showOnPicker : Boolean = true
 ) {
 	
-	Like("like","\ud83d\udc4d",  R.drawable.btn_reaction_like),
-	Love("love", "\u2665", R.drawable.btn_reaction_love),
-	Laugh("laugh","\ud83d\ude06", R.drawable.btn_reaction_laugh),
-	Hmm("hmm", "\ud83e\udd14", R.drawable.btn_reaction_hmm),
-	Surprise("surprise", "\ud83d\ude2e", R.drawable.btn_reaction_surprise),
-	Congrats("congrats", "\ud83c\udf89",R.drawable.btn_reaction_congrats),
-	Angry("angry", "\ud83d\udca2", R.drawable.btn_reaction_angry),
-	Confused("confused", "\ud83d\ude25",R.drawable.btn_reaction_confused),
-	Rip("rip", "\ud83d\ude07", R.drawable.btn_reaction_rip),
-	Pudding("pudding", "\ud83c\udf6e",  R.drawable.btn_reaction_pudding)
+	Like(
+		"like",
+		"\ud83d\udc4d"
+	),
+	Love(
+		"love",
+		"\u2665"
+	),
+	Laugh(
+		"laugh",
+		"\ud83d\ude06"
+	),
+	Hmm(
+		"hmm",
+		"\ud83e\udd14"
+	),
+	Surprise(
+		"surprise",
+		"\ud83d\ude2e"
+	),
+	Congrats(
+		"congrats",
+		"\ud83c\udf89"
+	),
+	Angry(
+		"angry",
+		"\ud83d\udca2"
+	),
+	Confused(
+		"confused",
+		"\ud83d\ude25"
+	),
+	Rip(
+		"rip",
+		"\ud83d\ude07"
+	),
+	Pudding(
+		"pudding",
+		"\ud83c\udf6e"
+	),
+	Star(
+		"star",
+		"\u2B50",
+		showOnPicker = false
+	)
 	
 	;
+	
 	
 	companion object {
 		val shortcodeMap : HashMap<String, MisskeyReaction> by lazy {
 			HashMap<String, MisskeyReaction>().apply {
-				for(e in MisskeyReaction.values()) {
+				for(e in values()) {
 					put(e.shortcode, e)
 				}
 			}
 		}
 	}
+	
+	fun loadToImageView(activity: ActMain, view: ImageView){
+		if(emojiResource.isSvg) {
+			Glide.with(activity)
+				.`as`(PictureDrawable::class.java)
+				.load("file:///android_asset/${emojiResource.assetsName}")
+				.into(view)
+		} else {
+			Glide.with(activity)
+				.load(emojiResource.drawableId)
+				.into(view)
+		}
+	}
+
 }

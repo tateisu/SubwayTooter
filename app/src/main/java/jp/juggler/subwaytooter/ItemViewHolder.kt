@@ -28,6 +28,7 @@ import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.drawable.PollPlotDrawable
 import jp.juggler.subwaytooter.drawable.PreviewCardBorder
 import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
@@ -897,7 +898,7 @@ internal class ItemViewHolder(
 					n.time_created_at,
 					R.drawable.ic_question, // not used
 					R.string.display_name_reaction_by,
-					reactionDrawableId = reaction?.btnDrawableId
+					misskeyReaction = reaction
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status, colorBg)
@@ -1096,12 +1097,14 @@ internal class ItemViewHolder(
 		// tootsearchではどのタンスから読んだか分からないのでin_reply_toのIDも信用できない
 	}
 	
+	
+	
 	private fun showBoost(
 		whoRef : TootAccountRef,
 		time : Long,
 		iconId : Int,
 		string_id : Int,
-		reactionDrawableId : Int? = null,
+		misskeyReaction : MisskeyReaction? = null,
 		boost_status : TootStatus? = null
 	) {
 		boost_account = whoRef
@@ -1115,8 +1118,9 @@ internal class ItemViewHolder(
 			whoRef.decoded_display_name
 		}.intoStringResource(activity, string_id)
 		
-		if(reactionDrawableId != null) {
-			ivBoosted.setImageResource(reactionDrawableId)
+		if(misskeyReaction != null) {
+			misskeyReaction.loadToImageView(activity,ivBoosted)
+			// TODO パディング少し変える？
 		} else {
 			setIconDrawableId(
 				activity,
@@ -2324,6 +2328,8 @@ internal class ItemViewHolder(
 		val compoundPaddingDp =
 			0f // ActMain.boostButtonSize.toFloat() * 0f / activity.density
 		
+	
+		
 		val box = FlexboxLayout(activity)
 		val boxLp = LinearLayout.LayoutParams(
 			LinearLayout.LayoutParams.MATCH_PARENT,
@@ -2385,9 +2391,14 @@ internal class ItemViewHolder(
 			
 			var lastButton : View? = null
 			
+			val paddingReactionH = (buttonHeight.toFloat() * 0.14f + 0.5f).toInt()
+			val paddingReactionV = (buttonHeight.toFloat() * 0.14f + 0.5f).toInt()
+			val compoundPaddingReactionDp = buttonHeight.toFloat() * 0.04f
+			
 			for(mr in MisskeyReaction.values()) {
 				val count = reactionsCount[mr.shortcode]
 				if(count == null || count <= 0) continue
+				
 				val b = CountImageButton(activity)
 				val blp = FlexboxLayout.LayoutParams(
 					FlexboxLayout.LayoutParams.WRAP_CONTENT,
@@ -2395,8 +2406,8 @@ internal class ItemViewHolder(
 				)
 				b.minimumWidth = buttonHeight
 				
-				b.imageResource = mr.btnDrawableId
 				b.scaleType = ImageView.ScaleType.FIT_CENTER
+				mr.loadToImageView(activity,b)
 				
 				b.layoutParams = blp
 				blp.endMargin = marginBetween
@@ -2406,10 +2417,11 @@ internal class ItemViewHolder(
 				)
 				b.setTextColor(content_color)
 				b.setPaddingAndText(
-					paddingH, paddingV
-					, count.toString()
-					, 14f
-					, compoundPaddingDp
+					paddingReactionH,
+					paddingReactionV,
+					count.toString(),
+					14f,
+					compoundPaddingReactionDp
 				)
 				b.tag = mr.shortcode
 				b.setOnClickListener { addReaction(status, it.tag as? String) }
@@ -2436,6 +2448,16 @@ internal class ItemViewHolder(
 			for(key in list) {
 				val count = reactionsCount[key]
 				if(count == null || count <= 0) continue
+				val emojiUrl = App1.custom_emoji_lister.getMap(access_info.host,true)
+					?.get(key.replace(":",""))
+					?.let{
+						if( Pref.bpDisableEmojiAnimation(activity.pref)){
+							it.static_url
+						}else{
+							it.url
+						}
+					}
+				
 				val b = Button(activity)
 				val blp = FlexboxLayout.LayoutParams(
 					FlexboxLayout.LayoutParams.WRAP_CONTENT,
@@ -2450,7 +2472,19 @@ internal class ItemViewHolder(
 				)
 				b.setTextColor(content_color)
 				b.setPadding(paddingH, paddingV, paddingH, paddingV)
-				b.text = "$key $count"
+				val sb = SpannableStringBuilder("$key $count")
+				if( emojiUrl !=null){
+					sb.setSpan(
+						NetworkEmojiSpan(emojiUrl,scale = 1.5f),
+						0,
+						key.length,
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+					)
+					val invalidator = NetworkEmojiInvalidator(activity.handler,b)
+					invalidator.register(sb)
+					extra_invalidator_list.add(invalidator)
+				}
+				b.text = sb
 				b.allCaps = false
 				b.tag = key
 				b.setOnClickListener { addReaction(status, it.tag as? String) }
@@ -2464,7 +2498,6 @@ internal class ItemViewHolder(
 					)
 					true
 				}
-				
 				box.addView(b)
 				lastButton = b
 			}

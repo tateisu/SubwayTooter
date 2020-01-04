@@ -1328,6 +1328,7 @@ object Action_Toot {
 		if(bSet && code == null) {
 			val ad = ActionsDialog()
 			for(mr in MisskeyReaction.values()) {
+				if(!mr.showOnPicker) continue
 				
 				val newCode = mr.shortcode
 				

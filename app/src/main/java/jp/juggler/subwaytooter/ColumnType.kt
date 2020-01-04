@@ -429,7 +429,7 @@ enum class ColumnType(
 	MISSKEY_HYBRID(27,
 		iconId = { R.drawable.ic_share },
 		name1 = { it.getString(R.string.misskey_hybrid_timeline) },
-		bAllowPseudo = true,
+		bAllowPseudo = false,
 		bAllowMastodon = false,
 		
 		loading = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },

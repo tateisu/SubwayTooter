@@ -24,6 +24,7 @@ import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.inputmethod.EditorInfo
 import android.widget.*
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.api.*
@@ -1160,6 +1161,11 @@ class ActPost : AppCompatActivity(),
 		cbContentWarning = findViewById(R.id.cbContentWarning)
 		etContentWarning = findViewById(R.id.etContentWarning)
 		etContent = findViewById(R.id.etContent)
+		// https://github.com/tateisu/SubwayTooter/issues/123
+		// 早い段階で指定する必要がある
+		etContent.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+		etContent.imeOptions = EditorInfo.IME_ACTION_NONE
+		
 		
 		cbQuoteRenote = findViewById(R.id.cbQuoteRenote)
 		
@@ -1280,7 +1286,6 @@ class ActPost : AppCompatActivity(),
 		etContent.contentMineTypeArray =
 			acceptable_mime_types.toArray(arrayOfNulls<String>(acceptable_mime_types.size))
 		etContent.commitContentListener = commitContentListener
-		
 	}
 	
 	private var lastInstanceTask : TootTaskRunner? = null

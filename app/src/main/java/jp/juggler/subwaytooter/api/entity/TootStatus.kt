@@ -365,7 +365,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			// しかしTLにRenoteが露出してるならそのIDを使う方が賢明であろう
 			// 外側ステータスが自分なら、内側ステータスのmyRenoteIdを設定する
-			if( reblog != null && (parser.linkHelper as? SavedAccount)?.isMe( account) ==true ){
+			if( reblog != null && parser.linkHelper.cast<SavedAccount>()?.isMe( account) ==true ){
 				reblog.myRenoteId = id
 				reblog.reblogged = true
 			}

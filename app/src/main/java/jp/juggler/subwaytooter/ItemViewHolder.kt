@@ -2334,7 +2334,6 @@ internal class ItemViewHolder(
 				topMargin = (0.5f + density * 3f).toInt()
 			}
 		}
-	
 		
 		// +ボタン
 		run {
@@ -2396,100 +2395,111 @@ internal class ItemViewHolder(
 			
 			// 通常の絵文字はUnicodeを使う
 			fun addEmojiReaction(name:String,unicode:String,count:Int){
-				val b = Button(activity)
-				val blp = FlexboxLayout.LayoutParams(
-					FlexboxLayout.LayoutParams.WRAP_CONTENT,
-					buttonHeight
-				)
-				b.minWidthCompat = buttonHeight
-				b.layoutParams = blp
-				blp.endMargin = marginBetween
-				b.background = ContextCompat.getDrawable(
-					activity,
-					R.drawable.btn_bg_transparent
-				)
-				b.setTextColor(content_color)
-				b.setPadding(paddingH, paddingV, paddingH, paddingV)
-				b.text = EmojiDecoder.decodeEmoji(options,"$unicode $count")
-				b.allCaps = false
-				b.tag = name
-				b.setOnClickListener { addReaction(status, it.tag as? String) }
+				val b = Button(activity).apply{
 
-				b.setOnLongClickListener {
-					Action_Toot.reactionFromAnotherAccount(
-						activity,
-						access_info,
-						status_showing,
-						it.tag as? String
+					layoutParams = FlexboxLayout.LayoutParams(
+						FlexboxLayout.LayoutParams.WRAP_CONTENT,
+						buttonHeight
+					).apply{
+						endMargin = marginBetween
+					}
+
+					text = EmojiDecoder.decodeEmoji(options,"$unicode $count")
+					allCaps = false
+					tag = name
+					minWidthCompat = buttonHeight
+					background = ContextCompat.getDrawable(
+						this@ItemViewHolder.activity,
+						R.drawable.btn_bg_transparent
 					)
-					true
+					setTextColor(content_color)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					setOnClickListener {
+						addReaction(status, it.tag as? String)
+					}
+					setOnLongClickListener {
+						Action_Toot.reactionFromAnotherAccount(
+							this@ItemViewHolder.activity,
+							access_info,
+							status_showing,
+							it.tag as? String
+						)
+						true
+					}
 				}
 				box.addView(b)
 				lastButton = b
 			}
 			
 			fun addCustomEmojiReaction(name:String,customCode:String,count:Int){
-				val b = Button(activity)
-				val blp = FlexboxLayout.LayoutParams(
-					FlexboxLayout.LayoutParams.WRAP_CONTENT,
-					buttonHeight
-				)
-				b.minWidthCompat = buttonHeight
-				b.layoutParams = blp
-				blp.endMargin = marginBetween
-				b.background = ContextCompat.getDrawable(
-					activity,
-					R.drawable.btn_bg_transparent
-				)
-				b.setTextColor(content_color)
-				b.setPadding(paddingH, paddingV, paddingH, paddingV)
-				
-				val emojiUrl =App1.custom_emoji_lister.getMap(access_info.host, true)
-					?.get(customCode)
-					?.let {
-						if(Pref.bpDisableEmojiAnimation(activity.pref)) {
-							it.static_url
-						} else {
-							it.url
-						}
+				val b = Button(activity).apply{
+					layoutParams = FlexboxLayout.LayoutParams(
+						FlexboxLayout.LayoutParams.WRAP_CONTENT,
+						buttonHeight
+					).apply{
+						endMargin = marginBetween
 					}
-				val sb = SpannableStringBuilder("$name $count")
-				if(emojiUrl != null) {
-					sb.setSpan(
-						NetworkEmojiSpan(emojiUrl, scale = 1.5f),
-						0,
-						name.length,
-						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+					minWidthCompat = buttonHeight
+					background = ContextCompat.getDrawable(
+						this@ItemViewHolder.activity,
+						R.drawable.btn_bg_transparent
 					)
-					val invalidator = NetworkEmojiInvalidator(activity.handler, b)
-					invalidator.register(sb)
-					extra_invalidator_list.add(invalidator)
-				}
-				b.text = sb
-				b.allCaps = false
-				b.tag = name
-				b.setOnClickListener { addReaction(status, it.tag as? String) }
-				
-				b.setOnLongClickListener {
-					Action_Toot.reactionFromAnotherAccount(
-						activity,
-						access_info,
-						status_showing,
-						it.tag as? String
-					)
-					true
+					setTextColor(content_color)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					
+					val emojiUrl =App1.custom_emoji_lister
+						.getMap(access_info.host, true)
+						?.get(customCode)
+						?.let {
+							if(Pref.bpDisableEmojiAnimation(this@ItemViewHolder.activity.pref)) {
+								it.static_url
+							} else {
+								it.url
+							}
+						}
+					
+					val sb = SpannableStringBuilder("$name $count")
+					if(emojiUrl != null) {
+						sb.setSpan(
+							NetworkEmojiSpan(emojiUrl, scale = 1.5f),
+							0,
+							name.length,
+							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+						)
+						val invalidator = NetworkEmojiInvalidator(this@ItemViewHolder.activity.handler, this)
+						invalidator.register(sb)
+						extra_invalidator_list.add(invalidator)
+					}
+					text = sb
+					allCaps = false
+					
+					tag = name
+					
+					setOnClickListener {
+						addReaction(status, it.tag as? String)
+					}
+					setOnLongClickListener {
+						Action_Toot.reactionFromAnotherAccount(
+							this@ItemViewHolder.activity,
+							access_info,
+							status_showing,
+							it.tag as? String
+						)
+						true
+					}
 				}
 				box.addView(b)
 				lastButton = b
 			}
 			
+			// 既定のリアクション
 			for(mr in MisskeyReaction.values()) {
 				val count = reactionsCount[mr.shortcode]
 				if(count == null || count <= 0) continue
 				addEmojiReaction(mr.shortcode,mr.emojiUtf16,count)
 			}
 			
-			// カスタム絵文字リアクション
+			// カスタム絵文字またはUnicode絵文字のリアクション
 			val list = reactionsCount.keys
 				.filter { MisskeyReaction.shortcodeMap[it] == null }
 				.sorted()
@@ -2508,7 +2518,7 @@ internal class ItemViewHolder(
 			
 			lastButton
 				?.layoutParams
-				?.castOrNull<ViewGroup.MarginLayoutParams>()
+				?.cast<ViewGroup.MarginLayoutParams>()
 				?.endMargin = 0
 		}
 		

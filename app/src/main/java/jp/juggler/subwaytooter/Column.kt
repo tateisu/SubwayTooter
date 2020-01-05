@@ -2761,7 +2761,7 @@ class Column(
 						}
 					}
 					o.highlightSpeech?.let {
-						App1.getAppState(context).addSpeech(it.name, allowRepeat = true)
+						App1.getAppState(context).addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
 					}
 				}
 			}

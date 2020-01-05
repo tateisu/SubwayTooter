@@ -32,6 +32,17 @@ import java.util.*
 import java.util.regex.Pattern
 import kotlin.math.max
 
+enum class DedupMode {
+	None,
+	RecentExpire,
+	Recent,
+}
+
+class DedupItem(
+	val text : String,
+	var time : Long = SystemClock.elapsedRealtime()
+)
+
 class AppState(internal val context : Context, internal val pref : SharedPreferences) {
 	
 	companion object {
@@ -128,7 +139,8 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	private val voice_list = ArrayList<Voice>()
 	
 	private val tts_queue = LinkedList<String>()
-	private val duplication_check = LinkedList<String>()
+	
+	private val duplication_check = LinkedList<DedupItem>()
 	
 	private var last_ringtone : WeakReference<Ringtone>? = null
 	
@@ -186,7 +198,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 				
 				val now = SystemClock.elapsedRealtime()
 				
-				if(tts_speak_start >= max(1L,tts_speak_end) ) {
+				if(tts_speak_start >= max(1L, tts_speak_end)) {
 					// まだ終了イベントを受け取っていない
 					val expire_remain = tts_speak_wait_expire + tts_speak_start - now
 					if(expire_remain <= 0) {
@@ -512,20 +524,31 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		addSpeech(sb.toString())
 	}
 	
-	internal fun addSpeech(text : String, allowRepeat : Boolean = false) {
+	internal fun addSpeech(text : String, dedupMode : DedupMode = DedupMode.Recent) {
 		
 		if(tts == null) return
 		
 		val sv = reSpaces.matcher(text).replaceAll(" ").trim { it <= ' ' }
 		if(sv.isEmpty()) return
 		
-		if(! allowRepeat) {
-			for(check in duplication_check) {
-				if(check == sv) return
-			}
-			duplication_check.addLast(sv)
-			if(duplication_check.size >= 60) {
-				duplication_check.removeFirst()
+		if(dedupMode != DedupMode.None) {
+			val check = duplication_check.find { it.text == sv }
+			if(check == null) {
+				duplication_check.addLast(DedupItem(sv))
+				if(duplication_check.size > 60) {
+					duplication_check.removeFirst()
+				}
+			} else {
+				when(dedupMode) {
+					DedupMode.None -> {
+					}
+					
+					DedupMode.Recent ->
+						return
+					
+					DedupMode.RecentExpire ->
+						if(SystemClock.elapsedRealtime() - check.time < 5000L) return
+				}
 			}
 		}
 		

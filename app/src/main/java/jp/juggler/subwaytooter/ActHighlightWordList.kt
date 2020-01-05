@@ -194,7 +194,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 						sound(o)
 					}
 					R.id.ivSpeech->{
-						App1.getAppState(this@ActHighlightWordList).addSpeech(o.name,allowRepeat = true)
+						App1.getAppState(this@ActHighlightWordList).addSpeech(o.name,dedupMode  = DedupMode.None)
 					}
 				}
 			}

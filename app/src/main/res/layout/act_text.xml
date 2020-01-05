@@ -79,10 +79,10 @@
             />
 
         <Button
-            android:id="@+id/btnSearchMSP"
+            android:id="@+id/btnTranslate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/toot_search_msp"
+            android:text="@string/translate"
             android:textAllCaps="false"
             />
 

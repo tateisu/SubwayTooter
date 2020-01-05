@@ -4,6 +4,7 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -23,7 +24,8 @@ object CustomShare {
 	
 	private val log = LogCategory("CustomShare")
 	
-	private const val translate_app_component_default = "com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity"
+	private const val translate_app_component_default =
+		"com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity"
 	
 	// convert "pkgName/className" string to ComponentName object.
 	private fun String.cn() : ComponentName? {
@@ -92,7 +94,35 @@ object CustomShare {
 	}
 	
 	fun invoke(
-		activity : ActMain,
+		context : Context,
+		text : String,
+		target : CustomShareTarget
+	) {
+		try {
+			// convert "pkgName/className" string to ComponentName object.
+			val cn = getCustomShareComponentName(App1.pref, target)
+			if(cn == null) {
+				showToast(context, true, R.string.custom_share_app_not_found)
+				return
+			}
+			
+			val intent = Intent()
+			intent.action = Intent.ACTION_SEND
+			intent.type = "text/plain"
+			intent.putExtra(Intent.EXTRA_TEXT, text)
+			intent.component = cn
+			context.startActivity(intent)
+		} catch(ex : ActivityNotFoundException) {
+			log.trace(ex)
+			showToast(context, true, R.string.custom_share_app_not_found)
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			showToast(context, ex, "invoke() failed.")
+		}
+	}
+	
+	fun invoke(
+		context : Context,
 		access_info : SavedAccount,
 		status : TootStatus?,
 		target : CustomShareTarget
@@ -101,33 +131,24 @@ object CustomShare {
 		
 		try {
 			// convert "pkgName/className" string to ComponentName object.
-			val cn = getCustomShareComponentName(activity.pref, target)
+			val cn = getCustomShareComponentName(App1.pref, target)
 			if(cn == null) {
-				showToast(activity,true,R.string.custom_share_app_not_found)
+				showToast(context, true, R.string.custom_share_app_not_found)
 				return
 			}
 			
-			val sv = TootTextEncoder.encodeStatusForTranslate(activity, access_info, status)
-			
-			val intent = Intent()
-			intent.action = Intent.ACTION_SEND
-			intent.type = "text/plain"
-			intent.putExtra(Intent.EXTRA_TEXT, sv)
-			intent.component = cn
-			activity.startActivity(intent)
-		} catch( ex: ActivityNotFoundException ){
-			log.trace(ex)
-			showToast(activity, true, R.string.custom_share_app_not_found)
+			val sv = TootTextEncoder.encodeStatusForTranslate(context, access_info, status)
+			invoke(context, sv, target)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(activity, ex, "invoke() failed.")
+			showToast(context, ex, "invoke() failed.")
 		}
 	}
 	
 	private val cache = HashMap<CustomShareTarget, Pair<CharSequence?, Drawable?>>()
 	
-	fun getCache(target:CustomShareTarget) = cache[target]
-
+	fun getCache(target : CustomShareTarget) = cache[target]
+	
 	fun reloadCache(context : Context, pref : SharedPreferences) {
 		val pm = context.packageManager
 		CustomShareTarget.values().forEach { target ->

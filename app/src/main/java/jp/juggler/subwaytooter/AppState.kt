@@ -30,6 +30,7 @@ import java.io.FileNotFoundException
 import java.lang.ref.WeakReference
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.math.max
 
 class AppState(internal val context : Context, internal val pref : SharedPreferences) {
 	
@@ -185,24 +186,22 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 				
 				val now = SystemClock.elapsedRealtime()
 				
-				if(tts_speak_start > 0L) {
-					if(tts_speak_start >= tts_speak_end) {
-						// まだ終了イベントを受け取っていない
-						val expire_remain = tts_speak_wait_expire + tts_speak_start - now
-						if(expire_remain <= 0) {
-							log.d("proc_flushSpeechQueue: tts_speak wait expired.")
-							restartTTS()
-						} else {
-							log.d(
-								"proc_flushSpeechQueue: tts is speaking. queue_count=%d, expire_remain=%.3f",
-								queue_count,
-								expire_remain / 1000f
-							)
-							handler.postDelayed(this, expire_remain)
-							return
-						}
+				if(tts_speak_start >= max(1L,tts_speak_end) ) {
+					// まだ終了イベントを受け取っていない
+					val expire_remain = tts_speak_wait_expire + tts_speak_start - now
+					if(expire_remain <= 0) {
+						log.d("proc_flushSpeechQueue: tts_speak wait expired.")
+						restartTTS()
+					} else {
+						log.d(
+							"proc_flushSpeechQueue: tts is speaking. queue_count=%d, expire_remain=%.3f",
+							queue_count,
+							expire_remain / 1000f
+						)
+						handler.postDelayed(this, expire_remain)
 						return
 					}
+					return
 				}
 				
 				val sv = tts_queue.removeFirst()
@@ -280,8 +279,6 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 				++ i
 			}
 		}
-		
-		enableSpeech()
 		
 		// ミュートデータのロード
 		TootStatus.muted_app = MutedApp.nameSet
@@ -515,14 +512,14 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		addSpeech(sb.toString())
 	}
 	
-	internal fun addSpeech(text : String,allowRepeat:Boolean = false) {
+	internal fun addSpeech(text : String, allowRepeat : Boolean = false) {
 		
 		if(tts == null) return
 		
 		val sv = reSpaces.matcher(text).replaceAll(" ").trim { it <= ' ' }
 		if(sv.isEmpty()) return
 		
-		if(!allowRepeat) {
+		if(! allowRepeat) {
 			for(check in duplication_check) {
 				if(check == sv) return
 			}

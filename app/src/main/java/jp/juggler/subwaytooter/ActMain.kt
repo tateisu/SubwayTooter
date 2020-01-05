@@ -654,6 +654,8 @@ class ActMain : AppCompatActivity()
 		
 		te = SystemClock.elapsedRealtime()
 		if(te - tsTotal >= 100L) log.w("onStart: ${te - tsTotal}ms : total")
+		
+		app_state.enableSpeech()
 	}
 	
 	override fun onStop() {

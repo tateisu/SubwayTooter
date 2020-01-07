@@ -2491,28 +2491,27 @@ internal class ItemViewHolder(
 				lastButton = b
 			}
 			
-			// 既定のリアクション
-			for(mr in MisskeyReaction.values()) {
-				val count = reactionsCount[mr.shortcode]
-				if(count == null || count <= 0) continue
-				addEmojiReaction(mr.shortcode, mr.emojiUtf16, count)
-			}
-			
-			// カスタム絵文字またはUnicode絵文字のリアクション
-			val list = reactionsCount.keys
-				.filter { MisskeyReaction.shortcodeMap[it] == null }
-				.sorted()
-			
-			for(key in list) {
-				val count = reactionsCount[key]
-				if(count == null || count <= 0) continue
+			for(entry in reactionsCount.entries) {
+				val key = entry.key
+				val count = entry.value
+				if(count <= 0) continue
 				
+				// 組み込みのリアクション
+				val mr = MisskeyReaction.shortcodeMap[key]
+				if(mr != null) {
+					addEmojiReaction(mr.shortcode, mr.emojiUtf16, count)
+					continue
+				}
+
+				// カスタム絵文字のリアクション
 				val customCode = key.replace(":", "")
 				if(key != customCode) {
 					addCustomEmojiReaction(key, customCode, count)
-				} else {
-					addEmojiReaction(key, key, count)
+					continue
 				}
+				
+				// Unicode絵文字のリアクション
+				addEmojiReaction(key, key, count)
 			}
 			
 			lastButton

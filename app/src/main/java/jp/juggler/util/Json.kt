@@ -919,60 +919,9 @@ fun Writer.writeArray(indentFactor : Int, indent : Int, src : Any) : Writer =
 		throw JsonException(e)
 	}
 
-fun Writer.writeJsonObject(indentFactor : Int, indent : Int, src : JsonObject) : Writer =
-	try {
-		append('{')
-		when(src.size) {
-			
-			0 -> {
-			}
-			
-			1 -> {
-				val entry = src.entries.first()
-				writeQuote(entry.key)
-				append(':')
-				if(indentFactor > 0) append(' ')
-				try {
-					writeJsonValue(indentFactor, indent, entry.value)
-				} catch(ex : Throwable) {
-					throw JsonException(
-						"Unable to write JsonObject value for key: ${entry.key}",
-						ex
-					)
-				}
-			}
-			
-			else -> {
-				val newIndent = indent + indentFactor
-				var needsComma = false
-				for(entry in src.entries) {
-					if(needsComma) append(',')
-					indent(indentFactor, newIndent)
-					writeQuote(entry.key)
-					append(':')
-					if(indentFactor > 0) append(' ')
-					try {
-						writeJsonValue(indentFactor, newIndent, entry.value)
-					} catch(ex : Exception) {
-						throw JsonException(
-							"Unable to write JsonObject value for key: ${entry.key}",
-							ex
-						)
-					}
-					needsComma = true
-				}
-				indent(indentFactor, indent)
-			}
-		}
-		append('}')
-		this
-	} catch(ex : IOException) {
-		throw JsonException(ex)
-	}
-
 private fun Writer.writeMap(indentFactor : Int, indent : Int, src : Map<*, *>) : Writer =
 	try {
-		append('[')
+		append('{')
 		when(src.size) {
 			0 -> {
 			}
@@ -1014,7 +963,7 @@ private fun Writer.writeMap(indentFactor : Int, indent : Int, src : Map<*, *>) :
 				indent(indentFactor, indent)
 			}
 		}
-		append(']')
+		append('}')
 		this
 	} catch(e : IOException) {
 		throw JsonException(e)
@@ -1025,34 +974,30 @@ private fun Writer.writeJsonValue(
 	indent : Int,
 	value : Any?
 ) : Writer {
-	if(value == null) {
-		write("null")
-	} else if(value is String) {
-		writeQuote(value)
-	} else if(value is Number) {
-		val sv = value.toJsonString()
-		if(reNumber.matcher(sv).matches()) {
-			write(sv)
-		} else {
-			// not all Numbers may match actual JSON Numbers. i.e. fractions or Imaginary
-			// The Number value is not a valid JSON number.
-			// Instead we will quote it as a string
-			writeQuote(sv)
+	when {
+		value == null -> write("null")
+
+		value is Boolean -> write(value.toString())
+		
+		value is Number -> {
+			val sv = value.toJsonString()
+			if(reNumber.matcher(sv).matches()) {
+				write(sv)
+			} else {
+				// not all Numbers may match actual JSON Numbers. i.e. fractions or Imaginary
+				// The Number value is not a valid JSON number.
+				// Instead we will quote it as a string
+				writeQuote(sv)
+			}
 		}
-	} else if(value is Boolean) {
-		writeQuote(value.toString())
-	} else if(value is Enum<*>) {
-		writeQuote(value.name)
-	} else if(value is JsonObject) {
-		writeJsonObject(indentFactor, indent, value)
-	} else if(value is Map<*, *>) {
-		writeMap(indentFactor, indent, value)
-	} else if(value is Collection<*>) {
-		writeCollection(indentFactor, indent, value)
-	} else if(value.javaClass.isArray) {
-		writeArray(indentFactor, indent, value)
-	} else {
-		writeQuote(value.toString())
+		
+		value is String -> writeQuote(value)
+		value is Enum<*> -> writeQuote(value.name)
+		value is JsonObject -> writeMap(indentFactor, indent, value)
+		value is Map<*, *> -> writeMap(indentFactor, indent, value)
+		value is Collection<*> -> writeCollection(indentFactor, indent, value)
+		value.javaClass.isArray -> writeArray(indentFactor, indent, value)
+		else -> writeQuote(value.toString())
 	}
 	return this
 }
@@ -1064,10 +1009,16 @@ fun notEmptyOrThrow(name : String, value : String?) =
 
 fun List<Any?>.toJsonArray() = JsonArray(this)
 
-// return null if the json value is "null"
-fun String.parseJson() = JsonTokenizer(this).nextValue()
+private val log = LogCategory("Json")
 
-//private val log = LogCategory("Json")
+// return null if the json value is "null"
+fun String.parseJson() = try{
+	JsonTokenizer(this).nextValue()
+}catch(ex:Throwable){
+	log.e(ex,"parseJson failed. $this")
+	throw ex
+}
+
 //fun String.parseJsonOrNull() =try {
 //	parseJson()
 //}catch(ex:Throwable){

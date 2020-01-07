@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.collections.LinkedHashMap
 import kotlin.math.abs
 
 class FilterTrees(
@@ -150,7 +151,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	
 	var viaMobile : Boolean = false
 	
-	var reactionCounts : HashMap<String, Int>? = null
+	var reactionCounts : LinkedHashMap<String, Int>? = null
 	var myReaction : String? = null
 	
 	var reply : TootStatus?
@@ -740,7 +741,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			// カウントを増やす
 			var map = this.reactionCounts
 			if(map == null) {
-				map = HashMap()
+				map = LinkedHashMap()
 				this.reactionCounts = map
 			}
 			map[reaction] = (map[reaction] ?: 0) + 1
@@ -769,7 +770,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			// カウントを減らす
 			var map = this.reactionCounts
 			if(map == null) {
-				map = HashMap()
+				map = LinkedHashMap()
 				this.reactionCounts = map
 			}
 			map[reaction] = (map[reaction] ?: 1) - 1
@@ -1063,16 +1064,15 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			return rv
 		}
 		
-		private fun parseReactionCounts(src : JsonObject?) : HashMap<String, Int>? {
-			var rv : HashMap<String, Int>? = null
-			if(src != null) {
-				for(key in src.keys) {
-					if(key.isEmpty()) continue
-					val v = src.parseInt(key) ?: continue
-					// カスタム絵文字などが含まれるようになったので、内容のバリデーションはできない
-					if(rv == null) rv = HashMap()
-					rv[key] = v
-				}
+		private fun parseReactionCounts(src : JsonObject?) : LinkedHashMap<String, Int>? {
+
+			// カスタム絵文字などが含まれるようになったので、内容のバリデーションはできない
+			var rv : LinkedHashMap<String, Int>? = null
+			src?.entries?.forEach { entry ->
+				val key = entry.key.notEmpty() ?: return@forEach
+				val v = src.parseInt(key)?.notZero() ?: return@forEach
+				if(rv == null) rv = LinkedHashMap()
+				rv!![key] = v
 			}
 			return rv
 		}

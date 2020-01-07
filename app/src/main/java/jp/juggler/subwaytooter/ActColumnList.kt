@@ -14,12 +14,7 @@ import com.woxthebox.draglistview.DragItemAdapter
 import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
-import jp.juggler.util.LogCategory
-import jp.juggler.util.activity
-import jp.juggler.util.getAttributeColor
-import jp.juggler.util.showToast
-import org.json.JSONArray
-import org.json.JSONObject
+import jp.juggler.util.*
 import java.util.*
 
 class ActColumnList : AppCompatActivity() {
@@ -61,16 +56,8 @@ class ActColumnList : AppCompatActivity() {
 		super.onSaveInstanceState(outState)
 		
 		outState.putInt(EXTRA_SELECTION, old_selection)
-		
-		//
-		val array = JSONArray()
-		val item_list = listAdapter.itemList
-		var i = 0
-		val ie = item_list.size
-		while(i < ie) {
-			array.put(item_list[i].json)
-			++ i
-		}
+
+		val array =listAdapter.itemList.map { it.json }.toJsonArray()
 		AppState.saveColumnList(this, TMP_FILE_COLUMN_LIST, array)
 	}
 	
@@ -151,27 +138,19 @@ class ActColumnList : AppCompatActivity() {
 		
 		val tmp_list = ArrayList<MyItem>()
 		try {
-			val array = AppState.loadColumnList(this, TMP_FILE_COLUMN_LIST)
-			if(array != null) {
-				var i = 0
-				val ie = array.length()
-				while(i < ie) {
+			AppState.loadColumnList(this, TMP_FILE_COLUMN_LIST)
+				?.toObjectList()
+				?.forEachIndexed{index,src->
 					try {
-						val src = array.optJSONObject(i)
-						val item = MyItem(src, i.toLong(), this)
-						if(src != null) {
-							tmp_list.add(item)
-							if(old_selection == item.old_index) {
-								item.setOldSelection(true)
-							}
+						val item = MyItem(src, index.toLong(), this)
+						tmp_list.add(item)
+						if(old_selection == item.old_index) {
+							item.setOldSelection(true)
 						}
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
-					
-					++ i
 				}
-			}
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
@@ -214,7 +193,7 @@ class ActColumnList : AppCompatActivity() {
 	}
 	
 	// リスト要素のデータ
-	internal class MyItem(val json : JSONObject, val id : Long, context : Context) {
+	internal class MyItem(val json : JsonObject, val id : Long, context : Context) {
 		
 		val name : String = json.optString(Column.KEY_COLUMN_NAME)
 		val acct : String = json.optString(Column.KEY_COLUMN_ACCESS)

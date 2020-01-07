@@ -5,17 +5,16 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
+import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 import jp.juggler.util.digestSHA256Hex
 import jp.juggler.util.toJsonObject
-import org.json.JSONObject
-import java.util.*
 
 class PostDraft {
 	
 	var id : Long = 0
 	var time_save : Long = 0
-	var json : JSONObject? = null
+	var json : JsonObject? = null
 	var hash : String? = null
 	
 	class ColIdx(cursor : Cursor) {
@@ -87,21 +86,15 @@ class PostDraft {
 			
 		}
 		
-		fun save(now : Long, json : JSONObject) {
+		fun save(now : Long, json : JsonObject) {
 			
 			deleteOld(now)
 			
 			try {
 				// make hash
 				val sb = StringBuilder()
-				val keys = ArrayList<String>()
-				val it = json.keys()
-				while(it.hasNext()) {
-					keys.add(it.next())
-				}
-				keys.sort()
-				for(k in keys) {
-					val v = (if(json.isNull(k)) null else json.opt(k))?.toString() ?: "(null)"
+				json.keys.toMutableList().apply { sort() }.forEach { k ->
+					val v = json[k]?.toString() ?: "(null)"
 					sb.append("&")
 					sb.append(k)
 					sb.append("=")
@@ -110,11 +103,11 @@ class PostDraft {
 				val hash = sb.toString().digestSHA256Hex()
 				
 				// save to db
-				val cv = ContentValues()
-				cv.put(COL_TIME_SAVE, now)
-				cv.put(COL_JSON, json.toString())
-				cv.put(COL_HASH, hash)
-				App1.database.replace(table, null, cv)
+				App1.database.replace(table, null, ContentValues().apply {
+					put(COL_TIME_SAVE, now)
+					put(COL_JSON, json.toString())
+					put(COL_HASH, hash)
+				})
 			} catch(ex : Throwable) {
 				log.e(ex, "save failed.")
 			}
@@ -172,7 +165,7 @@ class PostDraft {
 				dst.json = cursor.getString(colIdx.idx_json).toJsonObject()
 			} catch(ex : Throwable) {
 				log.trace(ex)
-				dst.json = JSONObject()
+				dst.json = JsonObject()
 			}
 			
 			dst.hash = cursor.getString(colIdx.idx_hash)

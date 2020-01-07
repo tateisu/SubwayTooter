@@ -11,17 +11,18 @@ import android.widget.*
 import androidx.viewpager.widget.ViewPager
 import com.astuetz.PagerSlidingTabStrip
 import com.bumptech.glide.Glide
-
 import jp.juggler.emoji.EmojiMap
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
+import jp.juggler.subwaytooter.put
 import jp.juggler.subwaytooter.view.HeaderGridView
 import jp.juggler.subwaytooter.view.MyViewPager
 import jp.juggler.subwaytooter.view.NetworkEmojiView
 import jp.juggler.util.*
 import org.jetbrains.anko.padding
 import org.jetbrains.anko.textColor
-import org.json.JSONObject
 import java.util.*
 
 @SuppressLint("InflateParams")
@@ -99,9 +100,7 @@ class EmojiPicker(
 		val sv = Pref.spEmojiPickerRecent(pref)
 		if(sv.isNotEmpty()) {
 			try {
-				val array = sv.toJsonArray()
-				for(i in 0 until array.length()) {
-					val item = array.optJSONObject(i)
+				sv.toJsonArray()?.toObjectList()?.forEach { item ->
 					val name = item.parseString("name")
 					if(name?.isNotEmpty() == true) {
 						val instance = item.parseString("instance")
@@ -528,11 +527,11 @@ class EmojiPicker(
 		val pref = App1.pref
 		
 		// Recentをロード(他インスタンスの絵文字を含む)
-		val list : ArrayList<JSONObject> = try {
-			Pref.spEmojiPickerRecent(pref).toJsonArray().toObjectList()
-		} catch(ignored : Throwable) {
-			ArrayList()
-		}
+		val list : MutableList<JsonObject> = try {
+			Pref.spEmojiPickerRecent(pref).toJsonArray()?.toObjectList() !!
+		} catch(_ : Throwable) {
+			emptyList<JsonObject>()
+		}.toMutableList()
 		
 		// 選択された絵文字と同じ項目を除去
 		// 項目が増えすぎたら減らす
@@ -552,7 +551,7 @@ class EmojiPicker(
 		}
 		
 		// 先頭に項目を追加
-		list.add(0, JSONObject().apply {
+		list.add(0, JsonObject().apply {
 			put("name", name)
 			if(instance != null) put("instance", instance)
 		})

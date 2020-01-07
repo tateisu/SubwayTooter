@@ -1,12 +1,10 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import org.json.JSONObject
-
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.util.parseString
+import jp.juggler.util.JsonObject
 
-class TootRelationShip(parser:TootParser,src : JSONObject) {
+class TootRelationShip(parser:TootParser,src : JsonObject) {
 	
 	// Target account id
 	// MisskeyのユーザリレーションはuserIdを含まないので後から何か設定する必要がある
@@ -61,14 +59,14 @@ class TootRelationShip(parser:TootParser,src : JSONObject) {
 		}else{
 			this.id = EntityId.mayDefault( src.parseString("id") )
 			
-			var ov = src.opt("following")
-			if(ov is JSONObject) {
+			var ov = src["following"]
+			if(ov is JsonObject) {
 				// https://github.com/tootsuite/mastodon/issues/5856
 				// 一部の開発版ではこうなっていた
 				
 				this.following = true
 				
-				ov = ov.opt("reblogs")
+				ov = ov["reblogs"]
 				if(ov is Boolean) {
 					this.showing_reblogs = if(ov) UserRelation.REBLOG_SHOW else UserRelation.REBLOG_HIDE
 				} else {
@@ -79,7 +77,7 @@ class TootRelationShip(parser:TootParser,src : JSONObject) {
 				this.following = if(ov is Boolean) ov else false
 				
 				// 2.1 の挙動
-				ov = src.opt("showing_reblogs")
+				ov = src["showing_reblogs"]
 				if(this.following && ov is Boolean) {
 					this.showing_reblogs = if(ov) UserRelation.REBLOG_SHOW else UserRelation.REBLOG_HIDE
 				} else {

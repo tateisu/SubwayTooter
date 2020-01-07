@@ -1,10 +1,8 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.util.notEmptyOrThrow
-import jp.juggler.util.parseString
-import org.json.JSONArray
-
-import org.json.JSONObject
+import jp.juggler.util.JsonArray
+import jp.juggler.util.JsonObject
+import jp.juggler.util.notEmpty
 
 class CustomEmoji(
 	val shortcode : String, // shortcode (コロンを含まない)
@@ -28,7 +26,7 @@ class CustomEmoji(
 	
 	companion object {
 		
-		val decode : (JSONObject) -> CustomEmoji = { src ->
+		val decode : (JsonObject) -> CustomEmoji = { src ->
 			CustomEmoji(
 				shortcode = src.notEmptyOrThrow("shortcode"),
 				url = src.notEmptyOrThrow("url"),
@@ -38,28 +36,26 @@ class CustomEmoji(
 			)
 		}
 		
-		val decodeMisskey : (JSONObject) -> CustomEmoji = { src ->
+		val decodeMisskey : (JsonObject) -> CustomEmoji = { src ->
 			val url = src.parseString("url") ?: error("missing url")
 			
 			CustomEmoji(
 				shortcode = src.parseString("name") ?: error("missing name"),
 				url = url,
 				static_url = url,
-				aliases = parseAliases(src.optJSONArray("aliases"))
+				aliases = parseAliases(src.parseJsonArray("aliases"))
 			)
 		}
 		
-		private fun parseAliases(src : JSONArray?) : ArrayList<String>? {
+		private fun parseAliases(src : JsonArray?) : ArrayList<String>? {
 			var dst = null as ArrayList<String>?
 			if(src != null) {
-				val size = src.length()
+				val size = src.size
 				if(size > 0) {
 					dst = ArrayList(size)
-					for(i in 0 until size) {
-						val str = src.parseString(i) ?: continue
-						if(str.isNotEmpty()) {
-							dst.add(str)
-						}
+					src.forEach {
+						val str = it?.toString()?.notEmpty()
+						if(str != null ) dst.add(str)
 					}
 				}
 			}

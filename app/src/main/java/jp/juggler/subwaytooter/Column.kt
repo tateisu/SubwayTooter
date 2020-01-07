@@ -17,9 +17,6 @@ import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.*
 import okhttp3.Handshake
 import org.jetbrains.anko.backgroundDrawable
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.File
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
@@ -217,7 +214,7 @@ class Column(
 			return params[idx] as T
 		}
 		
-		fun loadAccount(context : Context, src : JSONObject) : SavedAccount {
+		fun loadAccount(context : Context, src : JsonObject) : SavedAccount {
 			val account_db_id = src.parseLong(KEY_ACCOUNT_ROW_ID) ?: - 1L
 			return if(account_db_id >= 0) {
 				SavedAccount.loadAccount(context, account_db_id)
@@ -297,7 +294,7 @@ class Column(
 			}
 		}
 		
-		private fun decodeColumnId(src : JSONObject) : String {
+		private fun decodeColumnId(src : JsonObject) : String {
 			return src.parseString(KEY_COLUMN_ID) ?: generateColumnId()
 		}
 		
@@ -488,7 +485,7 @@ class Column(
 	internal var hashtag_none : String = ""
 	internal var hashtag_acct : String = ""
 	
-	internal var language_filter : JSONObject? = null
+	internal var language_filter : JsonObject? = null
 	
 	// プロフカラムでのアカウント情報
 	@Volatile
@@ -555,7 +552,7 @@ class Column(
 			|| dont_show_reply
 			|| dont_show_reaction
 			|| dont_show_vote
-			|| (language_filter?.length() ?: 0) > 0
+			|| (language_filter?.isNotEmpty() == true)
 			)
 	
 	@Volatile
@@ -679,7 +676,7 @@ class Column(
 		}
 	}
 	
-	internal constructor(app_state : AppState, src : JSONObject)
+	internal constructor(app_state : AppState, src : JsonObject)
 		: this(
 		app_state,
 		app_state.context,
@@ -709,7 +706,7 @@ class Column(
 		last_viewing_item_id = EntityId.from(src, KEY_LAST_VIEWING_ITEM)
 		
 		regex_text = src.parseString(KEY_REGEX_TEXT) ?: ""
-		language_filter = src.optJSONObject(KEY_LANGUAGE_FILTER)
+		language_filter = src.parseJsonObject(KEY_LANGUAGE_FILTER)
 		
 		header_bg_color = src.optInt(KEY_HEADER_BACKGROUND_COLOR)
 		header_fg_color = src.optInt(KEY_HEADER_TEXT_COLOR)
@@ -717,7 +714,7 @@ class Column(
 		acct_color = src.optInt(KEY_COLUMN_ACCT_TEXT_COLOR)
 		content_color = src.optInt(KEY_COLUMN_CONTENT_TEXT_COLOR)
 		column_bg_image = src.parseString(KEY_COLUMN_BACKGROUND_IMAGE) ?: ""
-		column_bg_image_alpha = src.optDouble(KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, 1.0).toFloat()
+		column_bg_image_alpha = src.optFloat(KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, 1f)
 		
 		when(type) {
 			
@@ -779,15 +776,15 @@ class Column(
 		}
 	}
 	
-	private fun JSONObject.putIfTrue(key : String, value : Boolean) {
+	private fun JsonObject.putIfTrue(key : String, value : Boolean) {
 		if(value) put(key, true)
 	}
 	
-	@Throws(JSONException::class)
-	fun encodeJSON(dst : JSONObject, old_index : Int) {
-		dst.put(KEY_ACCOUNT_ROW_ID, access_info.db_id)
-		dst.put(KEY_TYPE, type.id)
-		dst.put(KEY_COLUMN_ID, column_id)
+	@Throws(JsonException::class)
+	fun encodeJSON(dst : JsonObject, old_index : Int) {
+		dst[KEY_ACCOUNT_ROW_ID] = access_info.db_id
+		dst[KEY_TYPE] = type.id
+		dst[KEY_COLUMN_ID] = column_id
 		
 		dst.putIfTrue(KEY_DONT_CLOSE, dont_close)
 		dst.putIfTrue(KEY_WITH_ATTACHMENT, with_attachment)
@@ -806,69 +803,80 @@ class Column(
 		dst.putIfTrue(KEY_INSTANCE_LOCAL, instance_local)
 		dst.putIfTrue(KEY_ENABLE_SPEECH, enable_speech)
 		dst.putIfTrue(KEY_USE_OLD_API, use_old_api)
-		dst.put(KEY_QUICK_FILTER, quick_filter)
+		dst[KEY_QUICK_FILTER] = quick_filter
 		
 		last_viewing_item_id?.putTo(dst, KEY_LAST_VIEWING_ITEM)
 		
-		dst.put(KEY_REGEX_TEXT, regex_text)
+		dst[KEY_REGEX_TEXT] = regex_text
 		
 		val ov = language_filter
-		if(ov != null) dst.put(KEY_LANGUAGE_FILTER, ov)
+		if(ov != null) dst[KEY_LANGUAGE_FILTER] = ov
 		
-		dst.put(KEY_HEADER_BACKGROUND_COLOR, header_bg_color)
-		dst.put(KEY_HEADER_TEXT_COLOR, header_fg_color)
-		dst.put(KEY_COLUMN_BACKGROUND_COLOR, column_bg_color)
-		dst.put(KEY_COLUMN_ACCT_TEXT_COLOR, acct_color)
-		dst.put(KEY_COLUMN_CONTENT_TEXT_COLOR, content_color)
-		dst.put(KEY_COLUMN_BACKGROUND_IMAGE, column_bg_image)
-		dst.put(KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, column_bg_image_alpha.toDouble())
+		dst[KEY_HEADER_BACKGROUND_COLOR] = header_bg_color
+		dst[KEY_HEADER_TEXT_COLOR] = header_fg_color
+		dst[KEY_COLUMN_BACKGROUND_COLOR] = column_bg_color
+		dst[KEY_COLUMN_ACCT_TEXT_COLOR] = acct_color
+		dst[KEY_COLUMN_CONTENT_TEXT_COLOR] = content_color
+		dst[KEY_COLUMN_BACKGROUND_IMAGE] = column_bg_image
+		dst[KEY_COLUMN_BACKGROUND_IMAGE_ALPHA] = column_bg_image_alpha.toDouble()
 		
 		when(type) {
 			
-			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
-				dst.put(KEY_STATUS_ID, status_id.toString())
+			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY,
+			ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND,
+			ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
+				dst[KEY_STATUS_ID] = status_id.toString()
 			
-			ColumnType.PROFILE ->
-				dst.put(KEY_PROFILE_ID, profile_id.toString())
-					.put(KEY_PROFILE_TAB, profile_tab.id)
+			ColumnType.PROFILE -> {
+				dst[KEY_PROFILE_ID] = profile_id.toString()
+				dst[KEY_PROFILE_TAB] = profile_tab.id
+			}
 			
-			ColumnType.LIST_MEMBER, ColumnType.LIST_TL ->
-				dst.put(KEY_PROFILE_ID, profile_id.toString())
+			ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> {
+				dst[KEY_PROFILE_ID] = profile_id.toString()
+			}
 			
 			ColumnType.HASHTAG -> {
-				dst.put(KEY_HASHTAG, hashtag)
-				dst.put(KEY_HASHTAG_ANY, hashtag_any)
-				dst.put(KEY_HASHTAG_ALL, hashtag_all)
-				dst.put(KEY_HASHTAG_NONE, hashtag_none)
+				dst[KEY_HASHTAG] = hashtag
+				dst[KEY_HASHTAG_ANY] = hashtag_any
+				dst[KEY_HASHTAG_ALL] = hashtag_all
+				dst[KEY_HASHTAG_NONE] = hashtag_none
 			}
 			
 			ColumnType.HASHTAG_FROM_ACCT -> {
-				dst.put(KEY_HASHTAG_ACCT, hashtag_acct)
-				dst.put(KEY_HASHTAG, hashtag)
-				dst.put(KEY_HASHTAG_ANY, hashtag_any)
-				dst.put(KEY_HASHTAG_ALL, hashtag_all)
-				dst.put(KEY_HASHTAG_NONE, hashtag_none)
+				dst[KEY_HASHTAG_ACCT] = hashtag_acct
+				dst[KEY_HASHTAG] = hashtag
+				dst[KEY_HASHTAG_ANY] = hashtag_any
+				dst[KEY_HASHTAG_ALL] = hashtag_all
+				dst[KEY_HASHTAG_NONE] = hashtag_none
 			}
 			
 			ColumnType.NOTIFICATION_FROM_ACCT -> {
-				dst.put(KEY_HASHTAG_ACCT, hashtag_acct)
+				dst[KEY_HASHTAG_ACCT] = hashtag_acct
 			}
 			
-			ColumnType.SEARCH -> dst
-				.put(KEY_SEARCH_QUERY, search_query)
-				.put(KEY_SEARCH_RESOLVE, search_resolve)
+			ColumnType.SEARCH -> {
+				dst[KEY_SEARCH_QUERY] = search_query
+				dst[KEY_SEARCH_RESOLVE] = search_resolve
+			}
 			
-			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> dst.put(KEY_SEARCH_QUERY, search_query)
+			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> {
+				dst[KEY_SEARCH_QUERY] = search_query
+			}
 			
-			ColumnType.INSTANCE_INFORMATION -> dst.put(KEY_INSTANCE_URI, instance_uri)
+			ColumnType.INSTANCE_INFORMATION -> {
+				dst[KEY_INSTANCE_URI] = instance_uri
+			}
 			
-			ColumnType.PROFILE_DIRECTORY -> dst
-				.put(KEY_SEARCH_QUERY, search_query)
-				.put(KEY_SEARCH_RESOLVE, search_resolve)
-				.put(KEY_INSTANCE_URI, instance_uri)
+			ColumnType.PROFILE_DIRECTORY -> {
+				dst[KEY_SEARCH_QUERY] = search_query
+				dst[KEY_SEARCH_RESOLVE] = search_resolve
+				dst[KEY_INSTANCE_URI] = instance_uri
+			}
 			
-			ColumnType.DOMAIN_TIMELINE -> dst
-				.put(KEY_INSTANCE_URI, instance_uri)
+			ColumnType.DOMAIN_TIMELINE -> {
+				dst[KEY_INSTANCE_URI] = instance_uri
+			}
 			
 			else -> {
 				// no extra parameter
@@ -877,11 +885,11 @@ class Column(
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
 		val ac = AcctColor.load(access_info.acct)
-		dst.put(KEY_COLUMN_ACCESS, if(AcctColor.hasNickname(ac)) ac.nickname else access_info.acct)
-		dst.put(KEY_COLUMN_ACCESS_COLOR, ac.color_fg)
-		dst.put(KEY_COLUMN_ACCESS_COLOR_BG, ac.color_bg)
-		dst.put(KEY_COLUMN_NAME, getColumnName(true))
-		dst.put(KEY_OLD_INDEX, old_index)
+		dst[KEY_COLUMN_ACCESS] = if(AcctColor.hasNickname(ac)) ac.nickname else access_info.acct
+		dst[KEY_COLUMN_ACCESS_COLOR] = ac.color_fg
+		dst[KEY_COLUMN_ACCESS_COLOR_BG] = ac.color_bg
+		dst[KEY_COLUMN_NAME] = getColumnName(true)
+		dst[KEY_OLD_INDEX] = old_index
 	}
 	
 	internal fun isSameSpec(
@@ -1586,7 +1594,7 @@ class Column(
 			TootNotification.TYPE_FAVOURITE,
 			TootNotification.TYPE_REACTION,
 			TootNotification.TYPE_VOTE,
-			TootNotification.TYPE_FOLLOW ,
+			TootNotification.TYPE_FOLLOW,
 			TootNotification.TYPE_FOLLOW_REQUEST,
 			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> {
 				val who = item.account
@@ -1618,10 +1626,12 @@ class Column(
 			// リロード不要なら何もしない
 			null
 		} else if(isMisskey) {
-			val params = access_info.putMisskeyApiToken(JSONObject())
-				.put("userId", profile_id)
-			
-			val result = client.request(PATH_MISSKEY_PROFILE, params.toPostRequestBuilder())
+			val result = client.request(
+				PATH_MISSKEY_PROFILE,
+				access_info.putMisskeyApiToken().apply {
+					put("userId", profile_id)
+				}.toPostRequestBuilder()
+			)
 			
 			// ユーザリレーションの取り扱いのため、別のparserを作ってはいけない
 			parser.misskeyDecodeProfilePin = true
@@ -1653,9 +1663,13 @@ class Column(
 		val parser = TootParser(context, access_info)
 		if(bForceReload || this.list_info == null) {
 			val result = if(isMisskey) {
-				val params = makeMisskeyBaseParameter(parser)
-					.put("listId", profile_id)
-				client.request("/api/users/lists/show", params.toPostRequestBuilder())
+				
+				client.request(
+					"/api/users/lists/show",
+					makeMisskeyBaseParameter(parser).apply {
+						put("listId", profile_id)
+					}.toPostRequestBuilder()
+				)
 			} else {
 				client.request(String.format(Locale.JAPAN, PATH_LIST_INFO, profile_id))
 			}
@@ -1746,13 +1760,12 @@ class Column(
 						
 						val result = client.request(
 							"/api/users/relation",
-							access_info.putMisskeyApiToken()
-							.put(
-								"userId",
-								JSONArray().apply {
-									for(id in userIdList) put(id.toString())
-								}
-							).toPostRequestBuilder()
+							access_info.putMisskeyApiToken().apply {
+								put(
+									"userId",
+									userIdList.map { it.toString() }.toJsonArray()
+								)
+							}.toPostRequestBuilder()
 						)
 						
 						if(result == null || result.response?.code in 400 until 500) break
@@ -2400,18 +2413,18 @@ class Column(
 	
 	private fun createMisskeyConnectChannelMessage(
 		channel : String,
-		params : JSONObject = JSONObject()
+		params : JsonObject = JsonObject()
 	) =
-		JSONObject().apply {
+		JsonObject().apply {
 			put("type", "connect")
-			put("body", JSONObject().apply {
+			put("body", JsonObject().apply {
 				put("channel", channel)
 				put("id", streamCallback._channelId)
 				put("params", params)
 			})
 		}
 	
-	private fun makeMisskeyChannelArg() : JSONObject? {
+	private fun makeMisskeyChannelArg() : JsonObject? {
 		return if(access_info.misskeyVersion < 11) {
 			null
 		} else {
@@ -2761,7 +2774,8 @@ class Column(
 						}
 					}
 					o.highlightSpeech?.let {
-						App1.getAppState(context).addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
+						App1.getAppState(context)
+							.addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
 					}
 				}
 			}

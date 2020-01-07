@@ -1,8 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
-import org.json.JSONObject
-
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.util.JsonObject
 
 class TootContext(
 	//	The ancestors of the status in the conversation, as a list of Statuses
@@ -11,9 +10,9 @@ class TootContext(
 	val descendants : ArrayList<TootStatus>?
 ) {
 	
-	constructor(parser : TootParser, src : JSONObject) : this(
-		ancestors = parseListOrNull(::TootStatus,parser, src.optJSONArray("ancestors")),
-		descendants = parseListOrNull(::TootStatus,parser, src.optJSONArray("descendants"))
+	constructor(parser : TootParser, src : JsonObject) : this(
+		ancestors = parseListOrNull(::TootStatus, parser, src.parseJsonArray("ancestors")),
+		descendants = parseListOrNull(::TootStatus, parser, src.parseJsonArray("descendants"))
 	
 	)
 	

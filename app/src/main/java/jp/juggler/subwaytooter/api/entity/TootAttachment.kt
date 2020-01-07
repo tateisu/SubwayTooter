@@ -4,15 +4,14 @@ import android.content.SharedPreferences
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.util.*
-import org.json.JSONObject
 
 class TootAttachment : TootAttachmentLike {
 	
 	companion object {
-		private fun parseFocusValue(parent : JSONObject?, key : String) : Float {
+		private fun parseFocusValue(parent : JsonObject?, key : String) : Float {
 			if(parent != null) {
-				val dv = parent.optDouble(key)
-				if(dv.isFinite()) return clipRange(- 1f, 1f, dv.toFloat())
+				val dv = parent.parseDouble(key)
+				if(dv != null && dv.isFinite()) return clipRange(- 1f, 1f, dv.toFloat())
 			}
 			return 0f
 		}
@@ -34,7 +33,7 @@ class TootAttachment : TootAttachmentLike {
 		private const val KEY_Y = "y"
 		private const val KEY_BLURHASH = "blurhash"
 		
-		fun decodeJson(src : JSONObject) = TootAttachment(src, decode = true)
+		fun decodeJson(src : JsonObject) = TootAttachment(src, decode = true)
 		
 		private val ext_audio = arrayOf(".mpga", ".mp3", ".aac", ".ogg")
 		
@@ -50,7 +49,7 @@ class TootAttachment : TootAttachmentLike {
 		
 	}
 	
-	constructor(parser : TootParser, src : JSONObject) : this(parser.serviceType, src)
+	constructor(parser : TootParser, src : JsonObject) : this(parser.serviceType, src)
 	
 	//	ID of the attachment
 	val id : EntityId
@@ -94,13 +93,13 @@ class TootAttachment : TootAttachmentLike {
 		else -> false
 	}
 	
-	override val urlForDescription: String?
+	override val urlForDescription : String?
 		get() = remote_url.notEmpty() ?: url
 	
 	override val urlForThumbnail : String?
 		get() = preview_url.notEmpty() ?: remote_url.notEmpty() ?: url
 	
-	constructor(serviceType : ServiceType, src : JSONObject) {
+	constructor(serviceType : ServiceType, src : JsonObject) {
 		
 		when(serviceType) {
 			ServiceType.MISSKEY -> {
@@ -151,7 +150,7 @@ class TootAttachment : TootAttachmentLike {
 					else -> tmpType
 				}
 				
-				val focus = src.optJSONObject("meta")?.optJSONObject("focus")
+				val focus = src.parseJsonObject("meta")?.parseJsonObject("focus")
 				focusX = parseFocusValue(focus, "x")
 				focusY = parseFocusValue(focus, "y")
 				
@@ -164,7 +163,6 @@ class TootAttachment : TootAttachmentLike {
 	
 	private fun parseType(src : String?) =
 		TootAttachmentType.values().find { it.id == src }
-	
 	
 	fun getLargeUrl(pref : SharedPreferences) =
 		if(Pref.bpPriorLocalURL(pref)) {
@@ -208,7 +206,7 @@ class TootAttachment : TootAttachmentLike {
 	}
 	
 	constructor(
-		src : JSONObject,
+		src : JsonObject,
 		@Suppress("UNUSED_PARAMETER") decode : Boolean // dummy parameter for choosing this ctor.
 	) {
 		
@@ -229,7 +227,7 @@ class TootAttachment : TootAttachmentLike {
 		description = src.parseString(KEY_DESCRIPTION)
 		isSensitive = src.optBoolean(KEY_IS_SENSITIVE)
 		
-		val focus = src.optJSONObject(KEY_META)?.optJSONObject(KEY_FOCUS)
+		val focus = src.parseJsonObject(KEY_META)?.parseJsonObject(KEY_FOCUS)
 		focusX = parseFocusValue(focus, KEY_X)
 		focusY = parseFocusValue(focus, KEY_Y)
 		blurhash = src.parseString(KEY_BLURHASH)

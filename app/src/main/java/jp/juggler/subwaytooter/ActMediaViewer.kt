@@ -42,7 +42,6 @@ import jp.juggler.subwaytooter.util.ProgressResponseBody
 import jp.juggler.subwaytooter.view.PinchBitmapView
 import jp.juggler.util.*
 import okhttp3.Request
-import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.*
@@ -75,7 +74,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		internal fun decodeMediaList(src : String?) =
 			ArrayList<TootAttachment>().apply {
 				src?.toJsonArray()?.forEach {
-					if(it !is JSONObject) return@forEach
+					if(it !is JsonObject) return@forEach
 					add(TootAttachment.decodeJson(it))
 				}
 			}

@@ -15,8 +15,6 @@ import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
-import org.json.JSONArray
-import org.json.JSONObject
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
@@ -31,9 +29,9 @@ class FilterTrees(
 )
 
 @Suppress("MemberVisibilityCanPrivate")
-class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
+class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	
-	val json : JSONObject
+	val json : JsonObject
 	
 	// A Fediverse-unique resource ID
 	// MSP から取得したデータだと uri は提供されずnullになる
@@ -81,7 +79,6 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	//	Whether the authenticated user has bookmarked the status
 	var bookmarked : Boolean = false  // アプリから変更する
-	
 	
 	// Whether the authenticated user has muted the conversation this status from
 	var muted : Boolean = false // アプリから変更する
@@ -183,9 +180,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	// 会話の流れビューで後から追加する
 	var card : TootCard? = null
 	
-	var highlightSound: HighlightWord? = null
-	var highlightSpeech: HighlightWord? = null
-	var highlightAny: HighlightWord? = null
+	var highlightSound : HighlightWord? = null
+	var highlightSpeech : HighlightWord? = null
+	var highlightAny : HighlightWord? = null
 	
 	val time_created_at : Long
 	
@@ -224,10 +221,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
 			this.custom_emojis =
-				parseMapOrNull(CustomEmoji.decodeMisskey, src.optJSONArray("emojis"), log)
+				parseMapOrNull(CustomEmoji.decodeMisskey, src.parseJsonArray("emojis"), log)
 			this.profile_emojis = null
 			
-			val who = parser.account(src.optJSONObject("user"))
+			val who = parser.account(src.parseJsonObject("user"))
 				?: throw RuntimeException("missing account")
 			
 			this.accountRef = TootAccountRef(parser, who)
@@ -245,13 +242,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				localOnly
 			) ?: TootVisibility.Public
 			
-			this.misskeyVisibleIds = parseStringArray(src.optJSONArray("visibleUserIds"))
+			this.misskeyVisibleIds = parseStringArray(src.parseJsonArray("visibleUserIds"))
 			
 			this.media_attachments =
 				parseListOrNull(
 					::TootAttachment,
 					parser,
-					src.optJSONArray("files") ?: src.optJSONArray("media") // v11,v10
+					src.parseJsonArray("files") ?: src.parseJsonArray("media") // v11,v10
 				)
 			
 			// Misskeyは画像毎にNSFWフラグがある。どれか１枚でもNSFWならトゥート全体がNSFWということにする
@@ -263,7 +260,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			}
 			this.sensitive = bv
 			
-			this.reply = parser.status(src.optJSONObject("reply"))
+			this.reply = parser.status(src.parseJsonObject("reply"))
 			this.in_reply_to_id = EntityId.mayNull(src.parseString("replyId"))
 			this.in_reply_to_account_id = reply?.account?.id
 			
@@ -273,9 +270,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			// "mentionedRemoteUsers" -> "[{"uri":"https:\/\/mastodon.juggler.jp\/users\/tateisu","username":"tateisu","host":"mastodon.juggler.jp"}]"
 			
-			this.tags = parseMisskeyTags(src.optJSONArray("tags"))
+			this.tags = parseMisskeyTags(src.parseJsonArray("tags"))
 			
-			this.application = parseItem(::TootApplication, parser, src.optJSONObject("app"), log)
+			this.application = parseItem(::TootApplication, parser, src.parseJsonObject("app"), log)
 			
 			this.viaMobile = src.optBoolean("viaMobile")
 			
@@ -297,9 +294,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			)
 			
 			this.decoded_content = options.decodeHTML(content)
-			if(this.highlightSound==null) this.highlightSound = options.highlightSound
-			if(this.highlightSpeech==null) this.highlightSpeech = options.highlightSpeech
-			if(this.highlightAny==null) this.highlightAny = options.highlightAny
+			if(this.highlightSound == null) this.highlightSound = options.highlightSound
+			if(this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
+			if(this.highlightAny == null) this.highlightAny = options.highlightAny
 			
 			// Markdownのデコード結果からmentionsを読むのだった
 			val mentions1 =
@@ -326,9 +323,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			)
 			this.decoded_spoiler_text = options.decodeHTML(spoiler_text)
 			
-			if(this.highlightSound==null) this.highlightSound = options.highlightSound
-			if(this.highlightSpeech==null) this.highlightSpeech = options.highlightSpeech
-			if(this.highlightAny==null) this.highlightAny = options.highlightAny
+			if(this.highlightSound == null) this.highlightSound = options.highlightSound
+			if(this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
+			if(this.highlightAny == null) this.highlightAny = options.highlightAny
 			
 			val mentions2 =
 				(decoded_spoiler_text as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
@@ -345,27 +342,27 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				parser,
 				this,
 				media_attachments,
-				src.optJSONObject("poll"),
+				src.parseJsonObject("poll"),
 				TootPollsType.Misskey
 			)
 			
 			this.reactionCounts = parseReactionCounts(
-				src.optJSONObject("reactions") ?: src.optJSONObject("reactionCounts")
+				src.parseJsonObject("reactions") ?: src.parseJsonObject("reactionCounts")
 			)
 			this.myReaction = src.parseString("myReaction")
 			
-			val reblog = parser.status(src.optJSONObject("renote"))
+			val reblog = parser.status(src.parseJsonObject("renote"))
 			this.reblog = reblog
-
+			
 			// めいめいフォークでは myRenoteIdというものがあるらしい
 			// https://github.com/mei23/misskey/blob/mei-m544/src/models/note.ts#L384-L394
 			// 直近の一つのrenoteのIdを得られるらしい。
-			this.myRenoteId = EntityId.mayNull( src.parseString("myRenoteId"))
+			this.myRenoteId = EntityId.mayNull(src.parseString("myRenoteId"))
 			if(myRenoteId != null) reblogged = true
 			
 			// しかしTLにRenoteが露出してるならそのIDを使う方が賢明であろう
 			// 外側ステータスが自分なら、内側ステータスのmyRenoteIdを設定する
-			if( reblog != null && parser.linkHelper.cast<SavedAccount>()?.isMe( account) ==true ){
+			if(reblog != null && parser.linkHelper.cast<SavedAccount>()?.isMe(account) == true) {
 				reblog.myRenoteId = id
 				reblog.reblogged = true
 			}
@@ -394,15 +391,16 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.created_at = src.parseString("created_at")
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-			this.custom_emojis = parseMapOrNull(CustomEmoji.decode, src.optJSONArray("emojis"), log)
+			this.custom_emojis =
+				parseMapOrNull(CustomEmoji.decode, src.parseJsonArray("emojis"), log)
 			
-			this.profile_emojis = when(val o = src.opt("profile_emojis")) {
-				is JSONArray -> parseMapOrNull(::NicoProfileEmoji, o, log)
-				is JSONObject -> parseProfileEmoji2(::NicoProfileEmoji, o, log)
+			this.profile_emojis = when(val o = src.get("profile_emojis")) {
+				is JsonArray -> parseMapOrNull(::NicoProfileEmoji, o, log)
+				is JsonObject -> parseProfileEmoji2(::NicoProfileEmoji, o, log)
 				else -> null
 			}
 			
-			val who = parser.account(src.optJSONObject("account"))
+			val who = parser.account(src.parseJsonObject("account"))
 				?: throw RuntimeException("missing account")
 			
 			this.accountRef = TootAccountRef(parser, who)
@@ -427,7 +425,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 						parseListOrNull(
 							::TootAttachment,
 							parser,
-							src.optJSONArray("media_attachments"),
+							src.parseJsonArray("media_attachments"),
 							log
 						)
 					this.visibility = TootVisibility.parseMastodon(src.parseString("visibility"))
@@ -448,7 +446,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.media_attachments = parseListOrNull(
 						::TootAttachment,
 						parser,
-						src.optJSONArray("media_attachments"),
+						src.parseJsonArray("media_attachments"),
 						log
 					)
 					this.visibility = TootVisibility.Public
@@ -467,7 +465,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					this.time_created_at = parseTimeMSP(created_at)
 					this.media_attachments =
-						TootAttachmentMSP.parseList(src.optJSONArray("media_attachments"))
+						TootAttachmentMSP.parseList(src.parseJsonArray("media_attachments"))
 					this.visibility = TootVisibility.Public
 					this.sensitive = src.optInt("sensitive", 0) != 0
 				}
@@ -479,10 +477,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.in_reply_to_id = EntityId.mayNull(src.parseString("in_reply_to_id"))
 			this.in_reply_to_account_id =
 				EntityId.mayNull(src.parseString("in_reply_to_account_id"))
-			this.mentions = parseListOrNull(::TootMention, src.optJSONArray("mentions"), log)
-			this.tags = parseListOrNull(::TootTag, src.optJSONArray("tags"))
+			this.mentions = parseListOrNull(::TootMention, src.parseJsonArray("mentions"), log)
+			this.tags = parseListOrNull(::TootTag, src.parseJsonArray("tags"))
 			this.application =
-				parseItem(::TootApplication, parser, src.optJSONObject("application"), log)
+				parseItem(::TootApplication, parser, src.parseJsonObject("application"), log)
 			this.pinned = parser.pinned || src.optBoolean("pinned")
 			this.muted = src.optBoolean("muted")
 			this.language = src.parseString("language")?.notEmpty()
@@ -509,9 +507,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			)
 			
 			this.decoded_content = options.decodeHTML(content)
-			if(this.highlightSound==null) this.highlightSound = options.highlightSound
-			if(this.highlightSpeech==null) this.highlightSpeech = options.highlightSpeech
-			if(this.highlightAny==null) this.highlightAny = options.highlightAny
+			if(this.highlightSound == null) this.highlightSound = options.highlightSound
+			if(this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
+			if(this.highlightAny == null) this.highlightAny = options.highlightAny
 			
 			var sv = (src.parseString("spoiler_text") ?: "").cleanCW()
 			this.spoiler_text = when {
@@ -531,9 +529,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
 			
-			if(this.highlightSound==null) this.highlightSound = options.highlightSound
-			if(this.highlightSpeech==null) this.highlightSpeech = options.highlightSpeech
-			if(this.highlightAny==null) this.highlightAny = options.highlightAny
+			if(this.highlightSound == null) this.highlightSound = options.highlightSound
+			if(this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
+			if(this.highlightAny == null) this.highlightAny = options.highlightAny
 			
 			this.enquete = try {
 				sv = src.parseString("enquete") ?: ""
@@ -546,7 +544,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 						TootPollsType.FriendsNico
 					)
 				} else {
-					val ov = src.optJSONObject("poll")
+					val ov = src.parseJsonObject("poll")
 					TootPolls.parse(
 						parser,
 						this,
@@ -561,10 +559,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			}
 			
 			// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
-			this.reblog = parser.status(src.optJSONObject("reblog"))
+			this.reblog = parser.status(src.parseJsonObject("reblog"))
 			
 			// 2.6.0からステータスにもカード情報が含まれる
-			this.card = parseItem(::TootCard, src.optJSONObject("card"))
+			this.card = parseItem(::TootCard, src.parseJsonObject("card"))
 		}
 	}
 	
@@ -621,9 +619,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	}
 	
 	// 内部で使う
-	private var _filteredWord :String? = null
+	private var _filteredWord : String? = null
 	
-	val filteredWord :String?
+	val filteredWord : String?
 		get() = _filteredWord ?: reblog?._filteredWord
 	
 	val filtered : Boolean
@@ -684,31 +682,31 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		// status from me or boosted by me is not filtered.
 		if(accessInfo.isMe(account)) return false
 		
-		if(isKeywordFilteredSub(tree)!=null ) return true
-		if(reblog?.isKeywordFilteredSub(tree) !=null) return true
+		if(isKeywordFilteredSub(tree) != null) return true
+		if(reblog?.isKeywordFilteredSub(tree) != null) return true
 		
 		return false
 	}
 	
 	private fun isKeywordFilteredSub(tree : WordTrieTree) : ArrayList<String>? {
-
-		var list:ArrayList<String>? = null
 		
-		fun check(t:CharSequence?){
-			if(t?.isEmpty() != false ) return
+		var list : ArrayList<String>? = null
+		
+		fun check(t : CharSequence?) {
+			if(t?.isEmpty() != false) return
 			val matches = tree.matchList(t) ?: return
 			var dst = list
-			if(dst==null){
+			if(dst == null) {
 				dst = ArrayList()
 				list = dst
 			}
-			for( m in matches )
-				dst.add( m.word)
+			for(m in matches)
+				dst.add(m.word)
 		}
 		
-		check( decoded_spoiler_text)
+		check(decoded_spoiler_text)
 		check(decoded_content)
-
+		
 		return list
 	}
 	
@@ -815,8 +813,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		@Volatile
 		internal var muted_word : WordTrieTree? = null
 		
-		const val LANGUAGE_CODE_UNKNOWN="unknown"
-		const val LANGUAGE_CODE_DEFAULT="default"
+		const val LANGUAGE_CODE_UNKNOWN = "unknown"
+		const val LANGUAGE_CODE_DEFAULT = "default"
 		
 		val EMPTY_SPANNABLE = SpannableString("")
 		
@@ -905,7 +903,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		
 		fun parseListTootsearch(
 			parser : TootParser,
-			root : JSONObject
+			root : JsonObject
 		) : ArrayList<TootStatus> {
 			
 			parser.serviceType = ServiceType.TOOTSEARCH
@@ -913,11 +911,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			val result = ArrayList<TootStatus>()
 			val array = TootApiClient.getTootsearchHits(root)
 			if(array != null) {
-				val array_size = array.length()
+				val array_size = array.size
 				result.ensureCapacity(array_size)
-				for(i in 0 until array.length()) {
+				for(i in 0 until array.size) {
 					try {
-						val src = array.optJSONObject(i)?.optJSONObject("_source") ?: continue
+						val src = array.parseJsonObject(i)?.parseJsonObject("_source") ?: continue
 						result.add(TootStatus(parser, src))
 					} catch(ex : Throwable) {
 						log.trace(ex)
@@ -1051,11 +1049,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return date_format.format(Date(t))
 		}
 		
-		fun parseStringArray(src : JSONArray?) : ArrayList<String>? {
+		fun parseStringArray(src : JsonArray?) : ArrayList<String>? {
 			var rv : ArrayList<String>? = null
 			if(src != null) {
-				for(i in 0 until src.length()) {
-					val s = src.optString(i, null)
+				for(i in src.indices) {
+					val s = src.parseString(i)
 					if(s?.isNotEmpty() == true) {
 						if(rv == null) rv = ArrayList()
 						rv.add(s)
@@ -1065,11 +1063,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return rv
 		}
 		
-		private fun parseReactionCounts(src : JSONObject?) : HashMap<String, Int>? {
+		private fun parseReactionCounts(src : JsonObject?) : HashMap<String, Int>? {
 			var rv : HashMap<String, Int>? = null
 			if(src != null) {
-				for(key in src.keys()) {
-					if(key?.isEmpty() != false) continue
+				for(key in src.keys) {
+					if(key.isEmpty()) continue
 					val v = src.parseInt(key) ?: continue
 					// カスタム絵文字などが含まれるようになったので、内容のバリデーションはできない
 					if(rv == null) rv = HashMap()
@@ -1079,11 +1077,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return rv
 		}
 		
-		private fun parseMisskeyTags(src : JSONArray?) : ArrayList<TootTag>? {
+		private fun parseMisskeyTags(src : JsonArray?) : ArrayList<TootTag>? {
 			var rv : ArrayList<TootTag>? = null
 			if(src != null) {
-				for(i in 0 until src.length()) {
-					val sv = src.optString(i, null)
+				for(i in src.indices) {
+					val sv = src.parseString(i)
 					if(sv?.isNotEmpty() == true) {
 						if(rv == null) rv = ArrayList()
 						rv.add(TootTag(name = sv))

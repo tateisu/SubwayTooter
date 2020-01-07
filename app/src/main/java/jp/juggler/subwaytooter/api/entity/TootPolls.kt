@@ -5,10 +5,8 @@ import android.text.Spannable
 import android.text.SpannableString
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.*
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.regex.Pattern
 
 enum class TootPollsType {
@@ -29,7 +27,7 @@ class TootPolls private constructor(
 	parser : TootParser,
 	status : TootStatus,
 	list_attachment : ArrayList<TootAttachmentLike>?,
-	src : JSONObject,
+	src : JsonObject,
 	val pollType : TootPollsType
 ) {
 	
@@ -73,7 +71,7 @@ class TootPolls private constructor(
 				
 				this.items = parseChoiceListMisskey(
 					
-					src.optJSONArray("choices")
+					src.parseJsonArray("choices")
 				)
 				
 				val votesList = ArrayList<Int>()
@@ -134,7 +132,7 @@ class TootPolls private constructor(
 				this.items = parseChoiceListMastodon(
 					parser.context,
 					status,
-					src.optJSONArray("options")?.toObjectList()
+					src.parseJsonArray("options")?.toObjectList()
 				)
 				
 				this.pollId = EntityId.mayNull(src.parseString("id"))
@@ -145,15 +143,15 @@ class TootPolls private constructor(
 				this.votes_count = src.parseInt("votes_count")
 				
 				var ownVoted = src.optBoolean("voted", false)
-
-				src.optJSONArray("own_votes")?.forEach {
-					if( it is Number){
+				
+				src.parseJsonArray("own_votes")?.forEach {
+					if(it is Number) {
 						val i = it.toInt()
 						items?.get(i)?.isVoted = true
 						ownVoted = true
 					}
 				}
-
+				
 				this.ownVoted = ownVoted
 				
 				when {
@@ -229,7 +227,7 @@ class TootPolls private constructor(
 			parser : TootParser,
 			status : TootStatus,
 			list_attachment : ArrayList<TootAttachmentLike>?,
-			src : JSONObject?,
+			src : JsonObject?,
 			pollType : TootPollsType
 		) : TootPolls? {
 			src ?: return null
@@ -250,7 +248,7 @@ class TootPolls private constructor(
 		private fun parseChoiceListMastodon(
 			context : Context,
 			status : TootStatus,
-			objectArray : ArrayList<JSONObject>?
+			objectArray : List<JsonObject>?
 		) : ArrayList<TootPollsChoice>? {
 			if(objectArray != null) {
 				val size = objectArray.size
@@ -313,27 +311,29 @@ class TootPolls private constructor(
 		}
 		
 		private fun parseChoiceListMisskey(
-			choices : JSONArray?
+			choices : JsonArray?
 		) : ArrayList<TootPollsChoice>? {
 			if(choices != null) {
 				val items = ArrayList<TootPollsChoice>()
-				for(i in 0 until choices.length()) {
-					val src = choices.optJSONObject(i)
+				choices.forEach {
+					it.cast<JsonObject>()?.let { src ->
+						val text = reWhitespace
+							.matcher(src.parseString("text")?.sanitizeBDI() ?: "")
+							.replaceAll(" ")
+						val decoded_text = SpannableString(text) // misskey ではマークダウン不可で絵文字もない
+						
+						val dst = TootPollsChoice(
+							text = text,
+							decoded_text = decoded_text,
+							// 配列インデクスと同じだった id = EntityId.mayNull(src.parseLong("id")),
+							votes = src.parseInt("votes") ?: 0,
+							isVoted = src.optBoolean("isVoted")
+						)
+						items.add(dst)
+					}
 					
-					val text = reWhitespace
-						.matcher(src.parseString("text")?.sanitizeBDI() ?: "")
-						.replaceAll(" ")
-					val decoded_text = SpannableString(text) // misskey ではマークダウン不可で絵文字もない
-					
-					val dst = TootPollsChoice(
-						text = text,
-						decoded_text = decoded_text,
-						// 配列インデクスと同じだった id = EntityId.mayNull(src.parseLong("id")),
-						votes = src.parseInt("votes") ?: 0,
-						isVoted = src.optBoolean("isVoted")
-					)
-					items.add(dst)
 				}
+				
 				
 				if(items.isNotEmpty()) return items
 			}

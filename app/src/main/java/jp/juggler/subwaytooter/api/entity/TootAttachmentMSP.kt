@@ -1,8 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.util.notEmpty
-import jp.juggler.util.parseString
-import org.json.JSONArray
+import jp.juggler.util.JsonArray
+import jp.juggler.util.notBlank
 
 class TootAttachmentMSP(
 	val preview_url : String
@@ -19,7 +18,7 @@ class TootAttachmentMSP(
 	
 	override val urlForDescription : String?
 		get() = preview_url
-
+	
 	override val focusX : Float
 		get() = 0f
 	
@@ -29,17 +28,15 @@ class TootAttachmentMSP(
 	override fun hasUrl(url : String) : Boolean = (url == this.preview_url)
 	
 	companion object {
-		fun parseList(array : JSONArray?) : ArrayList<TootAttachmentLike>? {
+		fun parseList(array : JsonArray?) : ArrayList<TootAttachmentLike>? {
 			if(array != null) {
-				val array_size = array.length()
+				val array_size = array.size
 				if(array_size > 0) {
 					val result = ArrayList<TootAttachmentLike>()
 					result.ensureCapacity(array_size)
-					for(i in 0 until array_size) {
-						val sv = array.parseString(i)
-						if(sv != null && sv.isNotBlank()) {
-							result.add(TootAttachmentMSP(sv))
-						}
+					array.forEach {
+						val sv = it?.toString()?.notBlank()
+						if(sv != null) result.add(TootAttachmentMSP(sv))
 					}
 					if(result.isNotEmpty()) return result
 				}

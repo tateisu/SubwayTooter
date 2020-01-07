@@ -11,7 +11,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.util.*
-import org.json.JSONObject
 
 object Action_Follow {
 	
@@ -189,9 +188,9 @@ object Action_Follow {
 							bFollow -> "/api/following/create"
 							else -> "/api/following/delete"
 						},
-						access_info
-							.putMisskeyApiToken()
-							.put("userId", userId)
+						access_info.putMisskeyApiToken().apply {
+							put("userId", userId)
+						}
 							.toPostRequestBuilder()
 					)?.also { result ->
 						
@@ -330,12 +329,12 @@ object Action_Follow {
 						userId = user.id
 					}
 					
-					val params = access_info.putMisskeyApiToken(JSONObject())
-						.put("userId", userId)
-					
 					client.request(
 						"/api/following/requests/cancel"
-						, params.toPostRequestBuilder()
+						, access_info.putMisskeyApiToken().apply {
+							put("userId", userId)
+						}
+							.toPostRequestBuilder()
 					)?.also { result ->
 						// parserに残ってるRelationをDBに保存する
 						val parser = TootParser(activity, access_info)
@@ -458,8 +457,9 @@ object Action_Follow {
 				return if(access_info.isMisskey) {
 					client.request(
 						"/api/following/create",
-						access_info.putMisskeyApiToken()
-							.put("userId", userId)
+						access_info.putMisskeyApiToken().apply {
+							put("userId", userId)
+						}
 							.toPostRequestBuilder()
 					).also { result ->
 						if(result?.error?.contains("already following") == true
@@ -581,8 +581,9 @@ object Action_Follow {
 				return if(access_info.isMisskey) {
 					client.request(
 						"/api/following/requests/${if(bAllow) "accept" else "reject"}",
-						access_info.putMisskeyApiToken()
-							.put("userId", who.id)
+						access_info.putMisskeyApiToken().apply {
+							put("userId", who.id)
+						}
 							.toPostRequestBuilder()
 					).also { result ->
 						val user = parser.account(result?.jsonObject)

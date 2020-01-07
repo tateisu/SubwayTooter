@@ -6,11 +6,10 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.syncAccountByAcct
+import jp.juggler.util.JsonArray
+import jp.juggler.util.JsonObject
 import jp.juggler.util.encodePercent
 import jp.juggler.util.jsonArray
-import jp.juggler.util.parseString
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.*
 
 internal inline fun <reified T : TimelineItem> addAll(
@@ -22,7 +21,7 @@ internal inline fun <reified T : TimelineItem> addAll(
 	return dst
 }
 
-internal fun JSONObject.putMisskeyUntil(column : Column, id : EntityId?) : JSONObject {
+internal fun JsonObject.putMisskeyUntil(column : Column, id : EntityId?) : JsonObject {
 	if(id != null) {
 		if(column.useDate) {
 			put("untilDate", id.toString().toLong())
@@ -33,7 +32,7 @@ internal fun JSONObject.putMisskeyUntil(column : Column, id : EntityId?) : JSONO
 	return this
 }
 
-internal fun JSONObject.putMisskeySince(column : Column, id : EntityId?) : JSONObject {
+internal fun JsonObject.putMisskeySince(column : Column, id : EntityId?) : JsonObject {
 	if(id != null) {
 		if(column.useDate) {
 			put("sinceDate", id.toString().toLong())
@@ -44,7 +43,7 @@ internal fun JSONObject.putMisskeySince(column : Column, id : EntityId?) : JSONO
 	return this
 }
 
-internal fun JSONObject.addRangeMisskey(column : Column, bBottom : Boolean) : JSONObject {
+internal fun JsonObject.addRangeMisskey(column : Column, bBottom : Boolean) : JsonObject {
 	if(bBottom) {
 		putMisskeyUntil(column, column.idOld)
 	} else {
@@ -53,33 +52,34 @@ internal fun JSONObject.addRangeMisskey(column : Column, bBottom : Boolean) : JS
 	return this
 }
 
-internal fun JSONObject.addMisskeyNotificationFilter(column : Column) : JSONObject {
+internal fun JsonObject.addMisskeyNotificationFilter(column : Column) : JsonObject {
 	when(column.quick_filter) {
 		Column.QUICK_FILTER_ALL -> {
-			val excludeList = JSONArray()
+			val excludeList = jsonArray{
+				// Misskeyのお気に入りは通知されない
+				// if(dont_show_favourite) ...
+				
+				if(column.dont_show_boost) {
+					add("renote")
+					add("quote")
+				}
+				if(column.dont_show_follow) {
+					add("follow")
+					add("receiveFollowRequest")
+				}
+				if(column.dont_show_reply) {
+					add("mention")
+					add("reply")
+				}
+				if(column.dont_show_reaction) {
+					add("reaction")
+				}
+				if(column.dont_show_vote) {
+					add("poll_vote")
+				}
+			}
 			
-			// Misskeyのお気に入りは通知されない
-			// if(dont_show_favourite) ...
-			
-			if(column.dont_show_boost) {
-				excludeList.put("renote")
-				excludeList.put("quote")
-			}
-			if(column.dont_show_follow) {
-				excludeList.put("follow")
-				excludeList.put("receiveFollowRequest")
-			}
-			if(column.dont_show_reply) {
-				excludeList.put("mention")
-				excludeList.put("reply")
-			}
-			if(column.dont_show_reaction) {
-				excludeList.put("reaction")
-			}
-			if(column.dont_show_vote) {
-				excludeList.put("poll_vote")
-			}
-			if(excludeList.length() > 0) put("excludeTypes", excludeList)
+			if(excludeList.isNotEmpty()) put("excludeTypes", excludeList)
 		}
 		
 		// QUICK_FILTER_FAVOURITE // misskeyはお気に入りの通知はない
@@ -96,7 +96,7 @@ internal fun JSONObject.addMisskeyNotificationFilter(column : Column) : JSONObje
 	return this
 }
 
-internal fun JSONObject.putMisskeyParamsTimeline(column : Column) : JSONObject {
+internal fun JsonObject.putMisskeyParamsTimeline(column : Column) : JsonObject {
 	if(column.with_attachment && ! column.with_highlight) {
 		put("mediaOnly", true)
 		put("withMedia", true)
@@ -114,7 +114,7 @@ internal fun Column.makeHashtagAcctUrl(client : TootApiClient) : String? {
 		if(profile_id == null) {
 			val (result, whoRef) = client.syncAccountByAcct(access_info, hashtag_acct)
 			result ?: return null // cancelled.
-			if( whoRef == null){
+			if(whoRef == null) {
 				log.w("makeHashtagAcctUrl: ${result.error ?: "?"}")
 				return null
 			}
@@ -122,7 +122,7 @@ internal fun Column.makeHashtagAcctUrl(client : TootApiClient) : String? {
 		}
 		
 		val sb = StringBuilder("/api/v1/accounts/${profile_id}/statuses")
-			.append("?limit=").append(Column.READ_LIMIT)
+			.append("?limit=").append(READ_LIMIT)
 			.append("&tagged=").append(hashtag.encodePercent())
 		
 		if(with_attachment) sb.append("&only_media=true")
@@ -134,21 +134,23 @@ internal fun Column.makeHashtagAcctUrl(client : TootApiClient) : String? {
 	}
 }
 
-internal fun Column.makeMisskeyBaseParameter(parser : TootParser?) : JSONObject =
-	access_info
-		.putMisskeyApiToken(JSONObject())
-		.apply {
-			if(access_info.isMisskey) {
-				if(parser != null) parser.serviceType = ServiceType.MISSKEY
-				put("limit", 40)
-			}
+internal fun Column.makeMisskeyBaseParameter(parser : TootParser?) =
+	access_info.putMisskeyApiToken().apply {
+		if(access_info.isMisskey) {
+			if(parser != null) parser.serviceType = ServiceType.MISSKEY
+			put("limit", 40)
 		}
+	}
 
-internal fun Column.makeMisskeyParamsUserId(parser : TootParser) : JSONObject =
-	makeMisskeyBaseParameter(parser).put("userId", profile_id.toString())
+internal fun Column.makeMisskeyParamsUserId(parser : TootParser) =
+	makeMisskeyBaseParameter(parser).apply{
+		put("userId", profile_id.toString())
+	}
 
 internal fun Column.makeMisskeyTimelineParameter(parser : TootParser) =
-	makeMisskeyBaseParameter(parser).putMisskeyParamsTimeline(this)
+	makeMisskeyBaseParameter(parser).apply{
+		putMisskeyParamsTimeline(this@makeMisskeyTimelineParameter)
+	}
 
 internal fun Column.makeMisskeyParamsProfileStatuses(parser : TootParser) =
 	makeMisskeyParamsUserId(parser).apply {
@@ -165,7 +167,7 @@ internal fun Column.makePublicLocalUrl() : String {
 	}
 }
 
-internal fun Column.makeDomainTimelineUrl() : String{
+internal fun Column.makeDomainTimelineUrl() : String {
 	val base = "/api/v1/timelines/public?limit=$READ_LIMIT&domain=$instance_uri"
 	return when {
 		access_info.isMisskey -> "/api/notes/local-timeline"
@@ -274,7 +276,7 @@ internal fun Column.makeHashtagUrl() : String {
 		// hashtag : String // 先頭の#を含まない
 		val sb = StringBuilder("/api/v1/timelines/tag/")
 			.append(hashtag.encodePercent())
-			.append("?limit=").append(Column.READ_LIMIT)
+			.append("?limit=").append(READ_LIMIT)
 		
 		if(with_attachment) sb.append("&only_media=true")
 		if(instance_local) sb.append("&local=true")
@@ -285,37 +287,35 @@ internal fun Column.makeHashtagUrl() : String {
 	}
 }
 
-internal fun Column.makeHashtagParams(parser : TootParser) : JSONObject {
-	return makeMisskeyTimelineParameter(parser)
-		.put("tag", hashtag)
-		.put("limit", Column.MISSKEY_HASHTAG_LIMIT)
-}
+internal fun Column.makeHashtagParams(parser : TootParser) =
+	makeMisskeyTimelineParameter(parser).apply{
+		put("tag", hashtag)
+		put("limit", Column.MISSKEY_HASHTAG_LIMIT)
+	}
 
 // mastodon用
 internal fun Column.makeProfileStatusesUrl(profile_id : EntityId?) : String {
-	var path = "/api/v1/accounts/$profile_id/statuses?limit=${Column.READ_LIMIT}"
+	var path = "/api/v1/accounts/$profile_id/statuses?limit=$READ_LIMIT"
 	if(with_attachment && ! with_highlight) path += "&only_media=1"
 	if(dont_show_boost) path += "&exclude_reblogs=1"
 	if(dont_show_reply) path += "&exclude_replies=1"
 	return path
 }
 
-internal val misskeyArrayFinderUsers = { it : JSONObject ->
-	it.optJSONArray("users")
+internal val misskeyArrayFinderUsers = { it : JsonObject ->
+	it.parseJsonArray("users")
 }
 
 internal val misskeyFollowingParser =
-	{ parser : TootParser, jsonArray : JSONArray ->
+	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootAccountRef>()
-		for(i in 0 until jsonArray.length()) {
-			val src = jsonArray.optJSONObject(i) ?: continue
-			
+		jsonArray.toObjectList().forEach {src->
 			val accountRef = TootAccountRef.mayNull(
 				parser,
-				parser.account(src.optJSONObject("followee"))
-			) ?: continue
+				parser.account(src.parseJsonObject("followee"))
+			) ?: return@forEach
 			
-			val relationId = EntityId.mayNull(src.parseString("id")) ?: continue
+			val relationId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
 			
 			accountRef._orderId = relationId
 			
@@ -325,17 +325,15 @@ internal val misskeyFollowingParser =
 	}
 
 internal val misskeyFollowersParser =
-	{ parser : TootParser, jsonArray : JSONArray ->
+	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootAccountRef>()
-		for(i in 0 until jsonArray.length()) {
-			val src = jsonArray.optJSONObject(i) ?: continue
-			
+		jsonArray.toObjectList().forEach { src ->
 			val accountRef = TootAccountRef.mayNull(
 				parser,
-				parser.account(src.optJSONObject("follower"))
-			) ?: continue
+				parser.account(src.parseJsonObject("follower"))
+			) ?: return@forEach
 			
-			val relationId = EntityId.mayNull(src.parseString("id")) ?: continue
+			val relationId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
 			
 			accountRef._orderId = relationId
 			
@@ -345,37 +343,55 @@ internal val misskeyFollowersParser =
 	}
 
 internal val misskeyCustomParserFollowRequest =
-	{ parser : TootParser, jsonArray : JSONArray ->
+	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootAccountRef>()
-		for(i in 0 until jsonArray.length()) {
-			val src = jsonArray.optJSONObject(i) ?: continue
+		jsonArray.toObjectList().forEach { src ->
 			
 			val accountRef = TootAccountRef.mayNull(
 				parser,
-				parser.account(src.optJSONObject("follower"))
-			) ?: continue
+				parser.account(src.parseJsonObject("follower"))
+			) ?: return@forEach
 			
-			val requestId = EntityId.mayNull(src.parseString("id")) ?: continue
+			val requestId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
 			
 			accountRef._orderId = requestId
 			
 			dst.add(accountRef)
 		}
+		
 		dst
 	}
 
 internal val misskeyCustomParserMutes =
-	{ parser : TootParser, jsonArray : JSONArray ->
+	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootAccountRef>()
-		for(i in 0 until jsonArray.length()) {
-			val src = jsonArray.optJSONObject(i) ?: continue
+		jsonArray.toObjectList().forEach { src ->
 			
 			val accountRef = TootAccountRef.mayNull(
 				parser,
-				parser.account(src.optJSONObject("mutee"))
-			) ?: continue
+				parser.account(src.parseJsonObject("mutee"))
+			) ?: return@forEach
 			
-			val requestId = EntityId.mayNull(src.parseString("id")) ?: continue
+			val requestId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
+			
+			accountRef._orderId = requestId
+			
+			dst.add(accountRef)
+		}
+		
+		dst
+	}
+
+internal val misskeyCustomParserBlocks =
+	{ parser : TootParser, jsonArray : JsonArray ->
+		val dst = ArrayList<TootAccountRef>()
+		jsonArray.toObjectList().forEach { src ->
+			val accountRef = TootAccountRef.mayNull(
+				parser,
+				parser.account(src.parseJsonObject("blockee"))
+			) ?: return@forEach
+			
+			val requestId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
 			
 			accountRef._orderId = requestId
 			
@@ -384,37 +400,16 @@ internal val misskeyCustomParserMutes =
 		dst
 	}
 
-internal val misskeyCustomParserBlocks =
-	{ parser : TootParser, jsonArray : JSONArray ->
-		val dst = ArrayList<TootAccountRef>()
-		for(i in 0 until jsonArray.length()) {
-			val src = jsonArray.optJSONObject(i) ?: continue
-			
-			val accountRef = TootAccountRef.mayNull(
-				parser,
-				parser.account(src.optJSONObject("blockee"))
-			) ?: continue
-			
-			val requestId = EntityId.mayNull(src.parseString("id")) ?: continue
-			
-			accountRef._orderId = requestId
-			
-			dst.add(accountRef)
-		}
-		dst
-	}
 internal val misskeyCustomParserFavorites =
-	{ parser : TootParser, jsonArray : JSONArray ->
+	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootStatus>()
-		for(i in 0 until jsonArray.length()) {
-			val src = jsonArray.optJSONObject(i) ?: continue
-			val note = parser.status(src.optJSONObject("note")) ?: continue
-			val favId = EntityId.mayNull(src.parseString("id")) ?: continue
+		jsonArray.toObjectList().forEach { src ->
+			val note = parser.status(src.parseJsonObject("note")) ?: return@forEach
+			val favId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
 			note.favourited = true
 			note._orderId = favId
 			dst.add(note)
 		}
-		
 		dst
 	}
 

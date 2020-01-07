@@ -7,9 +7,10 @@ import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
+import jp.juggler.util.jsonObject
 import jp.juggler.util.showToast
-import org.json.JSONObject
 import java.util.*
 
 // 疑似アカウントを作成する
@@ -53,15 +54,16 @@ internal fun addPseudoAccount(
 			return
 		}
 		
-		val account_info = JSONObject()
-		account_info.put("username", username)
-		account_info.put("acct", username)
+		val account_info = jsonObject {
+			put("username", username)
+			put("acct", username)
+		}
 		
 		val row_id = SavedAccount.insert(
 			host,
 			full_acct,
 			account_info,
-			JSONObject(),
+			JsonObject(),
 			misskeyVersion = instanceInfo.misskeyVersion
 		)
 		

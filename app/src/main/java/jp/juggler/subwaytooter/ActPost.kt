@@ -46,9 +46,6 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okio.BufferedSink
 import org.jetbrains.anko.textColor
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.*
 import java.lang.ref.WeakReference
 import java.util.*
@@ -642,7 +639,12 @@ class ActPost : AppCompatActivity(),
 			if(a != null) {
 				savedInstanceState.getString(STATE_SCHEDULED_STATUS)?.let {
 					scheduledStatus =
-						parseItem(::TootScheduled, TootParser(this@ActPost, a), JSONObject(it), log)
+						parseItem(
+							::TootScheduled,
+							TootParser(this@ActPost, a),
+							it.toJsonObject(),
+							log
+						)
 				}
 			}
 			
@@ -668,8 +670,7 @@ class ActPost : AppCompatActivity(),
 					this.attachment_list.clear()
 					
 					try {
-						sv.toJsonArray().forEach {
-							if(it !is JSONObject) return@forEach
+						sv.toJsonArray().toObjectList().forEach {
 							try {
 								attachment_list.add(PostAttachment(TootAttachment.decodeJson(it)))
 							} catch(ex : Throwable) {
@@ -950,7 +951,7 @@ class ActPost : AppCompatActivity(),
 					val item = parseItem(
 						::TootScheduled,
 						TootParser(this@ActPost, account),
-						JSONObject(sv),
+						sv.toJsonObject(),
 						log
 					)
 					if(item != null) {
@@ -1047,16 +1048,14 @@ class ActPost : AppCompatActivity(),
 			outState.putInt(KEY_VISIBILITY, it.id)
 		}
 		
-		if(attachment_list.isNotEmpty()) {
-			val array = JSONArray()
-			for(pa in attachment_list) {
-				// アップロード完了したものだけ保持する
-				if(pa.status != PostAttachment.STATUS_UPLOADED) continue
-				val json = pa.attachment?.encodeJson() ?: continue
-				array.put(json)
-			}
-			outState.putString(KEY_ATTACHMENT_LIST, array.toString())
-		}
+		val array = attachment_list
+			// アップロード完了したものだけ保持する
+			.filter{it.status == PostAttachment.STATUS_UPLOADED }
+			.mapNotNull { it.attachment?.encodeJson()  }
+			.toJsonArray()
+			.notEmpty()
+		
+		if(array != null ) outState.putString(KEY_ATTACHMENT_LIST, array.toString())
 		
 		in_reply_to_id?.putTo(outState, KEY_IN_REPLY_TO_ID)
 		outState.putString(KEY_IN_REPLY_TO_TEXT, in_reply_to_text)
@@ -1664,7 +1663,7 @@ class ActPost : AppCompatActivity(),
 				editAttachmentDescription(pa)
 			}
 		
-		if( pa.attachment?.canFocus == true){
+		if(pa.attachment?.canFocus == true) {
 			a.addAction(getString(R.string.set_focus_point)) {
 				openFocusPoint(pa)
 			}
@@ -1691,8 +1690,9 @@ class ActPost : AppCompatActivity(),
 									try {
 										val result = client.request(
 											"/api/v1/media/${attachment.id}",
-											JSONObject()
-												.put("focus", "%.2f,%.2f".format(x, y))
+											jsonObject {
+												put("focus", "%.2f,%.2f".format(x, y))
+											}
 												.toPutRequestBuilder()
 										)
 										new_attachment =
@@ -1774,8 +1774,9 @@ class ActPost : AppCompatActivity(),
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val result = client.request(
 					"/api/v1/media/$attachment_id",
-					JSONObject()
-						.put("description", text)
+					jsonObject {
+						put("description", text)
+					}
 						.toPutRequestBuilder()
 				)
 				new_attachment =
@@ -2661,43 +2662,37 @@ class ActPost : AppCompatActivity(),
 		}
 		
 		try {
-			val tmp_attachment_list = JSONArray()
-			for(pa in attachment_list) {
-				val json = pa.attachment?.encodeJson()
-				if(json != null) tmp_attachment_list.put(json)
-			}
+			val tmp_attachment_list = attachment_list
+				.mapNotNull{it.attachment?.encodeJson()}
+				.toJsonArray()
 			
-			val json = JSONObject()
-			json.put(DRAFT_CONTENT, content)
-			json.put(DRAFT_CONTENT_WARNING, content_warning)
-			json.put(DRAFT_CONTENT_WARNING_CHECK, cbContentWarning.isChecked)
-			json.put(DRAFT_NSFW_CHECK, cbNSFW.isChecked)
+			val json = JsonObject()
+			json[DRAFT_CONTENT] = content
+			json[DRAFT_CONTENT_WARNING] = content_warning
+			json[DRAFT_CONTENT_WARNING_CHECK] = cbContentWarning.isChecked
+			json[DRAFT_NSFW_CHECK] = cbNSFW.isChecked
 			visibility?.let { json.put(DRAFT_VISIBILITY, it.id.toString()) }
-			json.put(DRAFT_ACCOUNT_DB_ID, account?.db_id ?: - 1L)
-			json.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list)
+			json[DRAFT_ACCOUNT_DB_ID] = account?.db_id ?: - 1L
+			json[DRAFT_ATTACHMENT_LIST] = tmp_attachment_list
 			in_reply_to_id?.putTo(json, DRAFT_REPLY_ID)
-			json.put(DRAFT_REPLY_TEXT, in_reply_to_text)
-			json.put(DRAFT_REPLY_IMAGE, in_reply_to_image)
-			json.put(DRAFT_REPLY_URL, in_reply_to_url)
+			json[DRAFT_REPLY_TEXT] = in_reply_to_text
+			json[DRAFT_REPLY_IMAGE] = in_reply_to_image
+			json[DRAFT_REPLY_URL] = in_reply_to_url
 			
-			json.put(DRAFT_QUOTED_RENOTE, cbQuoteRenote.isChecked)
+			json[DRAFT_QUOTED_RENOTE] = cbQuoteRenote.isChecked
 			
 			// deprecated. but still used in old draft.
 			// json.put(DRAFT_IS_ENQUETE, isEnquete)
 			
-			json.put(DRAFT_POLL_TYPE, spEnquete.selectedItemPosition.toPollTypeString())
+			json[DRAFT_POLL_TYPE] = spEnquete.selectedItemPosition.toPollTypeString()
 			
-			json.put(DRAFT_POLL_MULTIPLE, cbMultipleChoice.isChecked)
-			json.put(DRAFT_POLL_HIDE_TOTALS, cbHideTotals.isChecked)
-			json.put(DRAFT_POLL_EXPIRE_DAY, etExpireDays.text.toString())
-			json.put(DRAFT_POLL_EXPIRE_HOUR, etExpireHours.text.toString())
-			json.put(DRAFT_POLL_EXPIRE_MINUTE, etExpireMinutes.text.toString())
+			json[DRAFT_POLL_MULTIPLE] = cbMultipleChoice.isChecked
+			json[DRAFT_POLL_HIDE_TOTALS] = cbHideTotals.isChecked
+			json[DRAFT_POLL_EXPIRE_DAY] = etExpireDays.text.toString()
+			json[DRAFT_POLL_EXPIRE_HOUR] = etExpireHours.text.toString()
+			json[DRAFT_POLL_EXPIRE_MINUTE] = etExpireMinutes.text.toString()
 			
-			json.put(DRAFT_ENQUETE_ITEMS, JSONArray().apply {
-				for(s in str_choice) {
-					put(s)
-				}
-			})
+			json[DRAFT_ENQUETE_ITEMS] = str_choice.toJsonArray()
 			
 			PostDraft.save(System.currentTimeMillis(), json)
 			
@@ -2726,7 +2721,7 @@ class ActPost : AppCompatActivity(),
 		
 	}
 	
-	private fun restoreDraft(draft : JSONObject) {
+	private fun restoreDraft(draft : JsonObject) {
 		
 		@Suppress("DEPRECATION")
 		val progress = ProgressDialogEx(this)
@@ -2741,7 +2736,8 @@ class ActPost : AppCompatActivity(),
 				
 				var content = draft.parseString(DRAFT_CONTENT) ?: ""
 				val account_db_id = draft.parseLong(DRAFT_ACCOUNT_DB_ID) ?: - 1L
-				val tmp_attachment_list = draft.optJSONArray(DRAFT_ATTACHMENT_LIST)?.toObjectList()
+				val tmp_attachment_list =
+					draft.parseJsonArray(DRAFT_ATTACHMENT_LIST)?.toObjectList()?.toMutableList()
 				
 				val account = SavedAccount.loadAccount(this@ActPost, account_db_id)
 				if(account == null) {
@@ -2756,14 +2752,14 @@ class ActPost : AppCompatActivity(),
 								}
 							}
 							tmp_attachment_list.clear()
-							draft.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list.toJsonArray())
-							draft.put(DRAFT_CONTENT, content)
+							draft[DRAFT_ATTACHMENT_LIST] = tmp_attachment_list.toJsonArray()
+							draft[DRAFT_CONTENT] = content
 							draft.remove(DRAFT_REPLY_ID)
 							draft.remove(DRAFT_REPLY_TEXT)
 							draft.remove(DRAFT_REPLY_IMAGE)
 							draft.remove(DRAFT_REPLY_URL)
 						}
-					} catch(ignored : JSONException) {
+					} catch(ignored : JsonException) {
 					}
 					
 					return "OK"
@@ -2815,11 +2811,11 @@ class ActPost : AppCompatActivity(),
 						}
 						if(isSomeAttachmentRemoved) {
 							list_warning.add(getString(R.string.attachment_in_draft_is_lost))
-							draft.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list.toJsonArray())
-							draft.put(DRAFT_CONTENT, content)
+							draft[DRAFT_ATTACHMENT_LIST] = tmp_attachment_list.toJsonArray()
+							draft[DRAFT_CONTENT] = content
 						}
 					}
-				} catch(ex : JSONException) {
+				} catch(ex : JsonException) {
 					log.trace(ex)
 				}
 				
@@ -2842,7 +2838,7 @@ class ActPost : AppCompatActivity(),
 				val content_warning = draft.parseString(DRAFT_CONTENT_WARNING) ?: ""
 				val content_warning_checked = draft.optBoolean(DRAFT_CONTENT_WARNING_CHECK)
 				val nsfw_checked = draft.optBoolean(DRAFT_NSFW_CHECK)
-				val tmp_attachment_list = draft.optJSONArray(DRAFT_ATTACHMENT_LIST)
+				val tmp_attachment_list = draft.parseJsonArray(DRAFT_ATTACHMENT_LIST)
 				val reply_id = EntityId.from(draft, DRAFT_REPLY_ID)
 				val reply_text = draft.parseString(DRAFT_REPLY_TEXT)
 				val reply_image = draft.parseString(DRAFT_REPLY_IMAGE)
@@ -2876,11 +2872,11 @@ class ActPost : AppCompatActivity(),
 				etExpireHours.setText(draft.optString(DRAFT_POLL_EXPIRE_HOUR, ""))
 				etExpireMinutes.setText(draft.optString(DRAFT_POLL_EXPIRE_MINUTE, ""))
 				
-				val array = draft.optJSONArray(DRAFT_ENQUETE_ITEMS)
+				val array = draft.parseJsonArray(DRAFT_ENQUETE_ITEMS)
 				if(array != null) {
 					var src_index = 0
 					for(et in list_etChoice) {
-						if(src_index < array.length()) {
+						if(src_index < array.size) {
 							et.setText(array.optString(src_index))
 							++ src_index
 						} else {
@@ -2891,10 +2887,10 @@ class ActPost : AppCompatActivity(),
 				
 				if(account != null) selectAccount(account)
 				
-				if(tmp_attachment_list != null && tmp_attachment_list.length() > 0) {
+				if(tmp_attachment_list?.isNotEmpty() == true) {
 					attachment_list.clear()
 					tmp_attachment_list.forEach {
-						if(it !is JSONObject) return@forEach
+						if(it !is JsonObject) return@forEach
 						val pa = PostAttachment(TootAttachment.decodeJson(it))
 						attachment_list.add(pa)
 					}

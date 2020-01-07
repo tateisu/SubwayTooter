@@ -15,8 +15,6 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -42,17 +40,17 @@ object AppDataExporter {
 	// v3.4.5で廃止 private const val KEY_CLIENT_INFO = "client_info2"
 	private const val KEY_HIGHLIGHT_WORD = "highlight_word"
 	
-	@Throws(IOException::class, JSONException::class)
-	private fun writeJSONObject(writer : JsonWriter, src : JSONObject) {
+	@Throws(IOException::class, JsonException::class)
+	private fun writeJSONObject(writer : JsonWriter, src : JsonObject) {
 		writer.beginObject()
-		val it = src.keys()
+		val it = src.keys.iterator()
 		while(it.hasNext()) {
 			val k = it.next()
 			if(src.isNull(k)) {
 				writer.name(k)
 				writer.nullValue()
 			} else {
-				when(val o = src.get(k)) {
+				when(val o = src[k]) {
 					is String -> {
 						writer.name(k)
 						writer.value(o)
@@ -80,7 +78,7 @@ object AppDataExporter {
 					else -> throw RuntimeException(
 						String.format(
 							Locale.JAPAN,
-							"bad data type: JSONObject key =%s",
+							"bad data type: JsonObject key =%s",
 							k
 						)
 					)
@@ -90,9 +88,9 @@ object AppDataExporter {
 		writer.endObject()
 	}
 	
-	@Throws(IOException::class, JSONException::class)
-	private fun readJsonObject(reader : JsonReader) : JSONObject {
-		val dst = JSONObject()
+	@Throws(IOException::class, JsonException::class)
+	private fun readJsonObject(reader : JsonReader) : JsonObject {
+		val dst = JsonObject()
 		
 		reader.beginObject()
 		while(reader.hasNext()) {
@@ -101,11 +99,11 @@ object AppDataExporter {
 				
 				JsonToken.NULL -> reader.nextNull()
 				
-				JsonToken.STRING -> dst.put(name, reader.nextString())
+				JsonToken.STRING -> dst[name] = reader.nextString()
 				
-				JsonToken.BOOLEAN -> dst.put(name, reader.nextBoolean())
+				JsonToken.BOOLEAN -> dst[name] = reader.nextBoolean()
 				
-				JsonToken.NUMBER -> dst.put(name, reader.nextDouble())
+				JsonToken.NUMBER -> dst[name] = reader.nextDouble()
 				
 				else -> throw RuntimeException(
 					String.format(
@@ -325,18 +323,18 @@ object AppDataExporter {
 		e.apply()
 	}
 	
-	@Throws(IOException::class, JSONException::class)
+	@Throws(IOException::class, JsonException::class)
 	private fun writeColumn(app_state : AppState, writer : JsonWriter) {
 		writer.beginArray()
 		for(column in app_state.column_list) {
-			val dst = JSONObject()
+			val dst = JsonObject()
 			column.encodeJSON(dst, 0)
 			writeJSONObject(writer, dst)
 		}
 		writer.endArray()
 	}
 	
-	@Throws(IOException::class, JSONException::class)
+	@Throws(IOException::class, JsonException::class)
 	private fun readColumn(
 		app_state : AppState,
 		reader : JsonReader,
@@ -354,7 +352,7 @@ object AppDataExporter {
 				else -> {
 					val new_id =
 						id_map[old_id] ?: throw RuntimeException("readColumn: can't convert account id")
-					item.put(Column.KEY_ACCOUNT_ROW_ID, new_id)
+					item[Column.KEY_ACCOUNT_ROW_ID] = new_id
 				}
 			}
 			try {
@@ -370,7 +368,7 @@ object AppDataExporter {
 		return result
 	}
 	
-	@Throws(IOException::class, JSONException::class)
+	@Throws(IOException::class, JsonException::class)
 	fun encodeAppData(context : Context, writer : JsonWriter) {
 		writer.setIndent(" ")
 		writer.beginObject()
@@ -403,7 +401,7 @@ object AppDataExporter {
 	}
 	
 	@SuppressLint("UseSparseArrays")
-	@Throws(IOException::class, JSONException::class)
+	@Throws(IOException::class, JsonException::class)
 	internal fun decodeAppData(context : Context, reader : JsonReader) : ArrayList<Column> {
 		
 		var result : ArrayList<Column>? = null

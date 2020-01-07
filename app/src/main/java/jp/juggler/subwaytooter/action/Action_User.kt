@@ -18,8 +18,6 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.TootApiResultCallback
 import jp.juggler.util.*
 import okhttp3.Request
-import org.json.JSONArray
-import org.json.JSONObject
 
 object Action_User {
 	
@@ -56,15 +54,16 @@ object Action_User {
 					}
 					
 					access_info.isMisskey -> {
-						val params = access_info.putMisskeyApiToken(JSONObject())
-							.put("userId", who.id.toString())
-						
 						val result = client.request(
 							when(bMute) {
 								true -> "/api/mute/create"
 								else -> "/api/mute/delete"
-							}, params.toPostRequestBuilder()
+							},
+							access_info.putMisskeyApiToken().apply {
+								put("userId", who.id.toString())
+							}.toPostRequestBuilder()
 						)
+						
 						if(result?.jsonObject != null) {
 							// 204 no content
 							
@@ -87,8 +86,9 @@ object Action_User {
 							when {
 								! bMute -> "".toFormRequestBody()
 								else ->
-									JSONObject()
-										.put("notifications", bMuteNotification)
+									jsonObject {
+										put("notifications", bMuteNotification)
+									}
 										.toRequestBody()
 							}.toPost()
 						)
@@ -202,14 +202,15 @@ object Action_User {
 					}
 					
 					access_info.isMisskey -> {
-						val params = access_info.putMisskeyApiToken()
-							.put("userId", who.id)
+						
 						val result = client.request(
 							if(bBlock)
 								"/api/blocking/create"
 							else
 								"/api/blocking/delete",
-							params.toPostRequestBuilder()
+							access_info.putMisskeyApiToken().apply {
+								put("userId", who.id)
+							}.toPostRequestBuilder()
 						)
 						
 						fun saveBlock(v : Boolean) {
@@ -350,7 +351,7 @@ object Action_User {
 		pos : Int,
 		access_info : SavedAccount,
 		who_url : String,
-		acct:String
+		acct : String
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
@@ -358,11 +359,11 @@ object Action_User {
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val (result, ar) = client.syncAccountByUrl(access_info, who_url)
-				if( result == null) return null
+				if(result == null) return null
 				who = ar?.get()
-				if( who != null ) return result
-
-				val(r2, ar2) = client.syncAccountByAcct(access_info, acct)
+				if(who != null) return result
+				
+				val (r2, ar2) = client.syncAccountByAcct(access_info, acct)
 				who = ar2?.get()
 				return r2
 			}
@@ -406,7 +407,7 @@ object Action_User {
 			if(ai.host.equals(access_info.host, ignoreCase = true)) {
 				activity.addColumn(pos, ai, ColumnType.PROFILE, who.id)
 			} else {
-				profileFromUrlOrAcct(activity, pos, ai, who.url,access_info.getFullAcct(who))
+				profileFromUrlOrAcct(activity, pos, ai, who.url, access_info.getFullAcct(who))
 			}
 		}
 	}
@@ -436,12 +437,12 @@ object Action_User {
 		original_url : String = url
 	) {
 		val acct = "$user@$host"
-
+		
 		if(access_info?.isPseudo == false) {
 			// 文脈のアカウントがあり、疑似アカウントではない
-
+			
 			if(access_info.host.equals(host, ignoreCase = true)) {
-
+				
 				// 文脈のアカウントと同じインスタンスなら、アカウントIDを探して開いてしまう
 				TootTaskRunner(activity).run(access_info, object : TootTask {
 					
@@ -467,7 +468,7 @@ object Action_User {
 				})
 			} else {
 				// 文脈のアカウントと異なるインスタンスなら、別アカウントで開く
-				profileFromUrlOrAcct(activity, pos, access_info, url,acct)
+				profileFromUrlOrAcct(activity, pos, access_info, url, acct)
 			}
 			return
 		}
@@ -512,7 +513,7 @@ object Action_User {
 					ll.addView(b, 0)
 				}
 			) {
-				profileFromUrlOrAcct(activity, pos, it, url,acct)
+				profileFromUrlOrAcct(activity, pos, it, url, acct)
 			}
 		}
 	}
@@ -552,13 +553,13 @@ object Action_User {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/reports",
-					JSONObject().apply{
-						put("account_id",who.id.toString())
-						put("comment",comment)
-						put("forward",forward)
-						if(status != null){
-							put("status_ids",JSONArray().apply{
-								put(status.id.toString())
+					JsonObject().apply {
+						put("account_id", who.id.toString())
+						put("comment", comment)
+						put("forward", forward)
+						if(status != null) {
+							put("status_ids", jsonArray {
+								add(status.id.toString())
 							})
 						}
 					}.toPostRequestBuilder()
@@ -593,17 +594,17 @@ object Action_User {
 			var relation : UserRelation? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				val content = JSONObject()
-				try {
-					content.put("reblogs", bShow)
-				} catch(ex : Throwable) {
-					return TootApiResult(ex.withCaption("json encoding error"))
-				}
+				val result = client.request(
+					"/api/v1/accounts/${who.id}/follow",
+					jsonObject {
+						try {
+							put("reblogs", bShow)
+						} catch(ex : Throwable) {
+							return TootApiResult(ex.withCaption("json encoding error"))
+						}
+					}.toPostRequestBuilder()
+				)
 				
-				val request_builder = content.toPostRequestBuilder()
-				
-				val result =
-					client.request("/api/v1/accounts/" + who.id + "/follow", request_builder)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
 					relation =

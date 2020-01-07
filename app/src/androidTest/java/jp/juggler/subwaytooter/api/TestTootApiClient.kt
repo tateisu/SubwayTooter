@@ -13,8 +13,6 @@ import okhttp3.*
 import okio.Buffer
 import okio.BufferedSource
 import okio.ByteString
-import org.json.JSONArray
-import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -131,7 +129,7 @@ class TestTootApiClient {
 					// ログインユーザの情報
 					"/api/v1/accounts/verify_credentials" -> {
 						val instance = request.url.host
-						val account1Json = JSONObject()
+						val account1Json = JsonObject()
 						account1Json.apply {
 							put("username", "user1")
 							put("acct", "user1")
@@ -153,7 +151,7 @@ class TestTootApiClient {
 						.protocol(Protocol.HTTP_1_1)
 						.code(200)
 						.message("status-message")
-						.body(JSONObject().apply {
+						.body(JsonObject().apply {
 							put("uri", "http://${request.url.host}/")
 							put("title", "dummy instance")
 							put("description", "dummy description")
@@ -167,7 +165,7 @@ class TestTootApiClient {
 						
 						val username = "user1"
 						
-						val account1Json = JSONObject()
+						val account1Json = JsonObject()
 						account1Json.apply {
 							put("username", username)
 							put("acct", username)
@@ -175,16 +173,16 @@ class TestTootApiClient {
 							put("url", "http://$instance/@$username")
 						}
 						
-						val array = JSONArray()
-						for(i in 0 until 10) {
-							val json = JSONObject()
-							json.apply {
-								put("account", account1Json)
-								put("id", i.toLong())
-								put("uri", "https://$instance/@$username/$i")
-								put("url", "https://$instance/@$username/$i")
+						val array = jsonArray {
+							for(i in 0 until 10) {
+								add(jsonObject {
+									put("account", account1Json)
+									put("id", i.toLong())
+									put("uri", "https://$instance/@$username/$i")
+									put("url", "https://$instance/@$username/$i")
+								})
 							}
-							array.put(json)
+							
 						}
 						
 						Response.Builder()
@@ -275,10 +273,10 @@ class TestTootApiClient {
 		.body(strJsonError.toResponseBody(MEDIA_TYPE_JSON))
 		.build()
 	
-	private fun createResponseEmptyBody() = Response.Builder()
+	private fun createResponseEmptyBody(code:Int=200) = Response.Builder()
 		.request(requestSimple)
 		.protocol(Protocol.HTTP_1_1)
-		.code(200)
+		.code(code)
 		.message("status-message")
 		.body("".toResponseBody(MEDIA_TYPE_JSON))
 		.build()
@@ -540,7 +538,7 @@ class TestTootApiClient {
 			callback.progressString = null
 			val bOk = client.sendRequest(result) { requestSimple }
 			assertEquals(true, bOk)
-			assertEquals("取得中: GET /", callback.progressString)
+			assertEquals("Acquiring: GET /", callback.progressString)
 			assertEquals(null, result.error)
 			assertNotNull(result.response)
 		}
@@ -558,9 +556,9 @@ class TestTootApiClient {
 			callback.progressString = null
 			val bOk = client.sendRequest(result) { requestSimple }
 			assertEquals(false, bOk)
-			assertEquals("取得中: GET /", callback.progressString)
+			assertEquals("Acquiring: GET /", callback.progressString)
 			assertEquals(
-				"instance: 通信エラー :NotImplementedError An operation is not implemented.",
+				"instance: Network error.: NotImplementedError An operation is not implemented.",
 				result.error
 			)
 			assertNull(result.response)
@@ -580,7 +578,7 @@ class TestTootApiClient {
 			callback.progressString = null
 			val bOk = client.sendRequest(result, progressPath = "XXX") { requestSimple }
 			assertEquals(true, bOk)
-			assertEquals("取得中: GET XXX", callback.progressString)
+			assertEquals("Acquiring: GET XXX", callback.progressString)
 			assertEquals(null, result.error)
 			assertNotNull(result.response)
 		}
@@ -623,7 +621,7 @@ class TestTootApiClient {
 			val bodyString = client.readBodyString(result)
 			assertEquals(strJsonOk, bodyString)
 			assertEquals(strJsonOk, result.bodyString)
-			assertEquals("応答の解析中…", callback.progressString)
+			assertEquals("Parsing response…", callback.progressString)
 			assertNull(result.error)
 			assertNull(result.data)
 		}
@@ -639,7 +637,7 @@ class TestTootApiClient {
 			val bodyString = client.readBodyString(result)
 			assertEquals(null, bodyString)
 			assertEquals(null, result.bodyString)
-			assertEquals("読込中: GET instance", callback.progressString)
+			assertEquals("Reading: GET instance", callback.progressString)
 			assertEquals("Error! (HTTP 500 status-message) instance", result.error)
 			assertNull(result.data)
 		}
@@ -652,10 +650,10 @@ class TestTootApiClient {
 			result.response = createResponseEmptyBody()
 			callback.progressString = null
 			val bodyString = client.readBodyString(result)
-			assertEquals(null, bodyString)
-			assertEquals(null, result.bodyString)
-			assertEquals("読込中: GET instance", callback.progressString)
-			assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
+			assertEquals("", bodyString)
+			assertEquals("", result.bodyString)
+			assertEquals("Reading: GET instance", callback.progressString)
+			assertEquals(null, result.error)
 			assertNull(result.data)
 		}
 		// ボディがnullなら
@@ -667,10 +665,10 @@ class TestTootApiClient {
 			
 			callback.progressString = null
 			val bodyString = client.readBodyString(result)
-			assertEquals(null, bodyString)
-			assertEquals(null, result.bodyString)
-			assertEquals("読込中: GET instance", callback.progressString)
-			assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
+			assertEquals("", bodyString)
+			assertEquals("", result.bodyString)
+			assertEquals("Reading: GET instance", callback.progressString)
+			assertEquals(null, result.error)
 			assertNull(result.data)
 		}
 		
@@ -730,7 +728,7 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals(strJsonOk, result.string)
 			assertEquals(strJsonOk, result.bodyString)
-			assertEquals("応答の解析中…", callback.progressString)
+			assertEquals("Parsing response…", callback.progressString)
 			assertNull(result.error)
 		}
 		// 正常レスポンスならJSONにエラーがあってもreadStringは関知しない
@@ -744,7 +742,7 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals(strJsonError, result.string)
 			assertEquals(strJsonError, result.bodyString)
-			assertEquals("応答の解析中…", callback.progressString)
+			assertEquals("Parsing response…", callback.progressString)
 			assertNull(result.error)
 		}
 		
@@ -759,26 +757,26 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals(null, result.string)
 			assertEquals(null, result.bodyString)
-			assertEquals("読込中: GET instance", callback.progressString)
+			assertEquals("Reading: GET instance", callback.progressString)
 			assertEquals("Error! (HTTP 500 status-message) instance", result.error)
 		}
 		
-		// ボディが空なら
+		// ボディが空で応答コードがエラーなら
 		run {
 			
 			val result = TootApiResult.makeWithCaption("instance")
 			assertEquals(null, result.error)
-			result.response = createResponseEmptyBody()
+			result.response = createResponseEmptyBody(code=404)
 			callback.progressString = null
 			val r2 = client.parseString(result)
 			assertNotNull(r2)
 			assertEquals(null, result.string)
 			assertEquals(null, result.bodyString)
-			assertEquals("読込中: GET instance", callback.progressString)
-			assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
+			assertEquals("Reading: GET instance", callback.progressString)
+			assertEquals("(no information) (HTTP 404 status-message) instance", result.error)
 			assertNull(result.data)
 		}
-		// ボディがnullなら
+		// ボディがnullでも応答コードが成功ならエラーではない
 		run {
 			
 			val result = TootApiResult.makeWithCaption("instance")
@@ -788,11 +786,11 @@ class TestTootApiClient {
 			callback.progressString = null
 			val r2 = client.parseString(result)
 			assertNotNull(r2)
-			assertEquals(null, result.string)
-			assertEquals(null, result.bodyString)
-			assertEquals("読込中: GET instance", callback.progressString)
-			assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
-			assertNull(result.data)
+			assertEquals("", result.string)
+			assertEquals("", result.bodyString)
+			assertEquals("Reading: GET instance", callback.progressString)
+			assertEquals(null, result.error)
+			assertEquals("",result.data)
 		}
 		
 		// string() が例外
@@ -805,7 +803,7 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals(null, result.string)
 			assertEquals(null, result.bodyString)
-			assertEquals("読込中: GET instance", callback.progressString)
+			assertEquals("Reading: GET instance", callback.progressString)
 			assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
 			assertNull(result.data)
 		}
@@ -849,7 +847,7 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals("A!", result.jsonObject?.optString("a"))
 			assertEquals(strJsonOk, result.bodyString)
-			assertEquals("応答の解析中…", callback.progressString)
+			assertEquals("Parsing response…", callback.progressString)
 			assertNull(result.error)
 		}
 		// 正常ケースでもjsonデータにerror項目があれば
@@ -864,7 +862,7 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals(null, result.data)
 			assertEquals(strJsonError, result.bodyString)
-			assertEquals("応答の解析中…", callback.progressString)
+			assertEquals("Parsing response…", callback.progressString)
 			assertEquals("Error!", result.error)
 		}
 		
@@ -878,7 +876,7 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals(null, result.data)
 			assertEquals(null, result.bodyString)
-			assertEquals("読込中: GET instance", callback.progressString)
+			assertEquals("Reading: GET instance", callback.progressString)
 			assertEquals("Error! (HTTP 500 status-message) instance", result.error)
 		}
 		
@@ -891,11 +889,10 @@ class TestTootApiClient {
 			callback.progressString = null
 			val r2 = client.parseJson(result)
 			assertNotNull(r2)
-			assertEquals(null, result.data)
-			assertEquals(null, result.bodyString)
-			assertEquals("読込中: GET instance", callback.progressString)
-			assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
-			assertNull(result.data)
+			assertEquals(0, result.jsonObject?.size)
+			assertEquals("", result.bodyString)
+			assertEquals("Reading: GET instance", callback.progressString)
+			assertEquals(null, result.error)
 		}
 		
 		// ボディがnullなら
@@ -906,11 +903,10 @@ class TestTootApiClient {
 			callback.progressString = null
 			val r2 = client.parseJson(result)
 			assertNotNull(r2)
-			assertEquals(null, result.data)
-			assertEquals(null, result.bodyString)
-			assertEquals("読込中: GET instance", callback.progressString)
-			assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
-			assertNull(result.data)
+			assertEquals(0, result.jsonObject?.size)
+			assertEquals("", result.bodyString)
+			assertEquals("Reading: GET instance", callback.progressString)
+			assertEquals(null, result.error)
 		}
 		
 		// string() が例外
@@ -923,7 +919,7 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals(null, result.data)
 			assertEquals(null, result.bodyString)
-			assertEquals("読込中: GET instance", callback.progressString)
+			assertEquals("Reading: GET instance", callback.progressString)
 			assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
 			assertNull(result.data)
 		}
@@ -939,7 +935,7 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals("A!", result.jsonArray?.optString(0))
 			assertEquals(strJsonArray1, result.bodyString)
-			assertEquals("応答の解析中…", callback.progressString)
+			assertEquals("Parsing response…", callback.progressString)
 			assertNull(result.error)
 		}
 		
@@ -955,7 +951,7 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals("A!", result.jsonArray?.optString(0))
 			assertEquals(strJsonArray2, result.bodyString)
-			assertEquals("応答の解析中…", callback.progressString)
+			assertEquals("Parsing response…", callback.progressString)
 			assertNull(result.error)
 		}
 		
@@ -970,7 +966,7 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals("A!", result.jsonObject?.optString("a"))
 			assertEquals(strJsonObject2, result.bodyString)
-			assertEquals("応答の解析中…", callback.progressString)
+			assertEquals("Parsing response…", callback.progressString)
 			assertNull(result.error)
 		}
 		// JSONじゃない
@@ -984,8 +980,8 @@ class TestTootApiClient {
 			assertNotNull(r2)
 			assertEquals(null, result.data)
 			assertEquals(strPlainText, result.bodyString)
-			assertEquals("応答の解析中…", callback.progressString)
-			assertEquals("APIの応答がJSONではありません\nHello!", result.error)
+			assertEquals("Parsing response…", callback.progressString)
+			assertEquals("API response is not JSON. Hello! (HTTP 200 status-message) https://dummy-url.net/", result.error)
 		}
 	}
 	
@@ -1018,7 +1014,7 @@ class TestTootApiClient {
 		val clientCredential = result?.string
 		assertNotNull(clientCredential)
 		if(clientCredential == null) return
-		clientInfo.put(TootApiClient.KEY_CLIENT_CREDENTIAL, clientCredential)
+		clientInfo[TootApiClient.KEY_CLIENT_CREDENTIAL] = clientCredential
 		
 		// clientCredential の検証
 		result = client.verifyClientCredential(clientCredential)
@@ -1076,11 +1072,11 @@ class TestTootApiClient {
 		)
 		val instance = "unit-test"
 		client.instance = instance
-		val(instanceInfo,instanceResult) = TootInstance.get(client)
+		val (instanceInfo, instanceResult) = TootInstance.get(client)
 		assertNotNull(instanceInfo)
-		assertNull(instanceResult)
+		assertNotNull(instanceResult)
 		val json = instanceResult?.jsonObject
-		if( json != null) println(json.toString())
+		if(json != null) println(json.toString())
 		
 	}
 	
@@ -1100,8 +1096,8 @@ class TestTootApiClient {
 	
 	@Test
 	fun testRequest() {
-		val tokenInfo = JSONObject()
-		tokenInfo.put("access_token", "DUMMY_ACCESS_TOKEN")
+		val tokenInfo = JsonObject()
+		tokenInfo["access_token"] = "DUMMY_ACCESS_TOKEN"
 		
 		val accessInfo = SavedAccount(
 			db_id = 1,
@@ -1121,13 +1117,14 @@ class TestTootApiClient {
 		
 		val content = result?.jsonArray
 		assertNotNull(content)
-		println(content?.optJSONObject(0).toString())
+		println(content?.parseJsonObject(0).toString())
 	}
 	
 	@Test
 	fun testWebSocket() {
-		val tokenInfo = JSONObject()
-		tokenInfo.put("access_token", "DUMMY_ACCESS_TOKEN")
+		val tokenInfo = jsonObject {
+			put("access_token", "DUMMY_ACCESS_TOKEN")
+		}
 		
 		val accessInfo = SavedAccount(
 			db_id = 1,

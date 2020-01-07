@@ -15,8 +15,6 @@ import jp.juggler.subwaytooter.api.entity.TootFilter
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
-import org.json.JSONArray
-import org.json.JSONObject
 
 class ActKeywordFilter
 	: AppCompatActivity(), View.OnClickListener {
@@ -216,18 +214,18 @@ class ActKeywordFilter
 		cb.isChecked = ((filter.context and bit) != 0)
 	}
 	
-	private fun JSONArray.putContextChecked(cb : CheckBox, key : String) {
-		if(cb.isChecked) this.put(key)
+	private fun JsonArray.putContextChecked(cb : CheckBox, key : String) {
+		if(cb.isChecked) add(key)
 	}
 	
 	private fun save() {
 		if(loading) return
 		
-		val params = JSONObject().apply {
+		val params = jsonObject{
 			
 			put("phrase", etPhrase.text.toString())
 			
-			put("context", JSONArray().apply {
+			put("context", JsonArray().apply {
 				putContextChecked(cbContextHome, "home")
 				putContextChecked(cbContextNotification, "notifications")
 				putContextChecked(cbContextPublic, "public")
@@ -251,11 +249,12 @@ class ActKeywordFilter
 				}
 				
 				// unlimited
-				0 -> if(filter_expire <= 0L) {
+				0 -> when {
 					// already unlimited. don't change.
-				} else {
+					filter_expire <= 0L -> {
+					}
 					// FIXME: currently there is no way to remove expires from existing filter.
-					put("expires_in", Int.MAX_VALUE)
+					else ->  put("expires_in", Int.MAX_VALUE)
 				}
 				
 				// set seconds

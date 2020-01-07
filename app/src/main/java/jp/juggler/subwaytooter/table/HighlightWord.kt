@@ -5,9 +5,6 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-
-import org.json.JSONObject
-
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.*
 import java.util.concurrent.atomic.AtomicReference
@@ -149,19 +146,19 @@ class HighlightWord {
 	var sound_uri : String? = null
 	var speech = 0
 	
-	fun encodeJson() : JSONObject {
-		val dst = JSONObject()
-		dst.put(COL_ID, id)
-		dst.put(COL_NAME, name)
-		dst.put(COL_COLOR_BG, color_bg)
-		dst.put(COL_COLOR_FG, color_fg)
-		dst.put(COL_SOUND_TYPE, sound_type)
-		dst.put(COL_SPEECH, speech)
-		if(sound_uri != null) dst.put(COL_SOUND_URI, sound_uri)
+	fun encodeJson() : JsonObject {
+		val dst = JsonObject()
+		dst[COL_ID] = id
+		dst[COL_NAME] = name
+		dst[COL_COLOR_BG] = color_bg
+		dst[COL_COLOR_FG] = color_fg
+		dst[COL_SOUND_TYPE] = sound_type
+		dst[COL_SPEECH] = speech
+		if(sound_uri != null) dst[COL_SOUND_URI] = sound_uri
 		return dst
 	}
 	
-	constructor(src : JSONObject) {
+	constructor(src : JsonObject) {
 		this.id = src.parseLong(COL_ID) ?: - 1L
 		this.name = src.notEmptyOrThrow(COL_NAME)
 		this.color_bg = src.optInt(COL_COLOR_BG)

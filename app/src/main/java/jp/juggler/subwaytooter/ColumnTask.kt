@@ -7,8 +7,8 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.JsonObject
 import jp.juggler.util.WordTrieTree
-import org.json.JSONObject
 import java.util.concurrent.atomic.AtomicBoolean
 
 enum class ColumnTaskType {
@@ -52,10 +52,10 @@ abstract class ColumnTask(
 	val pref : SharedPreferences
 		get() = column.app_state.pref
 	
-	internal fun JSONObject.putMisskeyUntil(id : EntityId?) = putMisskeyUntil(column, id)
-	internal fun JSONObject.putMisskeySince(id : EntityId?) = putMisskeySince(column, id)
-	internal fun JSONObject.addMisskeyNotificationFilter() = addMisskeyNotificationFilter(column)
-	internal fun JSONObject.addRangeMisskey(bBottom : Boolean) = addRangeMisskey(column, bBottom)
+	internal fun JsonObject.putMisskeyUntil(id : EntityId?) = putMisskeyUntil(column, id)
+	internal fun JsonObject.putMisskeySince(id : EntityId?) = putMisskeySince(column, id)
+	internal fun JsonObject.addMisskeyNotificationFilter() = addMisskeyNotificationFilter(column)
+	internal fun JsonObject.addRangeMisskey(bBottom : Boolean) = addRangeMisskey(column, bBottom)
 	
 	internal fun addOne(
 		dstArg : ArrayList<TimelineItem>?,

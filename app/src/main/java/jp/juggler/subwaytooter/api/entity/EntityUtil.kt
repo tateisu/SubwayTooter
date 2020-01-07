@@ -1,10 +1,10 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.util.JsonArray
+import jp.juggler.util.JsonException
+import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
 import java.util.HashMap
 
 object EntityUtil {
@@ -15,8 +15,8 @@ object EntityUtil {
 
 // JSONObjectを渡してEntityを生成するコードのnullチェックと例外補足
 inline fun <reified T> parseItem(
-	factory : (src : JSONObject) -> T,
-	src : JSONObject?,
+	factory : (src : JsonObject) -> T,
+	src : JsonObject?,
 	log : LogCategory = EntityUtil.log
 ) : T? {
 	if(src == null) return null
@@ -30,17 +30,17 @@ inline fun <reified T> parseItem(
 }
 
 inline fun <reified T> parseList(
-	factory : (src : JSONObject) -> T,
-	src : JSONArray?,
+	factory : (src : JsonObject) -> T,
+	src : JsonArray?,
 	log : LogCategory = EntityUtil.log
 ) : ArrayList<T> {
 	val dst = ArrayList<T>()
 	if(src != null) {
-		val src_length = src.length()
+		val src_length = src.size
 		if(src_length > 0) {
 			dst.ensureCapacity(src_length)
 			for(i in 0 until src_length) {
-				val item = parseItem(factory, src.optJSONObject(i), log)
+				val item = parseItem(factory, src.parseJsonObject(i), log)
 				if(item != null) dst.add(item)
 			}
 		}
@@ -49,18 +49,18 @@ inline fun <reified T> parseList(
 }
 
 inline fun <reified T> parseList(
-	factory : (serviceType : ServiceType, src : JSONObject) -> T,
+	factory : (serviceType : ServiceType, src : JsonObject) -> T,
 	serviceType : ServiceType,
-	src : JSONArray?,
+	src : JsonArray?,
 	log : LogCategory = EntityUtil.log
 ) : ArrayList<T> {
 	val dst = ArrayList<T>()
 	if(src != null) {
-		val src_length = src.length()
+		val src_length = src.size
 		if(src_length > 0) {
 			dst.ensureCapacity(src_length)
-			for(i in 0 until src.length()) {
-				val item = parseItem(factory, serviceType, src.optJSONObject(i), log)
+			for(i in 0 until src_length) {
+				val item = parseItem(factory, serviceType, src.parseJsonObject(i), log)
 				if(item != null) dst.add(item)
 			}
 		}
@@ -69,17 +69,16 @@ inline fun <reified T> parseList(
 }
 
 inline fun <reified T> parseListOrNull(
-	factory : (src : JSONObject) -> T,
-	src : JSONArray?,
+	factory : (src : JsonObject) -> T,
+	src : JsonArray?,
 	log : LogCategory = EntityUtil.log
 ) : ArrayList<T>? {
 	if(src != null) {
-		val src_length = src.length()
+		val src_length = src.size
 		if(src_length > 0) {
-			val dst = ArrayList<T>()
-			dst.ensureCapacity(src_length)
-			for(i in 0 until src.length()) {
-				val item = parseItem(factory, src.optJSONObject(i), log)
+			val dst = ArrayList<T>(src_length)
+			for(i in 0 until src.size) {
+				val item = parseItem(factory, src.parseJsonObject(i), log)
 				if(item != null) dst.add(item)
 			}
 			if(dst.isNotEmpty()) return dst
@@ -90,15 +89,14 @@ inline fun <reified T> parseListOrNull(
 
 @Suppress("unused")
 inline fun <reified K, reified V> parseMap(
-	factory : (src : JSONObject) -> V,
-	src : JSONArray?,
+	factory : (src : JsonObject) -> V,
+	src : JsonArray?,
 	log : LogCategory = EntityUtil.log
 ) : HashMap<K, V> where V : Mappable<K> {
 	val dst = HashMap<K, V>()
 	if(src != null) {
-		val size = src.length()
-		for(i in 0 until size) {
-			val item = parseItem(factory, src.optJSONObject(i), log)
+		for(i in src.indices ) {
+			val item = parseItem(factory, src.parseJsonObject(i), log)
 			if(item != null) dst[item.mapKey] = item
 		}
 	}
@@ -106,16 +104,16 @@ inline fun <reified K, reified V> parseMap(
 }
 
 inline fun <reified K, reified V> parseMapOrNull(
-	factory : (src : JSONObject) -> V,
-	src : JSONArray?,
+	factory : (src : JsonObject) -> V,
+	src : JsonArray?,
 	log : LogCategory = EntityUtil.log
 ) : HashMap<K, V>? where V : Mappable<K> {
 	if(src != null) {
-		val size = src.length()
+		val size = src.size
 		if(size > 0) {
 			val dst = HashMap<K, V>()
 			for(i in 0 until size) {
-				val item = parseItem(factory, src.optJSONObject(i), log)
+				val item = parseItem(factory, src.parseJsonObject(i), log)
 				if(item != null) dst[item.mapKey] = item
 			}
 			if(dst.isNotEmpty()) return dst
@@ -125,16 +123,16 @@ inline fun <reified K, reified V> parseMapOrNull(
 }
 
 inline fun <reified V> parseProfileEmoji2(
-	factory : (src : JSONObject,shortcode:String) -> V,
-	src : JSONObject?,
+	factory : (src : JsonObject,shortcode:String) -> V,
+	src : JsonObject?,
 	log : LogCategory = EntityUtil.log
 ) : HashMap<String, V>? {
 	if(src != null) {
-		val size = src.length()
+		val size = src.size
 		if(size > 0) {
 			val dst = HashMap<String, V>()
-			for( key in src.keys()){
-				val v = src.optJSONObject(key) ?: continue
+			for( key in src.keys){
+				val v = src.parseJsonObject(key) ?: continue
 				val item = try{
 					factory(v,key)
 				} catch(ex : Throwable) {
@@ -153,9 +151,9 @@ inline fun <reified V> parseProfileEmoji2(
 ////////////////////////////////////////
 
 inline fun <reified T> parseItem(
-	factory : (parser : TootParser, src : JSONObject) -> T,
+	factory : (parser : TootParser, src : JsonObject) -> T,
 	parser : TootParser,
-	src : JSONObject?,
+	src : JsonObject?,
 	log : LogCategory = EntityUtil.log
 ) : T? {
 	if(src == null) return null
@@ -169,9 +167,9 @@ inline fun <reified T> parseItem(
 }
 
 inline fun <reified T> parseItem(
-	factory : (serviceType : ServiceType, src : JSONObject) -> T,
+	factory : (serviceType : ServiceType, src : JsonObject) -> T,
 	serviceType : ServiceType,
-	src : JSONObject?,
+	src : JsonObject?,
 	log : LogCategory = EntityUtil.log
 ) : T? {
 	if(src == null) return null
@@ -185,18 +183,18 @@ inline fun <reified T> parseItem(
 }
 
 inline fun <reified T> parseList(
-	factory : (parser : TootParser, src : JSONObject) -> T,
+	factory : (parser : TootParser, src : JsonObject) -> T,
 	parser : TootParser,
-	src : JSONArray?,
+	src : JsonArray?,
 	log : LogCategory = EntityUtil.log
 ) : ArrayList<T> {
 	val dst = ArrayList<T>()
 	if(src != null) {
-		val src_length = src.length()
+		val src_length = src.size
 		if(src_length > 0) {
 			dst.ensureCapacity(src_length)
-			for(i in 0 until src.length()) {
-				val item = parseItem(factory, parser, src.optJSONObject(i), log)
+			for(i in src.indices) {
+				val item = parseItem(factory, parser, src.parseJsonObject(i), log)
 				if(item != null) dst.add(item)
 			}
 		}
@@ -206,18 +204,18 @@ inline fun <reified T> parseList(
 
 @Suppress("unused")
 inline fun <reified T> parseListOrNull(
-	factory : (parser : TootParser, src : JSONObject) -> T,
+	factory : (parser : TootParser, src : JsonObject) -> T,
 	parser : TootParser,
-	src : JSONArray?,
+	src : JsonArray?,
 	log : LogCategory = EntityUtil.log
 ) : ArrayList<T>? {
 	if(src != null) {
-		val src_length = src.length()
+		val src_length = src.size
 		if(src_length > 0) {
 			val dst = ArrayList<T>()
 			dst.ensureCapacity(src_length)
-			for(i in 0 until src.length()) {
-				val item = parseItem(factory, parser, src.optJSONObject(i), log)
+			for(i in src.indices) {
+				val item = parseItem(factory, parser, src.parseJsonObject(i), log)
 				if(item != null) dst.add(item)
 			}
 			if(dst.isNotEmpty()) return dst
@@ -228,13 +226,13 @@ inline fun <reified T> parseListOrNull(
 
 ////////////////////////////////////////
 
-fun <T : TootAttachmentLike> ArrayList<T>.encodeJson() : JSONArray {
-	val a = JSONArray()
+fun <T : TootAttachmentLike> ArrayList<T>.encodeJson() : JsonArray {
+	val a = JsonArray()
 	forEach { ta->
 		if(ta !is TootAttachment) return@forEach
 		try {
-			a.put(ta.encodeJson())
-		} catch(ex : JSONException) {
+			a.add(ta.encodeJson())
+		} catch(ex : JsonException) {
 			EntityUtil.log.e(ex, "encode failed.")
 		}
 	}

@@ -4,8 +4,6 @@ import android.os.SystemClock
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.util.*
-import org.json.JSONArray
-import org.json.JSONObject
 
 class ColumnTask_Gap(
 	columnArg : Column,
@@ -184,10 +182,10 @@ class ColumnTask_Gap(
 	internal fun getAccountList(
 		client : TootApiClient,
 		path_base : String,
-		misskeyParams : JSONObject? = null,
-		misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
+		misskeyParams : JsonObject? = null,
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootAccountRef> =
 			{ parser, jsonArray -> parser.accountList(jsonArray) },
-		misskeyArrayFinder : (jsonObject : JSONObject) -> JSONArray? = { null }
+		misskeyArrayFinder : (jsonObject : JsonObject) -> JsonArray? = { null }
 	
 	) : TootApiResult? {
 		
@@ -552,8 +550,8 @@ class ColumnTask_Gap(
 	internal fun getStatusList(
 		client : TootApiClient,
 		path_base : String?,
-		misskeyParams : JSONObject? = null,
-		misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
+		misskeyParams : JsonObject? = null,
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootStatus> =
 			{ parser, jsonArray -> parser.statusList(jsonArray) }
 	) : TootApiResult? {
 		
@@ -691,8 +689,8 @@ class ColumnTask_Gap(
 	internal fun getConversationSummaryList(
 		client : TootApiClient,
 		path_base : String,
-		misskeyParams : JSONObject? = null,
-		misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootConversationSummary> =
+		misskeyParams : JsonObject? = null,
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootConversationSummary> =
 			{ parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
 	) : TootApiResult? {
 		
@@ -723,8 +721,9 @@ class ColumnTask_Gap(
 				
 				val r2 = client.request(
 					path_base,
-					params
-						.putMisskeySince(since_id)
+					params.apply{
+						putMisskeySince(since_id)
+					}
 						.toPostRequestBuilder()
 				)
 				

@@ -16,7 +16,6 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.*
 import org.jetbrains.anko.textColor
-import org.json.JSONException
 
 class ActHighlightWordEdit
 	: AppCompatActivity(),
@@ -39,7 +38,7 @@ class ActHighlightWordEdit
 				val intent = Intent(activity, ActHighlightWordEdit::class.java)
 				intent.putExtra(EXTRA_ITEM, item.encodeJson().toString())
 				activity.startActivityForResult(intent, request_code)
-			} catch(ex : JSONException) {
+			} catch(ex : JsonException) {
 				throw RuntimeException(ex)
 			}
 		}
@@ -51,7 +50,6 @@ class ActHighlightWordEdit
 	private lateinit var swSound : Switch
 	private lateinit var swSpeech : Switch
 	
-	
 	private var bBusy = false
 	
 	private fun makeResult() {
@@ -59,7 +57,7 @@ class ActHighlightWordEdit
 			val data = Intent()
 			data.putExtra(EXTRA_ITEM, item.encodeJson().toString())
 			setResult(Activity.RESULT_OK, data)
-		} catch(ex : JSONException) {
+		} catch(ex : JsonException) {
 			throw RuntimeException(ex)
 		}
 	}
@@ -75,13 +73,10 @@ class ActHighlightWordEdit
 		initUI()
 		
 		item = HighlightWord(
-			(savedInstanceState?.getString(EXTRA_ITEM)
-				?: intent.getStringExtra(EXTRA_ITEM)
-				).toJsonObject()
+			(savedInstanceState?.getString(EXTRA_ITEM) ?: intent.getStringExtra(EXTRA_ITEM))
+				.toJsonObject() !!
 		)
-		
 		showSampleText()
-		
 	}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
@@ -179,8 +174,8 @@ class ActHighlightWordEdit
 	override fun onCheckedChanged(buttonView : CompoundButton, isChecked : Boolean) {
 		if(bBusy) return
 		
-		when(buttonView.id){
-			R.id.swSound ->{
+		when(buttonView.id) {
+			R.id.swSound -> {
 				if(! isChecked) {
 					item.sound_type = HighlightWord.SOUND_TYPE_NONE
 				} else {
@@ -188,10 +183,11 @@ class ActHighlightWordEdit
 						if(item.sound_uri?.isEmpty() != false) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_CUSTOM
 				}
 			}
-			R.id.swSpeech->{
-				item.speech = when(isChecked){
-					false->0
-					else->1
+			
+			R.id.swSpeech -> {
+				item.speech = when(isChecked) {
+					false -> 0
+					else -> 1
 				}
 			}
 		}

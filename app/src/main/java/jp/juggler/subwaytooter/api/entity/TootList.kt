@@ -2,15 +2,11 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.b2i
-import jp.juggler.util.LogCategory
-import jp.juggler.util.forEach
-import jp.juggler.util.groupEx
-import jp.juggler.util.parseString
-import org.json.JSONObject
+import jp.juggler.util.*
 import java.util.*
 import java.util.regex.Pattern
 
-class TootList(parser:TootParser,src : JSONObject): TimelineItem(), Comparable<TootList> {
+class TootList(parser:TootParser,src : JsonObject): TimelineItem(), Comparable<TootList> {
 
 	val id : EntityId
 
@@ -32,7 +28,7 @@ class TootList(parser:TootParser,src : JSONObject): TimelineItem(), Comparable<T
 			this.title_for_sort = makeTitleForSort(this.title)
 			val user_list = ArrayList<EntityId>()
 			userIds = user_list
-			src.optJSONArray("userIds")?.forEach {
+			src.parseJsonArray("userIds")?.forEach {
 				val id = EntityId.mayNull( it as? String )
 				if(id != null ) user_list.add(id )
 			}

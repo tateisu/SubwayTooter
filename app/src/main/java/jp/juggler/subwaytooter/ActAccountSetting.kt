@@ -41,7 +41,6 @@ import okhttp3.RequestBody
 import okio.BufferedSink
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
-import org.json.JSONObject
 import java.io.*
 import kotlin.math.max
 
@@ -281,7 +280,7 @@ class ActAccountSetting
 		cbNotificationBoost = findViewById(R.id.cbNotificationBoost)
 		cbNotificationFavourite = findViewById(R.id.cbNotificationFavourite)
 		cbNotificationFollow = findViewById(R.id.cbNotificationFollow)
-		cbNotificationFollowRequest= findViewById(R.id.cbNotificationFollowRequest)
+		cbNotificationFollowRequest = findViewById(R.id.cbNotificationFollowRequest)
 		
 		cbNotificationReaction = findViewById(R.id.cbNotificationReaction)
 		cbNotificationVote = findViewById(R.id.cbNotificationVote)
@@ -906,8 +905,10 @@ class ActAccountSetting
 			var data : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				if(account.isMisskey) {
-					val params = account.putMisskeyApiToken(JSONObject())
-					val result = client.request("/api/i", params.toPostRequestBuilder())
+					val result = client.request(
+						"/api/i",
+						account.putMisskeyApiToken().toPostRequestBuilder()
+					)
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
 						data = TootParser(this@ActAccountSetting, account).account(jsonObject)
@@ -1172,13 +1173,13 @@ class ActAccountSetting
 							}
 							
 							when(value) {
-								is String -> params.put(misskeyKey, value)
-								is Boolean -> params.put(misskeyKey, value)
+								is String -> params[misskeyKey] = value
+								is Boolean -> params[misskeyKey] = value
 								
 								is InputStreamOpener -> {
 									val (result, ta) = uploadImageMisskey(client, value)
 									ta ?: return result
-									params.put(misskeyKey, ta.id)
+									params[misskeyKey] = ta.id
 								}
 							}
 						}

@@ -10,7 +10,6 @@ import jp.juggler.util.*
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import org.json.JSONObject
 import java.net.ProtocolException
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -179,7 +178,7 @@ internal class StreamReader(
 			}
 		}
 		
-		private fun handleMisskeyMessage(obj : JSONObject, channelId : String? = null) {
+		private fun handleMisskeyMessage(obj : JsonObject, channelId : String? = null) {
 			val type = obj.parseString("type")
 			if(type?.isEmpty() != false) {
 				log.d("handleMisskeyMessage: missing type parameter")
@@ -188,7 +187,7 @@ internal class StreamReader(
 			when(type) {
 				
 				"channel" -> {
-					val body = obj.optJSONObject("body")
+					val body = obj.parseJsonObject("body")
 					if(body == null) {
 						log.e("handleMisskeyMessage: channel body is null")
 						return
@@ -223,12 +222,12 @@ internal class StreamReader(
 				}
 				
 				"note" -> {
-					val body = obj.optJSONObject("body")
+					val body = obj.parseJsonObject("body")
 					fireTimelineItem(parser.status(body), channelId)
 				}
 				
 				"noteUpdated" -> {
-					val body = obj.optJSONObject("body")
+					val body = obj.parseJsonObject("body")
 					if(body == null) {
 						log.e("handleMisskeyMessage: noteUpdated body is null")
 						return
@@ -237,7 +236,7 @@ internal class StreamReader(
 				}
 				
 				"notification" -> {
-					val body = obj.optJSONObject("body")
+					val body = obj.parseJsonObject("body")
 					if(body == null) {
 						log.e("handleMisskeyMessage: notification body is null")
 						return
@@ -258,13 +257,11 @@ internal class StreamReader(
 		override fun onMessage(webSocket : WebSocket, text : String) {
 			// warning.d( "WebSocket onMessage. url=%s, message=%s", webSocket.request().url(), text );
 			try {
-				
-				if(text.isEmpty() || text[0] != '{') {
+				val obj = text.toJsonObject()
+				if(obj == null) {
 					log.d("onMessage: text is not JSON: $text")
 					return
 				}
-				
-				val obj = text.toJsonObject()
 				
 				if(access_info.isMisskey) {
 					handleMisskeyMessage(obj)
@@ -445,7 +442,7 @@ internal class StreamReader(
 			}
 		}
 		
-		fun registerMisskeyChannel(channelArg : JSONObject?) {
+		fun registerMisskeyChannel(channelArg : JsonObject?) {
 			channelArg ?: return
 			try {
 				if(bDisposed.get()) return
@@ -460,9 +457,9 @@ internal class StreamReader(
 			try {
 				if(bDisposed.get()) return
 				socket.get()?.send(
-					JSONObject().apply {
+					JsonObject().apply {
 						put("type", "disconnect")
-						put("body", JSONObject().apply {
+						put("body", JsonObject().apply {
 							put("id", channelId)
 						})
 					}.toString()

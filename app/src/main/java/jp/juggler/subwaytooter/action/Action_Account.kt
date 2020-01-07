@@ -15,7 +15,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
-import org.json.JSONObject
 
 object Action_Account {
 	
@@ -65,7 +64,7 @@ object Action_Account {
 								return
 							}
 							
-							LoginForm.Action.Create -> if(data is JSONObject) {
+							LoginForm.Action.Create -> if(data is JsonObject) {
 								// インスタンスを確認できた
 								createAccount(
 									activity,
@@ -144,7 +143,7 @@ object Action_Account {
 	private fun createAccount(
 		activity : ActMain,
 		instance : String,
-		client_info : JSONObject,
+		client_info : JsonObject,
 		dialog_host : Dialog
 	) {
 		DlgCreateAccount(
@@ -178,7 +177,7 @@ object Action_Account {
 					this.ta = TootParser(activity, linkHelper).account(r2?.jsonObject)
 					if(this.ta != null) return r2
 					
-					val jsonObject = JSONObject().apply {
+					val jsonObject = jsonObject {
 						put("id", EntityId.CONFIRMING.toString())
 						put("username", username)
 						put("acct", username)

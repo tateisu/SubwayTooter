@@ -6,10 +6,7 @@ import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.parseList
-import jp.juggler.util.LogCategory
-import jp.juggler.util.toJsonArray
-import jp.juggler.util.toRequestBody
-import org.json.JSONObject
+import jp.juggler.util.*
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -192,12 +189,11 @@ class CustomEmojiLister(internal val context : Context) {
 					var listWithAlias : ArrayList<CustomEmoji>? = null
 					try {
 						val data = if(request.isMisskey) {
-							App1.getHttpCachedString("https://" + request.instance + "/api/meta") { builder ->
-								builder.post(JSONObject().toRequestBody())
+							App1.getHttpCachedString("https://${request.instance}/api/meta") { builder ->
+								builder.post(JsonObject().toRequestBody())
 							}
-							
 						} else {
-							App1.getHttpCachedString("https://" + request.instance + "/api/v1/custom_emojis")
+							App1.getHttpCachedString("https://${request.instance}/api/v1/custom_emojis")
 						}
 						
 						if(data != null) {
@@ -281,7 +277,7 @@ class CustomEmojiLister(internal val context : Context) {
 		) : ArrayList<CustomEmoji>? {
 			return try {
 				val list = if(isMisskey) {
-					parseList(CustomEmoji.decodeMisskey, JSONObject(data).optJSONArray("emojis"))
+					parseList(CustomEmoji.decodeMisskey, data.toJsonObject()?.parseJsonArray("emojis"))
 				} else {
 					parseList(CustomEmoji.decode, data.toJsonArray())
 				}

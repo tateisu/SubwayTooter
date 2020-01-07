@@ -9,12 +9,8 @@ import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.dismissSafe
-import jp.juggler.util.showToast
-import jp.juggler.util.toPostRequestBuilder
-import jp.juggler.util.toPutRequestBuilder
+import jp.juggler.util.*
 import okhttp3.Request
-import org.json.JSONObject
 
 object Action_List {
 	
@@ -37,16 +33,18 @@ object Action_List {
 				val result = if(access_info.isMisskey) {
 					client.request(
 						"/api/users/lists/create",
-						access_info.putMisskeyApiToken()
-							.put("title", title)
-							.put("name", title)
+						access_info.putMisskeyApiToken().apply {
+							put("title", title)
+							put("name", title)
+						}
 							.toPostRequestBuilder()
 					)
 				} else {
 					client.request(
 						"/api/v1/lists",
-						JSONObject()
-							.put("title", title)
+						jsonObject {
+							put("title", title)
+						}
 							.toPostRequestBuilder()
 					)
 				}
@@ -98,12 +96,19 @@ object Action_List {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return if(access_info.isMisskey) {
-					val params = access_info.putMisskeyApiToken()
-						.put("listId", list.id)
-					client.request("/api/users/lists/delete", params.toPostRequestBuilder())
+					client.request(
+						"/api/users/lists/delete",
+						access_info.putMisskeyApiToken().apply {
+							put("listId", list.id)
+						}
+							.toPostRequestBuilder()
+					)
 					// 204 no content
 				} else {
-					client.request("/api/v1/lists/{list.id}", Request.Builder().delete())
+					client.request(
+						"/api/v1/lists/{list.id}",
+						Request.Builder().delete()
+					)
 				}
 			}
 			
@@ -149,16 +154,19 @@ object Action_List {
 							val result = if(access_info.isMisskey) {
 								client.request(
 									"/api/users/lists/update",
-									access_info.putMisskeyApiToken()
-										.put("listId", item.id)
-										.put("title", text)
+									access_info.putMisskeyApiToken().apply {
+										put("listId", item.id)
+										put("title", text)
+									}
 										.toPostRequestBuilder()
 								)
 							} else {
 								client.request(
 									"/api/v1/lists/${item.id}",
-									JSONObject()
-										.put("title", text)
+									jsonObject {
+										put("title", text)
+									}
+										
 										.toPutRequestBuilder()
 								)
 							}

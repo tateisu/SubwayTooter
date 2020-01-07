@@ -5,8 +5,6 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.util.InstanceTicker
 import jp.juggler.util.*
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -146,8 +144,8 @@ class ColumnTask_Loading(
 		aroundMin : Boolean = false,
 		aroundMax : Boolean = false,
 		
-		misskeyParams : JSONObject? = null,
-		misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
+		misskeyParams : JsonObject? = null,
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootStatus> =
 			{ parser, jsonArray -> parser.statusList(jsonArray) },
 		initialUntilDate : Boolean = false
 	) : TootApiResult? {
@@ -167,7 +165,7 @@ class ColumnTask_Loading(
 		val result = when {
 			isMisskey -> {
 				if(initialUntilDate) {
-					params.put("untilDate", System.currentTimeMillis() + (86400000L * 365))
+					params["untilDate"] = System.currentTimeMillis() + (86400000L * 365)
 				}
 				client.request(path_base, params.toPostRequestBuilder())
 			}
@@ -321,8 +319,8 @@ class ColumnTask_Loading(
 		path_base : String,
 		aroundMin : Boolean = false,
 		aroundMax : Boolean = false,
-		misskeyParams : JSONObject? = null,
-		misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootConversationSummary> =
+		misskeyParams : JsonObject? = null,
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootConversationSummary> =
 			{ parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
 	) : TootApiResult? {
 		
@@ -485,9 +483,9 @@ class ColumnTask_Loading(
 		client : TootApiClient,
 		path_base : String,
 		emptyMessage : String? = null,
-		misskeyParams : JSONObject? = null,
-		misskeyArrayFinder : (JSONObject) -> JSONArray? = { null },
-		misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
+		misskeyParams : JsonObject? = null,
+		misskeyArrayFinder : (JsonObject) -> JsonArray? = { null },
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootAccountRef> =
 			{ parser, jsonArray -> parser.accountList(jsonArray) }
 	) : TootApiResult? {
 		
@@ -584,7 +582,7 @@ class ColumnTask_Loading(
 	internal fun parseListList(
 		client : TootApiClient,
 		path_base : String,
-		misskeyParams : JSONObject? = null
+		misskeyParams : JsonObject? = null
 	) : TootApiResult? {
 		val result = if(misskeyParams != null) {
 			client.request(path_base, misskeyParams.toPostRequestBuilder())
@@ -790,8 +788,10 @@ class ColumnTask_Loading(
 	internal fun getConversation(client : TootApiClient) : TootApiResult? {
 		return if(isMisskey) {
 			// 指定された発言そのもの
-			val queryParams = column.makeMisskeyBaseParameter(parser)
-				.put("noteId", column.status_id)
+			val queryParams = column.makeMisskeyBaseParameter(parser).apply {
+				put("noteId", column.status_id)
+			}
+			
 			var result = client.request(
 				"/api/notes/show"
 				, queryParams.toPostRequestBuilder()
@@ -805,7 +805,7 @@ class ColumnTask_Loading(
 			val list_asc = java.util.ArrayList<TootStatus>()
 			while(true) {
 				if(client.isApiCancelled) return null
-				queryParams.put("offset", list_asc.size)
+				queryParams["offset"] = list_asc.size
 				result = client.request(
 					"/api/notes/conversation"
 					, queryParams.toPostRequestBuilder()
@@ -831,10 +831,10 @@ class ColumnTask_Loading(
 					}
 					
 					misskeyVersion >= 11 -> {
-						queryParams.put("untilId", untilId.toString())
+						queryParams["untilId"] = untilId.toString()
 					}
 					
-					else -> queryParams.put("offset", list_desc.size)
+					else -> queryParams["offset"] = list_desc.size
 				}
 				
 				result = client.request(
@@ -933,9 +933,10 @@ class ColumnTask_Loading(
 			if(queryAccount.isNotEmpty()) {
 				result = client.request(
 					"/api/users/search",
-					access_info.putMisskeyApiToken()
-						.put("query", queryAccount)
-						.put("localOnly", ! column.search_resolve).toPostRequestBuilder()
+					access_info.putMisskeyApiToken().apply {
+						put("query", queryAccount)
+						put("localOnly", ! column.search_resolve)
+					}.toPostRequestBuilder()
 				)
 				val jsonArray = result?.jsonArray
 				if(jsonArray != null) {
@@ -949,9 +950,9 @@ class ColumnTask_Loading(
 			if(queryTag.isNotEmpty()) {
 				result = client.request(
 					"/api/hashtags/search",
-					access_info.putMisskeyApiToken()
-						.put("query", queryTag)
-						.toPostRequestBuilder()
+					access_info.putMisskeyApiToken().apply {
+						put("query", queryTag)
+					}.toPostRequestBuilder()
 				)
 				val jsonArray = result?.jsonArray
 				if(jsonArray != null) {
@@ -962,8 +963,9 @@ class ColumnTask_Loading(
 			if(column.search_query.isNotEmpty()) {
 				result = client.request(
 					"/api/notes/search",
-					access_info.putMisskeyApiToken()
-						.put("query", column.search_query)
+					access_info.putMisskeyApiToken().apply {
+						put("query", column.search_query)
+					}
 						.toPostRequestBuilder()
 				)
 				val jsonArray = result?.jsonArray

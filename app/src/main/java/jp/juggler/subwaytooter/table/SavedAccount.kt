@@ -16,7 +16,6 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
-import org.json.JSONObject
 import java.util.*
 import java.util.regex.Pattern
 
@@ -24,7 +23,7 @@ class SavedAccount(
 	val db_id : Long,
 	val acct : String,
 	hostArg : String? = null,
-	var token_info : JSONObject? = null,
+	var token_info : JsonObject? = null,
 	var loginAccount : TootAccount? = null, // 疑似アカウントではnull
 	override val misskeyVersion : Int = 0
 ) : LinkHelper {
@@ -97,7 +96,7 @@ class SavedAccount(
 		val strAccount = cursor.getString(COL_ACCOUNT)
 		val jsonAccount = strAccount.toJsonObject()
 		
-		loginAccount = if(jsonAccount.opt("id") == null) {
+		loginAccount = if(jsonAccount?.get("id") == null) {
 			null // 疑似アカウント
 		} else {
 			TootParser(
@@ -167,11 +166,11 @@ class SavedAccount(
 		
 	}
 	
-	fun updateTokenInfo(tokenInfoArg : JSONObject?) {
+	fun updateTokenInfo(tokenInfoArg : JsonObject?) {
 		
 		if(db_id == INVALID_DB_ID) throw RuntimeException("updateTokenInfo: missing db_id")
 		
-		val token_info = tokenInfoArg ?: JSONObject()
+		val token_info = tokenInfoArg ?: JsonObject()
 		this.token_info = token_info
 		
 		val cv = ContentValues()
@@ -744,8 +743,8 @@ class SavedAccount(
 		fun insert(
 			host : String,
 			acct : String,
-			account : JSONObject,
-			token : JSONObject,
+			account : JsonObject,
+			token : JsonObject,
 			misskeyVersion : Int = 0
 		) : Long {
 			try {
@@ -1023,9 +1022,9 @@ class SavedAccount(
 	val misskeyApiToken : String?
 		get() = token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
 	
-	fun putMisskeyApiToken(params : JSONObject = JSONObject()) : JSONObject {
+	fun putMisskeyApiToken(params : JsonObject = JsonObject()) : JsonObject {
 		val apiKey = misskeyApiToken
-		if(apiKey?.isNotEmpty() == true) params.put("i", apiKey)
+		if(apiKey?.isNotEmpty() == true) params["i"] = apiKey
 		return params
 	}
 	

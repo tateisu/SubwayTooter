@@ -4,28 +4,27 @@ import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.database.Cursor
 import android.os.AsyncTask
-import androidx.appcompat.app.AlertDialog
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.BaseAdapter
 import android.widget.ListView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.PostDraft
+import jp.juggler.util.JsonObject
 import jp.juggler.util.dismissSafe
-import jp.juggler.util.parseString
 import jp.juggler.util.showToast
-import org.json.JSONObject
 
 class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
 	DialogInterface.OnDismissListener {
 	
 	private lateinit var activity : ActPost
-	private lateinit var callback : (draft : JSONObject) -> Unit
+	private lateinit var callback : (draft : JsonObject) -> Unit
 	private lateinit var lvDraft : ListView
 	private lateinit var adapter : MyAdapter
 	private lateinit var dialog : AlertDialog
@@ -71,7 +70,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 	}
 	
 	@SuppressLint("InflateParams")
-	fun open(_activity : ActPost, _callback : (draft : JSONObject) -> Unit) {
+	fun open(_activity : ActPost, _callback : (draft : JsonObject) -> Unit) {
 		this.activity = _activity
 		this.callback = _callback
 		

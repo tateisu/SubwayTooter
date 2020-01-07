@@ -8,8 +8,6 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.*
-import org.json.JSONArray
-import org.json.JSONObject
 
 class ColumnTask_Refresh(
 	columnArg : Column,
@@ -136,15 +134,16 @@ class ColumnTask_Refresh(
 				
 				var doneSound = false
 				for(o in list_new) {
-					if( o is TootStatus ){
-						o.highlightSound?.let{
-							if(!doneSound){
+					if(o is TootStatus) {
+						o.highlightSound?.let {
+							if(! doneSound) {
 								doneSound = true
 								App1.sound(it)
 							}
 						}
-						o.highlightSpeech?.let{
-							App1.getAppState(context).addSpeech(it.name,dedupMode = DedupMode.RecentExpire)
+						o.highlightSpeech?.let {
+							App1.getAppState(context)
+								.addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
 						}
 					}
 				}
@@ -211,9 +210,9 @@ class ColumnTask_Refresh(
 	internal fun getAccountList(
 		client : TootApiClient,
 		path_base : String,
-		misskeyParams : JSONObject? = null,
-		misskeyArrayFinder : (JSONObject) -> JSONArray? = { null },
-		misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
+		misskeyParams : JsonObject? = null,
+		misskeyArrayFinder : (JsonObject) -> JsonArray? = { null },
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootAccountRef> =
 			{ parser, jsonArray -> parser.accountList(jsonArray) }
 	) : TootApiResult? {
 		
@@ -249,11 +248,15 @@ class ColumnTask_Refresh(
 		var result = if(isMisskey) {
 			client.request(
 				path_base,
-				when(column.pagingType) {
-					ColumnPagingType.Default -> params.addRangeMisskey(bBottom)
-					ColumnPagingType.Offset -> params.put("offset", column.offsetNext)
-					ColumnPagingType.Cursor -> params.put("cursor", column.idOld)
-					else -> params
+				params.apply {
+					when(column.pagingType) {
+						ColumnPagingType.Default -> addRangeMisskey(bBottom)
+						ColumnPagingType.Offset -> put("offset", column.offsetNext)
+						ColumnPagingType.Cursor -> put("cursor", column.idOld)
+						
+						ColumnPagingType.None -> {
+						}
+					}
 				}
 					.toPostRequestBuilder()
 			)
@@ -344,7 +347,7 @@ class ColumnTask_Refresh(
 						addAll(list_tmp, src)
 						
 						// pagingType is always default.
-						column.saveRange(false, true, result, src)
+						column.saveRange(bBottom = false, bTop = true, result = result, list = src)
 					}
 					
 					// pagingType is always default.
@@ -669,7 +672,7 @@ class ColumnTask_Refresh(
 						
 						src = parser.notificationList(jsonArray)
 						
-						column.saveRange(false, true, result, src)
+						column.saveRange(bBottom = false, bTop = true, result = result, list = src)
 						if(src.isNotEmpty()) {
 							addWithFilterNotification(list_tmp, src)
 							PollingWorker.injectData(context, access_info, src)
@@ -817,8 +820,8 @@ class ColumnTask_Refresh(
 		client : TootApiClient,
 		path_base : String,
 		aroundMin : Boolean = false,
-		misskeyParams : JSONObject? = null,
-		misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootConversationSummary> =
+		misskeyParams : JsonObject? = null,
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootConversationSummary> =
 			{ parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
 	) : TootApiResult? {
 		
@@ -895,7 +898,7 @@ class ColumnTask_Refresh(
 						
 						src = misskeyCustomParser(parser, jsonArray2)
 						
-						column.saveRange(false, true, result, src)
+						column.saveRange(bBottom = false, bTop = true, result = result, list = src)
 						
 						addWithFilterConversationSummary(list_tmp, src)
 					}
@@ -1055,8 +1058,10 @@ class ColumnTask_Refresh(
 					result = if(isMisskey) {
 						client.request(
 							path_base,
-							params
-								.putMisskeyUntil(column.idOld)
+							params.apply {
+								putMisskeyUntil(column.idOld)
+								
+							}
 								.toPostRequestBuilder()
 						)
 					} else {
@@ -1094,8 +1099,8 @@ class ColumnTask_Refresh(
 		client : TootApiClient,
 		path_base : String?,
 		aroundMin : Boolean = false,
-		misskeyParams : JSONObject? = null,
-		misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
+		misskeyParams : JsonObject? = null,
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootStatus> =
 			{ parser, jsonArray -> parser.statusList(jsonArray) }
 	) : TootApiResult? {
 		
@@ -1160,8 +1165,10 @@ class ColumnTask_Refresh(
 						
 						result = client.request(
 							path_base,
-							params
-								.putMisskeySince(column.idRecent)
+							params.apply {
+								putMisskeySince(column.idRecent)
+							}
+								
 								.toPostRequestBuilder()
 						)
 						
@@ -1174,7 +1181,7 @@ class ColumnTask_Refresh(
 						
 						src = misskeyCustomParser(parser, jsonArray2)
 						
-						column.saveRange(false, true, result, src)
+						column.saveRange(bBottom = false, bTop = true, result = result, list = src)
 						
 						addWithFilterStatus(list_tmp, src)
 					}
@@ -1334,8 +1341,10 @@ class ColumnTask_Refresh(
 					result = if(isMisskey) {
 						client.request(
 							path_base,
-							params
-								.putMisskeyUntil(column.idOld)
+							params.apply {
+								putMisskeyUntil(column.idOld)
+							}
+								
 								.toPostRequestBuilder()
 						)
 					} else {

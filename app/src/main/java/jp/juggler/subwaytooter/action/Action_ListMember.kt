@@ -1,16 +1,18 @@
 package jp.juggler.subwaytooter.action
 
+import android.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootRelationShip
+import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import okhttp3.Request
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.regex.Pattern
 
 object Action_ListMember {
@@ -44,11 +46,14 @@ object Action_ListMember {
 				return if(access_info.isMisskey) {
 					// misskeyのリストはフォロー無関係
 					
-					val params = access_info.putMisskeyApiToken(JSONObject())
-						.put("listId", list_id)
-						.put("userId", local_who.id)
-					
-					client.request("/api/users/lists/push", params.toPostRequestBuilder())
+					client.request(
+						"/api/users/lists/push",
+						access_info.putMisskeyApiToken().apply {
+							put("listId", list_id)
+							put("userId", local_who.id)
+							
+						}.toPostRequestBuilder()
+					)
 					// 204 no content
 				} else {
 					if(bFollow) {
@@ -72,6 +77,7 @@ object Action_ListMember {
 							?: return TootApiResult("parse error.")
 						
 						if(! relation.following) {
+							@Suppress("ControlFlowWithEmptyBody")
 							if(relation.requested) {
 								return TootApiResult(activity.getString(R.string.cant_add_list_follow_requesting))
 							} else {
@@ -85,11 +91,11 @@ object Action_ListMember {
 					
 					client.request(
 						"/api/v1/lists/$list_id/accounts",
-						JSONObject().apply {
+						jsonObject {
 							put(
 								"account_ids",
-								JSONArray().apply {
-									put(userId.toString())
+								jsonArray {
+									add(userId.toString())
 								}
 							)
 						}
@@ -134,7 +140,7 @@ object Action_ListMember {
 										access_info.getFullAcct(local_who)
 									)
 								) {
-									Action_ListMember.add(
+									add(
 										activity,
 										access_info,
 										list_id,
@@ -144,7 +150,7 @@ object Action_ListMember {
 									)
 								}
 							} else {
-								android.app.AlertDialog.Builder(activity)
+								AlertDialog.Builder(activity)
 									.setCancelable(true)
 									.setMessage(R.string.cant_add_list_follow_requesting)
 									.setNeutralButton(R.string.close, null)
@@ -176,9 +182,10 @@ object Action_ListMember {
 				return if(access_info.isMisskey) {
 					client.request(
 						"/api/users/lists/pull",
-						access_info.putMisskeyApiToken()
-							.put("listId", list_id.toString())
-							.put("userId", local_who.id.toString())
+						access_info.putMisskeyApiToken().apply {
+							put("listId", list_id.toString())
+							put("userId", local_who.id.toString())
+						}
 							.toPostRequestBuilder()
 					)
 				} else {

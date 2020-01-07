@@ -4,7 +4,8 @@ import androidx.test.runner.AndroidJUnit4
 import android.test.mock.MockContext
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
-import org.json.JSONObject
+import jp.juggler.util.JsonObject
+import jp.juggler.util.jsonObject
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -28,14 +29,12 @@ class TestDuplicateMap {
 	
 	private fun genStatus(
 		parser : TootParser,
-		accountJson : JSONObject,
+		accountJson : JsonObject,
 		statusId : String,
 		uri : String?,
 		url : String?
 	):TootStatus{
-		val itemJson = JSONObject()
-		
-		itemJson.apply {
+		val itemJson = jsonObject{
 			put("account", accountJson)
 			put("id", statusId)
 			if(uri != null) put("uri", uri)
@@ -48,7 +47,7 @@ class TestDuplicateMap {
 	private fun checkStatus(
 		map : DuplicateMap,
 		parser : TootParser,
-		accountJson : JSONObject,
+		accountJson : JsonObject,
 		statusId : String,
 		uri : String?,
 		url : String?
@@ -62,8 +61,7 @@ class TestDuplicateMap {
 	
 	private fun testDuplicateStatus() {
 		
-		val account1Json = JSONObject()
-		account1Json.apply {
+		val account1Json = jsonObject{
 			put("username", "user1")
 			put("acct", "user1")
 			put("id", 1L)
@@ -129,7 +127,7 @@ class TestDuplicateMap {
 		parser : TootParser,
 		id : Long
 	) {
-		val itemJson = JSONObject()
+		val itemJson = JsonObject()
 		
 		itemJson.apply {
 			put("type", TootNotification.TYPE_MENTION)
@@ -155,7 +153,7 @@ class TestDuplicateMap {
 		map : DuplicateMap,
 		id : Long
 	) {
-		val item = TootReport(JSONObject().apply{
+		val item = TootReport(JsonObject().apply{
 			put("id",id)
 			put("action_taken","eat")
 		})
@@ -181,7 +179,7 @@ class TestDuplicateMap {
 		id : Long
 	) {
 
-		val itemJson = JSONObject()
+		val itemJson = JsonObject()
 		itemJson.apply {
 			put("username", "user$id")
 			put("acct", "user$id")

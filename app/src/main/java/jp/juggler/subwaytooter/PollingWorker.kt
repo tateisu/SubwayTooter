@@ -34,8 +34,6 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import okhttp3.Call
 import okhttp3.Request
-import org.json.JSONException
-import org.json.JSONObject
 import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -255,12 +253,16 @@ class PollingWorker private constructor(contextArg : Context) {
 			context : Context,
 			removeOld : Boolean,
 			task_id : Int,
-			taskDataArg : JSONObject?
+			taskDataArg : JsonObject?
 		) {
 			try {
-				val taskData = taskDataArg ?: JSONObject()
-				taskData.put(EXTRA_TASK_ID, task_id)
-				task_list.addLast(context, removeOld, taskData)
+				task_list.addLast(
+					context,
+					removeOld,
+					(taskDataArg ?: JsonObject()).apply {
+						put(EXTRA_TASK_ID, task_id)
+					}
+				)
 				scheduleJob(context, JOB_TASK)
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -290,10 +292,11 @@ class PollingWorker private constructor(contextArg : Context) {
 		
 		fun queueNotificationCleared(context : Context, db_id : Long) {
 			try {
-				val data = JSONObject()
-				data.putOpt(EXTRA_DB_ID, db_id)
+				val data = jsonObject {
+					putNotNull(EXTRA_DB_ID, db_id)
+				}
 				addTask(context, true, TASK_NOTIFICATION_CLEAR, data)
-			} catch(ex : JSONException) {
+			} catch(ex : JsonException) {
 				log.trace(ex)
 			}
 			
@@ -301,11 +304,12 @@ class PollingWorker private constructor(contextArg : Context) {
 		
 		fun queueNotificationDeleted(context : Context, db_id : Long, trackingType : String) {
 			try {
-				val data = JSONObject()
-				data.putOpt(EXTRA_DB_ID, db_id)
-				data.putOpt(EXTRA_NOTIFICATION_TYPE, trackingType)
+				val data = jsonObject {
+					putNotNull(EXTRA_DB_ID, db_id)
+					putNotNull(EXTRA_NOTIFICATION_TYPE, trackingType)
+				}
 				addTask(context, true, TASK_NOTIFICATION_DELETE, data)
-			} catch(ex : JSONException) {
+			} catch(ex : JsonException) {
 				log.trace(ex)
 			}
 			
@@ -313,11 +317,12 @@ class PollingWorker private constructor(contextArg : Context) {
 		
 		fun queueNotificationClicked(context : Context, db_id : Long, trackingType : String) {
 			try {
-				val data = JSONObject()
-				data.putOpt(EXTRA_DB_ID, db_id)
-				data.putOpt(EXTRA_NOTIFICATION_TYPE, trackingType)
+				val data = jsonObject {
+					putNotNull(EXTRA_DB_ID, db_id)
+					putNotNull(EXTRA_NOTIFICATION_TYPE, trackingType)
+				}
 				addTask(context, true, TASK_NOTIFICATION_CLICK, data)
-			} catch(ex : JSONException) {
+			} catch(ex : JsonException) {
 				log.trace(ex)
 			}
 		}
@@ -353,11 +358,12 @@ class PollingWorker private constructor(contextArg : Context) {
 			callback.onStatus("=>")
 			
 			// タスクを追加
-			val data = JSONObject()
-			try {
-				if(tag != null) data.putOpt(EXTRA_TAG, tag)
-				data.put(EXTRA_TASK_ID, TASK_FCM_MESSAGE)
-			} catch(ignored : JSONException) {
+			val data = JsonObject().apply {
+				try {
+					putNotNull(EXTRA_TAG, tag)
+					this[EXTRA_TASK_ID] = TASK_FCM_MESSAGE
+				} catch(_ : JsonException) {
+				}
 			}
 			
 			task_list.addLast(context, true, data)
@@ -752,7 +758,7 @@ class PollingWorker private constructor(contextArg : Context) {
 				
 				if(! isJobCancelled && ! bPollingComplete && jobId == JOB_POLLING) {
 					// タスクがなかった場合でも定期実行ジョブからの実行ならポーリングを行う
-					TaskRunner().runTask(this@JobItem, TASK_POLLING, JSONObject())
+					TaskRunner().runTask(this@JobItem, TASK_POLLING, JsonObject())
 				}
 				job_status.set("make next schedule.")
 				
@@ -815,7 +821,7 @@ class PollingWorker private constructor(contextArg : Context) {
 		
 		val error_instance = ArrayList<String>()
 		
-		fun runTask(job : JobItem, taskId : Int, taskData : JSONObject) {
+		fun runTask(job : JobItem, taskId : Int, taskData : JsonObject) {
 			try {
 				log.d("(runTask: taskId=${taskId}")
 				job_status.set("start task $taskId")
@@ -1042,7 +1048,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					}
 					
 					wps.updateSubscription(client) ?: return // cancelled.
-
+					
 					val wps_log = wps.log
 					if(wps_log.isNotEmpty())
 						log.d("PushSubscriptionHelper: ${account.acct} $wps_log")
@@ -1166,7 +1172,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					nr.save()
 				}
 				
-				private fun update_sub(src : JSONObject) {
+				private fun update_sub(src : JsonObject) {
 					
 					val id = getEntityOrderId(account, src)
 					if(id.isDefault || duplicate_check.contains(id)) return

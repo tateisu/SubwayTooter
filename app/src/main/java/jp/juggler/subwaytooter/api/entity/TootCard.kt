@@ -2,9 +2,8 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.HTMLDecoder
+import jp.juggler.util.JsonObject
 import jp.juggler.util.filterNotEmpty
-import jp.juggler.util.parseString
-import org.json.JSONObject
 
 class TootCard(
 	
@@ -29,7 +28,7 @@ class TootCard(
 	val originalStatus : TootStatus? = null
 ) {
 	
-	constructor(src : JSONObject) : this(
+	constructor(src : JsonObject) : this(
 		url = src.parseString("url"),
 		title = src.parseString("title"),
 		description = src.parseString("description"),

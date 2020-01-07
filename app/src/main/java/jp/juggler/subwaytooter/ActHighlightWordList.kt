@@ -136,7 +136,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		
 		val tvName : TextView
 		private val btnSound : View
-		val ivSpeech: ImageButton
+		private val ivSpeech: ImageButton
 		
 		init {
 			

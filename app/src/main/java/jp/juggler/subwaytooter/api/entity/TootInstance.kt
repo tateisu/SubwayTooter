@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.api.entity
 
-import android.content.Context
 import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
@@ -10,15 +9,16 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.VersionString
-import jp.juggler.util.*
+import jp.juggler.util.JsonObject
+import jp.juggler.util.groupEx
+import jp.juggler.util.toPostRequestBuilder
 import okhttp3.Request
-import org.json.JSONObject
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.math.max
 
-class TootInstance(parser : TootParser, src : JSONObject) {
+class TootInstance(parser : TootParser, src : JsonObject) {
 	
 	// いつ取得したか(内部利用)
 	private var time_parse : Long = SystemClock.elapsedRealtime()
@@ -85,7 +85,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			
 			this.uri = parser.accessHost
 			this.title = parser.accessHost
-			val sv = src.optJSONObject("maintainer")?.parseString("url")
+			val sv = src.parseJsonObject("maintainer")?.parseString("url")
 			this.email = when {
 				sv?.startsWith("mailto:") == true -> sv.substring(7)
 				else -> sv
@@ -97,7 +97,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			this.thumbnail = null
 			this.max_toot_chars = src.parseInt("maxNoteTextLength")
 			this.instanceType = InstanceType.Misskey
-			this.languages = src.optJSONArray("langs")?.toStringArrayList() ?: ArrayList()
+			this.languages = src.parseJsonArray("langs")?.toStringArrayList() ?: ArrayList()
 			this.contact_account = null
 			
 			this.description = src.parseString("description")
@@ -116,7 +116,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			
 			this.version = src.parseString("version")
 			this.decoded_version = VersionString(version)
-			this.stats = parseItem(::Stats, src.optJSONObject("stats"))
+			this.stats = parseItem(::Stats, src.parseJsonObject("stats"))
 			this.thumbnail = src.parseString("thumbnail")
 			
 			this.max_toot_chars = src.parseInt("max_toot_chars")
@@ -127,14 +127,14 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 				else -> InstanceType.Mastodon
 			}
 			
-			languages = src.optJSONArray("languages")?.toStringArrayList()
+			languages = src.parseJsonArray("languages")?.toStringArrayList()
 			
 			val parser2 = TootParser(
 				parser.context,
 				LinkHelper.newLinkHelper(uri ?: "?")
 			)
 			contact_account =
-				parseItem(::TootAccount, parser2, src.optJSONObject("contact_account"))
+				parseItem(::TootAccount, parser2, src.parseJsonObject("contact_account"))
 			
 			this.description = src.parseString("description")
 			this.short_description = src.parseString("short_description")
@@ -142,7 +142,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		}
 	}
 	
-	class Stats(src : JSONObject) {
+	class Stats(src : JsonObject) {
 		val user_count : Long
 		val status_count : Long
 		val domain_count : Long
@@ -190,8 +190,8 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		const val DESCRIPTION_DEFAULT = "(no description)"
 		
 		// 引数はtoken_infoかTootInstanceのパース前のいずれか
-		fun parseMisskeyVersion(token_info : JSONObject) : Int {
-			return when(val o = token_info.opt(TootApiClient.KEY_MISSKEY_VERSION)) {
+		fun parseMisskeyVersion(token_info : JsonObject) : Int {
+			return when(val o = token_info[TootApiClient.KEY_MISSKEY_VERSION]) {
 				is Int -> o
 				is Boolean -> if(o) 10 else 0
 				else -> 0
@@ -219,7 +219,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			val result = TootApiResult.makeWithCaption(instance)
 			if(result.error != null) return result
 			if(sendRequest(result) {
-					JSONObject().apply {
+					JsonObject().apply {
 						put("dummy", 1)
 					}
 						.toPostRequestBuilder()
@@ -231,7 +231,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 				result.jsonObject?.apply {
 					val m = reDigits.matcher(parseString("version") ?: "")
 					if(m.find()) {
-						put(TootApiClient.KEY_MISSKEY_VERSION, max(1,m.groupEx(1) !!.toInt()))
+						put(TootApiClient.KEY_MISSKEY_VERSION, max(1, m.groupEx(1) !!.toInt()))
 					}
 				}
 			}
@@ -314,7 +314,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 					// get new information
 					val result = if(account != null) {
 						if(account.isMisskey) {
-							val params = JSONObject().apply {
+							val params = JsonObject().apply {
 								put("dummy", 1)
 							}
 							client.request("/api/meta", params.toPostRequestBuilder())

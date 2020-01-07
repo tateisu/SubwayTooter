@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
-import org.json.JSONArray
-
+import jp.juggler.util.JsonArray
 import java.util.ArrayList
 
 class TootDomainBlock(
@@ -9,16 +8,13 @@ class TootDomainBlock(
 ):TimelineItem() {
 
 	companion object {
-		
-		fun parseList(array : JSONArray?) : ArrayList<TootDomainBlock> {
+		fun parseList(array : JsonArray?) : ArrayList<TootDomainBlock> {
 			val result = ArrayList<TootDomainBlock>()
 			if(array != null) {
-				val array_size = array.length()
-				result.ensureCapacity(array_size)
-				for(i in 0 until array_size) {
-					val sv = array.optString(i)
-					if(sv?.isNotEmpty() == true) {
-						result.add(TootDomainBlock(sv))
+				result.ensureCapacity(array.size)
+				array.toStringList().forEach {
+					if(it.isNotEmpty() ) {
+						result.add(TootDomainBlock(it))
 					}
 				}
 			}

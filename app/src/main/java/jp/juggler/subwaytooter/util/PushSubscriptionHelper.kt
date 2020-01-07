@@ -12,7 +12,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.SubscriptionServerKey
 import jp.juggler.util.*
 import okhttp3.Request
-import org.json.JSONObject
 
 class PushSubscriptionHelper(
 	val context : Context,
@@ -92,9 +91,10 @@ class PushSubscriptionHelper(
 			
 			// サーバキーをアプリサーバに登録
 			val r = client.http(
-				JSONObject()
-					.put("client_id", clientIdentifier)
-					.put("server_key", serverKey)
+				JsonObject().apply{
+					put("client_id", clientIdentifier)
+					put("server_key", serverKey)
+				}
 					.toPostRequestBuilder()
 					.url("${PollingWorker.APP_SERVER}/webpushserverkey")
 					.build()
@@ -131,10 +131,11 @@ class PushSubscriptionHelper(
 		if( account.last_push_endpoint == endpoint) return TootApiResult()
 		
 		return client.http(
-			JSONObject()
-				.put("acct", account.acct)
-				.put("deviceId", deviceId)
-				.put("endpoint", endpoint)
+			jsonObject {
+				put("acct", account.acct)
+				put("deviceId", deviceId)
+				put("endpoint", endpoint)
+			}
 				.toPostRequestBuilder()
 				.url("${PollingWorker.APP_SERVER}/webpushendpoint")
 				.build()
@@ -198,13 +199,14 @@ class PushSubscriptionHelper(
 		// 購読
 		return client.request(
 			"/api/sw/register",
-			account.putMisskeyApiToken()
-				.put("endpoint", endpoint)
-				.put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
-				.put(
+			account.putMisskeyApiToken().apply{
+				put("endpoint", endpoint)
+				put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
+				put(
 					"publickey",
 					"BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
 				)
+			}
 				.toPostRequestBuilder()
 		)?.also { result ->
 			val jsonObject = result.jsonObject
@@ -322,9 +324,10 @@ class PushSubscriptionHelper(
 		
 		// アクセストークンの優先権を取得
 		r = client.http(
-			JSONObject()
-				.put("token_digest", tokenDigest)
-				.put("install_id", install_id)
+			jsonObject{
+				put("token_digest", tokenDigest)
+				put("install_id", install_id)
+			}
 				.toPostRequestBuilder()
 				.url("${PollingWorker.APP_SERVER}/webpushtokencheck")
 				.build()
@@ -376,10 +379,10 @@ class PushSubscriptionHelper(
 			
 			r = client.request(
 				"/api/v1/push/subscription",
-				JSONObject().apply {
-					put("subscription", JSONObject().apply {
+				JsonObject().apply {
+					put("subscription", JsonObject().apply {
 						put("endpoint", endpoint)
-						put("keys", JSONObject().apply {
+						put("keys", JsonObject().apply {
 							put(
 								"p256dh",
 								"BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
@@ -387,8 +390,8 @@ class PushSubscriptionHelper(
 							put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
 						})
 					})
-					put("data", JSONObject().apply {
-						put("alerts", JSONObject().apply {
+					put("data", JsonObject().apply {
+						put("alerts", JsonObject().apply {
 							put("follow", account.notification_follow)
 							put("favourite", account.notification_favourite)
 							put("reblog", account.notification_boost)

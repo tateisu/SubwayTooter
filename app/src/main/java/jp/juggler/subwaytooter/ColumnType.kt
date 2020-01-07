@@ -10,8 +10,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.LogCategory
 import jp.juggler.util.ellipsizeDot3
 import jp.juggler.util.notEmpty
-import org.json.JSONArray
-import org.json.JSONObject
+import jp.juggler.util.toJsonArray
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -453,7 +452,6 @@ enum class ColumnType(
 		gap = { client -> getStatusList(client, column.makeDomainTimelineUrl()) }
 	),
 	
-	
 	LOCAL_AROUND(29,
 		iconId = { R.drawable.ic_run },
 		name1 = { it.getString(R.string.ltl_around) },
@@ -612,7 +610,6 @@ enum class ColumnType(
 			}
 		}
 	),
-	
 	
 	NOTIFICATIONS(
 		7,
@@ -896,7 +893,7 @@ enum class ColumnType(
 				getAccountList(
 					client
 					, Column.PATH_MISSKEY_FOLLOW_REQUESTS
-					, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+					, misskeyParams = access_info.putMisskeyApiToken()
 					, misskeyCustomParser = misskeyCustomParserFollowRequest
 				)
 			} else {
@@ -908,7 +905,7 @@ enum class ColumnType(
 				getAccountList(
 					client
 					, Column.PATH_MISSKEY_FOLLOW_REQUESTS
-					, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+					, misskeyParams = access_info.putMisskeyApiToken()
 					, misskeyCustomParser = misskeyCustomParserFollowRequest
 				)
 			} else {
@@ -920,7 +917,7 @@ enum class ColumnType(
 				getAccountList(
 					client
 					, Column.PATH_MISSKEY_FOLLOW_REQUESTS
-					, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+					, misskeyParams = access_info.putMisskeyApiToken()
 					, misskeyCustomParser = misskeyCustomParserFollowRequest
 				)
 			} else {
@@ -1206,8 +1203,9 @@ enum class ColumnType(
 				getStatusList(
 					client,
 					column.makeListTlUrl(),
-					misskeyParams = column.makeMisskeyTimelineParameter(parser)
-						.put("listId", column.profile_id)
+					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
+						put("listId", column.profile_id)
+					}
 				)
 			} else {
 				getStatusList(client, column.makeListTlUrl())
@@ -1220,8 +1218,9 @@ enum class ColumnType(
 				getStatusList(
 					client,
 					column.makeListTlUrl(),
-					misskeyParams = column.makeMisskeyTimelineParameter(parser)
-						.put("listId", column.profile_id)
+					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
+						put("listId", column.profile_id)
+					}
 				)
 			} else {
 				getStatusList(client, column.makeListTlUrl())
@@ -1233,8 +1232,9 @@ enum class ColumnType(
 				getStatusList(
 					client,
 					column.makeListTlUrl(),
-					misskeyParams = column.makeMisskeyTimelineParameter(parser)
-						.put("listId", column.profile_id)
+					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
+						put("listId", column.profile_id)
+					}
 				)
 			} else {
 				getStatusList(client, column.makeListTlUrl())
@@ -1259,12 +1259,10 @@ enum class ColumnType(
 				getAccountList(
 					client,
 					"/api/users/show",
-					misskeyParams = access_info.putMisskeyApiToken()
-						.put("userIds", JSONArray().apply {
-							column.list_info?.userIds?.forEach {
-								this.put(it.toString())
-							}
-						})
+					misskeyParams = access_info.putMisskeyApiToken().apply {
+						val list = column.list_info?.userIds?.map { it.toString() }?.toJsonArray()
+						if(list !=null) put("userIds",list)
+					}
 				)
 				
 			} else {
@@ -1350,7 +1348,7 @@ enum class ColumnType(
 				getAccountList(
 					client
 					, Column.PATH_MISSKEY_FOLLOW_SUGGESTION
-					, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+					, misskeyParams = access_info.putMisskeyApiToken()
 				)
 			} else {
 				getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
@@ -1362,7 +1360,7 @@ enum class ColumnType(
 				getAccountList(
 					client
 					, Column.PATH_MISSKEY_FOLLOW_SUGGESTION
-					, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+					, misskeyParams = access_info.putMisskeyApiToken()
 				)
 			} else {
 				getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
@@ -1374,7 +1372,7 @@ enum class ColumnType(
 				getAccountList(
 					client
 					, Column.PATH_MISSKEY_FOLLOW_SUGGESTION
-					, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+					, misskeyParams = access_info.putMisskeyApiToken()
 				)
 			} else {
 				getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)

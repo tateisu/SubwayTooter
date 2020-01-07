@@ -20,7 +20,6 @@ import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.textColor
-import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -122,7 +121,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 		column_index = intent.getIntExtra(EXTRA_COLUMN_INDEX, 0)
 		column = app_state.column_list[column_index]
 		
-		load(column.language_filter )
+		load(column.language_filter)
 	}
 	
 	private fun initUI() {
@@ -144,13 +143,13 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 		listView.onItemClickListener = adapter
 	}
 	
-	private fun load(src : JSONObject?) {
+	private fun load(src : JsonObject?) {
 		loading_busy = true
 		try {
 			
 			languageList.clear()
-			if(src !=null) {
-				for(key in src.keys()) {
+			if(src != null) {
+				for(key in src.keys) {
 					languageList.add(MyItem(key, src.parseBoolean(key) ?: true))
 				}
 			}
@@ -166,11 +165,11 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	private fun save() {
-		val dst = JSONObject()
-		for(item in languageList) {
-			dst.put(item.code, item.allow)
+		column.language_filter = jsonObject {
+			for(item in languageList) {
+				put(item.code, item.allow)
+			}
 		}
-		column.language_filter = dst
 	}
 	
 	private inner class MyAdapter : BaseAdapter(), AdapterView.OnItemClickListener {
@@ -321,7 +320,12 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 			if(item != null) {
 				etLanguage.isEnabled = false
 				btnPresets.isEnabled = false
-				btnPresets.setEnabledColor(activity,R.drawable.ic_edit, getAttributeColor(activity,R.attr.colorVectorDrawable),false)
+				btnPresets.setEnabledColor(
+					activity,
+					R.drawable.ic_edit,
+					getAttributeColor(activity, R.attr.colorVectorDrawable),
+					false
+				)
 			}
 			
 			val builder = AlertDialog.Builder(activity)
@@ -346,7 +350,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 		
 		val progress = ProgressDialogEx(this)
 		
-		val data = JSONObject().apply {
+		val data = JsonObject().apply {
 			for(item in languageList) {
 				put(item.code, item.allow)
 			}
@@ -448,9 +452,9 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 		val progress = ProgressDialogEx(this)
 		
 		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, String, JSONObject?>() {
+		object : AsyncTask<Void, String, JsonObject?>() {
 			
-			override fun doInBackground(vararg params : Void) : JSONObject? {
+			override fun doInBackground(vararg params : Void) : JsonObject? {
 				try {
 					val source = contentResolver.openInputStream(uri)
 					if(source == null) {
@@ -460,7 +464,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 					return source.use { inStream ->
 						val bao = ByteArrayOutputStream()
 						IOUtils.copy(inStream, bao)
-						JSONObject(bao.toByteArray().decodeUTF8())
+						bao.toByteArray().decodeUTF8().toJsonObject()
 					}
 				} catch(ex : Throwable) {
 					log.trace(ex)
@@ -469,11 +473,11 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 				}
 			}
 			
-			override fun onCancelled(result : JSONObject?) {
+			override fun onCancelled(result : JsonObject?) {
 				onPostExecute(result)
 			}
 			
-			override fun onPostExecute(result : JSONObject?) {
+			override fun onPostExecute(result : JsonObject?) {
 				progress.dismissSafe()
 				
 				// cancelled.

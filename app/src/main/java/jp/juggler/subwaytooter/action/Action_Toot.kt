@@ -13,7 +13,6 @@ import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
 import jp.juggler.util.*
 import okhttp3.Request
-import org.json.JSONObject
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.math.max
@@ -139,9 +138,9 @@ object Action_Toot {
 						} else {
 							"/api/notes/favorites/delete"
 						},
-						access_info
-							.putMisskeyApiToken(JSONObject())
-							.put("noteId", target_status.id.toString())
+						access_info.putMisskeyApiToken().apply {
+							put("noteId", target_status.id.toString())
+						}
 							.toPostRequestBuilder()
 					)?.also { result ->
 						// 正常レスポンスは 204 no content
@@ -365,9 +364,9 @@ object Action_Toot {
 		val who_host = timeline_account.host
 		val status_owner = timeline_account.getFullAcct(status.account)
 		
-		val isPrivateToot =timeline_account.isMastodon &&
+		val isPrivateToot = timeline_account.isMastodon &&
 			status.visibility == TootVisibility.PrivateFollowers
-
+		
 		if(isPrivateToot) {
 			val list = ArrayList<SavedAccount>()
 			for(a in SavedAccount.loadAccountList(activity)) {
@@ -513,9 +512,10 @@ object Action_Toot {
 						
 						client.request(
 							"/api/notes/delete",
-							access_info.putMisskeyApiToken()
-								.put("noteId", myRenoteId.toString())
-								.put("renoteId", target_status.id.toString())
+							access_info.putMisskeyApiToken().apply {
+								put("noteId", myRenoteId.toString())
+								put("renoteId", target_status.id.toString())
+							}
 								.toPostRequestBuilder()
 						)
 							?.also {
@@ -525,15 +525,16 @@ object Action_Toot {
 					} else {
 						client.request(
 							"/api/notes/create",
-							access_info.putMisskeyApiToken()
-								.put("renoteId", target_status.id.toString())
+							access_info.putMisskeyApiToken().apply {
+								put("renoteId", target_status.id.toString())
+							}
 								.toPostRequestBuilder()
 						)
 							?.also { result ->
 								val jsonObject = result.jsonObject
 								if(jsonObject != null) {
 									val outerStatus = parser.status(
-										jsonObject.optJSONObject("createdNote")
+										jsonObject.parseJsonObject("createdNote")
 											?: jsonObject
 									)
 									val innerStatus = outerStatus?.reblog ?: outerStatus
@@ -548,7 +549,7 @@ object Action_Toot {
 					}
 					
 				} else {
-					val b = JSONObject().apply {
+					val b = JsonObject().apply {
 						if(visibility != null) put("visibility", visibility.strMastodon)
 					}.toPostRequestBuilder()
 					
@@ -667,8 +668,9 @@ object Action_Toot {
 				return if(access_info.isMisskey) {
 					client.request(
 						"/api/notes/delete",
-						access_info.putMisskeyApiToken()
-							.put("noteId", status_id)
+						access_info.putMisskeyApiToken().apply {
+							put("noteId", status_id)
+						}
 							.toPostRequestBuilder()
 					)
 					// 204 no content
@@ -1328,7 +1330,7 @@ object Action_Toot {
 		if(bSet && code == null) {
 			val ad = ActionsDialog()
 			for(mr in MisskeyReaction.values()) {
-				if(!mr.showOnPicker) continue
+				if(! mr.showOnPicker) continue
 				
 				val newCode = mr.shortcode
 				
@@ -1380,17 +1382,20 @@ object Action_Toot {
 				return if(! bSet) {
 					client.request(
 						"/api/notes/reactions/delete",
-						access_info.putMisskeyApiToken()
-							.put("noteId", target_status.id.toString())
+						access_info.putMisskeyApiToken().apply {
+							put("noteId", target_status.id.toString())
+						}
 							.toPostRequestBuilder()
 					)
 					// 成功すると204 no content
 				} else {
 					client.request(
 						"/api/notes/reactions/create",
-						access_info.putMisskeyApiToken()
-							.put("noteId", target_status.id.toString())
-							.put("reaction", code)
+						access_info.putMisskeyApiToken().apply {
+							put("noteId", target_status.id.toString())
+							put("reaction", code)
+							
+						}
 							.toPostRequestBuilder()
 					)
 					// 成功すると204 no content

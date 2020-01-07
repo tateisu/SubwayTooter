@@ -1,17 +1,14 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.util.parseString
-import org.json.JSONObject
+import jp.juggler.util.JsonObject
 
-class TootReport(src : JSONObject) : TimelineItem() {
+class TootReport(src : JsonObject) : TimelineItem() {
 	
-	val id : EntityId
-	private val action_taken : String? // The action taken in response to the report
+	val id = EntityId.mayDefault(src.parseString("id"))
 	
-	init {
-		id = EntityId.mayDefault(src.parseString("id"))
-		action_taken = src.parseString("action_taken")
-	}
+	// The action taken in response to the report
+	@Suppress("unused")
+	val action_taken = src.parseString("action_taken")
 	
 	override fun getOrderId() = id
 }

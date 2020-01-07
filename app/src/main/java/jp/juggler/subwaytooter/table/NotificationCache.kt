@@ -11,7 +11,6 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.util.*
-import org.json.JSONObject
 import java.util.*
 import kotlin.Comparator
 import kotlin.collections.ArrayList
@@ -24,7 +23,7 @@ class NotificationCache(private val account_db_id : Long) {
 	private var last_load : Long = 0
 	
 	// 通知のリスト
-	var data = ArrayList<JSONObject>()
+	var data = ArrayList<JsonObject>()
 	
 	// 次回以降の読み込み位置
 	var sinceId : EntityId? = null
@@ -99,7 +98,7 @@ class NotificationCache(private val account_db_id : Long) {
 			
 		}
 		
-		fun getEntityOrderId(account : SavedAccount, src : JSONObject) : EntityId =
+		fun getEntityOrderId(account : SavedAccount, src : JsonObject) : EntityId =
 			if(account.isMisskey) {
 				when(val created_at = src.parseString("createdAt")) {
 					null -> EntityId.DEFAULT
@@ -135,13 +134,13 @@ class NotificationCache(private val account_db_id : Long) {
 			}
 		}
 		
-		fun parseNotificationTime(accessInfo : SavedAccount, src : JSONObject) : Long =
+		fun parseNotificationTime(accessInfo : SavedAccount, src : JsonObject) : Long =
 			when {
 				accessInfo.isMisskey -> TootStatus.parseTime(src.parseString("createdAt"))
 				else -> TootStatus.parseTime(src.parseString("created_at"))
 			}
 		
-		fun parseNotificationType(accessInfo : SavedAccount, src : JSONObject) : String =
+		fun parseNotificationType(accessInfo : SavedAccount, src : JsonObject) : String =
 			when {
 				accessInfo.isMisskey -> src.parseString("type")
 				else -> src.parseString("type")
@@ -177,11 +176,8 @@ class NotificationCache(private val account_db_id : Long) {
 					this.last_load = cursor.getLong(COL_LAST_LOAD)
 					this.sinceId = EntityId.from(cursor, COL_SINCE_ID)
 					
-					val src = cursor.getStringOrNull(COL_DATA)?.toJsonArray()
-					if(src != null) {
-						for(i in 0 until src.length()) {
-							data.add(src.optJSONObject(i) ?: continue)
-						}
+					cursor.getStringOrNull(COL_DATA)?.toJsonArray()?.toObjectList()?.let {
+						data.addAll(it)
 					}
 				} else {
 					this.id = - 1
@@ -309,11 +305,10 @@ class NotificationCache(private val account_db_id : Long) {
 				val array = result.jsonArray
 				if(array != null) {
 					account.updateNotificationError(null)
-
+					
 					// データをマージする
-					for(i in 0 until array.length()) {
-						val item = array.optJSONObject(i) ?: continue
-						item.put(KEY_TIME_CREATED_AT, parseNotificationTime(account, item))
+					array.toObjectList().forEach { item ->
+						item[KEY_TIME_CREATED_AT] = parseNotificationTime(account, item)
 						data.add(item)
 					}
 					
@@ -345,7 +340,7 @@ class NotificationCache(private val account_db_id : Long) {
 		try {
 			val jsonList = list.map { it.json }
 			jsonList.forEach { item ->
-				item.put(KEY_TIME_CREATED_AT, parseNotificationTime(account, item))
+				item[KEY_TIME_CREATED_AT] = parseNotificationTime(account, item)
 			}
 			data.addAll(jsonList)
 			normalize(account)

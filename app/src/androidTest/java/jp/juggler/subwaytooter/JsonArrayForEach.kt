@@ -6,8 +6,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import jp.juggler.util.*
-import org.json.JSONArray
-import org.json.JSONObject
+import org.jetbrains.anko.collections.forEachReversedByIndex
+import org.jetbrains.anko.collections.forEachReversedWithIndex
 import org.junit.Assert.assertEquals
 
 /**
@@ -21,41 +21,41 @@ class JsonArrayForEach {
 	@Test
 	@Throws(Exception::class)
 	fun test(){
-		val array = JSONArray().apply{
-			put("a")
-			put("b")
-			put( null)
-			put( JSONObject.NULL)
+		val array = jsonArray{
+			add("a")
+			add("b")
+			add( null)
+			add( null)
 		}
 		
 		var count = 0
 		
 		array.forEach {
-			println("JSONArray.forEach $it")
+			println("JsonArray.forEach $it")
 			++count
 		}
 		
 		array.forEachIndexed { i,v->
-			println("JSONArray.forEachIndexed $i $v")
+			println("JsonArray.forEachIndexed $i $v")
 			++count
 		}
 		
-		array.downForEach {
-			println("JSONArray.downForEach $it")
+		array.forEachReversedByIndex {
+			println("JsonArray.downForEach $it")
 			++count
 		}
 		
-		array.downForEachIndexed { i,v->
-			println("JSONArray.downForEachIndexed $i $v")
+		array.forEachReversedWithIndex{ i,v->
+			println("JsonArray.downForEachIndexed $i $v")
 			++count
 		}
 		
 		for( o in array.iterator() ){
-			println("JSONArray.iterator $o")
+			println("JsonArray.iterator $o")
 			++count
 		}
-		for( o in array.reverseIterator() ){
-			println("JSONArray.reverseIterator $o")
+		for( o in array.asReversed().iterator() ){
+			println("JsonArray.reverseIterator $o")
 			++count
 		}
 		

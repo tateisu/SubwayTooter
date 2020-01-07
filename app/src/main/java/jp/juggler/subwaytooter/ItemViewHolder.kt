@@ -34,8 +34,6 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
 import jp.juggler.util.*
 import org.jetbrains.anko.*
-import org.json.JSONArray
-import org.json.JSONObject
 import kotlin.math.max
 
 internal class ItemViewHolder(
@@ -2324,13 +2322,13 @@ internal class ItemViewHolder(
 		val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
 		val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
 		
-		val box = FlexboxLayout(activity).apply{
+		val box = FlexboxLayout(activity).apply {
 			flexWrap = FlexWrap.WRAP
 			justifyContent = JustifyContent.FLEX_START
 			layoutParams = LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT
-			).apply{
+			).apply {
 				topMargin = (0.5f + density * 3f).toInt()
 			}
 		}
@@ -2390,21 +2388,21 @@ internal class ItemViewHolder(
 				activity,
 				access_info,
 				decodeEmoji = true,
-				enlargeEmoji=1.5f
+				enlargeEmoji = 1.5f
 			)
 			
 			// 通常の絵文字はUnicodeを使う
-			fun addEmojiReaction(name:String,unicode:String,count:Int){
-				val b = Button(activity).apply{
-
+			fun addEmojiReaction(name : String, unicode : String, count : Int) {
+				val b = Button(activity).apply {
+					
 					layoutParams = FlexboxLayout.LayoutParams(
 						FlexboxLayout.LayoutParams.WRAP_CONTENT,
 						buttonHeight
-					).apply{
+					).apply {
 						endMargin = marginBetween
 					}
-
-					text = EmojiDecoder.decodeEmoji(options,"$unicode $count")
+					
+					text = EmojiDecoder.decodeEmoji(options, "$unicode $count")
 					allCaps = false
 					tag = name
 					minWidthCompat = buttonHeight
@@ -2431,12 +2429,12 @@ internal class ItemViewHolder(
 				lastButton = b
 			}
 			
-			fun addCustomEmojiReaction(name:String,customCode:String,count:Int){
-				val b = Button(activity).apply{
+			fun addCustomEmojiReaction(name : String, customCode : String, count : Int) {
+				val b = Button(activity).apply {
 					layoutParams = FlexboxLayout.LayoutParams(
 						FlexboxLayout.LayoutParams.WRAP_CONTENT,
 						buttonHeight
-					).apply{
+					).apply {
 						endMargin = marginBetween
 					}
 					minWidthCompat = buttonHeight
@@ -2447,7 +2445,7 @@ internal class ItemViewHolder(
 					setTextColor(content_color)
 					setPadding(paddingH, paddingV, paddingH, paddingV)
 					
-					val emojiUrl =App1.custom_emoji_lister
+					val emojiUrl = App1.custom_emoji_lister
 						.getMap(access_info.host, true)
 						?.get(customCode)
 						?.let {
@@ -2466,7 +2464,8 @@ internal class ItemViewHolder(
 							name.length,
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
 						)
-						val invalidator = NetworkEmojiInvalidator(this@ItemViewHolder.activity.handler, this)
+						val invalidator =
+							NetworkEmojiInvalidator(this@ItemViewHolder.activity.handler, this)
 						invalidator.register(sb)
 						extra_invalidator_list.add(invalidator)
 					}
@@ -2496,7 +2495,7 @@ internal class ItemViewHolder(
 			for(mr in MisskeyReaction.values()) {
 				val count = reactionsCount[mr.shortcode]
 				if(count == null || count <= 0) continue
-				addEmojiReaction(mr.shortcode,mr.emojiUtf16,count)
+				addEmojiReaction(mr.shortcode, mr.emojiUtf16, count)
 			}
 			
 			// カスタム絵文字またはUnicode絵文字のリアクション
@@ -2508,11 +2507,11 @@ internal class ItemViewHolder(
 				val count = reactionsCount[key]
 				if(count == null || count <= 0) continue
 				
-				val customCode = key.replace(":","")
-				if(key != customCode ) {
-					addCustomEmojiReaction(key,customCode,count)
-				}else{
-					addEmojiReaction(key,key,count)
+				val customCode = key.replace(":", "")
+				if(key != customCode) {
+					addCustomEmojiReaction(key, customCode, count)
+				} else {
+					addEmojiReaction(key, key, count)
 				}
 			}
 			
@@ -2553,9 +2552,10 @@ internal class ItemViewHolder(
 		TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
 			object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val params = access_info.putMisskeyApiToken(JSONObject())
-						.put("noteId", status.id.toString())
-						.put("reaction", code)
+					val params = access_info.putMisskeyApiToken().apply {
+						put("noteId", status.id.toString())
+						put("reaction", code)
+					}
 					
 					@Suppress("UnnecessaryVariable")
 					val result =
@@ -2615,8 +2615,9 @@ internal class ItemViewHolder(
 					// 成功すると204 no content
 					client.request(
 						"/api/notes/reactions/delete",
-						access_info.putMisskeyApiToken(JSONObject())
-							.put("noteId", status.id.toString())
+						access_info.putMisskeyApiToken().apply {
+							put("noteId", status.id.toString())
+						}
 							.toPostRequestBuilder()
 					)
 				
@@ -2933,27 +2934,23 @@ internal class ItemViewHolder(
 			override fun background(client : TootApiClient) = when(enquete.pollType) {
 				TootPollsType.Misskey -> client.request(
 					"/api/notes/polls/vote",
-					accessInfo.putMisskeyApiToken(JSONObject())
-						.put("noteId", enquete.status_id.toString())
-						.put("choice", idx)
-						.toPostRequestBuilder()
+					accessInfo.putMisskeyApiToken().apply {
+						put("noteId", enquete.status_id.toString())
+						put("choice", idx)
+						
+					}.toPostRequestBuilder()
 				)
 				TootPollsType.Mastodon -> client.request(
 					"/api/v1/polls/${enquete.pollId}/votes",
-					JSONObject()
-						.put(
-							"choices",
-							JSONArray().apply {
-								put(idx)
-							}
-						)
-						.toPostRequestBuilder()
+					jsonObject {
+						put("choices", jsonArray { add(idx) })
+					}.toPostRequestBuilder()
 				)
 				TootPollsType.FriendsNico -> client.request(
 					"/api/v1/votes/${enquete.status_id}",
-					JSONObject()
-						.put("item_index", idx.toString())
-						.toPostRequestBuilder()
+					jsonObject {
+						put("item_index", idx.toString())
+					}.toPostRequestBuilder()
 				)
 			}
 			
@@ -3032,13 +3029,13 @@ internal class ItemViewHolder(
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/polls/${enquete.pollId}/votes",
-					JSONObject()
-						.put("choices", JSONArray().apply {
+					jsonObject {
+						put("choices", jsonArray {
 							enquete.items.forEachIndexed { index, choice ->
-								if(choice.checked) put(index)
+								if(choice.checked) add(index)
 							}
 						})
-						.toPostRequestBuilder()
+					}.toPostRequestBuilder()
 				)?.also { result ->
 					val data = result.jsonObject
 					if(data != null) {

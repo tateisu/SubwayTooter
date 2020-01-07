@@ -15,12 +15,10 @@ import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.util.*
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.*
 import java.util.regex.Pattern
 
-open class TootAccount(parser : TootParser, src : JSONObject) {
+open class TootAccount(parser : TootParser, src : JsonObject) {
 	
 	//URL of the user's profile page (can be remote)
 	// https://mastodon.juggler.jp/@tateisu
@@ -112,7 +110,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	// last_status_at : "2019-08-29T12:42:08.838Z" or null
 	private var last_status_at = 0L
 	
-	val json : JSONObject
+	val json : JsonObject
 	
 	init {
 		this.json = src
@@ -125,7 +123,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.host = remoteHost ?: parser.accessHost ?: error("missing host")
 			
 			this.custom_emojis =
-				parseMapOrNull(CustomEmoji.decodeMisskey, src.optJSONArray("emojis"))
+				parseMapOrNull(CustomEmoji.decodeMisskey, src.parseJsonArray("emojis"))
 			
 			this.profile_emojis = null
 			
@@ -180,12 +178,12 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			
 			this.pinnedNoteIds = src.parseStringArrayList("pinnedNoteIds")
 			if(parser.misskeyDecodeProfilePin) {
-				val list = parseList(::TootStatus, parser, src.optJSONArray("pinnedNotes"))
+				val list = parseList(::TootStatus, parser, src.parseJsonArray("pinnedNotes"))
 				list.forEach { it.pinned = true }
 				this.pinnedNotes = if(list.isNotEmpty()) list else null
 			}
 			
-			val profile = src.optJSONObject("profile")
+			val profile = src.parseJsonObject("profile")
 			this.location = profile?.parseString("location")
 			this.birthday = profile?.parseString("birthday")
 			
@@ -201,11 +199,11 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		} else {
 			
 			// 絵文字データは先に読んでおく
-			this.custom_emojis = parseMapOrNull(CustomEmoji.decode, src.optJSONArray("emojis"))
+			this.custom_emojis = parseMapOrNull(CustomEmoji.decode, src.parseJsonArray("emojis"))
 			
-			this.profile_emojis = when(val o = src.opt("profile_emojis")) {
-				is JSONArray -> parseMapOrNull(::NicoProfileEmoji, o, TootStatus.log)
-				is JSONObject -> parseProfileEmoji2(::NicoProfileEmoji, o, TootStatus.log)
+			this.profile_emojis = when(val o = src["profile_emojis"]) {
+				is JsonArray -> parseMapOrNull(::NicoProfileEmoji, o, TootStatus.log)
+				is JsonObject -> parseProfileEmoji2(::NicoProfileEmoji, o, TootStatus.log)
 				else -> null
 			}
 			
@@ -220,16 +218,16 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			//
 			this.note = src.parseString("note")
 			
-			this.source = parseSource(src.optJSONObject("source"))
+			this.source = parseSource(src.parseJsonObject("source"))
 			this.movedRef = TootAccountRef.mayNull(
 				parser,
-				src.optJSONObject("moved")?.let {
+				src.parseJsonObject("moved")?.let {
 					TootAccount(parser, it)
 				}
 			)
 			this.locked = src.optBoolean("locked")
 			
-			this.fields = parseFields(src.optJSONArray("fields"))
+			this.fields = parseFields(src.parseJsonArray("fields"))
 			
 			this.bot = src.optBoolean("bot", false)
 			this.isAdmin = false
@@ -314,7 +312,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		}
 	}
 	
-	class Source(src : JSONObject) {
+	class Source(src : JsonObject) {
 		// デフォルト公開範囲
 		val privacy : String?
 		
@@ -333,7 +331,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			// nullになることがあるが、falseと同じ扱いでよい
 			this.sensitive = src.optBoolean("sensitive", false)
 			//
-			this.fields = parseFields(src.optJSONArray("fields"))
+			this.fields = parseFields(src.parseJsonArray("fields"))
 		}
 	}
 	
@@ -503,7 +501,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			return null
 		}
 		
-		private fun parseSource(src : JSONObject?) : Source? {
+		private fun parseSource(src : JsonObject?) : Source? {
 			src ?: return null
 			return try {
 				Source(src)
@@ -543,11 +541,11 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			return null
 		}
 		
-		fun parseFields(src : JSONArray?) : ArrayList<Field>? {
+		fun parseFields(src : JsonArray?) : ArrayList<Field>? {
 			src ?: return null
 			val dst = ArrayList<Field>()
-			for(i in 0 until src.length()) {
-				val item = src.optJSONObject(i) ?: continue
+			for(item in src) {
+				if(item !is JsonObject) continue
 				val name = item.parseString("name") ?: continue
 				val value = item.parseString("value") ?: continue
 				val verifiedAt = when(val svVerifiedAt = item.parseString("verified_at")) {
@@ -556,22 +554,18 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				}
 				dst.add(Field(name, value, verifiedAt))
 			}
-			return if(dst.isEmpty()) {
-				null
-			} else {
-				dst
-			}
+			return dst.notEmpty()
 		}
 		
-		private fun parseMisskeyFields(src : JSONObject) : ArrayList<Field>? {
+		private fun parseMisskeyFields(src : JsonObject) : ArrayList<Field>? {
 			
 			var dst : ArrayList<Field>? = null
 			
 			// リモートユーザーはAP経由のフィールドが表示される
 			// https://github.com/syuilo/misskey/pull/3590
 			// https://github.com/syuilo/misskey/pull/3596
-			src.optJSONArray("fields")?.forEach { o ->
-				if(o !is JSONObject) return@forEach
+			src.parseJsonArray("fields")?.forEach { o ->
+				if(o !is JsonObject) return@forEach
 				//plain text
 				val n = o.parseString("name") ?: return@forEach
 				// mfm
@@ -589,7 +583,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			}
 			
 			runCatching {
-				src.optJSONObject("twitter")?.let {
+				src.parseJsonObject("twitter")?.let {
 					appendField(
 						"Twitter",
 						"@${it.parseString("screenName")}",
@@ -599,7 +593,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			}
 			
 			runCatching {
-				src.optJSONObject("github")?.parseString("login")?.let {
+				src.parseJsonObject("github")?.parseString("login")?.let {
 					appendField(
 						"GitHub",
 						it,
@@ -609,7 +603,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			}
 			
 			runCatching {
-				src.optJSONObject("discord")?.let {
+				src.parseJsonObject("discord")?.let {
 					appendField(
 						"Discord",
 						"${it.parseString("username")}#${it.parseString("discriminator")}",

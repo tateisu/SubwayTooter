@@ -3,8 +3,6 @@ package jp.juggler.subwaytooter.api.entity
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.MisskeyMarkdownDecoder
 import jp.juggler.util.*
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.regex.Pattern
 
 open class TootTag constructor(
@@ -33,7 +31,7 @@ open class TootTag constructor(
 		accountWeekly = history?.map { it.accounts }?.max() ?: accountDaily
 	}
 	
-	class History(src : JSONObject) {
+	class History(src : JsonObject) {
 		val day : Long
 		val uses : Int
 		val accounts : Int
@@ -50,23 +48,23 @@ open class TootTag constructor(
 	}
 	
 	// for TREND_TAG column
-	constructor(src : JSONObject) : this(
+	constructor(src : JsonObject) : this(
 		name = src.notEmptyOrThrow("name"),
 		url = src.parseString("url"),
-		history = parseHistories(src.optJSONArray("history"))
+		history = parseHistories(src.parseJsonArray("history"))
 	)
 	
 	companion object {
 		
 		val log = LogCategory("TootTag")
 		
-		private fun parseHistories(src : JSONArray?) : ArrayList<History>? {
+		private fun parseHistories(src : JsonArray?) : ArrayList<History>? {
 			src ?: return null
 			
 			val dst = ArrayList<History>()
-			for(i in 0 until src.length()) {
+			src.toObjectList().forEach {
 				try {
-					dst.add(History(src.optJSONObject(i)))
+					dst.add(History(it))
 				} catch(ex : Throwable) {
 					log.e(ex, "parseHistories failed.")
 				}
@@ -74,26 +72,25 @@ open class TootTag constructor(
 			return dst
 		}
 		
-		fun parseList(parser : TootParser, array : JSONArray?) : ArrayList<TootTag> {
+		fun parseList(parser : TootParser, array : JsonArray?) : ArrayList<TootTag> {
 			val result = ArrayList<TootTag>()
 			if(array != null) {
 				if(parser.serviceType == ServiceType.MISSKEY) {
-					for(i in 0 until array.length()) {
-						val sv = array.parseString(i)
-						if(sv?.isNotEmpty() == true) {
+					array.toStringArrayList().forEach { sv ->
+						if(sv.isNotEmpty()) {
 							result.add(TootTag(name = sv))
 						}
 					}
 				} else {
-					for(i in 0 until array.length()) {
+					array.forEach { item ->
 						val tag = try {
-							when(val item = array.opt(i)) {
+							when(item) {
 								is String -> if(item.isNotEmpty()) {
 									TootTag(name = item)
 								} else {
 									null
 								}
-								is JSONObject -> TootTag(item)
+								is JsonObject -> TootTag(item)
 								else -> null
 							}
 						} catch(ex : Throwable) {

@@ -1,9 +1,8 @@
 package jp.juggler.subwaytooter.api.entity
 
-import org.json.JSONObject
-import jp.juggler.util.parseString
+import jp.juggler.util.JsonObject
 
-class TootPushSubscription(src : JSONObject){
+class TootPushSubscription(src : JsonObject){
 	val id: EntityId
 	val endpoint : String?
 	private val alerts= HashMap<String,Boolean>()
@@ -14,11 +13,10 @@ class TootPushSubscription(src : JSONObject){
 		endpoint = src.parseString("endpoint")
 		server_key = src.parseString("server_key")
 		
-		src.optJSONObject("alerts")?.let{
-			for( k in it.keys() ){
+		src.parseJsonObject("alerts")?.let{
+			for( k in it.keys ){
 				alerts[k] = it.optBoolean(k)
 			}
 		}
 	}
-	
 }

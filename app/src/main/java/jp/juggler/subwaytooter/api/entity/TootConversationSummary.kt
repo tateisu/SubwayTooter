@@ -1,10 +1,9 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.util.parseString
-import org.json.JSONObject
+import jp.juggler.util.JsonObject
 
-class TootConversationSummary(parser : TootParser, src : JSONObject) : TimelineItem() {
+class TootConversationSummary(parser : TootParser, src : JsonObject) : TimelineItem() {
 	
 	val id : EntityId
 	val accounts : ArrayList<TootAccountRef>
@@ -13,8 +12,8 @@ class TootConversationSummary(parser : TootParser, src : JSONObject) : TimelineI
 	
 	init {
 		this.id = EntityId.mayDefault(src.parseString("id"))
-		this.accounts = parser.accountList(src.optJSONArray("accounts"))
-		this.last_status = parser.status(src.optJSONObject("last_status")) !!
+		this.accounts = parser.accountList(src.parseJsonArray("accounts"))
+		this.last_status = parser.status(src.parseJsonObject("last_status")) !!
 		this.unread = src.optBoolean("unread")
 		
 		this.last_status.conversationSummary = this

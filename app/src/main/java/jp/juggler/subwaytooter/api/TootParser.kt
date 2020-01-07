@@ -4,12 +4,11 @@ import android.content.Context
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.UserRelation
 
-import org.json.JSONArray
-import org.json.JSONObject
 
 import jp.juggler.util.WordTrieTree
 import jp.juggler.subwaytooter.util.LinkHelper
-import jp.juggler.util.parseString
+import jp.juggler.util.JsonArray
+import jp.juggler.util.JsonObject
 
 class TootParser(
 	val context : Context,
@@ -32,27 +31,27 @@ class TootParser(
 	
 	fun getFullAcct(acct : String?) = linkHelper.getFullAcct(acct)
 	
-	fun account(src : JSONObject?) = parseItem(::TootAccount, this, src)
-	fun accountList(array : JSONArray?) =
+	fun account(src : JsonObject?) = parseItem(::TootAccount, this, src)
+	fun accountList(array : JsonArray?) =
 		TootAccountRef.wrapList(this, parseList(::TootAccount, this, array))
 	
-	fun status(src : JSONObject?) = parseItem(::TootStatus, this, src)
-	fun statusList(array : JSONArray?) = parseList(::TootStatus, this, array)
+	fun status(src : JsonObject?) = parseItem(::TootStatus, this, src)
+	fun statusList(array : JsonArray?) = parseList(::TootStatus, this, array)
 	
-	fun notification(src : JSONObject?) = parseItem(::TootNotification, this, src)
-	fun notificationList(src : JSONArray?) = parseList(::TootNotification, this, src)
+	fun notification(src : JsonObject?) = parseItem(::TootNotification, this, src)
+	fun notificationList(src : JsonArray?) = parseList(::TootNotification, this, src)
 	
-	fun tagList(array : JSONArray?) = parseList(::TootTag, array)
-	fun results(src : JSONObject?) = parseItem(::TootResults, this, src)
-	fun instance(src : JSONObject?) = parseItem(::TootInstance, this, src)
+	fun tagList(array : JsonArray?) = parseList(::TootTag, array)
+	fun results(src : JsonObject?) = parseItem(::TootResults, this, src)
+	fun instance(src : JsonObject?) = parseItem(::TootInstance, this, src)
 	
 	fun getMisskeyUserRelation(whoId : EntityId) = misskeyUserRelationMap[whoId]
 	
-	fun parseMisskeyApShow(jsonObject : JSONObject?) : Any? {
+	fun parseMisskeyApShow(jsonObject : JsonObject?) : Any? {
 		// ap/show の戻り値はActivityPubオブジェクトではなく、Misskeyのエンティティです。
 		return when(jsonObject?.parseString("type")) {
-			"Note" -> status(jsonObject.optJSONObject("object"))
-			"User" -> account(jsonObject.optJSONObject("object"))
+			"Note" -> status(jsonObject.parseJsonObject("object"))
+			"User" -> account(jsonObject.parseJsonObject("object"))
 			else -> null
 		}
 	}

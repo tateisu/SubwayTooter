@@ -4,11 +4,10 @@ import androidx.test.runner.AndroidJUnit4
 import android.test.mock.MockContext
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.JsonArray
+import jp.juggler.util.JsonObject
 import jp.juggler.util.notEmptyOrThrow
-import jp.juggler.util.parseLong
 import jp.juggler.util.toJsonObject
-import org.json.JSONArray
-import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.runner.RunWith
 
@@ -18,15 +17,15 @@ import org.junit.Test
 class TestEntityUtils {
 	
 	class TestEntity(val s : String, val l : Long) : Mappable<String> {
-		constructor(src : JSONObject) : this(
+		constructor(src : JsonObject) : this(
 			s = src.notEmptyOrThrow("s"),
-			l = src.parseLong("l") ?: -1L
+			l = src.parseLong("l") ?: 0L
 		)
 		
 		@Suppress("UNUSED_PARAMETER")
-		constructor(parser : TootParser, src : JSONObject) : this(
+		constructor(parser : TootParser, src : JsonObject) : this(
 			s = src.notEmptyOrThrow("s"),
-			l = src.parseLong("l") ?: -1L
+			l = src.parseLong("l") ?: 0L
 		)
 		
 		override val mapKey : String
@@ -81,17 +80,17 @@ class TestEntityUtils {
 	fun testParseList() {
 		assertEquals(0, parseList(::TestEntity, null).size)
 		
-		val src = JSONArray()
+		val src = JsonArray()
 		assertEquals(0, parseList(::TestEntity, src).size)
 		
-		src.put("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".toJsonObject())
 		assertEquals(1, parseList(::TestEntity, src).size)
 		
-		src.put("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".toJsonObject())
 		assertEquals(2, parseList(::TestEntity, src).size)
 		
 		// error
-		src.put("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".toJsonObject())
 		assertEquals(2, parseList(::TestEntity, src).size)
 		
 	}
@@ -100,17 +99,17 @@ class TestEntityUtils {
 	fun testParseListOrNull() {
 		assertEquals(null, parseListOrNull(::TestEntity, null))
 		
-		val src = JSONArray()
+		val src = JsonArray()
 		assertEquals(null, parseListOrNull(::TestEntity, src))
 		
-		src.put("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".toJsonObject())
 		assertEquals(1, parseListOrNull(::TestEntity, src)?.size)
 		
-		src.put("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".toJsonObject())
 		assertEquals(2, parseListOrNull(::TestEntity, src)?.size)
 		
 		// error
-		src.put("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".toJsonObject())
 		assertEquals(2, parseListOrNull(::TestEntity, src)?.size)
 		
 	}
@@ -119,17 +118,17 @@ class TestEntityUtils {
 	fun testParseMap() {
 		assertEquals(0, parseMap(::TestEntity, null).size)
 		
-		val src = JSONArray()
+		val src = JsonArray()
 		assertEquals(0, parseMap(::TestEntity, src).size)
 		
-		src.put("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".toJsonObject())
 		assertEquals(1, parseMap(::TestEntity, src).size)
 		
-		src.put("""{"s":"B","l":"100"}""".toJsonObject())
+		src.add("""{"s":"B","l":"100"}""".toJsonObject())
 		assertEquals(2, parseMap(::TestEntity, src).size)
 		
 		// error
-		src.put("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".toJsonObject())
 		assertEquals(2, parseMap(::TestEntity, src).size)
 		
 	}
@@ -138,17 +137,17 @@ class TestEntityUtils {
 	fun testParseMapOrNull() {
 		assertEquals(null, parseMapOrNull(::TestEntity, null))
 		
-		val src = JSONArray()
+		val src = JsonArray()
 		assertEquals(null, parseMapOrNull(::TestEntity, src))
 		
-		src.put("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".toJsonObject())
 		assertEquals(1, parseMapOrNull(::TestEntity, src)?.size)
 		
-		src.put("""{"s":"B","l":"100"}""".toJsonObject())
+		src.add("""{"s":"B","l":"100"}""".toJsonObject())
 		assertEquals(2, parseMapOrNull(::TestEntity, src)?.size)
 		
 		// error
-		src.put("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".toJsonObject())
 		assertEquals(2, parseMapOrNull(::TestEntity, src)?.size)
 		
 	}
@@ -204,17 +203,17 @@ class TestEntityUtils {
 	fun testParseListWithParser() {
 		assertEquals(0, parseList(::TestEntity, parser, null).size)
 		
-		val src = JSONArray()
+		val src = JsonArray()
 		assertEquals(0, parseList(::TestEntity, parser, src).size)
 		
-		src.put("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".toJsonObject())
 		assertEquals(1, parseList(::TestEntity, parser, src).size)
 		
-		src.put("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".toJsonObject())
 		assertEquals(2, parseList(::TestEntity, parser, src).size)
 		
 		// error
-		src.put("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".toJsonObject())
 		assertEquals(2, parseList(::TestEntity, parser, src).size)
 		
 	}
@@ -223,17 +222,17 @@ class TestEntityUtils {
 	fun testParseListOrNullWithParser() {
 		assertEquals(null, parseListOrNull(::TestEntity, parser, null))
 		
-		val src = JSONArray()
+		val src = JsonArray()
 		assertEquals(null, parseListOrNull(::TestEntity, parser, src))
 		
-		src.put("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".toJsonObject())
 		assertEquals(1, parseListOrNull(::TestEntity, parser, src)?.size)
 		
-		src.put("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".toJsonObject())
 		assertEquals(2, parseListOrNull(::TestEntity, parser, src)?.size)
 		
 		// error
-		src.put("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".toJsonObject())
 		assertEquals(2, parseListOrNull(::TestEntity, parser, src)?.size)
 		
 	}

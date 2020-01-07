@@ -21,9 +21,6 @@ import jp.juggler.subwaytooter.util.NetworkStateTracker
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -61,7 +58,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		
 		private var utteranceIdSeed = 0
 		
-		internal fun saveColumnList(context : Context, fileName : String, array : JSONArray) {
+		internal fun saveColumnList(context : Context, fileName : String, array : JsonArray) {
 			synchronized(log) {
 				try {
 					val tmpName =
@@ -89,7 +86,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			}
 		}
 		
-		internal fun loadColumnList(context : Context, fileName : String) : JSONArray? {
+		internal fun loadColumnList(context : Context, fileName : String) : JsonArray? {
 			synchronized(log) {
 				try {
 					context.openFileInput(fileName).use { inData ->
@@ -249,24 +246,17 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		}
 	}
 	
-	internal fun encodeColumnList() : JSONArray {
-		val array = JSONArray()
-		var i = 0
-		val ie = column_list.size
-		while(i < ie) {
-			val column = column_list[i]
+	internal fun encodeColumnList() =
+		column_list.mapIndexedNotNull { index, column ->
 			try {
-				val dst = JSONObject()
-				column.encodeJSON(dst, i)
-				array.put(dst)
-			} catch(ex : JSONException) {
+				val dst = JsonObject()
+				column.encodeJSON(dst, index)
+				dst
+			} catch(ex : JsonException) {
 				log.trace(ex)
+				null
 			}
-			
-			++ i
-		}
-		return array
-	}
+		}.toJsonArray()
 	
 	internal fun saveColumnList(bEnableSpeech : Boolean = true) {
 		val array = encodeColumnList()
@@ -275,22 +265,17 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	}
 	
 	private fun loadColumnList() {
-		val array = loadColumnList(context, FILE_COLUMN_LIST)
-		if(array != null) {
-			var i = 0
-			val ie = array.length()
-			while(i < ie) {
+		val list = loadColumnList(context, FILE_COLUMN_LIST)
+			?.toObjectList()
+			?.mapNotNull { src ->
 				try {
-					val src = array.optJSONObject(i)
-					val col = Column(this, src)
-					column_list.add(col)
+					Column(this, src)
 				} catch(ex : Throwable) {
 					log.trace(ex)
+					null
 				}
-				
-				++ i
 			}
-		}
+		if(list != null) column_list.addAll(list)
 		
 		// ミュートデータのロード
 		TootStatus.muted_app = MutedApp.nameSet

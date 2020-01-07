@@ -1,8 +1,7 @@
 package jp.juggler.subwaytooter.api
 
-import org.json.JSONArray
-import org.json.JSONObject
-
+import jp.juggler.util.JsonArray
+import jp.juggler.util.JsonObject
 import java.util.regex.Pattern
 
 import jp.juggler.util.LogCategory
@@ -36,21 +35,21 @@ open class TootApiResult(
 	
 	var requestInfo = ""
 	
-	var tokenInfo : JSONObject? = null
+	var tokenInfo : JsonObject? = null
 	
 	var data : Any? = null
 		set(value) {
-			if(value is JSONArray) {
+			if(value is JsonArray) {
 				parseLinkHeader(response, value)
 			}
 			field = value
 		}
 	
-	val jsonObject : JSONObject?
-		get() = data as? JSONObject
+	val jsonObject : JsonObject?
+		get() = data as? JsonObject
 	
-	val jsonArray : JSONArray?
-		get() = data as? JSONArray
+	val jsonArray : JsonArray?
+		get() = data as? JsonArray
 	
 	val string : String?
 		get() = data as? String
@@ -81,10 +80,10 @@ open class TootApiResult(
 		return this
 	}
 	
-	private fun parseLinkHeader(response : Response?, array : JSONArray) {
+	private fun parseLinkHeader(response : Response?, array : JsonArray) {
 		response ?: return
 		
-		log.d("array size=%s", array.length())
+		log.d("array size=${array.size}" )
 		
 		val sv = response.header("Link")
 		if(sv == null) {

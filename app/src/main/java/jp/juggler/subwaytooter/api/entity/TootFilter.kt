@@ -2,86 +2,76 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.content.Context
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.LogCategory
-import jp.juggler.util.parseLong
-import jp.juggler.util.parseString
-import org.json.JSONArray
-import org.json.JSONObject
+import jp.juggler.util.*
 
-class TootFilter( src: JSONObject) :TimelineItem() {
+class TootFilter(src : JsonObject) : TimelineItem() {
 	
-	class FilterContext(val name:String,val bit:Int,val caption_id:Int)
+	class FilterContext(val name : String, val bit : Int, val caption_id : Int)
 	
 	companion object {
 		val log = LogCategory("TootFilter")
 		
-		@Suppress("MemberVisibilityCanBePrivate")
-		const val CONTEXT_ALL =15
-		const val CONTEXT_NONE =0
-		const val CONTEXT_HOME =1
+		@Suppress("unused")
+		const val CONTEXT_ALL = 15
+		const val CONTEXT_NONE = 0
+		const val CONTEXT_HOME = 1
 		const val CONTEXT_NOTIFICATIONS = 2
-		const val CONTEXT_PUBLIC=4
-		const val CONTEXT_THREAD=8
+		const val CONTEXT_PUBLIC = 4
+		const val CONTEXT_THREAD = 8
 		
 		private val CONTEXT_LIST = arrayOf(
-			FilterContext("home",CONTEXT_HOME, R.string.filter_home),
-			FilterContext("notifications",CONTEXT_NOTIFICATIONS, R.string.filter_notification),
-			FilterContext("public",CONTEXT_PUBLIC, R.string.filter_public),
-			FilterContext("thread",CONTEXT_THREAD, R.string.filter_thread)
+			FilterContext("home", CONTEXT_HOME, R.string.filter_home),
+			FilterContext("notifications", CONTEXT_NOTIFICATIONS, R.string.filter_notification),
+			FilterContext("public", CONTEXT_PUBLIC, R.string.filter_public),
+			FilterContext("thread", CONTEXT_THREAD, R.string.filter_thread)
 		)
-
-		private val CONTEXT_MAP = CONTEXT_LIST.map{ Pair(it.name,it) }.toMap()
 		
-		private fun parseFilterContext(src:JSONArray?):Int{
+		private val CONTEXT_MAP = CONTEXT_LIST.map { Pair(it.name, it) }.toMap()
+		
+		private fun parseFilterContext(src : JsonArray?) : Int {
 			var n = 0
-			if( src != null) {
-				for(i in 0 until src.length()) {
-					val key = src.optString(i)
-					val v = CONTEXT_MAP[key]
-					if( v !=null) n+= v.bit
-				}
+			src?.toStringList()?.forEach { key ->
+				val v = CONTEXT_MAP[key]
+				if(v != null) n += v.bit
 			}
 			return n
 		}
 		
-		fun parseList(src:JSONArray?): ArrayList<TootFilter>{
-			val result = ArrayList<TootFilter>()
-			if(src!=null){
-				for(i in 0 until src.length()) {
-					try{
-						result.add(TootFilter(src.optJSONObject(i)))
-					}catch(ex:Throwable){
+		fun parseList(src : JsonArray?) =
+			ArrayList<TootFilter>().also { result ->
+				src?.toObjectList()?.forEach {
+					try {
+						result.add(TootFilter(it))
+					} catch(ex : Throwable) {
 						log.trace(ex)
-						log.e(ex,"TootFilter parse failed.")
+						log.e(ex, "TootFilter parse failed.")
 					}
 				}
 			}
-			return result
-		}
 	}
 	
-	val id:EntityId
-	val phrase :String
-	val context: Int
+	val id : EntityId
+	val phrase : String
+	val context : Int
 	private val expires_at : String? // null is not specified, or "2018-07-06T00:59:13.161Z"
 	val time_expires_at : Long // 0L if not specified
 	val irreversible : Boolean
 	val whole_word : Boolean
 	
-	init{
-		id = EntityId.mayDefault(src.parseString("id") )
-		phrase = src.parseString("phrase")?: error("missing phrase")
-		context = parseFilterContext(src.optJSONArray("context"))
+	init {
+		id = EntityId.mayDefault(src.parseString("id"))
+		phrase = src.parseString("phrase") ?: error("missing phrase")
+		context = parseFilterContext(src.parseJsonArray("context"))
 		expires_at = src.parseString("expires_at") // may null
 		time_expires_at = TootStatus.parseTime(expires_at)
 		irreversible = src.optBoolean("irreversible")
 		whole_word = src.optBoolean("whole_word")
 	}
 	
-	fun getContextNames(context: Context) : ArrayList<String> {
+	fun getContextNames(context : Context) : ArrayList<String> {
 		val result = ArrayList<String>()
-		for(item in CONTEXT_LIST){
-			if( (item.bit and this.context) != 0 ) result.add(context.getString(item.caption_id))
+		for(item in CONTEXT_LIST) {
+			if((item.bit and this.context) != 0) result.add(context.getString(item.caption_id))
 		}
 		return result
 	}

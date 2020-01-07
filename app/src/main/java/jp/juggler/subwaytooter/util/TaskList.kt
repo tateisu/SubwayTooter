@@ -1,13 +1,8 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
-import jp.juggler.util.LogCategory
-import jp.juggler.util.decodeUTF8
-import jp.juggler.util.encodeUTF8
-import jp.juggler.util.toJsonArray
+import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
-import org.json.JSONArray
-import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
 import java.util.*
@@ -20,10 +15,10 @@ class TaskList {
 		private const val FILE_TASK_LIST = "JOB_TASK_LIST"
 	}
 	
-	private lateinit var _list : LinkedList<JSONObject>
+	private lateinit var _list : LinkedList<JsonObject>
 	
 	@Synchronized
-	private fun prepareList(context : Context) : LinkedList<JSONObject> {
+	private fun prepareList(context : Context) : LinkedList<JsonObject> {
 		if(! ::_list.isInitialized) {
 			_list = LinkedList()
 			
@@ -31,22 +26,15 @@ class TaskList {
 				context.openFileInput(FILE_TASK_LIST).use { inputStream ->
 					val bao = ByteArrayOutputStream()
 					IOUtils.copy(inputStream, bao)
-					val array = bao.toByteArray().decodeUTF8().toJsonArray()
-					var i = 0
-					val ie = array.length()
-					while(i < ie) {
-						val item = array.optJSONObject(i)
-						if(item != null) _list.add(item)
-						++ i
+					bao.toByteArray().decodeUTF8().toJsonArray()?.toObjectList()?.forEach {
+						_list.add(it)
 					}
-					
 				}
 			} catch(ex : FileNotFoundException) {
 				log.e(ex, "prepareList: file not found.")
 			} catch(ex : Throwable) {
-				log.trace(ex,"TaskList: prepareArray failed.")
+				log.trace(ex, "TaskList: prepareArray failed.")
 			}
-			
 		}
 		
 		return _list
@@ -57,11 +45,7 @@ class TaskList {
 		val list = prepareList(context)
 		try {
 			log.d("saveArray size=%s", list.size)
-			val array = JSONArray()
-			for(item in list) {
-				array.put(item)
-			}
-			val data = array.toString().encodeUTF8()
+			val data = JsonArray(list).toString().encodeUTF8()
 			context.openFileOutput(FILE_TASK_LIST, Context.MODE_PRIVATE)
 				.use { IOUtils.write(data, it) }
 		} catch(ex : Throwable) {
@@ -72,7 +56,7 @@ class TaskList {
 	}
 	
 	@Synchronized
-	fun addLast(context : Context, removeOld : Boolean, taskData : JSONObject) {
+	fun addLast(context : Context, removeOld : Boolean, taskData : JsonObject) {
 		val list = prepareList(context)
 		if(removeOld) {
 			val it = list.iterator()
@@ -92,7 +76,7 @@ class TaskList {
 	}
 	
 	@Synchronized
-	fun next(context : Context) : JSONObject? {
+	fun next(context : Context) : JsonObject? {
 		val list = prepareList(context)
 		val item = if(list.isEmpty()) null else list.removeFirst()
 		saveArray(context)

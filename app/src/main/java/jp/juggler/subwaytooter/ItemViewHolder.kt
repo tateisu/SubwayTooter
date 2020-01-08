@@ -2445,10 +2445,11 @@ internal class ItemViewHolder(
 					setTextColor(content_color)
 					setPadding(paddingH, paddingV, paddingH, paddingV)
 					
-					val emojiUrl = App1.custom_emoji_lister
-						.getMap(access_info.host, true)
-						?.get(customCode)
-						?.let {
+					val emoji = status.custom_emojis?.get(customCode)
+						?: App1.custom_emoji_lister.getMap(access_info.host, true)
+							?.get(customCode)
+					
+					val emojiUrl = emoji?.let {
 							if(Pref.bpDisableEmojiAnimation(this@ItemViewHolder.activity.pref)) {
 								it.static_url
 							} else {

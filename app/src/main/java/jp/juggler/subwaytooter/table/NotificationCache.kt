@@ -100,12 +100,12 @@ class NotificationCache(private val account_db_id : Long) {
 		
 		fun getEntityOrderId(account : SavedAccount, src : JsonObject) : EntityId =
 			if(account.isMisskey) {
-				when(val created_at = src.parseString("createdAt")) {
+				when(val created_at = src.string("createdAt")) {
 					null -> EntityId.DEFAULT
 					else -> EntityId(TootStatus.parseTime(created_at).toString())
 				}
 			} else {
-				EntityId.mayDefault(src.parseString("id"))
+				EntityId.mayDefault(src.string("id"))
 			}
 		
 		private fun makeNotificationUrl(
@@ -136,14 +136,14 @@ class NotificationCache(private val account_db_id : Long) {
 		
 		fun parseNotificationTime(accessInfo : SavedAccount, src : JsonObject) : Long =
 			when {
-				accessInfo.isMisskey -> TootStatus.parseTime(src.parseString("createdAt"))
-				else -> TootStatus.parseTime(src.parseString("created_at"))
+				accessInfo.isMisskey -> TootStatus.parseTime(src.string("createdAt"))
+				else -> TootStatus.parseTime(src.string("created_at"))
 			}
 		
 		fun parseNotificationType(accessInfo : SavedAccount, src : JsonObject) : String =
 			when {
-				accessInfo.isMisskey -> src.parseString("type")
-				else -> src.parseString("type")
+				accessInfo.isMisskey -> src.string("type")
+				else -> src.string("type")
 			} ?: "?"
 		
 		fun deleteCache(dbId : Long) {
@@ -176,7 +176,7 @@ class NotificationCache(private val account_db_id : Long) {
 					this.last_load = cursor.getLong(COL_LAST_LOAD)
 					this.sinceId = EntityId.from(cursor, COL_SINCE_ID)
 					
-					cursor.getStringOrNull(COL_DATA)?.decodeJsonArray()?.toObjectList()?.let {
+					cursor.getStringOrNull(COL_DATA)?.decodeJsonArray()?.objectList()?.let {
 						data.addAll(it)
 					}
 				} else {
@@ -307,7 +307,7 @@ class NotificationCache(private val account_db_id : Long) {
 					account.updateNotificationError(null)
 					
 					// データをマージする
-					array.toObjectList().forEach { item ->
+					array.objectList().forEach { item ->
 						item[KEY_TIME_CREATED_AT] = parseNotificationTime(account, item)
 						data.add(item)
 					}

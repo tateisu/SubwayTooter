@@ -49,9 +49,9 @@ class TootParser(
 	
 	fun parseMisskeyApShow(jsonObject : JsonObject?) : Any? {
 		// ap/show の戻り値はActivityPubオブジェクトではなく、Misskeyのエンティティです。
-		return when(jsonObject?.parseString("type")) {
-			"Note" -> status(jsonObject.parseJsonObject("object"))
-			"User" -> account(jsonObject.parseJsonObject("object"))
+		return when(jsonObject?.string("type")) {
+			"Note" -> status(jsonObject.jsonObject("object"))
+			"User" -> account(jsonObject.jsonObject("object"))
 			else -> null
 		}
 	}

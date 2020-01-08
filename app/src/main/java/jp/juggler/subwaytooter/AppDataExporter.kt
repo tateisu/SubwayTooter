@@ -345,7 +345,7 @@ object AppDataExporter {
 		while(reader.hasNext()) {
 			val item = readJsonObject(reader)
 			
-			when(val old_id = item.parseLong(Column.KEY_ACCOUNT_ROW_ID) ?: - 1L) {
+			when(val old_id = item.long(Column.KEY_ACCOUNT_ROW_ID) ?: - 1L) {
 				- 1L -> {
 					// 検索カラムは NAアカウントと紐ついている。変換の必要はない
 				}

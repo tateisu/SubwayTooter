@@ -10,7 +10,7 @@ class TootAttachment : TootAttachmentLike {
 	companion object {
 		private fun parseFocusValue(parent : JsonObject?, key : String) : Float {
 			if(parent != null) {
-				val dv = parent.parseDouble(key)
+				val dv = parent.double(key)
 				if(dv != null && dv.isFinite()) return clipRange(- 1f, 1f, dv.toFloat())
 			}
 			return 0f
@@ -103,9 +103,9 @@ class TootAttachment : TootAttachmentLike {
 		
 		when(serviceType) {
 			ServiceType.MISSKEY -> {
-				id = EntityId.mayDefault(src.parseString("id"))
+				id = EntityId.mayDefault(src.string("id"))
 				
-				val mimeType = src.parseString("type") ?: "?"
+				val mimeType = src.string("type") ?: "?"
 				
 				this.type = when {
 					mimeType.startsWith("image/") -> TootAttachmentType.Image
@@ -114,14 +114,14 @@ class TootAttachment : TootAttachmentLike {
 					else -> TootAttachmentType.Unknown
 				}
 				
-				url = src.parseString("url")
-				preview_url = src.parseString("thumbnailUrl")
+				url = src.string("url")
+				preview_url = src.string("thumbnailUrl")
 				remote_url = url
 				text_url = url
 				
 				description = arrayOf(
-					src.parseString("name"),
-					src.parseString("comment")
+					src.string("name"),
+					src.string("comment")
 				)
 					.filterNotNull()
 					.joinToString(" / ")
@@ -134,15 +134,15 @@ class TootAttachment : TootAttachmentLike {
 			}
 			
 			else -> {
-				id = EntityId.mayDefault(src.parseString("id"))
-				url = src.parseString("url")
-				remote_url = src.parseString("remote_url")
-				preview_url = src.parseString("preview_url")
-				text_url = src.parseString("text_url")
-				description = src.parseString("description")
+				id = EntityId.mayDefault(src.string("id"))
+				url = src.string("url")
+				remote_url = src.string("remote_url")
+				preview_url = src.string("preview_url")
+				text_url = src.string("text_url")
+				description = src.string("description")
 				isSensitive = false // Misskey用のパラメータなので、マストドンでは適当な値を使ってOK
 				
-				type = when(val tmpType = parseType(src.parseString("type"))) {
+				type = when(val tmpType = parseType(src.string("type"))) {
 					null, TootAttachmentType.Unknown -> {
 						guessMediaTypeByUrl(remote_url ?: url) ?: TootAttachmentType.Unknown
 					}
@@ -150,11 +150,11 @@ class TootAttachment : TootAttachmentLike {
 					else -> tmpType
 				}
 				
-				val focus = src.parseJsonObject("meta")?.parseJsonObject("focus")
+				val focus = src.jsonObject("meta")?.jsonObject("focus")
 				focusX = parseFocusValue(focus, "x")
 				focusY = parseFocusValue(focus, "y")
 				
-				blurhash = src.parseString("blurhash")
+				blurhash = src.string("blurhash")
 				
 			}
 		}
@@ -210,13 +210,13 @@ class TootAttachment : TootAttachmentLike {
 		@Suppress("UNUSED_PARAMETER") decode : Boolean // dummy parameter for choosing this ctor.
 	) {
 		
-		id = EntityId.mayDefault(src.parseString(KEY_ID))
-		url = src.parseString(KEY_URL)
-		remote_url = src.parseString(KEY_REMOTE_URL)
-		preview_url = src.parseString(KEY_PREVIEW_URL)
-		text_url = src.parseString(KEY_TEXT_URL)
+		id = EntityId.mayDefault(src.string(KEY_ID))
+		url = src.string(KEY_URL)
+		remote_url = src.string(KEY_REMOTE_URL)
+		preview_url = src.string(KEY_PREVIEW_URL)
+		text_url = src.string(KEY_TEXT_URL)
 		
-		type = when(val tmpType = parseType(src.parseString(KEY_TYPE))) {
+		type = when(val tmpType = parseType(src.string(KEY_TYPE))) {
 			null, TootAttachmentType.Unknown -> {
 				guessMediaTypeByUrl(remote_url ?: url) ?: TootAttachmentType.Unknown
 			}
@@ -224,13 +224,13 @@ class TootAttachment : TootAttachmentLike {
 			else -> tmpType
 		}
 		
-		description = src.parseString(KEY_DESCRIPTION)
+		description = src.string(KEY_DESCRIPTION)
 		isSensitive = src.optBoolean(KEY_IS_SENSITIVE)
 		
-		val focus = src.parseJsonObject(KEY_META)?.parseJsonObject(KEY_FOCUS)
+		val focus = src.jsonObject(KEY_META)?.jsonObject(KEY_FOCUS)
 		focusX = parseFocusValue(focus, KEY_X)
 		focusY = parseFocusValue(focus, KEY_Y)
-		blurhash = src.parseString(KEY_BLURHASH)
+		blurhash = src.string(KEY_BLURHASH)
 	}
 }
 

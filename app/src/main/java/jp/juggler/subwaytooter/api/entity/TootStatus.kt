@@ -197,10 +197,10 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			val instance = parser.accessHost
-			val misskeyId = src.parseString("id")
+			val misskeyId = src.string("id")
 			this.host_access = parser.accessHost
 			
-			val uri = src.parseString("uri")
+			val uri = src.string("uri")
 			if(uri != null) {
 				// リモート投稿には uriが含まれる
 				this.uri = uri
@@ -211,7 +211,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				this.url = "https://$instance/notes/$misskeyId"
 			}
 			
-			this.created_at = src.parseString("createdAt")
+			this.created_at = src.string("createdAt")
 			this.time_created_at = parseTime(this.created_at)
 			this.id = EntityId.mayDefault(misskeyId)
 			
@@ -222,34 +222,34 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
 			this.custom_emojis =
-				parseMapOrNull(CustomEmoji.decodeMisskey, src.parseJsonArray("emojis"), log)
+				parseMapOrNull(CustomEmoji.decodeMisskey, src.jsonArray("emojis"), log)
 			this.profile_emojis = null
 			
-			val who = parser.account(src.parseJsonObject("user"))
+			val who = parser.account(src.jsonObject("user"))
 				?: throw RuntimeException("missing account")
 			
 			this.accountRef = TootAccountRef(parser, who)
 			
-			this.reblogs_count = src.parseLong("renoteCount") ?: 0L
+			this.reblogs_count = src.long("renoteCount") ?: 0L
 			this.favourites_count = 0L
-			this.replies_count = src.parseLong("repliesCount") ?: 0L
+			this.replies_count = src.long("repliesCount") ?: 0L
 			
 			this.reblogged = false
 			this.favourited = src.optBoolean("isFavorited")
 			
 			this.localOnly = src.optBoolean("localOnly")
 			this.visibility = TootVisibility.parseMisskey(
-				src.parseString("visibility"),
+				src.string("visibility"),
 				localOnly
 			) ?: TootVisibility.Public
 			
-			this.misskeyVisibleIds = parseStringArray(src.parseJsonArray("visibleUserIds"))
+			this.misskeyVisibleIds = parseStringArray(src.jsonArray("visibleUserIds"))
 			
 			this.media_attachments =
 				parseListOrNull(
 					::TootAttachment,
 					parser,
-					src.parseJsonArray("files") ?: src.parseJsonArray("media") // v11,v10
+					src.jsonArray("files") ?: src.jsonArray("media") // v11,v10
 				)
 			
 			// Misskeyは画像毎にNSFWフラグがある。どれか１枚でもNSFWならトゥート全体がNSFWということにする
@@ -261,8 +261,8 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			}
 			this.sensitive = bv
 			
-			this.reply = parser.status(src.parseJsonObject("reply"))
-			this.in_reply_to_id = EntityId.mayNull(src.parseString("replyId"))
+			this.reply = parser.status(src.jsonObject("reply"))
+			this.in_reply_to_id = EntityId.mayNull(src.string("replyId"))
 			this.in_reply_to_account_id = reply?.account?.id
 			
 			this.pinned = parser.pinned
@@ -271,16 +271,16 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			
 			// "mentionedRemoteUsers" -> "[{"uri":"https:\/\/mastodon.juggler.jp\/users\/tateisu","username":"tateisu","host":"mastodon.juggler.jp"}]"
 			
-			this.tags = parseMisskeyTags(src.parseJsonArray("tags"))
+			this.tags = parseMisskeyTags(src.jsonArray("tags"))
 			
-			this.application = parseItem(::TootApplication, parser, src.parseJsonObject("app"), log)
+			this.application = parseItem(::TootApplication, parser, src.jsonObject("app"), log)
 			
 			this.viaMobile = src.optBoolean("viaMobile")
 			
 			// this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			
 			// content
-			this.content = src.parseString("text")
+			this.content = src.string("text")
 			
 			var options = DecodeOptions(
 				parser.context,
@@ -303,7 +303,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			val mentions1 =
 				(decoded_content as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
 			
-			val sv = src.parseString("cw")?.cleanCW()
+			val sv = src.string("cw")?.cleanCW()
 			this.spoiler_text = when {
 				sv == null -> "" // CWなし
 				sv.isBlank() -> parser.context.getString(R.string.blank_cw)
@@ -343,22 +343,22 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				parser,
 				this,
 				media_attachments,
-				src.parseJsonObject("poll"),
+				src.jsonObject("poll"),
 				TootPollsType.Misskey
 			)
 			
 			this.reactionCounts = parseReactionCounts(
-				src.parseJsonObject("reactions") ?: src.parseJsonObject("reactionCounts")
+				src.jsonObject("reactions") ?: src.jsonObject("reactionCounts")
 			)
-			this.myReaction = src.parseString("myReaction")
+			this.myReaction = src.string("myReaction")
 			
-			val reblog = parser.status(src.parseJsonObject("renote"))
+			val reblog = parser.status(src.jsonObject("renote"))
 			this.reblog = reblog
 			
 			// めいめいフォークでは myRenoteIdというものがあるらしい
 			// https://github.com/mei23/misskey/blob/mei-m544/src/models/note.ts#L384-L394
 			// 直近の一つのrenoteのIdを得られるらしい。
-			this.myRenoteId = EntityId.mayNull(src.parseString("myRenoteId"))
+			this.myRenoteId = EntityId.mayNull(src.string("myRenoteId"))
 			if(myRenoteId != null) reblogged = true
 			
 			// しかしTLにRenoteが露出してるならそのIDを使う方が賢明であろう
@@ -368,7 +368,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				reblog.reblogged = true
 			}
 			
-			this.deletedAt = src.parseString("deletedAt")
+			this.deletedAt = src.string("deletedAt")
 			this.time_deleted_at = parseTime(deletedAt)
 			
 			if(card == null) {
@@ -388,12 +388,12 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			deletedAt = null
 			time_deleted_at = 0L
 			
-			this.url = src.parseString("url") // ブースト等では頻繁にnullになる
-			this.created_at = src.parseString("created_at")
+			this.url = src.string("url") // ブースト等では頻繁にnullになる
+			this.created_at = src.string("created_at")
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
 			this.custom_emojis =
-				parseMapOrNull(CustomEmoji.decode, src.parseJsonArray("emojis"), log)
+				parseMapOrNull(CustomEmoji.decode, src.jsonArray("emojis"), log)
 			
 			this.profile_emojis = when(val o = src.get("profile_emojis")) {
 				is JsonArray -> parseMapOrNull(::NicoProfileEmoji, o, log)
@@ -401,21 +401,21 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				else -> null
 			}
 			
-			val who = parser.account(src.parseJsonObject("account"))
+			val who = parser.account(src.jsonObject("account"))
 				?: throw RuntimeException("missing account")
 			
 			this.accountRef = TootAccountRef(parser, who)
 			
-			this.reblogs_count = src.parseLong("reblogs_count")
-			this.favourites_count = src.parseLong("favourites_count")
-			this.replies_count = src.parseLong("replies_count")
+			this.reblogs_count = src.long("reblogs_count")
+			this.favourites_count = src.long("favourites_count")
+			this.replies_count = src.long("replies_count")
 			
 			when(parser.serviceType) {
 				ServiceType.MASTODON -> {
 					this.host_access = parser.accessHost
 					
-					this.id = EntityId.mayDefault(src.parseString("id"))
-					this.uri = src.parseString("uri") ?: error("missing uri")
+					this.id = EntityId.mayDefault(src.string("id"))
+					this.uri = src.string("uri") ?: error("missing uri")
 					
 					this.reblogged = src.optBoolean("reblogged")
 					this.favourited = src.optBoolean("favourited")
@@ -426,10 +426,10 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 						parseListOrNull(
 							::TootAttachment,
 							parser,
-							src.parseJsonArray("media_attachments"),
+							src.jsonArray("media_attachments"),
 							log
 						)
-					this.visibility = TootVisibility.parseMastodon(src.parseString("visibility"))
+					this.visibility = TootVisibility.parseMastodon(src.string("visibility"))
 						?: TootVisibility.Public
 					this.sensitive = src.optBoolean("sensitive")
 					
@@ -440,14 +440,14 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 					
 					// 投稿元タンスでのIDを調べる。失敗するかもしれない
 					// FIXME: Pleromaだとダメそうな印象
-					this.uri = src.parseString("uri") ?: error("missing uri")
+					this.uri = src.string("uri") ?: error("missing uri")
 					this.id = findStatusIdFromUri(uri, url) ?: EntityId.DEFAULT
 					
 					this.time_created_at = parseTime(this.created_at)
 					this.media_attachments = parseListOrNull(
 						::TootAttachment,
 						parser,
-						src.parseJsonArray("media_attachments"),
+						src.jsonArray("media_attachments"),
 						log
 					)
 					this.visibility = TootVisibility.Public
@@ -459,14 +459,14 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 					this.host_access = parser.accessHost
 					
 					// MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
-					this.id = EntityId.mayDefault(src.parseString("id"))
+					this.id = EntityId.mayDefault(src.string("id"))
 					// MSPだとuriは提供されない。LTL限定なのでURL的なものを作れるはず
 					this.uri =
 						"https://${parser.accessHost}/users/${who.username}/statuses/$id"
 					
 					this.time_created_at = parseTimeMSP(created_at)
 					this.media_attachments =
-						TootAttachmentMSP.parseList(src.parseJsonArray("media_attachments"))
+						TootAttachmentMSP.parseList(src.jsonArray("media_attachments"))
 					this.visibility = TootVisibility.Public
 					this.sensitive = src.optInt("sensitive", 0) != 0
 				}
@@ -475,16 +475,16 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			}
 			
 			this._orderId = this.id
-			this.in_reply_to_id = EntityId.mayNull(src.parseString("in_reply_to_id"))
+			this.in_reply_to_id = EntityId.mayNull(src.string("in_reply_to_id"))
 			this.in_reply_to_account_id =
-				EntityId.mayNull(src.parseString("in_reply_to_account_id"))
-			this.mentions = parseListOrNull(::TootMention, src.parseJsonArray("mentions"), log)
-			this.tags = parseListOrNull(::TootTag, src.parseJsonArray("tags"))
+				EntityId.mayNull(src.string("in_reply_to_account_id"))
+			this.mentions = parseListOrNull(::TootMention, src.jsonArray("mentions"), log)
+			this.tags = parseListOrNull(::TootTag, src.jsonArray("tags"))
 			this.application =
-				parseItem(::TootApplication, parser, src.parseJsonObject("application"), log)
+				parseItem(::TootApplication, parser, src.jsonObject("application"), log)
 			this.pinned = parser.pinned || src.optBoolean("pinned")
 			this.muted = src.optBoolean("muted")
-			this.language = src.parseString("language")?.notEmpty()
+			this.language = src.string("language")?.notEmpty()
 			this.decoded_mentions = HTMLDecoder.decodeMentions(
 				parser.linkHelper,
 				this.mentions,
@@ -493,7 +493,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			// this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			
 			// content
-			this.content = src.parseString("content")
+			this.content = src.string("content")
 			
 			var options = DecodeOptions(
 				parser.context,
@@ -512,7 +512,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			if(this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
 			if(this.highlightAny == null) this.highlightAny = options.highlightAny
 			
-			var sv = (src.parseString("spoiler_text") ?: "").cleanCW()
+			var sv = (src.string("spoiler_text") ?: "").cleanCW()
 			this.spoiler_text = when {
 				sv.isEmpty() -> "" // CWなし
 				sv.isBlank() -> parser.context.getString(R.string.blank_cw)
@@ -535,7 +535,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			if(this.highlightAny == null) this.highlightAny = options.highlightAny
 			
 			this.enquete = try {
-				sv = src.parseString("enquete") ?: ""
+				sv = src.string("enquete") ?: ""
 				if(sv.isNotEmpty()) {
 					TootPolls.parse(
 						parser,
@@ -545,7 +545,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 						TootPollsType.FriendsNico
 					)
 				} else {
-					val ov = src.parseJsonObject("poll")
+					val ov = src.jsonObject("poll")
 					TootPolls.parse(
 						parser,
 						this,
@@ -560,10 +560,10 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			}
 			
 			// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
-			this.reblog = parser.status(src.parseJsonObject("reblog"))
+			this.reblog = parser.status(src.jsonObject("reblog"))
 			
 			// 2.6.0からステータスにもカード情報が含まれる
-			this.card = parseItem(::TootCard, src.parseJsonObject("card"))
+			this.card = parseItem(::TootCard, src.jsonObject("card"))
 		}
 	}
 	
@@ -916,7 +916,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				result.ensureCapacity(array_size)
 				for(i in 0 until array.size) {
 					try {
-						val src = array.parseJsonObject(i)?.parseJsonObject("_source") ?: continue
+						val src = array.jsonObject(i)?.jsonObject("_source") ?: continue
 						result.add(TootStatus(parser, src))
 					} catch(ex : Throwable) {
 						log.trace(ex)
@@ -1054,7 +1054,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			var rv : ArrayList<String>? = null
 			if(src != null) {
 				for(i in src.indices) {
-					val s = src.parseString(i)
+					val s = src.string(i)
 					if(s?.isNotEmpty() == true) {
 						if(rv == null) rv = ArrayList()
 						rv.add(s)
@@ -1070,7 +1070,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			var rv : LinkedHashMap<String, Int>? = null
 			src?.entries?.forEach { entry ->
 				val key = entry.key.notEmpty() ?: return@forEach
-				val v = src.parseInt(key)?.notZero() ?: return@forEach
+				val v = src.int(key)?.notZero() ?: return@forEach
 				if(rv == null) rv = LinkedHashMap()
 				rv!![key] = v
 			}
@@ -1081,7 +1081,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			var rv : ArrayList<TootTag>? = null
 			if(src != null) {
 				for(i in src.indices) {
-					val sv = src.parseString(i)
+					val sv = src.string(i)
 					if(sv?.isNotEmpty() == true) {
 						if(rv == null) rv = ArrayList()
 						rv.add(TootTag(name = sv))

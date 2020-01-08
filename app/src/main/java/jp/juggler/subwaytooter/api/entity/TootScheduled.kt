@@ -22,24 +22,24 @@ class TootScheduled(parser : TootParser, val src : JsonObject) : TimelineItem() 
 	val uri : String
 	
 	init {
-		id = EntityId.mayDefault(src.parseString("id"))
+		id = EntityId.mayDefault(src.string("id"))
 		uri = "scheduled://${parser.accessHost}/$id"
 		
-		scheduled_at = src.parseString("scheduled_at")
+		scheduled_at = src.string("scheduled_at")
 		timeScheduledAt = TootStatus.parseTime(scheduled_at)
 		media_attachments =
 			parseListOrNull(
 				::TootAttachment,
 				parser,
-				src.parseJsonArray("media_attachments"),
+				src.jsonArray("media_attachments"),
 				log
 			)
-		val params = src.parseJsonObject("params")
-		text = params?.parseString("text")
-		visibility = TootVisibility.parseMastodon(params?.parseString("visibility"))
+		val params = src.jsonObject("params")
+		text = params?.string("text")
+		visibility = TootVisibility.parseMastodon(params?.string("visibility"))
 			?: TootVisibility.Public
-		spoiler_text = params?.parseString("spoiler_text")
-		in_reply_to_id = params?.parseLong("in_reply_to_id")
+		spoiler_text = params?.string("spoiler_text")
+		in_reply_to_id = params?.long("in_reply_to_id")
 		sensitive = params?.optBoolean("sensitive") ?: false
 	}
 	

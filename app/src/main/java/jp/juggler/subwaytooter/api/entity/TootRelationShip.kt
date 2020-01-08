@@ -57,7 +57,7 @@ class TootRelationShip(parser:TootParser,src : JsonObject) {
 			showing_reblogs = UserRelation.REBLOG_UNKNOWN
 			
 		}else{
-			this.id = EntityId.mayDefault( src.parseString("id") )
+			this.id = EntityId.mayDefault( src.string("id") )
 			
 			var ov = src["following"]
 			if(ov is JsonObject) {

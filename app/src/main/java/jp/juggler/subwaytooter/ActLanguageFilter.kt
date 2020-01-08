@@ -150,7 +150,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 			languageList.clear()
 			if(src != null) {
 				for(key in src.keys) {
-					languageList.add(MyItem(key, src.parseBoolean(key) ?: true))
+					languageList.add(MyItem(key, src.boolean(key) ?: true))
 				}
 			}
 			if(null == languageList.find { it.code == TootStatus.LANGUAGE_CODE_DEFAULT }) {

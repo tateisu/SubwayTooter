@@ -40,7 +40,7 @@ inline fun <reified T> parseList(
 		if(src_length > 0) {
 			dst.ensureCapacity(src_length)
 			for(i in 0 until src_length) {
-				val item = parseItem(factory, src.parseJsonObject(i), log)
+				val item = parseItem(factory, src.jsonObject(i), log)
 				if(item != null) dst.add(item)
 			}
 		}
@@ -60,7 +60,7 @@ inline fun <reified T> parseList(
 		if(src_length > 0) {
 			dst.ensureCapacity(src_length)
 			for(i in 0 until src_length) {
-				val item = parseItem(factory, serviceType, src.parseJsonObject(i), log)
+				val item = parseItem(factory, serviceType, src.jsonObject(i), log)
 				if(item != null) dst.add(item)
 			}
 		}
@@ -78,7 +78,7 @@ inline fun <reified T> parseListOrNull(
 		if(src_length > 0) {
 			val dst = ArrayList<T>(src_length)
 			for(i in 0 until src.size) {
-				val item = parseItem(factory, src.parseJsonObject(i), log)
+				val item = parseItem(factory, src.jsonObject(i), log)
 				if(item != null) dst.add(item)
 			}
 			if(dst.isNotEmpty()) return dst
@@ -96,7 +96,7 @@ inline fun <reified K, reified V> parseMap(
 	val dst = HashMap<K, V>()
 	if(src != null) {
 		for(i in src.indices ) {
-			val item = parseItem(factory, src.parseJsonObject(i), log)
+			val item = parseItem(factory, src.jsonObject(i), log)
 			if(item != null) dst[item.mapKey] = item
 		}
 	}
@@ -113,7 +113,7 @@ inline fun <reified K, reified V> parseMapOrNull(
 		if(size > 0) {
 			val dst = HashMap<K, V>()
 			for(i in 0 until size) {
-				val item = parseItem(factory, src.parseJsonObject(i), log)
+				val item = parseItem(factory, src.jsonObject(i), log)
 				if(item != null) dst[item.mapKey] = item
 			}
 			if(dst.isNotEmpty()) return dst
@@ -132,7 +132,7 @@ inline fun <reified V> parseProfileEmoji2(
 		if(size > 0) {
 			val dst = HashMap<String, V>()
 			for( key in src.keys){
-				val v = src.parseJsonObject(key) ?: continue
+				val v = src.jsonObject(key) ?: continue
 				val item = try{
 					factory(v,key)
 				} catch(ex : Throwable) {
@@ -194,7 +194,7 @@ inline fun <reified T> parseList(
 		if(src_length > 0) {
 			dst.ensureCapacity(src_length)
 			for(i in src.indices) {
-				val item = parseItem(factory, parser, src.parseJsonObject(i), log)
+				val item = parseItem(factory, parser, src.jsonObject(i), log)
 				if(item != null) dst.add(item)
 			}
 		}
@@ -215,7 +215,7 @@ inline fun <reified T> parseListOrNull(
 			val dst = ArrayList<T>()
 			dst.ensureCapacity(src_length)
 			for(i in src.indices) {
-				val item = parseItem(factory, parser, src.parseJsonObject(i), log)
+				val item = parseItem(factory, parser, src.jsonObject(i), log)
 				if(item != null) dst.add(item)
 			}
 			if(dst.isNotEmpty()) return dst

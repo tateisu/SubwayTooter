@@ -1049,7 +1049,7 @@ class TestTootApiClient {
 		val tokenInfo = result?.tokenInfo
 		assertNotNull(tokenInfo)
 		if(tokenInfo == null) return
-		val accessToken = tokenInfo.parseString("access_token")
+		val accessToken = tokenInfo.string("access_token")
 		assertNotNull(accessToken)
 		if(accessToken == null) return
 		
@@ -1117,7 +1117,7 @@ class TestTootApiClient {
 		
 		val content = result?.jsonArray
 		assertNotNull(content)
-		println(content?.parseJsonObject(0).toString())
+		println(content?.jsonObject(0).toString())
 	}
 	
 	@Test

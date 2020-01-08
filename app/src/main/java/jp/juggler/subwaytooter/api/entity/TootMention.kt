@@ -10,7 +10,7 @@ class TootMention(
 ) {
 	
 	constructor(src : JsonObject) : this(
-		id = EntityId.mayDefault(src.parseString("id")),
+		id = EntityId.mayDefault(src.string("id")),
 		url = src.notEmptyOrThrow("url"),
 		acct = src.notEmptyOrThrow("acct"),
 		username = src.notEmptyOrThrow("username")

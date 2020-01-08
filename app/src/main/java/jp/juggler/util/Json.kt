@@ -5,6 +5,12 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.regex.Pattern
 
+class JsonException : RuntimeException {
+	constructor(message : String?) : super(message)
+	constructor(message : String?, cause : Throwable?) : super(message, cause)
+	constructor(cause : Throwable) : super(cause.message, cause)
+}
+
 private const val char0 = '\u0000'
 
 // Tests if the value should be tried as a decimal.
@@ -16,10 +22,9 @@ private fun String.isDecimalNotation() : Boolean =
 		indexOf('E') > - 1 ||
 		this == "-0"
 
-@Throws(NumberFormatException::class)
 private fun String.stringToNumber() : Number {
 	val initial = this.firstOrNull()
-	if(initial !=null && (initial >= '0' && initial <= '9' || initial == '-') ) {
+	if(initial != null && (initial >= '0' && initial <= '9' || initial == '-')) {
 		val length = this.length
 		when {
 			isDecimalNotation() -> return if(length > 14) {
@@ -60,7 +65,7 @@ private fun String.stringToNumber() : Number {
 	throw NumberFormatException("val [$this] is not a valid number.")
 }
 
-private fun Any?.asNumber(defaultValue : Number) : Number  =
+private fun Any?.asNumber(defaultValue : Number) : Number =
 	when(this) {
 		null -> defaultValue
 		is Number -> this
@@ -86,29 +91,148 @@ class JsonArray : ArrayList<Any?> {
 	
 	override fun toString() : String = toString(0)
 	
-	fun toObjectList() = mapNotNull { it.cast<JsonObject>() }
+	fun objectList() = mapNotNull { it.cast<JsonObject>() }
 	
-	fun toStringList() = mapNotNull { it?.toString() }
+	fun stringList() = mapNotNull { it?.toString() }
 	
-	fun toStringArrayList() = ArrayList<String>(toStringList())
+	fun stringArrayList() = ArrayList<String>(stringList())
 	
-	fun toFloatArrayList() = ArrayList<Float>(this.size).apply {
+	fun floatArrayList() = ArrayList<Float>(this.size).apply {
 		addAll(this@JsonArray.mapNotNull { this.asNumber(0f).toFloat() })
 	}
 	
-	fun parseString(key : Int) : String? =
-		this[key]?.toString()
+	fun string(key : Int) : String? = this[key]?.toString()
+	fun boolean(key : Int) : Boolean? = JsonObject.castBoolean(this[key])
+	fun int(key : Int) : Int? = JsonObject.castInt(this[key])
+	fun long(key : Int) : Long? = JsonObject.castLong(this[key])
+	fun float(key : Int) : Float? = JsonObject.castFloat(this[key])
+	@Suppress("MemberVisibilityCanBePrivate")
+	fun double(key : Int) : Double? = JsonObject.castDouble(this[key])
 	
-	fun parseJsonObject(index : Int) = this[index].cast<JsonObject>()
-	fun parseJsonArray(index : Int) = this[index].cast<JsonArray>()
-
-	fun optString(key : Int,defVal:String="") = parseString(key) ?: defVal
+	fun jsonObject(key : Int) = this[key].cast<JsonObject>()
+	fun jsonArray(key : Int) = this[key].cast<JsonArray>()
+	
+	fun optString(key : Int, defVal : String = "") = string(key) ?: defVal
+	fun optBoolean(key : Int, defVal : Boolean = false) = boolean(key) ?: defVal
+	@Suppress("unused")
+	fun optInt(key : Int, defVal : Int = 0) = int(key) ?: defVal
+	
+	@Suppress("unused")
+	fun optLong(key : Int, defVal : Long = 0L) = long(key) ?: defVal
+	
+	@Suppress("unused")
+	fun optFloat(key : Int, defVal : Float) = float(key) ?: defVal
+	
+	@Suppress("unused")
+	fun optDouble(key : Int, defVal : Double) = double(key) ?: defVal
+	
+	@Suppress("unused")
+	fun notEmptyOrThrow(key : Int) = notEmptyOrThrow(key.toString(), string(key))
+	
+	@Suppress("unused")
+	fun isNull(key : Int) = this[key] == null
 }
 
 // https://stackoverflow.com/questions/5525795/does-javascript-guarantee-object-property-order/38218582#38218582
-// ES2015 require keep insertion order
-// この実装はJSONパース中の挿入だけ配慮する
+// ブラウザはES2015によりオブジェクト列挙順序に挿入順序が影響する
+// JSONにそんな規定はないが、MisskeyのAPIはこれに依存した挙動をする。
 class JsonObject : LinkedHashMap<String, Any?>() {
+	
+	companion object {
+		fun castBoolean(o : Any?) : Boolean? =
+			when(o) {
+				null -> null
+				is Boolean -> o
+				is Int -> o != 0
+				is Long -> o != 0L
+				is Float -> ! (o.isFinite() && o == 0f)
+				is Double -> ! (o.isFinite() && o == 0.0)
+				
+				is String -> when(o) {
+					"", "0", "false", "False" -> false
+					else -> true
+				}
+				
+				is JsonArray -> o.isNotEmpty()
+				is JsonObject -> o.isNotEmpty()
+				
+				else -> true
+			}
+		
+		fun castLong(o : Any?) : Long? =
+			when(o) {
+				is Long -> o
+				is Number -> o.toLong()
+				
+				is String -> try {
+					o.stringToNumber().toLong()
+				} catch(_ : NumberFormatException) {
+					null
+				}
+				
+				else -> null // may null or JsonObject.NULL or object,array,boolean
+			}
+		
+		fun castInt(o : Any?) : Int? =
+			when(o) {
+				
+				is Int -> o
+				
+				is Number -> try {
+					o.toInt()
+				} catch(_ : NumberFormatException) {
+					null
+				}
+				
+				is String -> try {
+					o.stringToNumber().toInt()
+				} catch(_ : NumberFormatException) {
+					null
+				}
+				
+				else -> null // may null or JsonObject.NULL or object,array,boolean
+			}
+		
+		fun castDouble(o : Any?) : Double? =
+			when(o) {
+				
+				is Double -> o
+				
+				is Number -> try {
+					o.toDouble()
+				} catch(_ : NumberFormatException) {
+					null
+				}
+				
+				is String -> try {
+					o.stringToNumber().toDouble()
+				} catch(_ : NumberFormatException) {
+					null
+				}
+				
+				else -> null // may null or JsonObject.NULL or object,array,boolean
+			}
+		
+		fun castFloat(o : Any?) : Float? =
+			when(o) {
+				
+				is Float -> o
+				
+				is Number -> try {
+					o.toFloat()
+				} catch(_ : NumberFormatException) {
+					null
+				}
+				
+				is String -> try {
+					o.stringToNumber().toFloat()
+				} catch(_ : NumberFormatException) {
+					null
+				}
+				
+				else -> null // may null or JsonObject.NULL or object,array,boolean
+			}
+	}
 	
 	fun toString(indentFactor : Int) : String {
 		val sw = StringWriter()
@@ -119,132 +243,47 @@ class JsonObject : LinkedHashMap<String, Any?>() {
 	
 	override fun toString() : String = toString(0)
 	
-	fun parseJsonObject(name : String) = this[name].cast<JsonObject>()
-	fun parseJsonArray(name : String) = this[name].cast<JsonArray>()
+	fun string(key : String) : String? = this[key]?.toString()
+	fun boolean(key : String) : Boolean? = castBoolean(this[key])
+	fun int(key : String) : Int? = castInt(this[key])
+	fun long(key : String) : Long? = castLong(this[key])
+	fun float(key : String) : Float? = castFloat(this[key])
+	fun double(key : String) : Double? = castDouble(this[key])
+	fun jsonObject(name : String) = this[name].cast<JsonObject>()
+	fun jsonArray(name : String) = this[name].cast<JsonArray>()
 	
-	fun parseStringArrayList(name : String) : ArrayList<String>? =
-		get(name).cast<JsonArray>()
-			?.toStringArrayList()
-			?.notEmpty()
+	fun stringArrayList(name : String) : ArrayList<String>? =
+		jsonArray(name)?.stringArrayList()?.notEmpty()
 	
-	fun parseFloatArrayList(name : String) : ArrayList<Float>? =
-		get(name).cast<JsonArray>()
-			?.toFloatArrayList()
-			?.notEmpty()
+	fun floatArrayList(name : String) : ArrayList<Float>? =
+		jsonArray(name)?.floatArrayList()?.notEmpty()
 	
-	fun parseBoolean(key : String) : Boolean? =
-		when(val o = this[key]) {
-			null -> null
-			is Boolean -> o
-			is Int -> o != 0
-			is Long -> o != 0L
-			is Float -> ! (o.isFinite() && o == 0f)
-			is Double -> ! (o.isFinite() && o == 0.0)
-			
-			is String -> when(o) {
-				"", "0", "false", "False" -> false
-				else -> true
-			}
-			
-			is JsonArray -> o.isNotEmpty()
-			is JsonObject -> o.isNotEmpty()
-			
-			else -> true
-		}
+	fun optString(name : String, defVal : String = "") = string(name) ?: defVal
+	fun optBoolean(name : String, defVal : Boolean = false) = boolean(name) ?: defVal
+	fun optInt(name : String, defVal : Int = 0) = int(name) ?: defVal
+	fun optLong(name : String, defVal : Long = 0L) = long(name) ?: defVal
+	fun optFloat(name : String, defVal : Float) = float(name) ?: defVal
+	@Suppress("unused")
+	fun optDouble(name : String, defVal : Double) = double(name) ?: defVal
 	
-	fun parseString(key : String) : String? =
-		this[key]?.toString()
-	
-	fun notEmptyOrThrow(name : String) =
-		notEmptyOrThrow(name, parseString(name))
-	
-	// 文字列データをLong精度で取得できる代替品
-	fun parseLong(key : String) : Long? =
-		when(val o = this[key]) {
-			is Long -> o
-			is Number -> o.toLong()
-			
-			is String -> try {
-				o.stringToNumber().toLong()
-			} catch(_ : NumberFormatException) {
-				null
-			}
-			
-			else -> null // may null or JsonObject.NULL or object,array,boolean
-		}
-	
-	fun parseInt(key : String) : Int? =
-		when(val o = this[key]) {
-			
-			is Int -> o
-			
-			is Number -> try {
-				o.toInt()
-			} catch(_ : NumberFormatException) {
-				null
-			}
-			
-			is String -> try {
-				o.stringToNumber().toInt()
-			} catch(_ : NumberFormatException) {
-				null
-			}
-			
-			else -> null // may null or JsonObject.NULL or object,array,boolean
-		}
-	
-	fun parseDouble(key : String) : Double? =
-		when(val o = this[key]) {
-			
-			is Double -> o
-			
-			is Number -> try {
-				o.toDouble()
-			} catch(_ : NumberFormatException) {
-				null
-			}
-			
-			is String -> try {
-				o.stringToNumber().toDouble()
-			} catch(_ : NumberFormatException) {
-				null
-			}
-			
-			else -> null // may null or JsonObject.NULL or object,array,boolean
-		}
-	
-	fun isNull(name : String) = this[name]==null
-
-	fun optBoolean(name : String, defVal : Boolean = false) = parseBoolean(name) ?: defVal
-	fun optInt(name : String, defVal : Int=0) = parseInt(name) ?: defVal
-	fun optLong(name : String, defVal : Long=0L) = parseLong(name) ?: defVal
-	// fun optDouble(name : String, defVal : Double) = parseDouble(name) ?: defVal
-	fun optFloat(name : String, defVal : Float) = parseDouble(name)?.toFloat() ?: defVal
-	fun optString(name : String, defVal : String="") = parseString(name) ?: defVal
-
-	fun putNotNull(name:String,value:Any?){
-		if(value!=null) put(name,value)
+	fun notEmptyOrThrow(name : String) = notEmptyOrThrow(name, string(name))
+	fun isNull(name : String) = this[name] == null
+	fun putNotNull(name : String, value : Any?) {
+		if(value != null) put(name, value)
 	}
-	
-}
-
-class JsonException : RuntimeException {
-	constructor(message : String?) : super(message)
-	constructor(message : String?, cause : Throwable?) : super(message, cause)
-	constructor(cause : Throwable) : super(cause.message, cause)
 }
 
 class JsonTokenizer(reader : Reader) {
 	
-	companion object{
+	companion object {
 		
 		private fun String.toStringOrNumber() : Any {
 			/*
 			* If it might be a number, try converting it. If a number cannot be
 			* produced, then the value will just be a string.
 			*/
-			val initial = this[0]
-			if(initial in '0' .. '9' || initial == '-') {
+			val initial = this.firstOrNull()
+			if(initial != null && (initial in '0' .. '9' || initial == '-')) {
 				try { // if we want full Big Number support the contents of this
 					// `try` block can be replaced with:
 					// return stringToNumber(string);
@@ -326,37 +365,37 @@ class JsonTokenizer(reader : Reader) {
 	 *
 	 * @return true if at the end of the file and we didn't step back
 	 */
-	fun end() : Boolean {
+	private fun end() : Boolean {
 		return eof && ! usePrevious
 	}
 	
-	/**
-	 * Determine if the source string still contains characters that next()
-	 * can consume.
-	 * @return true if not yet at the end of the source.
-	 * @throws JsonException thrown if there is an error stepping forward
-	 * or backward while checking for more data.
-	 */
-	fun more() : Boolean {
-		if(usePrevious) {
-			return true
-		}
-		try {
-			reader.mark(1)
-		} catch(e : IOException) {
-			throw JsonException("Unable to preserve stream position", e)
-		}
-		try { // -1 is EOF, but next() can not consume the null character '\0'
-			if(reader.read() <= 0) {
-				eof = true
-				return false
-			}
-			reader.reset()
-		} catch(e : IOException) {
-			throw JsonException("Unable to read the next character from the stream", e)
-		}
-		return true
-	}
+	//	/**
+	//	 * Determine if the source string still contains characters that next()
+	//	 * can consume.
+	//	 * @return true if not yet at the end of the source.
+	//	 * @throws JsonException thrown if there is an error stepping forward
+	//	 * or backward while checking for more data.
+	//	 */
+	//	private fun more() : Boolean {
+	//		if(usePrevious) {
+	//			return true
+	//		}
+	//		try {
+	//			reader.mark(1)
+	//		} catch(e : IOException) {
+	//			throw JsonException("Unable to preserve stream position", e)
+	//		}
+	//		try { // -1 is EOF, but next() can not consume the null character '\0'
+	//			if(reader.read() <= 0) {
+	//				eof = true
+	//				return false
+	//			}
+	//			reader.reset()
+	//		} catch(e : IOException) {
+	//			throw JsonException("Unable to read the next character from the stream", e)
+	//		}
+	//		return true
+	//	}
 	
 	/**
 	 * Get the next character in the source string.
@@ -364,7 +403,7 @@ class JsonTokenizer(reader : Reader) {
 	 * @return The next character, or 0 if past the end of the source string.
 	 * @throws JsonException Thrown if there is an error reading the source string.
 	 */
-	operator fun next() : Char {
+	private operator fun next() : Char {
 		val c : Char
 		if(usePrevious) {
 			usePrevious = false
@@ -415,26 +454,26 @@ class JsonTokenizer(reader : Reader) {
 		}
 	}
 	
-	/**
-	 * Consume the next character, and check that it matches a specified
-	 * character.
-	 * @param c The character to match.
-	 * @return The character.
-	 * @throws JsonException if the character does not match.
-	 */
-	fun next(c : Char) : Char {
-		val n = this.next()
-		if(n != c) {
-			if(n.toInt() > 0) {
-				throw this.syntaxError(
-					"Expected '" + c + "' and instead saw '" +
-						n + "'"
-				)
-			}
-			throw this.syntaxError("Expected '$c' and instead saw ''")
-		}
-		return n
-	}
+	//	/**
+	//	 * Consume the next character, and check that it matches a specified
+	//	 * character.
+	//	 * @param c The character to match.
+	//	 * @return The character.
+	//	 * @throws JsonException if the character does not match.
+	//	 */
+	//	private fun next(c : Char) : Char {
+	//		val n = this.next()
+	//		if(n != c) {
+	//			if(n.toInt() > 0) {
+	//				throw this.syntaxError(
+	//					"Expected '" + c + "' and instead saw '" +
+	//						n + "'"
+	//				)
+	//			}
+	//			throw this.syntaxError("Expected '$c' and instead saw ''")
+	//		}
+	//		return n
+	//	}
 	
 	/**
 	 * Get the next n characters.
@@ -445,8 +484,7 @@ class JsonTokenizer(reader : Reader) {
 	 * Substring bounds error if there are not
 	 * n characters remaining in the source string.
 	 */
-	@Throws(JsonException::class)
-	fun next(n : Int) : String {
+	private fun next(@Suppress("SameParameterValue") n : Int) : String {
 		if(n == 0) {
 			return ""
 		}
@@ -467,8 +505,7 @@ class JsonTokenizer(reader : Reader) {
 	 * @throws JsonException Thrown if there is an error reading the source string.
 	 * @return  A character, or 0 if there are no more characters.
 	 */
-	@Throws(JsonException::class)
-	fun nextClean() : Char {
+	private fun nextClean() : Char {
 		while(true) {
 			val c = this.next()
 			if(c == char0 || c > ' ') {
@@ -488,8 +525,7 @@ class JsonTokenizer(reader : Reader) {
 	 * @return      A String.
 	 * @throws JsonException Unterminated string.
 	 */
-	@Throws(JsonException::class)
-	fun nextString(quote : Char) : String {
+	private fun nextString(quote : Char) : String {
 		val sb = StringBuilder()
 		while(true) {
 			var c : Char = this.next()
@@ -523,49 +559,49 @@ class JsonTokenizer(reader : Reader) {
 		}
 	}
 	
-//	/**
-//	 * Get the text up but not including the specified character or the
-//	 * end of line, whichever comes first.
-//	 * @param  delimiter A delimiter character.
-//	 * @return   A string.
-//	 * @throws JsonException Thrown if there is an error while searching
-//	 * for the delimiter
-//	 */
-//	fun nextTo(delimiter : Char) : String {
-//		val sb = StringBuilder()
-//		while(true) {
-//			val c = this.next()
-//			if(c == delimiter || c == char0 || c == '\n' || c == '\r') {
-//				if(c != char0) {
-//					back()
-//				}
-//				return sb.toString().trim()
-//			}
-//			sb.append(c)
-//		}
-//	}
+	//	/**
+	//	 * Get the text up but not including the specified character or the
+	//	 * end of line, whichever comes first.
+	//	 * @param  delimiter A delimiter character.
+	//	 * @return   A string.
+	//	 * @throws JsonException Thrown if there is an error while searching
+	//	 * for the delimiter
+	//	 */
+	//	fun nextTo(delimiter : Char) : String {
+	//		val sb = StringBuilder()
+	//		while(true) {
+	//			val c = this.next()
+	//			if(c == delimiter || c == char0 || c == '\n' || c == '\r') {
+	//				if(c != char0) {
+	//					back()
+	//				}
+	//				return sb.toString().trim()
+	//			}
+	//			sb.append(c)
+	//		}
+	//	}
 	
-//	/**
-//	 * Get the text up but not including one of the specified delimiter
-//	 * characters or the end of line, whichever comes first.
-//	 * @param delimiters A set of delimiter characters.
-//	 * @return A string, trimmed.
-//	 * @throws JsonException Thrown if there is an error while searching
-//	 * for the delimiter
-//	 */
-//	fun nextTo(delimiters : String) : String {
-//		val sb = StringBuilder()
-//		while(true) {
-//			val c = this.next()
-//			if(delimiters.indexOf(c) >= 0 || c == char0 || c == '\n' || c == '\r') {
-//				if(c != char0) {
-//					back()
-//				}
-//				return sb.toString().trim { it <= ' ' }
-//			}
-//			sb.append(c)
-//		}
-//	}
+	//	/**
+	//	 * Get the text up but not including one of the specified delimiter
+	//	 * characters or the end of line, whichever comes first.
+	//	 * @param delimiters A set of delimiter characters.
+	//	 * @return A string, trimmed.
+	//	 * @throws JsonException Thrown if there is an error while searching
+	//	 * for the delimiter
+	//	 */
+	//	fun nextTo(delimiters : String) : String {
+	//		val sb = StringBuilder()
+	//		while(true) {
+	//			val c = this.next()
+	//			if(delimiters.indexOf(c) >= 0 || c == char0 || c == '\n' || c == '\r') {
+	//				if(c != char0) {
+	//					back()
+	//				}
+	//				return sb.toString().trim { it <= ' ' }
+	//			}
+	//			sb.append(c)
+	//		}
+	//	}
 	
 	/**
 	 * Get the next value. The value can be a Boolean, Double, Integer,
@@ -574,7 +610,6 @@ class JsonTokenizer(reader : Reader) {
 	 *
 	 * @return An object.
 	 */
-	@Throws(JsonException::class)
 	fun nextValue() : Any? {
 		var c = nextClean()
 		val string : String
@@ -611,7 +646,7 @@ class JsonTokenizer(reader : Reader) {
 		if("" == string) {
 			throw syntaxError("Missing value")
 		}
-		return with(string){
+		return with(string) {
 			when {
 				isEmpty() -> ""
 				equals("true", ignoreCase = true) -> true
@@ -621,44 +656,43 @@ class JsonTokenizer(reader : Reader) {
 			}
 		}
 	}
-
 	
-//	/**
-//	 * Skip characters until the next character is the requested character.
-//	 * If the requested character is not found, no characters are skipped.
-//	 * @param to A character to skip to.
-//	 * @return The requested character, or zero if the requested character
-//	 * is not found.
-//	 * @throws JsonException Thrown if there is an error while searching
-//	 * for the to character
-//	 */
-//	@Throws(JsonException::class)
-//	fun skipTo(to : Char) : Char {
-//		var c : Char
-//		try {
-//			val startIndex = index
-//			val startCharacter = character
-//			val startLine = line
-//			reader.mark(1000000)
-//			do {
-//				c = this.next()
-//				if(c.toInt() == 0) { // in some readers, reset() may throw an exception if
-//					// the remaining portion of the input is greater than
-//					// the mark size (1,000,000 above).
-//					reader.reset()
-//					index = startIndex
-//					character = startCharacter
-//					line = startLine
-//					return char0
-//				}
-//			} while(c != to)
-//			reader.mark(1)
-//		} catch(exception : IOException) {
-//			throw JsonException(exception)
-//		}
-//		back()
-//		return c
-//	}
+	//	/**
+	//	 * Skip characters until the next character is the requested character.
+	//	 * If the requested character is not found, no characters are skipped.
+	//	 * @param to A character to skip to.
+	//	 * @return The requested character, or zero if the requested character
+	//	 * is not found.
+	//	 * @throws JsonException Thrown if there is an error while searching
+	//	 * for the to character
+	//	 */
+	//	@Throws(JsonException::class)
+	//	fun skipTo(to : Char) : Char {
+	//		var c : Char
+	//		try {
+	//			val startIndex = index
+	//			val startCharacter = character
+	//			val startLine = line
+	//			reader.mark(1000000)
+	//			do {
+	//				c = this.next()
+	//				if(c.toInt() == 0) { // in some readers, reset() may throw an exception if
+	//					// the remaining portion of the input is greater than
+	//					// the mark size (1,000,000 above).
+	//					reader.reset()
+	//					index = startIndex
+	//					character = startCharacter
+	//					line = startLine
+	//					return char0
+	//				}
+	//			} while(c != to)
+	//			reader.mark(1)
+	//		} catch(exception : IOException) {
+	//			throw JsonException(exception)
+	//		}
+	//		back()
+	//		return c
+	//	}
 	
 	/**
 	 * Make a JsonException to signal a syntax error.
@@ -775,8 +809,7 @@ class JsonTokenizer(reader : Reader) {
 
 private val reNumber = Pattern.compile("""-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?""")
 
-
-fun Writer.writeQuote(string : String) : Writer {
+private fun Writer.writeQuote(string : String) : Writer {
 	if(string.isEmpty()) {
 		write("\"\"")
 	} else {
@@ -818,7 +851,7 @@ fun Writer.writeQuote(string : String) : Writer {
 	return this
 }
 
-fun Number.toJsonString() : String {
+private fun Number.toJsonString() : String {
 	
 	when(this) {
 		is Double -> if(isInfinite() || isNaN())
@@ -843,7 +876,7 @@ fun Number.toJsonString() : String {
 	return string
 }
 
-fun Writer.indent(indentFactor : Int, indent : Int) : Writer {
+private fun Writer.indent(indentFactor : Int, indent : Int) : Writer {
 	if(indentFactor > 0) {
 		append('\n')
 		for(i in 0 until indent) append(' ')
@@ -851,7 +884,7 @@ fun Writer.indent(indentFactor : Int, indent : Int) : Writer {
 	return this
 }
 
-fun Writer.writeCollection(indentFactor : Int, indent : Int, src : Collection<*>) : Writer =
+private fun Writer.writeCollection(indentFactor : Int, indent : Int, src : Collection<*>) : Writer =
 	try {
 		append('[')
 		when(src.size) {
@@ -884,7 +917,7 @@ fun Writer.writeCollection(indentFactor : Int, indent : Int, src : Collection<*>
 		throw JsonException(e)
 	}
 
-fun Writer.writeArray(indentFactor : Int, indent : Int, src : Any) : Writer =
+private fun Writer.writeArray(indentFactor : Int, indent : Int, src : Any) : Writer =
 	try {
 		append('[')
 		when(val size = java.lang.reflect.Array.getLength(src)) {
@@ -976,7 +1009,7 @@ fun Writer.writeJsonValue(
 ) : Writer {
 	when {
 		value == null -> write("null")
-
+		
 		value is Boolean -> write(value.toString())
 		
 		value is Number -> {
@@ -990,9 +1023,9 @@ fun Writer.writeJsonValue(
 				writeQuote(sv)
 			}
 		}
-
-		value is Char -> writeJsonValue(indentFactor,indent,value.toInt())
-
+		
+		value is Char -> writeJsonValue(indentFactor, indent, value.toInt())
+		
 		value is String -> writeQuote(value)
 		value is Enum<*> -> writeQuote(value.name)
 		value is JsonObject -> writeMap(indentFactor, indent, value)
@@ -1012,10 +1045,10 @@ fun notEmptyOrThrow(name : String, value : String?) =
 private val log = LogCategory("Json")
 
 // return null if the json value is "null"
-fun String.decodeJsonValue() = try{
+fun String.decodeJsonValue() = try {
 	JsonTokenizer(this).nextValue()
-}catch(ex:Throwable){
-	log.e(ex,"decodeJsonValue failed. $this")
+} catch(ex : Throwable) {
+	log.e(ex, "decodeJsonValue failed. $this")
 	throw ex
 }
 
@@ -1026,9 +1059,9 @@ fun String.decodeJsonValue() = try{
 //	null
 //}
 
-fun String.decodeJsonObject() = decodeJsonValue()!!.castNotNull<JsonObject>()
+fun String.decodeJsonObject() = decodeJsonValue() !!.castNotNull<JsonObject>()
 
-fun String.decodeJsonArray() = decodeJsonValue()!!.castNotNull<JsonArray>()
+fun String.decodeJsonArray() = decodeJsonValue() !!.castNotNull<JsonArray>()
 
 fun Array<*>.toJsonArray() : JsonArray = JsonArray(this)
 fun List<*>.toJsonArray() = JsonArray(this)
@@ -1039,4 +1072,4 @@ inline fun jsonObject(initializer : JsonObject.() -> Unit) =
 inline fun jsonArray(initializer : JsonArray.() -> Unit) =
 	JsonArray().apply { initializer() }
 
-fun jsonArray(vararg args:String) = JsonArray(args)
+fun jsonArray(vararg args : String) = JsonArray(args)

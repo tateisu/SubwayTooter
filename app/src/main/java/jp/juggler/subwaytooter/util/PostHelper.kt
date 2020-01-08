@@ -405,7 +405,7 @@ class PostHelper(
 										}
 											.toPostRequestBuilder()
 									)
-									val id = result?.jsonObject?.parseString("id")
+									val id = result?.jsonObject?.string("id")
 									if(id?.isNotEmpty() == true) {
 										userIds.add(id)
 									}
@@ -601,7 +601,7 @@ class PostHelper(
 				
 				val status = parser.status(
 					if(isMisskey) {
-						result?.jsonObject?.parseJsonObject("createdNote") ?: result?.jsonObject
+						result?.jsonObject?.jsonObject("createdNote") ?: result?.jsonObject
 					} else {
 						result?.jsonObject
 					}

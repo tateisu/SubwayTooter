@@ -12,8 +12,8 @@ class NicoProfileEmoji(
 	constructor(src : JsonObject, shortcode : String? = null) : this(
 		url = src.notEmptyOrThrow("url"),
 		shortcode = shortcode ?: src.notEmptyOrThrow("shortcode"),
-		account_url = src.parseString("account_url"),
-		account_id = EntityId.mayDefault(src.parseString("account_id"))
+		account_url = src.string("account_url"),
+		account_id = EntityId.mayDefault(src.string("account_id"))
 	)
 	
 	constructor(src : JsonObject) : this(src, null)

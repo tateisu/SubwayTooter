@@ -100,10 +100,10 @@ class EmojiPicker(
 		val sv = Pref.spEmojiPickerRecent(pref)
 		if(sv.isNotEmpty()) {
 			try {
-				sv.decodeJsonArray().toObjectList().forEach { item ->
-					val name = item.parseString("name")
+				sv.decodeJsonArray().objectList().forEach { item ->
+					val name = item.string("name")
 					if(name?.isNotEmpty() == true) {
-						val instance = item.parseString("instance")
+						val instance = item.string("instance")
 						recent_list.add(EmojiItem(name, instance))
 					}
 				}
@@ -528,7 +528,7 @@ class EmojiPicker(
 		
 		// Recentをロード(他インスタンスの絵文字を含む)
 		val list : MutableList<JsonObject> = try {
-			Pref.spEmojiPickerRecent(pref).decodeJsonArray().toObjectList()
+			Pref.spEmojiPickerRecent(pref).decodeJsonArray().objectList()
 		} catch(_ : Throwable) {
 			emptyList<JsonObject>()
 		}.toMutableList()
@@ -540,8 +540,8 @@ class EmojiPicker(
 			val it = list.iterator()
 			while(it.hasNext()) {
 				val item = it.next()
-				if(name == item.parseString("name")
-					&& instance == item.parseString("instance")
+				if(name == item.string("name")
+					&& instance == item.string("instance")
 				) {
 					it.remove()
 				} else if(++ nCount >= 256) {

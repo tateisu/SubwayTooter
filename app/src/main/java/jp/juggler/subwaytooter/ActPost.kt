@@ -670,7 +670,7 @@ class ActPost : AppCompatActivity(),
 					this.attachment_list.clear()
 					
 					try {
-						sv.decodeJsonArray().toObjectList().forEach {
+						sv.decodeJsonArray().objectList().forEach {
 							try {
 								attachment_list.add(PostAttachment(TootAttachment.decodeJson(it)))
 							} catch(ex : Throwable) {
@@ -2181,7 +2181,7 @@ class ActPost : AppCompatActivity(),
 					val multipart_builder = MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
 					
-					val apiKey = account.token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
+					val apiKey = account.token_info?.string(TootApiClient.KEY_API_KEY_MISSKEY)
 					if(apiKey?.isNotEmpty() == true) {
 						multipart_builder.addFormDataPart("i", apiKey)
 					}
@@ -2734,10 +2734,10 @@ class ActPost : AppCompatActivity(),
 			
 			override fun doInBackground(vararg params : Void) : String? {
 				
-				var content = draft.parseString(DRAFT_CONTENT) ?: ""
-				val account_db_id = draft.parseLong(DRAFT_ACCOUNT_DB_ID) ?: - 1L
+				var content = draft.string(DRAFT_CONTENT) ?: ""
+				val account_db_id = draft.long(DRAFT_ACCOUNT_DB_ID) ?: - 1L
 				val tmp_attachment_list =
-					draft.parseJsonArray(DRAFT_ATTACHMENT_LIST)?.toObjectList()?.toMutableList()
+					draft.jsonArray(DRAFT_ATTACHMENT_LIST)?.objectList()?.toMutableList()
 				
 				val account = SavedAccount.loadAccount(this@ActPost, account_db_id)
 				if(account == null) {
@@ -2834,17 +2834,17 @@ class ActPost : AppCompatActivity(),
 					return
 				}
 				
-				val content = draft.parseString(DRAFT_CONTENT) ?: ""
-				val content_warning = draft.parseString(DRAFT_CONTENT_WARNING) ?: ""
+				val content = draft.string(DRAFT_CONTENT) ?: ""
+				val content_warning = draft.string(DRAFT_CONTENT_WARNING) ?: ""
 				val content_warning_checked = draft.optBoolean(DRAFT_CONTENT_WARNING_CHECK)
 				val nsfw_checked = draft.optBoolean(DRAFT_NSFW_CHECK)
-				val tmp_attachment_list = draft.parseJsonArray(DRAFT_ATTACHMENT_LIST)
+				val tmp_attachment_list = draft.jsonArray(DRAFT_ATTACHMENT_LIST)
 				val reply_id = EntityId.from(draft, DRAFT_REPLY_ID)
-				val reply_text = draft.parseString(DRAFT_REPLY_TEXT)
-				val reply_image = draft.parseString(DRAFT_REPLY_IMAGE)
-				val reply_url = draft.parseString(DRAFT_REPLY_URL)
+				val reply_text = draft.string(DRAFT_REPLY_TEXT)
+				val reply_image = draft.string(DRAFT_REPLY_IMAGE)
+				val reply_url = draft.string(DRAFT_REPLY_URL)
 				val draft_visibility = TootVisibility
-					.parseSavedVisibility(draft.parseString(DRAFT_VISIBILITY))
+					.parseSavedVisibility(draft.string(DRAFT_VISIBILITY))
 				
 				val evEmoji = DecodeOptions(this@ActPost, decodeEmoji = true).decodeEmoji(content)
 				etContent.setText(evEmoji)
@@ -2857,7 +2857,7 @@ class ActPost : AppCompatActivity(),
 				
 				cbQuoteRenote.isChecked = draft.optBoolean(DRAFT_QUOTED_RENOTE)
 				
-				val sv = draft.parseString(DRAFT_POLL_TYPE)
+				val sv = draft.string(DRAFT_POLL_TYPE)
 				if(sv != null) {
 					spEnquete.setSelection(sv.toPollTypeIndex())
 				} else {
@@ -2872,7 +2872,7 @@ class ActPost : AppCompatActivity(),
 				etExpireHours.setText(draft.optString(DRAFT_POLL_EXPIRE_HOUR, ""))
 				etExpireMinutes.setText(draft.optString(DRAFT_POLL_EXPIRE_MINUTE, ""))
 				
-				val array = draft.parseJsonArray(DRAFT_ENQUETE_ITEMS)
+				val array = draft.jsonArray(DRAFT_ENQUETE_ITEMS)
 				if(array != null) {
 					var src_index = 0
 					for(et in list_etChoice) {

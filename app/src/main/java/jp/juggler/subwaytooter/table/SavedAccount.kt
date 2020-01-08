@@ -1016,11 +1016,11 @@ class SavedAccount(
 	}
 	
 	fun getAccessToken() : String? {
-		return token_info?.parseString("access_token")
+		return token_info?.string("access_token")
 	}
 	
 	val misskeyApiToken : String?
-		get() = token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
+		get() = token_info?.string(TootApiClient.KEY_API_KEY_MISSKEY)
 	
 	fun putMisskeyApiToken(params : JsonObject = JsonObject()) : JsonObject {
 		val apiKey = misskeyApiToken

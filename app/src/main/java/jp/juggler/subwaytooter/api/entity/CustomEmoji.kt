@@ -30,20 +30,20 @@ class CustomEmoji(
 			CustomEmoji(
 				shortcode = src.notEmptyOrThrow("shortcode"),
 				url = src.notEmptyOrThrow("url"),
-				static_url = src.parseString("static_url"),
+				static_url = src.string("static_url"),
 				visible_in_picker = src.optBoolean("visible_in_picker", true),
-				category =src.parseString("category")
+				category =src.string("category")
 			)
 		}
 		
 		val decodeMisskey : (JsonObject) -> CustomEmoji = { src ->
-			val url = src.parseString("url") ?: error("missing url")
+			val url = src.string("url") ?: error("missing url")
 			
 			CustomEmoji(
-				shortcode = src.parseString("name") ?: error("missing name"),
+				shortcode = src.string("name") ?: error("missing name"),
 				url = url,
 				static_url = url,
-				aliases = parseAliases(src.parseJsonArray("aliases"))
+				aliases = parseAliases(src.jsonArray("aliases"))
 			)
 		}
 		

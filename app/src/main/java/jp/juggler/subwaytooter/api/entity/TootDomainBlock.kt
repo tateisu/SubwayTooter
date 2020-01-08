@@ -12,7 +12,7 @@ class TootDomainBlock(
 			val result = ArrayList<TootDomainBlock>()
 			if(array != null) {
 				result.ensureCapacity(array.size)
-				array.toStringList().forEach {
+				array.stringList().forEach {
 					if(it.isNotEmpty() ) {
 						result.add(TootDomainBlock(it))
 					}

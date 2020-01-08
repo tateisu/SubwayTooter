@@ -695,26 +695,26 @@ class ActAccountSetting
 					loading = true
 					
 					val tmpVisibility =
-						TootVisibility.parseMastodon(json.parseString("posting:default:visibility"))
+						TootVisibility.parseMastodon(json.string("posting:default:visibility"))
 					if(tmpVisibility != null) {
 						bChanged = true
 						visibility = tmpVisibility
 						showVisibility()
 					}
 					
-					val tmpDefaultSensitive = json.parseBoolean("posting:default:sensitive")
+					val tmpDefaultSensitive = json.boolean("posting:default:sensitive")
 					if(tmpDefaultSensitive != null) {
 						bChanged = true
 						swMarkSensitive.isChecked = tmpDefaultSensitive
 					}
 					
-					val tmpExpandMedia = json.parseString("reading:expand:media")
+					val tmpExpandMedia = json.string("reading:expand:media")
 					if(tmpExpandMedia?.isNotEmpty() == true) {
 						bChanged = true
 						swNSFWOpen.isChecked = (tmpExpandMedia == "show_all")
 					}
 					
-					val tmpExpandCW = json.parseBoolean("reading:expand:spoilers")
+					val tmpExpandCW = json.boolean("reading:expand:spoilers")
 					if(tmpExpandCW != null) {
 						bChanged = true
 						swExpandCW.isChecked = tmpExpandCW
@@ -1105,7 +1105,7 @@ class ActAccountSetting
 					.setType(MultipartBody.FORM)
 				
 				val apiKey =
-					account.token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
+					account.token_info?.string(TootApiClient.KEY_API_KEY_MISSKEY)
 				if(apiKey?.isNotEmpty() == true) {
 					multipart_builder.addFormDataPart("i", apiKey)
 				}

@@ -2987,7 +2987,7 @@ internal class ItemViewHolder(
 						}
 						
 						TootPollsType.FriendsNico -> {
-							val message = data.parseString("message") ?: "?"
+							val message = data.string("message") ?: "?"
 							val valid = data.optBoolean("valid")
 							if(valid) {
 								showToast(context, false, R.string.enquete_voted)

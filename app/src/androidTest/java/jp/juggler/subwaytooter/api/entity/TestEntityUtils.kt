@@ -19,13 +19,13 @@ class TestEntityUtils {
 	class TestEntity(val s : String, val l : Long) : Mappable<String> {
 		constructor(src : JsonObject) : this(
 			s = src.notEmptyOrThrow("s"),
-			l = src.parseLong("l") ?: 0L
+			l = src.long("l") ?: 0L
 		)
 		
 		@Suppress("UNUSED_PARAMETER")
 		constructor(parser : TootParser, src : JsonObject) : this(
 			s = src.notEmptyOrThrow("s"),
-			l = src.parseLong("l") ?: 0L
+			l = src.long("l") ?: 0L
 		)
 		
 		override val mapKey : String

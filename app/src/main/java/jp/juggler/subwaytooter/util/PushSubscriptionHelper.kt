@@ -218,7 +218,7 @@ class PushSubscriptionHelper(
 				return updateServerKey(
 					client,
 					clientIdentifier,
-					jsonObject.parseString("key") ?: "3q2+rw"
+					jsonObject.string("key") ?: "3q2+rw"
 				)
 			}
 		}

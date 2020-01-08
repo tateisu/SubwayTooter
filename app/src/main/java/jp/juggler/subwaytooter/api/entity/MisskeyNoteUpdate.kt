@@ -20,32 +20,32 @@ class MisskeyNoteUpdate(src : JsonObject) {
 	
 	init {
 		noteId =
-			EntityId.mayNull(src.parseString("id")) ?: error("MisskeyNoteUpdate: missing note id")
+			EntityId.mayNull(src.string("id")) ?: error("MisskeyNoteUpdate: missing note id")
 		
-		val src2 = src.parseJsonObject("body") ?: error("MisskeyNoteUpdate: missing body")
+		val src2 = src.jsonObject("body") ?: error("MisskeyNoteUpdate: missing body")
 		
-		when(val strType = src.parseString("type")) {
+		when(val strType = src.string("type")) {
 			"reacted" -> {
 				type = Type.REACTION
-				reaction = src2.parseString("reaction")
-				userId = EntityId.mayDefault(src2.parseString("userId"))
+				reaction = src2.string("reaction")
+				userId = EntityId.mayDefault(src2.string("userId"))
 			}
 			
 			"unreacted" -> {
 				type = Type.UNREACTION
-				reaction = src2.parseString("reaction")
-				userId = EntityId.mayDefault(src2.parseString("userId"))
+				reaction = src2.string("reaction")
+				userId = EntityId.mayDefault(src2.string("userId"))
 			}
 			
 			"deleted" -> {
 				type = Type.DELETED
-				deletedAt = TootStatus.parseTime(src2.parseString("deletedAt"))
+				deletedAt = TootStatus.parseTime(src2.string("deletedAt"))
 			}
 			
 			"pollVoted" -> {
 				type = Type.VOTED
-				choice = src2.parseInt("choice")
-				userId = EntityId.mayDefault(src2.parseString("userId"))
+				choice = src2.int("choice")
+				userId = EntityId.mayDefault(src2.string("userId"))
 			}
 			
 			else -> error("MisskeyNoteUpdate: unknown type $strType")

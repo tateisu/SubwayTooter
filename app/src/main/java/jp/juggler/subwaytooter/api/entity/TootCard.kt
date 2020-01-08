@@ -29,16 +29,16 @@ class TootCard(
 ) {
 	
 	constructor(src : JsonObject) : this(
-		url = src.parseString("url"),
-		title = src.parseString("title"),
-		description = src.parseString("description"),
-		image = src.parseString("image"),
+		url = src.string("url"),
+		title = src.string("title"),
+		description = src.string("description"),
+		image = src.string("image"),
 		
-		type = src.parseString("type"),
-		author_name = src.parseString("author_name"),
-		author_url = src.parseString("author_url"),
-		provider_name = src.parseString("provider_name"),
-		provider_url = src.parseString("provider_url")
+		type = src.string("type"),
+		author_name = src.string("author_name"),
+		author_url = src.string("author_url"),
+		provider_name = src.string("provider_name"),
+		provider_url = src.string("provider_url")
 	
 	)
 	

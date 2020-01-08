@@ -71,7 +71,7 @@ class TootPolls private constructor(
 				
 				this.items = parseChoiceListMisskey(
 					
-					src.parseJsonArray("choices")
+					src.jsonArray("choices")
 				)
 				
 				val votesList = ArrayList<Int>()
@@ -132,19 +132,19 @@ class TootPolls private constructor(
 				this.items = parseChoiceListMastodon(
 					parser.context,
 					status,
-					src.parseJsonArray("options")?.toObjectList()
+					src.jsonArray("options")?.objectList()
 				)
 				
-				this.pollId = EntityId.mayNull(src.parseString("id"))
+				this.pollId = EntityId.mayNull(src.string("id"))
 				this.expired_at =
-					TootStatus.parseTime(src.parseString("expires_at")).notZero() ?: Long.MAX_VALUE
+					TootStatus.parseTime(src.string("expires_at")).notZero() ?: Long.MAX_VALUE
 				this.expired = src.optBoolean("expired", false)
 				this.multiple = src.optBoolean("multiple", false)
-				this.votes_count = src.parseInt("votes_count")
+				this.votes_count = src.int("votes_count")
 				
 				var ownVoted = src.optBoolean("voted", false)
 				
-				src.parseJsonArray("own_votes")?.forEach {
+				src.jsonArray("own_votes")?.forEach {
 					if(it is Number) {
 						val i = it.toInt()
 						items?.get(i)?.isVoted = true
@@ -180,9 +180,9 @@ class TootPolls private constructor(
 			}
 			
 			TootPollsType.FriendsNico -> {
-				this.type = src.parseString("type")
+				this.type = src.string("type")
 				
-				this.question = src.parseString("question")
+				this.question = src.string("question")
 				this.decoded_question = DecodeOptions(
 					parser.context,
 					parser.linkHelper,
@@ -198,11 +198,11 @@ class TootPolls private constructor(
 				this.items = parseChoiceListFriendsNico(
 					parser.context,
 					status,
-					src.parseStringArrayList("items")
+					src.stringArrayList("items")
 				)
 				
-				this.ratios = src.parseFloatArrayList("ratios")
-				this.ratios_text = src.parseStringArrayList("ratios_text")
+				this.ratios = src.floatArrayList("ratios")
+				this.ratios_text = src.stringArrayList("ratios_text")
 				
 				this.ownVoted = false
 			}
@@ -261,7 +261,7 @@ class TootPolls private constructor(
 				)
 				for(o in objectArray) {
 					val text = reWhitespace
-						.matcher((o.parseString("title") ?: "?").sanitizeBDI())
+						.matcher((o.string("title") ?: "?").sanitizeBDI())
 						.replaceAll(" ")
 					val decoded_text = options.decodeEmoji(text)
 					
@@ -269,7 +269,7 @@ class TootPolls private constructor(
 						TootPollsChoice(
 							text,
 							decoded_text,
-							votes = o.parseInt("votes_count") // may null
+							votes = o.int("votes_count") // may null
 						)
 					)
 				}
@@ -318,15 +318,15 @@ class TootPolls private constructor(
 				choices.forEach {
 					it.cast<JsonObject>()?.let { src ->
 						val text = reWhitespace
-							.matcher(src.parseString("text")?.sanitizeBDI() ?: "")
+							.matcher(src.string("text")?.sanitizeBDI() ?: "")
 							.replaceAll(" ")
 						val decoded_text = SpannableString(text) // misskey ではマークダウン不可で絵文字もない
 						
 						val dst = TootPollsChoice(
 							text = text,
 							decoded_text = decoded_text,
-							// 配列インデクスと同じだった id = EntityId.mayNull(src.parseLong("id")),
-							votes = src.parseInt("votes") ?: 0,
+							// 配列インデクスと同じだった id = EntityId.mayNull(src.long("id")),
+							votes = src.int("votes") ?: 0,
 							isVoted = src.optBoolean("isVoted")
 						)
 						items.add(dst)

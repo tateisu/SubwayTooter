@@ -159,12 +159,12 @@ class HighlightWord {
 	}
 	
 	constructor(src : JsonObject) {
-		this.id = src.parseLong(COL_ID) ?: - 1L
+		this.id = src.long(COL_ID) ?: - 1L
 		this.name = src.notEmptyOrThrow(COL_NAME)
 		this.color_bg = src.optInt(COL_COLOR_BG)
 		this.color_fg = src.optInt(COL_COLOR_FG)
 		this.sound_type = src.optInt(COL_SOUND_TYPE)
-		this.sound_uri = src.parseString(COL_SOUND_URI)
+		this.sound_uri = src.string(COL_SOUND_URI)
 		this.speech = src.optInt(COL_SPEECH)
 	}
 	

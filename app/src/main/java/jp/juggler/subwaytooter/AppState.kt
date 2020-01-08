@@ -266,7 +266,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	
 	private fun loadColumnList() {
 		val list = loadColumnList(context, FILE_COLUMN_LIST)
-			?.toObjectList()
+			?.objectList()
 			?.mapNotNull { src ->
 				try {
 					Column(this, src)

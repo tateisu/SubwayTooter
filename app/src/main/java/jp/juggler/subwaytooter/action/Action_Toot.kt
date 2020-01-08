@@ -534,7 +534,7 @@ object Action_Toot {
 								val jsonObject = result.jsonObject
 								if(jsonObject != null) {
 									val outerStatus = parser.status(
-										jsonObject.parseJsonObject("createdNote")
+										jsonObject.jsonObject("createdNote")
 											?: jsonObject
 									)
 									val innerStatus = outerStatus?.reblog ?: outerStatus

@@ -874,7 +874,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					// プッシュ通知が届いた
 					TASK_FCM_MESSAGE -> {
 						var bDone = false
-						val tag = taskData.parseString(EXTRA_TAG)
+						val tag = taskData.string(EXTRA_TAG)
 						if(tag != null) {
 							if(tag.startsWith("acct<>")) {
 								val acct = tag.substring(6)
@@ -900,7 +900,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					}
 					
 					TASK_NOTIFICATION_CLEAR -> {
-						val db_id = taskData.parseLong(EXTRA_DB_ID)
+						val db_id = taskData.long(EXTRA_DB_ID)
 						log.d("Notification clear! db_id=$db_id")
 						if(db_id != null) {
 							deleteCacheData(db_id)
@@ -908,9 +908,9 @@ class PollingWorker private constructor(contextArg : Context) {
 					}
 					
 					TASK_NOTIFICATION_DELETE -> {
-						val db_id = taskData.parseLong(EXTRA_DB_ID)
+						val db_id = taskData.long(EXTRA_DB_ID)
 						val type =
-							when(TrackingType.parseStr(taskData.parseString(EXTRA_NOTIFICATION_TYPE))) {
+							when(TrackingType.parseStr(taskData.string(EXTRA_NOTIFICATION_TYPE))) {
 								TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
 								else -> NotificationHelper.TRACKING_NAME_DEFAULT
 							}
@@ -922,9 +922,9 @@ class PollingWorker private constructor(contextArg : Context) {
 					}
 					
 					TASK_NOTIFICATION_CLICK -> {
-						val db_id = taskData.parseLong(EXTRA_DB_ID)
+						val db_id = taskData.long(EXTRA_DB_ID)
 						val type =
-							when(TrackingType.parseStr(taskData.parseString(EXTRA_NOTIFICATION_TYPE))) {
+							when(TrackingType.parseStr(taskData.string(EXTRA_NOTIFICATION_TYPE))) {
 								TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
 								else -> NotificationHelper.TRACKING_NAME_DEFAULT
 							}

@@ -11,8 +11,8 @@ class TootContext(
 ) {
 	
 	constructor(parser : TootParser, src : JsonObject) : this(
-		ancestors = parseListOrNull(::TootStatus, parser, src.parseJsonArray("ancestors")),
-		descendants = parseListOrNull(::TootStatus, parser, src.parseJsonArray("descendants"))
+		ancestors = parseListOrNull(::TootStatus, parser, src.jsonArray("ancestors")),
+		descendants = parseListOrNull(::TootStatus, parser, src.jsonArray("descendants"))
 	
 	)
 	

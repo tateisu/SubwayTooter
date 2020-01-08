@@ -55,31 +55,31 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 		json = src
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
-			id = EntityId.mayDefault(src.parseString("id"))
+			id = EntityId.mayDefault(src.string("id"))
 			
 			type = src.notEmptyOrThrow("type")
 			
-			created_at = src.parseString("createdAt")
+			created_at = src.string("createdAt")
 			time_created_at = TootStatus.parseTime(created_at)
 			
-			accountRef = TootAccountRef.mayNull(parser, parser.account(src.parseJsonObject("user")))
-			status = parser.status(src.parseJsonObject("note"))
+			accountRef = TootAccountRef.mayNull(parser, parser.account(src.jsonObject("user")))
+			status = parser.status(src.jsonObject("note"))
 			
-			reaction = src.parseString("reaction")
+			reaction = src.string("reaction")
 			
 			// Misskeyの通知APIはページネーションをIDでしか行えない
 			// これは改善される予定 https://github.com/syuilo/misskey/issues/2275
 			
 		} else {
-			id = EntityId.mayDefault(src.parseString("id"))
+			id = EntityId.mayDefault(src.string("id"))
 			
 			type = src.notEmptyOrThrow("type")
 			
-			created_at = src.parseString("created_at")
+			created_at = src.string("created_at")
 			time_created_at = TootStatus.parseTime(created_at)
 			accountRef =
-				TootAccountRef.mayNull(parser, parser.account(src.parseJsonObject("account")))
-			status = parser.status(src.parseJsonObject("status"))
+				TootAccountRef.mayNull(parser, parser.account(src.jsonObject("account")))
+			status = parser.status(src.jsonObject("status"))
 			
 		}
 	}

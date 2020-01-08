@@ -215,7 +215,7 @@ class Column(
 		}
 		
 		fun loadAccount(context : Context, src : JsonObject) : SavedAccount {
-			val account_db_id = src.parseLong(KEY_ACCOUNT_ROW_ID) ?: - 1L
+			val account_db_id = src.long(KEY_ACCOUNT_ROW_ID) ?: - 1L
 			return if(account_db_id >= 0) {
 				SavedAccount.loadAccount(context, account_db_id)
 					?: throw RuntimeException("missing account")
@@ -295,7 +295,7 @@ class Column(
 		}
 		
 		private fun decodeColumnId(src : JsonObject) : String {
-			return src.parseString(KEY_COLUMN_ID) ?: generateColumnId()
+			return src.string(KEY_COLUMN_ID) ?: generateColumnId()
 		}
 		
 		fun findColumnById(id : String) : Column? {
@@ -705,30 +705,30 @@ class Column(
 		use_old_api = src.optBoolean(KEY_USE_OLD_API)
 		last_viewing_item_id = EntityId.from(src, KEY_LAST_VIEWING_ITEM)
 		
-		regex_text = src.parseString(KEY_REGEX_TEXT) ?: ""
-		language_filter = src.parseJsonObject(KEY_LANGUAGE_FILTER)
+		regex_text = src.string(KEY_REGEX_TEXT) ?: ""
+		language_filter = src.jsonObject(KEY_LANGUAGE_FILTER)
 		
 		header_bg_color = src.optInt(KEY_HEADER_BACKGROUND_COLOR)
 		header_fg_color = src.optInt(KEY_HEADER_TEXT_COLOR)
 		column_bg_color = src.optInt(KEY_COLUMN_BACKGROUND_COLOR)
 		acct_color = src.optInt(KEY_COLUMN_ACCT_TEXT_COLOR)
 		content_color = src.optInt(KEY_COLUMN_CONTENT_TEXT_COLOR)
-		column_bg_image = src.parseString(KEY_COLUMN_BACKGROUND_IMAGE) ?: ""
+		column_bg_image = src.string(KEY_COLUMN_BACKGROUND_IMAGE) ?: ""
 		column_bg_image_alpha = src.optFloat(KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, 1f)
 		
 		when(type) {
 			
 			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
-				status_id = EntityId.mayNull(src.parseString(KEY_STATUS_ID))
+				status_id = EntityId.mayNull(src.string(KEY_STATUS_ID))
 			
 			ColumnType.PROFILE -> {
-				profile_id = EntityId.mayNull(src.parseString(KEY_PROFILE_ID))
+				profile_id = EntityId.mayNull(src.string(KEY_PROFILE_ID))
 				val tabId = src.optInt(KEY_PROFILE_TAB)
 				profile_tab = ProfileTab.values().find { it.id == tabId } ?: ProfileTab.Status
 			}
 			
 			ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> {
-				profile_id = EntityId.mayNull(src.parseString(KEY_PROFILE_ID))
+				profile_id = EntityId.mayNull(src.string(KEY_PROFILE_ID))
 			}
 			
 			ColumnType.HASHTAG -> {
@@ -1510,10 +1510,10 @@ class Column(
 		status ?: return false
 		val languageFilter = language_filter ?: return false
 		
-		val allow = languageFilter.parseBoolean(
+		val allow = languageFilter.boolean(
 			status.language ?: status.reblog?.language ?: TootStatus.LANGUAGE_CODE_UNKNOWN
 		)
-			?: languageFilter.parseBoolean(TootStatus.LANGUAGE_CODE_DEFAULT)
+			?: languageFilter.boolean(TootStatus.LANGUAGE_CODE_DEFAULT)
 			?: true
 		
 		return ! allow

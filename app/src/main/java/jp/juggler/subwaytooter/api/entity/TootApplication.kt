@@ -14,12 +14,12 @@ class TootApplication(parser : TootParser, src : JsonObject) {
 	
 	init {
 		if(parser.serviceType == ServiceType.MISSKEY) {
-			name = src.parseString("name")
+			name = src.string("name")
 			website = null
-			//			description = src.parseString("description")
+			//			description = src.string("description")
 		} else {
-			name = src.parseString("name")
-			website = src.parseString("website")
+			name = src.string("name")
+			website = src.string("website")
 			//			description = website
 		}
 	}

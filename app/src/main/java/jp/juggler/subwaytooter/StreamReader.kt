@@ -179,7 +179,7 @@ internal class StreamReader(
 		}
 		
 		private fun handleMisskeyMessage(obj : JsonObject, channelId : String? = null) {
-			val type = obj.parseString("type")
+			val type = obj.string("type")
 			if(type?.isEmpty() != false) {
 				log.d("handleMisskeyMessage: missing type parameter")
 				return
@@ -187,12 +187,12 @@ internal class StreamReader(
 			when(type) {
 				
 				"channel" -> {
-					val body = obj.parseJsonObject("body")
+					val body = obj.jsonObject("body")
 					if(body == null) {
 						log.e("handleMisskeyMessage: channel body is null")
 						return
 					}
-					val id = body.parseString("id")
+					val id = body.string("id")
 					// ストリーミングのchannelイベントにチャネルIDが含まれない場合がある
 					// https://github.com/syuilo/misskey/issues/4801
 					handleMisskeyMessage(body, id)
@@ -222,12 +222,12 @@ internal class StreamReader(
 				}
 				
 				"note" -> {
-					val body = obj.parseJsonObject("body")
+					val body = obj.jsonObject("body")
 					fireTimelineItem(parser.status(body), channelId)
 				}
 				
 				"noteUpdated" -> {
-					val body = obj.parseJsonObject("body")
+					val body = obj.jsonObject("body")
 					if(body == null) {
 						log.e("handleMisskeyMessage: noteUpdated body is null")
 						return
@@ -236,7 +236,7 @@ internal class StreamReader(
 				}
 				
 				"notification" -> {
-					val body = obj.parseJsonObject("body")
+					val body = obj.jsonObject("body")
 					if(body == null) {
 						log.e("handleMisskeyMessage: notification body is null")
 						return
@@ -263,7 +263,7 @@ internal class StreamReader(
 					handleMisskeyMessage(obj)
 				} else {
 					
-					val event = obj.parseString("event")
+					val event = obj.string("event")
 					
 					if(event == null || event.isEmpty()) {
 						log.d("onMessage: missing event parameter")

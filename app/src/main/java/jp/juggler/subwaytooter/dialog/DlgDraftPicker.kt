@@ -152,8 +152,8 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 			
 			val json = draft.json
 			if(json != null) {
-				val cw = json.parseString(ActPost.DRAFT_CONTENT_WARNING)
-				val c = json.parseString(ActPost.DRAFT_CONTENT)
+				val cw = json.string(ActPost.DRAFT_CONTENT_WARNING)
+				val c = json.string(ActPost.DRAFT_CONTENT)
 				val sb = StringBuilder()
 				if(cw?.trim { it <= ' ' }?.isNotEmpty() == true) {
 					sb.append(cw)

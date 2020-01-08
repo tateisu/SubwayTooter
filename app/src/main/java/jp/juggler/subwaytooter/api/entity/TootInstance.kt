@@ -85,41 +85,41 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 			
 			this.uri = parser.accessHost
 			this.title = parser.accessHost
-			val sv = src.parseJsonObject("maintainer")?.parseString("url")
+			val sv = src.jsonObject("maintainer")?.string("url")
 			this.email = when {
 				sv?.startsWith("mailto:") == true -> sv.substring(7)
 				else -> sv
 			}
 			
-			this.version = src.parseString("version")
+			this.version = src.string("version")
 			this.decoded_version = VersionString(version)
 			this.stats = null
 			this.thumbnail = null
-			this.max_toot_chars = src.parseInt("maxNoteTextLength")
+			this.max_toot_chars = src.int("maxNoteTextLength")
 			this.instanceType = InstanceType.Misskey
-			this.languages = src.parseJsonArray("langs")?.toStringArrayList() ?: ArrayList()
+			this.languages = src.jsonArray("langs")?.stringArrayList() ?: ArrayList()
 			this.contact_account = null
 			
-			this.description = src.parseString("description")
+			this.description = src.string("description")
 			this.short_description = null
 			this.approval_required = false
 			
 		} else {
-			this.uri = src.parseString("uri")
-			this.title = src.parseString("title")
+			this.uri = src.string("uri")
+			this.title = src.string("title")
 			
-			val sv = src.parseString("email")
+			val sv = src.string("email")
 			this.email = when {
 				sv?.startsWith("mailto:") == true -> sv.substring(7)
 				else -> sv
 			}
 			
-			this.version = src.parseString("version")
+			this.version = src.string("version")
 			this.decoded_version = VersionString(version)
-			this.stats = parseItem(::Stats, src.parseJsonObject("stats"))
-			this.thumbnail = src.parseString("thumbnail")
+			this.stats = parseItem(::Stats, src.jsonObject("stats"))
+			this.thumbnail = src.string("thumbnail")
 			
-			this.max_toot_chars = src.parseInt("max_toot_chars")
+			this.max_toot_chars = src.int("max_toot_chars")
 			
 			this.instanceType = when {
 				rePleroma.matcher(version ?: "").find() -> InstanceType.Pleroma
@@ -127,18 +127,18 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 				else -> InstanceType.Mastodon
 			}
 			
-			languages = src.parseJsonArray("languages")?.toStringArrayList()
+			languages = src.jsonArray("languages")?.stringArrayList()
 			
 			val parser2 = TootParser(
 				parser.context,
 				LinkHelper.newLinkHelper(uri ?: "?")
 			)
 			contact_account =
-				parseItem(::TootAccount, parser2, src.parseJsonObject("contact_account"))
+				parseItem(::TootAccount, parser2, src.jsonObject("contact_account"))
 			
-			this.description = src.parseString("description")
-			this.short_description = src.parseString("short_description")
-			this.approval_required = src.parseBoolean("approval_required") ?: false
+			this.description = src.string("description")
+			this.short_description = src.string("short_description")
+			this.approval_required = src.boolean("approval_required") ?: false
 		}
 	}
 	
@@ -148,9 +148,9 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 		val domain_count : Long
 		
 		init {
-			this.user_count = src.parseLong("user_count") ?: - 1L
-			this.status_count = src.parseLong("status_count") ?: - 1L
-			this.domain_count = src.parseLong("domain_count") ?: - 1L
+			this.user_count = src.long("user_count") ?: - 1L
+			this.status_count = src.long("status_count") ?: - 1L
+			this.domain_count = src.long("domain_count") ?: - 1L
 		}
 	}
 	
@@ -229,7 +229,7 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 				parseJson(result) ?: return null
 				
 				result.jsonObject?.apply {
-					val m = reDigits.matcher(parseString("version") ?: "")
+					val m = reDigits.matcher(string("version") ?: "")
 					if(m.find()) {
 						put(TootApiClient.KEY_MISSKEY_VERSION, max(1, m.groupEx(1) !!.toInt()))
 					}

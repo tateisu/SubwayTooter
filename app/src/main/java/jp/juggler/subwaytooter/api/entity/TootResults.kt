@@ -16,8 +16,8 @@ class TootResults private constructor(
 	var searchApiVersion = 0 // 0 means not from search API. such as trend tags.
 	
 	constructor(parser : TootParser, src : JsonObject) : this(
-		accounts = parser.accountList(src.parseJsonArray("accounts")),
-		statuses = parser.statusList(src.parseJsonArray("statuses")),
-		hashtags = TootTag.parseList(parser, src.parseJsonArray("hashtags"))
+		accounts = parser.accountList(src.jsonArray("accounts")),
+		statuses = parser.statusList(src.jsonArray("statuses")),
+		hashtags = TootTag.parseList(parser, src.jsonArray("hashtags"))
 	)
 }

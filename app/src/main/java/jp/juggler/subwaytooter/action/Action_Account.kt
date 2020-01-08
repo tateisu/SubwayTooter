@@ -170,7 +170,7 @@ object Action_Account {
 					val linkHelper =
 						LinkHelper.newLinkHelper(instance, misskeyVersion = misskeyVersion)
 					
-					val access_token = ti.parseString("access_token")
+					val access_token = ti.string("access_token")
 						?: return TootApiResult("can't get user access token")
 					
 					val r2 = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)

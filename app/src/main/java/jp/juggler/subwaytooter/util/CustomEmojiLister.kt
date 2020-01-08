@@ -277,7 +277,7 @@ class CustomEmojiLister(internal val context : Context) {
 		) : ArrayList<CustomEmoji>? {
 			return try {
 				val list = if(isMisskey) {
-					parseList(CustomEmoji.decodeMisskey, data.decodeJsonObject().parseJsonArray("emojis"))
+					parseList(CustomEmoji.decodeMisskey, data.decodeJsonObject().jsonArray("emojis"))
 				} else {
 					parseList(CustomEmoji.decode, data.decodeJsonArray())
 				}

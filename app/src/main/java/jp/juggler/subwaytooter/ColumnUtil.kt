@@ -83,14 +83,18 @@ internal fun JsonObject.addMisskeyNotificationFilter(column : Column) : JsonObje
 		}
 		
 		// QUICK_FILTER_FAVOURITE // misskeyはお気に入りの通知はない
-		Column.QUICK_FILTER_BOOST -> put("includeTypes", jsonArray("renote", "quote"))
+		Column.QUICK_FILTER_BOOST -> put("includeTypes",
+			jsonArray("renote", "quote")
+		)
 		Column.QUICK_FILTER_FOLLOW -> put(
 			"includeTypes",
 			jsonArray("follow", "receiveFollowRequest")
 		)
-		Column.QUICK_FILTER_MENTION -> put("includeTypes", jsonArray("mention", "reply"))
-		Column.QUICK_FILTER_REACTION -> put("includeTypes", jsonArray("reaction"))
-		Column.QUICK_FILTER_VOTE -> put("includeTypes", jsonArray("poll_vote"))
+		Column.QUICK_FILTER_MENTION -> put("includeTypes",
+			jsonArray("mention", "reply")
+		)
+		Column.QUICK_FILTER_REACTION -> put("includeTypes", jp.juggler.util.jsonArray("reaction"))
+		Column.QUICK_FILTER_VOTE -> put("includeTypes", jp.juggler.util.jsonArray("poll_vote"))
 	}
 	
 	return this
@@ -303,19 +307,19 @@ internal fun Column.makeProfileStatusesUrl(profile_id : EntityId?) : String {
 }
 
 internal val misskeyArrayFinderUsers = { it : JsonObject ->
-	it.parseJsonArray("users")
+	it.jsonArray("users")
 }
 
 internal val misskeyFollowingParser =
 	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootAccountRef>()
-		jsonArray.toObjectList().forEach {src->
+		jsonArray.objectList().forEach { src->
 			val accountRef = TootAccountRef.mayNull(
 				parser,
-				parser.account(src.parseJsonObject("followee"))
+				parser.account(src.jsonObject("followee"))
 			) ?: return@forEach
 			
-			val relationId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
+			val relationId = EntityId.mayNull(src.string("id")) ?: return@forEach
 			
 			accountRef._orderId = relationId
 			
@@ -327,13 +331,13 @@ internal val misskeyFollowingParser =
 internal val misskeyFollowersParser =
 	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootAccountRef>()
-		jsonArray.toObjectList().forEach { src ->
+		jsonArray.objectList().forEach { src ->
 			val accountRef = TootAccountRef.mayNull(
 				parser,
-				parser.account(src.parseJsonObject("follower"))
+				parser.account(src.jsonObject("follower"))
 			) ?: return@forEach
 			
-			val relationId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
+			val relationId = EntityId.mayNull(src.string("id")) ?: return@forEach
 			
 			accountRef._orderId = relationId
 			
@@ -345,14 +349,14 @@ internal val misskeyFollowersParser =
 internal val misskeyCustomParserFollowRequest =
 	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootAccountRef>()
-		jsonArray.toObjectList().forEach { src ->
+		jsonArray.objectList().forEach { src ->
 			
 			val accountRef = TootAccountRef.mayNull(
 				parser,
-				parser.account(src.parseJsonObject("follower"))
+				parser.account(src.jsonObject("follower"))
 			) ?: return@forEach
 			
-			val requestId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
+			val requestId = EntityId.mayNull(src.string("id")) ?: return@forEach
 			
 			accountRef._orderId = requestId
 			
@@ -365,14 +369,14 @@ internal val misskeyCustomParserFollowRequest =
 internal val misskeyCustomParserMutes =
 	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootAccountRef>()
-		jsonArray.toObjectList().forEach { src ->
+		jsonArray.objectList().forEach { src ->
 			
 			val accountRef = TootAccountRef.mayNull(
 				parser,
-				parser.account(src.parseJsonObject("mutee"))
+				parser.account(src.jsonObject("mutee"))
 			) ?: return@forEach
 			
-			val requestId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
+			val requestId = EntityId.mayNull(src.string("id")) ?: return@forEach
 			
 			accountRef._orderId = requestId
 			
@@ -385,13 +389,13 @@ internal val misskeyCustomParserMutes =
 internal val misskeyCustomParserBlocks =
 	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootAccountRef>()
-		jsonArray.toObjectList().forEach { src ->
+		jsonArray.objectList().forEach { src ->
 			val accountRef = TootAccountRef.mayNull(
 				parser,
-				parser.account(src.parseJsonObject("blockee"))
+				parser.account(src.jsonObject("blockee"))
 			) ?: return@forEach
 			
-			val requestId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
+			val requestId = EntityId.mayNull(src.string("id")) ?: return@forEach
 			
 			accountRef._orderId = requestId
 			
@@ -403,9 +407,9 @@ internal val misskeyCustomParserBlocks =
 internal val misskeyCustomParserFavorites =
 	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootStatus>()
-		jsonArray.toObjectList().forEach { src ->
-			val note = parser.status(src.parseJsonObject("note")) ?: return@forEach
-			val favId = EntityId.mayNull(src.parseString("id")) ?: return@forEach
+		jsonArray.objectList().forEach { src ->
+			val note = parser.status(src.jsonObject("note")) ?: return@forEach
+			val favId = EntityId.mayNull(src.string("id")) ?: return@forEach
 			note.favourited = true
 			note._orderId = favId
 			dst.add(note)

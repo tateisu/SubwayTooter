@@ -9,11 +9,11 @@ class TootPushSubscription(src : JsonObject){
 	val server_key : String?
 
 	init{
-		id = EntityId.mayDefault(src.parseString("id"))
-		endpoint = src.parseString("endpoint")
-		server_key = src.parseString("server_key")
+		id = EntityId.mayDefault(src.string("id"))
+		endpoint = src.string("endpoint")
+		server_key = src.string("server_key")
 		
-		src.parseJsonObject("alerts")?.let{
+		src.jsonObject("alerts")?.let{
 			for( k in it.keys ){
 				alerts[k] = it.optBoolean(k)
 			}

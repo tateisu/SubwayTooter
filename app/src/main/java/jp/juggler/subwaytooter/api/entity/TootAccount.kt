@@ -119,11 +119,11 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			
-			val remoteHost = src.parseString("host")
+			val remoteHost = src.string("host")
 			this.host = remoteHost ?: parser.accessHost ?: error("missing host")
 			
 			this.custom_emojis =
-				parseMapOrNull(CustomEmoji.decodeMisskey, src.parseJsonArray("emojis"))
+				parseMapOrNull(CustomEmoji.decodeMisskey, src.jsonArray("emojis"))
 			
 			this.profile_emojis = null
 			
@@ -131,11 +131,11 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			this.url = "https://$host/@$username"
 			
 			//
-			sv = src.parseString("name")
+			sv = src.string("name")
 			this.display_name = if(sv?.isNotEmpty() == true) sv.sanitizeBDI() else username
 			
 			//
-			this.note = src.parseString("description")
+			this.note = src.string("description")
 			
 			this.source = null
 			this.movedRef = null
@@ -150,7 +150,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			
 			// this.user_hides_network = src.optBoolean("user_hides_network")
 			
-			this.id = EntityId.mayDefault(src.parseString("id"))
+			this.id = EntityId.mayDefault(src.string("id"))
 			
 			this.acct = when {
 				
@@ -164,28 +164,28 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 				else -> "${username}@$host"
 			}
 			
-			this.followers_count = src.parseLong("followersCount") ?: - 1L
-			this.following_count = src.parseLong("followingCount") ?: - 1L
-			this.statuses_count = src.parseLong("notesCount") ?: - 1L
+			this.followers_count = src.long("followersCount") ?: - 1L
+			this.following_count = src.long("followingCount") ?: - 1L
+			this.statuses_count = src.long("notesCount") ?: - 1L
 			
-			this.created_at = src.parseString("createdAt")
+			this.created_at = src.string("createdAt")
 			this.time_created_at = TootStatus.parseTime(this.created_at)
 			
-			this.avatar = src.parseString("avatarUrl")
-			this.avatar_static = src.parseString("avatarUrl")
-			this.header = src.parseString("bannerUrl")
-			this.header_static = src.parseString("bannerUrl")
+			this.avatar = src.string("avatarUrl")
+			this.avatar_static = src.string("avatarUrl")
+			this.header = src.string("bannerUrl")
+			this.header_static = src.string("bannerUrl")
 			
-			this.pinnedNoteIds = src.parseStringArrayList("pinnedNoteIds")
+			this.pinnedNoteIds = src.stringArrayList("pinnedNoteIds")
 			if(parser.misskeyDecodeProfilePin) {
-				val list = parseList(::TootStatus, parser, src.parseJsonArray("pinnedNotes"))
+				val list = parseList(::TootStatus, parser, src.jsonArray("pinnedNotes"))
 				list.forEach { it.pinned = true }
 				this.pinnedNotes = if(list.isNotEmpty()) list else null
 			}
 			
-			val profile = src.parseJsonObject("profile")
-			this.location = profile?.parseString("location")
-			this.birthday = profile?.parseString("birthday")
+			val profile = src.jsonObject("profile")
+			this.location = profile?.string("location")
+			this.birthday = profile?.string("birthday")
 			
 			
 			this.fields = parseMisskeyFields(src)
@@ -199,7 +199,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 		} else {
 			
 			// 絵文字データは先に読んでおく
-			this.custom_emojis = parseMapOrNull(CustomEmoji.decode, src.parseJsonArray("emojis"))
+			this.custom_emojis = parseMapOrNull(CustomEmoji.decode, src.jsonArray("emojis"))
 			
 			this.profile_emojis = when(val o = src["profile_emojis"]) {
 				is JsonArray -> parseMapOrNull(::NicoProfileEmoji, o, TootStatus.log)
@@ -208,26 +208,26 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			}
 			
 			// 疑似アカウントにacctとusernameだけ
-			this.url = src.parseString("url")
+			this.url = src.string("url")
 			this.username = src.notEmptyOrThrow("username")
 			
 			//
-			sv = src.parseString("display_name")
+			sv = src.string("display_name")
 			this.display_name = if(sv?.isNotEmpty() == true) sv.sanitizeBDI() else username
 			
 			//
-			this.note = src.parseString("note")
+			this.note = src.string("note")
 			
-			this.source = parseSource(src.parseJsonObject("source"))
+			this.source = parseSource(src.jsonObject("source"))
 			this.movedRef = TootAccountRef.mayNull(
 				parser,
-				src.parseJsonObject("moved")?.let {
+				src.jsonObject("moved")?.let {
 					TootAccount(parser, it)
 				}
 			)
 			this.locked = src.optBoolean("locked")
 			
-			this.fields = parseFields(src.parseJsonArray("fields"))
+			this.fields = parseFields(src.jsonArray("fields"))
 			
 			this.bot = src.optBoolean("bot", false)
 			this.isAdmin = false
@@ -235,30 +235,30 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			this.isPro = false
 			// this.user_hides_network = src.optBoolean("user_hides_network")
 			
-			this.last_status_at = TootStatus.parseTime(src.parseString("last_status_at"))
+			this.last_status_at = TootStatus.parseTime(src.string("last_status_at"))
 			
 			when(parser.serviceType) {
 				ServiceType.MASTODON -> {
 					
 					val hostAccess = parser.accessHost
 					
-					this.id = EntityId.mayDefault(src.parseString("id"))
+					this.id = EntityId.mayDefault(src.string("id"))
 					
 					this.acct = src.notEmptyOrThrow("acct")
 					this.host = findHostFromUrl(acct, hostAccess, url)
 						?: throw RuntimeException("can't get host from acct or url")
 					
-					this.followers_count = src.parseLong("followers_count")
-					this.following_count = src.parseLong("following_count")
-					this.statuses_count = src.parseLong("statuses_count")
+					this.followers_count = src.long("followers_count")
+					this.following_count = src.long("following_count")
+					this.statuses_count = src.long("statuses_count")
 					
-					this.created_at = src.parseString("created_at")
+					this.created_at = src.string("created_at")
 					this.time_created_at = TootStatus.parseTime(this.created_at)
 					
-					this.avatar = src.parseString("avatar")
-					this.avatar_static = src.parseString("avatar_static")
-					this.header = src.parseString("header")
-					this.header_static = src.parseString("header_static")
+					this.avatar = src.string("avatar")
+					this.avatar_static = src.string("avatar_static")
+					this.header = src.string("header")
+					this.header_static = src.string("header_static")
 					
 				}
 				
@@ -271,21 +271,21 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 						?: throw RuntimeException("can't get host from acct or url")
 					this.acct = this.username + "@" + this.host
 					
-					this.followers_count = src.parseLong("followers_count")
-					this.following_count = src.parseLong("following_count")
-					this.statuses_count = src.parseLong("statuses_count")
+					this.followers_count = src.long("followers_count")
+					this.following_count = src.long("following_count")
+					this.statuses_count = src.long("statuses_count")
 					
-					this.created_at = src.parseString("created_at")
+					this.created_at = src.string("created_at")
 					this.time_created_at = TootStatus.parseTime(this.created_at)
 					
-					this.avatar = src.parseString("avatar")
-					this.avatar_static = src.parseString("avatar_static")
-					this.header = src.parseString("header")
-					this.header_static = src.parseString("header_static")
+					this.avatar = src.string("avatar")
+					this.avatar_static = src.string("avatar_static")
+					this.header = src.string("header")
+					this.header_static = src.string("header_static")
 				}
 				
 				ServiceType.MSP -> {
-					this.id = EntityId.mayDefault(src.parseString("id"))
+					this.id = EntityId.mayDefault(src.string("id"))
 					
 					// MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
 					this.host = findHostFromUrl(null, null, url)
@@ -299,7 +299,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					this.created_at = null
 					this.time_created_at = 0L
 					
-					val avatar = src.parseString("avatar")
+					val avatar = src.string("avatar")
 					this.avatar = avatar
 					this.avatar_static = avatar
 					this.header = null
@@ -326,12 +326,12 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 		val fields : ArrayList<Field>?
 		
 		init {
-			this.privacy = src.parseString("privacy")
-			this.note = src.parseString("note")
+			this.privacy = src.string("privacy")
+			this.note = src.string("note")
 			// nullになることがあるが、falseと同じ扱いでよい
 			this.sensitive = src.optBoolean("sensitive", false)
 			//
-			this.fields = parseFields(src.parseJsonArray("fields"))
+			this.fields = parseFields(src.jsonArray("fields"))
 		}
 	}
 	
@@ -546,9 +546,9 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			val dst = ArrayList<Field>()
 			for(item in src) {
 				if(item !is JsonObject) continue
-				val name = item.parseString("name") ?: continue
-				val value = item.parseString("value") ?: continue
-				val verifiedAt = when(val svVerifiedAt = item.parseString("verified_at")) {
+				val name = item.string("name") ?: continue
+				val value = item.string("value") ?: continue
+				val verifiedAt = when(val svVerifiedAt = item.string("verified_at")) {
 					null -> 0L
 					else -> TootStatus.parseTime(svVerifiedAt)
 				}
@@ -564,12 +564,12 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			// リモートユーザーはAP経由のフィールドが表示される
 			// https://github.com/syuilo/misskey/pull/3590
 			// https://github.com/syuilo/misskey/pull/3596
-			src.parseJsonArray("fields")?.forEach { o ->
+			src.jsonArray("fields")?.forEach { o ->
 				if(o !is JsonObject) return@forEach
 				//plain text
-				val n = o.parseString("name") ?: return@forEach
+				val n = o.string("name") ?: return@forEach
 				// mfm
-				val v = o.parseString("value") ?: ""
+				val v = o.string("value") ?: ""
 				dst = (dst ?: ArrayList()).apply { add(Field(n, v, 0L)) }
 			}
 			
@@ -583,17 +583,17 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			}
 			
 			runCatching {
-				src.parseJsonObject("twitter")?.let {
+				src.jsonObject("twitter")?.let {
 					appendField(
 						"Twitter",
-						"@${it.parseString("screenName")}",
-						"https://twitter.com/intent/user?user_id=${it.parseString("userId")}"
+						"@${it.string("screenName")}",
+						"https://twitter.com/intent/user?user_id=${it.string("userId")}"
 					)
 				}
 			}
 			
 			runCatching {
-				src.parseJsonObject("github")?.parseString("login")?.let {
+				src.jsonObject("github")?.string("login")?.let {
 					appendField(
 						"GitHub",
 						it,
@@ -603,11 +603,11 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			}
 			
 			runCatching {
-				src.parseJsonObject("discord")?.let {
+				src.jsonObject("discord")?.let {
 					appendField(
 						"Discord",
-						"${it.parseString("username")}#${it.parseString("discriminator")}",
-						"https://discordapp.com/users/${it.parseString("id")}"
+						"${it.string("username")}#${it.string("discriminator")}",
+						"https://discordapp.com/users/${it.string("id")}"
 					)
 				}
 			}

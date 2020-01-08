@@ -23,18 +23,18 @@ class TootList(parser:TootParser,src : JsonObject): TimelineItem(), Comparable<T
 	
 	init {
 		if( parser.serviceType == ServiceType.MISSKEY){
-			id = EntityId.mayDefault(src.parseString("id") )
-			title = src.parseString("name") ?: src.parseString("title") // v11,v10
+			id = EntityId.mayDefault(src.string("id") )
+			title = src.string("name") ?: src.string("title") // v11,v10
 			this.title_for_sort = makeTitleForSort(this.title)
 			val user_list = ArrayList<EntityId>()
 			userIds = user_list
-			src.parseJsonArray("userIds")?.forEach {
+			src.jsonArray("userIds")?.forEach {
 				val id = EntityId.mayNull( it as? String )
 				if(id != null ) user_list.add(id )
 			}
 		}else {
-			id = EntityId.mayDefault(src.parseString("id") )
-			title = src.parseString("title")
+			id = EntityId.mayDefault(src.string("id") )
+			title = src.string("title")
 			this.title_for_sort = makeTitleForSort(this.title)
 		}
 	}

@@ -37,11 +37,11 @@ open class TootTag constructor(
 		val accounts : Int
 		
 		init {
-			day = src.parseLong("day")
+			day = src.long("day")
 				?: throw RuntimeException("TootTrendTag.History: missing day")
-			uses = src.parseInt("uses")
+			uses = src.int("uses")
 				?: throw RuntimeException("TootTrendTag.History: missing uses")
-			accounts = src.parseInt("accounts")
+			accounts = src.int("accounts")
 				?: throw RuntimeException("TootTrendTag.History: missing accounts")
 		}
 		
@@ -50,8 +50,8 @@ open class TootTag constructor(
 	// for TREND_TAG column
 	constructor(src : JsonObject) : this(
 		name = src.notEmptyOrThrow("name"),
-		url = src.parseString("url"),
-		history = parseHistories(src.parseJsonArray("history"))
+		url = src.string("url"),
+		history = parseHistories(src.jsonArray("history"))
 	)
 	
 	companion object {
@@ -62,7 +62,7 @@ open class TootTag constructor(
 			src ?: return null
 			
 			val dst = ArrayList<History>()
-			src.toObjectList().forEach {
+			src.objectList().forEach {
 				try {
 					dst.add(History(it))
 				} catch(ex : Throwable) {
@@ -76,7 +76,7 @@ open class TootTag constructor(
 			val result = ArrayList<TootTag>()
 			if(array != null) {
 				if(parser.serviceType == ServiceType.MISSKEY) {
-					array.toStringArrayList().forEach { sv ->
+					array.stringArrayList().forEach { sv ->
 						if(sv.isNotEmpty()) {
 							result.add(TootTag(name = sv))
 						}

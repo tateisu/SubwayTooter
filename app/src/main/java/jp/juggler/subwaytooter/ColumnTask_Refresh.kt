@@ -274,7 +274,7 @@ class ColumnTask_Refresh(
 		var jsonObject = result?.jsonObject
 		if(jsonObject != null) {
 			if(column.pagingType == ColumnPagingType.Cursor) {
-				column.idOld = EntityId.mayNull(jsonObject.parseString("next"))
+				column.idOld = EntityId.mayNull(jsonObject.string("next"))
 			}
 			result !!.data = misskeyArrayFinder(jsonObject)
 		}

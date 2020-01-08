@@ -11,9 +11,9 @@ class TootConversationSummary(parser : TootParser, src : JsonObject) : TimelineI
 	var unread : Boolean // タップ時にクリアする
 	
 	init {
-		this.id = EntityId.mayDefault(src.parseString("id"))
-		this.accounts = parser.accountList(src.parseJsonArray("accounts"))
-		this.last_status = parser.status(src.parseJsonObject("last_status")) !!
+		this.id = EntityId.mayDefault(src.string("id"))
+		this.accounts = parser.accountList(src.jsonArray("accounts"))
+		this.last_status = parser.status(src.jsonObject("last_status")) !!
 		this.unread = src.optBoolean("unread")
 		
 		this.last_status.conversationSummary = this

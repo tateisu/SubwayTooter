@@ -30,7 +30,7 @@ class TootFilter(src : JsonObject) : TimelineItem() {
 		
 		private fun parseFilterContext(src : JsonArray?) : Int {
 			var n = 0
-			src?.toStringList()?.forEach { key ->
+			src?.stringList()?.forEach { key ->
 				val v = CONTEXT_MAP[key]
 				if(v != null) n += v.bit
 			}
@@ -39,7 +39,7 @@ class TootFilter(src : JsonObject) : TimelineItem() {
 		
 		fun parseList(src : JsonArray?) =
 			ArrayList<TootFilter>().also { result ->
-				src?.toObjectList()?.forEach {
+				src?.objectList()?.forEach {
 					try {
 						result.add(TootFilter(it))
 					} catch(ex : Throwable) {
@@ -59,10 +59,10 @@ class TootFilter(src : JsonObject) : TimelineItem() {
 	val whole_word : Boolean
 	
 	init {
-		id = EntityId.mayDefault(src.parseString("id"))
-		phrase = src.parseString("phrase") ?: error("missing phrase")
-		context = parseFilterContext(src.parseJsonArray("context"))
-		expires_at = src.parseString("expires_at") // may null
+		id = EntityId.mayDefault(src.string("id"))
+		phrase = src.string("phrase") ?: error("missing phrase")
+		context = parseFilterContext(src.jsonArray("context"))
+		expires_at = src.string("expires_at") // may null
 		time_expires_at = TootStatus.parseTime(expires_at)
 		irreversible = src.optBoolean("irreversible")
 		whole_word = src.optBoolean("whole_word")

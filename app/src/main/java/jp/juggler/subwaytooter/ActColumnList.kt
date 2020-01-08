@@ -139,7 +139,7 @@ class ActColumnList : AppCompatActivity() {
 		val tmp_list = ArrayList<MyItem>()
 		try {
 			AppState.loadColumnList(this, TMP_FILE_COLUMN_LIST)
-				?.toObjectList()
+				?.objectList()
 				?.forEachIndexed{index,src->
 					try {
 						val item = MyItem(src, index.toLong(), this)

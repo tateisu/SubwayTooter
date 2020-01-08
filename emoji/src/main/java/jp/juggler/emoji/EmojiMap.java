@@ -283,7 +283,7 @@ public class EmojiMap {
 		code( "\ue12e", "emj_1f19a.svg" );
 		code( "\ue5d2", "emj_1f19a.svg" );
 		code( "\udbba\udf32", "emj_1f19a.svg" );
-		code( "\ud83c\udde6", R.drawable.emj_1f1e6 );
+		code( "\ud83c\udde6", "emj_1f1e6.svg" );
 		code( "\ud83c\udde6\ud83c\udde8", "emj_1f1e6_1f1e8.svg" );
 		code( "\ud83c\udde6\ud83c\udde9", "emj_1f1e6_1f1e9.svg" );
 		code( "\ud83c\udde6\ud83c\uddea", "emj_1f1e6_1f1ea.svg" );
@@ -301,7 +301,7 @@ public class EmojiMap {
 		code( "\ud83c\udde6\ud83c\uddfc", "emj_1f1e6_1f1fc.svg" );
 		code( "\ud83c\udde6\ud83c\uddfd", "emj_1f1e6_1f1fd.svg" );
 		code( "\ud83c\udde6\ud83c\uddff", "emj_1f1e6_1f1ff.svg" );
-		code( "\ud83c\udde7", R.drawable.emj_1f1e7 );
+		code( "\ud83c\udde7", "emj_1f1e7.svg" );
 		code( "\ud83c\udde7\ud83c\udde6", "emj_1f1e7_1f1e6.svg" );
 		code( "\ud83c\udde7\ud83c\udde7", "emj_1f1e7_1f1e7.svg" );
 		code( "\ud83c\udde7\ud83c\udde9", "emj_1f1e7_1f1e9.svg" );
@@ -325,7 +325,7 @@ public class EmojiMap {
 		code( "\ud83c\udde7\ud83c\uddfc", "emj_1f1e7_1f1fc.svg" );
 		code( "\ud83c\udde7\ud83c\uddfe", "emj_1f1e7_1f1fe.svg" );
 		code( "\ud83c\udde7\ud83c\uddff", "emj_1f1e7_1f1ff.svg" );
-		code( "\ud83c\udde8", R.drawable.emj_1f1e8 );
+		code( "\ud83c\udde8", "emj_1f1e8.svg" );
 		code( "\ud83c\udde8\ud83c\udde6", "emj_1f1e8_1f1e6.svg" );
 		code( "\ud83c\udde8\ud83c\udde8", "emj_1f1e8_1f1e8.svg" );
 		code( "\ud83c\udde8\ud83c\udde9", "emj_1f1e8_1f1e9.svg" );
@@ -349,7 +349,7 @@ public class EmojiMap {
 		code( "\ud83c\udde8\ud83c\uddfd", "emj_1f1e8_1f1fd.svg" );
 		code( "\ud83c\udde8\ud83c\uddfe", "emj_1f1e8_1f1fe.svg" );
 		code( "\ud83c\udde8\ud83c\uddff", "emj_1f1e8_1f1ff.svg" );
-		code( "\ud83c\udde9", R.drawable.emj_1f1e9 );
+		code( "\ud83c\udde9", "emj_1f1e9.svg" );
 		code( "\ud83c\udde9\ud83c\uddea", "emj_1f1e9_1f1ea.svg" );
 		code( "\ue50e", "emj_1f1e9_1f1ea.svg" );
 		code( "\ueb0e", "emj_1f1e9_1f1ea.svg" );
@@ -360,7 +360,7 @@ public class EmojiMap {
 		code( "\ud83c\udde9\ud83c\uddf2", "emj_1f1e9_1f1f2.svg" );
 		code( "\ud83c\udde9\ud83c\uddf4", "emj_1f1e9_1f1f4.svg" );
 		code( "\ud83c\udde9\ud83c\uddff", "emj_1f1e9_1f1ff.svg" );
-		code( "\ud83c\uddea", R.drawable.emj_1f1ea );
+		code( "\ud83c\uddea", "emj_1f1ea.svg" );
 		code( "\ud83c\uddea\ud83c\udde6", "emj_1f1ea_1f1e6.svg" );
 		code( "\ud83c\uddea\ud83c\udde8", "emj_1f1ea_1f1e8.svg" );
 		code( "\ud83c\uddea\ud83c\uddea", "emj_1f1ea_1f1ea.svg" );
@@ -373,7 +373,7 @@ public class EmojiMap {
 		code( "\udbb9\udceb", "emj_1f1ea_1f1f8.svg" );
 		code( "\ud83c\uddea\ud83c\uddf9", "emj_1f1ea_1f1f9.svg" );
 		code( "\ud83c\uddea\ud83c\uddfa", "emj_1f1ea_1f1fa.svg" );
-		code( "\ud83c\uddeb", R.drawable.emj_1f1eb );
+		code( "\ud83c\uddeb", "emj_1f1eb.svg" );
 		code( "\ud83c\uddeb\ud83c\uddee", "emj_1f1eb_1f1ee.svg" );
 		code( "\ud83c\uddeb\ud83c\uddef", "emj_1f1eb_1f1ef.svg" );
 		code( "\ud83c\uddeb\ud83c\uddf0", "emj_1f1eb_1f1f0.svg" );
@@ -383,7 +383,7 @@ public class EmojiMap {
 		code( "\ue50d", "emj_1f1eb_1f1f7.svg" );
 		code( "\ueafa", "emj_1f1eb_1f1f7.svg" );
 		code( "\udbb9\udce7", "emj_1f1eb_1f1f7.svg" );
-		code( "\ud83c\uddec", R.drawable.emj_1f1ec );
+		code( "\ud83c\uddec", "emj_1f1ec.svg" );
 		code( "\ud83c\uddec\ud83c\udde6", "emj_1f1ec_1f1e6.svg" );
 		code( "\ud83c\uddec\ud83c\udde7", "emj_1f1ec_1f1e7.svg" );
 		code( "\ue510", "emj_1f1ec_1f1e7.svg" );
@@ -406,14 +406,14 @@ public class EmojiMap {
 		code( "\ud83c\uddec\ud83c\uddfa", "emj_1f1ec_1f1fa.svg" );
 		code( "\ud83c\uddec\ud83c\uddfc", "emj_1f1ec_1f1fc.svg" );
 		code( "\ud83c\uddec\ud83c\uddfe", "emj_1f1ec_1f1fe.svg" );
-		code( "\ud83c\udded", R.drawable.emj_1f1ed );
+		code( "\ud83c\udded", "emj_1f1ed.svg" );
 		code( "\ud83c\udded\ud83c\uddf0", "emj_1f1ed_1f1f0.svg" );
 		code( "\ud83c\udded\ud83c\uddf2", "emj_1f1ed_1f1f2.svg" );
 		code( "\ud83c\udded\ud83c\uddf3", "emj_1f1ed_1f1f3.svg" );
 		code( "\ud83c\udded\ud83c\uddf7", "emj_1f1ed_1f1f7.svg" );
 		code( "\ud83c\udded\ud83c\uddf9", "emj_1f1ed_1f1f9.svg" );
 		code( "\ud83c\udded\ud83c\uddfa", "emj_1f1ed_1f1fa.svg" );
-		code( "\ud83c\uddee", R.drawable.emj_1f1ee );
+		code( "\ud83c\uddee", "emj_1f1ee.svg" );
 		code( "\ud83c\uddee\ud83c\udde8", "emj_1f1ee_1f1e8.svg" );
 		code( "\ud83c\uddee\ud83c\udde9", "emj_1f1ee_1f1e9.svg" );
 		code( "\ud83c\uddee\ud83c\uddea", "emj_1f1ee_1f1ea.svg" );
@@ -430,7 +430,7 @@ public class EmojiMap {
 		code( "\ue50f", "emj_1f1ee_1f1f9.svg" );
 		code( "\ueb0f", "emj_1f1ee_1f1f9.svg" );
 		code( "\udbb9\udce9", "emj_1f1ee_1f1f9.svg" );
-		code( "\ud83c\uddef", R.drawable.emj_1f1ef );
+		code( "\ud83c\uddef", "emj_1f1ef.svg" );
 		code( "\ud83c\uddef\ud83c\uddea", "emj_1f1ef_1f1ea.svg" );
 		code( "\ud83c\uddef\ud83c\uddf2", "emj_1f1ef_1f1f2.svg" );
 		code( "\ud83c\uddef\ud83c\uddf4", "emj_1f1ef_1f1f4.svg" );
@@ -438,7 +438,7 @@ public class EmojiMap {
 		code( "\ue4cc", "emj_1f1ef_1f1f5.svg" );
 		code( "\ue50b", "emj_1f1ef_1f1f5.svg" );
 		code( "\udbb9\udce5", "emj_1f1ef_1f1f5.svg" );
-		code( "\ud83c\uddf0", R.drawable.emj_1f1f0 );
+		code( "\ud83c\uddf0", "emj_1f1f0.svg" );
 		code( "\ud83c\uddf0\ud83c\uddea", "emj_1f1f0_1f1ea.svg" );
 		code( "\ud83c\uddf0\ud83c\uddec", "emj_1f1f0_1f1ec.svg" );
 		code( "\ud83c\uddf0\ud83c\udded", "emj_1f1f0_1f1ed.svg" );
@@ -453,7 +453,7 @@ public class EmojiMap {
 		code( "\ud83c\uddf0\ud83c\uddfc", "emj_1f1f0_1f1fc.svg" );
 		code( "\ud83c\uddf0\ud83c\uddfe", "emj_1f1f0_1f1fe.svg" );
 		code( "\ud83c\uddf0\ud83c\uddff", "emj_1f1f0_1f1ff.svg" );
-		code( "\ud83c\uddf1", R.drawable.emj_1f1f1 );
+		code( "\ud83c\uddf1", "emj_1f1f1.svg" );
 		code( "\ud83c\uddf1\ud83c\udde6", "emj_1f1f1_1f1e6.svg" );
 		code( "\ud83c\uddf1\ud83c\udde7", "emj_1f1f1_1f1e7.svg" );
 		code( "\ud83c\uddf1\ud83c\udde8", "emj_1f1f1_1f1e8.svg" );
@@ -465,7 +465,7 @@ public class EmojiMap {
 		code( "\ud83c\uddf1\ud83c\uddfa", "emj_1f1f1_1f1fa.svg" );
 		code( "\ud83c\uddf1\ud83c\uddfb", "emj_1f1f1_1f1fb.svg" );
 		code( "\ud83c\uddf1\ud83c\uddfe", "emj_1f1f1_1f1fe.svg" );
-		code( "\ud83c\uddf2", R.drawable.emj_1f1f2 );
+		code( "\ud83c\uddf2", "emj_1f1f2.svg" );
 		code( "\ud83c\uddf2\ud83c\udde6", "emj_1f1f2_1f1e6.svg" );
 		code( "\ud83c\uddf2\ud83c\udde8", "emj_1f1f2_1f1e8.svg" );
 		code( "\ud83c\uddf2\ud83c\udde9", "emj_1f1f2_1f1e9.svg" );
@@ -489,7 +489,7 @@ public class EmojiMap {
 		code( "\ud83c\uddf2\ud83c\uddfd", "emj_1f1f2_1f1fd.svg" );
 		code( "\ud83c\uddf2\ud83c\uddfe", "emj_1f1f2_1f1fe.svg" );
 		code( "\ud83c\uddf2\ud83c\uddff", "emj_1f1f2_1f1ff.svg" );
-		code( "\ud83c\uddf3", R.drawable.emj_1f1f3 );
+		code( "\ud83c\uddf3", "emj_1f1f3.svg" );
 		code( "\ud83c\uddf3\ud83c\udde6", "emj_1f1f3_1f1e6.svg" );
 		code( "\ud83c\uddf3\ud83c\udde8", "emj_1f1f3_1f1e8.svg" );
 		code( "\ud83c\uddf3\ud83c\uddea", "emj_1f1f3_1f1ea.svg" );
@@ -502,9 +502,9 @@ public class EmojiMap {
 		code( "\ud83c\uddf3\ud83c\uddf7", "emj_1f1f3_1f1f7.svg" );
 		code( "\ud83c\uddf3\ud83c\uddfa", "emj_1f1f3_1f1fa.svg" );
 		code( "\ud83c\uddf3\ud83c\uddff", "emj_1f1f3_1f1ff.svg" );
-		code( "\ud83c\uddf4", R.drawable.emj_1f1f4 );
+		code( "\ud83c\uddf4", "emj_1f1f4.svg" );
 		code( "\ud83c\uddf4\ud83c\uddf2", "emj_1f1f4_1f1f2.svg" );
-		code( "\ud83c\uddf5", R.drawable.emj_1f1f5 );
+		code( "\ud83c\uddf5", "emj_1f1f5.svg" );
 		code( "\ud83c\uddf5\ud83c\udde6", "emj_1f1f5_1f1e6.svg" );
 		code( "\ud83c\uddf5\ud83c\uddea", "emj_1f1f5_1f1ea.svg" );
 		code( "\ud83c\uddf5\ud83c\uddeb", "emj_1f1f5_1f1eb.svg" );
@@ -519,9 +519,9 @@ public class EmojiMap {
 		code( "\ud83c\uddf5\ud83c\uddf9", "emj_1f1f5_1f1f9.svg" );
 		code( "\ud83c\uddf5\ud83c\uddfc", "emj_1f1f5_1f1fc.svg" );
 		code( "\ud83c\uddf5\ud83c\uddfe", "emj_1f1f5_1f1fe.svg" );
-		code( "\ud83c\uddf6", R.drawable.emj_1f1f6 );
+		code( "\ud83c\uddf6", "emj_1f1f6.svg" );
 		code( "\ud83c\uddf6\ud83c\udde6", "emj_1f1f6_1f1e6.svg" );
-		code( "\ud83c\uddf7", R.drawable.emj_1f1f7 );
+		code( "\ud83c\uddf7", "emj_1f1f7.svg" );
 		code( "\ud83c\uddf7\ud83c\uddea", "emj_1f1f7_1f1ea.svg" );
 		code( "\ud83c\uddf7\ud83c\uddf4", "emj_1f1f7_1f1f4.svg" );
 		code( "\ud83c\uddf7\ud83c\uddf8", "emj_1f1f7_1f1f8.svg" );
@@ -532,7 +532,7 @@ public class EmojiMap {
 		code( "\ue5d6", "emj_1f1f7_1f1fa.svg" );
 		code( "\udbb9\udcec", "emj_1f1f7_1f1fa.svg" );
 		code( "\ud83c\uddf7\ud83c\uddfc", "emj_1f1f7_1f1fc.svg" );
-		code( "\ud83c\uddf8", R.drawable.emj_1f1f8 );
+		code( "\ud83c\uddf8", "emj_1f1f8.svg" );
 		code( "\ud83c\uddf8\ud83c\udde6", "emj_1f1f8_1f1e6.svg" );
 		code( "\ud83c\uddf8\ud83c\udde7", "emj_1f1f8_1f1e7.svg" );
 		code( "\ud83c\uddf8\ud83c\udde8", "emj_1f1f8_1f1e8.svg" );
@@ -554,7 +554,7 @@ public class EmojiMap {
 		code( "\ud83c\uddf8\ud83c\uddfd", "emj_1f1f8_1f1fd.svg" );
 		code( "\ud83c\uddf8\ud83c\uddfe", "emj_1f1f8_1f1fe.svg" );
 		code( "\ud83c\uddf8\ud83c\uddff", "emj_1f1f8_1f1ff.svg" );
-		code( "\ud83c\uddf9", R.drawable.emj_1f1f9 );
+		code( "\ud83c\uddf9", "emj_1f1f9.svg" );
 		code( "\ud83c\uddf9\ud83c\udde6", "emj_1f1f9_1f1e6.svg" );
 		code( "\ud83c\uddf9\ud83c\udde8", "emj_1f1f9_1f1e8.svg" );
 		code( "\ud83c\uddf9\ud83c\udde9", "emj_1f1f9_1f1e9.svg" );
@@ -572,7 +572,7 @@ public class EmojiMap {
 		code( "\ud83c\uddf9\ud83c\uddfb", "emj_1f1f9_1f1fb.svg" );
 		code( "\ud83c\uddf9\ud83c\uddfc", "emj_1f1f9_1f1fc.svg" );
 		code( "\ud83c\uddf9\ud83c\uddff", "emj_1f1f9_1f1ff.svg" );
-		code( "\ud83c\uddfa", R.drawable.emj_1f1fa );
+		code( "\ud83c\uddfa", "emj_1f1fa.svg" );
 		code( "\ud83c\uddfa\ud83c\udde6", "emj_1f1fa_1f1e6.svg" );
 		code( "\ud83c\uddfa\ud83c\uddec", "emj_1f1fa_1f1ec.svg" );
 		code( "\ud83c\uddfa\ud83c\uddf2", "emj_1f1fa_1f1f2.svg" );
@@ -583,7 +583,7 @@ public class EmojiMap {
 		code( "\udbb9\udce6", "emj_1f1fa_1f1f8.svg" );
 		code( "\ud83c\uddfa\ud83c\uddfe", "emj_1f1fa_1f1fe.svg" );
 		code( "\ud83c\uddfa\ud83c\uddff", "emj_1f1fa_1f1ff.svg" );
-		code( "\ud83c\uddfb", R.drawable.emj_1f1fb );
+		code( "\ud83c\uddfb", "emj_1f1fb.svg" );
 		code( "\ud83c\uddfb\ud83c\udde6", "emj_1f1fb_1f1e6.svg" );
 		code( "\ud83c\uddfb\ud83c\udde8", "emj_1f1fb_1f1e8.svg" );
 		code( "\ud83c\uddfb\ud83c\uddea", "emj_1f1fb_1f1ea.svg" );
@@ -591,15 +591,15 @@ public class EmojiMap {
 		code( "\ud83c\uddfb\ud83c\uddee", "emj_1f1fb_1f1ee.svg" );
 		code( "\ud83c\uddfb\ud83c\uddf3", "emj_1f1fb_1f1f3.svg" );
 		code( "\ud83c\uddfb\ud83c\uddfa", "emj_1f1fb_1f1fa.svg" );
-		code( "\ud83c\uddfc", R.drawable.emj_1f1fc );
+		code( "\ud83c\uddfc", "emj_1f1fc.svg" );
 		code( "\ud83c\uddfc\ud83c\uddeb", "emj_1f1fc_1f1eb.svg" );
 		code( "\ud83c\uddfc\ud83c\uddf8", "emj_1f1fc_1f1f8.svg" );
-		code( "\ud83c\uddfd", R.drawable.emj_1f1fd );
+		code( "\ud83c\uddfd", "emj_1f1fd.svg" );
 		code( "\ud83c\uddfd\ud83c\uddf0", "emj_1f1fd_1f1f0.svg" );
-		code( "\ud83c\uddfe", R.drawable.emj_1f1fe );
+		code( "\ud83c\uddfe", "emj_1f1fe.svg" );
 		code( "\ud83c\uddfe\ud83c\uddea", "emj_1f1fe_1f1ea.svg" );
 		code( "\ud83c\uddfe\ud83c\uddf9", "emj_1f1fe_1f1f9.svg" );
-		code( "\ud83c\uddff", R.drawable.emj_1f1ff );
+		code( "\ud83c\uddff", "emj_1f1ff.svg" );
 		code( "\ud83c\uddff\ud83c\udde6", "emj_1f1ff_1f1e6.svg" );
 		code( "\ud83c\uddff\ud83c\uddf2", "emj_1f1ff_1f1f2.svg" );
 		code( "\ud83c\uddff\ud83c\uddfc", "emj_1f1ff_1f1fc.svg" );
@@ -1624,6 +1624,7 @@ public class EmojiMap {
 		code( "\ud83c\udff3\ufe0f", R.drawable.emj_1f3f3_fe0f );
 		code( "\ud83c\udff3\ud83c\udf08", "emj_1f3f3_fe0f_200d_1f308.svg" );
 		code( "\ud83c\udff3\ufe0f\u200d\ud83c\udf08", "emj_1f3f3_fe0f_200d_1f308.svg" );
+		code( "\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f", "emj_1f3f3_fe0f_200d_26a7_fe0f.svg" );
 		code( "\ud83c\udff4", "emj_1f3f4.svg" );
 		code( "\ud83c\udff4\u200d\u2620\ufe0f", "emj_1f3f4_200d_2620_fe0f.svg" );
 		code( "\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f", "emj_1f3f4_e0067_e0062_e0065_e006e_e0067_e007f.svg" );
@@ -1658,9 +1659,9 @@ public class EmojiMap {
 		code( "\ueb7e", "emj_1f40c.svg" );
 		code( "\udbb8\uddb9", "emj_1f40c.svg" );
 		code( "\ud83d\udc0d", "emj_1f40d.svg" );
-		code( "\ue52d", "emj_1f40d.svg" );
 	}
 	private static void init16(){
+		code( "\ue52d", "emj_1f40d.svg" );
 		code( "\ueb22", "emj_1f40d.svg" );
 		code( "\udbb8\uddd3", "emj_1f40d.svg" );
 		code( "\ud83d\udc0e", "emj_1f40e.svg" );
@@ -1683,6 +1684,7 @@ public class EmojiMap {
 		code( "\ueb23", "emj_1f414.svg" );
 		code( "\udbb8\uddd4", "emj_1f414.svg" );
 		code( "\ud83d\udc15", "emj_1f415.svg" );
+		code( "\ud83d\udc15\u200d\ud83e\uddba", "emj_1f415_200d_1f9ba.svg" );
 		code( "\ud83d\udc16", "emj_1f416.svg" );
 		code( "\ud83d\udc17", "emj_1f417.svg" );
 		code( "\ue52f", "emj_1f417.svg" );
@@ -1760,10 +1762,10 @@ public class EmojiMap {
 		code( "\ue530", "emj_1f42b.svg" );
 		code( "\ueb25", "emj_1f42b.svg" );
 		code( "\udbb8\uddd6", "emj_1f42b.svg" );
-		code( "\ud83d\udc2c", "emj_1f42c.svg" );
-		code( "\ue520", "emj_1f42c.svg" );
 	}
 	private static void init17(){
+		code( "\ud83d\udc2c", "emj_1f42c.svg" );
+		code( "\ue520", "emj_1f42c.svg" );
 		code( "\ueb1b", "emj_1f42c.svg" );
 		code( "\udbb8\uddc7", "emj_1f42c.svg" );
 		code( "\ud83d\udc2d", "emj_1f42d.svg" );
@@ -1844,6 +1846,8 @@ public class EmojiMap {
 		code( "\ue5a4", "emj_1f440.svg" );
 		code( "\ue691", "emj_1f440.svg" );
 		code( "\udbb8\udd90", "emj_1f440.svg" );
+		code( "\ud83d\udc41\ud83d\udde8", "emj_1f441_200d_1f5e8.svg" );
+		code( "\ud83d\udc41\u200d\ud83d\udde8", "emj_1f441_200d_1f5e8.svg" );
 		code( "\ud83d\udc41", R.drawable.emj_1f441_fe0f );
 		code( "\ud83d\udc41\ufe0f", R.drawable.emj_1f441_fe0f );
 		code( "\ud83d\udc41\ud83d\udde8", R.drawable.emj_1f441_fe0f_200d_1f5e8_fe0f );
@@ -1861,12 +1865,12 @@ public class EmojiMap {
 		code( "\ud83d\udc43", "emj_1f443.svg" );
 		code( "\ue41a", "emj_1f443.svg" );
 		code( "\uead0", "emj_1f443.svg" );
+	}
+	private static void init18(){
 		code( "\udbb8\udd92", "emj_1f443.svg" );
 		code( "\ud83d\udc43\ud83c\udffb", "emj_1f443_1f3fb.svg" );
 		code( "\ud83d\udc43\ud83c\udffc", "emj_1f443_1f3fc.svg" );
 		code( "\ud83d\udc43\ud83c\udffd", "emj_1f443_1f3fd.svg" );
-	}
-	private static void init18(){
 		code( "\ud83d\udc43\ud83c\udffe", "emj_1f443_1f3fe.svg" );
 		code( "\ud83d\udc43\ud83c\udfff", "emj_1f443_1f3ff.svg" );
 		code( "\ud83d\udc44", "emj_1f444.svg" );
@@ -1964,12 +1968,12 @@ public class EmojiMap {
 		code( "\uead3", "emj_1f44f.svg" );
 		code( "\udbba\udf9e", "emj_1f44f.svg" );
 		code( "\ud83d\udc4f\ud83c\udffb", "emj_1f44f_1f3fb.svg" );
+	}
+	private static void init19(){
 		code( "\ud83d\udc4f\ud83c\udffc", "emj_1f44f_1f3fc.svg" );
 		code( "\ud83d\udc4f\ud83c\udffd", "emj_1f44f_1f3fd.svg" );
 		code( "\ud83d\udc4f\ud83c\udffe", "emj_1f44f_1f3fe.svg" );
 		code( "\ud83d\udc4f\ud83c\udfff", "emj_1f44f_1f3ff.svg" );
-	}
-	private static void init19(){
 		code( "\ud83d\udc50", "emj_1f450.svg" );
 		code( "\ue422", "emj_1f450.svg" );
 		code( "\udbba\udfa1", "emj_1f450.svg" );
@@ -2067,12 +2071,12 @@ public class EmojiMap {
 		code( "\udbb8\udd9b", "emj_1f466.svg" );
 		code( "\ud83d\udc66\ud83c\udffb", "emj_1f466_1f3fb.svg" );
 		code( "\ud83d\udc66\ud83c\udffc", "emj_1f466_1f3fc.svg" );
+	}
+	private static void init20(){
 		code( "\ud83d\udc66\ud83c\udffd", "emj_1f466_1f3fd.svg" );
 		code( "\ud83d\udc66\ud83c\udffe", "emj_1f466_1f3fe.svg" );
 		code( "\ud83d\udc66\ud83c\udfff", "emj_1f466_1f3ff.svg" );
 		code( "\ud83d\udc67", "emj_1f467.svg" );
-	}
-	private static void init20(){
 		code( "\ue002", "emj_1f467.svg" );
 		code( "\ue4fa", "emj_1f467.svg" );
 		code( "\udbb8\udd9c", "emj_1f467.svg" );
@@ -2112,10 +2116,17 @@ public class EmojiMap {
 		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83d\ude80", "emj_1f468_1f3fb_200d_1f680.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\ud83d\ude92", "emj_1f468_1f3fb_200d_1f692.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83d\ude92", "emj_1f468_1f3fb_200d_1f692.svg" );
+		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fb_200d_1f91d_200d_1f468_1f3fc.svg" );
+		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fb_200d_1f91d_200d_1f468_1f3fd.svg" );
+		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fb_200d_1f91d_200d_1f468_1f3fe.svg" );
+		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fb_200d_1f91d_200d_1f468_1f3ff.svg" );
+		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddaf", "emj_1f468_1f3fb_200d_1f9af.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb0", "emj_1f468_1f3fb_200d_1f9b0.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb1", "emj_1f468_1f3fb_200d_1f9b1.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb2", "emj_1f468_1f3fb_200d_1f9b2.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb3", "emj_1f468_1f3fb_200d_1f9b3.svg" );
+		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddbc", "emj_1f468_1f3fb_200d_1f9bc.svg" );
+		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddbd", "emj_1f468_1f3fb_200d_1f9bd.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\u200d\u2695\ufe0f", "emj_1f468_1f3fb_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\u2695", "emj_1f468_1f3fb_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\u200d\u2696\ufe0f", "emj_1f468_1f3fb_200d_2696_fe0f.svg" );
@@ -2149,13 +2160,22 @@ public class EmojiMap {
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83d\ude80", "emj_1f468_1f3fc_200d_1f680.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\ud83d\ude92", "emj_1f468_1f3fc_200d_1f692.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83d\ude92", "emj_1f468_1f3fc_200d_1f692.svg" );
+		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fc_200d_1f91d_200d_1f468_1f3fb.svg" );
+		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fc_200d_1f91d_200d_1f468_1f3fd.svg" );
+		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fc_200d_1f91d_200d_1f468_1f3fe.svg" );
+		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fc_200d_1f91d_200d_1f468_1f3ff.svg" );
+		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddaf", "emj_1f468_1f3fc_200d_1f9af.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb0", "emj_1f468_1f3fc_200d_1f9b0.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb1", "emj_1f468_1f3fc_200d_1f9b1.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb2", "emj_1f468_1f3fc_200d_1f9b2.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb3", "emj_1f468_1f3fc_200d_1f9b3.svg" );
+		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddbc", "emj_1f468_1f3fc_200d_1f9bc.svg" );
+		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddbd", "emj_1f468_1f3fc_200d_1f9bd.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\u2695\ufe0f", "emj_1f468_1f3fc_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u2695", "emj_1f468_1f3fc_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\u2696\ufe0f", "emj_1f468_1f3fc_200d_2696_fe0f.svg" );
+	}
+	private static void init21(){
 		code( "\ud83d\udc68\ud83c\udffc\u2696", "emj_1f468_1f3fc_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\u2708\ufe0f", "emj_1f468_1f3fc_200d_2708_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u2708", "emj_1f468_1f3fc_200d_2708_fe0f.svg" );
@@ -2174,8 +2194,6 @@ public class EmojiMap {
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udfeb", "emj_1f468_1f3fd_200d_1f3eb.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\ud83c\udfed", "emj_1f468_1f3fd_200d_1f3ed.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udfed", "emj_1f468_1f3fd_200d_1f3ed.svg" );
-	}
-	private static void init21(){
 		code( "\ud83d\udc68\ud83c\udffd\ud83d\udcbb", "emj_1f468_1f3fd_200d_1f4bb.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83d\udcbb", "emj_1f468_1f3fd_200d_1f4bb.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\ud83d\udcbc", "emj_1f468_1f3fd_200d_1f4bc.svg" );
@@ -2188,10 +2206,17 @@ public class EmojiMap {
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83d\ude80", "emj_1f468_1f3fd_200d_1f680.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\ud83d\ude92", "emj_1f468_1f3fd_200d_1f692.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83d\ude92", "emj_1f468_1f3fd_200d_1f692.svg" );
+		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fd_200d_1f91d_200d_1f468_1f3fb.svg" );
+		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fd_200d_1f91d_200d_1f468_1f3fc.svg" );
+		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fd_200d_1f91d_200d_1f468_1f3fe.svg" );
+		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fd_200d_1f91d_200d_1f468_1f3ff.svg" );
+		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddaf", "emj_1f468_1f3fd_200d_1f9af.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb0", "emj_1f468_1f3fd_200d_1f9b0.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb1", "emj_1f468_1f3fd_200d_1f9b1.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb2", "emj_1f468_1f3fd_200d_1f9b2.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb3", "emj_1f468_1f3fd_200d_1f9b3.svg" );
+		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddbc", "emj_1f468_1f3fd_200d_1f9bc.svg" );
+		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddbd", "emj_1f468_1f3fd_200d_1f9bd.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u200d\u2695\ufe0f", "emj_1f468_1f3fd_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u2695", "emj_1f468_1f3fd_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u200d\u2696\ufe0f", "emj_1f468_1f3fd_200d_2696_fe0f.svg" );
@@ -2225,10 +2250,17 @@ public class EmojiMap {
 		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83d\ude80", "emj_1f468_1f3fe_200d_1f680.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\ud83d\ude92", "emj_1f468_1f3fe_200d_1f692.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83d\ude92", "emj_1f468_1f3fe_200d_1f692.svg" );
+		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fe_200d_1f91d_200d_1f468_1f3fb.svg" );
+		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fe_200d_1f91d_200d_1f468_1f3fc.svg" );
+		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fe_200d_1f91d_200d_1f468_1f3fd.svg" );
+		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fe_200d_1f91d_200d_1f468_1f3ff.svg" );
+		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddaf", "emj_1f468_1f3fe_200d_1f9af.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb0", "emj_1f468_1f3fe_200d_1f9b0.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb1", "emj_1f468_1f3fe_200d_1f9b1.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb2", "emj_1f468_1f3fe_200d_1f9b2.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb3", "emj_1f468_1f3fe_200d_1f9b3.svg" );
+		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddbc", "emj_1f468_1f3fe_200d_1f9bc.svg" );
+		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddbd", "emj_1f468_1f3fe_200d_1f9bd.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u200d\u2695\ufe0f", "emj_1f468_1f3fe_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u2695", "emj_1f468_1f3fe_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u200d\u2696\ufe0f", "emj_1f468_1f3fe_200d_2696_fe0f.svg" );
@@ -2245,6 +2277,8 @@ public class EmojiMap {
 		code( "\ud83d\udc68\ud83c\udfff\ud83c\udfa4", "emj_1f468_1f3ff_200d_1f3a4.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfa4", "emj_1f468_1f3ff_200d_1f3a4.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\ud83c\udfa8", "emj_1f468_1f3ff_200d_1f3a8.svg" );
+	}
+	private static void init22(){
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfa8", "emj_1f468_1f3ff_200d_1f3a8.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\ud83c\udfeb", "emj_1f468_1f3ff_200d_1f3eb.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfeb", "emj_1f468_1f3ff_200d_1f3eb.svg" );
@@ -2262,10 +2296,17 @@ public class EmojiMap {
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83d\ude80", "emj_1f468_1f3ff_200d_1f680.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\ud83d\ude92", "emj_1f468_1f3ff_200d_1f692.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83d\ude92", "emj_1f468_1f3ff_200d_1f692.svg" );
+		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3ff_200d_1f91d_200d_1f468_1f3fb.svg" );
+		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3ff_200d_1f91d_200d_1f468_1f3fc.svg" );
+		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3ff_200d_1f91d_200d_1f468_1f3fd.svg" );
+		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3ff_200d_1f91d_200d_1f468_1f3fe.svg" );
+		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddaf", "emj_1f468_1f3ff_200d_1f9af.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb0", "emj_1f468_1f3ff_200d_1f9b0.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb1", "emj_1f468_1f3ff_200d_1f9b1.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb2", "emj_1f468_1f3ff_200d_1f9b2.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb3", "emj_1f468_1f3ff_200d_1f9b3.svg" );
+		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddbc", "emj_1f468_1f3ff_200d_1f9bc.svg" );
+		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddbd", "emj_1f468_1f3ff_200d_1f9bd.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\u2695\ufe0f", "emj_1f468_1f3ff_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u2695", "emj_1f468_1f3ff_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\u2696\ufe0f", "emj_1f468_1f3ff_200d_2696_fe0f.svg" );
@@ -2277,8 +2318,6 @@ public class EmojiMap {
 		code( "\ud83d\udc68\ud83c\udf73", "emj_1f468_200d_1f373.svg" );
 		code( "\ud83d\udc68\u200d\ud83c\udf73", "emj_1f468_200d_1f373.svg" );
 		code( "\ud83d\udc68\ud83c\udf93", "emj_1f468_200d_1f393.svg" );
-	}
-	private static void init22(){
 		code( "\ud83d\udc68\u200d\ud83c\udf93", "emj_1f468_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udfa4", "emj_1f468_200d_1f3a4.svg" );
 		code( "\ud83d\udc68\u200d\ud83c\udfa4", "emj_1f468_200d_1f3a4.svg" );
@@ -2330,14 +2369,19 @@ public class EmojiMap {
 		code( "\ud83d\udc68\u200d\ud83d\ude80", "emj_1f468_200d_1f680.svg" );
 		code( "\ud83d\udc68\ud83d\ude92", "emj_1f468_200d_1f692.svg" );
 		code( "\ud83d\udc68\u200d\ud83d\ude92", "emj_1f468_200d_1f692.svg" );
+		code( "\ud83d\udc68\u200d\ud83e\uddaf", "emj_1f468_200d_1f9af.svg" );
 		code( "\ud83d\udc68\u200d\ud83e\uddb0", "emj_1f468_200d_1f9b0.svg" );
 		code( "\ud83d\udc68\u200d\ud83e\uddb1", "emj_1f468_200d_1f9b1.svg" );
 		code( "\ud83d\udc68\u200d\ud83e\uddb2", "emj_1f468_200d_1f9b2.svg" );
 		code( "\ud83d\udc68\u200d\ud83e\uddb3", "emj_1f468_200d_1f9b3.svg" );
+		code( "\ud83d\udc68\u200d\ud83e\uddbc", "emj_1f468_200d_1f9bc.svg" );
+		code( "\ud83d\udc68\u200d\ud83e\uddbd", "emj_1f468_200d_1f9bd.svg" );
 		code( "\ud83d\udc68\u200d\u2695\ufe0f", "emj_1f468_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\u2695", "emj_1f468_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\u200d\u2696\ufe0f", "emj_1f468_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc68\u2696", "emj_1f468_200d_2696_fe0f.svg" );
+	}
+	private static void init23(){
 		code( "\ud83d\udc68\u200d\u2708\ufe0f", "emj_1f468_200d_2708_fe0f.svg" );
 		code( "\ud83d\udc68\u2708", "emj_1f468_200d_2708_fe0f.svg" );
 		code( "\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc68", "emj_1f468_200d_2764_fe0f_200d_1f468.svg" );
@@ -2375,13 +2419,22 @@ public class EmojiMap {
 		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83d\ude80", "emj_1f469_1f3fb_200d_1f680.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\ud83d\ude92", "emj_1f469_1f3fb_200d_1f692.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83d\ude92", "emj_1f469_1f3fb_200d_1f692.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fb_200d_1f91d_200d_1f468_1f3fc.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fb_200d_1f91d_200d_1f468_1f3fd.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fb_200d_1f91d_200d_1f468_1f3fe.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fb_200d_1f91d_200d_1f468_1f3ff.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fb_200d_1f91d_200d_1f469_1f3fc.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fb_200d_1f91d_200d_1f469_1f3fd.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fb_200d_1f91d_200d_1f469_1f3fe.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fb_200d_1f91d_200d_1f469_1f3ff.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddaf", "emj_1f469_1f3fb_200d_1f9af.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb0", "emj_1f469_1f3fb_200d_1f9b0.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb1", "emj_1f469_1f3fb_200d_1f9b1.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb2", "emj_1f469_1f3fb_200d_1f9b2.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb3", "emj_1f469_1f3fb_200d_1f9b3.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddbc", "emj_1f469_1f3fb_200d_1f9bc.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddbd", "emj_1f469_1f3fb_200d_1f9bd.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\u200d\u2695\ufe0f", "emj_1f469_1f3fb_200d_2695_fe0f.svg" );
-	}
-	private static void init23(){
 		code( "\ud83d\udc69\ud83c\udffb\u2695", "emj_1f469_1f3fb_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\u200d\u2696\ufe0f", "emj_1f469_1f3fb_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\u2696", "emj_1f469_1f3fb_200d_2696_fe0f.svg" );
@@ -2414,11 +2467,24 @@ public class EmojiMap {
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83d\ude80", "emj_1f469_1f3fc_200d_1f680.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\ud83d\ude92", "emj_1f469_1f3fc_200d_1f692.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83d\ude92", "emj_1f469_1f3fc_200d_1f692.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fc_200d_1f91d_200d_1f468_1f3fb.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fc_200d_1f91d_200d_1f468_1f3fd.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fc_200d_1f91d_200d_1f468_1f3fe.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fc_200d_1f91d_200d_1f468_1f3ff.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fc_200d_1f91d_200d_1f469_1f3fb.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fc_200d_1f91d_200d_1f469_1f3fd.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fc_200d_1f91d_200d_1f469_1f3fe.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fc_200d_1f91d_200d_1f469_1f3ff.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddaf", "emj_1f469_1f3fc_200d_1f9af.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb0", "emj_1f469_1f3fc_200d_1f9b0.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb1", "emj_1f469_1f3fc_200d_1f9b1.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb2", "emj_1f469_1f3fc_200d_1f9b2.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb3", "emj_1f469_1f3fc_200d_1f9b3.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddbc", "emj_1f469_1f3fc_200d_1f9bc.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddbd", "emj_1f469_1f3fc_200d_1f9bd.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\u2695\ufe0f", "emj_1f469_1f3fc_200d_2695_fe0f.svg" );
+	}
+	private static void init24(){
 		code( "\ud83d\udc69\ud83c\udffc\u2695", "emj_1f469_1f3fc_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\u2696\ufe0f", "emj_1f469_1f3fc_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u2696", "emj_1f469_1f3fc_200d_2696_fe0f.svg" );
@@ -2451,10 +2517,21 @@ public class EmojiMap {
 		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83d\ude80", "emj_1f469_1f3fd_200d_1f680.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\ud83d\ude92", "emj_1f469_1f3fd_200d_1f692.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83d\ude92", "emj_1f469_1f3fd_200d_1f692.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fd_200d_1f91d_200d_1f468_1f3fb.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fd_200d_1f91d_200d_1f468_1f3fc.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fd_200d_1f91d_200d_1f468_1f3fe.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fd_200d_1f91d_200d_1f468_1f3ff.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fd_200d_1f91d_200d_1f469_1f3fb.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fd_200d_1f91d_200d_1f469_1f3fc.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fd_200d_1f91d_200d_1f469_1f3fe.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fd_200d_1f91d_200d_1f469_1f3ff.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddaf", "emj_1f469_1f3fd_200d_1f9af.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb0", "emj_1f469_1f3fd_200d_1f9b0.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb1", "emj_1f469_1f3fd_200d_1f9b1.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb2", "emj_1f469_1f3fd_200d_1f9b2.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb3", "emj_1f469_1f3fd_200d_1f9b3.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddbc", "emj_1f469_1f3fd_200d_1f9bc.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddbd", "emj_1f469_1f3fd_200d_1f9bd.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\u200d\u2695\ufe0f", "emj_1f469_1f3fd_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\u2695", "emj_1f469_1f3fd_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\u200d\u2696\ufe0f", "emj_1f469_1f3fd_200d_2696_fe0f.svg" );
@@ -2483,23 +2560,34 @@ public class EmojiMap {
 		code( "\ud83d\udc69\ud83c\udffe\ud83d\udd27", "emj_1f469_1f3fe_200d_1f527.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83d\udd27", "emj_1f469_1f3fe_200d_1f527.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\ud83d\udd2c", "emj_1f469_1f3fe_200d_1f52c.svg" );
-	}
-	private static void init24(){
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83d\udd2c", "emj_1f469_1f3fe_200d_1f52c.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\ud83d\ude80", "emj_1f469_1f3fe_200d_1f680.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83d\ude80", "emj_1f469_1f3fe_200d_1f680.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\ud83d\ude92", "emj_1f469_1f3fe_200d_1f692.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83d\ude92", "emj_1f469_1f3fe_200d_1f692.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fe_200d_1f91d_200d_1f468_1f3fb.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fe_200d_1f91d_200d_1f468_1f3fc.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fe_200d_1f91d_200d_1f468_1f3fd.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fe_200d_1f91d_200d_1f468_1f3ff.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fe_200d_1f91d_200d_1f469_1f3fb.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fe_200d_1f91d_200d_1f469_1f3fc.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fe_200d_1f91d_200d_1f469_1f3fd.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fe_200d_1f91d_200d_1f469_1f3ff.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddaf", "emj_1f469_1f3fe_200d_1f9af.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb0", "emj_1f469_1f3fe_200d_1f9b0.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb1", "emj_1f469_1f3fe_200d_1f9b1.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb2", "emj_1f469_1f3fe_200d_1f9b2.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb3", "emj_1f469_1f3fe_200d_1f9b3.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddbc", "emj_1f469_1f3fe_200d_1f9bc.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddbd", "emj_1f469_1f3fe_200d_1f9bd.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\u2695\ufe0f", "emj_1f469_1f3fe_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u2695", "emj_1f469_1f3fe_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\u2696\ufe0f", "emj_1f469_1f3fe_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u2696", "emj_1f469_1f3fe_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\u2708\ufe0f", "emj_1f469_1f3fe_200d_2708_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u2708", "emj_1f469_1f3fe_200d_2708_fe0f.svg" );
+	}
+	private static void init25(){
 		code( "\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3ff.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\ud83c\udf3e", "emj_1f469_1f3ff_200d_1f33e.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf3e", "emj_1f469_1f3ff_200d_1f33e.svg" );
@@ -2527,10 +2615,21 @@ public class EmojiMap {
 		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83d\ude80", "emj_1f469_1f3ff_200d_1f680.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\ud83d\ude92", "emj_1f469_1f3ff_200d_1f692.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83d\ude92", "emj_1f469_1f3ff_200d_1f692.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3ff_200d_1f91d_200d_1f468_1f3fb.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3ff_200d_1f91d_200d_1f468_1f3fc.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3ff_200d_1f91d_200d_1f468_1f3fd.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3ff_200d_1f91d_200d_1f468_1f3fe.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3ff_200d_1f91d_200d_1f469_1f3fb.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3ff_200d_1f91d_200d_1f469_1f3fc.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3ff_200d_1f91d_200d_1f469_1f3fd.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3ff_200d_1f91d_200d_1f469_1f3fe.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddaf", "emj_1f469_1f3ff_200d_1f9af.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb0", "emj_1f469_1f3ff_200d_1f9b0.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb1", "emj_1f469_1f3ff_200d_1f9b1.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb2", "emj_1f469_1f3ff_200d_1f9b2.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb3", "emj_1f469_1f3ff_200d_1f9b3.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddbc", "emj_1f469_1f3ff_200d_1f9bc.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddbd", "emj_1f469_1f3ff_200d_1f9bd.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u200d\u2695\ufe0f", "emj_1f469_1f3ff_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u2695", "emj_1f469_1f3ff_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u200d\u2696\ufe0f", "emj_1f469_1f3ff_200d_2696_fe0f.svg" );
@@ -2583,12 +2682,15 @@ public class EmojiMap {
 		code( "\ud83d\udc69\u200d\ud83d\ude80", "emj_1f469_200d_1f680.svg" );
 		code( "\ud83d\udc69\ud83d\ude92", "emj_1f469_200d_1f692.svg" );
 		code( "\ud83d\udc69\u200d\ud83d\ude92", "emj_1f469_200d_1f692.svg" );
+		code( "\ud83d\udc69\u200d\ud83e\uddaf", "emj_1f469_200d_1f9af.svg" );
 		code( "\ud83d\udc69\u200d\ud83e\uddb0", "emj_1f469_200d_1f9b0.svg" );
 		code( "\ud83d\udc69\u200d\ud83e\uddb1", "emj_1f469_200d_1f9b1.svg" );
 		code( "\ud83d\udc69\u200d\ud83e\uddb2", "emj_1f469_200d_1f9b2.svg" );
-	}
-	private static void init25(){
 		code( "\ud83d\udc69\u200d\ud83e\uddb3", "emj_1f469_200d_1f9b3.svg" );
+		code( "\ud83d\udc69\u200d\ud83e\uddbc", "emj_1f469_200d_1f9bc.svg" );
+		code( "\ud83d\udc69\u200d\ud83e\uddbd", "emj_1f469_200d_1f9bd.svg" );
+	}
+	private static void init26(){
 		code( "\ud83d\udc69\u200d\u2695\ufe0f", "emj_1f469_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\u2695", "emj_1f469_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\u200d\u2696\ufe0f", "emj_1f469_200d_2696_fe0f.svg" );
@@ -2609,8 +2711,23 @@ public class EmojiMap {
 		code( "\ud83d\udc6b", "emj_1f46b.svg" );
 		code( "\ue428", "emj_1f46b.svg" );
 		code( "\udbb8\udda0", "emj_1f46b.svg" );
+		code( "\ud83d\udc6b\ud83c\udffb", "emj_1f46b_1f3fb.svg" );
+		code( "\ud83d\udc6b\ud83c\udffc", "emj_1f46b_1f3fc.svg" );
+		code( "\ud83d\udc6b\ud83c\udffd", "emj_1f46b_1f3fd.svg" );
+		code( "\ud83d\udc6b\ud83c\udffe", "emj_1f46b_1f3fe.svg" );
+		code( "\ud83d\udc6b\ud83c\udfff", "emj_1f46b_1f3ff.svg" );
 		code( "\ud83d\udc6c", "emj_1f46c.svg" );
+		code( "\ud83d\udc6c\ud83c\udffb", "emj_1f46c_1f3fb.svg" );
+		code( "\ud83d\udc6c\ud83c\udffc", "emj_1f46c_1f3fc.svg" );
+		code( "\ud83d\udc6c\ud83c\udffd", "emj_1f46c_1f3fd.svg" );
+		code( "\ud83d\udc6c\ud83c\udffe", "emj_1f46c_1f3fe.svg" );
+		code( "\ud83d\udc6c\ud83c\udfff", "emj_1f46c_1f3ff.svg" );
 		code( "\ud83d\udc6d", "emj_1f46d.svg" );
+		code( "\ud83d\udc6d\ud83c\udffb", "emj_1f46d_1f3fb.svg" );
+		code( "\ud83d\udc6d\ud83c\udffc", "emj_1f46d_1f3fc.svg" );
+		code( "\ud83d\udc6d\ud83c\udffd", "emj_1f46d_1f3fd.svg" );
+		code( "\ud83d\udc6d\ud83c\udffe", "emj_1f46d_1f3fe.svg" );
+		code( "\ud83d\udc6d\ud83c\udfff", "emj_1f46d_1f3ff.svg" );
 		code( "\ud83d\udc6e", "emj_1f46e.svg" );
 		code( "\ue152", "emj_1f46e.svg" );
 		code( "\ue5dd", "emj_1f46e.svg" );
@@ -2675,6 +2792,8 @@ public class EmojiMap {
 		code( "\ud83d\udc71\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f471_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udffc\u2642", "emj_1f471_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udffd", "emj_1f471_1f3fd.svg" );
+	}
+	private static void init27(){
 		code( "\ud83d\udc71\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f471_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udffd\u2640", "emj_1f471_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f471_1f3fd_200d_2642_fe0f.svg" );
@@ -2689,8 +2808,6 @@ public class EmojiMap {
 		code( "\ud83d\udc71\ud83c\udfff\u2640", "emj_1f471_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f471_1f3ff_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udfff\u2642", "emj_1f471_1f3ff_200d_2642_fe0f.svg" );
-	}
-	private static void init26(){
 		code( "\ud83d\udc71\u200d\u2640\ufe0f", "emj_1f471_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc71\u2640", "emj_1f471_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc71\u200d\u2642\ufe0f", "emj_1f471_200d_2642_fe0f.svg" );
@@ -2778,6 +2895,8 @@ public class EmojiMap {
 		code( "\ud83d\udc77\ud83c\udffc\u2640", "emj_1f477_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc77\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f477_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc77\ud83c\udffc\u2642", "emj_1f477_1f3fc_200d_2642_fe0f.svg" );
+	}
+	private static void init28(){
 		code( "\ud83d\udc77\ud83c\udffd", "emj_1f477_1f3fd.svg" );
 		code( "\ud83d\udc77\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f477_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc77\ud83c\udffd\u2640", "emj_1f477_1f3fd_200d_2640_fe0f.svg" );
@@ -2792,8 +2911,6 @@ public class EmojiMap {
 		code( "\ud83d\udc77\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f477_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc77\ud83c\udfff\u2640", "emj_1f477_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc77\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f477_1f3ff_200d_2642_fe0f.svg" );
-	}
-	private static void init27(){
 		code( "\ud83d\udc77\ud83c\udfff\u2642", "emj_1f477_1f3ff_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc77\u200d\u2640\ufe0f", "emj_1f477_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc77\u2640", "emj_1f477_200d_2640_fe0f.svg" );
@@ -2881,6 +2998,8 @@ public class EmojiMap {
 		code( "\ud83d\udc82\ud83c\udffb", "emj_1f482_1f3fb.svg" );
 		code( "\ud83d\udc82\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f482_1f3fb_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc82\ud83c\udffb\u2640", "emj_1f482_1f3fb_200d_2640_fe0f.svg" );
+	}
+	private static void init29(){
 		code( "\ud83d\udc82\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f482_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc82\ud83c\udffb\u2642", "emj_1f482_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc82\ud83c\udffc", "emj_1f482_1f3fc.svg" );
@@ -2895,8 +3014,6 @@ public class EmojiMap {
 		code( "\ud83d\udc82\ud83c\udffd\u2642", "emj_1f482_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc82\ud83c\udffe", "emj_1f482_1f3fe.svg" );
 		code( "\ud83d\udc82\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f482_1f3fe_200d_2640_fe0f.svg" );
-	}
-	private static void init28(){
 		code( "\ud83d\udc82\ud83c\udffe\u2640", "emj_1f482_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc82\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f482_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc82\ud83c\udffe\u2642", "emj_1f482_1f3fe_200d_2642_fe0f.svg" );
@@ -2984,6 +3101,8 @@ public class EmojiMap {
 		code( "\ud83d\udc87\ud83c\udffd\u2640", "emj_1f487_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc87\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f487_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc87\ud83c\udffd\u2642", "emj_1f487_1f3fd_200d_2642_fe0f.svg" );
+	}
+	private static void init30(){
 		code( "\ud83d\udc87\ud83c\udffe", "emj_1f487_1f3fe.svg" );
 		code( "\ud83d\udc87\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f487_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc87\ud83c\udffe\u2640", "emj_1f487_1f3fe_200d_2640_fe0f.svg" );
@@ -2998,8 +3117,6 @@ public class EmojiMap {
 		code( "\ud83d\udc87\u2640", "emj_1f487_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc87\u200d\u2642\ufe0f", "emj_1f487_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc87\u2642", "emj_1f487_200d_2642_fe0f.svg" );
-	}
-	private static void init29(){
 		code( "\ud83d\udc88", "emj_1f488.svg" );
 		code( "\ue320", "emj_1f488.svg" );
 		code( "\ueaa2", "emj_1f488.svg" );
@@ -3087,6 +3204,8 @@ public class EmojiMap {
 		code( "\ueaaa", "emj_1f49c.svg" );
 		code( "\udbba\udf16", "emj_1f49c.svg" );
 		code( "\ud83d\udc9d", "emj_1f49d.svg" );
+	}
+	private static void init31(){
 		code( "\ue437", "emj_1f49d.svg" );
 		code( "\ueb54", "emj_1f49d.svg" );
 		code( "\udbba\udf17", "emj_1f49d.svg" );
@@ -3101,8 +3220,6 @@ public class EmojiMap {
 		code( "\ud83d\udca0", "emj_1f4a0.svg" );
 		code( "\udbba\udf55", "emj_1f4a0.svg" );
 		code( "\ud83d\udca1", "emj_1f4a1.svg" );
-	}
-	private static void init30(){
 		code( "\ue10f", "emj_1f4a1.svg" );
 		code( "\ue476", "emj_1f4a1.svg" );
 		code( "\ue6fb", "emj_1f4a1.svg" );
@@ -3190,6 +3307,8 @@ public class EmojiMap {
 		code( "\ud83d\udcb6", "emj_1f4b6.svg" );
 		code( "\ud83d\udcb7", "emj_1f4b7.svg" );
 		code( "\ud83d\udcb8", "emj_1f4b8.svg" );
+	}
+	private static void init32(){
 		code( "\ueb5b", "emj_1f4b8.svg" );
 		code( "\udbb9\udce4", "emj_1f4b8.svg" );
 		code( "\ud83d\udcb9", "emj_1f4b9.svg" );
@@ -3204,8 +3323,6 @@ public class EmojiMap {
 		code( "\ue00c", "emj_1f4bb.svg" );
 		code( "\ue5b8", "emj_1f4bb.svg" );
 		code( "\ue716", "emj_1f4bb.svg" );
-	}
-	private static void init31(){
 		code( "\udbb9\udd38", "emj_1f4bb.svg" );
 		code( "\ud83d\udcbc", "emj_1f4bc.svg" );
 		code( "\ue11e", "emj_1f4bc.svg" );
@@ -3293,6 +3410,8 @@ public class EmojiMap {
 		code( "\ue568", "emj_1f4d5.svg" );
 		code( "\udbb9\udd02", "emj_1f4d5.svg" );
 		code( "\ud83d\udcd6", "emj_1f4d6.svg" );
+	}
+	private static void init33(){
 		code( "\ue148", "emj_1f4d6.svg" );
 		code( "\ue49f", "emj_1f4d6.svg" );
 		code( "\udbb9\udd46", "emj_1f4d6.svg" );
@@ -3307,8 +3426,6 @@ public class EmojiMap {
 		code( "\ue683", "emj_1f4d9.svg" );
 		code( "\udbb9\udd01", "emj_1f4d9.svg" );
 		code( "\ud83d\udcda", "emj_1f4da.svg" );
-	}
-	private static void init32(){
 		code( "\ue56f", "emj_1f4da.svg" );
 		code( "\udbb9\udd03", "emj_1f4da.svg" );
 		code( "\ud83d\udcdb", "emj_1f4db.svg" );
@@ -3396,6 +3513,8 @@ public class EmojiMap {
 		code( "\ue6ce", "emj_1f4f2.svg" );
 		code( "\ueb08", "emj_1f4f2.svg" );
 		code( "\udbb9\udd26", "emj_1f4f2.svg" );
+	}
+	private static void init34(){
 		code( "\ud83d\udcf3", "emj_1f4f3.svg" );
 		code( "\ue250", "emj_1f4f3.svg" );
 		code( "\uea90", "emj_1f4f3.svg" );
@@ -3410,8 +3529,6 @@ public class EmojiMap {
 		code( "\uea84", "emj_1f4f6.svg" );
 		code( "\udbba\udc38", "emj_1f4f6.svg" );
 		code( "\ud83d\udcf7", "emj_1f4f7.svg" );
-	}
-	private static void init33(){
 		code( "\ue008", "emj_1f4f7.svg" );
 		code( "\ue515", "emj_1f4f7.svg" );
 		code( "\ue681", "emj_1f4f7.svg" );
@@ -3499,6 +3616,8 @@ public class EmojiMap {
 		code( "\udbba\udf4b", "emj_1f517.svg" );
 		code( "\ud83d\udd18", "emj_1f518.svg" );
 		code( "\ueb04", "emj_1f518.svg" );
+	}
+	private static void init35(){
 		code( "\udbba\udf8c", "emj_1f518.svg" );
 		code( "\ud83d\udd19", "emj_1f519.svg" );
 		code( "\ueb06", "emj_1f519.svg" );
@@ -3513,8 +3632,6 @@ public class EmojiMap {
 		code( "\ue6b7", "emj_1f51c.svg" );
 		code( "\udbb8\udc18", "emj_1f51c.svg" );
 		code( "\ud83d\udd1d", "emj_1f51d.svg" );
-	}
-	private static void init34(){
 		code( "\ue24c", "emj_1f51d.svg" );
 		code( "\udbba\udf42", "emj_1f51d.svg" );
 		code( "\ud83d\udd1e", "emj_1f51e.svg" );
@@ -3602,6 +3719,8 @@ public class EmojiMap {
 		code( "\udbba\udf74", "emj_1f537.svg" );
 		code( "\ud83d\udd38", "emj_1f538.svg" );
 		code( "\ue536", "emj_1f538.svg" );
+	}
+	private static void init36(){
 		code( "\udbba\udf75", "emj_1f538.svg" );
 		code( "\ud83d\udd39", "emj_1f539.svg" );
 		code( "\ue537", "emj_1f539.svg" );
@@ -3616,8 +3735,6 @@ public class EmojiMap {
 		code( "\ue543", "emj_1f53c.svg" );
 		code( "\udbba\udf01", "emj_1f53c.svg" );
 		code( "\ud83d\udd3d", "emj_1f53d.svg" );
-	}
-	private static void init35(){
 		code( "\ue542", "emj_1f53d.svg" );
 		code( "\udbba\udf00", "emj_1f53d.svg" );
 		code( "\ud83d\udd49", R.drawable.emj_1f549_fe0f );
@@ -3695,12 +3812,26 @@ public class EmojiMap {
 		code( "\ud83d\udd73", R.drawable.emj_1f573_fe0f );
 		code( "\ud83d\udd73\ufe0f", R.drawable.emj_1f573_fe0f );
 		code( "\ud83d\udd74\ud83c\udffb", "emj_1f574_1f3fb.svg" );
+		code( "\ud83d\udd74\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f574_1f3fb_200d_2640_fe0f.svg" );
+		code( "\ud83d\udd74\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f574_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83d\udd74\ud83c\udffc", "emj_1f574_1f3fc.svg" );
+		code( "\ud83d\udd74\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f574_1f3fc_200d_2640_fe0f.svg" );
+		code( "\ud83d\udd74\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f574_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\udd74\ud83c\udffd", "emj_1f574_1f3fd.svg" );
+		code( "\ud83d\udd74\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f574_1f3fd_200d_2640_fe0f.svg" );
+		code( "\ud83d\udd74\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f574_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\udd74\ud83c\udffe", "emj_1f574_1f3fe.svg" );
+		code( "\ud83d\udd74\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f574_1f3fe_200d_2640_fe0f.svg" );
+	}
+	private static void init37(){
+		code( "\ud83d\udd74\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f574_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83d\udd74\ud83c\udfff", "emj_1f574_1f3ff.svg" );
+		code( "\ud83d\udd74\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f574_1f3ff_200d_2640_fe0f.svg" );
+		code( "\ud83d\udd74\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f574_1f3ff_200d_2642_fe0f.svg" );
 		code( "\ud83d\udd74", R.drawable.emj_1f574_fe0f );
 		code( "\ud83d\udd74\ufe0f", R.drawable.emj_1f574_fe0f );
+		code( "\ud83d\udd74\ufe0f\u200d\u2640\ufe0f", "emj_1f574_fe0f_200d_2640_fe0f.svg" );
+		code( "\ud83d\udd74\ufe0f\u200d\u2642\ufe0f", "emj_1f574_fe0f_200d_2642_fe0f.svg" );
 		code( "\ud83d\udd75\ud83c\udffb", "emj_1f575_1f3fb.svg" );
 		code( "\ud83d\udd75\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f575_1f3fb_200d_2640_fe0f.svg" );
 		code( "\ud83d\udd75\ud83c\udffb\u2640", "emj_1f575_1f3fb_200d_2640_fe0f.svg" );
@@ -3719,8 +3850,6 @@ public class EmojiMap {
 		code( "\ud83d\udd75\ud83c\udffe", "emj_1f575_1f3fe.svg" );
 		code( "\ud83d\udd75\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f575_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83d\udd75\ud83c\udffe\u2640", "emj_1f575_1f3fe_200d_2640_fe0f.svg" );
-	}
-	private static void init36(){
 		code( "\ud83d\udd75\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f575_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83d\udd75\ud83c\udffe\u2642", "emj_1f575_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83d\udd75\ud83c\udfff", "emj_1f575_1f3ff.svg" );
@@ -3796,6 +3925,8 @@ public class EmojiMap {
 		code( "\ud83d\uddc4\ufe0f", R.drawable.emj_1f5c4_fe0f );
 		code( "\ud83d\uddd1", R.drawable.emj_1f5d1_fe0f );
 		code( "\ud83d\uddd1\ufe0f", R.drawable.emj_1f5d1_fe0f );
+	}
+	private static void init38(){
 		code( "\ud83d\uddd2", R.drawable.emj_1f5d2_fe0f );
 		code( "\ud83d\uddd2\ufe0f", R.drawable.emj_1f5d2_fe0f );
 		code( "\ud83d\uddd3", R.drawable.emj_1f5d3_fe0f );
@@ -3822,8 +3953,6 @@ public class EmojiMap {
 		code( "\ue03b", "emj_1f5fb.svg" );
 		code( "\ue5bd", "emj_1f5fb.svg" );
 		code( "\ue740", "emj_1f5fb.svg" );
-	}
-	private static void init37(){
 		code( "\udbb9\udcc3", "emj_1f5fb.svg" );
 		code( "\ud83d\uddfc", "emj_1f5fc.svg" );
 		code( "\ue4c0", "emj_1f5fc.svg" );
@@ -3899,6 +4028,8 @@ public class EmojiMap {
 		code( "\ud83d\ude12", "emj_1f612.svg" );
 		code( "\ue40e", "emj_1f612.svg" );
 		code( "\ue725", "emj_1f612.svg" );
+	}
+	private static void init39(){
 		code( "\ueac9", "emj_1f612.svg" );
 		code( "\udbb8\udf26", "emj_1f612.svg" );
 		code( "\ud83d\ude13", "emj_1f613.svg" );
@@ -3925,8 +4056,6 @@ public class EmojiMap {
 		code( "\ud83d\ude1a", "emj_1f61a.svg" );
 		code( "\ue417", "emj_1f61a.svg" );
 		code( "\ueace", "emj_1f61a.svg" );
-	}
-	private static void init38(){
 		code( "\udbb8\udf2d", "emj_1f61a.svg" );
 		code( "\ud83d\ude1b", "emj_1f61b.svg" );
 		code( "\ud83d\ude1c", "emj_1f61c.svg" );
@@ -4002,6 +4131,8 @@ public class EmojiMap {
 		code( "\ud83d\ude31", "emj_1f631.svg" );
 		code( "\ue107", "emj_1f631.svg" );
 		code( "\ue5c5", "emj_1f631.svg" );
+	}
+	private static void init40(){
 		code( "\ue757", "emj_1f631.svg" );
 		code( "\udbb8\udf41", "emj_1f631.svg" );
 		code( "\ud83d\ude32", "emj_1f632.svg" );
@@ -4028,8 +4159,6 @@ public class EmojiMap {
 		code( "\ud83d\ude39", "emj_1f639.svg" );
 		code( "\ueb63", "emj_1f639.svg" );
 		code( "\udbb8\udf4a", "emj_1f639.svg" );
-	}
-	private static void init39(){
 		code( "\ud83d\ude3a", "emj_1f63a.svg" );
 		code( "\ueb61", "emj_1f63a.svg" );
 		code( "\udbb8\udf48", "emj_1f63a.svg" );
@@ -4105,6 +4234,8 @@ public class EmojiMap {
 		code( "\ud83d\ude46\ud83c\udffd", "emj_1f646_1f3fd.svg" );
 		code( "\ud83d\ude46\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f646_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\ude46\ud83c\udffd\u2640", "emj_1f646_1f3fd_200d_2640_fe0f.svg" );
+	}
+	private static void init41(){
 		code( "\ud83d\ude46\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f646_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude46\ud83c\udffd\u2642", "emj_1f646_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude46\ud83c\udffe", "emj_1f646_1f3fe.svg" );
@@ -4131,8 +4262,6 @@ public class EmojiMap {
 		code( "\ud83d\ude47\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f647_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude47\ud83c\udffb\u2642", "emj_1f647_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude47\ud83c\udffc", "emj_1f647_1f3fc.svg" );
-	}
-	private static void init40(){
 		code( "\ud83d\ude47\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f647_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83d\ude47\ud83c\udffc\u2640", "emj_1f647_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83d\ude47\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f647_1f3fc_200d_2642_fe0f.svg" );
@@ -4208,6 +4337,8 @@ public class EmojiMap {
 		code( "\ud83d\ude4c\ud83c\udfff", "emj_1f64c_1f3ff.svg" );
 		code( "\ud83d\ude4d", "emj_1f64d.svg" );
 		code( "\ueb87", "emj_1f64d.svg" );
+	}
+	private static void init42(){
 		code( "\udbb8\udf59", "emj_1f64d.svg" );
 		code( "\ud83d\ude4d\ud83c\udffb", "emj_1f64d_1f3fb.svg" );
 		code( "\ud83d\ude4d\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f64d_1f3fb_200d_2640_fe0f.svg" );
@@ -4234,8 +4365,6 @@ public class EmojiMap {
 		code( "\ud83d\ude4d\ud83c\udfff\u2640", "emj_1f64d_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83d\ude4d\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f64d_1f3ff_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude4d\ud83c\udfff\u2642", "emj_1f64d_1f3ff_200d_2642_fe0f.svg" );
-	}
-	private static void init41(){
 		code( "\ud83d\ude4d\u200d\u2640\ufe0f", "emj_1f64d_200d_2640_fe0f.svg" );
 		code( "\ud83d\ude4d\u2640", "emj_1f64d_200d_2640_fe0f.svg" );
 		code( "\ud83d\ude4d\u200d\u2642\ufe0f", "emj_1f64d_200d_2642_fe0f.svg" );
@@ -4311,6 +4440,8 @@ public class EmojiMap {
 		code( "\ud83d\ude88", "emj_1f688.svg" );
 		code( "\ud83d\ude89", "emj_1f689.svg" );
 		code( "\ue039", "emj_1f689.svg" );
+	}
+	private static void init43(){
 		code( "\ueb6d", "emj_1f689.svg" );
 		code( "\udbb9\udfec", "emj_1f689.svg" );
 		code( "\ud83d\ude8a", "emj_1f68a.svg" );
@@ -4337,8 +4468,6 @@ public class EmojiMap {
 		code( "\udbb9\udff2", "emj_1f692.svg" );
 		code( "\ud83d\ude93", "emj_1f693.svg" );
 		code( "\ue432", "emj_1f693.svg" );
-	}
-	private static void init42(){
 		code( "\ueae1", "emj_1f693.svg" );
 		code( "\udbb9\udff4", "emj_1f693.svg" );
 		code( "\ud83d\ude94", "emj_1f694.svg" );
@@ -4414,6 +4543,8 @@ public class EmojiMap {
 		code( "\ue46a", "emj_1f6a5.svg" );
 		code( "\ue66d", "emj_1f6a5.svg" );
 		code( "\udbb9\udff7", "emj_1f6a5.svg" );
+	}
+	private static void init44(){
 		code( "\ud83d\udea6", "emj_1f6a6.svg" );
 		code( "\ud83d\udea7", "emj_1f6a7.svg" );
 		code( "\ue137", "emj_1f6a7.svg" );
@@ -4440,8 +4571,6 @@ public class EmojiMap {
 		code( "\ud83d\udead", "emj_1f6ad.svg" );
 		code( "\ue208", "emj_1f6ad.svg" );
 		code( "\ue47e", "emj_1f6ad.svg" );
-	}
-	private static void init43(){
 		code( "\ue680", "emj_1f6ad.svg" );
 		code( "\udbba\udf1f", "emj_1f6ad.svg" );
 		code( "\ud83d\udeae", "emj_1f6ae.svg" );
@@ -4517,6 +4646,8 @@ public class EmojiMap {
 		code( "\ud83d\udeb6", "emj_1f6b6.svg" );
 		code( "\ue201", "emj_1f6b6.svg" );
 		code( "\ueb72", "emj_1f6b6.svg" );
+	}
+	private static void init45(){
 		code( "\udbb9\udff0", "emj_1f6b6.svg" );
 		code( "\ud83d\udeb6\ud83c\udffb", "emj_1f6b6_1f3fb.svg" );
 		code( "\ud83d\udeb6\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f6b6_1f3fb_200d_2640_fe0f.svg" );
@@ -4543,8 +4674,6 @@ public class EmojiMap {
 		code( "\ud83d\udeb6\ud83c\udfff\u2640", "emj_1f6b6_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83d\udeb6\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f6b6_1f3ff_200d_2642_fe0f.svg" );
 		code( "\ud83d\udeb6\ud83c\udfff\u2642", "emj_1f6b6_1f3ff_200d_2642_fe0f.svg" );
-	}
-	private static void init44(){
 		code( "\ud83d\udeb6\u200d\u2640\ufe0f", "emj_1f6b6_200d_2640_fe0f.svg" );
 		code( "\ud83d\udeb6\u2640", "emj_1f6b6_200d_2640_fe0f.svg" );
 		code( "\ud83d\udeb6\u200d\u2642\ufe0f", "emj_1f6b6_200d_2642_fe0f.svg" );
@@ -4607,6 +4736,7 @@ public class EmojiMap {
 		code( "\ud83d\uded0", "emj_1f6d0.svg" );
 		code( "\ud83d\uded1", "emj_1f6d1.svg" );
 		code( "\ud83d\uded2", "emj_1f6d2.svg" );
+		code( "\ud83d\uded5", "emj_1f6d5.svg" );
 		code( "\ud83d\udee0", R.drawable.emj_1f6e0_fe0f );
 		code( "\ud83d\udee0\ufe0f", R.drawable.emj_1f6e0_fe0f );
 		code( "\ud83d\udee1", R.drawable.emj_1f6e1_fe0f );
@@ -4619,6 +4749,8 @@ public class EmojiMap {
 		code( "\ud83d\udee4\ufe0f", R.drawable.emj_1f6e4_fe0f );
 		code( "\ud83d\udee5", R.drawable.emj_1f6e5_fe0f );
 		code( "\ud83d\udee5\ufe0f", R.drawable.emj_1f6e5_fe0f );
+	}
+	private static void init46(){
 		code( "\ud83d\udee9", R.drawable.emj_1f6e9_fe0f );
 		code( "\ud83d\udee9\ufe0f", R.drawable.emj_1f6e9_fe0f );
 		code( "\ud83d\udeeb", "emj_1f6eb.svg" );
@@ -4633,6 +4765,27 @@ public class EmojiMap {
 		code( "\ud83d\udef7", "emj_1f6f7.svg" );
 		code( "\ud83d\udef8", "emj_1f6f8.svg" );
 		code( "\ud83d\udef9", "emj_1f6f9.svg" );
+		code( "\ud83d\udefa", "emj_1f6fa.svg" );
+		code( "\ud83d\udfe0", "emj_1f7e0.svg" );
+		code( "\ud83d\udfe1", "emj_1f7e1.svg" );
+		code( "\ud83d\udfe2", "emj_1f7e2.svg" );
+		code( "\ud83d\udfe3", "emj_1f7e3.svg" );
+		code( "\ud83d\udfe4", "emj_1f7e4.svg" );
+		code( "\ud83d\udfe5", "emj_1f7e5.svg" );
+		code( "\ud83d\udfe6", "emj_1f7e6.svg" );
+		code( "\ud83d\udfe7", "emj_1f7e7.svg" );
+		code( "\ud83d\udfe8", "emj_1f7e8.svg" );
+		code( "\ud83d\udfe9", "emj_1f7e9.svg" );
+		code( "\ud83d\udfea", "emj_1f7ea.svg" );
+		code( "\ud83d\udfeb", "emj_1f7eb.svg" );
+		code( "\ud83e\udd0d", "emj_1f90d.svg" );
+		code( "\ud83e\udd0e", "emj_1f90e.svg" );
+		code( "\ud83e\udd0f", "emj_1f90f.svg" );
+		code( "\ud83e\udd0f\ud83c\udffb", "emj_1f90f_1f3fb.svg" );
+		code( "\ud83e\udd0f\ud83c\udffc", "emj_1f90f_1f3fc.svg" );
+		code( "\ud83e\udd0f\ud83c\udffd", "emj_1f90f_1f3fd.svg" );
+		code( "\ud83e\udd0f\ud83c\udffe", "emj_1f90f_1f3fe.svg" );
+		code( "\ud83e\udd0f\ud83c\udfff", "emj_1f90f_1f3ff.svg" );
 		code( "\ud83e\udd10", "emj_1f910.svg" );
 		code( "\ud83e\udd11", "emj_1f911.svg" );
 		code( "\ud83e\udd12", "emj_1f912.svg" );
@@ -4646,8 +4799,6 @@ public class EmojiMap {
 		code( "\ud83e\udd18\ud83c\udffc", "emj_1f918_1f3fc.svg" );
 		code( "\ud83e\udd18\ud83c\udffd", "emj_1f918_1f3fd.svg" );
 		code( "\ud83e\udd18\ud83c\udffe", "emj_1f918_1f3fe.svg" );
-	}
-	private static void init45(){
 		code( "\ud83e\udd18\ud83c\udfff", "emj_1f918_1f3ff.svg" );
 		code( "\ud83e\udd19", "emj_1f919.svg" );
 		code( "\ud83e\udd19\ud83c\udffb", "emj_1f919_1f3fb.svg" );
@@ -4701,6 +4852,8 @@ public class EmojiMap {
 		code( "\ud83e\udd26\ud83c\udffc", "emj_1f926_1f3fc.svg" );
 		code( "\ud83e\udd26\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f926_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd26\ud83c\udffc\u2640", "emj_1f926_1f3fc_200d_2640_fe0f.svg" );
+	}
+	private static void init47(){
 		code( "\ud83e\udd26\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f926_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd26\ud83c\udffc\u2642", "emj_1f926_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd26\ud83c\udffd", "emj_1f926_1f3fd.svg" );
@@ -4749,8 +4902,6 @@ public class EmojiMap {
 		code( "\ud83e\udd32\ud83c\udffd", "emj_1f932_1f3fd.svg" );
 		code( "\ud83e\udd32\ud83c\udffe", "emj_1f932_1f3fe.svg" );
 		code( "\ud83e\udd32\ud83c\udfff", "emj_1f932_1f3ff.svg" );
-	}
-	private static void init46(){
 		code( "\ud83e\udd33", "emj_1f933.svg" );
 		code( "\ud83e\udd33\ud83c\udffb", "emj_1f933_1f3fb.svg" );
 		code( "\ud83e\udd33\ud83c\udffc", "emj_1f933_1f3fc.svg" );
@@ -4765,10 +4916,22 @@ public class EmojiMap {
 		code( "\ud83e\udd34\ud83c\udfff", "emj_1f934_1f3ff.svg" );
 		code( "\ud83e\udd35", "emj_1f935.svg" );
 		code( "\ud83e\udd35\ud83c\udffb", "emj_1f935_1f3fb.svg" );
+		code( "\ud83e\udd35\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f935_1f3fb_200d_2640_fe0f.svg" );
+		code( "\ud83e\udd35\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f935_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd35\ud83c\udffc", "emj_1f935_1f3fc.svg" );
+		code( "\ud83e\udd35\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f935_1f3fc_200d_2640_fe0f.svg" );
+		code( "\ud83e\udd35\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f935_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd35\ud83c\udffd", "emj_1f935_1f3fd.svg" );
+		code( "\ud83e\udd35\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f935_1f3fd_200d_2640_fe0f.svg" );
+		code( "\ud83e\udd35\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f935_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd35\ud83c\udffe", "emj_1f935_1f3fe.svg" );
+		code( "\ud83e\udd35\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f935_1f3fe_200d_2640_fe0f.svg" );
+		code( "\ud83e\udd35\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f935_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd35\ud83c\udfff", "emj_1f935_1f3ff.svg" );
+		code( "\ud83e\udd35\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f935_1f3ff_200d_2640_fe0f.svg" );
+		code( "\ud83e\udd35\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f935_1f3ff_200d_2642_fe0f.svg" );
+		code( "\ud83e\udd35\u200d\u2640\ufe0f", "emj_1f935_200d_2640_fe0f.svg" );
+		code( "\ud83e\udd35\u200d\u2642\ufe0f", "emj_1f935_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd36", "emj_1f936.svg" );
 		code( "\ud83e\udd36\ud83c\udffb", "emj_1f936_1f3fb.svg" );
 		code( "\ud83e\udd36\ud83c\udffc", "emj_1f936_1f3fc.svg" );
@@ -4792,6 +4955,8 @@ public class EmojiMap {
 		code( "\ud83e\udd37\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f937_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd37\ud83c\udffd\u2642", "emj_1f937_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd37\ud83c\udffe", "emj_1f937_1f3fe.svg" );
+	}
+	private static void init48(){
 		code( "\ud83e\udd37\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f937_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd37\ud83c\udffe\u2640", "emj_1f937_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd37\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f937_1f3fe_200d_2642_fe0f.svg" );
@@ -4852,8 +5017,6 @@ public class EmojiMap {
 		code( "\ud83e\udd39\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f939_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd39\ud83c\udffd\u2642", "emj_1f939_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd39\ud83c\udffe", "emj_1f939_1f3fe.svg" );
-	}
-	private static void init47(){
 		code( "\ud83e\udd39\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f939_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd39\ud83c\udffe\u2640", "emj_1f939_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd39\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f939_1f3fe_200d_2642_fe0f.svg" );
@@ -4895,6 +5058,8 @@ public class EmojiMap {
 		code( "\ud83e\udd3d\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f93d_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd3d\ud83c\udffe\u2642", "emj_1f93d_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd3d\ud83c\udfff", "emj_1f93d_1f3ff.svg" );
+	}
+	private static void init49(){
 		code( "\ud83e\udd3d\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f93d_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd3d\ud83c\udfff\u2640", "emj_1f93d_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd3d\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f93d_1f3ff_200d_2642_fe0f.svg" );
@@ -4933,6 +5098,7 @@ public class EmojiMap {
 		code( "\ud83e\udd3e\u2640", "emj_1f93e_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd3e\u200d\u2642\ufe0f", "emj_1f93e_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd3e\u2642", "emj_1f93e_200d_2642_fe0f.svg" );
+		code( "\ud83e\udd3f", "emj_1f93f.svg" );
 		code( "\ud83e\udd40", "emj_1f940.svg" );
 		code( "\ud83e\udd41", "emj_1f941.svg" );
 		code( "\ud83e\udd42", "emj_1f942.svg" );
@@ -4955,8 +5121,6 @@ public class EmojiMap {
 		code( "\ud83e\udd54", "emj_1f954.svg" );
 		code( "\ud83e\udd55", "emj_1f955.svg" );
 		code( "\ud83e\udd56", "emj_1f956.svg" );
-	}
-	private static void init48(){
 		code( "\ud83e\udd57", "emj_1f957.svg" );
 		code( "\ud83e\udd58", "emj_1f958.svg" );
 		code( "\ud83e\udd59", "emj_1f959.svg" );
@@ -4983,11 +5147,13 @@ public class EmojiMap {
 		code( "\ud83e\udd6e", "emj_1f96e.svg" );
 		code( "\ud83e\udd6f", "emj_1f96f.svg" );
 		code( "\ud83e\udd70", "emj_1f970.svg" );
+		code( "\ud83e\udd71", "emj_1f971.svg" );
 		code( "\ud83e\udd73", "emj_1f973.svg" );
 		code( "\ud83e\udd74", "emj_1f974.svg" );
 		code( "\ud83e\udd75", "emj_1f975.svg" );
 		code( "\ud83e\udd76", "emj_1f976.svg" );
 		code( "\ud83e\udd7a", "emj_1f97a.svg" );
+		code( "\ud83e\udd7b", "emj_1f97b.svg" );
 		code( "\ud83e\udd7c", "emj_1f97c.svg" );
 		code( "\ud83e\udd7d", "emj_1f97d.svg" );
 		code( "\ud83e\udd7e", "emj_1f97e.svg" );
@@ -4995,6 +5161,8 @@ public class EmojiMap {
 		code( "\ud83e\udd80", "emj_1f980.svg" );
 		code( "\ud83e\udd81", "emj_1f981.svg" );
 		code( "\ud83e\udd82", "emj_1f982.svg" );
+	}
+	private static void init50(){
 		code( "\ud83e\udd83", "emj_1f983.svg" );
 		code( "\ud83e\udd84", "emj_1f984.svg" );
 		code( "\ud83e\udd85", "emj_1f985.svg" );
@@ -5027,6 +5195,18 @@ public class EmojiMap {
 		code( "\ud83e\udda0", "emj_1f9a0.svg" );
 		code( "\ud83e\udda1", "emj_1f9a1.svg" );
 		code( "\ud83e\udda2", "emj_1f9a2.svg" );
+		code( "\ud83e\udda5", "emj_1f9a5.svg" );
+		code( "\ud83e\udda6", "emj_1f9a6.svg" );
+		code( "\ud83e\udda7", "emj_1f9a7.svg" );
+		code( "\ud83e\udda8", "emj_1f9a8.svg" );
+		code( "\ud83e\udda9", "emj_1f9a9.svg" );
+		code( "\ud83e\uddaa", "emj_1f9aa.svg" );
+		code( "\ud83e\uddae", "emj_1f9ae.svg" );
+		code( "\ud83e\uddaf", "emj_1f9af.svg" );
+		code( "\ud83e\uddb0", "emj_1f9b0.svg" );
+		code( "\ud83e\uddb1", "emj_1f9b1.svg" );
+		code( "\ud83e\uddb2", "emj_1f9b2.svg" );
+		code( "\ud83e\uddb3", "emj_1f9b3.svg" );
 		code( "\ud83e\uddb4", "emj_1f9b4.svg" );
 		code( "\ud83e\uddb5", "emj_1f9b5.svg" );
 		code( "\ud83e\uddb5\ud83c\udffb", "emj_1f9b5_1f3fb.svg" );
@@ -5041,42 +5221,155 @@ public class EmojiMap {
 		code( "\ud83e\uddb6\ud83c\udffe", "emj_1f9b6_1f3fe.svg" );
 		code( "\ud83e\uddb6\ud83c\udfff", "emj_1f9b6_1f3ff.svg" );
 		code( "\ud83e\uddb7", "emj_1f9b7.svg" );
+		code( "\ud83e\uddb8", "emj_1f9b8.svg" );
+		code( "\ud83e\uddb8\ud83c\udffb", "emj_1f9b8_1f3fb.svg" );
 		code( "\ud83e\uddb8\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9b8_1f3fb_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddb8\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9b8_1f3fb_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddb8\ud83c\udffc", "emj_1f9b8_1f3fc.svg" );
 		code( "\ud83e\uddb8\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9b8_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddb8\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9b8_1f3fc_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddb8\ud83c\udffd", "emj_1f9b8_1f3fd.svg" );
 		code( "\ud83e\uddb8\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f9b8_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddb8\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f9b8_1f3fd_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddb8\ud83c\udffe", "emj_1f9b8_1f3fe.svg" );
 		code( "\ud83e\uddb8\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f9b8_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddb8\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f9b8_1f3fe_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddb8\ud83c\udfff", "emj_1f9b8_1f3ff.svg" );
 		code( "\ud83e\uddb8\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f9b8_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddb8\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f9b8_1f3ff_200d_2642_fe0f.svg" );
 		code( "\ud83e\uddb8\u200d\u2640\ufe0f", "emj_1f9b8_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddb8\u200d\u2642\ufe0f", "emj_1f9b8_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddb9", "emj_1f9b9.svg" );
+		code( "\ud83e\uddb9\ud83c\udffb", "emj_1f9b9_1f3fb.svg" );
 		code( "\ud83e\uddb9\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9b9_1f3fb_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddb9\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9b9_1f3fb_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddb9\ud83c\udffc", "emj_1f9b9_1f3fc.svg" );
 		code( "\ud83e\uddb9\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9b9_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddb9\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9b9_1f3fc_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddb9\ud83c\udffd", "emj_1f9b9_1f3fd.svg" );
 		code( "\ud83e\uddb9\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f9b9_1f3fd_200d_2640_fe0f.svg" );
-	}
-	private static void init49(){
 		code( "\ud83e\uddb9\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f9b9_1f3fd_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddb9\ud83c\udffe", "emj_1f9b9_1f3fe.svg" );
 		code( "\ud83e\uddb9\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f9b9_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddb9\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f9b9_1f3fe_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddb9\ud83c\udfff", "emj_1f9b9_1f3ff.svg" );
 		code( "\ud83e\uddb9\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f9b9_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddb9\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f9b9_1f3ff_200d_2642_fe0f.svg" );
 		code( "\ud83e\uddb9\u200d\u2640\ufe0f", "emj_1f9b9_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddb9\u200d\u2642\ufe0f", "emj_1f9b9_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddba", "emj_1f9ba.svg" );
+		code( "\ud83e\uddbb", "emj_1f9bb.svg" );
+		code( "\ud83e\uddbb\ud83c\udffb", "emj_1f9bb_1f3fb.svg" );
+		code( "\ud83e\uddbb\ud83c\udffc", "emj_1f9bb_1f3fc.svg" );
+		code( "\ud83e\uddbb\ud83c\udffd", "emj_1f9bb_1f3fd.svg" );
+		code( "\ud83e\uddbb\ud83c\udffe", "emj_1f9bb_1f3fe.svg" );
+		code( "\ud83e\uddbb\ud83c\udfff", "emj_1f9bb_1f3ff.svg" );
+	}
+	private static void init51(){
+		code( "\ud83e\uddbc", "emj_1f9bc.svg" );
+		code( "\ud83e\uddbd", "emj_1f9bd.svg" );
+		code( "\ud83e\uddbe", "emj_1f9be.svg" );
+		code( "\ud83e\uddbf", "emj_1f9bf.svg" );
 		code( "\ud83e\uddc0", "emj_1f9c0.svg" );
 		code( "\ud83e\uddc1", "emj_1f9c1.svg" );
 		code( "\ud83e\uddc2", "emj_1f9c2.svg" );
+		code( "\ud83e\uddc3", "emj_1f9c3.svg" );
+		code( "\ud83e\uddc4", "emj_1f9c4.svg" );
+		code( "\ud83e\uddc5", "emj_1f9c5.svg" );
+		code( "\ud83e\uddc6", "emj_1f9c6.svg" );
+		code( "\ud83e\uddc7", "emj_1f9c7.svg" );
+		code( "\ud83e\uddc8", "emj_1f9c8.svg" );
+		code( "\ud83e\uddc9", "emj_1f9c9.svg" );
+		code( "\ud83e\uddca", "emj_1f9ca.svg" );
+		code( "\ud83e\uddcd", "emj_1f9cd.svg" );
+		code( "\ud83e\uddcd\ud83c\udffb", "emj_1f9cd_1f3fb.svg" );
+		code( "\ud83e\uddcd\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9cd_1f3fb_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcd\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9cd_1f3fb_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddcd\ud83c\udffc", "emj_1f9cd_1f3fc.svg" );
+		code( "\ud83e\uddcd\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9cd_1f3fc_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcd\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9cd_1f3fc_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddcd\ud83c\udffd", "emj_1f9cd_1f3fd.svg" );
+		code( "\ud83e\uddcd\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f9cd_1f3fd_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcd\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f9cd_1f3fd_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddcd\ud83c\udffe", "emj_1f9cd_1f3fe.svg" );
+		code( "\ud83e\uddcd\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f9cd_1f3fe_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcd\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f9cd_1f3fe_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddcd\ud83c\udfff", "emj_1f9cd_1f3ff.svg" );
+		code( "\ud83e\uddcd\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f9cd_1f3ff_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcd\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f9cd_1f3ff_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddcd\u200d\u2640\ufe0f", "emj_1f9cd_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcd\u200d\u2642\ufe0f", "emj_1f9cd_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddce", "emj_1f9ce.svg" );
+		code( "\ud83e\uddce\ud83c\udffb", "emj_1f9ce_1f3fb.svg" );
+		code( "\ud83e\uddce\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9ce_1f3fb_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddce\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9ce_1f3fb_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddce\ud83c\udffc", "emj_1f9ce_1f3fc.svg" );
+		code( "\ud83e\uddce\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9ce_1f3fc_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddce\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9ce_1f3fc_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddce\ud83c\udffd", "emj_1f9ce_1f3fd.svg" );
+		code( "\ud83e\uddce\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f9ce_1f3fd_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddce\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f9ce_1f3fd_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddce\ud83c\udffe", "emj_1f9ce_1f3fe.svg" );
+		code( "\ud83e\uddce\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f9ce_1f3fe_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddce\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f9ce_1f3fe_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddce\ud83c\udfff", "emj_1f9ce_1f3ff.svg" );
+		code( "\ud83e\uddce\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f9ce_1f3ff_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddce\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f9ce_1f3ff_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddce\u200d\u2640\ufe0f", "emj_1f9ce_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddce\u200d\u2642\ufe0f", "emj_1f9ce_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddcf", "emj_1f9cf.svg" );
+		code( "\ud83e\uddcf\ud83c\udffb", "emj_1f9cf_1f3fb.svg" );
+		code( "\ud83e\uddcf\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9cf_1f3fb_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcf\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9cf_1f3fb_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddcf\ud83c\udffc", "emj_1f9cf_1f3fc.svg" );
+		code( "\ud83e\uddcf\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9cf_1f3fc_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcf\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9cf_1f3fc_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddcf\ud83c\udffd", "emj_1f9cf_1f3fd.svg" );
+		code( "\ud83e\uddcf\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f9cf_1f3fd_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcf\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f9cf_1f3fd_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddcf\ud83c\udffe", "emj_1f9cf_1f3fe.svg" );
+		code( "\ud83e\uddcf\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f9cf_1f3fe_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcf\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f9cf_1f3fe_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddcf\ud83c\udfff", "emj_1f9cf_1f3ff.svg" );
+		code( "\ud83e\uddcf\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f9cf_1f3ff_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcf\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f9cf_1f3ff_200d_2642_fe0f.svg" );
+		code( "\ud83e\uddcf\u200d\u2640\ufe0f", "emj_1f9cf_200d_2640_fe0f.svg" );
+		code( "\ud83e\uddcf\u200d\u2642\ufe0f", "emj_1f9cf_200d_2642_fe0f.svg" );
 		code( "\ud83e\uddd0", "emj_1f9d0.svg" );
 		code( "\ud83e\uddd1", "emj_1f9d1.svg" );
 		code( "\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fb_200d_1f91d_200d_1f9d1_1f3fb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fb_200d_1f91d_200d_1f9d1_1f3fc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fb_200d_1f91d_200d_1f9d1_1f3fd.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fb_200d_1f91d_200d_1f9d1_1f3fe.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fb_200d_1f91d_200d_1f9d1_1f3ff.svg" );
 		code( "\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fc_200d_1f91d_200d_1f9d1_1f3fb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fc_200d_1f91d_200d_1f9d1_1f3fc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fc_200d_1f91d_200d_1f9d1_1f3fd.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fc_200d_1f91d_200d_1f9d1_1f3fe.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fc_200d_1f91d_200d_1f9d1_1f3ff.svg" );
 		code( "\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fd.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fd_200d_1f91d_200d_1f9d1_1f3fb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fd_200d_1f91d_200d_1f9d1_1f3fc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fd_200d_1f91d_200d_1f9d1_1f3fd.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fd_200d_1f91d_200d_1f9d1_1f3fe.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fd_200d_1f91d_200d_1f9d1_1f3ff.svg" );
 		code( "\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fe.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fe_200d_1f91d_200d_1f9d1_1f3fb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fe_200d_1f91d_200d_1f9d1_1f3fc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fe_200d_1f91d_200d_1f9d1_1f3fd.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fe_200d_1f91d_200d_1f9d1_1f3fe.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fe_200d_1f91d_200d_1f9d1_1f3ff.svg" );
 		code( "\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3ff.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3fb.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3fc.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3fd.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3fe.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3ff.svg" );
+	}
+	private static void init52(){
+		code( "\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1", "emj_1f9d1_200d_1f91d_200d_1f9d1.svg" );
 		code( "\ud83e\uddd2", "emj_1f9d2.svg" );
 		code( "\ud83e\uddd2\ud83c\udffb", "emj_1f9d2_1f3fb.svg" );
 		code( "\ud83e\uddd2\ud83c\udffc", "emj_1f9d2_1f3fc.svg" );
@@ -5161,8 +5454,6 @@ public class EmojiMap {
 		code( "\ud83e\uddd9\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9d9_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83e\uddd9\ud83c\udffc", "emj_1f9d9_1f3fc.svg" );
 		code( "\ud83e\uddd9\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9d9_1f3fc_200d_2640_fe0f.svg" );
-	}
-	private static void init50(){
 		code( "\ud83e\uddd9\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9d9_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83e\uddd9\ud83c\udffd", "emj_1f9d9_1f3fd.svg" );
 		code( "\ud83e\uddd9\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f9d9_1f3fd_200d_2640_fe0f.svg" );
@@ -5179,6 +5470,8 @@ public class EmojiMap {
 		code( "\ud83e\uddda\ud83c\udffb", "emj_1f9da_1f3fb.svg" );
 		code( "\ud83e\uddda\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9da_1f3fb_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddda\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9da_1f3fb_200d_2642_fe0f.svg" );
+	}
+	private static void init53(){
 		code( "\ud83e\uddda\ud83c\udffc", "emj_1f9da_1f3fc.svg" );
 		code( "\ud83e\uddda\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9da_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddda\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9da_1f3fc_200d_2642_fe0f.svg" );
@@ -5264,8 +5557,6 @@ public class EmojiMap {
 		code( "\ud83e\udde8", "emj_1f9e8.svg" );
 		code( "\ud83e\udde9", "emj_1f9e9.svg" );
 		code( "\ud83e\uddea", "emj_1f9ea.svg" );
-	}
-	private static void init51(){
 		code( "\ud83e\uddeb", "emj_1f9eb.svg" );
 		code( "\ud83e\uddec", "emj_1f9ec.svg" );
 		code( "\ud83e\udded", "emj_1f9ed.svg" );
@@ -5282,11 +5573,29 @@ public class EmojiMap {
 		code( "\ud83e\uddf8", "emj_1f9f8.svg" );
 		code( "\ud83e\uddf9", "emj_1f9f9.svg" );
 		code( "\ud83e\uddfa", "emj_1f9fa.svg" );
+	}
+	private static void init54(){
 		code( "\ud83e\uddfb", "emj_1f9fb.svg" );
 		code( "\ud83e\uddfc", "emj_1f9fc.svg" );
 		code( "\ud83e\uddfd", "emj_1f9fd.svg" );
 		code( "\ud83e\uddfe", "emj_1f9fe.svg" );
 		code( "\ud83e\uddff", "emj_1f9ff.svg" );
+		code( "\ud83e\ude70", "emj_1fa70.svg" );
+		code( "\ud83e\ude71", "emj_1fa71.svg" );
+		code( "\ud83e\ude72", "emj_1fa72.svg" );
+		code( "\ud83e\ude73", "emj_1fa73.svg" );
+		code( "\ud83e\ude78", "emj_1fa78.svg" );
+		code( "\ud83e\ude79", "emj_1fa79.svg" );
+		code( "\ud83e\ude7a", "emj_1fa7a.svg" );
+		code( "\ud83e\ude80", "emj_1fa80.svg" );
+		code( "\ud83e\ude81", "emj_1fa81.svg" );
+		code( "\ud83e\ude82", "emj_1fa82.svg" );
+		code( "\ud83e\ude90", "emj_1fa90.svg" );
+		code( "\ud83e\ude91", "emj_1fa91.svg" );
+		code( "\ud83e\ude92", "emj_1fa92.svg" );
+		code( "\ud83e\ude93", "emj_1fa93.svg" );
+		code( "\ud83e\ude94", "emj_1fa94.svg" );
+		code( "\ud83e\ude95", "emj_1fa95.svg" );
 		code( "\u203c", R.drawable.emj_203c_fe0f );
 		code( "\u203c\ufe0f", R.drawable.emj_203c_fe0f );
 		code( "\ue704", R.drawable.emj_203c_fe0f );
@@ -5360,15 +5669,16 @@ public class EmojiMap {
 		code( "\udbb8\udc1c", "emj_231b.svg" );
 		code( "\u2328", R.drawable.emj_2328_fe0f );
 		code( "\u2328\ufe0f", R.drawable.emj_2328_fe0f );
+		code( "\u0023\u20e3", "emj_23_20e3.svg" );
 		code( "\u23cf", R.drawable.emj_23cf_fe0f );
 		code( "\u23cf\ufe0f", R.drawable.emj_23cf_fe0f );
 		code( "\u23e9", "emj_23e9.svg" );
 		code( "\ue23c", "emj_23e9.svg" );
 		code( "\ue530", "emj_23e9.svg" );
 		code( "\udbba\udefe", "emj_23e9.svg" );
-		code( "\u23ea", "emj_23ea.svg" );
 	}
-	private static void init52(){
+	private static void init55(){
+		code( "\u23ea", "emj_23ea.svg" );
 		code( "\ue23d", "emj_23ea.svg" );
 		code( "\ue52f", "emj_23ea.svg" );
 		code( "\udbba\udeff", "emj_23ea.svg" );
@@ -5469,9 +5779,9 @@ public class EmojiMap {
 		code( "\u2614", "emj_2614.svg" );
 		code( "\ue04b", "emj_2614.svg" );
 		code( "\ue48c", "emj_2614.svg" );
-		code( "\ue640", "emj_2614.svg" );
 	}
-	private static void init53(){
+	private static void init56(){
+		code( "\ue640", "emj_2614.svg" );
 		code( "\udbb8\udc02", "emj_2614.svg" );
 		code( "\u2615", "emj_2615.svg" );
 		code( "\ue045", "emj_2615.svg" );
@@ -5572,9 +5882,9 @@ public class EmojiMap {
 		code( "\ue499", "emj_2652.svg" );
 		code( "\ue650", "emj_2652.svg" );
 		code( "\udbb8\udc35", "emj_2652.svg" );
-		code( "\u2653", "emj_2653.svg" );
 	}
-	private static void init54(){
+	private static void init57(){
+		code( "\u2653", "emj_2653.svg" );
 		code( "\ue24a", "emj_2653.svg" );
 		code( "\ue49a", "emj_2653.svg" );
 		code( "\ue651", "emj_2653.svg" );
@@ -5652,6 +5962,7 @@ public class EmojiMap {
 		code( "\ue487", "emj_26a1.svg" );
 		code( "\ue642", "emj_26a1.svg" );
 		code( "\udbb8\udc04", "emj_26a1.svg" );
+		code( "\u26a7", "emj_26a7.svg" );
 		code( "\u26aa", "emj_26aa.svg" );
 		code( "\ue53a", "emj_26aa.svg" );
 		code( "\udbba\udf65", "emj_26aa.svg" );
@@ -5674,10 +5985,10 @@ public class EmojiMap {
 		code( "\udbb9\udfd1", "emj_26be.svg" );
 		code( "\u26c4", "emj_26c4.svg" );
 		code( "\ue048", "emj_26c4.svg" );
+	}
+	private static void init58(){
 		code( "\ue485", "emj_26c4.svg" );
 		code( "\ue641", "emj_26c4.svg" );
-	}
-	private static void init55(){
 		code( "\udbb8\udc03", "emj_26c4.svg" );
 		code( "\u26c5", "emj_26c5.svg" );
 		code( "\ue48e", "emj_26c5.svg" );
@@ -5724,6 +6035,11 @@ public class EmojiMap {
 		code( "\ue4b4", "emj_26f5.svg" );
 		code( "\ue6a3", "emj_26f5.svg" );
 		code( "\udbb9\udfea", "emj_26f5.svg" );
+		code( "\u26f7\ud83c\udffb", "emj_26f7_1f3fb.svg" );
+		code( "\u26f7\ud83c\udffc", "emj_26f7_1f3fc.svg" );
+		code( "\u26f7\ud83c\udffd", "emj_26f7_1f3fd.svg" );
+		code( "\u26f7\ud83c\udffe", "emj_26f7_1f3fe.svg" );
+		code( "\u26f7\ud83c\udfff", "emj_26f7_1f3ff.svg" );
 		code( "\u26f7", R.drawable.emj_26f7_fe0f );
 		code( "\u26f7\ufe0f", R.drawable.emj_26f7_fe0f );
 		code( "\u26f8", R.drawable.emj_26f8_fe0f );
@@ -5772,6 +6088,8 @@ public class EmojiMap {
 		code( "\u2702\ufe0f", R.drawable.emj_2702_fe0f );
 		code( "\ue313", R.drawable.emj_2702_fe0f );
 		code( "\ue516", R.drawable.emj_2702_fe0f );
+	}
+	private static void init59(){
 		code( "\ue675", R.drawable.emj_2702_fe0f );
 		code( "\udbb9\udd3e", R.drawable.emj_2702_fe0f );
 		code( "\u2705", "emj_2705.svg" );
@@ -5779,8 +6097,6 @@ public class EmojiMap {
 		code( "\udbba\udf4a", "emj_2705.svg" );
 		code( "\u2708", R.drawable.emj_2708_fe0f );
 		code( "\u2708\ufe0f", R.drawable.emj_2708_fe0f );
-	}
-	private static void init56(){
 		code( "\ue01d", R.drawable.emj_2708_fe0f );
 		code( "\ue4b3", R.drawable.emj_2708_fe0f );
 		code( "\ue662", R.drawable.emj_2708_fe0f );
@@ -5875,6 +6191,8 @@ public class EmojiMap {
 		code( "\udbba\udf77", R.drawable.emj_2747_fe0f );
 		code( "\u274c", "emj_274c.svg" );
 		code( "\ue333", "emj_274c.svg" );
+	}
+	private static void init60(){
 		code( "\ue550", "emj_274c.svg" );
 		code( "\udbba\udf45", "emj_274c.svg" );
 		code( "\u274e", "emj_274e.svg" );
@@ -5882,8 +6200,6 @@ public class EmojiMap {
 		code( "\udbba\udf46", "emj_274e.svg" );
 		code( "\u2753", "emj_2753.svg" );
 		code( "\ue020", "emj_2753.svg" );
-	}
-	private static void init57(){
 		code( "\ue483", "emj_2753.svg" );
 		code( "\udbba\udf09", "emj_2753.svg" );
 		code( "\u2754", "emj_2754.svg" );
@@ -5938,6 +6254,7 @@ public class EmojiMap {
 		code( "\ue700", R.drawable.emj_2935_fe0f );
 		code( "\ueb2e", R.drawable.emj_2935_fe0f );
 		code( "\udbba\udef5", R.drawable.emj_2935_fe0f );
+		code( "\u002a\u20e3", "emj_2a_20e3.svg" );
 		code( "\u2b05", R.drawable.emj_2b05_fe0f );
 		code( "\u2b05\ufe0f", R.drawable.emj_2b05_fe0f );
 		code( "\ue235", R.drawable.emj_2b05_fe0f );
@@ -5975,6 +6292,10 @@ public class EmojiMap {
 		code( "\u303d\ufe0f", R.drawable.emj_303d_fe0f );
 		code( "\ue12c", R.drawable.emj_303d_fe0f );
 		code( "\udbba\udc1b", R.drawable.emj_303d_fe0f );
+		code( "\u0030\u20e3", "emj_30_20e3.svg" );
+		code( "\u0031\u20e3", "emj_31_20e3.svg" );
+	}
+	private static void init61(){
 		code( "\u3297", R.drawable.emj_3297_fe0f );
 		code( "\u3297\ufe0f", R.drawable.emj_3297_fe0f );
 		code( "\ue30d", R.drawable.emj_3297_fe0f );
@@ -5985,9 +6306,17 @@ public class EmojiMap {
 		code( "\ue315", R.drawable.emj_3299_fe0f );
 		code( "\ue4f1", R.drawable.emj_3299_fe0f );
 		code( "\ue734", R.drawable.emj_3299_fe0f );
-	}
-	private static void init58(){
 		code( "\udbba\udf2b", R.drawable.emj_3299_fe0f );
+		code( "\u0032\u20e3", "emj_32_20e3.svg" );
+		code( "\u0033\u20e3", "emj_33_20e3.svg" );
+		code( "\u0034\u20e3", "emj_34_20e3.svg" );
+		code( "\u0035\u20e3", "emj_35_20e3.svg" );
+		code( "\u0036\u20e3", "emj_36_20e3.svg" );
+		code( "\u0037\u20e3", "emj_37_20e3.svg" );
+		code( "\u0038\u20e3", "emj_38_20e3.svg" );
+		code( "\u0039\u20e3", "emj_39_20e3.svg" );
+		code( "\u00a9", "emj_a9.svg" );
+		code( "\u00ae", "emj_ae.svg" );
 		name( "+1", "\ud83d\udc4d" );
 		name( "+1_dark_skin_tone", "\ud83d\udc4d\ud83c\udfff" );
 		name( "+1_light_skin_tone", "\ud83d\udc4d\ud83c\udffb" );
@@ -6068,6 +6397,8 @@ public class EmojiMap {
 		name( "ant", "\ud83d\udc1c" );
 		name( "ao", "\ud83c\udde6\ud83c\uddf4" );
 		name( "apple", "\ud83c\udf4e" );
+	}
+	private static void init62(){
 		name( "aq", "\ud83c\udde6\ud83c\uddf6" );
 		name( "aquarius", "\u2652" );
 		name( "ar", "\ud83c\udde6\ud83c\uddf7" );
@@ -6088,8 +6419,6 @@ public class EmojiMap {
 		name( "arrow_right_hook", "\u21aa\ufe0f" );
 		name( "arrow_up", "\u2b06\ufe0f" );
 		name( "arrow_up_down", "\u2195\ufe0f" );
-	}
-	private static void init59(){
 		name( "arrow_up_small", "\ud83d\udd3c" );
 		name( "arrow_upper_left", "\u2196\ufe0f" );
 		name( "arrow_upper_right", "\u2197\ufe0f" );
@@ -6171,6 +6500,8 @@ public class EmojiMap {
 		name( "bath_tone1", "\ud83d\udec0\ud83c\udffb" );
 		name( "bath_tone2", "\ud83d\udec0\ud83c\udffc" );
 		name( "bath_tone3", "\ud83d\udec0\ud83c\udffd" );
+	}
+	private static void init63(){
 		name( "bath_tone4", "\ud83d\udec0\ud83c\udffe" );
 		name( "bath_tone5", "\ud83d\udec0\ud83c\udfff" );
 		name( "bathtub", "\ud83d\udec1" );
@@ -6191,8 +6522,6 @@ public class EmojiMap {
 		name( "bearded_person_tone1", "\ud83e\uddd4\ud83c\udffb" );
 		name( "bearded_person_tone2", "\ud83e\uddd4\ud83c\udffc" );
 		name( "bearded_person_tone3", "\ud83e\uddd4\ud83c\udffd" );
-	}
-	private static void init60(){
 		name( "bearded_person_tone4", "\ud83e\uddd4\ud83c\udffe" );
 		name( "bearded_person_tone5", "\ud83e\uddd4\ud83c\udfff" );
 		name( "bed", "\ud83d\udecf\ufe0f" );
@@ -6274,6 +6603,8 @@ public class EmojiMap {
 		name( "blush", "\ud83d\ude0a" );
 		name( "bm", "\ud83c\udde7\ud83c\uddf2" );
 		name( "bn", "\ud83c\udde7\ud83c\uddf3" );
+	}
+	private static void init64(){
 		name( "bo", "\ud83c\udde7\ud83c\uddf4" );
 		name( "boar", "\ud83d\udc17" );
 		name( "boat", "\u26f5" );
@@ -6294,8 +6625,6 @@ public class EmojiMap {
 		name( "bow_medium_dark_skin_tone", "\ud83d\ude47\ud83c\udffe" );
 		name( "bow_medium_light_skin_tone", "\ud83d\ude47\ud83c\udffc" );
 		name( "bow_medium_skin_tone", "\ud83d\ude47\ud83c\udffd" );
-	}
-	private static void init61(){
 		name( "bow_tone1", "\ud83d\ude47\ud83c\udffb" );
 		name( "bow_tone2", "\ud83d\ude47\ud83c\udffc" );
 		name( "bow_tone3", "\ud83d\ude47\ud83c\udffd" );
@@ -6377,6 +6706,8 @@ public class EmojiMap {
 		name( "call_me_hand_medium_dark_skin_tone", "\ud83e\udd19\ud83c\udffe" );
 		name( "call_me_hand_medium_light_skin_tone", "\ud83e\udd19\ud83c\udffc" );
 		name( "call_me_hand_medium_skin_tone", "\ud83e\udd19\ud83c\udffd" );
+	}
+	private static void init65(){
 		name( "call_me_hand_tone1", "\ud83e\udd19\ud83c\udffb" );
 		name( "call_me_hand_tone2", "\ud83e\udd19\ud83c\udffc" );
 		name( "call_me_hand_tone3", "\ud83e\udd19\ud83c\udffd" );
@@ -6397,8 +6728,6 @@ public class EmojiMap {
 		name( "candy", "\ud83c\udf6c" );
 		name( "canned_food", "\ud83e\udd6b" );
 		name( "canoe", "\ud83d\udef6" );
-	}
-	private static void init62(){
 		name( "capital_abcd", "\ud83d\udd20" );
 		name( "capricorn", "\u2651" );
 		name( "car", "\ud83d\ude97" );
@@ -6480,6 +6809,8 @@ public class EmojiMap {
 		name( "clipboard", "\ud83d\udccb" );
 		name( "clock", "\ud83d\udd70\ufe0f" );
 		name( "clock1", "\ud83d\udd50" );
+	}
+	private static void init66(){
 		name( "clock10", "\ud83d\udd59" );
 		name( "clock1030", "\ud83d\udd65" );
 		name( "clock11", "\ud83d\udd5a" );
@@ -6500,8 +6831,6 @@ public class EmojiMap {
 		name( "clock7", "\ud83d\udd56" );
 		name( "clock730", "\ud83d\udd62" );
 		name( "clock8", "\ud83d\udd57" );
-	}
-	private static void init63(){
 		name( "clock830", "\ud83d\udd63" );
 		name( "clock9", "\ud83d\udd58" );
 		name( "clock930", "\ud83d\udd64" );
@@ -6583,6 +6912,8 @@ public class EmojiMap {
 		name( "couplekiss", "\ud83d\udc8f" );
 		name( "couplekiss_mm", "\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68" );
 		name( "couplekiss_ww", "\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69" );
+	}
+	private static void init67(){
 		name( "cow", "\ud83d\udc2e" );
 		name( "cow2", "\ud83d\udc04" );
 		name( "cowboy", "\ud83e\udd20" );
@@ -6603,8 +6934,6 @@ public class EmojiMap {
 		name( "crossed_fingers_light_skin_tone", "\ud83e\udd1e\ud83c\udffb" );
 		name( "crossed_fingers_medium_dark_skin_tone", "\ud83e\udd1e\ud83c\udffe" );
 		name( "crossed_fingers_medium_light_skin_tone", "\ud83e\udd1e\ud83c\udffc" );
-	}
-	private static void init64(){
 		name( "crossed_fingers_medium_skin_tone", "\ud83e\udd1e\ud83c\udffd" );
 		name( "crossed_fingers_tone1", "\ud83e\udd1e\ud83c\udffb" );
 		name( "crossed_fingers_tone2", "\ud83e\udd1e\ud83c\udffc" );
@@ -6686,6 +7015,8 @@ public class EmojiMap {
 		name( "dk", "\ud83c\udde9\ud83c\uddf0" );
 		name( "dm", "\ud83c\udde9\ud83c\uddf2" );
 		name( "dna", "\ud83e\uddec" );
+	}
+	private static void init68(){
 		name( "do", "\ud83c\udde9\ud83c\uddf4" );
 		name( "do_not_litter", "\ud83d\udeaf" );
 		name( "dog", "\ud83d\udc36" );
@@ -6706,8 +7037,6 @@ public class EmojiMap {
 		name( "drooling_face", "\ud83e\udd24" );
 		name( "droplet", "\ud83d\udca7" );
 		name( "drum", "\ud83e\udd41" );
-	}
-	private static void init65(){
 		name( "drum_with_drumsticks", "\ud83e\udd41" );
 		name( "duck", "\ud83e\udd86" );
 		name( "dumpling", "\ud83e\udd5f" );
@@ -6777,7 +7106,7 @@ public class EmojiMap {
 		name( "exploding_head", "\ud83e\udd2f" );
 		name( "expressionless", "\ud83d\ude11" );
 		name( "eye", "\ud83d\udc41\ufe0f" );
-		name( "eye_in_speech_bubble", "\ud83d\udc41\ufe0f\u200d\ud83d\udde8\ufe0f" );
+		name( "eye_in_speech_bubble", "\ud83d\udc41\u200d\ud83d\udde8" );
 		name( "eyeglasses", "\ud83d\udc53" );
 		name( "eyes", "\ud83d\udc40" );
 		name( "face_palm", "\ud83e\udd26" );
@@ -6789,6 +7118,8 @@ public class EmojiMap {
 		name( "face_palm_tone1", "\ud83e\udd26\ud83c\udffb" );
 		name( "face_palm_tone2", "\ud83e\udd26\ud83c\udffc" );
 		name( "face_palm_tone3", "\ud83e\udd26\ud83c\udffd" );
+	}
+	private static void init69(){
 		name( "face_palm_tone4", "\ud83e\udd26\ud83c\udffe" );
 		name( "face_palm_tone5", "\ud83e\udd26\ud83c\udfff" );
 		name( "face_vomiting", "\ud83e\udd2e" );
@@ -6809,8 +7140,6 @@ public class EmojiMap {
 		name( "facepalm_tone3", "\ud83e\udd26\ud83c\udffd" );
 		name( "facepalm_tone4", "\ud83e\udd26\ud83c\udffe" );
 		name( "facepalm_tone5", "\ud83e\udd26\ud83c\udfff" );
-	}
-	private static void init66(){
 		name( "facepunch", "\ud83d\udc4a" );
 		name( "facepunch_dark_skin_tone", "\ud83d\udc4a\ud83c\udfff" );
 		name( "facepunch_light_skin_tone", "\ud83d\udc4a\ud83c\udffb" );
@@ -6892,6 +7221,8 @@ public class EmojiMap {
 		name( "female_bald_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb2" );
 		name( "female_bald_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb2" );
 		name( "female_bald_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb2" );
+	}
+	private static void init70(){
 		name( "female_bald_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb2" );
 		name( "female_bald_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb2" );
 		name( "female_bald_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb2" );
@@ -6912,8 +7243,6 @@ public class EmojiMap {
 		name( "female_cook", "\ud83d\udc69\u200d\ud83c\udf73" );
 		name( "female_cook_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf73" );
 		name( "female_cook_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf73" );
-	}
-	private static void init67(){
 		name( "female_cook_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf73" );
 		name( "female_cook_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf73" );
 		name( "female_cook_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf73" );
@@ -6995,6 +7324,8 @@ public class EmojiMap {
 		name( "female_farmer_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf3e" );
 		name( "female_farmer_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf3e" );
 		name( "female_farmer_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf3e" );
+	}
+	private static void init71(){
 		name( "female_farmer_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf3e" );
 		name( "female_farmer_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf3e" );
 		name( "female_farmer_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf3e" );
@@ -7015,8 +7346,6 @@ public class EmojiMap {
 		name( "female_guard_dark_skin_tone", "\ud83d\udc82\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "female_guard_light_skin_tone", "\ud83d\udc82\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "female_guard_medium_dark_skin_tone", "\ud83d\udc82\ud83c\udffe\u200d\u2640\ufe0f" );
-	}
-	private static void init68(){
 		name( "female_guard_medium_light_skin_tone", "\ud83d\udc82\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "female_guard_medium_skin_tone", "\ud83d\udc82\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "female_guard_tone1", "\ud83d\udc82\ud83c\udffb\u200d\u2640\ufe0f" );
@@ -7098,6 +7427,8 @@ public class EmojiMap {
 		name( "female_red_haired_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb0" );
 		name( "female_red_haired_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb0" );
 		name( "female_red_haired_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb0" );
+	}
+	private static void init72(){
 		name( "female_red_haired_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb0" );
 		name( "female_red_haired_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb0" );
 		name( "female_red_haired_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb0" );
@@ -7118,8 +7449,6 @@ public class EmojiMap {
 		name( "female_singer_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udfa4" );
 		name( "female_singer_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udfa4" );
 		name( "female_singer_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udfa4" );
-	}
-	private static void init69(){
 		name( "female_singer_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udfa4" );
 		name( "female_singer_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udfa4" );
 		name( "female_singer_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udfa4" );
@@ -7201,6 +7530,8 @@ public class EmojiMap {
 		name( "female_white_haired_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb3" );
 		name( "female_white_haired_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb3" );
 		name( "female_white_haired_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb3" );
+	}
+	private static void init73(){
 		name( "female_white_haired_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb3" );
 		name( "female_white_haired_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb3" );
 		name( "female_zombie", "\ud83e\udddf\u200d\u2640\ufe0f" );
@@ -7221,8 +7552,6 @@ public class EmojiMap {
 		name( "fingers_crossed_tone3", "\ud83e\udd1e\ud83c\udffd" );
 		name( "fingers_crossed_tone4", "\ud83e\udd1e\ud83c\udffe" );
 		name( "fingers_crossed_tone5", "\ud83e\udd1e\ud83c\udfff" );
-	}
-	private static void init70(){
 		name( "fire", "\ud83d\udd25" );
 		name( "fire_engine", "\ud83d\ude92" );
 		name( "fire_extinguisher", "\ud83e\uddef" );
@@ -7304,6 +7633,8 @@ public class EmojiMap {
 		name( "flag_cr", "\ud83c\udde8\ud83c\uddf7" );
 		name( "flag_cu", "\ud83c\udde8\ud83c\uddfa" );
 		name( "flag_cv", "\ud83c\udde8\ud83c\uddfb" );
+	}
+	private static void init74(){
 		name( "flag_cw", "\ud83c\udde8\ud83c\uddfc" );
 		name( "flag_cx", "\ud83c\udde8\ud83c\uddfd" );
 		name( "flag_cy", "\ud83c\udde8\ud83c\uddfe" );
@@ -7324,8 +7655,6 @@ public class EmojiMap {
 		name( "flag_er", "\ud83c\uddea\ud83c\uddf7" );
 		name( "flag_es", "\ud83c\uddea\ud83c\uddf8" );
 		name( "flag_et", "\ud83c\uddea\ud83c\uddf9" );
-	}
-	private static void init71(){
 		name( "flag_eu", "\ud83c\uddea\ud83c\uddfa" );
 		name( "flag_fi", "\ud83c\uddeb\ud83c\uddee" );
 		name( "flag_fj", "\ud83c\uddeb\ud83c\uddef" );
@@ -7407,6 +7736,8 @@ public class EmojiMap {
 		name( "flag_mm", "\ud83c\uddf2\ud83c\uddf2" );
 		name( "flag_mn", "\ud83c\uddf2\ud83c\uddf3" );
 		name( "flag_mo", "\ud83c\uddf2\ud83c\uddf4" );
+	}
+	private static void init75(){
 		name( "flag_mp", "\ud83c\uddf2\ud83c\uddf5" );
 		name( "flag_mq", "\ud83c\uddf2\ud83c\uddf6" );
 		name( "flag_mr", "\ud83c\uddf2\ud83c\uddf7" );
@@ -7427,8 +7758,6 @@ public class EmojiMap {
 		name( "flag_nl", "\ud83c\uddf3\ud83c\uddf1" );
 		name( "flag_no", "\ud83c\uddf3\ud83c\uddf4" );
 		name( "flag_np", "\ud83c\uddf3\ud83c\uddf5" );
-	}
-	private static void init72(){
 		name( "flag_nr", "\ud83c\uddf3\ud83c\uddf7" );
 		name( "flag_nu", "\ud83c\uddf3\ud83c\uddfa" );
 		name( "flag_nz", "\ud83c\uddf3\ud83c\uddff" );
@@ -7510,6 +7839,8 @@ public class EmojiMap {
 		name( "flag_wf", "\ud83c\uddfc\ud83c\uddeb" );
 		name( "flag_white", "\ud83c\udff3\ufe0f" );
 		name( "flag_ws", "\ud83c\uddfc\ud83c\uddf8" );
+	}
+	private static void init76(){
 		name( "flag_xk", "\ud83c\uddfd\ud83c\uddf0" );
 		name( "flag_ye", "\ud83c\uddfe\ud83c\uddea" );
 		name( "flag_yt", "\ud83c\uddfe\ud83c\uddf9" );
@@ -7530,8 +7861,6 @@ public class EmojiMap {
 		name( "fm", "\ud83c\uddeb\ud83c\uddf2" );
 		name( "fo", "\ud83c\uddeb\ud83c\uddf4" );
 		name( "fog", "\ud83c\udf2b\ufe0f" );
-	}
-	private static void init73(){
 		name( "foggy", "\ud83c\udf01" );
 		name( "foot", "\ud83e\uddb6" );
 		name( "foot_dark_skin_tone", "\ud83e\uddb6\ud83c\udfff" );
@@ -7613,6 +7942,8 @@ public class EmojiMap {
 		name( "golfer", "\ud83c\udfcc\ufe0f" );
 		name( "golfer_dark_skin_tone", "\ud83c\udfcc\ud83c\udfff" );
 		name( "golfer_light_skin_tone", "\ud83c\udfcc\ud83c\udffb" );
+	}
+	private static void init77(){
 		name( "golfer_medium_dark_skin_tone", "\ud83c\udfcc\ud83c\udffe" );
 		name( "golfer_medium_light_skin_tone", "\ud83c\udfcc\ud83c\udffc" );
 		name( "golfer_medium_skin_tone", "\ud83c\udfcc\ud83c\udffd" );
@@ -7633,8 +7964,6 @@ public class EmojiMap {
 		name( "grandma_tone5", "\ud83d\udc75\ud83c\udfff" );
 		name( "grapes", "\ud83c\udf47" );
 		name( "green_apple", "\ud83c\udf4f" );
-	}
-	private static void init74(){
 		name( "green_book", "\ud83d\udcd7" );
 		name( "green_heart", "\ud83d\udc9a" );
 		name( "green_salad", "\ud83e\udd57" );
@@ -7716,6 +8045,8 @@ public class EmojiMap {
 		name( "handball_medium_dark_skin_tone", "\ud83e\udd3e\ud83c\udffe" );
 		name( "handball_medium_light_skin_tone", "\ud83e\udd3e\ud83c\udffc" );
 		name( "handball_medium_skin_tone", "\ud83e\udd3e\ud83c\udffd" );
+	}
+	private static void init78(){
 		name( "handball_tone1", "\ud83e\udd3e\ud83c\udffb" );
 		name( "handball_tone2", "\ud83e\udd3e\ud83c\udffc" );
 		name( "handball_tone3", "\ud83e\udd3e\ud83c\udffd" );
@@ -7736,8 +8067,6 @@ public class EmojiMap {
 		name( "heart_eyes_cat", "\ud83d\ude3b" );
 		name( "heartbeat", "\ud83d\udc93" );
 		name( "heartpulse", "\ud83d\udc97" );
-	}
-	private static void init75(){
 		name( "hearts", "\u2665\ufe0f" );
 		name( "heavy_check_mark", "\u2714\ufe0f" );
 		name( "heavy_division_sign", "\u2797" );
@@ -7819,6 +8148,8 @@ public class EmojiMap {
 		name( "il", "\ud83c\uddee\ud83c\uddf1" );
 		name( "im", "\ud83c\uddee\ud83c\uddf2" );
 		name( "imp", "\ud83d\udc7f" );
+	}
+	private static void init79(){
 		name( "in", "\ud83c\uddee\ud83c\uddf3" );
 		name( "inbox_tray", "\ud83d\udce5" );
 		name( "incoming_envelope", "\ud83d\udce8" );
@@ -7839,8 +8170,6 @@ public class EmojiMap {
 		name( "innocent", "\ud83d\ude07" );
 		name( "interrobang", "\u2049\ufe0f" );
 		name( "io", "\ud83c\uddee\ud83c\uddf4" );
-	}
-	private static void init76(){
 		name( "iphone", "\ud83d\udcf1" );
 		name( "iq", "\ud83c\uddee\ud83c\uddf6" );
 		name( "ir", "\ud83c\uddee\ud83c\uddf7" );
@@ -7922,6 +8251,8 @@ public class EmojiMap {
 		name( "lacrosse", "\ud83e\udd4d" );
 		name( "lantern", "\ud83c\udfee" );
 		name( "large_blue_circle", "\ud83d\udd35" );
+	}
+	private static void init80(){
 		name( "large_blue_diamond", "\ud83d\udd37" );
 		name( "large_orange_diamond", "\ud83d\udd36" );
 		name( "last_quarter_moon", "\ud83c\udf17" );
@@ -7942,8 +8273,6 @@ public class EmojiMap {
 		name( "left_facing_fist_tone1", "\ud83e\udd1b\ud83c\udffb" );
 		name( "left_facing_fist_tone2", "\ud83e\udd1b\ud83c\udffc" );
 		name( "left_facing_fist_tone3", "\ud83e\udd1b\ud83c\udffd" );
-	}
-	private static void init77(){
 		name( "left_facing_fist_tone4", "\ud83e\udd1b\ud83c\udffe" );
 		name( "left_facing_fist_tone5", "\ud83e\udd1b\ud83c\udfff" );
 		name( "left_fist", "\ud83e\udd1b" );
@@ -8025,6 +8354,8 @@ public class EmojiMap {
 		name( "mage_light_skin_tone", "\ud83e\uddd9\ud83c\udffb" );
 		name( "mage_medium_dark_skin_tone", "\ud83e\uddd9\ud83c\udffe" );
 		name( "mage_medium_light_skin_tone", "\ud83e\uddd9\ud83c\udffc" );
+	}
+	private static void init81(){
 		name( "mage_medium_skin_tone", "\ud83e\uddd9\ud83c\udffd" );
 		name( "mage_tone1", "\ud83e\uddd9\ud83c\udffb" );
 		name( "mage_tone2", "\ud83e\uddd9\ud83c\udffc" );
@@ -8045,8 +8376,6 @@ public class EmojiMap {
 		name( "male_artist_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udfa8" );
 		name( "male_artist_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udfa8" );
 		name( "male_artist_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfa8" );
-	}
-	private static void init78(){
 		name( "male_artist_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udfa8" );
 		name( "male_artist_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfa8" );
 		name( "male_artist_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfa8" );
@@ -8128,6 +8457,8 @@ public class EmojiMap {
 		name( "male_doctor_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2695\ufe0f" );
 		name( "male_doctor_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2695\ufe0f" );
 		name( "male_doctor_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2695\ufe0f" );
+	}
+	private static void init82(){
 		name( "male_doctor_tone1", "\ud83d\udc68\ud83c\udffb\u200d\u2695\ufe0f" );
 		name( "male_doctor_tone2", "\ud83d\udc68\ud83c\udffc\u200d\u2695\ufe0f" );
 		name( "male_doctor_tone3", "\ud83d\udc68\ud83c\udffd\u200d\u2695\ufe0f" );
@@ -8148,8 +8479,6 @@ public class EmojiMap {
 		name( "male_factory_worker_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfed" );
 		name( "male_factory_worker_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udfed" );
 		name( "male_factory_worker_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfed" );
-	}
-	private static void init79(){
 		name( "male_factory_worker_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfed" );
 		name( "male_factory_worker_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udfed" );
 		name( "male_factory_worker_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udfed" );
@@ -8231,6 +8560,8 @@ public class EmojiMap {
 		name( "male_mechanic_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udd27" );
 		name( "male_mechanic_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83d\udd27" );
 		name( "male_mechanic_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83d\udd27" );
+	}
+	private static void init83(){
 		name( "male_mechanic_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udd27" );
 		name( "male_mechanic_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83d\udd27" );
 		name( "male_mechanic_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83d\udd27" );
@@ -8251,8 +8582,6 @@ public class EmojiMap {
 		name( "male_pilot_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2708\ufe0f" );
 		name( "male_pilot_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2708\ufe0f" );
 		name( "male_pilot_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2708\ufe0f" );
-	}
-	private static void init80(){
 		name( "male_pilot_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2708\ufe0f" );
 		name( "male_pilot_tone1", "\ud83d\udc68\ud83c\udffb\u200d\u2708\ufe0f" );
 		name( "male_pilot_tone2", "\ud83d\udc68\ud83c\udffc\u200d\u2708\ufe0f" );
@@ -8334,6 +8663,8 @@ public class EmojiMap {
 		name( "male_supervillain_medium_skin_tone", "\ud83e\uddb9\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "male_supervillain_tone1", "\ud83e\uddb9\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "male_supervillain_tone2", "\ud83e\uddb9\ud83c\udffc\u200d\u2642\ufe0f" );
+	}
+	private static void init84(){
 		name( "male_supervillain_tone3", "\ud83e\uddb9\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "male_supervillain_tone4", "\ud83e\uddb9\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "male_supervillain_tone5", "\ud83e\uddb9\ud83c\udfff\u200d\u2642\ufe0f" );
@@ -8354,8 +8685,6 @@ public class EmojiMap {
 		name( "male_technologist_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83d\udcbb" );
 		name( "male_technologist_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udcbb" );
 		name( "male_technologist_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83d\udcbb" );
-	}
-	private static void init81(){
 		name( "male_technologist_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83d\udcbb" );
 		name( "male_technologist_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udcbb" );
 		name( "male_technologist_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83d\udcbb" );
@@ -8437,6 +8766,8 @@ public class EmojiMap {
 		name( "man_bowing_medium_light_skin_tone", "\ud83d\ude47\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_bowing_medium_skin_tone", "\ud83d\ude47\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_bowing_tone1", "\ud83d\ude47\ud83c\udffb\u200d\u2642\ufe0f" );
+	}
+	private static void init85(){
 		name( "man_bowing_tone2", "\ud83d\ude47\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_bowing_tone3", "\ud83d\ude47\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_bowing_tone4", "\ud83d\ude47\ud83c\udffe\u200d\u2642\ufe0f" );
@@ -8457,8 +8788,6 @@ public class EmojiMap {
 		name( "man_climbing", "\ud83e\uddd7\u200d\u2642\ufe0f" );
 		name( "man_climbing_dark_skin_tone", "\ud83e\uddd7\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_climbing_light_skin_tone", "\ud83e\uddd7\ud83c\udffb\u200d\u2642\ufe0f" );
-	}
-	private static void init82(){
 		name( "man_climbing_medium_dark_skin_tone", "\ud83e\uddd7\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_climbing_medium_light_skin_tone", "\ud83e\uddd7\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_climbing_medium_skin_tone", "\ud83e\uddd7\ud83c\udffd\u200d\u2642\ufe0f" );
@@ -8540,6 +8869,8 @@ public class EmojiMap {
 		name( "man_farmer_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf3e" );
 		name( "man_farmer_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf3e" );
 		name( "man_farmer_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf3e" );
+	}
+	private static void init86(){
 		name( "man_farmer_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf3e" );
 		name( "man_farmer_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf3e" );
 		name( "man_farmer_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf3e" );
@@ -8560,8 +8891,6 @@ public class EmojiMap {
 		name( "man_frowning_dark_skin_tone", "\ud83d\ude4d\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_frowning_light_skin_tone", "\ud83d\ude4d\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_frowning_medium_dark_skin_tone", "\ud83d\ude4d\ud83c\udffe\u200d\u2642\ufe0f" );
-	}
-	private static void init83(){
 		name( "man_frowning_medium_light_skin_tone", "\ud83d\ude4d\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_frowning_medium_skin_tone", "\ud83d\ude4d\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_frowning_tone1", "\ud83d\ude4d\ud83c\udffb\u200d\u2642\ufe0f" );
@@ -8643,6 +8972,8 @@ public class EmojiMap {
 		name( "man_guard_light_skin_tone", "\ud83d\udc82\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_guard_medium_dark_skin_tone", "\ud83d\udc82\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_guard_medium_light_skin_tone", "\ud83d\udc82\ud83c\udffc\u200d\u2642\ufe0f" );
+	}
+	private static void init87(){
 		name( "man_guard_medium_skin_tone", "\ud83d\udc82\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_guard_tone1", "\ud83d\udc82\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_guard_tone2", "\ud83d\udc82\ud83c\udffc\u200d\u2642\ufe0f" );
@@ -8663,8 +8994,6 @@ public class EmojiMap {
 		name( "man_heart_man", "\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc68" );
 		name( "man_in_business_suit_levitating", "\ud83d\udd74\ufe0f" );
 		name( "man_in_business_suit_levitating_dark_skin_tone", "\ud83d\udd74\ud83c\udfff" );
-	}
-	private static void init84(){
 		name( "man_in_business_suit_levitating_light_skin_tone", "\ud83d\udd74\ud83c\udffb" );
 		name( "man_in_business_suit_levitating_medium_dark_skin_tone", "\ud83d\udd74\ud83c\udffe" );
 		name( "man_in_business_suit_levitating_medium_light_skin_tone", "\ud83d\udd74\ud83c\udffc" );
@@ -8746,6 +9075,8 @@ public class EmojiMap {
 		name( "man_man_boy_boy", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66" );
 		name( "man_man_girl", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67" );
 		name( "man_man_girl_boy", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d\udc66" );
+	}
+	private static void init88(){
 		name( "man_man_girl_girl", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d\udc67" );
 		name( "man_mechanic", "\ud83d\udc68\u200d\ud83d\udd27" );
 		name( "man_mechanic_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83d\udd27" );
@@ -8766,8 +9097,6 @@ public class EmojiMap {
 		name( "man_mountain_biking_light_skin_tone", "\ud83d\udeb5\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_mountain_biking_medium_dark_skin_tone", "\ud83d\udeb5\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_mountain_biking_medium_light_skin_tone", "\ud83d\udeb5\ud83c\udffc\u200d\u2642\ufe0f" );
-	}
-	private static void init85(){
 		name( "man_mountain_biking_medium_skin_tone", "\ud83d\udeb5\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_mountain_biking_tone1", "\ud83d\udeb5\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_mountain_biking_tone2", "\ud83d\udeb5\ud83c\udffc\u200d\u2642\ufe0f" );
@@ -8849,6 +9178,8 @@ public class EmojiMap {
 		name( "man_raising_hand_tone1", "\ud83d\ude4b\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_raising_hand_tone2", "\ud83d\ude4b\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_raising_hand_tone3", "\ud83d\ude4b\ud83c\udffd\u200d\u2642\ufe0f" );
+	}
+	private static void init89(){
 		name( "man_raising_hand_tone4", "\ud83d\ude4b\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_raising_hand_tone5", "\ud83d\ude4b\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_rowing_boat", "\ud83d\udea3\u200d\u2642\ufe0f" );
@@ -8869,8 +9200,6 @@ public class EmojiMap {
 		name( "man_running_medium_light_skin_tone", "\ud83c\udfc3\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_running_medium_skin_tone", "\ud83c\udfc3\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_running_tone1", "\ud83c\udfc3\ud83c\udffb\u200d\u2642\ufe0f" );
-	}
-	private static void init86(){
 		name( "man_running_tone2", "\ud83c\udfc3\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_running_tone3", "\ud83c\udfc3\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_running_tone4", "\ud83c\udfc3\ud83c\udffe\u200d\u2642\ufe0f" );
@@ -8952,6 +9281,8 @@ public class EmojiMap {
 		name( "man_teacher_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udfeb" );
 		name( "man_teacher_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfeb" );
 		name( "man_teacher_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfeb" );
+	}
+	private static void init90(){
 		name( "man_technologist", "\ud83d\udc68\u200d\ud83d\udcbb" );
 		name( "man_technologist_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83d\udcbb" );
 		name( "man_technologist_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83d\udcbb" );
@@ -8972,8 +9303,6 @@ public class EmojiMap {
 		name( "man_tipping_hand_tone1", "\ud83d\udc81\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_tipping_hand_tone2", "\ud83d\udc81\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_tipping_hand_tone3", "\ud83d\udc81\ud83c\udffd\u200d\u2642\ufe0f" );
-	}
-	private static void init87(){
 		name( "man_tipping_hand_tone4", "\ud83d\udc81\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_tipping_hand_tone5", "\ud83d\udc81\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_tone1", "\ud83d\udc68\ud83c\udffb" );
@@ -9055,6 +9384,8 @@ public class EmojiMap {
 		name( "md", "\ud83c\uddf2\ud83c\udde9" );
 		name( "me", "\ud83c\uddf2\ud83c\uddea" );
 		name( "meat_on_bone", "\ud83c\udf56" );
+	}
+	private static void init91(){
 		name( "medal", "\ud83c\udfc5" );
 		name( "medical_symbol", "\u2695\ufe0f" );
 		name( "mega", "\ud83d\udce3" );
@@ -9075,8 +9406,6 @@ public class EmojiMap {
 		name( "mermaid_tone2", "\ud83e\udddc\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "mermaid_tone3", "\ud83e\udddc\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "mermaid_tone4", "\ud83e\udddc\ud83c\udffe\u200d\u2640\ufe0f" );
-	}
-	private static void init88(){
 		name( "mermaid_tone5", "\ud83e\udddc\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "merman", "\ud83e\udddc\u200d\u2642\ufe0f" );
 		name( "merman_dark_skin_tone", "\ud83e\udddc\ud83c\udfff\u200d\u2642\ufe0f" );
@@ -9158,6 +9487,8 @@ public class EmojiMap {
 		name( "mother_christmas_tone1", "\ud83e\udd36\ud83c\udffb" );
 		name( "mother_christmas_tone2", "\ud83e\udd36\ud83c\udffc" );
 		name( "mother_christmas_tone3", "\ud83e\udd36\ud83c\udffd" );
+	}
+	private static void init92(){
 		name( "mother_christmas_tone4", "\ud83e\udd36\ud83c\udffe" );
 		name( "mother_christmas_tone5", "\ud83e\udd36\ud83c\udfff" );
 		name( "motor_boat", "\ud83d\udee5\ufe0f" );
@@ -9178,8 +9509,6 @@ public class EmojiMap {
 		name( "mountain_bicyclist_tone2", "\ud83d\udeb5\ud83c\udffc" );
 		name( "mountain_bicyclist_tone3", "\ud83d\udeb5\ud83c\udffd" );
 		name( "mountain_bicyclist_tone4", "\ud83d\udeb5\ud83c\udffe" );
-	}
-	private static void init89(){
 		name( "mountain_bicyclist_tone5", "\ud83d\udeb5\ud83c\udfff" );
 		name( "mountain_cableway", "\ud83d\udea0" );
 		name( "mountain_railway", "\ud83d\ude9e" );
@@ -9261,6 +9590,8 @@ public class EmojiMap {
 		name( "ni", "\ud83c\uddf3\ud83c\uddee" );
 		name( "nigeria", "\ud83c\uddf3\ud83c\uddec" );
 		name( "night_with_stars", "\ud83c\udf03" );
+	}
+	private static void init93(){
 		name( "nine", "\u0039\ufe0f\u20e3" );
 		name( "nl", "\ud83c\uddf3\ud83c\uddf1" );
 		name( "no", "\ud83c\uddf3\ud83c\uddf4" );
@@ -9281,8 +9612,6 @@ public class EmojiMap {
 		name( "no_good_tone5", "\ud83d\ude45\ud83c\udfff" );
 		name( "no_mobile_phones", "\ud83d\udcf5" );
 		name( "no_mouth", "\ud83d\ude36" );
-	}
-	private static void init90(){
 		name( "no_pedestrians", "\ud83d\udeb7" );
 		name( "no_smoking", "\ud83d\udead" );
 		name( "non_potable_water", "\ud83d\udeb1" );
@@ -9364,6 +9693,8 @@ public class EmojiMap {
 		name( "older_woman", "\ud83d\udc75" );
 		name( "older_woman_dark_skin_tone", "\ud83d\udc75\ud83c\udfff" );
 		name( "older_woman_light_skin_tone", "\ud83d\udc75\ud83c\udffb" );
+	}
+	private static void init94(){
 		name( "older_woman_medium_dark_skin_tone", "\ud83d\udc75\ud83c\udffe" );
 		name( "older_woman_medium_light_skin_tone", "\ud83d\udc75\ud83c\udffc" );
 		name( "older_woman_medium_skin_tone", "\ud83d\udc75\ud83c\udffd" );
@@ -9384,8 +9715,6 @@ public class EmojiMap {
 		name( "open_file_folder", "\ud83d\udcc2" );
 		name( "open_hands", "\ud83d\udc50" );
 		name( "open_hands_dark_skin_tone", "\ud83d\udc50\ud83c\udfff" );
-	}
-	private static void init91(){
 		name( "open_hands_light_skin_tone", "\ud83d\udc50\ud83c\udffb" );
 		name( "open_hands_medium_dark_skin_tone", "\ud83d\udc50\ud83c\udffe" );
 		name( "open_hands_medium_light_skin_tone", "\ud83d\udc50\ud83c\udffc" );
@@ -9467,6 +9796,8 @@ public class EmojiMap {
 		name( "person_doing_cartwheel_dark_skin_tone", "\ud83e\udd38\ud83c\udfff" );
 		name( "person_doing_cartwheel_light_skin_tone", "\ud83e\udd38\ud83c\udffb" );
 		name( "person_doing_cartwheel_medium_dark_skin_tone", "\ud83e\udd38\ud83c\udffe" );
+	}
+	private static void init95(){
 		name( "person_doing_cartwheel_medium_light_skin_tone", "\ud83e\udd38\ud83c\udffc" );
 		name( "person_doing_cartwheel_medium_skin_tone", "\ud83e\udd38\ud83c\udffd" );
 		name( "person_doing_cartwheel_tone1", "\ud83e\udd38\ud83c\udffb" );
@@ -9487,8 +9818,6 @@ public class EmojiMap {
 		name( "person_frowning_tone5", "\ud83d\ude4d\ud83c\udfff" );
 		name( "person_golfing_dark_skin_tone", "\ud83c\udfcc\ud83c\udfff" );
 		name( "person_golfing_light_skin_tone", "\ud83c\udfcc\ud83c\udffb" );
-	}
-	private static void init92(){
 		name( "person_golfing_medium_dark_skin_tone", "\ud83c\udfcc\ud83c\udffe" );
 		name( "person_golfing_medium_light_skin_tone", "\ud83c\udfcc\ud83c\udffc" );
 		name( "person_golfing_medium_skin_tone", "\ud83c\udfcc\ud83c\udffd" );
@@ -9570,6 +9899,8 @@ public class EmojiMap {
 		name( "person_with_pouting_face_medium_skin_tone", "\ud83d\ude4e\ud83c\udffd" );
 		name( "person_with_pouting_face_tone1", "\ud83d\ude4e\ud83c\udffb" );
 		name( "person_with_pouting_face_tone2", "\ud83d\ude4e\ud83c\udffc" );
+	}
+	private static void init96(){
 		name( "person_with_pouting_face_tone3", "\ud83d\ude4e\ud83c\udffd" );
 		name( "person_with_pouting_face_tone4", "\ud83d\ude4e\ud83c\udffe" );
 		name( "person_with_pouting_face_tone5", "\ud83d\ude4e\ud83c\udfff" );
@@ -9590,8 +9921,6 @@ public class EmojiMap {
 		name( "pisces", "\u2653" );
 		name( "pizza", "\ud83c\udf55" );
 		name( "pk", "\ud83c\uddf5\ud83c\uddf0" );
-	}
-	private static void init93(){
 		name( "pl", "\ud83c\uddf5\ud83c\uddf1" );
 		name( "place_of_worship", "\ud83d\uded0" );
 		name( "play_pause", "\u23ef\ufe0f" );
@@ -9673,6 +10002,8 @@ public class EmojiMap {
 		name( "pray_dark_skin_tone", "\ud83d\ude4f\ud83c\udfff" );
 		name( "pray_light_skin_tone", "\ud83d\ude4f\ud83c\udffb" );
 		name( "pray_medium_dark_skin_tone", "\ud83d\ude4f\ud83c\udffe" );
+	}
+	private static void init97(){
 		name( "pray_medium_light_skin_tone", "\ud83d\ude4f\ud83c\udffc" );
 		name( "pray_medium_skin_tone", "\ud83d\ude4f\ud83c\udffd" );
 		name( "pray_tone1", "\ud83d\ude4f\ud83c\udffb" );
@@ -9693,8 +10024,6 @@ public class EmojiMap {
 		name( "pregnant_woman_tone4", "\ud83e\udd30\ud83c\udffe" );
 		name( "pregnant_woman_tone5", "\ud83e\udd30\ud83c\udfff" );
 		name( "pretzel", "\ud83e\udd68" );
-	}
-	private static void init94(){
 		name( "previous_track", "\u23ee\ufe0f" );
 		name( "prince", "\ud83e\udd34" );
 		name( "prince_dark_skin_tone", "\ud83e\udd34\ud83c\udfff" );
@@ -9776,6 +10105,8 @@ public class EmojiMap {
 		name( "raised_hand_light_skin_tone", "\u270b\ud83c\udffb" );
 		name( "raised_hand_medium_dark_skin_tone", "\u270b\ud83c\udffe" );
 		name( "raised_hand_medium_light_skin_tone", "\u270b\ud83c\udffc" );
+	}
+	private static void init98(){
 		name( "raised_hand_medium_skin_tone", "\u270b\ud83c\udffd" );
 		name( "raised_hand_tone1", "\u270b\ud83c\udffb" );
 		name( "raised_hand_tone2", "\u270b\ud83c\udffc" );
@@ -9796,8 +10127,6 @@ public class EmojiMap {
 		name( "raised_hand_with_part_between_middle_and_ring_fingers", "\ud83d\udd96" );
 		name( "raised_hand_with_part_between_middle_and_ring_fingers_tone1", "\ud83d\udd96\ud83c\udffb" );
 		name( "raised_hand_with_part_between_middle_and_ring_fingers_tone2", "\ud83d\udd96\ud83c\udffc" );
-	}
-	private static void init95(){
 		name( "raised_hand_with_part_between_middle_and_ring_fingers_tone3", "\ud83d\udd96\ud83c\udffd" );
 		name( "raised_hand_with_part_between_middle_and_ring_fingers_tone4", "\ud83d\udd96\ud83c\udffe" );
 		name( "raised_hand_with_part_between_middle_and_ring_fingers_tone5", "\ud83d\udd96\ud83c\udfff" );
@@ -9879,6 +10208,8 @@ public class EmojiMap {
 		name( "reversed_hand_with_middle_finger_extended_tone5", "\ud83d\udd95\ud83c\udfff" );
 		name( "revolving_hearts", "\ud83d\udc9e" );
 		name( "rewind", "\u23ea" );
+	}
+	private static void init99(){
 		name( "rhino", "\ud83e\udd8f" );
 		name( "rhinoceros", "\ud83e\udd8f" );
 		name( "ribbon", "\ud83c\udf80" );
@@ -9899,8 +10230,6 @@ public class EmojiMap {
 		name( "right_facing_fist_tone4", "\ud83e\udd1c\ud83c\udffe" );
 		name( "right_facing_fist_tone5", "\ud83e\udd1c\ud83c\udfff" );
 		name( "right_fist", "\ud83e\udd1c" );
-	}
-	private static void init96(){
 		name( "right_fist_tone1", "\ud83e\udd1c\ud83c\udffb" );
 		name( "right_fist_tone2", "\ud83e\udd1c\ud83c\udffc" );
 		name( "right_fist_tone3", "\ud83e\udd1c\ud83c\udffd" );
@@ -9982,6 +10311,8 @@ public class EmojiMap {
 		name( "santa_tone5", "\ud83c\udf85\ud83c\udfff" );
 		name( "satellite", "\ud83d\udef0\ufe0f" );
 		name( "satellite_antenna", "\ud83d\udce1" );
+	}
+	private static void init100(){
 		name( "satellite_orbital", "\ud83d\udef0\ufe0f" );
 		name( "satisfied", "\ud83d\ude06" );
 		name( "saudi", "\ud83c\uddf8\ud83c\udde6" );
@@ -10002,8 +10333,6 @@ public class EmojiMap {
 		name( "scream_cat", "\ud83d\ude40" );
 		name( "scroll", "\ud83d\udcdc" );
 		name( "sd", "\ud83c\uddf8\ud83c\udde9" );
-	}
-	private static void init97(){
 		name( "se", "\ud83c\uddf8\ud83c\uddea" );
 		name( "seat", "\ud83d\udcba" );
 		name( "second_place", "\ud83e\udd48" );
@@ -10085,6 +10414,8 @@ public class EmojiMap {
 		name( "skin_tone_4", "\ud83c\udffd" );
 		name( "skin_tone_5", "\ud83c\udffe" );
 		name( "skin_tone_6", "\ud83c\udfff" );
+	}
+	private static void init101(){
 		name( "skull", "\ud83d\udc80" );
 		name( "skull_and_crossbones", "\u2620\ufe0f" );
 		name( "skull_crossbones", "\u2620\ufe0f" );
@@ -10105,8 +10436,6 @@ public class EmojiMap {
 		name( "sleepy", "\ud83d\ude2a" );
 		name( "sleuth_or_spy", "\ud83d\udd75\ufe0f" );
 		name( "sleuth_or_spy_dark_skin_tone", "\ud83d\udd75\ud83c\udfff" );
-	}
-	private static void init98(){
 		name( "sleuth_or_spy_light_skin_tone", "\ud83d\udd75\ud83c\udffb" );
 		name( "sleuth_or_spy_medium_dark_skin_tone", "\ud83d\udd75\ud83c\udffe" );
 		name( "sleuth_or_spy_medium_light_skin_tone", "\ud83d\udd75\ud83c\udffc" );
@@ -10188,6 +10517,8 @@ public class EmojiMap {
 		name( "spiral_note_pad", "\ud83d\uddd2\ufe0f" );
 		name( "spock_hand", "\ud83d\udd96" );
 		name( "spock_hand_dark_skin_tone", "\ud83d\udd96\ud83c\udfff" );
+	}
+	private static void init102(){
 		name( "spock_hand_light_skin_tone", "\ud83d\udd96\ud83c\udffb" );
 		name( "spock_hand_medium_dark_skin_tone", "\ud83d\udd96\ud83c\udffe" );
 		name( "spock_hand_medium_light_skin_tone", "\ud83d\udd96\ud83c\udffc" );
@@ -10208,8 +10539,6 @@ public class EmojiMap {
 		name( "spy_tone5", "\ud83d\udd75\ud83c\udfff" );
 		name( "squid", "\ud83e\udd91" );
 		name( "sr", "\ud83c\uddf8\ud83c\uddf7" );
-	}
-	private static void init99(){
 		name( "ss", "\ud83c\uddf8\ud83c\uddf8" );
 		name( "st", "\ud83c\uddf8\ud83c\uddf9" );
 		name( "stadium", "\ud83c\udfdf\ufe0f" );
@@ -10291,6 +10620,8 @@ public class EmojiMap {
 		name( "tangerine", "\ud83c\udf4a" );
 		name( "taurus", "\u2649" );
 		name( "taxi", "\ud83d\ude95" );
+	}
+	private static void init103(){
 		name( "tc", "\ud83c\uddf9\ud83c\udde8" );
 		name( "td", "\ud83c\uddf9\ud83c\udde9" );
 		name( "tea", "\ud83c\udf75" );
@@ -10311,8 +10642,6 @@ public class EmojiMap {
 		name( "the_horns_medium_light_skin_tone", "\ud83e\udd18\ud83c\udffc" );
 		name( "the_horns_medium_skin_tone", "\ud83e\udd18\ud83c\udffd" );
 		name( "the_horns_tone1", "\ud83e\udd18\ud83c\udffb" );
-	}
-	private static void init100(){
 		name( "the_horns_tone2", "\ud83e\udd18\ud83c\udffc" );
 		name( "the_horns_tone3", "\ud83e\udd18\ud83c\udffd" );
 		name( "the_horns_tone4", "\ud83e\udd18\ud83c\udffe" );
@@ -10394,6 +10723,8 @@ public class EmojiMap {
 		name( "tornado_cloud", "\ud83c\udf2a\ufe0f" );
 		name( "tr", "\ud83c\uddf9\ud83c\uddf7" );
 		name( "track_next", "\u23ed\ufe0f" );
+	}
+	private static void init104(){
 		name( "track_previous", "\u23ee\ufe0f" );
 		name( "trackball", "\ud83d\uddb2\ufe0f" );
 		name( "tractor", "\ud83d\ude9c" );
@@ -10414,8 +10745,6 @@ public class EmojiMap {
 		name( "tshirt", "\ud83d\udc55" );
 		name( "tt", "\ud83c\uddf9\ud83c\uddf9" );
 		name( "tulip", "\ud83c\udf37" );
-	}
-	private static void init101(){
 		name( "tumbler_glass", "\ud83e\udd43" );
 		name( "turkey", "\ud83e\udd83" );
 		name( "turkmenistan", "\ud83c\uddf9\ud83c\uddf2" );
@@ -10497,6 +10826,8 @@ public class EmojiMap {
 		name( "vi", "\ud83c\uddfb\ud83c\uddee" );
 		name( "vibration_mode", "\ud83d\udcf3" );
 		name( "video_camera", "\ud83d\udcf9" );
+	}
+	private static void init105(){
 		name( "video_game", "\ud83c\udfae" );
 		name( "violin", "\ud83c\udfbb" );
 		name( "virgo", "\u264d" );
@@ -10517,8 +10848,6 @@ public class EmojiMap {
 		name( "walking_medium_dark_skin_tone", "\ud83d\udeb6\ud83c\udffe" );
 		name( "walking_medium_light_skin_tone", "\ud83d\udeb6\ud83c\udffc" );
 		name( "walking_medium_skin_tone", "\ud83d\udeb6\ud83c\udffd" );
-	}
-	private static void init102(){
 		name( "walking_tone1", "\ud83d\udeb6\ud83c\udffb" );
 		name( "walking_tone2", "\ud83d\udeb6\ud83c\udffc" );
 		name( "walking_tone3", "\ud83d\udeb6\ud83c\udffd" );
@@ -10600,6 +10929,8 @@ public class EmojiMap {
 		name( "wine_glass", "\ud83c\udf77" );
 		name( "wink", "\ud83d\ude09" );
 		name( "wolf", "\ud83d\udc3a" );
+	}
+	private static void init106(){
 		name( "woman", "\ud83d\udc69" );
 		name( "woman_artist", "\ud83d\udc69\u200d\ud83c\udfa8" );
 		name( "woman_artist_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udfa8" );
@@ -10620,8 +10951,6 @@ public class EmojiMap {
 		name( "woman_astronaut_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83d\ude80" );
 		name( "woman_astronaut_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83d\ude80" );
 		name( "woman_astronaut_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83d\ude80" );
-	}
-	private static void init103(){
 		name( "woman_astronaut_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83d\ude80" );
 		name( "woman_astronaut_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83d\ude80" );
 		name( "woman_astronaut_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83d\ude80" );
@@ -10703,6 +11032,8 @@ public class EmojiMap {
 		name( "woman_cook_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf73" );
 		name( "woman_cook_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf73" );
 		name( "woman_cook_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf73" );
+	}
+	private static void init107(){
 		name( "woman_cook_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf73" );
 		name( "woman_dark_skin_tone", "\ud83d\udc69\ud83c\udfff" );
 		name( "woman_detective", "\ud83d\udd75\ufe0f\u200d\u2640\ufe0f" );
@@ -10723,8 +11054,6 @@ public class EmojiMap {
 		name( "woman_facepalming_medium_light_skin_tone", "\ud83e\udd26\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_facepalming_medium_skin_tone", "\ud83e\udd26\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_facepalming_tone1", "\ud83e\udd26\ud83c\udffb\u200d\u2640\ufe0f" );
-	}
-	private static void init104(){
 		name( "woman_facepalming_tone2", "\ud83e\udd26\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_facepalming_tone3", "\ud83e\udd26\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_facepalming_tone4", "\ud83e\udd26\ud83c\udffe\u200d\u2640\ufe0f" );
@@ -10806,6 +11135,8 @@ public class EmojiMap {
 		name( "woman_getting_face_massage_tone3", "\ud83d\udc86\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_getting_face_massage_tone4", "\ud83d\udc86\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_getting_face_massage_tone5", "\ud83d\udc86\ud83c\udfff\u200d\u2640\ufe0f" );
+	}
+	private static void init108(){
 		name( "woman_getting_haircut", "\ud83d\udc87\u200d\u2640\ufe0f" );
 		name( "woman_getting_haircut_dark_skin_tone", "\ud83d\udc87\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_getting_haircut_light_skin_tone", "\ud83d\udc87\ud83c\udffb\u200d\u2640\ufe0f" );
@@ -10826,8 +11157,6 @@ public class EmojiMap {
 		name( "woman_getting_massage_tone1", "\ud83d\udc86\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_getting_massage_tone2", "\ud83d\udc86\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_getting_massage_tone3", "\ud83d\udc86\ud83c\udffd\u200d\u2640\ufe0f" );
-	}
-	private static void init105(){
 		name( "woman_getting_massage_tone4", "\ud83d\udc86\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_getting_massage_tone5", "\ud83d\udc86\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_girl", "\ud83d\udc69\u200d\ud83d\udc67" );
@@ -10909,6 +11238,8 @@ public class EmojiMap {
 		name( "woman_juggling_medium_skin_tone", "\ud83e\udd39\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_juggling_tone1", "\ud83e\udd39\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_juggling_tone2", "\ud83e\udd39\ud83c\udffc\u200d\u2640\ufe0f" );
+	}
+	private static void init109(){
 		name( "woman_juggling_tone3", "\ud83e\udd39\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_juggling_tone4", "\ud83e\udd39\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_juggling_tone5", "\ud83e\udd39\ud83c\udfff\u200d\u2640\ufe0f" );
@@ -10929,8 +11260,6 @@ public class EmojiMap {
 		name( "woman_mechanic", "\ud83d\udc69\u200d\ud83d\udd27" );
 		name( "woman_mechanic_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83d\udd27" );
 		name( "woman_mechanic_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83d\udd27" );
-	}
-	private static void init106(){
 		name( "woman_mechanic_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83d\udd27" );
 		name( "woman_mechanic_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83d\udd27" );
 		name( "woman_mechanic_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83d\udd27" );
@@ -11012,6 +11341,8 @@ public class EmojiMap {
 		name( "woman_pouting_dark_skin_tone", "\ud83d\ude4e\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_pouting_light_skin_tone", "\ud83d\ude4e\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_pouting_medium_dark_skin_tone", "\ud83d\ude4e\ud83c\udffe\u200d\u2640\ufe0f" );
+	}
+	private static void init110(){
 		name( "woman_pouting_medium_light_skin_tone", "\ud83d\ude4e\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_pouting_medium_skin_tone", "\ud83d\ude4e\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_pouting_tone1", "\ud83d\ude4e\ud83c\udffb\u200d\u2640\ufe0f" );
@@ -11032,8 +11363,6 @@ public class EmojiMap {
 		name( "woman_raising_hand_tone5", "\ud83d\ude4b\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_rowing_boat", "\ud83d\udea3\u200d\u2640\ufe0f" );
 		name( "woman_rowing_boat_dark_skin_tone", "\ud83d\udea3\ud83c\udfff\u200d\u2640\ufe0f" );
-	}
-	private static void init107(){
 		name( "woman_rowing_boat_light_skin_tone", "\ud83d\udea3\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_rowing_boat_medium_dark_skin_tone", "\ud83d\udea3\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_rowing_boat_medium_light_skin_tone", "\ud83d\udea3\ud83c\udffc\u200d\u2640\ufe0f" );
@@ -11115,6 +11444,8 @@ public class EmojiMap {
 		name( "woman_swimming_medium_dark_skin_tone", "\ud83c\udfca\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_swimming_medium_light_skin_tone", "\ud83c\udfca\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_swimming_medium_skin_tone", "\ud83c\udfca\ud83c\udffd\u200d\u2640\ufe0f" );
+	}
+	private static void init111(){
 		name( "woman_swimming_tone1", "\ud83c\udfca\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_swimming_tone2", "\ud83c\udfca\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_swimming_tone3", "\ud83c\udfca\ud83c\udffd\u200d\u2640\ufe0f" );
@@ -11135,8 +11466,6 @@ public class EmojiMap {
 		name( "woman_technologist_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83d\udcbb" );
 		name( "woman_technologist_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83d\udcbb" );
 		name( "woman_technologist_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83d\udcbb" );
-	}
-	private static void init108(){
 		name( "woman_technologist_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83d\udcbb" );
 		name( "woman_technologist_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83d\udcbb" );
 		name( "woman_technologist_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83d\udcbb" );
@@ -11218,6 +11547,8 @@ public class EmojiMap {
 		name( "xk", "\ud83c\uddfd\ud83c\uddf0" );
 		name( "yarn", "\ud83e\uddf6" );
 		name( "ye", "\ud83c\uddfe\ud83c\uddea" );
+	}
+	private static void init112(){
 		name( "yellow_heart", "\ud83d\udc9b" );
 		name( "yen", "\ud83d\udcb4" );
 		name( "yin_yang", "\u262f\ufe0f" );
@@ -11238,8 +11569,6 @@ public class EmojiMap {
 		category(CATEGORY_PEOPLE, "grin");
 		category(CATEGORY_PEOPLE, "joy");
 		category(CATEGORY_PEOPLE, "rolling_on_the_floor_laughing");
-	}
-	private static void init109(){
 		category(CATEGORY_PEOPLE, "smiley");
 		category(CATEGORY_PEOPLE, "smile");
 		category(CATEGORY_PEOPLE, "sweat_smile");
@@ -11321,6 +11650,8 @@ public class EmojiMap {
 		category(CATEGORY_PEOPLE, "face_with_monocle");
 		category(CATEGORY_PEOPLE, "nerd_face");
 		category(CATEGORY_PEOPLE, "smiling_imp");
+	}
+	private static void init113(){
 		category(CATEGORY_PEOPLE, "imp");
 		category(CATEGORY_PEOPLE, "japanese_ogre");
 		category(CATEGORY_PEOPLE, "japanese_goblin");
@@ -11341,8 +11672,6 @@ public class EmojiMap {
 		category(CATEGORY_PEOPLE, "crying_cat_face");
 		category(CATEGORY_PEOPLE, "pouting_cat");
 		category(CATEGORY_PEOPLE, "see_no_evil");
-	}
-	private static void init110(){
 		category(CATEGORY_PEOPLE, "hear_no_evil");
 		category(CATEGORY_PEOPLE, "speak_no_evil");
 		category(CATEGORY_PEOPLE, "baby");
@@ -11424,6 +11753,8 @@ public class EmojiMap {
 		category(CATEGORY_PEOPLE, "female_fairy");
 		category(CATEGORY_PEOPLE, "male_fairy");
 		category(CATEGORY_PEOPLE, "vampire");
+	}
+	private static void init114(){
 		category(CATEGORY_PEOPLE, "female_vampire");
 		category(CATEGORY_PEOPLE, "male_vampire");
 		category(CATEGORY_PEOPLE, "merperson");
@@ -11444,8 +11775,6 @@ public class EmojiMap {
 		category(CATEGORY_PEOPLE, "person_with_pouting_face");
 		category(CATEGORY_PEOPLE, "man_pouting");
 		category(CATEGORY_PEOPLE, "woman_pouting");
-	}
-	private static void init111(){
 		category(CATEGORY_PEOPLE, "no_good");
 		category(CATEGORY_PEOPLE, "man_gesturing_no");
 		category(CATEGORY_PEOPLE, "woman_gesturing_no");
@@ -11527,6 +11856,8 @@ public class EmojiMap {
 		category(CATEGORY_PEOPLE, "mountain_bicyclist");
 		category(CATEGORY_PEOPLE, "man_mountain_biking");
 		category(CATEGORY_PEOPLE, "woman_mountain_biking");
+	}
+	private static void init115(){
 		category(CATEGORY_PEOPLE, "racing_car");
 		category(CATEGORY_PEOPLE, "racing_motorcycle");
 		category(CATEGORY_PEOPLE, "person_doing_cartwheel");
@@ -11547,8 +11878,6 @@ public class EmojiMap {
 		category(CATEGORY_PEOPLE, "couple");
 		category(CATEGORY_PEOPLE, "two_men_holding_hands");
 		category(CATEGORY_PEOPLE, "two_women_holding_hands");
-	}
-	private static void init112(){
 		category(CATEGORY_PEOPLE, "couplekiss");
 		category(CATEGORY_PEOPLE, "woman_kiss_man");
 		category(CATEGORY_PEOPLE, "man_kiss_man");
@@ -11630,6 +11959,8 @@ public class EmojiMap {
 		category(CATEGORY_PEOPLE, "heart");
 		category(CATEGORY_PEOPLE, "heartbeat");
 		category(CATEGORY_PEOPLE, "broken_heart");
+	}
+	private static void init116(){
 		category(CATEGORY_PEOPLE, "two_hearts");
 		category(CATEGORY_PEOPLE, "sparkling_heart");
 		category(CATEGORY_PEOPLE, "heartpulse");
@@ -11650,8 +11981,6 @@ public class EmojiMap {
 		category(CATEGORY_PEOPLE, "boom");
 		category(CATEGORY_PEOPLE, "sweat_drops");
 		category(CATEGORY_PEOPLE, "dash");
-	}
-	private static void init113(){
 		category(CATEGORY_PEOPLE, "dizzy");
 		category(CATEGORY_PEOPLE, "speech_balloon");
 		category(CATEGORY_PEOPLE, "left_speech_bubble");
@@ -11733,6 +12062,8 @@ public class EmojiMap {
 		category(CATEGORY_NATURE, "rabbit");
 		category(CATEGORY_NATURE, "rabbit2");
 		category(CATEGORY_NATURE, "chipmunk");
+	}
+	private static void init117(){
 		category(CATEGORY_NATURE, "hedgehog");
 		category(CATEGORY_NATURE, "bat");
 		category(CATEGORY_NATURE, "bear");
@@ -11753,8 +12084,6 @@ public class EmojiMap {
 		category(CATEGORY_NATURE, "owl");
 		category(CATEGORY_NATURE, "frog");
 		category(CATEGORY_NATURE, "crocodile");
-	}
-	private static void init114(){
 		category(CATEGORY_NATURE, "turtle");
 		category(CATEGORY_NATURE, "lizard");
 		category(CATEGORY_NATURE, "snake");
@@ -11836,6 +12165,8 @@ public class EmojiMap {
 		category(CATEGORY_FOODS, "bread");
 		category(CATEGORY_FOODS, "croissant");
 		category(CATEGORY_FOODS, "baguette_bread");
+	}
+	private static void init118(){
 		category(CATEGORY_FOODS, "pretzel");
 		category(CATEGORY_FOODS, "pancakes");
 		category(CATEGORY_FOODS, "cheese_wedge");
@@ -11856,8 +12187,6 @@ public class EmojiMap {
 		category(CATEGORY_FOODS, "shallow_pan_of_food");
 		category(CATEGORY_FOODS, "stew");
 		category(CATEGORY_FOODS, "bowl_with_spoon");
-	}
-	private static void init115(){
 		category(CATEGORY_FOODS, "green_salad");
 		category(CATEGORY_FOODS, "popcorn");
 		category(CATEGORY_FOODS, "canned_food");
@@ -11939,6 +12268,8 @@ public class EmojiMap {
 		category(CATEGORY_ACTIVITY, "baseball");
 		category(CATEGORY_ACTIVITY, "basketball");
 		category(CATEGORY_ACTIVITY, "volleyball");
+	}
+	private static void init119(){
 		category(CATEGORY_ACTIVITY, "football");
 		category(CATEGORY_ACTIVITY, "rugby_football");
 		category(CATEGORY_ACTIVITY, "tennis");
@@ -11959,8 +12290,6 @@ public class EmojiMap {
 		category(CATEGORY_ACTIVITY, "running_shirt_with_sash");
 		category(CATEGORY_ACTIVITY, "ski");
 		category(CATEGORY_ACTIVITY, "sled");
-	}
-	private static void init116(){
 		category(CATEGORY_ACTIVITY, "curling_stone");
 		category(CATEGORY_ACTIVITY, "video_game");
 		category(CATEGORY_ACTIVITY, "joystick");
@@ -12042,6 +12371,8 @@ public class EmojiMap {
 		category(CATEGORY_PLACES, "bullettrain_front");
 		category(CATEGORY_PLACES, "train2");
 		category(CATEGORY_PLACES, "metro");
+	}
+	private static void init120(){
 		category(CATEGORY_PLACES, "light_rail");
 		category(CATEGORY_PLACES, "station");
 		category(CATEGORY_PLACES, "tram");
@@ -12062,8 +12393,6 @@ public class EmojiMap {
 		category(CATEGORY_PLACES, "oncoming_automobile");
 		category(CATEGORY_PLACES, "blue_car");
 		category(CATEGORY_PLACES, "truck");
-	}
-	private static void init117(){
 		category(CATEGORY_PLACES, "articulated_lorry");
 		category(CATEGORY_PLACES, "tractor");
 		category(CATEGORY_PLACES, "bike");
@@ -12145,6 +12474,8 @@ public class EmojiMap {
 		category(CATEGORY_PLACES, "last_quarter_moon");
 		category(CATEGORY_PLACES, "waning_crescent_moon");
 		category(CATEGORY_PLACES, "crescent_moon");
+	}
+	private static void init121(){
 		category(CATEGORY_PLACES, "new_moon_with_face");
 		category(CATEGORY_PLACES, "first_quarter_moon_with_face");
 		category(CATEGORY_PLACES, "last_quarter_moon_with_face");
@@ -12165,8 +12496,6 @@ public class EmojiMap {
 		category(CATEGORY_PLACES, "snow_cloud");
 		category(CATEGORY_PLACES, "lightning");
 		category(CATEGORY_PLACES, "tornado");
-	}
-	private static void init118(){
 		category(CATEGORY_PLACES, "fog");
 		category(CATEGORY_PLACES, "wind_blowing_face");
 		category(CATEGORY_PLACES, "cyclone");
@@ -12248,6 +12577,8 @@ public class EmojiMap {
 		category(CATEGORY_OBJECTS, "book");
 		category(CATEGORY_OBJECTS, "green_book");
 		category(CATEGORY_OBJECTS, "blue_book");
+	}
+	private static void init122(){
 		category(CATEGORY_OBJECTS, "orange_book");
 		category(CATEGORY_OBJECTS, "books");
 		category(CATEGORY_OBJECTS, "notebook");
@@ -12268,8 +12599,6 @@ public class EmojiMap {
 		category(CATEGORY_OBJECTS, "money_with_wings");
 		category(CATEGORY_OBJECTS, "credit_card");
 		category(CATEGORY_OBJECTS, "chart");
-	}
-	private static void init119(){
 		category(CATEGORY_OBJECTS, "currency_exchange");
 		category(CATEGORY_OBJECTS, "heavy_dollar_sign");
 		category(CATEGORY_OBJECTS, "email");
@@ -12351,6 +12680,8 @@ public class EmojiMap {
 		category(CATEGORY_SYMBOLS, "put_litter_in_its_place");
 		category(CATEGORY_SYMBOLS, "potable_water");
 		category(CATEGORY_SYMBOLS, "wheelchair");
+	}
+	private static void init123(){
 		category(CATEGORY_SYMBOLS, "mens");
 		category(CATEGORY_SYMBOLS, "womens");
 		category(CATEGORY_SYMBOLS, "restroom");
@@ -12371,8 +12702,6 @@ public class EmojiMap {
 		category(CATEGORY_SYMBOLS, "no_pedestrians");
 		category(CATEGORY_SYMBOLS, "no_mobile_phones");
 		category(CATEGORY_SYMBOLS, "underage");
-	}
-	private static void init120(){
 		category(CATEGORY_SYMBOLS, "radioactive_sign");
 		category(CATEGORY_SYMBOLS, "biohazard_sign");
 		category(CATEGORY_SYMBOLS, "arrow_up");
@@ -12454,6 +12783,8 @@ public class EmojiMap {
 		category(CATEGORY_SYMBOLS, "name_badge");
 		category(CATEGORY_SYMBOLS, "beginner");
 		category(CATEGORY_SYMBOLS, "o");
+	}
+	private static void init124(){
 		category(CATEGORY_SYMBOLS, "white_check_mark");
 		category(CATEGORY_SYMBOLS, "ballot_box_with_check");
 		category(CATEGORY_SYMBOLS, "heavy_check_mark");
@@ -12474,8 +12805,6 @@ public class EmojiMap {
 		category(CATEGORY_SYMBOLS, "question");
 		category(CATEGORY_SYMBOLS, "grey_question");
 		category(CATEGORY_SYMBOLS, "grey_exclamation");
-	}
-	private static void init121(){
 		category(CATEGORY_SYMBOLS, "exclamation");
 		category(CATEGORY_SYMBOLS, "wavy_dash");
 		category(CATEGORY_SYMBOLS, "copyright");
@@ -12557,6 +12886,8 @@ public class EmojiMap {
 		category(CATEGORY_SYMBOLS, "red_circle");
 		category(CATEGORY_SYMBOLS, "large_blue_circle");
 		category(CATEGORY_FLAGS, "checkered_flag");
+	}
+	private static void init125(){
 		category(CATEGORY_FLAGS, "cn");
 		category(CATEGORY_FLAGS, "crossed_flags");
 		category(CATEGORY_FLAGS, "de");
@@ -12577,8 +12908,6 @@ public class EmojiMap {
 		category(CATEGORY_FLAGS, "flag_au");
 		category(CATEGORY_FLAGS, "flag_aw");
 		category(CATEGORY_FLAGS, "flag_ax");
-	}
-	private static void init122(){
 		category(CATEGORY_FLAGS, "flag_az");
 		category(CATEGORY_FLAGS, "flag_ba");
 		category(CATEGORY_FLAGS, "flag_bb");
@@ -12660,6 +12989,8 @@ public class EmojiMap {
 		category(CATEGORY_FLAGS, "flag_gy");
 		category(CATEGORY_FLAGS, "flag_hk");
 		category(CATEGORY_FLAGS, "flag_hm");
+	}
+	private static void init126(){
 		category(CATEGORY_FLAGS, "flag_hn");
 		category(CATEGORY_FLAGS, "flag_hr");
 		category(CATEGORY_FLAGS, "flag_ht");
@@ -12680,8 +13011,6 @@ public class EmojiMap {
 		category(CATEGORY_FLAGS, "flag_ke");
 		category(CATEGORY_FLAGS, "flag_kg");
 		category(CATEGORY_FLAGS, "flag_kh");
-	}
-	private static void init123(){
 		category(CATEGORY_FLAGS, "flag_ki");
 		category(CATEGORY_FLAGS, "flag_km");
 		category(CATEGORY_FLAGS, "flag_kn");
@@ -12763,6 +13092,8 @@ public class EmojiMap {
 		category(CATEGORY_FLAGS, "flag_se");
 		category(CATEGORY_FLAGS, "flag_sg");
 		category(CATEGORY_FLAGS, "flag_sh");
+	}
+	private static void init127(){
 		category(CATEGORY_FLAGS, "flag_si");
 		category(CATEGORY_FLAGS, "flag_sj");
 		category(CATEGORY_FLAGS, "flag_sk");
@@ -12783,8 +13114,6 @@ public class EmojiMap {
 		category(CATEGORY_FLAGS, "flag_tf");
 		category(CATEGORY_FLAGS, "flag_tg");
 		category(CATEGORY_FLAGS, "flag_th");
-	}
-	private static void init124(){
 		category(CATEGORY_FLAGS, "flag_tj");
 		category(CATEGORY_FLAGS, "flag_tk");
 		category(CATEGORY_FLAGS, "flag_tl");
@@ -12956,6 +13285,9 @@ public class EmojiMap {
 		init122();
 		init123();
 		init124();
+		init125();
+		init126();
+		init127();
 	}
 	
 }

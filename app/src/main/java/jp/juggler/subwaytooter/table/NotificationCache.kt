@@ -176,7 +176,7 @@ class NotificationCache(private val account_db_id : Long) {
 					this.last_load = cursor.getLong(COL_LAST_LOAD)
 					this.sinceId = EntityId.from(cursor, COL_SINCE_ID)
 					
-					cursor.getStringOrNull(COL_DATA)?.toJsonArray()?.toObjectList()?.let {
+					cursor.getStringOrNull(COL_DATA)?.decodeJsonArray()?.toObjectList()?.let {
 						data.addAll(it)
 					}
 				} else {

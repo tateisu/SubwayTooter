@@ -301,6 +301,42 @@ sub addResourceEmojione{
 
 my $fh;
 
+##############################################################
+
+# コード＝＞画像リソースのマップ
+my %code_map;
+sub updateCodeMap{
+	undef %code_map;
+	for my $res_info (values %res_map ){
+		my $res_code_map = $res_info->{codepoint_map};
+		for my $code ( keys %$res_code_map ){
+			#
+			my $rh = $code_map{ $code};
+			$rh or $rh = $code_map{$code} = {};
+			$rh->{ $res_info->{res_name} } = $res_info;
+			#
+			my $code2 = removeZWJ( $code );
+			$rh = $code_map{ $code2};
+			$rh or $rh = $code_map{$code2} = {};
+			$rh->{ $res_info->{res_name} } = $res_info;
+		}
+	}
+}
+
+# 名前＝＞画像リソースのマップ
+my %name_map;
+sub updateNameMap{
+	undef %name_map;
+	for my $res_info (values %res_map ){
+		my $res_name_map = $res_info->{shortname_map};
+		for my $name ( keys %$res_name_map ){
+			my $rh = $name_map{ $name};
+			$rh or $rh = $name_map{$name} = {};
+			$rh->{ $res_info->{res_name} } = $res_info;
+		}
+	}
+}
+
 ################################################################################
 # emoji_data のデータを読む
 
@@ -372,40 +408,42 @@ for my $variant ( @emoji_variants ){
 }
 
 ##############################################################
+# twemojiのsvgファイルを直接読む
 
-# コード＝＞画像リソースのマップ
-my %code_map;
-sub updateCodeMap{
-	undef %code_map;
-	for my $res_info (values %res_map ){
-		my $res_code_map = $res_info->{codepoint_map};
-		for my $code ( keys %$res_code_map ){
-			#
-			my $rh = $code_map{ $code};
-			$rh or $rh = $code_map{$code} = {};
-			$rh->{ $res_info->{res_name} } = $res_info;
-			#
-			my $code2 = removeZWJ( $code );
-			$rh = $code_map{ $code2};
-			$rh or $rh = $code_map{$code2} = {};
-			$rh->{ $res_info->{res_name} } = $res_info;
-		}
+{
+	updateCodeMap();
+#	while( my($k,$v)=each %code_map){
+#		print "$k,$v\n"; # like as 1f9dd-1f3fb-2642,HASH(0x601213f30)
+#	}
+
+#	print dump( $code_map{'1fa95'} ); # undef
+#	exit;
+
+	my $dir = "twemoji/assets/svg";
+	opendir(my $dh,$dir) or die "$dir $!";
+	my $serial=0;
+	while(my $file = readdir $dh){
+		next if not $file =~/(.+?)\.svg$/;
+		my $code = lc $1;
+		next if $code_map{$code};
+		print "twemoji $code\n";
+		
+		my @codepoints;
+		push @codepoints,map{ parseCodePoint($_) } $code;
+
+		addResource(
+			"__twemoji_".(++$serial)
+			,$code
+			, $code
+			, \@codepoints
+			, []
+			, 0
+			, undef
+		);
 	}
 }
 
-# 名前＝＞画像リソースのマップ
-my %name_map;
-sub updateNameMap{
-	undef %name_map;
-	for my $res_info (values %res_map ){
-		my $res_name_map = $res_info->{shortname_map};
-		for my $name ( keys %$res_name_map ){
-			my $rh = $name_map{ $name};
-			$rh or $rh = $name_map{$name} = {};
-			$rh->{ $res_info->{res_name} } = $res_info;
-		}
-	}
-}
+
 
 ##############################################################
 # 古いemojioneのデータを読む
@@ -592,7 +630,7 @@ for my $name (sort keys %name_map){
 	warn "name $name has multiple resource. ",join(',',map{ $_->{res_name} } @res_list),"\n";
 	$bad_name = 1;
 }
-$bad_name and die "please fix name=>resource duplicate.\n";
+$bad_name and warn "please fix name=>resource duplicate.\n";
 warn "name_chars: [",join('',sort keys %name_chars),"]\n";
 
 sub decodeUnified($){
@@ -793,6 +831,7 @@ for(my $i=1;$i <= $func_num;++$i){
 print $fh "\t}\n";
 
 close($fh) or die "$out_file : $!";
+print "wrote $out_file\n";
 
 #########################################################################
 # shortname => unicode

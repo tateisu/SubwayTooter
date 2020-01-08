@@ -92,7 +92,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 					context.openFileInput(fileName).use { inData ->
 						val bao = ByteArrayOutputStream(inData.available())
 						IOUtils.copy(inData, bao)
-						return bao.toByteArray().decodeUTF8().toJsonArray()
+						return bao.toByteArray().decodeUTF8().decodeJsonArray()
 					}
 				} catch(ignored : FileNotFoundException) {
 				} catch(ex : Throwable) {

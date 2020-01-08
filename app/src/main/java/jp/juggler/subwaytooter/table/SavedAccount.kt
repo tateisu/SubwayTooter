@@ -94,9 +94,9 @@ class SavedAccount(
 		, misskeyVersion = cursor.getInt(COL_MISSKEY_VERSION)
 	) {
 		val strAccount = cursor.getString(COL_ACCOUNT)
-		val jsonAccount = strAccount.toJsonObject()
+		val jsonAccount = strAccount.decodeJsonObject()
 		
-		loginAccount = if(jsonAccount?.get("id") == null) {
+		loginAccount = if(jsonAccount["id"] == null) {
 			null // 疑似アカウント
 		} else {
 			TootParser(
@@ -135,7 +135,7 @@ class SavedAccount(
 		
 		register_time = cursor.getLong(COL_REGISTER_TIME)
 		
-		token_info = cursor.getString(COL_TOKEN).toJsonObject()
+		token_info = cursor.getString(COL_TOKEN).decodeJsonObject()
 		
 		sound_uri = cursor.getString(COL_SOUND_URI)
 		

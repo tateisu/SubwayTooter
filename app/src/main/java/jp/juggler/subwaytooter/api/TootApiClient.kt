@@ -66,9 +66,9 @@ class TootApiClient(
 		
 		private const val NO_INFORMATION = "(no information)"
 		
-		private val reStartJsonArray = Pattern.compile("\\A\\s*\\[")
-		private val reStartJsonObject = Pattern.compile("\\A\\s*\\{")
-		private val reWhiteSpace = Pattern.compile("\\s+")
+		private val reStartJsonArray = Pattern.compile("""\A\s*\[""")
+		private val reStartJsonObject = Pattern.compile("""\A\s*\{""")
+		private val reWhiteSpace = Pattern.compile("""\s+""")
 		
 		private const val mspTokenUrl = "http://mastodonsearch.jp/api/v1.0.1/utoken"
 		private const val mspSearchUrl = "http://mastodonsearch.jp/api/v1.0.1/cross"
@@ -111,23 +111,22 @@ class TootApiClient(
 			
 			// JsonObjectとして解釈できるならエラーメッセージを検出する
 			try {
-				val json = sv.toJsonObject()
-				val error_message = jsonErrorParser(json)?.notEmpty()
-				if(error_message != null ) {
+				val json = sv.decodeJsonObject()
+				val error_message =
+					jsonErrorParser(json)?.notEmpty()
+				if(error_message != null) {
 					return error_message
 				}
-			} catch(ex : Throwable) {
-				log.e(ex, "response body is not JSON or missing 'error' attribute.")
+			}catch(_:Throwable) {
 			}
 			
 			// HTMLならタグの除去を試みる
 			val ct = response.body?.contentType()
 			if(ct?.subtype == "html") {
 				val decoded = DecodeOptions().decodeHTML(sv).toString()
-				
 				return reWhiteSpace.matcher(decoded).replaceAll(" ").trim()
 			}
-			
+
 			// XXX: Amazon S3 が403を返した場合にcontent-typeが?/xmlでserverがAmazonならXMLをパースしてエラーを整形することもできるが、多分必要ない
 			
 			return reWhiteSpace.matcher(sv).replaceAll(" ").trim()
@@ -460,10 +459,10 @@ class TootApiClient(
 				result.data = JsonObject()
 				
 			} else if(reStartJsonArray.matcher(bodyString).find()) {
-				result.data = bodyString.toJsonArray()
+				result.data = bodyString.decodeJsonArray()
 				
 			} else if(reStartJsonObject.matcher(bodyString).find()) {
-				val json = bodyString.toJsonObject()
+				val json = bodyString.decodeJsonObject()
 				val error_message = jsonErrorParser(json)
 				if(error_message != null) {
 					result.error = error_message
@@ -1312,7 +1311,7 @@ class TootApiClient(
 	//		val result = TootApiResult.makeWithCaption(req.url().host())
 	//		if(result.error != null) return result
 	//		if(sendRequest(result, progressPath = null) { req }) {
-	//			parseJson(result)
+	//			decodeJsonValue(result)
 	//		}
 	//		return result
 	//	}

@@ -257,15 +257,10 @@ internal class StreamReader(
 		override fun onMessage(webSocket : WebSocket, text : String) {
 			// warning.d( "WebSocket onMessage. url=%s, message=%s", webSocket.request().url(), text );
 			try {
-				val obj = text.toJsonObject()
-				if(obj == null) {
-					log.d("onMessage: text is not JSON: $text")
-					return
-				}
+				val obj = text.decodeJsonObject()
 				
 				if(access_info.isMisskey) {
 					handleMisskeyMessage(obj)
-					
 				} else {
 					
 					val event = obj.parseString("event")

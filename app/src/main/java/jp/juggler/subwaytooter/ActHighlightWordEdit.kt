@@ -74,7 +74,7 @@ class ActHighlightWordEdit
 		
 		item = HighlightWord(
 			(savedInstanceState?.getString(EXTRA_ITEM) ?: intent.getStringExtra(EXTRA_ITEM))
-				.toJsonObject() !!
+				.decodeJsonObject()
 		)
 		showSampleText()
 	}

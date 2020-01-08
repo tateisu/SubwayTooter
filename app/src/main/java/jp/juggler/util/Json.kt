@@ -969,7 +969,7 @@ private fun Writer.writeMap(indentFactor : Int, indent : Int, src : Map<*, *>) :
 		throw JsonException(e)
 	}
 
-private fun Writer.writeJsonValue(
+fun Writer.writeJsonValue(
 	indentFactor : Int,
 	indent : Int,
 	value : Any?
@@ -990,7 +990,9 @@ private fun Writer.writeJsonValue(
 				writeQuote(sv)
 			}
 		}
-		
+
+		value is Char -> writeJsonValue(indentFactor,indent,value.toInt())
+
 		value is String -> writeQuote(value)
 		value is Enum<*> -> writeQuote(value.name)
 		value is JsonObject -> writeMap(indentFactor, indent, value)
@@ -1007,30 +1009,29 @@ private fun Writer.writeJsonValue(
 fun notEmptyOrThrow(name : String, value : String?) =
 	if(value?.isNotEmpty() == true) value else throw RuntimeException("$name is empty")
 
-fun List<Any?>.toJsonArray() = JsonArray(this)
-
 private val log = LogCategory("Json")
 
 // return null if the json value is "null"
-fun String.parseJson() = try{
+fun String.decodeJsonValue() = try{
 	JsonTokenizer(this).nextValue()
 }catch(ex:Throwable){
-	log.e(ex,"parseJson failed. $this")
+	log.e(ex,"decodeJsonValue failed. $this")
 	throw ex
 }
 
 //fun String.parseJsonOrNull() =try {
-//	parseJson()
+//	decodeJsonValue()
 //}catch(ex:Throwable){
-//	log.e(ex,"parseJson() failed.")
+//	log.e(ex,"decodeJsonValue() failed.")
 //	null
 //}
 
-fun String.toJsonObject() = parseJson()!!.castNotNull<JsonObject>()
+fun String.decodeJsonObject() = decodeJsonValue()!!.castNotNull<JsonObject>()
 
-fun String.toJsonArray() = parseJson()!!.castNotNull<JsonArray>()
+fun String.decodeJsonArray() = decodeJsonValue()!!.castNotNull<JsonArray>()
 
-fun Array<String>.toJsonArray() : JsonArray = JsonArray(this)
+fun Array<*>.toJsonArray() : JsonArray = JsonArray(this)
+fun List<*>.toJsonArray() = JsonArray(this)
 
 inline fun jsonObject(initializer : JsonObject.() -> Unit) =
 	JsonObject().apply { initializer() }

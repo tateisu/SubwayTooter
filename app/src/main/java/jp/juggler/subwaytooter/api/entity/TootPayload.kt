@@ -51,7 +51,7 @@ object TootPayload {
 			if(payload is String) {
 				
 				if(payload[0] == '{') {
-					val src = payload.toJsonObject()
+					val src = payload.decodeJsonObject()
 					return when(event) {
 						// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
 						"update" -> parser.status(src)

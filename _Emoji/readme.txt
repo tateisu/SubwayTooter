@@ -19,7 +19,8 @@ rm -fr mastodon
 git clone git@github.com:tootsuite/mastodon.git mastodon
 
 # twemoji
-git clone git@github.com:twitter/twemoji.git
+rm -fr twemoji
+git clone git@github.com:twitter/twemoji.git twemoji
 
 # override/ フォルダに優先的に使いたいsvgやpngを入れておく
 

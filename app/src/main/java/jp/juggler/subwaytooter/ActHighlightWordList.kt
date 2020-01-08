@@ -280,7 +280,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 				data != null ->
 				try {
 					val sv = data.getStringExtra(ActHighlightWordEdit.EXTRA_ITEM) ?: return
-					val item = HighlightWord(sv.toJsonObject())
+					val item = HighlightWord(sv.decodeJsonObject())
 					item.save(this@ActHighlightWordList)
 					loadData()
 				} catch(ex : Throwable) {

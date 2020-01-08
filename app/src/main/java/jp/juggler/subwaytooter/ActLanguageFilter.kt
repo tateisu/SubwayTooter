@@ -464,7 +464,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 					return source.use { inStream ->
 						val bao = ByteArrayOutputStream()
 						IOUtils.copy(inStream, bao)
-						bao.toByteArray().decodeUTF8().toJsonObject()
+						bao.toByteArray().decodeUTF8().decodeJsonObject()
 					}
 				} catch(ex : Throwable) {
 					log.trace(ex)

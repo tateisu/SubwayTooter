@@ -8,7 +8,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 import jp.juggler.util.digestSHA256Hex
-import jp.juggler.util.toJsonObject
+import jp.juggler.util.decodeJsonObject
 
 class PostDraft {
 	
@@ -162,7 +162,7 @@ class PostDraft {
 			dst.id = cursor.getLong(colIdx.idx_id)
 			dst.time_save = cursor.getLong(colIdx.idx_time_save)
 			try {
-				dst.json = cursor.getString(colIdx.idx_json).toJsonObject()
+				dst.json = cursor.getString(colIdx.idx_json).decodeJsonObject()
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				dst.json = JsonObject()

@@ -73,7 +73,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		internal fun decodeMediaList(src : String?) =
 			ArrayList<TootAttachment>().apply {
-				src?.toJsonArray()?.forEach {
+				src?.decodeJsonArray()?.forEach {
 					if(it !is JsonObject) return@forEach
 					add(TootAttachment.decodeJson(it))
 				}

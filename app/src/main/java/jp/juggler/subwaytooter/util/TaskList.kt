@@ -26,7 +26,7 @@ class TaskList {
 				context.openFileInput(FILE_TASK_LIST).use { inputStream ->
 					val bao = ByteArrayOutputStream()
 					IOUtils.copy(inputStream, bao)
-					bao.toByteArray().decodeUTF8().toJsonArray()?.toObjectList()?.forEach {
+					bao.toByteArray().decodeUTF8().decodeJsonArray().toObjectList().forEach {
 						_list.add(it)
 					}
 				}

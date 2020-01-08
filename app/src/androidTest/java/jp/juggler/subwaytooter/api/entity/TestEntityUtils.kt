@@ -7,7 +7,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.JsonArray
 import jp.juggler.util.JsonObject
 import jp.juggler.util.notEmptyOrThrow
-import jp.juggler.util.toJsonObject
+import jp.juggler.util.decodeJsonObject
 import org.junit.Assert.*
 import org.junit.runner.RunWith
 
@@ -37,38 +37,38 @@ class TestEntityUtils {
 		assertEquals(null, parseItem(::TestEntity, null))
 		
 		run {
-			val src = """{"s":null,"l":"100"}""".toJsonObject()
+			val src = """{"s":null,"l":"100"}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, src)
 			assertNull(item)
 		}
 		run {
-			val src = """{"s":"","l":"100"}""".toJsonObject()
+			val src = """{"s":"","l":"100"}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, src)
 			assertNull(item)
 		}
 		run {
-			val src = """{"s":"A","l":null}""".toJsonObject()
+			val src = """{"s":"A","l":null}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, src)
 			assertNotNull(item)
 			assertEquals(src.optString("s"), item?.s)
 			assertEquals(src.optLong("l"), item?.l)
 		}
 		run {
-			val src = """{"s":"A","l":""}""".toJsonObject()
+			val src = """{"s":"A","l":""}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, src)
 			assertNotNull(item)
 			assertEquals(src.optString("s"), item?.s)
 			assertEquals(src.optLong("l"), item?.l)
 		}
 		run {
-			val src = """{"s":"A","l":100}""".toJsonObject()
+			val src = """{"s":"A","l":100}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, src)
 			assertNotNull(item)
 			assertEquals(src.optString("s"), item?.s)
 			assertEquals(src.optLong("l"), item?.l)
 		}
 		run {
-			val src ="""{"s":"A","l":"100"}""".toJsonObject()
+			val src ="""{"s":"A","l":"100"}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, src)
 			assertNotNull(item)
 			assertEquals(src.optString("s"), item?.s)
@@ -83,14 +83,14 @@ class TestEntityUtils {
 		val src = JsonArray()
 		assertEquals(0, parseList(::TestEntity, src).size)
 		
-		src.add("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
 		assertEquals(1, parseList(::TestEntity, src).size)
 		
-		src.add("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseList(::TestEntity, src).size)
 		
 		// error
-		src.add("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseList(::TestEntity, src).size)
 		
 	}
@@ -102,14 +102,14 @@ class TestEntityUtils {
 		val src = JsonArray()
 		assertEquals(null, parseListOrNull(::TestEntity, src))
 		
-		src.add("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
 		assertEquals(1, parseListOrNull(::TestEntity, src)?.size)
 		
-		src.add("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseListOrNull(::TestEntity, src)?.size)
 		
 		// error
-		src.add("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseListOrNull(::TestEntity, src)?.size)
 		
 	}
@@ -121,14 +121,14 @@ class TestEntityUtils {
 		val src = JsonArray()
 		assertEquals(0, parseMap(::TestEntity, src).size)
 		
-		src.add("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
 		assertEquals(1, parseMap(::TestEntity, src).size)
 		
-		src.add("""{"s":"B","l":"100"}""".toJsonObject())
+		src.add("""{"s":"B","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseMap(::TestEntity, src).size)
 		
 		// error
-		src.add("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseMap(::TestEntity, src).size)
 		
 	}
@@ -140,14 +140,14 @@ class TestEntityUtils {
 		val src = JsonArray()
 		assertEquals(null, parseMapOrNull(::TestEntity, src))
 		
-		src.add("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
 		assertEquals(1, parseMapOrNull(::TestEntity, src)?.size)
 		
-		src.add("""{"s":"B","l":"100"}""".toJsonObject())
+		src.add("""{"s":"B","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseMapOrNull(::TestEntity, src)?.size)
 		
 		// error
-		src.add("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseMapOrNull(::TestEntity, src)?.size)
 		
 	}
@@ -160,38 +160,38 @@ class TestEntityUtils {
 		assertEquals(null, parseItem(::TestEntity, parser, null))
 		
 		run {
-			val src ="""{"s":null,"l":"100"}""".toJsonObject()
+			val src ="""{"s":null,"l":"100"}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, parser, src)
 			assertNull(item)
 		}
 		run {
-			val src = """{"s":"","l":"100"}""".toJsonObject()
+			val src = """{"s":"","l":"100"}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, parser, src)
 			assertNull(item)
 		}
 		run {
-			val src = """{"s":"A","l":null}""".toJsonObject()
+			val src = """{"s":"A","l":null}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, parser, src)
 			assertNotNull(item)
 			assertEquals(src.optString("s"), item?.s)
 			assertEquals(src.optLong("l"), item?.l)
 		}
 		run {
-			val src = """{"s":"A","l":""}""".toJsonObject()
+			val src = """{"s":"A","l":""}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, parser, src)
 			assertNotNull(item)
 			assertEquals(src.optString("s"), item?.s)
 			assertEquals(src.optLong("l"), item?.l)
 		}
 		run {
-			val src = """{"s":"A","l":100}""".toJsonObject()
+			val src = """{"s":"A","l":100}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, parser, src)
 			assertNotNull(item)
 			assertEquals(src.optString("s"), item?.s)
 			assertEquals(src.optLong("l"), item?.l)
 		}
 		run {
-			val src = """{"s":"A","l":"100"}""".toJsonObject()
+			val src = """{"s":"A","l":"100"}""".decodeJsonObject()
 			val item = parseItem(::TestEntity, parser, src)
 			assertNotNull(item)
 			assertEquals(src.optString("s"), item?.s)
@@ -206,14 +206,14 @@ class TestEntityUtils {
 		val src = JsonArray()
 		assertEquals(0, parseList(::TestEntity, parser, src).size)
 		
-		src.add("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
 		assertEquals(1, parseList(::TestEntity, parser, src).size)
 		
-		src.add("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseList(::TestEntity, parser, src).size)
 		
 		// error
-		src.add("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseList(::TestEntity, parser, src).size)
 		
 	}
@@ -225,14 +225,14 @@ class TestEntityUtils {
 		val src = JsonArray()
 		assertEquals(null, parseListOrNull(::TestEntity, parser, src))
 		
-		src.add("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
 		assertEquals(1, parseListOrNull(::TestEntity, parser, src)?.size)
 		
-		src.add("""{"s":"A","l":"100"}""".toJsonObject())
+		src.add("""{"s":"A","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseListOrNull(::TestEntity, parser, src)?.size)
 		
 		// error
-		src.add("""{"s":"","l":"100"}""".toJsonObject())
+		src.add("""{"s":"","l":"100"}""".decodeJsonObject())
 		assertEquals(2, parseListOrNull(::TestEntity, parser, src)?.size)
 		
 	}
@@ -254,16 +254,16 @@ class TestEntityUtils {
 	
 	@Test(expected = RuntimeException::class)
 	fun testNotEmptyOrThrow4() {
-		println("""{"param1":null}""".toJsonObject().notEmptyOrThrow("param1"))
+		println("""{"param1":null}""".decodeJsonObject().notEmptyOrThrow("param1"))
 	}
 	
 	@Test(expected = RuntimeException::class)
 	fun testNotEmptyOrThrow5() {
-		println("""{"param1":""}""".toJsonObject().notEmptyOrThrow("param1"))
+		println("""{"param1":""}""".decodeJsonObject().notEmptyOrThrow("param1"))
 	}
 	
 	@Test
 	fun testNotEmptyOrThrow6() {
-		assertEquals("A", """{"param1":"A"}""".toJsonObject().notEmptyOrThrow("param1"))
+		assertEquals("A", """{"param1":"A"}""".decodeJsonObject().notEmptyOrThrow("param1"))
 	}
 }

@@ -6,7 +6,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getString
-import jp.juggler.util.toJsonObject
+import jp.juggler.util.decodeJsonObject
 
 
 object ClientInfo :TableCompanion {
@@ -42,7 +42,7 @@ object ClientInfo :TableCompanion {
 			App1.database.query(table, null, "h=? and cn=?", arrayOf(instance, client_name), null, null, null)
 				.use { cursor ->
 					if(cursor.moveToFirst()) {
-						return cursor.getString(COL_RESULT).toJsonObject()
+						return cursor.getString(COL_RESULT).decodeJsonObject()
 					}
 				}
 		} catch(ex : Throwable) {

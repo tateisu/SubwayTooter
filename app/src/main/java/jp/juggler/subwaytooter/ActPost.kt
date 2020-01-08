@@ -642,7 +642,7 @@ class ActPost : AppCompatActivity(),
 						parseItem(
 							::TootScheduled,
 							TootParser(this@ActPost, a),
-							it.toJsonObject(),
+							it.decodeJsonObject(),
 							log
 						)
 				}
@@ -670,7 +670,7 @@ class ActPost : AppCompatActivity(),
 					this.attachment_list.clear()
 					
 					try {
-						sv.toJsonArray().toObjectList().forEach {
+						sv.decodeJsonArray().toObjectList().forEach {
 							try {
 								attachment_list.add(PostAttachment(TootAttachment.decodeJson(it)))
 							} catch(ex : Throwable) {
@@ -744,7 +744,7 @@ class ActPost : AppCompatActivity(),
 			sv = intent.getStringExtra(KEY_REPLY_STATUS)
 			if(sv != null && account != null) {
 				try {
-					val reply_status = TootParser(this@ActPost, account).status(sv.toJsonObject())
+					val reply_status = TootParser(this@ActPost, account).status(sv.decodeJsonObject())
 					
 					val isQuoterRenote = intent.getBooleanExtra(KEY_QUOTED_RENOTE, false)
 					
@@ -842,7 +842,7 @@ class ActPost : AppCompatActivity(),
 			sv = intent.getStringExtra(KEY_REDRAFT_STATUS)
 			if(sv != null && account != null) {
 				try {
-					val base_status = TootParser(this@ActPost, account).status(sv.toJsonObject())
+					val base_status = TootParser(this@ActPost, account).status(sv.decodeJsonObject())
 					if(base_status != null) {
 						
 						redraft_status_id = base_status.id
@@ -951,7 +951,7 @@ class ActPost : AppCompatActivity(),
 					val item = parseItem(
 						::TootScheduled,
 						TootParser(this@ActPost, account),
-						sv.toJsonObject(),
+						sv.decodeJsonObject(),
 						log
 					)
 					if(item != null) {

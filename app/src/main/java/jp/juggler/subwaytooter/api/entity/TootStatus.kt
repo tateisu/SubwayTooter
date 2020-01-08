@@ -541,7 +541,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 						parser,
 						this,
 						media_attachments,
-						sv.toJsonObject(),
+						sv.decodeJsonObject(),
 						TootPollsType.FriendsNico
 					)
 				} else {

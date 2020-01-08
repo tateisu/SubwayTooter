@@ -121,10 +121,10 @@ class JsonArray : ArrayList<Any?> {
 	fun optLong(key : Int, defVal : Long = 0L) = long(key) ?: defVal
 	
 	@Suppress("unused")
-	fun optFloat(key : Int, defVal : Float) = float(key) ?: defVal
+	fun optFloat(key : Int, defVal : Float = 0f) = float(key) ?: defVal
 	
 	@Suppress("unused")
-	fun optDouble(key : Int, defVal : Double) = double(key) ?: defVal
+	fun optDouble(key : Int, defVal : Double = 0.0) = double(key) ?: defVal
 	
 	@Suppress("unused")
 	fun notEmptyOrThrow(key : Int) = notEmptyOrThrow(key.toString(), string(key))
@@ -263,9 +263,9 @@ class JsonObject : LinkedHashMap<String, Any?>() {
 	fun optBoolean(name : String, defVal : Boolean = false) = boolean(name) ?: defVal
 	fun optInt(name : String, defVal : Int = 0) = int(name) ?: defVal
 	fun optLong(name : String, defVal : Long = 0L) = long(name) ?: defVal
-	fun optFloat(name : String, defVal : Float) = float(name) ?: defVal
+	fun optFloat(name : String, defVal : Float = 0f) = float(name) ?: defVal
 	@Suppress("unused")
-	fun optDouble(name : String, defVal : Double) = double(name) ?: defVal
+	fun optDouble(name : String, defVal : Double = 0.0) = double(name) ?: defVal
 	
 	fun notEmptyOrThrow(name : String) = notEmptyOrThrow(name, string(name))
 	fun isNull(name : String) = this[name] == null
@@ -1074,3 +1074,9 @@ inline fun jsonArray(initializer : JsonArray.() -> Unit) =
 	JsonArray().apply { initializer() }
 
 fun jsonArray(vararg args : String) = JsonArray(args)
+
+fun jsonObject(vararg args : Pair<String,*>) = JsonObject().apply {
+	for(pair in args){
+		put(pair.first,pair.second)
+	}
+}

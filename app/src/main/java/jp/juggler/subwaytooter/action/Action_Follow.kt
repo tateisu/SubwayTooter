@@ -169,16 +169,39 @@ object Action_Follow {
 		
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
+			val parser = TootParser(activity, access_info)
+			
 			var relation : UserRelation? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				// リモートユーザの同期
 				var userId = who.id
 				if(who.acct.contains("@")) {
-					val (result, ar) = client.syncAccountByAcct(access_info, who.acct)
-					val user = ar?.get() ?: return result
-					userId = user.id
+					
+					// リモートユーザの確認
+
+					
+					val skipAccountSync = if(access_info.isMisskey) {
+						// Misskey の /users/show はリモートユーザに関して404を返すので
+						// userIdからリモートﾕｰｻﾞを照合することはできない。
+						// ただし検索APIがエラーになるかどうかは未確認
+						false
+					} else {
+						// https://github.com/tateisu/SubwayTooter/issues/124
+						// によると、閉じたタンスのユーザを同期しようとすると検索APIがエラーを返す
+						// この問題を回避するため、手持ちのuserIdで照合したユーザのacctが目的のユーザと同じなら
+						// 検索APIを呼び出さないようにする
+						val result =  client.request("/api/v1/accounts/${userId}")
+							?: return null
+						who.acct == parser.account(result.jsonObject)?.acct
+					}
+
+					if(!skipAccountSync){
+						// 同タンスのIDではなかった場合、検索APIを使う
+						val (result, ar) = client.syncAccountByAcct(access_info, who.acct)
+						val user = ar?.get() ?: return result
+						userId = user.id
+					}
 				}
 				
 				return if(access_info.isMisskey) {
@@ -224,7 +247,6 @@ object Action_Follow {
 						"/api/v1/accounts/${userId}/${if(bFollow) "follow" else "unfollow"}"
 						, "".toFormRequestBody().toPost()
 					)?.also { result ->
-						val parser = TootParser(activity, access_info)
 						val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
 						if(newRelation != null) {
 							relation = saveUserRelation(access_info, newRelation)

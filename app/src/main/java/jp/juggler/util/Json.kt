@@ -135,7 +135,8 @@ class JsonArray : ArrayList<Any?> {
 
 // https://stackoverflow.com/questions/5525795/does-javascript-guarantee-object-property-order/38218582#38218582
 // ブラウザはES2015によりオブジェクト列挙順序に挿入順序が影響する
-// JSONにそんな規定はないが、MisskeyのAPIはこれに依存した挙動をする。
+// JSONにそんな規定はないが、MisskeyのAPIはこれに依存した挙動をする
+// https://github.com/syuilo/misskey/issues/5684
 class JsonObject : LinkedHashMap<String, Any?>() {
 	
 	companion object {

@@ -403,9 +403,9 @@ class ActMain : AppCompatActivity()
 					}
 				}
 				
-				return when {
+				return when(accounts.size) {
 					// 候補が1つだけならアカウント選択は不要
-					accounts.size == 1 -> accounts.first()
+					1 -> accounts.first()
 					// 候補が2つ以上ならアカウント選択は必要
 					else -> null
 				}
@@ -500,11 +500,11 @@ class ActMain : AppCompatActivity()
 		phoneTab(
 			{ env -> outState.putInt(STATE_CURRENT_PAGE, env.pager.currentItem) },
 			{ env ->
-				val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
-				if(ve != RecyclerView.NO_POSITION) {
-					outState.putInt(STATE_CURRENT_PAGE, ve)
-				}
-			})
+				env.tablet_layout_manager.findLastVisibleItemPosition()
+					.takeIf { it != RecyclerView.NO_POSITION }
+					?.let { outState.putInt(STATE_CURRENT_PAGE, it) }
+			}
+		)
 		
 		for(column in app_state.column_list) {
 			column.saveScrollPosition()
@@ -682,9 +682,46 @@ class ActMain : AppCompatActivity()
 	}
 	
 	override fun onResume() {
-		super.onResume()
 		log.d("onResume")
 		isResumed = true
+		
+		super.onResume()
+		/*
+		super.onResume() から呼ばれる isTopOfTask() が android.os.RemoteException 例外をたまに出すが、放置することにした。
+		
+		java.lang.RuntimeException:
+		at android.app.ActivityThread.performResumeActivity (ActivityThread.java:4430)
+		at android.app.ActivityThread.handleResumeActivity (ActivityThread.java:4470)
+		at android.app.servertransaction.TransactionExecutor.performLifecycleSequence (TransactionExecutor.java:183)
+		at android.app.servertransaction.TransactionExecutor.cycleToPath (TransactionExecutor.java:165)
+		at android.app.servertransaction.TransactionExecutor.executeLifecycleState (TransactionExecutor.java:142)
+		at android.app.servertransaction.TransactionExecutor.execute (TransactionExecutor.java:70)
+		at android.app.ActivityThread$H.handleMessage (ActivityThread.java:2199)
+		at android.os.Handler.dispatchMessage (Handler.java:112)
+		at android.os.Looper.loop (Looper.java:216)
+		at android.app.ActivityThread.main (ActivityThread.java:7625)
+		at java.lang.reflect.Method.invoke (Native Method)
+		at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run (RuntimeInit.java:524)
+		at com.android.internal.os.ZygoteInit.main (ZygoteInit.java:987)
+		Caused by: java.lang.IllegalArgumentException:
+		at android.os.Parcel.createException (Parcel.java:1957)
+		at android.os.Parcel.readException (Parcel.java:1921)
+		at android.os.Parcel.readException (Parcel.java:1871)
+		at android.app.IActivityManager$Stub$Proxy.isTopOfTask (IActivityManager.java:7912)
+		at android.app.Activity.isTopOfTask (Activity.java:6724)
+		at android.app.Activity.onResume (Activity.java:1425)
+		at androidx.fragment.app.FragmentActivity.onResume (FragmentActivity.java:456)
+		at jp.juggler.subwaytooter.ActMain.onResume (ActMain.kt:685)
+		at android.app.Instrumentation.callActivityOnResume (Instrumentation.java:1456)
+		at android.app.Activity.performResume (Activity.java:7614)
+		at android.app.ActivityThread.performResumeActivity (ActivityThread.java:4412)
+		Caused by: android.os.RemoteException:
+		at com.android.server.am.ActivityManagerService.isTopOfTask (ActivityManagerService.java:16128)
+		at android.app.IActivityManager$Stub.onTransact (IActivityManager.java:2376)
+		at com.android.server.am.ActivityManagerService.onTransact (ActivityManagerService.java:3648)
+		at com.android.server.am.HwActivityManagerService.onTransact (HwActivityManagerService.java:609)
+		at android.os.Binder.execTransact (Binder.java:739)
+		*/
 		
 		MyClickableSpan.link_callback = WeakReference(link_click_listener)
 		
@@ -1294,9 +1331,9 @@ class ActMain : AppCompatActivity()
 		when(Pref.ipJustifyWindowContentPortrait(pref)) {
 			Pref.JWCP_START -> {
 				val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
-				val padding = resources.displayMetrics.widthPixels /2 -iconW
+				val padding = resources.displayMetrics.widthPixels / 2 - iconW
 				
-				fun ViewGroup.addViewBeforeLast(v : View) = addView(v, childCount-1)
+				fun ViewGroup.addViewBeforeLast(v : View) = addView(v, childCount - 1)
 				(svColumnStrip.parent as LinearLayout).addViewBeforeLast(
 					View(this).apply {
 						layoutParams = LinearLayout.LayoutParams(padding, 0)
@@ -1312,7 +1349,7 @@ class ActMain : AppCompatActivity()
 			Pref.JWCP_END -> {
 				val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
 				val borderWidth = (1f * density + 0.5f).toInt()
-				val padding = resources.displayMetrics.widthPixels /2 -iconW -borderWidth
+				val padding = resources.displayMetrics.widthPixels / 2 - iconW - borderWidth
 				
 				fun ViewGroup.addViewAfterFirst(v : View) = addView(v, 1)
 				(svColumnStrip.parent as LinearLayout).addViewAfterFirst(
@@ -1511,12 +1548,12 @@ class ActMain : AppCompatActivity()
 		
 		// 両端のメニューと投稿ボタンの大きさ
 		val pad = (rootH - iconSize) shr 1
-		for(btn in  arrayOf(btnToot,btnMenu,btnQuickTootMenu,btnQuickToot)){
+		for(btn in arrayOf(btnToot, btnMenu, btnQuickTootMenu, btnQuickToot)) {
 			btn.layoutParams.width = rootH // not W
 			btn.layoutParams.height = rootH
 			btn.setPaddingRelative(pad, pad, pad, pad)
 		}
-
+		
 		llColumnStrip.removeAllViews()
 		for(i in 0 until app_state.column_list.size) {
 			
@@ -2344,11 +2381,11 @@ class ActMain : AppCompatActivity()
 				
 				// opener.linkInfo をチェックしてメンションを判別する
 				val mention = opener.linkInfo?.mention
-				if( mention != null ){
-					val fullAcct = getFullAcctOrNull(accessInfo,mention.acct,mention.url)
-					if( fullAcct != null){
-						val(user,host) = fullAcct.splitFullAcct()
-						if(host != null ) {
+				if(mention != null) {
+					val fullAcct = getFullAcctOrNull(accessInfo, mention.acct, mention.url)
+					if(fullAcct != null) {
+						val (user, host) = fullAcct.splitFullAcct()
+						if(host != null) {
 							when(host.toLowerCase(Locale.JAPAN)) {
 								"github.com",
 								"twitter.com" ->
@@ -2371,7 +2408,7 @@ class ActMain : AppCompatActivity()
 						}
 					}
 				}
-
+				
 				// ユーザページをアプリ内で開く
 				var m = TootAccount.reAccountUrl.matcher(opener.url)
 				if(m.find()) {
@@ -2431,7 +2468,6 @@ class ActMain : AppCompatActivity()
 					)
 					return
 				}
-				
 				
 			}
 			

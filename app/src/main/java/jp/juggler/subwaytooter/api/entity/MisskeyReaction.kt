@@ -6,17 +6,30 @@ import com.bumptech.glide.Glide
 import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.ActMain
 
-private fun findSvgFile(utf16 : String):EmojiMap.EmojiResource{
-	return EmojiMap.sUTF16ToEmojiResource[utf16]!!
+private fun findSvgFile(utf16 : String) =
+	EmojiMap.sUTF16ToEmojiResource[utf16]
+
+fun EmojiMap.EmojiResource.loadToImageView(activity : ActMain, view : ImageView) {
+	if(isSvg) {
+		Glide.with(activity)
+			.`as`(PictureDrawable::class.java)
+			.load("file:///android_asset/${assetsName}")
+			.into(view)
+	} else {
+		Glide.with(activity)
+			.load(drawableId)
+			.into(view)
+	}
 }
 
 class MisskeyReaction(
 	val shortcode : String,
 	val emojiUtf16 : String,
-	private val emojiResource : EmojiMap.EmojiResource = findSvgFile(emojiUtf16),
+	val emojiResource : EmojiMap.EmojiResource? = findSvgFile(emojiUtf16),
 	val showOnPicker : Boolean = true
 ) {
-	companion object{
+	
+	companion object {
 		private val LIST = listOf(
 			MisskeyReaction(
 				"like",
@@ -65,23 +78,10 @@ class MisskeyReaction(
 			)
 		)
 		
-		fun values() =LIST
+		fun values() = LIST
 		
-		val shortcodeMap = HashMap<String, MisskeyReaction>().apply{
-			LIST.forEach { put(it.shortcode,it) }
-		}
-	}
-	
-	fun loadToImageView(activity: ActMain, view: ImageView){
-		if(emojiResource.isSvg) {
-			Glide.with(activity)
-				.`as`(PictureDrawable::class.java)
-				.load("file:///android_asset/${emojiResource.assetsName}")
-				.into(view)
-		} else {
-			Glide.with(activity)
-				.load(emojiResource.drawableId)
-				.into(view)
+		val shortcodeMap = HashMap<String, MisskeyReaction>().apply {
+			LIST.forEach { put(it.shortcode, it) }
 		}
 	}
 }

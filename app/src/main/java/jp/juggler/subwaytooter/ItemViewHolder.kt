@@ -1114,8 +1114,9 @@ internal class ItemViewHolder(
 			whoRef.decoded_display_name
 		}.intoStringResource(activity, string_id)
 		
-		if(misskeyReaction != null) {
-			misskeyReaction.loadToImageView(activity, ivBoosted)
+		val emojiResource = misskeyReaction.emojiResource
+		if(emojiResource != null) {
+			emojiResource.loadToImageView(activity, ivBoosted)
 			// TODO パディング少し変える？
 		} else {
 			setIconDrawableId(
@@ -2450,12 +2451,12 @@ internal class ItemViewHolder(
 							?.get(customCode)
 					
 					val emojiUrl = emoji?.let {
-							if(Pref.bpDisableEmojiAnimation(this@ItemViewHolder.activity.pref)) {
-								it.static_url
-							} else {
-								it.url
-							}
+						if(Pref.bpDisableEmojiAnimation(this@ItemViewHolder.activity.pref)) {
+							it.static_url
+						} else {
+							it.url
 						}
+					}
 					
 					val sb = SpannableStringBuilder("$name $count")
 					if(emojiUrl != null) {
@@ -2503,7 +2504,7 @@ internal class ItemViewHolder(
 					addEmojiReaction(mr.shortcode, mr.emojiUtf16, count)
 					continue
 				}
-
+				
 				// カスタム絵文字のリアクション
 				val customCode = key.replace(":", "")
 				if(key != customCode) {

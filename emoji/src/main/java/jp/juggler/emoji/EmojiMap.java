@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+
 import android.util.SparseArray;
 
 import java.util.ArrayList;
@@ -13,34 +14,34 @@ import java.util.HashMap;
 @SuppressWarnings({ "unused" })
 public class EmojiMap {
 	
-	public static final int CATEGORY_PEOPLE =0;
-	public static final int CATEGORY_NATURE =1;
-	public static final int CATEGORY_FOODS =2;
-	public static final int CATEGORY_ACTIVITY =3;
-	public static final int CATEGORY_PLACES =4;
-	public static final int CATEGORY_OBJECTS =5;
-	public static final int CATEGORY_SYMBOLS =6;
-	public static final int CATEGORY_FLAGS =7;
+	public static final int CATEGORY_PEOPLE = 0;
+	public static final int CATEGORY_NATURE = 1;
+	public static final int CATEGORY_FOODS = 2;
+	public static final int CATEGORY_ACTIVITY = 3;
+	public static final int CATEGORY_PLACES = 4;
+	public static final int CATEGORY_OBJECTS = 5;
+	public static final int CATEGORY_SYMBOLS = 6;
+	public static final int CATEGORY_FLAGS = 7;
 	
 	public static class Category {
 		public final int category_id; // this is String resource id;
 		public final ArrayList< String > emoji_list = new ArrayList<>();
 		
-		public Category(int category_id){
+		public Category( int category_id ){
 			this.category_id = category_id;
 		}
 	}
 	
-	public static class EmojiResource{
+	public static class EmojiResource {
 		@DrawableRes public final int drawableId;
 		@Nullable public final String assetsName;
 		
-		public EmojiResource(@DrawableRes int drawableId){
+		public EmojiResource( @DrawableRes int drawableId ){
 			this.drawableId = drawableId;
 			this.assetsName = null;
 		}
 		
-		EmojiResource(@NonNull String assetsName){
+		EmojiResource( @NonNull String assetsName ){
 			this.drawableId = 0;
 			this.assetsName = assetsName;
 		}
@@ -54,7 +55,7 @@ public class EmojiMap {
 		@NonNull public final String unified;
 		@NonNull public final EmojiResource er;
 		
-		public EmojiInfo( @NonNull String unified ,@NonNull EmojiResource er  ){
+		public EmojiInfo( @NonNull String unified, @NonNull EmojiResource er ){
 			this.unified = unified;
 			this.er = er;
 		}
@@ -84,22 +85,22 @@ public class EmojiMap {
 	}
 	
 	// PNG
-	private static void code( @NonNull String code , @DrawableRes int resId ){
+	private static void code( @NonNull String code, @DrawableRes int resId ){
 		if( isIgnored( code ) ) return;
-		sUTF16ToEmojiResource.put(code,new EmojiResource(resId));
+		sUTF16ToEmojiResource.put( code, new EmojiResource( resId ) );
 	}
-
+	
 	// Assets
-	private static void code( @NonNull String code , @NonNull String assetsName ){
+	private static void code( @NonNull String code, @NonNull String assetsName ){
 		if( isIgnored( code ) ) return;
-		sUTF16ToEmojiResource.put(code,new EmojiResource(assetsName));
+		sUTF16ToEmojiResource.put( code, new EmojiResource( assetsName ) );
 	}
-
+	
 	private static void name( @NonNull String name, @NonNull String unified ){
 		if( isIgnored( unified ) ) return;
-		EmojiResource er = sUTF16ToEmojiResource.get(unified);
-		if(er==null) throw new IllegalStateException("missing emoji for code "+unified);
-		sShortNameToEmojiInfo.put( name, new EmojiInfo(unified,er ) );
+		EmojiResource er = sUTF16ToEmojiResource.get( unified );
+		if( er == null ) throw new IllegalStateException( "missing emoji for code " + unified );
+		sShortNameToEmojiInfo.put( name, new EmojiInfo( unified, er ) );
 		sShortNameList.add( name );
 	}
 	
@@ -218,6 +219,7 @@ public class EmojiMap {
 		code( "\ud83c\udd70", R.drawable.emj_1f170_fe0f );
 		code( "\ud83c\udd70\ufe0f", R.drawable.emj_1f170_fe0f );
 	}
+	
 	private static void init2(){
 		code( "\ue532", R.drawable.emj_1f170_fe0f );
 		code( "\ueb26", R.drawable.emj_1f170_fe0f );
@@ -321,6 +323,7 @@ public class EmojiMap {
 		code( "\ud83c\udde7\ud83c\uddf9", "emj_1f1e7_1f1f9.svg" );
 		code( "\ud83c\udde7\ud83c\uddfb", "emj_1f1e7_1f1fb.svg" );
 	}
+	
 	private static void init3(){
 		code( "\ud83c\udde7\ud83c\uddfc", "emj_1f1e7_1f1fc.svg" );
 		code( "\ud83c\udde7\ud83c\uddfe", "emj_1f1e7_1f1fe.svg" );
@@ -424,6 +427,7 @@ public class EmojiMap {
 		code( "\ud83c\uddee\ud83c\uddf6", "emj_1f1ee_1f1f6.svg" );
 		code( "\ud83c\uddee\ud83c\uddf7", "emj_1f1ee_1f1f7.svg" );
 	}
+	
 	private static void init4(){
 		code( "\ud83c\uddee\ud83c\uddf8", "emj_1f1ee_1f1f8.svg" );
 		code( "\ud83c\uddee\ud83c\uddf9", "emj_1f1ee_1f1f9.svg" );
@@ -527,6 +531,7 @@ public class EmojiMap {
 		code( "\ud83c\uddf7\ud83c\uddf8", "emj_1f1f7_1f1f8.svg" );
 		code( "\ud83c\uddf7\ud83c\uddfa", "emj_1f1f7_1f1fa.svg" );
 	}
+	
 	private static void init5(){
 		code( "\ue512", "emj_1f1f7_1f1fa.svg" );
 		code( "\ue5d6", "emj_1f1f7_1f1fa.svg" );
@@ -630,6 +635,7 @@ public class EmojiMap {
 		code( "\ue73a", "emj_1f234.svg" );
 		code( "\udbba\udf30", "emj_1f234.svg" );
 	}
+	
 	private static void init6(){
 		code( "\ud83c\ude35", "emj_1f235.svg" );
 		code( "\ue22a", "emj_1f235.svg" );
@@ -733,6 +739,7 @@ public class EmojiMap {
 		code( "\udbb8\udc13", "emj_1f313.svg" );
 		code( "\ud83c\udf14", "emj_1f314.svg" );
 	}
+	
 	private static void init7(){
 		code( "\ue5a9", "emj_1f314.svg" );
 		code( "\ue69d", "emj_1f314.svg" );
@@ -836,6 +843,7 @@ public class EmojiMap {
 		code( "\ue444", "emj_1f33e.svg" );
 		code( "\udbb8\udc49", "emj_1f33e.svg" );
 	}
+	
 	private static void init8(){
 		code( "\ud83c\udf3f", "emj_1f33f.svg" );
 		code( "\ueb82", "emj_1f33f.svg" );
@@ -939,6 +947,7 @@ public class EmojiMap {
 		code( "\ueab4", "emj_1f35a.svg" );
 		code( "\udbba\udd6a", "emj_1f35a.svg" );
 	}
+	
 	private static void init9(){
 		code( "\ud83c\udf5b", "emj_1f35b.svg" );
 		code( "\ue341", "emj_1f35b.svg" );
@@ -1042,6 +1051,7 @@ public class EmojiMap {
 		code( "\ue338", "emj_1f375.svg" );
 		code( "\ue71e", "emj_1f375.svg" );
 	}
+	
 	private static void init10(){
 		code( "\ueaae", "emj_1f375.svg" );
 		code( "\udbba\udd84", "emj_1f375.svg" );
@@ -1145,6 +1155,7 @@ public class EmojiMap {
 		code( "\ueae4", "emj_1f38e.svg" );
 		code( "\udbb9\udd19", "emj_1f38e.svg" );
 	}
+	
 	private static void init11(){
 		code( "\ud83c\udf8f", "emj_1f38f.svg" );
 		code( "\ue43b", "emj_1f38f.svg" );
@@ -1248,6 +1259,7 @@ public class EmojiMap {
 		code( "\ue130", "emj_1f3af.svg" );
 		code( "\ue4c5", "emj_1f3af.svg" );
 	}
+	
 	private static void init12(){
 		code( "\udbba\udc0c", "emj_1f3af.svg" );
 		code( "\ud83c\udfb0", "emj_1f3b0.svg" );
@@ -1351,6 +1363,7 @@ public class EmojiMap {
 		code( "\ud83c\udfc3\ud83c\udffd\u2642", "emj_1f3c3_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83c\udfc3\ud83c\udffe", "emj_1f3c3_1f3fe.svg" );
 	}
+	
 	private static void init13(){
 		code( "\ud83c\udfc3\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f3c3_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83c\udfc3\ud83c\udffe\u2640", "emj_1f3c3_1f3fe_200d_2640_fe0f.svg" );
@@ -1454,6 +1467,7 @@ public class EmojiMap {
 		code( "\ud83c\udfcb\ud83c\udffb\u2642", "emj_1f3cb_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83c\udfcb\ud83c\udffc", "emj_1f3cb_1f3fc.svg" );
 	}
+	
 	private static void init14(){
 		code( "\ud83c\udfcb\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f3cb_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83c\udfcb\ud83c\udffc\u2640", "emj_1f3cb_1f3fc_200d_2640_fe0f.svg" );
@@ -1557,6 +1571,7 @@ public class EmojiMap {
 		code( "\ue038", "emj_1f3e2.svg" );
 		code( "\ue4ad", "emj_1f3e2.svg" );
 	}
+	
 	private static void init15(){
 		code( "\ue664", "emj_1f3e2.svg" );
 		code( "\udbb9\udcb2", "emj_1f3e2.svg" );
@@ -1660,6 +1675,7 @@ public class EmojiMap {
 		code( "\udbb8\uddb9", "emj_1f40c.svg" );
 		code( "\ud83d\udc0d", "emj_1f40d.svg" );
 	}
+	
 	private static void init16(){
 		code( "\ue52d", "emj_1f40d.svg" );
 		code( "\ueb22", "emj_1f40d.svg" );
@@ -1763,6 +1779,7 @@ public class EmojiMap {
 		code( "\ueb25", "emj_1f42b.svg" );
 		code( "\udbb8\uddd6", "emj_1f42b.svg" );
 	}
+	
 	private static void init17(){
 		code( "\ud83d\udc2c", "emj_1f42c.svg" );
 		code( "\ue520", "emj_1f42c.svg" );
@@ -1866,6 +1883,7 @@ public class EmojiMap {
 		code( "\ue41a", "emj_1f443.svg" );
 		code( "\uead0", "emj_1f443.svg" );
 	}
+	
 	private static void init18(){
 		code( "\udbb8\udd92", "emj_1f443.svg" );
 		code( "\ud83d\udc43\ud83c\udffb", "emj_1f443_1f3fb.svg" );
@@ -1969,6 +1987,7 @@ public class EmojiMap {
 		code( "\udbba\udf9e", "emj_1f44f.svg" );
 		code( "\ud83d\udc4f\ud83c\udffb", "emj_1f44f_1f3fb.svg" );
 	}
+	
 	private static void init19(){
 		code( "\ud83d\udc4f\ud83c\udffc", "emj_1f44f_1f3fc.svg" );
 		code( "\ud83d\udc4f\ud83c\udffd", "emj_1f44f_1f3fd.svg" );
@@ -2072,6 +2091,7 @@ public class EmojiMap {
 		code( "\ud83d\udc66\ud83c\udffb", "emj_1f466_1f3fb.svg" );
 		code( "\ud83d\udc66\ud83c\udffc", "emj_1f466_1f3fc.svg" );
 	}
+	
 	private static void init20(){
 		code( "\ud83d\udc66\ud83c\udffd", "emj_1f466_1f3fd.svg" );
 		code( "\ud83d\udc66\ud83c\udffe", "emj_1f466_1f3fe.svg" );
@@ -2175,6 +2195,7 @@ public class EmojiMap {
 		code( "\ud83d\udc68\ud83c\udffc\u2695", "emj_1f468_1f3fc_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\u2696\ufe0f", "emj_1f468_1f3fc_200d_2696_fe0f.svg" );
 	}
+	
 	private static void init21(){
 		code( "\ud83d\udc68\ud83c\udffc\u2696", "emj_1f468_1f3fc_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\u2708\ufe0f", "emj_1f468_1f3fc_200d_2708_fe0f.svg" );
@@ -2278,6 +2299,7 @@ public class EmojiMap {
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfa4", "emj_1f468_1f3ff_200d_1f3a4.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\ud83c\udfa8", "emj_1f468_1f3ff_200d_1f3a8.svg" );
 	}
+	
 	private static void init22(){
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfa8", "emj_1f468_1f3ff_200d_1f3a8.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\ud83c\udfeb", "emj_1f468_1f3ff_200d_1f3eb.svg" );
@@ -2381,6 +2403,7 @@ public class EmojiMap {
 		code( "\ud83d\udc68\u200d\u2696\ufe0f", "emj_1f468_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc68\u2696", "emj_1f468_200d_2696_fe0f.svg" );
 	}
+	
 	private static void init23(){
 		code( "\ud83d\udc68\u200d\u2708\ufe0f", "emj_1f468_200d_2708_fe0f.svg" );
 		code( "\ud83d\udc68\u2708", "emj_1f468_200d_2708_fe0f.svg" );
@@ -2484,6 +2507,7 @@ public class EmojiMap {
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddbd", "emj_1f469_1f3fc_200d_1f9bd.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\u2695\ufe0f", "emj_1f469_1f3fc_200d_2695_fe0f.svg" );
 	}
+	
 	private static void init24(){
 		code( "\ud83d\udc69\ud83c\udffc\u2695", "emj_1f469_1f3fc_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\u2696\ufe0f", "emj_1f469_1f3fc_200d_2696_fe0f.svg" );
@@ -2587,6 +2611,7 @@ public class EmojiMap {
 		code( "\ud83d\udc69\ud83c\udffe\u200d\u2708\ufe0f", "emj_1f469_1f3fe_200d_2708_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u2708", "emj_1f469_1f3fe_200d_2708_fe0f.svg" );
 	}
+	
 	private static void init25(){
 		code( "\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3ff.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\ud83c\udf3e", "emj_1f469_1f3ff_200d_1f33e.svg" );
@@ -2690,6 +2715,7 @@ public class EmojiMap {
 		code( "\ud83d\udc69\u200d\ud83e\uddbc", "emj_1f469_200d_1f9bc.svg" );
 		code( "\ud83d\udc69\u200d\ud83e\uddbd", "emj_1f469_200d_1f9bd.svg" );
 	}
+	
 	private static void init26(){
 		code( "\ud83d\udc69\u200d\u2695\ufe0f", "emj_1f469_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\u2695", "emj_1f469_200d_2695_fe0f.svg" );
@@ -2793,6 +2819,7 @@ public class EmojiMap {
 		code( "\ud83d\udc71\ud83c\udffc\u2642", "emj_1f471_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udffd", "emj_1f471_1f3fd.svg" );
 	}
+	
 	private static void init27(){
 		code( "\ud83d\udc71\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f471_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udffd\u2640", "emj_1f471_1f3fd_200d_2640_fe0f.svg" );
@@ -2896,6 +2923,7 @@ public class EmojiMap {
 		code( "\ud83d\udc77\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f477_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc77\ud83c\udffc\u2642", "emj_1f477_1f3fc_200d_2642_fe0f.svg" );
 	}
+	
 	private static void init28(){
 		code( "\ud83d\udc77\ud83c\udffd", "emj_1f477_1f3fd.svg" );
 		code( "\ud83d\udc77\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f477_1f3fd_200d_2640_fe0f.svg" );
@@ -2999,6 +3027,7 @@ public class EmojiMap {
 		code( "\ud83d\udc82\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f482_1f3fb_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc82\ud83c\udffb\u2640", "emj_1f482_1f3fb_200d_2640_fe0f.svg" );
 	}
+	
 	private static void init29(){
 		code( "\ud83d\udc82\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f482_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc82\ud83c\udffb\u2642", "emj_1f482_1f3fb_200d_2642_fe0f.svg" );
@@ -3102,6 +3131,7 @@ public class EmojiMap {
 		code( "\ud83d\udc87\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f487_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc87\ud83c\udffd\u2642", "emj_1f487_1f3fd_200d_2642_fe0f.svg" );
 	}
+	
 	private static void init30(){
 		code( "\ud83d\udc87\ud83c\udffe", "emj_1f487_1f3fe.svg" );
 		code( "\ud83d\udc87\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f487_1f3fe_200d_2640_fe0f.svg" );
@@ -3205,6 +3235,7 @@ public class EmojiMap {
 		code( "\udbba\udf16", "emj_1f49c.svg" );
 		code( "\ud83d\udc9d", "emj_1f49d.svg" );
 	}
+	
 	private static void init31(){
 		code( "\ue437", "emj_1f49d.svg" );
 		code( "\ueb54", "emj_1f49d.svg" );
@@ -3308,6 +3339,7 @@ public class EmojiMap {
 		code( "\ud83d\udcb7", "emj_1f4b7.svg" );
 		code( "\ud83d\udcb8", "emj_1f4b8.svg" );
 	}
+	
 	private static void init32(){
 		code( "\ueb5b", "emj_1f4b8.svg" );
 		code( "\udbb9\udce4", "emj_1f4b8.svg" );
@@ -3411,6 +3443,7 @@ public class EmojiMap {
 		code( "\udbb9\udd02", "emj_1f4d5.svg" );
 		code( "\ud83d\udcd6", "emj_1f4d6.svg" );
 	}
+	
 	private static void init33(){
 		code( "\ue148", "emj_1f4d6.svg" );
 		code( "\ue49f", "emj_1f4d6.svg" );
@@ -3514,6 +3547,7 @@ public class EmojiMap {
 		code( "\ueb08", "emj_1f4f2.svg" );
 		code( "\udbb9\udd26", "emj_1f4f2.svg" );
 	}
+	
 	private static void init34(){
 		code( "\ud83d\udcf3", "emj_1f4f3.svg" );
 		code( "\ue250", "emj_1f4f3.svg" );
@@ -3617,6 +3651,7 @@ public class EmojiMap {
 		code( "\ud83d\udd18", "emj_1f518.svg" );
 		code( "\ueb04", "emj_1f518.svg" );
 	}
+	
 	private static void init35(){
 		code( "\udbba\udf8c", "emj_1f518.svg" );
 		code( "\ud83d\udd19", "emj_1f519.svg" );
@@ -3720,6 +3755,7 @@ public class EmojiMap {
 		code( "\ud83d\udd38", "emj_1f538.svg" );
 		code( "\ue536", "emj_1f538.svg" );
 	}
+	
 	private static void init36(){
 		code( "\udbba\udf75", "emj_1f538.svg" );
 		code( "\ud83d\udd39", "emj_1f539.svg" );
@@ -3823,6 +3859,7 @@ public class EmojiMap {
 		code( "\ud83d\udd74\ud83c\udffe", "emj_1f574_1f3fe.svg" );
 		code( "\ud83d\udd74\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f574_1f3fe_200d_2640_fe0f.svg" );
 	}
+	
 	private static void init37(){
 		code( "\ud83d\udd74\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f574_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83d\udd74\ud83c\udfff", "emj_1f574_1f3ff.svg" );
@@ -3926,6 +3963,7 @@ public class EmojiMap {
 		code( "\ud83d\uddd1", R.drawable.emj_1f5d1_fe0f );
 		code( "\ud83d\uddd1\ufe0f", R.drawable.emj_1f5d1_fe0f );
 	}
+	
 	private static void init38(){
 		code( "\ud83d\uddd2", R.drawable.emj_1f5d2_fe0f );
 		code( "\ud83d\uddd2\ufe0f", R.drawable.emj_1f5d2_fe0f );
@@ -4029,6 +4067,7 @@ public class EmojiMap {
 		code( "\ue40e", "emj_1f612.svg" );
 		code( "\ue725", "emj_1f612.svg" );
 	}
+	
 	private static void init39(){
 		code( "\ueac9", "emj_1f612.svg" );
 		code( "\udbb8\udf26", "emj_1f612.svg" );
@@ -4132,6 +4171,7 @@ public class EmojiMap {
 		code( "\ue107", "emj_1f631.svg" );
 		code( "\ue5c5", "emj_1f631.svg" );
 	}
+	
 	private static void init40(){
 		code( "\ue757", "emj_1f631.svg" );
 		code( "\udbb8\udf41", "emj_1f631.svg" );
@@ -4235,6 +4275,7 @@ public class EmojiMap {
 		code( "\ud83d\ude46\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f646_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\ude46\ud83c\udffd\u2640", "emj_1f646_1f3fd_200d_2640_fe0f.svg" );
 	}
+	
 	private static void init41(){
 		code( "\ud83d\ude46\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f646_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude46\ud83c\udffd\u2642", "emj_1f646_1f3fd_200d_2642_fe0f.svg" );
@@ -4338,6 +4379,7 @@ public class EmojiMap {
 		code( "\ud83d\ude4d", "emj_1f64d.svg" );
 		code( "\ueb87", "emj_1f64d.svg" );
 	}
+	
 	private static void init42(){
 		code( "\udbb8\udf59", "emj_1f64d.svg" );
 		code( "\ud83d\ude4d\ud83c\udffb", "emj_1f64d_1f3fb.svg" );
@@ -4441,6 +4483,7 @@ public class EmojiMap {
 		code( "\ud83d\ude89", "emj_1f689.svg" );
 		code( "\ue039", "emj_1f689.svg" );
 	}
+	
 	private static void init43(){
 		code( "\ueb6d", "emj_1f689.svg" );
 		code( "\udbb9\udfec", "emj_1f689.svg" );
@@ -4544,6 +4587,7 @@ public class EmojiMap {
 		code( "\ue66d", "emj_1f6a5.svg" );
 		code( "\udbb9\udff7", "emj_1f6a5.svg" );
 	}
+	
 	private static void init44(){
 		code( "\ud83d\udea6", "emj_1f6a6.svg" );
 		code( "\ud83d\udea7", "emj_1f6a7.svg" );
@@ -4647,6 +4691,7 @@ public class EmojiMap {
 		code( "\ue201", "emj_1f6b6.svg" );
 		code( "\ueb72", "emj_1f6b6.svg" );
 	}
+	
 	private static void init45(){
 		code( "\udbb9\udff0", "emj_1f6b6.svg" );
 		code( "\ud83d\udeb6\ud83c\udffb", "emj_1f6b6_1f3fb.svg" );
@@ -4750,6 +4795,7 @@ public class EmojiMap {
 		code( "\ud83d\udee5", R.drawable.emj_1f6e5_fe0f );
 		code( "\ud83d\udee5\ufe0f", R.drawable.emj_1f6e5_fe0f );
 	}
+	
 	private static void init46(){
 		code( "\ud83d\udee9", R.drawable.emj_1f6e9_fe0f );
 		code( "\ud83d\udee9\ufe0f", R.drawable.emj_1f6e9_fe0f );
@@ -4853,6 +4899,7 @@ public class EmojiMap {
 		code( "\ud83e\udd26\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f926_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd26\ud83c\udffc\u2640", "emj_1f926_1f3fc_200d_2640_fe0f.svg" );
 	}
+	
 	private static void init47(){
 		code( "\ud83e\udd26\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f926_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd26\ud83c\udffc\u2642", "emj_1f926_1f3fc_200d_2642_fe0f.svg" );
@@ -4956,6 +5003,7 @@ public class EmojiMap {
 		code( "\ud83e\udd37\ud83c\udffd\u2642", "emj_1f937_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd37\ud83c\udffe", "emj_1f937_1f3fe.svg" );
 	}
+	
 	private static void init48(){
 		code( "\ud83e\udd37\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f937_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd37\ud83c\udffe\u2640", "emj_1f937_1f3fe_200d_2640_fe0f.svg" );
@@ -5059,6 +5107,7 @@ public class EmojiMap {
 		code( "\ud83e\udd3d\ud83c\udffe\u2642", "emj_1f93d_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd3d\ud83c\udfff", "emj_1f93d_1f3ff.svg" );
 	}
+	
 	private static void init49(){
 		code( "\ud83e\udd3d\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f93d_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd3d\ud83c\udfff\u2640", "emj_1f93d_1f3ff_200d_2640_fe0f.svg" );
@@ -5162,6 +5211,7 @@ public class EmojiMap {
 		code( "\ud83e\udd81", "emj_1f981.svg" );
 		code( "\ud83e\udd82", "emj_1f982.svg" );
 	}
+	
 	private static void init50(){
 		code( "\ud83e\udd83", "emj_1f983.svg" );
 		code( "\ud83e\udd84", "emj_1f984.svg" );
@@ -5265,6 +5315,7 @@ public class EmojiMap {
 		code( "\ud83e\uddbb\ud83c\udffe", "emj_1f9bb_1f3fe.svg" );
 		code( "\ud83e\uddbb\ud83c\udfff", "emj_1f9bb_1f3ff.svg" );
 	}
+	
 	private static void init51(){
 		code( "\ud83e\uddbc", "emj_1f9bc.svg" );
 		code( "\ud83e\uddbd", "emj_1f9bd.svg" );
@@ -5368,6 +5419,7 @@ public class EmojiMap {
 		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3fe.svg" );
 		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3ff.svg" );
 	}
+	
 	private static void init52(){
 		code( "\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1", "emj_1f9d1_200d_1f91d_200d_1f9d1.svg" );
 		code( "\ud83e\uddd2", "emj_1f9d2.svg" );
@@ -5471,6 +5523,7 @@ public class EmojiMap {
 		code( "\ud83e\uddda\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9da_1f3fb_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddda\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9da_1f3fb_200d_2642_fe0f.svg" );
 	}
+	
 	private static void init53(){
 		code( "\ud83e\uddda\ud83c\udffc", "emj_1f9da_1f3fc.svg" );
 		code( "\ud83e\uddda\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9da_1f3fc_200d_2640_fe0f.svg" );
@@ -5574,6 +5627,7 @@ public class EmojiMap {
 		code( "\ud83e\uddf9", "emj_1f9f9.svg" );
 		code( "\ud83e\uddfa", "emj_1f9fa.svg" );
 	}
+	
 	private static void init54(){
 		code( "\ud83e\uddfb", "emj_1f9fb.svg" );
 		code( "\ud83e\uddfc", "emj_1f9fc.svg" );
@@ -5677,6 +5731,7 @@ public class EmojiMap {
 		code( "\ue530", "emj_23e9.svg" );
 		code( "\udbba\udefe", "emj_23e9.svg" );
 	}
+	
 	private static void init55(){
 		code( "\u23ea", "emj_23ea.svg" );
 		code( "\ue23d", "emj_23ea.svg" );
@@ -5780,6 +5835,7 @@ public class EmojiMap {
 		code( "\ue04b", "emj_2614.svg" );
 		code( "\ue48c", "emj_2614.svg" );
 	}
+	
 	private static void init56(){
 		code( "\ue640", "emj_2614.svg" );
 		code( "\udbb8\udc02", "emj_2614.svg" );
@@ -5883,6 +5939,7 @@ public class EmojiMap {
 		code( "\ue650", "emj_2652.svg" );
 		code( "\udbb8\udc35", "emj_2652.svg" );
 	}
+	
 	private static void init57(){
 		code( "\u2653", "emj_2653.svg" );
 		code( "\ue24a", "emj_2653.svg" );
@@ -5986,6 +6043,7 @@ public class EmojiMap {
 		code( "\u26c4", "emj_26c4.svg" );
 		code( "\ue048", "emj_26c4.svg" );
 	}
+	
 	private static void init58(){
 		code( "\ue485", "emj_26c4.svg" );
 		code( "\ue641", "emj_26c4.svg" );
@@ -6089,6 +6147,7 @@ public class EmojiMap {
 		code( "\ue313", R.drawable.emj_2702_fe0f );
 		code( "\ue516", R.drawable.emj_2702_fe0f );
 	}
+	
 	private static void init59(){
 		code( "\ue675", R.drawable.emj_2702_fe0f );
 		code( "\udbb9\udd3e", R.drawable.emj_2702_fe0f );
@@ -6192,6 +6251,7 @@ public class EmojiMap {
 		code( "\u274c", "emj_274c.svg" );
 		code( "\ue333", "emj_274c.svg" );
 	}
+	
 	private static void init60(){
 		code( "\ue550", "emj_274c.svg" );
 		code( "\udbba\udf45", "emj_274c.svg" );
@@ -6295,6 +6355,7 @@ public class EmojiMap {
 		code( "\u0030\u20e3", "emj_30_20e3.svg" );
 		code( "\u0031\u20e3", "emj_31_20e3.svg" );
 	}
+	
 	private static void init61(){
 		code( "\u3297", R.drawable.emj_3297_fe0f );
 		code( "\u3297\ufe0f", R.drawable.emj_3297_fe0f );
@@ -6398,6 +6459,7 @@ public class EmojiMap {
 		name( "ao", "\ud83c\udde6\ud83c\uddf4" );
 		name( "apple", "\ud83c\udf4e" );
 	}
+	
 	private static void init62(){
 		name( "aq", "\ud83c\udde6\ud83c\uddf6" );
 		name( "aquarius", "\u2652" );
@@ -6501,6 +6563,7 @@ public class EmojiMap {
 		name( "bath_tone2", "\ud83d\udec0\ud83c\udffc" );
 		name( "bath_tone3", "\ud83d\udec0\ud83c\udffd" );
 	}
+	
 	private static void init63(){
 		name( "bath_tone4", "\ud83d\udec0\ud83c\udffe" );
 		name( "bath_tone5", "\ud83d\udec0\ud83c\udfff" );
@@ -6604,6 +6667,7 @@ public class EmojiMap {
 		name( "bm", "\ud83c\udde7\ud83c\uddf2" );
 		name( "bn", "\ud83c\udde7\ud83c\uddf3" );
 	}
+	
 	private static void init64(){
 		name( "bo", "\ud83c\udde7\ud83c\uddf4" );
 		name( "boar", "\ud83d\udc17" );
@@ -6707,6 +6771,7 @@ public class EmojiMap {
 		name( "call_me_hand_medium_light_skin_tone", "\ud83e\udd19\ud83c\udffc" );
 		name( "call_me_hand_medium_skin_tone", "\ud83e\udd19\ud83c\udffd" );
 	}
+	
 	private static void init65(){
 		name( "call_me_hand_tone1", "\ud83e\udd19\ud83c\udffb" );
 		name( "call_me_hand_tone2", "\ud83e\udd19\ud83c\udffc" );
@@ -6810,6 +6875,7 @@ public class EmojiMap {
 		name( "clock", "\ud83d\udd70\ufe0f" );
 		name( "clock1", "\ud83d\udd50" );
 	}
+	
 	private static void init66(){
 		name( "clock10", "\ud83d\udd59" );
 		name( "clock1030", "\ud83d\udd65" );
@@ -6913,6 +6979,7 @@ public class EmojiMap {
 		name( "couplekiss_mm", "\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68" );
 		name( "couplekiss_ww", "\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69" );
 	}
+	
 	private static void init67(){
 		name( "cow", "\ud83d\udc2e" );
 		name( "cow2", "\ud83d\udc04" );
@@ -7016,6 +7083,7 @@ public class EmojiMap {
 		name( "dm", "\ud83c\udde9\ud83c\uddf2" );
 		name( "dna", "\ud83e\uddec" );
 	}
+	
 	private static void init68(){
 		name( "do", "\ud83c\udde9\ud83c\uddf4" );
 		name( "do_not_litter", "\ud83d\udeaf" );
@@ -7119,6 +7187,7 @@ public class EmojiMap {
 		name( "face_palm_tone2", "\ud83e\udd26\ud83c\udffc" );
 		name( "face_palm_tone3", "\ud83e\udd26\ud83c\udffd" );
 	}
+	
 	private static void init69(){
 		name( "face_palm_tone4", "\ud83e\udd26\ud83c\udffe" );
 		name( "face_palm_tone5", "\ud83e\udd26\ud83c\udfff" );
@@ -7222,6 +7291,7 @@ public class EmojiMap {
 		name( "female_bald_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb2" );
 		name( "female_bald_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb2" );
 	}
+	
 	private static void init70(){
 		name( "female_bald_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb2" );
 		name( "female_bald_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb2" );
@@ -7325,6 +7395,7 @@ public class EmojiMap {
 		name( "female_farmer_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf3e" );
 		name( "female_farmer_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf3e" );
 	}
+	
 	private static void init71(){
 		name( "female_farmer_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf3e" );
 		name( "female_farmer_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf3e" );
@@ -7428,6 +7499,7 @@ public class EmojiMap {
 		name( "female_red_haired_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb0" );
 		name( "female_red_haired_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb0" );
 	}
+	
 	private static void init72(){
 		name( "female_red_haired_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb0" );
 		name( "female_red_haired_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb0" );
@@ -7531,6 +7603,7 @@ public class EmojiMap {
 		name( "female_white_haired_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb3" );
 		name( "female_white_haired_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb3" );
 	}
+	
 	private static void init73(){
 		name( "female_white_haired_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb3" );
 		name( "female_white_haired_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb3" );
@@ -7634,6 +7707,7 @@ public class EmojiMap {
 		name( "flag_cu", "\ud83c\udde8\ud83c\uddfa" );
 		name( "flag_cv", "\ud83c\udde8\ud83c\uddfb" );
 	}
+	
 	private static void init74(){
 		name( "flag_cw", "\ud83c\udde8\ud83c\uddfc" );
 		name( "flag_cx", "\ud83c\udde8\ud83c\uddfd" );
@@ -7737,6 +7811,7 @@ public class EmojiMap {
 		name( "flag_mn", "\ud83c\uddf2\ud83c\uddf3" );
 		name( "flag_mo", "\ud83c\uddf2\ud83c\uddf4" );
 	}
+	
 	private static void init75(){
 		name( "flag_mp", "\ud83c\uddf2\ud83c\uddf5" );
 		name( "flag_mq", "\ud83c\uddf2\ud83c\uddf6" );
@@ -7840,6 +7915,7 @@ public class EmojiMap {
 		name( "flag_white", "\ud83c\udff3\ufe0f" );
 		name( "flag_ws", "\ud83c\uddfc\ud83c\uddf8" );
 	}
+	
 	private static void init76(){
 		name( "flag_xk", "\ud83c\uddfd\ud83c\uddf0" );
 		name( "flag_ye", "\ud83c\uddfe\ud83c\uddea" );
@@ -7943,6 +8019,7 @@ public class EmojiMap {
 		name( "golfer_dark_skin_tone", "\ud83c\udfcc\ud83c\udfff" );
 		name( "golfer_light_skin_tone", "\ud83c\udfcc\ud83c\udffb" );
 	}
+	
 	private static void init77(){
 		name( "golfer_medium_dark_skin_tone", "\ud83c\udfcc\ud83c\udffe" );
 		name( "golfer_medium_light_skin_tone", "\ud83c\udfcc\ud83c\udffc" );
@@ -8046,6 +8123,7 @@ public class EmojiMap {
 		name( "handball_medium_light_skin_tone", "\ud83e\udd3e\ud83c\udffc" );
 		name( "handball_medium_skin_tone", "\ud83e\udd3e\ud83c\udffd" );
 	}
+	
 	private static void init78(){
 		name( "handball_tone1", "\ud83e\udd3e\ud83c\udffb" );
 		name( "handball_tone2", "\ud83e\udd3e\ud83c\udffc" );
@@ -8149,6 +8227,7 @@ public class EmojiMap {
 		name( "im", "\ud83c\uddee\ud83c\uddf2" );
 		name( "imp", "\ud83d\udc7f" );
 	}
+	
 	private static void init79(){
 		name( "in", "\ud83c\uddee\ud83c\uddf3" );
 		name( "inbox_tray", "\ud83d\udce5" );
@@ -8252,6 +8331,7 @@ public class EmojiMap {
 		name( "lantern", "\ud83c\udfee" );
 		name( "large_blue_circle", "\ud83d\udd35" );
 	}
+	
 	private static void init80(){
 		name( "large_blue_diamond", "\ud83d\udd37" );
 		name( "large_orange_diamond", "\ud83d\udd36" );
@@ -8355,6 +8435,7 @@ public class EmojiMap {
 		name( "mage_medium_dark_skin_tone", "\ud83e\uddd9\ud83c\udffe" );
 		name( "mage_medium_light_skin_tone", "\ud83e\uddd9\ud83c\udffc" );
 	}
+	
 	private static void init81(){
 		name( "mage_medium_skin_tone", "\ud83e\uddd9\ud83c\udffd" );
 		name( "mage_tone1", "\ud83e\uddd9\ud83c\udffb" );
@@ -8458,6 +8539,7 @@ public class EmojiMap {
 		name( "male_doctor_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2695\ufe0f" );
 		name( "male_doctor_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2695\ufe0f" );
 	}
+	
 	private static void init82(){
 		name( "male_doctor_tone1", "\ud83d\udc68\ud83c\udffb\u200d\u2695\ufe0f" );
 		name( "male_doctor_tone2", "\ud83d\udc68\ud83c\udffc\u200d\u2695\ufe0f" );
@@ -8561,6 +8643,7 @@ public class EmojiMap {
 		name( "male_mechanic_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83d\udd27" );
 		name( "male_mechanic_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83d\udd27" );
 	}
+	
 	private static void init83(){
 		name( "male_mechanic_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udd27" );
 		name( "male_mechanic_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83d\udd27" );
@@ -8664,6 +8747,7 @@ public class EmojiMap {
 		name( "male_supervillain_tone1", "\ud83e\uddb9\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "male_supervillain_tone2", "\ud83e\uddb9\ud83c\udffc\u200d\u2642\ufe0f" );
 	}
+	
 	private static void init84(){
 		name( "male_supervillain_tone3", "\ud83e\uddb9\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "male_supervillain_tone4", "\ud83e\uddb9\ud83c\udffe\u200d\u2642\ufe0f" );
@@ -8767,6 +8851,7 @@ public class EmojiMap {
 		name( "man_bowing_medium_skin_tone", "\ud83d\ude47\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_bowing_tone1", "\ud83d\ude47\ud83c\udffb\u200d\u2642\ufe0f" );
 	}
+	
 	private static void init85(){
 		name( "man_bowing_tone2", "\ud83d\ude47\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_bowing_tone3", "\ud83d\ude47\ud83c\udffd\u200d\u2642\ufe0f" );
@@ -8870,6 +8955,7 @@ public class EmojiMap {
 		name( "man_farmer_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf3e" );
 		name( "man_farmer_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf3e" );
 	}
+	
 	private static void init86(){
 		name( "man_farmer_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf3e" );
 		name( "man_farmer_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf3e" );
@@ -8973,6 +9059,7 @@ public class EmojiMap {
 		name( "man_guard_medium_dark_skin_tone", "\ud83d\udc82\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_guard_medium_light_skin_tone", "\ud83d\udc82\ud83c\udffc\u200d\u2642\ufe0f" );
 	}
+	
 	private static void init87(){
 		name( "man_guard_medium_skin_tone", "\ud83d\udc82\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_guard_tone1", "\ud83d\udc82\ud83c\udffb\u200d\u2642\ufe0f" );
@@ -9076,6 +9163,7 @@ public class EmojiMap {
 		name( "man_man_girl", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67" );
 		name( "man_man_girl_boy", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d\udc66" );
 	}
+	
 	private static void init88(){
 		name( "man_man_girl_girl", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d\udc67" );
 		name( "man_mechanic", "\ud83d\udc68\u200d\ud83d\udd27" );
@@ -9179,6 +9267,7 @@ public class EmojiMap {
 		name( "man_raising_hand_tone2", "\ud83d\ude4b\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_raising_hand_tone3", "\ud83d\ude4b\ud83c\udffd\u200d\u2642\ufe0f" );
 	}
+	
 	private static void init89(){
 		name( "man_raising_hand_tone4", "\ud83d\ude4b\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_raising_hand_tone5", "\ud83d\ude4b\ud83c\udfff\u200d\u2642\ufe0f" );
@@ -9282,6 +9371,7 @@ public class EmojiMap {
 		name( "man_teacher_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfeb" );
 		name( "man_teacher_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfeb" );
 	}
+	
 	private static void init90(){
 		name( "man_technologist", "\ud83d\udc68\u200d\ud83d\udcbb" );
 		name( "man_technologist_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83d\udcbb" );
@@ -9385,6 +9475,7 @@ public class EmojiMap {
 		name( "me", "\ud83c\uddf2\ud83c\uddea" );
 		name( "meat_on_bone", "\ud83c\udf56" );
 	}
+	
 	private static void init91(){
 		name( "medal", "\ud83c\udfc5" );
 		name( "medical_symbol", "\u2695\ufe0f" );
@@ -9488,6 +9579,7 @@ public class EmojiMap {
 		name( "mother_christmas_tone2", "\ud83e\udd36\ud83c\udffc" );
 		name( "mother_christmas_tone3", "\ud83e\udd36\ud83c\udffd" );
 	}
+	
 	private static void init92(){
 		name( "mother_christmas_tone4", "\ud83e\udd36\ud83c\udffe" );
 		name( "mother_christmas_tone5", "\ud83e\udd36\ud83c\udfff" );
@@ -9591,6 +9683,7 @@ public class EmojiMap {
 		name( "nigeria", "\ud83c\uddf3\ud83c\uddec" );
 		name( "night_with_stars", "\ud83c\udf03" );
 	}
+	
 	private static void init93(){
 		name( "nine", "\u0039\ufe0f\u20e3" );
 		name( "nl", "\ud83c\uddf3\ud83c\uddf1" );
@@ -9694,6 +9787,7 @@ public class EmojiMap {
 		name( "older_woman_dark_skin_tone", "\ud83d\udc75\ud83c\udfff" );
 		name( "older_woman_light_skin_tone", "\ud83d\udc75\ud83c\udffb" );
 	}
+	
 	private static void init94(){
 		name( "older_woman_medium_dark_skin_tone", "\ud83d\udc75\ud83c\udffe" );
 		name( "older_woman_medium_light_skin_tone", "\ud83d\udc75\ud83c\udffc" );
@@ -9797,6 +9891,7 @@ public class EmojiMap {
 		name( "person_doing_cartwheel_light_skin_tone", "\ud83e\udd38\ud83c\udffb" );
 		name( "person_doing_cartwheel_medium_dark_skin_tone", "\ud83e\udd38\ud83c\udffe" );
 	}
+	
 	private static void init95(){
 		name( "person_doing_cartwheel_medium_light_skin_tone", "\ud83e\udd38\ud83c\udffc" );
 		name( "person_doing_cartwheel_medium_skin_tone", "\ud83e\udd38\ud83c\udffd" );
@@ -9900,6 +9995,7 @@ public class EmojiMap {
 		name( "person_with_pouting_face_tone1", "\ud83d\ude4e\ud83c\udffb" );
 		name( "person_with_pouting_face_tone2", "\ud83d\ude4e\ud83c\udffc" );
 	}
+	
 	private static void init96(){
 		name( "person_with_pouting_face_tone3", "\ud83d\ude4e\ud83c\udffd" );
 		name( "person_with_pouting_face_tone4", "\ud83d\ude4e\ud83c\udffe" );
@@ -10003,6 +10099,7 @@ public class EmojiMap {
 		name( "pray_light_skin_tone", "\ud83d\ude4f\ud83c\udffb" );
 		name( "pray_medium_dark_skin_tone", "\ud83d\ude4f\ud83c\udffe" );
 	}
+	
 	private static void init97(){
 		name( "pray_medium_light_skin_tone", "\ud83d\ude4f\ud83c\udffc" );
 		name( "pray_medium_skin_tone", "\ud83d\ude4f\ud83c\udffd" );
@@ -10106,6 +10203,7 @@ public class EmojiMap {
 		name( "raised_hand_medium_dark_skin_tone", "\u270b\ud83c\udffe" );
 		name( "raised_hand_medium_light_skin_tone", "\u270b\ud83c\udffc" );
 	}
+	
 	private static void init98(){
 		name( "raised_hand_medium_skin_tone", "\u270b\ud83c\udffd" );
 		name( "raised_hand_tone1", "\u270b\ud83c\udffb" );
@@ -10209,6 +10307,7 @@ public class EmojiMap {
 		name( "revolving_hearts", "\ud83d\udc9e" );
 		name( "rewind", "\u23ea" );
 	}
+	
 	private static void init99(){
 		name( "rhino", "\ud83e\udd8f" );
 		name( "rhinoceros", "\ud83e\udd8f" );
@@ -10312,6 +10411,7 @@ public class EmojiMap {
 		name( "satellite", "\ud83d\udef0\ufe0f" );
 		name( "satellite_antenna", "\ud83d\udce1" );
 	}
+	
 	private static void init100(){
 		name( "satellite_orbital", "\ud83d\udef0\ufe0f" );
 		name( "satisfied", "\ud83d\ude06" );
@@ -10415,6 +10515,7 @@ public class EmojiMap {
 		name( "skin_tone_5", "\ud83c\udffe" );
 		name( "skin_tone_6", "\ud83c\udfff" );
 	}
+	
 	private static void init101(){
 		name( "skull", "\ud83d\udc80" );
 		name( "skull_and_crossbones", "\u2620\ufe0f" );
@@ -10518,6 +10619,7 @@ public class EmojiMap {
 		name( "spock_hand", "\ud83d\udd96" );
 		name( "spock_hand_dark_skin_tone", "\ud83d\udd96\ud83c\udfff" );
 	}
+	
 	private static void init102(){
 		name( "spock_hand_light_skin_tone", "\ud83d\udd96\ud83c\udffb" );
 		name( "spock_hand_medium_dark_skin_tone", "\ud83d\udd96\ud83c\udffe" );
@@ -10621,6 +10723,7 @@ public class EmojiMap {
 		name( "taurus", "\u2649" );
 		name( "taxi", "\ud83d\ude95" );
 	}
+	
 	private static void init103(){
 		name( "tc", "\ud83c\uddf9\ud83c\udde8" );
 		name( "td", "\ud83c\uddf9\ud83c\udde9" );
@@ -10724,6 +10827,7 @@ public class EmojiMap {
 		name( "tr", "\ud83c\uddf9\ud83c\uddf7" );
 		name( "track_next", "\u23ed\ufe0f" );
 	}
+	
 	private static void init104(){
 		name( "track_previous", "\u23ee\ufe0f" );
 		name( "trackball", "\ud83d\uddb2\ufe0f" );
@@ -10827,6 +10931,7 @@ public class EmojiMap {
 		name( "vibration_mode", "\ud83d\udcf3" );
 		name( "video_camera", "\ud83d\udcf9" );
 	}
+	
 	private static void init105(){
 		name( "video_game", "\ud83c\udfae" );
 		name( "violin", "\ud83c\udfbb" );
@@ -10930,6 +11035,7 @@ public class EmojiMap {
 		name( "wink", "\ud83d\ude09" );
 		name( "wolf", "\ud83d\udc3a" );
 	}
+	
 	private static void init106(){
 		name( "woman", "\ud83d\udc69" );
 		name( "woman_artist", "\ud83d\udc69\u200d\ud83c\udfa8" );
@@ -11033,6 +11139,7 @@ public class EmojiMap {
 		name( "woman_cook_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf73" );
 		name( "woman_cook_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf73" );
 	}
+	
 	private static void init107(){
 		name( "woman_cook_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf73" );
 		name( "woman_dark_skin_tone", "\ud83d\udc69\ud83c\udfff" );
@@ -11136,6 +11243,7 @@ public class EmojiMap {
 		name( "woman_getting_face_massage_tone4", "\ud83d\udc86\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_getting_face_massage_tone5", "\ud83d\udc86\ud83c\udfff\u200d\u2640\ufe0f" );
 	}
+	
 	private static void init108(){
 		name( "woman_getting_haircut", "\ud83d\udc87\u200d\u2640\ufe0f" );
 		name( "woman_getting_haircut_dark_skin_tone", "\ud83d\udc87\ud83c\udfff\u200d\u2640\ufe0f" );
@@ -11239,6 +11347,7 @@ public class EmojiMap {
 		name( "woman_juggling_tone1", "\ud83e\udd39\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_juggling_tone2", "\ud83e\udd39\ud83c\udffc\u200d\u2640\ufe0f" );
 	}
+	
 	private static void init109(){
 		name( "woman_juggling_tone3", "\ud83e\udd39\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_juggling_tone4", "\ud83e\udd39\ud83c\udffe\u200d\u2640\ufe0f" );
@@ -11342,6 +11451,7 @@ public class EmojiMap {
 		name( "woman_pouting_light_skin_tone", "\ud83d\ude4e\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_pouting_medium_dark_skin_tone", "\ud83d\ude4e\ud83c\udffe\u200d\u2640\ufe0f" );
 	}
+	
 	private static void init110(){
 		name( "woman_pouting_medium_light_skin_tone", "\ud83d\ude4e\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_pouting_medium_skin_tone", "\ud83d\ude4e\ud83c\udffd\u200d\u2640\ufe0f" );
@@ -11445,6 +11555,7 @@ public class EmojiMap {
 		name( "woman_swimming_medium_light_skin_tone", "\ud83c\udfca\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_swimming_medium_skin_tone", "\ud83c\udfca\ud83c\udffd\u200d\u2640\ufe0f" );
 	}
+	
 	private static void init111(){
 		name( "woman_swimming_tone1", "\ud83c\udfca\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_swimming_tone2", "\ud83c\udfca\ud83c\udffc\u200d\u2640\ufe0f" );
@@ -11548,6 +11659,7 @@ public class EmojiMap {
 		name( "yarn", "\ud83e\uddf6" );
 		name( "ye", "\ud83c\uddfe\ud83c\uddea" );
 	}
+	
 	private static void init112(){
 		name( "yellow_heart", "\ud83d\udc9b" );
 		name( "yen", "\ud83d\udcb4" );
@@ -11565,1600 +11677,1616 @@ public class EmojiMap {
 		name( "zombie", "\ud83e\udddf" );
 		name( "zw", "\ud83c\uddff\ud83c\uddfc" );
 		name( "zzz", "\ud83d\udca4" );
-		category(CATEGORY_PEOPLE, "grinning");
-		category(CATEGORY_PEOPLE, "grin");
-		category(CATEGORY_PEOPLE, "joy");
-		category(CATEGORY_PEOPLE, "rolling_on_the_floor_laughing");
-		category(CATEGORY_PEOPLE, "smiley");
-		category(CATEGORY_PEOPLE, "smile");
-		category(CATEGORY_PEOPLE, "sweat_smile");
-		category(CATEGORY_PEOPLE, "laughing");
-		category(CATEGORY_PEOPLE, "wink");
-		category(CATEGORY_PEOPLE, "blush");
-		category(CATEGORY_PEOPLE, "yum");
-		category(CATEGORY_PEOPLE, "sunglasses");
-		category(CATEGORY_PEOPLE, "heart_eyes");
-		category(CATEGORY_PEOPLE, "kissing_heart");
-		category(CATEGORY_PEOPLE, "kissing");
-		category(CATEGORY_PEOPLE, "kissing_smiling_eyes");
-		category(CATEGORY_PEOPLE, "kissing_closed_eyes");
-		category(CATEGORY_PEOPLE, "relaxed");
-		category(CATEGORY_PEOPLE, "slightly_smiling_face");
-		category(CATEGORY_PEOPLE, "hugging_face");
-		category(CATEGORY_PEOPLE, "star_struck");
-		category(CATEGORY_PEOPLE, "thinking_face");
-		category(CATEGORY_PEOPLE, "face_with_raised_eyebrow");
-		category(CATEGORY_PEOPLE, "neutral_face");
-		category(CATEGORY_PEOPLE, "expressionless");
-		category(CATEGORY_PEOPLE, "no_mouth");
-		category(CATEGORY_PEOPLE, "face_with_rolling_eyes");
-		category(CATEGORY_PEOPLE, "smirk");
-		category(CATEGORY_PEOPLE, "persevere");
-		category(CATEGORY_PEOPLE, "disappointed_relieved");
-		category(CATEGORY_PEOPLE, "open_mouth");
-		category(CATEGORY_PEOPLE, "zipper_mouth_face");
-		category(CATEGORY_PEOPLE, "hushed");
-		category(CATEGORY_PEOPLE, "sleepy");
-		category(CATEGORY_PEOPLE, "tired_face");
-		category(CATEGORY_PEOPLE, "sleeping");
-		category(CATEGORY_PEOPLE, "relieved");
-		category(CATEGORY_PEOPLE, "stuck_out_tongue");
-		category(CATEGORY_PEOPLE, "stuck_out_tongue_winking_eye");
-		category(CATEGORY_PEOPLE, "stuck_out_tongue_closed_eyes");
-		category(CATEGORY_PEOPLE, "drooling_face");
-		category(CATEGORY_PEOPLE, "unamused");
-		category(CATEGORY_PEOPLE, "sweat");
-		category(CATEGORY_PEOPLE, "pensive");
-		category(CATEGORY_PEOPLE, "confused");
-		category(CATEGORY_PEOPLE, "upside_down_face");
-		category(CATEGORY_PEOPLE, "money_mouth_face");
-		category(CATEGORY_PEOPLE, "astonished");
-		category(CATEGORY_PEOPLE, "white_frowning_face");
-		category(CATEGORY_PEOPLE, "slightly_frowning_face");
-		category(CATEGORY_PEOPLE, "confounded");
-		category(CATEGORY_PEOPLE, "disappointed");
-		category(CATEGORY_PEOPLE, "worried");
-		category(CATEGORY_PEOPLE, "triumph");
-		category(CATEGORY_PEOPLE, "cry");
-		category(CATEGORY_PEOPLE, "sob");
-		category(CATEGORY_PEOPLE, "frowning");
-		category(CATEGORY_PEOPLE, "anguished");
-		category(CATEGORY_PEOPLE, "fearful");
-		category(CATEGORY_PEOPLE, "weary");
-		category(CATEGORY_PEOPLE, "exploding_head");
-		category(CATEGORY_PEOPLE, "grimacing");
-		category(CATEGORY_PEOPLE, "cold_sweat");
-		category(CATEGORY_PEOPLE, "scream");
-		category(CATEGORY_PEOPLE, "flushed");
-		category(CATEGORY_PEOPLE, "zany_face");
-		category(CATEGORY_PEOPLE, "dizzy_face");
-		category(CATEGORY_PEOPLE, "rage");
-		category(CATEGORY_PEOPLE, "angry");
-		category(CATEGORY_PEOPLE, "face_with_symbols_on_mouth");
-		category(CATEGORY_PEOPLE, "mask");
-		category(CATEGORY_PEOPLE, "face_with_thermometer");
-		category(CATEGORY_PEOPLE, "face_with_head_bandage");
-		category(CATEGORY_PEOPLE, "nauseated_face");
-		category(CATEGORY_PEOPLE, "face_vomiting");
-		category(CATEGORY_PEOPLE, "sneezing_face");
-		category(CATEGORY_PEOPLE, "innocent");
-		category(CATEGORY_PEOPLE, "face_with_cowboy_hat");
-		category(CATEGORY_PEOPLE, "clown_face");
-		category(CATEGORY_PEOPLE, "lying_face");
-		category(CATEGORY_PEOPLE, "shushing_face");
-		category(CATEGORY_PEOPLE, "face_with_hand_over_mouth");
-		category(CATEGORY_PEOPLE, "face_with_monocle");
-		category(CATEGORY_PEOPLE, "nerd_face");
-		category(CATEGORY_PEOPLE, "smiling_imp");
+		category( CATEGORY_PEOPLE, "grinning" );
+		category( CATEGORY_PEOPLE, "grin" );
+		category( CATEGORY_PEOPLE, "joy" );
+		category( CATEGORY_PEOPLE, "rolling_on_the_floor_laughing" );
+		category( CATEGORY_PEOPLE, "smiley" );
+		category( CATEGORY_PEOPLE, "smile" );
+		category( CATEGORY_PEOPLE, "sweat_smile" );
+		category( CATEGORY_PEOPLE, "laughing" );
+		category( CATEGORY_PEOPLE, "wink" );
+		category( CATEGORY_PEOPLE, "blush" );
+		category( CATEGORY_PEOPLE, "yum" );
+		category( CATEGORY_PEOPLE, "sunglasses" );
+		category( CATEGORY_PEOPLE, "heart_eyes" );
+		category( CATEGORY_PEOPLE, "kissing_heart" );
+		category( CATEGORY_PEOPLE, "kissing" );
+		category( CATEGORY_PEOPLE, "kissing_smiling_eyes" );
+		category( CATEGORY_PEOPLE, "kissing_closed_eyes" );
+		category( CATEGORY_PEOPLE, "relaxed" );
+		category( CATEGORY_PEOPLE, "slightly_smiling_face" );
+		category( CATEGORY_PEOPLE, "hugging_face" );
+		category( CATEGORY_PEOPLE, "star_struck" );
+		category( CATEGORY_PEOPLE, "thinking_face" );
+		category( CATEGORY_PEOPLE, "face_with_raised_eyebrow" );
+		category( CATEGORY_PEOPLE, "neutral_face" );
+		category( CATEGORY_PEOPLE, "expressionless" );
+		category( CATEGORY_PEOPLE, "no_mouth" );
+		category( CATEGORY_PEOPLE, "face_with_rolling_eyes" );
+		category( CATEGORY_PEOPLE, "smirk" );
+		category( CATEGORY_PEOPLE, "persevere" );
+		category( CATEGORY_PEOPLE, "disappointed_relieved" );
+		category( CATEGORY_PEOPLE, "open_mouth" );
+		category( CATEGORY_PEOPLE, "zipper_mouth_face" );
+		category( CATEGORY_PEOPLE, "hushed" );
+		category( CATEGORY_PEOPLE, "sleepy" );
+		category( CATEGORY_PEOPLE, "tired_face" );
+		category( CATEGORY_PEOPLE, "sleeping" );
+		category( CATEGORY_PEOPLE, "relieved" );
+		category( CATEGORY_PEOPLE, "stuck_out_tongue" );
+		category( CATEGORY_PEOPLE, "stuck_out_tongue_winking_eye" );
+		category( CATEGORY_PEOPLE, "stuck_out_tongue_closed_eyes" );
+		category( CATEGORY_PEOPLE, "drooling_face" );
+		category( CATEGORY_PEOPLE, "unamused" );
+		category( CATEGORY_PEOPLE, "sweat" );
+		category( CATEGORY_PEOPLE, "pensive" );
+		category( CATEGORY_PEOPLE, "confused" );
+		category( CATEGORY_PEOPLE, "upside_down_face" );
+		category( CATEGORY_PEOPLE, "money_mouth_face" );
+		category( CATEGORY_PEOPLE, "astonished" );
+		category( CATEGORY_PEOPLE, "white_frowning_face" );
+		category( CATEGORY_PEOPLE, "slightly_frowning_face" );
+		category( CATEGORY_PEOPLE, "confounded" );
+		category( CATEGORY_PEOPLE, "disappointed" );
+		category( CATEGORY_PEOPLE, "worried" );
+		category( CATEGORY_PEOPLE, "triumph" );
+		category( CATEGORY_PEOPLE, "cry" );
+		category( CATEGORY_PEOPLE, "sob" );
+		category( CATEGORY_PEOPLE, "frowning" );
+		category( CATEGORY_PEOPLE, "anguished" );
+		category( CATEGORY_PEOPLE, "fearful" );
+		category( CATEGORY_PEOPLE, "weary" );
+		category( CATEGORY_PEOPLE, "exploding_head" );
+		category( CATEGORY_PEOPLE, "grimacing" );
+		category( CATEGORY_PEOPLE, "cold_sweat" );
+		category( CATEGORY_PEOPLE, "scream" );
+		category( CATEGORY_PEOPLE, "flushed" );
+		category( CATEGORY_PEOPLE, "zany_face" );
+		category( CATEGORY_PEOPLE, "dizzy_face" );
+		category( CATEGORY_PEOPLE, "rage" );
+		category( CATEGORY_PEOPLE, "angry" );
+		category( CATEGORY_PEOPLE, "face_with_symbols_on_mouth" );
+		category( CATEGORY_PEOPLE, "mask" );
+		category( CATEGORY_PEOPLE, "face_with_thermometer" );
+		category( CATEGORY_PEOPLE, "face_with_head_bandage" );
+		category( CATEGORY_PEOPLE, "nauseated_face" );
+		category( CATEGORY_PEOPLE, "face_vomiting" );
+		category( CATEGORY_PEOPLE, "sneezing_face" );
+		category( CATEGORY_PEOPLE, "innocent" );
+		category( CATEGORY_PEOPLE, "face_with_cowboy_hat" );
+		category( CATEGORY_PEOPLE, "clown_face" );
+		category( CATEGORY_PEOPLE, "lying_face" );
+		category( CATEGORY_PEOPLE, "shushing_face" );
+		category( CATEGORY_PEOPLE, "face_with_hand_over_mouth" );
+		category( CATEGORY_PEOPLE, "face_with_monocle" );
+		category( CATEGORY_PEOPLE, "nerd_face" );
+		category( CATEGORY_PEOPLE, "smiling_imp" );
 	}
+	
 	private static void init113(){
-		category(CATEGORY_PEOPLE, "imp");
-		category(CATEGORY_PEOPLE, "japanese_ogre");
-		category(CATEGORY_PEOPLE, "japanese_goblin");
-		category(CATEGORY_PEOPLE, "skull");
-		category(CATEGORY_PEOPLE, "skull_and_crossbones");
-		category(CATEGORY_PEOPLE, "ghost");
-		category(CATEGORY_PEOPLE, "alien");
-		category(CATEGORY_PEOPLE, "space_invader");
-		category(CATEGORY_PEOPLE, "robot_face");
-		category(CATEGORY_PEOPLE, "hankey");
-		category(CATEGORY_PEOPLE, "smiley_cat");
-		category(CATEGORY_PEOPLE, "smile_cat");
-		category(CATEGORY_PEOPLE, "joy_cat");
-		category(CATEGORY_PEOPLE, "heart_eyes_cat");
-		category(CATEGORY_PEOPLE, "smirk_cat");
-		category(CATEGORY_PEOPLE, "kissing_cat");
-		category(CATEGORY_PEOPLE, "scream_cat");
-		category(CATEGORY_PEOPLE, "crying_cat_face");
-		category(CATEGORY_PEOPLE, "pouting_cat");
-		category(CATEGORY_PEOPLE, "see_no_evil");
-		category(CATEGORY_PEOPLE, "hear_no_evil");
-		category(CATEGORY_PEOPLE, "speak_no_evil");
-		category(CATEGORY_PEOPLE, "baby");
-		category(CATEGORY_PEOPLE, "child");
-		category(CATEGORY_PEOPLE, "boy");
-		category(CATEGORY_PEOPLE, "girl");
-		category(CATEGORY_PEOPLE, "adult");
-		category(CATEGORY_PEOPLE, "man");
-		category(CATEGORY_PEOPLE, "woman");
-		category(CATEGORY_PEOPLE, "older_adult");
-		category(CATEGORY_PEOPLE, "older_man");
-		category(CATEGORY_PEOPLE, "older_woman");
-		category(CATEGORY_PEOPLE, "male_doctor");
-		category(CATEGORY_PEOPLE, "female_doctor");
-		category(CATEGORY_PEOPLE, "male_student");
-		category(CATEGORY_PEOPLE, "female_student");
-		category(CATEGORY_PEOPLE, "male_teacher");
-		category(CATEGORY_PEOPLE, "female_teacher");
-		category(CATEGORY_PEOPLE, "male_judge");
-		category(CATEGORY_PEOPLE, "female_judge");
-		category(CATEGORY_PEOPLE, "male_farmer");
-		category(CATEGORY_PEOPLE, "female_farmer");
-		category(CATEGORY_PEOPLE, "male_cook");
-		category(CATEGORY_PEOPLE, "female_cook");
-		category(CATEGORY_PEOPLE, "male_mechanic");
-		category(CATEGORY_PEOPLE, "female_mechanic");
-		category(CATEGORY_PEOPLE, "male_factory_worker");
-		category(CATEGORY_PEOPLE, "female_factory_worker");
-		category(CATEGORY_PEOPLE, "male_office_worker");
-		category(CATEGORY_PEOPLE, "female_office_worker");
-		category(CATEGORY_PEOPLE, "male_scientist");
-		category(CATEGORY_PEOPLE, "female_scientist");
-		category(CATEGORY_PEOPLE, "male_technologist");
-		category(CATEGORY_PEOPLE, "female_technologist");
-		category(CATEGORY_PEOPLE, "male_singer");
-		category(CATEGORY_PEOPLE, "female_singer");
-		category(CATEGORY_PEOPLE, "male_artist");
-		category(CATEGORY_PEOPLE, "female_artist");
-		category(CATEGORY_PEOPLE, "male_pilot");
-		category(CATEGORY_PEOPLE, "female_pilot");
-		category(CATEGORY_PEOPLE, "male_astronaut");
-		category(CATEGORY_PEOPLE, "female_astronaut");
-		category(CATEGORY_PEOPLE, "male_firefighter");
-		category(CATEGORY_PEOPLE, "female_firefighter");
-		category(CATEGORY_PEOPLE, "cop");
-		category(CATEGORY_PEOPLE, "male_police_officer");
-		category(CATEGORY_PEOPLE, "female_police_officer");
-		category(CATEGORY_PEOPLE, "sleuth_or_spy");
-		category(CATEGORY_PEOPLE, "male_detective");
-		category(CATEGORY_PEOPLE, "female_detective");
-		category(CATEGORY_PEOPLE, "guardsman");
-		category(CATEGORY_PEOPLE, "male_guard");
-		category(CATEGORY_PEOPLE, "female_guard");
-		category(CATEGORY_PEOPLE, "construction_worker");
-		category(CATEGORY_PEOPLE, "male_construction_worker");
-		category(CATEGORY_PEOPLE, "female_construction_worker");
-		category(CATEGORY_PEOPLE, "prince");
-		category(CATEGORY_PEOPLE, "princess");
-		category(CATEGORY_PEOPLE, "man_with_turban");
-		category(CATEGORY_PEOPLE, "man_wearing_turban");
-		category(CATEGORY_PEOPLE, "woman_wearing_turban");
-		category(CATEGORY_PEOPLE, "man_with_gua_pi_mao");
-		category(CATEGORY_PEOPLE, "person_with_headscarf");
-		category(CATEGORY_PEOPLE, "bearded_person");
-		category(CATEGORY_PEOPLE, "person_with_blond_hair");
-		category(CATEGORY_PEOPLE, "blond_haired_man");
-		category(CATEGORY_PEOPLE, "blond_haired_woman");
-		category(CATEGORY_PEOPLE, "man_in_tuxedo");
-		category(CATEGORY_PEOPLE, "bride_with_veil");
-		category(CATEGORY_PEOPLE, "pregnant_woman");
-		category(CATEGORY_PEOPLE, "breast_feeding");
-		category(CATEGORY_PEOPLE, "angel");
-		category(CATEGORY_PEOPLE, "santa");
-		category(CATEGORY_PEOPLE, "mrs_claus");
-		category(CATEGORY_PEOPLE, "mage");
-		category(CATEGORY_PEOPLE, "female_mage");
-		category(CATEGORY_PEOPLE, "male_mage");
-		category(CATEGORY_PEOPLE, "fairy");
-		category(CATEGORY_PEOPLE, "female_fairy");
-		category(CATEGORY_PEOPLE, "male_fairy");
-		category(CATEGORY_PEOPLE, "vampire");
+		category( CATEGORY_PEOPLE, "imp" );
+		category( CATEGORY_PEOPLE, "japanese_ogre" );
+		category( CATEGORY_PEOPLE, "japanese_goblin" );
+		category( CATEGORY_PEOPLE, "skull" );
+		category( CATEGORY_PEOPLE, "skull_and_crossbones" );
+		category( CATEGORY_PEOPLE, "ghost" );
+		category( CATEGORY_PEOPLE, "alien" );
+		category( CATEGORY_PEOPLE, "space_invader" );
+		category( CATEGORY_PEOPLE, "robot_face" );
+		category( CATEGORY_PEOPLE, "hankey" );
+		category( CATEGORY_PEOPLE, "smiley_cat" );
+		category( CATEGORY_PEOPLE, "smile_cat" );
+		category( CATEGORY_PEOPLE, "joy_cat" );
+		category( CATEGORY_PEOPLE, "heart_eyes_cat" );
+		category( CATEGORY_PEOPLE, "smirk_cat" );
+		category( CATEGORY_PEOPLE, "kissing_cat" );
+		category( CATEGORY_PEOPLE, "scream_cat" );
+		category( CATEGORY_PEOPLE, "crying_cat_face" );
+		category( CATEGORY_PEOPLE, "pouting_cat" );
+		category( CATEGORY_PEOPLE, "see_no_evil" );
+		category( CATEGORY_PEOPLE, "hear_no_evil" );
+		category( CATEGORY_PEOPLE, "speak_no_evil" );
+		category( CATEGORY_PEOPLE, "baby" );
+		category( CATEGORY_PEOPLE, "child" );
+		category( CATEGORY_PEOPLE, "boy" );
+		category( CATEGORY_PEOPLE, "girl" );
+		category( CATEGORY_PEOPLE, "adult" );
+		category( CATEGORY_PEOPLE, "man" );
+		category( CATEGORY_PEOPLE, "woman" );
+		category( CATEGORY_PEOPLE, "older_adult" );
+		category( CATEGORY_PEOPLE, "older_man" );
+		category( CATEGORY_PEOPLE, "older_woman" );
+		category( CATEGORY_PEOPLE, "male_doctor" );
+		category( CATEGORY_PEOPLE, "female_doctor" );
+		category( CATEGORY_PEOPLE, "male_student" );
+		category( CATEGORY_PEOPLE, "female_student" );
+		category( CATEGORY_PEOPLE, "male_teacher" );
+		category( CATEGORY_PEOPLE, "female_teacher" );
+		category( CATEGORY_PEOPLE, "male_judge" );
+		category( CATEGORY_PEOPLE, "female_judge" );
+		category( CATEGORY_PEOPLE, "male_farmer" );
+		category( CATEGORY_PEOPLE, "female_farmer" );
+		category( CATEGORY_PEOPLE, "male_cook" );
+		category( CATEGORY_PEOPLE, "female_cook" );
+		category( CATEGORY_PEOPLE, "male_mechanic" );
+		category( CATEGORY_PEOPLE, "female_mechanic" );
+		category( CATEGORY_PEOPLE, "male_factory_worker" );
+		category( CATEGORY_PEOPLE, "female_factory_worker" );
+		category( CATEGORY_PEOPLE, "male_office_worker" );
+		category( CATEGORY_PEOPLE, "female_office_worker" );
+		category( CATEGORY_PEOPLE, "male_scientist" );
+		category( CATEGORY_PEOPLE, "female_scientist" );
+		category( CATEGORY_PEOPLE, "male_technologist" );
+		category( CATEGORY_PEOPLE, "female_technologist" );
+		category( CATEGORY_PEOPLE, "male_singer" );
+		category( CATEGORY_PEOPLE, "female_singer" );
+		category( CATEGORY_PEOPLE, "male_artist" );
+		category( CATEGORY_PEOPLE, "female_artist" );
+		category( CATEGORY_PEOPLE, "male_pilot" );
+		category( CATEGORY_PEOPLE, "female_pilot" );
+		category( CATEGORY_PEOPLE, "male_astronaut" );
+		category( CATEGORY_PEOPLE, "female_astronaut" );
+		category( CATEGORY_PEOPLE, "male_firefighter" );
+		category( CATEGORY_PEOPLE, "female_firefighter" );
+		category( CATEGORY_PEOPLE, "cop" );
+		category( CATEGORY_PEOPLE, "male_police_officer" );
+		category( CATEGORY_PEOPLE, "female_police_officer" );
+		category( CATEGORY_PEOPLE, "sleuth_or_spy" );
+		category( CATEGORY_PEOPLE, "male_detective" );
+		category( CATEGORY_PEOPLE, "female_detective" );
+		category( CATEGORY_PEOPLE, "guardsman" );
+		category( CATEGORY_PEOPLE, "male_guard" );
+		category( CATEGORY_PEOPLE, "female_guard" );
+		category( CATEGORY_PEOPLE, "construction_worker" );
+		category( CATEGORY_PEOPLE, "male_construction_worker" );
+		category( CATEGORY_PEOPLE, "female_construction_worker" );
+		category( CATEGORY_PEOPLE, "prince" );
+		category( CATEGORY_PEOPLE, "princess" );
+		category( CATEGORY_PEOPLE, "man_with_turban" );
+		category( CATEGORY_PEOPLE, "man_wearing_turban" );
+		category( CATEGORY_PEOPLE, "woman_wearing_turban" );
+		category( CATEGORY_PEOPLE, "man_with_gua_pi_mao" );
+		category( CATEGORY_PEOPLE, "person_with_headscarf" );
+		category( CATEGORY_PEOPLE, "bearded_person" );
+		category( CATEGORY_PEOPLE, "person_with_blond_hair" );
+		category( CATEGORY_PEOPLE, "blond_haired_man" );
+		category( CATEGORY_PEOPLE, "blond_haired_woman" );
+		category( CATEGORY_PEOPLE, "man_in_tuxedo" );
+		category( CATEGORY_PEOPLE, "bride_with_veil" );
+		category( CATEGORY_PEOPLE, "pregnant_woman" );
+		category( CATEGORY_PEOPLE, "breast_feeding" );
+		category( CATEGORY_PEOPLE, "angel" );
+		category( CATEGORY_PEOPLE, "santa" );
+		category( CATEGORY_PEOPLE, "mrs_claus" );
+		category( CATEGORY_PEOPLE, "mage" );
+		category( CATEGORY_PEOPLE, "female_mage" );
+		category( CATEGORY_PEOPLE, "male_mage" );
+		category( CATEGORY_PEOPLE, "fairy" );
+		category( CATEGORY_PEOPLE, "female_fairy" );
+		category( CATEGORY_PEOPLE, "male_fairy" );
+		category( CATEGORY_PEOPLE, "vampire" );
 	}
+	
 	private static void init114(){
-		category(CATEGORY_PEOPLE, "female_vampire");
-		category(CATEGORY_PEOPLE, "male_vampire");
-		category(CATEGORY_PEOPLE, "merperson");
-		category(CATEGORY_PEOPLE, "mermaid");
-		category(CATEGORY_PEOPLE, "merman");
-		category(CATEGORY_PEOPLE, "elf");
-		category(CATEGORY_PEOPLE, "female_elf");
-		category(CATEGORY_PEOPLE, "male_elf");
-		category(CATEGORY_PEOPLE, "genie");
-		category(CATEGORY_PEOPLE, "female_genie");
-		category(CATEGORY_PEOPLE, "male_genie");
-		category(CATEGORY_PEOPLE, "zombie");
-		category(CATEGORY_PEOPLE, "female_zombie");
-		category(CATEGORY_PEOPLE, "male_zombie");
-		category(CATEGORY_PEOPLE, "person_frowning");
-		category(CATEGORY_PEOPLE, "man_frowning");
-		category(CATEGORY_PEOPLE, "woman_frowning");
-		category(CATEGORY_PEOPLE, "person_with_pouting_face");
-		category(CATEGORY_PEOPLE, "man_pouting");
-		category(CATEGORY_PEOPLE, "woman_pouting");
-		category(CATEGORY_PEOPLE, "no_good");
-		category(CATEGORY_PEOPLE, "man_gesturing_no");
-		category(CATEGORY_PEOPLE, "woman_gesturing_no");
-		category(CATEGORY_PEOPLE, "ok_woman");
-		category(CATEGORY_PEOPLE, "man_gesturing_ok");
-		category(CATEGORY_PEOPLE, "woman_gesturing_ok");
-		category(CATEGORY_PEOPLE, "information_desk_person");
-		category(CATEGORY_PEOPLE, "man_tipping_hand");
-		category(CATEGORY_PEOPLE, "woman_tipping_hand");
-		category(CATEGORY_PEOPLE, "raising_hand");
-		category(CATEGORY_PEOPLE, "man_raising_hand");
-		category(CATEGORY_PEOPLE, "woman_raising_hand");
-		category(CATEGORY_PEOPLE, "bow");
-		category(CATEGORY_PEOPLE, "man_bowing");
-		category(CATEGORY_PEOPLE, "woman_bowing");
-		category(CATEGORY_PEOPLE, "face_palm");
-		category(CATEGORY_PEOPLE, "man_facepalming");
-		category(CATEGORY_PEOPLE, "woman_facepalming");
-		category(CATEGORY_PEOPLE, "shrug");
-		category(CATEGORY_PEOPLE, "man_shrugging");
-		category(CATEGORY_PEOPLE, "woman_shrugging");
-		category(CATEGORY_PEOPLE, "massage");
-		category(CATEGORY_PEOPLE, "man_getting_massage");
-		category(CATEGORY_PEOPLE, "woman_getting_massage");
-		category(CATEGORY_PEOPLE, "haircut");
-		category(CATEGORY_PEOPLE, "man_getting_haircut");
-		category(CATEGORY_PEOPLE, "woman_getting_haircut");
-		category(CATEGORY_PEOPLE, "walking");
-		category(CATEGORY_PEOPLE, "man_walking");
-		category(CATEGORY_PEOPLE, "woman_walking");
-		category(CATEGORY_PEOPLE, "runner");
-		category(CATEGORY_PEOPLE, "man_running");
-		category(CATEGORY_PEOPLE, "woman_running");
-		category(CATEGORY_PEOPLE, "dancer");
-		category(CATEGORY_PEOPLE, "man_dancing");
-		category(CATEGORY_PEOPLE, "dancers");
-		category(CATEGORY_PEOPLE, "man_with_bunny_ears_partying");
-		category(CATEGORY_PEOPLE, "woman_with_bunny_ears_partying");
-		category(CATEGORY_PEOPLE, "person_in_steamy_room");
-		category(CATEGORY_PEOPLE, "woman_in_steamy_room");
-		category(CATEGORY_PEOPLE, "man_in_steamy_room");
-		category(CATEGORY_PEOPLE, "person_climbing");
-		category(CATEGORY_PEOPLE, "woman_climbing");
-		category(CATEGORY_PEOPLE, "man_climbing");
-		category(CATEGORY_PEOPLE, "person_in_lotus_position");
-		category(CATEGORY_PEOPLE, "woman_in_lotus_position");
-		category(CATEGORY_PEOPLE, "man_in_lotus_position");
-		category(CATEGORY_PEOPLE, "bath");
-		category(CATEGORY_PEOPLE, "sleeping_accommodation");
-		category(CATEGORY_PEOPLE, "man_in_business_suit_levitating");
-		category(CATEGORY_PEOPLE, "speaking_head_in_silhouette");
-		category(CATEGORY_PEOPLE, "bust_in_silhouette");
-		category(CATEGORY_PEOPLE, "busts_in_silhouette");
-		category(CATEGORY_PEOPLE, "fencer");
-		category(CATEGORY_PEOPLE, "horse_racing");
-		category(CATEGORY_PEOPLE, "skier");
-		category(CATEGORY_PEOPLE, "snowboarder");
-		category(CATEGORY_PEOPLE, "golfer");
-		category(CATEGORY_PEOPLE, "man_golfing");
-		category(CATEGORY_PEOPLE, "woman_golfing");
-		category(CATEGORY_PEOPLE, "surfer");
-		category(CATEGORY_PEOPLE, "man_surfing");
-		category(CATEGORY_PEOPLE, "woman_surfing");
-		category(CATEGORY_PEOPLE, "rowboat");
-		category(CATEGORY_PEOPLE, "man_rowing_boat");
-		category(CATEGORY_PEOPLE, "woman_rowing_boat");
-		category(CATEGORY_PEOPLE, "swimmer");
-		category(CATEGORY_PEOPLE, "man_swimming");
-		category(CATEGORY_PEOPLE, "woman_swimming");
-		category(CATEGORY_PEOPLE, "person_with_ball");
-		category(CATEGORY_PEOPLE, "man_bouncing_ball");
-		category(CATEGORY_PEOPLE, "woman_bouncing_ball");
-		category(CATEGORY_PEOPLE, "weight_lifter");
-		category(CATEGORY_PEOPLE, "man_lifting_weights");
-		category(CATEGORY_PEOPLE, "woman_lifting_weights");
-		category(CATEGORY_PEOPLE, "bicyclist");
-		category(CATEGORY_PEOPLE, "man_biking");
-		category(CATEGORY_PEOPLE, "woman_biking");
-		category(CATEGORY_PEOPLE, "mountain_bicyclist");
-		category(CATEGORY_PEOPLE, "man_mountain_biking");
-		category(CATEGORY_PEOPLE, "woman_mountain_biking");
+		category( CATEGORY_PEOPLE, "female_vampire" );
+		category( CATEGORY_PEOPLE, "male_vampire" );
+		category( CATEGORY_PEOPLE, "merperson" );
+		category( CATEGORY_PEOPLE, "mermaid" );
+		category( CATEGORY_PEOPLE, "merman" );
+		category( CATEGORY_PEOPLE, "elf" );
+		category( CATEGORY_PEOPLE, "female_elf" );
+		category( CATEGORY_PEOPLE, "male_elf" );
+		category( CATEGORY_PEOPLE, "genie" );
+		category( CATEGORY_PEOPLE, "female_genie" );
+		category( CATEGORY_PEOPLE, "male_genie" );
+		category( CATEGORY_PEOPLE, "zombie" );
+		category( CATEGORY_PEOPLE, "female_zombie" );
+		category( CATEGORY_PEOPLE, "male_zombie" );
+		category( CATEGORY_PEOPLE, "person_frowning" );
+		category( CATEGORY_PEOPLE, "man_frowning" );
+		category( CATEGORY_PEOPLE, "woman_frowning" );
+		category( CATEGORY_PEOPLE, "person_with_pouting_face" );
+		category( CATEGORY_PEOPLE, "man_pouting" );
+		category( CATEGORY_PEOPLE, "woman_pouting" );
+		category( CATEGORY_PEOPLE, "no_good" );
+		category( CATEGORY_PEOPLE, "man_gesturing_no" );
+		category( CATEGORY_PEOPLE, "woman_gesturing_no" );
+		category( CATEGORY_PEOPLE, "ok_woman" );
+		category( CATEGORY_PEOPLE, "man_gesturing_ok" );
+		category( CATEGORY_PEOPLE, "woman_gesturing_ok" );
+		category( CATEGORY_PEOPLE, "information_desk_person" );
+		category( CATEGORY_PEOPLE, "man_tipping_hand" );
+		category( CATEGORY_PEOPLE, "woman_tipping_hand" );
+		category( CATEGORY_PEOPLE, "raising_hand" );
+		category( CATEGORY_PEOPLE, "man_raising_hand" );
+		category( CATEGORY_PEOPLE, "woman_raising_hand" );
+		category( CATEGORY_PEOPLE, "bow" );
+		category( CATEGORY_PEOPLE, "man_bowing" );
+		category( CATEGORY_PEOPLE, "woman_bowing" );
+		category( CATEGORY_PEOPLE, "face_palm" );
+		category( CATEGORY_PEOPLE, "man_facepalming" );
+		category( CATEGORY_PEOPLE, "woman_facepalming" );
+		category( CATEGORY_PEOPLE, "shrug" );
+		category( CATEGORY_PEOPLE, "man_shrugging" );
+		category( CATEGORY_PEOPLE, "woman_shrugging" );
+		category( CATEGORY_PEOPLE, "massage" );
+		category( CATEGORY_PEOPLE, "man_getting_massage" );
+		category( CATEGORY_PEOPLE, "woman_getting_massage" );
+		category( CATEGORY_PEOPLE, "haircut" );
+		category( CATEGORY_PEOPLE, "man_getting_haircut" );
+		category( CATEGORY_PEOPLE, "woman_getting_haircut" );
+		category( CATEGORY_PEOPLE, "walking" );
+		category( CATEGORY_PEOPLE, "man_walking" );
+		category( CATEGORY_PEOPLE, "woman_walking" );
+		category( CATEGORY_PEOPLE, "runner" );
+		category( CATEGORY_PEOPLE, "man_running" );
+		category( CATEGORY_PEOPLE, "woman_running" );
+		category( CATEGORY_PEOPLE, "dancer" );
+		category( CATEGORY_PEOPLE, "man_dancing" );
+		category( CATEGORY_PEOPLE, "dancers" );
+		category( CATEGORY_PEOPLE, "man_with_bunny_ears_partying" );
+		category( CATEGORY_PEOPLE, "woman_with_bunny_ears_partying" );
+		category( CATEGORY_PEOPLE, "person_in_steamy_room" );
+		category( CATEGORY_PEOPLE, "woman_in_steamy_room" );
+		category( CATEGORY_PEOPLE, "man_in_steamy_room" );
+		category( CATEGORY_PEOPLE, "person_climbing" );
+		category( CATEGORY_PEOPLE, "woman_climbing" );
+		category( CATEGORY_PEOPLE, "man_climbing" );
+		category( CATEGORY_PEOPLE, "person_in_lotus_position" );
+		category( CATEGORY_PEOPLE, "woman_in_lotus_position" );
+		category( CATEGORY_PEOPLE, "man_in_lotus_position" );
+		category( CATEGORY_PEOPLE, "bath" );
+		category( CATEGORY_PEOPLE, "sleeping_accommodation" );
+		category( CATEGORY_PEOPLE, "man_in_business_suit_levitating" );
+		category( CATEGORY_PEOPLE, "speaking_head_in_silhouette" );
+		category( CATEGORY_PEOPLE, "bust_in_silhouette" );
+		category( CATEGORY_PEOPLE, "busts_in_silhouette" );
+		category( CATEGORY_PEOPLE, "fencer" );
+		category( CATEGORY_PEOPLE, "horse_racing" );
+		category( CATEGORY_PEOPLE, "skier" );
+		category( CATEGORY_PEOPLE, "snowboarder" );
+		category( CATEGORY_PEOPLE, "golfer" );
+		category( CATEGORY_PEOPLE, "man_golfing" );
+		category( CATEGORY_PEOPLE, "woman_golfing" );
+		category( CATEGORY_PEOPLE, "surfer" );
+		category( CATEGORY_PEOPLE, "man_surfing" );
+		category( CATEGORY_PEOPLE, "woman_surfing" );
+		category( CATEGORY_PEOPLE, "rowboat" );
+		category( CATEGORY_PEOPLE, "man_rowing_boat" );
+		category( CATEGORY_PEOPLE, "woman_rowing_boat" );
+		category( CATEGORY_PEOPLE, "swimmer" );
+		category( CATEGORY_PEOPLE, "man_swimming" );
+		category( CATEGORY_PEOPLE, "woman_swimming" );
+		category( CATEGORY_PEOPLE, "person_with_ball" );
+		category( CATEGORY_PEOPLE, "man_bouncing_ball" );
+		category( CATEGORY_PEOPLE, "woman_bouncing_ball" );
+		category( CATEGORY_PEOPLE, "weight_lifter" );
+		category( CATEGORY_PEOPLE, "man_lifting_weights" );
+		category( CATEGORY_PEOPLE, "woman_lifting_weights" );
+		category( CATEGORY_PEOPLE, "bicyclist" );
+		category( CATEGORY_PEOPLE, "man_biking" );
+		category( CATEGORY_PEOPLE, "woman_biking" );
+		category( CATEGORY_PEOPLE, "mountain_bicyclist" );
+		category( CATEGORY_PEOPLE, "man_mountain_biking" );
+		category( CATEGORY_PEOPLE, "woman_mountain_biking" );
 	}
+	
 	private static void init115(){
-		category(CATEGORY_PEOPLE, "racing_car");
-		category(CATEGORY_PEOPLE, "racing_motorcycle");
-		category(CATEGORY_PEOPLE, "person_doing_cartwheel");
-		category(CATEGORY_PEOPLE, "man_cartwheeling");
-		category(CATEGORY_PEOPLE, "woman_cartwheeling");
-		category(CATEGORY_PEOPLE, "wrestlers");
-		category(CATEGORY_PEOPLE, "man_wrestling");
-		category(CATEGORY_PEOPLE, "woman_wrestling");
-		category(CATEGORY_PEOPLE, "water_polo");
-		category(CATEGORY_PEOPLE, "man_playing_water_polo");
-		category(CATEGORY_PEOPLE, "woman_playing_water_polo");
-		category(CATEGORY_PEOPLE, "handball");
-		category(CATEGORY_PEOPLE, "man_playing_handball");
-		category(CATEGORY_PEOPLE, "woman_playing_handball");
-		category(CATEGORY_PEOPLE, "juggling");
-		category(CATEGORY_PEOPLE, "man_juggling");
-		category(CATEGORY_PEOPLE, "woman_juggling");
-		category(CATEGORY_PEOPLE, "couple");
-		category(CATEGORY_PEOPLE, "two_men_holding_hands");
-		category(CATEGORY_PEOPLE, "two_women_holding_hands");
-		category(CATEGORY_PEOPLE, "couplekiss");
-		category(CATEGORY_PEOPLE, "woman_kiss_man");
-		category(CATEGORY_PEOPLE, "man_kiss_man");
-		category(CATEGORY_PEOPLE, "woman_kiss_woman");
-		category(CATEGORY_PEOPLE, "couple_with_heart");
-		category(CATEGORY_PEOPLE, "woman_heart_man");
-		category(CATEGORY_PEOPLE, "man_heart_man");
-		category(CATEGORY_PEOPLE, "woman_heart_woman");
-		category(CATEGORY_PEOPLE, "family");
-		category(CATEGORY_PEOPLE, "man_woman_boy");
-		category(CATEGORY_PEOPLE, "man_woman_girl");
-		category(CATEGORY_PEOPLE, "man_woman_girl_boy");
-		category(CATEGORY_PEOPLE, "man_woman_boy_boy");
-		category(CATEGORY_PEOPLE, "man_woman_girl_girl");
-		category(CATEGORY_PEOPLE, "man_man_boy");
-		category(CATEGORY_PEOPLE, "man_man_girl");
-		category(CATEGORY_PEOPLE, "man_man_girl_boy");
-		category(CATEGORY_PEOPLE, "man_man_boy_boy");
-		category(CATEGORY_PEOPLE, "man_man_girl_girl");
-		category(CATEGORY_PEOPLE, "woman_woman_boy");
-		category(CATEGORY_PEOPLE, "woman_woman_girl");
-		category(CATEGORY_PEOPLE, "woman_woman_girl_boy");
-		category(CATEGORY_PEOPLE, "woman_woman_boy_boy");
-		category(CATEGORY_PEOPLE, "woman_woman_girl_girl");
-		category(CATEGORY_PEOPLE, "man_boy");
-		category(CATEGORY_PEOPLE, "man_boy_boy");
-		category(CATEGORY_PEOPLE, "man_girl");
-		category(CATEGORY_PEOPLE, "man_girl_boy");
-		category(CATEGORY_PEOPLE, "man_girl_girl");
-		category(CATEGORY_PEOPLE, "woman_boy");
-		category(CATEGORY_PEOPLE, "woman_boy_boy");
-		category(CATEGORY_PEOPLE, "woman_girl");
-		category(CATEGORY_PEOPLE, "woman_girl_boy");
-		category(CATEGORY_PEOPLE, "woman_girl_girl");
-		category(CATEGORY_PEOPLE, "selfie");
-		category(CATEGORY_PEOPLE, "muscle");
-		category(CATEGORY_PEOPLE, "point_left");
-		category(CATEGORY_PEOPLE, "point_right");
-		category(CATEGORY_PEOPLE, "point_up");
-		category(CATEGORY_PEOPLE, "point_up_2");
-		category(CATEGORY_PEOPLE, "middle_finger");
-		category(CATEGORY_PEOPLE, "point_down");
-		category(CATEGORY_PEOPLE, "v");
-		category(CATEGORY_PEOPLE, "crossed_fingers");
-		category(CATEGORY_PEOPLE, "spock_hand");
-		category(CATEGORY_PEOPLE, "the_horns");
-		category(CATEGORY_PEOPLE, "call_me_hand");
-		category(CATEGORY_PEOPLE, "raised_hand_with_fingers_splayed");
-		category(CATEGORY_PEOPLE, "hand");
-		category(CATEGORY_PEOPLE, "ok_hand");
-		category(CATEGORY_PEOPLE, "+1");
-		category(CATEGORY_PEOPLE, "_1");
-		category(CATEGORY_PEOPLE, "fist");
-		category(CATEGORY_PEOPLE, "facepunch");
-		category(CATEGORY_PEOPLE, "left_facing_fist");
-		category(CATEGORY_PEOPLE, "right_facing_fist");
-		category(CATEGORY_PEOPLE, "raised_back_of_hand");
-		category(CATEGORY_PEOPLE, "wave");
-		category(CATEGORY_PEOPLE, "i_love_you_hand_sign");
-		category(CATEGORY_PEOPLE, "writing_hand");
-		category(CATEGORY_PEOPLE, "clap");
-		category(CATEGORY_PEOPLE, "open_hands");
-		category(CATEGORY_PEOPLE, "raised_hands");
-		category(CATEGORY_PEOPLE, "palms_up_together");
-		category(CATEGORY_PEOPLE, "pray");
-		category(CATEGORY_PEOPLE, "handshake");
-		category(CATEGORY_PEOPLE, "nail_care");
-		category(CATEGORY_PEOPLE, "ear");
-		category(CATEGORY_PEOPLE, "nose");
-		category(CATEGORY_PEOPLE, "footprints");
-		category(CATEGORY_PEOPLE, "eyes");
-		category(CATEGORY_PEOPLE, "eye");
-		category(CATEGORY_PEOPLE, "eye_in_speech_bubble");
-		category(CATEGORY_PEOPLE, "brain");
-		category(CATEGORY_PEOPLE, "tongue");
-		category(CATEGORY_PEOPLE, "lips");
-		category(CATEGORY_PEOPLE, "kiss");
-		category(CATEGORY_PEOPLE, "cupid");
-		category(CATEGORY_PEOPLE, "heart");
-		category(CATEGORY_PEOPLE, "heartbeat");
-		category(CATEGORY_PEOPLE, "broken_heart");
+		category( CATEGORY_PEOPLE, "racing_car" );
+		category( CATEGORY_PEOPLE, "racing_motorcycle" );
+		category( CATEGORY_PEOPLE, "person_doing_cartwheel" );
+		category( CATEGORY_PEOPLE, "man_cartwheeling" );
+		category( CATEGORY_PEOPLE, "woman_cartwheeling" );
+		category( CATEGORY_PEOPLE, "wrestlers" );
+		category( CATEGORY_PEOPLE, "man_wrestling" );
+		category( CATEGORY_PEOPLE, "woman_wrestling" );
+		category( CATEGORY_PEOPLE, "water_polo" );
+		category( CATEGORY_PEOPLE, "man_playing_water_polo" );
+		category( CATEGORY_PEOPLE, "woman_playing_water_polo" );
+		category( CATEGORY_PEOPLE, "handball" );
+		category( CATEGORY_PEOPLE, "man_playing_handball" );
+		category( CATEGORY_PEOPLE, "woman_playing_handball" );
+		category( CATEGORY_PEOPLE, "juggling" );
+		category( CATEGORY_PEOPLE, "man_juggling" );
+		category( CATEGORY_PEOPLE, "woman_juggling" );
+		category( CATEGORY_PEOPLE, "couple" );
+		category( CATEGORY_PEOPLE, "two_men_holding_hands" );
+		category( CATEGORY_PEOPLE, "two_women_holding_hands" );
+		category( CATEGORY_PEOPLE, "couplekiss" );
+		category( CATEGORY_PEOPLE, "woman_kiss_man" );
+		category( CATEGORY_PEOPLE, "man_kiss_man" );
+		category( CATEGORY_PEOPLE, "woman_kiss_woman" );
+		category( CATEGORY_PEOPLE, "couple_with_heart" );
+		category( CATEGORY_PEOPLE, "woman_heart_man" );
+		category( CATEGORY_PEOPLE, "man_heart_man" );
+		category( CATEGORY_PEOPLE, "woman_heart_woman" );
+		category( CATEGORY_PEOPLE, "family" );
+		category( CATEGORY_PEOPLE, "man_woman_boy" );
+		category( CATEGORY_PEOPLE, "man_woman_girl" );
+		category( CATEGORY_PEOPLE, "man_woman_girl_boy" );
+		category( CATEGORY_PEOPLE, "man_woman_boy_boy" );
+		category( CATEGORY_PEOPLE, "man_woman_girl_girl" );
+		category( CATEGORY_PEOPLE, "man_man_boy" );
+		category( CATEGORY_PEOPLE, "man_man_girl" );
+		category( CATEGORY_PEOPLE, "man_man_girl_boy" );
+		category( CATEGORY_PEOPLE, "man_man_boy_boy" );
+		category( CATEGORY_PEOPLE, "man_man_girl_girl" );
+		category( CATEGORY_PEOPLE, "woman_woman_boy" );
+		category( CATEGORY_PEOPLE, "woman_woman_girl" );
+		category( CATEGORY_PEOPLE, "woman_woman_girl_boy" );
+		category( CATEGORY_PEOPLE, "woman_woman_boy_boy" );
+		category( CATEGORY_PEOPLE, "woman_woman_girl_girl" );
+		category( CATEGORY_PEOPLE, "man_boy" );
+		category( CATEGORY_PEOPLE, "man_boy_boy" );
+		category( CATEGORY_PEOPLE, "man_girl" );
+		category( CATEGORY_PEOPLE, "man_girl_boy" );
+		category( CATEGORY_PEOPLE, "man_girl_girl" );
+		category( CATEGORY_PEOPLE, "woman_boy" );
+		category( CATEGORY_PEOPLE, "woman_boy_boy" );
+		category( CATEGORY_PEOPLE, "woman_girl" );
+		category( CATEGORY_PEOPLE, "woman_girl_boy" );
+		category( CATEGORY_PEOPLE, "woman_girl_girl" );
+		category( CATEGORY_PEOPLE, "selfie" );
+		category( CATEGORY_PEOPLE, "muscle" );
+		category( CATEGORY_PEOPLE, "point_left" );
+		category( CATEGORY_PEOPLE, "point_right" );
+		category( CATEGORY_PEOPLE, "point_up" );
+		category( CATEGORY_PEOPLE, "point_up_2" );
+		category( CATEGORY_PEOPLE, "middle_finger" );
+		category( CATEGORY_PEOPLE, "point_down" );
+		category( CATEGORY_PEOPLE, "v" );
+		category( CATEGORY_PEOPLE, "crossed_fingers" );
+		category( CATEGORY_PEOPLE, "spock_hand" );
+		category( CATEGORY_PEOPLE, "the_horns" );
+		category( CATEGORY_PEOPLE, "call_me_hand" );
+		category( CATEGORY_PEOPLE, "raised_hand_with_fingers_splayed" );
+		category( CATEGORY_PEOPLE, "hand" );
+		category( CATEGORY_PEOPLE, "ok_hand" );
+		category( CATEGORY_PEOPLE, "+1" );
+		category( CATEGORY_PEOPLE, "_1" );
+		category( CATEGORY_PEOPLE, "fist" );
+		category( CATEGORY_PEOPLE, "facepunch" );
+		category( CATEGORY_PEOPLE, "left_facing_fist" );
+		category( CATEGORY_PEOPLE, "right_facing_fist" );
+		category( CATEGORY_PEOPLE, "raised_back_of_hand" );
+		category( CATEGORY_PEOPLE, "wave" );
+		category( CATEGORY_PEOPLE, "i_love_you_hand_sign" );
+		category( CATEGORY_PEOPLE, "writing_hand" );
+		category( CATEGORY_PEOPLE, "clap" );
+		category( CATEGORY_PEOPLE, "open_hands" );
+		category( CATEGORY_PEOPLE, "raised_hands" );
+		category( CATEGORY_PEOPLE, "palms_up_together" );
+		category( CATEGORY_PEOPLE, "pray" );
+		category( CATEGORY_PEOPLE, "handshake" );
+		category( CATEGORY_PEOPLE, "nail_care" );
+		category( CATEGORY_PEOPLE, "ear" );
+		category( CATEGORY_PEOPLE, "nose" );
+		category( CATEGORY_PEOPLE, "footprints" );
+		category( CATEGORY_PEOPLE, "eyes" );
+		category( CATEGORY_PEOPLE, "eye" );
+		category( CATEGORY_PEOPLE, "eye_in_speech_bubble" );
+		category( CATEGORY_PEOPLE, "brain" );
+		category( CATEGORY_PEOPLE, "tongue" );
+		category( CATEGORY_PEOPLE, "lips" );
+		category( CATEGORY_PEOPLE, "kiss" );
+		category( CATEGORY_PEOPLE, "cupid" );
+		category( CATEGORY_PEOPLE, "heart" );
+		category( CATEGORY_PEOPLE, "heartbeat" );
+		category( CATEGORY_PEOPLE, "broken_heart" );
 	}
+	
 	private static void init116(){
-		category(CATEGORY_PEOPLE, "two_hearts");
-		category(CATEGORY_PEOPLE, "sparkling_heart");
-		category(CATEGORY_PEOPLE, "heartpulse");
-		category(CATEGORY_PEOPLE, "blue_heart");
-		category(CATEGORY_PEOPLE, "green_heart");
-		category(CATEGORY_PEOPLE, "yellow_heart");
-		category(CATEGORY_PEOPLE, "orange_heart");
-		category(CATEGORY_PEOPLE, "purple_heart");
-		category(CATEGORY_PEOPLE, "black_heart");
-		category(CATEGORY_PEOPLE, "gift_heart");
-		category(CATEGORY_PEOPLE, "revolving_hearts");
-		category(CATEGORY_PEOPLE, "heart_decoration");
-		category(CATEGORY_PEOPLE, "heavy_heart_exclamation_mark_ornament");
-		category(CATEGORY_PEOPLE, "love_letter");
-		category(CATEGORY_PEOPLE, "zzz");
-		category(CATEGORY_PEOPLE, "anger");
-		category(CATEGORY_PEOPLE, "bomb");
-		category(CATEGORY_PEOPLE, "boom");
-		category(CATEGORY_PEOPLE, "sweat_drops");
-		category(CATEGORY_PEOPLE, "dash");
-		category(CATEGORY_PEOPLE, "dizzy");
-		category(CATEGORY_PEOPLE, "speech_balloon");
-		category(CATEGORY_PEOPLE, "left_speech_bubble");
-		category(CATEGORY_PEOPLE, "right_anger_bubble");
-		category(CATEGORY_PEOPLE, "thought_balloon");
-		category(CATEGORY_PEOPLE, "hole");
-		category(CATEGORY_PEOPLE, "eyeglasses");
-		category(CATEGORY_PEOPLE, "dark_sunglasses");
-		category(CATEGORY_PEOPLE, "necktie");
-		category(CATEGORY_PEOPLE, "shirt");
-		category(CATEGORY_PEOPLE, "jeans");
-		category(CATEGORY_PEOPLE, "scarf");
-		category(CATEGORY_PEOPLE, "gloves");
-		category(CATEGORY_PEOPLE, "coat");
-		category(CATEGORY_PEOPLE, "socks");
-		category(CATEGORY_PEOPLE, "dress");
-		category(CATEGORY_PEOPLE, "kimono");
-		category(CATEGORY_PEOPLE, "bikini");
-		category(CATEGORY_PEOPLE, "womans_clothes");
-		category(CATEGORY_PEOPLE, "purse");
-		category(CATEGORY_PEOPLE, "handbag");
-		category(CATEGORY_PEOPLE, "pouch");
-		category(CATEGORY_PEOPLE, "shopping_bags");
-		category(CATEGORY_PEOPLE, "school_satchel");
-		category(CATEGORY_PEOPLE, "mans_shoe");
-		category(CATEGORY_PEOPLE, "athletic_shoe");
-		category(CATEGORY_PEOPLE, "high_heel");
-		category(CATEGORY_PEOPLE, "sandal");
-		category(CATEGORY_PEOPLE, "boot");
-		category(CATEGORY_PEOPLE, "crown");
-		category(CATEGORY_PEOPLE, "womans_hat");
-		category(CATEGORY_PEOPLE, "tophat");
-		category(CATEGORY_PEOPLE, "mortar_board");
-		category(CATEGORY_PEOPLE, "billed_cap");
-		category(CATEGORY_PEOPLE, "helmet_with_white_cross");
-		category(CATEGORY_PEOPLE, "prayer_beads");
-		category(CATEGORY_PEOPLE, "lipstick");
-		category(CATEGORY_PEOPLE, "ring");
-		category(CATEGORY_PEOPLE, "gem");
-		category(CATEGORY_NATURE, "monkey_face");
-		category(CATEGORY_NATURE, "monkey");
-		category(CATEGORY_NATURE, "gorilla");
-		category(CATEGORY_NATURE, "dog");
-		category(CATEGORY_NATURE, "dog2");
-		category(CATEGORY_NATURE, "poodle");
-		category(CATEGORY_NATURE, "wolf");
-		category(CATEGORY_NATURE, "fox_face");
-		category(CATEGORY_NATURE, "cat");
-		category(CATEGORY_NATURE, "cat2");
-		category(CATEGORY_NATURE, "lion_face");
-		category(CATEGORY_NATURE, "tiger");
-		category(CATEGORY_NATURE, "tiger2");
-		category(CATEGORY_NATURE, "leopard");
-		category(CATEGORY_NATURE, "horse");
-		category(CATEGORY_NATURE, "racehorse");
-		category(CATEGORY_NATURE, "unicorn_face");
-		category(CATEGORY_NATURE, "zebra_face");
-		category(CATEGORY_NATURE, "deer");
-		category(CATEGORY_NATURE, "cow");
-		category(CATEGORY_NATURE, "ox");
-		category(CATEGORY_NATURE, "water_buffalo");
-		category(CATEGORY_NATURE, "cow2");
-		category(CATEGORY_NATURE, "pig");
-		category(CATEGORY_NATURE, "pig2");
-		category(CATEGORY_NATURE, "boar");
-		category(CATEGORY_NATURE, "pig_nose");
-		category(CATEGORY_NATURE, "ram");
-		category(CATEGORY_NATURE, "sheep");
-		category(CATEGORY_NATURE, "goat");
-		category(CATEGORY_NATURE, "dromedary_camel");
-		category(CATEGORY_NATURE, "camel");
-		category(CATEGORY_NATURE, "giraffe_face");
-		category(CATEGORY_NATURE, "elephant");
-		category(CATEGORY_NATURE, "rhinoceros");
-		category(CATEGORY_NATURE, "mouse");
-		category(CATEGORY_NATURE, "mouse2");
-		category(CATEGORY_NATURE, "rat");
-		category(CATEGORY_NATURE, "hamster");
-		category(CATEGORY_NATURE, "rabbit");
-		category(CATEGORY_NATURE, "rabbit2");
-		category(CATEGORY_NATURE, "chipmunk");
+		category( CATEGORY_PEOPLE, "two_hearts" );
+		category( CATEGORY_PEOPLE, "sparkling_heart" );
+		category( CATEGORY_PEOPLE, "heartpulse" );
+		category( CATEGORY_PEOPLE, "blue_heart" );
+		category( CATEGORY_PEOPLE, "green_heart" );
+		category( CATEGORY_PEOPLE, "yellow_heart" );
+		category( CATEGORY_PEOPLE, "orange_heart" );
+		category( CATEGORY_PEOPLE, "purple_heart" );
+		category( CATEGORY_PEOPLE, "black_heart" );
+		category( CATEGORY_PEOPLE, "gift_heart" );
+		category( CATEGORY_PEOPLE, "revolving_hearts" );
+		category( CATEGORY_PEOPLE, "heart_decoration" );
+		category( CATEGORY_PEOPLE, "heavy_heart_exclamation_mark_ornament" );
+		category( CATEGORY_PEOPLE, "love_letter" );
+		category( CATEGORY_PEOPLE, "zzz" );
+		category( CATEGORY_PEOPLE, "anger" );
+		category( CATEGORY_PEOPLE, "bomb" );
+		category( CATEGORY_PEOPLE, "boom" );
+		category( CATEGORY_PEOPLE, "sweat_drops" );
+		category( CATEGORY_PEOPLE, "dash" );
+		category( CATEGORY_PEOPLE, "dizzy" );
+		category( CATEGORY_PEOPLE, "speech_balloon" );
+		category( CATEGORY_PEOPLE, "left_speech_bubble" );
+		category( CATEGORY_PEOPLE, "right_anger_bubble" );
+		category( CATEGORY_PEOPLE, "thought_balloon" );
+		category( CATEGORY_PEOPLE, "hole" );
+		category( CATEGORY_PEOPLE, "eyeglasses" );
+		category( CATEGORY_PEOPLE, "dark_sunglasses" );
+		category( CATEGORY_PEOPLE, "necktie" );
+		category( CATEGORY_PEOPLE, "shirt" );
+		category( CATEGORY_PEOPLE, "jeans" );
+		category( CATEGORY_PEOPLE, "scarf" );
+		category( CATEGORY_PEOPLE, "gloves" );
+		category( CATEGORY_PEOPLE, "coat" );
+		category( CATEGORY_PEOPLE, "socks" );
+		category( CATEGORY_PEOPLE, "dress" );
+		category( CATEGORY_PEOPLE, "kimono" );
+		category( CATEGORY_PEOPLE, "bikini" );
+		category( CATEGORY_PEOPLE, "womans_clothes" );
+		category( CATEGORY_PEOPLE, "purse" );
+		category( CATEGORY_PEOPLE, "handbag" );
+		category( CATEGORY_PEOPLE, "pouch" );
+		category( CATEGORY_PEOPLE, "shopping_bags" );
+		category( CATEGORY_PEOPLE, "school_satchel" );
+		category( CATEGORY_PEOPLE, "mans_shoe" );
+		category( CATEGORY_PEOPLE, "athletic_shoe" );
+		category( CATEGORY_PEOPLE, "high_heel" );
+		category( CATEGORY_PEOPLE, "sandal" );
+		category( CATEGORY_PEOPLE, "boot" );
+		category( CATEGORY_PEOPLE, "crown" );
+		category( CATEGORY_PEOPLE, "womans_hat" );
+		category( CATEGORY_PEOPLE, "tophat" );
+		category( CATEGORY_PEOPLE, "mortar_board" );
+		category( CATEGORY_PEOPLE, "billed_cap" );
+		category( CATEGORY_PEOPLE, "helmet_with_white_cross" );
+		category( CATEGORY_PEOPLE, "prayer_beads" );
+		category( CATEGORY_PEOPLE, "lipstick" );
+		category( CATEGORY_PEOPLE, "ring" );
+		category( CATEGORY_PEOPLE, "gem" );
+		category( CATEGORY_NATURE, "monkey_face" );
+		category( CATEGORY_NATURE, "monkey" );
+		category( CATEGORY_NATURE, "gorilla" );
+		category( CATEGORY_NATURE, "dog" );
+		category( CATEGORY_NATURE, "dog2" );
+		category( CATEGORY_NATURE, "poodle" );
+		category( CATEGORY_NATURE, "wolf" );
+		category( CATEGORY_NATURE, "fox_face" );
+		category( CATEGORY_NATURE, "cat" );
+		category( CATEGORY_NATURE, "cat2" );
+		category( CATEGORY_NATURE, "lion_face" );
+		category( CATEGORY_NATURE, "tiger" );
+		category( CATEGORY_NATURE, "tiger2" );
+		category( CATEGORY_NATURE, "leopard" );
+		category( CATEGORY_NATURE, "horse" );
+		category( CATEGORY_NATURE, "racehorse" );
+		category( CATEGORY_NATURE, "unicorn_face" );
+		category( CATEGORY_NATURE, "zebra_face" );
+		category( CATEGORY_NATURE, "deer" );
+		category( CATEGORY_NATURE, "cow" );
+		category( CATEGORY_NATURE, "ox" );
+		category( CATEGORY_NATURE, "water_buffalo" );
+		category( CATEGORY_NATURE, "cow2" );
+		category( CATEGORY_NATURE, "pig" );
+		category( CATEGORY_NATURE, "pig2" );
+		category( CATEGORY_NATURE, "boar" );
+		category( CATEGORY_NATURE, "pig_nose" );
+		category( CATEGORY_NATURE, "ram" );
+		category( CATEGORY_NATURE, "sheep" );
+		category( CATEGORY_NATURE, "goat" );
+		category( CATEGORY_NATURE, "dromedary_camel" );
+		category( CATEGORY_NATURE, "camel" );
+		category( CATEGORY_NATURE, "giraffe_face" );
+		category( CATEGORY_NATURE, "elephant" );
+		category( CATEGORY_NATURE, "rhinoceros" );
+		category( CATEGORY_NATURE, "mouse" );
+		category( CATEGORY_NATURE, "mouse2" );
+		category( CATEGORY_NATURE, "rat" );
+		category( CATEGORY_NATURE, "hamster" );
+		category( CATEGORY_NATURE, "rabbit" );
+		category( CATEGORY_NATURE, "rabbit2" );
+		category( CATEGORY_NATURE, "chipmunk" );
 	}
+	
 	private static void init117(){
-		category(CATEGORY_NATURE, "hedgehog");
-		category(CATEGORY_NATURE, "bat");
-		category(CATEGORY_NATURE, "bear");
-		category(CATEGORY_NATURE, "koala");
-		category(CATEGORY_NATURE, "panda_face");
-		category(CATEGORY_NATURE, "feet");
-		category(CATEGORY_NATURE, "turkey");
-		category(CATEGORY_NATURE, "chicken");
-		category(CATEGORY_NATURE, "rooster");
-		category(CATEGORY_NATURE, "hatching_chick");
-		category(CATEGORY_NATURE, "baby_chick");
-		category(CATEGORY_NATURE, "hatched_chick");
-		category(CATEGORY_NATURE, "bird");
-		category(CATEGORY_NATURE, "penguin");
-		category(CATEGORY_NATURE, "dove_of_peace");
-		category(CATEGORY_NATURE, "eagle");
-		category(CATEGORY_NATURE, "duck");
-		category(CATEGORY_NATURE, "owl");
-		category(CATEGORY_NATURE, "frog");
-		category(CATEGORY_NATURE, "crocodile");
-		category(CATEGORY_NATURE, "turtle");
-		category(CATEGORY_NATURE, "lizard");
-		category(CATEGORY_NATURE, "snake");
-		category(CATEGORY_NATURE, "dragon_face");
-		category(CATEGORY_NATURE, "dragon");
-		category(CATEGORY_NATURE, "sauropod");
-		category(CATEGORY_NATURE, "t_rex");
-		category(CATEGORY_NATURE, "whale");
-		category(CATEGORY_NATURE, "whale2");
-		category(CATEGORY_NATURE, "dolphin");
-		category(CATEGORY_NATURE, "fish");
-		category(CATEGORY_NATURE, "tropical_fish");
-		category(CATEGORY_NATURE, "blowfish");
-		category(CATEGORY_NATURE, "shark");
-		category(CATEGORY_NATURE, "octopus");
-		category(CATEGORY_NATURE, "shell");
-		category(CATEGORY_NATURE, "crab");
-		category(CATEGORY_NATURE, "shrimp");
-		category(CATEGORY_NATURE, "squid");
-		category(CATEGORY_NATURE, "snail");
-		category(CATEGORY_NATURE, "butterfly");
-		category(CATEGORY_NATURE, "bug");
-		category(CATEGORY_NATURE, "ant");
-		category(CATEGORY_NATURE, "bee");
-		category(CATEGORY_NATURE, "beetle");
-		category(CATEGORY_NATURE, "cricket");
-		category(CATEGORY_NATURE, "spider");
-		category(CATEGORY_NATURE, "spider_web");
-		category(CATEGORY_NATURE, "scorpion");
-		category(CATEGORY_NATURE, "bouquet");
-		category(CATEGORY_NATURE, "cherry_blossom");
-		category(CATEGORY_NATURE, "white_flower");
-		category(CATEGORY_NATURE, "rosette");
-		category(CATEGORY_NATURE, "rose");
-		category(CATEGORY_NATURE, "wilted_flower");
-		category(CATEGORY_NATURE, "hibiscus");
-		category(CATEGORY_NATURE, "sunflower");
-		category(CATEGORY_NATURE, "blossom");
-		category(CATEGORY_NATURE, "tulip");
-		category(CATEGORY_NATURE, "seedling");
-		category(CATEGORY_NATURE, "evergreen_tree");
-		category(CATEGORY_NATURE, "deciduous_tree");
-		category(CATEGORY_NATURE, "palm_tree");
-		category(CATEGORY_NATURE, "cactus");
-		category(CATEGORY_NATURE, "ear_of_rice");
-		category(CATEGORY_NATURE, "herb");
-		category(CATEGORY_NATURE, "shamrock");
-		category(CATEGORY_NATURE, "four_leaf_clover");
-		category(CATEGORY_NATURE, "maple_leaf");
-		category(CATEGORY_NATURE, "fallen_leaf");
-		category(CATEGORY_NATURE, "leaves");
-		category(CATEGORY_FOODS, "grapes");
-		category(CATEGORY_FOODS, "melon");
-		category(CATEGORY_FOODS, "watermelon");
-		category(CATEGORY_FOODS, "tangerine");
-		category(CATEGORY_FOODS, "lemon");
-		category(CATEGORY_FOODS, "banana");
-		category(CATEGORY_FOODS, "pineapple");
-		category(CATEGORY_FOODS, "apple");
-		category(CATEGORY_FOODS, "green_apple");
-		category(CATEGORY_FOODS, "pear");
-		category(CATEGORY_FOODS, "peach");
-		category(CATEGORY_FOODS, "cherries");
-		category(CATEGORY_FOODS, "strawberry");
-		category(CATEGORY_FOODS, "kiwifruit");
-		category(CATEGORY_FOODS, "tomato");
-		category(CATEGORY_FOODS, "coconut");
-		category(CATEGORY_FOODS, "avocado");
-		category(CATEGORY_FOODS, "eggplant");
-		category(CATEGORY_FOODS, "potato");
-		category(CATEGORY_FOODS, "carrot");
-		category(CATEGORY_FOODS, "corn");
-		category(CATEGORY_FOODS, "hot_pepper");
-		category(CATEGORY_FOODS, "cucumber");
-		category(CATEGORY_FOODS, "broccoli");
-		category(CATEGORY_FOODS, "mushroom");
-		category(CATEGORY_FOODS, "peanuts");
-		category(CATEGORY_FOODS, "chestnut");
-		category(CATEGORY_FOODS, "bread");
-		category(CATEGORY_FOODS, "croissant");
-		category(CATEGORY_FOODS, "baguette_bread");
+		category( CATEGORY_NATURE, "hedgehog" );
+		category( CATEGORY_NATURE, "bat" );
+		category( CATEGORY_NATURE, "bear" );
+		category( CATEGORY_NATURE, "koala" );
+		category( CATEGORY_NATURE, "panda_face" );
+		category( CATEGORY_NATURE, "feet" );
+		category( CATEGORY_NATURE, "turkey" );
+		category( CATEGORY_NATURE, "chicken" );
+		category( CATEGORY_NATURE, "rooster" );
+		category( CATEGORY_NATURE, "hatching_chick" );
+		category( CATEGORY_NATURE, "baby_chick" );
+		category( CATEGORY_NATURE, "hatched_chick" );
+		category( CATEGORY_NATURE, "bird" );
+		category( CATEGORY_NATURE, "penguin" );
+		category( CATEGORY_NATURE, "dove_of_peace" );
+		category( CATEGORY_NATURE, "eagle" );
+		category( CATEGORY_NATURE, "duck" );
+		category( CATEGORY_NATURE, "owl" );
+		category( CATEGORY_NATURE, "frog" );
+		category( CATEGORY_NATURE, "crocodile" );
+		category( CATEGORY_NATURE, "turtle" );
+		category( CATEGORY_NATURE, "lizard" );
+		category( CATEGORY_NATURE, "snake" );
+		category( CATEGORY_NATURE, "dragon_face" );
+		category( CATEGORY_NATURE, "dragon" );
+		category( CATEGORY_NATURE, "sauropod" );
+		category( CATEGORY_NATURE, "t_rex" );
+		category( CATEGORY_NATURE, "whale" );
+		category( CATEGORY_NATURE, "whale2" );
+		category( CATEGORY_NATURE, "dolphin" );
+		category( CATEGORY_NATURE, "fish" );
+		category( CATEGORY_NATURE, "tropical_fish" );
+		category( CATEGORY_NATURE, "blowfish" );
+		category( CATEGORY_NATURE, "shark" );
+		category( CATEGORY_NATURE, "octopus" );
+		category( CATEGORY_NATURE, "shell" );
+		category( CATEGORY_NATURE, "crab" );
+		category( CATEGORY_NATURE, "shrimp" );
+		category( CATEGORY_NATURE, "squid" );
+		category( CATEGORY_NATURE, "snail" );
+		category( CATEGORY_NATURE, "butterfly" );
+		category( CATEGORY_NATURE, "bug" );
+		category( CATEGORY_NATURE, "ant" );
+		category( CATEGORY_NATURE, "bee" );
+		category( CATEGORY_NATURE, "beetle" );
+		category( CATEGORY_NATURE, "cricket" );
+		category( CATEGORY_NATURE, "spider" );
+		category( CATEGORY_NATURE, "spider_web" );
+		category( CATEGORY_NATURE, "scorpion" );
+		category( CATEGORY_NATURE, "bouquet" );
+		category( CATEGORY_NATURE, "cherry_blossom" );
+		category( CATEGORY_NATURE, "white_flower" );
+		category( CATEGORY_NATURE, "rosette" );
+		category( CATEGORY_NATURE, "rose" );
+		category( CATEGORY_NATURE, "wilted_flower" );
+		category( CATEGORY_NATURE, "hibiscus" );
+		category( CATEGORY_NATURE, "sunflower" );
+		category( CATEGORY_NATURE, "blossom" );
+		category( CATEGORY_NATURE, "tulip" );
+		category( CATEGORY_NATURE, "seedling" );
+		category( CATEGORY_NATURE, "evergreen_tree" );
+		category( CATEGORY_NATURE, "deciduous_tree" );
+		category( CATEGORY_NATURE, "palm_tree" );
+		category( CATEGORY_NATURE, "cactus" );
+		category( CATEGORY_NATURE, "ear_of_rice" );
+		category( CATEGORY_NATURE, "herb" );
+		category( CATEGORY_NATURE, "shamrock" );
+		category( CATEGORY_NATURE, "four_leaf_clover" );
+		category( CATEGORY_NATURE, "maple_leaf" );
+		category( CATEGORY_NATURE, "fallen_leaf" );
+		category( CATEGORY_NATURE, "leaves" );
+		category( CATEGORY_FOODS, "grapes" );
+		category( CATEGORY_FOODS, "melon" );
+		category( CATEGORY_FOODS, "watermelon" );
+		category( CATEGORY_FOODS, "tangerine" );
+		category( CATEGORY_FOODS, "lemon" );
+		category( CATEGORY_FOODS, "banana" );
+		category( CATEGORY_FOODS, "pineapple" );
+		category( CATEGORY_FOODS, "apple" );
+		category( CATEGORY_FOODS, "green_apple" );
+		category( CATEGORY_FOODS, "pear" );
+		category( CATEGORY_FOODS, "peach" );
+		category( CATEGORY_FOODS, "cherries" );
+		category( CATEGORY_FOODS, "strawberry" );
+		category( CATEGORY_FOODS, "kiwifruit" );
+		category( CATEGORY_FOODS, "tomato" );
+		category( CATEGORY_FOODS, "coconut" );
+		category( CATEGORY_FOODS, "avocado" );
+		category( CATEGORY_FOODS, "eggplant" );
+		category( CATEGORY_FOODS, "potato" );
+		category( CATEGORY_FOODS, "carrot" );
+		category( CATEGORY_FOODS, "corn" );
+		category( CATEGORY_FOODS, "hot_pepper" );
+		category( CATEGORY_FOODS, "cucumber" );
+		category( CATEGORY_FOODS, "broccoli" );
+		category( CATEGORY_FOODS, "mushroom" );
+		category( CATEGORY_FOODS, "peanuts" );
+		category( CATEGORY_FOODS, "chestnut" );
+		category( CATEGORY_FOODS, "bread" );
+		category( CATEGORY_FOODS, "croissant" );
+		category( CATEGORY_FOODS, "baguette_bread" );
 	}
+	
 	private static void init118(){
-		category(CATEGORY_FOODS, "pretzel");
-		category(CATEGORY_FOODS, "pancakes");
-		category(CATEGORY_FOODS, "cheese_wedge");
-		category(CATEGORY_FOODS, "meat_on_bone");
-		category(CATEGORY_FOODS, "poultry_leg");
-		category(CATEGORY_FOODS, "cut_of_meat");
-		category(CATEGORY_FOODS, "bacon");
-		category(CATEGORY_FOODS, "hamburger");
-		category(CATEGORY_FOODS, "fries");
-		category(CATEGORY_FOODS, "pizza");
-		category(CATEGORY_FOODS, "hotdog");
-		category(CATEGORY_FOODS, "sandwich");
-		category(CATEGORY_FOODS, "taco");
-		category(CATEGORY_FOODS, "burrito");
-		category(CATEGORY_FOODS, "stuffed_flatbread");
-		category(CATEGORY_FOODS, "egg");
-		category(CATEGORY_FOODS, "fried_egg");
-		category(CATEGORY_FOODS, "shallow_pan_of_food");
-		category(CATEGORY_FOODS, "stew");
-		category(CATEGORY_FOODS, "bowl_with_spoon");
-		category(CATEGORY_FOODS, "green_salad");
-		category(CATEGORY_FOODS, "popcorn");
-		category(CATEGORY_FOODS, "canned_food");
-		category(CATEGORY_FOODS, "bento");
-		category(CATEGORY_FOODS, "rice_cracker");
-		category(CATEGORY_FOODS, "rice_ball");
-		category(CATEGORY_FOODS, "rice");
-		category(CATEGORY_FOODS, "curry");
-		category(CATEGORY_FOODS, "ramen");
-		category(CATEGORY_FOODS, "spaghetti");
-		category(CATEGORY_FOODS, "sweet_potato");
-		category(CATEGORY_FOODS, "oden");
-		category(CATEGORY_FOODS, "sushi");
-		category(CATEGORY_FOODS, "fried_shrimp");
-		category(CATEGORY_FOODS, "fish_cake");
-		category(CATEGORY_FOODS, "dango");
-		category(CATEGORY_FOODS, "dumpling");
-		category(CATEGORY_FOODS, "fortune_cookie");
-		category(CATEGORY_FOODS, "takeout_box");
-		category(CATEGORY_FOODS, "icecream");
-		category(CATEGORY_FOODS, "shaved_ice");
-		category(CATEGORY_FOODS, "ice_cream");
-		category(CATEGORY_FOODS, "doughnut");
-		category(CATEGORY_FOODS, "cookie");
-		category(CATEGORY_FOODS, "birthday");
-		category(CATEGORY_FOODS, "cake");
-		category(CATEGORY_FOODS, "pie");
-		category(CATEGORY_FOODS, "chocolate_bar");
-		category(CATEGORY_FOODS, "candy");
-		category(CATEGORY_FOODS, "lollipop");
-		category(CATEGORY_FOODS, "custard");
-		category(CATEGORY_FOODS, "honey_pot");
-		category(CATEGORY_FOODS, "baby_bottle");
-		category(CATEGORY_FOODS, "glass_of_milk");
-		category(CATEGORY_FOODS, "coffee");
-		category(CATEGORY_FOODS, "tea");
-		category(CATEGORY_FOODS, "sake");
-		category(CATEGORY_FOODS, "champagne");
-		category(CATEGORY_FOODS, "wine_glass");
-		category(CATEGORY_FOODS, "cocktail");
-		category(CATEGORY_FOODS, "tropical_drink");
-		category(CATEGORY_FOODS, "beer");
-		category(CATEGORY_FOODS, "beers");
-		category(CATEGORY_FOODS, "clinking_glasses");
-		category(CATEGORY_FOODS, "tumbler_glass");
-		category(CATEGORY_FOODS, "cup_with_straw");
-		category(CATEGORY_FOODS, "chopsticks");
-		category(CATEGORY_FOODS, "knife_fork_plate");
-		category(CATEGORY_FOODS, "fork_and_knife");
-		category(CATEGORY_FOODS, "spoon");
-		category(CATEGORY_FOODS, "hocho");
-		category(CATEGORY_FOODS, "amphora");
-		category(CATEGORY_ACTIVITY, "jack_o_lantern");
-		category(CATEGORY_ACTIVITY, "christmas_tree");
-		category(CATEGORY_ACTIVITY, "fireworks");
-		category(CATEGORY_ACTIVITY, "sparkler");
-		category(CATEGORY_ACTIVITY, "sparkles");
-		category(CATEGORY_ACTIVITY, "balloon");
-		category(CATEGORY_ACTIVITY, "tada");
-		category(CATEGORY_ACTIVITY, "confetti_ball");
-		category(CATEGORY_ACTIVITY, "tanabata_tree");
-		category(CATEGORY_ACTIVITY, "bamboo");
-		category(CATEGORY_ACTIVITY, "dolls");
-		category(CATEGORY_ACTIVITY, "flags");
-		category(CATEGORY_ACTIVITY, "wind_chime");
-		category(CATEGORY_ACTIVITY, "rice_scene");
-		category(CATEGORY_ACTIVITY, "ribbon");
-		category(CATEGORY_ACTIVITY, "gift");
-		category(CATEGORY_ACTIVITY, "reminder_ribbon");
-		category(CATEGORY_ACTIVITY, "admission_tickets");
-		category(CATEGORY_ACTIVITY, "ticket");
-		category(CATEGORY_ACTIVITY, "medal");
-		category(CATEGORY_ACTIVITY, "trophy");
-		category(CATEGORY_ACTIVITY, "sports_medal");
-		category(CATEGORY_ACTIVITY, "first_place_medal");
-		category(CATEGORY_ACTIVITY, "second_place_medal");
-		category(CATEGORY_ACTIVITY, "third_place_medal");
-		category(CATEGORY_ACTIVITY, "soccer");
-		category(CATEGORY_ACTIVITY, "baseball");
-		category(CATEGORY_ACTIVITY, "basketball");
-		category(CATEGORY_ACTIVITY, "volleyball");
+		category( CATEGORY_FOODS, "pretzel" );
+		category( CATEGORY_FOODS, "pancakes" );
+		category( CATEGORY_FOODS, "cheese_wedge" );
+		category( CATEGORY_FOODS, "meat_on_bone" );
+		category( CATEGORY_FOODS, "poultry_leg" );
+		category( CATEGORY_FOODS, "cut_of_meat" );
+		category( CATEGORY_FOODS, "bacon" );
+		category( CATEGORY_FOODS, "hamburger" );
+		category( CATEGORY_FOODS, "fries" );
+		category( CATEGORY_FOODS, "pizza" );
+		category( CATEGORY_FOODS, "hotdog" );
+		category( CATEGORY_FOODS, "sandwich" );
+		category( CATEGORY_FOODS, "taco" );
+		category( CATEGORY_FOODS, "burrito" );
+		category( CATEGORY_FOODS, "stuffed_flatbread" );
+		category( CATEGORY_FOODS, "egg" );
+		category( CATEGORY_FOODS, "fried_egg" );
+		category( CATEGORY_FOODS, "shallow_pan_of_food" );
+		category( CATEGORY_FOODS, "stew" );
+		category( CATEGORY_FOODS, "bowl_with_spoon" );
+		category( CATEGORY_FOODS, "green_salad" );
+		category( CATEGORY_FOODS, "popcorn" );
+		category( CATEGORY_FOODS, "canned_food" );
+		category( CATEGORY_FOODS, "bento" );
+		category( CATEGORY_FOODS, "rice_cracker" );
+		category( CATEGORY_FOODS, "rice_ball" );
+		category( CATEGORY_FOODS, "rice" );
+		category( CATEGORY_FOODS, "curry" );
+		category( CATEGORY_FOODS, "ramen" );
+		category( CATEGORY_FOODS, "spaghetti" );
+		category( CATEGORY_FOODS, "sweet_potato" );
+		category( CATEGORY_FOODS, "oden" );
+		category( CATEGORY_FOODS, "sushi" );
+		category( CATEGORY_FOODS, "fried_shrimp" );
+		category( CATEGORY_FOODS, "fish_cake" );
+		category( CATEGORY_FOODS, "dango" );
+		category( CATEGORY_FOODS, "dumpling" );
+		category( CATEGORY_FOODS, "fortune_cookie" );
+		category( CATEGORY_FOODS, "takeout_box" );
+		category( CATEGORY_FOODS, "icecream" );
+		category( CATEGORY_FOODS, "shaved_ice" );
+		category( CATEGORY_FOODS, "ice_cream" );
+		category( CATEGORY_FOODS, "doughnut" );
+		category( CATEGORY_FOODS, "cookie" );
+		category( CATEGORY_FOODS, "birthday" );
+		category( CATEGORY_FOODS, "cake" );
+		category( CATEGORY_FOODS, "pie" );
+		category( CATEGORY_FOODS, "chocolate_bar" );
+		category( CATEGORY_FOODS, "candy" );
+		category( CATEGORY_FOODS, "lollipop" );
+		category( CATEGORY_FOODS, "custard" );
+		category( CATEGORY_FOODS, "honey_pot" );
+		category( CATEGORY_FOODS, "baby_bottle" );
+		category( CATEGORY_FOODS, "glass_of_milk" );
+		category( CATEGORY_FOODS, "coffee" );
+		category( CATEGORY_FOODS, "tea" );
+		category( CATEGORY_FOODS, "sake" );
+		category( CATEGORY_FOODS, "champagne" );
+		category( CATEGORY_FOODS, "wine_glass" );
+		category( CATEGORY_FOODS, "cocktail" );
+		category( CATEGORY_FOODS, "tropical_drink" );
+		category( CATEGORY_FOODS, "beer" );
+		category( CATEGORY_FOODS, "beers" );
+		category( CATEGORY_FOODS, "clinking_glasses" );
+		category( CATEGORY_FOODS, "tumbler_glass" );
+		category( CATEGORY_FOODS, "cup_with_straw" );
+		category( CATEGORY_FOODS, "chopsticks" );
+		category( CATEGORY_FOODS, "knife_fork_plate" );
+		category( CATEGORY_FOODS, "fork_and_knife" );
+		category( CATEGORY_FOODS, "spoon" );
+		category( CATEGORY_FOODS, "hocho" );
+		category( CATEGORY_FOODS, "amphora" );
+		category( CATEGORY_ACTIVITY, "jack_o_lantern" );
+		category( CATEGORY_ACTIVITY, "christmas_tree" );
+		category( CATEGORY_ACTIVITY, "fireworks" );
+		category( CATEGORY_ACTIVITY, "sparkler" );
+		category( CATEGORY_ACTIVITY, "sparkles" );
+		category( CATEGORY_ACTIVITY, "balloon" );
+		category( CATEGORY_ACTIVITY, "tada" );
+		category( CATEGORY_ACTIVITY, "confetti_ball" );
+		category( CATEGORY_ACTIVITY, "tanabata_tree" );
+		category( CATEGORY_ACTIVITY, "bamboo" );
+		category( CATEGORY_ACTIVITY, "dolls" );
+		category( CATEGORY_ACTIVITY, "flags" );
+		category( CATEGORY_ACTIVITY, "wind_chime" );
+		category( CATEGORY_ACTIVITY, "rice_scene" );
+		category( CATEGORY_ACTIVITY, "ribbon" );
+		category( CATEGORY_ACTIVITY, "gift" );
+		category( CATEGORY_ACTIVITY, "reminder_ribbon" );
+		category( CATEGORY_ACTIVITY, "admission_tickets" );
+		category( CATEGORY_ACTIVITY, "ticket" );
+		category( CATEGORY_ACTIVITY, "medal" );
+		category( CATEGORY_ACTIVITY, "trophy" );
+		category( CATEGORY_ACTIVITY, "sports_medal" );
+		category( CATEGORY_ACTIVITY, "first_place_medal" );
+		category( CATEGORY_ACTIVITY, "second_place_medal" );
+		category( CATEGORY_ACTIVITY, "third_place_medal" );
+		category( CATEGORY_ACTIVITY, "soccer" );
+		category( CATEGORY_ACTIVITY, "baseball" );
+		category( CATEGORY_ACTIVITY, "basketball" );
+		category( CATEGORY_ACTIVITY, "volleyball" );
 	}
+	
 	private static void init119(){
-		category(CATEGORY_ACTIVITY, "football");
-		category(CATEGORY_ACTIVITY, "rugby_football");
-		category(CATEGORY_ACTIVITY, "tennis");
-		category(CATEGORY_ACTIVITY, "8ball");
-		category(CATEGORY_ACTIVITY, "bowling");
-		category(CATEGORY_ACTIVITY, "cricket_bat_and_ball");
-		category(CATEGORY_ACTIVITY, "field_hockey_stick_and_ball");
-		category(CATEGORY_ACTIVITY, "ice_hockey_stick_and_puck");
-		category(CATEGORY_ACTIVITY, "table_tennis_paddle_and_ball");
-		category(CATEGORY_ACTIVITY, "badminton_racquet_and_shuttlecock");
-		category(CATEGORY_ACTIVITY, "boxing_glove");
-		category(CATEGORY_ACTIVITY, "martial_arts_uniform");
-		category(CATEGORY_ACTIVITY, "goal_net");
-		category(CATEGORY_ACTIVITY, "dart");
-		category(CATEGORY_ACTIVITY, "golf");
-		category(CATEGORY_ACTIVITY, "ice_skate");
-		category(CATEGORY_ACTIVITY, "fishing_pole_and_fish");
-		category(CATEGORY_ACTIVITY, "running_shirt_with_sash");
-		category(CATEGORY_ACTIVITY, "ski");
-		category(CATEGORY_ACTIVITY, "sled");
-		category(CATEGORY_ACTIVITY, "curling_stone");
-		category(CATEGORY_ACTIVITY, "video_game");
-		category(CATEGORY_ACTIVITY, "joystick");
-		category(CATEGORY_ACTIVITY, "game_die");
-		category(CATEGORY_ACTIVITY, "spades");
-		category(CATEGORY_ACTIVITY, "hearts");
-		category(CATEGORY_ACTIVITY, "diamonds");
-		category(CATEGORY_ACTIVITY, "clubs");
-		category(CATEGORY_ACTIVITY, "black_joker");
-		category(CATEGORY_ACTIVITY, "mahjong");
-		category(CATEGORY_ACTIVITY, "flower_playing_cards");
-		category(CATEGORY_PLACES, "earth_africa");
-		category(CATEGORY_PLACES, "earth_americas");
-		category(CATEGORY_PLACES, "earth_asia");
-		category(CATEGORY_PLACES, "globe_with_meridians");
-		category(CATEGORY_PLACES, "world_map");
-		category(CATEGORY_PLACES, "japan");
-		category(CATEGORY_PLACES, "snow_capped_mountain");
-		category(CATEGORY_PLACES, "mountain");
-		category(CATEGORY_PLACES, "volcano");
-		category(CATEGORY_PLACES, "mount_fuji");
-		category(CATEGORY_PLACES, "camping");
-		category(CATEGORY_PLACES, "beach_with_umbrella");
-		category(CATEGORY_PLACES, "desert");
-		category(CATEGORY_PLACES, "desert_island");
-		category(CATEGORY_PLACES, "national_park");
-		category(CATEGORY_PLACES, "stadium");
-		category(CATEGORY_PLACES, "classical_building");
-		category(CATEGORY_PLACES, "building_construction");
-		category(CATEGORY_PLACES, "house_buildings");
-		category(CATEGORY_PLACES, "cityscape");
-		category(CATEGORY_PLACES, "derelict_house_building");
-		category(CATEGORY_PLACES, "house");
-		category(CATEGORY_PLACES, "house_with_garden");
-		category(CATEGORY_PLACES, "office");
-		category(CATEGORY_PLACES, "post_office");
-		category(CATEGORY_PLACES, "european_post_office");
-		category(CATEGORY_PLACES, "hospital");
-		category(CATEGORY_PLACES, "bank");
-		category(CATEGORY_PLACES, "hotel");
-		category(CATEGORY_PLACES, "love_hotel");
-		category(CATEGORY_PLACES, "convenience_store");
-		category(CATEGORY_PLACES, "school");
-		category(CATEGORY_PLACES, "department_store");
-		category(CATEGORY_PLACES, "factory");
-		category(CATEGORY_PLACES, "japanese_castle");
-		category(CATEGORY_PLACES, "european_castle");
-		category(CATEGORY_PLACES, "wedding");
-		category(CATEGORY_PLACES, "tokyo_tower");
-		category(CATEGORY_PLACES, "statue_of_liberty");
-		category(CATEGORY_PLACES, "church");
-		category(CATEGORY_PLACES, "mosque");
-		category(CATEGORY_PLACES, "synagogue");
-		category(CATEGORY_PLACES, "shinto_shrine");
-		category(CATEGORY_PLACES, "kaaba");
-		category(CATEGORY_PLACES, "fountain");
-		category(CATEGORY_PLACES, "tent");
-		category(CATEGORY_PLACES, "foggy");
-		category(CATEGORY_PLACES, "night_with_stars");
-		category(CATEGORY_PLACES, "sunrise_over_mountains");
-		category(CATEGORY_PLACES, "sunrise");
-		category(CATEGORY_PLACES, "city_sunset");
-		category(CATEGORY_PLACES, "city_sunrise");
-		category(CATEGORY_PLACES, "bridge_at_night");
-		category(CATEGORY_PLACES, "hotsprings");
-		category(CATEGORY_PLACES, "milky_way");
-		category(CATEGORY_PLACES, "carousel_horse");
-		category(CATEGORY_PLACES, "ferris_wheel");
-		category(CATEGORY_PLACES, "roller_coaster");
-		category(CATEGORY_PLACES, "barber");
-		category(CATEGORY_PLACES, "circus_tent");
-		category(CATEGORY_PLACES, "performing_arts");
-		category(CATEGORY_PLACES, "frame_with_picture");
-		category(CATEGORY_PLACES, "art");
-		category(CATEGORY_PLACES, "slot_machine");
-		category(CATEGORY_PLACES, "steam_locomotive");
-		category(CATEGORY_PLACES, "railway_car");
-		category(CATEGORY_PLACES, "bullettrain_side");
-		category(CATEGORY_PLACES, "bullettrain_front");
-		category(CATEGORY_PLACES, "train2");
-		category(CATEGORY_PLACES, "metro");
+		category( CATEGORY_ACTIVITY, "football" );
+		category( CATEGORY_ACTIVITY, "rugby_football" );
+		category( CATEGORY_ACTIVITY, "tennis" );
+		category( CATEGORY_ACTIVITY, "8ball" );
+		category( CATEGORY_ACTIVITY, "bowling" );
+		category( CATEGORY_ACTIVITY, "cricket_bat_and_ball" );
+		category( CATEGORY_ACTIVITY, "field_hockey_stick_and_ball" );
+		category( CATEGORY_ACTIVITY, "ice_hockey_stick_and_puck" );
+		category( CATEGORY_ACTIVITY, "table_tennis_paddle_and_ball" );
+		category( CATEGORY_ACTIVITY, "badminton_racquet_and_shuttlecock" );
+		category( CATEGORY_ACTIVITY, "boxing_glove" );
+		category( CATEGORY_ACTIVITY, "martial_arts_uniform" );
+		category( CATEGORY_ACTIVITY, "goal_net" );
+		category( CATEGORY_ACTIVITY, "dart" );
+		category( CATEGORY_ACTIVITY, "golf" );
+		category( CATEGORY_ACTIVITY, "ice_skate" );
+		category( CATEGORY_ACTIVITY, "fishing_pole_and_fish" );
+		category( CATEGORY_ACTIVITY, "running_shirt_with_sash" );
+		category( CATEGORY_ACTIVITY, "ski" );
+		category( CATEGORY_ACTIVITY, "sled" );
+		category( CATEGORY_ACTIVITY, "curling_stone" );
+		category( CATEGORY_ACTIVITY, "video_game" );
+		category( CATEGORY_ACTIVITY, "joystick" );
+		category( CATEGORY_ACTIVITY, "game_die" );
+		category( CATEGORY_ACTIVITY, "spades" );
+		category( CATEGORY_ACTIVITY, "hearts" );
+		category( CATEGORY_ACTIVITY, "diamonds" );
+		category( CATEGORY_ACTIVITY, "clubs" );
+		category( CATEGORY_ACTIVITY, "black_joker" );
+		category( CATEGORY_ACTIVITY, "mahjong" );
+		category( CATEGORY_ACTIVITY, "flower_playing_cards" );
+		category( CATEGORY_PLACES, "earth_africa" );
+		category( CATEGORY_PLACES, "earth_americas" );
+		category( CATEGORY_PLACES, "earth_asia" );
+		category( CATEGORY_PLACES, "globe_with_meridians" );
+		category( CATEGORY_PLACES, "world_map" );
+		category( CATEGORY_PLACES, "japan" );
+		category( CATEGORY_PLACES, "snow_capped_mountain" );
+		category( CATEGORY_PLACES, "mountain" );
+		category( CATEGORY_PLACES, "volcano" );
+		category( CATEGORY_PLACES, "mount_fuji" );
+		category( CATEGORY_PLACES, "camping" );
+		category( CATEGORY_PLACES, "beach_with_umbrella" );
+		category( CATEGORY_PLACES, "desert" );
+		category( CATEGORY_PLACES, "desert_island" );
+		category( CATEGORY_PLACES, "national_park" );
+		category( CATEGORY_PLACES, "stadium" );
+		category( CATEGORY_PLACES, "classical_building" );
+		category( CATEGORY_PLACES, "building_construction" );
+		category( CATEGORY_PLACES, "house_buildings" );
+		category( CATEGORY_PLACES, "cityscape" );
+		category( CATEGORY_PLACES, "derelict_house_building" );
+		category( CATEGORY_PLACES, "house" );
+		category( CATEGORY_PLACES, "house_with_garden" );
+		category( CATEGORY_PLACES, "office" );
+		category( CATEGORY_PLACES, "post_office" );
+		category( CATEGORY_PLACES, "european_post_office" );
+		category( CATEGORY_PLACES, "hospital" );
+		category( CATEGORY_PLACES, "bank" );
+		category( CATEGORY_PLACES, "hotel" );
+		category( CATEGORY_PLACES, "love_hotel" );
+		category( CATEGORY_PLACES, "convenience_store" );
+		category( CATEGORY_PLACES, "school" );
+		category( CATEGORY_PLACES, "department_store" );
+		category( CATEGORY_PLACES, "factory" );
+		category( CATEGORY_PLACES, "japanese_castle" );
+		category( CATEGORY_PLACES, "european_castle" );
+		category( CATEGORY_PLACES, "wedding" );
+		category( CATEGORY_PLACES, "tokyo_tower" );
+		category( CATEGORY_PLACES, "statue_of_liberty" );
+		category( CATEGORY_PLACES, "church" );
+		category( CATEGORY_PLACES, "mosque" );
+		category( CATEGORY_PLACES, "synagogue" );
+		category( CATEGORY_PLACES, "shinto_shrine" );
+		category( CATEGORY_PLACES, "kaaba" );
+		category( CATEGORY_PLACES, "fountain" );
+		category( CATEGORY_PLACES, "tent" );
+		category( CATEGORY_PLACES, "foggy" );
+		category( CATEGORY_PLACES, "night_with_stars" );
+		category( CATEGORY_PLACES, "sunrise_over_mountains" );
+		category( CATEGORY_PLACES, "sunrise" );
+		category( CATEGORY_PLACES, "city_sunset" );
+		category( CATEGORY_PLACES, "city_sunrise" );
+		category( CATEGORY_PLACES, "bridge_at_night" );
+		category( CATEGORY_PLACES, "hotsprings" );
+		category( CATEGORY_PLACES, "milky_way" );
+		category( CATEGORY_PLACES, "carousel_horse" );
+		category( CATEGORY_PLACES, "ferris_wheel" );
+		category( CATEGORY_PLACES, "roller_coaster" );
+		category( CATEGORY_PLACES, "barber" );
+		category( CATEGORY_PLACES, "circus_tent" );
+		category( CATEGORY_PLACES, "performing_arts" );
+		category( CATEGORY_PLACES, "frame_with_picture" );
+		category( CATEGORY_PLACES, "art" );
+		category( CATEGORY_PLACES, "slot_machine" );
+		category( CATEGORY_PLACES, "steam_locomotive" );
+		category( CATEGORY_PLACES, "railway_car" );
+		category( CATEGORY_PLACES, "bullettrain_side" );
+		category( CATEGORY_PLACES, "bullettrain_front" );
+		category( CATEGORY_PLACES, "train2" );
+		category( CATEGORY_PLACES, "metro" );
 	}
+	
 	private static void init120(){
-		category(CATEGORY_PLACES, "light_rail");
-		category(CATEGORY_PLACES, "station");
-		category(CATEGORY_PLACES, "tram");
-		category(CATEGORY_PLACES, "monorail");
-		category(CATEGORY_PLACES, "mountain_railway");
-		category(CATEGORY_PLACES, "train");
-		category(CATEGORY_PLACES, "bus");
-		category(CATEGORY_PLACES, "oncoming_bus");
-		category(CATEGORY_PLACES, "trolleybus");
-		category(CATEGORY_PLACES, "minibus");
-		category(CATEGORY_PLACES, "ambulance");
-		category(CATEGORY_PLACES, "fire_engine");
-		category(CATEGORY_PLACES, "police_car");
-		category(CATEGORY_PLACES, "oncoming_police_car");
-		category(CATEGORY_PLACES, "taxi");
-		category(CATEGORY_PLACES, "oncoming_taxi");
-		category(CATEGORY_PLACES, "car");
-		category(CATEGORY_PLACES, "oncoming_automobile");
-		category(CATEGORY_PLACES, "blue_car");
-		category(CATEGORY_PLACES, "truck");
-		category(CATEGORY_PLACES, "articulated_lorry");
-		category(CATEGORY_PLACES, "tractor");
-		category(CATEGORY_PLACES, "bike");
-		category(CATEGORY_PLACES, "scooter");
-		category(CATEGORY_PLACES, "motor_scooter");
-		category(CATEGORY_PLACES, "busstop");
-		category(CATEGORY_PLACES, "motorway");
-		category(CATEGORY_PLACES, "railway_track");
-		category(CATEGORY_PLACES, "fuelpump");
-		category(CATEGORY_PLACES, "rotating_light");
-		category(CATEGORY_PLACES, "traffic_light");
-		category(CATEGORY_PLACES, "vertical_traffic_light");
-		category(CATEGORY_PLACES, "construction");
-		category(CATEGORY_PLACES, "octagonal_sign");
-		category(CATEGORY_PLACES, "anchor");
-		category(CATEGORY_PLACES, "boat");
-		category(CATEGORY_PLACES, "canoe");
-		category(CATEGORY_PLACES, "speedboat");
-		category(CATEGORY_PLACES, "passenger_ship");
-		category(CATEGORY_PLACES, "ferry");
-		category(CATEGORY_PLACES, "motor_boat");
-		category(CATEGORY_PLACES, "ship");
-		category(CATEGORY_PLACES, "airplane");
-		category(CATEGORY_PLACES, "small_airplane");
-		category(CATEGORY_PLACES, "airplane_departure");
-		category(CATEGORY_PLACES, "airplane_arriving");
-		category(CATEGORY_PLACES, "seat");
-		category(CATEGORY_PLACES, "helicopter");
-		category(CATEGORY_PLACES, "suspension_railway");
-		category(CATEGORY_PLACES, "mountain_cableway");
-		category(CATEGORY_PLACES, "aerial_tramway");
-		category(CATEGORY_PLACES, "satellite");
-		category(CATEGORY_PLACES, "rocket");
-		category(CATEGORY_PLACES, "flying_saucer");
-		category(CATEGORY_PLACES, "bellhop_bell");
-		category(CATEGORY_PLACES, "door");
-		category(CATEGORY_PLACES, "bed");
-		category(CATEGORY_PLACES, "couch_and_lamp");
-		category(CATEGORY_PLACES, "toilet");
-		category(CATEGORY_PLACES, "shower");
-		category(CATEGORY_PLACES, "bathtub");
-		category(CATEGORY_PLACES, "hourglass");
-		category(CATEGORY_PLACES, "hourglass_flowing_sand");
-		category(CATEGORY_PLACES, "watch");
-		category(CATEGORY_PLACES, "alarm_clock");
-		category(CATEGORY_PLACES, "stopwatch");
-		category(CATEGORY_PLACES, "timer_clock");
-		category(CATEGORY_PLACES, "mantelpiece_clock");
-		category(CATEGORY_PLACES, "clock12");
-		category(CATEGORY_PLACES, "clock1230");
-		category(CATEGORY_PLACES, "clock1");
-		category(CATEGORY_PLACES, "clock130");
-		category(CATEGORY_PLACES, "clock2");
-		category(CATEGORY_PLACES, "clock230");
-		category(CATEGORY_PLACES, "clock3");
-		category(CATEGORY_PLACES, "clock330");
-		category(CATEGORY_PLACES, "clock4");
-		category(CATEGORY_PLACES, "clock430");
-		category(CATEGORY_PLACES, "clock5");
-		category(CATEGORY_PLACES, "clock530");
-		category(CATEGORY_PLACES, "clock6");
-		category(CATEGORY_PLACES, "clock630");
-		category(CATEGORY_PLACES, "clock7");
-		category(CATEGORY_PLACES, "clock730");
-		category(CATEGORY_PLACES, "clock8");
-		category(CATEGORY_PLACES, "clock830");
-		category(CATEGORY_PLACES, "clock9");
-		category(CATEGORY_PLACES, "clock930");
-		category(CATEGORY_PLACES, "clock10");
-		category(CATEGORY_PLACES, "clock1030");
-		category(CATEGORY_PLACES, "clock11");
-		category(CATEGORY_PLACES, "clock1130");
-		category(CATEGORY_PLACES, "new_moon");
-		category(CATEGORY_PLACES, "waxing_crescent_moon");
-		category(CATEGORY_PLACES, "first_quarter_moon");
-		category(CATEGORY_PLACES, "moon");
-		category(CATEGORY_PLACES, "full_moon");
-		category(CATEGORY_PLACES, "waning_gibbous_moon");
-		category(CATEGORY_PLACES, "last_quarter_moon");
-		category(CATEGORY_PLACES, "waning_crescent_moon");
-		category(CATEGORY_PLACES, "crescent_moon");
+		category( CATEGORY_PLACES, "light_rail" );
+		category( CATEGORY_PLACES, "station" );
+		category( CATEGORY_PLACES, "tram" );
+		category( CATEGORY_PLACES, "monorail" );
+		category( CATEGORY_PLACES, "mountain_railway" );
+		category( CATEGORY_PLACES, "train" );
+		category( CATEGORY_PLACES, "bus" );
+		category( CATEGORY_PLACES, "oncoming_bus" );
+		category( CATEGORY_PLACES, "trolleybus" );
+		category( CATEGORY_PLACES, "minibus" );
+		category( CATEGORY_PLACES, "ambulance" );
+		category( CATEGORY_PLACES, "fire_engine" );
+		category( CATEGORY_PLACES, "police_car" );
+		category( CATEGORY_PLACES, "oncoming_police_car" );
+		category( CATEGORY_PLACES, "taxi" );
+		category( CATEGORY_PLACES, "oncoming_taxi" );
+		category( CATEGORY_PLACES, "car" );
+		category( CATEGORY_PLACES, "oncoming_automobile" );
+		category( CATEGORY_PLACES, "blue_car" );
+		category( CATEGORY_PLACES, "truck" );
+		category( CATEGORY_PLACES, "articulated_lorry" );
+		category( CATEGORY_PLACES, "tractor" );
+		category( CATEGORY_PLACES, "bike" );
+		category( CATEGORY_PLACES, "scooter" );
+		category( CATEGORY_PLACES, "motor_scooter" );
+		category( CATEGORY_PLACES, "busstop" );
+		category( CATEGORY_PLACES, "motorway" );
+		category( CATEGORY_PLACES, "railway_track" );
+		category( CATEGORY_PLACES, "fuelpump" );
+		category( CATEGORY_PLACES, "rotating_light" );
+		category( CATEGORY_PLACES, "traffic_light" );
+		category( CATEGORY_PLACES, "vertical_traffic_light" );
+		category( CATEGORY_PLACES, "construction" );
+		category( CATEGORY_PLACES, "octagonal_sign" );
+		category( CATEGORY_PLACES, "anchor" );
+		category( CATEGORY_PLACES, "boat" );
+		category( CATEGORY_PLACES, "canoe" );
+		category( CATEGORY_PLACES, "speedboat" );
+		category( CATEGORY_PLACES, "passenger_ship" );
+		category( CATEGORY_PLACES, "ferry" );
+		category( CATEGORY_PLACES, "motor_boat" );
+		category( CATEGORY_PLACES, "ship" );
+		category( CATEGORY_PLACES, "airplane" );
+		category( CATEGORY_PLACES, "small_airplane" );
+		category( CATEGORY_PLACES, "airplane_departure" );
+		category( CATEGORY_PLACES, "airplane_arriving" );
+		category( CATEGORY_PLACES, "seat" );
+		category( CATEGORY_PLACES, "helicopter" );
+		category( CATEGORY_PLACES, "suspension_railway" );
+		category( CATEGORY_PLACES, "mountain_cableway" );
+		category( CATEGORY_PLACES, "aerial_tramway" );
+		category( CATEGORY_PLACES, "satellite" );
+		category( CATEGORY_PLACES, "rocket" );
+		category( CATEGORY_PLACES, "flying_saucer" );
+		category( CATEGORY_PLACES, "bellhop_bell" );
+		category( CATEGORY_PLACES, "door" );
+		category( CATEGORY_PLACES, "bed" );
+		category( CATEGORY_PLACES, "couch_and_lamp" );
+		category( CATEGORY_PLACES, "toilet" );
+		category( CATEGORY_PLACES, "shower" );
+		category( CATEGORY_PLACES, "bathtub" );
+		category( CATEGORY_PLACES, "hourglass" );
+		category( CATEGORY_PLACES, "hourglass_flowing_sand" );
+		category( CATEGORY_PLACES, "watch" );
+		category( CATEGORY_PLACES, "alarm_clock" );
+		category( CATEGORY_PLACES, "stopwatch" );
+		category( CATEGORY_PLACES, "timer_clock" );
+		category( CATEGORY_PLACES, "mantelpiece_clock" );
+		category( CATEGORY_PLACES, "clock12" );
+		category( CATEGORY_PLACES, "clock1230" );
+		category( CATEGORY_PLACES, "clock1" );
+		category( CATEGORY_PLACES, "clock130" );
+		category( CATEGORY_PLACES, "clock2" );
+		category( CATEGORY_PLACES, "clock230" );
+		category( CATEGORY_PLACES, "clock3" );
+		category( CATEGORY_PLACES, "clock330" );
+		category( CATEGORY_PLACES, "clock4" );
+		category( CATEGORY_PLACES, "clock430" );
+		category( CATEGORY_PLACES, "clock5" );
+		category( CATEGORY_PLACES, "clock530" );
+		category( CATEGORY_PLACES, "clock6" );
+		category( CATEGORY_PLACES, "clock630" );
+		category( CATEGORY_PLACES, "clock7" );
+		category( CATEGORY_PLACES, "clock730" );
+		category( CATEGORY_PLACES, "clock8" );
+		category( CATEGORY_PLACES, "clock830" );
+		category( CATEGORY_PLACES, "clock9" );
+		category( CATEGORY_PLACES, "clock930" );
+		category( CATEGORY_PLACES, "clock10" );
+		category( CATEGORY_PLACES, "clock1030" );
+		category( CATEGORY_PLACES, "clock11" );
+		category( CATEGORY_PLACES, "clock1130" );
+		category( CATEGORY_PLACES, "new_moon" );
+		category( CATEGORY_PLACES, "waxing_crescent_moon" );
+		category( CATEGORY_PLACES, "first_quarter_moon" );
+		category( CATEGORY_PLACES, "moon" );
+		category( CATEGORY_PLACES, "full_moon" );
+		category( CATEGORY_PLACES, "waning_gibbous_moon" );
+		category( CATEGORY_PLACES, "last_quarter_moon" );
+		category( CATEGORY_PLACES, "waning_crescent_moon" );
+		category( CATEGORY_PLACES, "crescent_moon" );
 	}
+	
 	private static void init121(){
-		category(CATEGORY_PLACES, "new_moon_with_face");
-		category(CATEGORY_PLACES, "first_quarter_moon_with_face");
-		category(CATEGORY_PLACES, "last_quarter_moon_with_face");
-		category(CATEGORY_PLACES, "thermometer");
-		category(CATEGORY_PLACES, "sunny");
-		category(CATEGORY_PLACES, "full_moon_with_face");
-		category(CATEGORY_PLACES, "sun_with_face");
-		category(CATEGORY_PLACES, "star");
-		category(CATEGORY_PLACES, "star2");
-		category(CATEGORY_PLACES, "stars");
-		category(CATEGORY_PLACES, "cloud");
-		category(CATEGORY_PLACES, "partly_sunny");
-		category(CATEGORY_PLACES, "thunder_cloud_and_rain");
-		category(CATEGORY_PLACES, "mostly_sunny");
-		category(CATEGORY_PLACES, "barely_sunny");
-		category(CATEGORY_PLACES, "partly_sunny_rain");
-		category(CATEGORY_PLACES, "rain_cloud");
-		category(CATEGORY_PLACES, "snow_cloud");
-		category(CATEGORY_PLACES, "lightning");
-		category(CATEGORY_PLACES, "tornado");
-		category(CATEGORY_PLACES, "fog");
-		category(CATEGORY_PLACES, "wind_blowing_face");
-		category(CATEGORY_PLACES, "cyclone");
-		category(CATEGORY_PLACES, "rainbow");
-		category(CATEGORY_PLACES, "closed_umbrella");
-		category(CATEGORY_PLACES, "umbrella");
-		category(CATEGORY_PLACES, "umbrella_with_rain_drops");
-		category(CATEGORY_PLACES, "umbrella_on_ground");
-		category(CATEGORY_PLACES, "zap");
-		category(CATEGORY_PLACES, "snowflake");
-		category(CATEGORY_PLACES, "snowman");
-		category(CATEGORY_PLACES, "snowman_without_snow");
-		category(CATEGORY_PLACES, "comet");
-		category(CATEGORY_PLACES, "fire");
-		category(CATEGORY_PLACES, "droplet");
-		category(CATEGORY_PLACES, "ocean");
-		category(CATEGORY_OBJECTS, "mute");
-		category(CATEGORY_OBJECTS, "speaker");
-		category(CATEGORY_OBJECTS, "sound");
-		category(CATEGORY_OBJECTS, "loud_sound");
-		category(CATEGORY_OBJECTS, "loudspeaker");
-		category(CATEGORY_OBJECTS, "mega");
-		category(CATEGORY_OBJECTS, "postal_horn");
-		category(CATEGORY_OBJECTS, "bell");
-		category(CATEGORY_OBJECTS, "no_bell");
-		category(CATEGORY_OBJECTS, "musical_score");
-		category(CATEGORY_OBJECTS, "musical_note");
-		category(CATEGORY_OBJECTS, "notes");
-		category(CATEGORY_OBJECTS, "studio_microphone");
-		category(CATEGORY_OBJECTS, "level_slider");
-		category(CATEGORY_OBJECTS, "control_knobs");
-		category(CATEGORY_OBJECTS, "microphone");
-		category(CATEGORY_OBJECTS, "headphones");
-		category(CATEGORY_OBJECTS, "radio");
-		category(CATEGORY_OBJECTS, "saxophone");
-		category(CATEGORY_OBJECTS, "guitar");
-		category(CATEGORY_OBJECTS, "musical_keyboard");
-		category(CATEGORY_OBJECTS, "trumpet");
-		category(CATEGORY_OBJECTS, "violin");
-		category(CATEGORY_OBJECTS, "drum_with_drumsticks");
-		category(CATEGORY_OBJECTS, "iphone");
-		category(CATEGORY_OBJECTS, "calling");
-		category(CATEGORY_OBJECTS, "phone");
-		category(CATEGORY_OBJECTS, "telephone_receiver");
-		category(CATEGORY_OBJECTS, "pager");
-		category(CATEGORY_OBJECTS, "fax");
-		category(CATEGORY_OBJECTS, "battery");
-		category(CATEGORY_OBJECTS, "electric_plug");
-		category(CATEGORY_OBJECTS, "computer");
-		category(CATEGORY_OBJECTS, "desktop_computer");
-		category(CATEGORY_OBJECTS, "printer");
-		category(CATEGORY_OBJECTS, "keyboard");
-		category(CATEGORY_OBJECTS, "three_button_mouse");
-		category(CATEGORY_OBJECTS, "trackball");
-		category(CATEGORY_OBJECTS, "minidisc");
-		category(CATEGORY_OBJECTS, "floppy_disk");
-		category(CATEGORY_OBJECTS, "cd");
-		category(CATEGORY_OBJECTS, "dvd");
-		category(CATEGORY_OBJECTS, "movie_camera");
-		category(CATEGORY_OBJECTS, "film_frames");
-		category(CATEGORY_OBJECTS, "film_projector");
-		category(CATEGORY_OBJECTS, "clapper");
-		category(CATEGORY_OBJECTS, "tv");
-		category(CATEGORY_OBJECTS, "camera");
-		category(CATEGORY_OBJECTS, "camera_with_flash");
-		category(CATEGORY_OBJECTS, "video_camera");
-		category(CATEGORY_OBJECTS, "vhs");
-		category(CATEGORY_OBJECTS, "mag");
-		category(CATEGORY_OBJECTS, "mag_right");
-		category(CATEGORY_OBJECTS, "microscope");
-		category(CATEGORY_OBJECTS, "telescope");
-		category(CATEGORY_OBJECTS, "satellite_antenna");
-		category(CATEGORY_OBJECTS, "candle");
-		category(CATEGORY_OBJECTS, "bulb");
-		category(CATEGORY_OBJECTS, "flashlight");
-		category(CATEGORY_OBJECTS, "izakaya_lantern");
-		category(CATEGORY_OBJECTS, "notebook_with_decorative_cover");
-		category(CATEGORY_OBJECTS, "closed_book");
-		category(CATEGORY_OBJECTS, "book");
-		category(CATEGORY_OBJECTS, "green_book");
-		category(CATEGORY_OBJECTS, "blue_book");
+		category( CATEGORY_PLACES, "new_moon_with_face" );
+		category( CATEGORY_PLACES, "first_quarter_moon_with_face" );
+		category( CATEGORY_PLACES, "last_quarter_moon_with_face" );
+		category( CATEGORY_PLACES, "thermometer" );
+		category( CATEGORY_PLACES, "sunny" );
+		category( CATEGORY_PLACES, "full_moon_with_face" );
+		category( CATEGORY_PLACES, "sun_with_face" );
+		category( CATEGORY_PLACES, "star" );
+		category( CATEGORY_PLACES, "star2" );
+		category( CATEGORY_PLACES, "stars" );
+		category( CATEGORY_PLACES, "cloud" );
+		category( CATEGORY_PLACES, "partly_sunny" );
+		category( CATEGORY_PLACES, "thunder_cloud_and_rain" );
+		category( CATEGORY_PLACES, "mostly_sunny" );
+		category( CATEGORY_PLACES, "barely_sunny" );
+		category( CATEGORY_PLACES, "partly_sunny_rain" );
+		category( CATEGORY_PLACES, "rain_cloud" );
+		category( CATEGORY_PLACES, "snow_cloud" );
+		category( CATEGORY_PLACES, "lightning" );
+		category( CATEGORY_PLACES, "tornado" );
+		category( CATEGORY_PLACES, "fog" );
+		category( CATEGORY_PLACES, "wind_blowing_face" );
+		category( CATEGORY_PLACES, "cyclone" );
+		category( CATEGORY_PLACES, "rainbow" );
+		category( CATEGORY_PLACES, "closed_umbrella" );
+		category( CATEGORY_PLACES, "umbrella" );
+		category( CATEGORY_PLACES, "umbrella_with_rain_drops" );
+		category( CATEGORY_PLACES, "umbrella_on_ground" );
+		category( CATEGORY_PLACES, "zap" );
+		category( CATEGORY_PLACES, "snowflake" );
+		category( CATEGORY_PLACES, "snowman" );
+		category( CATEGORY_PLACES, "snowman_without_snow" );
+		category( CATEGORY_PLACES, "comet" );
+		category( CATEGORY_PLACES, "fire" );
+		category( CATEGORY_PLACES, "droplet" );
+		category( CATEGORY_PLACES, "ocean" );
+		category( CATEGORY_OBJECTS, "mute" );
+		category( CATEGORY_OBJECTS, "speaker" );
+		category( CATEGORY_OBJECTS, "sound" );
+		category( CATEGORY_OBJECTS, "loud_sound" );
+		category( CATEGORY_OBJECTS, "loudspeaker" );
+		category( CATEGORY_OBJECTS, "mega" );
+		category( CATEGORY_OBJECTS, "postal_horn" );
+		category( CATEGORY_OBJECTS, "bell" );
+		category( CATEGORY_OBJECTS, "no_bell" );
+		category( CATEGORY_OBJECTS, "musical_score" );
+		category( CATEGORY_OBJECTS, "musical_note" );
+		category( CATEGORY_OBJECTS, "notes" );
+		category( CATEGORY_OBJECTS, "studio_microphone" );
+		category( CATEGORY_OBJECTS, "level_slider" );
+		category( CATEGORY_OBJECTS, "control_knobs" );
+		category( CATEGORY_OBJECTS, "microphone" );
+		category( CATEGORY_OBJECTS, "headphones" );
+		category( CATEGORY_OBJECTS, "radio" );
+		category( CATEGORY_OBJECTS, "saxophone" );
+		category( CATEGORY_OBJECTS, "guitar" );
+		category( CATEGORY_OBJECTS, "musical_keyboard" );
+		category( CATEGORY_OBJECTS, "trumpet" );
+		category( CATEGORY_OBJECTS, "violin" );
+		category( CATEGORY_OBJECTS, "drum_with_drumsticks" );
+		category( CATEGORY_OBJECTS, "iphone" );
+		category( CATEGORY_OBJECTS, "calling" );
+		category( CATEGORY_OBJECTS, "phone" );
+		category( CATEGORY_OBJECTS, "telephone_receiver" );
+		category( CATEGORY_OBJECTS, "pager" );
+		category( CATEGORY_OBJECTS, "fax" );
+		category( CATEGORY_OBJECTS, "battery" );
+		category( CATEGORY_OBJECTS, "electric_plug" );
+		category( CATEGORY_OBJECTS, "computer" );
+		category( CATEGORY_OBJECTS, "desktop_computer" );
+		category( CATEGORY_OBJECTS, "printer" );
+		category( CATEGORY_OBJECTS, "keyboard" );
+		category( CATEGORY_OBJECTS, "three_button_mouse" );
+		category( CATEGORY_OBJECTS, "trackball" );
+		category( CATEGORY_OBJECTS, "minidisc" );
+		category( CATEGORY_OBJECTS, "floppy_disk" );
+		category( CATEGORY_OBJECTS, "cd" );
+		category( CATEGORY_OBJECTS, "dvd" );
+		category( CATEGORY_OBJECTS, "movie_camera" );
+		category( CATEGORY_OBJECTS, "film_frames" );
+		category( CATEGORY_OBJECTS, "film_projector" );
+		category( CATEGORY_OBJECTS, "clapper" );
+		category( CATEGORY_OBJECTS, "tv" );
+		category( CATEGORY_OBJECTS, "camera" );
+		category( CATEGORY_OBJECTS, "camera_with_flash" );
+		category( CATEGORY_OBJECTS, "video_camera" );
+		category( CATEGORY_OBJECTS, "vhs" );
+		category( CATEGORY_OBJECTS, "mag" );
+		category( CATEGORY_OBJECTS, "mag_right" );
+		category( CATEGORY_OBJECTS, "microscope" );
+		category( CATEGORY_OBJECTS, "telescope" );
+		category( CATEGORY_OBJECTS, "satellite_antenna" );
+		category( CATEGORY_OBJECTS, "candle" );
+		category( CATEGORY_OBJECTS, "bulb" );
+		category( CATEGORY_OBJECTS, "flashlight" );
+		category( CATEGORY_OBJECTS, "izakaya_lantern" );
+		category( CATEGORY_OBJECTS, "notebook_with_decorative_cover" );
+		category( CATEGORY_OBJECTS, "closed_book" );
+		category( CATEGORY_OBJECTS, "book" );
+		category( CATEGORY_OBJECTS, "green_book" );
+		category( CATEGORY_OBJECTS, "blue_book" );
 	}
+	
 	private static void init122(){
-		category(CATEGORY_OBJECTS, "orange_book");
-		category(CATEGORY_OBJECTS, "books");
-		category(CATEGORY_OBJECTS, "notebook");
-		category(CATEGORY_OBJECTS, "ledger");
-		category(CATEGORY_OBJECTS, "page_with_curl");
-		category(CATEGORY_OBJECTS, "scroll");
-		category(CATEGORY_OBJECTS, "page_facing_up");
-		category(CATEGORY_OBJECTS, "newspaper");
-		category(CATEGORY_OBJECTS, "rolled_up_newspaper");
-		category(CATEGORY_OBJECTS, "bookmark_tabs");
-		category(CATEGORY_OBJECTS, "bookmark");
-		category(CATEGORY_OBJECTS, "label");
-		category(CATEGORY_OBJECTS, "moneybag");
-		category(CATEGORY_OBJECTS, "yen");
-		category(CATEGORY_OBJECTS, "dollar");
-		category(CATEGORY_OBJECTS, "euro");
-		category(CATEGORY_OBJECTS, "pound");
-		category(CATEGORY_OBJECTS, "money_with_wings");
-		category(CATEGORY_OBJECTS, "credit_card");
-		category(CATEGORY_OBJECTS, "chart");
-		category(CATEGORY_OBJECTS, "currency_exchange");
-		category(CATEGORY_OBJECTS, "heavy_dollar_sign");
-		category(CATEGORY_OBJECTS, "email");
-		category(CATEGORY_OBJECTS, "e_mail");
-		category(CATEGORY_OBJECTS, "incoming_envelope");
-		category(CATEGORY_OBJECTS, "envelope_with_arrow");
-		category(CATEGORY_OBJECTS, "outbox_tray");
-		category(CATEGORY_OBJECTS, "inbox_tray");
-		category(CATEGORY_OBJECTS, "package");
-		category(CATEGORY_OBJECTS, "mailbox");
-		category(CATEGORY_OBJECTS, "mailbox_closed");
-		category(CATEGORY_OBJECTS, "mailbox_with_mail");
-		category(CATEGORY_OBJECTS, "mailbox_with_no_mail");
-		category(CATEGORY_OBJECTS, "postbox");
-		category(CATEGORY_OBJECTS, "ballot_box_with_ballot");
-		category(CATEGORY_OBJECTS, "pencil2");
-		category(CATEGORY_OBJECTS, "black_nib");
-		category(CATEGORY_OBJECTS, "lower_left_fountain_pen");
-		category(CATEGORY_OBJECTS, "lower_left_ballpoint_pen");
-		category(CATEGORY_OBJECTS, "lower_left_paintbrush");
-		category(CATEGORY_OBJECTS, "lower_left_crayon");
-		category(CATEGORY_OBJECTS, "memo");
-		category(CATEGORY_OBJECTS, "briefcase");
-		category(CATEGORY_OBJECTS, "file_folder");
-		category(CATEGORY_OBJECTS, "open_file_folder");
-		category(CATEGORY_OBJECTS, "card_index_dividers");
-		category(CATEGORY_OBJECTS, "date");
-		category(CATEGORY_OBJECTS, "calendar");
-		category(CATEGORY_OBJECTS, "spiral_note_pad");
-		category(CATEGORY_OBJECTS, "spiral_calendar_pad");
-		category(CATEGORY_OBJECTS, "card_index");
-		category(CATEGORY_OBJECTS, "chart_with_upwards_trend");
-		category(CATEGORY_OBJECTS, "chart_with_downwards_trend");
-		category(CATEGORY_OBJECTS, "bar_chart");
-		category(CATEGORY_OBJECTS, "clipboard");
-		category(CATEGORY_OBJECTS, "pushpin");
-		category(CATEGORY_OBJECTS, "round_pushpin");
-		category(CATEGORY_OBJECTS, "paperclip");
-		category(CATEGORY_OBJECTS, "linked_paperclips");
-		category(CATEGORY_OBJECTS, "straight_ruler");
-		category(CATEGORY_OBJECTS, "triangular_ruler");
-		category(CATEGORY_OBJECTS, "scissors");
-		category(CATEGORY_OBJECTS, "card_file_box");
-		category(CATEGORY_OBJECTS, "file_cabinet");
-		category(CATEGORY_OBJECTS, "wastebasket");
-		category(CATEGORY_OBJECTS, "lock");
-		category(CATEGORY_OBJECTS, "unlock");
-		category(CATEGORY_OBJECTS, "lock_with_ink_pen");
-		category(CATEGORY_OBJECTS, "closed_lock_with_key");
-		category(CATEGORY_OBJECTS, "key");
-		category(CATEGORY_OBJECTS, "old_key");
-		category(CATEGORY_OBJECTS, "hammer");
-		category(CATEGORY_OBJECTS, "pick");
-		category(CATEGORY_OBJECTS, "hammer_and_pick");
-		category(CATEGORY_OBJECTS, "hammer_and_wrench");
-		category(CATEGORY_OBJECTS, "dagger_knife");
-		category(CATEGORY_OBJECTS, "crossed_swords");
-		category(CATEGORY_OBJECTS, "gun");
-		category(CATEGORY_OBJECTS, "bow_and_arrow");
-		category(CATEGORY_OBJECTS, "shield");
-		category(CATEGORY_OBJECTS, "wrench");
-		category(CATEGORY_OBJECTS, "nut_and_bolt");
-		category(CATEGORY_OBJECTS, "gear");
-		category(CATEGORY_OBJECTS, "compression");
-		category(CATEGORY_OBJECTS, "alembic");
-		category(CATEGORY_OBJECTS, "scales");
-		category(CATEGORY_OBJECTS, "link");
-		category(CATEGORY_OBJECTS, "chains");
-		category(CATEGORY_OBJECTS, "syringe");
-		category(CATEGORY_OBJECTS, "pill");
-		category(CATEGORY_OBJECTS, "smoking");
-		category(CATEGORY_OBJECTS, "coffin");
-		category(CATEGORY_OBJECTS, "funeral_urn");
-		category(CATEGORY_OBJECTS, "moyai");
-		category(CATEGORY_OBJECTS, "oil_drum");
-		category(CATEGORY_OBJECTS, "crystal_ball");
-		category(CATEGORY_OBJECTS, "shopping_trolley");
-		category(CATEGORY_SYMBOLS, "atm");
-		category(CATEGORY_SYMBOLS, "put_litter_in_its_place");
-		category(CATEGORY_SYMBOLS, "potable_water");
-		category(CATEGORY_SYMBOLS, "wheelchair");
+		category( CATEGORY_OBJECTS, "orange_book" );
+		category( CATEGORY_OBJECTS, "books" );
+		category( CATEGORY_OBJECTS, "notebook" );
+		category( CATEGORY_OBJECTS, "ledger" );
+		category( CATEGORY_OBJECTS, "page_with_curl" );
+		category( CATEGORY_OBJECTS, "scroll" );
+		category( CATEGORY_OBJECTS, "page_facing_up" );
+		category( CATEGORY_OBJECTS, "newspaper" );
+		category( CATEGORY_OBJECTS, "rolled_up_newspaper" );
+		category( CATEGORY_OBJECTS, "bookmark_tabs" );
+		category( CATEGORY_OBJECTS, "bookmark" );
+		category( CATEGORY_OBJECTS, "label" );
+		category( CATEGORY_OBJECTS, "moneybag" );
+		category( CATEGORY_OBJECTS, "yen" );
+		category( CATEGORY_OBJECTS, "dollar" );
+		category( CATEGORY_OBJECTS, "euro" );
+		category( CATEGORY_OBJECTS, "pound" );
+		category( CATEGORY_OBJECTS, "money_with_wings" );
+		category( CATEGORY_OBJECTS, "credit_card" );
+		category( CATEGORY_OBJECTS, "chart" );
+		category( CATEGORY_OBJECTS, "currency_exchange" );
+		category( CATEGORY_OBJECTS, "heavy_dollar_sign" );
+		category( CATEGORY_OBJECTS, "email" );
+		category( CATEGORY_OBJECTS, "e_mail" );
+		category( CATEGORY_OBJECTS, "incoming_envelope" );
+		category( CATEGORY_OBJECTS, "envelope_with_arrow" );
+		category( CATEGORY_OBJECTS, "outbox_tray" );
+		category( CATEGORY_OBJECTS, "inbox_tray" );
+		category( CATEGORY_OBJECTS, "package" );
+		category( CATEGORY_OBJECTS, "mailbox" );
+		category( CATEGORY_OBJECTS, "mailbox_closed" );
+		category( CATEGORY_OBJECTS, "mailbox_with_mail" );
+		category( CATEGORY_OBJECTS, "mailbox_with_no_mail" );
+		category( CATEGORY_OBJECTS, "postbox" );
+		category( CATEGORY_OBJECTS, "ballot_box_with_ballot" );
+		category( CATEGORY_OBJECTS, "pencil2" );
+		category( CATEGORY_OBJECTS, "black_nib" );
+		category( CATEGORY_OBJECTS, "lower_left_fountain_pen" );
+		category( CATEGORY_OBJECTS, "lower_left_ballpoint_pen" );
+		category( CATEGORY_OBJECTS, "lower_left_paintbrush" );
+		category( CATEGORY_OBJECTS, "lower_left_crayon" );
+		category( CATEGORY_OBJECTS, "memo" );
+		category( CATEGORY_OBJECTS, "briefcase" );
+		category( CATEGORY_OBJECTS, "file_folder" );
+		category( CATEGORY_OBJECTS, "open_file_folder" );
+		category( CATEGORY_OBJECTS, "card_index_dividers" );
+		category( CATEGORY_OBJECTS, "date" );
+		category( CATEGORY_OBJECTS, "calendar" );
+		category( CATEGORY_OBJECTS, "spiral_note_pad" );
+		category( CATEGORY_OBJECTS, "spiral_calendar_pad" );
+		category( CATEGORY_OBJECTS, "card_index" );
+		category( CATEGORY_OBJECTS, "chart_with_upwards_trend" );
+		category( CATEGORY_OBJECTS, "chart_with_downwards_trend" );
+		category( CATEGORY_OBJECTS, "bar_chart" );
+		category( CATEGORY_OBJECTS, "clipboard" );
+		category( CATEGORY_OBJECTS, "pushpin" );
+		category( CATEGORY_OBJECTS, "round_pushpin" );
+		category( CATEGORY_OBJECTS, "paperclip" );
+		category( CATEGORY_OBJECTS, "linked_paperclips" );
+		category( CATEGORY_OBJECTS, "straight_ruler" );
+		category( CATEGORY_OBJECTS, "triangular_ruler" );
+		category( CATEGORY_OBJECTS, "scissors" );
+		category( CATEGORY_OBJECTS, "card_file_box" );
+		category( CATEGORY_OBJECTS, "file_cabinet" );
+		category( CATEGORY_OBJECTS, "wastebasket" );
+		category( CATEGORY_OBJECTS, "lock" );
+		category( CATEGORY_OBJECTS, "unlock" );
+		category( CATEGORY_OBJECTS, "lock_with_ink_pen" );
+		category( CATEGORY_OBJECTS, "closed_lock_with_key" );
+		category( CATEGORY_OBJECTS, "key" );
+		category( CATEGORY_OBJECTS, "old_key" );
+		category( CATEGORY_OBJECTS, "hammer" );
+		category( CATEGORY_OBJECTS, "pick" );
+		category( CATEGORY_OBJECTS, "hammer_and_pick" );
+		category( CATEGORY_OBJECTS, "hammer_and_wrench" );
+		category( CATEGORY_OBJECTS, "dagger_knife" );
+		category( CATEGORY_OBJECTS, "crossed_swords" );
+		category( CATEGORY_OBJECTS, "gun" );
+		category( CATEGORY_OBJECTS, "bow_and_arrow" );
+		category( CATEGORY_OBJECTS, "shield" );
+		category( CATEGORY_OBJECTS, "wrench" );
+		category( CATEGORY_OBJECTS, "nut_and_bolt" );
+		category( CATEGORY_OBJECTS, "gear" );
+		category( CATEGORY_OBJECTS, "compression" );
+		category( CATEGORY_OBJECTS, "alembic" );
+		category( CATEGORY_OBJECTS, "scales" );
+		category( CATEGORY_OBJECTS, "link" );
+		category( CATEGORY_OBJECTS, "chains" );
+		category( CATEGORY_OBJECTS, "syringe" );
+		category( CATEGORY_OBJECTS, "pill" );
+		category( CATEGORY_OBJECTS, "smoking" );
+		category( CATEGORY_OBJECTS, "coffin" );
+		category( CATEGORY_OBJECTS, "funeral_urn" );
+		category( CATEGORY_OBJECTS, "moyai" );
+		category( CATEGORY_OBJECTS, "oil_drum" );
+		category( CATEGORY_OBJECTS, "crystal_ball" );
+		category( CATEGORY_OBJECTS, "shopping_trolley" );
+		category( CATEGORY_SYMBOLS, "atm" );
+		category( CATEGORY_SYMBOLS, "put_litter_in_its_place" );
+		category( CATEGORY_SYMBOLS, "potable_water" );
+		category( CATEGORY_SYMBOLS, "wheelchair" );
 	}
+	
 	private static void init123(){
-		category(CATEGORY_SYMBOLS, "mens");
-		category(CATEGORY_SYMBOLS, "womens");
-		category(CATEGORY_SYMBOLS, "restroom");
-		category(CATEGORY_SYMBOLS, "baby_symbol");
-		category(CATEGORY_SYMBOLS, "wc");
-		category(CATEGORY_SYMBOLS, "passport_control");
-		category(CATEGORY_SYMBOLS, "customs");
-		category(CATEGORY_SYMBOLS, "baggage_claim");
-		category(CATEGORY_SYMBOLS, "left_luggage");
-		category(CATEGORY_SYMBOLS, "warning");
-		category(CATEGORY_SYMBOLS, "children_crossing");
-		category(CATEGORY_SYMBOLS, "no_entry");
-		category(CATEGORY_SYMBOLS, "no_entry_sign");
-		category(CATEGORY_SYMBOLS, "no_bicycles");
-		category(CATEGORY_SYMBOLS, "no_smoking");
-		category(CATEGORY_SYMBOLS, "do_not_litter");
-		category(CATEGORY_SYMBOLS, "non_potable_water");
-		category(CATEGORY_SYMBOLS, "no_pedestrians");
-		category(CATEGORY_SYMBOLS, "no_mobile_phones");
-		category(CATEGORY_SYMBOLS, "underage");
-		category(CATEGORY_SYMBOLS, "radioactive_sign");
-		category(CATEGORY_SYMBOLS, "biohazard_sign");
-		category(CATEGORY_SYMBOLS, "arrow_up");
-		category(CATEGORY_SYMBOLS, "arrow_upper_right");
-		category(CATEGORY_SYMBOLS, "arrow_right");
-		category(CATEGORY_SYMBOLS, "arrow_lower_right");
-		category(CATEGORY_SYMBOLS, "arrow_down");
-		category(CATEGORY_SYMBOLS, "arrow_lower_left");
-		category(CATEGORY_SYMBOLS, "arrow_left");
-		category(CATEGORY_SYMBOLS, "arrow_upper_left");
-		category(CATEGORY_SYMBOLS, "arrow_up_down");
-		category(CATEGORY_SYMBOLS, "left_right_arrow");
-		category(CATEGORY_SYMBOLS, "leftwards_arrow_with_hook");
-		category(CATEGORY_SYMBOLS, "arrow_right_hook");
-		category(CATEGORY_SYMBOLS, "arrow_heading_up");
-		category(CATEGORY_SYMBOLS, "arrow_heading_down");
-		category(CATEGORY_SYMBOLS, "arrows_clockwise");
-		category(CATEGORY_SYMBOLS, "arrows_counterclockwise");
-		category(CATEGORY_SYMBOLS, "back");
-		category(CATEGORY_SYMBOLS, "end");
-		category(CATEGORY_SYMBOLS, "on");
-		category(CATEGORY_SYMBOLS, "soon");
-		category(CATEGORY_SYMBOLS, "top");
-		category(CATEGORY_SYMBOLS, "place_of_worship");
-		category(CATEGORY_SYMBOLS, "atom_symbol");
-		category(CATEGORY_SYMBOLS, "om_symbol");
-		category(CATEGORY_SYMBOLS, "star_of_david");
-		category(CATEGORY_SYMBOLS, "wheel_of_dharma");
-		category(CATEGORY_SYMBOLS, "yin_yang");
-		category(CATEGORY_SYMBOLS, "latin_cross");
-		category(CATEGORY_SYMBOLS, "orthodox_cross");
-		category(CATEGORY_SYMBOLS, "star_and_crescent");
-		category(CATEGORY_SYMBOLS, "peace_symbol");
-		category(CATEGORY_SYMBOLS, "menorah_with_nine_branches");
-		category(CATEGORY_SYMBOLS, "six_pointed_star");
-		category(CATEGORY_SYMBOLS, "aries");
-		category(CATEGORY_SYMBOLS, "taurus");
-		category(CATEGORY_SYMBOLS, "gemini");
-		category(CATEGORY_SYMBOLS, "cancer");
-		category(CATEGORY_SYMBOLS, "leo");
-		category(CATEGORY_SYMBOLS, "virgo");
-		category(CATEGORY_SYMBOLS, "libra");
-		category(CATEGORY_SYMBOLS, "scorpius");
-		category(CATEGORY_SYMBOLS, "sagittarius");
-		category(CATEGORY_SYMBOLS, "capricorn");
-		category(CATEGORY_SYMBOLS, "aquarius");
-		category(CATEGORY_SYMBOLS, "pisces");
-		category(CATEGORY_SYMBOLS, "ophiuchus");
-		category(CATEGORY_SYMBOLS, "twisted_rightwards_arrows");
-		category(CATEGORY_SYMBOLS, "repeat");
-		category(CATEGORY_SYMBOLS, "repeat_one");
-		category(CATEGORY_SYMBOLS, "arrow_forward");
-		category(CATEGORY_SYMBOLS, "fast_forward");
-		category(CATEGORY_SYMBOLS, "black_right_pointing_double_triangle_with_vertical_bar");
-		category(CATEGORY_SYMBOLS, "black_right_pointing_triangle_with_double_vertical_bar");
-		category(CATEGORY_SYMBOLS, "arrow_backward");
-		category(CATEGORY_SYMBOLS, "rewind");
-		category(CATEGORY_SYMBOLS, "black_left_pointing_double_triangle_with_vertical_bar");
-		category(CATEGORY_SYMBOLS, "arrow_up_small");
-		category(CATEGORY_SYMBOLS, "arrow_double_up");
-		category(CATEGORY_SYMBOLS, "arrow_down_small");
-		category(CATEGORY_SYMBOLS, "arrow_double_down");
-		category(CATEGORY_SYMBOLS, "double_vertical_bar");
-		category(CATEGORY_SYMBOLS, "black_square_for_stop");
-		category(CATEGORY_SYMBOLS, "black_circle_for_record");
-		category(CATEGORY_SYMBOLS, "eject");
-		category(CATEGORY_SYMBOLS, "cinema");
-		category(CATEGORY_SYMBOLS, "low_brightness");
-		category(CATEGORY_SYMBOLS, "high_brightness");
-		category(CATEGORY_SYMBOLS, "signal_strength");
-		category(CATEGORY_SYMBOLS, "vibration_mode");
-		category(CATEGORY_SYMBOLS, "mobile_phone_off");
-		category(CATEGORY_SYMBOLS, "female_sign");
-		category(CATEGORY_SYMBOLS, "male_sign");
-		category(CATEGORY_SYMBOLS, "medical_symbol");
-		category(CATEGORY_SYMBOLS, "recycle");
-		category(CATEGORY_SYMBOLS, "fleur_de_lis");
-		category(CATEGORY_SYMBOLS, "trident");
-		category(CATEGORY_SYMBOLS, "name_badge");
-		category(CATEGORY_SYMBOLS, "beginner");
-		category(CATEGORY_SYMBOLS, "o");
+		category( CATEGORY_SYMBOLS, "mens" );
+		category( CATEGORY_SYMBOLS, "womens" );
+		category( CATEGORY_SYMBOLS, "restroom" );
+		category( CATEGORY_SYMBOLS, "baby_symbol" );
+		category( CATEGORY_SYMBOLS, "wc" );
+		category( CATEGORY_SYMBOLS, "passport_control" );
+		category( CATEGORY_SYMBOLS, "customs" );
+		category( CATEGORY_SYMBOLS, "baggage_claim" );
+		category( CATEGORY_SYMBOLS, "left_luggage" );
+		category( CATEGORY_SYMBOLS, "warning" );
+		category( CATEGORY_SYMBOLS, "children_crossing" );
+		category( CATEGORY_SYMBOLS, "no_entry" );
+		category( CATEGORY_SYMBOLS, "no_entry_sign" );
+		category( CATEGORY_SYMBOLS, "no_bicycles" );
+		category( CATEGORY_SYMBOLS, "no_smoking" );
+		category( CATEGORY_SYMBOLS, "do_not_litter" );
+		category( CATEGORY_SYMBOLS, "non_potable_water" );
+		category( CATEGORY_SYMBOLS, "no_pedestrians" );
+		category( CATEGORY_SYMBOLS, "no_mobile_phones" );
+		category( CATEGORY_SYMBOLS, "underage" );
+		category( CATEGORY_SYMBOLS, "radioactive_sign" );
+		category( CATEGORY_SYMBOLS, "biohazard_sign" );
+		category( CATEGORY_SYMBOLS, "arrow_up" );
+		category( CATEGORY_SYMBOLS, "arrow_upper_right" );
+		category( CATEGORY_SYMBOLS, "arrow_right" );
+		category( CATEGORY_SYMBOLS, "arrow_lower_right" );
+		category( CATEGORY_SYMBOLS, "arrow_down" );
+		category( CATEGORY_SYMBOLS, "arrow_lower_left" );
+		category( CATEGORY_SYMBOLS, "arrow_left" );
+		category( CATEGORY_SYMBOLS, "arrow_upper_left" );
+		category( CATEGORY_SYMBOLS, "arrow_up_down" );
+		category( CATEGORY_SYMBOLS, "left_right_arrow" );
+		category( CATEGORY_SYMBOLS, "leftwards_arrow_with_hook" );
+		category( CATEGORY_SYMBOLS, "arrow_right_hook" );
+		category( CATEGORY_SYMBOLS, "arrow_heading_up" );
+		category( CATEGORY_SYMBOLS, "arrow_heading_down" );
+		category( CATEGORY_SYMBOLS, "arrows_clockwise" );
+		category( CATEGORY_SYMBOLS, "arrows_counterclockwise" );
+		category( CATEGORY_SYMBOLS, "back" );
+		category( CATEGORY_SYMBOLS, "end" );
+		category( CATEGORY_SYMBOLS, "on" );
+		category( CATEGORY_SYMBOLS, "soon" );
+		category( CATEGORY_SYMBOLS, "top" );
+		category( CATEGORY_SYMBOLS, "place_of_worship" );
+		category( CATEGORY_SYMBOLS, "atom_symbol" );
+		category( CATEGORY_SYMBOLS, "om_symbol" );
+		category( CATEGORY_SYMBOLS, "star_of_david" );
+		category( CATEGORY_SYMBOLS, "wheel_of_dharma" );
+		category( CATEGORY_SYMBOLS, "yin_yang" );
+		category( CATEGORY_SYMBOLS, "latin_cross" );
+		category( CATEGORY_SYMBOLS, "orthodox_cross" );
+		category( CATEGORY_SYMBOLS, "star_and_crescent" );
+		category( CATEGORY_SYMBOLS, "peace_symbol" );
+		category( CATEGORY_SYMBOLS, "menorah_with_nine_branches" );
+		category( CATEGORY_SYMBOLS, "six_pointed_star" );
+		category( CATEGORY_SYMBOLS, "aries" );
+		category( CATEGORY_SYMBOLS, "taurus" );
+		category( CATEGORY_SYMBOLS, "gemini" );
+		category( CATEGORY_SYMBOLS, "cancer" );
+		category( CATEGORY_SYMBOLS, "leo" );
+		category( CATEGORY_SYMBOLS, "virgo" );
+		category( CATEGORY_SYMBOLS, "libra" );
+		category( CATEGORY_SYMBOLS, "scorpius" );
+		category( CATEGORY_SYMBOLS, "sagittarius" );
+		category( CATEGORY_SYMBOLS, "capricorn" );
+		category( CATEGORY_SYMBOLS, "aquarius" );
+		category( CATEGORY_SYMBOLS, "pisces" );
+		category( CATEGORY_SYMBOLS, "ophiuchus" );
+		category( CATEGORY_SYMBOLS, "twisted_rightwards_arrows" );
+		category( CATEGORY_SYMBOLS, "repeat" );
+		category( CATEGORY_SYMBOLS, "repeat_one" );
+		category( CATEGORY_SYMBOLS, "arrow_forward" );
+		category( CATEGORY_SYMBOLS, "fast_forward" );
+		category( CATEGORY_SYMBOLS, "black_right_pointing_double_triangle_with_vertical_bar" );
+		category( CATEGORY_SYMBOLS, "black_right_pointing_triangle_with_double_vertical_bar" );
+		category( CATEGORY_SYMBOLS, "arrow_backward" );
+		category( CATEGORY_SYMBOLS, "rewind" );
+		category( CATEGORY_SYMBOLS, "black_left_pointing_double_triangle_with_vertical_bar" );
+		category( CATEGORY_SYMBOLS, "arrow_up_small" );
+		category( CATEGORY_SYMBOLS, "arrow_double_up" );
+		category( CATEGORY_SYMBOLS, "arrow_down_small" );
+		category( CATEGORY_SYMBOLS, "arrow_double_down" );
+		category( CATEGORY_SYMBOLS, "double_vertical_bar" );
+		category( CATEGORY_SYMBOLS, "black_square_for_stop" );
+		category( CATEGORY_SYMBOLS, "black_circle_for_record" );
+		category( CATEGORY_SYMBOLS, "eject" );
+		category( CATEGORY_SYMBOLS, "cinema" );
+		category( CATEGORY_SYMBOLS, "low_brightness" );
+		category( CATEGORY_SYMBOLS, "high_brightness" );
+		category( CATEGORY_SYMBOLS, "signal_strength" );
+		category( CATEGORY_SYMBOLS, "vibration_mode" );
+		category( CATEGORY_SYMBOLS, "mobile_phone_off" );
+		category( CATEGORY_SYMBOLS, "female_sign" );
+		category( CATEGORY_SYMBOLS, "male_sign" );
+		category( CATEGORY_SYMBOLS, "medical_symbol" );
+		category( CATEGORY_SYMBOLS, "recycle" );
+		category( CATEGORY_SYMBOLS, "fleur_de_lis" );
+		category( CATEGORY_SYMBOLS, "trident" );
+		category( CATEGORY_SYMBOLS, "name_badge" );
+		category( CATEGORY_SYMBOLS, "beginner" );
+		category( CATEGORY_SYMBOLS, "o" );
 	}
+	
 	private static void init124(){
-		category(CATEGORY_SYMBOLS, "white_check_mark");
-		category(CATEGORY_SYMBOLS, "ballot_box_with_check");
-		category(CATEGORY_SYMBOLS, "heavy_check_mark");
-		category(CATEGORY_SYMBOLS, "heavy_multiplication_x");
-		category(CATEGORY_SYMBOLS, "x");
-		category(CATEGORY_SYMBOLS, "negative_squared_cross_mark");
-		category(CATEGORY_SYMBOLS, "heavy_plus_sign");
-		category(CATEGORY_SYMBOLS, "heavy_minus_sign");
-		category(CATEGORY_SYMBOLS, "heavy_division_sign");
-		category(CATEGORY_SYMBOLS, "curly_loop");
-		category(CATEGORY_SYMBOLS, "loop");
-		category(CATEGORY_SYMBOLS, "part_alternation_mark");
-		category(CATEGORY_SYMBOLS, "eight_spoked_asterisk");
-		category(CATEGORY_SYMBOLS, "eight_pointed_black_star");
-		category(CATEGORY_SYMBOLS, "sparkle");
-		category(CATEGORY_SYMBOLS, "bangbang");
-		category(CATEGORY_SYMBOLS, "interrobang");
-		category(CATEGORY_SYMBOLS, "question");
-		category(CATEGORY_SYMBOLS, "grey_question");
-		category(CATEGORY_SYMBOLS, "grey_exclamation");
-		category(CATEGORY_SYMBOLS, "exclamation");
-		category(CATEGORY_SYMBOLS, "wavy_dash");
-		category(CATEGORY_SYMBOLS, "copyright");
-		category(CATEGORY_SYMBOLS, "registered");
-		category(CATEGORY_SYMBOLS, "tm");
-		category(CATEGORY_SYMBOLS, "hash");
-		category(CATEGORY_SYMBOLS, "keycap_star");
-		category(CATEGORY_SYMBOLS, "zero");
-		category(CATEGORY_SYMBOLS, "one");
-		category(CATEGORY_SYMBOLS, "two");
-		category(CATEGORY_SYMBOLS, "three");
-		category(CATEGORY_SYMBOLS, "four");
-		category(CATEGORY_SYMBOLS, "five");
-		category(CATEGORY_SYMBOLS, "six");
-		category(CATEGORY_SYMBOLS, "seven");
-		category(CATEGORY_SYMBOLS, "eight");
-		category(CATEGORY_SYMBOLS, "nine");
-		category(CATEGORY_SYMBOLS, "keycap_ten");
-		category(CATEGORY_SYMBOLS, "100");
-		category(CATEGORY_SYMBOLS, "capital_abcd");
-		category(CATEGORY_SYMBOLS, "abcd");
-		category(CATEGORY_SYMBOLS, "1234");
-		category(CATEGORY_SYMBOLS, "symbols");
-		category(CATEGORY_SYMBOLS, "abc");
-		category(CATEGORY_SYMBOLS, "a");
-		category(CATEGORY_SYMBOLS, "ab");
-		category(CATEGORY_SYMBOLS, "b");
-		category(CATEGORY_SYMBOLS, "cl");
-		category(CATEGORY_SYMBOLS, "cool");
-		category(CATEGORY_SYMBOLS, "free");
-		category(CATEGORY_SYMBOLS, "information_source");
-		category(CATEGORY_SYMBOLS, "id");
-		category(CATEGORY_SYMBOLS, "m");
-		category(CATEGORY_SYMBOLS, "new");
-		category(CATEGORY_SYMBOLS, "ng");
-		category(CATEGORY_SYMBOLS, "o2");
-		category(CATEGORY_SYMBOLS, "ok");
-		category(CATEGORY_SYMBOLS, "parking");
-		category(CATEGORY_SYMBOLS, "sos");
-		category(CATEGORY_SYMBOLS, "up");
-		category(CATEGORY_SYMBOLS, "vs");
-		category(CATEGORY_SYMBOLS, "koko");
-		category(CATEGORY_SYMBOLS, "sa");
-		category(CATEGORY_SYMBOLS, "u6708");
-		category(CATEGORY_SYMBOLS, "u6709");
-		category(CATEGORY_SYMBOLS, "u6307");
-		category(CATEGORY_SYMBOLS, "ideograph_advantage");
-		category(CATEGORY_SYMBOLS, "u5272");
-		category(CATEGORY_SYMBOLS, "u7121");
-		category(CATEGORY_SYMBOLS, "u7981");
-		category(CATEGORY_SYMBOLS, "accept");
-		category(CATEGORY_SYMBOLS, "u7533");
-		category(CATEGORY_SYMBOLS, "u5408");
-		category(CATEGORY_SYMBOLS, "u7a7a");
-		category(CATEGORY_SYMBOLS, "congratulations");
-		category(CATEGORY_SYMBOLS, "secret");
-		category(CATEGORY_SYMBOLS, "u55b6");
-		category(CATEGORY_SYMBOLS, "u6e80");
-		category(CATEGORY_SYMBOLS, "black_small_square");
-		category(CATEGORY_SYMBOLS, "white_small_square");
-		category(CATEGORY_SYMBOLS, "white_medium_square");
-		category(CATEGORY_SYMBOLS, "black_medium_square");
-		category(CATEGORY_SYMBOLS, "white_medium_small_square");
-		category(CATEGORY_SYMBOLS, "black_medium_small_square");
-		category(CATEGORY_SYMBOLS, "black_large_square");
-		category(CATEGORY_SYMBOLS, "white_large_square");
-		category(CATEGORY_SYMBOLS, "large_orange_diamond");
-		category(CATEGORY_SYMBOLS, "large_blue_diamond");
-		category(CATEGORY_SYMBOLS, "small_orange_diamond");
-		category(CATEGORY_SYMBOLS, "small_blue_diamond");
-		category(CATEGORY_SYMBOLS, "small_red_triangle");
-		category(CATEGORY_SYMBOLS, "small_red_triangle_down");
-		category(CATEGORY_SYMBOLS, "diamond_shape_with_a_dot_inside");
-		category(CATEGORY_SYMBOLS, "radio_button");
-		category(CATEGORY_SYMBOLS, "black_square_button");
-		category(CATEGORY_SYMBOLS, "white_square_button");
-		category(CATEGORY_SYMBOLS, "white_circle");
-		category(CATEGORY_SYMBOLS, "black_circle");
-		category(CATEGORY_SYMBOLS, "red_circle");
-		category(CATEGORY_SYMBOLS, "large_blue_circle");
-		category(CATEGORY_FLAGS, "checkered_flag");
+		category( CATEGORY_SYMBOLS, "white_check_mark" );
+		category( CATEGORY_SYMBOLS, "ballot_box_with_check" );
+		category( CATEGORY_SYMBOLS, "heavy_check_mark" );
+		category( CATEGORY_SYMBOLS, "heavy_multiplication_x" );
+		category( CATEGORY_SYMBOLS, "x" );
+		category( CATEGORY_SYMBOLS, "negative_squared_cross_mark" );
+		category( CATEGORY_SYMBOLS, "heavy_plus_sign" );
+		category( CATEGORY_SYMBOLS, "heavy_minus_sign" );
+		category( CATEGORY_SYMBOLS, "heavy_division_sign" );
+		category( CATEGORY_SYMBOLS, "curly_loop" );
+		category( CATEGORY_SYMBOLS, "loop" );
+		category( CATEGORY_SYMBOLS, "part_alternation_mark" );
+		category( CATEGORY_SYMBOLS, "eight_spoked_asterisk" );
+		category( CATEGORY_SYMBOLS, "eight_pointed_black_star" );
+		category( CATEGORY_SYMBOLS, "sparkle" );
+		category( CATEGORY_SYMBOLS, "bangbang" );
+		category( CATEGORY_SYMBOLS, "interrobang" );
+		category( CATEGORY_SYMBOLS, "question" );
+		category( CATEGORY_SYMBOLS, "grey_question" );
+		category( CATEGORY_SYMBOLS, "grey_exclamation" );
+		category( CATEGORY_SYMBOLS, "exclamation" );
+		category( CATEGORY_SYMBOLS, "wavy_dash" );
+		category( CATEGORY_SYMBOLS, "copyright" );
+		category( CATEGORY_SYMBOLS, "registered" );
+		category( CATEGORY_SYMBOLS, "tm" );
+		category( CATEGORY_SYMBOLS, "hash" );
+		category( CATEGORY_SYMBOLS, "keycap_star" );
+		category( CATEGORY_SYMBOLS, "zero" );
+		category( CATEGORY_SYMBOLS, "one" );
+		category( CATEGORY_SYMBOLS, "two" );
+		category( CATEGORY_SYMBOLS, "three" );
+		category( CATEGORY_SYMBOLS, "four" );
+		category( CATEGORY_SYMBOLS, "five" );
+		category( CATEGORY_SYMBOLS, "six" );
+		category( CATEGORY_SYMBOLS, "seven" );
+		category( CATEGORY_SYMBOLS, "eight" );
+		category( CATEGORY_SYMBOLS, "nine" );
+		category( CATEGORY_SYMBOLS, "keycap_ten" );
+		category( CATEGORY_SYMBOLS, "100" );
+		category( CATEGORY_SYMBOLS, "capital_abcd" );
+		category( CATEGORY_SYMBOLS, "abcd" );
+		category( CATEGORY_SYMBOLS, "1234" );
+		category( CATEGORY_SYMBOLS, "symbols" );
+		category( CATEGORY_SYMBOLS, "abc" );
+		category( CATEGORY_SYMBOLS, "a" );
+		category( CATEGORY_SYMBOLS, "ab" );
+		category( CATEGORY_SYMBOLS, "b" );
+		category( CATEGORY_SYMBOLS, "cl" );
+		category( CATEGORY_SYMBOLS, "cool" );
+		category( CATEGORY_SYMBOLS, "free" );
+		category( CATEGORY_SYMBOLS, "information_source" );
+		category( CATEGORY_SYMBOLS, "id" );
+		category( CATEGORY_SYMBOLS, "m" );
+		category( CATEGORY_SYMBOLS, "new" );
+		category( CATEGORY_SYMBOLS, "ng" );
+		category( CATEGORY_SYMBOLS, "o2" );
+		category( CATEGORY_SYMBOLS, "ok" );
+		category( CATEGORY_SYMBOLS, "parking" );
+		category( CATEGORY_SYMBOLS, "sos" );
+		category( CATEGORY_SYMBOLS, "up" );
+		category( CATEGORY_SYMBOLS, "vs" );
+		category( CATEGORY_SYMBOLS, "koko" );
+		category( CATEGORY_SYMBOLS, "sa" );
+		category( CATEGORY_SYMBOLS, "u6708" );
+		category( CATEGORY_SYMBOLS, "u6709" );
+		category( CATEGORY_SYMBOLS, "u6307" );
+		category( CATEGORY_SYMBOLS, "ideograph_advantage" );
+		category( CATEGORY_SYMBOLS, "u5272" );
+		category( CATEGORY_SYMBOLS, "u7121" );
+		category( CATEGORY_SYMBOLS, "u7981" );
+		category( CATEGORY_SYMBOLS, "accept" );
+		category( CATEGORY_SYMBOLS, "u7533" );
+		category( CATEGORY_SYMBOLS, "u5408" );
+		category( CATEGORY_SYMBOLS, "u7a7a" );
+		category( CATEGORY_SYMBOLS, "congratulations" );
+		category( CATEGORY_SYMBOLS, "secret" );
+		category( CATEGORY_SYMBOLS, "u55b6" );
+		category( CATEGORY_SYMBOLS, "u6e80" );
+		category( CATEGORY_SYMBOLS, "black_small_square" );
+		category( CATEGORY_SYMBOLS, "white_small_square" );
+		category( CATEGORY_SYMBOLS, "white_medium_square" );
+		category( CATEGORY_SYMBOLS, "black_medium_square" );
+		category( CATEGORY_SYMBOLS, "white_medium_small_square" );
+		category( CATEGORY_SYMBOLS, "black_medium_small_square" );
+		category( CATEGORY_SYMBOLS, "black_large_square" );
+		category( CATEGORY_SYMBOLS, "white_large_square" );
+		category( CATEGORY_SYMBOLS, "large_orange_diamond" );
+		category( CATEGORY_SYMBOLS, "large_blue_diamond" );
+		category( CATEGORY_SYMBOLS, "small_orange_diamond" );
+		category( CATEGORY_SYMBOLS, "small_blue_diamond" );
+		category( CATEGORY_SYMBOLS, "small_red_triangle" );
+		category( CATEGORY_SYMBOLS, "small_red_triangle_down" );
+		category( CATEGORY_SYMBOLS, "diamond_shape_with_a_dot_inside" );
+		category( CATEGORY_SYMBOLS, "radio_button" );
+		category( CATEGORY_SYMBOLS, "black_square_button" );
+		category( CATEGORY_SYMBOLS, "white_square_button" );
+		category( CATEGORY_SYMBOLS, "white_circle" );
+		category( CATEGORY_SYMBOLS, "black_circle" );
+		category( CATEGORY_SYMBOLS, "red_circle" );
+		category( CATEGORY_SYMBOLS, "large_blue_circle" );
+		category( CATEGORY_FLAGS, "checkered_flag" );
 	}
+	
 	private static void init125(){
-		category(CATEGORY_FLAGS, "cn");
-		category(CATEGORY_FLAGS, "crossed_flags");
-		category(CATEGORY_FLAGS, "de");
-		category(CATEGORY_FLAGS, "es");
-		category(CATEGORY_FLAGS, "flag_ac");
-		category(CATEGORY_FLAGS, "flag_ad");
-		category(CATEGORY_FLAGS, "flag_ae");
-		category(CATEGORY_FLAGS, "flag_af");
-		category(CATEGORY_FLAGS, "flag_ag");
-		category(CATEGORY_FLAGS, "flag_ai");
-		category(CATEGORY_FLAGS, "flag_al");
-		category(CATEGORY_FLAGS, "flag_am");
-		category(CATEGORY_FLAGS, "flag_ao");
-		category(CATEGORY_FLAGS, "flag_aq");
-		category(CATEGORY_FLAGS, "flag_ar");
-		category(CATEGORY_FLAGS, "flag_as");
-		category(CATEGORY_FLAGS, "flag_at");
-		category(CATEGORY_FLAGS, "flag_au");
-		category(CATEGORY_FLAGS, "flag_aw");
-		category(CATEGORY_FLAGS, "flag_ax");
-		category(CATEGORY_FLAGS, "flag_az");
-		category(CATEGORY_FLAGS, "flag_ba");
-		category(CATEGORY_FLAGS, "flag_bb");
-		category(CATEGORY_FLAGS, "flag_bd");
-		category(CATEGORY_FLAGS, "flag_be");
-		category(CATEGORY_FLAGS, "flag_bf");
-		category(CATEGORY_FLAGS, "flag_bg");
-		category(CATEGORY_FLAGS, "flag_bh");
-		category(CATEGORY_FLAGS, "flag_bi");
-		category(CATEGORY_FLAGS, "flag_bj");
-		category(CATEGORY_FLAGS, "flag_bl");
-		category(CATEGORY_FLAGS, "flag_bm");
-		category(CATEGORY_FLAGS, "flag_bn");
-		category(CATEGORY_FLAGS, "flag_bo");
-		category(CATEGORY_FLAGS, "flag_bq");
-		category(CATEGORY_FLAGS, "flag_br");
-		category(CATEGORY_FLAGS, "flag_bs");
-		category(CATEGORY_FLAGS, "flag_bt");
-		category(CATEGORY_FLAGS, "flag_bv");
-		category(CATEGORY_FLAGS, "flag_bw");
-		category(CATEGORY_FLAGS, "flag_by");
-		category(CATEGORY_FLAGS, "flag_bz");
-		category(CATEGORY_FLAGS, "flag_ca");
-		category(CATEGORY_FLAGS, "flag_cc");
-		category(CATEGORY_FLAGS, "flag_cd");
-		category(CATEGORY_FLAGS, "flag_cf");
-		category(CATEGORY_FLAGS, "flag_cg");
-		category(CATEGORY_FLAGS, "flag_ch");
-		category(CATEGORY_FLAGS, "flag_ci");
-		category(CATEGORY_FLAGS, "flag_ck");
-		category(CATEGORY_FLAGS, "flag_cl");
-		category(CATEGORY_FLAGS, "flag_cm");
-		category(CATEGORY_FLAGS, "flag_co");
-		category(CATEGORY_FLAGS, "flag_cp");
-		category(CATEGORY_FLAGS, "flag_cr");
-		category(CATEGORY_FLAGS, "flag_cu");
-		category(CATEGORY_FLAGS, "flag_cv");
-		category(CATEGORY_FLAGS, "flag_cw");
-		category(CATEGORY_FLAGS, "flag_cx");
-		category(CATEGORY_FLAGS, "flag_cy");
-		category(CATEGORY_FLAGS, "flag_cz");
-		category(CATEGORY_FLAGS, "flag_dg");
-		category(CATEGORY_FLAGS, "flag_dj");
-		category(CATEGORY_FLAGS, "flag_dk");
-		category(CATEGORY_FLAGS, "flag_dm");
-		category(CATEGORY_FLAGS, "flag_do");
-		category(CATEGORY_FLAGS, "flag_dz");
-		category(CATEGORY_FLAGS, "flag_ea");
-		category(CATEGORY_FLAGS, "flag_ec");
-		category(CATEGORY_FLAGS, "flag_ee");
-		category(CATEGORY_FLAGS, "flag_eg");
-		category(CATEGORY_FLAGS, "flag_eh");
-		category(CATEGORY_FLAGS, "flag_england");
-		category(CATEGORY_FLAGS, "flag_er");
-		category(CATEGORY_FLAGS, "flag_et");
-		category(CATEGORY_FLAGS, "flag_eu");
-		category(CATEGORY_FLAGS, "flag_fi");
-		category(CATEGORY_FLAGS, "flag_fj");
-		category(CATEGORY_FLAGS, "flag_fk");
-		category(CATEGORY_FLAGS, "flag_fm");
-		category(CATEGORY_FLAGS, "flag_fo");
-		category(CATEGORY_FLAGS, "flag_ga");
-		category(CATEGORY_FLAGS, "flag_gd");
-		category(CATEGORY_FLAGS, "flag_ge");
-		category(CATEGORY_FLAGS, "flag_gf");
-		category(CATEGORY_FLAGS, "flag_gg");
-		category(CATEGORY_FLAGS, "flag_gh");
-		category(CATEGORY_FLAGS, "flag_gi");
-		category(CATEGORY_FLAGS, "flag_gl");
-		category(CATEGORY_FLAGS, "flag_gm");
-		category(CATEGORY_FLAGS, "flag_gn");
-		category(CATEGORY_FLAGS, "flag_gp");
-		category(CATEGORY_FLAGS, "flag_gq");
-		category(CATEGORY_FLAGS, "flag_gr");
-		category(CATEGORY_FLAGS, "flag_gs");
-		category(CATEGORY_FLAGS, "flag_gt");
-		category(CATEGORY_FLAGS, "flag_gu");
-		category(CATEGORY_FLAGS, "flag_gw");
-		category(CATEGORY_FLAGS, "flag_gy");
-		category(CATEGORY_FLAGS, "flag_hk");
-		category(CATEGORY_FLAGS, "flag_hm");
+		category( CATEGORY_FLAGS, "cn" );
+		category( CATEGORY_FLAGS, "crossed_flags" );
+		category( CATEGORY_FLAGS, "de" );
+		category( CATEGORY_FLAGS, "es" );
+		category( CATEGORY_FLAGS, "flag_ac" );
+		category( CATEGORY_FLAGS, "flag_ad" );
+		category( CATEGORY_FLAGS, "flag_ae" );
+		category( CATEGORY_FLAGS, "flag_af" );
+		category( CATEGORY_FLAGS, "flag_ag" );
+		category( CATEGORY_FLAGS, "flag_ai" );
+		category( CATEGORY_FLAGS, "flag_al" );
+		category( CATEGORY_FLAGS, "flag_am" );
+		category( CATEGORY_FLAGS, "flag_ao" );
+		category( CATEGORY_FLAGS, "flag_aq" );
+		category( CATEGORY_FLAGS, "flag_ar" );
+		category( CATEGORY_FLAGS, "flag_as" );
+		category( CATEGORY_FLAGS, "flag_at" );
+		category( CATEGORY_FLAGS, "flag_au" );
+		category( CATEGORY_FLAGS, "flag_aw" );
+		category( CATEGORY_FLAGS, "flag_ax" );
+		category( CATEGORY_FLAGS, "flag_az" );
+		category( CATEGORY_FLAGS, "flag_ba" );
+		category( CATEGORY_FLAGS, "flag_bb" );
+		category( CATEGORY_FLAGS, "flag_bd" );
+		category( CATEGORY_FLAGS, "flag_be" );
+		category( CATEGORY_FLAGS, "flag_bf" );
+		category( CATEGORY_FLAGS, "flag_bg" );
+		category( CATEGORY_FLAGS, "flag_bh" );
+		category( CATEGORY_FLAGS, "flag_bi" );
+		category( CATEGORY_FLAGS, "flag_bj" );
+		category( CATEGORY_FLAGS, "flag_bl" );
+		category( CATEGORY_FLAGS, "flag_bm" );
+		category( CATEGORY_FLAGS, "flag_bn" );
+		category( CATEGORY_FLAGS, "flag_bo" );
+		category( CATEGORY_FLAGS, "flag_bq" );
+		category( CATEGORY_FLAGS, "flag_br" );
+		category( CATEGORY_FLAGS, "flag_bs" );
+		category( CATEGORY_FLAGS, "flag_bt" );
+		category( CATEGORY_FLAGS, "flag_bv" );
+		category( CATEGORY_FLAGS, "flag_bw" );
+		category( CATEGORY_FLAGS, "flag_by" );
+		category( CATEGORY_FLAGS, "flag_bz" );
+		category( CATEGORY_FLAGS, "flag_ca" );
+		category( CATEGORY_FLAGS, "flag_cc" );
+		category( CATEGORY_FLAGS, "flag_cd" );
+		category( CATEGORY_FLAGS, "flag_cf" );
+		category( CATEGORY_FLAGS, "flag_cg" );
+		category( CATEGORY_FLAGS, "flag_ch" );
+		category( CATEGORY_FLAGS, "flag_ci" );
+		category( CATEGORY_FLAGS, "flag_ck" );
+		category( CATEGORY_FLAGS, "flag_cl" );
+		category( CATEGORY_FLAGS, "flag_cm" );
+		category( CATEGORY_FLAGS, "flag_co" );
+		category( CATEGORY_FLAGS, "flag_cp" );
+		category( CATEGORY_FLAGS, "flag_cr" );
+		category( CATEGORY_FLAGS, "flag_cu" );
+		category( CATEGORY_FLAGS, "flag_cv" );
+		category( CATEGORY_FLAGS, "flag_cw" );
+		category( CATEGORY_FLAGS, "flag_cx" );
+		category( CATEGORY_FLAGS, "flag_cy" );
+		category( CATEGORY_FLAGS, "flag_cz" );
+		category( CATEGORY_FLAGS, "flag_dg" );
+		category( CATEGORY_FLAGS, "flag_dj" );
+		category( CATEGORY_FLAGS, "flag_dk" );
+		category( CATEGORY_FLAGS, "flag_dm" );
+		category( CATEGORY_FLAGS, "flag_do" );
+		category( CATEGORY_FLAGS, "flag_dz" );
+		category( CATEGORY_FLAGS, "flag_ea" );
+		category( CATEGORY_FLAGS, "flag_ec" );
+		category( CATEGORY_FLAGS, "flag_ee" );
+		category( CATEGORY_FLAGS, "flag_eg" );
+		category( CATEGORY_FLAGS, "flag_eh" );
+		category( CATEGORY_FLAGS, "flag_england" );
+		category( CATEGORY_FLAGS, "flag_er" );
+		category( CATEGORY_FLAGS, "flag_et" );
+		category( CATEGORY_FLAGS, "flag_eu" );
+		category( CATEGORY_FLAGS, "flag_fi" );
+		category( CATEGORY_FLAGS, "flag_fj" );
+		category( CATEGORY_FLAGS, "flag_fk" );
+		category( CATEGORY_FLAGS, "flag_fm" );
+		category( CATEGORY_FLAGS, "flag_fo" );
+		category( CATEGORY_FLAGS, "flag_ga" );
+		category( CATEGORY_FLAGS, "flag_gd" );
+		category( CATEGORY_FLAGS, "flag_ge" );
+		category( CATEGORY_FLAGS, "flag_gf" );
+		category( CATEGORY_FLAGS, "flag_gg" );
+		category( CATEGORY_FLAGS, "flag_gh" );
+		category( CATEGORY_FLAGS, "flag_gi" );
+		category( CATEGORY_FLAGS, "flag_gl" );
+		category( CATEGORY_FLAGS, "flag_gm" );
+		category( CATEGORY_FLAGS, "flag_gn" );
+		category( CATEGORY_FLAGS, "flag_gp" );
+		category( CATEGORY_FLAGS, "flag_gq" );
+		category( CATEGORY_FLAGS, "flag_gr" );
+		category( CATEGORY_FLAGS, "flag_gs" );
+		category( CATEGORY_FLAGS, "flag_gt" );
+		category( CATEGORY_FLAGS, "flag_gu" );
+		category( CATEGORY_FLAGS, "flag_gw" );
+		category( CATEGORY_FLAGS, "flag_gy" );
+		category( CATEGORY_FLAGS, "flag_hk" );
+		category( CATEGORY_FLAGS, "flag_hm" );
 	}
+	
 	private static void init126(){
-		category(CATEGORY_FLAGS, "flag_hn");
-		category(CATEGORY_FLAGS, "flag_hr");
-		category(CATEGORY_FLAGS, "flag_ht");
-		category(CATEGORY_FLAGS, "flag_hu");
-		category(CATEGORY_FLAGS, "flag_ic");
-		category(CATEGORY_FLAGS, "flag_id");
-		category(CATEGORY_FLAGS, "flag_ie");
-		category(CATEGORY_FLAGS, "flag_il");
-		category(CATEGORY_FLAGS, "flag_im");
-		category(CATEGORY_FLAGS, "flag_in");
-		category(CATEGORY_FLAGS, "flag_io");
-		category(CATEGORY_FLAGS, "flag_iq");
-		category(CATEGORY_FLAGS, "flag_ir");
-		category(CATEGORY_FLAGS, "flag_is");
-		category(CATEGORY_FLAGS, "flag_je");
-		category(CATEGORY_FLAGS, "flag_jm");
-		category(CATEGORY_FLAGS, "flag_jo");
-		category(CATEGORY_FLAGS, "flag_ke");
-		category(CATEGORY_FLAGS, "flag_kg");
-		category(CATEGORY_FLAGS, "flag_kh");
-		category(CATEGORY_FLAGS, "flag_ki");
-		category(CATEGORY_FLAGS, "flag_km");
-		category(CATEGORY_FLAGS, "flag_kn");
-		category(CATEGORY_FLAGS, "flag_kp");
-		category(CATEGORY_FLAGS, "flag_kw");
-		category(CATEGORY_FLAGS, "flag_ky");
-		category(CATEGORY_FLAGS, "flag_kz");
-		category(CATEGORY_FLAGS, "flag_la");
-		category(CATEGORY_FLAGS, "flag_lb");
-		category(CATEGORY_FLAGS, "flag_lc");
-		category(CATEGORY_FLAGS, "flag_li");
-		category(CATEGORY_FLAGS, "flag_lk");
-		category(CATEGORY_FLAGS, "flag_lr");
-		category(CATEGORY_FLAGS, "flag_ls");
-		category(CATEGORY_FLAGS, "flag_lt");
-		category(CATEGORY_FLAGS, "flag_lu");
-		category(CATEGORY_FLAGS, "flag_lv");
-		category(CATEGORY_FLAGS, "flag_ly");
-		category(CATEGORY_FLAGS, "flag_ma");
-		category(CATEGORY_FLAGS, "flag_mc");
-		category(CATEGORY_FLAGS, "flag_md");
-		category(CATEGORY_FLAGS, "flag_me");
-		category(CATEGORY_FLAGS, "flag_mf");
-		category(CATEGORY_FLAGS, "flag_mg");
-		category(CATEGORY_FLAGS, "flag_mh");
-		category(CATEGORY_FLAGS, "flag_mk");
-		category(CATEGORY_FLAGS, "flag_ml");
-		category(CATEGORY_FLAGS, "flag_mm");
-		category(CATEGORY_FLAGS, "flag_mn");
-		category(CATEGORY_FLAGS, "flag_mo");
-		category(CATEGORY_FLAGS, "flag_mp");
-		category(CATEGORY_FLAGS, "flag_mq");
-		category(CATEGORY_FLAGS, "flag_mr");
-		category(CATEGORY_FLAGS, "flag_ms");
-		category(CATEGORY_FLAGS, "flag_mt");
-		category(CATEGORY_FLAGS, "flag_mu");
-		category(CATEGORY_FLAGS, "flag_mv");
-		category(CATEGORY_FLAGS, "flag_mw");
-		category(CATEGORY_FLAGS, "flag_mx");
-		category(CATEGORY_FLAGS, "flag_my");
-		category(CATEGORY_FLAGS, "flag_mz");
-		category(CATEGORY_FLAGS, "flag_na");
-		category(CATEGORY_FLAGS, "flag_nc");
-		category(CATEGORY_FLAGS, "flag_ne");
-		category(CATEGORY_FLAGS, "flag_nf");
-		category(CATEGORY_FLAGS, "flag_ng");
-		category(CATEGORY_FLAGS, "flag_ni");
-		category(CATEGORY_FLAGS, "flag_nl");
-		category(CATEGORY_FLAGS, "flag_no");
-		category(CATEGORY_FLAGS, "flag_np");
-		category(CATEGORY_FLAGS, "flag_nr");
-		category(CATEGORY_FLAGS, "flag_nu");
-		category(CATEGORY_FLAGS, "flag_nz");
-		category(CATEGORY_FLAGS, "flag_om");
-		category(CATEGORY_FLAGS, "flag_pa");
-		category(CATEGORY_FLAGS, "flag_pe");
-		category(CATEGORY_FLAGS, "flag_pf");
-		category(CATEGORY_FLAGS, "flag_pg");
-		category(CATEGORY_FLAGS, "flag_ph");
-		category(CATEGORY_FLAGS, "flag_pk");
-		category(CATEGORY_FLAGS, "flag_pl");
-		category(CATEGORY_FLAGS, "flag_pm");
-		category(CATEGORY_FLAGS, "flag_pn");
-		category(CATEGORY_FLAGS, "flag_pr");
-		category(CATEGORY_FLAGS, "flag_ps");
-		category(CATEGORY_FLAGS, "flag_pt");
-		category(CATEGORY_FLAGS, "flag_pw");
-		category(CATEGORY_FLAGS, "flag_py");
-		category(CATEGORY_FLAGS, "flag_qa");
-		category(CATEGORY_FLAGS, "flag_re");
-		category(CATEGORY_FLAGS, "flag_ro");
-		category(CATEGORY_FLAGS, "flag_rs");
-		category(CATEGORY_FLAGS, "flag_rw");
-		category(CATEGORY_FLAGS, "flag_sa");
-		category(CATEGORY_FLAGS, "flag_sb");
-		category(CATEGORY_FLAGS, "flag_sc");
-		category(CATEGORY_FLAGS, "flag_scotland");
-		category(CATEGORY_FLAGS, "flag_sd");
-		category(CATEGORY_FLAGS, "flag_se");
-		category(CATEGORY_FLAGS, "flag_sg");
-		category(CATEGORY_FLAGS, "flag_sh");
+		category( CATEGORY_FLAGS, "flag_hn" );
+		category( CATEGORY_FLAGS, "flag_hr" );
+		category( CATEGORY_FLAGS, "flag_ht" );
+		category( CATEGORY_FLAGS, "flag_hu" );
+		category( CATEGORY_FLAGS, "flag_ic" );
+		category( CATEGORY_FLAGS, "flag_id" );
+		category( CATEGORY_FLAGS, "flag_ie" );
+		category( CATEGORY_FLAGS, "flag_il" );
+		category( CATEGORY_FLAGS, "flag_im" );
+		category( CATEGORY_FLAGS, "flag_in" );
+		category( CATEGORY_FLAGS, "flag_io" );
+		category( CATEGORY_FLAGS, "flag_iq" );
+		category( CATEGORY_FLAGS, "flag_ir" );
+		category( CATEGORY_FLAGS, "flag_is" );
+		category( CATEGORY_FLAGS, "flag_je" );
+		category( CATEGORY_FLAGS, "flag_jm" );
+		category( CATEGORY_FLAGS, "flag_jo" );
+		category( CATEGORY_FLAGS, "flag_ke" );
+		category( CATEGORY_FLAGS, "flag_kg" );
+		category( CATEGORY_FLAGS, "flag_kh" );
+		category( CATEGORY_FLAGS, "flag_ki" );
+		category( CATEGORY_FLAGS, "flag_km" );
+		category( CATEGORY_FLAGS, "flag_kn" );
+		category( CATEGORY_FLAGS, "flag_kp" );
+		category( CATEGORY_FLAGS, "flag_kw" );
+		category( CATEGORY_FLAGS, "flag_ky" );
+		category( CATEGORY_FLAGS, "flag_kz" );
+		category( CATEGORY_FLAGS, "flag_la" );
+		category( CATEGORY_FLAGS, "flag_lb" );
+		category( CATEGORY_FLAGS, "flag_lc" );
+		category( CATEGORY_FLAGS, "flag_li" );
+		category( CATEGORY_FLAGS, "flag_lk" );
+		category( CATEGORY_FLAGS, "flag_lr" );
+		category( CATEGORY_FLAGS, "flag_ls" );
+		category( CATEGORY_FLAGS, "flag_lt" );
+		category( CATEGORY_FLAGS, "flag_lu" );
+		category( CATEGORY_FLAGS, "flag_lv" );
+		category( CATEGORY_FLAGS, "flag_ly" );
+		category( CATEGORY_FLAGS, "flag_ma" );
+		category( CATEGORY_FLAGS, "flag_mc" );
+		category( CATEGORY_FLAGS, "flag_md" );
+		category( CATEGORY_FLAGS, "flag_me" );
+		category( CATEGORY_FLAGS, "flag_mf" );
+		category( CATEGORY_FLAGS, "flag_mg" );
+		category( CATEGORY_FLAGS, "flag_mh" );
+		category( CATEGORY_FLAGS, "flag_mk" );
+		category( CATEGORY_FLAGS, "flag_ml" );
+		category( CATEGORY_FLAGS, "flag_mm" );
+		category( CATEGORY_FLAGS, "flag_mn" );
+		category( CATEGORY_FLAGS, "flag_mo" );
+		category( CATEGORY_FLAGS, "flag_mp" );
+		category( CATEGORY_FLAGS, "flag_mq" );
+		category( CATEGORY_FLAGS, "flag_mr" );
+		category( CATEGORY_FLAGS, "flag_ms" );
+		category( CATEGORY_FLAGS, "flag_mt" );
+		category( CATEGORY_FLAGS, "flag_mu" );
+		category( CATEGORY_FLAGS, "flag_mv" );
+		category( CATEGORY_FLAGS, "flag_mw" );
+		category( CATEGORY_FLAGS, "flag_mx" );
+		category( CATEGORY_FLAGS, "flag_my" );
+		category( CATEGORY_FLAGS, "flag_mz" );
+		category( CATEGORY_FLAGS, "flag_na" );
+		category( CATEGORY_FLAGS, "flag_nc" );
+		category( CATEGORY_FLAGS, "flag_ne" );
+		category( CATEGORY_FLAGS, "flag_nf" );
+		category( CATEGORY_FLAGS, "flag_ng" );
+		category( CATEGORY_FLAGS, "flag_ni" );
+		category( CATEGORY_FLAGS, "flag_nl" );
+		category( CATEGORY_FLAGS, "flag_no" );
+		category( CATEGORY_FLAGS, "flag_np" );
+		category( CATEGORY_FLAGS, "flag_nr" );
+		category( CATEGORY_FLAGS, "flag_nu" );
+		category( CATEGORY_FLAGS, "flag_nz" );
+		category( CATEGORY_FLAGS, "flag_om" );
+		category( CATEGORY_FLAGS, "flag_pa" );
+		category( CATEGORY_FLAGS, "flag_pe" );
+		category( CATEGORY_FLAGS, "flag_pf" );
+		category( CATEGORY_FLAGS, "flag_pg" );
+		category( CATEGORY_FLAGS, "flag_ph" );
+		category( CATEGORY_FLAGS, "flag_pk" );
+		category( CATEGORY_FLAGS, "flag_pl" );
+		category( CATEGORY_FLAGS, "flag_pm" );
+		category( CATEGORY_FLAGS, "flag_pn" );
+		category( CATEGORY_FLAGS, "flag_pr" );
+		category( CATEGORY_FLAGS, "flag_ps" );
+		category( CATEGORY_FLAGS, "flag_pt" );
+		category( CATEGORY_FLAGS, "flag_pw" );
+		category( CATEGORY_FLAGS, "flag_py" );
+		category( CATEGORY_FLAGS, "flag_qa" );
+		category( CATEGORY_FLAGS, "flag_re" );
+		category( CATEGORY_FLAGS, "flag_ro" );
+		category( CATEGORY_FLAGS, "flag_rs" );
+		category( CATEGORY_FLAGS, "flag_rw" );
+		category( CATEGORY_FLAGS, "flag_sa" );
+		category( CATEGORY_FLAGS, "flag_sb" );
+		category( CATEGORY_FLAGS, "flag_sc" );
+		category( CATEGORY_FLAGS, "flag_scotland" );
+		category( CATEGORY_FLAGS, "flag_sd" );
+		category( CATEGORY_FLAGS, "flag_se" );
+		category( CATEGORY_FLAGS, "flag_sg" );
+		category( CATEGORY_FLAGS, "flag_sh" );
 	}
+	
 	private static void init127(){
-		category(CATEGORY_FLAGS, "flag_si");
-		category(CATEGORY_FLAGS, "flag_sj");
-		category(CATEGORY_FLAGS, "flag_sk");
-		category(CATEGORY_FLAGS, "flag_sl");
-		category(CATEGORY_FLAGS, "flag_sm");
-		category(CATEGORY_FLAGS, "flag_sn");
-		category(CATEGORY_FLAGS, "flag_so");
-		category(CATEGORY_FLAGS, "flag_sr");
-		category(CATEGORY_FLAGS, "flag_ss");
-		category(CATEGORY_FLAGS, "flag_st");
-		category(CATEGORY_FLAGS, "flag_sv");
-		category(CATEGORY_FLAGS, "flag_sx");
-		category(CATEGORY_FLAGS, "flag_sy");
-		category(CATEGORY_FLAGS, "flag_sz");
-		category(CATEGORY_FLAGS, "flag_ta");
-		category(CATEGORY_FLAGS, "flag_tc");
-		category(CATEGORY_FLAGS, "flag_td");
-		category(CATEGORY_FLAGS, "flag_tf");
-		category(CATEGORY_FLAGS, "flag_tg");
-		category(CATEGORY_FLAGS, "flag_th");
-		category(CATEGORY_FLAGS, "flag_tj");
-		category(CATEGORY_FLAGS, "flag_tk");
-		category(CATEGORY_FLAGS, "flag_tl");
-		category(CATEGORY_FLAGS, "flag_tm");
-		category(CATEGORY_FLAGS, "flag_tn");
-		category(CATEGORY_FLAGS, "flag_to");
-		category(CATEGORY_FLAGS, "flag_tr");
-		category(CATEGORY_FLAGS, "flag_tt");
-		category(CATEGORY_FLAGS, "flag_tv");
-		category(CATEGORY_FLAGS, "flag_tw");
-		category(CATEGORY_FLAGS, "flag_tz");
-		category(CATEGORY_FLAGS, "flag_ua");
-		category(CATEGORY_FLAGS, "flag_ug");
-		category(CATEGORY_FLAGS, "flag_um");
-		category(CATEGORY_FLAGS, "flag_uy");
-		category(CATEGORY_FLAGS, "flag_uz");
-		category(CATEGORY_FLAGS, "flag_va");
-		category(CATEGORY_FLAGS, "flag_vc");
-		category(CATEGORY_FLAGS, "flag_ve");
-		category(CATEGORY_FLAGS, "flag_vg");
-		category(CATEGORY_FLAGS, "flag_vi");
-		category(CATEGORY_FLAGS, "flag_vn");
-		category(CATEGORY_FLAGS, "flag_vu");
-		category(CATEGORY_FLAGS, "flag_wales");
-		category(CATEGORY_FLAGS, "flag_wf");
-		category(CATEGORY_FLAGS, "flag_ws");
-		category(CATEGORY_FLAGS, "flag_xk");
-		category(CATEGORY_FLAGS, "flag_ye");
-		category(CATEGORY_FLAGS, "flag_yt");
-		category(CATEGORY_FLAGS, "flag_za");
-		category(CATEGORY_FLAGS, "flag_zm");
-		category(CATEGORY_FLAGS, "flag_zw");
-		category(CATEGORY_FLAGS, "fr");
-		category(CATEGORY_FLAGS, "gb");
-		category(CATEGORY_FLAGS, "it");
-		category(CATEGORY_FLAGS, "jp");
-		category(CATEGORY_FLAGS, "kr");
-		category(CATEGORY_FLAGS, "rainbow_flag");
-		category(CATEGORY_FLAGS, "ru");
-		category(CATEGORY_FLAGS, "triangular_flag_on_post");
-		category(CATEGORY_FLAGS, "us");
-		category(CATEGORY_FLAGS, "waving_black_flag");
-		category(CATEGORY_FLAGS, "waving_white_flag");
+		category( CATEGORY_FLAGS, "flag_si" );
+		category( CATEGORY_FLAGS, "flag_sj" );
+		category( CATEGORY_FLAGS, "flag_sk" );
+		category( CATEGORY_FLAGS, "flag_sl" );
+		category( CATEGORY_FLAGS, "flag_sm" );
+		category( CATEGORY_FLAGS, "flag_sn" );
+		category( CATEGORY_FLAGS, "flag_so" );
+		category( CATEGORY_FLAGS, "flag_sr" );
+		category( CATEGORY_FLAGS, "flag_ss" );
+		category( CATEGORY_FLAGS, "flag_st" );
+		category( CATEGORY_FLAGS, "flag_sv" );
+		category( CATEGORY_FLAGS, "flag_sx" );
+		category( CATEGORY_FLAGS, "flag_sy" );
+		category( CATEGORY_FLAGS, "flag_sz" );
+		category( CATEGORY_FLAGS, "flag_ta" );
+		category( CATEGORY_FLAGS, "flag_tc" );
+		category( CATEGORY_FLAGS, "flag_td" );
+		category( CATEGORY_FLAGS, "flag_tf" );
+		category( CATEGORY_FLAGS, "flag_tg" );
+		category( CATEGORY_FLAGS, "flag_th" );
+		category( CATEGORY_FLAGS, "flag_tj" );
+		category( CATEGORY_FLAGS, "flag_tk" );
+		category( CATEGORY_FLAGS, "flag_tl" );
+		category( CATEGORY_FLAGS, "flag_tm" );
+		category( CATEGORY_FLAGS, "flag_tn" );
+		category( CATEGORY_FLAGS, "flag_to" );
+		category( CATEGORY_FLAGS, "flag_tr" );
+		category( CATEGORY_FLAGS, "flag_tt" );
+		category( CATEGORY_FLAGS, "flag_tv" );
+		category( CATEGORY_FLAGS, "flag_tw" );
+		category( CATEGORY_FLAGS, "flag_tz" );
+		category( CATEGORY_FLAGS, "flag_ua" );
+		category( CATEGORY_FLAGS, "flag_ug" );
+		category( CATEGORY_FLAGS, "flag_um" );
+		category( CATEGORY_FLAGS, "flag_uy" );
+		category( CATEGORY_FLAGS, "flag_uz" );
+		category( CATEGORY_FLAGS, "flag_va" );
+		category( CATEGORY_FLAGS, "flag_vc" );
+		category( CATEGORY_FLAGS, "flag_ve" );
+		category( CATEGORY_FLAGS, "flag_vg" );
+		category( CATEGORY_FLAGS, "flag_vi" );
+		category( CATEGORY_FLAGS, "flag_vn" );
+		category( CATEGORY_FLAGS, "flag_vu" );
+		category( CATEGORY_FLAGS, "flag_wales" );
+		category( CATEGORY_FLAGS, "flag_wf" );
+		category( CATEGORY_FLAGS, "flag_ws" );
+		category( CATEGORY_FLAGS, "flag_xk" );
+		category( CATEGORY_FLAGS, "flag_ye" );
+		category( CATEGORY_FLAGS, "flag_yt" );
+		category( CATEGORY_FLAGS, "flag_za" );
+		category( CATEGORY_FLAGS, "flag_zm" );
+		category( CATEGORY_FLAGS, "flag_zw" );
+		category( CATEGORY_FLAGS, "fr" );
+		category( CATEGORY_FLAGS, "gb" );
+		category( CATEGORY_FLAGS, "it" );
+		category( CATEGORY_FLAGS, "jp" );
+		category( CATEGORY_FLAGS, "kr" );
+		category( CATEGORY_FLAGS, "rainbow_flag" );
+		category( CATEGORY_FLAGS, "ru" );
+		category( CATEGORY_FLAGS, "triangular_flag_on_post" );
+		category( CATEGORY_FLAGS, "us" );
+		category( CATEGORY_FLAGS, "waving_black_flag" );
+		category( CATEGORY_FLAGS, "waving_white_flag" );
 	}
-	public static final int utf16_max_length=14;
+	
+	public static final int utf16_max_length = 14;
 	
 	static void initAll(){
 		init1();

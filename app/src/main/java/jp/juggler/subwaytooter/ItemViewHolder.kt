@@ -1114,7 +1114,7 @@ internal class ItemViewHolder(
 			whoRef.decoded_display_name
 		}.intoStringResource(activity, string_id)
 		
-		val emojiResource = misskeyReaction.emojiResource
+		val emojiResource = misskeyReaction?.emojiResource
 		if(emojiResource != null) {
 			emojiResource.loadToImageView(activity, ivBoosted)
 			// TODO パディング少し変える？

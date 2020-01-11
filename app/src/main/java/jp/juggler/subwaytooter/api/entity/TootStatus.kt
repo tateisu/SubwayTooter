@@ -306,7 +306,10 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			val sv = src.string("cw")?.cleanCW()
 			this.spoiler_text = when {
 				sv == null -> "" // CWなし
-				sv.isBlank() -> parser.context.getString(R.string.blank_cw)
+
+				sv.replace('\u0323',' ').isBlank() ->
+					parser.context.getString(R.string.blank_cw)
+
 				else -> sv
 			}
 			

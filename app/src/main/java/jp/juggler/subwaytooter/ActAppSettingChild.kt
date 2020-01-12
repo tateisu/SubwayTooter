@@ -1233,7 +1233,7 @@ class ActAppSettingChild : AppCompatActivity()
 			
 			R.id.btnInstanceTickerCopyright -> App1.openBrowser(
 				this@ActAppSettingChild,
-				"https://wee.jp/mastodon/"
+				"https://github.com/MiyonMiyon/InstanceTicker_List"
 			)
 			
 			R.id.btnBackgroundColorBoostEdit -> openColorPicker(

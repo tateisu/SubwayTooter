@@ -829,7 +829,7 @@
     <string name="about_this_instance">About this server</string>
     <string name="top_page">Top page</string>
     <string name="show_instance_ticker">Show #InstanceTicker (column reload required)</string>
-    <string name="instance_ticker_copyright" translatable="false">#InstanceTicker\nhttps://wee.jp/mastodon/\nCopyright 2018 weepjp, kyori19.</string>
+    <string name="instance_ticker_copyright" translatable="false">#InstanceTicker\n(c)2018-2020 MiyonMiyon. Released under the MIT License.</string>
     <string name="location">Location</string>
     <string name="birthday">Birthday</string>
     <string name="existing_account">Log in</string>

@@ -818,9 +818,6 @@
     <string name="about_this_instance">이 서버에 대해서</string>
     <string name="top_page">맨 위 페이지</string>
     <string name="show_instance_ticker">#InstanceTicker 보이기 (칼럼 새로고침 필요)</string>
-    <string name="instance_ticker_copyright">#InstanceTicker
-\nhttps://wee.jp/mastodon/
-\nCopyright 2018 weepjp, kyori19.</string>
     <string name="location">위치</string>
     <string name="birthday">생일</string>
     <string name="existing_account">로그인</string>

@@ -844,9 +844,6 @@
     <string name="about_this_instance">Sobre el servidor</string>
     <string name="top_page">Primera plana</string>
     <string name="show_instance_ticker">Mostra #InstanceTicker (cal refrescar columna)</string>
-    <string name="instance_ticker_copyright">#InstanceTicker
-\nhttps://wee.jp/mastodon/
-\nCopyright 2018 weepjp, kyori19.</string>
     <string name="location">Ubicació</string>
     <string name="birthday">Aniversari</string>
     <string name="existing_account">Iniciar sessió</string>

@@ -41,7 +41,7 @@ fun SharedPreferences.Editor.remove(item : BasePref<*>) : SharedPreferences.Edit
 class BooleanPref(
 	key : String,
 	private val defVal : Boolean,
-	val id : Int
+	val id : Int =0
 ) : BasePref<Boolean>(key) {
 	
 	override operator fun invoke(pref : SharedPreferences) : Boolean {
@@ -476,6 +476,11 @@ object Pref {
 		R.id.swEnableDomainTimeline
 	)
 
+	val bpDivideNotification = BooleanPref(
+		"DivideNotification",
+		false,
+		R.id.swDivideNotification//FIXME
+	)
 	
 	// int
 	

@@ -104,5 +104,19 @@
 
         <View style="@style/setting_divider" />
 
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/divide_notification" />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDivideNotification"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center" />
+
+        </LinearLayout>
+        <View style="@style/setting_divider" />
+
     </LinearLayout>
 </ScrollView>

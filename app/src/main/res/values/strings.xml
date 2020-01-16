@@ -995,4 +995,5 @@
     <string name="follow_request">Follow request</string>
     <string name="push_notification_server_key_missing">Push notification will not work because server misconfiguration. Server public key is missing.</string>
     <string name="push_notification_server_key_empty">Push notification will not work because server misconfiguration. Server public key is empty.</string>
+    <string name="divide_notification">Divide notifications (Android 6+)</string>
 </resources>

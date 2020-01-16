@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
+import android.annotation.TargetApi
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.job.JobInfo
@@ -18,6 +19,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.PowerManager
 import android.os.SystemClock
+import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.google.firebase.iid.FirebaseInstanceId
@@ -1094,16 +1096,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					this.parser = TootParser(context, account)
 					
-					if(! Pref.bpSeparateReplyNotificationGroup(pref)) {
-						val tr = TrackingRunner(
-							trackingType = TrackingType.All,
-							trackingName = NotificationHelper.TRACKING_NAME_DEFAULT
-						)
-						tr.checkAccount()
-						if(job.isJobCancelled) return
-						tr.updateNotification()
-						
-					} else {
+					if(Pref.bpSeparateReplyNotificationGroup(pref)) {
 						var tr = TrackingRunner(
 							trackingType = TrackingType.NotReply,
 							trackingName = NotificationHelper.TRACKING_NAME_DEFAULT
@@ -1115,6 +1108,15 @@ class PollingWorker private constructor(contextArg : Context) {
 						tr = TrackingRunner(
 							trackingType = TrackingType.Reply,
 							trackingName = NotificationHelper.TRACKING_NAME_REPLY
+						)
+						tr.checkAccount()
+						if(job.isJobCancelled) return
+						tr.updateNotification()
+						
+					} else {
+						val tr = TrackingRunner(
+							trackingType = TrackingType.All,
+							trackingName = NotificationHelper.TRACKING_NAME_DEFAULT
 						)
 						tr.checkAccount()
 						if(job.isJobCancelled) return
@@ -1214,33 +1216,219 @@ class PollingWorker private constructor(contextArg : Context) {
 						else -> "${account.db_id}/$trackingName"
 					}
 					
+					val nt = NotificationTracking.load(account.db_id, trackingName)
 					val dataList = dstListData
-					val item = dataList.firstOrNull()
-					if(item == null) {
-						log.d("showNotification[${account.acct}] cancel notification.")
-						notification_manager.cancel(notification_tag, NOTIFICATION_ID)
+					val first = dataList.firstOrNull()
+					if(first == null) {
+						log.d("showNotification[${account.acct}/$notification_tag] cancel notification.")
+						if(Build.VERSION.SDK_INT >= 23 && Pref.bpDivideNotification(pref)) {
+							notification_manager.activeNotifications?.forEach {
+								if(it != null &&
+									it.id == NOTIFICATION_ID &&
+									it.tag.startsWith("$notification_tag//")
+								) {
+									log.d("cancel: ${it.tag} context=${account.acct} $notification_tag")
+									notification_manager.cancel(it.tag, NOTIFICATION_ID)
+								}
+							}
+						} else {
+							notification_manager.cancel(notification_tag, NOTIFICATION_ID)
+						}
 						return
 					}
 					
-					val nt = NotificationTracking.load(account.db_id, trackingName)
-					
-					if(item.notification.time_created_at == nt.post_time
-						&& item.notification.id == nt.post_id
+					val lastPostTime = nt.post_time
+					val lastPostId = nt.post_id
+					if(first.notification.time_created_at == lastPostTime
+						&& first.notification.id == lastPostId
 					) {
 						// 先頭にあるデータが同じなら、通知を更新しない
 						// このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
-						
-						log.d("showNotification[${account.acct}] id=${item.notification.id} is already shown.")
+						log.d("showNotification[${account.acct}] id=${first.notification.id} is already shown.")
 						return
 					}
 					
-					nt.updatePost(item.notification.id, item.notification.time_created_at)
-					
-					createNotification(dataList, notification_tag)
+					if(Build.VERSION.SDK_INT >= 23 && Pref.bpDivideNotification(pref)) {
+						val activeNotificationMap = HashMap<String, StatusBarNotification>().apply {
+							notification_manager.activeNotifications?.forEach {
+								if(it != null &&
+									it.id == NOTIFICATION_ID &&
+									it.tag.startsWith("$notification_tag//")
+								) {
+									put(it.tag, it)
+								}
+							}
+						}
+						for(item in dstListData.reversed()) {
+							val itemTag = "$notification_tag//${item.notification.id}"
+							
+							if(lastPostId != null &&
+								item.notification.time_created_at <= lastPostTime &&
+								item.notification.id <= lastPostId
+							) {
+								// 掲載済みデータより古い通知は再表示しない
+								log.d("ignore $itemTag ${item.notification.time_created_at} <= $lastPostTime && ${item.notification.id} <= $lastPostId")
+								continue
+							}
+							
+							// ignore if already showing
+							if(activeNotificationMap.remove(itemTag) != null){
+								log.d("ignore $itemTag is in activeNotificationMap")
+								continue
+							}
+
+							createNotification(itemTag) { builder ->
+								
+								val myAcct = item.access_info.acct
+								
+								builder.setWhen(item.notification.time_created_at)
+								
+								val summary = getNotificationLine(item)
+								builder.setContentTitle(myAcct)
+								builder.setContentText(summary)
+								val content = item.notification.status?.decoded_content?.notEmpty()
+								if(content != null) {
+									builder.setStyle(
+										NotificationCompat.BigTextStyle()
+											.setBigContentTitle(summary)
+											.setSummaryText(content)
+											.bigText(content)
+									)
+								}
+								
+								if(Build.VERSION.SDK_INT < 26) {
+									var iv = 0
+									
+									if(Pref.bpNotificationSound(pref)) {
+										
+										var sound_uri : Uri? = null
+										
+										try {
+											val whoAcct =
+												account.getFullAcct(item.notification.account)
+											sound_uri =
+												AcctColor.getNotificationSound(whoAcct).mayUri()
+										} catch(ex : Throwable) {
+											log.trace(ex)
+										}
+										
+										if(sound_uri == null) {
+											sound_uri = account.sound_uri.mayUri()
+										}
+										
+										var bSoundSet = false
+										if(sound_uri != null) {
+											try {
+												builder.setSound(sound_uri)
+												bSoundSet = true
+											} catch(ex : Throwable) {
+												log.trace(ex)
+											}
+											
+										}
+										if(! bSoundSet) {
+											iv = iv or NotificationCompat.DEFAULT_SOUND
+										}
+									}
+									
+									if(Pref.bpNotificationVibration(pref)) {
+										iv = iv or NotificationCompat.DEFAULT_VIBRATE
+									}
+									
+									if(Pref.bpNotificationLED(pref)) {
+										iv = iv or NotificationCompat.DEFAULT_LIGHTS
+									}
+									
+									builder.setDefaults(iv)
+								}
+							}
+						}
+						// リストにない通知は消さない。ある通知をユーザが指で削除した際に他の通知が残ってほしい場合がある
+					} else {
+						log.d("showNotification[${account.acct}] creating notification(1)")
+						createNotification(notification_tag) { builder ->
+							
+							builder.setWhen(first.notification.time_created_at)
+							
+							var a = getNotificationLine(first)
+							
+							val myAcct = account.acct
+							
+							if(dataList.size == 1) {
+								builder.setContentTitle(a)
+								builder.setContentText(myAcct)
+							} else {
+								val header =
+									context.getString(R.string.notification_count, dataList.size)
+								builder.setContentTitle(header)
+									.setContentText(a)
+								
+								val style = NotificationCompat.InboxStyle()
+									.setBigContentTitle(header)
+									.setSummaryText(myAcct)
+								for(i in 0 .. 4) {
+									if(i >= dataList.size) break
+									val item = dataList[i]
+									a = getNotificationLine(item)
+									style.addLine(a)
+								}
+								builder.setStyle(style)
+							}
+							
+							if(Build.VERSION.SDK_INT < 26) {
+								
+								var iv = 0
+								
+								if(Pref.bpNotificationSound(pref)) {
+									
+									var sound_uri : Uri? = null
+									
+									try {
+										val whoAcct =
+											account.getFullAcct(first.notification.account)
+										sound_uri = AcctColor.getNotificationSound(whoAcct).mayUri()
+									} catch(ex : Throwable) {
+										log.trace(ex)
+									}
+									
+									if(sound_uri == null) {
+										sound_uri = account.sound_uri.mayUri()
+									}
+									
+									var bSoundSet = false
+									if(sound_uri != null) {
+										try {
+											builder.setSound(sound_uri)
+											bSoundSet = true
+										} catch(ex : Throwable) {
+											log.trace(ex)
+										}
+										
+									}
+									if(! bSoundSet) {
+										iv = iv or NotificationCompat.DEFAULT_SOUND
+									}
+								}
+								
+								if(Pref.bpNotificationVibration(pref)) {
+									iv = iv or NotificationCompat.DEFAULT_VIBRATE
+								}
+								
+								if(Pref.bpNotificationLED(pref)) {
+									iv = iv or NotificationCompat.DEFAULT_LIGHTS
+								}
+								
+								builder.setDefaults(iv)
+							}
+						}
+					}
+					nt.updatePost(first.notification.id, first.notification.time_created_at)
 				}
 				
-				private fun createNotification(dataList : List<Data>, notification_tag : String) {
-					var item = dataList.first()
+				private fun createNotification(
+					notification_tag : String,
+					setContent : (builder : NotificationCompat.Builder) -> Unit
+				) {
 					log.d("showNotification[${account.acct}] creating notification(1)")
 					
 					val midInt = Int.MAX_VALUE shr 1
@@ -1300,18 +1488,14 @@ class PollingWorker private constructor(contextArg : Context) {
 						NotificationCompat.Builder(context, "not_used")
 					}
 					
-					builder
-						.setContentIntent(pi_click)
-						.setDeleteIntent(pi_delete)
-						.setAutoCancel(true)
-						.setSmallIcon(R.drawable.ic_notification) // ここは常に白テーマのアイコンを使う
-						.setColor(
-							ContextCompat.getColor(
-								context,
-								R.color.Light_colorAccent
-							)
-						) // ここは常に白テーマの色を使う
-						.setWhen(item.notification.time_created_at)
+					
+					builder.setContentIntent(pi_click)
+					builder.setDeleteIntent(pi_delete)
+					builder.setAutoCancel(true)
+					builder.setSmallIcon(R.drawable.ic_notification) // ここは常に白テーマのアイコンを使う
+					
+					// ここは常に白テーマの色を使う
+					builder.color = ContextCompat.getColor(context, R.color.Light_colorAccent)
 					
 					// Android 7.0 ではグループを指定しないと勝手に通知が束ねられてしまう。
 					// 束ねられた通知をタップしても pi_click が実行されないので困るため、
@@ -1320,81 +1504,11 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					log.d("showNotification[${account.acct}] creating notification(3)")
 					
-					if(Build.VERSION.SDK_INT < 26) {
-						
-						var iv = 0
-						
-						if(Pref.bpNotificationSound(pref)) {
-							
-							var sound_uri : Uri? = null
-							
-							try {
-								val acct = item.access_info.getFullAcct(item.notification.account)
-								sound_uri = AcctColor.getNotificationSound(acct).mayUri()
-							} catch(ex : Throwable) {
-								log.trace(ex)
-							}
-							
-							if(sound_uri == null) {
-								sound_uri = account.sound_uri.mayUri()
-							}
-							
-							var bSoundSet = false
-							if(sound_uri != null) {
-								try {
-									builder.setSound(sound_uri)
-									bSoundSet = true
-								} catch(ex : Throwable) {
-									log.trace(ex)
-								}
-								
-							}
-							if(! bSoundSet) {
-								iv = iv or NotificationCompat.DEFAULT_SOUND
-							}
-						}
-						
-						if(Pref.bpNotificationVibration(pref)) {
-							iv = iv or NotificationCompat.DEFAULT_VIBRATE
-						}
-						
-						if(Pref.bpNotificationLED(pref)) {
-							iv = iv or NotificationCompat.DEFAULT_LIGHTS
-						}
-						
-						builder.setDefaults(iv)
-					}
-					
-					log.d("showNotification[${account.acct}] creating notification(7)")
-					
-					var a = getNotificationLine(item)
-					
-					val acct = item.access_info.acct
-					
-					if(dataList.size == 1) {
-						builder.setContentTitle(a)
-						builder.setContentText(acct)
-					} else {
-						val header = context.getString(R.string.notification_count, dataList.size)
-						builder.setContentTitle(header)
-							.setContentText(a)
-						
-						val style = NotificationCompat.InboxStyle()
-							.setBigContentTitle(header)
-							.setSummaryText(acct)
-						for(i in 0 .. 4) {
-							if(i >= dataList.size) break
-							item = dataList[i]
-							a = getNotificationLine(item)
-							style.addLine(a)
-						}
-						builder.setStyle(style)
-					}
+					setContent(builder)
 					
 					log.d("showNotification[${account.acct}] set notification...")
 					
 					notification_manager.notify(notification_tag, NOTIFICATION_ID, builder.build())
-					
 				}
 			}
 		}

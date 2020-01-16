@@ -252,9 +252,9 @@ class NotificationCache(private val account_db_id : Long) {
 				continue
 			}
 			
-			// 種類別に10まで保持する
+			// 種類別に一定件数を保持する
 			val count = 1 + (typeCount[type] ?: 0)
-			if(count > 10) {
+			if(count > 60) {
 				it.remove()
 				continue
 			}

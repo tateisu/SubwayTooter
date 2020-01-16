@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.job.JobInfo
@@ -1212,7 +1211,7 @@ class PollingWorker private constructor(contextArg : Context) {
 				internal fun updateNotification() {
 					
 					val notification_tag = when(trackingName) {
-						"" -> account.db_id.toString()
+						"" -> "${account.db_id}/_"
 						else -> "${account.db_id}/$trackingName"
 					}
 					
@@ -1225,7 +1224,7 @@ class PollingWorker private constructor(contextArg : Context) {
 							notification_manager.activeNotifications?.forEach {
 								if(it != null &&
 									it.id == NOTIFICATION_ID &&
-									it.tag.startsWith("$notification_tag//")
+									it.tag.startsWith("$notification_tag/")
 								) {
 									log.d("cancel: ${it.tag} context=${account.acct} $notification_tag")
 									notification_manager.cancel(it.tag, NOTIFICATION_ID)
@@ -1253,14 +1252,14 @@ class PollingWorker private constructor(contextArg : Context) {
 							notification_manager.activeNotifications?.forEach {
 								if(it != null &&
 									it.id == NOTIFICATION_ID &&
-									it.tag.startsWith("$notification_tag//")
+									it.tag.startsWith("$notification_tag/")
 								) {
 									put(it.tag, it)
 								}
 							}
 						}
 						for(item in dstListData.reversed()) {
-							val itemTag = "$notification_tag//${item.notification.id}"
+							val itemTag = "$notification_tag/${item.notification.id}"
 							
 							if(lastPostId != null &&
 								item.notification.time_created_at <= lastPostTime &&
@@ -1272,11 +1271,11 @@ class PollingWorker private constructor(contextArg : Context) {
 							}
 							
 							// ignore if already showing
-							if(activeNotificationMap.remove(itemTag) != null){
+							if(activeNotificationMap.remove(itemTag) != null) {
 								log.d("ignore $itemTag is in activeNotificationMap")
 								continue
 							}
-
+							
 							createNotification(itemTag) { builder ->
 								
 								val myAcct = item.access_info.acct
@@ -1284,16 +1283,17 @@ class PollingWorker private constructor(contextArg : Context) {
 								builder.setWhen(item.notification.time_created_at)
 								
 								val summary = getNotificationLine(item)
-								builder.setContentTitle(myAcct)
-								builder.setContentText(summary)
+								builder.setContentTitle(summary)
 								val content = item.notification.status?.decoded_content?.notEmpty()
 								if(content != null) {
 									builder.setStyle(
 										NotificationCompat.BigTextStyle()
 											.setBigContentTitle(summary)
-											.setSummaryText(content)
+											.setSummaryText(myAcct)
 											.bigText(content)
 									)
+								}else{
+									builder.setContentText(myAcct)
 								}
 								
 								if(Build.VERSION.SDK_INT < 26) {

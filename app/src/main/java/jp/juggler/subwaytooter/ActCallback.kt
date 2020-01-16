@@ -18,8 +18,6 @@ class ActCallback : AppCompatActivity() {
 	companion object {
 		private val log = LogCategory("ActCallback")
 		
-		const val ACTION_NOTIFICATION_CLICK = "notification_click"
-		
 		internal val last_uri = AtomicReference<Uri>(null)
 		internal val sent_intent = AtomicReference<Intent>(null)
 		

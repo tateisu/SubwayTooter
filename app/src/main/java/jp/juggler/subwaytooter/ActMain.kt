@@ -1815,9 +1815,11 @@ class ActMain : AppCompatActivity()
 		// subwaytooter://notification_click/?db_id=(db_id)
 		val dataIdString = uri.getQueryParameter("db_id")
 		if(dataIdString != null) {
+
+			PollingWorker.queueNotificationClicked(this, uri)
+
 			try {
-				val dataId = dataIdString.toLong(10)
-				val type = uri.getQueryParameter("type") ?: ""
+				val dataId = dataIdString.toLong()
 				val account = SavedAccount.loadAccount(this@ActMain, dataId)
 				if(account != null) {
 					var column = app_state.column_list.firstOrNull {
@@ -1836,14 +1838,10 @@ class ActMain : AppCompatActivity()
 							ColumnType.NOTIFICATIONS
 						)
 					}
-					
 					// 通知を読み直す
 					if(! column.bInitialLoading) {
 						column.startLoading()
 					}
-					
-					PollingWorker.queueNotificationClicked(this, dataId, type)
-					
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)

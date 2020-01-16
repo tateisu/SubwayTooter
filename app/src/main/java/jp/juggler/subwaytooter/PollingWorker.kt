@@ -81,6 +81,7 @@ class PollingWorker private constructor(contextArg : Context) {
 		const val EXTRA_TAG = "tag"
 		const val EXTRA_TASK_ID = "task_id"
 		const val EXTRA_NOTIFICATION_TYPE = "notification_type"
+		const val EXTRA_NOTIFICATION_ID = "notificationId"
 		
 		const val APP_SERVER = "https://mastodon-msg.juggler.jp"
 		
@@ -303,26 +304,37 @@ class PollingWorker private constructor(contextArg : Context) {
 			
 		}
 		
-		fun queueNotificationDeleted(context : Context, db_id : Long, trackingType : String) {
+		private fun decodeNotificationUri(uri:Uri?):JsonObject?{
+			uri ?: return null
+			return jsonObject {
+				putNotNull(
+					EXTRA_DB_ID,
+					uri.getQueryParameter("db_id")?.toLongOrNull()
+				)
+				putNotNull(
+					EXTRA_NOTIFICATION_TYPE,
+					uri.getQueryParameter("type")?.notEmpty()
+				)
+				putNotNull(
+					EXTRA_NOTIFICATION_ID,
+					uri.getQueryParameter("notificationId")?.notEmpty()
+				)
+			}
+		}
+		
+		fun queueNotificationDeleted(context : Context, uri : Uri?) {
 			try {
-				val data = jsonObject {
-					putNotNull(EXTRA_DB_ID, db_id)
-					putNotNull(EXTRA_NOTIFICATION_TYPE, trackingType)
-				}
-				addTask(context, true, TASK_NOTIFICATION_DELETE, data)
+				val params = decodeNotificationUri(uri) ?: return
+				addTask(context,false,TASK_NOTIFICATION_DELETE,params)
 			} catch(ex : JsonException) {
 				log.trace(ex)
 			}
-			
 		}
 		
-		fun queueNotificationClicked(context : Context, db_id : Long, trackingType : String) {
+		fun queueNotificationClicked(context : Context, uri:Uri?) {
 			try {
-				val data = jsonObject {
-					putNotNull(EXTRA_DB_ID, db_id)
-					putNotNull(EXTRA_NOTIFICATION_TYPE, trackingType)
-				}
-				addTask(context, true, TASK_NOTIFICATION_CLICK, data)
+				val params = decodeNotificationUri(uri) ?: return
+				addTask(context, true, TASK_NOTIFICATION_CLICK, params)
 			} catch(ex : JsonException) {
 				log.trace(ex)
 			}
@@ -815,12 +827,20 @@ class PollingWorker private constructor(contextArg : Context) {
 		
 	}
 	
+	private fun TrackingType.trackingTypeName()=when(this){
+		TrackingType.NotReply ->NotificationHelper.TRACKING_NAME_DEFAULT
+		TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
+		TrackingType.All ->  NotificationHelper.TRACKING_NAME_DEFAULT
+	}
+	
 	internal inner class TaskRunner {
 		
 		lateinit var job : JobItem
 		private var taskId : Int = 0
 		
 		val error_instance = ArrayList<String>()
+		
+		
 		
 		fun runTask(job : JobItem, taskId : Int, taskData : JsonObject) {
 			try {
@@ -910,32 +930,36 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					TASK_NOTIFICATION_DELETE -> {
 						val db_id = taskData.long(EXTRA_DB_ID)
-						val type =
-							when(TrackingType.parseStr(taskData.string(EXTRA_NOTIFICATION_TYPE))) {
-								TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
-								else -> NotificationHelper.TRACKING_NAME_DEFAULT
-							}
-						log.d("Notification deleted! db_id=$db_id,type=$type")
+						val type = TrackingType.parseStr(taskData.string(EXTRA_NOTIFICATION_TYPE))
+						val typeName = type.trackingTypeName()
+						val id = taskData.string(EXTRA_NOTIFICATION_ID)
+						log.d("Notification deleted! db_id=$db_id,type=$type,id=$id")
 						if(db_id != null) {
-							NotificationTracking.updateRead(db_id, type)
+							NotificationTracking.updateRead(db_id, typeName)
 						}
 						return
 					}
 					
 					TASK_NOTIFICATION_CLICK -> {
 						val db_id = taskData.long(EXTRA_DB_ID)
-						val type =
-							when(TrackingType.parseStr(taskData.string(EXTRA_NOTIFICATION_TYPE))) {
-								TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
-								else -> NotificationHelper.TRACKING_NAME_DEFAULT
-							}
-						log.d("Notification clicked! db_id=$db_id,type=$type")
+						val type = TrackingType.parseStr(taskData.string(EXTRA_NOTIFICATION_TYPE))
+						val typeName = type.trackingTypeName()
+						val id = taskData.string(EXTRA_NOTIFICATION_ID).notEmpty()
+						log.d("Notification clicked! db_id=$db_id,type=$type,id=$id")
 						if(db_id != null) {
 							// 通知をキャンセル
-							notification_manager.cancel(db_id.toString(), NOTIFICATION_ID)
+							val notification_tag = when(typeName) {
+								"" -> "${db_id}/_"
+								else -> "${db_id}/$typeName"
+							}
+							if( id != null){
+								val itemTag = "$notification_tag/$id"
+								notification_manager.cancel(itemTag, NOTIFICATION_ID)
+							}else{
+								notification_manager.cancel(notification_tag, NOTIFICATION_ID)
+							}
 							// DB更新処理
-							NotificationTracking.updateRead(db_id, type)
-							
+							NotificationTracking.updateRead(db_id, typeName)
 						}
 						return
 					}
@@ -1276,7 +1300,7 @@ class PollingWorker private constructor(contextArg : Context) {
 								continue
 							}
 							
-							createNotification(itemTag) { builder ->
+							createNotification(itemTag,notificationId = item.notification.id.toString()) { builder ->
 								
 								val myAcct = item.access_info.acct
 								
@@ -1292,7 +1316,7 @@ class PollingWorker private constructor(contextArg : Context) {
 											.setSummaryText(myAcct)
 											.bigText(content)
 									)
-								}else{
+								} else {
 									builder.setContentText(myAcct)
 								}
 								
@@ -1427,53 +1451,10 @@ class PollingWorker private constructor(contextArg : Context) {
 				
 				private fun createNotification(
 					notification_tag : String,
+					notificationId : String? = null,
 					setContent : (builder : NotificationCompat.Builder) -> Unit
 				) {
 					log.d("showNotification[${account.acct}] creating notification(1)")
-					
-					val midInt = Int.MAX_VALUE shr 1
-					
-					// 通知タップ時のPendingIntent
-					val intent_click = Intent(context, ActCallback::class.java)
-					intent_click.action = ActCallback.ACTION_NOTIFICATION_CLICK
-					intent_click.data =
-						"subwaytooter://notification_click/?db_id=${account.db_id}&type=${trackingType.str}"
-							.toUri()
-					
-					// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
-					intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-					
-					val pi_click = PendingIntent.getActivity(
-						context,
-						when(trackingType) {
-							TrackingType.Reply -> midInt + account.db_id.toInt()
-							else -> 256 + account.db_id.toInt()
-						},
-						intent_click,
-						PendingIntent.FLAG_UPDATE_CURRENT
-					)
-					
-					// 通知を消去した時のPendingIntent
-					val intent_delete = Intent(context, EventReceiver::class.java)
-					intent_delete.action = EventReceiver.ACTION_NOTIFICATION_DELETE
-					intent_delete.putExtra(EXTRA_DB_ID, account.db_id)
-					intent_delete.putExtra(EXTRA_NOTIFICATION_TYPE, trackingType.str)
-					val pi_delete = PendingIntent.getBroadcast(
-						context,
-						when(trackingType) {
-							TrackingType.Reply -> {
-								midInt - account.db_id.toInt()
-							}
-							
-							else -> {
-								Integer.MAX_VALUE - account.db_id.toInt()
-							}
-						},
-						intent_delete,
-						PendingIntent.FLAG_UPDATE_CURRENT
-					)
-					
-					log.d("showNotification[${account.acct}] creating notification(2)")
 					
 					val builder = if(Build.VERSION.SDK_INT >= 26) {
 						// Android 8 から、通知のスタイルはユーザが管理することになった
@@ -1488,19 +1469,63 @@ class PollingWorker private constructor(contextArg : Context) {
 						NotificationCompat.Builder(context, "not_used")
 					}
 					
-					
-					builder.setContentIntent(pi_click)
-					builder.setDeleteIntent(pi_delete)
-					builder.setAutoCancel(true)
-					builder.setSmallIcon(R.drawable.ic_notification) // ここは常に白テーマのアイコンを使う
-					
-					// ここは常に白テーマの色を使う
-					builder.color = ContextCompat.getColor(context, R.color.Light_colorAccent)
-					
-					// Android 7.0 ではグループを指定しないと勝手に通知が束ねられてしまう。
-					// 束ねられた通知をタップしても pi_click が実行されないので困るため、
-					// アカウント別にグループキーを設定する
-					builder.setGroup(context.packageName + ":" + account.acct)
+					builder.apply {
+						
+						val params = listOf(
+							"db_id" to account.db_id.toString(),
+							"type" to trackingType.str,
+							"notificationId" to notificationId
+						).mapNotNull{
+							val second = it.second
+							if( second == null ){
+								null
+							}else{
+								"${it.first.encodePercent()}=${second.encodePercent()}"
+							}
+						}.joinToString("&")
+						
+						setContentIntent(
+							PendingIntent.getActivity(
+								context,
+								257,
+								Intent(context, ActCallback::class.java).apply {
+									data =
+										"subwaytooter://notification_click/?$params".toUri()
+									
+									// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
+									addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+								},
+								PendingIntent.FLAG_UPDATE_CURRENT
+							)
+						)
+						
+						setDeleteIntent(
+							PendingIntent.getBroadcast(
+								context,
+								257,
+								Intent(context, EventReceiver::class.java).apply {
+									action = EventReceiver.ACTION_NOTIFICATION_DELETE
+									data =
+										"subwaytooter://notification_delete/?$params".toUri()
+								},
+								PendingIntent.FLAG_UPDATE_CURRENT
+							)
+						)
+						
+						setAutoCancel(true)
+						
+						// 常に白テーマのアイコンを使う
+						setSmallIcon(R.drawable.ic_notification)
+						
+						// 常に白テーマの色を使う
+						builder.color = ContextCompat.getColor(context, R.color.Light_colorAccent)
+						
+						// Android 7.0 ではグループを指定しないと勝手に通知が束ねられてしまう。
+						// 束ねられた通知をタップしても pi_click が実行されないので困るため、
+						// アカウント別にグループキーを設定する
+						setGroup(context.packageName + ":" + account.acct)
+						
+					}
 					
 					log.d("showNotification[${account.acct}] creating notification(3)")
 					
@@ -1648,5 +1673,4 @@ class PollingWorker private constructor(contextArg : Context) {
 		}
 		notification_manager.notify(NOTIFICATION_ID_ERROR, builder.build())
 	}
-	
 }

@@ -11,6 +11,7 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import java.net.ProtocolException
+import java.net.SocketException
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -340,7 +341,11 @@ internal class StreamReader(
 		 * listener will be made.
 		 */
 		override fun onFailure(webSocket : WebSocket, t : Throwable, response : Response?) {
-			log.e(t, "WebSocket onFailure. url=%s .", webSocket.request().url)
+			if( t is SocketException && t.message == "Socket is closed"){
+				log.w("WebSocket is closed. url=${webSocket.request().url}")
+			}else {
+				log.e(t, "WebSocket onFailure. url=${webSocket.request().url}")
+			}
 			
 			bListening.set(false)
 			handler.removeCallbacks(proc_reconnect)

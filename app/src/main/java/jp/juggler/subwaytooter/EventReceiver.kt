@@ -22,13 +22,8 @@ class EventReceiver : BroadcastReceiver() {
 			Intent.ACTION_MY_PACKAGE_REPLACED ->
 				PollingWorker.queuePackageReplaced(context)
 			
-			ACTION_NOTIFICATION_DELETE -> {
-				PollingWorker.queueNotificationDeleted(
-					context,
-					intent.getLongExtra(PollingWorker.EXTRA_DB_ID, - 1L),
-					intent.getStringExtra(PollingWorker.EXTRA_NOTIFICATION_TYPE) ?: ""
-				)
-			}
+			ACTION_NOTIFICATION_DELETE ->
+				PollingWorker.queueNotificationDeleted( context,intent.data)
 			
 			else -> log.e("onReceive: unsupported action %s", action)
 		}

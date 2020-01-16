@@ -14,3 +14,7 @@ _Emoji/emoji-data/
 *.apk
 output.json
 *.log
+/.idea/StickySelectionHighlights.xml
+/.idea/caches/
+/.idea/codeStyles/
+/_Emoji/*

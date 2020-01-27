@@ -101,6 +101,8 @@ class ColumnViewHolder(
 	private lateinit var etRegexFilter : EditText
 	private lateinit var tvRegexFilterError : TextView
 	
+	private lateinit var btnAnnouncementsBadge : ImageView
+	private lateinit var btnAnnouncements : ImageButton
 	private lateinit var btnColumnSetting : ImageButton
 	private lateinit var btnColumnReload : ImageButton
 	private lateinit var btnColumnClose : ImageButton
@@ -153,13 +155,10 @@ class ColumnViewHolder(
 	private lateinit var etHashtagExtraNone : EditText
 	
 	private lateinit var llAnnouncementsBox : View
-	private lateinit var llAnnouncementsHeader : View
-	
 	private lateinit var tvAnnouncementsCaption : TextView
 	private lateinit var tvAnnouncementsIndex : TextView
 	private lateinit var btnAnnouncementsPrev : ImageButton
 	private lateinit var btnAnnouncementsNext : ImageButton
-	private lateinit var btnAnnouncementsShowHide : ImageButton
 	private lateinit var llAnnouncements : View
 	private lateinit var tvAnnouncementPeriod : TextView
 	private lateinit var tvAnnouncementContent : MyTextView
@@ -334,6 +333,7 @@ class ColumnViewHolder(
 		btnQuickFilterVote.setOnClickListener(this)
 		
 		llColumnHeader.setOnClickListener(this)
+		btnAnnouncements.setOnClickListener(this)
 		btnColumnSetting.setOnClickListener(this)
 		btnColumnReload.setOnClickListener(this)
 		btnColumnClose.setOnClickListener(this)
@@ -348,11 +348,8 @@ class ColumnViewHolder(
 		
 		llRefreshError.setOnClickListener(this)
 		
-		btnAnnouncementsShowHide.setOnClickListener(this)
 		btnAnnouncementsPrev.setOnClickListener(this)
 		btnAnnouncementsNext.setOnClickListener(this)
-		llAnnouncementsHeader.setOnClickListener(this)
-		
 		
 		cbDontCloseColumn.setOnCheckedChangeListener(this)
 		cbWithAttachment.setOnCheckedChangeListener(this)
@@ -407,6 +404,10 @@ class ColumnViewHolder(
 		
 		pad = (ActMain.headerIconSize * 0.125f + 0.5f).toInt()
 		wh = ActMain.headerIconSize + pad * 2
+		
+		btnAnnouncements.layoutParams.width = wh
+		btnAnnouncements.layoutParams.height = wh
+		btnAnnouncements.setPaddingRelative(pad, pad, pad, pad)
 		btnColumnSetting.layoutParams.width = wh
 		btnColumnSetting.layoutParams.height = wh
 		btnColumnSetting.setPaddingRelative(pad, pad, pad, pad)
@@ -766,6 +767,7 @@ class ColumnViewHolder(
 		val csl = ColorStateList.valueOf(c)
 		tvColumnName.textColor = c
 		ivColumnIcon.imageTintList = csl
+		btnAnnouncements.imageTintList = csl
 		btnColumnSetting.imageTintList = csl
 		btnColumnReload.imageTintList = csl
 		btnColumnClose.imageTintList = csl
@@ -1063,8 +1065,11 @@ class ColumnViewHolder(
 			
 			llColumnHeader -> scrollToTop2()
 			
-			btnColumnSetting -> llColumnSetting.visibility =
-				if(llColumnSetting.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+			btnColumnSetting -> {
+				if(llColumnSetting.vg(llColumnSetting.visibility != View.VISIBLE) != null) {
+					hideAnnouncements()
+				}
+			}
 			
 			btnDeleteNotification -> Action_Notification.deleteAll(
 				activity,
@@ -1104,15 +1109,7 @@ class ColumnViewHolder(
 			btnQuickFilterReaction -> clickQuickFilter(Column.QUICK_FILTER_REACTION)
 			btnQuickFilterVote -> clickQuickFilter(Column.QUICK_FILTER_VOTE)
 			
-			llAnnouncementsHeader, btnAnnouncementsShowHide -> {
-				if(llAnnouncements.visibility == View.VISIBLE) {
-					column.announcementHideTime = System.currentTimeMillis()
-				} else {
-					column.announcementHideTime = 0L
-				}
-				activity.app_state.saveColumnList()
-				showAnnouncements()
-			}
+			btnAnnouncements -> toggleAnnouncements()
 			
 			btnAnnouncementsPrev -> {
 				column.announcementId =
@@ -1714,6 +1711,30 @@ class ColumnViewHolder(
 						weight = 1f
 					}
 					
+					frameLayout {
+						lparams(wrapContent, wrapContent) {
+							gravity = Gravity.CENTER_VERTICAL
+							startMargin = dip(2)
+						}
+						btnAnnouncements = imageButton {
+							background =
+								ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+							contentDescription = context.getString(R.string.announcements)
+							setImageResource(R.drawable.ic_info_outline)
+							padding = dip(8)
+							scaleType = ImageView.ScaleType.FIT_CENTER
+						}.lparams(dip(40), dip(40))
+						
+						btnAnnouncementsBadge = imageView {
+							setImageResource(R.drawable.announcements_dot)
+							scaleType = ImageView.ScaleType.FIT_CENTER
+						}.lparams(dip(7), dip(7)) {
+							gravity = Gravity.END or Gravity.TOP
+							endMargin = dip(4)
+							topMargin = dip(4)
+						}
+					}
+					
 					btnColumnSetting = imageButton {
 						background =
 							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
@@ -1974,7 +1995,7 @@ class ColumnViewHolder(
 				val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
 				val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
 				
-				llAnnouncementsHeader = linearLayout {
+				linearLayout {
 					lparams(matchParent, wrapContent)
 					val pad_lr = dip(6)
 					setPadding(pad_lr, 0, pad_lr, 0)
@@ -1984,7 +2005,7 @@ class ColumnViewHolder(
 						R.drawable.btn_bg_transparent_round6dp
 					)
 					
-					gravity =  Gravity.CENTER_VERTICAL or Gravity.END
+					gravity = Gravity.CENTER_VERTICAL or Gravity.END
 					
 					tvAnnouncementsCaption = textView {
 						gravity = Gravity.END or Gravity.CENTER_VERTICAL
@@ -2024,19 +2045,6 @@ class ColumnViewHolder(
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER
 						
-					}.lparams(buttonHeight, buttonHeight) {
-						marginStart = dip(4)
-					}
-					
-					btnAnnouncementsShowHide = imageButton {
-						background = ContextCompat.getDrawable(
-							context,
-							R.drawable.btn_bg_transparent_round6dp
-						)
-						contentDescription = context.getString(R.string.hide)
-						imageResource = R.drawable.ic_arrow_drop_down
-						setPadding(paddingH, paddingV, paddingH, paddingV)
-						scaleType = ImageView.ScaleType.FIT_CENTER
 					}.lparams(buttonHeight, buttonHeight) {
 						marginStart = dip(4)
 					}
@@ -2307,6 +2315,29 @@ class ColumnViewHolder(
 		rv
 	}
 	
+	private fun hideAnnouncements() {
+		val column = column ?: return
+		
+		if(column.announcementHideTime <= 0L)
+			column.announcementHideTime = System.currentTimeMillis()
+		activity.app_state.saveColumnList()
+		showAnnouncements()
+	}
+	
+	private fun toggleAnnouncements() {
+		val column = column ?: return
+		
+		if(llAnnouncementsBox.visibility == View.VISIBLE) {
+			if(column.announcementHideTime <= 0L)
+				column.announcementHideTime = System.currentTimeMillis()
+		} else {
+			llColumnSetting.vg(false)
+			column.announcementHideTime = 0L
+		}
+		activity.app_state.saveColumnList()
+		showAnnouncements()
+	}
+	
 	private fun showAnnouncements(force : Boolean = true) {
 		val column = column ?: return
 		
@@ -2325,14 +2356,34 @@ class ColumnViewHolder(
 		clearExtras()
 		
 		val listShown = TootAnnouncement.filterShown(column.announcements)
-		if(llAnnouncementsBox.vg(listShown?.isNotEmpty() == true) == null) {
+		if(listShown?.isEmpty() != false) {
+			btnAnnouncements.vg(false)
+			llAnnouncementsBox.vg(false)
+			btnAnnouncementsBadge.vg(false)
+			return
+		}
+		
+		btnAnnouncements.vg(true)
+		
+		val expand = column.announcementHideTime <= 0L
+		
+		llAnnouncementsBox.vg(expand)
+		
+		btnAnnouncementsBadge.vg(false)
+		if(! expand) {
+			val newer = listShown.find { it.updated_at > column.announcementHideTime }
+			if(newer != null) {
+				column.announcementId = newer.id
+				btnAnnouncementsBadge.vg(true)
+			}
 			return
 		}
 		
 		val content_color = column.getContentColor()
 		
-		val item = listShown !!.find { it.id == column.announcementId }
+		val item = listShown.find { it.id == column.announcementId }
 			?: listShown[0]
+		
 		val itemIndex = listShown.indexOf(item)
 		
 		val enablePaging = listShown.size > 1
@@ -2355,7 +2406,6 @@ class ColumnViewHolder(
 			alphaMultiplier = alphaPrevNext
 		)
 		
-		val expand = column.announcementHideTime <= 0L
 		
 		btnAnnouncementsPrev.vg(expand)?.run {
 			isEnabled = enablePaging
@@ -2389,37 +2439,6 @@ class ColumnViewHolder(
 		tvAnnouncementsIndex.vg(expand)?.text =
 			activity.getString(R.string.announcements_index, itemIndex + 1, listShown.size)
 		llAnnouncements.vg(expand)
-		
-		if(! expand) {
-			val newer = listShown.find { it.updated_at > column.announcementHideTime }
-			if(newer != null) {
-				column.announcementId = newer.id
-				setIconDrawableId(
-					activity,
-					btnAnnouncementsShowHide,
-					R.drawable.ic_error,
-					color = getAttributeColor(activity, R.attr.colorRegexFilterError),
-					alphaMultiplier = 1f
-				)
-			} else {
-				setIconDrawableId(
-					activity,
-					btnAnnouncementsShowHide,
-					R.drawable.ic_arrow_drop_down,
-					color = content_color,
-					alphaMultiplier = 1f
-				)
-			}
-			return
-		}
-		
-		setIconDrawableId(
-			activity,
-			btnAnnouncementsShowHide,
-			R.drawable.ic_arrow_drop_up,
-			color = content_color,
-			alphaMultiplier = 1f
-		)
 		
 		var periods : StringBuilder? = null
 		fun String.appendPeriod() {

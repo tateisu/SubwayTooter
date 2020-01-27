@@ -153,6 +153,9 @@ class ColumnViewHolder(
 	private lateinit var etHashtagExtraNone : EditText
 	
 	private lateinit var llAnnouncementsBox : View
+	private lateinit var llAnnouncementsHeader : View
+	
+	private lateinit var tvAnnouncementsCaption : TextView
 	private lateinit var tvAnnouncementsIndex : TextView
 	private lateinit var btnAnnouncementsPrev : ImageButton
 	private lateinit var btnAnnouncementsNext : ImageButton
@@ -164,7 +167,7 @@ class ColumnViewHolder(
 	
 	private val announcementContentInvalidator : NetworkEmojiInvalidator
 	
-	private var lastAnnouncementShown = 0L
+	var lastAnnouncementShown = 0L
 	
 	private val extra_invalidator_list = ArrayList<NetworkEmojiInvalidator>()
 	
@@ -348,6 +351,7 @@ class ColumnViewHolder(
 		btnAnnouncementsShowHide.setOnClickListener(this)
 		btnAnnouncementsPrev.setOnClickListener(this)
 		btnAnnouncementsNext.setOnClickListener(this)
+		llAnnouncementsHeader.setOnClickListener(this)
 		
 		
 		cbDontCloseColumn.setOnCheckedChangeListener(this)
@@ -788,6 +792,8 @@ class ColumnViewHolder(
 		
 		// カラム色を変更したらクイックフィルタの色も変わる場合がある
 		showQuickFilter()
+		
+		showAnnouncements(force = false)
 	}
 	
 	private fun closeBitmaps() {
@@ -1098,7 +1104,7 @@ class ColumnViewHolder(
 			btnQuickFilterReaction -> clickQuickFilter(Column.QUICK_FILTER_REACTION)
 			btnQuickFilterVote -> clickQuickFilter(Column.QUICK_FILTER_VOTE)
 			
-			btnAnnouncementsShowHide -> {
+			llAnnouncementsHeader, btnAnnouncementsShowHide -> {
 				if(llAnnouncements.visibility == View.VISIBLE) {
 					column.announcementHideTime = System.currentTimeMillis()
 				} else {
@@ -1959,23 +1965,29 @@ class ColumnViewHolder(
 				}
 				background = createRoundDrawable(
 					dip(6).toFloat(),
-					getAttributeColor(context, R.attr.colorThumbnailBackground)
+					getAttributeColor(context, R.attr.colorSearchFormBackground)
 				)
 				var pad_tb = dip(2)
 				setPadding(0, pad_tb, 0, pad_tb)
 				
-				linearLayout {
-					lparams(matchParent, wrapContent) {
-						startMargin = dip(6)
-						endMargin = dip(6)
-					}
+				val buttonHeight = ActMain.boostButtonSize
+				val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
+				val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
+				
+				llAnnouncementsHeader = linearLayout {
+					lparams(matchParent, wrapContent)
+					val pad_lr = dip(6)
+					setPadding(pad_lr, 0, pad_lr, 0)
 					
-					gravity = Gravity.CENTER_VERTICAL
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent_round6dp
+					)
 					
+					gravity =  Gravity.CENTER_VERTICAL or Gravity.END
 					
-					
-					textView {
-						gravity = Gravity.END
+					tvAnnouncementsCaption = textView {
+						gravity = Gravity.END or Gravity.CENTER_VERTICAL
 						text = context.getString(R.string.announcements)
 					}.lparams(0, wrapContent) {
 						weight = 1f
@@ -1985,12 +1997,14 @@ class ColumnViewHolder(
 						
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						contentDescription = context.getString(R.string.previous)
 						imageResource = R.drawable.ic_arrow_start
-					}.lparams(dip(32), dip(32)) {
-						gravity = Gravity.END
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						
+					}.lparams(buttonHeight, buttonHeight) {
 						marginStart = dip(4)
 					}
 					
@@ -2003,27 +2017,29 @@ class ColumnViewHolder(
 						
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						contentDescription = context.getString(R.string.next)
 						imageResource = R.drawable.ic_arrow_end
-					}.lparams(dip(32), dip(32)) {
-						gravity = Gravity.END
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						
+					}.lparams(buttonHeight, buttonHeight) {
 						marginStart = dip(4)
 					}
 					
 					btnAnnouncementsShowHide = imageButton {
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						contentDescription = context.getString(R.string.hide)
-						imageResource = R.drawable.ic_close
-					}.lparams(dip(32), dip(32)) {
-						gravity = Gravity.END
+						imageResource = R.drawable.ic_arrow_drop_down
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+					}.lparams(buttonHeight, buttonHeight) {
 						marginStart = dip(4)
 					}
-					
 				}
 				
 				llAnnouncements = maxHeightScrollView {
@@ -2320,16 +2336,56 @@ class ColumnViewHolder(
 		val itemIndex = listShown.indexOf(item)
 		
 		val enablePaging = listShown.size > 1
+		
+		val alphaPrevNext = if(enablePaging) 1f else 0.3f
+		
+		setIconDrawableId(
+			activity,
+			btnAnnouncementsPrev,
+			R.drawable.ic_arrow_start,
+			color = content_color,
+			alphaMultiplier = alphaPrevNext
+		)
+		
+		setIconDrawableId(
+			activity,
+			btnAnnouncementsNext,
+			R.drawable.ic_arrow_end,
+			color = content_color,
+			alphaMultiplier = alphaPrevNext
+		)
+		
 		val expand = column.announcementHideTime <= 0L
 		
 		btnAnnouncementsPrev.vg(expand)?.run {
 			isEnabled = enablePaging
-			alpha = if(enablePaging) 1f else 0.3f
 		}
 		btnAnnouncementsNext.vg(expand)?.run {
 			isEnabled = enablePaging
-			alpha = if(enablePaging) 1f else 0.3f
 		}
+		
+		tvAnnouncementsCaption.textColor = content_color
+		tvAnnouncementsIndex.textColor = content_color
+		tvAnnouncementPeriod.textColor = content_color
+		
+		val f = activity.timeline_font_size_sp
+		if(! f.isNaN()) {
+			tvAnnouncementsCaption.textSize = f
+			tvAnnouncementsIndex.textSize = f
+			tvAnnouncementPeriod.textSize = f
+			tvAnnouncementContent.textSize = f
+		}
+		val spacing = activity.timeline_spacing
+		if(spacing != null) {
+			tvAnnouncementPeriod.setLineSpacing(0f, spacing)
+			tvAnnouncementContent.setLineSpacing(0f, spacing)
+		}
+		tvAnnouncementsCaption.typeface = ActMain.timeline_font_bold
+		val font_normal = ActMain.timeline_font
+		tvAnnouncementsIndex.typeface = font_normal
+		tvAnnouncementPeriod.typeface = font_normal
+		tvAnnouncementContent.typeface = font_normal
+		
 		tvAnnouncementsIndex.vg(expand)?.text =
 			activity.getString(R.string.announcements_index, itemIndex + 1, listShown.size)
 		llAnnouncements.vg(expand)
@@ -2343,7 +2399,7 @@ class ColumnViewHolder(
 					btnAnnouncementsShowHide,
 					R.drawable.ic_error,
 					color = getAttributeColor(activity, R.attr.colorRegexFilterError),
-					alphaMultiplier = Styler.boost_alpha
+					alphaMultiplier = 1f
 				)
 			} else {
 				setIconDrawableId(
@@ -2351,7 +2407,7 @@ class ColumnViewHolder(
 					btnAnnouncementsShowHide,
 					R.drawable.ic_arrow_drop_down,
 					color = content_color,
-					alphaMultiplier = Styler.boost_alpha
+					alphaMultiplier = 1f
 				)
 			}
 			return
@@ -2362,7 +2418,7 @@ class ColumnViewHolder(
 			btnAnnouncementsShowHide,
 			R.drawable.ic_arrow_drop_up,
 			color = content_color,
-			alphaMultiplier = Styler.boost_alpha
+			alphaMultiplier = 1f
 		)
 		
 		var periods : StringBuilder? = null
@@ -2381,7 +2437,6 @@ class ColumnViewHolder(
 			item.ends_at,
 			item.all_day
 		)
-		
 		
 		when {
 			
@@ -2409,7 +2464,9 @@ class ColumnViewHolder(
 		val sb = periods
 		tvAnnouncementPeriod.vg(sb != null)?.text = sb
 		
+		tvAnnouncementContent.textColor = content_color
 		tvAnnouncementContent.text = item.decoded_content
+		tvAnnouncementContent.tag = this@ColumnViewHolder
 		announcementContentInvalidator.register(item.decoded_content)
 		
 		// リアクションの表示
@@ -2418,6 +2475,7 @@ class ColumnViewHolder(
 		
 		val buttonHeight = ActMain.boostButtonSize
 		val marginBetween = (buttonHeight.toFloat() * 0.2f + 0.5f).toInt()
+		val marginBottom = (buttonHeight.toFloat() * 0.2f + 0.5f).toInt()
 		
 		val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
 		val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
@@ -2439,8 +2497,10 @@ class ColumnViewHolder(
 			val blp = FlexboxLayout.LayoutParams(
 				buttonHeight,
 				buttonHeight
-			)
-			blp.endMargin = marginBetween
+			).apply {
+				bottomMargin = marginBottom
+				endMargin = marginBetween
+			}
 			b.layoutParams = blp
 			b.background = ContextCompat.getDrawable(
 				activity,
@@ -2459,7 +2519,7 @@ class ColumnViewHolder(
 				b,
 				R.drawable.ic_add,
 				color = content_color,
-				alphaMultiplier = Styler.boost_alpha
+				alphaMultiplier = 1f
 			)
 			
 			box.addView(b)
@@ -2477,29 +2537,30 @@ class ColumnViewHolder(
 			)
 			
 			val actMain = activity
-			val emojiAnimation = Pref.bpDisableEmojiAnimation(actMain.pref)
+			val disableEmojiAnimation = Pref.bpDisableEmojiAnimation(actMain.pref)
 			
 			for(reaction in reactions) {
 				
-				val url = if(emojiAnimation) {
-					reaction.url.notEmpty() ?: reaction.static_url.notEmpty()
-				} else {
+				val url = if(disableEmojiAnimation) {
 					reaction.static_url.notEmpty() ?: reaction.url.notEmpty()
+				} else {
+					reaction.url.notEmpty() ?: reaction.static_url.notEmpty()
 				}
 				
-				val b = Button(activity).apply {
-					layoutParams = FlexboxLayout.LayoutParams(
+				val b = Button(activity).also { btn ->
+					btn.layoutParams = FlexboxLayout.LayoutParams(
 						FlexboxLayout.LayoutParams.WRAP_CONTENT,
 						buttonHeight
 					).apply {
 						endMargin = marginBetween
+						bottomMargin = marginBottom
 					}
-					minWidthCompat = buttonHeight
+					btn.minWidthCompat = buttonHeight
 					
-					allCaps = false
-					tag = reaction
+					btn.allCaps = false
+					btn.tag = reaction
 					
-					background = ContextCompat.getDrawable(
+					btn.background = ContextCompat.getDrawable(
 						actMain,
 						if(reaction.me == true) {
 							R.drawable.bg_button_cw
@@ -2508,12 +2569,12 @@ class ColumnViewHolder(
 						}
 					)
 					
-					setTextColor(content_color)
+					btn.setTextColor(content_color)
 					
-					setPadding(paddingH, paddingV, paddingH, paddingV)
+					btn.setPadding(paddingH, paddingV, paddingH, paddingV)
 					
 					
-					text = if(url == null) {
+					btn.text = if(url == null) {
 						EmojiDecoder.decodeEmoji(options, "${reaction.name} ${reaction.count}")
 					} else {
 						SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
@@ -2524,13 +2585,13 @@ class ColumnViewHolder(
 								Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
 							)
 							val invalidator =
-								NetworkEmojiInvalidator(actMain.handler, this)
+								NetworkEmojiInvalidator(actMain.handler, btn)
 							invalidator.register(sb)
 							extra_invalidator_list.add(invalidator)
 						}
 					}
 					
-					setOnClickListener {
+					btn.setOnClickListener {
 						if(reaction.me == true) {
 							removeReaction(item, reaction.name)
 						} else {
@@ -2563,27 +2624,16 @@ class ColumnViewHolder(
 		val host = column.access_info.host
 		val isMisskey = column.isMisskey
 		if(sample == null) {
-			EmojiPicker(activity, host, isMisskey) { name, _, _ ,unicode->
+			EmojiPicker(activity, host, isMisskey) { name, _, _, unicode, customEmoji ->
 				log.d("addReaction: $name")
 				addReaction(item, TootAnnouncement.Reaction(jsonObject {
-					put("name", unicode ?: name )
+					put("name", unicode ?: name)
 					put("count", 1)
 					put("me", true)
-					
 					// 以下はカスタム絵文字のみ
-					if(unicode == null){
-						val map = App1.custom_emoji_lister.getMap(host, isMisskey)
-						if(map == null) {
-							showToast(activity, false, "emoji map is null")
-							return@EmojiPicker
-						}
-						val ce = map[name]
-						if(ce == null) {
-							showToast(activity, false, "emoji '$name' not found.")
-							return@EmojiPicker
-						}
-						putNotNull("url", ce.url)
-						putNotNull("static_url", ce.static_url)
+					if(customEmoji != null) {
+						putNotNull("url", customEmoji.url)
+						putNotNull("static_url", customEmoji.static_url)
 					}
 				}))
 			}.show()
@@ -2603,6 +2653,7 @@ class ColumnViewHolder(
 				if(result.jsonObject == null) {
 					showToast(activity, true, result.error)
 				} else {
+					sample.count = 0
 					val list = item.reactions
 					if(list == null) {
 						item.reactions = mutableListOf(sample)
@@ -2612,7 +2663,7 @@ class ColumnViewHolder(
 							list.add(sample)
 						} else {
 							reaction.me = true
-							++reaction.count
+							++ reaction.count
 						}
 					}
 					column.announcementUpdated = SystemClock.elapsedRealtime()

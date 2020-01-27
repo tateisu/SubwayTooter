@@ -242,6 +242,10 @@ class ActMain : AppCompatActivity()
 				column = tag.ivh.column
 				whoRef = tag.ivh.getAccount()
 				break
+			} else if(tag is ColumnViewHolder) {
+				column = tag.column
+				whoRef = null
+				break
 			} else if(tag is ViewHolderHeaderBase) {
 				column = tag.column
 				whoRef = tag.getAccount()
@@ -603,6 +607,7 @@ class ActMain : AppCompatActivity()
 		
 		// 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
 		for(column in app_state.column_list) {
+			column.viewHolder?.lastAnnouncementShown = 0L
 			column.fireColumnColor()
 		}
 		

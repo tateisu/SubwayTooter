@@ -34,7 +34,8 @@ class EmojiPicker(
 		name : String,
 		instance : String?,
 		bInstanceHasCustomEmoji : Boolean,
-		unicode:String?
+		unicode : String?,
+		customEmoji : CustomEmoji?
 	) -> Unit
 	// onEmojiPickedのinstance引数は通常の絵文字ならnull、カスタム絵文字なら非null、
 ) : View.OnClickListener, ViewPager.OnPageChangeListener {
@@ -92,7 +93,7 @@ class EmojiPicker(
 	private var custom_list = ArrayList<EmojiItem>()
 	private var custom_categories = ArrayList<CustomCategory>()
 	
-	private val emoji_url_map = HashMap<String, String>()
+	private val emoji_url_map = HashMap<String, CustomEmoji>()
 	
 	private val recent_page_idx : Int
 	
@@ -237,7 +238,7 @@ class EmojiPicker(
 				newList[category] = subList
 			}
 			subList.add(EmojiItem(emoji.shortcode, instance))
-			emoji_url_map[emoji.shortcode] = emoji.url
+			emoji_url_map[emoji.shortcode] = emoji
 		}
 		// compose categories data list
 		val entries = newList.entries
@@ -452,7 +453,7 @@ class EmojiPicker(
 					layoutParams = AbsListView.LayoutParams(wh, wh)
 				}
 				view.setTag(R.id.btnAbout, item)
-				(view as? NetworkEmojiView)?.setEmoji(emoji_url_map[item.name])
+				(view as? NetworkEmojiView)?.setEmoji(emoji_url_map[item.name]?.url)
 			} else {
 				if(viewOld == null) {
 					view = ImageView(activity)
@@ -506,7 +507,7 @@ class EmojiPicker(
 				var name = item.name
 				if(item.instance != null && item.instance.isNotEmpty()) {
 					// カスタム絵文字
-					selected(name, item.instance,null)
+					selected(name, item.instance, customEmoji = emoji_url_map[item.name])
 				} else {
 					// 普通の絵文字
 					var ei = EmojiMap.sShortNameToEmojiInfo[name] ?: return
@@ -514,20 +515,25 @@ class EmojiPicker(
 					if(page.hasSkinTone) {
 						val sv = applySkinTone(name)
 						val tmp = EmojiMap.sShortNameToEmojiInfo[sv]
-						if( tmp!=null){
+						if(tmp != null) {
 							ei = tmp
 							name = sv
 						}
 					}
 					
-					selected(name, null,ei.unified)
+					selected(name, null, unicode= ei.unified)
 				}
 			}
 		}
 	}
 	
 	// name はスキントーン適用済みであること
-	internal fun selected(name : String, instance : String?,unicode:String?) {
+	internal fun selected(
+		name : String,
+		instance : String?,
+		unicode : String? = null,
+		customEmoji : CustomEmoji? = null
+	) {
 		
 		dialog.dismissSafe()
 		
@@ -571,7 +577,7 @@ class EmojiPicker(
 		
 		}
 		
-		onEmojiPicked(name, instance, bInstanceHasCustomEmoji,unicode)
+		onEmojiPicked(name, instance, bInstanceHasCustomEmoji, unicode,customEmoji)
 	}
 	
 	internal inner class EmojiPickerPagerAdapter : androidx.viewpager.widget.PagerAdapter() {

@@ -189,6 +189,8 @@ class Column(
 		internal const val KEY_COLUMN_NAME = "column_name"
 		internal const val KEY_OLD_INDEX = "old_index"
 		
+		internal const val KEY_ANNOUNCEMEMT_HIDE_TIME = "announcementHideTime"
+		
 		val typeMap : SparseArray<ColumnType> = SparseArray()
 		
 		internal var useInstanceTicker = false
@@ -713,6 +715,8 @@ class Column(
 		instance_local = src.optBoolean(KEY_INSTANCE_LOCAL)
 		quick_filter = src.optInt(KEY_QUICK_FILTER, 0)
 		
+		announcementHideTime = src.optLong(KEY_ANNOUNCEMEMT_HIDE_TIME,0L)
+		
 		enable_speech = src.optBoolean(KEY_ENABLE_SPEECH)
 		use_old_api = src.optBoolean(KEY_USE_OLD_API)
 		last_viewing_item_id = EntityId.from(src, KEY_LAST_VIEWING_ITEM)
@@ -797,6 +801,8 @@ class Column(
 		dst[KEY_ACCOUNT_ROW_ID] = access_info.db_id
 		dst[KEY_TYPE] = type.id
 		dst[KEY_COLUMN_ID] = column_id
+		
+		dst[KEY_ANNOUNCEMEMT_HIDE_TIME] = announcementHideTime
 		
 		dst.putIfTrue(KEY_DONT_CLOSE, dont_close)
 		dst.putIfTrue(KEY_WITH_ATTACHMENT, with_attachment)

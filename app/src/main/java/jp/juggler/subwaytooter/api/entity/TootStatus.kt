@@ -22,6 +22,7 @@ import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 import kotlin.math.abs
+import kotlin.math.min
 
 class FilterTrees(
 	val treeIrreversible : WordTrieTree = WordTrieTree(),
@@ -995,6 +996,9 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		
 		@SuppressLint("SimpleDateFormat")
 		internal val date_format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
+		@SuppressLint("SimpleDateFormat")
+		internal val date_format2 = SimpleDateFormat("yyyy-MM-dd")
 		
 		fun formatTime(context : Context, t : Long, bAllowRelative : Boolean) : String {
 			if(bAllowRelative && Pref.bpRelativeTimestamp(App1.pref)) {
@@ -1050,7 +1054,53 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				}
 			}
 			
-			return date_format.format(Date(t))
+			return formatDate(t,date_format,omitZeroSecond = false)
+		}
+		
+		// 告知の開始/終了日付
+		private fun formatDate(
+			t : Long,
+			format:SimpleDateFormat ,
+			omitZeroSecond:Boolean
+		) : String {
+			var dateTarget = format.format(Date(t))
+			
+			// 秒の部分を省略する
+			if( omitZeroSecond && dateTarget.endsWith(":00")){
+				dateTarget = dateTarget.substring(0,dateTarget.length -3)
+			}
+			
+			// 年の部分が現在と同じなら省略する
+			val dateNow = format.format(Date(t))
+			val delm = dateNow.indexOf('-')
+			if(delm!=-1 && dateNow.substring(0,delm+1) == dateTarget.substring(0,delm+1)){
+				dateTarget = dateTarget.substring(delm+1)
+			}
+
+			return dateTarget
+		}
+		
+		fun formatTimeRange(start : Long, end : Long, allDay : Boolean):Pair<String,String>{
+			val strStart = when {
+				start <= 0L -> ""
+				allDay-> formatDate(start,date_format2,omitZeroSecond = false)
+				else -> formatDate(start, date_format,omitZeroSecond = true)
+			}
+			val strEnd = when {
+				end <= 0L -> ""
+				allDay-> formatDate(end,date_format2,omitZeroSecond = false)
+				else -> formatDate(end, date_format,omitZeroSecond = true)
+			}
+			// 終了日は先頭と同じ部分を省略する
+			var skip = 0
+			for(i in 0 until min(strStart.length,strEnd.length)){
+				val c =strStart[i]
+				if(c != strEnd[i] ) break
+				if( c.isDigit() ) continue
+				skip= i+1
+				if( c == ' ') break // 時間以降は省略しない
+			}
+			return Pair( strStart,strEnd.substring(skip,strEnd.length))
 		}
 		
 		fun parseStringArray(src : JsonArray?) : ArrayList<String>? {

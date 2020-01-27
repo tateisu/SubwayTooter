@@ -30,7 +30,12 @@ class EmojiPicker(
 	private val activity : Activity,
 	private val instance : String?,
 	@Suppress("CanBeParameter") private val isMisskey : Boolean,
-	private val onEmojiPicked : (name : String, instance : String?, bInstanceHasCustomEmoji : Boolean) -> Unit
+	private val onEmojiPicked : (
+		name : String,
+		instance : String?,
+		bInstanceHasCustomEmoji : Boolean,
+		unicode:String?
+	) -> Unit
 	// onEmojiPickedのinstance引数は通常の絵文字ならnull、カスタム絵文字なら非null、
 ) : View.OnClickListener, ViewPager.OnPageChangeListener {
 	
@@ -501,26 +506,28 @@ class EmojiPicker(
 				var name = item.name
 				if(item.instance != null && item.instance.isNotEmpty()) {
 					// カスタム絵文字
-					selected(name, item.instance)
+					selected(name, item.instance,null)
 				} else {
 					// 普通の絵文字
-					EmojiMap.sShortNameToEmojiInfo[name] ?: return
+					var ei = EmojiMap.sShortNameToEmojiInfo[name] ?: return
 					
 					if(page.hasSkinTone) {
 						val sv = applySkinTone(name)
-						if(EmojiMap.sShortNameToEmojiInfo[sv] != null) {
+						val tmp = EmojiMap.sShortNameToEmojiInfo[sv]
+						if( tmp!=null){
+							ei = tmp
 							name = sv
 						}
 					}
 					
-					selected(name, null)
+					selected(name, null,ei.unified)
 				}
 			}
 		}
 	}
 	
 	// name はスキントーン適用済みであること
-	internal fun selected(name : String, instance : String?) {
+	internal fun selected(name : String, instance : String?,unicode:String?) {
 		
 		dialog.dismissSafe()
 		
@@ -564,7 +571,7 @@ class EmojiPicker(
 		
 		}
 		
-		onEmojiPicked(name, instance, bInstanceHasCustomEmoji)
+		onEmojiPicked(name, instance, bInstanceHasCustomEmoji,unicode)
 	}
 	
 	internal inner class EmojiPickerPagerAdapter : androidx.viewpager.widget.PagerAdapter() {

@@ -487,6 +487,18 @@ class Column(
 	
 	internal var language_filter : JsonObject? = null
 	
+	// 告知のリスト
+	internal var announcements : MutableList<TootAnnouncement>? = null
+	
+	// 表示中の告知
+	internal var announcementId : EntityId? = null
+	
+	// 告知を閉じた時刻, 0なら閉じていない
+	internal var announcementHideTime = 0L
+	
+	// 告知データを更新したタイミング
+	internal var announcementUpdated = 0L
+	
 	// プロフカラムでのアカウント情報
 	@Volatile
 	internal var who_account : TootAccountRef? = null
@@ -2571,6 +2583,65 @@ class Column(
 					fireShowContent(reason = "onNoteUpdated", changeList = changeList)
 				}
 			}
+		}
+		
+		override fun onAnnouncementUpdate(item : TootAnnouncement) {
+			val list = announcements
+			if(list == null) {
+				announcements = mutableListOf(item)
+			}else{
+				val index = list.indexOfFirst{ it.id == item.id}
+				if( index != -1 ){
+					list[index] = TootAnnouncement.merge(list[index],item)
+				}else{
+					list.add(0, item)
+				}
+				announcements?.sortWith(TootAnnouncement.comparator)
+			}
+			announcementUpdated = SystemClock.elapsedRealtime()
+			fireShowColumnHeader()
+		}
+		
+		override fun onAnnouncementDelete(id : EntityId) {
+			val it = announcements?.iterator() ?: return
+			while(it.hasNext()){
+				val item = it.next()
+				if( item.id == id){
+					it.remove()
+					announcementUpdated = SystemClock.elapsedRealtime()
+					fireShowColumnHeader()
+					return
+				}
+			}
+		}
+		
+		override fun onAnnouncementReaction(reaction : TootAnnouncement.Reaction) {
+			// find announcement
+			val announcement_id = reaction.announcement_id ?: return
+			val announcement = announcements?.find { it.id == announcement_id } ?: return
+			
+			// find reaction
+			val index = announcement.reactions?.indexOfFirst { it.name == reaction.name }
+			when {
+				reaction.count <= 0L -> {
+					if(index != null && index != - 1) announcement.reactions?.removeAt(index)
+				}
+				
+				index == null -> {
+					announcement.reactions = ArrayList<TootAnnouncement.Reaction>().apply {
+						add(reaction)
+					}
+				}
+				
+				index == - 1 -> announcement.reactions?.add(reaction)
+				
+				else -> announcement.reactions?.get(index)?.let{ old ->
+					old.count = reaction.count
+					// ストリーミングイベントにはmeが含まれないので、oldにあるmeは変更されない
+				}
+			}
+			announcementUpdated = SystemClock.elapsedRealtime()
+			fireShowColumnHeader()
 		}
 	}
 	

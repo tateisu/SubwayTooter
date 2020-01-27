@@ -6,7 +6,9 @@ import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.AsyncTask
+import android.os.SystemClock
 import android.text.InputType
+import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
 import android.view.*
@@ -17,13 +19,26 @@ import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.flexbox.FlexWrap
+import com.google.android.flexbox.FlexboxLayout
+import com.google.android.flexbox.JustifyContent
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
 import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_Notification
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.TootTask
+import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.entity.TootAnnouncement
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.dialog.EmojiPicker
+import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.ListDivider
+import jp.juggler.subwaytooter.view.MyLinkMovementMethod
+import jp.juggler.subwaytooter.view.MyTextView
 import jp.juggler.util.*
 import org.jetbrains.anko.*
 import java.io.Closeable
@@ -136,6 +151,22 @@ class ColumnViewHolder(
 	private lateinit var etHashtagExtraAny : EditText
 	private lateinit var etHashtagExtraAll : EditText
 	private lateinit var etHashtagExtraNone : EditText
+	
+	private lateinit var llAnnouncementsBox : View
+	private lateinit var tvAnnouncementsIndex : TextView
+	private lateinit var btnAnnouncementsPrev : ImageButton
+	private lateinit var btnAnnouncementsNext : ImageButton
+	private lateinit var btnAnnouncementsShowHide : ImageButton
+	private lateinit var llAnnouncements : View
+	private lateinit var tvAnnouncementPeriod : TextView
+	private lateinit var tvAnnouncementContent : MyTextView
+	private lateinit var llAnnouncementExtra : LinearLayout
+	
+	private val announcementContentInvalidator : NetworkEmojiInvalidator
+	
+	private var lastAnnouncementShown = 0L
+	
+	private val extra_invalidator_list = ArrayList<NetworkEmojiInvalidator>()
 	
 	private val isPageDestroyed : Boolean
 		get() = column == null || activity.isFinishing
@@ -291,8 +322,6 @@ class ColumnViewHolder(
 			handled
 		}
 		
-		
-		
 		btnQuickFilterAll.setOnClickListener(this)
 		btnQuickFilterMention.setOnClickListener(this)
 		btnQuickFilterFavourite.setOnClickListener(this)
@@ -300,7 +329,6 @@ class ColumnViewHolder(
 		btnQuickFilterFollow.setOnClickListener(this)
 		btnQuickFilterReaction.setOnClickListener(this)
 		btnQuickFilterVote.setOnClickListener(this)
-		
 		
 		llColumnHeader.setOnClickListener(this)
 		btnColumnSetting.setOnClickListener(this)
@@ -316,6 +344,10 @@ class ColumnViewHolder(
 		refreshLayout.setDistanceToTriggerSync((0.5f + 20f * activity.density).toInt())
 		
 		llRefreshError.setOnClickListener(this)
+		
+		btnAnnouncementsShowHide.setOnClickListener(this)
+		btnAnnouncementsPrev.setOnClickListener(this)
+		btnAnnouncementsNext.setOnClickListener(this)
 		
 		
 		cbDontCloseColumn.setOnCheckedChangeListener(this)
@@ -426,6 +458,10 @@ class ColumnViewHolder(
 			activity.handler.removeCallbacks(proc_start_filter)
 			activity.handler.postDelayed(proc_start_filter, 666L)
 		})
+		
+		announcementContentInvalidator =
+			NetworkEmojiInvalidator(activity.handler, tvAnnouncementContent)
+		tvAnnouncementContent.movementMethod = MyLinkMovementMethod
 	}
 	
 	private val proc_start_filter : Runnable = Runnable {
@@ -611,7 +647,7 @@ class ColumnViewHolder(
 			
 			btnDeleteNotification.vg(column.isNotificationColumn)
 			
-			llSearch.vg(column.isSearchColumn)?.let{
+			llSearch.vg(column.isSearchColumn)?.let {
 				btnSearchClear.vg(Pref.bpShowSearchClear(activity.pref))
 			}
 			
@@ -651,6 +687,8 @@ class ColumnViewHolder(
 			// listView.isFastScrollEnabled = ! Pref.bpDisableFastScroller(Pref.pref(activity))
 			
 			column.addColumnViewHolder(this)
+			
+			lastAnnouncementShown = - 1L
 			
 			showColumnColor()
 			
@@ -1060,8 +1098,30 @@ class ColumnViewHolder(
 			btnQuickFilterReaction -> clickQuickFilter(Column.QUICK_FILTER_REACTION)
 			btnQuickFilterVote -> clickQuickFilter(Column.QUICK_FILTER_VOTE)
 			
+			btnAnnouncementsShowHide -> {
+				if(llAnnouncements.visibility == View.VISIBLE) {
+					column.announcementHideTime = System.currentTimeMillis()
+				} else {
+					column.announcementHideTime = 0L
+				}
+				activity.app_state.saveColumnList()
+				showAnnouncements()
+			}
+			
+			btnAnnouncementsPrev -> {
+				column.announcementId =
+					TootAnnouncement.move(column.announcements, column.announcementId, - 1)
+				activity.app_state.saveColumnList()
+				showAnnouncements()
+			}
+			
+			btnAnnouncementsNext -> {
+				column.announcementId =
+					TootAnnouncement.move(column.announcements, column.announcementId, + 1)
+				activity.app_state.saveColumnList()
+				showAnnouncements()
+			}
 		}
-		
 	}
 	
 	override fun onLongClick(v : View) : Boolean {
@@ -1130,12 +1190,14 @@ class ColumnViewHolder(
 		
 		showColumnCloseButton()
 		
+		showAnnouncements(force = false)
 	}
 	
 	// カラムヘッダなど、負荷が低い部分の表示更新
 	fun showColumnHeader() {
 		activity.handler.removeCallbacks(procShowColumnHeader)
 		activity.handler.postDelayed(procShowColumnHeader, 50L)
+		
 	}
 	
 	internal fun showContent(
@@ -1198,6 +1260,7 @@ class ColumnViewHolder(
 			showRefreshError()
 		}
 		proc_restoreScrollPosition.run()
+		
 	}
 	
 	private var bRefreshErrorWillShown = false
@@ -1887,6 +1950,121 @@ class ColumnViewHolder(
 				
 			} // end of column setting scroll view
 			
+			llAnnouncementsBox = verticalLayout {
+				lparams(matchParent, wrapContent) {
+					startMargin = dip(6)
+					endMargin = dip(6)
+					topMargin = dip(2)
+					bottomMargin = dip(2)
+				}
+				background = createRoundDrawable(
+					dip(6).toFloat(),
+					getAttributeColor(context, R.attr.colorThumbnailBackground)
+				)
+				var pad_tb = dip(2)
+				setPadding(0, pad_tb, 0, pad_tb)
+				
+				linearLayout {
+					lparams(matchParent, wrapContent) {
+						startMargin = dip(6)
+						endMargin = dip(6)
+					}
+					
+					gravity = Gravity.CENTER_VERTICAL
+					
+					
+					
+					textView {
+						gravity = Gravity.END
+						text = context.getString(R.string.announcements)
+					}.lparams(0, wrapContent) {
+						weight = 1f
+					}
+					
+					btnAnnouncementsPrev = imageButton {
+						
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						contentDescription = context.getString(R.string.previous)
+						imageResource = R.drawable.ic_arrow_start
+					}.lparams(dip(32), dip(32)) {
+						gravity = Gravity.END
+						marginStart = dip(4)
+					}
+					
+					tvAnnouncementsIndex = textView {
+					}.lparams(wrapContent, wrapContent) {
+						marginStart = dip(4)
+					}
+					
+					btnAnnouncementsNext = imageButton {
+						
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						contentDescription = context.getString(R.string.next)
+						imageResource = R.drawable.ic_arrow_end
+					}.lparams(dip(32), dip(32)) {
+						gravity = Gravity.END
+						marginStart = dip(4)
+					}
+					
+					btnAnnouncementsShowHide = imageButton {
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						contentDescription = context.getString(R.string.hide)
+						imageResource = R.drawable.ic_close
+					}.lparams(dip(32), dip(32)) {
+						gravity = Gravity.END
+						marginStart = dip(4)
+					}
+					
+				}
+				
+				llAnnouncements = maxHeightScrollView {
+					lparams(matchParent, wrapContent) {
+						topMargin = dip(1)
+					}
+					val pad_lr = dip(6)
+					pad_tb = dip(2)
+					setPadding(pad_lr, pad_tb, pad_lr, pad_tb)
+					
+					scrollBarStyle = View.SCROLLBARS_OUTSIDE_OVERLAY
+					isScrollbarFadingEnabled = false
+					
+					maxHeight = dip(240)
+					
+					verticalLayout {
+						lparams(matchParent, wrapContent)
+						
+						// 期間があれば表示する
+						tvAnnouncementPeriod = textView {
+							gravity = Gravity.END
+						}.lparams(matchParent, wrapContent) {
+							bottomMargin = dip(3)
+						}
+						
+						tvAnnouncementContent = myTextView {
+							setLineSpacing(lineSpacingExtra, 1.1f)
+							// tools:text="Contents\nContents"
+						}.lparams(matchParent, wrapContent) {
+							topMargin = dip(3)
+						}
+						
+						llAnnouncementExtra = verticalLayout {
+							lparams(matchParent, wrapContent) {
+								topMargin = dip(3)
+							}
+						}
+					}
+				}
+			}
+			
 			llSearch = verticalLayout {
 				lparams(matchParent, wrapContent)
 				backgroundColor = getAttributeColor(context, R.attr.colorSearchFormBackground)
@@ -2111,5 +2289,368 @@ class ColumnViewHolder(
 		}
 		b.report()
 		rv
+	}
+	
+	private fun showAnnouncements(force : Boolean = true) {
+		val column = column ?: return
+		
+		if(! force && lastAnnouncementShown >= column.announcementUpdated) {
+			return
+		}
+		lastAnnouncementShown = SystemClock.elapsedRealtime()
+		
+		fun clearExtras() {
+			for(invalidator in extra_invalidator_list) {
+				invalidator.register(null)
+			}
+			extra_invalidator_list.clear()
+		}
+		llAnnouncementExtra.removeAllViews()
+		clearExtras()
+		
+		val listShown = TootAnnouncement.filterShown(column.announcements)
+		if(llAnnouncementsBox.vg(listShown?.isNotEmpty() == true) == null) {
+			return
+		}
+		
+		val content_color = column.getContentColor()
+		
+		val item = listShown !!.find { it.id == column.announcementId }
+			?: listShown[0]
+		val itemIndex = listShown.indexOf(item)
+		
+		val enablePaging = listShown.size > 1
+		val expand = column.announcementHideTime <= 0L
+		
+		btnAnnouncementsPrev.vg(expand)?.run {
+			isEnabled = enablePaging
+			alpha = if(enablePaging) 1f else 0.3f
+		}
+		btnAnnouncementsNext.vg(expand)?.run {
+			isEnabled = enablePaging
+			alpha = if(enablePaging) 1f else 0.3f
+		}
+		tvAnnouncementsIndex.vg(expand)?.text =
+			activity.getString(R.string.announcements_index, itemIndex + 1, listShown.size)
+		llAnnouncements.vg(expand)
+		
+		if(! expand) {
+			val newer = listShown.find { it.updated_at > column.announcementHideTime }
+			if(newer != null) {
+				column.announcementId = newer.id
+				setIconDrawableId(
+					activity,
+					btnAnnouncementsShowHide,
+					R.drawable.ic_error,
+					color = getAttributeColor(activity, R.attr.colorRegexFilterError),
+					alphaMultiplier = Styler.boost_alpha
+				)
+			} else {
+				setIconDrawableId(
+					activity,
+					btnAnnouncementsShowHide,
+					R.drawable.ic_arrow_drop_down,
+					color = content_color,
+					alphaMultiplier = Styler.boost_alpha
+				)
+			}
+			return
+		}
+		
+		setIconDrawableId(
+			activity,
+			btnAnnouncementsShowHide,
+			R.drawable.ic_arrow_drop_up,
+			color = content_color,
+			alphaMultiplier = Styler.boost_alpha
+		)
+		
+		var periods : StringBuilder? = null
+		fun String.appendPeriod() {
+			val sb = periods
+			if(sb == null) {
+				periods = StringBuilder(this)
+			} else {
+				sb.append("\n")
+				sb.append(this)
+			}
+		}
+		
+		val (strStart, strEnd) = TootStatus.formatTimeRange(
+			item.starts_at,
+			item.ends_at,
+			item.all_day
+		)
+		
+		
+		when {
+			
+			// no periods.
+			strStart == "" && strEnd == "" -> {
+			}
+			
+			// single date
+			strStart == strEnd -> {
+				activity.getString(R.string.announcements_period1, strStart)
+					.appendPeriod()
+			}
+			
+			else -> {
+				activity.getString(R.string.announcements_period2, strStart, strEnd)
+					.appendPeriod()
+			}
+		}
+		
+		if(item.updated_at > item.published_at) {
+			val strUpdateAt = TootStatus.formatTime(activity, item.updated_at, false)
+			activity.getString(R.string.edited_at, strUpdateAt).appendPeriod()
+		}
+		
+		val sb = periods
+		tvAnnouncementPeriod.vg(sb != null)?.text = sb
+		
+		tvAnnouncementContent.text = item.decoded_content
+		announcementContentInvalidator.register(item.decoded_content)
+		
+		// リアクションの表示
+		
+		val density = activity.density
+		
+		val buttonHeight = ActMain.boostButtonSize
+		val marginBetween = (buttonHeight.toFloat() * 0.2f + 0.5f).toInt()
+		
+		val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
+		val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
+		
+		val box = FlexboxLayout(activity).apply {
+			flexWrap = FlexWrap.WRAP
+			justifyContent = JustifyContent.FLEX_START
+			layoutParams = LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT
+			).apply {
+				topMargin = (0.5f + density * 3f).toInt()
+			}
+		}
+		
+		// +ボタン
+		run {
+			val b = ImageButton(activity)
+			val blp = FlexboxLayout.LayoutParams(
+				buttonHeight,
+				buttonHeight
+			)
+			blp.endMargin = marginBetween
+			b.layoutParams = blp
+			b.background = ContextCompat.getDrawable(
+				activity,
+				R.drawable.btn_bg_transparent
+			)
+			
+			b.contentDescription = activity.getString(R.string.reaction_add)
+			b.scaleType = ImageView.ScaleType.FIT_CENTER
+			b.padding = paddingV
+			b.setOnClickListener {
+				addReaction(item, null)
+			}
+			
+			setIconDrawableId(
+				activity,
+				b,
+				R.drawable.ic_add,
+				color = content_color,
+				alphaMultiplier = Styler.boost_alpha
+			)
+			
+			box.addView(b)
+		}
+		val reactions = item.reactions?.filter { it.count > 0L }?.notEmpty()
+		if(reactions != null) {
+			
+			var lastButton : View? = null
+			
+			val options = DecodeOptions(
+				activity,
+				column.access_info,
+				decodeEmoji = true,
+				enlargeEmoji = 1.5f
+			)
+			
+			val actMain = activity
+			val emojiAnimation = Pref.bpDisableEmojiAnimation(actMain.pref)
+			
+			for(reaction in reactions) {
+				
+				val url = if(emojiAnimation) {
+					reaction.url.notEmpty() ?: reaction.static_url.notEmpty()
+				} else {
+					reaction.static_url.notEmpty() ?: reaction.url.notEmpty()
+				}
+				
+				val b = Button(activity).apply {
+					layoutParams = FlexboxLayout.LayoutParams(
+						FlexboxLayout.LayoutParams.WRAP_CONTENT,
+						buttonHeight
+					).apply {
+						endMargin = marginBetween
+					}
+					minWidthCompat = buttonHeight
+					
+					allCaps = false
+					tag = reaction
+					
+					background = ContextCompat.getDrawable(
+						actMain,
+						if(reaction.me == true) {
+							R.drawable.bg_button_cw
+						} else {
+							R.drawable.btn_bg_transparent
+						}
+					)
+					
+					setTextColor(content_color)
+					
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					
+					
+					text = if(url == null) {
+						EmojiDecoder.decodeEmoji(options, "${reaction.name} ${reaction.count}")
+					} else {
+						SpannableStringBuilder("${reaction.name} ${reaction.count}").also { sb ->
+							sb.setSpan(
+								NetworkEmojiSpan(url, scale = 1.5f),
+								0,
+								reaction.name.length,
+								Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+							)
+							val invalidator =
+								NetworkEmojiInvalidator(actMain.handler, this)
+							invalidator.register(sb)
+							extra_invalidator_list.add(invalidator)
+						}
+					}
+					
+					setOnClickListener {
+						if(reaction.me == true) {
+							removeReaction(item, reaction.name)
+						} else {
+							addReaction(item, TootAnnouncement.Reaction(jsonObject {
+								put("name", reaction.name)
+								put("count", 1)
+								put("me", true)
+								putNotNull("url", reaction.url)
+								putNotNull("static_url", reaction.static_url)
+							}))
+						}
+					}
+				}
+				box.addView(b)
+				lastButton = b
+				
+			}
+			
+			lastButton
+				?.layoutParams
+				?.cast<ViewGroup.MarginLayoutParams>()
+				?.endMargin = 0
+		}
+		
+		llAnnouncementExtra.addView(box)
+	}
+	
+	private fun addReaction(item : TootAnnouncement, sample : TootAnnouncement.Reaction?) {
+		val column = column ?: return
+		val host = column.access_info.host
+		val isMisskey = column.isMisskey
+		if(sample == null) {
+			EmojiPicker(activity, host, isMisskey) { name, _, _ ,unicode->
+				log.d("addReaction: $name")
+				addReaction(item, TootAnnouncement.Reaction(jsonObject {
+					put("name", unicode ?: name )
+					put("count", 1)
+					put("me", true)
+					
+					// 以下はカスタム絵文字のみ
+					if(unicode == null){
+						val map = App1.custom_emoji_lister.getMap(host, isMisskey)
+						if(map == null) {
+							showToast(activity, false, "emoji map is null")
+							return@EmojiPicker
+						}
+						val ce = map[name]
+						if(ce == null) {
+							showToast(activity, false, "emoji '$name' not found.")
+							return@EmojiPicker
+						}
+						putNotNull("url", ce.url)
+						putNotNull("static_url", ce.static_url)
+					}
+				}))
+			}.show()
+			return
+		}
+		TootTaskRunner(activity).run(column.access_info, object : TootTask {
+			override fun background(client : TootApiClient) : TootApiResult? {
+				return client.request(
+					"/api/v1/announcements/${item.id}/reactions/${sample.name.encodePercent()}",
+					JsonObject().toPutRequestBuilder()
+				)
+				// 200 {}
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				result ?: return
+				if(result.jsonObject == null) {
+					showToast(activity, true, result.error)
+				} else {
+					val list = item.reactions
+					if(list == null) {
+						item.reactions = mutableListOf(sample)
+					} else {
+						val reaction = list.find { it.name == sample.name }
+						if(reaction == null) {
+							list.add(sample)
+						} else {
+							reaction.me = true
+							++reaction.count
+						}
+					}
+					column.announcementUpdated = SystemClock.elapsedRealtime()
+					showAnnouncements()
+				}
+			}
+		})
+	}
+	
+	private fun removeReaction(item : TootAnnouncement, name : String) {
+		val column = column ?: return
+		TootTaskRunner(activity).run(column.access_info, object : TootTask {
+			override fun background(client : TootApiClient) : TootApiResult? {
+				return client.request(
+					"/api/v1/announcements/${item.id}/reactions/${name.encodePercent()}",
+					JsonObject().toDeleteRequestBuilder()
+				)
+				// 200 {}
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				result ?: return
+				if(result.jsonObject == null) {
+					showToast(activity, true, result.error)
+				} else {
+					val it = item.reactions?.iterator() ?: return
+					while(it.hasNext()) {
+						val reaction = it.next()
+						if(reaction.name == name) {
+							reaction.me = false
+							if(-- reaction.count <= 0) it.remove()
+							break
+						}
+					}
+					column.announcementUpdated = SystemClock.elapsedRealtime()
+					showAnnouncements()
+				}
+			}
+		})
 	}
 }

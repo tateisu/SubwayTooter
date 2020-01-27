@@ -23,8 +23,8 @@ fun RequestBody.toPost() : Request.Builder =
 fun RequestBody.toPut() :Request.Builder =
 	Request.Builder().put(this)
 
-// fun RequestBody.toDelete():Request.Builder  =
-// Request.Builder().delete(this)
+fun RequestBody.toDelete():Request.Builder  =
+	Request.Builder().delete(this)
 
 fun RequestBody.toPatch() :Request.Builder =
 	Request.Builder().patch(this)
@@ -34,3 +34,4 @@ fun RequestBody.toRequest(methodArg : String) :Request.Builder =
 
 fun JsonObject.toPostRequestBuilder() : Request.Builder = toRequestBody( ).toPost()
 fun JsonObject.toPutRequestBuilder() : Request.Builder = toRequestBody( ).toPut()
+fun JsonObject.toDeleteRequestBuilder() : Request.Builder = toRequestBody( ).toDelete()

@@ -3365,7 +3365,7 @@ internal class ItemViewHolder(
 												context,
 												R.drawable.btn_bg_transparent
 											)
-											contentDescription = "@string/hide"
+											contentDescription = context.getString(R.string.hide)
 											imageResource = R.drawable.ic_close
 										}.lparams(dip(32), dip(32)) {
 											gravity = Gravity.END

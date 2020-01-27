@@ -1001,5 +1001,10 @@
     <string name="push_notification_server_key_missing">サーバ側の設定ミスによりプッシュ通知は動作しません。サーバ公開鍵がありません。</string>
     <string name="push_notification_server_key_empty">サーバ側の設定ミスによりプッシュ通知は動作しません。サーバ公開鍵がカラです。</string>
     <string name="divide_notification">通知を分割する (Android 6+)</string>
+    <string name="announcements">告知</string>
+    <string name="announcements_index">%1$d/%2$d</string>
+    <string name="announcements_period1">イベント期間: %1$s</string>
+    <string name="announcements_period2">イベント期間: %1$s～%2$s</string>
+    <string name="edited_at">更新: %1$s</string>
 
 </resources>

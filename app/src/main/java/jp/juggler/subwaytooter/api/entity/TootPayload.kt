@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.TootAnnouncement.Reaction
 import jp.juggler.util.*
 import java.util.regex.Pattern
 
@@ -61,10 +62,13 @@ object TootPayload {
 						
 						"conversation" -> parseItem(::TootConversationSummary, parser, src)
 						
-						// ここを通るケースはまだ確認できていない
+						"announcement" -> parseItem(::TootAnnouncement, parser, src)
+						
+						"announcement.reaction" -> parseItem(::Reaction, src)
+						
 						else -> {
 							log.e("unknown payload(2). message=%s", parent_text)
-							null
+							// ここを通るケースはまだ確認できていない
 						}
 					}
 				} else if(payload[0] == '[') {

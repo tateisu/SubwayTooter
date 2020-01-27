@@ -3,6 +3,7 @@ package jp.juggler.util
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.graphics.drawable.GradientDrawable
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -85,4 +86,12 @@ var CompoundButton.isCheckedNoAnime : Boolean
 	set(value) {
 		isChecked = value
 		jumpDrawablesToCurrentState()
+	}
+
+
+fun createRoundDrawable(radius:Float,fillColor:Int?=null, strokeColor:Int?=null, strokeWidth:Int = 4) =
+	GradientDrawable().apply{
+		setCornerRadius(radius)
+		if(fillColor!=null) setColor(fillColor)
+		if( strokeColor!=null) setStroke(strokeWidth,strokeColor)
 	}

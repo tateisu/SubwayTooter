@@ -996,4 +996,9 @@
     <string name="push_notification_server_key_missing">Push notification will not work because server misconfiguration. Server public key is missing.</string>
     <string name="push_notification_server_key_empty">Push notification will not work because server misconfiguration. Server public key is empty.</string>
     <string name="divide_notification">Divide notifications (Android 6+)</string>
+    <string name="announcements">Announcements</string>
+    <string name="announcements_index">%1$d/%2$d</string>
+    <string name="announcements_period1">Event Period: %1$s</string>
+    <string name="announcements_period2">Event Period: %1$s…%2$s</string>
+    <string name="edited_at">Edited: %1$s</string>
 </resources>

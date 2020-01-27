@@ -35,7 +35,7 @@ var View.endPadding : Int
 	}
 
 // paddingStart,paddingEndにはsetterが提供されてない問題の対策
-fun View.setPaddingStartEnd(start : Int, end : Int) {
+fun View.setPaddingStartEnd(start : Int, end : Int =start) {
 	setPaddingRelative(start, paddingTop, end, paddingBottom)
 }
 

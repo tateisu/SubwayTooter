@@ -398,7 +398,10 @@ enum class ColumnType(
 		iconId = { R.drawable.ic_home },
 		name1 = { it.getString(R.string.home) },
 		
-		loading = { client -> getStatusList(client, column.makeHomeTlUrl()) },
+		loading = { client ->
+			getAnnouncements(client)
+			getStatusList(client, column.makeHomeTlUrl())
+		},
 		refresh = { client -> getStatusList(client, column.makeHomeTlUrl()) },
 		gap = { client -> getStatusList(client, column.makeHomeTlUrl()) },
 		bAllowPseudo = false

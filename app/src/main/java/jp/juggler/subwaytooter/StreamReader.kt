@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.os.Handler
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TootAnnouncement.Reaction
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import okhttp3.Response
@@ -24,11 +25,14 @@ internal class StreamReader(
 ) {
 	
 	internal interface StreamCallback {
+		fun channelId() : String?
+
 		fun onTimelineItem(item : TimelineItem)
 		fun onListeningStateChanged(bListen : Boolean)
 		fun onNoteUpdated(ev : MisskeyNoteUpdate)
-		
-		fun channelId() : String?
+		fun onAnnouncementUpdate( item: TootAnnouncement)
+		fun onAnnouncementDelete( id: EntityId)
+		fun onAnnouncementReaction(reaction : Reaction)
 	}
 	
 	companion object {
@@ -131,14 +135,12 @@ internal class StreamReader(
 			}
 		}
 		
-		private fun fireTimelineItem(item : TimelineItem?, channelId : String? = null) {
-			item ?: return
+		private inline fun eachCallback(block:(callback:StreamCallback)->Unit){
 			synchronized(this) {
 				if(bDisposed.get()) return@synchronized
 				for(callback in callback_list) {
 					try {
-						if(channelId != null && channelId != callback.channelId()) continue
-						callback.onTimelineItem(item)
+						block(callback)
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
@@ -146,12 +148,21 @@ internal class StreamReader(
 			}
 		}
 		
+		private fun fireTimelineItem(item : TimelineItem?, channelId : String? = null) {
+			item ?: return
+			eachCallback{ callback->
+				if(channelId != null && channelId != callback.channelId()) return@eachCallback
+				callback.onTimelineItem(item)
+			}
+		}
+		
 		private fun fireDeleteId(id : EntityId) {
+
 			val tl_host = access_info.host
 			runOnMainLooper {
 				synchronized(this) {
-					if(bDisposed.get()) return@runOnMainLooper
-					if(Pref.bpDontRemoveDeletedToot(App1.getAppState(context).pref)) return@runOnMainLooper
+					if(bDisposed.get()) return@synchronized
+					if(Pref.bpDontRemoveDeletedToot(App1.getAppState(context).pref)) return@synchronized
 					for(column in App1.getAppState(context).column_list) {
 						try {
 							column.onStatusRemoved(tl_host, id)
@@ -165,16 +176,9 @@ internal class StreamReader(
 		
 		private fun fireNoteUpdated(ev : MisskeyNoteUpdate, channelId : String? = null) {
 			runOnMainLooper {
-				synchronized(this) {
-					if(bDisposed.get()) return@runOnMainLooper
-					for(callback in callback_list) {
-						try {
-							if(channelId != null && channelId != callback.channelId()) continue
-							callback.onNoteUpdated(ev)
-						} catch(ex : Throwable) {
-							log.trace(ex)
-						}
-					}
+				eachCallback { callback->
+					if(channelId != null && channelId != callback.channelId()) return@eachCallback
+					callback.onNoteUpdated(ev)
 				}
 			}
 		}
@@ -252,6 +256,61 @@ internal class StreamReader(
 			
 		}
 		
+		private fun handleMastodonMessage(obj:JsonObject,text:String){
+			
+			when(val event = obj.string("event")) {
+				null,"" -> log.d("onMessage: missing event parameter")
+				
+				"filters_changed" ->
+					Column.onFiltersChanged(context, access_info)
+
+				else -> {
+					val payload = TootPayload.parsePayload(parser, event, obj, text)
+					
+					when(event) {
+						"delete" -> when(payload) {
+							is Long -> fireDeleteId(EntityId(payload.toString()))
+							is String -> fireDeleteId(EntityId(payload.toString()))
+							else -> log.d("unsupported payload type. $payload")
+						}
+						
+						// {"event":"announcement","payload":"{\"id\":\"3\",\"content\":\"<p>追加</p>\",\"starts_at\":null,\"ends_at\":null,\"all_day\":false,\"mentions\":[],\"tags\":[],\"emojis\":[],\"reactions\":[]}"}
+						"announcement"->{
+							if( payload is TootAnnouncement) {
+								runOnMainLooper {
+									eachCallback { it.onAnnouncementUpdate(payload) }
+								}
+							}
+						}
+						
+						// {"event":"announcement.delete","payload":"2"}
+						"announcement.delete"->{
+							val id = EntityId.mayNull(payload?.toString())
+							if( id != null){
+								runOnMainLooper {
+									eachCallback { it.onAnnouncementDelete(id) }
+								}
+							}
+						}
+						
+						// {"event":"announcement.reaction","payload":"{\"name\":\"hourglass_gif\",\"count\":1,\"url\":\"https://m2j.zzz.ac/...\",\"static_url\":\"https://m2j.zzz.ac/...\",\"announcement_id\":\"9\"}"}
+						"announcement.reaction"->{
+							if( payload is Reaction) {
+								runOnMainLooper {
+									eachCallback { it.onAnnouncementReaction(payload) }
+								}
+							}
+						}
+						
+						else -> when(payload) {
+							is TimelineItem -> fireTimelineItem(payload)
+							else -> log.d("unsupported payload type. $payload")
+						}
+					}
+				}
+			}
+		}
+		
 		/**
 		 * Invoked when a text (type `0x1`) message has been received.
 		 */
@@ -263,34 +322,8 @@ internal class StreamReader(
 				if(access_info.isMisskey) {
 					handleMisskeyMessage(obj)
 				} else {
-					
-					val event = obj.string("event")
-					
-					if(event == null || event.isEmpty()) {
-						log.d("onMessage: missing event parameter")
-						return
-					}
-					
-					if(event == "filters_changed") {
-						Column.onFiltersChanged(context, access_info)
-						return
-					}
-					
-					val payload = TootPayload.parsePayload(parser, event, obj, text)
-					
-					when(event) {
-						
-						"delete" -> when(payload) {
-							is Long -> fireDeleteId(EntityId(payload.toString()))
-							is String -> fireDeleteId(EntityId(payload.toString()))
-							else -> log.d("unsupported payload type. $payload")
-						}
-						
-						else -> when(payload) {
-							is TimelineItem -> fireTimelineItem(payload)
-							else -> log.d("unsupported payload type. $payload")
-						}
-					}
+					handleMastodonMessage(obj,text)
+				
 					
 				}
 			} catch(ex : Throwable) {

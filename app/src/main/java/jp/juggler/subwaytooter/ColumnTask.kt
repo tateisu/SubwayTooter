@@ -43,8 +43,15 @@ abstract class ColumnTask(
 	val highlight_trie : WordTrieTree?
 		get() = column.highlight_trie
 	
+	val isPseudo :Boolean
+		get() = access_info.isPseudo
+	
+	val isMastodon : Boolean
+		get() = access_info.isMastodon
+	
 	val isMisskey : Boolean
 		get() = access_info.isMisskey
+	
 	
 	val misskeyVersion : Int
 		get() = access_info.misskeyVersion

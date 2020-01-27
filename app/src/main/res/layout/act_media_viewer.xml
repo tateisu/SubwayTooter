@@ -83,7 +83,7 @@
             android:contentDescription="@string/previous"
 
             android:minWidth="48dp"
-            android:src="@drawable/ic_left"
+            android:src="@drawable/ic_arrow_start"
             android:tint="?attr/colorVectorDrawable" />
 
         <ImageButton
@@ -92,7 +92,7 @@
             android:layout_height="48dp"
             android:contentDescription="@string/next"
             android:minWidth="48dp"
-            android:src="@drawable/ic_right"
+            android:src="@drawable/ic_arrow_end"
             android:tint="?attr/colorVectorDrawable" />
 
         <ImageButton

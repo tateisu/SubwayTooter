@@ -1014,7 +1014,7 @@ class PostHelper(
 	}
 	
 	private val open_picker_emoji : Runnable = Runnable {
-		EmojiPicker(activity, instance, isMisskey) { name, instance, bInstanceHasCustomEmoji ->
+		EmojiPicker(activity, instance, isMisskey) { name, instance, bInstanceHasCustomEmoji,_ ->
 			val et = this.et ?: return@EmojiPicker
 			
 			val src = et.text ?: ""
@@ -1042,7 +1042,7 @@ class PostHelper(
 	}
 	
 	fun openEmojiPickerFromMore() {
-		EmojiPicker(activity, instance, isMisskey) { name, instance, bInstanceHasCustomEmoji ->
+		EmojiPicker(activity, instance, isMisskey) { name, instance, bInstanceHasCustomEmoji,_ ->
 			val et = this.et ?: return@EmojiPicker
 			
 			val src = et.text ?: ""

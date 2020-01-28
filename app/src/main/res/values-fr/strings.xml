@@ -981,7 +981,7 @@
     <string name="presets">Pré-réglages</string>
     <string name="custom">Personnalisé</string>
     <string name="language_code_hint">Choisissez un préréglage ou saisissez le code d’une langue</string>
-    <string name="language_is">lan</string>
+    <string name="language_is">lan: %1$s</string>
     <string name="always_show_language">Toujours afficher la langue</string>
     <string name="developer_options">Options développeurs</string>
     <string name="follow_request">Demande d’abonnement</string>

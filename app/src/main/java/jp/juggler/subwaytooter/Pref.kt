@@ -40,7 +40,7 @@ fun SharedPreferences.Editor.remove(item : BasePref<*>) : SharedPreferences.Edit
 
 class BooleanPref(
 	key : String,
-	private val defVal : Boolean,
+	val defVal : Boolean,
 	val id : Int =0
 ) : BasePref<Boolean>(key) {
 	
@@ -50,6 +50,15 @@ class BooleanPref(
 	
 	override fun put(editor : SharedPreferences.Editor, v : Boolean) {
 		editor.putBoolean(key, v)
+	}
+	
+	// put if value is not default, remove if value is same to default
+	fun putOrRemove(editor : SharedPreferences.Editor, v : Boolean) {
+		if( v != defVal) {
+			editor.putBoolean(key, v)
+		}else{
+			editor.remove(key)
+		}
 	}
 }
 
@@ -460,7 +469,7 @@ object Pref {
 	
 	val bpShowBookmarkButton = BooleanPref(
 		"ShowBookmarkButton",
-		false,
+		true,
 		R.id.swShowBookmarkButton
 	)
 	

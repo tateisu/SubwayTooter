@@ -704,9 +704,13 @@ class ActAppSettingChild : AppCompatActivity()
 	private fun loadUIFromData() {
 		load_busy = true
 		
-		for(si in booleanViewList) {
-			si.view.isChecked = si.info(pref)
-		}
+		pref.edit().also{ e->
+			for(si in booleanViewList) {
+				val curVal = si.info(pref)
+				si.view.isChecked = curVal
+				if( curVal == si.info.defVal) si.info.remove(e)
+			}
+		}.apply()
 		
 		spBackButtonAction?.setSelection(Pref.ipBackButtonAction(pref))
 		spRepliesCount?.setSelection(Pref.ipRepliesCount(pref))
@@ -834,7 +838,7 @@ class ActAppSettingChild : AppCompatActivity()
 		val e = pref.edit()
 		
 		for(si in booleanViewList) {
-			e.putBoolean(si.info.key, si.view.isChecked)
+			si.info.putOrRemove(e,si.view.isChecked)
 		}
 		
 		spDefaultAccount?.let {

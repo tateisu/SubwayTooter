@@ -1006,5 +1006,6 @@
     <string name="announcements_period1">イベント期間: %1$s</string>
     <string name="announcements_period2">イベント期間: %1$s～%2$s</string>
     <string name="edited_at">更新: %1$s</string>
+    <string name="hide_followers_count">フォロワー数を隠す</string>
 
 </resources>

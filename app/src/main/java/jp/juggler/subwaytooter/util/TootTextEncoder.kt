@@ -3,6 +3,8 @@ package jp.juggler.subwaytooter.util
 import android.content.Context
 import android.content.Intent
 import jp.juggler.subwaytooter.ActText
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -291,18 +293,21 @@ object TootTextEncoder {
 		
 		addHeader(context, sb, R.string.send_header_account_created_at, who.created_at)
 		addHeader(context, sb, R.string.send_header_account_statuses_count, who.statuses_count)
-		addHeader(
-			context,
-			sb,
-			R.string.send_header_account_followers_count,
-			who.followers_count
-		)
-		addHeader(
-			context,
-			sb,
-			R.string.send_header_account_following_count,
-			who.following_count
-		)
+		
+		if(! Pref.bpHideFollowCount( App1.getAppState(context).pref)) {
+			addHeader(
+				context,
+				sb,
+				R.string.send_header_account_followers_count,
+				who.followers_count
+			)
+			addHeader(
+				context,
+				sb,
+				R.string.send_header_account_following_count,
+				who.following_count
+			)
+		}
 		addHeader(context, sb, R.string.send_header_account_locked, who.locked)
 		
 		sb.addAfterLine(String.format(Locale.JAPAN, "Account-Source: %s", who.json.toString(2)))

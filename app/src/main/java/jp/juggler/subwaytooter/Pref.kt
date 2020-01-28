@@ -479,8 +479,15 @@ object Pref {
 	val bpDivideNotification = BooleanPref(
 		"DivideNotification",
 		false,
-		R.id.swDivideNotification//FIXME
+		R.id.swDivideNotification
 	)
+	
+	val bpHideFollowCount = BooleanPref(
+		"HideFollowCount",
+		false,
+		R.id.swHideFollowCount
+	)
+	
 	
 	// int
 	

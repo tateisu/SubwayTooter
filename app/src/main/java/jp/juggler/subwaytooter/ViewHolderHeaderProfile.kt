@@ -327,12 +327,21 @@ internal class ViewHolderHeaderProfile(
 			btnStatusCount.text =
 				"${activity.getString(R.string.statuses)}\n${whoDetail?.statuses_count
 					?: who.statuses_count}"
-			btnFollowing.text =
-				"${activity.getString(R.string.following)}\n${whoDetail?.following_count
-					?: who.following_count}"
-			btnFollowers.text =
-				"${activity.getString(R.string.followers)}\n${whoDetail?.followers_count
-					?: who.followers_count}"
+			
+			if(Pref.bpHideFollowCount(activity.pref)) {
+				btnFollowing.text = activity.getString(R.string.following)
+				btnFollowers.text = activity.getString(R.string.followers)
+			} else {
+				btnFollowing.text =
+					"${activity.getString(R.string.following)}\n${
+					whoDetail?.following_count ?: who.following_count
+					}"
+				btnFollowers.text =
+					"${activity.getString(R.string.followers)}\n${
+					whoDetail?.followers_count ?: who.followers_count
+					}"
+				
+			}
 			
 			val relation = UserRelation.load(access_info.db_id, who.id)
 			Styler.setFollowIcon(

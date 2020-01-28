@@ -1001,4 +1001,5 @@
     <string name="announcements_period1">Event Period: %1$s</string>
     <string name="announcements_period2">Event Period: %1$s…%2$s</string>
     <string name="edited_at">Edited: %1$s</string>
+    <string name="hide_followers_count">Hide followers count</string>
 </resources>

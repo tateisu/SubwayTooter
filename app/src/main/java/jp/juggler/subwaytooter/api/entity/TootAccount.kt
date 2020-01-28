@@ -409,6 +409,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					.append(statuses_count.toString())
 			
 			if(Pref.bpDirectoryFollowers(pref)
+				&& !Pref.bpHideFollowCount(pref)
 				&& (followers_count ?: 0L) > 0L)
 				prepareSb()
 					.append(context.getString(R.string.followers))

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
 
     android:id="@+id/svContent"
@@ -14,251 +13,168 @@
     android:paddingBottom="128dp"
     android:scrollbarStyle="outsideOverlay"
 
-    tools:ignore="TooManyViews,UseCompoundDrawables,UselessParent,Autofill"
-    >
+    tools:ignore="TooManyViews,UseCompoundDrawables,UselessParent,Autofill">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
-        <View style="@style/setting_divider"/>
-
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/simple_list"
-            />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Switch
-                android:id="@+id/swSimpleList"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/show_follow_button_in_button_bar"
-            />
+            android:text="@string/simple_list" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swSimpleList"
+            style="@style/setting_row_form"
+            android:gravity="center" />
 
-            <Switch
-                android:id="@+id/swShowFollowButtonInButtonBar"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/dont_show_preview_card"
-            />
+            android:text="@string/show_follow_button_in_button_bar" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swShowFollowButtonInButtonBar"
+            style="@style/setting_row_form"
+            android:gravity="center" />
 
-            <Switch
-                android:id="@+id/swDontShowPreviewCard"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/short_acct_local_user"
-            />
+            android:text="@string/dont_show_preview_card" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swDontShowPreviewCard"
+            style="@style/setting_row_form"
+            android:gravity="center" />
 
-            <Switch
-                android:id="@+id/swShortAcctLocalUser"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/mention_full_acct"
-            />
+            android:text="@string/short_acct_local_user" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swShortAcctLocalUser"
+            style="@style/setting_row_form"
+            android:gravity="center" />
 
-            <Switch
-                android:id="@+id/swMentionFullAcct"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/relative_timestamp"
-            />
+            android:text="@string/mention_full_acct" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swMentionFullAcct"
+            style="@style/setting_row_form"
+            android:gravity="center" />
 
-            <Switch
-                android:id="@+id/swRelativeTimestamp"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/timezone"
-            />
+            android:text="@string/relative_timestamp" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swRelativeTimestamp"
+            style="@style/setting_row_form"
+            android:gravity="center" />
 
-            <Spinner
-                android:id="@+id/spTimeZone"
-                style="@style/setting_horizontal_stretch"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/always_show_application"
-            />
+            android:text="@string/timezone" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Spinner
+            android:id="@+id/spTimeZone"
+            style="@style/setting_row_form" />
 
-            <Switch
-                android:id="@+id/swShowAppName"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/always_show_language"
-            />
+            android:text="@string/always_show_application" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swShowAppName"
+            style="@style/setting_row_form"
+            android:gravity="center" />
 
-            <Switch
-                android:id="@+id/swShowLanguage"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
+        <View style="@style/setting_divider" />
 
-        </LinearLayout>
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/always_show_language" />
 
+        <Switch
+            android:id="@+id/swShowLanguage"
+            style="@style/setting_row_form"
+            android:gravity="center" />
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etAutoCWLines"
-            android:text="@string/auto_cw"
+            android:text="@string/auto_cw" />
+
+        <EditText
+            android:id="@+id/etAutoCWLines"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="number"
+
             />
 
-        <LinearLayout style="@style/setting_row_form">
-
-            <EditText
-                android:id="@+id/etAutoCWLines"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="number"
-
-                />
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etCardDescriptionLength"
-            android:text="@string/card_description_length"
-            />
+            android:text="@string/card_description_length" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etCardDescriptionLength"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="number" />
 
-            <EditText
-                android:id="@+id/etCardDescriptionLength"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="number"
-                />
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/display_replies_count"
-            />
+            android:text="@string/display_replies_count" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Spinner
+            android:id="@+id/spRepliesCount"
+            style="@style/setting_row_form" />
 
-            <Spinner
-                android:id="@+id/spRepliesCount"
-                style="@style/setting_horizontal_stretch"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/visibility_style"
-            />
+            android:text="@string/visibility_style" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Spinner
+            android:id="@+id/spVisibilityStyle"
+            style="@style/setting_row_form" />
 
-            <Spinner
-                android:id="@+id/spVisibilityStyle"
-                style="@style/setting_horizontal_stretch"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/timeline_font"
-            />
+            android:text="@string/timeline_font" />
 
-        <LinearLayout style="@style/setting_row_form">
-
-            <TextView
-                android:id="@+id/tvTimelineFontUrl"
-                style="@style/setting_horizontal_stretch"
-                />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/tvTimelineFontUrl"
+            style="@style/setting_row_form" />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -267,36 +183,28 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/edit"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnTimelineFontReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reset"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
         </LinearLayout>
 
         <!-- ################################################################## -->
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/timeline_font_bold"
-            />
+            android:text="@string/timeline_font_bold" />
 
-        <LinearLayout style="@style/setting_row_form">
-
-            <TextView
-                android:id="@+id/tvTimelineFontBoldUrl"
-                style="@style/setting_horizontal_stretch"
-                />
-
-        </LinearLayout>
+        <TextView
+            android:id="@+id/tvTimelineFontBoldUrl"
+            style="@style/setting_row_form" />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -305,467 +213,333 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/edit"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnTimelineFontBoldReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reset"
-                android:textAllCaps="false"
-                />
+                android:textAllCaps="false" />
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             android:id="@+id/tvTimelineFontSize"
             style="@style/setting_row_label"
             android:labelFor="@+id/etTimelineFontSize"
-            android:text="@string/timeline_font_size"
-            />
+            android:text="@string/timeline_font_size" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etTimelineFontSize"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etTimelineFontSize"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             android:id="@+id/tvAcctFontSize"
             style="@style/setting_row_label"
             android:labelFor="@+id/etAcctFontSize"
-            android:text="@string/acct_font_size"
-            />
+            android:text="@string/acct_font_size" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etAcctFontSize"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etAcctFontSize"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             android:id="@+id/tvNotificationTlFontSize"
             style="@style/setting_row_label"
             android:labelFor="@+id/etNotificationTlFontSize"
-            android:text="@string/notification_tl_font_size"
-            />
+            android:text="@string/notification_tl_font_size" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etNotificationTlFontSize"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etNotificationTlFontSize"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etNotificationTlIconSize"
-            android:text="@string/notification_tl_icon_size"
-            />
+            android:text="@string/notification_tl_icon_size" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etNotificationTlIconSize"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etNotificationTlIconSize"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etTimelineSpacing"
-            android:text="@string/timeline_line_spacing"
-            />
+            android:text="@string/timeline_line_spacing" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etTimelineSpacing"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etTimelineSpacing"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etBoostButtonSize"
-            android:text="@string/boost_button_size"
-            />
+            android:text="@string/boost_button_size" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etBoostButtonSize"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etBoostButtonSize"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/boost_button_alignment"
-            />
+            android:text="@string/boost_button_alignment" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Spinner
+            android:id="@+id/spBoostButtonJustify"
+            style="@style/setting_row_form" />
 
-            <Spinner
-                android:id="@+id/spBoostButtonJustify"
-                style="@style/setting_horizontal_stretch"
-                />
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etAvatarIconSize"
-            android:text="@string/avatar_icon_size"
-            />
+            android:text="@string/avatar_icon_size" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etAvatarIconSize"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etAvatarIconSize"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etRoundRatio"
-            android:text="@string/avatar_icon_round_ratio"
-            />
+            android:text="@string/avatar_icon_round_ratio" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etRoundRatio"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etRoundRatio"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/avatar_icon_dont_round"
-            />
+            android:text="@string/avatar_icon_dont_round" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swDontRound"
+            style="@style/setting_row_form" />
 
-            <Switch
-                android:id="@+id/swDontRound"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etReplyIconSize"
-            android:text="@string/reply_icon_size"
-            />
+            android:text="@string/reply_icon_size" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etReplyIconSize"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etReplyIconSize"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etHeaderIconSize"
-            android:text="@string/header_icon_size"
-            />
+            android:text="@string/header_icon_size" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etHeaderIconSize"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etHeaderIconSize"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             android:id="@+id/tvHeaderTextSize"
             style="@style/setting_row_label"
             android:labelFor="@+id/etHeaderTextSize"
-            android:text="@string/header_text_size"
-            />
+            android:text="@string/header_text_size" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etHeaderTextSize"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etHeaderTextSize"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
             android:labelFor="@+id/etStripIconSize"
-            android:text="@string/strip_icon_size"
-            />
+            android:text="@string/strip_icon_size" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <EditText
+            android:id="@+id/etStripIconSize"
+            style="@style/setting_row_form"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/etStripIconSize"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                android:inputType="numberDecimal"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/show_instance_ticker"
-            />
+            android:text="@string/show_instance_ticker" />
 
-        <LinearLayout style="@style/setting_row_form">
-
-            <Switch
-                android:id="@+id/swInstanceTicker"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
+        <Switch
+            android:id="@+id/swInstanceTicker"
+            style="@style/setting_row_form" />
 
         <Button
             android:id="@+id/btnInstanceTickerCopyright"
             style="@style/setting_row_button"
-            android:text="@string/instance_ticker_copyright"
-            />
+            android:text="@string/instance_ticker_copyright" />
 
-        <View style="@style/setting_divider"/>
-
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/show_links_in_context_menu"
-            />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Switch
-                android:id="@+id/swLinksInContextMenu"
-                style="@style/setting_horizontal_stretch"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/show_link_underline"
-            />
+            android:text="@string/show_links_in_context_menu" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swLinksInContextMenu"
+            style="@style/setting_row_form" />
 
-            <Switch
-                android:id="@+id/swShowLinkUnderline"
-                style="@style/setting_horizontal_stretch"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/move_notifications_quick_filter_to_column_setting"
-            />
+            android:text="@string/show_link_underline" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swShowLinkUnderline"
+            style="@style/setting_row_form" />
 
-            <Switch
-                android:id="@+id/swMoveNotificationsQuickFilter"
-                style="@style/setting_horizontal_stretch"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/show_clear_button_in_search_bar"
-            />
+            android:text="@string/move_notifications_quick_filter_to_column_setting" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swMoveNotificationsQuickFilter"
+            style="@style/setting_row_form" />
 
-            <Switch
-                android:id="@+id/swShowSearchClear"
-                style="@style/setting_horizontal_stretch"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/dont_show_column_background_image"
-            />
+            android:text="@string/show_clear_button_in_search_bar" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swShowSearchClear"
+            style="@style/setting_row_form" />
 
-            <Switch
-                android:id="@+id/swDontShowColumnBackgroundImage"
-                style="@style/setting_horizontal_stretch"
-                />
-
-        </LinearLayout>
-
-
-
-
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/show_in_directory"
-            />
+            android:text="@string/dont_show_column_background_image" />
+
+        <Switch
+            android:id="@+id/swDontShowColumnBackgroundImage"
+            style="@style/setting_row_form" />
+
+        <View style="@style/setting_divider" />
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/show_in_directory" />
 
         <CheckBox
-            style="@style/setting_row_button"
             android:id="@+id/swDirectoryLastActive"
-            android:text="@string/last_active"
-            />
-        <CheckBox
             style="@style/setting_row_button"
+            android:text="@string/last_active" />
+
+        <CheckBox
             android:id="@+id/swDirectoryFollowers"
-            android:text="@string/followers"
-            />
-        <CheckBox
             style="@style/setting_row_button"
+            android:text="@string/followers" />
+
+        <CheckBox
             android:id="@+id/swDirectoryTootCount"
-            android:text="@string/toot_count"
-            />
-        <CheckBox
             style="@style/setting_row_button"
+            android:text="@string/toot_count" />
+
+        <CheckBox
             android:id="@+id/swDirectoryNote"
-            android:text="@string/note"
-            />
-        <View style="@style/setting_divider"/>
+            style="@style/setting_row_button"
+            android:text="@string/note" />
 
-
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/always_expand_context_menu_sub_items"
-            />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Switch
-                android:id="@+id/swAlwaysExpandContextMenuItems"
-                style="@style/setting_horizontal_stretch"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/show_bookmark_button"
-            />
+            android:text="@string/always_expand_context_menu_sub_items" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swAlwaysExpandContextMenuItems"
+            style="@style/setting_row_form" />
 
-            <Switch
-                android:id="@+id/swShowBookmarkButton"
-                style="@style/setting_horizontal_stretch"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
+        <View style="@style/setting_divider" />
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/hide_followers_count"
-            />
+            android:text="@string/show_bookmark_button" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <Switch
+            android:id="@+id/swShowBookmarkButton"
+            style="@style/setting_row_form" />
 
-            <Switch
-                android:id="@+id/swHideFollowCount"
-                style="@style/setting_horizontal_stretch"
-                />
+        <View style="@style/setting_divider" />
 
-        </LinearLayout>
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/hide_followers_count" />
 
-        <View style="@style/setting_divider"/>
+        <Switch
+            android:id="@+id/swHideFollowCount"
+            style="@style/setting_row_form" />
 
+        <View style="@style/setting_divider" />
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/emojione_shortcode_support" />
+
+        <Switch
+            android:id="@+id/swEmojioneShortcode"
+            style="@style/setting_row_form" />
+
+        <TextView
+            style="@style/setting_row_form"
+            android:text="@string/emojione_shortcode_support_desc" />
+
+        <View style="@style/setting_divider" />
 
     </LinearLayout>
 </ScrollView>

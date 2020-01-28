@@ -488,6 +488,11 @@ object Pref {
 		R.id.swHideFollowCount
 	)
 	
+	val bpEmojioneShortcode = BooleanPref(
+		"EmojioneShortcode",
+		true,
+		R.id.swEmojioneShortcode
+	)
 	
 	// int
 	

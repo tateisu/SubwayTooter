@@ -1007,5 +1007,7 @@
     <string name="announcements_period2">イベント期間: %1$s～%2$s</string>
     <string name="edited_at">更新: %1$s</string>
     <string name="hide_followers_count">フォロワー数を隠す</string>
+    <string name="emojione_shortcode_support">EmojiOneのショートコードを変換する</string>
+    <string name="emojione_shortcode_support_desc">サーバが古い間に作られた投稿は(サーバがアップデートした後でも)EmojiOneのショートコードを含むかもしれません。</string>
 
 </resources>

@@ -1002,4 +1002,6 @@
     <string name="announcements_period2">Event Period: %1$s…%2$s</string>
     <string name="edited_at">Edited: %1$s</string>
     <string name="hide_followers_count">Hide followers count</string>
+    <string name="emojione_shortcode_support">EmojiOne shortcode support</string>
+    <string name="emojione_shortcode_support_desc">The toots made by old Mastodon may contain emojione\'s shortcode even if the server have been updated.</string>
 </resources>

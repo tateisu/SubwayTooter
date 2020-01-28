@@ -340,6 +340,11 @@ object EmojiDecoder {
 		val emojiMapCustom = options.emojiMapCustom
 		val emojiMapProfile = options.emojiMapProfile
 		
+		val useEmojioneShortcode = when(val context = options.context) {
+			null -> false
+			else -> Pref.bpEmojioneShortcode(App1.getAppState(context).pref)
+		}
+		
 		splitShortCode(s, callback = object : ShortCodeSplitterCallback {
 			override fun onString(part : String) {
 				builder.addUnicodeString(part)
@@ -371,11 +376,13 @@ object EmojiDecoder {
 				}
 				
 				// 通常の絵文字
-				val info =
-					EmojiMap.sShortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
-				if(info != null) {
-					builder.addImageSpan(part, info.er)
-					return
+				if( useEmojioneShortcode ){
+					val info =
+						EmojiMap.sShortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
+					if(info != null) {
+						builder.addImageSpan(part, info.er)
+						return
+					}
 				}
 				
 				when {

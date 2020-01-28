@@ -399,11 +399,26 @@ enum class ColumnType(
 		name1 = { it.getString(R.string.home) },
 		
 		loading = { client ->
-			getAnnouncements(client)
-			getStatusList(client, column.makeHomeTlUrl())
+			val ra = getAnnouncements(client,force=true)
+			if(ra==null||ra.error!=null)
+				ra
+			else
+				getStatusList(client, column.makeHomeTlUrl())
 		},
-		refresh = { client -> getStatusList(client, column.makeHomeTlUrl()) },
-		gap = { client -> getStatusList(client, column.makeHomeTlUrl()) },
+		refresh = { client ->
+			val ra = getAnnouncements(client)
+			if(ra==null||ra.error!=null)
+				ra
+			else
+				getStatusList(client, column.makeHomeTlUrl())
+		},
+		gap = { client ->
+			val ra = getAnnouncements(client)
+			if(ra==null||ra.error!=null)
+				ra
+			else
+				getStatusList(client, column.makeHomeTlUrl())
+		},
 		bAllowPseudo = false
 	),
 	

@@ -1040,30 +1040,5 @@ class ColumnTask_Loading(
 		return getStatusList(client, Column.PATH_DIRECT_MESSAGES)
 	}
 	
-	internal fun getAnnouncements(client : TootApiClient) : TootApiResult? {
-		if( isMastodon && !isPseudo ){
-			column.announcements = null
-			column.announcementUpdated =1L
-			column.announcementId = null
-			client.publishApiProgress("loading announcements")
-			val (instance, _) = TootInstance.get(client)
-			if( instance?.versionGE(TootInstance.VERSION_3_1_0_rc1) == true){
-				val result = client.request("/api/v1/announcements")
-					?: return null // cancelled.
-				val code = result.response?.code ?: 0
-				if(code !in 400 until 500) {
-					val list = parseList(::TootAnnouncement,parser,result.jsonArray)
-					if(list.isNotEmpty()){
-						column.announcements = list
-						column.announcementUpdated = SystemClock.elapsedRealtime()
-						client.publishApiProgress("announcements loaded")
-					}
-					// other errors such as network or server fails will stop column loading.
-					return result
-				}
-				// just skip load announcements for 4xx error if server does not support announcements.
-			}
-		}
-		return TootApiResult()
-	}
+
 }

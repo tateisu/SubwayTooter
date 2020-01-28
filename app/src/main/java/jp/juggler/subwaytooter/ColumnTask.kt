@@ -3,12 +3,15 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.AsyncTask
+import android.os.SystemClock
+import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.JsonObject
 import jp.juggler.util.WordTrieTree
+import jp.juggler.util.notEmpty
 import java.util.concurrent.atomic.AtomicBoolean
 
 enum class ColumnTaskType {
@@ -43,7 +46,7 @@ abstract class ColumnTask(
 	val highlight_trie : WordTrieTree?
 		get() = column.highlight_trie
 	
-	val isPseudo :Boolean
+	val isPseudo : Boolean
 		get() = access_info.isPseudo
 	
 	val isMastodon : Boolean
@@ -51,7 +54,6 @@ abstract class ColumnTask(
 	
 	val isMisskey : Boolean
 		get() = access_info.isMisskey
-	
 	
 	val misskeyVersion : Int
 		get() = access_info.misskeyVersion
@@ -119,8 +121,8 @@ abstract class ColumnTask(
 		return dst
 	}
 	
-	internal val profileDirectoryPath:String
-		get(){
+	internal val profileDirectoryPath : String
+		get() {
 			val order = when(val q = column.search_query) {
 				"new" -> q
 				else -> "active"
@@ -128,4 +130,44 @@ abstract class ColumnTask(
 			val local = ! column.search_resolve
 			return "${Column.PATH_PROFILE_DIRECTORY}&order=$order&local=$local"
 		}
+	
+	internal fun getAnnouncements(
+		client : TootApiClient,
+		force : Boolean = false
+	) : TootApiResult? {
+		// announcements is shown only mastodon home timeline, not pseudo.
+		if(isMastodon && ! isPseudo) {
+			// force (initial loading) always reload announcements
+			// other (refresh,gap) may reload announcements if last load is too old
+			if(force || SystemClock.elapsedRealtime() - column.announcementUpdated >= 15 * 60000L) {
+				if(force) {
+					column.announcements = null
+					column.announcementUpdated = SystemClock.elapsedRealtime()
+					client.publishApiProgress("announcements reset")
+				}
+				val (instance, _) = TootInstance.get(client)
+				if(instance?.versionGE(TootInstance.VERSION_3_1_0_rc1) == true) {
+					val result = client.request("/api/v1/announcements")
+						?: return null // cancelled.
+					val code = result.response?.code ?: 0
+					when(code) {
+						// just skip load announcements for 4xx error if server does not support announcements.
+						in 400 until 500 -> {
+						}
+
+						else -> {
+							column.announcements =
+								parseList(::TootAnnouncement, parser, result.jsonArray)
+									.notEmpty()
+							column.announcementUpdated = SystemClock.elapsedRealtime()
+							client.publishApiProgress("announcements loaded")
+							// other errors such as network or server fails will stop column loading.
+							return result
+						}
+					}
+				}
+			}
+		}
+		return TootApiResult()
+	}
 }

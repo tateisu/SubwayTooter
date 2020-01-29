@@ -124,7 +124,11 @@ internal class ItemViewHolder(
 	
 	private lateinit var llCardOuter : View
 	private lateinit var tvCardText : MyTextView
+	private lateinit var flCardImage : View
+	private lateinit var llCardImage : View
 	private lateinit var ivCardImage : MyNetworkImageView
+	private lateinit var btnCardImageHide : ImageButton
+	private lateinit var btnCardImageShow : Button
 	
 	private lateinit var llExtra : LinearLayout
 	
@@ -192,6 +196,9 @@ internal class ItemViewHolder(
 		
 		ivCardImage.setOnClickListener(this)
 		ivCardImage.setOnLongClickListener(this)
+		btnCardImageHide.setOnClickListener(this)
+		btnCardImageShow.setOnClickListener(this)
+		
 		
 		ivThumbnail.setOnClickListener(this)
 		
@@ -236,6 +243,7 @@ internal class ItemViewHolder(
 			tvContentWarning.textSize = f
 			tvContent.textSize = f
 			btnShowMedia.textSize = f
+			btnCardImageShow.textSize = f
 			tvApplication.textSize = f
 			tvMessageHolder.textSize = f
 			btnListTL.textSize = f
@@ -274,6 +282,7 @@ internal class ItemViewHolder(
 			tvContentWarning.setLineSpacing(0f, spacing)
 			tvContent.setLineSpacing(0f, spacing)
 			btnShowMedia.setLineSpacing(0f, spacing)
+			btnCardImageShow.setLineSpacing(0f, spacing)
 			tvApplication.setLineSpacing(0f, spacing)
 			tvMessageHolder.setLineSpacing(0f, spacing)
 			btnListTL.setLineSpacing(0f, spacing)
@@ -316,18 +325,20 @@ internal class ItemViewHolder(
 			cardBackground.width = (density * 1f)
 		}
 		
-		btnShowMedia.text =
-			SpannableString(activity.getString(R.string.tap_to_show))
-				.apply {
-					val colorBg = getAttributeColor(activity, R.attr.colorShowMediaBackground)
-						.applyAlphaMultiplier(0.5f)
-					setSpan(
-						BackgroundColorSpan(colorBg),
-						0,
-						this.length,
-						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-					)
-				}
+		val textShowMedia = SpannableString(activity.getString(R.string.tap_to_show))
+			.apply {
+				val colorBg = getAttributeColor(activity, R.attr.colorShowMediaBackground)
+					.applyAlphaMultiplier(0.5f)
+				setSpan(
+					BackgroundColorSpan(colorBg),
+					0,
+					this.length,
+					Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+			}
+		
+		btnShowMedia.text = textShowMedia
+		btnCardImageShow.text = textShowMedia
 	}
 	
 	fun onViewRecycled() {
@@ -444,7 +455,7 @@ internal class ItemViewHolder(
 		tvMediaDescription.visibility = View.GONE
 		llCardOuter.visibility = View.GONE
 		tvCardText.visibility = View.GONE
-		ivCardImage.visibility = View.GONE
+		flCardImage.visibility = View.GONE
 		llConversationIcons.visibility = View.GONE
 		
 		removeExtraView()
@@ -1771,30 +1782,37 @@ internal class ItemViewHolder(
 		val notification = (item as? TootNotification)
 		when(v) {
 			
-			btnHideMedia -> {
+			btnHideMedia, btnCardImageHide -> {
+				fun hideViews(){
+					llMedia.visibility = View.GONE
+					btnShowMedia.visibility = View.VISIBLE
+					llCardImage.visibility =View.GONE
+					btnCardImageShow.visibility = View.VISIBLE
+				}
 				status_showing?.let { status ->
 					MediaShown.save(status, false)
-					btnShowMedia.visibility = View.VISIBLE
-					llMedia.visibility = View.GONE
+					hideViews()
 				}
 				if(item is TootScheduled) {
 					MediaShown.save(item.uri, false)
-					btnShowMedia.visibility = View.VISIBLE
-					llMedia.visibility = View.GONE
+					hideViews()
 				}
 			}
 			
-			btnShowMedia -> {
-				
+			btnShowMedia, btnCardImageShow -> {
+				fun showViews(){
+					llMedia.visibility = View.VISIBLE
+					btnShowMedia.visibility = View.GONE
+					llCardImage.visibility =View.VISIBLE
+					btnCardImageShow.visibility = View.GONE
+				}
 				status_showing?.let { status ->
 					MediaShown.save(status, true)
-					btnShowMedia.visibility = View.GONE
-					llMedia.visibility = View.VISIBLE
+					showViews()
 				}
 				if(item is TootScheduled) {
 					MediaShown.save(item.uri, true)
-					btnShowMedia.visibility = View.GONE
-					llMedia.visibility = View.VISIBLE
+					showViews()
 				}
 			}
 			
@@ -2209,7 +2227,7 @@ internal class ItemViewHolder(
 			return
 		}
 		
-		var bShown = false
+		var bShowOuter = false
 		
 		val sb = StringBuilder()
 		
@@ -2252,30 +2270,35 @@ internal class ItemViewHolder(
 		
 		if(sb.isNotEmpty()) {
 			val text =
-				DecodeOptions(activity, access_info, forceHtml = true).decodeHTML(sb.toString())
+				DecodeOptions(activity, access_info, forceHtml = true)
+					.decodeHTML(sb.toString())
 			if(text.isNotEmpty()) {
 				tvCardText.visibility = View.VISIBLE
 				tvCardText.text = text
-				bShown = true
+				bShowOuter = true
 			}
 		}
 		
 		val image = card.image
-		if(image != null && image.isNotEmpty()) {
-			ivCardImage.visibility = View.VISIBLE
-			ivCardImage.setImageUrl(
-				activity.pref,
-				0f,
-				access_info.supplyBaseUrl(image),
-				access_info.supplyBaseUrl(image)
-			)
-			bShown = true
+		if(flCardImage.vg(image?.isNotEmpty()==true) !=null) {
+			val imageUrl = access_info.supplyBaseUrl(image)
+			ivCardImage.setImageUrl(activity.pref, 0f, imageUrl, imageUrl)
+			
+			// show about card outer
+			bShowOuter = true
+			
+			// show about image content
+			val default_shown = when {
+				column.hide_media_default -> false
+				access_info.dont_hide_nsfw -> true
+				else -> ! status.sensitive
+			}
+			val is_shown = MediaShown.isShown(status, default_shown)
+			llCardImage.vg(is_shown)
+			btnCardImageShow.vg(! is_shown)
 		}
 		
-		if(bShown) {
-			llCardOuter.visibility = View.VISIBLE
-		}
-		
+		if(bShowOuter) llCardOuter.visibility = View.VISIBLE
 	}
 	
 	private fun addLinkAndCaption(
@@ -3519,7 +3542,7 @@ internal class ItemViewHolder(
 												context,
 												R.drawable.btn_bg_transparent
 											)
-											contentDescription = "@string/hide"
+											contentDescription = context.getString(R.string.hide)
 											imageResource = R.drawable.ic_close
 										}.lparams(dip(32), matchParent) {
 											startMargin = dip(8)
@@ -3560,18 +3583,56 @@ internal class ItemViewHolder(
 								}.lparams(matchParent, wrapContent) {
 								}
 								
-								ivCardImage = myNetworkImageView {
+								flCardImage = frameLayout {
+									lparams(matchParent, activity.app_state.media_thumb_height) {
+										topMargin = dip(3)
+									}
 									
-									contentDescription = context.getString(R.string.thumbnail)
+									llCardImage = linearLayout {
+										lparams(matchParent, matchParent)
+										
+										ivCardImage = myNetworkImageView {
+											
+											contentDescription =
+												context.getString(R.string.thumbnail)
+											
+											scaleType = if(Pref.bpDontCropMediaThumb(App1.pref))
+												ImageView.ScaleType.FIT_CENTER
+											else
+												ImageView.ScaleType.CENTER_CROP
+											
+										}.lparams(0, matchParent) {
+											weight = 1f
+										}
+										btnCardImageHide = imageButton {
+											background = ContextCompat.getDrawable(
+												context,
+												R.drawable.btn_bg_transparent
+											)
+											contentDescription = context.getString(R.string.hide)
+											imageResource = R.drawable.ic_close
+										}.lparams(dip(32), matchParent) {
+											startMargin = dip(4)
+										}
+									}
 									
-									scaleType = if(Pref.bpDontCropMediaThumb(App1.pref))
-										ImageView.ScaleType.FIT_CENTER
-									else
-										ImageView.ScaleType.CENTER_CROP
-									
-								}.lparams(matchParent, activity.app_state.media_thumb_height) {
-									topMargin = dip(3)
+									btnCardImageShow = button {
+										
+										backgroundColor = getAttributeColor(
+											context,
+											R.attr.colorShowMediaBackground
+										)
+										
+										gravity = Gravity.CENTER
+										
+										textColor = getAttributeColor(
+											context,
+											R.attr.colorShowMediaText
+										)
+										
+									}.lparams(matchParent, matchParent)
 								}
+								
 							}
 							
 							

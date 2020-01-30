@@ -468,7 +468,7 @@ object Pref {
 	)
 	
 	val bpShowBookmarkButton = BooleanPref(
-		"ShowBookmarkButton",
+		"ShowBookmarkButton2",
 		true,
 		R.id.swShowBookmarkButton
 	)

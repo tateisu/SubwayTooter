@@ -502,8 +502,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 					}
 					
 					SettingType.CheckBox -> {
-						val bp = item.pref.cast<BooleanPref>() ?: error("$name has no boolean pref")
-						if(bp(pref) == bp.defVal) pref.edit().remove(bp).apply()
+						val bp :BooleanPref = item.pref.cast() ?: error("$name has no boolean pref")
+						if(pref.contains(bp.key) && bp(pref) == bp.defVal) pref.edit().remove(bp).apply()
 						checkBox.vg(false) // skip animation
 						checkBox.text = name
 						checkBox.isEnabled = item.enabled
@@ -512,14 +512,13 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 					}
 					
 					SettingType.Switch -> {
-						val bp = item.pref.cast<BooleanPref>() ?: error("$name has no boolean pref")
-						if(bp(pref) == bp.defVal) pref.edit().remove(bp).apply()
+						val bp :BooleanPref = item.pref.cast() ?: error("$name has no boolean pref")
+						if(pref.contains(bp.key) && bp(pref) == bp.defVal) pref.edit().remove(bp).apply()
 						showCaption(name)
 						swSwitch.vg(false) // skip animation
+						App1.setSwitchColor1(activity, pref, swSwitch)
 						swSwitch.isEnabled = item.enabled
 						swSwitch.isChecked = bp(pref)
-						
-						App1.setSwitchColor1(activity, pref, swSwitch)
 						swSwitch.vg(true)
 					}
 					

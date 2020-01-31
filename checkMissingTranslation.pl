@@ -37,7 +37,7 @@ while(<$fh>){
 		my $branch=$1;
 		print "# branch=$branch\n";
 		$branch eq 'master'
-			or die "current branch is not master.\n";
+			or warn "!!!! current branch is not master !!!!\n";
 #	}else{
 #		warn "working tree is not clean.\n";
 #		cmd "git status";

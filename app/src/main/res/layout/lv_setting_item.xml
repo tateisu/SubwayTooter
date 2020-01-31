@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/setting_row_label"
+        android:id="@+id/tvCaption" />
+
+    <Button
+        android:id="@+id/btnAction"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_bg_transparent_round6dp"
+        android:gravity="start|center_vertical"
+        android:minHeight="48dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:paddingStart="6dp"
+        android:textAllCaps="false" />
+
+    <CheckBox
+        android:id="@+id/checkBox"
+        style="@style/setting_row_form" />
+
+    <Switch
+        android:id="@+id/swSwitch"
+        style="@style/setting_row_form"
+        android:gravity="center"
+        android:minHeight="40dp"
+        />
+
+    <Spinner
+        android:id="@+id/spSpinner"
+        style="@style/setting_row_form"
+        android:minHeight="40dp"
+        />
+
+    <EditText
+        android:id="@+id/etEditText"
+        style="@style/setting_row_form"
+        android:gravity="center"
+         />
+    <TextView
+        android:id="@+id/tvError"
+        style="@style/setting_row_form"
+        android:textColor="?attr/colorRegexFilterError"
+        />
+
+    <TextView
+        android:id="@+id/textView1"
+        style="@style/setting_row_form" />
+
+    <LinearLayout
+        style="@style/setting_row_form"
+        android:id="@+id/llButtonBar"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        >
+
+
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/edit"
+            android:textAllCaps="false"
+            />
+
+        <Button
+            android:id="@+id/btnReset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reset"
+            android:textAllCaps="false"
+            />
+
+        <View android:id="@+id/vColor"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/llExtra"
+        android:orientation="vertical"
+        style="@style/setting_row_form">
+
+    </LinearLayout>
+
+    <TextView
+        style="@style/setting_row_form"
+        android:id="@+id/tvDesc"
+         />
+</LinearLayout>

@@ -7,14 +7,18 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.ColorStateList
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.graphics.Color
+import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.Switch
+import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabsIntent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
@@ -739,6 +743,144 @@ class App1 : Application() {
 							}
 					}
 				} // else: need restart app.
+			}
+		}
+		
+		
+		fun setSwitchColor1(
+			activity : AppCompatActivity,
+			pref : SharedPreferences,
+			view : Switch?
+		) {
+			fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
+				(Color.red(col1) + Color.red(col2)) ushr 1,
+				(Color.green(col1) + Color.green(col2)) ushr 1,
+				(Color.blue(col1) + Color.blue(col2)) ushr 1
+			)
+			
+			val colorBg = getAttributeColor(activity, R.attr.colorWindowBackground)
+			
+			val colorOn = Pref.ipSwitchOnColor(pref)
+			
+			val colorOff = /* Pref.ipSwitchOffColor(pref).notZero() ?: */
+				getAttributeColor(activity, android.R.attr.colorPrimary)
+			
+			val colorDisabled = mixColor(colorBg, colorOff)
+			
+			val colorTrackDisabled = mixColor(colorBg, colorDisabled)
+			val colorTrackOn = mixColor(colorBg, colorOn)
+			val colorTrackOff = mixColor(colorBg, colorOff)
+			
+			// set Switch Color
+			// https://stackoverflow.com/a/25635526/9134243
+			val thumbStates = ColorStateList(
+				arrayOf(
+					intArrayOf(- android.R.attr.state_enabled),
+					intArrayOf(android.R.attr.state_checked),
+					intArrayOf()
+				),
+				intArrayOf(
+					colorDisabled,
+					colorOn,
+					colorOff
+				)
+			)
+			
+			val trackStates = ColorStateList(
+				arrayOf(
+					intArrayOf(- android.R.attr.state_enabled),
+					intArrayOf(android.R.attr.state_checked),
+					intArrayOf()
+				),
+				intArrayOf(
+					colorTrackDisabled,
+					colorTrackOn,
+					colorTrackOff
+				)
+			)
+			
+			view?.apply {
+				if(Build.VERSION.SDK_INT < 23) {
+					// android 5
+					thumbDrawable?.setTintList(thumbStates)
+					trackDrawable?.setTintList(thumbStates) // not trackState
+				} else {
+					// android 6
+					thumbTintList = thumbStates
+					if(Build.VERSION.SDK_INT >= 24) {
+						// android 7
+						trackTintList = trackStates
+						trackTintMode = PorterDuff.Mode.SRC_OVER
+					}
+				}
+			}
+		}
+		
+		fun setSwitchColor(activity : AppCompatActivity, pref : SharedPreferences, root : View?) {
+			
+			fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
+				(Color.red(col1) + Color.red(col2)) ushr 1,
+				(Color.green(col1) + Color.green(col2)) ushr 1,
+				(Color.blue(col1) + Color.blue(col2)) ushr 1
+			)
+			
+			val colorBg = getAttributeColor(activity, R.attr.colorWindowBackground)
+			
+			val colorOn = Pref.ipSwitchOnColor(pref)
+			
+			val colorOff = /* Pref.ipSwitchOffColor(pref).notZero() ?: */
+				getAttributeColor(activity, android.R.attr.colorPrimary)
+			
+			val colorDisabled = mixColor(colorBg, colorOff)
+			
+			val colorTrackDisabled = mixColor(colorBg, colorDisabled)
+			val colorTrackOn = mixColor(colorBg, colorOn)
+			val colorTrackOff = mixColor(colorBg, colorOff)
+			
+			// set Switch Color
+			// https://stackoverflow.com/a/25635526/9134243
+			val thumbStates = ColorStateList(
+				arrayOf(
+					intArrayOf(- android.R.attr.state_enabled),
+					intArrayOf(android.R.attr.state_checked),
+					intArrayOf()
+				),
+				intArrayOf(
+					colorDisabled,
+					colorOn,
+					colorOff
+				)
+			)
+			
+			val trackStates = ColorStateList(
+				arrayOf(
+					intArrayOf(- android.R.attr.state_enabled),
+					intArrayOf(android.R.attr.state_checked),
+					intArrayOf()
+				),
+				intArrayOf(
+					colorTrackDisabled,
+					colorTrackOn,
+					colorTrackOff
+				)
+			)
+			
+			root?.scan {
+				(it as? Switch)?.apply {
+					if(Build.VERSION.SDK_INT < 23) {
+						// android 5
+						thumbDrawable?.setTintList(thumbStates)
+						trackDrawable?.setTintList(thumbStates) // not trackState
+					} else {
+						// android 6
+						thumbTintList = thumbStates
+						if(Build.VERSION.SDK_INT >= 24) {
+							// android 7
+							trackTintList = trackStates
+							trackTintMode = PorterDuff.Mode.SRC_OVER
+						}
+					}
+				}
 			}
 		}
 	}

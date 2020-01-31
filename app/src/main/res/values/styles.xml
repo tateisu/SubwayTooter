@@ -130,11 +130,11 @@
         <item name="android:orientation">horizontal</item>
         <item name="android:baselineAligned">true</item>
 
-        <item name="android:paddingLeft">48dp</item>
-        <item name="android:paddingRight">0dp</item>
+        <item name="android:layout_marginLeft">32dp</item>
+        <item name="android:layout_marginRight">0dp</item>
 
-        <item name="android:paddingStart" tools:ignore="NewApi">48dp</item>
-        <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
+        <item name="android:layout_marginStart" tools:ignore="NewApi">32dp</item>
+        <item name="android:layout_marginEnd" tools:ignore="NewApi">0dp</item>
 
     </style>
 
@@ -156,10 +156,10 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
 
-        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingLeft">0dp</item>
         <item name="android:paddingRight">0dp</item>
 
-        <item name="android:paddingStart" tools:ignore="NewApi">12dp</item>
+        <item name="android:paddingStart" tools:ignore="NewApi">0dp</item>
         <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
 
         <item name="android:textSize">14sp</item>

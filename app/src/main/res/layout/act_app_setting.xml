@@ -1,139 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 
     android:id="@+id/llContent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSearchFormBackground"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="6dp">
+
+        <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/search"
+            android:importantForAutofill="no"
+            android:inputType="text" />
+
+        <ImageButton
+            android:id="@+id/btnSearchReset"
+            android:background="@drawable/btn_bg_transparent"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="6dp"
+            android:contentDescription="@string/reset"
+            android:padding="8dp"
+            android:src="@drawable/ic_close"
+            android:tint="?attr/colorVectorDrawable" />
+
+    </LinearLayout>
 
     <ListView
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/lvList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbarStyle="outsideOverlay"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="128dp"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:paddingStart="12dp"
         android:paddingTop="12dp"
-
-        />
+        android:paddingEnd="12dp"
+        android:paddingBottom="128dp"
+        android:scrollbarStyle="outsideOverlay" />
 </LinearLayout>
-
-    <!--<LinearLayout-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:orientation="vertical"-->
-    <!--&gt;-->
-
-    <!--<Button-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:textAllCaps="false"-->
-    <!--android:text="@string/appearance"-->
-    <!--android:id="@+id/btnAppearance"-->
-    <!--/>-->
-    <!--<Button-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:textAllCaps="false"-->
-    <!--android:text="@string/behavior"-->
-    <!--android:id="@+id/btnBehavior"-->
-    <!--/>-->
-    <!--<Button-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:textAllCaps="false"-->
-    <!--android:text="@string/emoji"-->
-    <!--android:id="@+id/btnEmoji"-->
-    <!--/>-->
-    <!--<Button-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:textAllCaps="false"-->
-    <!--android:text="@string/media_attachment"-->
-    <!--android:id="@+id/btnMediaAttachment"-->
-    <!--/>-->
-    <!--<Button-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:textAllCaps="false"-->
-    <!--android:text="@string/notifications"-->
-    <!--android:id="@+id/btnNotifications"-->
-    <!--/>-->
-    <!--<Button-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:textAllCaps="false"-->
-    <!--android:text="@string/performance"-->
-    <!--android:id="@+id/btnPerformance"-->
-    <!--/>-->
-    <!--<Button-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:textAllCaps="false"-->
-    <!--android:text="@string/post"-->
-    <!--android:id="@+id/btnPost"-->
-    <!--/>-->
-    <!--<Button-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:textAllCaps="false"-->
-    <!--android:text="@string/tablet_mode"-->
-    <!--android:id="@+id/btnTabletMode"-->
-    <!--/>-->
-
-    <!--<View style="@style/setting_divider"/>-->
-
-    <!--&lt;!&ndash; =============================================== &ndash;&gt;-->
-    <!--<TextView-->
-    <!--style="@style/setting_group_header"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:text="@string/actions"-->
-    <!--/>-->
-
-    <!--<View style="@style/setting_divider"/>-->
-
-    <!--<TextView-->
-    <!--style="@style/setting_row_label"-->
-    <!--android:text="@string/actions"-->
-    <!--/>-->
-
-    <!--<LinearLayout style="@style/setting_row_form">-->
-
-    <!--<Button-->
-    <!--android:id="@+id/btnSettingExport"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:text="@string/"-->
-    <!--android:textAllCaps="false"-->
-    <!--/>-->
-    <!--</LinearLayout>-->
-
-    <!--<LinearLayout style="@style/setting_row_form">-->
-
-    <!--<Button-->
-    <!--android:id="@+id/btnSettingImport"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:text="@string/"-->
-    <!--android:textAllCaps="false"-->
-    <!--/>-->
-    <!--</LinearLayout>-->
-
-    <!--<LinearLayout style="@style/setting_row_form">-->
-
-    <!--<TextView-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:text="@string/"-->
-    <!--android:textAllCaps="false"-->
-    <!--/>-->
-    <!--</LinearLayout>-->
-
-    <!--<View style="@style/setting_divider"/>-->
-
-    <!--</LinearLayout>-->
-    <!--</ListView>-->

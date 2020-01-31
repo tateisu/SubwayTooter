@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <FrameLayout
+        android:id="@+id/flColumnBackground"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/tvSampleAcct"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:gravity="start"
+                android:maxLines="1"
+                android:text="@string/acct_sample"
+                android:textColor="?attr/colorTimeSmall"
+                android:textSize="12sp" />
+
+            <jp.juggler.subwaytooter.view.MyTextView
+                android:id="@+id/tvSampleContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:gravity="start"
+                android:lineSpacingMultiplier="1.1"
+                android:text="@string/content_sample"
+                android:textColor="?attr/colorContentText" />
+        </LinearLayout>
+    </FrameLayout>
+</merge>

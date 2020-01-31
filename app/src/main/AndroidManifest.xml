@@ -168,13 +168,6 @@
         <activity
             android:name=".ActAppSetting"
             android:label="@string/app_setting"
-
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            />
-        <activity
-            android:name=".ActAppSettingChild"
-            android:label="@string/app_setting"
-
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             />
 

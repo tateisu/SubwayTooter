@@ -116,6 +116,10 @@ fun SharedPreferences.Editor.put(item : BooleanPref, v : Boolean) : SharedPrefer
 	item.put(this, v)
 	return this
 }
+fun SharedPreferences.Editor.putOrRemove(item : BooleanPref, v : Boolean) : SharedPreferences.Editor {
+	item.putOrRemove(this, v)
+	return this
+}
 
 fun SharedPreferences.Editor.put(item : StringPref, v : String) : SharedPreferences.Editor {
 	item.put(this, v)

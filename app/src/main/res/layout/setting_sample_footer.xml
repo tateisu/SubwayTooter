@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/llFooterBG"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="?attr/colorColumnStripBackground"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/ivFooterMenu"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_hamburger" />
+
+            <View
+                android:id="@+id/vFooterDivider1"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="?attr/colorImageButton" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <HorizontalScrollView
+                android:id="@+id/svColumnStrip"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+
+                android:cacheColorHint="#00000000"
+                android:fadingEdge="horizontal"
+                android:fadingEdgeLength="20dp"
+                android:fillViewport="true"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/llColumnStrip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <View
+                android:id="@+id/vFooterDivider2"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="?attr/colorImageButton" />
+
+            <ImageView
+                android:id="@+id/ivFooterToot"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/toot"
+                android:src="@drawable/ic_edit" />
+        </LinearLayout>
+
+        <View
+            android:id="@+id/vIndicator"
+            android:layout_width="48dp"
+            android:layout_height="2dp"
+            android:layout_gravity="center_horizontal" />
+    </FrameLayout>
+
+</merge>

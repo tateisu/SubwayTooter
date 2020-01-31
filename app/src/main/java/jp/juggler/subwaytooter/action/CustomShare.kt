@@ -24,25 +24,17 @@ enum class CustomShareTarget {
 	CustomShare3,
 }
 
+
 object CustomShare {
 	
-	private val log = LogCategory("CustomShare")
+	val log = LogCategory("CustomShare")
 	
 	const val CN_CLIPBOARD = "<InApp>/CopyToClipboard"
 	
 	private const val translate_app_component_default =
 		"com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity"
 	
-	// convert "pkgName/className" string to ComponentName object.
-	private fun String.cn() : ComponentName? {
-		try {
-			val idx = indexOf('/')
-			if(idx >= 1) return ComponentName(substring(0 until idx), substring(idx + 1))
-		} catch(ex : Throwable) {
-			log.e(ex, "incorrect component name $this")
-		}
-		return null
-	}
+
 	
 	fun getCustomShareComponentName(
 		pref : SharedPreferences,
@@ -82,7 +74,8 @@ object CustomShare {
 				val cnStr = "${cn.packageName}/${cn.className}"
 				label = cnStr
 				if(cnStr == CN_CLIPBOARD) {
-					label = context.getString(R.string.copy_to_clipboard)
+					label =
+						"${context.getString(R.string.copy_to_clipboard)}(${context.getString(R.string.app_name)})"
 					icon = ContextCompat.getDrawable(context, R.drawable.ic_copy)?.mutate()?.apply{
 						setTint(getAttributeColor(context,R.attr.colorVectorDrawable))
 						setTintMode(PorterDuff.Mode.SRC_IN)
@@ -183,4 +176,15 @@ object CustomShare {
 			cache[target] = pair
 		}
 	}
+}
+
+// convert "pkgName/className" string to ComponentName object.
+fun String.cn() : ComponentName? {
+	try {
+		val idx = indexOf('/')
+		if(idx >= 1) return ComponentName(substring(0 until idx), substring(idx + 1))
+	} catch(ex : Throwable) {
+		CustomShare.log.e(ex, "incorrect component name $this")
+	}
+	return null
 }

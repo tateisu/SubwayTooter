@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.view.View
@@ -15,16 +16,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.CustomShare
+import jp.juggler.subwaytooter.action.cn
 import jp.juggler.util.*
 
 class DlgAppPicker(
 	val activity : AppCompatActivity,
 	val callback : (String) -> Unit
 ) {
-	
+	companion object{
+		fun Char.isAlpha() = ('A' <= this && this <= 'Z')||('a' <= this && this <= 'z')
+	}
+
 	class ListItem(
 		val icon : Drawable?,
-		val text : CharSequence,
+		val text : String,
 		val componentName : String
 	)
 	
@@ -32,14 +37,14 @@ class DlgAppPicker(
 		
 		val pm = activity.packageManager
 		val listResolveInfo = pm.queryIntentActivities(
-			Intent().apply{
+			Intent().apply {
 				action = Intent.ACTION_SEND
 				type = "text/plain"
 				putExtra(Intent.EXTRA_TEXT, activity.getString(R.string.content_sample))
 			},
-			if( Build.VERSION.SDK_INT >= 23 ) {
+			if(Build.VERSION.SDK_INT >= 23) {
 				PackageManager.MATCH_ALL
-			}else {
+			} else {
 				0 // PackageManager.MATCH_DEFAULT_ONLY
 			}
 		)
@@ -49,20 +54,23 @@ class DlgAppPicker(
 			add(
 				ListItem(
 					it.loadIcon(pm),
-					it.loadLabel(pm)?.notEmpty() ?: cn,
+					(it.loadLabel(pm)?.notEmpty() ?: cn).toString(),
 					cn
 				)
 			)
 		}
 		
-		add(
-			ListItem(
-				ContextCompat.getDrawable(activity, R.mipmap.ic_launcher),
-				activity.getString(R.string.copy_to_clipboard),
-				CustomShare.CN_CLIPBOARD
-			)
-		)
-		sortBy { it.text.toString() }
+		val (label, icon) = CustomShare.getInfo(activity, CustomShare.CN_CLIPBOARD.cn())
+		add(ListItem(icon, label.toString(), CustomShare.CN_CLIPBOARD))
+		sortWith(Comparator { a, b->
+			val a1 = a.text.firstOrNull() ?: '\u0000'
+			val b1 = b.text.firstOrNull() ?: '\u0000'
+			when {
+				!a1.isAlpha() && b1.isAlpha() -> -1
+				a1.isAlpha() && !b1.isAlpha() -> 1
+				else -> a.text.compareTo(b.text,ignoreCase = true)
+			}
+		})
 	}
 	
 	val dialog : AlertDialog

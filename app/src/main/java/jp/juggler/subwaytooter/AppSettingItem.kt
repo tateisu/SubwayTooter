@@ -214,8 +214,6 @@ class AppSettingGroup(
 
 val appSettingRoot = AppSettingGroup(null, SettingType.Section, R.string.app_setting).apply {
 	
-	// TODO項目一覧に漏れがないか確認すること
-	
 	section(R.string.notifications) {
 		
 		group(R.string.notification_style_before_oreo) {

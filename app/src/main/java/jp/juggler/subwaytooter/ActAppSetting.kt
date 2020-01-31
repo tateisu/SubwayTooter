@@ -109,7 +109,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 		
 		adapter = MyAdapter()
 		lvList.adapter = adapter
-		load(null, null)
 		
 		etSearch = findViewById<EditText>(R.id.etSearch).apply {
 			addTextChangedListener(object : TextWatcher {
@@ -140,7 +139,17 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 		findViewById<View>(R.id.btnSearchReset).apply {
 			setOnClickListener(this@ActAppSetting)
 		}
+		
+		val e = pref.edit()
+		var dirty = false
+		appSettingRoot.scan{
+			if( it.pref?.removeDefault(pref,e) ==true ) dirty = true
+		}
+		if(dirty) e.apply()
+
+		load(null, null)
 	}
+	
 	
 	override fun onSaveInstanceState(outState : Bundle) {
 		super.onSaveInstanceState(outState)
@@ -209,10 +218,10 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 	private val divider = Any()
 	private val list = ArrayList<Any>()
 	
-	private var lastSection : AppSettingGroup? = null
+	private var lastSection : AppSettingItem? = null
 	private var lastQuery : String? = null
 	
-	private fun load(section : AppSettingGroup?, query : String?) {
+	private fun load(section : AppSettingItem?, query : String?) {
 		list.clear()
 		
 		var lastPath : String? = null
@@ -239,7 +248,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 				if(item.caption == 0) return
 				if(item.type != SettingType.Section) {
 					var match = getString(item.caption).contains(query, ignoreCase = true)
-					if(item.type == SettingType.Group && item is AppSettingGroup) {
+					if(item.type == SettingType.Group) {
 						for(child in item.items) {
 							if(child.caption == 0) continue
 							if(getString(item.caption).contains(query, ignoreCase = true)) {
@@ -256,15 +265,15 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 							}
 						}
 						return
-					} else if(match) {
+					}
+					
+					if(match) {
 						addParentPath(item)
 						list.add(item)
 					}
 				}
-				if(item is AppSettingGroup) {
-					for(child in item.items) {
-						scanGroup(level + 1, child)
-					}
+				for(child in item.items) {
+					scanGroup(level + 1, child)
 				}
 			}
 			scanGroup(0, appSettingRoot)
@@ -283,12 +292,12 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 			// show section page
 			lastSection = section
 			lastQuery = null
-			fun scanGroup(level : Int, parent : AppSettingGroup?) {
+			fun scanGroup(level : Int, parent : AppSettingItem?) {
 				parent ?: return
 				for(item in parent.items) {
 					list.add(divider)
 					list.add(item)
-					if(item is AppSettingGroup) {
+					if(item.items.isNotEmpty()) {
 						if(item.type == SettingType.Group) {
 							for(child in item.items) {
 								list.add(child)
@@ -502,8 +511,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 					}
 					
 					SettingType.CheckBox -> {
-						val bp :BooleanPref = item.pref.cast() ?: error("$name has no boolean pref")
-						if(pref.contains(bp.key) && bp(pref) == bp.defVal) pref.edit().remove(bp).apply()
+						val bp : BooleanPref =
+							item.pref.cast() ?: error("$name has no boolean pref")
 						checkBox.vg(false) // skip animation
 						checkBox.text = name
 						checkBox.isEnabled = item.enabled
@@ -512,8 +521,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 					}
 					
 					SettingType.Switch -> {
-						val bp :BooleanPref = item.pref.cast() ?: error("$name has no boolean pref")
-						if(pref.contains(bp.key) && bp(pref) == bp.defVal) pref.edit().remove(bp).apply()
+						val bp : BooleanPref =
+							item.pref.cast() ?: error("$name has no boolean pref")
 						showCaption(name)
 						swSwitch.vg(false) // skip animation
 						App1.setSwitchColor1(activity, pref, swSwitch)
@@ -735,7 +744,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 			if(bindingBusy) return
 			val item = item ?: return
 			when(val pi = item.pref) {
-				is BooleanPref -> pref.edit().putOrRemove(pi, isChecked).apply()
+				is BooleanPref -> pref.edit().put(pi, isChecked).apply()
 				else -> error("CompoundButton has no booleanPref $pi")
 			}
 			item.changed.invoke(activity)

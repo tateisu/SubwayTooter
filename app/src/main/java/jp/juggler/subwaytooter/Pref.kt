@@ -7,10 +7,10 @@ import androidx.preference.PreferenceManager
 import jp.juggler.util.optInt
 
 @Suppress("EqualsOrHashCode")
-abstract class BasePref<T>(val key : String) {
+abstract class BasePref<T>(val key : String,val defVal : T) {
 	
 	init {
-		if( Pref.map[key] != null )
+		if(Pref.map[key] != null)
 			error("Preference key duplicate: ${key}")
 		else
 			@Suppress("LeakingThis")
@@ -32,114 +32,97 @@ abstract class BasePref<T>(val key : String) {
 		return invoke(Pref.pref(context))
 	}
 	
+	fun removeDefault(pref : SharedPreferences, e : SharedPreferences.Editor) :Boolean{
+		if(pref.contains(key) && this.invoke(pref) == defVal){
+			e.remove(key)
+			return true
+		}
+		return false
+	}
 }
+
 fun SharedPreferences.Editor.remove(item : BasePref<*>) : SharedPreferences.Editor {
 	item.remove(this)
 	return this
 }
 
-class BooleanPref(
-	key : String,
-	val defVal : Boolean,
-	val id : Int =0
-) : BasePref<Boolean>(key) {
+class BooleanPref(key : String,defVal:Boolean)
+	: BasePref<Boolean>(key,defVal) {
 	
 	override operator fun invoke(pref : SharedPreferences) : Boolean {
 		return pref.getBoolean(key, defVal)
 	}
 	
-	override fun put(editor : SharedPreferences.Editor, v : Boolean) {
-		editor.putBoolean(key, v)
-	}
-	
 	// put if value is not default, remove if value is same to default
-	fun putOrRemove(editor : SharedPreferences.Editor, v : Boolean) {
-		if( v != defVal) {
-			editor.putBoolean(key, v)
-		}else{
-			editor.remove(key)
-		}
+	override fun put(editor : SharedPreferences.Editor, v : Boolean) {
+		if(v == defVal) editor.remove(key) else editor.putBoolean(key, v)
 	}
 }
 
-class IntPref(key : String, val defVal : Int) : BasePref<Int>(key) {
+class IntPref(key : String,defVal : Int) : BasePref<Int>(key,defVal) {
 	
 	override operator fun invoke(pref : SharedPreferences) : Int {
 		return pref.getInt(key, defVal)
 	}
 	
 	override fun put(editor : SharedPreferences.Editor, v : Int) {
-		editor.putInt(key, v)
+		if(v == defVal) editor.remove(key) else editor.putInt(key, v)
 	}
 }
 
-class LongPref(key : String, private val defVal : Long) : BasePref<Long>(key) {
+class LongPref(key : String, defVal : Long) : BasePref<Long>(key,defVal) {
 	
 	override operator fun invoke(pref : SharedPreferences) : Long {
 		return pref.getLong(key, defVal)
 	}
 	
 	override fun put(editor : SharedPreferences.Editor, v : Long) {
-		editor.putLong(key, v)
+		if(v == defVal) editor.remove(key) else editor.putLong(key, v)
 	}
 }
 
-class FloatPref(key : String, private val defVal : Float) : BasePref<Float>(key) {
+class FloatPref(key : String,  defVal : Float) : BasePref<Float>(key,defVal) {
 	
 	override operator fun invoke(pref : SharedPreferences) : Float {
 		return pref.getFloat(key, defVal)
 	}
 	
 	override fun put(editor : SharedPreferences.Editor, v : Float) {
-		editor.putFloat(key, v)
+		if(v == defVal) editor.remove(key) else editor.putFloat(key, v)
 	}
 }
 
 class StringPref(
 	key : String,
-	val defVal : String,
+	defVal : String,
 	val skipImport : Boolean = false
-) : BasePref<String>(key) {
+) : BasePref<String>(key,defVal) {
 	
 	override operator fun invoke(pref : SharedPreferences) : String {
-		return pref.getString(key,defVal) ?: defVal
+		return pref.getString(key, defVal) ?: defVal
 	}
 	
 	override fun put(editor : SharedPreferences.Editor, v : String) {
-		editor.putString(key, v)
+		if(v == defVal) editor.remove(key) else editor.putString(key, v)
 	}
 	
 	fun toInt(pref : SharedPreferences) = invoke(pref).optInt() ?: defVal.toInt()
 }
 
-fun SharedPreferences.Editor.put(item : BooleanPref, v : Boolean) : SharedPreferences.Editor {
-	item.put(this, v)
-	return this
-}
-fun SharedPreferences.Editor.putOrRemove(item : BooleanPref, v : Boolean) : SharedPreferences.Editor {
-	item.putOrRemove(this, v)
-	return this
-}
+fun SharedPreferences.Editor.put(item : BooleanPref, v : Boolean) =
+	this.apply { item.put(this, v) }
 
-fun SharedPreferences.Editor.put(item : StringPref, v : String) : SharedPreferences.Editor {
-	item.put(this, v)
-	return this
-}
+fun SharedPreferences.Editor.put(item : StringPref, v : String) =
+	this.apply { item.put(this, v) }
 
-fun SharedPreferences.Editor.put(item : IntPref, v : Int) : SharedPreferences.Editor {
-	item.put(this, v)
-	return this
-}
+fun SharedPreferences.Editor.put(item : IntPref, v : Int) =
+	this.apply { item.put(this, v) }
 
-fun SharedPreferences.Editor.put(item : LongPref, v : Long) : SharedPreferences.Editor {
-	item.put(this, v)
-	return this
-}
+fun SharedPreferences.Editor.put(item : LongPref, v : Long) =
+	this.apply { item.put(this, v) }
 
-fun SharedPreferences.Editor.put(item : FloatPref, v : Float) : SharedPreferences.Editor {
-	item.put(this, v)
-	return this
-}
+fun SharedPreferences.Editor.put(item : FloatPref, v : Float) =
+	this.apply { item.put(this, v) }
 
 object Pref {
 	
@@ -147,364 +130,302 @@ object Pref {
 		return PreferenceManager.getDefaultSharedPreferences(context)
 	}
 	
-	
 	// キー名と設定項目のマップ。インポートやアプリ設定で使う
 	val map = HashMap<String, BasePref<*>>()
-	
 	
 	// boolean
 	
 	val bpDisableEmojiAnimation = BooleanPref(
 		"disable_emoji_animation",
-		false,
-		R.id.swDisableEmojiAnimation
+		false
 	)
 	
 	// val bpDisableFastScroller = BooleanPref("disable_fast_scroller", true, 0) // R.id.swDisableFastScroller)
 	
 	val bpDisableTabletMode = BooleanPref(
 		"disable_tablet_mode",
-		false,
-		R.id.swDisableTabletMode
+		false
 	)
 	
 	val bpDontConfirmBeforeCloseColumn = BooleanPref(
 		"DontConfirmBeforeCloseColumn",
-		false,
-		R.id.swDontConfirmBeforeCloseColumn
+		false
 	)
 	
 	val bpDontCropMediaThumb = BooleanPref(
 		"DontCropMediaThumb",
-		false,
-		R.id.swDontCropMediaThumb
+		false
 	)
 	
 	val bpDontDuplicationCheck = BooleanPref(
 		"dont_duplication_check",
-		false,
-		R.id.swDontDuplicationCheck
+		false
 	)
 	
 	val bpDontRefreshOnResume = BooleanPref(
 		"dont_refresh_on_resume",
-		false,
-		R.id.swDontRefreshOnResume
+		false
 	)
 	
 	val bpDontRound = BooleanPref(
 		"dont_round",
-		false,
-		R.id.swDontRound
+		false
 	)
 	
 	val bpDontScreenOff = BooleanPref(
 		"dont_screen_off",
-		false,
-		R.id.swDontScreenOff
+		false
 	)
 	
 	val bpDontUseActionButtonWithQuickTootBar = BooleanPref(
 		"dont_use_action_button",
-		false,
-		R.id.swDontUseActionButtonWithQuickTootBar
+		false
 	)
 	
 	val bpDontUseStreaming = BooleanPref(
 		"dont_use_streaming",
-		false,
-		R.id.swDontUseStreaming
+		false
 	)
 	
 	val bpEnableGifAnimation = BooleanPref(
 		"enable_gif_animation",
-		false,
-		R.id.swEnableGifAnimation
+		false
 	)
 	
 	val bpExitAppWhenCloseProtectedColumn = BooleanPref(
 		"ExitAppWhenCloseProtectedColumn",
-		false,
-		R.id.swExitAppWhenCloseProtectedColumn
+		false
 	)
 	
 	val bpMentionFullAcct = BooleanPref(
 		"mention_full_acct",
-		false,
-		R.id.swMentionFullAcct
+		false
 	)
 	
 	val bpNotificationLED = BooleanPref(
 		"notification_led",
-		true,
-		R.id.cbNotificationLED
+		true
 	)
 	
 	val bpNotificationSound = BooleanPref(
 		"notification_sound",
-		true,
-		R.id.cbNotificationSound
+		true
 	)
 	
 	val bpNotificationVibration = BooleanPref(
 		"notification_vibration",
-		true,
-		R.id.cbNotificationVibration
+		true
 	)
 	
 	val bpPostButtonBarTop = BooleanPref(
 		"post_button_bar_at_top",
-		true,
-		R.id.swPostButtonBarTop
+		true
 	)
 	
 	val bpPriorChrome = BooleanPref(
 		"prior_chrome",
-		true,
-		R.id.swPriorChrome
+		true
 	)
 	val bpDontUseCustomTabs = BooleanPref(
 		"DontUseCustomTabs",
-		false,
-		R.id.swDontUseCustomTabs
+		false
 	)
 	val bpPriorLocalURL = BooleanPref(
 		"prior_local_url",
-		false,
-		R.id.swPriorLocalURL
+		false
 	)
 	
 	val bpQuickTootBar = BooleanPref(
 		"quick_toot_bar",
-		false,
-		R.id.swQuickTootBar
+		false
 	)
 	
 	val bpRelativeTimestamp = BooleanPref(
 		"relative_timestamp",
-		true,
-		R.id.swRelativeTimestamp
+		true
 	)
 	
 	val bpShortAcctLocalUser = BooleanPref(
 		"short_acct_local_user",
-		true,
-		R.id.swShortAcctLocalUser
+		true
 	)
 	
 	val bpShowFollowButtonInButtonBar = BooleanPref(
 		"ShowFollowButtonInButtonBar",
-		false,
-		R.id.swShowFollowButtonInButtonBar
+		false
 	)
 	
 	val bpSimpleList = BooleanPref(
 		"simple_list",
-		true,
-		R.id.swSimpleList
+		true
 	)
 	
 	val bpUseInternalMediaViewer = BooleanPref(
 		"use_internal_media_viewer",
-		true,
-		R.id.swUseInternalMediaViewer
+		true
 	)
 	
 	val bpShowAppName = BooleanPref(
 		"show_app_name",
-		false,
-		R.id.swShowAppName
+		false
 	)
 	val bpShowLanguage = BooleanPref(
 		"ShowLanguage",
-		false,
-		R.id.swShowLanguage
+		false
 	)
 	val bpForceGap = BooleanPref(
 		"force_gap",
-		false,
-		R.id.swForceGap
+		false
 	)
 	
 	val bpShareViewPool = BooleanPref(
 		"ShareViewPool",
-		true,
-		R.id.swShareViewPool
+		true
 	)
 	
 	val bpAllowColumnDuplication = BooleanPref(
 		"AllowColumnDuplication",
-		true,
-		R.id.swShareViewPool
+		true
 	)
 	
 	val bpAppendAttachmentUrlToContent = BooleanPref(
 		"AppendAttachmentUrlToContent",
-		false,
-		R.id.swAppendAttachmentUrlToContent
+		false
 	)
 	
 	val bpVerticalArrangeThumbnails = BooleanPref(
 		"VerticalArrangeThumbnails",
-		false,
-		R.id.swVerticalArrangeThumbnails
+		false
 	)
 	
 	val bpDontShowPreviewCard = BooleanPref(
 		"DontShowPreviewCard",
-		false,
-		R.id.swDontShowPreviewCard
+		false
 	)
 	
 	val bpScrollTopFromColumnStrip = BooleanPref(
 		"ScrollTopFromColumnStrip",
-		false,
-		R.id.swScrollTopFromColumnStrip
+		false
 	)
 	
 	val bpInstanceTicker = BooleanPref(
 		"InstanceTicker",
-		false,
-		R.id.swInstanceTicker
+		false
 	)
 	val bpLinksInContextMenu = BooleanPref(
 		"LinksInContextMenu",
-		false,
-		R.id.swLinksInContextMenu
+		false
 	)
 	val bpMoveNotificationsQuickFilter = BooleanPref(
 		"MoveNotificationsQuickFilter",
-		false,
-		R.id.swMoveNotificationsQuickFilter
+		false
 	)
 	val bpShowAcctInSystemNotification = BooleanPref(
 		"ShowAcctInSystemNotification",
-		false,
-		R.id.swShowAcctInSystemNotification
+		false
 	)
 	val bpShowLinkUnderline = BooleanPref(
 		"ShowLinkUnderline",
-		false,
-		R.id.swShowLinkUnderline
+		false
 	)
 	
 	val bpShowSearchClear = BooleanPref(
 		"ShowSearchClear",
-		false,
-		R.id.swShowSearchClear
+		false
 	)
 	
 	val bpDontRemoveDeletedToot = BooleanPref(
 		"DontRemoveDeletedToot",
-		false,
-		R.id.swDontRemoveDeletedToot
+		false
 	)
 	
 	val bpDontShowColumnBackgroundImage = BooleanPref(
 		"DontShowColumnBackgroundImage",
-		false,
-		R.id.swDontShowColumnBackgroundImage
+		false
 	)
 	
 	val bpCustomEmojiSeparatorZwsp = BooleanPref(
 		"CustomEmojiSeparatorZwsp",
-		false,
-		R.id.swCustomEmojiSeparatorZwsp
+		false
 	)
 	
 	val bpShowTranslateButton = BooleanPref(
 		"ShowTranslateButton",
-		false,
-		R.id.swShowTranslateButton
+		false
 	)
 	
 	val bpDirectoryLastActive = BooleanPref(
 		"DirectoryLastActive",
-		true,
-		R.id.swDirectoryLastActive
+		true
 	)
 	
 	val bpDirectoryFollowers = BooleanPref(
 		"DirectoryFollowers",
-		true,
-		R.id.swDirectoryFollowers
+		true
 	)
 	
 	val bpDirectoryTootCount = BooleanPref(
 		"DirectoryTootCount",
-		true,
-		R.id.swDirectoryTootCount
+		true
 	)
 	val bpDirectoryNote = BooleanPref(
 		"DirectoryNote",
-		true,
-		R.id.swDirectoryNote
+		true
 	)
 	
 	val bpWarnHashtagAsciiAndNonAscii = BooleanPref(
 		"WarnHashtagAsciiAndNonAscii",
-		false,
-		R.id.swWarnHashtagAsciiAndNonAscii
+		false
 	)
 	
 	val bpEnablePixelfed = BooleanPref(
 		"EnablePixelfed",
-		false,
-		R.id.swEnablePixelfed
+		false
 	)
 	
 	val bpQuickTootOmitAccountSelection = BooleanPref(
 		"QuickTootOmitAccountSelection",
-		false,
-		R.id.swQuickTootOmitAccountSelection
+		false
 	)
 	
 	val bpSeparateReplyNotificationGroup = BooleanPref(
 		"SeparateReplyNotificationGroup",
-		false,
-		R.id.swSeparateReplyNotificationGroup
+		false
 	)
 	
 	val bpAlwaysExpandContextMenuItems = BooleanPref(
 		"AlwaysExpandContextMenuItems",
-		false,
-		R.id.swAlwaysExpandContextMenuItems
+		false
 	)
 	
 	val bpShowBookmarkButton = BooleanPref(
 		"ShowBookmarkButton2",
-		true,
-		R.id.swShowBookmarkButton
+		true
 	)
 	
 	val bpShowFilteredWord = BooleanPref(
 		"ShowFilteredWord",
-		false,
-		R.id.swShowFilteredWord
+		false
 	)
 	
 	val bpEnableDomainTimeline = BooleanPref(
 		"EnableDomainTimeline",
-		false,
-		R.id.swEnableDomainTimeline
+		false
 	)
-
+	
 	val bpDivideNotification = BooleanPref(
 		"DivideNotification",
-		false,
-		R.id.swDivideNotification
+		false
 	)
 	
 	val bpHideFollowCount = BooleanPref(
 		"HideFollowCount",
-		false,
-		R.id.swHideFollowCount
+		false
 	)
 	
 	val bpEmojioneShortcode = BooleanPref(
 		"EmojioneShortcode",
-		true,
-		R.id.swEmojioneShortcode
+		true
 	)
 	
 	// int
@@ -519,7 +440,7 @@ object Pref {
 	val ipUiTheme = IntPref("ui_theme", 0)
 	val ipResizeImage = IntPref("resize_image", 4)
 	
-	val ipRepliesCount = IntPref("RepliesCount",0)
+	val ipRepliesCount = IntPref("RepliesCount", 0)
 	const val RC_SIMPLE = 0
 	const val RC_ACTUAL = 1
 	@Suppress("unused")
@@ -542,8 +463,7 @@ object Pref {
 	const val ABP_BOTTOM = 1
 	const val ABP_START = 2
 	const val ABP_END = 3
-	val ipAdditionalButtonsPosition = IntPref( "AdditionalButtonsPosition",ABP_END)
-	
+	val ipAdditionalButtonsPosition = IntPref("AdditionalButtonsPosition", ABP_END)
 	
 	val ipFooterButtonBgColor = IntPref("footer_button_bg_color", 0)
 	val ipFooterButtonFgColor = IntPref("footer_button_fg_color", 0)
@@ -558,7 +478,8 @@ object Pref {
 	const val JWCP_DEFAULT = 0
 	const val JWCP_START = 1
 	const val JWCP_END = 2
-	val ipJustifyWindowContentPortrait = IntPref("JustifyWindowContentPortrait", 0) // 0=default,1=start,2=end
+	val ipJustifyWindowContentPortrait =
+		IntPref("JustifyWindowContentPortrait", 0) // 0=default,1=start,2=end
 	
 	val ipLinkColor = IntPref("LinkColor", 0)
 	
@@ -589,8 +510,8 @@ object Pref {
 	val ipCcdContentText = IntPref("ipCcdContentText", 0)
 	
 	//	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)
-//	const val TTCS_WEEKLY = 0
-//	const val TTCS_DAILY = 1
+	//	const val TTCS_WEEKLY = 0
+	//	const val TTCS_DAILY = 1
 	
 	// string
 	val spColumnWidth = StringPref("ColumnWidth", "")
@@ -621,19 +542,19 @@ object Pref {
 	val spUserAgent = StringPref("UserAgent", "")
 	
 	val spMediaReadTimeout = StringPref("spMediaReadTimeout", "60")
-	val spAgreedPrivacyPolicyDigest= StringPref("spAgreedPrivacyPolicyDigest", "")
+	val spAgreedPrivacyPolicyDigest = StringPref("spAgreedPrivacyPolicyDigest", "")
 	
-	val spTimeZone = StringPref("TimeZone","")
+	val spTimeZone = StringPref("TimeZone", "")
 	
-	val spQuickTootMacro = StringPref("QuickTootMacro","")
-	val spQuickTootVisibility = StringPref("QuickTootVisibility","")
+	val spQuickTootMacro = StringPref("QuickTootMacro", "")
+	val spQuickTootVisibility = StringPref("QuickTootVisibility", "")
 	
-	val spTranslateAppComponent = StringPref("TranslateAppComponent","")
-	val spCustomShare1 = StringPref("CustomShare1","")
-	val spCustomShare2 = StringPref("CustomShare2","")
-	val spCustomShare3 = StringPref("CustomShare3","")
+	val spTranslateAppComponent = StringPref("TranslateAppComponent", "")
+	val spCustomShare1 = StringPref("CustomShare1", "")
+	val spCustomShare2 = StringPref("CustomShare2", "")
+	val spCustomShare3 = StringPref("CustomShare3", "")
 	
-	val spTimelineSpacing = StringPref("TimelineSpacing","")
+	val spTimelineSpacing = StringPref("TimelineSpacing", "")
 	
 	// long
 	val lpTabletTootDefaultAccount = LongPref("tablet_toot_default_account", - 1L)

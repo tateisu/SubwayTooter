@@ -28,11 +28,11 @@ enum class SettingType(val id : Int) {
 	Section(12)
 }
 
-open class AppSettingItem(
+class AppSettingItem(
 	val parent : AppSettingItem?,
 	val type : SettingType,
-	val pref : BasePref<*>?,
-	@StringRes val caption : Int
+	@StringRes val caption : Int,
+	val pref : BasePref<*>? = null
 ) {
 	
 	@StringRes
@@ -78,51 +78,20 @@ open class AppSettingItem(
 	var toFloat : ActAppSetting.(String) -> Float = { 0f }
 	var fromFloat : ActAppSetting.(Float) -> String = { it.toString() }
 	
-	companion object {
-		
-		var SAMPLE_CCD_HEADER : AppSettingItem? = null
-		var SAMPLE_CCD_BODY : AppSettingItem? = null
-		var SAMPLE_FOOTER : AppSettingItem? = null
-		
-		var CUSTOM_TRANSLATE : AppSettingItem? = null
-		var CUSTOM_SHARE_1 : AppSettingItem? = null
-		var CUSTOM_SHARE_2 : AppSettingItem? = null
-		var CUSTOM_SHARE_3 : AppSettingItem? = null
-		
-		var TIMELINE_FONT : AppSettingItem? = null
-		var TIMELINE_FONT_BOLD : AppSettingItem? = null
-		
-		var FONT_SIZE_TIMELINE : AppSettingItem? = null
-		var FONT_SIZE_NOTIFICATION_TL : AppSettingItem? = null
-		
-	}
-}
-
-class AppSettingGroup(
-	parent : AppSettingGroup?,
-	type : SettingType,
-	@StringRes caption : Int
-) : AppSettingItem(
-	parent = parent,
-	type = type,
-	pref = null,
-	caption = caption
-) {
-	
 	val items = ArrayList<AppSettingItem>()
 	
 	fun section(
 		@StringRes caption : Int,
-		initializer : AppSettingGroup.() -> Unit = {}
+		initializer : AppSettingItem.() -> Unit = {}
 	) {
-		items.add(AppSettingGroup(this, SettingType.Section, caption).apply { initializer() })
+		items.add(AppSettingItem(this, SettingType.Section, caption).apply { initializer() })
 	}
 	
 	fun group(
 		@StringRes caption : Int,
-		initializer : AppSettingGroup.() -> Unit = {}
+		initializer : AppSettingItem.() -> Unit = {}
 	) {
-		items.add(AppSettingGroup(this, SettingType.Group, caption).apply { initializer() })
+		items.add(AppSettingItem(this, SettingType.Group, caption).apply { initializer() })
 	}
 	
 	fun item(
@@ -131,7 +100,7 @@ class AppSettingGroup(
 		@StringRes caption : Int,
 		initializer : AppSettingItem.() -> Unit = {}
 	) : AppSettingItem {
-		val item = AppSettingItem(this, type, pref, caption).apply { initializer() }
+		val item = AppSettingItem(this, type, caption, pref).apply { initializer() }
 		items.add(item)
 		return item
 	}
@@ -210,9 +179,31 @@ class AppSettingGroup(
 		this.sampleUpdate = sampleUpdate
 	}
 	
+	fun scan(block:(AppSettingItem)->Unit){
+		block(this)
+		for( item in items) item.scan(block)
+	}
+	
+	companion object {
+		
+		var SAMPLE_CCD_HEADER : AppSettingItem? = null
+		var SAMPLE_CCD_BODY : AppSettingItem? = null
+		var SAMPLE_FOOTER : AppSettingItem? = null
+		
+		var CUSTOM_TRANSLATE : AppSettingItem? = null
+		var CUSTOM_SHARE_1 : AppSettingItem? = null
+		var CUSTOM_SHARE_2 : AppSettingItem? = null
+		var CUSTOM_SHARE_3 : AppSettingItem? = null
+		
+		var TIMELINE_FONT : AppSettingItem? = null
+		var TIMELINE_FONT_BOLD : AppSettingItem? = null
+		
+		var FONT_SIZE_TIMELINE : AppSettingItem? = null
+		var FONT_SIZE_NOTIFICATION_TL : AppSettingItem? = null
+	}
 }
 
-val appSettingRoot = AppSettingGroup(null, SettingType.Section, R.string.app_setting).apply {
+val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_setting).apply {
 	
 	section(R.string.notifications) {
 		

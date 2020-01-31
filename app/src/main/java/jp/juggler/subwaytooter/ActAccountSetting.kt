@@ -261,7 +261,7 @@ class ActAccountSetting
 		
 		Styler.fixHorizontalPadding(root)
 		
-		ActAppSetting.setSwitchColor(this, pref, root)
+		App1.setSwitchColor(this, pref, root)
 		
 		tvInstance = findViewById(R.id.tvInstance)
 		tvUser = findViewById(R.id.tvUser)

@@ -1071,7 +1071,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			}
 			
 			// 年の部分が現在と同じなら省略する
-			val dateNow = format.format(Date(t))
+			val dateNow = format.format(Date())
 			val delm = dateNow.indexOf('-')
 			if(delm!=-1 && dateNow.substring(0,delm+1) == dateTarget.substring(0,delm+1)){
 				dateTarget = dateTarget.substring(delm+1)

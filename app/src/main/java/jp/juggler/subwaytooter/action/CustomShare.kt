@@ -2,8 +2,10 @@ package jp.juggler.subwaytooter.action
 
 import android.content.*
 import android.content.pm.PackageManager
+import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
-import jp.juggler.subwaytooter.ActMain
+import android.net.Uri
+import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
@@ -11,7 +13,9 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.TootTextEncoder
 import jp.juggler.util.LogCategory
+import jp.juggler.util.getAttributeColor
 import jp.juggler.util.showToast
+import jp.juggler.util.systemService
 
 enum class CustomShareTarget {
 	Translate,
@@ -23,6 +27,8 @@ enum class CustomShareTarget {
 object CustomShare {
 	
 	private val log = LogCategory("CustomShare")
+	
+	const val CN_CLIPBOARD = "<InApp>/CopyToClipboard"
 	
 	private const val translate_app_component_default =
 		"com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity"
@@ -68,22 +74,33 @@ object CustomShare {
 		return src.cn() ?: defaultComponentName?.cn()
 	}
 	
-	fun getInfo(pm : PackageManager, cn : ComponentName?) : Pair<CharSequence?, Drawable?> {
+	fun getInfo(context : Context, cn : ComponentName?) : Pair<CharSequence?, Drawable?> {
 		var label : CharSequence? = null
 		var icon : Drawable? = null
 		try {
 			if(cn != null) {
-				val ri = pm.resolveActivity(Intent().apply { component = cn }, 0)
-				if(ri != null) {
-					try {
-						label = ri.loadLabel(pm)
-					} catch(ex : Throwable) {
-						log.e(ex, "loadLabel failed.")
+				val cnStr = "${cn.packageName}/${cn.className}"
+				label = cnStr
+				if(cnStr == CN_CLIPBOARD) {
+					label = context.getString(R.string.copy_to_clipboard)
+					icon = ContextCompat.getDrawable(context, R.drawable.ic_copy)?.mutate()?.apply{
+						setTint(getAttributeColor(context,R.attr.colorVectorDrawable))
+						setTintMode(PorterDuff.Mode.SRC_IN)
 					}
-					try {
-						icon = ri.loadIcon(pm)
-					} catch(ex : Throwable) {
-						log.e(ex, "loadIcon failed.")
+				} else {
+					val pm = context.packageManager
+					val ri = pm.resolveActivity(Intent().apply { component = cn }, 0)
+					if(ri != null) {
+						try {
+							label = ri.loadLabel(pm)
+						} catch(ex : Throwable) {
+							log.e(ex, "loadLabel failed.")
+						}
+						try {
+							icon = ri.loadIcon(pm)
+						} catch(ex : Throwable) {
+							log.e(ex, "loadIcon failed.")
+						}
 					}
 				}
 			}
@@ -98,14 +115,24 @@ object CustomShare {
 		text : String,
 		target : CustomShareTarget
 	) {
-		try {
-			// convert "pkgName/className" string to ComponentName object.
-			val cn = getCustomShareComponentName(App1.pref, target)
-			if(cn == null) {
-				showToast(context, true, R.string.custom_share_app_not_found)
-				return
+		// convert "pkgName/className" string to ComponentName object.
+		val cn = getCustomShareComponentName(App1.pref, target)
+		if(cn == null) {
+			showToast(context, true, R.string.custom_share_app_not_found)
+			return
+		}
+		val cnStr = "${cn.packageName}/${cn.className}"
+		if(cnStr == CN_CLIPBOARD) {
+			try {
+				val cm : ClipboardManager = systemService(context) !!
+				cm.setPrimaryClip(ClipData.newPlainText("", text))
+				showToast(context, false, R.string.copied_to_clipboard)
+			} catch(ex : Throwable) {
+				showToast(context, ex, "copy to clipboard failed.")
 			}
-			
+			return
+		}
+		try {
 			val intent = Intent()
 			intent.action = Intent.ACTION_SEND
 			intent.type = "text/plain"
@@ -119,6 +146,7 @@ object CustomShare {
 			log.trace(ex)
 			showToast(context, ex, "invoke() failed.")
 		}
+		
 	}
 	
 	fun invoke(
@@ -128,7 +156,6 @@ object CustomShare {
 		target : CustomShareTarget
 	) {
 		status ?: return
-		
 		try {
 			// convert "pkgName/className" string to ComponentName object.
 			val cn = getCustomShareComponentName(App1.pref, target)
@@ -150,12 +177,10 @@ object CustomShare {
 	fun getCache(target : CustomShareTarget) = cache[target]
 	
 	fun reloadCache(context : Context, pref : SharedPreferences) {
-		val pm = context.packageManager
 		CustomShareTarget.values().forEach { target ->
 			val cn = getCustomShareComponentName(pref, target)
-			val pair = getInfo(pm, cn)
+			val pair = getInfo(context, cn)
 			cache[target] = pair
 		}
 	}
-	
 }

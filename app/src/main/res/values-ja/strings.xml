@@ -1009,5 +1009,7 @@
     <string name="hide_followers_count">フォロワー数を隠す</string>
     <string name="emojione_shortcode_support">EmojiOneのショートコードを変換する</string>
     <string name="emojione_shortcode_support_desc">サーバが古い間に作られた投稿は(サーバがアップデートした後でも)EmojiOneのショートコードを含むかもしれません。</string>
+    <string name="copy_to_clipboard">クリップボードにコピー</string>
+    <string name="copied_to_clipboard">クリップボードにコピーしました</string>
 
 </resources>

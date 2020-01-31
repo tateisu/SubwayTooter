@@ -50,7 +50,9 @@
 
     <TextView
         android:id="@+id/textView1"
-        style="@style/setting_row_form" />
+        style="@style/setting_row_form"
+        android:gravity="start|center_vertical"
+        />
 
     <LinearLayout
         style="@style/setting_row_form"

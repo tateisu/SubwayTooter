@@ -7,7 +7,7 @@ import androidx.preference.PreferenceManager
 import jp.juggler.util.optInt
 
 @Suppress("EqualsOrHashCode")
-abstract class BasePref<T>(val key : String,val defVal : T) {
+abstract class BasePref<T>(val key : String, val defVal : T) {
 	
 	init {
 		if(Pref.map[key] != null)
@@ -32,8 +32,8 @@ abstract class BasePref<T>(val key : String,val defVal : T) {
 		return invoke(Pref.pref(context))
 	}
 	
-	fun removeDefault(pref : SharedPreferences, e : SharedPreferences.Editor) :Boolean{
-		if(pref.contains(key) && this.invoke(pref) == defVal){
+	fun removeDefault(pref : SharedPreferences, e : SharedPreferences.Editor) : Boolean {
+		if(pref.contains(key) && this.invoke(pref) == defVal) {
 			e.remove(key)
 			return true
 		}
@@ -46,8 +46,7 @@ fun SharedPreferences.Editor.remove(item : BasePref<*>) : SharedPreferences.Edit
 	return this
 }
 
-class BooleanPref(key : String,defVal:Boolean)
-	: BasePref<Boolean>(key,defVal) {
+class BooleanPref(key : String, defVal : Boolean) : BasePref<Boolean>(key, defVal) {
 	
 	override operator fun invoke(pref : SharedPreferences) : Boolean {
 		return pref.getBoolean(key, defVal)
@@ -59,7 +58,7 @@ class BooleanPref(key : String,defVal:Boolean)
 	}
 }
 
-class IntPref(key : String,defVal : Int) : BasePref<Int>(key,defVal) {
+class IntPref(key : String, defVal : Int) : BasePref<Int>(key, defVal) {
 	
 	override operator fun invoke(pref : SharedPreferences) : Int {
 		return pref.getInt(key, defVal)
@@ -70,7 +69,7 @@ class IntPref(key : String,defVal : Int) : BasePref<Int>(key,defVal) {
 	}
 }
 
-class LongPref(key : String, defVal : Long) : BasePref<Long>(key,defVal) {
+class LongPref(key : String, defVal : Long) : BasePref<Long>(key, defVal) {
 	
 	override operator fun invoke(pref : SharedPreferences) : Long {
 		return pref.getLong(key, defVal)
@@ -81,7 +80,7 @@ class LongPref(key : String, defVal : Long) : BasePref<Long>(key,defVal) {
 	}
 }
 
-class FloatPref(key : String,  defVal : Float) : BasePref<Float>(key,defVal) {
+class FloatPref(key : String, defVal : Float) : BasePref<Float>(key, defVal) {
 	
 	override operator fun invoke(pref : SharedPreferences) : Float {
 		return pref.getFloat(key, defVal)
@@ -96,7 +95,7 @@ class StringPref(
 	key : String,
 	defVal : String,
 	val skipImport : Boolean = false
-) : BasePref<String>(key,defVal) {
+) : BasePref<String>(key, defVal) {
 	
 	override operator fun invoke(pref : SharedPreferences) : String {
 		return pref.getString(key, defVal) ?: defVal

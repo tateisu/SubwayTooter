@@ -77,6 +77,12 @@ internal class StatusButtons(
 		btnCustomShare1.setOnClickListener(this)
 		btnCustomShare2.setOnClickListener(this)
 		btnCustomShare3.setOnClickListener(this)
+		btnTranslate.setOnLongClickListener(this)
+		btnCustomShare1.setOnLongClickListener(this)
+		btnCustomShare2.setOnLongClickListener(this)
+		btnCustomShare3.setOnLongClickListener(this)
+
+
 		btnMore.setOnClickListener(this)
 		btnConversation.setOnClickListener(this)
 		btnConversation.setOnLongClickListener(this)
@@ -627,10 +633,38 @@ internal class StatusButtons(
 				activity, activity.nextPosition(column), access_info, status.account
 			)
 			
+			btnTranslate -> shareUrl(
+				status,
+				CustomShareTarget.Translate
+			)
+			
+			btnCustomShare1 -> shareUrl(
+				status,
+				CustomShareTarget.CustomShare1
+			)
+			
+			btnCustomShare2 ->shareUrl(
+				status,
+				CustomShareTarget.CustomShare2
+			)
+			
+			btnCustomShare3 -> shareUrl(
+				status,
+				CustomShareTarget.CustomShare3
+			)
+			
 		}
 		return true
 	}
 	
+	private fun shareUrl(
+		status : TootStatus,
+		target : CustomShareTarget
+	) {
+		val url = status.url ?: status.uri ?: return
+		
+		CustomShare.invoke(activity,url,target)
+	}
 }
 
 open class _FlexboxLayout(ctx : Context) : FlexboxLayout(ctx) {

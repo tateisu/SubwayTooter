@@ -1,14 +1,12 @@
 package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
-import android.app.PendingIntent
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.AsyncTask
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
@@ -27,6 +25,7 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.action.CustomShare
 import jp.juggler.subwaytooter.action.CustomShareTarget
+import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -1189,44 +1188,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 	}
 	
 	fun openCustomShareChooser(target : CustomShareTarget) {
-		
-		val intent = Intent()
-		intent.action = Intent.ACTION_SEND
-		intent.type = "text/plain"
-		intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.content_sample))
-		
-		// このifはwhenにしてはならない。APIバージョン関連の警告が出てしまう
-		@Suppress("CascadeIf")
-		if(intent.resolveActivity(packageManager) == null) {
-			// ACTION_SENDを受け取れるアプリがインストールされてない
-			showToast(this, true, getString(R.string.missing_app_can_receive_action_send))
-		} else if(Build.VERSION.SDK_INT <= 21) {
-			// createChooserにIntentSenderを指定できるのはAndroid 22以降
-			showToast(
-				this,
-				true,
-				getString(R.string.app_chooser_works_android_5_1)
-			)
-		} else try {
-			customShareTarget = target
-			ChooseReceiver.lastComponentName = null
-			ChooseReceiver.setCallback { onCustomShareSelected() }
-			
-			val receiver = Intent(this, ChooseReceiver::class.java)
-			val pendingIntent = PendingIntent.getBroadcast(
-				this,
-				1,
-				receiver,
-				PendingIntent.FLAG_UPDATE_CURRENT
-			)
-			startActivity(
-				Intent.createChooser(
-					intent,
-					getString(R.string.select_destination_app_and_back),
-					pendingIntent.intentSender
-				)
-			)
-			
+		try {
+			DlgAppPicker(this){ setCustomShare(target, it) }.show()
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			showToast(this, ex, "openCustomShareChooser failed.")
@@ -1264,9 +1227,10 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 	fun showCustomShareIcon(tv : TextView?, target : CustomShareTarget) {
 		tv ?: return
 		val cn = CustomShare.getCustomShareComponentName(pref, target)
-		val (label, icon) = CustomShare.getInfo(packageManager, cn)
+		val (label, icon) =CustomShare.getInfo(this, cn)
 		tv.text = label ?: getString(R.string.not_selected)
 		tv.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
+		tv.compoundDrawablePadding = (resources.displayMetrics.density * 4f + 0.5f).toInt()
 	}
 	
 }

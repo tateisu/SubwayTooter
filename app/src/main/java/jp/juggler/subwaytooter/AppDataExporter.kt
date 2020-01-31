@@ -41,82 +41,76 @@ object AppDataExporter {
 	private const val KEY_HIGHLIGHT_WORD = "highlight_word"
 	
 	@Throws(IOException::class, JsonException::class)
-	private fun writeJSONObject(writer : JsonWriter, src : JsonObject) {
+	private fun writeJsonValue(writer : JsonWriter, value:Any?) {
+		when(value) {
+			null -> writer.nullValue()
+			is String -> writer.value(value)
+			is Boolean -> writer.value(value)
+			is Number -> writer.value(value)
+			is EntityId -> writer.value(value.toString())
+			is JsonObject -> writeJsonObject(writer,value)
+			is JsonArray ->writeJsonArray(writer,value)
+			else -> throw RuntimeException("writeJsonValue: bad data type: $value")
+		}
+	}
+	
+	@Throws(IOException::class, JsonException::class)
+	private fun writeJsonArray(writer : JsonWriter, src : JsonArray) {
+		writer.beginArray()
+		for( value in src) {
+			writeJsonValue(writer,value)
+		}
+		writer.endArray()
+	}
+	
+	@Throws(IOException::class, JsonException::class)
+	private fun writeJsonObject(writer : JsonWriter, src : JsonObject) {
 		writer.beginObject()
-		val it = src.keys.iterator()
-		while(it.hasNext()) {
-			val k = it.next()
-			if(src.isNull(k)) {
-				writer.name(k)
-				writer.nullValue()
-			} else {
-				when(val o = src[k]) {
-					is String -> {
-						writer.name(k)
-						writer.value(o)
-						
-					}
-					
-					is Boolean -> {
-						writer.name(k)
-						writer.value(o)
-						
-					}
-					
-					is Number -> {
-						
-						writer.name(k)
-						writer.value(o)
-						
-					}
-					
-					is EntityId -> {
-						writer.name(k)
-						writer.value(o.toString())
-					}
-					
-					else -> throw RuntimeException(
-						String.format(
-							Locale.JAPAN,
-							"bad data type: JsonObject key =%s",
-							k
-						)
-					)
-				}
-			}
+		for( entry in src.entries){
+			writer.name(entry.key)
+			writeJsonValue(writer, entry.value)
 		}
 		writer.endObject()
 	}
 	
 	@Throws(IOException::class, JsonException::class)
-	private fun readJsonObject(reader : JsonReader) : JsonObject {
-		val dst = JsonObject()
+	private fun readJsonValue(reader:JsonReader):Any?{
 		
+		return when(val token = reader.peek()) {
+			JsonToken.NULL -> {
+				reader.nextNull()
+				null
+			}
+			
+			JsonToken.STRING -> reader.nextString()
+			JsonToken.BOOLEAN -> reader.nextBoolean()
+			JsonToken.NUMBER -> reader.nextDouble()
+			JsonToken.BEGIN_ARRAY -> readJsonArray(reader)
+			JsonToken.BEGIN_OBJECT -> readJsonObject(reader)
+			else -> null
+		}
+	}
+	
+	@Throws(IOException::class, JsonException::class)
+	private fun readJsonArray(reader:JsonReader):JsonArray{
+		val dst = JsonArray()
+		reader.beginArray()
+		while(reader.hasNext()) {
+			dst.add(readJsonValue(reader))
+		}
+		reader.endArray()
+		return dst
+	}
+	@Throws(IOException::class, JsonException::class)
+	private fun readJsonObject(reader:JsonReader):JsonObject{
+		val dst = JsonObject()
 		reader.beginObject()
 		while(reader.hasNext()) {
 			val name = reader.nextName()
-			when(val token = reader.peek()) {
-				
-				JsonToken.NULL -> reader.nextNull()
-				
-				JsonToken.STRING -> dst[name] = reader.nextString()
-				
-				JsonToken.BOOLEAN -> dst[name] = reader.nextBoolean()
-				
-				JsonToken.NUMBER -> dst[name] = reader.nextDouble()
-				
-				else -> throw RuntimeException(
-					String.format(
-						Locale.JAPAN,
-						"bad data type: %s key =%s",
-						token,
-						name
-					)
-				)
-			}
+			val value = readJsonValue(reader)
+			dst[name]=value
 		}
 		reader.endObject()
-		
 		return dst
 	}
 	
@@ -329,7 +323,7 @@ object AppDataExporter {
 		for(column in app_state.column_list) {
 			val dst = JsonObject()
 			column.encodeJSON(dst, 0)
-			writeJSONObject(writer, dst)
+			writeJsonObject(writer, dst)
 		}
 		writer.endArray()
 	}

@@ -1054,14 +1054,15 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				}
 			}
 			
-			return formatDate(t,date_format,omitZeroSecond = false)
+			return formatDate(t,date_format,omitZeroSecond = false,omitYear = false)
 		}
 		
 		// 告知の開始/終了日付
 		private fun formatDate(
 			t : Long,
 			format:SimpleDateFormat ,
-			omitZeroSecond:Boolean
+			omitZeroSecond:Boolean,
+			omitYear:Boolean
 		) : String {
 			var dateTarget = format.format(Date(t))
 			
@@ -1071,10 +1072,15 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			}
 			
 			// 年の部分が現在と同じなら省略する
-			val dateNow = format.format(Date())
-			val delm = dateNow.indexOf('-')
-			if(delm!=-1 && dateNow.substring(0,delm+1) == dateTarget.substring(0,delm+1)){
-				dateTarget = dateTarget.substring(delm+1)
+			if(omitYear) {
+				val dateNow = format.format(Date())
+				val delm = dateNow.indexOf('-')
+				if(delm != - 1 && dateNow.substring(0, delm + 1) == dateTarget.substring(
+						0,
+						delm + 1
+					)) {
+					dateTarget = dateTarget.substring(delm + 1)
+				}
 			}
 
 			return dateTarget
@@ -1083,13 +1089,13 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		fun formatTimeRange(start : Long, end : Long, allDay : Boolean):Pair<String,String>{
 			val strStart = when {
 				start <= 0L -> ""
-				allDay-> formatDate(start,date_format2,omitZeroSecond = false)
-				else -> formatDate(start, date_format,omitZeroSecond = true)
+				allDay-> formatDate(start,date_format2,omitZeroSecond = false,omitYear = true)
+				else -> formatDate(start, date_format,omitZeroSecond = true,omitYear = true)
 			}
 			val strEnd = when {
 				end <= 0L -> ""
-				allDay-> formatDate(end,date_format2,omitZeroSecond = false)
-				else -> formatDate(end, date_format,omitZeroSecond = true)
+				allDay-> formatDate(end,date_format2,omitZeroSecond = false,omitYear = true)
+				else -> formatDate(end, date_format,omitZeroSecond = true,omitYear = true)
 			}
 			// 終了日は先頭と同じ部分を省略する
 			var skip = 0

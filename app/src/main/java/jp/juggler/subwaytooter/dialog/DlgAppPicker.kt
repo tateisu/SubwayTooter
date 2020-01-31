@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
-import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.view.View
@@ -13,7 +11,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.action.CustomShare
 import jp.juggler.subwaytooter.action.cn

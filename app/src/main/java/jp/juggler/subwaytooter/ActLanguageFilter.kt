@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.os.Process
 import android.text.Editable
 import android.text.TextWatcher
@@ -38,6 +39,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 		internal val log = LogCategory("ActLanguageFilter")
 		
 		internal const val EXTRA_COLUMN_INDEX = "column_index"
+		private const val STATE_LANGUAGE_LIST = "language_list"
 		
 		fun open(activity : ActMain, idx : Int, request_code : Int) {
 			val intent = Intent(activity, ActLanguageFilter::class.java)
@@ -59,6 +61,19 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 			}
 		}
 		
+		private fun equalsLanguageList(a : JsonObject?, b : JsonObject?) : Boolean {
+			fun JsonObject.encodeToString() : String {
+				val clone = this.toString().decodeJsonObject()
+				if(! clone.contains(TootStatus.LANGUAGE_CODE_DEFAULT)) {
+					clone[TootStatus.LANGUAGE_CODE_DEFAULT] = true
+				}
+				return clone.keys.sorted().joinToString(",") { "$it=${this[it]}" }
+			}
+			
+			val a_sign = (a ?: JsonObject()).encodeToString()
+			val b_sign = (b ?: JsonObject()).encodeToString()
+			return a_sign == b_sign
+		}
 	}
 	
 	private val languageNameMap by lazy {
@@ -94,6 +109,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 			put(TootStatus.LANGUAGE_CODE_DEFAULT, getString(R.string.language_code_default))
 			put(TootStatus.LANGUAGE_CODE_UNKNOWN, getString(R.string.language_code_unknown))
 		}
+		
 	}
 	
 	private fun getDesc(item : MyItem) : String {
@@ -121,7 +137,37 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 		column_index = intent.getIntExtra(EXTRA_COLUMN_INDEX, 0)
 		column = app_state.column_list[column_index]
 		
+		if(savedInstanceState != null) {
+			try {
+				val sv = savedInstanceState.getString(STATE_LANGUAGE_LIST, null)
+				if(sv != null) {
+					val list = sv.decodeJsonObject()
+					load(list)
+					return
+				}
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+		}
 		load(column.language_filter)
+	}
+	
+	override fun onSaveInstanceState(outState : Bundle, outPersistentState : PersistableBundle) {
+		super.onSaveInstanceState(outState, outPersistentState)
+		outState.putString(STATE_LANGUAGE_LIST, encodeLanguageList().toString())
+	}
+	
+	override fun onBackPressed() {
+		if(! equalsLanguageList(column.language_filter, encodeLanguageList())) {
+			AlertDialog.Builder(this)
+				.setMessage(R.string.language_filter_quit_waring)
+				.setPositiveButton(R.string.ok) { _, _ -> finish() }
+				.setNegativeButton(R.string.cancel, null)
+				.show()
+			return
+		}
+		
+		super.onBackPressed()
 	}
 	
 	private fun initUI() {
@@ -143,21 +189,30 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 		listView.onItemClickListener = adapter
 	}
 	
+	// UIのデータをJsonObjectにエンコード
+	private fun encodeLanguageList() = jsonObject {
+		for(item in languageList) {
+			put(item.code, item.allow)
+		}
+	}
+	
 	private fun load(src : JsonObject?) {
 		loading_busy = true
 		try {
-			
 			languageList.clear()
+			
 			if(src != null) {
 				for(key in src.keys) {
 					languageList.add(MyItem(key, src.boolean(key) ?: true))
 				}
 			}
+			
 			if(null == languageList.find { it.code == TootStatus.LANGUAGE_CODE_DEFAULT }) {
 				languageList.add(MyItem(TootStatus.LANGUAGE_CODE_DEFAULT, true))
 			}
 			
 			languageList.sortWith(languageComparator)
+			
 			adapter.notifyDataSetChanged()
 		} finally {
 			loading_busy = false
@@ -165,11 +220,7 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	private fun save() {
-		column.language_filter = jsonObject {
-			for(item in languageList) {
-				put(item.code, item.allow)
-			}
-		}
+		column.language_filter = encodeLanguageList()
 	}
 	
 	private inner class MyAdapter : BaseAdapter(), AdapterView.OnItemClickListener {

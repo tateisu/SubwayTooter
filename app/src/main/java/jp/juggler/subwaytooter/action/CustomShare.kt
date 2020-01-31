@@ -1,10 +1,8 @@
 package jp.juggler.subwaytooter.action
 
 import android.content.*
-import android.content.pm.PackageManager
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref

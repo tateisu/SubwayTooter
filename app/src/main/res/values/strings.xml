@@ -1006,4 +1006,5 @@
     <string name="emojione_shortcode_support_desc">The toots made by old Mastodon may contain emojione\'s shortcode even if the server have been updated.</string>
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_to_clipboard">Copied to clipboard.</string>
+    <string name="language_filter_quit_waring">Language filter is not saved. exit anyway?</string>
 </resources>

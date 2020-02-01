@@ -1178,7 +1178,7 @@ class ColumnViewHolder(
 		tvColumnContext.text = if(nickname != null && nickname.isNotEmpty())
 			nickname
 		else
-			acct
+			column.access_info.prettyAcct
 		
 		
 		tvColumnContext.setTextColor(

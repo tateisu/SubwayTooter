@@ -16,6 +16,7 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
+import java.net.IDN
 import java.util.*
 import java.util.regex.Pattern
 
@@ -69,13 +70,18 @@ class SavedAccount(
 	var last_subscription_error : String? = null
 	var last_push_endpoint : String? = null
 	
+	val prettyAcct :String
+	
 	init {
 		val pos = acct.indexOf('@')
 		if(pos == - 1) {
 			this.username = acct
+			prettyAcct = acct
 		} else {
 			this.username = acct.substring(0, pos)
+			prettyAcct = username+"@"+IDN.toUnicode(acct.substring(pos+1),IDN.ALLOW_UNASSIGNED)
 		}
+		
 		if(username.isEmpty()) throw RuntimeException("missing username in acct")
 		
 		this.host = if(hostArg != null && hostArg.isNotEmpty()) {

@@ -1011,7 +1011,7 @@
     <string name="emojione_shortcode_support_desc">サーバが古い間に作られた投稿は(サーバがアップデートした後でも)EmojiOneのショートコードを含むかもしれません。</string>
     <string name="copy_to_clipboard">クリップボードにコピー</string>
     <string name="copied_to_clipboard">クリップボードにコピーしました</string>
-    <string name="language_filter_quit_waring">Language filter is not saved. exit anyway?</string>
+    <string name="language_filter_quit_waring">言語フィルタは保存されていません。構わず閉じますか?</string>
     <string name="import_completed_please_restart_app">インポート完了。アプリを再起動してください</string>
 
 </resources>

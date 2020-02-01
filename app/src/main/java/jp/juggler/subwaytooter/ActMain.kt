@@ -2878,6 +2878,9 @@ class ActMain : AppCompatActivity()
 					// 通知サービスをリスタート
 					PollingWorker.queueAppDataImportAfter(this@ActMain)
 				}
+				
+				showToast(this@ActMain,true,R.string.import_completed_please_restart_app)
+				finish()
 			}
 		}
 		

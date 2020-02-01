@@ -1007,4 +1007,5 @@
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_to_clipboard">Copied to clipboard.</string>
     <string name="language_filter_quit_waring">Language filter is not saved. exit anyway?</string>
+    <string name="import_completed_please_restart_app">Import completed. Please restart app.</string>
 </resources>

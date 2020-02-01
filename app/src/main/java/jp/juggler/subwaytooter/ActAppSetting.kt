@@ -100,6 +100,14 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 			}
 		}
 		
+		initUi()
+		
+		removeDefaultPref()
+
+		load(null, null)
+	}
+	
+	private fun initUi(){
 		setContentView(R.layout.act_app_setting)
 		App1.initEdgeToEdge(this)
 		
@@ -138,17 +146,16 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 		findViewById<View>(R.id.btnSearchReset).apply {
 			setOnClickListener(this@ActAppSetting)
 		}
-		
-		val e = pref.edit()
-		var dirty = false
-		appSettingRoot.scan{
-			if( it.pref?.removeDefault(pref,e) ==true ) dirty = true
-		}
-		if(dirty) e.apply()
-
-		load(null, null)
 	}
 	
+	private fun removeDefaultPref(){
+		val e = pref.edit()
+		var changed = false
+		appSettingRoot.scan{
+			if( it.pref?.removeDefault(pref,e) ==true ) changed = true
+		}
+		if(changed) e.apply()
+	}
 	
 	override fun onSaveInstanceState(outState : Bundle) {
 		super.onSaveInstanceState(outState)

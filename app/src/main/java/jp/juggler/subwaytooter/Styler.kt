@@ -253,7 +253,8 @@ object Styler {
 	}
 	
 	private fun getHorizontalPadding(v : View, delta_dp : Float ) : Int {
-		val form_width_max = 420f
+		// Essential Phone PH-1は 短辺439dp
+		val form_width_max = 460f
 		val dm = v.resources.displayMetrics
 		val screen_w = dm.widthPixels
 		val content_w = (0.5f + form_width_max * dm.density).toInt()

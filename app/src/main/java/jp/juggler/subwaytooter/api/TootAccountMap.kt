@@ -12,7 +12,7 @@ object TootAccountMap{
 		val watcher: String
 		
 		init{
-			this.acct = parser.getFullAcct(who.acct)
+			this.acct = parser.getFullAcct(who.acctAscii)
 			
 			this.watcher =when(parser.serviceType){
 				ServiceType.MASTODON -> requireNotNull(parser.accessHost)

@@ -855,11 +855,11 @@ object MisskeyMarkdownDecoder {
 			} else {
 				
 				val userHost = when {
-					host.isEmpty() -> linkHelper.host
+					host.isEmpty() -> linkHelper.hostAscii
 					else -> host
-				} ?: "?"
+				}?.toLowerCase(Locale.JAPAN) ?: "?"
 				
-				when(userHost.toLowerCase(Locale.JAPAN)) {
+				when(userHost) {
 					
 					// https://github.com/syuilo/misskey/pull/3603
 					
@@ -884,16 +884,18 @@ object MisskeyMarkdownDecoder {
 						val userUrl = "https://$userHost/@$username"
 						
 						val shortAcct = when {
+
 							host.isEmpty()
-								|| host.equals(linkHelper.host, ignoreCase = true) ->
-								username
-							else ->
-								"$username@$host"
+								|| host.equals(linkHelper.hostAscii, ignoreCase = true)
+								|| host.equals(linkHelper.hostPretty, ignoreCase = true) -> username
+
+							else -> "$username@$host"
+
 						}
 						
 						val mentions = prepareMentions()
 						
-						if(mentions.find { m -> m.acct == shortAcct } == null) {
+						if(mentions.find { m -> m.acctAscii == shortAcct || m.acctPretty == shortAcct } == null) {
 							mentions.add(
 								TootMention(
 									jp.juggler.subwaytooter.api.entity.EntityId.DEFAULT
@@ -922,7 +924,7 @@ object MisskeyMarkdownDecoder {
 			if(tag.isNotEmpty() && linkHelper != null) {
 				appendLink(
 					"#$tag",
-					"https://${linkHelper.host}/tags/" + tag.encodePercent()
+					"https://${linkHelper.hostAscii}/tags/" + tag.encodePercent()
 				)
 			}
 		}),

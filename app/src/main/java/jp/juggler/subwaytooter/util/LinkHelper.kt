@@ -8,26 +8,26 @@ import java.net.IDN
 interface LinkHelper {
 	
 	// SavedAccountのロード時にhostを供給する必要があった
-	val host : String? // punycode
-	val prettyHost : String? // unicode
+	val hostAscii : String? // punycode
+	val hostPretty : String? // unicode
 	
 	//	fun findAcct(url : String?) : String? = null
 	//	fun colorFromAcct(acct : String?) : AcctColor? = null
 	
 	// user とか user@host とかを user@host に変換する
 	// nullや空文字列なら ?@? を返す
-	fun getFullAcct(acct : String?) : String = when {
-		acct?.isEmpty() != false -> "?@?"
-		acct.contains('@') -> acct
-		else -> "$acct@$host"
+	fun getFullAcct(acctAscii : String?) : String = when {
+		acctAscii?.isEmpty() != false -> "?@?"
+		acctAscii.contains('@') -> acctAscii
+		else -> "$acctAscii@$hostAscii"
 	}
 	
 	// user とか user@host とかを user@host に変換する
 	// nullや空文字列なら ?@? を返す
-	fun getFullPrettyAcct(prettyAcct : String?) : String = when {
-		prettyAcct?.isEmpty() != false -> "?@?"
-		prettyAcct.contains('@') -> prettyAcct
-		else -> "$prettyAcct@$prettyHost"
+	fun getFullPrettyAcct(acctPretty : String?) : String = when {
+		acctPretty?.isEmpty() != false -> "?@?"
+		acctPretty.contains('@') -> acctPretty
+		else -> "$acctPretty@$hostPretty"
 	}
 	
 	val misskeyVersion : Int
@@ -40,13 +40,19 @@ interface LinkHelper {
 	val isMastodon : Boolean
 		get() = misskeyVersion <= 0
 	
+	fun matchHost(host : String?) : Boolean =
+		host != null && (
+			host.equals(hostAscii, ignoreCase = true) ||
+				host.equals(hostPretty, ignoreCase = true)
+			)
+	
 	companion object {
 		
 		fun newLinkHelper(hostArg : String?, misskeyVersion : Int = 0) = object : LinkHelper {
 			
-			override val host : String? =
+			override val hostAscii : String? =
 				hostArg?.let { IDN.toASCII(hostArg, IDN.ALLOW_UNASSIGNED) }
-			override val prettyHost : String? =
+			override val hostPretty : String? =
 				hostArg?.let { IDN.toUnicode(hostArg, IDN.ALLOW_UNASSIGNED) }
 			
 			override val misskeyVersion : Int
@@ -54,13 +60,14 @@ interface LinkHelper {
 		}
 		
 		val nullHost = object : LinkHelper {
-			override val host : String? = null
-			override val prettyHost : String? = null
+			override val hostAscii : String? = null
+			override val hostPretty : String? = null
 		}
 	}
 }
 
 // user や user@host から user@host を返す
+// ただし host部分がpunycodeかunicodeかは分からない
 fun getFullAcctOrNull(
 	linkHelper : LinkHelper?,
 	rawAcct : String,
@@ -81,8 +88,8 @@ fun getFullAcctOrNull(
 	// https://fedibird.com/@noellabo/103350050191159092
 	// に含まれるメンションををリモートから見るとmentions メタデータがない。
 	// この場合アクセス元のホストを補うのは誤りなのだが、他の方法で解決できないなら仕方ない…
-	if(linkHelper?.host?.endsWith('?') == false)
-		return "$rawAcct@${linkHelper.host}"
+	if(linkHelper?.hostAscii?.endsWith('?') == false)
+		return "$rawAcct@${linkHelper.hostAscii}"
 	
 	return null
 }

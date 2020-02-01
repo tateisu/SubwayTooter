@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
@@ -504,20 +505,31 @@ object HTMLDecoder {
 		for(item in mentionList) {
 			if(sb.isNotEmpty()) sb.append(" ")
 			
-			val rawAcct = item.acct
-			val fullAcct = getFullAcctOrNull(linkHelper, rawAcct,item.url)
+			val fullAcct = getFullAcctOrNull(linkHelper, item.acctAscii,item.url)
 			
-			val linkInfo = LinkInfo(
-				url = item.url,
-				caption = "@" + if(fullAcct != null && Pref.bpMentionFullAcct(App1.pref)) {
-					fullAcct
-				} else {
-					rawAcct
-				},
-				ac = if(fullAcct != null) AcctColor.load(fullAcct) else null,
-				mention = item,
-				tag = link_tag
-			)
+			val linkInfo = if( fullAcct != null){
+				val(fullAcctAscii,fullAcctPretty) = TootAccount.acctAndPrettyAcct(fullAcct)
+				LinkInfo(
+					url = item.url,
+					caption = "@" + if( Pref.bpMentionFullAcct(App1.pref)) {
+						fullAcctPretty
+					} else {
+						item.acctPretty
+					},
+					ac = AcctColor.load(fullAcctAscii),
+					mention = item,
+					tag = link_tag
+				)
+			}else{
+				LinkInfo(
+					url = item.url,
+					caption = "@" + item.acctPretty,
+					ac = null,
+					mention = item,
+					tag = link_tag
+				)
+			}
+			
 			val start = sb.length
 			sb.append(linkInfo.caption)
 			val end = sb.length
@@ -598,7 +610,7 @@ object HTMLDecoder {
 				
 				// Account.note does not have mentions metadata.
 				// fallback to resolve acct by mention URL.
-				val rawAcct = mention?.acct ?: originalCaption.toString().substring(1)
+				val rawAcct = mention?.acctPretty ?: originalCaption.toString().substring(1)
 				val fullAcct = getFullAcctOrNull(options.linkHelper, rawAcct,href)
 				
 				if(fullAcct != null) {
@@ -608,7 +620,7 @@ object HTMLDecoder {
 						linkInfo.mention = TootMention(
 							id = EntityId.DEFAULT,
 							url = href,
-							acct = fullAcct ,
+							acctArg = fullAcct ,
 							username = rawAcct.splitFullAcct().first
 						)
 					}

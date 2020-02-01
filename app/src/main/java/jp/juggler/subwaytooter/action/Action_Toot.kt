@@ -32,7 +32,7 @@ object Action_Toot {
 		status : TootStatus?
 	) {
 		if(status == null) return
-		val who_host = timeline_account.host
+		val who_host = timeline_account.hostAscii
 		
 		AccountPicker.pick(
 			activity,
@@ -194,13 +194,13 @@ object Action_Toot {
 						}
 						
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status.id) { account, status ->
+							column.findStatus(access_info.hostAscii, new_status.id) { account, status ->
 								
 								// 同タンス別アカウントでもカウントは変化する
 								status.favourites_count = new_status.favourites_count
 								
 								// 同アカウントならfav状態を変化させる
-								if(access_info.acct == account.acct) {
+								if(access_info  == account ) {
 									status.favourited = new_status.favourited
 								}
 								
@@ -230,7 +230,7 @@ object Action_Toot {
 		status : TootStatus?
 	) {
 		if(status == null) return
-		val who_host = timeline_account.host
+		val who_host = timeline_account.hostAscii
 		
 		AccountPicker.pick(
 			activity,
@@ -330,10 +330,10 @@ object Action_Toot {
 					
 					new_status != null -> {
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status.id) { account, status ->
+							column.findStatus(access_info.hostAscii, new_status.id) { account, status ->
 								
 								// 同アカウントならブックマーク状態を伝播する
-								if(access_info.acct == account.acct) {
+								if(access_info  == account ) {
 									status.bookmarked = new_status.bookmarked
 								}
 								
@@ -362,7 +362,7 @@ object Action_Toot {
 	) {
 		status ?: return
 		
-		val who_host = timeline_account.host
+		val who_host = timeline_account.hostAscii
 		val status_owner = timeline_account.getFullAcct(status.account)
 		
 		val isPrivateToot = timeline_account.isMastodon &&
@@ -371,7 +371,7 @@ object Action_Toot {
 		if(isPrivateToot) {
 			val list = ArrayList<SavedAccount>()
 			for(a in SavedAccount.loadAccountList(activity)) {
-				if(a.acct == status_owner) list.add(a)
+				if(a.acctAscii == status_owner) list.add(a)
 			}
 			if(list.isEmpty()) {
 				showToast(activity, false, R.string.boost_private_toot_not_allowed)
@@ -434,7 +434,7 @@ object Action_Toot {
 		// Mastodonは非公開トゥートをブーストできるのは本人だけ
 		val isPrivateToot = access_info.isMastodon &&
 			arg_status.visibility == TootVisibility.PrivateFollowers
-		if(isPrivateToot && access_info.acct != status_owner_acct) {
+		if(isPrivateToot && access_info.acctAscii != status_owner_acct) {
 			showToast(activity, false, R.string.boost_private_toot_not_allowed)
 			return
 		}
@@ -587,15 +587,13 @@ object Action_Toot {
 						val count = max(0, (arg_status.reblogs_count ?: 1) - 1)
 						
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, arg_status.id) { account, status ->
+							column.findStatus(access_info.hostAscii, arg_status.id) { account, status ->
 								
 								// 同タンス別アカウントでもカウントは変化する
 								status.reblogs_count = count
 								
 								// 同アカウントならreblogged状態を変化させる
-								if(access_info.acct == account.acct &&
-									status.myRenoteId == unrenoteId
-								) {
+								if(access_info == account && status.myRenoteId == unrenoteId ) {
 									status.myRenoteId = null
 									status.reblogged = false
 								}
@@ -623,12 +621,12 @@ object Action_Toot {
 						}
 						
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status.id) { account, status ->
+							column.findStatus(access_info.hostAscii, new_status.id) { account, status ->
 								
 								// 同タンス別アカウントでもカウントは変化する
 								status.reblogs_count = new_status.reblogs_count
 								
-								if(access_info.acct == account.acct) {
+								if(access_info  == account ) {
 									
 									// 同アカウントならreblog状態を変化させる
 									when {
@@ -689,7 +687,7 @@ object Action_Toot {
 				if(result.jsonObject != null) {
 					showToast(activity, false, R.string.delete_succeeded)
 					for(column in App1.getAppState(activity).column_list) {
-						column.onStatusRemoved(access_info.host, status_id)
+						column.onStatusRemoved(access_info.hostAscii, status_id)
 					}
 				} else {
 					showToast(activity, false, result.error)
@@ -731,7 +729,7 @@ object Action_Toot {
 		access_info : SavedAccount,
 		status : TootStatus
 	) {
-		if(access_info.isNA || ! access_info.host.equals(status.host_access, ignoreCase = true)) {
+		if(access_info.isNA || ! access_info.matchHost(status.host_access)) {
 			conversationOtherInstance(activity, pos, status)
 		} else {
 			
@@ -845,11 +843,11 @@ object Action_Toot {
 			// 疑似アカウントは後でまとめて処理する
 			if(a.isPseudo) continue
 			
-			if(status_id_original != null && a.host.equals(host_original, ignoreCase = true)) {
+			if(status_id_original != null && a.matchHost(host_original)) {
 				// アクセス情報＋ステータスID でアクセスできるなら
 				// 同タンスのアカウントならステータスIDの変換なしに表示できる
 				local_account_list.add(a)
-			} else if(status_id_access != null && a.host.equals(host_access, ignoreCase = true)) {
+			} else if(status_id_access != null && a.matchHost(host_access)) {
 				// 既に変換済みのステータスIDがあるなら、そのアカウントでもステータスIDの変換は必要ない
 				access_account_list.add(a)
 			} else {
@@ -887,8 +885,8 @@ object Action_Toot {
 					AcctColor.getStringWithNickname(
 						activity,
 						R.string.open_in_account,
-						a.acct,
-						a.prettyAcct
+						a.acctAscii,
+						a.acctPretty
 					)
 				) { conversationLocal(activity, pos, a, status_id_original) }
 			}
@@ -902,7 +900,8 @@ object Action_Toot {
 					AcctColor.getStringWithNickname(
 						activity,
 						R.string.open_in_account,
-						a.acct,a.prettyAcct
+						a.acctAscii,
+						a.acctPretty
 					)
 				) { conversationLocal(activity, pos, a, status_id_access) }
 			}
@@ -915,7 +914,8 @@ object Action_Toot {
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acct,a.prettyAcct
+					a.acctAscii,
+					a.acctPretty
 				)
 			) { conversationRemote(activity, pos, a, url) }
 		}
@@ -1010,7 +1010,7 @@ object Action_Toot {
 		
 		// step 1: choose account
 		
-		val host = statusArg.account.host
+		val host = statusArg.account.hostAscii
 		val local_account_list = ArrayList<SavedAccount>()
 		val other_account_list = ArrayList<SavedAccount>()
 		
@@ -1019,7 +1019,7 @@ object Action_Toot {
 			// 検索APIはログイン必須なので疑似アカウントは使えない
 			if(a.isPseudo) continue
 			
-			if(a.host.equals(host, ignoreCase = true)) {
+			if(a.matchHost(host)) {
 				local_account_list.add(a)
 			} else {
 				other_account_list.add(a)
@@ -1034,7 +1034,8 @@ object Action_Toot {
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acct,a.prettyAcct
+					a.acctAscii,
+					a.acctPretty
 				)
 			) { step2(a) }
 		}
@@ -1045,7 +1046,8 @@ object Action_Toot {
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acct,a.prettyAcct
+					a.acctAscii,
+					a.acctPretty
 				)
 			) { step2(a) }
 		}
@@ -1089,9 +1091,9 @@ object Action_Toot {
 						
 						new_status != null -> {
 							for(column in App1.getAppState(activity).column_list) {
-								if(access_info.acct == column.access_info.acct) {
+								if(access_info  == column.access_info ) {
 									column.findStatus(
-										access_info.host,
+										access_info.hostAscii,
 										new_status.id
 									) { _, status ->
 										status.pinned = bSet
@@ -1171,10 +1173,10 @@ object Action_Toot {
 		quotedRenote : Boolean = false
 	) {
 		status ?: return
-		val who_host = timeline_account.host
+		val who_host = timeline_account.hostAscii
 		
 		val accountCallback : SavedAccountCallback = { ai ->
-			if(ai.host.equals(status.host_access, ignoreCase = true)) {
+			if(ai.matchHost(status.host_access)) {
 				// アクセス元ホストが同じならステータスIDを使って返信できる
 				reply(activity, ai, status, quotedRenote = quotedRenote)
 			} else {
@@ -1292,8 +1294,8 @@ object Action_Toot {
 				val ls = local_status
 				if(ls != null) {
 					for(column in App1.getAppState(activity).column_list) {
-						if(access_info.acct == column.access_info.acct) {
-							column.findStatus(access_info.host, ls.id) { _, status ->
+						if(access_info  == column.access_info ) {
+							column.findStatus(access_info.hostAscii, ls.id) { _, status ->
 								status.muted = bMute
 								true
 							}
@@ -1315,7 +1317,7 @@ object Action_Toot {
 		activity : ActMain,
 		access_info : SavedAccount,
 		arg_status : TootStatus,
-		status_owner_acct : String,
+		status_owner_acct : String, // acctAscii
 		nCrossAccountMode : Int,
 		callback : EmptyCallback?,
 		bSet : Boolean = true,
@@ -1324,7 +1326,7 @@ object Action_Toot {
 		if(access_info.isPseudo || ! access_info.isMisskey) return
 		
 		// 自分の投稿にはリアクション出来ない
-		if(access_info.acct == status_owner_acct) {
+		if(access_info.acctAscii == status_owner_acct) {
 			showToast(activity, false, R.string.it_is_you)
 			return
 		}

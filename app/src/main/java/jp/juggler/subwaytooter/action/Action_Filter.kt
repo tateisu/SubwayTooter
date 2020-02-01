@@ -47,7 +47,7 @@ object Action_Filter {
 				if( filterList != null) {
 					showToast(activity, false, R.string.delete_succeeded)
 					for(column in App1.getAppState(activity).column_list) {
-						if( column.access_info.acct == access_info.acct){
+						if( column.access_info == access_info ){
 							column.onFilterDeleted(filter,filterList)
 						}
 					}

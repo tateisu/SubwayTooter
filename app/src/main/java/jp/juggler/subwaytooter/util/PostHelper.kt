@@ -580,7 +580,7 @@ class PostHelper(
 				val request_builder = body_string.toRequestBody(MEDIA_TYPE_JSON).toPost()
 				
 				if(! Pref.bpDontDuplicationCheck(pref)) {
-					val digest = (body_string + account.acct).digestSHA256Hex()
+					val digest = (body_string + account.acctAscii).digestSHA256Hex()
 					request_builder.header("Idempotency-Key", digest)
 				}
 				

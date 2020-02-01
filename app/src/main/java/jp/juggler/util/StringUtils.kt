@@ -3,6 +3,7 @@ package jp.juggler.util
 import android.content.Context
 import android.content.res.Resources
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -335,3 +336,11 @@ fun <T> Array<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
 //fun <T> Collection<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
 //fun <T> Iterable<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
 //fun <T> Sequence<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
+
+fun defaultLocale(context:Context)=
+	if( Build.VERSION.SDK_INT >= 24){
+		context.resources.configuration.locales[0]
+	}else{
+		@Suppress("DEPRECATION")
+		context.resources.configuration.locale
+	}

@@ -30,13 +30,13 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	val id : EntityId
 	
 	//	Equals username for local users, includes @domain for remote ones
-	val acct : String // punycode
+	val acctAscii : String // punycode
 	val prettyAcct : String // unicode
 	
 	// 	The username of the account  /[A-Za-z0-9_]{1,30}/
 	val username : String
 	
-	val host : String // punycode
+	val hostAscii : String // punycode
 	
 	//	The account's display name
 	val display_name : String
@@ -99,10 +99,10 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	val isPro : Boolean
 	
 	val isLocal :Boolean
-		get() = !acct.contains('@')
+		get() = !acctAscii.contains('@')
 
 	val isRemote :Boolean
-		get() = acct.contains('@')
+		get() = acctAscii.contains('@')
 	
 	// user_hides_network is preference, not exposed in API
 	// val user_hides_network : Boolean
@@ -129,7 +129,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			
 			val remoteHost = src.string("host")
 			val tmpHost = (remoteHost ?: parser.accessHost ?: error("missing host")).toLowerCase(Locale.JAPAN)
-			this.host = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
+			this.hostAscii = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
 			val prettyHost = IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
 			
 			this.custom_emojis =
@@ -138,7 +138,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			this.profile_emojis = null
 			
 			this.username = src.notEmptyOrThrow("username")
-			this.url = "https://$host/@$username"
+			this.url = "https://$hostAscii/@$username"
 			
 			//
 			sv = src.string("name")
@@ -162,7 +162,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			
 			this.id = EntityId.mayDefault(src.string("id"))
 			
-			this.acct = when {
+			this.acctAscii = when {
 				
 				// アクセス元から見て内部ユーザなら short acct
 				remoteHost?.equals(
@@ -171,7 +171,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 				) != false -> username
 				
 				// アクセス元から見て外部ユーザならfull acct
-				else -> "$username@$host"
+				else -> "$username@$hostAscii"
 			}
 
 			this.prettyAcct = when {
@@ -270,9 +270,9 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 						findHostFromUrl(tmpAcct, hostAccess, url)
 							?: throw RuntimeException("can't get host from acct or url")
 					).toLowerCase(Locale.JAPAN)
-					this.host = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
+					this.hostAscii = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
 					val prettyHost = IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
-					this.acct = if( !tmpAcct.contains('@') ) tmpAcct else "$username@$host"
+					this.acctAscii = if( !tmpAcct.contains('@') ) tmpAcct else "$username@$hostAscii"
 					this.prettyAcct = if( !tmpAcct.contains('@') ) tmpAcct else "$username@$prettyHost"
 					
 					this.followers_count = src.long("followers_count")
@@ -297,10 +297,10 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					val tmpHost = (findHostFromUrl(sv, null, url)
 						?: throw RuntimeException("can't get host from acct or url")
 						).toLowerCase(Locale.JAPAN)
-					this.host = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
+					this.hostAscii = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
 					val prettyHost=IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
 					
-					this.acct = this.username + "@" + this.host
+					this.acctAscii = this.username + "@" + this.hostAscii
 					this.prettyAcct = this.username + "@" + prettyHost
 					
 					this.followers_count = src.long("followers_count")
@@ -323,10 +323,10 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					val tmpHost = (findHostFromUrl(null, null, url)
 						?: throw RuntimeException("can't get host from url")
 						).toLowerCase(Locale.JAPAN)
-					this.host = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
+					this.hostAscii = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
 					val prettyHost = IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
 
-					this.acct = this.username + "@" + host
+					this.acctAscii = this.username + "@" + hostAscii
 					this.prettyAcct = this.username + "@" + prettyHost
 					
 					this.followers_count = null
@@ -655,15 +655,13 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 		
 		
 		fun acctAndPrettyAcct(src : String) : Pair<String, String> {
-			val cols = src.split('@')
+			val cols = src.split("@")
+			if(cols.size < 2 ) return Pair(src,src)
 			val username = cols[0]
-			return if(cols.size == 1)
-				Pair(username, username)
-			else
-				Pair(
-					username + "@" + IDN.toASCII(cols[1], IDN.ALLOW_UNASSIGNED),
-					username + "@" + IDN.toUnicode(cols[1], IDN.ALLOW_UNASSIGNED)
-				)
+			return Pair(
+				"$username@${IDN.toASCII(cols[1], IDN.ALLOW_UNASSIGNED)}",
+				"$username@${IDN.toUnicode(cols[1], IDN.ALLOW_UNASSIGNED)}"
+			)
 		}
 	}
 }

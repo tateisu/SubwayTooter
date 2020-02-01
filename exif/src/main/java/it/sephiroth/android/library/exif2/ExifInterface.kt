@@ -16,7 +16,9 @@
 
 package it.sephiroth.android.library.exif2
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.os.Build
 import android.util.Log
 import android.util.SparseIntArray
 import org.apache.commons.io.IOUtils
@@ -2381,13 +2383,15 @@ class ExifInterface {
 				val seconds = coord[2].toDouble()
 				ref = ref.substring(0, 1)
 				
+				
+				
 				String.format(
 					Locale.ENGLISH,
 					"%1$.0f° %2$.0f' %3$.0f\" %4\$s",
 					degrees,
 					minutes,
 					seconds,
-					ref.toUpperCase(Locale.getDefault())
+					ref.toUpperCase(Locale.ENGLISH)
 				)
 			} catch(ex : Throwable) {
 				ex.printStackTrace()

@@ -913,14 +913,14 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 	
 	fun formatFontSize(fv : Float) : String =
 		when {
-			fv.isFinite() -> String.format(Locale.getDefault(), "%.1f", fv)
+			fv.isFinite() -> String.format(defaultLocale(this), "%.1f", fv)
 			else -> ""
 		}
 	
 	fun parseFontSize(src : String) : Float {
 		try {
 			if(src.isNotEmpty()) {
-				val f = NumberFormat.getInstance(Locale.getDefault()).parse(src)?.toFloat()
+				val f = NumberFormat.getInstance(defaultLocale(this)).parse(src)?.toFloat()
 				return when {
 					f == null -> Float.NaN
 					f.isNaN() -> Float.NaN

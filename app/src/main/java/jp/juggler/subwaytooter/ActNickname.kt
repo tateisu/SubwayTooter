@@ -25,18 +25,21 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	
 	companion object {
 		
-		internal const val EXTRA_ACCT = "acct"
+		internal const val EXTRA_ACCT_ASCII = "acctAscii"
+		internal const val EXTRA_ACCT_PRETTY = "acctPretty"
 		internal const val EXTRA_SHOW_NOTIFICATION_SOUND = "show_notification_sound"
 		internal const val REQUEST_CODE_NOTIFICATION_SOUND = 2
 		
 		fun open(
 			activity : Activity,
-			full_acct : String,
+			fullAcctAscii : String,
+			fullAcctPretty: String,
 			bShowNotificationSound : Boolean,
 			requestCode : Int
 		) {
 			val intent = Intent(activity, ActNickname::class.java)
-			intent.putExtra(EXTRA_ACCT, full_acct)
+			intent.putExtra(EXTRA_ACCT_ASCII, fullAcctAscii)
+			intent.putExtra(EXTRA_ACCT_PRETTY, fullAcctPretty)
 			intent.putExtra(EXTRA_SHOW_NOTIFICATION_SOUND, bShowNotificationSound)
 			activity.startActivityForResult(intent, requestCode)
 		}
@@ -44,7 +47,8 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	}
 	
 	private var show_notification_sound : Boolean = false
-	private lateinit var acct : String
+	private lateinit var acctAscii : String
+	private lateinit var acctPretty : String
 	private var color_fg : Int = 0
 	private var color_bg : Int = 0
 	private var notification_sound_uri : String? = null
@@ -73,7 +77,8 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		App1.setActivityTheme(this)
 		
 		val intent = intent
-		this.acct = intent.getStringExtra(EXTRA_ACCT) !!
+		this.acctAscii = intent.getStringExtra(EXTRA_ACCT_ASCII) !!
+		this.acctPretty = intent.getStringExtra(EXTRA_ACCT_PRETTY) !!
 		this.show_notification_sound = intent.getBooleanExtra(EXTRA_SHOW_NOTIFICATION_SOUND, false)
 		
 		initUI()
@@ -148,9 +153,9 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		findViewById<View>(R.id.llNotificationSound).visibility =
 			if(show_notification_sound) View.VISIBLE else View.GONE
 		
-		tvAcct.text = acct
+		tvAcct.text = acctPretty
 		
-		val ac = AcctColor.load(acct)
+		val ac = AcctColor.load(acctAscii)
 		color_bg = ac.color_bg
 		color_fg = ac.color_fg
 		etNickname.setText(if(ac.nickname == null) "" else ac.nickname)
@@ -163,7 +168,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	private fun save() {
 		if(bLoading) return
 		AcctColor(
-			acct,
+			acctAscii,
 			etNickname.text.toString().trim { it <= ' ' },
 			color_fg,
 			color_bg,
@@ -173,7 +178,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	
 	private fun show() {
 		val s = etNickname.text.toString().trim { it <= ' ' }
-		tvPreview.text = s.notEmpty() ?: acct
+		tvPreview.text = s.notEmpty() ?: acctPretty
 		tvPreview.textColor = color_fg.notZero() ?: getAttributeColor(this, R.attr.colorTimeSmall)
 		tvPreview.backgroundColor = color_bg
 	}

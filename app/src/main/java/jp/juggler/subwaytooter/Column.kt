@@ -263,10 +263,9 @@ class Column(
 					override fun handleResult(result : TootApiResult?) {
 						val filter_list = this.filter_list
 						if(filter_list != null) {
-							val stream_acct = access_info.acct
-							log.d("update filters for $stream_acct")
+							log.d("update filters for ${access_info.acctAscii}")
 							for(column in App1.getAppState(context).column_list) {
-								if(column.access_info.acct == stream_acct) {
+								if(column.access_info == access_info) {
 									column.onFiltersChanged2(filter_list)
 								}
 							}
@@ -361,8 +360,7 @@ class Column(
 	
 	val type = ColumnType.parse(typeId)
 	
-	fun getIconId() : Int =
-		type.iconId(access_info.acct)
+	fun getIconId() : Int = type.iconId(access_info.acctAscii)
 	
 	fun getColumnName(long : Boolean) =
 		type.name2(this, long) ?: type.name1(context)
@@ -903,8 +901,8 @@ class Column(
 		}
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
-		val ac = AcctColor.load(access_info.acct)
-		dst[KEY_COLUMN_ACCESS] = if(AcctColor.hasNickname(ac)) ac.nickname else access_info.acct
+		val ac = AcctColor.load(access_info.acctAscii)
+		dst[KEY_COLUMN_ACCESS] = if(AcctColor.hasNickname(ac)) ac.nickname else access_info.acctPretty
 		dst[KEY_COLUMN_ACCESS_COLOR] = ac.color_fg
 		dst[KEY_COLUMN_ACCESS_COLOR_BG] = ac.color_bg
 		dst[KEY_COLUMN_NAME] = getColumnName(true)
@@ -916,7 +914,7 @@ class Column(
 		type : ColumnType,
 		params : Array<out Any>
 	) : Boolean {
-		if(type != this.type || ai.acct != access_info.acct) return false
+		if(type != this.type || ai != access_info) return false
 		
 		return try {
 			when(type) {
@@ -1038,7 +1036,7 @@ class Column(
 		callback : (account : SavedAccount, status : TootStatus) -> Boolean
 		// callback return true if rebind view required
 	) {
-		if(! access_info.host.equals(target_instance, ignoreCase = true)) return
+		if(! access_info.matchHost(target_instance)) return
 		
 		var bChanged = false
 		
@@ -1068,7 +1066,7 @@ class Column(
 		who_id : EntityId,
 		removeFromUserList : Boolean = false
 	) {
-		if(target_account.acct != access_info.acct) return
+		if(target_account != access_info) return
 		
 		val INVALID_ACCOUNT = - 1L
 		
@@ -1121,13 +1119,13 @@ class Column(
 	
 	// misskeyカラムやプロフカラムでブロック成功した時に呼ばれる
 	fun updateFollowIcons(target_account : SavedAccount) {
-		if(target_account.acct != access_info.acct) return
+		if(target_account != access_info) return
 		
 		fireShowContent(reason = "updateFollowIcons", reset = true)
 	}
 	
 	fun removeUser(targetAccount : SavedAccount, columnType : ColumnType, who_id : EntityId) {
-		if(type == columnType && targetAccount.acct == access_info.acct) {
+		if(type == columnType && targetAccount == access_info ) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootAccountRef) {
@@ -1148,7 +1146,7 @@ class Column(
 		
 		if(is_dispose.get() || bInitialLoading || bRefreshLoading) return
 		
-		if(tl_host.equals(access_info.host, ignoreCase = true)) {
+		if(tl_host.equals(access_info.hostAscii, ignoreCase = true)) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootStatus) {
@@ -1203,7 +1201,7 @@ class Column(
 	fun removeNotificationOne(target_account : SavedAccount, notification : TootNotification) {
 		if(! isNotificationColumn) return
 		
-		if(access_info.acct != target_account.acct) return
+		if(access_info != target_account) return
 		
 		val tmp_list = ArrayList<TimelineItem>(list_data.size)
 		for(o in list_data) {
@@ -1268,7 +1266,7 @@ class Column(
 		
 		val domain = IDN.toASCII(domainArg,IDN.ALLOW_UNASSIGNED)
 		
-		if(target_account.host != access_info.host) return
+		if(target_account.hostAscii != access_info.hostAscii) return
 		if(access_info.isPseudo) return
 		
 		if(type == ColumnType.DOMAIN_BLOCKS) {
@@ -1281,7 +1279,7 @@ class Column(
 			// ブロックしたのとドメイン部分が一致するアカウントからのステータスと通知をすべて除去する
 			val reDomain = Pattern.compile("\\A[^@]+@\\Q$domain\\E\\z", Pattern.CASE_INSENSITIVE)
 			val checker =
-				{ account : TootAccount? -> if(account == null ) false else reDomain.matcher(account.acct).find() }
+				{ account : TootAccount? -> if(account == null ) false else reDomain.matcher(account.acctAscii).find() }
 			
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			
@@ -1307,7 +1305,7 @@ class Column(
 	}
 	
 	fun onListListUpdated(account : SavedAccount) {
-		if(type == ColumnType.LIST_LIST && access_info.acct == account.acct) {
+		if(type == ColumnType.LIST_LIST && access_info == account) {
 			startLoading()
 			val vh = viewHolder
 			vh?.onListListUpdated()
@@ -1315,7 +1313,7 @@ class Column(
 	}
 	
 	fun onListNameUpdated(account : SavedAccount, item : TootList) {
-		if(access_info.acct != account.acct) return
+		if(access_info != account) return
 		when(type) {
 			ColumnType.LIST_LIST -> {
 				startLoading()
@@ -1340,11 +1338,11 @@ class Column(
 		who : TootAccount,
 		bAdd : Boolean
 	) {
-		if(type == ColumnType.LIST_TL && access_info.acct == account.acct && list_id == profile_id) {
+		if(type == ColumnType.LIST_TL && access_info == account && list_id == profile_id) {
 			if(! bAdd) {
 				removeAccountInTimeline(account, who.id)
 			}
-		} else if(type == ColumnType.LIST_MEMBER && access_info.acct == account.acct && list_id == profile_id) {
+		} else if(type == ColumnType.LIST_MEMBER && access_info == account && list_id == profile_id) {
 			if(! bAdd) {
 				removeAccountInTimeline(account, who.id)
 			}

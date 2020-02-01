@@ -221,7 +221,7 @@ class ActKeywordFilter
 	private fun save() {
 		if(loading) return
 		
-		val params = jsonObject{
+		val params = jsonObject {
 			
 			put("phrase", etPhrase.text.toString())
 			
@@ -254,7 +254,7 @@ class ActKeywordFilter
 					filter_expire <= 0L -> {
 					}
 					// FIXME: currently there is no way to remove expires from existing filter.
-					else ->  put("expires_in", Int.MAX_VALUE)
+					else -> put("expires_in", Int.MAX_VALUE)
 				}
 				
 				// set seconds
@@ -285,9 +285,7 @@ class ActKeywordFilter
 				} else {
 					val app_state = App1.prepare(applicationContext)
 					for(column in app_state.column_list) {
-						if(column.access_info.acct == account.acct
-							&& column.type == ColumnType.KEYWORD_FILTER
-						) {
+						if(column.type == ColumnType.KEYWORD_FILTER && column.access_info == account) {
 							column.filter_reload_required = true
 						}
 					}

@@ -122,22 +122,34 @@ object Action_HashTag {
 		val list_other = ArrayList<SavedAccount>()
 		for(a in account_list) {
 			if( acctAscii == null){
-				if(! host.equals(a.host, ignoreCase = true)) {
-					list_other.add(a)
-				} else if(a.isPseudo) {
-					list_original_pseudo.add(a)
-				} else {
-					list_original.add(a)
+				when {
+					! host.equals(a.hostAscii, ignoreCase = true) -> {
+						list_other.add(a)
+					}
+					a.isPseudo -> {
+						list_original_pseudo.add(a)
+					}
+					else -> {
+						list_original.add(a)
+					}
 				}
 			}else{
-				if(a.isPseudo) {
+				when {
+
 					// acctからidを取得できない
-				}else if(a.isMisskey) {
+					a.isPseudo -> {
+					}
+
 					// ミスキーのアカウント別タグTLは未対応
-				}else if(! host.equals(a.host, ignoreCase = true)) {
-					list_other.add(a)
-				} else {
-					list_original.add(a)
+					a.isMisskey -> {
+					}
+
+					! host.equals(a.hostAscii, ignoreCase = true) -> {
+						list_other.add(a)
+					}
+					else -> {
+						list_original.add(a)
+					}
 				}
 			}
 		}
@@ -163,8 +175,8 @@ object Action_HashTag {
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acct,
-					a.prettyAcct
+					a.acctAscii,
+					a.acctPretty
 				)
 			)
 			{ timeline(activity, pos, a, tag_without_sharp,acctAscii) }
@@ -174,8 +186,8 @@ object Action_HashTag {
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acct,
-					a.prettyAcct
+					a.acctAscii,
+					a.acctPretty
 				)
 			)
 			{ timeline(activity, pos, a, tag_without_sharp,acctAscii) }
@@ -185,8 +197,8 @@ object Action_HashTag {
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acct,
-					a.prettyAcct
+					a.acctAscii,
+					a.acctPretty
 				)
 			)
 			{ timeline(activity, pos, a, tag_without_sharp,acctAscii) }

@@ -48,7 +48,7 @@ object Action_Instance {
 				App1.openBrowser(activity, "https://$host/explore")
 			
 			// ホスト名部分が一致するならそのアカウントで開く
-			accessInfo.host == host ->
+			accessInfo.hostAscii == host ->
 				activity.addColumn(
 					false,
 					pos,
@@ -83,7 +83,7 @@ object Action_Instance {
 				ColumnType.PROFILE_DIRECTORY.name1(activity)
 			)
 		) { ai ->
-			profileDirectory(activity, ai, ai.host)
+			profileDirectory(activity, ai, ai.hostAscii)
 		}
 	}
 	
@@ -134,7 +134,7 @@ object Action_Instance {
 		// 指定タンスのアカウントを持ってるか？
 		val account_list = ArrayList<SavedAccount>()
 		for(a in SavedAccount.loadAccountList(activity)) {
-			if(host.equals(a.host, ignoreCase = true)) account_list.add(a)
+			if(host.equals(a.hostAscii, ignoreCase = true)) account_list.add(a)
 		}
 		if(account_list.isEmpty()) {
 			// 持ってないなら疑似アカウントを追加する
@@ -159,7 +159,7 @@ object Action_Instance {
 		activity : ActMain, access_info : SavedAccount, domain : String, bBlock : Boolean
 	) {
 		
-		if(access_info.host.equals(domain, ignoreCase = true)) {
+		if(access_info.matchHost(domain)) {
 			showToast(activity, false, R.string.it_is_you)
 			return
 		}
@@ -260,7 +260,7 @@ object Action_Instance {
 				a.isMisskey -> continue@label
 				
 				// 閲覧アカウントとホスト名が同じならステータスIDの変換が必要ない
-				a.host.equals(access_info.host, ignoreCase = true) -> {
+				a.matchHost(access_info.hostAscii) -> {
 					if(! allowPseudo && a.isPseudo) continue@label
 					account_list1.add(a)
 				}
@@ -282,7 +282,7 @@ object Action_Instance {
 				message = "select account to read timeline",
 				accountListArg = account_list1
 			) { ai ->
-				if(! ai.isNA && ai.host.equals(access_info.host, ignoreCase = true)) {
+				if(! ai.isNA && ai.matchHost(access_info.hostAscii)) {
 					timelinePublicAround2(activity, ai, pos, status.id, type)
 				} else {
 					timelinePublicAround3(activity, ai, pos, status, type)

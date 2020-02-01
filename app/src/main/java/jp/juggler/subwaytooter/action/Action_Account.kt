@@ -240,7 +240,7 @@ object Action_Account {
 				}
 				
 				ColumnType.PROFILE_DIRECTORY -> {
-					activity.addColumn(pos, ai, type, ai.host)
+					activity.addColumn(pos, ai, type, ai.hostAscii)
 				}
 				
 				else -> activity.addColumn(pos, ai, type, *args)

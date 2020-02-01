@@ -142,9 +142,8 @@ class DlgListMember(
 			//
 			
 		} else {
-			val acct = a.acct
-			val ac = AcctColor.load(acct)
-			val nickname = if(AcctColor.hasNickname(ac)) ac.nickname else acct
+			val ac = AcctColor.load(a.acctAscii)
+			val nickname = if(AcctColor.hasNickname(ac)) ac.nickname else a.acctPretty
 			btnListOwner.text = nickname
 			
 			if(AcctColor.hasColorBackground(ac)) {

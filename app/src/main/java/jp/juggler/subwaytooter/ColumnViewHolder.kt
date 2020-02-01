@@ -1171,15 +1171,13 @@ class ColumnViewHolder(
 		val column = this.column
 		if(column == null || column.is_dispose.get()) return@Runnable
 		
-		val acct = column.access_info.acct
-		val ac = AcctColor.load(acct)
+		val ac = AcctColor.load(column.access_info.acctAscii)
 		
 		val nickname = ac.nickname
 		tvColumnContext.text = if(nickname != null && nickname.isNotEmpty())
 			nickname
 		else
-			column.access_info.prettyAcct
-		
+			column.access_info.acctPretty
 		
 		tvColumnContext.setTextColor(
 			ac.color_fg.notZero()
@@ -2640,7 +2638,7 @@ class ColumnViewHolder(
 	
 	private fun addReaction(item : TootAnnouncement, sample : TootAnnouncement.Reaction?) {
 		val column = column ?: return
-		val host = column.access_info.host
+		val host = column.access_info.hostAscii
 		val isMisskey = column.isMisskey
 		if(sample == null) {
 			EmojiPicker(activity, host, isMisskey) { name, _, _, unicode, customEmoji ->

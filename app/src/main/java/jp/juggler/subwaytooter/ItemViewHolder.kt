@@ -1093,7 +1093,7 @@ internal class ItemViewHolder(
 		} else {
 			val m = reply.mentions?.find { it.id == accountId }
 			if(m != null) {
-				AcctColor.getNicknameWithColor(access_info,m.acct)
+				AcctColor.getNicknameWithColor(access_info,m.acctAscii)
 			} else {
 				SpannableString("ID(${accountId})")
 			}
@@ -1409,12 +1409,12 @@ internal class ItemViewHolder(
 		try {
 			if(! Column.useInstanceTicker) return
 			
-			val host = who.host
+			val host = who.hostAscii
 			
 			// LTLでホスト名が同じならTickerを表示しない
 			when(column.type) {
 				ColumnType.LOCAL, ColumnType.LOCAL_AROUND -> {
-					if(host == access_info.host) return
+					if(host == access_info.hostAscii) return
 				}
 				
 				else -> {
@@ -2142,7 +2142,7 @@ internal class ItemViewHolder(
 					is TootTag -> {
 						// search_tag は#を含まない
 						val tagEncoded = item.name.encodePercent()
-						val host = access_info.host
+						val host = access_info.hostAscii
 						val url = "https://$host/tags/$tagEncoded"
 						Action_HashTag.timelineOtherInstance(
 							activity = activity,
@@ -2469,7 +2469,7 @@ internal class ItemViewHolder(
 					setPadding(paddingH, paddingV, paddingH, paddingV)
 					
 					val emoji = status.custom_emojis?.get(customCode)
-						?: App1.custom_emoji_lister.getMap(access_info.host, true)
+						?: App1.custom_emoji_lister.getMap(access_info.hostAscii, true)
 							?.get(customCode)
 					
 					val emojiUrl = emoji?.let {

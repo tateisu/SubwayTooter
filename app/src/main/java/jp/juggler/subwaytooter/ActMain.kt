@@ -124,7 +124,7 @@ class ActMain : AppCompatActivity()
 	
 	// onActivityResultで設定されてonResumeで消化される
 	// 状態保存の必要なし
-	private var posted_acct : String? = null
+	private var posted_acct : String? = null // acctAscii
 	private var posted_status_id : EntityId? = null
 	private var posted_reply_id : EntityId? = null
 	private var posted_redraft_id : EntityId? = null
@@ -401,7 +401,7 @@ class ActMain : AppCompatActivity()
 							break
 						}
 						// 既出でなければ追加する
-						if(null == accounts.find { it.acct == a.acct }) accounts.add(a)
+						if(null == accounts.find { it.acctAscii == a.acctAscii }) accounts.add(a)
 					} catch(ex : Throwable) {
 					
 					}
@@ -795,7 +795,7 @@ class ActMain : AppCompatActivity()
 				when {
 					column.access_info.isNA -> post_helper.setInstance(null, false)
 					else -> post_helper.setInstance(
-						column.access_info.host,
+						column.access_info.hostAscii,
 						column.access_info.isMisskey
 					)
 				}
@@ -865,7 +865,7 @@ class ActMain : AppCompatActivity()
 			// 予約投稿なら予約投稿リストをリロードする
 			for(column in app_state.column_list) {
 				if(column.type == ColumnType.SCHEDULED_STATUS
-					&& column.access_info.acct == posted_acct
+					&& column.access_info.acctAscii == posted_acct
 				) {
 					column.startLoading()
 				}
@@ -888,7 +888,7 @@ class ActMain : AppCompatActivity()
 			val refresh_after_toot = Pref.ipRefreshAfterToot(pref)
 			if(refresh_after_toot != Pref.RAT_DONT_REFRESH) {
 				for(column in app_state.column_list) {
-					if(column.access_info.acct != posted_acct) continue
+					if(column.access_info.acctAscii != posted_acct) continue
 					column.startRefreshForPost(
 						refresh_after_toot,
 						posted_status_id,
@@ -967,7 +967,7 @@ class ActMain : AppCompatActivity()
 		post_helper.in_reply_to_id = null
 		post_helper.attachment_list = null
 		post_helper.emojiMapCustom =
-			App1.custom_emoji_lister.getMap(account.host, account.isMisskey)
+			App1.custom_emoji_lister.getMap(account.hostAscii, account.isMisskey)
 		
 		
 		etQuickToot.hideKeyboard()
@@ -978,7 +978,7 @@ class ActMain : AppCompatActivity()
 				status : TootStatus
 			) {
 				etQuickToot.setText("")
-				posted_acct = target_account.acct
+				posted_acct = target_account.acctAscii
 				posted_status_id = status.id
 				posted_reply_id = status.in_reply_to_id
 				posted_redraft_id = null
@@ -1600,7 +1600,7 @@ class ActMain : AppCompatActivity()
 			ivIcon.imageTintList = ColorStateList.valueOf(column.getHeaderNameColor())
 			
 			//
-			val ac = AcctColor.load(column.access_info.acct)
+			val ac = AcctColor.load(column.access_info.acctAscii)
 			if(AcctColor.hasColorForeground(ac)) {
 				vAcctColor.setBackgroundColor(ac.color_fg)
 			} else {
@@ -1829,7 +1829,7 @@ class ActMain : AppCompatActivity()
 				if(account != null) {
 					var column = app_state.column_list.firstOrNull {
 						it.type == ColumnType.NOTIFICATIONS
-							&& account.acct == it.access_info.acct
+							&& account.acctAscii == it.access_info.acctAscii
 							&& ! it.system_notification_not_related
 					}
 					if(column != null) {
@@ -2029,7 +2029,7 @@ class ActMain : AppCompatActivity()
 				if(sa.username != ta.username) {
 					showToast(this@ActMain, true, R.string.user_name_not_match)
 				} else {
-					showToast(this@ActMain, false, R.string.access_token_updated_for, sa.acct)
+					showToast(this@ActMain, false, R.string.access_token_updated_for, sa.acctPretty)
 					
 					// DBの情報を更新する
 					sa.updateTokenInfo(token_info)
@@ -2039,7 +2039,7 @@ class ActMain : AppCompatActivity()
 					
 					// 自動でリロードする
 					for(it in app_state.column_list) {
-						if(it.access_info.acct == sa.acct) {
+						if(it.access_info.acctAscii == sa.acctAscii) {
 							it.startLoading()
 						}
 					}
@@ -2156,7 +2156,7 @@ class ActMain : AppCompatActivity()
 			null,
 			object : DlgTextInput.Callback {
 				override fun onOK(dialog : Dialog, text : String) {
-					checkAccessToken(null, dialog, sa.host, text, sa)
+					checkAccessToken(null, dialog, sa.hostAscii, text, sa)
 				}
 				
 				override fun onEmptyError() {
@@ -2180,7 +2180,7 @@ class ActMain : AppCompatActivity()
 		val done_list = ArrayList<SavedAccount>()
 		for(column in app_state.column_list) {
 			val a = column.access_info
-			if(a.acct != account.acct) continue
+			if(a.acctAscii != account.acctAscii) continue
 			if(done_list.contains(a)) continue
 			done_list.add(a)
 			if(! a.isNA) a.reloadSetting(this@ActMain)
@@ -2361,7 +2361,7 @@ class ActMain : AppCompatActivity()
 				if(statusInfo != null) {
 					if(accessInfo.isNA ||
 						statusInfo.statusId == null ||
-						! statusInfo.host.equals(accessInfo.host, ignoreCase = true)
+						! statusInfo.host.equals(accessInfo.hostAscii, ignoreCase = true)
 					) {
 						Action_Toot.conversationOtherInstance(
 							this@ActMain,
@@ -2385,7 +2385,7 @@ class ActMain : AppCompatActivity()
 				// opener.linkInfo をチェックしてメンションを判別する
 				val mention = opener.linkInfo?.mention
 				if(mention != null) {
-					val fullAcct = getFullAcctOrNull(accessInfo, mention.acct, mention.url)
+					val fullAcct = getFullAcctOrNull(accessInfo, mention.acctAscii, mention.url)
 					if(fullAcct != null) {
 						val (user, host) = fullAcct.splitFullAcct()
 						if(host != null) {
@@ -2487,7 +2487,7 @@ class ActMain : AppCompatActivity()
 	
 	fun showColumnMatchAccount(account : SavedAccount) {
 		for(column in app_state.column_list) {
-			if(account.acct == column.access_info.acct) {
+			if(account.acctAscii == column.access_info.acctAscii) {
 				column.fireRebindAdapterItems()
 			}
 		}

@@ -177,7 +177,7 @@ class AcctColor {
 			val nickname = ac.nickname
 			return if(nickname != null && nickname.isNotEmpty()) nickname.sanitizeBDI() else prettyAcct
 		}
-		fun getNickname(sa:SavedAccount) : String = getNickname(sa.acct,sa.prettyAcct)
+		fun getNickname(sa:SavedAccount) : String = getNickname(sa.acctAscii,sa.acctPretty)
 
 		fun getNickname(sa:SavedAccount,who:TootAccount) : String = getNickname(sa.getFullAcct(who),sa.getFullPrettyAcct(who))
 		

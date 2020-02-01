@@ -99,10 +99,11 @@ fun makeAccountListNonPseudo(
 	val list_other_host = ArrayList<SavedAccount>()
 	for(a in SavedAccount.loadAccountList(context)) {
 		if(a.isPseudo) continue
-		(if(pickup_host == null || pickup_host.equals(
-				a.host,
-				ignoreCase = true
-			)) list_same_host else list_other_host).add(a)
+		(if(pickup_host == null || pickup_host.equals(a.hostAscii, ignoreCase = true) || pickup_host.equals(a.hostPretty, ignoreCase = true))
+			list_same_host
+		else
+			list_other_host
+			).add(a)
 	}
 	SavedAccount.sort(list_same_host)
 	SavedAccount.sort(list_other_host)
@@ -154,12 +155,8 @@ const val CROSS_ACCOUNT_REMOTE_INSTANCE = 3
 internal fun calcCrossAccountMode(
 	timeline_account : SavedAccount,
 	action_account : SavedAccount
-) : Int {
-	return if(! timeline_account.host.equals(action_account.host, ignoreCase = true)) {
-		CROSS_ACCOUNT_REMOTE_INSTANCE
-	} else if(! timeline_account.acct.equals(action_account.acct, ignoreCase = true)) {
-		CROSS_ACCOUNT_SAME_INSTANCE
-	} else {
-		NOT_CROSS_ACCOUNT
-	}
+) : Int =when{
+	timeline_account == action_account -> NOT_CROSS_ACCOUNT
+	timeline_account.matchHost(action_account.hostAscii) -> CROSS_ACCOUNT_SAME_INSTANCE
+	else -> CROSS_ACCOUNT_REMOTE_INSTANCE
 }

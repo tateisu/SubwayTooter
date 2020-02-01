@@ -158,7 +158,7 @@ internal class StreamReader(
 		
 		private fun fireDeleteId(id : EntityId) {
 
-			val tl_host = access_info.host
+			val tl_host = access_info.hostAscii
 			runOnMainLooper {
 				synchronized(this) {
 					if(bDisposed.get()) return@synchronized

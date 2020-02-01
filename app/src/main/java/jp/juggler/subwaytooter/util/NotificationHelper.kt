@@ -27,17 +27,17 @@ object NotificationHelper {
 	) = when(trackingName) {
 		"" -> createNotificationChannel(
 			context,
-			account.acct, // id
-			account.acct, // name
-			context.getString(R.string.notification_channel_description, account.acct),
+			account.acctAscii, // id
+			account.acctPretty, // name
+			context.getString(R.string.notification_channel_description, account.acctPretty),
 			NotificationManager.IMPORTANCE_DEFAULT // : NotificationManager.IMPORTANCE_LOW;
 		)
 		
 		else -> createNotificationChannel(
 			context,
-			"${account.acct}/$trackingName", // id
-			"${account.acct}/$trackingName", // name
-			context.getString(R.string.notification_channel_description, account.acct),
+			"${account.acctAscii}/$trackingName", // id
+			"${account.acctPretty}/$trackingName", // name
+			context.getString(R.string.notification_channel_description, account.acctPretty),
 			NotificationManager.IMPORTANCE_DEFAULT // : NotificationManager.IMPORTANCE_LOW;
 		)
 	}

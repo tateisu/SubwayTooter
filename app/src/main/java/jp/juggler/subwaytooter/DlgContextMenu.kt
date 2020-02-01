@@ -412,7 +412,7 @@ internal class DlgContextMenu(
 				// 疑似アカウントではドメインブロックできない
 				// 自ドメインはブロックできない
 				btnDomainBlock.vg(
-					! (access_info.isPseudo || access_info.host.equals(who_host, ignoreCase = true))
+					! (access_info.isPseudo || access_info.matchHost(who_host))
 				)
 				
 				btnDomainTimeline.vg(
@@ -525,9 +525,9 @@ internal class DlgContextMenu(
 	}
 	
 	private fun getUserHost() : String {
-		return when(val who_host = whoRef?.get()?.host) {
+		return when(val who_host = whoRef?.get()?.hostAscii) {
 			"?" -> column.instance_uri
-			null, "" -> access_info.host
+			null, "" -> access_info.hostAscii
 			else -> who_host
 		}
 	}
@@ -766,6 +766,7 @@ internal class DlgContextMenu(
 					ActNickname.open(
 						activity,
 						access_info.getFullAcct(who),
+						access_info.getFullPrettyAcct(who),
 						true,
 						ActMain.REQUEST_CODE_NICKNAME
 					)
@@ -783,10 +784,10 @@ internal class DlgContextMenu(
 						showToast(activity, false, R.string.domain_block_from_pseudo)
 						return
 					} else {
-						val who_host = who.host
+						val who_host = who.hostAscii
 						
 						// 自分のドメインではブロックできない
-						if(access_info.host.equals(who_host, ignoreCase = true)) {
+						if(access_info.matchHost(who_host)) {
 							showToast(activity, false, R.string.domain_block_from_local)
 							return
 						}
@@ -800,7 +801,7 @@ internal class DlgContextMenu(
 					}
 				
 				R.id.btnOpenTimeline -> {
-					val who_host = who.host
+					val who_host = who.hostAscii
 					@Suppress("ControlFlowWithEmptyBody")
 					if(who_host.isEmpty() || who_host == "?") {
 						// 何もしない
@@ -810,7 +811,7 @@ internal class DlgContextMenu(
 				}
 				
 				R.id.btnDomainTimeline -> {
-					val who_host = who.host
+					val who_host = who.hostAscii
 					@Suppress("ControlFlowWithEmptyBody")
 					if(who_host.isEmpty() || who_host == "?") {
 						// 何もしない
@@ -885,7 +886,7 @@ internal class DlgContextMenu(
 					activity,
 					access_info,
 					pos,
-					who.host,
+					who.hostAscii,
 					status,
 					ColumnType.ACCOUNT_AROUND
 					, allowPseudo = false
@@ -895,7 +896,7 @@ internal class DlgContextMenu(
 					activity,
 					access_info,
 					pos,
-					who.host,
+					who.hostAscii,
 					status,
 					ColumnType.LOCAL_AROUND
 				)
@@ -904,7 +905,7 @@ internal class DlgContextMenu(
 					activity,
 					access_info,
 					pos,
-					who.host,
+					who.hostAscii,
 					status,
 					ColumnType.FEDERATED_AROUND
 				)
@@ -914,13 +915,13 @@ internal class DlgContextMenu(
 				R.id.btnOpenAccountInAdminWebUi ->
 					App1.openBrowser(
 						activity,
-						"https://${access_info.host}/admin/accounts/${who.id}"
+						"https://${access_info.hostAscii}/admin/accounts/${who.id}"
 					)
 				
 				R.id.btnOpenInstanceInAdminWebUi ->
 					App1.openBrowser(
 						activity,
-						"https://${access_info.host}/admin/instances/${who.host}"
+						"https://${access_info.hostAscii}/admin/instances/${who.hostAscii}"
 					)
 				
 				R.id.btnBoostWithVisibility -> {

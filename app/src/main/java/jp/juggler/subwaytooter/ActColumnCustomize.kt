@@ -351,7 +351,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 				ivColumnBackground.alpha = column.column_bg_image_alpha
 				etAlpha.setText(
 					String.format(
-						Locale.getDefault(),
+						defaultLocale(this@ActColumnCustomize),
 						"%.4f",
 						column.column_bg_image_alpha
 					)
@@ -379,7 +379,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 				if(loading_busy) return
 				try {
 					
-					var f = NumberFormat.getInstance(Locale.getDefault())
+					var f = NumberFormat.getInstance(defaultLocale(this@ActColumnCustomize))
 						.parse(etAlpha.text.toString())?.toFloat()
 					
 					if(f != null && ! f.isNaN()) {
@@ -426,7 +426,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			
 			etAlpha.setText(
 				String.format(
-					Locale.getDefault(),
+					defaultLocale(this@ActColumnCustomize),
 					"%.4f",
 					column.column_bg_image_alpha
 				)

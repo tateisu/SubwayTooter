@@ -11,7 +11,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.util.*
-import java.net.IDN
 
 object Action_Follow {
 	
@@ -193,12 +192,12 @@ object Action_Follow {
 						// 検索APIを呼び出さないようにする
 						val result = client.request("/api/v1/accounts/${userId}")
 							?: return null
-						who.acct == parser.account(result.jsonObject)?.acct
+						who.acctAscii == parser.account(result.jsonObject)?.acctAscii
 					}
 					
 					if(! skipAccountSync) {
 						// 同タンスのIDではなかった場合、検索APIを使う
-						val (result, ar) = client.syncAccountByAcct(access_info, who.acct)
+						val (result, ar) = client.syncAccountByAcct(access_info, who.acctAscii)
 						val user = ar?.get() ?: return result
 						userId = user.id
 					}
@@ -346,7 +345,7 @@ object Action_Follow {
 					
 					// リモートユーザの同期
 					if(who.isRemote) {
-						val (result, ar) = client.syncAccountByAcct(access_info, who.acct)
+						val (result, ar) = client.syncAccountByAcct(access_info, who.acctAscii)
 						val user = ar?.get() ?: return result
 						userId = user.id
 					}
@@ -573,7 +572,7 @@ object Action_Follow {
 			activity,
 			bAuto = false,
 			message = activity.getString(R.string.account_picker_follow),
-			accountListArg = makeAccountListNonPseudo(activity, account.host)
+			accountListArg = makeAccountListNonPseudo(activity, account.hostAscii)
 		) { ai ->
 			followRemote(
 				activity,
@@ -643,7 +642,7 @@ object Action_Follow {
 						column.removeUser(access_info, ColumnType.FOLLOW_REQUESTS, who.id)
 						
 						// 他のカラムでもフォロー状態の表示更新が必要
-						if(column.access_info.acct == access_info.acct
+						if(column.access_info == access_info
 							&& column.type != ColumnType.FOLLOW_REQUESTS
 						) {
 							column.fireRebindAdapterItems()

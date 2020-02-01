@@ -301,47 +301,47 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	}
 	
 	fun isBusyFav(account : SavedAccount, status : TootStatus) : Boolean {
-		val key = account.acct + ":" + status.busyKey
+		val key = account.acctAscii + ":" + status.busyKey
 		return map_busy_fav.contains(key)
 	}
 	
 	fun setBusyFav(account : SavedAccount, status : TootStatus) {
-		val key = account.acct + ":" + status.busyKey
+		val key = account.acctAscii + ":" + status.busyKey
 		map_busy_fav.add(key)
 	}
 	
 	fun resetBusyFav(account : SavedAccount, status : TootStatus) {
-		val key = account.acct + ":" + status.busyKey
+		val key = account.acctAscii + ":" + status.busyKey
 		map_busy_fav.remove(key)
 	}
 	
 	fun isBusyBookmark(account : SavedAccount, status : TootStatus) : Boolean {
-		val key = account.acct + ":" + status.busyKey
+		val key = account.acctAscii + ":" + status.busyKey
 		return map_busy_bookmark.contains(key)
 	}
 	
 	fun setBusyBookmark(account : SavedAccount, status : TootStatus) {
-		val key = account.acct + ":" + status.busyKey
+		val key = account.acctAscii + ":" + status.busyKey
 		map_busy_bookmark.add(key)
 	}
 	
 	fun resetBusyBookmark(account : SavedAccount, status : TootStatus) {
-		val key = account.acct + ":" + status.busyKey
+		val key = account.acctAscii + ":" + status.busyKey
 		map_busy_bookmark.remove(key)
 	}
 	
 	fun isBusyBoost(account : SavedAccount, status : TootStatus) : Boolean {
-		val key = account.acct + ":" + status.busyKey
+		val key = account.acctAscii + ":" + status.busyKey
 		return map_busy_boost.contains(key)
 	}
 	
 	fun setBusyBoost(account : SavedAccount, status : TootStatus) {
-		val key = account.acct + ":" + status.busyKey
+		val key = account.acctAscii + ":" + status.busyKey
 		map_busy_boost.add(key)
 	}
 	
 	fun resetBusyBoost(account : SavedAccount, status : TootStatus) {
-		val key = account.acct + ":" + status.busyKey
+		val key = account.acctAscii + ":" + status.busyKey
 		map_busy_boost.remove(key)
 	}
 	
@@ -400,7 +400,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 									if(voice_set == null || voice_set.isEmpty()) {
 										log.d("TextToSpeech.getVoices returns null or empty set.")
 									} else {
-										val lang = Locale.getDefault().toLanguageTag()
+										val lang = defaultLocale(context).toLanguageTag()
 										for(v in voice_set) {
 											log.d(
 												"Voice %s %s %s",

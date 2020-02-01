@@ -119,7 +119,6 @@ class ActAccountSetting
 	
 	private lateinit var tvUserCustom : TextView
 	private lateinit var btnUserCustom : View
-	private lateinit var full_acct : String
 	
 	private lateinit var btnNotificationSoundEdit : Button
 	private lateinit var btnNotificationSoundReset : Button
@@ -173,13 +172,13 @@ class ActAccountSetting
 			finish()
 			return
 		}
-		this.account = a
 		
-		loadUIFromData(account)
+		
+		loadUIFromData(a)
 		
 		initializeProfile()
 		
-		btnOpenBrowser.text = getString(R.string.open_instance_website, account.host)
+		btnOpenBrowser.text = getString(R.string.open_instance_website, account.hostAscii)
 	}
 	
 	override fun onStop() {
@@ -443,11 +442,10 @@ class ActAccountSetting
 	}
 	
 	private fun loadUIFromData(a : SavedAccount) {
+		this.account = a
 		
-		this.full_acct = a.acct
-		
-		tvInstance.text = a.host
-		tvUser.text = a.acct
+		tvInstance.text = a.hostPretty
+		tvUser.text = a.acctPretty
 		
 		this.visibility = a.visibility
 		
@@ -518,9 +516,10 @@ class ActAccountSetting
 	}
 	
 	private fun showAcctColor() {
-		val ac = AcctColor.load(full_acct)
+		val sa = this.account
+		val ac = AcctColor.load(sa.acctAscii)
 		tvUserCustom.backgroundColor = ac.color_bg
-		tvUserCustom.text = ac.nickname?.notEmpty() ?: full_acct
+		tvUserCustom.text = ac.nickname?.notEmpty() ?: sa.acctPretty
 		tvUserCustom.textColor = ac.color_fg.notZero()
 			?: getAttributeColor(this, R.attr.colorTimeSmall)
 	}
@@ -584,13 +583,14 @@ class ActAccountSetting
 			R.id.btnVisibility -> performVisibility()
 			R.id.btnOpenBrowser -> App1.openBrowser(
 				this@ActAccountSetting,
-				"https://" + account.host + "/"
+				"https://" + account.hostAscii + "/"
 			)
 			R.id.btnPushSubscription -> startTest()
 			
 			R.id.btnUserCustom -> ActNickname.open(
 				this,
-				full_acct,
+				account.acctAscii,
+				account.acctPretty,
 				false,
 				REQUEST_CODE_ACCT_CUSTOMIZE
 			)
@@ -764,7 +764,7 @@ class ActAccountSetting
 							}
 							
 							val call = App1.ok_http_client.newCall(
-								("instance_url=" + ("https://" + account.host).encodePercent()
+								("instance_url=" + ("https://" + account.hostAscii).encodePercent()
 									+ "&app_id=" + packageName.encodePercent()
 									+ "&tag=" + tag
 									)

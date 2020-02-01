@@ -60,7 +60,7 @@ object Action_ListMember {
 						
 						// リモートユーザの解決
 						if(! access_info.isLocalUser(local_who)) {
-							val (r2, ar) = client.syncAccountByAcct(access_info, local_who.acct)
+							val (r2, ar) = client.syncAccountByAcct(access_info, local_who.acctAscii)
 							val user = ar?.get() ?: return r2
 							userId = user.id
 						}

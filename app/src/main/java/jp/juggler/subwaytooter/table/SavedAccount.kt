@@ -22,7 +22,7 @@ import java.util.regex.Pattern
 
 class SavedAccount(
 	val db_id : Long,
-	val acct : String,
+	acctArg : String,
 	hostArg : String? = null,
 	var token_info : JsonObject? = null,
 	var loginAccount : TootAccount? = null, // 疑似アカウントではnull
@@ -31,8 +31,8 @@ class SavedAccount(
 	
 	val username : String
 	
-	override val host : String // punycode
-	override val prettyHost : String // unicode
+	override val hostAscii : String // punycode
+	override val hostPretty : String // unicode
 	
 	var visibility : TootVisibility = TootVisibility.Public
 	var confirm_boost : Boolean = false
@@ -71,30 +71,32 @@ class SavedAccount(
 	var last_subscription_error : String? = null
 	var last_push_endpoint : String? = null
 	
-	val prettyAcct :String
+	val acctAscii :String
+	val acctPretty :String
 	
 	init {
-		val pos = acct.indexOf('@')
+		val pos = acctArg.indexOf('@')
+		val tmpHost:String?
 		if(pos == - 1) {
-			this.username = acct
-			prettyAcct = acct
+			this.username = acctArg
+			acctAscii = acctArg
+			acctPretty = acctArg
+			tmpHost = null
 		} else {
-			this.username = acct.substring(0, pos)
-			prettyAcct = username+"@"+IDN.toUnicode(acct.substring(pos+1),IDN.ALLOW_UNASSIGNED)
+			this.username = acctArg.substring(0, pos)
+			tmpHost = acctArg.substring(pos+1).toLowerCase(Locale.JAPAN)
+			acctAscii= username+"@"+IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
+			acctPretty = username+"@"+IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
 		}
 		
 		if(username.isEmpty()) throw RuntimeException("missing username in acct")
 		
-		val host = if(hostArg != null && hostArg.isNotEmpty()) {
-			hostArg
-		} else {
-			val hostInAcct = if(pos == - 1) "" else acct.substring(pos + 1)
-			if(hostInAcct.isEmpty()) throw RuntimeException("missing host in acct")
-			hostInAcct
-		}.toLowerCase(Locale.JAPAN)
+		val host = hostArg?.notEmpty()?.toLowerCase(Locale.JAPAN)
+				?: tmpHost
+				?: error("missing host in acct")
 		
-		this.host = IDN.toASCII(host,IDN.ALLOW_UNASSIGNED)
-		this.prettyHost = IDN.toUnicode(host,IDN.ALLOW_UNASSIGNED)
+		this.hostAscii = IDN.toASCII(host,IDN.ALLOW_UNASSIGNED)
+		this.hostPretty = IDN.toUnicode(host,IDN.ALLOW_UNASSIGNED)
 	}
 	
 	constructor(context : Context, cursor : Cursor) : this(
@@ -111,7 +113,7 @@ class SavedAccount(
 		} else {
 			TootParser(
 				context,
-				LinkHelper.newLinkHelper(this@SavedAccount.host, misskeyVersion = misskeyVersion)
+				LinkHelper.newLinkHelper(this@SavedAccount.hostAscii, misskeyVersion = misskeyVersion)
 			).account(jsonAccount)
 				?: error("missing loginAccount for $strAccount")
 		}
@@ -161,7 +163,7 @@ class SavedAccount(
 	}
 	
 	val isNA : Boolean
-		get() = "?@?" == acct
+		get() = "?@?" == acctAscii
 	
 	val isPseudo : Boolean
 		get() = username == "?"
@@ -282,17 +284,17 @@ class SavedAccount(
 		this.sound_uri = b.sound_uri
 	}
 	
-	fun getFullAcct(who : TootAccount?) : String = getFullAcct(who?.acct)
+	fun getFullAcct(who : TootAccount?) : String = getFullAcct(who?.acctAscii)
 	fun getFullPrettyAcct(who : TootAccount?) : String = getFullPrettyAcct(who?.prettyAcct)
 	
 	private fun isLocalUser(acct : String?) : Boolean {
 		acct ?: return false
 		val pos = acct.indexOf('@')
-		return pos == - 1 || host.equals(acct.substring(pos + 1), ignoreCase = true)
+		return pos == - 1 || matchHost( acct.substring(pos + 1) )
 	}
 	
 	fun isLocalUser(who : TootAccount?) : Boolean {
-		return isLocalUser(who?.acct)
+		return isLocalUser(who?.acctAscii)
 	}
 	
 	fun isRemoteUser(who : TootAccount) : Boolean {
@@ -305,24 +307,24 @@ class SavedAccount(
 	
 	fun getUserUrl(who : TootAccount) : String =
 		who.url ?: if(who.isRemote) {
-			"https://${IDN.toUnicode(who.host, IDN.ALLOW_UNASSIGNED)}/@${who.username}"
+			"https://${IDN.toUnicode(who.hostAscii, IDN.ALLOW_UNASSIGNED)}/@${who.username}"
 		} else {
-			"https://$prettyHost/@${who.username}"
+			"https://$hostPretty/@${who.username}"
 		}
 	
 	fun isMe(who : TootAccount?) : Boolean {
 		if(who == null || who.username != this.username) return false
 		//
-		val who_acct = who.acct
+		val who_acct = who.acctAscii
 		val pos = who_acct.indexOf('@')
 		if(pos == - 1) return true // local user have no acct
-		return who_acct.substring(pos + 1).equals(this.host, ignoreCase = true)
+		return who_acct.substring(pos + 1).equals(this.hostAscii, ignoreCase = true)
 	}
 	
 	fun isMe(who_acct : String) : Boolean {
 		// 自分のユーザ名部分
-		var pos = this.acct.indexOf('@')
-		val me_user = this.acct.substring(0, pos)
+		var pos = this.acctAscii.indexOf('@')
+		val me_user = this.acctAscii.substring(0, pos)
 		
 		//
 		pos = who_acct.indexOf('@')
@@ -331,25 +333,25 @@ class SavedAccount(
 		// リモートユーザならホスト名部分の比較も必要
 		val who_user = who_acct.substring(0, pos)
 		val who_host = who_acct.substring(pos + 1)
-		return who_user == me_user && ( who_host.equals(this.host, ignoreCase = true) || who_host.equals(this.prettyHost, ignoreCase = true) )
+		return who_user == me_user && ( who_host.equals(this.hostAscii, ignoreCase = true) || who_host.equals(this.hostPretty, ignoreCase = true) )
 	}
 	
 	fun supplyBaseUrl(url : String?) : String? {
 		return when {
 			url == null || url.isEmpty() -> return null
-			url[0] == '/' -> "https://$host$url"
+			url[0] == '/' -> "https://$hostAscii$url"
 			else -> url
 		}
 	}
 	
 	fun isNicoru(account : TootAccount?) : Boolean {
-		var host = this.host
+		var host = this.hostAscii
 		var host_start = 0
-		val acct = account?.acct
+		val acct = account?.acctAscii
 		if(acct != null) {
 			val pos = acct.indexOf('@')
 			if(pos != - 1) {
-				host = account.acct
+				host = account.acctAscii
 				host_start = pos + 1
 			}
 		}
@@ -925,8 +927,8 @@ class SavedAccount(
 				return 0L
 			}
 		
-		fun isNicoru(acct : String?) : Boolean {
-			return acct != null && reAtNicoruHost.matcher(acct).find()
+		fun isNicoru(acct:String) : Boolean {
+			return reAtNicoruHost.matcher(acct).find()
 		}
 		
 		private fun charAtLower(src : CharSequence, pos : Int) : Char {
@@ -1125,5 +1127,14 @@ class SavedAccount(
 			App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 		}
 	}
+	
+	override fun equals(other : Any?) : Boolean =
+		when(other) {
+			is SavedAccount -> acctAscii == other.acctAscii
+			else -> false
+		}
+	
+	override fun hashCode() : Int = acctAscii.hashCode()
+	
 	
 }

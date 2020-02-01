@@ -27,7 +27,7 @@ class PushSubscriptionHelper(
 		
 		fun clearLastCheck(account : SavedAccount) {
 			synchronized(lastCheckedMap) {
-				lastCheckedMap.remove(account.acct)
+				lastCheckedMap.remove(account.acctAscii)
 			}
 		}
 		
@@ -38,11 +38,11 @@ class PushSubscriptionHelper(
 	private fun isRecentlyChecked() : Boolean {
 		if(verbose) return false
 		val now = System.currentTimeMillis()
-		val acct = account.acct
+		val acctAscii = account.acctAscii
 		synchronized(lastCheckedMap) {
-			val lastChecked = lastCheckedMap[acct]
+			val lastChecked = lastCheckedMap[acctAscii]
 			val rv = lastChecked != null && now - lastChecked < 3600000L
-			if(! rv) lastCheckedMap[acct] = now
+			if(! rv) lastCheckedMap[acctAscii] = now
 			return rv
 		}
 	}
@@ -132,7 +132,7 @@ class PushSubscriptionHelper(
 		
 		return client.http(
 			jsonObject {
-				put("acct", account.acct)
+				put("acct", account.acctAscii)
 				put("deviceId", deviceId)
 				put("endpoint", endpoint)
 			}
@@ -190,7 +190,7 @@ class PushSubscriptionHelper(
 		// 2018/9/1 の上記コミット以降、Misskeyでもサーバ公開鍵を得られるようになった
 		
 		val endpoint =
-			"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags/$clientIdentifier/misskey"
+			"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acctAscii.encodePercent()}/$flags/$clientIdentifier/misskey"
 
 		// アプリサーバが過去のendpoint urlに410を返せるよう、状態を通知する
 		val r = registerEndpoint(client,device_id,endpoint.toUri().encodedPath!!)
@@ -313,7 +313,7 @@ class PushSubscriptionHelper(
 		val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
 		
 		val endpoint =
-			"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags/$clientIdentifier"
+			"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acctAscii.encodePercent()}/$flags/$clientIdentifier"
 		
 		if(oldSubscription?.endpoint == endpoint) {
 			// 既に登録済みで、endpointも一致している

@@ -45,7 +45,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	
 	// 投稿元タンスのホスト名
 	val host_original : String
-		get() = account.host
+		get() = account.hostAscii
 	
 	// 取得タンスのホスト名。トゥート検索サービスでは提供されずnullになる
 	val host_access : String?
@@ -646,7 +646,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		}
 		
 		mentions?.forEach {
-			if(fullAcctMe != access_info.getFullAcct(it.acct))
+			if(fullAcctMe != access_info.getFullAcct(it.acctAscii))
 				return@hasReceipt TootVisibility.DirectSpecified
 		}
 		

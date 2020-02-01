@@ -30,7 +30,7 @@ class TootApiClient(
 	// アカウントがある場合に使用する
 	var account : SavedAccount? = null
 		set(value) {
-			instance = value?.host
+			instance = value?.hostAscii
 			field = value
 		}
 	
@@ -1534,7 +1534,7 @@ fun TootApiClient.syncStatus(
 				)
 					.status(result.jsonObject)
 					?.apply {
-						if(host.equals(accessInfo.host, ignoreCase = true)) {
+						if(host.equals(accessInfo.hostAscii, ignoreCase = true)) {
 							return Pair(result, this)
 						}
 						uri.letNotEmpty { url = it }

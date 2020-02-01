@@ -127,7 +127,7 @@ object AccountPicker {
 		for(a in account_list) {
 			val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
 			
-			val ac = AcctColor.load(a.acct)
+			val ac = AcctColor.load(a.acctAscii)
 			
 			val b = Button(activity)
 			
@@ -146,7 +146,7 @@ object AccountPicker {
 			b.layoutParams = lp
 			b.minHeight = (0.5f + 32f * density).toInt()
 			
-			val sb = SpannableStringBuilder(if(AcctColor.hasNickname(ac)) ac.nickname else a.prettyAcct)
+			val sb = SpannableStringBuilder(if(AcctColor.hasNickname(ac)) ac.nickname else a.acctPretty)
 			if( a.last_notification_error?.isNotEmpty() == true) {
 				sb.append("\n")
 				val start = sb.length

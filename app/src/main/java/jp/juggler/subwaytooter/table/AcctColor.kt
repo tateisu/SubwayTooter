@@ -9,6 +9,7 @@ import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getIntOrNull
 import jp.juggler.util.getStringOrNull
@@ -87,7 +88,7 @@ class AcctColor {
 			}
 		}
 		
-		private val mMemoryCache = androidx.collection.LruCache<String, AcctColor>(2048)
+		private val mMemoryCache = LruCache<String, AcctColor>(2048)
 		
 		override fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
@@ -166,18 +167,32 @@ class AcctColor {
 			return ac
 		}
 		
-		fun getNickname(acct : String) : String {
+//		fun getNickname(acct : String) : String {
+//			val ac = load(acct)
+//			val nickname = ac.nickname
+//			return if(nickname != null && nickname.isNotEmpty()) nickname.sanitizeBDI() else acct
+//		}
+		fun getNickname(acct:String,prettyAcct:String) : String {
 			val ac = load(acct)
 			val nickname = ac.nickname
-			return if(nickname != null && nickname.isNotEmpty()) nickname.sanitizeBDI() else acct
+			return if(nickname != null && nickname.isNotEmpty()) nickname.sanitizeBDI() else prettyAcct
+		}
+		fun getNickname(sa:SavedAccount) : String = getNickname(sa.acct,sa.prettyAcct)
+
+		fun getNickname(sa:SavedAccount,who:TootAccount) : String = getNickname(sa.getFullAcct(who),sa.getFullPrettyAcct(who))
+		
+		fun getNicknameWithColor(sa:SavedAccount,who:TootAccount) : CharSequence =
+			getNicknameWithColor(sa.getFullAcct(who),sa.getFullPrettyAcct(who))
+		
+		fun getNicknameWithColor(sa:SavedAccount,acctArg:String) : CharSequence {
+			val(acct,prettyAcct)=TootAccount.acctAndPrettyAcct(sa.getFullAcct(acctArg))
+			return getNicknameWithColor(acct,prettyAcct)
 		}
 		
-		fun getNicknameWithColor(
-			acct : String
-		) : CharSequence {
+		fun getNicknameWithColor(acct : String,prettyAcct : String) : CharSequence {
 			val ac = load(acct)
 			val nickname = ac.nickname
-			val name = if(nickname == null || nickname.isEmpty()) acct else nickname.sanitizeBDI()
+			val name = if(nickname == null || nickname.isEmpty()) prettyAcct else nickname.sanitizeBDI()
 			val sb = SpannableStringBuilder(name)
 			val start = 0
 			val end = sb.length
@@ -220,11 +235,12 @@ class AcctColor {
 		fun getStringWithNickname(
 			context : Context,
 			string_id : Int,
-			acct : String
+			acct : String,
+			prettyAcct:String
 		) : CharSequence {
 			val ac = load(acct)
 			val nickname = ac.nickname
-			val name = if(nickname == null || nickname.isEmpty()) acct else nickname.sanitizeBDI()
+			val name = if(nickname == null || nickname.isEmpty()) prettyAcct else nickname.sanitizeBDI()
 			val sb = SpannableStringBuilder(
 				context.getString(
 					string_id,

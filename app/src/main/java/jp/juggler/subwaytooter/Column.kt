@@ -19,6 +19,7 @@ import okhttp3.Handshake
 import org.jetbrains.anko.backgroundDrawable
 import java.io.File
 import java.lang.ref.WeakReference
+import java.net.IDN
 import java.nio.ByteBuffer
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -1263,7 +1264,10 @@ class Column(
 		}
 	}
 	
-	fun onDomainBlockChanged(target_account : SavedAccount, domain : String, bBlocked : Boolean) {
+	fun onDomainBlockChanged(target_account : SavedAccount, domainArg : String, bBlocked : Boolean) {
+		
+		val domain = IDN.toASCII(domainArg,IDN.ALLOW_UNASSIGNED)
+		
 		if(target_account.host != access_info.host) return
 		if(access_info.isPseudo) return
 		
@@ -1275,20 +1279,20 @@ class Column(
 		
 		if(bBlocked) {
 			// ブロックしたのとドメイン部分が一致するアカウントからのステータスと通知をすべて除去する
-			val reDomain = Pattern.compile("[^@]+@\\Q$domain\\E\\z", Pattern.CASE_INSENSITIVE)
+			val reDomain = Pattern.compile("\\A[^@]+@\\Q$domain\\E\\z", Pattern.CASE_INSENSITIVE)
 			val checker =
-				{ acct : String? -> if(acct == null) false else reDomain.matcher(acct).find() }
+				{ account : TootAccount? -> if(account == null ) false else reDomain.matcher(account.acct).find() }
 			
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			
 			for(o in list_data) {
 				if(o is TootStatus) {
-					if(checker(o.account.acct)) continue
-					if(checker(o.reblog?.account?.acct)) continue
+					if(checker(o.account)) continue
+					if(checker(o.reblog?.account)) continue
 				} else if(o is TootNotification) {
-					if(checker(o.account?.acct)) continue
-					if(checker(o.status?.account?.acct)) continue
-					if(checker(o.status?.reblog?.account?.acct)) continue
+					if(checker(o.account)) continue
+					if(checker(o.status?.account)) continue
+					if(checker(o.status?.reblog?.account)) continue
 				}
 				tmp_list.add(o)
 			}
@@ -2510,7 +2514,9 @@ class Column(
 				// マストドン2.6.0形式のDMカラム用イベントを利用したならば、その直後に発生する普通の投稿イベントを無視する
 				if(useConversationSummaryStreaming) return
 				
-				if(type == ColumnType.LOCAL && ! isMisskey && item.account.acct.indexOf('@') != - 1) return
+				// マストドンはLTLに外部ユーザの投稿を表示しない
+				if(type == ColumnType.LOCAL && isMastodon && item.account.isRemote ) return
+
 				if(isFiltered(item)) return
 			}
 			
@@ -3081,6 +3087,8 @@ class Column(
 		}
 	}
 	
+	val isMastodon : Boolean = access_info.isMastodon
+
 	val isMisskey : Boolean = access_info.isMisskey
 	
 	val misskeyVersion = access_info.misskeyVersion

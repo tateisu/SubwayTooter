@@ -524,7 +524,7 @@ enum class ColumnType(
 			context.getString(
 				R.string.profile_of,
 				if(who != null)
-					AcctColor.getNickname(access_info.getFullAcct(who))
+					AcctColor.getNickname(access_info,who)
 				else
 					profile_id.toString()
 			)

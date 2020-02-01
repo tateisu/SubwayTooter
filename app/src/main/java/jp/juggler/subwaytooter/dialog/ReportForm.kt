@@ -46,9 +46,7 @@ object ReportForm {
 			cbForward.text = activity.getString(R.string.report_forward_to,who.host)
 		}
 		
-		
-		tvUser.text = who.acct
-		
+		tvUser.text = who.prettyAcct
 		
 		if( status == null){
 			tvStatusCaption.visibility = View.GONE

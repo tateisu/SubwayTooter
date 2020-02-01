@@ -146,7 +146,7 @@ object AccountPicker {
 			b.layoutParams = lp
 			b.minHeight = (0.5f + 32f * density).toInt()
 			
-			val sb = SpannableStringBuilder(if(AcctColor.hasNickname(ac)) ac.nickname else a.acct)
+			val sb = SpannableStringBuilder(if(AcctColor.hasNickname(ac)) ac.nickname else a.prettyAcct)
 			if( a.last_notification_error?.isNotEmpty() == true) {
 				sb.append("\n")
 				val start = sb.length

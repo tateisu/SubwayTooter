@@ -575,7 +575,7 @@ internal class ItemViewHolder(
 			val whoRef = TootAccountRef(TootParser(activity, access_info), who)
 			this.status_account = whoRef
 			
-			setAcct(tvAcct, access_info.getFullAcct(who), who.acct)
+			setAcct(tvAcct, access_info,who)
 			
 			tvName.text = whoRef.decoded_display_name
 			name_invalidator.register(whoRef.decoded_display_name)
@@ -1089,11 +1089,11 @@ internal class ItemViewHolder(
 	private fun showReply(reply : TootStatus, accountId : EntityId) {
 		val name = if(accountId == reply.account.id) {
 			// 自己レスなら
-			AcctColor.getNicknameWithColor(access_info.getFullAcct(reply.account))
+			AcctColor.getNicknameWithColor(access_info,reply.account)
 		} else {
 			val m = reply.mentions?.find { it.id == accountId }
 			if(m != null) {
-				AcctColor.getNicknameWithColor(access_info.getFullAcct(m.acct))
+				AcctColor.getNicknameWithColor(access_info,m.acct)
 			} else {
 				SpannableString("ID(${accountId})")
 			}
@@ -1144,7 +1144,7 @@ internal class ItemViewHolder(
 		showStatusTime(activity, tvBoostedTime, who, time = time, status = boost_status)
 		tvBoosted.text = text
 		boost_invalidator.register(text)
-		setAcct(tvBoostedAcct, access_info.getFullAcct(who), who.acct)
+		setAcct(tvBoostedAcct,  access_info,who)
 	}
 	
 	private fun showAccount(whoRef : TootAccountRef) {
@@ -1162,7 +1162,7 @@ internal class ItemViewHolder(
 		tvFollowerName.text = whoRef.decoded_display_name
 		follow_invalidator.register(whoRef.decoded_display_name)
 		
-		setAcct(tvFollowerAcct, access_info.getFullAcct(who), who.acct)
+		setAcct(tvFollowerAcct, access_info,who)
 		
 		who.setAccountExtra(access_info, tvLastStatusAt, lastActive_invalidator)
 		
@@ -1231,7 +1231,7 @@ internal class ItemViewHolder(
 		val who = whoRef.get()
 		this.status_account = whoRef
 		
-		setAcct(tvAcct, access_info.getFullAcct(who), who.acct)
+		setAcct(tvAcct,  access_info,who)
 		
 		//		if(who == null) {
 		//			tvName.text = "?"
@@ -1638,13 +1638,12 @@ internal class ItemViewHolder(
 	//		}
 	//	}
 	
-	private fun setAcct(tv : TextView, acctLong : String, acctShort : String?) {
-		
-		val ac = AcctColor.load(acctLong)
+	private fun setAcct(tv : TextView,accessInfo:SavedAccount,who:TootAccount) {
+		val ac = AcctColor.load(accessInfo.getFullAcct(who))
 		tv.text = when {
 			AcctColor.hasNickname(ac) -> ac.nickname
-			Pref.bpShortAcctLocalUser(App1.pref) -> "@" + (acctShort ?: "?")
-			else -> acctLong
+			Pref.bpShortAcctLocalUser(App1.pref) -> "@" + who.prettyAcct
+			else -> accessInfo.getFullPrettyAcct(who)
 		}
 		tv.textColor = ac.color_fg.notZero() ?: this.acct_color
 		
@@ -1974,7 +1973,7 @@ internal class ItemViewHolder(
 					activity,
 					activity.getString(
 						R.string.follow_accept_confirm,
-						AcctColor.getNickname(access_info.getFullAcct(who))
+						AcctColor.getNickname(access_info,who)
 					)
 				) {
 					Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, true)
@@ -1987,7 +1986,7 @@ internal class ItemViewHolder(
 					activity,
 					activity.getString(
 						R.string.follow_deny_confirm,
-						AcctColor.getNickname(access_info.getFullAcct(who))
+						AcctColor.getNickname(access_info,who)
 					)
 				) {
 					Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, false)

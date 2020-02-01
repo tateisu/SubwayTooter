@@ -13,6 +13,7 @@ import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
 import jp.juggler.util.*
 import okhttp3.Request
+import java.net.IDN
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.math.max
@@ -74,7 +75,7 @@ object Action_Toot {
 						true -> R.string.confirm_favourite_from
 						else -> R.string.confirm_unfavourite_from
 					},
-					AcctColor.getNickname(access_info.acct)
+					AcctColor.getNickname(access_info)
 				),
 				object : DlgConfirm.Callback {
 					
@@ -274,7 +275,7 @@ object Action_Toot {
 				activity,
 				activity.getString(
 					R.string.confirm_unbookmark_from,
-					AcctColor.getNickname(access_info.acct)
+					AcctColor.getNickname(access_info)
 				)
 			) {
 				bookmark(
@@ -449,7 +450,7 @@ object Action_Toot {
 						visibility == TootVisibility.PrivateFollowers -> R.string.confirm_private_boost_from
 						else -> R.string.confirm_boost_from
 					},
-					AcctColor.getNickname(access_info.acct)
+					AcctColor.getNickname(access_info)
 				),
 				object : DlgConfirm.Callback {
 					override fun onOK() {
@@ -820,13 +821,13 @@ object Action_Toot {
 		
 		val dialog = ActionsDialog()
 		
-		val host_original = url.toUri().authority ?: ""
-		
+		val host_original = IDN.toASCII( url.toUri().authority ?: "" , IDN.ALLOW_UNASSIGNED)
+		val host_original_pretty = IDN.toUnicode(host_original)
 		// 選択肢：ブラウザで表示する
 		dialog.addAction(
 			activity.getString(
 				R.string.open_web_on_host,
-				host_original
+				host_original_pretty
 			)
 		) { App1.openCustomTab(activity, url) }
 		
@@ -861,7 +862,7 @@ object Action_Toot {
 		if(local_account_list.isEmpty()) {
 			if(status_id_original != null) {
 				dialog.addAction(
-					activity.getString(R.string.open_in_pseudo_account, "?@$host_original")
+					activity.getString(R.string.open_in_pseudo_account, "?@$host_original_pretty")
 				) {
 					addPseudoAccount(activity, host_original) { sa ->
 						conversationLocal(activity, pos, sa, status_id_original)
@@ -869,7 +870,7 @@ object Action_Toot {
 				}
 			} else {
 				dialog.addAction(
-					activity.getString(R.string.open_in_pseudo_account, "?@$host_original")
+					activity.getString(R.string.open_in_pseudo_account, "?@$host_original_pretty")
 				) {
 					addPseudoAccount(activity, host_original) { sa ->
 						conversationRemote(activity, pos, sa, url)
@@ -886,7 +887,8 @@ object Action_Toot {
 					AcctColor.getStringWithNickname(
 						activity,
 						R.string.open_in_account,
-						a.acct
+						a.acct,
+						a.prettyAcct
 					)
 				) { conversationLocal(activity, pos, a, status_id_original) }
 			}
@@ -900,7 +902,7 @@ object Action_Toot {
 					AcctColor.getStringWithNickname(
 						activity,
 						R.string.open_in_account,
-						a.acct
+						a.acct,a.prettyAcct
 					)
 				) { conversationLocal(activity, pos, a, status_id_access) }
 			}
@@ -913,7 +915,7 @@ object Action_Toot {
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acct
+					a.acct,a.prettyAcct
 				)
 			) { conversationRemote(activity, pos, a, url) }
 		}
@@ -1032,7 +1034,7 @@ object Action_Toot {
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acct
+					a.acct,a.prettyAcct
 				)
 			) { step2(a) }
 		}
@@ -1043,7 +1045,7 @@ object Action_Toot {
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acct
+					a.acct,a.prettyAcct
 				)
 			) { step2(a) }
 		}

@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.util.*
+import java.net.IDN
 
 object Action_Follow {
 	
@@ -72,7 +73,7 @@ object Action_Follow {
 					activity.getString(
 						R.string.confirm_follow_request_who_from,
 						whoRef.decoded_display_name,
-						AcctColor.getNickname(access_info.acct)
+						AcctColor.getNickname(access_info)
 					)
 					, object : DlgConfirm.Callback {
 						
@@ -102,7 +103,7 @@ object Action_Follow {
 				val msg = activity.getString(
 					R.string.confirm_follow_who_from,
 					whoRef.decoded_display_name,
-					AcctColor.getNickname(access_info.acct)
+					AcctColor.getNickname(access_info)
 				)
 				
 				DlgConfirm.open(
@@ -138,7 +139,7 @@ object Action_Follow {
 					activity.getString(
 						R.string.confirm_unfollow_who_from,
 						whoRef.decoded_display_name,
-						AcctColor.getNickname(access_info.acct)
+						AcctColor.getNickname(access_info)
 					),
 					object : DlgConfirm.Callback {
 						
@@ -176,10 +177,9 @@ object Action_Follow {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				var userId = who.id
-				if(who.acct.contains("@")) {
+				if(who.isRemote) {
 					
 					// リモートユーザの確認
-
 					
 					val skipAccountSync = if(access_info.isMisskey) {
 						// Misskey の /users/show はリモートユーザに関して404を返すので
@@ -191,12 +191,12 @@ object Action_Follow {
 						// によると、閉じたタンスのユーザを同期しようとすると検索APIがエラーを返す
 						// この問題を回避するため、手持ちのuserIdで照合したユーザのacctが目的のユーザと同じなら
 						// 検索APIを呼び出さないようにする
-						val result =  client.request("/api/v1/accounts/${userId}")
+						val result = client.request("/api/v1/accounts/${userId}")
 							?: return null
 						who.acct == parser.account(result.jsonObject)?.acct
 					}
-
-					if(!skipAccountSync){
+					
+					if(! skipAccountSync) {
 						// 同タンスのIDではなかった場合、検索APIを使う
 						val (result, ar) = client.syncAccountByAcct(access_info, who.acct)
 						val user = ar?.get() ?: return result
@@ -319,7 +319,7 @@ object Action_Follow {
 				activity.getString(
 					R.string.confirm_cancel_follow_request_who_from,
 					whoRef.decoded_display_name,
-					AcctColor.getNickname(access_info.acct)
+					AcctColor.getNickname(access_info)
 				)
 			) {
 				deleteFollowRequest(
@@ -345,7 +345,7 @@ object Action_Follow {
 					var userId : EntityId = who.id
 					
 					// リモートユーザの同期
-					if(who.acct.contains("@")) {
+					if(who.isRemote) {
 						val (result, ar) = client.syncAccountByAcct(access_info, who.acct)
 						val user = ar?.get() ?: return result
 						userId = user.id
@@ -386,16 +386,19 @@ object Action_Follow {
 			}
 		})
 	}
+
 	
 	// acct で指定したユーザをリモートフォローする
 	fun followRemote(
 		activity : ActMain,
 		access_info : SavedAccount,
-		acct : String,
+		acctArg : String,
 		locked : Boolean,
 		bConfirmed : Boolean = false,
 		callback : EmptyCallback? = null
 	) {
+		val(acct,prettyAcct)=TootAccount.acctAndPrettyAcct(acctArg)
+		
 		if(access_info.isMe(acct)) {
 			showToast(activity, false, R.string.it_is_you)
 			return
@@ -407,8 +410,8 @@ object Action_Follow {
 					activity,
 					activity.getString(
 						R.string.confirm_follow_request_who_from,
-						AcctColor.getNickname(acct),
-						AcctColor.getNickname(access_info.acct)
+						AcctColor.getNickname(acct,prettyAcct),
+						AcctColor.getNickname(access_info)
 					),
 					object : DlgConfirm.Callback {
 						override fun onOK() {
@@ -436,8 +439,8 @@ object Action_Follow {
 					activity,
 					activity.getString(
 						R.string.confirm_follow_who_from,
-						AcctColor.getNickname(acct),
-						AcctColor.getNickname(access_info.acct)
+						AcctColor.getNickname(acct,prettyAcct),
+						AcctColor.getNickname(access_info)
 					),
 					object : DlgConfirm.Callback {
 						

@@ -30,6 +30,7 @@ class TootParser(
 	}
 	
 	fun getFullAcct(acct : String?) = linkHelper.getFullAcct(acct)
+	fun getFullPrettyAcct(acct : String?) = linkHelper.getFullPrettyAcct(acct)
 	
 	fun account(src : JsonObject?) = parseItem(::TootAccount, this, src)
 	fun accountList(array : JsonArray?) =

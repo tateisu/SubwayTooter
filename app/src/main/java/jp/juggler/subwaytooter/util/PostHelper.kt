@@ -160,7 +160,7 @@ class PostHelper(
 		if(! bConfirmAccount) {
 			DlgConfirm.open(
 				activity,
-				activity.getString(R.string.confirm_post_from, AcctColor.getNickname(account.acct)),
+				activity.getString(R.string.confirm_post_from, AcctColor.getNickname(account)),
 				object : DlgConfirm.Callback {
 					override var isConfirmEnabled : Boolean
 						get() = account.confirm_post

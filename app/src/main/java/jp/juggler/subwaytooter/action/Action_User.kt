@@ -400,7 +400,7 @@ object Action_User {
 			bAuto = false,
 			message = activity.getString(
 				R.string.account_picker_open_user_who,
-				AcctColor.getNickname(who.acct)
+				AcctColor.getNickname(access_info,who)
 			),
 			accountListArg = makeAccountListNonPseudo(activity, who_host)
 		) { ai ->
@@ -481,13 +481,14 @@ object Action_User {
 			// chrome tab で開く
 			App1.openCustomTab(activity, original_url)
 		} else {
+			val(asciiAcct,prettyAcct)=TootAccount.acctAndPrettyAcct("$user@$host")
 			AccountPicker.pick(
 				activity,
 				bAllowPseudo = false,
 				bAuto = false,
 				message = activity.getString(
 					R.string.account_picker_open_user_who,
-					AcctColor.getNickname("$user@$host")
+					AcctColor.getNickname(asciiAcct,prettyAcct)
 				),
 				accountListArg = makeAccountListNonPseudo(activity, host),
 				extra_callback = { ll, pad_se, pad_tb ->

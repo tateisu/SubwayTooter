@@ -31,7 +31,8 @@ class SavedAccount(
 	
 	val username : String
 	
-	override val host : String
+	override val host : String // punycode
+	override val prettyHost : String // unicode
 	
 	var visibility : TootVisibility = TootVisibility.Public
 	var confirm_boost : Boolean = false
@@ -84,13 +85,16 @@ class SavedAccount(
 		
 		if(username.isEmpty()) throw RuntimeException("missing username in acct")
 		
-		this.host = if(hostArg != null && hostArg.isNotEmpty()) {
+		val host = if(hostArg != null && hostArg.isNotEmpty()) {
 			hostArg
 		} else {
 			val hostInAcct = if(pos == - 1) "" else acct.substring(pos + 1)
 			if(hostInAcct.isEmpty()) throw RuntimeException("missing host in acct")
 			hostInAcct
 		}.toLowerCase(Locale.JAPAN)
+		
+		this.host = IDN.toASCII(host,IDN.ALLOW_UNASSIGNED)
+		this.prettyHost = IDN.toUnicode(host,IDN.ALLOW_UNASSIGNED)
 	}
 	
 	constructor(context : Context, cursor : Cursor) : this(
@@ -278,9 +282,8 @@ class SavedAccount(
 		this.sound_uri = b.sound_uri
 	}
 	
-	fun getFullAcct(who : TootAccount?) : String {
-		return getFullAcct(who?.acct)
-	}
+	fun getFullAcct(who : TootAccount?) : String = getFullAcct(who?.acct)
+	fun getFullPrettyAcct(who : TootAccount?) : String = getFullPrettyAcct(who?.prettyAcct)
 	
 	private fun isLocalUser(acct : String?) : Boolean {
 		acct ?: return false
@@ -300,14 +303,12 @@ class SavedAccount(
 	//		return ! isLocalUser(acct)
 	//	}
 	
-	fun getUserUrl(who_acct : String) : String {
-		val p = who_acct.indexOf('@')
-		return if(- 1 != p) {
-			"https://" + who_acct.substring(p + 1) + "/@" + who_acct.substring(0, p)
+	fun getUserUrl(who : TootAccount) : String =
+		who.url ?: if(who.isRemote) {
+			"https://${IDN.toUnicode(who.host, IDN.ALLOW_UNASSIGNED)}/@${who.username}"
 		} else {
-			"https://$host/@$who_acct"
+			"https://$prettyHost/@${who.username}"
 		}
-	}
 	
 	fun isMe(who : TootAccount?) : Boolean {
 		if(who == null || who.username != this.username) return false
@@ -330,7 +331,7 @@ class SavedAccount(
 		// リモートユーザならホスト名部分の比較も必要
 		val who_user = who_acct.substring(0, pos)
 		val who_host = who_acct.substring(pos + 1)
-		return who_user == me_user && who_host.equals(this.host, ignoreCase = true)
+		return who_user == me_user && ( who_host.equals(this.host, ignoreCase = true) || who_host.equals(this.prettyHost, ignoreCase = true) )
 	}
 	
 	fun supplyBaseUrl(url : String?) : String? {
@@ -977,8 +978,8 @@ class SavedAccount(
 			i = a.isPseudo.b2i() - b.isPseudo.b2i()
 			if(i != 0) return@Comparator i
 			
-			val sa = AcctColor.getNickname(a.acct)
-			val sb = AcctColor.getNickname(b.acct)
+			val sa = AcctColor.getNickname(a)
+			val sb = AcctColor.getNickname(b)
 			sa.compareTo(sb, ignoreCase = true)
 		}
 		

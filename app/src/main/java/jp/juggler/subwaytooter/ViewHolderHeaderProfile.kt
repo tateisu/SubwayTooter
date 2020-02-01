@@ -16,6 +16,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
@@ -265,7 +266,7 @@ internal class ViewHolderHeaderProfile(
 				
 				append("@")
 				
-				append(access_info.getFullAcct(who))
+				append(access_info.getFullPrettyAcct(who))
 				
 				if(whoDetail?.locked ?: who.locked) {
 					append(" ")
@@ -464,7 +465,7 @@ internal class ViewHolderHeaderProfile(
 		tvMovedName.text = movedRef.decoded_display_name
 		moved_name_invalidator.register(movedRef.decoded_display_name)
 		
-		setAcct(tvMovedAcct, access_info.getFullAcct(moved), moved.acct)
+		setAcct(tvMovedAcct, access_info,moved)
 		
 		val relation = UserRelation.load(access_info.db_id, moved.id)
 		Styler.setFollowIcon(
@@ -478,12 +479,12 @@ internal class ViewHolderHeaderProfile(
 		)
 	}
 	
-	private fun setAcct(tv : TextView, acctLong : String, acctShort : String) {
-		val ac = AcctColor.load(acctLong)
+	private fun setAcct(tv : TextView,accessInfo:SavedAccount,who:TootAccount) {
+		val ac = AcctColor.load(accessInfo.getFullAcct(who))
 		tv.text = when {
 			AcctColor.hasNickname(ac) -> ac.nickname
-			Pref.bpShortAcctLocalUser(App1.pref) -> "@$acctShort"
-			else -> acctLong
+			Pref.bpShortAcctLocalUser(App1.pref) -> "@${who.prettyAcct}"
+			else -> accessInfo.getFullPrettyAcct(who)
 		}
 		
 		tv.textColor = ac.color_fg.notZero() ?: column.getAcctColor()

@@ -1059,7 +1059,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 				if(position == 0)
 					getString(R.string.ask_always)
 				else
-					AcctColor.getNickname(list[position - 1].acct)
+					AcctColor.getNickname(list[position - 1])
 			return view
 		}
 		
@@ -1070,7 +1070,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 				if(position == 0)
 					getString(R.string.ask_always)
 				else
-					AcctColor.getNickname(list[position - 1].acct)
+					AcctColor.getNickname(list[position - 1])
 			return view
 		}
 		

@@ -25,6 +25,7 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.*
 import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.backgroundDrawable
+import java.net.IDN
 import java.util.*
 
 @SuppressLint("InflateParams")
@@ -406,7 +407,7 @@ internal class DlgContextMenu(
 			.vg(! (who_host.isEmpty() || who_host == "?"))
 			?.let {
 				val tvInstanceActions : TextView = viewRoot.findViewById(R.id.tvInstanceActions)
-				tvInstanceActions.text = activity.getString(R.string.instance_actions_for, who_host)
+				tvInstanceActions.text = activity.getString(R.string.instance_actions_for, IDN.toUnicode(who_host,IDN.ALLOW_UNASSIGNED))
 				
 				// 疑似アカウントではドメインブロックできない
 				// 自ドメインはブロックできない
@@ -773,7 +774,7 @@ internal class DlgContextMenu(
 					DlgQRCode.open(
 						activity,
 						whoRef.decoded_display_name,
-						access_info.getUserUrl(who.acct)
+						access_info.getUserUrl(who)
 					)
 				
 				R.id.btnDomainBlock ->

@@ -3,24 +3,31 @@ package jp.juggler.subwaytooter.util
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.util.groupEx
 import jp.juggler.util.notEmpty
-import java.util.regex.Pattern
+import java.net.IDN
 
 interface LinkHelper {
 	
 	// SavedAccountのロード時にhostを供給する必要があった
-	val host : String?
+	val host : String? // punycode
+	val prettyHost : String? // unicode
 	
 	//	fun findAcct(url : String?) : String? = null
 	//	fun colorFromAcct(acct : String?) : AcctColor? = null
 	
 	// user とか user@host とかを user@host に変換する
 	// nullや空文字列なら ?@? を返す
-	fun getFullAcct(acct : String?) : String {
-		return when {
-			acct?.isEmpty() != false -> "?@?"
-			acct.contains('@') -> acct
-			else -> "$acct@$host"
-		}
+	fun getFullAcct(acct : String?) : String = when {
+		acct?.isEmpty() != false -> "?@?"
+		acct.contains('@') -> acct
+		else -> "$acct@$host"
+	}
+	
+	// user とか user@host とかを user@host に変換する
+	// nullや空文字列なら ?@? を返す
+	fun getFullPrettyAcct(prettyAcct : String?) : String = when {
+		prettyAcct?.isEmpty() != false -> "?@?"
+		prettyAcct.contains('@') -> prettyAcct
+		else -> "$prettyAcct@$prettyHost"
 	}
 	
 	val misskeyVersion : Int
@@ -35,19 +42,20 @@ interface LinkHelper {
 	
 	companion object {
 		
-		fun newLinkHelper(host : String?, misskeyVersion : Int = 0) = object : LinkHelper {
+		fun newLinkHelper(hostArg : String?, misskeyVersion : Int = 0) = object : LinkHelper {
 			
-			override val host : String?
-				get() = host
+			override val host : String? =
+				hostArg?.let { IDN.toASCII(hostArg, IDN.ALLOW_UNASSIGNED) }
+			override val prettyHost : String? =
+				hostArg?.let { IDN.toUnicode(hostArg, IDN.ALLOW_UNASSIGNED) }
 			
 			override val misskeyVersion : Int
 				get() = misskeyVersion
 		}
 		
 		val nullHost = object : LinkHelper {
-			
-			override val host : String?
-				get() = null
+			override val host : String? = null
+			override val prettyHost : String? = null
 		}
 	}
 }
@@ -65,7 +73,7 @@ fun getFullAcctOrNull(
 	// URLが既知のパターンだった
 	val fullAcct = TootAccount.getAcctFromUrl(url)
 	if(fullAcct != null) return fullAcct
-
+	
 	// URLのホスト名部分を補う
 	val m = TootAccount.reUrlHost.matcher(url)
 	if(m.find()) return "${rawAcct}@${m.groupEx(1)}"

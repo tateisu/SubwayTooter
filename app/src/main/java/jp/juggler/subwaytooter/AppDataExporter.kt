@@ -238,6 +238,7 @@ object AppDataExporter {
 	
 	@Throws(IOException::class)
 	private fun writePref(writer : JsonWriter, pref : SharedPreferences) {
+		writer.name(KEY_PREF)
 		writer.beginObject()
 		for((k, v) in pref.all) {
 			writer.name(k)
@@ -250,13 +251,7 @@ object AppDataExporter {
 					(v is Float && v.isNaN()) -> writer.value(MAGIC_NAN)
 					else -> writer.value(v)
 				}
-				else -> throw RuntimeException(
-					String.format(
-						Locale.JAPAN,
-						"writePref. bad data type: Preference key =%s",
-						k
-					)
-				)
+				else -> error("writePref: bad data type. key=$k, type=${v.javaClass.simpleName}")
 			}
 		}
 		writer.endObject()
@@ -306,6 +301,7 @@ object AppDataExporter {
 	
 	@Throws(IOException::class, JsonException::class)
 	private fun writeColumn(app_state : AppState, writer : JsonWriter) {
+		writer.name(KEY_COLUMN)
 		writer.beginArray()
 		for(column in app_state.column_list) {
 			writer.writeJsonValue(jsonObject { column.encodeJSON(this, 0) })
@@ -318,21 +314,20 @@ object AppDataExporter {
 		app_state : AppState,
 		reader : JsonReader,
 		id_map : HashMap<Long, Long>
-	) : ArrayList<Column> {
-		val result = ArrayList<Column>()
+	) = ArrayList<Column>().also{ result->
 		reader.beginArray()
 		while(reader.hasNext()) {
-			val item = reader.readJsonValue().cast<JsonObject>() !!
+			val item :JsonObject = reader.readJsonValue().cast() !!
 			
+			// DB上のアカウントIDが変化したので置き換える
 			when(val old_id = item.long(Column.KEY_ACCOUNT_ROW_ID) ?: - 1L) {
+				
 				// 検索カラムのアカウントIDはNAアカウントと紐ついている。変換の必要はない
 				- 1L -> {
 				}
 				
-				else -> {
-					item[Column.KEY_ACCOUNT_ROW_ID] = id_map[old_id]
-						?: error("readColumn: can't convert account id")
-				}
+				else -> item[Column.KEY_ACCOUNT_ROW_ID] = id_map[old_id]
+					?: error("readColumn: can't convert account id")
 			}
 			
 			try {
@@ -344,7 +339,6 @@ object AppDataExporter {
 			}
 		}
 		reader.endArray()
-		return result
 	}
 	
 	@Throws(IOException::class, JsonException::class)
@@ -353,29 +347,18 @@ object AppDataExporter {
 		writer.beginObject()
 		
 		val app_state = App1.getAppState(context)
-		//////////////////////////////////////
-		run {
-			writer.name(KEY_PREF)
-			writePref(writer, app_state.pref)
-		}
-		//////////////////////////////////////
+		
+		writePref(writer, app_state.pref)
+
 		writeFromTable(writer, KEY_ACCOUNT, SavedAccount.table)
 		writeFromTable(writer, KEY_ACCT_COLOR, AcctColor.table)
 		writeFromTable(writer, KEY_MUTED_APP, MutedApp.table)
 		writeFromTable(writer, KEY_MUTED_WORD, MutedWord.table)
 		writeFromTable(writer, KEY_FAV_MUTE, FavMute.table)
 		writeFromTable(writer, KEY_HIGHLIGHT_WORD, HighlightWord.table)
-		
-		// 端末間でクライアントIDを再利用することはできなくなった
-		//writeFromTable(writer, KEY_CLIENT_INFO, ClientInfo.table)
-		
-		//////////////////////////////////////
-		run {
-			writer.name(KEY_COLUMN)
-			writeColumn(app_state, writer)
-			
-		}
-		
+
+		writeColumn(app_state, writer)
+
 		writer.endObject()
 	}
 	

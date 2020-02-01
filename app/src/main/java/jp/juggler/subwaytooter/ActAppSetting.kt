@@ -156,13 +156,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 		if(sv != null) outState.putString(STATE_CHOOSE_INTENT_TARGET, sv)
 	}
 	
-	override fun onResume() {
-		super.onResume()
-		onCustomShareSelected()
-	}
-	
-	override fun onPause() {
-		super.onPause()
+	override fun onStop() {
+		super.onStop()
 		
 		// Pull通知チェック間隔を変更したかもしれないのでジョブを再設定する
 		try {
@@ -1193,16 +1188,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			showToast(this, ex, "openCustomShareChooser failed.")
-		}
-	}
-	
-	private fun onCustomShareSelected() {
-		if(isDestroyed) return
-		
-		val cn = ChooseReceiver.lastComponentName
-		if(cn != null) {
-			ChooseReceiver.lastComponentName = null
-			setCustomShare(customShareTarget, "${cn.packageName}/${cn.className}")
 		}
 	}
 	

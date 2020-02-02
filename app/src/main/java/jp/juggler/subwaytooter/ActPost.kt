@@ -1463,9 +1463,8 @@ class ActPost : AppCompatActivity(),
 				// 何もしない
 			}
 			
-			val ac = AcctColor.load(a.acctAscii)
-			val nickname = if(AcctColor.hasNickname(ac)) ac.nickname else a.acctPretty
-			btnAccount.text = nickname
+			val ac = AcctColor.load(a)
+			btnAccount.text = ac.nickname
 			
 			if(AcctColor.hasColorBackground(ac)) {
 				btnAccount.setBackgroundColor(ac.color_bg)

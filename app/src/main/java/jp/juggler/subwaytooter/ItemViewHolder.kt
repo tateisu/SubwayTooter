@@ -1639,11 +1639,11 @@ internal class ItemViewHolder(
 	//	}
 	
 	private fun setAcct(tv : TextView,accessInfo:SavedAccount,who:TootAccount) {
-		val ac = AcctColor.load(accessInfo.getFullAcct(who))
+		val ac = AcctColor.load(accessInfo,who)
 		tv.text = when {
 			AcctColor.hasNickname(ac) -> ac.nickname
-			Pref.bpShortAcctLocalUser(App1.pref) -> "@" + who.prettyAcct
-			else -> accessInfo.getFullPrettyAcct(who)
+			Pref.bpShortAcctLocalUser(App1.pref) -> "@${who.acctPretty}"
+			else -> "@${ac.nickname}"
 		}
 		tv.textColor = ac.color_fg.notZero() ?: this.acct_color
 		

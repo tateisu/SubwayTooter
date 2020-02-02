@@ -31,7 +31,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	
 	//	Equals username for local users, includes @domain for remote ones
 	val acctAscii : String // punycode
-	val prettyAcct : String // unicode
+	val acctPretty : String // unicode
 	
 	// 	The username of the account  /[A-Za-z0-9_]{1,30}/
 	val username : String
@@ -174,7 +174,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 				else -> "$username@$hostAscii"
 			}
 
-			this.prettyAcct = when {
+			this.acctPretty = when {
 				// アクセス元から見て内部ユーザなら short acct
 				remoteHost?.equals(
 					parser.accessHost,
@@ -273,7 +273,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					this.hostAscii = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
 					val prettyHost = IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
 					this.acctAscii = if( !tmpAcct.contains('@') ) tmpAcct else "$username@$hostAscii"
-					this.prettyAcct = if( !tmpAcct.contains('@') ) tmpAcct else "$username@$prettyHost"
+					this.acctPretty = if( !tmpAcct.contains('@') ) tmpAcct else "$username@$prettyHost"
 					
 					this.followers_count = src.long("followers_count")
 					this.following_count = src.long("following_count")
@@ -301,7 +301,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					val prettyHost=IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
 					
 					this.acctAscii = this.username + "@" + this.hostAscii
-					this.prettyAcct = this.username + "@" + prettyHost
+					this.acctPretty = this.username + "@" + prettyHost
 					
 					this.followers_count = src.long("followers_count")
 					this.following_count = src.long("following_count")
@@ -327,7 +327,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					val prettyHost = IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
 
 					this.acctAscii = this.username + "@" + hostAscii
-					this.prettyAcct = this.username + "@" + prettyHost
+					this.acctPretty = this.username + "@" + prettyHost
 					
 					this.followers_count = null
 					this.following_count = null
@@ -499,6 +499,9 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 		// MFMのメンション @username @username@host
 		// (Mastodonのカラムでは使われていない)
 		internal val reMention = Pattern.compile("""\A@(\w+(?:[\w-]*\w)?)(?:@(\w[\w.-]*\w))?""")
+		
+		// for IDN domain... Misskeyはまだサポートしていない
+		// internal val reMention = Pattern.compile("""\A@(\w+(?:[\w-]*\w)?)(?:@([${TootTag.w}][${TootTag.w}.-]*[${TootTag.w}]))?""")
 		
 		internal val reUrlHost : Pattern =
 			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/""")

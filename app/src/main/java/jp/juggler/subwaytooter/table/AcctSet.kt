@@ -8,7 +8,7 @@ import java.util.ArrayList
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.LogCategory
 
-object AcctSet :TableCompanion{
+object AcctSet : TableCompanion {
 	
 	private val log = LogCategory("AcctSet")
 	
@@ -34,10 +34,10 @@ object AcctSet :TableCompanion{
 				+ ")"
 		)
 		db.execSQL(
-			"create unique index if not exists " + table + "_acct on " + table + "(" + COL_ACCT + ")"
+			"create unique index if not exists ${table}_acct on $table($COL_ACCT)"
 		)
 		db.execSQL(
-			"create index if not exists " + table + "_time on " + table + "(" + COL_TIME_SAVE + ")"
+			"create index if not exists ${table}_time on $table($COL_TIME_SAVE)"
 		)
 	}
 	
@@ -51,7 +51,7 @@ object AcctSet :TableCompanion{
 		try {
 			// 古いデータを掃除する
 			val expire = now - 86400000L * 365
-			App1.database.delete(table, COL_TIME_SAVE + "<?", arrayOf(expire.toString()))
+			App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
 			
 		} catch(ex : Throwable) {
 			log.e(ex, "deleteOld failed.")
@@ -113,7 +113,15 @@ object AcctSet :TableCompanion{
 		try {
 			val where_arg = prefix_search_where_arg.get() ?: arrayOfNulls<String?>(1)
 			where_arg[0] = makePattern(prefix)
-			App1.database.query(table, null, prefix_search_where, where_arg, null, null, COL_ACCT + " asc limit " + limit)
+			App1.database.query(
+				table,
+				null,
+				prefix_search_where,
+				where_arg,
+				null,
+				null,
+				"$COL_ACCT asc limit $limit"
+			)
 				.use { cursor ->
 					val dst = ArrayList<CharSequence>(cursor.count)
 					val idx_acct = cursor.getColumnIndex(COL_ACCT)

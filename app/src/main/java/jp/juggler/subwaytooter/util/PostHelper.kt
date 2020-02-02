@@ -701,26 +701,54 @@ class PostHelper(
 		
 		private fun checkMention(et : MyEditText, src : String) {
 			
+			fun matchUserNameOrAsciiDomain(cp : Int) : Boolean {
+				if(cp >= 0x7f) return false
+				val c = cp.toChar()
+				
+				return '0' <= c && c <= '9' ||
+					'A' <= c && c <= 'Z' ||
+					'a' <= c && c <= 'z' ||
+					c == '_' || c == '-' || c == '.'
+			}
+			
+			// Letter | Mark | Decimal_Number | Connector_Punctuation
+			fun matchIdnWord(cp:Int)=when(Character.getType(cp).toByte()) {
+				// Letter
+				// LCはエイリアスなので文字から得られることはないはず
+				Character.UPPERCASE_LETTER,
+				Character.LOWERCASE_LETTER,
+				Character.TITLECASE_LETTER,
+				Character.MODIFIER_LETTER,
+				Character.OTHER_LETTER -> true
+				// Mark
+				Character.NON_SPACING_MARK,
+				Character.COMBINING_SPACING_MARK,
+				Character.ENCLOSING_MARK -> true
+				// Decimal_Number
+				Character.DECIMAL_DIGIT_NUMBER -> true
+				// Connector_Punctuation
+				Character.CONNECTOR_PUNCTUATION -> true
+				
+				else -> false
+			}
+
 			var count_atMark = 0
 			val end = et.selectionEnd
 			var start : Int = - 1
 			var i = end
 			while(i > 0) {
-				val c = src[i - 1]
+				val cp = src.codePointBefore(i)
+				i -= Character.charCount(cp)
 				
-				if(c == '@') {
-					start = -- i
+				if(cp == '@'.toInt()) {
+					start = i
 					if(++ count_atMark >= 2) break else continue
-				} else if('0' <= c && c <= '9'
-					|| 'A' <= c && c <= 'Z'
-					|| 'a' <= c && c <= 'z'
-					|| c == '_' || c == '-' || c == '.'
-				) {
-					-- i
+				} else if( matchUserNameOrAsciiDomain(cp) ||matchIdnWord(cp) ){
 					continue
+				}else {
+					// その他の文字種が出たら探索打ち切り
+					break
 				}
-				// その他の文字種が出たら探索打ち切り
-				break
 			}
 			
 			if(start == - 1) {

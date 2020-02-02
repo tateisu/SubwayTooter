@@ -517,9 +517,9 @@ class ActAccountSetting
 	
 	private fun showAcctColor() {
 		val sa = this.account
-		val ac = AcctColor.load(sa.acctAscii)
+		val ac = AcctColor.load(sa)
 		tvUserCustom.backgroundColor = ac.color_bg
-		tvUserCustom.text = ac.nickname?.notEmpty() ?: sa.acctPretty
+		tvUserCustom.text = ac.nickname
 		tvUserCustom.textColor = ac.color_fg.notZero()
 			?: getAttributeColor(this, R.attr.colorTimeSmall)
 	}

@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootMention
+import jp.juggler.subwaytooter.api.entity.TootTag
 import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
@@ -795,7 +796,10 @@ object MisskeyMarkdownDecoder {
 			val linkInfo = LinkInfo(
 				caption = text,
 				url = url,
-				ac = fullAcct?.let { AcctColor.load(it) },
+				ac = fullAcct?.let {
+					val (fullAcctAscii,fullAcctPretty) = TootAccount.acctAndPrettyAcct(it)
+					AcctColor.load(fullAcctAscii,fullAcctPretty)
+				},
 				tag = options.linkTag
 			)
 			// リンクの一部にハイライトがある場合、リンクをセットしてからハイライトをセットしないとクリック判定がおかしくなる。
@@ -1044,7 +1048,10 @@ object MisskeyMarkdownDecoder {
 					val linkInfo = LinkInfo(
 						url = url,
 						tag = options.linkTag,
-						ac = TootAccount.getAcctFromUrl(url)?.let { acct -> AcctColor.load(acct) },
+						ac = TootAccount.getAcctFromUrl(url)?.let {acct->
+							val (fullAcctAscii,fullAcctPretty) = TootAccount.acctAndPrettyAcct(acct)
+							AcctColor.load(fullAcctAscii,fullAcctPretty)
+						},
 						caption = sb.substring(start, sb.length)
 					)
 					spanList.addFirst(start, sb.length, MyClickableSpan(linkInfo))
@@ -1482,6 +1489,16 @@ object MisskeyMarkdownDecoder {
 			)
 		)
 		
+//		// プロフ絵文字
+//		addParser(
+//			":"
+//			, simpleParser(
+//				Pattern.compile("""\A:(@[a-zA-Z0-9+-_]+(?:@[${TootTag.w}.-]+[a-z0-9]+)?):""",Pattern.CASE_INSENSITIVE)
+//				, NodeType.EMOJI
+//			)
+//		)
+		
+		// モーション
 		addParser(
 			"("
 			, simpleParser(

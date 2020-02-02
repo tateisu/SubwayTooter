@@ -111,7 +111,7 @@ open class TootTag constructor(
 		// \p{Pc} : 連結用句読記号 (Connector punctuation)
 		
 		// rubyの [:word:] ： 単語構成文字 (Letter | Mark | Decimal_Number | Connector_Punctuation)
-		private const val w = """\p{L}\p{M}\p{Nd}\p{Pc}"""
+		const val w = """\p{L}\p{M}\p{Nd}\p{Pc}"""
 		
 		// rubyの [:alpha:] : 英字 (Letter | Mark)
 		private const val a = """\p{L}\p{M}"""

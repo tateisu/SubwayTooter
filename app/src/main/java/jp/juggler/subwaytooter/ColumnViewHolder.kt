@@ -1171,14 +1171,9 @@ class ColumnViewHolder(
 		val column = this.column
 		if(column == null || column.is_dispose.get()) return@Runnable
 		
-		val ac = AcctColor.load(column.access_info.acctAscii)
+		val ac = AcctColor.load(column.access_info)
 		
-		val nickname = ac.nickname
-		tvColumnContext.text = if(nickname != null && nickname.isNotEmpty())
-			nickname
-		else
-			column.access_info.acctPretty
-		
+		tvColumnContext.text = ac.nickname
 		tvColumnContext.setTextColor(
 			ac.color_fg.notZero()
 				?: getAttributeColor(activity, R.attr.colorTimeSmall)

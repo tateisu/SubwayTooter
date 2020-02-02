@@ -155,10 +155,10 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		
 		tvAcct.text = acctPretty
 		
-		val ac = AcctColor.load(acctAscii)
+		val ac = AcctColor.load(acctAscii,acctPretty)
 		color_bg = ac.color_bg
 		color_fg = ac.color_fg
-		etNickname.setText(if(ac.nickname == null) "" else ac.nickname)
+		etNickname.setText(ac.nickname)
 		notification_sound_uri = ac.notification_sound
 		
 		bLoading = false
@@ -169,6 +169,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		if(bLoading) return
 		AcctColor(
 			acctAscii,
+			acctPretty,
 			etNickname.text.toString().trim { it <= ' ' },
 			color_fg,
 			color_bg,

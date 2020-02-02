@@ -1540,7 +1540,7 @@ class PollingWorker private constructor(contextArg : Context) {
 			false -> item.notification.accountRef?.decoded_display_name
 			
 			true -> {
-				val prettyAcct = item.notification.accountRef?.get()?.prettyAcct
+				val prettyAcct = item.notification.accountRef?.get()?.acctPretty
 				if(prettyAcct?.isNotEmpty() == true) {
 					"@$prettyAcct"
 				} else {

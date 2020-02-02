@@ -901,8 +901,8 @@ class Column(
 		}
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
-		val ac = AcctColor.load(access_info.acctAscii)
-		dst[KEY_COLUMN_ACCESS] = if(AcctColor.hasNickname(ac)) ac.nickname else access_info.acctPretty
+		val ac = AcctColor.load(access_info)
+		dst[KEY_COLUMN_ACCESS] = ac.nickname
 		dst[KEY_COLUMN_ACCESS_COLOR] = ac.color_fg
 		dst[KEY_COLUMN_ACCESS_COLOR_BG] = ac.color_bg
 		dst[KEY_COLUMN_NAME] = getColumnName(true)
@@ -1716,7 +1716,8 @@ class Column(
 		internal fun add(who : TootAccount?) {
 			who ?: return
 			who_set.add(who.id)
-			acct_set.add("@" + access_info.getFullAcct(who))
+			acct_set.add("@${access_info.getFullAcct(who)}")
+			acct_set.add("@${access_info.getFullAcctPretty(who)}")
 			//
 			add(who.movedRef)
 		}

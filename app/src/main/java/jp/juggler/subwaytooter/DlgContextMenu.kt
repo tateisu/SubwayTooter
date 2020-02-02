@@ -766,7 +766,7 @@ internal class DlgContextMenu(
 					ActNickname.open(
 						activity,
 						access_info.getFullAcct(who),
-						access_info.getFullPrettyAcct(who),
+						access_info.getFullAcctPretty(who),
 						true,
 						ActMain.REQUEST_CODE_NICKNAME
 					)

@@ -505,22 +505,22 @@ object HTMLDecoder {
 		for(item in mentionList) {
 			if(sb.isNotEmpty()) sb.append(" ")
 			
-			val fullAcct = getFullAcctOrNull(linkHelper, item.acctAscii,item.url)
+			val fullAcct = getFullAcctOrNull(linkHelper, item.acctAscii, item.url)
 			
-			val linkInfo = if( fullAcct != null){
-				val(fullAcctAscii,fullAcctPretty) = TootAccount.acctAndPrettyAcct(fullAcct)
+			val linkInfo = if(fullAcct != null) {
+				val (fullAcctAscii, fullAcctPretty) = TootAccount.acctAndPrettyAcct(fullAcct)
 				LinkInfo(
 					url = item.url,
-					caption = "@" + if( Pref.bpMentionFullAcct(App1.pref)) {
+					caption = "@" + if(Pref.bpMentionFullAcct(App1.pref)) {
 						fullAcctPretty
 					} else {
 						item.acctPretty
 					},
-					ac = AcctColor.load(fullAcctAscii),
+					ac = AcctColor.load(fullAcctAscii, fullAcctPretty),
 					mention = item,
 					tag = link_tag
 				)
-			}else{
+			} else {
 				LinkInfo(
 					url = item.url,
 					caption = "@" + item.acctPretty,
@@ -611,23 +611,24 @@ object HTMLDecoder {
 				// Account.note does not have mentions metadata.
 				// fallback to resolve acct by mention URL.
 				val rawAcct = mention?.acctPretty ?: originalCaption.toString().substring(1)
-				val fullAcct = getFullAcctOrNull(options.linkHelper, rawAcct,href)
+				val fullAcct = getFullAcctOrNull(options.linkHelper, rawAcct, href)
 				
 				if(fullAcct != null) {
 					
 					// リモートの投稿の一部で、mentionsメタデータに情報が含まれない場合がある
-					if(mention==null){
+					if(mention == null) {
 						linkInfo.mention = TootMention(
 							id = EntityId.DEFAULT,
 							url = href,
-							acctArg = fullAcct ,
+							acctArg = fullAcct,
 							username = rawAcct.splitFullAcct().first
 						)
 					}
 					
-					linkInfo.ac = AcctColor.load(fullAcct)
+					val (fullAcctAscii, fullAcctPretty) = TootAccount.acctAndPrettyAcct(fullAcct)
+					linkInfo.ac = AcctColor.load(fullAcctAscii, fullAcctPretty)
 					if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
-						linkInfo.caption = "@$fullAcct"
+						linkInfo.caption = "@$fullAcctPretty"
 					}
 				}
 			}

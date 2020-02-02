@@ -401,7 +401,7 @@ class ActMain : AppCompatActivity()
 							break
 						}
 						// 既出でなければ追加する
-						if(null == accounts.find { it.acctAscii == a.acctAscii }) accounts.add(a)
+						if(null == accounts.find { it == a }) accounts.add(a)
 					} catch(ex : Throwable) {
 					
 					}
@@ -1600,7 +1600,7 @@ class ActMain : AppCompatActivity()
 			ivIcon.imageTintList = ColorStateList.valueOf(column.getHeaderNameColor())
 			
 			//
-			val ac = AcctColor.load(column.access_info.acctAscii)
+			val ac = AcctColor.load(column.access_info)
 			if(AcctColor.hasColorForeground(ac)) {
 				vAcctColor.setBackgroundColor(ac.color_fg)
 			} else {
@@ -1829,7 +1829,7 @@ class ActMain : AppCompatActivity()
 				if(account != null) {
 					var column = app_state.column_list.firstOrNull {
 						it.type == ColumnType.NOTIFICATIONS
-							&& account.acctAscii == it.access_info.acctAscii
+							&& account == it.access_info
 							&& ! it.system_notification_not_related
 					}
 					if(column != null) {
@@ -2039,7 +2039,7 @@ class ActMain : AppCompatActivity()
 					
 					// 自動でリロードする
 					for(it in app_state.column_list) {
-						if(it.access_info.acctAscii == sa.acctAscii) {
+						if(it.access_info == sa ) {
 							it.startLoading()
 						}
 					}
@@ -2180,7 +2180,7 @@ class ActMain : AppCompatActivity()
 		val done_list = ArrayList<SavedAccount>()
 		for(column in app_state.column_list) {
 			val a = column.access_info
-			if(a.acctAscii != account.acctAscii) continue
+			if(a != account ) continue
 			if(done_list.contains(a)) continue
 			done_list.add(a)
 			if(! a.isNA) a.reloadSetting(this@ActMain)
@@ -2487,7 +2487,7 @@ class ActMain : AppCompatActivity()
 	
 	fun showColumnMatchAccount(account : SavedAccount) {
 		for(column in app_state.column_list) {
-			if(account.acctAscii == column.access_info.acctAscii) {
+			if(account == column.access_info) {
 				column.fireRebindAdapterItems()
 			}
 		}

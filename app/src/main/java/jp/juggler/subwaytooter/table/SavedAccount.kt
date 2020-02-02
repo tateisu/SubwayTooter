@@ -85,8 +85,8 @@ class SavedAccount(
 		} else {
 			this.username = acctArg.substring(0, pos)
 			tmpHost = acctArg.substring(pos+1).toLowerCase(Locale.JAPAN)
-			acctAscii= username+"@"+IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
-			acctPretty = username+"@"+IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
+			acctAscii= "$username@${IDN.toASCII(tmpHost, IDN.ALLOW_UNASSIGNED)}"
+			acctPretty = "$username@${IDN.toUnicode(tmpHost, IDN.ALLOW_UNASSIGNED)}"
 		}
 		
 		if(username.isEmpty()) throw RuntimeException("missing username in acct")
@@ -285,7 +285,7 @@ class SavedAccount(
 	}
 	
 	fun getFullAcct(who : TootAccount?) : String = getFullAcct(who?.acctAscii)
-	fun getFullPrettyAcct(who : TootAccount?) : String = getFullPrettyAcct(who?.prettyAcct)
+	fun getFullAcctPretty(who : TootAccount?) : String = getFullPrettyAcct(who?.acctPretty)
 	
 	private fun isLocalUser(acct : String?) : Boolean {
 		acct ?: return false
@@ -313,12 +313,12 @@ class SavedAccount(
 		}
 	
 	fun isMe(who : TootAccount?) : Boolean {
+		// usernameが一致しないなら異なる
 		if(who == null || who.username != this.username) return false
-		//
+		// acctのホスト名がない(ローカル)か、アカウントのホスト名部分に一致する
 		val who_acct = who.acctAscii
 		val pos = who_acct.indexOf('@')
-		if(pos == - 1) return true // local user have no acct
-		return who_acct.substring(pos + 1).equals(this.hostAscii, ignoreCase = true)
+		return pos == - 1 || matchHost(who_acct.substring(pos + 1))
 	}
 	
 	fun isMe(who_acct : String) : Boolean {
@@ -333,7 +333,7 @@ class SavedAccount(
 		// リモートユーザならホスト名部分の比較も必要
 		val who_user = who_acct.substring(0, pos)
 		val who_host = who_acct.substring(pos + 1)
-		return who_user == me_user && ( who_host.equals(this.hostAscii, ignoreCase = true) || who_host.equals(this.hostPretty, ignoreCase = true) )
+		return who_user == me_user && matchHost(who_host)
 	}
 	
 	fun supplyBaseUrl(url : String?) : String? {

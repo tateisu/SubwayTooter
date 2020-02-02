@@ -10,6 +10,7 @@ import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.util.LogCategory
 import jp.juggler.util.showToast
 import java.io.BufferedReader
@@ -40,7 +41,7 @@ object LoginForm {
 		instanceArg : String?,
 		onClickOk : (
 			dialog : Dialog,
-			instance : String,
+			instance : Host,
 			action : Action
 		) -> Unit
 	) {
@@ -112,12 +113,11 @@ object LoginForm {
 					showToast(activity, true, R.string.instance_not_need_slash)
 				
 				else -> {
-					val instanceAscii = IDN.toASCII(instance,IDN.ALLOW_UNASSIGNED)
 					val actionPos = spAction.selectedItemPosition
 					when(val action = Action.values().find { it.pos == actionPos }) {
 						null -> {
 						} // will no happened
-						else -> onClickOk(dialog, instanceAscii, action)
+						else -> onClickOk(dialog, Host.parse(instance), action)
 					}
 				}
 			}

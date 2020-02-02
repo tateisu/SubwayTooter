@@ -6,10 +6,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootRelationShip
-import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.api.entity.parseItem
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ReportForm
 import jp.juggler.subwaytooter.table.AcctColor
@@ -18,7 +15,6 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.TootApiResultCallback
 import jp.juggler.util.*
 import okhttp3.Request
-import java.net.IDN
 
 object Action_User {
 	
@@ -43,12 +39,12 @@ object Action_User {
 				return when {
 					access_info.isPseudo -> {
 						val acct = access_info.getFullAcct(who)
-						if(acct.contains('?')) {
-							TootApiResult("acct $acct contains '?'")
+						if(acct.ascii.contains('?')) {
+							TootApiResult("acct ${acct.pretty} contains '?'")
 						} else {
 							val relation = UserRelation.loadPseudo(acct)
 							relation.muting = bMute
-							relation.savePseudo(acct)
+							relation.savePseudo(acct.ascii)
 							this.relation = relation
 							TootApiResult()
 						}
@@ -191,12 +187,12 @@ object Action_User {
 				return when {
 					access_info.isPseudo -> {
 						val acct = access_info.getFullAcct(who)
-						if(acct.contains('?')) {
-							TootApiResult("acct $acct contains '?'")
+						if(acct.ascii.contains('?')) {
+							TootApiResult("acct ${acct.pretty} contains '?'")
 						} else {
 							val relation = UserRelation.loadPseudo(acct)
 							relation.blocking = bBlock
-							relation.savePseudo(acct)
+							relation.savePseudo(acct.ascii)
 							this.relation = relation
 							TootApiResult()
 						}
@@ -352,7 +348,7 @@ object Action_User {
 		pos : Int,
 		access_info : SavedAccount,
 		who_url : String,
-		acct : String
+		acct : Acct
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
@@ -393,7 +389,7 @@ object Action_User {
 		who : TootAccount?
 	) {
 		if(who?.url == null) return
-		val who_host = who.hostAscii
+		val who_host = who.host
 		
 		AccountPicker.pick(
 			activity,
@@ -405,7 +401,7 @@ object Action_User {
 			),
 			accountListArg = makeAccountListNonPseudo(activity, who_host)
 		) { ai ->
-			if(ai.matchHost(access_info.hostAscii)) {
+			if(ai.matchHost(access_info.host)) {
 				activity.addColumn(pos, ai, ColumnType.PROFILE, who.id)
 			} else {
 				profileFromUrlOrAcct(activity, pos, ai, who.url, access_info.getFullAcct(who))
@@ -433,17 +429,16 @@ object Action_User {
 		pos : Int,
 		access_info : SavedAccount?,
 		url : String,
-		hostArg : String,
+		host : Host,
 		user : String,
 		original_url : String = url
 	) {
-		val hostAscii = IDN.toASCII(hostArg,IDN.ALLOW_UNASSIGNED)
-		val acctAscii = "$user@$hostAscii"
+		val acct = Acct.parse(user,host)
 		
 		if(access_info?.isPseudo == false) {
 			// 文脈のアカウントがあり、疑似アカウントではない
 			
-			if(access_info.matchHost(hostAscii)) {
+			if(access_info.matchHost(host)) {
 				
 				// 文脈のアカウントと同じインスタンスなら、アカウントIDを探して開いてしまう
 				TootTaskRunner(activity).run(access_info, object : TootTask {
@@ -451,7 +446,7 @@ object Action_User {
 					var who : TootAccount? = null
 					
 					override fun background(client : TootApiClient) : TootApiResult? {
-						val (result, ar) = client.syncAccountByAcct(access_info, acctAscii)
+						val (result, ar) = client.syncAccountByAcct(access_info, acct)
 						who = ar?.get()
 						return result
 					}
@@ -470,7 +465,7 @@ object Action_User {
 				})
 			} else {
 				// 文脈のアカウントと異なるインスタンスなら、別アカウントで開く
-				profileFromUrlOrAcct(activity, pos, access_info, url, acctAscii)
+				profileFromUrlOrAcct(activity, pos, access_info, url, acct)
 			}
 			return
 		}
@@ -483,16 +478,15 @@ object Action_User {
 			// chrome tab で開く
 			App1.openCustomTab(activity, original_url)
 		} else {
-			val(_,acctPretty)=TootAccount.acctAndPrettyAcct(acctAscii)
 			AccountPicker.pick(
 				activity,
 				bAllowPseudo = false,
 				bAuto = false,
 				message = activity.getString(
 					R.string.account_picker_open_user_who,
-					AcctColor.getNickname(acctAscii,acctPretty)
+					AcctColor.getNickname(acct)
 				),
-				accountListArg = makeAccountListNonPseudo(activity, hostAscii),
+				accountListArg = makeAccountListNonPseudo(activity, host),
 				extra_callback = { ll, pad_se, pad_tb ->
 					
 					// chrome tab で開くアクションを追加
@@ -516,7 +510,7 @@ object Action_User {
 					ll.addView(b, 0)
 				}
 			) {
-				profileFromUrlOrAcct(activity, pos, it, url, acctAscii)
+				profileFromUrlOrAcct(activity, pos, it, url, acct)
 			}
 		}
 	}
@@ -652,7 +646,7 @@ object Action_User {
 	fun mention(
 		activity : ActMain, account : SavedAccount, who : TootAccount
 	) {
-		mention(activity, account, "@" + account.getFullAcct(who) + " ")
+		mention(activity, account, "@${account.getFullAcct(who).pretty} ")
 	}
 	
 	// メンションを含むトゥートを作る
@@ -660,9 +654,9 @@ object Action_User {
 		activity : ActMain, access_info : SavedAccount, who : TootAccount?
 	) {
 		if(who == null) return
-		val who_host = who.hostAscii
+		val who_host = who.host
 		
-		val initial_text = "@" + access_info.getFullAcct(who) + " "
+		val initial_text = "@${access_info.getFullAcct(who).pretty} "
 		AccountPicker.pick(
 			activity,
 			bAllowPseudo = false,

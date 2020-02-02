@@ -19,7 +19,6 @@ import okhttp3.Handshake
 import org.jetbrains.anko.backgroundDrawable
 import java.io.File
 import java.lang.ref.WeakReference
-import java.net.IDN
 import java.nio.ByteBuffer
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -190,7 +189,7 @@ class Column(
 		internal const val KEY_COLUMN_NAME = "column_name"
 		internal const val KEY_OLD_INDEX = "old_index"
 		
-		internal const val KEY_ANNOUNCEMEMT_HIDE_TIME = "announcementHideTime"
+		internal const val KEY_ANNOUNCEMENT_HIDE_TIME = "announcementHideTime"
 		
 		val typeMap : SparseArray<ColumnType> = SparseArray()
 		
@@ -210,6 +209,22 @@ class Column(
 		private inline fun <reified T> getParamAt(params : Array<out Any>, idx : Int) : T {
 			return params[idx] as T
 		}
+		
+		private fun getParamEntityId(params : Array<out Any>, @Suppress("SameParameterValue") idx : Int) : EntityId =
+			when(val o = params[idx]) {
+				is EntityId -> o
+				is String -> EntityId(o)
+				else -> error("getParamEntityId [$idx] bad type. $o")
+			}
+		
+		private fun getParamString(params : Array<out Any>, idx : Int) : String =
+			when(val o = params[idx]) {
+				is String -> o
+				is EntityId -> o.toString()
+				is Host -> o.ascii
+				is Acct -> o.ascii
+				else -> error("getParamString [$idx] bad type. $o")
+			}
 		
 		@Suppress("UNCHECKED_CAST")
 		private inline fun <reified T> getParamAtNullable(params : Array<out Any>, idx : Int) : T? {
@@ -263,7 +278,7 @@ class Column(
 					override fun handleResult(result : TootApiResult?) {
 						val filter_list = this.filter_list
 						if(filter_list != null) {
-							log.d("update filters for ${access_info.acctAscii}")
+							log.d("update filters for ${access_info.acct.pretty}")
 							for(column in App1.getAppState(context).column_list) {
 								if(column.access_info == access_info) {
 									column.onFiltersChanged2(filter_list)
@@ -360,7 +375,7 @@ class Column(
 	
 	val type = ColumnType.parse(typeId)
 	
-	fun getIconId() : Int = type.iconId(access_info.acctAscii)
+	fun getIconId() : Int = type.iconId(access_info.acct)
 	
 	fun getColumnName(long : Boolean) =
 		type.name2(this, long) ?: type.name1(context)
@@ -575,7 +590,7 @@ class Column(
 	internal var keywordFilterTrees : FilterTrees? = null
 	
 	@Volatile
-	private var favMuteSet : HashSet<String>? = null
+	private var favMuteSet : HashSet<Acct>? = null
 	
 	@Volatile
 	internal var highlight_trie : WordTrieTree? = null
@@ -638,8 +653,9 @@ class Column(
 		callback : Callback,
 		type : Int,
 		vararg params : Any
-	)
-		: this(app_state, app_state.context, access_info, type, generateColumnId()) {
+	) : this(
+		app_state, app_state.context, access_info, type, generateColumnId()
+	) {
 		this.callback_ref = WeakReference(callback)
 		when(typeMap[type]) {
 			
@@ -649,38 +665,41 @@ class Column(
 			ColumnType.LOCAL_AROUND,
 			ColumnType.FEDERATED_AROUND,
 			ColumnType.ACCOUNT_AROUND ->
-				status_id = getParamAt(params, 0)
-			ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER -> profile_id =
-				getParamAt(params, 0)
-			ColumnType.HASHTAG -> hashtag = getParamAt(params, 0)
+				status_id = getParamEntityId(params, 0)
+			
+			ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER ->
+				profile_id = getParamEntityId(params, 0)
+			
+			ColumnType.HASHTAG ->
+				hashtag = getParamString(params, 0)
 			
 			ColumnType.HASHTAG_FROM_ACCT -> {
-				hashtag = getParamAt(params, 0)
-				hashtag_acct = getParamAt(params, 1)
+				hashtag = getParamString(params, 0)
+				hashtag_acct = getParamString(params, 1)
 			}
 			
 			ColumnType.NOTIFICATION_FROM_ACCT -> {
-				hashtag_acct = getParamAt(params, 0)
+				hashtag_acct = getParamString(params, 0)
 			}
 			
 			ColumnType.SEARCH -> {
-				search_query = getParamAt(params, 0)
+				search_query = getParamString(params, 0)
 				search_resolve = getParamAt(params, 1)
 			}
 			
 			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS ->
-				search_query = getParamAt(params, 0)
+				search_query = getParamString(params, 0)
 			
 			ColumnType.INSTANCE_INFORMATION ->
-				instance_uri = getParamAt(params, 0)
+				instance_uri = getParamString(params, 0)
 			
 			ColumnType.PROFILE_DIRECTORY -> {
-				instance_uri = getParamAt(params, 0)
+				instance_uri = getParamString(params, 0)
 				search_resolve = true
 			}
 			
 			ColumnType.DOMAIN_TIMELINE -> {
-				instance_uri = getParamAt(params, 0)
+				instance_uri = getParamString(params, 0)
 			}
 			
 			else -> {
@@ -714,7 +733,7 @@ class Column(
 		instance_local = src.optBoolean(KEY_INSTANCE_LOCAL)
 		quick_filter = src.optInt(KEY_QUICK_FILTER, 0)
 		
-		announcementHideTime = src.optLong(KEY_ANNOUNCEMEMT_HIDE_TIME,0L)
+		announcementHideTime = src.optLong(KEY_ANNOUNCEMENT_HIDE_TIME, 0L)
 		
 		enable_speech = src.optBoolean(KEY_ENABLE_SPEECH)
 		use_old_api = src.optBoolean(KEY_USE_OLD_API)
@@ -801,7 +820,7 @@ class Column(
 		dst[KEY_TYPE] = type.id
 		dst[KEY_COLUMN_ID] = column_id
 		
-		dst[KEY_ANNOUNCEMEMT_HIDE_TIME] = announcementHideTime
+		dst[KEY_ANNOUNCEMENT_HIDE_TIME] = announcementHideTime
 		
 		dst.putIfTrue(KEY_DONT_CLOSE, dont_close)
 		dst.putIfTrue(KEY_WITH_ATTACHMENT, with_attachment)
@@ -920,20 +939,20 @@ class Column(
 			when(type) {
 				
 				ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER ->
-					profile_id == EntityId(getParamAt(params, 0))
+					profile_id == getParamEntityId(params, 0)
 				
 				ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
-					status_id == EntityId(getParamAt(params, 0))
+					status_id == getParamEntityId(params, 0)
 				
 				ColumnType.HASHTAG -> {
-					(getParamAt<String>(params, 0) == hashtag)
+					(getParamString(params, 0) == hashtag)
 						&& ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_any)
 						&& ((getParamAtNullable<String>(params, 2) ?: "") == hashtag_all)
 						&& ((getParamAtNullable<String>(params, 3) ?: "") == hashtag_none)
 				}
 				
 				ColumnType.HASHTAG_FROM_ACCT -> {
-					(getParamAt<String>(params, 0) == hashtag)
+					(getParamString(params, 0) == hashtag)
 						&& ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_acct)
 				}
 				
@@ -942,21 +961,21 @@ class Column(
 				}
 				
 				ColumnType.SEARCH ->
-					getParamAt<String>(params, 0) == search_query &&
+					getParamString(params, 0) == search_query &&
 						getParamAtNullable<Boolean>(params, 1) == search_resolve
 				
 				ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS ->
-					getParamAt<String>(params, 0) == search_query
+					getParamString(params, 0) == search_query
 				
-				ColumnType.INSTANCE_INFORMATION -> getParamAt<String>(params, 0) == instance_uri
+				ColumnType.INSTANCE_INFORMATION -> getParamString(params, 0) == instance_uri
 				
 				ColumnType.PROFILE_DIRECTORY ->
-					getParamAt<String>(params, 0) == instance_uri &&
+					getParamString(params, 0) == instance_uri &&
 						getParamAtNullable<String>(params, 1) == search_query &&
 						getParamAtNullable<Boolean>(params, 2) == search_resolve
 				
 				ColumnType.DOMAIN_TIMELINE ->
-					getParamAt<String>(params, 0) == instance_uri
+					getParamString(params, 0) == instance_uri
 				
 				else -> true
 			}
@@ -1031,7 +1050,7 @@ class Column(
 	
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
 	fun findStatus(
-		target_instance : String,
+		target_instance : Host,
 		target_status_id : EntityId,
 		callback : (account : SavedAccount, status : TootStatus) -> Boolean
 		// callback return true if rebind view required
@@ -1095,7 +1114,7 @@ class Column(
 	// ミュート、ブロックが成功した時に呼ばれる
 	// リストメンバーカラムでメンバーをリストから除去した時に呼ばれる
 	// require full acct
-	fun removeAccountInTimelinePseudo(acct : String) {
+	fun removeAccountInTimelinePseudo(acct : Acct) {
 		
 		val tmp_list = ArrayList<TimelineItem>(list_data.size)
 		for(o in list_data) {
@@ -1125,7 +1144,7 @@ class Column(
 	}
 	
 	fun removeUser(targetAccount : SavedAccount, columnType : ColumnType, who_id : EntityId) {
-		if(type == columnType && targetAccount == access_info ) {
+		if(type == columnType && targetAccount == access_info) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootAccountRef) {
@@ -1142,11 +1161,11 @@ class Column(
 	}
 	
 	// ステータスが削除された時に呼ばれる
-	fun onStatusRemoved(tl_host : String, status_id : EntityId) {
+	fun onStatusRemoved(tl_host : Host, status_id : EntityId) {
 		
 		if(is_dispose.get() || bInitialLoading || bRefreshLoading) return
 		
-		if(tl_host.equals(access_info.hostAscii, ignoreCase = true)) {
+		if(tl_host == access_info.host) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootStatus) {
@@ -1240,7 +1259,7 @@ class Column(
 		}
 	}
 	
-	fun onHideFavouriteNotification(acct : String) {
+	fun onHideFavouriteNotification(acct : Acct) {
 		if(! isNotificationColumn) return
 		
 		val tmp_list = ArrayList<TimelineItem>(list_data.size)
@@ -1262,11 +1281,13 @@ class Column(
 		}
 	}
 	
-	fun onDomainBlockChanged(target_account : SavedAccount, domainArg : String, bBlocked : Boolean) {
+	fun onDomainBlockChanged(
+		target_account : SavedAccount,
+		domain : Host,
+		bBlocked : Boolean
+	) {
 		
-		val domain = IDN.toASCII(domainArg,IDN.ALLOW_UNASSIGNED)
-		
-		if(target_account.hostAscii != access_info.hostAscii) return
+		if(target_account.host != access_info.host) return
 		if(access_info.isPseudo) return
 		
 		if(type == ColumnType.DOMAIN_BLOCKS) {
@@ -1277,9 +1298,8 @@ class Column(
 		
 		if(bBlocked) {
 			// ブロックしたのとドメイン部分が一致するアカウントからのステータスと通知をすべて除去する
-			val reDomain = Pattern.compile("\\A[^@]+@\\Q$domain\\E\\z", Pattern.CASE_INSENSITIVE)
 			val checker =
-				{ account : TootAccount? -> if(account == null ) false else reDomain.matcher(account.acctAscii).find() }
+				{ account : TootAccount? -> if(account == null) false else account.acct.host == domain }
 			
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			
@@ -1716,8 +1736,9 @@ class Column(
 		internal fun add(who : TootAccount?) {
 			who ?: return
 			who_set.add(who.id)
-			acct_set.add("@${access_info.getFullAcct(who)}")
-			acct_set.add("@${access_info.getFullAcctPretty(who)}")
+			val fullAcct = access_info.getFullAcct(who)
+			acct_set.add("@${fullAcct.ascii}")
+			acct_set.add("@${fullAcct.pretty}")
 			//
 			add(who.movedRef)
 		}
@@ -2514,8 +2535,8 @@ class Column(
 				if(useConversationSummaryStreaming) return
 				
 				// マストドンはLTLに外部ユーザの投稿を表示しない
-				if(type == ColumnType.LOCAL && isMastodon && item.account.isRemote ) return
-
+				if(type == ColumnType.LOCAL && isMastodon && item.account.isRemote) return
+				
 				if(isFiltered(item)) return
 			}
 			
@@ -2600,11 +2621,11 @@ class Column(
 			val list = announcements
 			if(list == null) {
 				announcements = mutableListOf(item)
-			}else{
-				val index = list.indexOfFirst{ it.id == item.id}
-				if( index != -1 ){
-					list[index] = TootAnnouncement.merge(list[index],item)
-				}else{
+			} else {
+				val index = list.indexOfFirst { it.id == item.id }
+				if(index != - 1) {
+					list[index] = TootAnnouncement.merge(list[index], item)
+				} else {
 					list.add(0, item)
 				}
 				announcements?.sortWith(TootAnnouncement.comparator)
@@ -2615,9 +2636,9 @@ class Column(
 		
 		override fun onAnnouncementDelete(id : EntityId) {
 			val it = announcements?.iterator() ?: return
-			while(it.hasNext()){
+			while(it.hasNext()) {
 				val item = it.next()
-				if( item.id == id){
+				if(item.id == id) {
 					it.remove()
 					announcementUpdated = SystemClock.elapsedRealtime()
 					fireShowColumnHeader()
@@ -2646,7 +2667,7 @@ class Column(
 				
 				index == - 1 -> announcement.reactions?.add(reaction)
 				
-				else -> announcement.reactions?.get(index)?.let{ old ->
+				else -> announcement.reactions?.get(index)?.let { old ->
 					old.count = reaction.count
 					// ストリーミングイベントにはmeが含まれないので、oldにあるmeは変更されない
 				}
@@ -3087,7 +3108,7 @@ class Column(
 	}
 	
 	val isMastodon : Boolean = access_info.isMastodon
-
+	
 	val isMisskey : Boolean = access_info.isMisskey
 	
 	val misskeyVersion = access_info.misskeyVersion

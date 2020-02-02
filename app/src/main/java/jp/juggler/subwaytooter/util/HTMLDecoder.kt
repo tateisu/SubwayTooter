@@ -7,8 +7,8 @@ import android.text.Spanned
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
@@ -505,25 +505,20 @@ object HTMLDecoder {
 		for(item in mentionList) {
 			if(sb.isNotEmpty()) sb.append(" ")
 			
-			val fullAcct = getFullAcctOrNull(linkHelper, item.acctAscii, item.url)
+			val fullAcct = getFullAcctOrNull(linkHelper, item.acct, item.url)
 			
 			val linkInfo = if(fullAcct != null) {
-				val (fullAcctAscii, fullAcctPretty) = TootAccount.acctAndPrettyAcct(fullAcct)
 				LinkInfo(
 					url = item.url,
-					caption = "@" + if(Pref.bpMentionFullAcct(App1.pref)) {
-						fullAcctPretty
-					} else {
-						item.acctPretty
-					},
-					ac = AcctColor.load(fullAcctAscii, fullAcctPretty),
+					caption = "@${(if(Pref.bpMentionFullAcct(App1.pref)) fullAcct else item.acct).pretty}",
+					ac = AcctColor.load(fullAcct),
 					mention = item,
 					tag = link_tag
 				)
 			} else {
 				LinkInfo(
 					url = item.url,
-					caption = "@" + item.acctPretty,
+					caption = "@${item.acct.pretty}",
 					ac = null,
 					mention = item,
 					tag = link_tag
@@ -610,7 +605,7 @@ object HTMLDecoder {
 				
 				// Account.note does not have mentions metadata.
 				// fallback to resolve acct by mention URL.
-				val rawAcct = mention?.acctPretty ?: originalCaption.toString().substring(1)
+				val rawAcct = mention?.acct ?: Acct.parse( originalCaption.toString().substring(1) )
 				val fullAcct = getFullAcctOrNull(options.linkHelper, rawAcct, href)
 				
 				if(fullAcct != null) {
@@ -620,15 +615,14 @@ object HTMLDecoder {
 						linkInfo.mention = TootMention(
 							id = EntityId.DEFAULT,
 							url = href,
-							acctArg = fullAcct,
-							username = rawAcct.splitFullAcct().first
+							acct = fullAcct,
+							username = rawAcct.username
 						)
 					}
 					
-					val (fullAcctAscii, fullAcctPretty) = TootAccount.acctAndPrettyAcct(fullAcct)
-					linkInfo.ac = AcctColor.load(fullAcctAscii, fullAcctPretty)
+					linkInfo.ac = AcctColor.load(fullAcct)
 					if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
-						linkInfo.caption = "@$fullAcctPretty"
+						linkInfo.caption = "@${fullAcct.pretty}"
 					}
 				}
 			}

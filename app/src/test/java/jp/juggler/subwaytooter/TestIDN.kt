@@ -24,5 +24,8 @@ class TestIDN {
 		// 複数のpunycode
 		assertEquals("թութ.հայ", IDN.toUnicode("xn--69aa8bzb.xn--y9a3aq",IDN.ALLOW_UNASSIGNED))
 		
+		// ?
+		assertEquals("?", IDN.toASCII("?",IDN.ALLOW_UNASSIGNED))
+		assertEquals("?", IDN.toUnicode("?",IDN.ALLOW_UNASSIGNED))
 	}
 }

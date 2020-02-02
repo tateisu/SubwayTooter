@@ -2,9 +2,7 @@ package jp.juggler.subwaytooter.action
 
 import android.content.Context
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.TootRelationShip
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.JsonObject
@@ -18,15 +16,14 @@ import java.util.*
 // 実アカウントを返すことはない
 internal fun addPseudoAccount(
 	context : Context,
-	host : String,
+	host : Host,
 	instanceInfo : TootInstance? = null,
 	callback : (SavedAccount) -> Unit
 ) {
 	try {
-		val username = "?"
-		val full_acct = "$username@$host"
+		val acct = Acct.parse("?",host)
 		
-		var account = SavedAccount.loadAccountByAcct(context, full_acct)
+		var account = SavedAccount.loadAccountByAcct(context, acct.ascii)
 		if(account != null) {
 			callback(account)
 			return
@@ -55,13 +52,13 @@ internal fun addPseudoAccount(
 		}
 		
 		val account_info = jsonObject {
-			put("username", username)
-			put("acct", username)
+			put("username", acct.username)
+			put("acct", acct.username) // ローカルから参照した場合なのでshort acct
 		}
 		
 		val row_id = SavedAccount.insert(
-			host,
-			full_acct,
+			host.ascii,
+			acct.ascii,
 			account_info,
 			JsonObject(),
 			misskeyVersion = instanceInfo.misskeyVersion
@@ -92,18 +89,17 @@ internal fun addPseudoAccount(
 
 // 疑似アカ以外のアカウントのリスト
 fun makeAccountListNonPseudo(
-	context : Context, pickup_host : String?
+	context : Context, pickup_host : Host?
 ) : ArrayList<SavedAccount> {
 	
 	val list_same_host = ArrayList<SavedAccount>()
 	val list_other_host = ArrayList<SavedAccount>()
 	for(a in SavedAccount.loadAccountList(context)) {
 		if(a.isPseudo) continue
-		(if(pickup_host == null || pickup_host.equals(a.hostAscii, ignoreCase = true) || pickup_host.equals(a.hostPretty, ignoreCase = true))
-			list_same_host
-		else
-			list_other_host
-			).add(a)
+		when(pickup_host) {
+			null, a.host -> list_same_host
+			else -> list_other_host
+		}.add(a)
 	}
 	SavedAccount.sort(list_same_host)
 	SavedAccount.sort(list_other_host)
@@ -155,8 +151,8 @@ const val CROSS_ACCOUNT_REMOTE_INSTANCE = 3
 internal fun calcCrossAccountMode(
 	timeline_account : SavedAccount,
 	action_account : SavedAccount
-) : Int =when{
+) : Int = when {
 	timeline_account == action_account -> NOT_CROSS_ACCOUNT
-	timeline_account.matchHost(action_account.hostAscii) -> CROSS_ACCOUNT_SAME_INSTANCE
+	timeline_account.matchHost(action_account.host) -> CROSS_ACCOUNT_SAME_INSTANCE
 	else -> CROSS_ACCOUNT_REMOTE_INSTANCE
 }

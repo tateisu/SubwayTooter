@@ -266,7 +266,7 @@ internal class ViewHolderHeaderProfile(
 				
 				append("@")
 				
-				append(access_info.getFullAcctPretty(who))
+				append(access_info.getFullAcct(who).pretty)
 				
 				if(whoDetail?.locked ?: who.locked) {
 					append(" ")
@@ -483,7 +483,7 @@ internal class ViewHolderHeaderProfile(
 		val ac = AcctColor.load(accessInfo,who)
 		tv.text = when {
 			AcctColor.hasNickname(ac) -> ac.nickname
-			Pref.bpShortAcctLocalUser(App1.pref) -> "@${who.acctPretty}"
+			Pref.bpShortAcctLocalUser(App1.pref) -> "@${who.acct.pretty}"
 			else -> "@${ac.nickname}"
 		}
 		

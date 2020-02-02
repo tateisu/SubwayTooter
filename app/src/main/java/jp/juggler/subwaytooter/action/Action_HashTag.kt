@@ -1,7 +1,11 @@
 package jp.juggler.subwaytooter.action
 
-import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.ColumnType
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -15,10 +19,10 @@ object Action_HashTag {
 		activity : ActMain,
 		pos : Int,
 		url : String,
-		host : String,
+		host : Host,
 		tag_without_sharp : String,
 		tag_list : ArrayList<String>?,
-		whoAcct: String?
+		whoAcct: Acct?
 	) {
 		val tag_with_sharp = "#$tag_without_sharp"
 		
@@ -36,16 +40,14 @@ object Action_HashTag {
 		// https://mastodon.juggler.jp/@tateisu/101865456016473337
 		// 一時的に使えなくする
 		if( whoAcct != null ){
-			val( acctAscii,acctPretty)=TootAccount.acctAndPrettyAcct(whoAcct)
-			val(username,instance)=whoAcct.split('@')
-			d.addAction(AcctColor.getStringWithNickname(activity, R.string.open_hashtag_from_account ,acctAscii,acctPretty)) {
+			d.addAction(AcctColor.getStringWithNickname(activity, R.string.open_hashtag_from_account ,whoAcct)) {
 				timelineOtherInstance(
 					activity,
 					pos,
-					"https://${instance}/@${username}/tagged/${ tag_without_sharp.encodePercent()}",
+					"https://${whoAcct.host?.ascii}/@${whoAcct.username}/tagged/${ tag_without_sharp.encodePercent()}",
 					host,
 					tag_without_sharp,
-					acctAscii
+					whoAcct
 				)
 			}
 		}
@@ -103,9 +105,9 @@ object Action_HashTag {
 		activity : ActMain,
 		pos : Int,
 		url : String,
-		host : String,
+		host : Host,
 		tag_without_sharp : String,
-		acctAscii :String? = null
+		acct :Acct? = null
 	) {
 		
 		val dialog = ActionsDialog()
@@ -121,17 +123,11 @@ object Action_HashTag {
 		val list_original_pseudo = ArrayList<SavedAccount>()
 		val list_other = ArrayList<SavedAccount>()
 		for(a in account_list) {
-			if( acctAscii == null){
+			if( acct == null){
 				when {
-					! host.equals(a.hostAscii, ignoreCase = true) -> {
-						list_other.add(a)
-					}
-					a.isPseudo -> {
-						list_original_pseudo.add(a)
-					}
-					else -> {
-						list_original.add(a)
-					}
+					a.host != host -> list_other.add(a)
+					a.isPseudo -> list_original_pseudo.add(a)
+					else -> list_original.add(a)
 				}
 			}else{
 				when {
@@ -144,12 +140,8 @@ object Action_HashTag {
 					a.isMisskey -> {
 					}
 
-					! host.equals(a.hostAscii, ignoreCase = true) -> {
-						list_other.add(a)
-					}
-					else -> {
-						list_original.add(a)
-					}
+					a.host != host -> list_other.add(a)
+					else -> list_original.add(a)
 				}
 			}
 		}
@@ -161,7 +153,7 @@ object Action_HashTag {
 		
 		// 同タンスのアカウントがない場合は疑似アカウントを作成して開く
 		// ただし疑似アカウントではアカウントの同期ができないため、特定ユーザのタグTLは読めない)
-		if( acctAscii == null && list_original.isEmpty() && list_original_pseudo.isEmpty()) {
+		if( acct == null && list_original.isEmpty() && list_original_pseudo.isEmpty()) {
 			dialog.addAction(activity.getString(R.string.open_in_pseudo_account, "?@$host")) {
 				addPseudoAccount(activity, host) { sa ->
 					timeline(activity, pos, sa, tag_without_sharp)
@@ -175,33 +167,30 @@ object Action_HashTag {
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acctAscii,
-					a.acctPretty
+					a.acct
 				)
 			)
-			{ timeline(activity, pos, a, tag_without_sharp,acctAscii) }
+			{ timeline(activity, pos, a, tag_without_sharp,acct?.ascii) }
 		}
 		for(a in list_original_pseudo) {
 			dialog.addAction(
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acctAscii,
-					a.acctPretty
+					a.acct
 				)
 			)
-			{ timeline(activity, pos, a, tag_without_sharp,acctAscii) }
+			{ timeline(activity, pos, a, tag_without_sharp,acct?.ascii) }
 		}
 		for(a in list_other) {
 			dialog.addAction(
 				AcctColor.getStringWithNickname(
 					activity,
 					R.string.open_in_account,
-					a.acctAscii,
-					a.acctPretty
+					a.acct
 				)
 			)
-			{ timeline(activity, pos, a, tag_without_sharp,acctAscii) }
+			{ timeline(activity, pos, a, tag_without_sharp,acct?.ascii) }
 		}
 		
 		dialog.show(activity, "#$tag_without_sharp")

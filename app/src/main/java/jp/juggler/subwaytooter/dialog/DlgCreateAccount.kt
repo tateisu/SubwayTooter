@@ -11,6 +11,7 @@ import android.widget.EditText
 import android.widget.TextView
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
@@ -18,7 +19,7 @@ import jp.juggler.util.*
 
 class DlgCreateAccount(
 	val activity : Activity,
-	val instance : String,
+	val instance : Host,
 	val onClickOk : (
 		dialog : Dialog,
 		username : String,
@@ -48,7 +49,7 @@ class DlgCreateAccount(
 	private val dialog = Dialog(activity)
 	
 	init {
-		viewRoot.findViewById<TextView>(R.id.tvInstance).text = instance
+		viewRoot.findViewById<TextView>(R.id.tvInstance).text = instance.pretty
 		
 		arrayOf(
 			R.id.btnRules,
@@ -59,7 +60,7 @@ class DlgCreateAccount(
 			viewRoot.findViewById<Button>(it)?.setOnClickListener(this)
 		}
 		
-		val instanceInfo = TootInstance.getCached(instance)
+		val instanceInfo = TootInstance.getCached(instance.ascii)
 		
 		tvDescription.text =
 			DecodeOptions(

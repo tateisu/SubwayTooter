@@ -15,10 +15,7 @@ import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_ListMember
 import jp.juggler.subwaytooter.action.makeAccountListNonPseudo
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootList
-import jp.juggler.subwaytooter.api.entity.parseList
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
@@ -41,7 +38,7 @@ class DlgListMember(
 	private val btnCreateList : Button
 	
 	private val account_list : ArrayList<SavedAccount>
-	private val target_user_full_acct : String
+	private val target_user_full_acct : Acct
 	
 	private var list_owner : SavedAccount? = null
 	private var local_who : TootAccount? = null
@@ -84,7 +81,7 @@ class DlgListMember(
 		val name = who.decodeDisplayName(activity)
 		tvUserName.text = name
 		user_name_invalidator.register(name)
-		tvUserAcct.text = target_user_full_acct
+		tvUserAcct.text = target_user_full_acct.pretty
 		
 		setListOwner(list_owner)
 		

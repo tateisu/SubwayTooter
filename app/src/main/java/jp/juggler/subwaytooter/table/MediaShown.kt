@@ -90,10 +90,7 @@ object MediaShown : TableCompanion {
 				table,
 				projection_shown,
 				"h=? and si=?",
-				arrayOf(
-					status.hostAccessOrOriginal,
-					status.id.toString()
-				),
+				arrayOf( status.hostAccessOrOriginal.ascii, status.id.toString() ),
 				null,
 				null,
 				null
@@ -128,7 +125,7 @@ object MediaShown : TableCompanion {
 		try {
 			val now = System.currentTimeMillis()
 			val cv = ContentValues()
-			cv.put(COL_HOST, status.hostAccessOrOriginal)
+			cv.put(COL_HOST, status.hostAccessOrOriginal.ascii)
 			cv.put(COL_STATUS_ID, status.id.toString())
 			cv.put(COL_SHOWN, is_shown.b2i())
 			cv.put(COL_TIME_SAVE, now)

@@ -44,11 +44,11 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	val url : String?
 	
 	// 投稿元タンスのホスト名
-	val host_original : String
-		get() = account.hostAscii
+	val host_original : Host
+		get() = account.host
 	
 	// 取得タンスのホスト名。トゥート検索サービスでは提供されずnullになる
-	val host_access : String?
+	val host_access : Host?
 	
 	// ステータスID。
 	// host_access が null の場合は投稿元タンスでのIDかもしれない。
@@ -399,7 +399,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			this.custom_emojis =
 				parseMapOrNull(CustomEmoji.decode, src.jsonArray("emojis"), log)
 			
-			this.profile_emojis = when(val o = src.get("profile_emojis")) {
+			this.profile_emojis = when(val o = src["profile_emojis"]) {
 				is JsonArray -> parseMapOrNull(::NicoProfileEmoji, o, log)
 				is JsonObject -> parseProfileEmoji2(::NicoProfileEmoji, o, log)
 				else -> null
@@ -586,11 +586,11 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	///////////////////////////////////////////////////
 	// ユーティリティ
 	
-	val hostAccessOrOriginal : String
-		get() = validHost(host_access) ?: validHost(host_original) ?: "(null)"
+	val hostAccessOrOriginal : Host
+		get() = host_access?.valid() ?: host_original.valid() ?: Host.UNKNOWN
 	
 	val busyKey : String
-		get() = "$hostAccessOrOriginal:$id"
+		get() = "${hostAccessOrOriginal.ascii}:$id"
 	
 	fun checkMuted() : Boolean {
 		
@@ -646,7 +646,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		}
 		
 		mentions?.forEach {
-			if(fullAcctMe != access_info.getFullAcct(it.acctAscii))
+			if(fullAcctMe != access_info.getFullAcct(it.acct))
 				return@hasReceipt TootVisibility.DirectSpecified
 		}
 		
@@ -804,9 +804,11 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	
 	class FindStatusIdFromUrlResult(
 		val statusId : EntityId?, // may null
-		val host : String,
+		hostArg:String,
 		val url : String
-	)
+	){
+		val host = Host.parse(hostArg)
+	}
 	
 	companion object {
 		
@@ -1150,10 +1152,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			return rv
 		}
 		
-		private fun validHost(host : String?) : String? {
-			return if(host != null && host.isNotEmpty() && host != "?") host else null
-		}
-		
+
 		fun validStatusId(src : EntityId?) : EntityId? =
 			when {
 				src == null -> null

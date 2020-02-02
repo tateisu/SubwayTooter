@@ -124,7 +124,7 @@ class ActMain : AppCompatActivity()
 	
 	// onActivityResultで設定されてonResumeで消化される
 	// 状態保存の必要なし
-	private var posted_acct : String? = null // acctAscii
+	private var posted_acct : Acct? = null // acctAscii
 	private var posted_status_id : EntityId? = null
 	private var posted_reply_id : EntityId? = null
 	private var posted_redraft_id : EntityId? = null
@@ -795,7 +795,7 @@ class ActMain : AppCompatActivity()
 				when {
 					column.access_info.isNA -> post_helper.setInstance(null, false)
 					else -> post_helper.setInstance(
-						column.access_info.hostAscii,
+						column.access_info.host,
 						column.access_info.isMisskey
 					)
 				}
@@ -861,23 +861,22 @@ class ActMain : AppCompatActivity()
 		val posted_acct = this.posted_acct
 		val posted_status_id = this.posted_status_id
 		
-		if(posted_acct?.isNotEmpty() == true && posted_status_id == null) {
+		if(posted_acct != null && posted_status_id == null) {
 			// 予約投稿なら予約投稿リストをリロードする
 			for(column in app_state.column_list) {
 				if(column.type == ColumnType.SCHEDULED_STATUS
-					&& column.access_info.acctAscii == posted_acct
+					&& column.access_info.acct == posted_acct
 				) {
 					column.startLoading()
 				}
 			}
 			
-		} else if(posted_acct?.isNotEmpty() == true && posted_status_id != null) {
+		} else if(posted_acct != null && posted_status_id != null) {
 			
 			val posted_redraft_id = this.posted_redraft_id
 			if(posted_redraft_id != null) {
-				val delm = posted_acct.indexOf('@')
-				if(delm != - 1) {
-					val host = posted_acct.substring(delm + 1)
+				val host = posted_acct.host
+				if(host != null) {
 					for(column in app_state.column_list) {
 						column.onStatusRemoved(host, posted_redraft_id)
 					}
@@ -888,7 +887,7 @@ class ActMain : AppCompatActivity()
 			val refresh_after_toot = Pref.ipRefreshAfterToot(pref)
 			if(refresh_after_toot != Pref.RAT_DONT_REFRESH) {
 				for(column in app_state.column_list) {
-					if(column.access_info.acctAscii != posted_acct) continue
+					if(column.access_info.acct != posted_acct) continue
 					column.startRefreshForPost(
 						refresh_after_toot,
 						posted_status_id,
@@ -967,7 +966,7 @@ class ActMain : AppCompatActivity()
 		post_helper.in_reply_to_id = null
 		post_helper.attachment_list = null
 		post_helper.emojiMapCustom =
-			App1.custom_emoji_lister.getMap(account.hostAscii, account.isMisskey)
+			App1.custom_emoji_lister.getMap(account.host.ascii, account.isMisskey)
 		
 		
 		etQuickToot.hideKeyboard()
@@ -978,7 +977,7 @@ class ActMain : AppCompatActivity()
 				status : TootStatus
 			) {
 				etQuickToot.setText("")
-				posted_acct = target_account.acctAscii
+				posted_acct = target_account.acct
 				posted_status_id = status.id
 				posted_reply_id = status.in_reply_to_id
 				posted_redraft_id = null
@@ -1045,7 +1044,8 @@ class ActMain : AppCompatActivity()
 				
 				REQUEST_CODE_POST -> if(data != null) {
 					etQuickToot.setText("")
-					posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)
+					posted_acct =
+						data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
 					if(data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
 						posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
 						posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
@@ -1719,7 +1719,7 @@ class ActMain : AppCompatActivity()
 					defaultInsertPosition,
 					null,
 					"https://$instance/@$user",
-					instance,
+					Host.parse(instance),
 					user,
 					original_url = url
 				)
@@ -1729,7 +1729,7 @@ class ActMain : AppCompatActivity()
 					defaultInsertPosition,
 					null,
 					url,
-					host,
+					Host.parse(host),
 					user
 				)
 			}
@@ -1747,7 +1747,7 @@ class ActMain : AppCompatActivity()
 				defaultInsertPosition,
 				null,
 				url,
-				host,
+				Host.parse(host),
 				user
 			)
 			return
@@ -1820,9 +1820,9 @@ class ActMain : AppCompatActivity()
 		// subwaytooter://notification_click/?db_id=(db_id)
 		val dataIdString = uri.getQueryParameter("db_id")
 		if(dataIdString != null) {
-
+			
 			PollingWorker.queueNotificationClicked(this, uri)
-
+			
 			try {
 				val dataId = dataIdString.toLong()
 				val account = SavedAccount.loadAccount(this@ActMain, dataId)
@@ -1861,7 +1861,7 @@ class ActMain : AppCompatActivity()
 			
 			var ta : TootAccount? = null
 			var sa : SavedAccount? = null
-			var host : String? = null
+			var host : Host? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
@@ -1879,8 +1879,10 @@ class ActMain : AppCompatActivity()
 					
 					val db_id = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID, - 1L)
 					
-					val instance = prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE, null)
-						?: return TootApiResult("missing instance name.")
+					val instance = Host.parse(
+						prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE, null)
+							?: return TootApiResult("missing instance name.")
+					)
 					
 					if(db_id != - 1L) {
 						try {
@@ -1951,7 +1953,7 @@ class ActMain : AppCompatActivity()
 							}
 							
 							param.startsWith("host:") -> {
-								val host = param.substring(5)
+								val host = Host.parse(param.substring(5))
 								client.instance = host
 							}
 							
@@ -1981,10 +1983,10 @@ class ActMain : AppCompatActivity()
 				val ta = this.ta
 				var sa = this.sa
 				
-				if(ta != null && host != null && sa == null) {
-					val user = ta.username + "@" + host
+				if(ta != null && host?.isValid ==true && sa == null) {
+					val acct = Acct.parse(ta.username,host)
 					// アカウント追加時に、アプリ内に既にあるアカウントと同じものを登録していたかもしれない
-					sa = SavedAccount.loadAccountByAcct(this@ActMain, user)
+					sa = SavedAccount.loadAccountByAcct(this@ActMain, acct.ascii)
 				}
 				
 				afterAccountVerify(result, ta, sa, host)
@@ -1997,7 +1999,7 @@ class ActMain : AppCompatActivity()
 		result : TootApiResult?,
 		ta : TootAccount?,
 		sa : SavedAccount?,
-		host : String?
+		host : Host?
 	) : Boolean {
 		
 		val jsonObject = result?.jsonObject
@@ -2029,7 +2031,12 @@ class ActMain : AppCompatActivity()
 				if(sa.username != ta.username) {
 					showToast(this@ActMain, true, R.string.user_name_not_match)
 				} else {
-					showToast(this@ActMain, false, R.string.access_token_updated_for, sa.acctPretty)
+					showToast(
+						this@ActMain,
+						false,
+						R.string.access_token_updated_for,
+						sa.acct.pretty
+					)
 					
 					// DBの情報を更新する
 					sa.updateTokenInfo(token_info)
@@ -2039,7 +2046,7 @@ class ActMain : AppCompatActivity()
 					
 					// 自動でリロードする
 					for(it in app_state.column_list) {
-						if(it.access_info == sa ) {
+						if(it.access_info == sa) {
 							it.startLoading()
 						}
 					}
@@ -2052,11 +2059,11 @@ class ActMain : AppCompatActivity()
 			
 			host != null -> {
 				// アカウント追加時
-				val user = ta.username + "@" + host
+				val user = Acct.parse(ta.username,host)
 				
 				val row_id = SavedAccount.insert(
-					host,
-					user,
+					host.ascii,
+					user.ascii,
 					jsonObject,
 					token_info,
 					misskeyVersion = TootInstance.parseMisskeyVersion(token_info)
@@ -2114,7 +2121,7 @@ class ActMain : AppCompatActivity()
 	fun checkAccessToken(
 		dialog_host : Dialog?,
 		dialog_token : Dialog?,
-		host : String,
+		host : Host,
 		access_token : String,
 		sa : SavedAccount?
 	) {
@@ -2156,7 +2163,7 @@ class ActMain : AppCompatActivity()
 			null,
 			object : DlgTextInput.Callback {
 				override fun onOK(dialog : Dialog, text : String) {
-					checkAccessToken(null, dialog, sa.hostAscii, text, sa)
+					checkAccessToken(null, dialog, sa.host, text, sa)
 				}
 				
 				override fun onEmptyError() {
@@ -2180,7 +2187,7 @@ class ActMain : AppCompatActivity()
 		val done_list = ArrayList<SavedAccount>()
 		for(column in app_state.column_list) {
 			val a = column.access_info
-			if(a != account ) continue
+			if(a != account) continue
 			if(done_list.contains(a)) continue
 			done_list.add(a)
 			if(! a.isNA) a.reloadSetting(this@ActMain)
@@ -2349,7 +2356,7 @@ class ActMain : AppCompatActivity()
 						this@ActMain,
 						opener.pos,
 						opener.url,
-						tagInfo.second,
+						Host.parse(tagInfo.second),
 						tagInfo.first,
 						opener.tagList,
 						whoAcct
@@ -2361,7 +2368,7 @@ class ActMain : AppCompatActivity()
 				if(statusInfo != null) {
 					if(accessInfo.isNA ||
 						statusInfo.statusId == null ||
-						! statusInfo.host.equals(accessInfo.hostAscii, ignoreCase = true)
+						statusInfo.host != accessInfo.host
 					) {
 						Action_Toot.conversationOtherInstance(
 							this@ActMain,
@@ -2385,16 +2392,15 @@ class ActMain : AppCompatActivity()
 				// opener.linkInfo をチェックしてメンションを判別する
 				val mention = opener.linkInfo?.mention
 				if(mention != null) {
-					val fullAcct = getFullAcctOrNull(accessInfo, mention.acctAscii, mention.url)
+					val fullAcct = getFullAcctOrNull(accessInfo, mention.acct.ascii, mention.url)
 					if(fullAcct != null) {
-						val (user, host) = fullAcct.splitFullAcct()
-						if(host != null) {
-							when(host.toLowerCase(Locale.JAPAN)) {
+						if(fullAcct.host != null) {
+							when(fullAcct.host.ascii) {
 								"github.com",
 								"twitter.com" ->
 									App1.openCustomTab(this, mention.url)
 								"gmail.com" ->
-									App1.openBrowser(this, "mailto:$user@$host")
+									App1.openBrowser(this, "mailto:${fullAcct.pretty}")
 								
 								else ->
 									Action_User.profile(
@@ -2402,8 +2408,8 @@ class ActMain : AppCompatActivity()
 										opener.pos,
 										accessInfo, // FIXME nullが必要なケースがあったっけなかったっけ…
 										mention.url,
-										host,
-										user,
+										fullAcct.host,
+										fullAcct.username,
 										original_url = opener.url
 									)
 							}
@@ -2417,12 +2423,13 @@ class ActMain : AppCompatActivity()
 				if(m.find()) {
 					val host = m.groupEx(1) !!
 					val user = m.groupEx(2) !!.decodePercent()
-					val instance = m.groupEx(3)?.decodePercent()
+					val instance = m.groupEx(3)?.decodePercent()?.notEmpty()
 					// https://misskey.xyz/@tateisu@github.com
 					// https://misskey.xyz/@tateisu@twitter.com
 					
-					if(instance?.isNotEmpty() == true) {
-						when(instance.toLowerCase(Locale.JAPAN)) {
+					if(instance != null) {
+						val instanceHost = Host.parse(instance)
+						when(instanceHost.ascii) {
 							"github.com", "twitter.com" -> {
 								App1.openCustomTab(this, "https://$instance/$user")
 							}
@@ -2437,7 +2444,7 @@ class ActMain : AppCompatActivity()
 									opener.pos,
 									null, // Misskeyだと疑似アカが必要なんだっけ…？
 									"https://$instance/@$user",
-									instance,
+									instanceHost,
 									user,
 									original_url = opener.url
 								)
@@ -2449,7 +2456,7 @@ class ActMain : AppCompatActivity()
 							opener.pos,
 							accessInfo,
 							opener.url,
-							host,
+							Host.parse(host),
 							user
 						)
 					}
@@ -2466,7 +2473,7 @@ class ActMain : AppCompatActivity()
 						opener.pos,
 						accessInfo,
 						opener.url,
-						host,
+						Host.parse(host),
 						user
 					)
 					return
@@ -2879,7 +2886,7 @@ class ActMain : AppCompatActivity()
 					PollingWorker.queueAppDataImportAfter(this@ActMain)
 				}
 				
-				showToast(this@ActMain,true,R.string.import_completed_please_restart_app)
+				showToast(this@ActMain, true, R.string.import_completed_please_restart_app)
 				finish()
 			}
 		}

@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.action
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
@@ -16,7 +17,7 @@ object Action_Instance {
 	private fun profileDirectory(
 		activity : ActMain,
 		accessInfo : SavedAccount,
-		host : String,
+		host : Host,
 		instance : TootInstance? = null,
 		pos : Int = activity.defaultInsertPosition
 	) {
@@ -45,10 +46,10 @@ object Action_Instance {
 			
 			// バージョンが足りないならWebページを開く
 			! instance.versionGE(TootInstance.VERSION_3_0_0_rc1) ->
-				App1.openBrowser(activity, "https://$host/explore")
+				App1.openBrowser(activity, "https://${host.ascii}/explore")
 			
 			// ホスト名部分が一致するならそのアカウントで開く
-			accessInfo.hostAscii == host ->
+			accessInfo.matchHost(host) ->
 				activity.addColumn(
 					false,
 					pos,
@@ -83,7 +84,7 @@ object Action_Instance {
 				ColumnType.PROFILE_DIRECTORY.name1(activity)
 			)
 		) { ai ->
-			profileDirectory(activity, ai, ai.hostAscii)
+			profileDirectory(activity, ai, ai.host)
 		}
 	}
 	
@@ -91,7 +92,7 @@ object Action_Instance {
 	fun profileDirectoryFromInstanceInformation(
 		activity : ActMain,
 		currentColumn : Column,
-		host : String,
+		host : Host,
 		instance : TootInstance? = null
 	) {
 		profileDirectory(
@@ -105,7 +106,7 @@ object Action_Instance {
 	fun information(
 		activity : ActMain,
 		pos : Int,
-		host : String
+		host : Host
 	) {
 		activity.addColumn(
 			false,
@@ -122,19 +123,21 @@ object Action_Instance {
 		activity : ActMain,
 		pos : Int,
 		accessInfo: SavedAccount,
-		host : String
+		host : Host
 	){
 		activity.addColumn(pos, accessInfo, ColumnType.DOMAIN_TIMELINE,host)
 	}
 	
 	// 指定タンスのローカルタイムラインを開く
 	fun timelineLocal(
-		activity : ActMain, pos : Int, host : String
+		activity : ActMain,
+		pos : Int,
+		host : Host
 	) {
 		// 指定タンスのアカウントを持ってるか？
 		val account_list = ArrayList<SavedAccount>()
 		for(a in SavedAccount.loadAccountList(activity)) {
-			if(host.equals(a.hostAscii, ignoreCase = true)) account_list.add(a)
+			if(a.matchHost(host)) account_list.add(a)
 		}
 		if(account_list.isEmpty()) {
 			// 持ってないなら疑似アカウントを追加する
@@ -156,7 +159,10 @@ object Action_Instance {
 	
 	// ドメインブロック
 	fun blockDomain(
-		activity : ActMain, access_info : SavedAccount, domain : String, bBlock : Boolean
+		activity : ActMain,
+		access_info : SavedAccount,
+		domain : Host,
+		bBlock : Boolean
 	) {
 		
 		if(access_info.matchHost(domain)) {
@@ -168,7 +174,7 @@ object Action_Instance {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/domain_blocks",
-					"domain=${domain.encodePercent()}"
+					"domain=${domain.ascii.encodePercent()}"
 						.toFormRequestBody()
 						.toRequest(if(bBlock) "POST" else "DELETE")
 				)
@@ -239,12 +245,12 @@ object Action_Instance {
 		activity : ActMain,
 		access_info : SavedAccount,
 		pos : Int,
-		host : String?,
+		host : Host?,
 		status : TootStatus?,
 		type : ColumnType,
 		allowPseudo : Boolean = true
 	) {
-		if(host?.isEmpty() != false || host == "?") return
+		host?.valid() ?: return
 		status ?: return
 		
 		// 利用可能なアカウントを列挙する
@@ -260,7 +266,7 @@ object Action_Instance {
 				a.isMisskey -> continue@label
 				
 				// 閲覧アカウントとホスト名が同じならステータスIDの変換が必要ない
-				a.matchHost(access_info.hostAscii) -> {
+				a.matchHost(access_info.host) -> {
 					if(! allowPseudo && a.isPseudo) continue@label
 					account_list1.add(a)
 				}
@@ -282,7 +288,7 @@ object Action_Instance {
 				message = "select account to read timeline",
 				accountListArg = account_list1
 			) { ai ->
-				if(! ai.isNA && ai.matchHost(access_info.hostAscii)) {
+				if(! ai.isNA && ai.matchHost(access_info.host)) {
 					timelinePublicAround2(activity, ai, pos, status.id, type)
 				} else {
 					timelinePublicAround3(activity, ai, pos, status, type)

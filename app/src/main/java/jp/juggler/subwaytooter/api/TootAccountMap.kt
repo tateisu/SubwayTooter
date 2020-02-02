@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api
 
+import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
@@ -8,14 +9,14 @@ import java.util.concurrent.ConcurrentHashMap
 object TootAccountMap{
 	
 	private class AccountUniqueKey(parser : TootParser, who : TootAccount) : Comparable<AccountUniqueKey>{
-		val acct :String
+		val acct : Acct
 		val watcher: String
 		
 		init{
-			this.acct = parser.getFullAcct(who.acctAscii)
+			this.acct = parser.getFullAcct(who.acct)
 			
 			this.watcher =when(parser.serviceType){
-				ServiceType.MASTODON -> requireNotNull(parser.accessHost)
+				ServiceType.MASTODON -> requireNotNull(parser.accessHost?.ascii)
 				ServiceType.TOOTSEARCH -> "?tootsearch"
 				ServiceType.MSP -> "?msp"
 				ServiceType.MISSKEY -> "?misskey"

@@ -2633,7 +2633,7 @@ class ColumnViewHolder(
 	
 	private fun addReaction(item : TootAnnouncement, sample : TootAnnouncement.Reaction?) {
 		val column = column ?: return
-		val host = column.access_info.hostAscii
+		val host = column.access_info.host.ascii
 		val isMisskey = column.isMisskey
 		if(sample == null) {
 			EmojiPicker(activity, host, isMisskey) { name, _, _, unicode, customEmoji ->

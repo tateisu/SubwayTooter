@@ -178,7 +178,7 @@ class ActAccountSetting
 		
 		initializeProfile()
 		
-		btnOpenBrowser.text = getString(R.string.open_instance_website, account.hostAscii)
+		btnOpenBrowser.text = getString(R.string.open_instance_website, account.host.pretty)
 	}
 	
 	override fun onStop() {
@@ -444,8 +444,8 @@ class ActAccountSetting
 	private fun loadUIFromData(a : SavedAccount) {
 		this.account = a
 		
-		tvInstance.text = a.hostPretty
-		tvUser.text = a.acctPretty
+		tvInstance.text = a.host.pretty
+		tvUser.text = a.acct.pretty
 		
 		this.visibility = a.visibility
 		
@@ -583,14 +583,13 @@ class ActAccountSetting
 			R.id.btnVisibility -> performVisibility()
 			R.id.btnOpenBrowser -> App1.openBrowser(
 				this@ActAccountSetting,
-				"https://" + account.hostAscii + "/"
+				"https://${account.host.ascii}/"
 			)
 			R.id.btnPushSubscription -> startTest()
 			
 			R.id.btnUserCustom -> ActNickname.open(
 				this,
-				account.acctAscii,
-				account.acctPretty,
+				account.acct,
 				false,
 				REQUEST_CODE_ACCT_CUSTOMIZE
 			)
@@ -764,7 +763,7 @@ class ActAccountSetting
 							}
 							
 							val call = App1.ok_http_client.newCall(
-								("instance_url=" + ("https://" + account.hostAscii).encodePercent()
+								("instance_url=" + "https://${account.host.ascii}".encodePercent()
 									+ "&app_id=" + packageName.encodePercent()
 									+ "&tag=" + tag
 									)

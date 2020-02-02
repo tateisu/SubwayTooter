@@ -507,7 +507,7 @@ class ActPost : AppCompatActivity(),
 			R.id.btnPlugin -> openMushroom()
 			R.id.btnEmojiPicker -> post_helper.openEmojiPickerFromMore()
 			R.id.btnFeaturedTag -> post_helper.openFeaturedTagList(
-				featuredTagCache[account?.acctAscii ?: ""]?.list
+				featuredTagCache[account?.acct?.ascii ?: ""]?.list
 			)
 			R.id.ibSchedule -> performSchedule()
 			R.id.ibScheduleReset -> resetSchedule()
@@ -769,18 +769,22 @@ class ActPost : AppCompatActivity(),
 							// 自己レス以外なら元レスへのメンションを追加
 							// 最初に追加する https://github.com/tateisu/SubwayTooter/issues/94
 							if(! account.isMe(reply_status.account)) {
-								mention_list.add("@${account.getFullAcct(reply_status.account)}")
+								mention_list.add("@${account.getFullAcct(reply_status.account).pretty}")
 							}
 							
 							// 元レスに含まれていたメンションを複製
 							reply_status.mentions?.forEach { mention ->
-								val who_acct = mention.acctAscii
+
+								val who_acct = mention.acct
+
 								// 空データなら追加しない
-								if(who_acct.isEmpty()) return@forEach
+								if( ! who_acct.isValid ) return@forEach
+
 								// 自分なら追加しない
 								if(account.isMe(who_acct)) return@forEach
-								val strMention = "@${account.getFullAcct(who_acct)}"
+
 								// 既出なら追加しない
+								val strMention = "@${account.getFullAcct(who_acct).pretty}"
 								if(mention_list.contains(strMention)) return@forEach
 								mention_list.add(strMention)
 								
@@ -1305,7 +1309,7 @@ class ActPost : AppCompatActivity(),
 			
 			else -> {
 				// インスタンス情報を確認する
-				val info = TootInstance.getCached(account.hostAscii)
+				val info = TootInstance.getCached(account.host.ascii)
 				if(info == null || info.isExpire) {
 					// 情報がないか古いなら再取得
 					
@@ -1408,7 +1412,7 @@ class ActPost : AppCompatActivity(),
 			return
 		}
 		
-		val cache = featuredTagCache[account.acctAscii]
+		val cache = featuredTagCache[account.acct.ascii]
 		
 		btnFeaturedTag.vg(cache?.list?.isNotEmpty() == true)
 		
@@ -1424,13 +1428,13 @@ class ActPost : AppCompatActivity(),
 				
 				override fun background(client : TootApiClient) : TootApiResult? {
 					return if(account.isMisskey) {
-						featuredTagCache[account.acctAscii] =
+						featuredTagCache[account.acct.ascii] =
 							FeaturedTagCache(emptyList(), SystemClock.elapsedRealtime())
 						TootApiResult()
 					} else {
 						client.request("/api/v1/featured_tags")?.also { result ->
 							val list = parseList(::TootTag, result.jsonArray)
-							featuredTagCache[account.acctAscii] =
+							featuredTagCache[account.acct.ascii] =
 								FeaturedTagCache(list, SystemClock.elapsedRealtime())
 						}
 					}
@@ -1456,10 +1460,10 @@ class ActPost : AppCompatActivity(),
 			btnAccount.setTextColor(getAttributeColor(this, android.R.attr.textColorPrimary))
 			btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent)
 		} else {
-			post_helper.setInstance(a.hostAscii, a.isMisskey)
+			post_helper.setInstance(a.host, a.isMisskey)
 			
 			// 先読みしてキャッシュに保持しておく
-			App1.custom_emoji_lister.getList(a.hostAscii, a.isMisskey) {
+			App1.custom_emoji_lister.getList(a.host.ascii, a.isMisskey) {
 				// 何もしない
 			}
 			
@@ -1507,7 +1511,7 @@ class ActPost : AppCompatActivity(),
 		) { ai ->
 			
 			// 別タンスのアカウントに変更したならならin_reply_toの変換が必要
-			if(in_reply_to_id != null && ! ai.matchHost(account?.hostAscii) ) {
+			if(in_reply_to_id != null && ! ai.matchHost(account?.host) ) {
 				startReplyConversion(ai)
 			} else {
 				setAccountWithVisibilityConversion(ai)
@@ -2036,7 +2040,7 @@ class ActPost : AppCompatActivity(),
 			return
 		}
 		
-		val instance = TootInstance.getCached(account.hostAscii)
+		val instance = TootInstance.getCached(account.host.ascii)
 		if(instance?.instanceType == TootInstance.InstanceType.Pixelfed) {
 			if(in_reply_to_id != null) {
 				showToast(this, true, R.string.pixelfed_does_not_allow_reply_with_media)
@@ -2574,7 +2578,7 @@ class ActPost : AppCompatActivity(),
 		post_helper.attachment_list = this.attachment_list
 		
 		post_helper.emojiMapCustom =
-			App1.custom_emoji_lister.getMap(account.hostAscii, account.isMisskey)
+			App1.custom_emoji_lister.getMap(account.host.ascii, account.isMisskey)
 		
 		post_helper.redraft_status_id = redraft_status_id
 		
@@ -2590,7 +2594,7 @@ class ActPost : AppCompatActivity(),
 				status : TootStatus
 			) {
 				val data = Intent()
-				data.putExtra(EXTRA_POSTED_ACCT, target_account.acctAscii)
+				data.putExtra(EXTRA_POSTED_ACCT, target_account.acct.ascii)
 				status.id.putTo(data, EXTRA_POSTED_STATUS_ID)
 				redraft_status_id?.putTo(data, EXTRA_POSTED_REDRAFT_ID)
 				status.in_reply_to_id?.putTo(data, EXTRA_POSTED_REPLY_ID)
@@ -2602,7 +2606,7 @@ class ActPost : AppCompatActivity(),
 			override fun onScheduledPostComplete(target_account : SavedAccount) {
 				showToast(this@ActPost, false, getString(R.string.scheduled_status_sent))
 				val data = Intent()
-				data.putExtra(EXTRA_POSTED_ACCT, target_account.acctAscii)
+				data.putExtra(EXTRA_POSTED_ACCT, target_account.acct.ascii)
 				setResult(RESULT_OK, data)
 				isPostComplete = true
 				this@ActPost.finish()

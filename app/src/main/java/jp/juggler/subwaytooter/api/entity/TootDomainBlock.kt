@@ -4,7 +4,7 @@ import jp.juggler.util.JsonArray
 import java.util.ArrayList
 
 class TootDomainBlock(
-	val domain : String
+	val domain : Host
 ):TimelineItem() {
 
 	companion object {
@@ -14,7 +14,7 @@ class TootDomainBlock(
 				result.ensureCapacity(array.size)
 				array.stringList().forEach {
 					if(it.isNotEmpty() ) {
-						result.add(TootDomainBlock(it))
+						result.add(TootDomainBlock(Host.parse(it)))
 					}
 				}
 			}

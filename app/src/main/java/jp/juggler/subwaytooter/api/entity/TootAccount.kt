@@ -29,14 +29,13 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	//	The ID of the account
 	val id : EntityId
 	
-	//	Equals username for local users, includes @domain for remote ones
-	val acctAscii : String // punycode
-	val acctPretty : String // unicode
-	
 	// 	The username of the account  /[A-Za-z0-9_]{1,30}/
 	val username : String
 	
-	val hostAscii : String // punycode
+	val host : Host
+	
+	//	Equals username for local users, includes @domain for remote ones
+	val acct : Acct
 	
 	//	The account's display name
 	val display_name : String
@@ -98,11 +97,14 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	val isAdmin : Boolean
 	val isPro : Boolean
 	
-	val isLocal :Boolean
-		get() = !acctAscii.contains('@')
-
-	val isRemote :Boolean
-		get() = acctAscii.contains('@')
+	@Suppress("unused")
+	val isLocal : Boolean
+		get() = acct.host == null
+	
+	val isRemote : Boolean
+		get() = acct.host != null
+	
+	fun getUserUrl() = url ?: "https://${host.pretty}/@${username}"
 	
 	// user_hides_network is preference, not exposed in API
 	// val user_hides_network : Boolean
@@ -123,25 +125,20 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	init {
 		this.json = src
 		
-		var sv : String?
-		
 		if(parser.serviceType == ServiceType.MISSKEY) {
-			
-			val remoteHost = src.string("host")
-			val tmpHost = (remoteHost ?: parser.accessHost ?: error("missing host")).toLowerCase(Locale.JAPAN)
-			this.hostAscii = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
-			val prettyHost = IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
 			
 			this.custom_emojis =
 				parseMapOrNull(CustomEmoji.decodeMisskey, src.jsonArray("emojis"))
-			
 			this.profile_emojis = null
 			
+			this.host = src.string("host")?.let { Host.parse(it) } ?: parser.accessHost
+				?: error("missing host")
+			
 			this.username = src.notEmptyOrThrow("username")
-			this.url = "https://$hostAscii/@$username"
+			this.url = "https://${host.ascii}/@$username"
 			
 			//
-			sv = src.string("name")
+			val sv = src.string("name")
 			this.display_name = if(sv?.isNotEmpty() == true) sv.sanitizeBDI() else username
 			
 			//
@@ -162,29 +159,14 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			
 			this.id = EntityId.mayDefault(src.string("id"))
 			
-			this.acctAscii = when {
-				
+			this.acct = when(host) {
 				// アクセス元から見て内部ユーザなら short acct
-				remoteHost?.equals(
-					parser.accessHost,
-					ignoreCase = true
-				) != false -> username
+				parser.accessHost -> Acct.parse(username)
 				
 				// アクセス元から見て外部ユーザならfull acct
-				else -> "$username@$hostAscii"
+				else -> Acct.parse(username, host)
 			}
-
-			this.acctPretty = when {
-				// アクセス元から見て内部ユーザなら short acct
-				remoteHost?.equals(
-					parser.accessHost,
-					ignoreCase = true
-				) != false -> username
-				
-				// アクセス元から見て外部ユーザならfull acct
-				else -> "$username@$prettyHost"
-			}
-
+			
 			this.followers_count = src.long("followersCount") ?: - 1L
 			this.following_count = src.long("followingCount") ?: - 1L
 			this.statuses_count = src.long("notesCount") ?: - 1L
@@ -233,7 +215,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			this.username = src.notEmptyOrThrow("username")
 			
 			//
-			sv = src.string("display_name")
+			val sv = src.string("display_name")
 			this.display_name = if(sv?.isNotEmpty() == true) sv.sanitizeBDI() else username
 			
 			//
@@ -261,19 +243,13 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			when(parser.serviceType) {
 				ServiceType.MASTODON -> {
 					
-					val hostAccess = parser.accessHost
-					
 					this.id = EntityId.mayDefault(src.string("id"))
-
-					val tmpAcct =  src.notEmptyOrThrow("acct")
-					val tmpHost = (
-						findHostFromUrl(tmpAcct, hostAccess, url)
-							?: throw RuntimeException("can't get host from acct or url")
-					).toLowerCase(Locale.JAPAN)
-					this.hostAscii = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
-					val prettyHost = IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
-					this.acctAscii = if( !tmpAcct.contains('@') ) tmpAcct else "$username@$hostAscii"
-					this.acctPretty = if( !tmpAcct.contains('@') ) tmpAcct else "$username@$prettyHost"
+					
+					val tmpAcct = src.notEmptyOrThrow("acct")
+					this.host = findHostFromUrl(tmpAcct, parser.accessHost, url)
+						?: error("can't get host from acct or url")
+					
+					this.acct = Acct.parse(username, if(tmpAcct.contains('@')) this.host else null)
 					
 					this.followers_count = src.long("followers_count")
 					this.following_count = src.long("following_count")
@@ -293,15 +269,11 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					// tootsearch のアカウントのIDはどのタンス上のものか分からないので役に立たない
 					this.id = EntityId.DEFAULT
 					
-					sv = src.notEmptyOrThrow("acct")
-					val tmpHost = (findHostFromUrl(sv, null, url)
-						?: throw RuntimeException("can't get host from acct or url")
-						).toLowerCase(Locale.JAPAN)
-					this.hostAscii = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
-					val prettyHost=IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
+					val tmpAcct = src.notEmptyOrThrow("acct")
+					this.host = findHostFromUrl(tmpAcct, null, url)
+						?: error("can't get host from acct or url")
 					
-					this.acctAscii = this.username + "@" + this.hostAscii
-					this.acctPretty = this.username + "@" + prettyHost
+					this.acct = Acct.parse(this.username, this.host)
 					
 					this.followers_count = src.long("followers_count")
 					this.following_count = src.long("following_count")
@@ -320,14 +292,10 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					this.id = EntityId.mayDefault(src.string("id"))
 					
 					// MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
-					val tmpHost = (findHostFromUrl(null, null, url)
-						?: throw RuntimeException("can't get host from url")
-						).toLowerCase(Locale.JAPAN)
-					this.hostAscii = IDN.toASCII(tmpHost,IDN.ALLOW_UNASSIGNED)
-					val prettyHost = IDN.toUnicode(tmpHost,IDN.ALLOW_UNASSIGNED)
-
-					this.acctAscii = this.username + "@" + hostAscii
-					this.acctPretty = this.username + "@" + prettyHost
+					this.host = findHostFromUrl(null, null, url)
+						?: error("can't get host from url")
+					
+					this.acct = Acct.parse(this.username, this.host)
 					
 					this.followers_count = null
 					this.following_count = null
@@ -446,7 +414,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					.append(statuses_count.toString())
 			
 			if(Pref.bpDirectoryFollowers(pref)
-				&& !Pref.bpHideFollowCount(pref)
+				&& ! Pref.bpHideFollowCount(pref)
 				&& (followers_count ?: 0L) > 0L)
 				prepareSb()
 					.append(context.getString(R.string.followers))
@@ -515,28 +483,23 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 		internal val reAccountUrl2 : Pattern =
 			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/users/(\w|\w+[\w-]*\w)(?=\z|[?#])""")
 		
-		fun getAcctFromUrl(url : String?) : String? {
+		fun getAcctFromUrl(url : String?) : Acct? {
 			
 			url ?: return null
 			
 			var m = reAccountUrl.matcher(url)
 			if(m.find()) {
 				val host = m.groupEx(1)
-				val user = m.groupEx(2)?.decodePercent()
+				val user = m.groupEx(2) !!.decodePercent()
 				val instance = m.groupEx(3)?.decodePercent()
-				return if(instance?.isNotEmpty() == true) {
-					"$user@$instance"
-				} else {
-					"$user@$host"
-				}
+				return Acct.parse(user, instance?.notEmpty() ?: host)
 			}
 			
 			m = reAccountUrl2.matcher(url)
 			if(m.find()) {
 				val host = m.groupEx(1)
-				val user = m.groupEx(2)?.decodePercent()
-				
-				return "$user@$host"
+				val user = m.groupEx(2) !!.decodePercent()
+				return Acct.parse(user, host)
 			}
 			
 			return null
@@ -554,15 +517,12 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 		}
 		
 		// Tootsearch用。URLやUriを使ってアカウントのインスタンス名を調べる
-		fun findHostFromUrl(acct : String?, accessHost : String?, url : String?) : String? {
+		fun findHostFromUrl(acctArg : String?, accessHost : Host?, url : String?) : Host? {
 			
 			// acctから調べる
-			if(acct != null) {
-				val pos = acct.indexOf('@')
-				if(pos != - 1) {
-					val host = acct.substring(pos + 1)
-					if(host.isNotEmpty()) return host.toLowerCase(Locale.JAPAN)
-				}
+			if(acctArg != null) {
+				val acct = Acct.parse(acctArg)
+				if( acct.host != null) return acct.host
 			}
 			
 			// accessHostから調べる
@@ -572,11 +532,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			
 			// URLから調べる
 			// たぶんどんなURLでもauthorityの部分にホスト名が来るだろう(慢心)
-			url.mayUri()?.authority?.let { host ->
-				if(host.isNotEmpty()) {
-					return host.toLowerCase(Locale.JAPAN)
-				}
-			}
+			url.mayUri()?.authority?.notEmpty()?.let { return Host.parse(it) }
 			
 			log.e("findHostFromUrl: can't parse host from URL $url")
 			return null
@@ -657,14 +613,5 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 		}
 		
 		
-		fun acctAndPrettyAcct(src : String) : Pair<String, String> {
-			val cols = src.split("@")
-			if(cols.size < 2 ) return Pair(src,src)
-			val username = cols[0]
-			return Pair(
-				"$username@${IDN.toASCII(cols[1], IDN.ALLOW_UNASSIGNED)}",
-				"$username@${IDN.toUnicode(cols[1], IDN.ALLOW_UNASSIGNED)}"
-			)
-		}
 	}
 }

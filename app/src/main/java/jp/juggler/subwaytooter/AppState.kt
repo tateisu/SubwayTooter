@@ -301,47 +301,47 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	}
 	
 	fun isBusyFav(account : SavedAccount, status : TootStatus) : Boolean {
-		val key = account.acctAscii + ":" + status.busyKey
+		val key = account.acct.ascii + ":" + status.busyKey
 		return map_busy_fav.contains(key)
 	}
 	
 	fun setBusyFav(account : SavedAccount, status : TootStatus) {
-		val key = account.acctAscii + ":" + status.busyKey
+		val key = account.acct.ascii + ":" + status.busyKey
 		map_busy_fav.add(key)
 	}
 	
 	fun resetBusyFav(account : SavedAccount, status : TootStatus) {
-		val key = account.acctAscii + ":" + status.busyKey
+		val key = account.acct.ascii + ":" + status.busyKey
 		map_busy_fav.remove(key)
 	}
 	
 	fun isBusyBookmark(account : SavedAccount, status : TootStatus) : Boolean {
-		val key = account.acctAscii + ":" + status.busyKey
+		val key = account.acct.ascii + ":" + status.busyKey
 		return map_busy_bookmark.contains(key)
 	}
 	
 	fun setBusyBookmark(account : SavedAccount, status : TootStatus) {
-		val key = account.acctAscii + ":" + status.busyKey
+		val key = account.acct.ascii + ":" + status.busyKey
 		map_busy_bookmark.add(key)
 	}
 	
 	fun resetBusyBookmark(account : SavedAccount, status : TootStatus) {
-		val key = account.acctAscii + ":" + status.busyKey
+		val key = account.acct.ascii + ":" + status.busyKey
 		map_busy_bookmark.remove(key)
 	}
 	
 	fun isBusyBoost(account : SavedAccount, status : TootStatus) : Boolean {
-		val key = account.acctAscii + ":" + status.busyKey
+		val key = account.acct.ascii + ":" + status.busyKey
 		return map_busy_boost.contains(key)
 	}
 	
 	fun setBusyBoost(account : SavedAccount, status : TootStatus) {
-		val key = account.acctAscii + ":" + status.busyKey
+		val key = account.acct.ascii + ":" + status.busyKey
 		map_busy_boost.add(key)
 	}
 	
 	fun resetBusyBoost(account : SavedAccount, status : TootStatus) {
-		val key = account.acctAscii + ":" + status.busyKey
+		val key = account.acct.ascii + ":" + status.busyKey
 		map_busy_boost.remove(key)
 	}
 	

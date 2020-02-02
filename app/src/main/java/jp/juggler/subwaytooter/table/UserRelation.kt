@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
@@ -400,7 +401,7 @@ class UserRelation {
 			}
 		}
 		
-		fun loadPseudo(acct : String) = load(DB_ID_PSEUDO, acct)
+		fun loadPseudo(acct : Acct) = load(DB_ID_PSEUDO, acct.ascii)
 		
 		fun createCursorPseudo() : Cursor =
 			App1.database.query(

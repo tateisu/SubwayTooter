@@ -3,19 +3,16 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.res.ColorStateList
-import androidx.core.app.ShareCompat
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AlertDialog
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ShareCompat
+import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.action.*
-import jp.juggler.subwaytooter.api.entity.TootAccountRef
-import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.DlgListMember
 import jp.juggler.subwaytooter.dialog.DlgQRCode
 import jp.juggler.subwaytooter.span.MyClickableSpan
@@ -25,7 +22,6 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.*
 import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.backgroundDrawable
-import java.net.IDN
 import java.util.*
 
 @SuppressLint("InflateParams")
@@ -404,10 +400,10 @@ internal class DlgContextMenu(
 		
 		val who_host = getUserHost()
 		viewRoot.findViewById<View>(R.id.llInstance)
-			.vg(! (who_host.isEmpty() || who_host == "?"))
+			.vg(  who_host.isValid )
 			?.let {
 				val tvInstanceActions : TextView = viewRoot.findViewById(R.id.tvInstanceActions)
-				tvInstanceActions.text = activity.getString(R.string.instance_actions_for, IDN.toUnicode(who_host,IDN.ALLOW_UNASSIGNED))
+				tvInstanceActions.text = activity.getString(R.string.instance_actions_for, who_host.pretty)
 				
 				// 疑似アカウントではドメインブロックできない
 				// 自ドメインはブロックできない
@@ -524,13 +520,12 @@ internal class DlgContextMenu(
 		dialog.show()
 	}
 	
-	private fun getUserHost() : String {
-		return when(val who_host = whoRef?.get()?.hostAscii) {
-			"?" -> column.instance_uri
-			null, "" -> access_info.hostAscii
+	private fun getUserHost() : Host =
+		when(val who_host = whoRef?.get()?.host) {
+			Host.UNKNOWN -> Host.parse(column.instance_uri)
+			Host.EMPTY, null -> access_info.host
 			else -> who_host
 		}
-	}
 	
 	private fun updateGroup(btn : Button, group : View, toggle : Boolean = false) {
 		
@@ -766,7 +761,6 @@ internal class DlgContextMenu(
 					ActNickname.open(
 						activity,
 						access_info.getFullAcct(who),
-						access_info.getFullAcctPretty(who),
 						true,
 						ActMain.REQUEST_CODE_NICKNAME
 					)
@@ -775,7 +769,7 @@ internal class DlgContextMenu(
 					DlgQRCode.open(
 						activity,
 						whoRef.decoded_display_name,
-						access_info.getUserUrl(who)
+						who.getUserUrl()
 					)
 				
 				R.id.btnDomainBlock ->
@@ -784,7 +778,7 @@ internal class DlgContextMenu(
 						showToast(activity, false, R.string.domain_block_from_pseudo)
 						return
 					} else {
-						val who_host = who.hostAscii
+						val who_host = who.host
 						
 						// 自分のドメインではブロックできない
 						if(access_info.matchHost(who_host)) {
@@ -801,22 +795,14 @@ internal class DlgContextMenu(
 					}
 				
 				R.id.btnOpenTimeline -> {
-					val who_host = who.hostAscii
-					@Suppress("ControlFlowWithEmptyBody")
-					if(who_host.isEmpty() || who_host == "?") {
-						// 何もしない
-					} else {
-						Action_Instance.timelineLocal(activity, pos, who_host)
+					who.host.valid()?.let{
+						Action_Instance.timelineLocal(activity, pos, it)
 					}
 				}
 				
 				R.id.btnDomainTimeline -> {
-					val who_host = who.hostAscii
-					@Suppress("ControlFlowWithEmptyBody")
-					if(who_host.isEmpty() || who_host == "?") {
-						// 何もしない
-					} else {
-						Action_Instance.timelineDomain(activity, pos, access_info, who_host)
+					who.host.valid()?.let{
+						Action_Instance.timelineDomain(activity, pos, access_info, it)
 					}
 				}
 				
@@ -886,7 +872,7 @@ internal class DlgContextMenu(
 					activity,
 					access_info,
 					pos,
-					who.hostAscii,
+					who.host,
 					status,
 					ColumnType.ACCOUNT_AROUND
 					, allowPseudo = false
@@ -896,7 +882,7 @@ internal class DlgContextMenu(
 					activity,
 					access_info,
 					pos,
-					who.hostAscii,
+					who.host,
 					status,
 					ColumnType.LOCAL_AROUND
 				)
@@ -905,7 +891,7 @@ internal class DlgContextMenu(
 					activity,
 					access_info,
 					pos,
-					who.hostAscii,
+					who.host,
 					status,
 					ColumnType.FEDERATED_AROUND
 				)
@@ -915,13 +901,13 @@ internal class DlgContextMenu(
 				R.id.btnOpenAccountInAdminWebUi ->
 					App1.openBrowser(
 						activity,
-						"https://${access_info.hostAscii}/admin/accounts/${who.id}"
+						"https://${access_info.host.ascii}/admin/accounts/${who.id}"
 					)
 				
 				R.id.btnOpenInstanceInAdminWebUi ->
 					App1.openBrowser(
 						activity,
-						"https://${access_info.hostAscii}/admin/instances/${who.hostAscii}"
+						"https://${access_info.host.ascii}/admin/instances/${who.host.ascii}"
 					)
 				
 				R.id.btnBoostWithVisibility -> {
@@ -971,13 +957,12 @@ internal class DlgContextMenu(
 					if(access_info.isMisskey) {
 						showToast(activity, false, R.string.misskey_account_not_supported)
 					} else {
-						val acct = access_info.getFullAcct(who)
-						if(acct.isNotEmpty() && ! acct.contains('?')) {
+						access_info.getFullAcct(who).validFull()?.let{
 							activity.addColumn(
 								pos,
 								access_info,
 								ColumnType.NOTIFICATION_FROM_ACCT,
-								acct
+								it
 							)
 						}
 					}

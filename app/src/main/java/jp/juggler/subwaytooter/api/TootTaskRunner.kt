@@ -10,6 +10,7 @@ import java.lang.ref.WeakReference
 import java.text.NumberFormat
 
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.dismissSafe
@@ -125,7 +126,7 @@ class TootTaskRunner(
 		return run(callback)
 	}
 	
-	fun run(instance : String, callback : TootTask) : TootTaskRunner {
+	fun run(instance : Host, callback : TootTask) : TootTaskRunner {
 		client.instance = instance
 		return run(callback)
 		

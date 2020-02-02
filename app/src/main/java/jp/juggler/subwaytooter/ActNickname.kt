@@ -16,6 +16,7 @@ import android.widget.EditText
 import android.widget.TextView
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.util.*
 import org.jetbrains.anko.backgroundColor
@@ -32,14 +33,13 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		
 		fun open(
 			activity : Activity,
-			fullAcctAscii : String,
-			fullAcctPretty: String,
+			fullAcct : Acct,
 			bShowNotificationSound : Boolean,
 			requestCode : Int
 		) {
 			val intent = Intent(activity, ActNickname::class.java)
-			intent.putExtra(EXTRA_ACCT_ASCII, fullAcctAscii)
-			intent.putExtra(EXTRA_ACCT_PRETTY, fullAcctPretty)
+			intent.putExtra(EXTRA_ACCT_ASCII, fullAcct.ascii)
+			intent.putExtra(EXTRA_ACCT_PRETTY, fullAcct.pretty)
 			intent.putExtra(EXTRA_SHOW_NOTIFICATION_SOUND, bShowNotificationSound)
 			activity.startActivityForResult(intent, requestCode)
 		}

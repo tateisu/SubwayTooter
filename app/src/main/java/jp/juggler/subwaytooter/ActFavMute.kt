@@ -12,6 +12,7 @@ import com.woxthebox.draglistview.DragItemAdapter
 import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
+import jp.juggler.subwaytooter.api.entity.Acct
 
 import java.util.ArrayList
 
@@ -114,7 +115,7 @@ class ActFavMute : AppCompatActivity() {
 				while(cursor.moveToNext()) {
 					val id = cursor.getLong(idx_id)
 					val name = cursor.getString(idx_name)
-					val item = MyItem(id, name)
+					val item = MyItem(id, Acct.parse(name))
 					tmp_list.add(item)
 				}
 			}
@@ -126,7 +127,7 @@ class ActFavMute : AppCompatActivity() {
 	}
 	
 	// リスト要素のデータ
-	internal class MyItem(val id : Long, val name : String)
+	internal class MyItem(val id : Long, val name : Acct)
 	
 	// リスト要素のViewHolder
 	internal class MyViewHolder(viewRoot : View) :
@@ -149,7 +150,7 @@ class ActFavMute : AppCompatActivity() {
 		
 		fun bind(item : MyItem) {
 			itemView.tag = item // itemView は親クラスのメンバ変数
-			tvName.text = item.name
+			tvName.text = item.name.pretty
 		}
 		
 		//		@Override

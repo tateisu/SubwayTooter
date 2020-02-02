@@ -32,7 +32,7 @@ private val unsupportedRefresh : ColumnTask_Refresh.(client : TootApiClient) -> 
 private val unsupportedGap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? =
 	{ TootApiResult("gap reading not supported.") }
 
-private val unusedIconId : (String) -> Int =
+private val unusedIconId : (Acct) -> Int =
 	{ R.drawable.ic_question }
 
 private val unusedName : (context : Context) -> String =
@@ -43,7 +43,7 @@ private val unusedName2 : Column.(long : Boolean) -> String? =
 
 enum class ColumnType(
 	val id : Int = 0,
-	val iconId : (acct:String) -> Int = unusedIconId,
+	val iconId : (Acct) -> Int = unusedIconId,
 	val name1 : (context : Context) -> String = unusedName,
 	val name2 : Column.(long : Boolean) -> String? = unusedName2,
 	val loading : ColumnTask_Loading.(client : TootApiClient) -> TootApiResult?,
@@ -1161,7 +1161,7 @@ enum class ColumnType(
 		loading = { client ->
 			val (instance, instanceResult) = TootInstance.get(
 				client,
-				column.instance_uri,
+				Host.parse(column.instance_uri),
 				allowPixelfed = true,
 				forceUpdate = true
 			)

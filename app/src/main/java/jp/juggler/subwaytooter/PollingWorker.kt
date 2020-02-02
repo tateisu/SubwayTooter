@@ -25,9 +25,7 @@ import com.google.firebase.iid.FirebaseInstanceId
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.table.NotificationCache.Companion.getEntityOrderId
 import jp.juggler.subwaytooter.table.NotificationCache.Companion.parseNotificationType
@@ -690,7 +688,7 @@ class PollingWorker private constructor(contextArg : Context) {
 		val bPollingRequired = AtomicBoolean(false)
 		lateinit var muted_app : HashSet<String>
 		lateinit var muted_word : WordTrieTree
-		lateinit var favMuteSet : HashSet<String>
+		lateinit var favMuteSet : HashSet<Acct>
 		var bPollingComplete = false
 		var install_id : String? = null
 		
@@ -987,15 +985,15 @@ class PollingWorker private constructor(contextArg : Context) {
 				}
 				while(true) {
 					// 同じホスト名が重複しないようにSetに集める
-					val liveSet = TreeSet<String>()
+					val liveSet = TreeSet<Host>()
 					for(t in thread_list) {
 						if(! t.isAlive) continue
 						if(job.isJobCancelled) t.cancel()
-						liveSet.add(t.account.hostAscii)
+						liveSet.add(t.account.host)
 					}
 					if(liveSet.isEmpty()) break
 					
-					job_status.set("waiting " + liveSet.joinToString(", "))
+					job_status.set("waiting " + liveSet.joinToString(", ") { it.pretty })
 					job.waitWorkerThread(if(job.isJobCancelled) 100L else 1000L)
 				}
 				
@@ -1024,7 +1022,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					get() = job.isJobCancelled
 			})
 			
-			private val favMuteSet : HashSet<String> get() = job.favMuteSet
+			private val favMuteSet : HashSet<Acct> get() = job.favMuteSet
 			private lateinit var parser : TootParser
 			private lateinit var cache : NotificationCache
 			
@@ -1076,7 +1074,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					val wps_log = wps.log
 					if(wps_log.isNotEmpty())
-						log.d("PushSubscriptionHelper: ${account.acctPretty} $wps_log")
+						log.d("PushSubscriptionHelper: ${account.acct.pretty} $wps_log")
 					
 					if(job.isJobCancelled) return
 					
@@ -1243,14 +1241,14 @@ class PollingWorker private constructor(contextArg : Context) {
 					val dataList = dstListData
 					val first = dataList.firstOrNull()
 					if(first == null) {
-						log.d("showNotification[${account.acctPretty}/$notification_tag] cancel notification.")
+						log.d("showNotification[${account.acct.pretty}/$notification_tag] cancel notification.")
 						if(Build.VERSION.SDK_INT >= 23 && Pref.bpDivideNotification(pref)) {
 							notification_manager.activeNotifications?.forEach {
 								if(it != null &&
 									it.id == NOTIFICATION_ID &&
 									it.tag.startsWith("$notification_tag/")
 								) {
-									log.d("cancel: ${it.tag} context=${account.acctPretty} $notification_tag")
+									log.d("cancel: ${it.tag} context=${account.acct.pretty} $notification_tag")
 									notification_manager.cancel(it.tag, NOTIFICATION_ID)
 								}
 							}
@@ -1267,7 +1265,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					) {
 						// 先頭にあるデータが同じなら、通知を更新しない
 						// このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
-						log.d("showNotification[${account.acctPretty}] id=${first.notification.id} is already shown.")
+						log.d("showNotification[${account.acct.pretty}] id=${first.notification.id} is already shown.")
 						return
 					}
 					
@@ -1311,11 +1309,11 @@ class PollingWorker private constructor(contextArg : Context) {
 									builder.setStyle(
 										NotificationCompat.BigTextStyle()
 											.setBigContentTitle(summary)
-											.setSummaryText(item.access_info.acctPretty)
+											.setSummaryText(item.access_info.acct.pretty)
 											.bigText(content)
 									)
 								} else {
-									builder.setContentText(item.access_info.acctPretty)
+									builder.setContentText(item.access_info.acct.pretty)
 								}
 								
 								if(Build.VERSION.SDK_INT < 26) {
@@ -1367,7 +1365,7 @@ class PollingWorker private constructor(contextArg : Context) {
 						}
 						// リストにない通知は消さない。ある通知をユーザが指で削除した際に他の通知が残ってほしい場合がある
 					} else {
-						log.d("showNotification[${account.acctPretty}] creating notification(1)")
+						log.d("showNotification[${account.acct.pretty}] creating notification(1)")
 						createNotification(notification_tag) { builder ->
 							
 							builder.setWhen(first.notification.time_created_at)
@@ -1376,7 +1374,7 @@ class PollingWorker private constructor(contextArg : Context) {
 							
 							if(dataList.size == 1) {
 								builder.setContentTitle(a)
-								builder.setContentText( account.acctPretty)
+								builder.setContentText( account.acct.pretty)
 							} else {
 								val header =
 									context.getString(R.string.notification_count, dataList.size)
@@ -1385,7 +1383,7 @@ class PollingWorker private constructor(contextArg : Context) {
 								
 								val style = NotificationCompat.InboxStyle()
 									.setBigContentTitle(header)
-									.setSummaryText( account.acctPretty)
+									.setSummaryText( account.acct.pretty)
 								for(i in 0 .. 4) {
 									if(i >= dataList.size) break
 									val item = dataList[i]
@@ -1450,7 +1448,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					notificationId : String? = null,
 					setContent : (builder : NotificationCompat.Builder) -> Unit
 				) {
-					log.d("showNotification[${account.acctPretty}] creating notification(1)")
+					log.d("showNotification[${account.acct.pretty}] creating notification(1)")
 					
 					val builder = if(Build.VERSION.SDK_INT >= 26) {
 						// Android 8 から、通知のスタイルはユーザが管理することになった
@@ -1519,15 +1517,15 @@ class PollingWorker private constructor(contextArg : Context) {
 						// Android 7.0 ではグループを指定しないと勝手に通知が束ねられてしまう。
 						// 束ねられた通知をタップしても pi_click が実行されないので困るため、
 						// アカウント別にグループキーを設定する
-						setGroup(context.packageName + ":" + account.acctAscii)
+						setGroup(context.packageName + ":" + account.acct.ascii)
 						
 					}
 					
-					log.d("showNotification[${account.acctPretty}] creating notification(3)")
+					log.d("showNotification[${account.acct.pretty}] creating notification(3)")
 					
 					setContent(builder)
 					
-					log.d("showNotification[${account.acctPretty}] set notification...")
+					log.d("showNotification[${account.acct.pretty}] set notification...")
 					
 					notification_manager.notify(notification_tag, NOTIFICATION_ID, builder.build())
 				}
@@ -1540,9 +1538,9 @@ class PollingWorker private constructor(contextArg : Context) {
 			false -> item.notification.accountRef?.decoded_display_name
 			
 			true -> {
-				val prettyAcct = item.notification.accountRef?.get()?.acctPretty
-				if(prettyAcct?.isNotEmpty() == true) {
-					"@$prettyAcct"
+				val acctPretty = item.notification.accountRef?.get()?.acct?.pretty
+				if(acctPretty?.isNotEmpty() == true) {
+					"@$acctPretty"
 				} else {
 					null
 				}

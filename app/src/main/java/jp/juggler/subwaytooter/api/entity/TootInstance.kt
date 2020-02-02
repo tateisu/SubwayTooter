@@ -83,8 +83,8 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 	init {
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			
-			this.uri = parser.accessHost
-			this.title = parser.accessHost
+			this.uri = parser.accessHost?.ascii
+			this.title = parser.accessHost?.pretty
 			val sv = src.jsonObject("maintainer")?.string("url")
 			this.email = when {
 				sv?.startsWith("mailto:") == true -> sv.substring(7)
@@ -131,7 +131,7 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 			
 			val parser2 = TootParser(
 				parser.context,
-				LinkHelper.newLinkHelper(uri ?: "?")
+				LinkHelper.newLinkHelper(Host.parse(uri ?: "?"))
 			)
 			contact_account =
 				parseItem(::TootAccount, parser2, src.jsonObject("contact_account"))
@@ -201,11 +201,11 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 		
 		// 疑似アカウントの追加時に、インスタンスの検証を行う
 		private fun TootApiClient.getInstanceInformationMastodon() : TootApiResult? {
-			val result = TootApiResult.makeWithCaption(instance)
+			val result = TootApiResult.makeWithCaption(instance?.pretty)
 			if(result.error != null) return result
 			
 			if(sendRequest(result) {
-					Request.Builder().url("https://$instance/api/v1/instance").build()
+					Request.Builder().url("https://${instance?.ascii}/api/v1/instance").build()
 				}
 			) {
 				parseJson(result) ?: return null
@@ -217,14 +217,14 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 		
 		// 疑似アカウントの追加時に、インスタンスの検証を行う
 		private fun TootApiClient.getInstanceInformationMisskey() : TootApiResult? {
-			val result = TootApiResult.makeWithCaption(instance)
+			val result = TootApiResult.makeWithCaption(instance?.pretty)
 			if(result.error != null) return result
 			if(sendRequest(result) {
 					JsonObject().apply {
 						put("dummy", 1)
 					}
 						.toPostRequestBuilder()
-						.url("https://$instance/api/meta")
+						.url("https://${instance?.ascii}/api/meta")
 						.build()
 				}) {
 				parseJson(result) ?: return null
@@ -273,7 +273,15 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 		
 		fun get(
 			client : TootApiClient,
-			host : String? = client.instance,
+			host : String,
+			account : SavedAccount? = client.account?.takeIf { it.matchHost(host)} ,
+			allowPixelfed : Boolean = false,
+			forceUpdate : Boolean = false
+		) : Pair<TootInstance?, TootApiResult?> = get(client,Host.parse(host),account,allowPixelfed,forceUpdate)
+		
+		fun get(
+			client : TootApiClient,
+			host : Host? = client.instance,
 			account : SavedAccount? = if(host == client.instance) client.account else null,
 			allowPixelfed : Boolean = false,
 			forceUpdate : Boolean = false
@@ -284,7 +292,7 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 			try {
 				client.account = account
 				if(host != null) client.instance = host
-				val instanceName = client.instance !!.toLowerCase(Locale.JAPAN)
+				val instanceName = client.instance!!.pretty
 				
 				// ホスト名ごとに用意したオブジェクトで同期する
 				val cacheEntry = getCacheEntry(instanceName)
@@ -336,7 +344,7 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 							TootParser(
 								client.context,
 								LinkHelper.newLinkHelper(
-									instanceName,
+									Host.parse(instanceName),
 									misskeyVersion = parseMisskeyVersion(json)
 								)
 							)

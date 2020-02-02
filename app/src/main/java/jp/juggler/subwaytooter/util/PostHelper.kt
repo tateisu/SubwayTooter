@@ -580,7 +580,7 @@ class PostHelper(
 				val request_builder = body_string.toRequestBody(MEDIA_TYPE_JSON).toPost()
 				
 				if(! Pref.bpDontDuplicationCheck(pref)) {
-					val digest = (body_string + account.acctAscii).digestSHA256Hex()
+					val digest = (body_string + account.acct.ascii).digestSHA256Hex()
 					request_builder.header("Idempotency-Key", digest)
 				}
 				
@@ -675,7 +675,7 @@ class PostHelper(
 	private var formRoot : View? = null
 	private var bMainScreen : Boolean = false
 	
-	private var instance : String? = null
+	private var instance : Host? = null
 	private var isMisskey = false
 	
 	private val onEmojiListLoad : (list : ArrayList<CustomEmoji>) -> Unit =
@@ -837,7 +837,7 @@ class PostHelper(
 			val limit = 100
 			
 			// カスタム絵文字の候補を部分一致検索
-			code_list.addAll(customEmojiCodeList(this@PostHelper.instance, limit, part))
+			code_list.addAll(customEmojiCodeList(instance?.ascii, limit, part))
 			
 			// 通常の絵文字を部分一致で検索
 			val remain = limit - code_list.size
@@ -864,11 +864,9 @@ class PostHelper(
 			instance : String?,
 			@Suppress("SameParameterValue") limit : Int,
 			needle : String
-		) : ArrayList<CharSequence> {
-			val dst = ArrayList<CharSequence>()
-			
+		) =  ArrayList<CharSequence>().also{ dst->
+
 			if(instance?.isNotEmpty() == true) {
-				
 				val custom_list = App1.custom_emoji_lister.getListWithAliases(
 					instance,
 					isMisskey,
@@ -916,8 +914,9 @@ class PostHelper(
 					}
 				}
 			}
-			return dst
+			
 		}
+			
 	}
 	
 	private fun openPopup() : PopupAutoCompleteAcct? {
@@ -936,13 +935,12 @@ class PostHelper(
 		fun canOpenPopup() : Boolean
 	}
 	
-	fun setInstance(_instance : String?, isMisskey : Boolean) {
-		val instance = _instance?.toLowerCase(Locale.JAPAN)
-		this.instance = instance
+	fun setInstance(instanceArg : Host?, isMisskey : Boolean) {
+		this.instance = instanceArg
 		this.isMisskey = isMisskey
 		
-		if(instance != null) {
-			App1.custom_emoji_lister.getList(instance, isMisskey, onEmojiListLoad)
+		if(instanceArg != null) {
+			App1.custom_emoji_lister.getList(instanceArg.ascii, isMisskey, onEmojiListLoad)
 		}
 		
 		val popup = this.popup
@@ -1044,7 +1042,7 @@ class PostHelper(
 	private val open_picker_emoji : Runnable = Runnable {
 		EmojiPicker(
 			activity,
-			instance,
+			instance?.ascii,
 			isMisskey
 		) { name, instance, bInstanceHasCustomEmoji, _, _ ->
 			val et = this.et ?: return@EmojiPicker
@@ -1076,7 +1074,7 @@ class PostHelper(
 	fun openEmojiPickerFromMore() {
 		EmojiPicker(
 			activity,
-			instance,
+			instance?.ascii,
 			isMisskey
 		) { name, instance, bInstanceHasCustomEmoji, _, _ ->
 			val et = this.et ?: return@EmojiPicker

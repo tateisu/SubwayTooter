@@ -9,6 +9,7 @@ import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.util.*
 import java.util.*
@@ -130,9 +131,10 @@ class AcctColor {
 				
 			}
 		}
-
-		fun load(a:SavedAccount) =load(a.acctAscii,a.acctPretty)
-		fun load(a:SavedAccount,who:TootAccount) =load(a.getFullAcct(who),a.getFullAcctPretty(who))
+		
+		fun load(a:SavedAccount,who:TootAccount) =load(a.getFullAcct(who))
+		fun load(a:SavedAccount) =load(a.acct)
+		fun load(acct:Acct) =load(acct.ascii,acct.pretty)
 		
 		fun load(acctAscii: String,acctPretty : String) : AcctColor {
 			val key = acctAscii.toLowerCase(Locale.ENGLISH)
@@ -179,23 +181,23 @@ class AcctColor {
 //			val nickname = ac.nickname
 //			return if(nickname != null && nickname.isNotEmpty()) nickname.sanitizeBDI() else acct
 //		}
+
 		fun getNickname(acctAscii:String,acctPretty:String) : String =
 			load(acctAscii,acctPretty).nickname
-		
+		fun getNickname(acct: Acct) : String =
+			getNickname(acct.ascii,acct.pretty)
 		fun getNickname(sa:SavedAccount) : String =
-			load(sa.acctAscii,sa.acctPretty).nickname
-
+			getNickname(sa.acct)
 		fun getNickname(sa:SavedAccount,who:TootAccount) : String =
-			load(sa.getFullAcct(who),sa.getFullAcctPretty(who)).nickname
+			getNickname(sa.getFullAcct(who))
 		
-		fun getNicknameWithColor(sa:SavedAccount,who:TootAccount) : CharSequence =
-			getNicknameWithColor(sa.getFullAcct(who),sa.getFullAcctPretty(who))
 		
-		fun getNicknameWithColor(sa:SavedAccount,acctArg:String) : CharSequence {
-			val(acct,prettyAcct)=TootAccount.acctAndPrettyAcct(sa.getFullAcct(acctArg))
-			return getNicknameWithColor(acct,prettyAcct)
-		}
-		
+		fun getNicknameWithColor(sa:SavedAccount,who:TootAccount)  =
+			getNicknameWithColor(sa.getFullAcct(who))
+		fun getNicknameWithColor(sa:SavedAccount,acctArg:String)  =
+			getNicknameWithColor(sa.getFullAcct(Acct.parse(acctArg)))
+		fun getNicknameWithColor(acct:Acct)  =
+			getNicknameWithColor(acct.ascii,acct.pretty)
 		private fun getNicknameWithColor(acctAscii : String,acctPretty : String) : CharSequence {
 			val ac = load(acctAscii,acctPretty)
 			val sb = SpannableStringBuilder(ac.nickname.sanitizeBDI())
@@ -218,9 +220,13 @@ class AcctColor {
 			return sb
 		}
 		
+		fun getNotificationSound(acct : Acct) : String? {
+			return load(acct).notification_sound?.notEmpty()
+		}
+
 		fun getNotificationSound(acctAscii : String) : String? {
-			// acctPretty is not used in this case
 			return load(acctAscii,"").notification_sound?.notEmpty()
+			// acctPretty is not used in this case
 		}
 		
 		fun hasNickname(ac : AcctColor?) : Boolean =
@@ -237,10 +243,9 @@ class AcctColor {
 		fun getStringWithNickname(
 			context : Context,
 			string_id : Int,
-			acctAscii : String,
-			acctPretty:String
+			acct : Acct
 		) : CharSequence {
-			val ac = load(acctAscii,acctPretty)
+			val ac = load(acct)
 			val name = ac.nickname
 			val sb = SpannableStringBuilder(
 				context.getString(

@@ -142,7 +142,7 @@ object Action_Account {
 	
 	private fun createAccount(
 		activity : ActMain,
-		instance : String,
+		instance : Host,
 		client_info : JsonObject,
 		dialog_host : Dialog
 	) {
@@ -240,7 +240,7 @@ object Action_Account {
 				}
 				
 				ColumnType.PROFILE_DIRECTORY -> {
-					activity.addColumn(pos, ai, type, ai.hostAscii)
+					activity.addColumn(pos, ai, type, ai.host)
 				}
 				
 				else -> activity.addColumn(pos, ai, type, *args)

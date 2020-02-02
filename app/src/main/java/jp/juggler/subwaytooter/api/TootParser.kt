@@ -22,15 +22,14 @@ class TootParser(
 	val misskeyUserRelationMap = HashMap<EntityId, UserRelation>()
 	val misskeyAccountDetailMap = HashMap<EntityId, TootAccount>()
 	
-	val accessHost : String?
-		get() = linkHelper.hostAscii
+	val accessHost : Host?
+		get() = linkHelper.host
 	
 	init {
 		if(linkHelper.isMisskey) serviceType = ServiceType.MISSKEY
 	}
 	
-	fun getFullAcct(acct : String?) = linkHelper.getFullAcct(acct)
-	fun getFullPrettyAcct(acct : String?) = linkHelper.getFullPrettyAcct(acct)
+	fun getFullAcct(acct : Acct?) = linkHelper.getFullAcct(acct)
 	
 	fun account(src : JsonObject?) = parseItem(::TootAccount, this, src)
 	fun accountList(array : JsonArray?) =

@@ -192,12 +192,12 @@ object Action_Follow {
 						// 検索APIを呼び出さないようにする
 						val result = client.request("/api/v1/accounts/${userId}")
 							?: return null
-						who.acctAscii == parser.account(result.jsonObject)?.acctAscii
+						who.acct == parser.account(result.jsonObject)?.acct
 					}
 					
 					if(! skipAccountSync) {
 						// 同タンスのIDではなかった場合、検索APIを使う
-						val (result, ar) = client.syncAccountByAcct(access_info, who.acctAscii)
+						val (result, ar) = client.syncAccountByAcct(access_info, who.acct)
 						val user = ar?.get() ?: return result
 						userId = user.id
 					}
@@ -345,7 +345,7 @@ object Action_Follow {
 					
 					// リモートユーザの同期
 					if(who.isRemote) {
-						val (result, ar) = client.syncAccountByAcct(access_info, who.acctAscii)
+						val (result, ar) = client.syncAccountByAcct(access_info, who.acct)
 						val user = ar?.get() ?: return result
 						userId = user.id
 					}
@@ -391,12 +391,11 @@ object Action_Follow {
 	fun followRemote(
 		activity : ActMain,
 		access_info : SavedAccount,
-		acctArg : String,
+		acct : Acct,
 		locked : Boolean,
 		bConfirmed : Boolean = false,
 		callback : EmptyCallback? = null
 	) {
-		val(acct,prettyAcct)=TootAccount.acctAndPrettyAcct(acctArg)
 		
 		if(access_info.isMe(acct)) {
 			showToast(activity, false, R.string.it_is_you)
@@ -409,7 +408,7 @@ object Action_Follow {
 					activity,
 					activity.getString(
 						R.string.confirm_follow_request_who_from,
-						AcctColor.getNickname(acct,prettyAcct),
+						AcctColor.getNickname(acct),
 						AcctColor.getNickname(access_info)
 					),
 					object : DlgConfirm.Callback {
@@ -438,7 +437,7 @@ object Action_Follow {
 					activity,
 					activity.getString(
 						R.string.confirm_follow_who_from,
-						AcctColor.getNickname(acct,prettyAcct),
+						AcctColor.getNickname(acct),
 						AcctColor.getNickname(access_info)
 					),
 					object : DlgConfirm.Callback {
@@ -572,7 +571,7 @@ object Action_Follow {
 			activity,
 			bAuto = false,
 			message = activity.getString(R.string.account_picker_follow),
-			accountListArg = makeAccountListNonPseudo(activity, account.hostAscii)
+			accountListArg = makeAccountListNonPseudo(activity, account.host)
 		) { ai ->
 			followRemote(
 				activity,

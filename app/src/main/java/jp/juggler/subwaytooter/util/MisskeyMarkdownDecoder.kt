@@ -15,7 +15,6 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootMention
-import jp.juggler.subwaytooter.api.entity.TootTag
 import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
@@ -797,8 +796,7 @@ object MisskeyMarkdownDecoder {
 				caption = text,
 				url = url,
 				ac = fullAcct?.let {
-					val (fullAcctAscii,fullAcctPretty) = TootAccount.acctAndPrettyAcct(it)
-					AcctColor.load(fullAcctAscii,fullAcctPretty)
+					AcctColor.load(fullAcct)
 				},
 				tag = options.linkTag
 			)
@@ -858,12 +856,12 @@ object MisskeyMarkdownDecoder {
 				)
 			} else {
 				
-				val userHost = when {
-					host.isEmpty() -> linkHelper.hostAscii
-					else -> host
-				}?.toLowerCase(Locale.JAPAN) ?: "?"
-				
-				when(userHost) {
+				when(
+					val userHost = (host.notEmpty()
+						?: linkHelper.host?.ascii
+						?: "?"
+						).toLowerCase(Locale.JAPAN)
+					) {
 					
 					// https://github.com/syuilo/misskey/pull/3603
 					
@@ -888,18 +886,15 @@ object MisskeyMarkdownDecoder {
 						val userUrl = "https://$userHost/@$username"
 						
 						val shortAcct = when {
-
-							host.isEmpty()
-								|| host.equals(linkHelper.hostAscii, ignoreCase = true)
-								|| host.equals(linkHelper.hostPretty, ignoreCase = true) -> username
-
+							
+							host.isEmpty() || linkHelper.host?.match(host) == true -> username
+							
 							else -> "$username@$host"
-
 						}
 						
 						val mentions = prepareMentions()
 						
-						if(mentions.find { m -> m.acctAscii == shortAcct || m.acctPretty == shortAcct } == null) {
+						if(null == mentions.find { m -> m.acct.ascii == shortAcct || m.acct.pretty == shortAcct }) {
 							mentions.add(
 								TootMention(
 									jp.juggler.subwaytooter.api.entity.EntityId.DEFAULT
@@ -912,7 +907,8 @@ object MisskeyMarkdownDecoder {
 						
 						appendLink(
 							when {
-								jp.juggler.subwaytooter.Pref.bpMentionFullAcct(jp.juggler.subwaytooter.App1.pref) -> "@$username@$userHost"
+								jp.juggler.subwaytooter.Pref.bpMentionFullAcct(jp.juggler.subwaytooter.App1.pref) ->
+									"@$username@$userHost"
 								else -> "@$shortAcct"
 							}
 							, userUrl
@@ -928,7 +924,7 @@ object MisskeyMarkdownDecoder {
 			if(tag.isNotEmpty() && linkHelper != null) {
 				appendLink(
 					"#$tag",
-					"https://${linkHelper.hostAscii}/tags/" + tag.encodePercent()
+					"https://${linkHelper.host?.ascii}/tags/" + tag.encodePercent()
 				)
 			}
 		}),
@@ -1048,10 +1044,7 @@ object MisskeyMarkdownDecoder {
 					val linkInfo = LinkInfo(
 						url = url,
 						tag = options.linkTag,
-						ac = TootAccount.getAcctFromUrl(url)?.let {acct->
-							val (fullAcctAscii,fullAcctPretty) = TootAccount.acctAndPrettyAcct(acct)
-							AcctColor.load(fullAcctAscii,fullAcctPretty)
-						},
+						ac = TootAccount.getAcctFromUrl(url)?.let { acct -> AcctColor.load(acct) },
 						caption = sb.substring(start, sb.length)
 					)
 					spanList.addFirst(start, sb.length, MyClickableSpan(linkInfo))
@@ -1489,14 +1482,14 @@ object MisskeyMarkdownDecoder {
 			)
 		)
 		
-//		// プロフ絵文字
-//		addParser(
-//			":"
-//			, simpleParser(
-//				Pattern.compile("""\A:(@[a-zA-Z0-9+-_]+(?:@[${TootTag.w}.-]+[a-z0-9]+)?):""",Pattern.CASE_INSENSITIVE)
-//				, NodeType.EMOJI
-//			)
-//		)
+		//		// プロフ絵文字
+		//		addParser(
+		//			":"
+		//			, simpleParser(
+		//				Pattern.compile("""\A:(@[a-zA-Z0-9+-_]+(?:@[${TootTag.w}.-]+[a-z0-9]+)?):""",Pattern.CASE_INSENSITIVE)
+		//				, NodeType.EMOJI
+		//			)
+		//		)
 		
 		// モーション
 		addParser(

@@ -10,15 +10,10 @@ import jp.juggler.subwaytooter.PollingWorker
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
-import java.net.IDN
 import java.util.*
-import java.util.regex.Pattern
 
 class SavedAccount(
 	val db_id : Long,
@@ -31,8 +26,8 @@ class SavedAccount(
 	
 	val username : String
 	
-	override val hostAscii : String // punycode
-	override val hostPretty : String // unicode
+	override val host : Host
+	val acct : Acct
 	
 	var visibility : TootVisibility = TootVisibility.Public
 	var confirm_boost : Boolean = false
@@ -71,32 +66,16 @@ class SavedAccount(
 	var last_subscription_error : String? = null
 	var last_push_endpoint : String? = null
 	
-	val acctAscii :String
-	val acctPretty :String
 	
 	init {
-		val pos = acctArg.indexOf('@')
-		val tmpHost:String?
-		if(pos == - 1) {
-			this.username = acctArg
-			acctAscii = acctArg
-			acctPretty = acctArg
-			tmpHost = null
-		} else {
-			this.username = acctArg.substring(0, pos)
-			tmpHost = acctArg.substring(pos+1).toLowerCase(Locale.JAPAN)
-			acctAscii= "$username@${IDN.toASCII(tmpHost, IDN.ALLOW_UNASSIGNED)}"
-			acctPretty = "$username@${IDN.toUnicode(tmpHost, IDN.ALLOW_UNASSIGNED)}"
-		}
+		val tmpAcct = Acct.parse(acctArg)
+		val tmpHost = hostArg?.notEmpty()?.let{ Host.parse(it)}
+		this.host = tmpHost ?: tmpAcct.host ?: error("missing host in acct")
 		
+		this.username = tmpAcct.username
+		this.acct = tmpAcct.followHost(host)
+
 		if(username.isEmpty()) throw RuntimeException("missing username in acct")
-		
-		val host = hostArg?.notEmpty()?.toLowerCase(Locale.JAPAN)
-				?: tmpHost
-				?: error("missing host in acct")
-		
-		this.hostAscii = IDN.toASCII(host,IDN.ALLOW_UNASSIGNED)
-		this.hostPretty = IDN.toUnicode(host,IDN.ALLOW_UNASSIGNED)
 	}
 	
 	constructor(context : Context, cursor : Cursor) : this(
@@ -113,7 +92,7 @@ class SavedAccount(
 		} else {
 			TootParser(
 				context,
-				LinkHelper.newLinkHelper(this@SavedAccount.hostAscii, misskeyVersion = misskeyVersion)
+				LinkHelper.newLinkHelper(this@SavedAccount.host, misskeyVersion = misskeyVersion)
 			).account(jsonAccount)
 				?: error("missing loginAccount for $strAccount")
 		}
@@ -163,7 +142,7 @@ class SavedAccount(
 	}
 	
 	val isNA : Boolean
-		get() = "?@?" == acctAscii
+		get() = acct == Acct.UNKNOWN
 	
 	val isPseudo : Boolean
 		get() = username == "?"
@@ -284,101 +263,43 @@ class SavedAccount(
 		this.sound_uri = b.sound_uri
 	}
 	
-	fun getFullAcct(who : TootAccount?) : String = getFullAcct(who?.acctAscii)
-	fun getFullAcctPretty(who : TootAccount?) : String = getFullPrettyAcct(who?.acctPretty)
+	fun getFullAcct(who : TootAccount?) = getFullAcct(who?.acct)
 	
-	private fun isLocalUser(acct : String?) : Boolean {
+	fun isRemoteUser(who : TootAccount) : Boolean = ! isLocalUser(who.acct)
+	fun isLocalUser(who : TootAccount?) : Boolean = isLocalUser(who?.acct)
+	private fun isLocalUser(acct : Acct?) : Boolean {
 		acct ?: return false
-		val pos = acct.indexOf('@')
-		return pos == - 1 || matchHost( acct.substring(pos + 1) )
+		return acct.host == null || acct.host == this.host
 	}
 	
-	fun isLocalUser(who : TootAccount?) : Boolean {
-		return isLocalUser(who?.acctAscii)
-	}
-	
-	fun isRemoteUser(who : TootAccount) : Boolean {
-		return ! isLocalUser(who)
-	}
 	
 	//	fun isRemoteUser(acct : String) : Boolean {
 	//		return ! isLocalUser(acct)
 	//	}
 	
-	fun getUserUrl(who : TootAccount) : String =
-		who.url ?: if(who.isRemote) {
-			"https://${IDN.toUnicode(who.hostAscii, IDN.ALLOW_UNASSIGNED)}/@${who.username}"
-		} else {
-			"https://$hostPretty/@${who.username}"
-		}
-	
-	fun isMe(who : TootAccount?) : Boolean {
-		// usernameが一致しないなら異なる
-		if(who == null || who.username != this.username) return false
-		// acctのホスト名がない(ローカル)か、アカウントのホスト名部分に一致する
-		val who_acct = who.acctAscii
-		val pos = who_acct.indexOf('@')
-		return pos == - 1 || matchHost(who_acct.substring(pos + 1))
+	fun isMe(who : TootAccount?) : Boolean = isMe(who?.acct)
+	fun isMe(who_acct : String) : Boolean  = isMe(Acct.parse(who_acct))
+
+	fun isMe(who_acct : Acct?):Boolean{
+		who_acct?:return false
+		if( who_acct.username != this.acct.username) return false
+		return who_acct.host == null || who_acct.host == this.acct.host
 	}
-	
-	fun isMe(who_acct : String) : Boolean {
-		// 自分のユーザ名部分
-		var pos = this.acctAscii.indexOf('@')
-		val me_user = this.acctAscii.substring(0, pos)
-		
-		//
-		pos = who_acct.indexOf('@')
-		// ローカルユーザは@以降を持たない
-		if(pos == - 1) return who_acct == me_user
-		// リモートユーザならホスト名部分の比較も必要
-		val who_user = who_acct.substring(0, pos)
-		val who_host = who_acct.substring(pos + 1)
-		return who_user == me_user && matchHost(who_host)
-	}
-	
+
 	fun supplyBaseUrl(url : String?) : String? {
 		return when {
 			url == null || url.isEmpty() -> return null
-			url[0] == '/' -> "https://$hostAscii$url"
+			url[0] == '/' -> "https://${host.ascii}$url"
 			else -> url
 		}
 	}
 	
-	fun isNicoru(account : TootAccount?) : Boolean {
-		var host = this.hostAscii
-		var host_start = 0
-		val acct = account?.acctAscii
-		if(acct != null) {
-			val pos = acct.indexOf('@')
-			if(pos != - 1) {
-				host = account.acctAscii
-				host_start = pos + 1
-			}
-		}
-		return host_match(strNicoruHost, 0, host, host_start)
-	}
-	
-//	// implements LinkHelper
-//	override fun findAcctColor(url : String?) : AcctColor? {
-//		if(url != null) {
-//			val acct = TootAccount.getAcctFromUrl(url)
-//			if(acct != null) {
-//				return AcctColor.load(acct)
-//			}
-//		}
-//		return null
-//	}
-//
-//	override fun findAcct(url : String?) : String? {
-//		return TootAccount.getAcctFromUrl(url)
-//	}
+	fun isNicoru(account : TootAccount?) : Boolean = account?.host == Host.FRIENDS_NICO
 	
 	companion object : TableCompanion {
 		private val log = LogCategory("SavedAccount")
 		
 		const val table = "access_info"
-		private const val strNicoruHost = "friends.nico"
-		private val reAtNicoruHost = Pattern.compile("@friends\\.nico\\z", Pattern.CASE_INSENSITIVE)
 		
 		private const val COL_ID = BaseColumns._ID
 		private const val COL_HOST = "h"
@@ -927,8 +848,8 @@ class SavedAccount(
 				return 0L
 			}
 		
-		fun isNicoru(acct:String) : Boolean {
-			return reAtNicoruHost.matcher(acct).find()
+		fun isNicoru(acct:Acct) : Boolean {
+			return acct.host == Host.FRIENDS_NICO
 		}
 		
 		private fun charAtLower(src : CharSequence, pos : Int) : Char {
@@ -1130,11 +1051,11 @@ class SavedAccount(
 	
 	override fun equals(other : Any?) : Boolean =
 		when(other) {
-			is SavedAccount -> acctAscii == other.acctAscii
+			is SavedAccount -> acct == other.acct
 			else -> false
 		}
 	
-	override fun hashCode() : Int = acctAscii.hashCode()
+	override fun hashCode() : Int = acct.hashCode()
 	
 	
 }

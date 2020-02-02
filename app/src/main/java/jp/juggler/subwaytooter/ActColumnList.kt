@@ -14,6 +14,7 @@ import com.woxthebox.draglistview.DragItemAdapter
 import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
+import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.util.*
 import java.util.*
 
@@ -196,7 +197,7 @@ class ActColumnList : AppCompatActivity() {
 	internal class MyItem(val json : JsonObject, val id : Long, context : Context) {
 		
 		val name : String = json.optString(Column.KEY_COLUMN_NAME)
-		val acct : String = json.optString(Column.KEY_COLUMN_ACCESS)
+		val acct : Acct = Acct.parse(json.optString(Column.KEY_COLUMN_ACCESS))
 		val old_index = json.optInt(Column.KEY_OLD_INDEX)
 		val type = ColumnType.parse(json.optInt(Column.KEY_TYPE))
 		val acct_color_fg : Int
@@ -240,7 +241,7 @@ class ActColumnList : AppCompatActivity() {
 		fun bind(item : MyItem) {
 			itemView.tag = item // itemView は親クラスのメンバ変数
 			ivBookmark.visibility = if(item.bOldSelection) View.VISIBLE else View.INVISIBLE
-			tvAccess.text = item.acct
+			tvAccess.text = item.acct.pretty
 			tvAccess.setTextColor(item.acct_color_fg)
 			tvAccess.setBackgroundColor(item.acct_color_bg)
 			tvAccess.setPaddingRelative(acct_pad_lr, 0, acct_pad_lr, 0)
@@ -269,7 +270,7 @@ class ActColumnList : AppCompatActivity() {
 			val item = clickedView.tag as MyItem
 			
 			var tv : TextView = dragView.findViewById(R.id.tvAccess)
-			tv.text = item.acct
+			tv.text = item.acct.pretty
 			tv.setTextColor(item.acct_color_fg)
 			tv.setBackgroundColor(item.acct_color_bg)
 			

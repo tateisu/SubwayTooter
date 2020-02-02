@@ -5,6 +5,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.util.LogCategory
 
 object FavMute :TableCompanion{
@@ -34,11 +35,11 @@ object FavMute :TableCompanion{
 		}
 	}
 	
-	fun save(acct : String?) {
+	fun save(acct : Acct?) {
 		acct ?: return
 		try {
 			val cv = ContentValues()
-			cv.put(COL_ACCT, acct)
+			cv.put(COL_ACCT, acct.ascii)
 			App1.database.replace(table, null, cv)
 		} catch(ex : Throwable) {
 			log.e(ex, "save failed.")
@@ -46,42 +47,40 @@ object FavMute :TableCompanion{
 		
 	}
 	
-	fun delete(acct : String) {
+	fun delete(acct : Acct) {
 		try {
-			App1.database.delete(table, "$COL_ACCT=?", arrayOf(acct))
+			App1.database.delete(table, "$COL_ACCT=?", arrayOf(acct.ascii))
 		} catch(ex : Throwable) {
 			log.e(ex, "delete failed.")
 		}
 	}
 
 	fun createCursor() : Cursor {
-		return App1.database.query(table, null, null, null, null, null, COL_ACCT + " asc")
+		return App1.database.query(table, null, null, null, null, null, "$COL_ACCT asc")
 	}
 	
-	val acctSet: HashSet<String>
-		get() {
-			val dst = HashSet<String>()
+	val acctSet: HashSet<Acct>
+		get() = HashSet<Acct>().also { dst ->
 			try {
 				App1.database.query(table, null, null, null, null, null, null)
 					.use{ cursor->
 						val idx_name = cursor.getColumnIndex(COL_ACCT)
 						while(cursor.moveToNext()) {
 							val s = cursor.getString(idx_name)
-							dst.add(s)
+							dst.add(Acct.parse(s))
 						}
 						
 					}
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
-			
-			return dst
 		}
+		
 	
-	fun contains( acct : String) : Boolean {
+	fun contains( acct : Acct) : Boolean {
 		var found = false
 		try {
-			App1.database.query(table, null, "$COL_ACCT=?", arrayOf(acct), null, null, null)
+			App1.database.query(table, null, "$COL_ACCT=?", arrayOf(acct.ascii), null, null, null)
 				.use{ cursor->
 					while(cursor.moveToNext()) {
 						found= true

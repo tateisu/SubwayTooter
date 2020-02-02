@@ -33,7 +33,7 @@ object ReportForm {
 		
 		val cbForward : CheckBox = view.findViewById(R.id.cbForward)
 		val tvForwardDesc:TextView = view.findViewById(R.id.tvForwardDesc)
-		val canForward = access_info.hostAscii != who.hostAscii
+		val canForward = access_info.host != who.host
 		
 		
 		cbForward.isChecked = false
@@ -43,10 +43,10 @@ object ReportForm {
 		}else{
 			cbForward.visibility = View.VISIBLE
 			tvForwardDesc.visibility = View.VISIBLE
-			cbForward.text = activity.getString(R.string.report_forward_to,who.hostAscii)
+			cbForward.text = activity.getString(R.string.report_forward_to,who.host.pretty)
 		}
 		
-		tvUser.text = who.acctPretty
+		tvUser.text = who.acct.pretty
 		
 		if( status == null){
 			tvStatusCaption.visibility = View.GONE

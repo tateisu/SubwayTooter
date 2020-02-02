@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.TextView
 import jp.juggler.subwaytooter.action.Action_Account
 import jp.juggler.subwaytooter.action.Action_Instance
+import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
@@ -98,7 +99,13 @@ internal class ViewHolderHeaderInstance(
 		} else {
 			val uri = instance.uri ?: ""
 			val hasUri = uri.isNotEmpty()
-			btnInstance.text = uri
+			
+			val host = Host.parse(uri)
+			btnInstance.text = if(host.ascii==host.pretty){
+				host.pretty
+			}else {
+				"${host.pretty}\n${host.ascii}"
+			}
 			
 			btnInstance.isEnabled = hasUri
 			btnAbout.isEnabled = hasUri
@@ -113,7 +120,7 @@ internal class ViewHolderHeaderInstance(
 			btnEmail.isEnabled = email.isNotEmpty()
 			
 			val contact_acct =
-				instance.contact_account?.let { who -> "@" + who.username + "@" + who.hostAscii } ?: ""
+				instance.contact_account?.let { who -> "@${who.username}@${who.host.pretty}" } ?: ""
 			btnContact.text = contact_acct
 			btnContact.isEnabled = contact_acct.isNotEmpty()
 			
@@ -191,6 +198,7 @@ internal class ViewHolderHeaderInstance(
 	}
 	
 	override fun onClick(v : View) {
+		val host = Host.parse(column.instance_uri)
 		when(v.id) {
 			
 			R.id.btnEmail -> instance?.email?.let { email ->
@@ -217,24 +225,23 @@ internal class ViewHolderHeaderInstance(
 					activity
 					, activity.nextPosition(column)
 					, ColumnType.SEARCH
-					
-					, args = arrayOf("@" + who.username + "@" + who.hostAscii, true)
+					, args = arrayOf("@${who.username}@${who.host.ascii}", true)
 				)
 			}
 			
-			R.id.btnInstance -> App1.openBrowser(activity, "https://${column.instance_uri}/about")
+			R.id.btnInstance -> App1.openBrowser(activity, "https://${host.pretty}/about")
 			R.id.ivThumbnail -> App1.openBrowser(activity, instance?.thumbnail)
 			
 			R.id.btnAbout ->
-				App1.openBrowser(activity, "https://${column.instance_uri}/about")
+				App1.openBrowser(activity, "https://${host.pretty}/about")
 			
 			R.id.btnAboutMore ->
-				App1.openBrowser(activity, "https://${column.instance_uri}/about/more")
+				App1.openBrowser(activity, "https://${host.pretty}/about/more")
 			
 			R.id.btnExplore -> Action_Instance.profileDirectoryFromInstanceInformation(
 				activity,
 				column,
-				column.instance_uri,
+				host,
 				instance = instance
 			)
 		}

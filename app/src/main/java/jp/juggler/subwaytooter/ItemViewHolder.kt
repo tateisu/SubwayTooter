@@ -999,7 +999,7 @@ internal class ItemViewHolder(
 	
 	private fun showDomainBlock(domain_block : TootDomainBlock) {
 		llSearchTag.visibility = View.VISIBLE
-		btnSearchTag.text = domain_block.domain
+		btnSearchTag.text = domain_block.domain.pretty
 	}
 	
 	private fun showFilter(filter : TootFilter) {
@@ -1093,7 +1093,7 @@ internal class ItemViewHolder(
 		} else {
 			val m = reply.mentions?.find { it.id == accountId }
 			if(m != null) {
-				AcctColor.getNicknameWithColor(access_info,m.acctAscii)
+				AcctColor.getNicknameWithColor(access_info.getFullAcct(m.acct))
 			} else {
 				SpannableString("ID(${accountId})")
 			}
@@ -1409,12 +1409,12 @@ internal class ItemViewHolder(
 		try {
 			if(! Column.useInstanceTicker) return
 			
-			val host = who.hostAscii
+			val host = who.host
 			
 			// LTLでホスト名が同じならTickerを表示しない
 			when(column.type) {
 				ColumnType.LOCAL, ColumnType.LOCAL_AROUND -> {
-					if(host == access_info.hostAscii) return
+					if(host == access_info.host) return
 				}
 				
 				else -> {
@@ -1422,7 +1422,7 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			val item = InstanceTicker.lastList[host] ?: return
+			val item = InstanceTicker.lastList[host.ascii] ?: return
 			
 			tvInstanceTicker.text = item.name
 			tvInstanceTicker.textColor = item.colorText
@@ -1469,21 +1469,6 @@ internal class ItemViewHolder(
 		time : Long? = null
 	) {
 		val sb = SpannableStringBuilder()
-		
-		//		if(access_info.getFullAcct(who) == "unarist@mstdn.maud.io") {
-		//			// if(sb.isNotEmpty()) sb.append(' ')
-		//
-		//			val start = sb.length
-		//			sb.append("unarist")
-		//			val end = sb.length
-		//			val icon_id = R.drawable.unarist
-		//			sb.setSpan(
-		//				EmojiImageSpan(activity, icon_id),
-		//				start,
-		//				end,
-		//				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-		//			)
-		//		}
 		
 		if(status != null) {
 			
@@ -1642,7 +1627,7 @@ internal class ItemViewHolder(
 		val ac = AcctColor.load(accessInfo,who)
 		tv.text = when {
 			AcctColor.hasNickname(ac) -> ac.nickname
-			Pref.bpShortAcctLocalUser(App1.pref) -> "@${who.acctPretty}"
+			Pref.bpShortAcctLocalUser(App1.pref) -> "@${who.acct.pretty}"
 			else -> "@${ac.nickname}"
 		}
 		tv.textColor = ac.color_fg.notZero() ?: this.acct_color
@@ -1901,16 +1886,15 @@ internal class ItemViewHolder(
 				is TootSearchGap -> column.startGap(item)
 				
 				is TootDomainBlock -> {
-					val domain = item.domain
 					AlertDialog.Builder(activity)
-						.setMessage(activity.getString(R.string.confirm_unblock_domain, domain))
+						.setMessage(activity.getString(R.string.confirm_unblock_domain, item.domain.pretty))
 						.setNegativeButton(R.string.cancel, null)
 						.setPositiveButton(R.string.ok) { _, _ ->
 							Action_Instance.blockDomain(
 								activity,
 								access_info,
-								domain,
-								false
+								item.domain,
+								bBlock = false
 							)
 						}
 						.show()
@@ -2142,13 +2126,12 @@ internal class ItemViewHolder(
 					is TootTag -> {
 						// search_tag は#を含まない
 						val tagEncoded = item.name.encodePercent()
-						val host = access_info.hostAscii
-						val url = "https://$host/tags/$tagEncoded"
+						val url = "https://${access_info.host.ascii}/tags/$tagEncoded"
 						Action_HashTag.timelineOtherInstance(
 							activity = activity,
 							pos = activity.nextPosition(column),
 							url = url,
-							host = host,
+							host = access_info.host,
 							tag_without_sharp = item.name
 						)
 					}
@@ -2469,7 +2452,7 @@ internal class ItemViewHolder(
 					setPadding(paddingH, paddingV, paddingH, paddingV)
 					
 					val emoji = status.custom_emojis?.get(customCode)
-						?: App1.custom_emoji_lister.getMap(access_info.hostAscii, true)
+						?: App1.custom_emoji_lister.getMap(access_info.host.ascii, true)
 							?.get(customCode)
 					
 					val emojiUrl = emoji?.let {

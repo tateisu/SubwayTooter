@@ -15,7 +15,6 @@ import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.util.*
-import java.net.IDN
 import java.util.*
 import java.util.regex.Pattern
 
@@ -174,10 +173,18 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			this.created_at = src.string("createdAt")
 			this.time_created_at = TootStatus.parseTime(this.created_at)
 			
+			// https://github.com/syuilo/misskey/blob/develop/src/client/scripts/get-static-image-url.ts
+			fun String.getStaticImageUrl():String?{
+				val uri = this.mayUri() ?: return null
+				val dummy = "${uri.encodedAuthority}${uri.encodedPath}"
+				return "https://${parser.linkHelper.host?.ascii}/proxy/$dummy?url=${encodePercent()}&static=1"
+			}
+			
 			this.avatar = src.string("avatarUrl")
-			this.avatar_static = src.string("avatarUrl")
+			this.avatar_static = src.string("avatarUrl")?.getStaticImageUrl()
 			this.header = src.string("bannerUrl")
-			this.header_static = src.string("bannerUrl")
+			this.header_static = src.string("bannerUrl")?.getStaticImageUrl()
+			
 			
 			this.pinnedNoteIds = src.stringArrayList("pinnedNoteIds")
 			if(parser.misskeyDecodeProfilePin) {

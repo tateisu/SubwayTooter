@@ -10,18 +10,20 @@ class Host private constructor(
 	val pretty : String = ascii
 ) :Comparable<Host>{
 	
+	override fun toString() : String = ascii
+	
+	override fun hashCode() : Int =
+		ascii.hashCode()
+	
+	override fun equals(other : Any?) : Boolean =
+		if( other is Host) ascii==other.ascii else false
+
+	// ソートはprettyのコード順
+	override fun compareTo(other : Host) : Int =
+		pretty.compareTo(other.pretty).notZero() ?: ascii.compareTo(other.ascii)
+	
 	fun match(src : String?) : Boolean =
 		ascii==src || pretty ==src
-	
-	override fun equals(other : Any?) : Boolean {
-		return if( other is Host) ascii==other.ascii else false
-	}
-	
-	override fun hashCode() : Int = ascii.hashCode()
-	
-	override fun compareTo(other : Host) : Int {
-		return pretty.compareTo(other.pretty).notZero() ?: ascii.compareTo(other.ascii)
-	}
 	
 	val isValid :Boolean
 		get() = ascii.isNotEmpty() && ascii != "?"
@@ -29,7 +31,7 @@ class Host private constructor(
 	fun valid() : Host? = if(isValid ) this else null
 	
 	companion object {
-		// decl this first!
+		// declare this first!
 		private val hostSet = ConcurrentHashMap<String, Host>()
 
 		val EMPTY = Host("")
@@ -56,32 +58,35 @@ class Acct private constructor(
 	val ascii:String = if(host==null) username else "$username@${host.ascii}"
 	val pretty:String = if(host==null) username else "$username@${host.pretty}"
 	
-	fun followHost(accessHost : Host?) : Acct {
-		return if( this.host != null)  this else Acct(username,accessHost)
-	}
-	
-	override fun equals(other : Any?) : Boolean {
-		return if( other is Acct) username==other.username && host==other.host else false
-	}
-	
-	override fun hashCode() : Int = ascii.hashCode()
+	override fun toString() : String = ascii
 
+	override fun hashCode() : Int = ascii.hashCode()
+	
+	override fun equals(other : Any?) : Boolean =
+		if( other is Acct) ascii == other.ascii else false
+	
+	// ソートはprettyのコード順
 	override fun compareTo(other : Acct) : Int {
 		return pretty.compareTo(other.pretty).notZero() ?: ascii.compareTo(other.ascii)
+	}
+	
+	fun followHost(accessHost : Host?) : Acct {
+		return if( this.host != null)  this else Acct(username,accessHost)
 	}
 	
 	val isValid : Boolean
 		get() = username.isNotEmpty() && username != "?" && (host?.isValid != false)
 
+	@Suppress("unused")
 	private fun valid():Acct? = if(isValid) this else null
 
-	val isValidFull : Boolean
+	private val isValidFull : Boolean
 		get() = username.isNotEmpty() && username != "?" && (host?.isValid == true)
 	
 	fun validFull():Acct ? = if(isValidFull) this else null
 	
 	companion object {
-		// decl this first!
+		// declare this first!
 		private val acctSet = ConcurrentHashMap<String, Acct>()
 
 		val UNKNOWN = Acct("?",Host.UNKNOWN)

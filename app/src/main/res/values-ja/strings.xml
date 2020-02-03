@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="access_token_or_api_token">アクセストークン (Misskeyサーバーの場合はAPIトークン)</string>
     <string name="access_token_updated_for">%1$sのアクセストークンを更新しました</string>
@@ -92,7 +92,6 @@
     <string name="boost_private_toot_not_allowed">非公開トゥートをブーストできるのは本人だけです</string>
     <string name="boost_succeeded">ブーストできました</string>
     <string name="reaction_succeeded">リアクションできました</string>
-
     <string name="boosted_by">トゥートをブーストした人</string>
     <string name="button_background_color">ボタン背景色</string>
     <string name="button_foreground_color">ボタン前景色</string>
@@ -281,13 +280,11 @@
     <string name="favourite_succeeded">お気に入りにしました</string>
     <string name="favourited_by">トゥートをお気に入りした人</string>
     <string name="favourites">お気に入り</string>
-
     <string name="bookmark">ブックマーク</string>
     <string name="bookmark_from_another_account">別アカウントでブックマーク</string>
     <string name="bookmark_succeeded">ブックマークしました</string>
     <string name="bookmarks">ブックマーク</string>
     <string name="unbookmark_succeeded">ブックマークを解除しました</string>
-
     <string name="federate_timeline">連合タイムライン</string>
     <string name="field_name1">ラベル1</string>
     <string name="field_name2">ラベル2</string>
@@ -417,7 +414,7 @@
     <string name="resize_square_pixels">%1$d平方ピクセル(%2$dx%2$d相当)</string>
     <string name="mail_address_not_contains_at_mark">メールアドレスが不十分です。\'@\'や\'.\'がありません</string>
     <string name="mail_hint">例: your@e-mail.address</string>
-    <string name="mail_not_specified">メールを指定してください</string>
+    <string name="mail_not_specified">メールアドレスを指定してください</string>
     <string name="make_enquete">アンケートを作成する(一部サーバーのみ有効)</string>
     <string name="mastodon">Mastodon</string>
     <string name="mastodon_1_6_later">マストドン1.6以降</string>
@@ -521,12 +518,10 @@
     <string name="password_not_specified">パスワードを指定してください</string>
     <string name="people_talking">%1$d(%2$d)人がトゥート</string>
     <string name="performance">性能</string>
-
     <string name="pick_image">画像を選択</string>
     <string name="pick_images">画像を選択</string>
     <string name="pick_videos">動画を選択</string>
     <string name="pick_audios">音声を選択</string>
-
     <string name="please_add_account">アカウントがありません。事前にアカウントの追加を行ってください</string>
     <string name="please_donate">開発継続のために寄付をお願いします！</string>
     <string name="please_rate">ストアで評価やレビューをお願いします！</string>
@@ -579,7 +574,6 @@
     <string name="regex_filter">正規表現フィルタ(上級者向け)</string>
     <string name="regex_filter_matches_empty_string">正規表現フィルタは空文字列にマッチしてしまいます</string>
     <string name="register_app_to_server">%1$sにこのアプリを登録しています…</string>
-
     <string name="relative_time_unit_second1">秒</string>
     <string name="relative_time_unit_seconds">秒</string>
     <string name="relative_time_unit_minute1">分</string>
@@ -650,10 +644,8 @@
     <string name="send_message">メッセージを送る</string>
     <string name="send_message_from_another_account">別アカウントでメッセージを送る</string>
     <string name="send_text">テキストをアプリに送る</string>
-
     <string name="sensitive_content_default_open">NSFWな添付データを隠さない</string>
     <string name="cw_default_open">CWされたコンテンツを隠さない</string>
-
     <string name="server_confirmed">サーバを確認しました</string>
     <string name="set_description">説明文を設定(マストドン2.0以降)</string>
     <string name="set_focus_point">焦点を設定 (マストドン2.3以降)</string>
@@ -681,7 +673,8 @@
     <string name="start">始端</string>
     <string name="status">ステータス</string>
     <string name="status_id_conversion_failed">ステータスIDを変換できませんでした</string>
-    <string name="statuses">投稿</string><!-- プロフカラム内部のタブ表示に使われる -->
+    <string name="statuses">投稿</string>
+    <!-- プロフカラム内部のタブ表示に使われる -->
     <string name="statuses_of">%1$s のトゥート</string>
     <string name="system_notification_not_related">システム通知をタップした時に選ばれない</string>
     <string name="tab_background_color">タブ背景色</string>
@@ -764,15 +757,12 @@
     <string name="visibility_unlisted">未収載</string>
     <string name="visibility_web_setting">Webアプリの設定に追従する</string>
     <string name="visibility_account_setting">アカウントの設定に追従する</string>
-
     <string name="visibility_local_public">公開 (ローカル)</string>
     <string name="visibility_local_home">ホーム (ローカル)</string>
     <string name="visibility_local_followers">フォロワー (ローカル)</string>
     <string name="visibility_local_unlisted">未収載 (ローカル)</string>
-
     <string name="vote_polls">投票やその結果</string>
     <string name="vote_count_text">%1$d票</string>
-
     <string name="wait_previous_operation">直前の操作が完了するまでお待ちください</string>
     <string name="with_attachment">添付データあり</string>
     <string name="with_highlight">強調表示あり</string>
@@ -790,11 +780,9 @@
     <string name="ltl_around_toot">周辺のローカルTL</string>
     <string name="ltl_around">…周辺のローカルTL</string>
     <string name="ltl_around_of">%1$s周辺のローカルTL</string>
-
     <string name="ftl_around_toot">周辺の連合TL</string>
     <string name="ftl_around">…周辺の連合TL</string>
     <string name="ftl_around_of">%1$s周辺の連合TL</string>
-
     <string name="account_tl_around_toot">周辺のアカウントTL</string>
     <string name="account_tl_around">…周辺のアカウントTL</string>
     <string name="account_tl_around_of">%1$s周辺のアカウントTL</string>
@@ -812,7 +800,6 @@
     <string name="make_quote_renote">引用Renoteにする</string>
     <string name="mute_application_confirm">アプリ \"%1$s\" はミュートされます。よろしいですか?</string>
     <string name="boost_button_alpha">ブーストボタンのアルファ不透明度(単位:%。アプリの再起動が必要。本文テキスト色のアルファ値の影響も受けます)</string>
-
     <string name="toot_background_color">トゥート背景色</string>
     <string name="unlisted_visibility">\'未収載\' 公開範囲</string>
     <string name="followers_visibility">\'フォロワーのみ\' 公開範囲</string>
@@ -919,7 +906,6 @@
     <string name="fixed_phrase">定型文</string>
     <string name="mark_sensitive_by_default">メディアを常に閲覧注意としてマークする(投稿時)</string>
     <string name="load_preference_from_web_ui">WebUIの設定をいくつか読み込む</string>
-
     <string name="hashtag_from_acct">ハッシュタグ(特定ユーザから)</string>
     <string name="notifications_from_acct">ユーザからの通知</string>
     <string name="notifications_from">%1$sからの通知</string>
@@ -1013,5 +999,4 @@
     <string name="copied_to_clipboard">クリップボードにコピーしました</string>
     <string name="language_filter_quit_waring">言語フィルタは保存されていません。構わず閉じますか?</string>
     <string name="import_completed_please_restart_app">インポート完了。アプリを再起動してください</string>
-
 </resources>

@@ -12,9 +12,11 @@ import android.text.style.StrikethroughSpan
 import android.util.SparseArray
 import android.util.SparseBooleanArray
 import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.span.*
@@ -778,7 +780,7 @@ object MisskeyMarkdownDecoder {
 		}
 		
 		// リンクを追加する
-		fun appendLink(text : String, url : String, allowShort : Boolean = false) {
+		fun appendLink(text : String, url : String, allowShort : Boolean = false,mention:TootMention?=null) {
 			when {
 				allowShort -> appendLinkText(text, url)
 				else -> appendText(text)
@@ -792,7 +794,8 @@ object MisskeyMarkdownDecoder {
 				ac = fullAcct?.let {
 					AcctColor.load(fullAcct)
 				},
-				tag = options.linkTag
+				tag = options.linkTag,
+				mention = mention
 			)
 			// リンクの一部にハイライトがある場合、リンクをセットしてからハイライトをセットしないとクリック判定がおかしくなる。
 			spanList.addFirst(start, sb.length, MyClickableSpan(linkInfo))
@@ -832,10 +835,11 @@ object MisskeyMarkdownDecoder {
 			
 			// リンク表記はユーザの記述やアプリ設定の影響を受ける
 			val caption = "@${when {
-				Pref.bpMentionFullAcct(jp.juggler.subwaytooter.App1.pref) -> fullAcct
+				Pref.bpMentionFullAcct(App1.pref) -> fullAcct
 				else -> rawAcct
 			}.pretty}"
 			
+			var mention :TootMention? = null
 			val url = when(strHost) {
 				
 				// https://github.com/syuilo/misskey/pull/3603
@@ -850,22 +854,23 @@ object MisskeyMarkdownDecoder {
 					// MFMはメンションからユーザのURIを調べる正式な方法がない
 					// たとえば @group_dev_jp@gup.pe の正式なURLは https://gup.pe/u/group_dev_jp
 					// だが、 misskey.io ではメンションのリンク先は https://misskey.io/@group_dev_jp@gup.pe になる
-					"https://${fullAcct.ascii}/@$username"
+					"https://${fullAcct.host?.ascii}/@$username"
 						.also { url ->
 							val mentions = prepareMentions()
-							if(null == mentions.find { m -> m.acct == shortAcct }) {
-								mentions.add(
-									TootMention(
-										jp.juggler.subwaytooter.api.entity.EntityId.DEFAULT
-										, url
-										, shortAcct.ascii
-										, username
-									)
+							mention = mentions.find { m -> m.acct == shortAcct }
+							if( mention == null){
+								val newMention = TootMention(
+									EntityId.DEFAULT
+									, url
+									, shortAcct.ascii
+									, username
 								)
+								mentions.add(newMention)
+								mention = newMention
 							}
 						}
 			}
-			appendLink(caption, url)
+			appendLink(caption, url,mention = mention)
 		}
 	}
 	

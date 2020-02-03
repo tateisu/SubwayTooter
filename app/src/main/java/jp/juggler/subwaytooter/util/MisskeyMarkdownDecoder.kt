@@ -14,10 +14,9 @@ import android.util.SparseBooleanArray
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootMention
-import jp.juggler.subwaytooter.api.entity.Acct
-import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
@@ -688,14 +687,6 @@ object MisskeyMarkdownDecoder {
 		
 		var start = 0
 		
-		fun prepareMentions() : ArrayList<TootMention> {
-			var mentions = sb.mentions
-			if(mentions != null) return mentions
-			mentions = ArrayList()
-			sb.mentions = mentions
-			return mentions
-		}
-		
 		fun fireRender(node : Node) : SpanList {
 			val spanList = SpanList()
 			this.spanList = spanList
@@ -806,6 +797,76 @@ object MisskeyMarkdownDecoder {
 			// リンクの一部にハイライトがある場合、リンクをセットしてからハイライトをセットしないとクリック判定がおかしくなる。
 			spanList.addFirst(start, sb.length, MyClickableSpan(linkInfo))
 		}
+		
+		private fun prepareMentions() : ArrayList<TootMention> {
+			var mentions = sb.mentions
+			if(mentions == null) {
+				mentions = ArrayList()
+				sb.mentions = mentions
+			}
+			return mentions
+		}
+		
+		fun appendMention(
+			username : String,
+			strHost : String?
+		) {
+			// ユーザが記述したacct
+			val rawAcct = Acct.parse(username, strHost)
+			
+			val linkHelper = linkHelper
+			if(linkHelper == null) {
+				appendText("@${rawAcct.pretty}")
+				return
+			}
+			
+			// 長いacct
+			val fullAcct = rawAcct.followHost(linkHelper.host)
+			
+			// mentionsメタデータに含まれるacct
+			// ユーザの記述に因らず、サーバのホスト名同じなら短い、そうでなければ長いメンション
+			val shortAcct = if(fullAcct.host == linkHelper.host)
+				Acct.parse(username)
+			else
+				fullAcct
+			
+			// リンク表記はユーザの記述やアプリ設定の影響を受ける
+			val caption = "@${when {
+				Pref.bpMentionFullAcct(jp.juggler.subwaytooter.App1.pref) -> fullAcct
+				else -> rawAcct
+			}.pretty}"
+			
+			val url = when(strHost) {
+				
+				// https://github.com/syuilo/misskey/pull/3603
+				
+				"github.com", "twitter.com" ->
+					"https://$strHost/$username" // no @
+				
+				"gmail.com" ->
+					"mailto:$username@$strHost"
+				
+				else ->
+					// MFMはメンションからユーザのURIを調べる正式な方法がない
+					// たとえば @group_dev_jp@gup.pe の正式なURLは https://gup.pe/u/group_dev_jp
+					// だが、 misskey.io ではメンションのリンク先は https://misskey.io/@group_dev_jp@gup.pe になる
+					"https://${fullAcct.ascii}/@$username"
+						.also { url ->
+							val mentions = prepareMentions()
+							if(null == mentions.find { m -> m.acct == shortAcct }) {
+								mentions.add(
+									TootMention(
+										jp.juggler.subwaytooter.api.entity.EntityId.DEFAULT
+										, url
+										, shortAcct.ascii
+										, username
+									)
+								)
+							}
+						}
+			}
+			appendLink(caption, url)
+		}
 	}
 	
 	////////////////////////////////////////////////////////////////////////////
@@ -846,70 +907,7 @@ object MisskeyMarkdownDecoder {
 		}),
 		
 		MENTION({
-			val username = it.args[0]
-			val strHost = it.args[1].notEmpty()
-			val rawAcct = Acct.parse(username, strHost?.let{ Host.parse(it)})
-			val linkHelper = linkHelper
-			if(linkHelper == null) {
-				appendText("@${rawAcct.pretty}")
-			} else {
-				when( strHost ){
-					// https://github.com/syuilo/misskey/pull/3603
-					"github.com", "twitter.com" -> {
-						appendLink(
-							"@${rawAcct.pretty}",
-							"https://$strHost/$username" // no @
-						)
-					}
-					
-					"gmail.com" -> {
-						appendLink(
-							"@${rawAcct.pretty}",
-							"mailto:$username@$strHost"
-						)
-					}
-					
-					else -> {
-						// MFMはメンションからユーザのURIを調べる正式な方法がない
-						// たとえば @group_dev_jp@gup.pe の正式なURLは https://gup.pe/u/group_dev_jp
-						// だが、 misskey.io ではメンションのリンク先は https://misskey.io/@group_dev_jp@gup.pe になる
-
-						val fullAcct = rawAcct.followHost(linkHelper.host)
-
-						val shortAcct = if(fullAcct.host != linkHelper.host) {
-							fullAcct
-						} else {
-							Acct.parse(username)
-						}
-
-						val userUrl = "https://${fullAcct.ascii}/@${username.encodePercent()}"
-						
-						val mentions = prepareMentions()
-						
-						if(null == mentions.find { m -> m.acct == shortAcct }) {
-							mentions.add(
-								TootMention(
-									jp.juggler.subwaytooter.api.entity.EntityId.DEFAULT
-									, userUrl
-									, shortAcct.ascii
-									, username
-								)
-							)
-						}
-						
-						appendLink(
-							when {
-								Pref.bpMentionFullAcct(jp.juggler.subwaytooter.App1.pref) ->
-									"@${fullAcct.pretty}"
-								else -> {
-									"@${rawAcct.pretty}"
-								}
-							}
-							, userUrl
-						)
-					}
-				}
-			}
+			appendMention(it.args[0], it.args[1].notEmpty())
 		}),
 		
 		HASHTAG({

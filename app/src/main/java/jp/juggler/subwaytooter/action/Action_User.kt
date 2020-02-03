@@ -632,7 +632,9 @@ object Action_User {
 	
 	// メンションを含むトゥートを作る
 	private fun mention(
-		activity : ActMain, account : SavedAccount, initial_text : String
+		activity : ActMain,
+		account : SavedAccount,
+		initial_text : String
 	) {
 		ActPost.open(
 			activity,
@@ -646,7 +648,7 @@ object Action_User {
 	fun mention(
 		activity : ActMain, account : SavedAccount, who : TootAccount
 	) {
-		mention(activity, account, "@${account.getFullAcct(who).pretty} ")
+		mention(activity, account, "@${account.getFullAcct(who).ascii} ")
 	}
 	
 	// メンションを含むトゥートを作る
@@ -656,7 +658,7 @@ object Action_User {
 		if(who == null) return
 		val who_host = who.host
 		
-		val initial_text = "@${access_info.getFullAcct(who).pretty} "
+		val initial_text = "@${access_info.getFullAcct(who).ascii} "
 		AccountPicker.pick(
 			activity,
 			bAllowPseudo = false,

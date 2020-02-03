@@ -744,7 +744,8 @@ class ActPost : AppCompatActivity(),
 			sv = intent.getStringExtra(KEY_REPLY_STATUS)
 			if(sv != null && account != null) {
 				try {
-					val reply_status = TootParser(this@ActPost, account).status(sv.decodeJsonObject())
+					val reply_status =
+						TootParser(this@ActPost, account).status(sv.decodeJsonObject())
 					
 					val isQuoterRenote = intent.getBooleanExtra(KEY_QUOTED_RENOTE, false)
 					
@@ -764,35 +765,28 @@ class ActPost : AppCompatActivity(),
 							}
 							
 							// 新しいメンションリスト
-							val mention_list = ArrayList<String>()
+							val mention_list = ArrayList<Acct>()
 							
 							// 自己レス以外なら元レスへのメンションを追加
 							// 最初に追加する https://github.com/tateisu/SubwayTooter/issues/94
 							if(! account.isMe(reply_status.account)) {
-								mention_list.add("@${account.getFullAcct(reply_status.account).pretty}")
+								mention_list.add(account.getFullAcct(reply_status.account))
 							}
 							
 							// 元レスに含まれていたメンションを複製
 							reply_status.mentions?.forEach { mention ->
-
+								
 								val who_acct = mention.acct
-
+								
 								// 空データなら追加しない
-								if( ! who_acct.isValid ) return@forEach
-
+								if(! who_acct.isValid) return@forEach
+								
 								// 自分なら追加しない
 								if(account.isMe(who_acct)) return@forEach
-
-								// 既出なら追加しない
-								val strMention = "@${account.getFullAcct(who_acct).pretty}"
-								if(mention_list.contains(strMention)) return@forEach
-								mention_list.add(strMention)
 								
-								/*
-								FIXME インスタンスのバージョンが3.1.0 以降ならメンションのホスト部分にIDNドメインを使いたいが、
-								投稿画面でのアカウント切り替え時にタンスのバージョンが異なると破綻する可能性が高い。
-								 */
-								
+								// 既出でないなら追加する
+								val acct = account.getFullAcct(who_acct)
+								if(! mention_list.contains(acct)) mention_list.add(acct)
 							}
 							
 							if(mention_list.isNotEmpty()) {
@@ -800,7 +794,7 @@ class ActPost : AppCompatActivity(),
 									StringBuilder().apply {
 										for(acct in mention_list) {
 											if(isNotEmpty()) append(' ')
-											append(acct)
+											append("@${acct.ascii}")
 										}
 										append(' ')
 									}.toString()
@@ -852,7 +846,8 @@ class ActPost : AppCompatActivity(),
 			sv = intent.getStringExtra(KEY_REDRAFT_STATUS)
 			if(sv != null && account != null) {
 				try {
-					val base_status = TootParser(this@ActPost, account).status(sv.decodeJsonObject())
+					val base_status =
+						TootParser(this@ActPost, account).status(sv.decodeJsonObject())
 					if(base_status != null) {
 						
 						redraft_status_id = base_status.id
@@ -1060,12 +1055,12 @@ class ActPost : AppCompatActivity(),
 		
 		val array = attachment_list
 			// アップロード完了したものだけ保持する
-			.filter{it.status == PostAttachment.STATUS_UPLOADED }
-			.mapNotNull { it.attachment?.encodeJson()  }
+			.filter { it.status == PostAttachment.STATUS_UPLOADED }
+			.mapNotNull { it.attachment?.encodeJson() }
 			.toJsonArray()
 			.notEmpty()
 		
-		if(array != null ) outState.putString(KEY_ATTACHMENT_LIST, array.toString())
+		if(array != null) outState.putString(KEY_ATTACHMENT_LIST, array.toString())
 		
 		in_reply_to_id?.putTo(outState, KEY_IN_REPLY_TO_ID)
 		outState.putString(KEY_IN_REPLY_TO_TEXT, in_reply_to_text)
@@ -1511,7 +1506,7 @@ class ActPost : AppCompatActivity(),
 		) { ai ->
 			
 			// 別タンスのアカウントに変更したならならin_reply_toの変換が必要
-			if(in_reply_to_id != null && ! ai.matchHost(account?.host) ) {
+			if(in_reply_to_id != null && ! ai.matchHost(account?.host)) {
 				startReplyConversion(ai)
 			} else {
 				setAccountWithVisibilityConversion(ai)
@@ -2672,7 +2667,7 @@ class ActPost : AppCompatActivity(),
 		
 		try {
 			val tmp_attachment_list = attachment_list
-				.mapNotNull{it.attachment?.encodeJson()}
+				.mapNotNull { it.attachment?.encodeJson() }
 				.toJsonArray()
 			
 			val json = JsonObject()

@@ -15,12 +15,14 @@ import android.widget.LinearLayout
 import android.widget.PopupWindow
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getAttributeColor
 import jp.juggler.util.groupEx
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.math.min
 
 @SuppressLint("InflateParams")
 internal class PopupAutoCompleteAcct(
@@ -135,8 +137,8 @@ internal class PopupAutoCompleteAcct(
 					val sb = SpannableStringBuilder()
 					
 					val src_length = editable.length
-					start = Math.min(src_length, sel_start)
-					val end = Math.min(src_length, sel_end)
+					start = min(src_length, sel_start)
+					val end = min(src_length, sel_end)
 					sb.append(editable.subSequence(0, start))
 					val remain = editable.subSequence(end, src_length)
 					
@@ -147,8 +149,13 @@ internal class PopupAutoCompleteAcct(
 						sb.append(findShortCode(acct.toString()))
 						// セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
 						if( separator != ' ') sb.append(separator)
-					} else {
-						// @user@host, #hashtag
+					} else if(acct[0] == '@' && null != acct.find{ it >= 0x80.toChar() } ) {
+						// @user@host IDNドメインを含む
+						// 直後に空白を付与する
+						sb.append("@"  + Acct.parse(acct.toString().substring(1)).ascii).append(" ")
+					}else{
+						// @user@host
+						// #hashtag
 						// 直後に空白を付与する
 						sb.append(acct).append(" ")
 					}

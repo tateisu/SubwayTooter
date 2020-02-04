@@ -18,11 +18,11 @@
     <string name="request_access_token">Requesting access token…</string>
     <string name="request_api">Acquiring: %1$s %2$s</string>
     <string name="reading_api">Reading: %1$s %2$s</string>
-    <string name="column_empty">Use the left-bottom menu button to add a column</string>
+    <string name="column_empty">Use the bottom left menu button to add a column</string>
     <string name="home">Home</string>
     <string name="local_timeline">Local timeline</string>
     <string name="federate_timeline">Federated timeline</string>
-    <string name="login_required">Please set your access token from the account setting.</string>
+    <string name="login_required">Please set your access token from the account settings.</string>
     <string name="cancelled">Cancelled</string>
     <string name="account_pick">Select an account</string>
     <string name="account_confirmed">Account confirmed.</string>
@@ -210,13 +210,11 @@
     <string name="app_was_muted">App was muted.</string>
     <string name="favourite_succeeded">Favourited</string>
     <string name="unfavourite_succeeded">Unfavourited</string>
-
     <string name="bookmark">Bookmark</string>
     <string name="bookmark_from_another_account">Bookmark from another account</string>
     <string name="bookmark_succeeded">Bookmarked</string>
     <string name="bookmarks">Bookmarks</string>
     <string name="unbookmark_succeeded">Unbookmarked</string>
-
     <string name="boost_succeeded">Boosted</string>
     <string name="unboost_succeeded">Unboosted</string>
     <string name="reaction_succeeded">Reacted</string>
@@ -315,7 +313,7 @@
     <string name="pick_image">Pick an image</string>
     <string name="pick_images">Pick image(s)…</string>
     <string name="pick_videos">Pick video(s)…</string>
-    <string name="pick_audios">Pick audio(s)…</string>
+    <string name="pick_audios">Choose audio file(s)…</string>
     <string name="image_alpha">Image alpha</string>
     <string name="image">Image</string>
     <string name="column_header">Column header</string>
@@ -586,7 +584,6 @@
     <string name="media_attachment_max_byte_size">Media attachment (image) bytes size limit (Unit:MB. The default is 8)</string>
     <string name="media_attachment_max_byte_size_movie">Media attachment (movie) bytes size limit (Unit:MB. The default is 40)</string>
     <string name="media_attachment_max_byte_size_pixelfed">Media attachment (Pixelfed) bytes size limit (Unit:MB. The default is 15)</string>
-
     <string name="tootsearch">tootsearch (JP)</string>
     <string name="cant_handle_uri_of">Subway Tooter can\'t handle URI \"%1$s\". Please select other app.</string>
     <string name="use_internal_media_viewer">Use built-in media viewer</string>
@@ -748,7 +745,6 @@
     <string name="visibility_home">Home</string>
     <string name="visibility_followers">Followers</string>
     <string name="vote_count_text">%1$d votes</string>
-
     <string name="reaction_add">Add reaction</string>
     <string name="reaction_remove">Remove reaction</string>
     <string name="unknown_notification_from">unknown notification from %1$s</string>
@@ -911,7 +907,7 @@
     <string name="quick_toot_menu">Quick toot menu</string>
     <string name="input">Input</string>
     <string name="polls_choice_not_selected">Please select 1 or more choices.</string>
-    <string name="custom_emoji_separator_zwsp">use ZWSP instead of space for custom emoji separator</string>
+    <string name="custom_emoji_separator_zwsp">use ZWS instead of space for custom emoji separator</string>
     <string name="fixed_phrase">fixed phrase</string>
     <string name="mark_sensitive_by_default">Always mark media as sensitive (when posting)</string>
     <string name="load_preference_from_web_ui">Load some preferences from WebUI</string>

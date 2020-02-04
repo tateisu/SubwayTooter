@@ -500,7 +500,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 		private const val reMastodonMention =
 			"""(?<=^|[^/$reRubyWord])@(($reMastodonUserName)(?:@[$reRubyWord.-]+[A-Za-z0-9]+)?)"""
 		
-		private val reCountMention = reMastodonMention.asciiPattern()
+		val reCountMention = reMastodonMention.asciiPattern()
 		
 		fun countText(s : String) : Int {
 			return s

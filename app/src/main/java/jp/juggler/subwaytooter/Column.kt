@@ -1465,7 +1465,7 @@ class Column(
 		val regex_text = this.regex_text
 		if(regex_text.isNotEmpty()) {
 			try {
-				val re = regex_text.asciiPattern()
+				val re = Pattern.compile(regex_text)
 				column_regex_filter =
 					{ text : CharSequence? ->
 						if(text?.isEmpty() != false) false else re.matcher(

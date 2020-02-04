@@ -45,7 +45,11 @@ class TestMisskeyMention {
 	
 	@Test fun test3(){
 		// [] 空の文字セットはパースエラーになる。
-		// val re1="""[]""".toRegex()
+		// val re1="""[]""".toRegex() // error 空の文字クラス
+		
+		// [[] や [[]] はパースエラーになる。
+		// val re1="""[[]""".toRegex() // error 閉じ括弧が足りない
+		// val re1="""[[]]""".toRegex() // error 内側が空の文字クラス
 		
 		// 最低でも1文字を含む。
 		assertEquals(true,"""[]]""".toRegex().matches("]"))

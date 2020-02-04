@@ -184,7 +184,7 @@ class ColumnViewHolder(
 			if(src.isEmpty()) {
 				return null
 			}
-			val m = src.asciiPattern().matcher("")
+			val m = Pattern.compile(src).matcher("")
 			if(m.find()) {
 				// 空文字列にマッチする正規表現はエラー扱いにする
 				// そうしないとCWの警告テキストにマッチしてしまう

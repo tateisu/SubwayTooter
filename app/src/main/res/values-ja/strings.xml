@@ -29,7 +29,7 @@
     <string name="acct_color">Acctの文字色</string>
     <string name="acct_font_size">Acctのフォントの大きさ(単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
     <string name="acct_sample">(見本)username@instance</string>
-    <string name="act_post">Tootの送信</string>
+    <string name="act_post">投稿の作成</string>
     <string name="action_settings">設定</string>
     <string name="actions">操作</string>
     <string name="actions_for_notification">通知へのアクション</string>
@@ -101,7 +101,7 @@
     <string name="cant_add_list_follow_failed">リストに追加できません:\nフォロー操作に失敗しました</string>
     <string name="cant_add_list_follow_requesting">リストに追加できません:
 \n\"鍵付き\"ユーザーの場合はフォローリクエストが承認されるまでお待ちください。そうでなければ2…3回再試行してください。</string>
-    <string name="cant_change_account_when_attachment_specified">添付ファイルがある状態ではアカウントを変更できません</string>
+    <string name="cant_change_account_when_attachment_specified">添付ファイルがある状態ではアカウントを変更できません。</string>
     <string name="cant_change_account_when_redraft">再編集中は投稿先アカウントを変更できません</string>
     <string name="cant_close_column_by_back_button_when_multiple_column_shown">複数カラムが表示されてると戻るボタンではカラムを閉じられません</string>
     <string name="cant_follow_locked_user">鍵つきユーザをフォローできません</string>
@@ -156,7 +156,7 @@
     <string name="confirm_delete_attachment">この添付データを除去しますか？</string>
     <string name="confirm_delete_notification">対象ユーザへの通知データがサーバから削除されます。よろしいですか？</string>
     <string name="confirm_delete_status">このトゥートを削除します。よろしいですか?</string>
-    <string name="confirm_favourite_from">このトゥートを %1$s からお気に入りしますか? トゥートした人に通知が送られます</string>
+    <string name="confirm_favourite_from">このトゥートを %1$s からお気に入りしますか\? トゥートした人に通知が送られます。</string>
     <string name="confirm_follow_request_who_from">%2$s から鍵付きユーザ %1$s にフォローリクエストを送りますか？</string>
     <string name="confirm_follow_who_from">%2$s で %1$s をフォローしますか？</string>
     <string name="confirm_mute_notification_for_user">ユーザからの通知もミュート</string>
@@ -294,7 +294,7 @@
     <string name="field_value2">内容2</string>
     <string name="field_value3">内容3</string>
     <string name="field_value4">内容4</string>
-    <string name="file_size_too_big">最大%1$dMBまでです</string>
+    <string name="file_size_too_big">最大%1$dMBまでです。</string>
     <string name="filter_context">適用箇所</string>
     <string name="filter_delete_confirm">フィルタ \'%1$s\' は削除されます。よろしいですか?</string>
     <string name="filter_expire_12hour">12時間後</string>
@@ -408,7 +408,7 @@
     <string name="loading_notification_title">通知の取得中…</string>
     <string name="local_timeline">ローカルタイムライン</string>
     <string name="locked_account">非公開アカウント</string>
-    <string name="login_failed">ログインに失敗</string>
+    <string name="login_failed">ログインできません。</string>
     <string name="login_required">アカウント設定からアクセストークンの更新を行ってください</string>
     <string name="long_side_pixel">長辺 %1$d ピクセル</string>
     <string name="resize_square_pixels">%1$d平方ピクセル(%2$dx%2$d相当)</string>
@@ -529,7 +529,7 @@
     <string name="plugin_not_installed">プラグインがインストールされてません</string>
     <string name="post">投稿</string>
     <string name="post_button_tapped_repeatly">投稿ボタンの連打を検出</string>
-    <string name="post_error_contents_empty">投稿の本文を入力してください</string>
+    <string name="post_error_contents_empty">投稿の本文を入力してください。</string>
     <string name="post_error_contents_warning_empty">コンテントワーニングを入力してください</string>
     <string name="post_from">投稿元</string>
     <string name="preview">プレビュー</string>

@@ -1,11 +1,8 @@
 package jp.juggler.subwaytooter.api
 
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
+import jp.juggler.util.*
 import java.util.regex.Pattern
 
-import jp.juggler.util.LogCategory
-import jp.juggler.util.groupEx
 import okhttp3.Response
 import okhttp3.WebSocket
 
@@ -18,7 +15,7 @@ open class TootApiResult(
 	companion object {
 		private val log = LogCategory("TootApiResult")
 		
-		private val reLinkURL = Pattern.compile("<([^>]+)>;\\s*rel=\"([^\"]+)\"")
+		private val reLinkURL = """<([^>]+)>;\s*rel="([^"]+)"""".asciiPattern()
 		
 		private const val NO_INSTANCE = "missing instance name"
 		

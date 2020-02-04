@@ -1346,11 +1346,11 @@ class ActPost : AppCompatActivity(),
 	private fun updateTextCount() {
 		var length = 0
 		
-		length += TootStatus.countText(
+		length += TootAccount.countText(
 			EmojiDecoder.decodeShortCode(etContent.text.toString())
 		)
 		
-		length += TootStatus.countText(
+		length += TootAccount.countText(
 			if(cbContentWarning.isChecked)
 				EmojiDecoder.decodeShortCode(etContentWarning.text.toString())
 			else
@@ -1361,7 +1361,7 @@ class ActPost : AppCompatActivity(),
 		
 		fun checkEnqueteLength() {
 			for(et in list_etChoice) {
-				length += TootStatus.countText(
+				length += TootAccount.countText(
 					EmojiDecoder.decodeShortCode(et.text.toString())
 				)
 			}
@@ -2165,7 +2165,7 @@ class ActPost : AppCompatActivity(),
 				
 				fun fixDocumentName(s : String) : String {
 					val s_length = s.length
-					val m = Pattern.compile("""([^\x20-\x7f])""").matcher(s)
+					val m = """([^\x20-\x7f])""".asciiPattern().matcher(s)
 					m.reset()
 					val sb = StringBuilder(s_length)
 					var lastEnd = 0

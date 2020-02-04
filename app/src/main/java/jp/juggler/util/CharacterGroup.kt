@@ -78,7 +78,7 @@ object CharacterGroup {
 				}
 			}.toString()
 		)
-		Pattern.compile("[${quotedKeys}]+")
+		"[${quotedKeys}]+".asciiPattern()
 	}
 	
 	private fun SparseBooleanArray.keys() = (0 until size()).map { keyAt(it) }
@@ -88,7 +88,7 @@ object CharacterGroup {
 			.map { it.toChar() }
 			.filter { it != '\n' }
 			.joinToString("")
-		Pattern.compile("[${whitespaces}]+\n")
+		"[${whitespaces}]+\n".asciiPattern()
 	}
 	
 	// 文字列のリストからグループIDを決定する

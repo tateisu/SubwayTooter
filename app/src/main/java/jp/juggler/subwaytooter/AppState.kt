@@ -54,7 +54,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		private const val tts_speak_wait_expire = 1000L * 100
 		private val random = Random()
 		
-		private val reSpaces = Pattern.compile("[\\s　]+")
+		private val reSpaces = "[\\s　]+".asciiPattern()
 		
 		private var utteranceIdSeed = 0
 		

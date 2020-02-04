@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.util.LogCategory
+import jp.juggler.util.asciiPattern
+import jp.juggler.util.replaceFirst
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -51,14 +53,15 @@ class ActDrawableList : AppCompatActivity(), CoroutineScope {
 	
 	private fun load() = launch {
 		try {
-			val rePackageSpec = """.+/""".toRegex()
-			val reSkipName = """^(abc_|avd_|btn_checkbox_|btn_radio_|googleg_|ic_keyboard_arrow_|ic_menu_arrow_|notification_|common_|emj_|cpv_|design_|exo_|mtrl_|ic_mtrl_)""".toRegex()
+			val rePackageSpec = """.+/""".asciiPattern()
+			val reSkipName = """^(abc_|avd_|btn_checkbox_|btn_radio_|googleg_|ic_keyboard_arrow_|ic_menu_arrow_|notification_|common_|emj_|cpv_|design_|exo_|mtrl_|ic_mtrl_)"""
+				.asciiPattern()
 			val list = withContext(Dispatchers.IO) {
 				R.drawable::class.java.fields
 					.mapNotNull {
 						val id = it.get(null) as? Int ?: return@mapNotNull null
 						val name = resources.getResourceName(id).replaceFirst(rePackageSpec, "")
-						if(reSkipName.find(name)!=null) return@mapNotNull null
+						if(reSkipName.matcher(name).find() ) return@mapNotNull null
 						MyItem(id, name)
 					}
 					.toMutableList()

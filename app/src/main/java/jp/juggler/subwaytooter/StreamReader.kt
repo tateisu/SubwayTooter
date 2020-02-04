@@ -40,8 +40,7 @@ internal class StreamReader(
 		
 		const val MISSKEY_ALIVE_INTERVAL = 60000L
 		
-		@Suppress("HasPlatformType")
-		val reAuthorizeError = Pattern.compile("authorize", Pattern.CASE_INSENSITIVE)
+		val reAuthorizeError = "authorize".asciiPattern(Pattern.CASE_INSENSITIVE )
 	}
 	
 	private val reader_list = LinkedList<Reader>()

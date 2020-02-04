@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.util
 
 import androidx.test.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
+import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.util.neatSpaces
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -25,7 +26,7 @@ class TestHtmlDecoder {
 		// Context of the app under test.
 		val appContext = InstrumentationRegistry.getTargetContext()
 		
-		val options = DecodeOptions(appContext,LinkHelper.newLinkHelper("instance.test"))
+		val options = DecodeOptions(appContext,LinkHelper.newLinkHelper(Host.parse("instance.test")))
 		
 		val html = """
 			日本語で楽しめるMastodonサーバを提供しています。

@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.LogCategory
+import jp.juggler.util.asciiPattern
 import jp.juggler.util.getAttributeColor
 import jp.juggler.util.groupEx
 import java.util.*
@@ -37,7 +38,7 @@ internal class PopupAutoCompleteAcct(
 		internal val log = LogCategory("PopupAutoCompleteAcct")
 		
 		// 絵文字ショートコードにマッチするとても雑な正規表現
-		private val reLastShortCode = Pattern.compile(""":([^\s:]+):\z""")
+		private val reLastShortCode = """:([^\s:]+):\z""".asciiPattern()
 	}
 	
 	private val acct_popup : PopupWindow

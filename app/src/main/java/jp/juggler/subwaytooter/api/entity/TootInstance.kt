@@ -10,6 +10,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.util.JsonObject
+import jp.juggler.util.asciiPattern
 import jp.juggler.util.groupEx
 import jp.juggler.util.toPostRequestBuilder
 import okhttp3.Request
@@ -168,8 +169,8 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 		}
 	
 	companion object {
-		private val rePleroma = Pattern.compile("""\bpleroma\b""", Pattern.CASE_INSENSITIVE)
-		private val rePixelfed = Pattern.compile("""\bpixelfed\b""", Pattern.CASE_INSENSITIVE)
+		private val rePleroma = """\bpleroma\b""".asciiPattern(Pattern.CASE_INSENSITIVE)
+		private val rePixelfed = """\bpixelfed\b""".asciiPattern( Pattern.CASE_INSENSITIVE)
 		
 		val VERSION_1_6 = VersionString("1.6")
 		val VERSION_2_4_0_rc1 = VersionString("2.4.0rc1")
@@ -184,7 +185,7 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 		
 		val MISSKEY_VERSION_11 = VersionString("11.0")
 		
-		private val reDigits = Pattern.compile("(\\d+)")
+		private val reDigits = """(\d+)""".asciiPattern()
 		
 		private const val EXPIRE = (1000 * 3600).toLong()
 		

@@ -808,7 +808,7 @@ class JsonTokenizer(reader : Reader) {
 	}
 }
 
-private val reNumber = Pattern.compile("""-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?""")
+private val reNumber = """-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?""".asciiPattern()
 
 private fun Writer.writeQuote(string : String) : Writer {
 	if(string.isEmpty()) {

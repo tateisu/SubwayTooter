@@ -1310,7 +1310,7 @@ class ActAccountSetting
 		val sv = etNote.text.toString()
 		if(! bConfirmed) {
 			
-			val length = TootStatus.countText(sv)
+			val length = TootAccount.countText(sv)
 			if(length > max_length_note) {
 				AlertDialog.Builder(this)
 					.setMessage(

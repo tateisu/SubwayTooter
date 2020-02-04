@@ -44,7 +44,7 @@ class TootList(parser:TootParser,src : JsonObject): TimelineItem(), Comparable<T
 	companion object {
 		private var log = LogCategory("TootList")
 		
-		private val reNumber = Pattern.compile("(\\d+)")
+		private val reNumber = """(\d+)""".asciiPattern()
 		
 		private fun makeTitleForSort(title : String?) : ArrayList<Any> {
 			val list = ArrayList<Any>()

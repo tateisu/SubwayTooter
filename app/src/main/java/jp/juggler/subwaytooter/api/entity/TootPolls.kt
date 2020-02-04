@@ -221,7 +221,7 @@ class TootPolls private constructor(
 		const val TYPE_ENQUETE_RESULT = "enquete_result"
 		
 		@Suppress("HasPlatformType")
-		private val reWhitespace = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
+		private val reWhitespace = """[\s\t\x0d\x0a]+""".asciiPattern()
 		
 		fun parse(
 			parser : TootParser,

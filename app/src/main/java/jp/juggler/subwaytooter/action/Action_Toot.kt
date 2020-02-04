@@ -14,7 +14,6 @@ import jp.juggler.subwaytooter.util.SavedAccountCallback
 import jp.juggler.util.*
 import okhttp3.Request
 import java.util.*
-import java.util.regex.Pattern
 import kotlin.math.max
 
 object Action_Toot {
@@ -22,7 +21,8 @@ object Action_Toot {
 	private val log = LogCategory("Action_Toot")
 	
 	private val reDetailedStatusTime =
-		Pattern.compile("""<a\b[^>]*?\bdetailed-status__datetime\b[^>]*href="https://[^/]+/@[^/]+/([^\s?#/"]+)""")
+		"""<a\b[^>]*?\bdetailed-status__datetime\b[^>]*href="https://[^/]+/@[^/]+/([^\s?#/"]+)"""
+			.asciiPattern()
 	
 	// アカウントを選んでお気に入り
 	fun favouriteFromAnotherAccount(

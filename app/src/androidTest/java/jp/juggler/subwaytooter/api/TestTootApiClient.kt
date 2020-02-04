@@ -4,6 +4,7 @@ package jp.juggler.subwaytooter.api
 
 import androidx.test.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
+import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.CurrentCallCallback
@@ -993,7 +994,7 @@ class TestTootApiClient {
 			httpClient = createHttpClientNormal(),
 			callback = callback
 		)
-		val instance = "unit-test"
+		val instance = Host.parse("unit-test")
 		client.instance = instance
 		val clientName = "SubwayTooterUnitTest"
 		val scope_string = "read+write+follow+push"
@@ -1070,7 +1071,7 @@ class TestTootApiClient {
 			httpClient = createHttpClientNormal(),
 			callback = callback
 		)
-		val instance = "unit-test"
+		val instance = Host.parse("unit-test")
 		client.instance = instance
 		val (instanceInfo, instanceResult) = TootInstance.get(client)
 		assertNotNull(instanceInfo)
@@ -1101,7 +1102,7 @@ class TestTootApiClient {
 		
 		val accessInfo = SavedAccount(
 			db_id = 1,
-			acct = "user1@host1",
+			acctArg = "user1@host1",
 			hostArg = null,
 			token_info = tokenInfo
 		)
@@ -1128,7 +1129,7 @@ class TestTootApiClient {
 		
 		val accessInfo = SavedAccount(
 			db_id = 1,
-			acct = "user1@host1",
+			acctArg = "user1@host1",
 			hostArg = null,
 			token_info = tokenInfo
 		)

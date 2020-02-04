@@ -104,21 +104,16 @@ open class TootTag constructor(
 			return result
 		}
 		
-		// \p{L} : アルファベット (Letter)。
-		// 　　Ll(小文字)、Lm(擬似文字)、Lo(その他の文字)、Lt(タイトル文字)、Lu(大文字アルファベット)を含む
-		// \p{M} : 記号 (Mark)
-		// \p{Nd} : 10 進数字 (Decimal number)
-		// \p{Pc} : 連結用句読記号 (Connector punctuation)
+		private const val w = TootAccount.reRubyWord
+		private const val a = TootAccount.reRubyAlpha
+		private const val s = "_\\u00B7\\u200c" // separators
+	
+		private fun generateMastodonTagPattern():Pattern{
+			val reMastodonTagName = """([_$w][$s$w]*[$s$a][$s$w]*[_$w])|([_$w]*[$a][_$w]*)"""
+			return  """(?:^|[^\w/)])#($reMastodonTagName)""".asciiPattern()
+		}
 		
-		// rubyの [:word:] ： 単語構成文字 (Letter | Mark | Decimal_Number | Connector_Punctuation)
-		const val w = """\p{L}\p{M}\p{Nd}\p{Pc}"""
-		
-		// rubyの [:alpha:] : 英字 (Letter | Mark)
-		private const val a = """\p{L}\p{M}"""
-		
-		// 2019/7/20 https://github.com/tootsuite/mastodon/pull/11363/files
-		private val reTagMastodon : Pattern =
-			Pattern.compile("""(?:^|[^\w)])#([_$w][·_$w]*[·_$a][·_$w]*[_$w]|[_$w]*[$a][_$w]*)""")
+		private val reMastodonTag = generateMastodonTagPattern()
 		
 		// https://medium.com/@alice/some-article#.abcdef123 => タグにならない
 		// https://en.wikipedia.org/wiki/Ghostbusters_(song)#Lawsuit => タグにならない
@@ -135,8 +130,8 @@ open class TootTag constructor(
 		
 		// タグに使えない文字
 		// 入力補完用なのでやや緩め
-		private val reCharsNotTagMastodon = Pattern.compile("""[^·_$w$a]""")
-		private val reCharsNotTagMisskey = Pattern.compile("""[\s.,!?'${'"'}:/\[\]【】]""")
+		private val reCharsNotTagMastodon = """[^$s$w$a]""".asciiPattern()
+		private val reCharsNotTagMisskey = """[\s.,!?'${'"'}:/\[\]【】]""".asciiPattern()
 		
 		// find hashtags in content text(raw)
 		// returns null if hashtags not found, or ArrayList of String (tag without #)
@@ -145,7 +140,7 @@ open class TootTag constructor(
 				MisskeyMarkdownDecoder.findHashtags(src)
 			} else {
 				var result : ArrayList<String>? = null
-				val m = reTagMastodon.matcher(src)
+				val m = reMastodonTag.matcher(src)
 				while(m.find()) {
 					if(result == null) result = ArrayList()
 					result.add(m.groupEx(1) !!)
@@ -161,12 +156,12 @@ open class TootTag constructor(
 			}
 		
 		// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
-		private val reUrlHashTag =
-			Pattern.compile("""\Ahttps://([^/]+)/tags/([^?#・\s\-+.,:;/]+)(?:\z|[?#])""")
+		private val reUrlHashTag ="""\Ahttps://([^/]+)/tags/([^?#・\s\-+.,:;/]+)(?:\z|[?#])"""
+			.asciiPattern()
 		
 		// https://pixelfed.tokyo/discover/tags/SubwayTooter?src=hash
-		private val reUrlHashTagPixelfed =
-			Pattern.compile("""\Ahttps://([^/]+)/discover/tags/([^?#・\s\-+.,:;/]+)(?:\z|[?#])""")
+		private val reUrlHashTagPixelfed ="""\Ahttps://([^/]+)/discover/tags/([^?#・\s\-+.,:;/]+)(?:\z|[?#])"""
+			.asciiPattern()
 		
 		// returns null or pair of ( decoded tag without sharp, host)
 		fun String.findHashtagFromUrl() : Pair<String, String>? {

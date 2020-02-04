@@ -34,11 +34,11 @@ object HTMLDecoder {
 	private const val TAG_TEXT = "<>text"
 	private const val TAG_END = "<>end"
 	
-	private val reTag = Pattern.compile("<(/?)(\\w+)")
-	private val reTagEnd = Pattern.compile("(/?)>$")
-	private val reHref = Pattern.compile("\\bhref=\"([^\"]*)\"")
-	private val reAttribute = Pattern.compile("\\s+([A-Za-z0-9:_-]+)\\s*=([\"'])([^>]*?)\\2")
-	private val reShortcode = Pattern.compile(":[A-Za-z0-9_-]+:")
+	private val reTag = "<(/?)(\\w+)".asciiPattern()
+	private val reTagEnd = "(/?)>$".asciiPattern()
+	private val reHref = "\\bhref=\"([^\"]*)\"".asciiPattern()
+	private val reAttribute = "\\s+([A-Za-z0-9:_-]+)\\s*=([\"'])([^>]*?)\\2".asciiPattern()
+	private val reShortcode = ":[A-Za-z0-9_-]+:".asciiPattern()
 	
 	// Block-level Elements
 	// https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements
@@ -116,7 +116,7 @@ object HTMLDecoder {
 		"wbr"
 	).toHashSet()
 	
-	private val reEntity = Pattern.compile("&(#?)(\\w+);")
+	private val reEntity = "&(#?)(\\w+);".asciiPattern()
 	private val entity_map = HashMap<String, Char>()
 	private fun _addEntity(s : String, c : Char) {
 		entity_map[s] = c
@@ -203,8 +203,8 @@ object HTMLDecoder {
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
-	private val reDoctype = Pattern.compile("\\A\\s*<!doctype[^>]*>", Pattern.CASE_INSENSITIVE)
-	private val reComment = Pattern.compile("<!--.*?-->", Pattern.DOTALL)
+	private val reDoctype = """\A\s*<!doctype[^>]*>""".asciiPattern( Pattern.CASE_INSENSITIVE)
+	private val reComment = """<!--.*?-->""".asciiPattern( Pattern.DOTALL)
 	
 	private fun String.quoteMeta() = Pattern.quote(this)
 	
@@ -539,7 +539,7 @@ object HTMLDecoder {
 		return sb
 	}
 	
-	private val reNormalLink = Pattern.compile("""\A(\w+://)[^/]*""")
+	private val reNormalLink = """\A(\w+://)[^/]*""".asciiPattern()
 	
 	// URLの表記を短くする
 	// Punycode のデコードはサーバ側で行われる?ので、ここでは元リンクの表示テキストを元にURL短縮を試みる
@@ -579,7 +579,7 @@ object HTMLDecoder {
 		return originalUrl
 	}
 	
-	private val reNicodic = Pattern.compile("""\Ahttps?://dic.nicovideo.jp/a/([^?#/]+)""")
+	private val reNicodic = """\Ahttps?://dic.nicovideo.jp/a/([^?#/]+)""".asciiPattern()
 	
 	private fun formatLinkCaption(
 		options : DecodeOptions,

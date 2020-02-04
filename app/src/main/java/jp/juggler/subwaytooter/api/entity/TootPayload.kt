@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.api.entity
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement.Reaction
 import jp.juggler.util.*
-import java.util.regex.Pattern
 
 object TootPayload {
 	
@@ -11,8 +10,7 @@ object TootPayload {
 	
 	private const val PAYLOAD = "payload"
 	
-	@Suppress("HasPlatformType")
-	private val reNumber = Pattern.compile("([-]?\\d+)")
+	private val reNumber = "([-]?\\d+)".asciiPattern()
 	
 	// ストリーミングAPIのペイロード部分をTootStatus,TootNotification,整数IDのどれかに解釈する
 	fun parsePayload(

@@ -1,8 +1,8 @@
 package jp.juggler.subwaytooter
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.net.IDN
-import kotlin.test.assertEquals
 
 class TestIDN {
 	

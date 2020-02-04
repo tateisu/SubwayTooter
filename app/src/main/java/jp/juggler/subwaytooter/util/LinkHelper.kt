@@ -66,7 +66,7 @@ fun getFullAcctOrNull(
 	if(fullAcct != null) return fullAcct
 	
 	// URLのホスト名部分を補う
-	val m = TootAccount.reUrlHost.matcher(url)
+	val m = TootAccount.reHostInUrl.matcher(url)
 	if(m.find()) return Acct.parse(src, m.groupEx(1))
 	
 	// https://fedibird.com/@noellabo/103350050191159092
@@ -93,7 +93,7 @@ fun getFullAcctOrNull(
 	if(fullAcct != null) return fullAcct
 	
 	// URLのホスト名部分を補う
-	val m = TootAccount.reUrlHost.matcher(url)
+	val m = TootAccount.reHostInUrl.matcher(url)
 	if(m.find()) return src.followHost(Host.parse(m.groupEx(1) !!))
 	
 	// https://fedibird.com/@noellabo/103350050191159092

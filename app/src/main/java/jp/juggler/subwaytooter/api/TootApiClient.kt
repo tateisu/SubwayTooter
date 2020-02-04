@@ -66,9 +66,9 @@ class TootApiClient(
 		
 		private const val NO_INFORMATION = "(no information)"
 		
-		private val reStartJsonArray = Pattern.compile("""\A\s*\[""")
-		private val reStartJsonObject = Pattern.compile("""\A\s*\{""")
-		private val reWhiteSpace = Pattern.compile("""\s+""")
+		private val reStartJsonArray = """\A\s*\[""".asciiPattern()
+		private val reStartJsonObject = """\A\s*\{""".asciiPattern()
+		private val reWhiteSpace = """\s+""".asciiPattern()
 		
 		private const val mspTokenUrl = "http://mastodonsearch.jp/api/v1.0.1/utoken"
 		private const val mspSearchUrl = "http://mastodonsearch.jp/api/v1.0.1/cross"

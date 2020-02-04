@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.util
 
+import jp.juggler.util.asciiPattern
 import jp.juggler.util.groupEx
 import java.math.BigInteger
 import java.util.ArrayList
@@ -104,7 +105,7 @@ class VersionString(src : String?) : Comparable<VersionString> {
 			return c == '.' || c == ' '
 		}
 		
-		private val reRcX = Pattern.compile("rc(\\d*)")
+		private val reRcX = "rc(\\d*)".asciiPattern()
 		
 		private fun checkTail(b : Any) : Int {
 			// 1.0 < 1.0.n  => -1

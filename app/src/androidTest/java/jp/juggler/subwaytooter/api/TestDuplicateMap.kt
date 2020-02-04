@@ -20,7 +20,7 @@ class TestDuplicateMap {
 		MockContext(),
 		SavedAccount(
 			db_id = 1,
-			acct = "user1@host1",
+			acctArg = "user1@host1",
 			hostArg = null
 		)
 	)

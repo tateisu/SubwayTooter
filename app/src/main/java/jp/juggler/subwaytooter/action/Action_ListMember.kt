@@ -17,7 +17,7 @@ import java.util.regex.Pattern
 
 object Action_ListMember {
 	
-	private val reFollowError = Pattern.compile("follow", Pattern.CASE_INSENSITIVE)
+	private val reFollowError ="follow".asciiPattern(Pattern.CASE_INSENSITIVE)
 	
 	interface Callback {
 		fun onListMemberUpdated(willRegistered : Boolean, bSuccess : Boolean)

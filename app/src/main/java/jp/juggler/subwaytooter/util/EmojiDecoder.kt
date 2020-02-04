@@ -17,6 +17,7 @@ import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.util.asciiPattern
 import jp.juggler.util.codePointBefore
 import java.util.*
 import java.util.regex.Pattern
@@ -330,8 +331,8 @@ object EmojiDecoder {
 		}
 	}
 	
-	private val reNicoru = Pattern.compile("\\Anicoru\\d*\\z", Pattern.CASE_INSENSITIVE)
-	private val reHohoemi = Pattern.compile("\\Ahohoemi\\d*\\z", Pattern.CASE_INSENSITIVE)
+	private val reNicoru = """\Anicoru\d*\z""".asciiPattern( Pattern.CASE_INSENSITIVE)
+	private val reHohoemi = """\Ahohoemi\d*\z""".asciiPattern( Pattern.CASE_INSENSITIVE)
 	
 	fun decodeEmoji(options : DecodeOptions, s : String) : Spannable {
 		

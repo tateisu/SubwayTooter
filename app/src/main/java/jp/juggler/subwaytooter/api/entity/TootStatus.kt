@@ -307,10 +307,10 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			val sv = src.string("cw")?.cleanCW()
 			this.spoiler_text = when {
 				sv == null -> "" // CWなし
-
-				sv.replace('\u0323',' ').isBlank() ->
+				
+				sv.replace('\u0323', ' ').isBlank() ->
 					parser.context.getString(R.string.blank_cw)
-
+				
 				else -> sv
 			}
 			
@@ -804,9 +804,10 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	
 	class FindStatusIdFromUrlResult(
 		val statusId : EntityId?, // may null
-		hostArg:String,
+		hostArg : String,
 		val url : String
-	){
+	) {
+		
 		val host = Host.parse(hostArg)
 	}
 	
@@ -825,42 +826,40 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		
 		val EMPTY_SPANNABLE = SpannableString("")
 		
+		val reHostIdn = TootAccount.reHostIdn
+		
 		// OStatus
-		private val reTootUriOS = Pattern.compile(
-			"tag:([^,]*),[^:]*:objectId=([^:?#/\\s]+):objectType=Status",
-			Pattern.CASE_INSENSITIVE
-		)
+		private val reTootUriOS = """tag:([^,]*),[^:]*:objectId=([^:?#/\s]+):objectType=Status"""
+			.asciiPattern(Pattern.CASE_INSENSITIVE)
 		
 		// ActivityPub 1
-		private val reTootUriAP1 =
-			Pattern.compile("https?://([^/]+)/users/[A-Za-z0-9_]+/statuses/([^?#/\\s]+)")
+		private val reTootUriAP1 = """https?://([^/]+)/users/\w+/statuses/([^?#/\s]+)"""
+			.asciiPattern()
 		
 		// ActivityPub 2
-		private val reTootUriAP2 =
-			Pattern.compile("https?://([^/]+)/@[A-Za-z0-9_]+/([^?#/\\s]+)")
+		private val reTootUriAP2 = """https?://([^/]+)/@\w+/([^?#/\s]+)"""
+			.asciiPattern()
 		
 		// 公開ステータスページのURL マストドン
-		private val reStatusPage =
-			Pattern.compile("""\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/([^?#/\s]+)(?:\z|[?#])""")
+		private val reStatusPage ="""\Ahttps://([^/]+)/@(\w+)/([^?#/\s]+)(?:\z|[?#])"""
+			.asciiPattern()
 		
 		// 公開ステータスページのURL Misskey
-		internal val reStatusPageMisskey = Pattern.compile(
-			"""\Ahttps://([^/]+)/notes/([0-9a-f]{24}|[0-9a-z]{10})\b""",
-			Pattern.CASE_INSENSITIVE
-		)
+		internal val reStatusPageMisskey = """\Ahttps://([^/]+)/notes/([0-9a-f]{24}|[0-9a-z]{10})\b"""
+			.asciiPattern(Pattern.CASE_INSENSITIVE )
 		
 		// PleromaのStatusのUri
-		private val reStatusPageObjects =
-			Pattern.compile("""\Ahttps://([^/]+)/objects/([^?#/\s]+)(?:\z|[?#])""")
+		private val reStatusPageObjects ="""\Ahttps://([^/]+)/objects/([^?#/\s]+)(?:\z|[?#])"""
+			.asciiPattern()
 		
 		// PleromaのStatusの公開ページ
-		private val reStatusPageNotice =
-			Pattern.compile("""\Ahttps://([^/]+)/notice/([^?#/\s]+)(?:\z|[?#])""")
+		private val reStatusPageNotice ="""\Ahttps://([^/]+)/notice/([^?#/\s]+)(?:\z|[?#])"""
+			.asciiPattern()
 		
 		// PixelfedのStatusの公開ページ
 		// https://pixelfed.tokyo/p/tateisu/84169185147621376
-		private val reStatusPagePixelfed =
-			Pattern.compile("""\Ahttps://([^/]+)/p/([A-Za-z0-9_]+)/([^?#/\s]+)(?:\z|[?#])""")
+		private val reStatusPagePixelfed ="""\Ahttps://([^/]+)/p/([A-Za-z0-9_]+)/([^?#/\s]+)(?:\z|[?#])"""
+			.asciiPattern()
 		
 		// returns null or pair( status_id, host ,url )
 		fun String.findStatusIdFromUrl() : FindStatusIdFromUrlResult? {
@@ -934,11 +933,11 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		
 		private val tz_utc = TimeZone.getTimeZone("UTC")
 		
-		private val reTime =
-			Pattern.compile("\\A(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)")
+		private val reTime ="""\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""
+			.asciiPattern()
 		
-		private val reMSPTime =
-			Pattern.compile("\\A(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)")
+		private val reMSPTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""
+			.asciiPattern()
 		
 		fun parseTime(strTime : String?) : Long {
 			if(strTime != null && strTime.isNotEmpty()) {
@@ -998,7 +997,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		
 		@SuppressLint("SimpleDateFormat")
 		internal val date_format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-
+		
 		@SuppressLint("SimpleDateFormat")
 		internal val date_format2 = SimpleDateFormat("yyyy-MM-dd")
 		
@@ -1056,21 +1055,21 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				}
 			}
 			
-			return formatDate(t,date_format,omitZeroSecond = false,omitYear = false)
+			return formatDate(t, date_format, omitZeroSecond = false, omitYear = false)
 		}
 		
 		// 告知の開始/終了日付
 		private fun formatDate(
 			t : Long,
-			format:SimpleDateFormat ,
-			omitZeroSecond:Boolean,
-			omitYear:Boolean
+			format : SimpleDateFormat,
+			omitZeroSecond : Boolean,
+			omitYear : Boolean
 		) : String {
 			var dateTarget = format.format(Date(t))
 			
 			// 秒の部分を省略する
-			if( omitZeroSecond && dateTarget.endsWith(":00")){
-				dateTarget = dateTarget.substring(0,dateTarget.length -3)
+			if(omitZeroSecond && dateTarget.endsWith(":00")) {
+				dateTarget = dateTarget.substring(0, dateTarget.length - 3)
 			}
 			
 			// 年の部分が現在と同じなら省略する
@@ -1084,31 +1083,31 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 					dateTarget = dateTarget.substring(delm + 1)
 				}
 			}
-
+			
 			return dateTarget
 		}
 		
-		fun formatTimeRange(start : Long, end : Long, allDay : Boolean):Pair<String,String>{
+		fun formatTimeRange(start : Long, end : Long, allDay : Boolean) : Pair<String, String> {
 			val strStart = when {
 				start <= 0L -> ""
-				allDay-> formatDate(start,date_format2,omitZeroSecond = false,omitYear = true)
-				else -> formatDate(start, date_format,omitZeroSecond = true,omitYear = true)
+				allDay -> formatDate(start, date_format2, omitZeroSecond = false, omitYear = true)
+				else -> formatDate(start, date_format, omitZeroSecond = true, omitYear = true)
 			}
 			val strEnd = when {
 				end <= 0L -> ""
-				allDay-> formatDate(end,date_format2,omitZeroSecond = false,omitYear = true)
-				else -> formatDate(end, date_format,omitZeroSecond = true,omitYear = true)
+				allDay -> formatDate(end, date_format2, omitZeroSecond = false, omitYear = true)
+				else -> formatDate(end, date_format, omitZeroSecond = true, omitYear = true)
 			}
 			// 終了日は先頭と同じ部分を省略する
 			var skip = 0
-			for(i in 0 until min(strStart.length,strEnd.length)){
-				val c =strStart[i]
-				if(c != strEnd[i] ) break
-				if( c.isDigit() ) continue
-				skip= i+1
-				if( c == ' ') break // 時間以降は省略しない
+			for(i in 0 until min(strStart.length, strEnd.length)) {
+				val c = strStart[i]
+				if(c != strEnd[i]) break
+				if(c.isDigit()) continue
+				skip = i + 1
+				if(c == ' ') break // 時間以降は省略しない
 			}
-			return Pair( strStart,strEnd.substring(skip,strEnd.length))
+			return Pair(strStart, strEnd.substring(skip, strEnd.length))
 		}
 		
 		fun parseStringArray(src : JsonArray?) : ArrayList<String>? {
@@ -1126,14 +1125,14 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		}
 		
 		private fun parseReactionCounts(src : JsonObject?) : LinkedHashMap<String, Int>? {
-
+			
 			// カスタム絵文字などが含まれるようになったので、内容のバリデーションはできない
 			var rv : LinkedHashMap<String, Int>? = null
 			src?.entries?.forEach { entry ->
 				val key = entry.key.notEmpty() ?: return@forEach
 				val v = src.int(key)?.notZero() ?: return@forEach
 				if(rv == null) rv = LinkedHashMap()
-				rv!![key] = v
+				rv !![key] = v
 			}
 			return rv
 		}
@@ -1152,7 +1151,6 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			return rv
 		}
 		
-
 		fun validStatusId(src : EntityId?) : EntityId? =
 			when {
 				src == null -> null
@@ -1237,19 +1235,6 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			return null
 		}
 		
-		private val reLinkUrl = Pattern.compile("""(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
-		private val reMention = Pattern.compile(
-			"""(?<=^|[^/\w\p{Pc}])@((\w+([\w.-]+\w+)?)(?:@[a-z0-9.\-]+[a-z0-9]+)?)""",
-			Pattern.CASE_INSENSITIVE
-		)
-		private val strUrlReplacement = (0 until 23).map { ' ' }.joinToString()
-		
-		fun countText(s : String) : Int {
-			return s
-				.replaceAll(reLinkUrl, strUrlReplacement)
-				.replaceAll(reMention, "@$2")
-				.codePointCount()
-		}
 	}
 	
 }

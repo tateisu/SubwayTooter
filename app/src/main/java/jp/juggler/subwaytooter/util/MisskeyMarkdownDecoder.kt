@@ -472,13 +472,23 @@ object MisskeySyntaxHighlighter {
 		}
 	}
 	
-	private val reLineComment = Pattern.compile("""\A//.*""")
-	private val reBlockComment = Pattern.compile("""\A/\*.*?\*/""", Pattern.DOTALL)
-	private val reNumber = Pattern.compile("""\A[\-+]?[\d.]+""")
-	private val reLabel = Pattern.compile("""\A@([A-Z_-][A-Z0-9_-]*)""", Pattern.CASE_INSENSITIVE)
-	private val reKeyword =
-		Pattern.compile("""\A([A-Z_-][A-Z0-9_-]*)([ \t]*\()?""", Pattern.CASE_INSENSITIVE)
-	private val reContainsAlpha = Pattern.compile("""[A-Za-z_]""")
+	private val reLineComment = """\A//.*"""
+		.asciiPattern()
+
+	private val reBlockComment = """\A/\*.*?\*/"""
+		.asciiPattern( Pattern.DOTALL)
+
+	private val reNumber = """\A[\-+]?[\d.]+"""
+		.asciiPattern()
+
+	private val reLabel = """\A@([A-Z_-][A-Z0-9_-]*)"""
+		.asciiPattern( Pattern.CASE_INSENSITIVE)
+
+	private val reKeyword ="""\A([A-Z_-][A-Z0-9_-]*)([ \t]*\()?"""
+		.asciiPattern( Pattern.CASE_INSENSITIVE)
+
+	private val reContainsAlpha = """[A-Za-z_]"""
+		.asciiPattern()
 	
 	private const val charH80 = 0x80.toChar()
 	
@@ -780,7 +790,12 @@ object MisskeyMarkdownDecoder {
 		}
 		
 		// リンクを追加する
-		fun appendLink(text : String, url : String, allowShort : Boolean = false,mention:TootMention?=null) {
+		fun appendLink(
+			text : String,
+			url : String,
+			allowShort : Boolean = false,
+			mention : TootMention? = null
+		) {
 			when {
 				allowShort -> appendLinkText(text, url)
 				else -> appendText(text)
@@ -839,7 +854,7 @@ object MisskeyMarkdownDecoder {
 				else -> rawAcct
 			}.pretty}"
 			
-			var mention :TootMention? = null
+			var mention : TootMention? = null
 			val url = when(strHost) {
 				
 				// https://github.com/syuilo/misskey/pull/3603
@@ -858,7 +873,7 @@ object MisskeyMarkdownDecoder {
 						.also { url ->
 							val mentions = prepareMentions()
 							mention = mentions.find { m -> m.acct == shortAcct }
-							if( mention == null){
+							if(mention == null) {
 								val newMention = TootMention(
 									EntityId.DEFAULT
 									, url
@@ -870,7 +885,7 @@ object MisskeyMarkdownDecoder {
 							}
 						}
 			}
-			appendLink(caption, url,mention = mention)
+			appendLink(caption, url, mention = mention)
 		}
 	}
 	
@@ -1412,7 +1427,7 @@ object MisskeyMarkdownDecoder {
 		addParser(
 			"~"
 			, simpleParser(
-				Pattern.compile("""\A~~(.+?)~~""")
+				"""\A~~(.+?)~~""".asciiPattern()
 				, NodeType.STRIKE
 			)
 		)
@@ -1421,17 +1436,15 @@ object MisskeyMarkdownDecoder {
 		addParser(
 			"\""
 			, simpleParser(
-				Pattern.compile("""\A"([^\x0d\x0a]+?)\n"[\x0d\x0a]*""")
+				"""\A"([^\x0d\x0a]+?)\n"[\x0d\x0a]*""".asciiPattern()
 				, NodeType.QUOTE_INLINE
 			)
 		)
 		
 		// Quote (行頭)>...(改行)
-		val reQuoteBlock = Pattern.compile(
-			// この正規表現の場合は \A ではなく ^ で各行の始端にマッチさせる
-			"""^>(?:[ 　]?)([^\x0d\x0a]*)(\x0a|\x0d\x0a?)?""",
-			Pattern.MULTILINE
-		)
+		// この正規表現の場合は \A ではなく ^ で各行の始端にマッチさせる
+		val reQuoteBlock = """^>(?:[ 　]?)([^\x0d\x0a]*)(\x0a|\x0d\x0a?)?"""
+			.asciiPattern(Pattern.MULTILINE)
 		
 		addParser(">", {
 			if(pos > 0) {
@@ -1474,30 +1487,21 @@ object MisskeyMarkdownDecoder {
 		addParser(
 			":"
 			, simpleParser(
-				Pattern.compile("""\A:([a-zA-Z0-9+-_]+):""")
+				"""\A:([a-zA-Z0-9+-_]+):""".asciiPattern()
 				, NodeType.EMOJI
 			)
 		)
-		
-		//		// プロフ絵文字
-		//		addParser(
-		//			":"
-		//			, simpleParser(
-		//				Pattern.compile("""\A:(@[a-zA-Z0-9+-_]+(?:@[${TootTag.w}.-]+[a-z0-9]+)?):""",Pattern.CASE_INSENSITIVE)
-		//				, NodeType.EMOJI
-		//			)
-		//		)
-		
+
 		// モーション
 		addParser(
 			"("
 			, simpleParser(
-				Pattern.compile("""\A\Q(((\E(.+?)\Q)))\E""", Pattern.DOTALL)
+				"""\A\Q(((\E(.+?)\Q)))\E""".asciiPattern(Pattern.DOTALL)
 				, NodeType.MOTION
 			)
 		)
 		
-		val reHtmlTag = Pattern.compile("""\A<([a-z]+)>(.+?)</\1>""", Pattern.DOTALL)
+		val reHtmlTag = """\A<([a-z]+)>(.+?)</\1>""".asciiPattern(Pattern.DOTALL)
 		
 		addParser("<", {
 			val matcher = remainMatcher(reHtmlTag)
@@ -1532,19 +1536,21 @@ object MisskeyMarkdownDecoder {
 			// 処理順序に意味があるので入れ替えないこと
 			// 記号列が長い順にパースを試す
 			, simpleParser(
-				Pattern.compile("""^\Q***\E(.+?)\Q***\E""")
+				"""^\Q***\E(.+?)\Q***\E""".asciiPattern()
 				, NodeType.BIG
 			)
 			, simpleParser(
-				Pattern.compile("""^\Q**\E(.+?)\Q**\E""")
+				"""^\Q**\E(.+?)\Q**\E""".asciiPattern()
 				, NodeType.BOLD
 			)
 		)
 		
-		val reAlnum = Pattern.compile("""[A-Z0-9]""", Pattern.CASE_INSENSITIVE)
+		val reAlnum = """[A-Za-z0-9]""".asciiPattern()
 		
 		// http(s)://....
-		val reUrl = Pattern.compile("""\A(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
+		val reUrl = """\A(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)"""
+			.asciiPattern()
+		
 		addParser("h", {
 			
 			// 直前の文字が英数字ならURLの開始とはみなさない
@@ -1567,10 +1573,8 @@ object MisskeyMarkdownDecoder {
 		})
 		
 		// 検索
-		val reSearchButton = Pattern.compile(
-			"""\A(検索|\[検索]|Search|\[Search])(\n|\z)"""
-			, Pattern.CASE_INSENSITIVE
-		)
+		val reSearchButton = """\A(検索|\[検索]|Search|\[Search])(\n|\z)"""
+			.asciiPattern(Pattern.CASE_INSENSITIVE)
 		
 		fun NodeParseEnv.parseSearchPrev() : String? {
 			val prev = text.substring(lastEnd, pos)
@@ -1608,14 +1612,13 @@ object MisskeyMarkdownDecoder {
 		// [title] 【title】
 		// 直後に改行が必要だったが文末でも良いことになった https://github.com/syuilo/misskey/commit/79ffbf95db9d0cc019d06ab93b1bfa6ba0d4f9ae
 		val titleParser = simpleParser(
-			Pattern.compile("""\A[【\[](.+?)[】\]](\n|\z)""")
+			"""\A[【\[](.+?)[】\]](\n|\z)""".asciiPattern()
 			, NodeType.TITLE
 		)
 		
 		// Link
-		val reLink = Pattern.compile(
-			"""\A\??\[([^\n\[\]]+?)]\((https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+?)\)"""
-		)
+		val reLink = """\A\??\[([^\n\[\]]+?)]\((https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+?)\)"""
+			.asciiPattern()
 		
 		val linkParser : NodeParseEnv.() -> NodeDetected? = {
 			val matcher = remainMatcher(reLink)
@@ -1662,7 +1665,7 @@ object MisskeyMarkdownDecoder {
 		
 		addParser("@", {
 			
-			val matcher = remainMatcher(TootAccount.reMention)
+			val matcher = remainMatcher(TootAccount.reMisskeyMentionMFM)
 			
 			when {
 				! matcher.find() -> null
@@ -1671,22 +1674,30 @@ object MisskeyMarkdownDecoder {
 					// 直前の文字がメールアドレスの@の手前に使える文字ならメンションではない
 					pos > 0 && mailChars.get(text.codePointBefore(pos)) -> null
 					
-					else -> makeDetected(
-						NodeType.MENTION,
-						arrayOf(
-							matcher.groupEx(1) !!,
-							matcher.groupEx(2) ?: "" // username, host
-						),
-						matcher.start(), matcher.end(),
-						"", 0, 0
-					)
+					else -> {
+						log.d(
+							"mention detected: ${matcher.group(1)},${matcher.group(2)},${matcher.group(
+								0
+							)}"
+						)
+						makeDetected(
+							NodeType.MENTION,
+							arrayOf(
+								matcher.groupEx(1) !!,
+								matcher.groupEx(2) ?: "" // username, host
+							),
+							matcher.start(), matcher.end(),
+							"", 0, 0
+						)
+					}
 				}
 			}
 		})
 		
 		// Hashtag
-		val reHashtag = Pattern.compile("""\A#([^\s.,!?#:]+)""")
-		val reDigitsOnly = Pattern.compile("""\A\d*\z""")
+		val reHashtag = """\A#([^\s.,!?#:]+)""".asciiPattern()
+		val reDigitsOnly = """\A\d*\z""".asciiPattern()
+
 		addParser("#", {
 			
 			if(pos > 0 && MatcherCache.matcher(reAlnum, text, pos - 1, pos).find()) {
@@ -1720,7 +1731,7 @@ object MisskeyMarkdownDecoder {
 		addParser(
 			"`"
 			, simpleParser(
-				Pattern.compile("""\A```(?:.*)\n([\s\S]+?)\n```(?:\n|$)""")
+				"""\A```(?:.*)\n([\s\S]+?)\n```(?:\n|$)""".asciiPattern()
 				, NodeType.CODE_BLOCK
 				/*
 				(A)
@@ -1738,7 +1749,7 @@ object MisskeyMarkdownDecoder {
 			)
 			, simpleParser(
 				// インラインコードは内部にとある文字を含むと認識されない。理由は顔文字と衝突するからだとか
-				Pattern.compile("""\A`([^`´\x0d\x0a]+)`""")
+				"""\A`([^`´\x0d\x0a]+)`""".asciiPattern()
 				, NodeType.CODE_INLINE
 			)
 		)

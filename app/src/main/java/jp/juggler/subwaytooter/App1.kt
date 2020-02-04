@@ -219,7 +219,7 @@ class App1 : Application() {
 		//		return maxSize * 1024;
 		//	}
 		
-		val reNotAllowedInUserAgent : Pattern = Pattern.compile("[^\\x21-\\x7e]+")
+		val reNotAllowedInUserAgent  ="[^\\x21-\\x7e]+".asciiPattern()
 		
 		val userAgentDefault =
 			"SubwayTooter/${BuildConfig.VERSION_NAME} Android/${Build.VERSION.RELEASE}"

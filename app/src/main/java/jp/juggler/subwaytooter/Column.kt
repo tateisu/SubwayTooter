@@ -246,16 +246,13 @@ class Column(
 		private val channelIdSeed = AtomicInteger(0)
 		
 		// より古いデータの取得に使う
-		internal val reMaxId =
-			Pattern.compile("""[&?]max_id=([^&?;\s]+)""")
+		internal val reMaxId ="""[&?]max_id=([^&?;\s]+)""".asciiPattern()
 		
 		// より新しいデータの取得に使う (マストドン2.6.0以降)
-		private val reMinId =
-			Pattern.compile("""[&?]min_id=([^&?;\s]+)""")
+		private val reMinId ="""[&?]min_id=([^&?;\s]+)""".asciiPattern()
 		
 		// より新しいデータの取得に使う(マストドン2.6.0未満)
-		private val reSinceId =
-			Pattern.compile("""[&?]since_id=([^&?;\s]+)""")
+		private val reSinceId ="""[&?]since_id=([^&?;\s]+)""".asciiPattern()
 		
 		val COLUMN_REGEX_FILTER_DEFAULT : (CharSequence?) -> Boolean = { false }
 		
@@ -1468,7 +1465,7 @@ class Column(
 		val regex_text = this.regex_text
 		if(regex_text.isNotEmpty()) {
 			try {
-				val re = Pattern.compile(regex_text)
+				val re = regex_text.asciiPattern()
 				column_regex_filter =
 					{ text : CharSequence? ->
 						if(text?.isEmpty() != false) false else re.matcher(

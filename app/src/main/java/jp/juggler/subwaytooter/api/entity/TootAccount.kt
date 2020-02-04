@@ -174,7 +174,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			this.time_created_at = TootStatus.parseTime(this.created_at)
 			
 			// https://github.com/syuilo/misskey/blob/develop/src/client/scripts/get-static-image-url.ts
-			fun String.getStaticImageUrl():String?{
+			fun String.getStaticImageUrl() : String? {
 				val uri = this.mayUri() ?: return null
 				val dummy = "${uri.encodedAuthority}${uri.encodedPath}"
 				return "https://${parser.linkHelper.host?.ascii}/proxy/$dummy?url=${encodePercent()}&static=1"
@@ -466,29 +466,81 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	companion object {
 		private val log = LogCategory("TootAccount")
 		
-		internal val reWhitespace : Pattern = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
+		internal val reWhitespace = "[\\s\\t\\x0d\\x0a]+".asciiPattern()
 		
 		// noteをディレクトリに表示する際、制御文字や空白を変換する
-		private val reNoteLineFeed : Pattern = Pattern.compile("""[\x00-\x20\x7f　]+""")
+		private val reNoteLineFeed : Pattern = """[\x00-\x20\x7f　]+""".asciiPattern()
+		
+		// IDNドメインを含むホスト名の正規表現
+		const val reHostIdn = """(?:(?:[\p{L}\p{N}][\p{L}\p{N}-_]*\.)+[\p{L}\p{N}]{2,})"""
+		
+		internal val reHostInUrl : Pattern = """\Ahttps://($reHostIdn)/"""
+			.asciiPattern()
+		
+		// 文字数カウントに使う正規表現
+		private val reCountLink = """(https?://$reHostIdn[\w/:%#@${'$'}&?!()\[\]~.=+\-]*)"""
+			.asciiPattern()
+		
+		// 投稿中のURLは23文字として扱う
+		private val strUrlReplacement = (1 .. 23).joinToString(transform = { " " })
+		
+		// \p{L} : アルファベット (Letter)。
+		// 　　Ll(小文字)、Lm(擬似文字)、Lo(その他の文字)、Lt(タイトル文字)、Lu(大文字アルファベット)を含む
+		// \p{M} : 記号 (Mark)
+		// \p{Nd} : 10 進数字 (Decimal number)
+		// \p{Pc} : 連結用句読記号 (Connector punctuation)
+		
+		// rubyの [:word:] ： 単語構成文字 (Letter | Mark | Decimal_Number | Connector_Punctuation)
+		const val reRubyWord = """\p{L}\p{M}\p{Nd}\p{Pc}"""
+		
+		// rubyの [:alpha:] : 英字 (Letter | Mark)
+		const val reRubyAlpha = """\p{L}\p{M}"""
+		
+		private const val reMastodonUserName = """[A-Za-z0-9_]+(?:[A-Za-z0-9_.-]+[A-Za-z0-9_]+)?"""
+		private const val reMastodonMention =
+			"""(?<=^|[^/$reRubyWord])@(($reMastodonUserName)(?:@[$reRubyWord.-]+[A-Za-z0-9]+)?)"""
+		
+		private val reCountMention = reMastodonMention.asciiPattern()
+		
+		fun countText(s : String) : Int {
+			return s
+				.replaceAll(reCountLink, strUrlReplacement)
+				.replaceAll(reCountMention, "@$2")
+				.codePointCount()
+		}
+		
+		// MisskeyのMFMのメンションのドメイン部分はIDN非対応
+		private const val reMisskeyHost = """\w[\w.-]*\w"""
+		
+		// https://misskey.io/@tateisu@%E3%83%9E%E3%82%B9%E3%83%88%E3%83%89%E3%83%B33.juggler.jp
+		// のようなURLがMisskeyのメンションから生成されることがある
+		// %エンコーディングのデコードが必要
+		private const val reMisskeyHostEncoded = """[\w%][\w.%-]*[\w%]"""
 		
 		// MFMのメンション @username @username@host
 		// (Mastodonのカラムでは使われていない)
-		internal val reMention = Pattern.compile("""\A@(\w+(?:[\w-]*\w)?)(?:@(\w[\w.-]*\w))?""")
+		// MisskeyのMFMはIDNをサポートしていない
+		private val reMisskeyMentionBase = """@(\w+(?:[\w-]*\w)?)(?:@($reMisskeyHost))?"""
+			.asciiPattern()
+
+		// MFMパース時に使う
+		internal val reMisskeyMentionMFM = """\A$reMisskeyMentionBase"""
+			.asciiPattern()
 		
-		// for IDN domain... Misskeyはまだサポートしていない
-		// internal val reMention = Pattern.compile("""\A@(\w+(?:[\w-]*\w)?)(?:@([${TootTag.w}][${TootTag.w}.-]*[${TootTag.w}]))?""")
-		
-		internal val reUrlHost : Pattern =
-			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/""")
+		// 投稿送信時にメンションを見つけてuserIdを調べるために使う
+		internal val reMisskeyMentionPost = """(?:\A|\s)$reMisskeyMentionBase"""
+			.asciiPattern()
 		
 		// host, user ,(instance)
 		// Misskeyだけではないのでusernameの定義が違う
-		internal val reAccountUrl : Pattern =
-			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/@(\w+[\w-]*)(?:@(\w[\w.-]*\w))?(?=\z|[?#])""")
+		internal val reAccountUrl =
+			"""\Ahttps://($reHostIdn)/@(\w+[\w-]*)(?:@($reMisskeyHostEncoded))?(?=\z|[?#])"""
+				.asciiPattern()
 		
 		// host,user
-		internal val reAccountUrl2 : Pattern =
-			Pattern.compile("""\Ahttps://(\w[\w.-]*\w)/users/(\w|\w+[\w-]*\w)(?=\z|[?#])""")
+		internal val reAccountUrl2 =
+			"""\Ahttps://($reHostIdn)/users/(\w|\w+[\w-]*\w)(?=\z|[?#])"""
+				.asciiPattern()
 		
 		fun getAcctFromUrl(url : String?) : Acct? {
 			
@@ -497,7 +549,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			var m = reAccountUrl.matcher(url)
 			if(m.find()) {
 				val host = m.groupEx(1)
-				val user = m.groupEx(2) !!.decodePercent()
+				val user = m.groupEx(2) !!
 				val instance = m.groupEx(3)?.decodePercent()
 				return Acct.parse(user, instance?.notEmpty() ?: host)
 			}
@@ -505,7 +557,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			m = reAccountUrl2.matcher(url)
 			if(m.find()) {
 				val host = m.groupEx(1)
-				val user = m.groupEx(2) !!.decodePercent()
+				val user = m.groupEx(2) !!
 				return Acct.parse(user, host)
 			}
 			
@@ -529,7 +581,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			// acctから調べる
 			if(acctArg != null) {
 				val acct = Acct.parse(acctArg)
-				if( acct.host != null) return acct.host
+				if(acct.host != null) return acct.host
 			}
 			
 			// accessHostから調べる
@@ -618,7 +670,6 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			
 			return if(dst?.isNotEmpty() == true) dst else null
 		}
-		
 		
 	}
 }

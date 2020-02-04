@@ -432,7 +432,7 @@ object AppDataExporter {
 		}
 	}
 	
-	private val reBackgroundImage = Pattern.compile("background-image/(.+)")
+	private val reBackgroundImage = "background-image/(.+)".asciiPattern()
 	
 	// エントリが背景画像のソレなら真を返す
 	// column.column_bg_image を更新する場合がある

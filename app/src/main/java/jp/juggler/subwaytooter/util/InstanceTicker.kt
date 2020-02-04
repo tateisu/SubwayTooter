@@ -6,6 +6,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.LogCategory
+import jp.juggler.util.asciiPattern
 import jp.juggler.util.ellipsize
 import jp.juggler.util.groupEx
 import java.util.concurrent.ConcurrentHashMap
@@ -17,11 +18,13 @@ object InstanceTicker {
 	
 	private fun parseHex(group : String?) : Int = group?.toInt(16) ?: 0
 	
-	private val reColor6 =
-		Pattern.compile("""#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})""", Pattern.CASE_INSENSITIVE)
+	private const val alnum = """[0-9a-fA-F]"""
 	
-	private val reColor3 =
-		Pattern.compile("""#([0-9a-f])([0-9a-f])([0-9a-f])\b""", Pattern.CASE_INSENSITIVE)
+	private val reColor6 ="""#($alnum{2})($alnum{2})($alnum{2})"""
+		.asciiPattern( Pattern.CASE_INSENSITIVE)
+	
+	private val reColor3 ="""#($alnum)($alnum)($alnum)\b"""
+		.asciiPattern( Pattern.CASE_INSENSITIVE)
 	
 	private fun parseColor(v : String) : Int? {
 		var m = reColor6.matcher(v)
@@ -154,7 +157,7 @@ object InstanceTicker {
 	var lastList = ConcurrentHashMap<String, Item>()
 	
 	private var timeNextLoad = 0L
-	private val reLine = Pattern.compile("""([^\x0d\x0a]+)""")
+	private val reLine = """([^\x0d\x0a]+)""".asciiPattern()
 	
 	fun load() {
 		synchronized(this) {

@@ -25,8 +25,8 @@ class TestTootAccount {
 		assertEquals("host",TootAccount.findHostFromUrl("user@HOST",null,null))
 		
 		// find from accessHost
-		assertEquals("",TootAccount.findHostFromUrl(null,"",null))
-		assertEquals("any string is allowed",TootAccount.findHostFromUrl(null,"any string is allowed",null))
+		assertEquals("",TootAccount.findHostFromUrl(null,Host.parse(""),null))
+		assertEquals("any string is allowed",TootAccount.findHostFromUrl(null,Host.parse("any string is allowed"),null))
 		
 		// find from url
 		assertEquals(null,TootAccount.findHostFromUrl(null,null,""))

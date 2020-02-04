@@ -40,11 +40,10 @@ class PostHelper(
 	
 	companion object {
 		private val log = LogCategory("PostHelper")
-		
-		private val reCharsNotEmoji = Pattern.compile("[^0-9A-Za-z_-]")
-		
-		private val reAscii = Pattern.compile("""[\x00-\x7f]""")
-		private val reNotAscii = Pattern.compile("""[^\x00-\x7f]""")
+
+		private val reCharsNotEmoji = "[^0-9A-Za-z_-]".asciiPattern()
+		private val reAscii = """[\x00-\x7f]""".asciiPattern()
+		private val reNotAscii = """[^\x00-\x7f]""".asciiPattern()
 		
 	}
 	
@@ -384,26 +383,20 @@ class PostHelper(
 							
 							if(visibility_checked == TootVisibility.DirectSpecified || visibility_checked == TootVisibility.DirectPrivate) {
 								val userIds = JsonArray()
-								val reMention =
-									Pattern.compile("(?:\\A|\\s)@([a-zA-Z0-9_]{1,20})(?:@([\\w.:-]+))?(?:\\z|\\s)")
-								val m = reMention.matcher(content)
+								
+								val m = TootAccount.reMisskeyMentionPost.matcher(content)
 								while(m.find()) {
 									val username = m.groupEx(1)
-									val host = m.groupEx(2)
+									val host = m.groupEx(2) // may null
 									
 									result = client.request(
 										"/api/users/show",
 										account.putMisskeyApiToken().apply {
-											if(username?.isNotEmpty() == true) put(
-												"username",
-												username
-											)
-											if(host?.isNotEmpty() == true) put(
-												"host",
-												host
-											)
-										}
-											.toPostRequestBuilder()
+											if(username?.isNotEmpty() == true)
+												put("username",username)
+											if(host?.isNotEmpty() == true)
+												put("host",host)
+										}.toPostRequestBuilder()
 									)
 									val id = result?.jsonObject?.string("id")
 									if(id?.isNotEmpty() == true) {

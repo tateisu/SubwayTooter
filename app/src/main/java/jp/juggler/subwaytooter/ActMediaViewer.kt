@@ -747,8 +747,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		if(fileName == null) {
 			fileName = url
-				.replaceFirst("https?://".toRegex(), "")
-				.replace("[^.\\w\\d]+".toRegex(), "-")
+				.replaceFirst("https?://".asciiPattern(), "")
+				.replaceAll("[^.\\w\\d]+".asciiPattern(), "-")
 		}
 		if(fileName.length >= 20) fileName = fileName.substring(fileName.length - 20)
 		

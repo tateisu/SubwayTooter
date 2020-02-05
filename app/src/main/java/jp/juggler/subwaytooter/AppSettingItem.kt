@@ -893,6 +893,11 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		sw(Pref.bpDontUseStreaming, R.string.dont_use_streaming_api)
 		sw(Pref.bpDontRefreshOnResume, R.string.dont_refresh_on_activity_resume)
 		text(Pref.spMediaReadTimeout, R.string.timeout_for_embed_media_viewer, InputTypeEx.number)
+		action(R.string.delete_custom_emoji_cache){
+			action ={
+				App1.custom_emoji_cache.delete()
+			}
+		}
 	}
 	
 	section(R.string.developer_options) {

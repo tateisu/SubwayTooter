@@ -102,13 +102,13 @@ dependencies {
     implementation "androidx.drawerlayout:drawerlayout:1.1.0-alpha03"
 
     // NavigationView
-    implementation "com.google.android.material:material:1.1.0-beta01"
+    implementation "com.google.android.material:material:1.1.0"
 
     // PreferenceManager
     implementation "androidx.preference:preference-ktx:1.1.0"
 
     // CustomTabs
-    implementation "androidx.browser:browser:1.0.0"
+    implementation "androidx.browser:browser:1.2.0"
 
     // Recyclerview
     implementation "androidx.recyclerview:recyclerview:1.1.0"
@@ -141,7 +141,7 @@ dependencies {
     //implementation "org.jetbrains.anko:anko-sdk25-coroutines:$anko_version"
     //implementation "org.jetbrains.anko:anko-appcompat-v7-coroutines:$anko_version"
 
-    testImplementation 'junit:junit:4.12' // しばらくはkotlin-testとjunitを併用
+    testImplementation 'junit:junit:4.13' // しばらくはkotlin-testとjunitを併用
 
     implementation 'com.squareup.okhttp3:okhttp:4.1.0'
     implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.1.0'

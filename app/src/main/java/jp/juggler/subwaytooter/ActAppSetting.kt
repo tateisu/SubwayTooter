@@ -331,6 +331,11 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 				else -> error("can't generate view for type ${item}")
 			}
 		
+		// true if the item at the specified position is not a separator.
+		// (A separator is a non-selectable, non-clickable item).
+		override fun areAllItemsEnabled() : Boolean =false
+		override fun isEnabled(position : Int) : Boolean = list[position] is AppSettingItem
+		
 		override fun getView(position : Int, convertView : View?, parent : ViewGroup?) : View =
 			when(val item = list[position]) {
 				is AppSettingItem ->

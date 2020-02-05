@@ -162,7 +162,7 @@ class ActMain : AppCompatActivity()
 	private lateinit var vFooterDivider1 : View
 	private lateinit var vFooterDivider2 : View
 	
-	lateinit var drawer : DrawerLayout
+	lateinit var drawer : MyDrawerLayout
 	
 	lateinit var post_helper : PostHelper
 	
@@ -1319,6 +1319,12 @@ class ActMain : AppCompatActivity()
 		drawer = findViewById(R.id.drawer_layout)
 		drawer.addDrawerListener(this)
 		
+		drawer.setExclusionSize( stripIconSize)
+		
+		
+		
+		
+		
 		SideMenuAdapter(this, findViewById(R.id.nav_view), drawer)
 		
 		btnMenu = findViewById(R.id.btnMenu)
@@ -1983,8 +1989,8 @@ class ActMain : AppCompatActivity()
 				val ta = this.ta
 				var sa = this.sa
 				
-				if(ta != null && host?.isValid ==true && sa == null) {
-					val acct = Acct.parse(ta.username,host)
+				if(ta != null && host?.isValid == true && sa == null) {
+					val acct = Acct.parse(ta.username, host)
 					// アカウント追加時に、アプリ内に既にあるアカウントと同じものを登録していたかもしれない
 					sa = SavedAccount.loadAccountByAcct(this@ActMain, acct.ascii)
 				}
@@ -2059,7 +2065,7 @@ class ActMain : AppCompatActivity()
 			
 			host != null -> {
 				// アカウント追加時
-				val user = Acct.parse(ta.username,host)
+				val user = Acct.parse(ta.username, host)
 				
 				val row_id = SavedAccount.insert(
 					host.ascii,

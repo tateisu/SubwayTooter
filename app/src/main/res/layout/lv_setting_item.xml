@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <TextView
         style="@style/setting_row_label"
-        android:id="@+id/tvCaption" />
+        android:id="@+id/tvCaption"
+        android:labelFor="@+id/etEditText"
+        tools:ignore="LabelFor" />
 
     <Button
         android:id="@+id/btnAction"
@@ -18,6 +21,7 @@
         android:paddingTop="6dp"
         android:paddingBottom="6dp"
         android:paddingStart="6dp"
+        android:paddingEnd="6dp"
         android:textAllCaps="false" />
 
     <CheckBox
@@ -41,7 +45,9 @@
         android:id="@+id/etEditText"
         style="@style/setting_row_form"
         android:gravity="center"
+        android:importantForAutofill="no"
          />
+
     <TextView
         android:id="@+id/tvError"
         style="@style/setting_row_form"

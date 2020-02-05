@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<jp.juggler.subwaytooter.view.MyDrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
 
@@ -136,39 +136,11 @@
                 android:src="@drawable/ic_send" />
         </LinearLayout>
     </LinearLayout>
-    <!--<android.support.design.widget.FloatingActionButton-->
-    <!--android:id="@+id/"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_gravity="bottom|end"-->
-    <!--android:layout_marginBottom="4dp"-->
-    <!--android:layout_marginEnd="4dp"-->
-    <!--app:srcCompat="?attr/ic_toot"-->
-    <!--/>-->
-
-    <!--<android.support.design.widget.FloatingActionButton-->
-    <!--android:id="@+id/fabMenu"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_gravity="bottom|start"-->
-    <!--android:layout_marginBottom="4dp"-->
-    <!--android:layout_marginStart="4dp"-->
-    <!--app:srcCompat="?attr/ic_menu"-->
-    <!--/>-->
-
-    <!--<android.support.design.widget.CoordinatorLayout-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--&gt;-->
-
-    <!--</android.support.design.widget.CoordinatorLayout>-->
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_gravity="start">
+        android:layout_gravity="start" />
 
-    </com.google.android.material.navigation.NavigationView>
-    <!-- app:headerLayout="@layout/nav_header_act_main" -->
-</androidx.drawerlayout.widget.DrawerLayout>
+</jp.juggler.subwaytooter.view.MyDrawerLayout>

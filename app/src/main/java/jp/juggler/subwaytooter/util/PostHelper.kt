@@ -40,7 +40,7 @@ class PostHelper(
 	
 	companion object {
 		private val log = LogCategory("PostHelper")
-
+		
 		private val reCharsNotEmoji = "[^0-9A-Za-z_-]".asciiPattern()
 		private val reAscii = """[\x00-\x7f]""".asciiPattern()
 		private val reNotAscii = """[^\x00-\x7f]""".asciiPattern()
@@ -393,9 +393,9 @@ class PostHelper(
 										"/api/users/show",
 										account.putMisskeyApiToken().apply {
 											if(username?.isNotEmpty() == true)
-												put("username",username)
+												put("username", username)
 											if(host?.isNotEmpty() == true)
-												put("host",host)
+												put("host", host)
 										}.toPostRequestBuilder()
 									)
 									val id = result?.jsonObject?.string("id")
@@ -705,7 +705,7 @@ class PostHelper(
 			}
 			
 			// Letter | Mark | Decimal_Number | Connector_Punctuation
-			fun matchIdnWord(cp:Int)=when(Character.getType(cp).toByte()) {
+			fun matchIdnWord(cp : Int) = when(Character.getType(cp).toByte()) {
 				// Letter
 				// LCはエイリアスなので文字から得られることはないはず
 				Character.UPPERCASE_LETTER,
@@ -724,7 +724,7 @@ class PostHelper(
 				
 				else -> false
 			}
-
+			
 			var count_atMark = 0
 			val end = et.selectionEnd
 			var start : Int = - 1
@@ -736,11 +736,13 @@ class PostHelper(
 				if(cp == '@'.toInt()) {
 					start = i
 					if(++ count_atMark >= 2) break else continue
-				} else if( matchUserNameOrAsciiDomain(cp) ||matchIdnWord(cp) ){
-					continue
-				}else {
-					// その他の文字種が出たら探索打ち切り
-					break
+				} else if(count_atMark == 1) {
+					// @username@host の username部分はUnicodeを含まない
+					if(matchUserNameOrAsciiDomain(cp)) continue else break
+				} else {
+					// @username@host のhost 部分か、 @username のusername部分
+					// ここはUnicodeを含むかもしれない
+					if(matchUserNameOrAsciiDomain(cp) || matchIdnWord(cp)) continue else break
 				}
 			}
 			
@@ -857,8 +859,8 @@ class PostHelper(
 			instance : String?,
 			@Suppress("SameParameterValue") limit : Int,
 			needle : String
-		) =  ArrayList<CharSequence>().also{ dst->
-
+		) = ArrayList<CharSequence>().also { dst ->
+			
 			if(instance?.isNotEmpty() == true) {
 				val custom_list = App1.custom_emoji_lister.getListWithAliases(
 					instance,
@@ -909,7 +911,7 @@ class PostHelper(
 			}
 			
 		}
-			
+		
 	}
 	
 	private fun openPopup() : PopupAutoCompleteAcct? {

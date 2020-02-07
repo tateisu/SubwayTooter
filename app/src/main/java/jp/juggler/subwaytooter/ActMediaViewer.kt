@@ -599,11 +599,16 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			) : Pair<TootApiResult?, ByteArray?> {
 				val result = TootApiResult.makeWithCaption(url)
 				
-				val request = Request.Builder()
-					.url(url)
-					.cacheControl(App1.CACHE_CONTROL)
-					.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
-					.build()
+				val request = try{
+					Request.Builder()
+						.url(url)
+						.cacheControl(App1.CACHE_CONTROL)
+						.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
+						.build()
+				}catch(ex:Throwable){
+					result.setError(ex.withCaption("incorrect URL."))
+					return Pair(result, null)
+				}
 				
 				if(! client.sendRequest(
 						result,

@@ -5,10 +5,7 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootRelationShip
-import jp.juggler.subwaytooter.api.entity.parseItem
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
@@ -17,7 +14,7 @@ import java.util.regex.Pattern
 
 object Action_ListMember {
 	
-	private val reFollowError ="follow".asciiPattern(Pattern.CASE_INSENSITIVE)
+	private val reFollowError = "follow".asciiPattern(Pattern.CASE_INSENSITIVE)
 	
 	interface Callback {
 		fun onListMemberUpdated(willRegistered : Boolean, bSuccess : Boolean)
@@ -31,10 +28,6 @@ object Action_ListMember {
 		bFollow : Boolean = false,
 		callback : Callback?
 	) {
-		if(access_info.isMe(local_who)) {
-			showToast(activity, false, R.string.it_is_you)
-			return
-		}
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
@@ -56,8 +49,15 @@ object Action_ListMember {
 					)
 					// 204 no content
 				} else {
-					if(bFollow) {
-						
+					
+					val isMe = access_info.isMe(local_who)
+					if( isMe ) {
+						val (ti, ri) = TootInstance.get(client)
+						if(ti == null) return ri
+						if(! ti.versionGE(TootInstance.VERSION_3_1_0_rc1)) {
+							return TootApiResult(activity.getString(R.string.it_is_you))
+						}
+					}else if(bFollow) {
 						// リモートユーザの解決
 						if(! access_info.isLocalUser(local_who)) {
 							val (r2, ar) = client.syncAccountByAcct(access_info, local_who.acct)

@@ -6,15 +6,16 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import jp.juggler.util.LogCategory
 import jp.juggler.util.cast
 import java.util.*
 
-class CutoutLinearLayout : LinearLayout {
-	companion object {
-		private val log = LogCategory("CutoutLinearLayout")
-	}
-	
+/*
+	「Viewからはみ出した部分の描画」を実現する。
+	子孫Viewとコールバックを登録すると、onDraw時に子孫Viewの位置とcanvasをコールバックに渡す。
+ */
+
+class OutsideDrawerLayout : LinearLayout {
+
 	constructor(context : Context) :
 		super(context) {
 		init()
@@ -33,12 +34,8 @@ class CutoutLinearLayout : LinearLayout {
 	fun init() {
 		setWillNotDraw(false)
 	}
-	
-	//	override fun dispatchDraw(canvas : Canvas?) {
-	//		super.dispatchDraw(canvas)
-	//	}
-	
-	class CutoutDrawer(
+
+	private class Callback(
 		val view : View,
 		val draw : (
 			canvas : Canvas,
@@ -49,9 +46,9 @@ class CutoutLinearLayout : LinearLayout {
 		) -> Unit
 	)
 	
-	private val cutoutList = LinkedList<CutoutDrawer>()
+	private val callbackList = LinkedList<Callback>()
 	
-	fun addCutoutDrawer(
+	fun addOutsideDrawer(
 		view : View,
 		draw : (
 			canvas : Canvas,
@@ -61,14 +58,14 @@ class CutoutLinearLayout : LinearLayout {
 			top : Int
 		) -> Unit
 	) {
-		if(null == cutoutList.find { it.view == view && it.draw == draw }) cutoutList.add(
-			CutoutDrawer(view, draw)
+		if(null == callbackList.find { it.view == view && it.draw == draw }) callbackList.add(
+			Callback(view, draw)
 		)
 	}
 	
 	@Suppress("unused")
-	fun removeCutoutDrawer(view : View) {
-		val it = cutoutList.iterator()
+	fun removeOutsideDrawer(view : View) {
+		val it = callbackList.iterator()
 		while(it.hasNext()) {
 			val cb = it.next()
 			if(cb.view == view) it.remove()
@@ -78,9 +75,8 @@ class CutoutLinearLayout : LinearLayout {
 	override fun onDraw(canvas : Canvas?) {
 		super.onDraw(canvas)
 		canvas ?: return
-		log.d("CutoutLinearLayout.onDraw!")
 		
-		val it = cutoutList.iterator()
+		val it = callbackList.iterator()
 		while(it.hasNext()) {
 			val drawer = it.next()
 			

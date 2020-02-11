@@ -1643,7 +1643,7 @@ class ColumnViewHolder(
 				layoutParams = lp
 			}
 			
-			llColumnHeader = customView<CutoutLinearLayout> {
+			llColumnHeader = customView<OutsideDrawerLayout> {
 				lparams(matchParent, wrapContent)
 				
 				orientation = LinearLayout.VERTICAL
@@ -1730,7 +1730,7 @@ class ColumnViewHolder(
 								color = getAttributeColor(context, R.attr.colorSearchFormBackground)
 							}
 							val path = Path()
-							addCutoutDrawer(this){canvas,parent,view,left,top->
+							addOutsideDrawer(this){ canvas, parent, view, left, top->
 								if( llAnnouncementsBox.visibility == View.VISIBLE){
 									val viewW = view.width
 									val viewH = view.height
@@ -1780,7 +1780,7 @@ class ColumnViewHolder(
 								color = getAttributeColor(context, R.attr.colorColumnSettingBackground)
 							}
 							val path = Path()
-							addCutoutDrawer(this){canvas,parent,view,left,top->
+							addOutsideDrawer(this){ canvas, parent, view, left, top->
 								if( llColumnSetting.visibility == View.VISIBLE){
 									val viewW = view.width
 									val viewH = view.height

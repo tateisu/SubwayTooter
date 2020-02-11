@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
 import android.os.AsyncTask
 import android.os.SystemClock
 import android.text.InputType
@@ -36,11 +38,10 @@ import jp.juggler.subwaytooter.dialog.EmojiPicker
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.util.*
-import jp.juggler.subwaytooter.view.ListDivider
-import jp.juggler.subwaytooter.view.MyLinkMovementMethod
-import jp.juggler.subwaytooter.view.MyTextView
+import jp.juggler.subwaytooter.view.*
 import jp.juggler.util.*
 import org.jetbrains.anko.*
+import org.jetbrains.anko.custom.customView
 import java.io.Closeable
 import java.lang.reflect.Field
 import java.util.regex.Pattern
@@ -408,6 +409,7 @@ class ColumnViewHolder(
 		btnAnnouncements.layoutParams.width = wh
 		btnAnnouncements.layoutParams.height = wh
 		btnAnnouncements.setPaddingRelative(pad, pad, pad, pad)
+		
 		btnColumnSetting.layoutParams.width = wh
 		btnColumnSetting.layoutParams.height = wh
 		btnColumnSetting.setPaddingRelative(pad, pad, pad, pad)
@@ -599,7 +601,7 @@ class ColumnViewHolder(
 			// 添付メディアや正規表現のフィルタ
 			val bAllowFilter = column.canStatusFilter()
 			
-			llColumnSetting.visibility = View.GONE
+			showColumnSetting(false)
 			
 			
 			
@@ -881,8 +883,10 @@ class ColumnViewHolder(
 		
 	}
 	
-	fun closeColumnSetting() {
-		llColumnSetting.visibility = View.GONE
+	fun showColumnSetting(show:Boolean):Boolean{
+		llColumnSetting.vg(show)
+		llColumnHeader.invalidate()
+		return show
 	}
 	
 	fun onListListUpdated() {
@@ -1066,7 +1070,7 @@ class ColumnViewHolder(
 			llColumnHeader -> scrollToTop2()
 			
 			btnColumnSetting -> {
-				if(llColumnSetting.vg(llColumnSetting.visibility != View.VISIBLE) != null) {
+				if(showColumnSetting(!isColumnSettingShown) ) {
 					hideAnnouncements()
 				}
 			}
@@ -1639,8 +1643,11 @@ class ColumnViewHolder(
 				layoutParams = lp
 			}
 			
-			llColumnHeader = verticalLayout {
+			llColumnHeader = customView<CutoutLinearLayout> {
 				lparams(matchParent, wrapContent)
+				
+				orientation = LinearLayout.VERTICAL
+				
 				background = ContextCompat.getDrawable(context, R.drawable.bg_column_header)
 				startPadding = dip(12)
 				endPadding = dip(12)
@@ -1684,7 +1691,6 @@ class ColumnViewHolder(
 				linearLayout {
 					lparams(matchParent, wrapContent) {
 						topMargin = dip(0)
-						
 					}
 					gravity = Gravity.CENTER_VERTICAL
 					isBaselineAligned = false
@@ -1709,6 +1715,8 @@ class ColumnViewHolder(
 							gravity = Gravity.CENTER_VERTICAL
 							startMargin = dip(2)
 						}
+						clipChildren = false
+						
 						btnAnnouncements = imageButton {
 							background =
 								ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
@@ -1716,6 +1724,29 @@ class ColumnViewHolder(
 							setImageResource(R.drawable.ic_info_outline)
 							padding = dip(8)
 							scaleType = ImageView.ScaleType.FIT_CENTER
+							
+							val paint = Paint().apply{
+								isAntiAlias = true
+								color = getAttributeColor(context, R.attr.colorSearchFormBackground)
+							}
+							val path = Path()
+							addCutoutDrawer(this){canvas,parent,view,left,top->
+								if( llAnnouncementsBox.visibility == View.VISIBLE){
+									val viewW = view.width
+									val viewH = view.height
+									val triTopX = (left + viewW /2).toFloat()
+									val triTopY = top.toFloat() +  viewH * 0.75f
+									val triBottomLeft = left.toFloat()
+									val triBottomRight = (left+viewW).toFloat()
+									val triBottom = parent.height.toFloat()
+									path.reset()
+									path.moveTo(triTopX,triTopY)
+									path.lineTo(triBottomRight,triBottom)
+									path.lineTo(triBottomLeft,triBottom)
+									path.lineTo(triTopX,triTopY)
+									canvas.drawPath(path, paint)
+								}
+							}
 						}.lparams(dip(40), dip(40))
 						
 						btnAnnouncementsBadge = imageView {
@@ -1726,18 +1757,48 @@ class ColumnViewHolder(
 							endMargin = dip(4)
 							topMargin = dip(4)
 						}
+						
 					}
 					
-					btnColumnSetting = imageButton {
-						background =
-							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
-						contentDescription = context.getString(R.string.setting)
-						setImageResource(R.drawable.ic_tune)
-						padding = dip(8)
-						scaleType = ImageView.ScaleType.FIT_CENTER
-					}.lparams(dip(40), dip(40)) {
-						gravity = Gravity.CENTER_VERTICAL
-						startMargin = dip(2)
+					frameLayout {
+						lparams(wrapContent, wrapContent) {
+							gravity = Gravity.CENTER_VERTICAL
+							startMargin = dip(2)
+						}
+						clipChildren = false
+						
+						btnColumnSetting = imageButton {
+							background =
+								ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+							contentDescription = context.getString(R.string.setting)
+							setImageResource(R.drawable.ic_tune)
+							padding = dip(8)
+							scaleType = ImageView.ScaleType.FIT_CENTER
+							
+							val paint = Paint().apply{
+								isAntiAlias = true
+								color = getAttributeColor(context, R.attr.colorColumnSettingBackground)
+							}
+							val path = Path()
+							addCutoutDrawer(this){canvas,parent,view,left,top->
+								if( llColumnSetting.visibility == View.VISIBLE){
+									val viewW = view.width
+									val viewH = view.height
+									val triTopX = (left + viewW /2).toFloat()
+									val triTopY = top.toFloat() +  viewH * 0.75f
+									val triBottomLeft = left.toFloat()
+									val triBottomRight = (left+viewW).toFloat()
+									val triBottom = parent.height.toFloat()
+									path.reset()
+									path.moveTo(triTopX,triTopY)
+									path.lineTo(triBottomRight,triBottom)
+									path.lineTo(triBottomLeft,triBottom)
+									path.lineTo(triTopX,triTopY)
+									canvas.drawPath(path, paint)
+								}
+							}
+						}.lparams(dip(40), dip(40))
+						
 					}
 					
 					btnColumnReload = imageButton {
@@ -1974,13 +2035,14 @@ class ColumnViewHolder(
 				lparams(matchParent, wrapContent) {
 					startMargin = dip(6)
 					endMargin = dip(6)
-					topMargin = dip(2)
 					bottomMargin = dip(2)
 				}
+				
 				background = createRoundDrawable(
 					dip(6).toFloat(),
 					getAttributeColor(context, R.attr.colorSearchFormBackground)
 				)
+				
 				var pad_tb = dip(2)
 				setPadding(0, pad_tb, 0, pad_tb)
 				
@@ -2324,7 +2386,7 @@ class ColumnViewHolder(
 			if(column.announcementHideTime <= 0L)
 				column.announcementHideTime = System.currentTimeMillis()
 		} else {
-			llColumnSetting.vg(false)
+			showColumnSetting(false)
 			column.announcementHideTime = 0L
 		}
 		activity.app_state.saveColumnList()
@@ -2353,6 +2415,7 @@ class ColumnViewHolder(
 			btnAnnouncements.vg(false)
 			llAnnouncementsBox.vg(false)
 			btnAnnouncementsBadge.vg(false)
+			llColumnHeader.invalidate()
 			return
 		}
 		
@@ -2361,6 +2424,7 @@ class ColumnViewHolder(
 		val expand = column.announcementHideTime <= 0L
 		
 		llAnnouncementsBox.vg(expand)
+		llColumnHeader.invalidate()
 		
 		btnAnnouncementsBadge.vg(false)
 		if(! expand) {

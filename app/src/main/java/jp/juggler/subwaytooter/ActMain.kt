@@ -2553,7 +2553,7 @@ class ActMain : AppCompatActivity()
 		phoneTab({ env ->
 			val vh = env.pager_adapter.getColumnViewHolder(env.pager.currentItem)
 			if(vh?.isColumnSettingShown == true) {
-				vh.closeColumnSetting()
+				vh.showColumnSetting(false)
 				return@closeColumnSetting true
 			}
 		}, { env ->
@@ -2565,7 +2565,7 @@ class ActMain : AppCompatActivity()
 				}
 				
 				if(columnViewHolder?.isColumnSettingShown == true) {
-					columnViewHolder.closeColumnSetting()
+					columnViewHolder.showColumnSetting(false)
 					return@closeColumnSetting true
 				}
 			}

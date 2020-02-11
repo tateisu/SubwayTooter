@@ -883,7 +883,7 @@ class ColumnViewHolder(
 		
 	}
 	
-	fun showColumnSetting(show:Boolean):Boolean{
+	fun showColumnSetting(show : Boolean) : Boolean {
 		llColumnSetting.vg(show)
 		llColumnHeader.invalidate()
 		return show
@@ -1070,7 +1070,7 @@ class ColumnViewHolder(
 			llColumnHeader -> scrollToTop2()
 			
 			btnColumnSetting -> {
-				if(showColumnSetting(!isColumnSettingShown) ) {
+				if(showColumnSetting(! isColumnSettingShown)) {
 					hideAnnouncements()
 				}
 			}
@@ -1725,25 +1725,25 @@ class ColumnViewHolder(
 							padding = dip(8)
 							scaleType = ImageView.ScaleType.FIT_CENTER
 							
-							val paint = Paint().apply{
+							val paint = Paint().apply {
 								isAntiAlias = true
 								color = getAttributeColor(context, R.attr.colorSearchFormBackground)
 							}
 							val path = Path()
-							addOutsideDrawer(this){ canvas, parent, view, left, top->
-								if( llAnnouncementsBox.visibility == View.VISIBLE){
+							addOutsideDrawer(this) { canvas, parent, view, left, top ->
+								if(llAnnouncementsBox.visibility == View.VISIBLE) {
 									val viewW = view.width
 									val viewH = view.height
-									val triTopX = (left + viewW /2).toFloat()
-									val triTopY = top.toFloat() +  viewH * 0.75f
+									val triTopX = (left + viewW / 2).toFloat()
+									val triTopY = top.toFloat() + viewH * 0.75f
 									val triBottomLeft = left.toFloat()
-									val triBottomRight = (left+viewW).toFloat()
+									val triBottomRight = (left + viewW).toFloat()
 									val triBottom = parent.height.toFloat()
 									path.reset()
-									path.moveTo(triTopX,triTopY)
-									path.lineTo(triBottomRight,triBottom)
-									path.lineTo(triBottomLeft,triBottom)
-									path.lineTo(triTopX,triTopY)
+									path.moveTo(triTopX, triTopY)
+									path.lineTo(triBottomRight, triBottom)
+									path.lineTo(triBottomLeft, triBottom)
+									path.lineTo(triTopX, triTopY)
 									canvas.drawPath(path, paint)
 								}
 							}
@@ -1775,25 +1775,26 @@ class ColumnViewHolder(
 							padding = dip(8)
 							scaleType = ImageView.ScaleType.FIT_CENTER
 							
-							val paint = Paint().apply{
+							val paint = Paint().apply {
 								isAntiAlias = true
-								color = getAttributeColor(context, R.attr.colorColumnSettingBackground)
+								color =
+									getAttributeColor(context, R.attr.colorColumnSettingBackground)
 							}
 							val path = Path()
-							addOutsideDrawer(this){ canvas, parent, view, left, top->
-								if( llColumnSetting.visibility == View.VISIBLE){
+							addOutsideDrawer(this) { canvas, parent, view, left, top ->
+								if(llColumnSetting.visibility == View.VISIBLE) {
 									val viewW = view.width
 									val viewH = view.height
-									val triTopX = (left + viewW /2).toFloat()
-									val triTopY = top.toFloat() +  viewH * 0.75f
+									val triTopX = (left + viewW / 2).toFloat()
+									val triTopY = top.toFloat() + viewH * 0.75f
 									val triBottomLeft = left.toFloat()
-									val triBottomRight = (left+viewW).toFloat()
+									val triBottomRight = (left + viewW).toFloat()
 									val triBottom = parent.height.toFloat()
 									path.reset()
-									path.moveTo(triTopX,triTopY)
-									path.lineTo(triBottomRight,triBottom)
-									path.lineTo(triBottomLeft,triBottom)
-									path.lineTo(triTopX,triTopY)
+									path.moveTo(triTopX, triTopY)
+									path.lineTo(triBottomRight, triBottom)
+									path.lineTo(triBottomLeft, triBottom)
+									path.lineTo(triTopX, triTopY)
 									canvas.drawPath(path, paint)
 								}
 							}
@@ -1836,11 +1837,12 @@ class ColumnViewHolder(
 				isScrollbarFadingEnabled = false
 				maxHeight = dip(240)
 				
+				backgroundColor =
+					getAttributeColor(context, R.attr.colorColumnSettingBackground)
+				
 				llColumnSettingInside = verticalLayout {
 					lparams(matchParent, wrapContent)
 					
-					backgroundColor =
-						getAttributeColor(context, R.attr.colorColumnSettingBackground)
 					startPadding = dip(12)
 					endPadding = dip(12)
 					topPadding = dip(3)
@@ -1899,77 +1901,57 @@ class ColumnViewHolder(
 						text = context.getString(R.string.dont_close_column)
 					}.lparams(matchParent, wrapContent)
 					
-					
 					cbWithAttachment = checkBox {
 						text = context.getString(R.string.with_attachment)
 					}.lparams(matchParent, wrapContent)
-					
-					
 					
 					cbWithHighlight = checkBox {
 						text = context.getString(R.string.with_highlight)
 					}.lparams(matchParent, wrapContent)
 					
-					
 					cbDontShowBoost = checkBox {
 						text = context.getString(R.string.dont_show_boost)
 					}.lparams(matchParent, wrapContent)
-					
-					
 					
 					cbDontShowFavourite = checkBox {
 						text = context.getString(R.string.dont_show_favourite)
 					}.lparams(matchParent, wrapContent)
 					
-					
-					
 					cbDontShowFollow = checkBox {
 						text = context.getString(R.string.dont_show_follow)
 					}.lparams(matchParent, wrapContent)
-					
 					
 					cbDontShowReply = checkBox {
 						text = context.getString(R.string.dont_show_reply)
 					}.lparams(matchParent, wrapContent)
 					
-					
 					cbDontShowReaction = checkBox {
 						text = context.getString(R.string.dont_show_reaction)
 					}.lparams(matchParent, wrapContent)
-					
 					
 					cbDontShowVote = checkBox {
 						text = context.getString(R.string.dont_show_vote)
 					}.lparams(matchParent, wrapContent)
 					
-					
 					cbDontShowNormalToot = checkBox {
 						text = context.getString(R.string.dont_show_normal_toot)
 					}.lparams(matchParent, wrapContent)
-					
-					
 					
 					cbInstanceLocal = checkBox {
 						text = context.getString(R.string.instance_local)
 					}.lparams(matchParent, wrapContent)
 					
-					
-					
 					cbDontStreaming = checkBox {
 						text = context.getString(R.string.dont_use_streaming_api)
 					}.lparams(matchParent, wrapContent)
-					
-					
 					
 					cbDontAutoRefresh = checkBox {
 						text = context.getString(R.string.dont_refresh_on_activity_resume)
 					}.lparams(matchParent, wrapContent)
 					
-					
 					cbHideMediaDefault = checkBox {
 						text = context.getString(R.string.hide_media_default)
 					}.lparams(matchParent, wrapContent)
-					
 					
 					cbSystemNotificationNotRelated = checkBox {
 						text = context.getString(R.string.system_notification_not_related)
@@ -1978,7 +1960,6 @@ class ColumnViewHolder(
 					cbEnableSpeech = checkBox {
 						text = context.getString(R.string.enable_speech)
 					}.lparams(matchParent, wrapContent)
-					
 					
 					cbOldApi = checkBox {
 						text = context.getString(R.string.use_old_api)

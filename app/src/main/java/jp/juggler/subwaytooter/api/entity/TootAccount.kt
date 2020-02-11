@@ -130,11 +130,19 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 				parseMapOrNull(CustomEmoji.decodeMisskey, src.jsonArray("emojis"))
 			this.profile_emojis = null
 			
-			this.host = src.string("host")?.let { Host.parse(it) } ?: parser.accessHost
-				?: error("missing host")
-			
 			this.username = src.notEmptyOrThrow("username")
+			this.host = src.string("host")?.let { Host.parse(it) }
+				?: parser.accessHost
+				?: error("missing host")
 			this.url = "https://${host.ascii}/@$username"
+			
+			this.acct = when(host) {
+				// アクセス元から見て内部ユーザなら short acct
+				parser.accessHost -> Acct.parse(username)
+				
+				// アクセス元から見て外部ユーザならfull acct
+				else -> Acct.parse(username, host)
+			}
 			
 			//
 			val sv = src.string("name")
@@ -158,14 +166,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			
 			this.id = EntityId.mayDefault(src.string("id"))
 			
-			this.acct = when(host) {
-				// アクセス元から見て内部ユーザなら short acct
-				parser.accessHost -> Acct.parse(username)
-				
-				// アクセス元から見て外部ユーザならfull acct
-				else -> Acct.parse(username, host)
-			}
-			
+
 			this.followers_count = src.long("followersCount") ?: - 1L
 			this.following_count = src.long("followingCount") ?: - 1L
 			this.statuses_count = src.long("notesCount") ?: - 1L

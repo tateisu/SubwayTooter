@@ -61,11 +61,10 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 		private const val STATE_CHOOSE_INTENT_TARGET = "customShareTarget"
 		
 		// 他の設定子画面と重複しない値にすること
-		private const val REQUEST_CODE_OTHER = 0
-		private const val REQUEST_CODE_APP_DATA_IMPORT = 1
-		
-		internal const val REQUEST_CODE_TIMELINE_FONT = 1
-		internal const val REQUEST_CODE_TIMELINE_FONT_BOLD = 2
+		const val REQUEST_CODE_OTHER = 0
+		const val REQUEST_CODE_APP_DATA_IMPORT = 1
+		const val REQUEST_CODE_TIMELINE_FONT = 2
+		const val REQUEST_CODE_TIMELINE_FONT_BOLD = 3
 		
 		val reLinefeed = Regex("[\\x0d\\x0a]+")
 	}
@@ -175,15 +174,22 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 	}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
-		if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_APP_DATA_IMPORT) {
-			data.handleGetContentResult(contentResolver).firstOrNull()?.uri?.let {
-				importAppData2(false, it)
+		if(resultCode == RESULT_OK && data != null  ){
+			when(requestCode) {
+				REQUEST_CODE_APP_DATA_IMPORT -> {
+					data.handleGetContentResult(contentResolver).firstOrNull()?.uri?.let {
+						importAppData2(false, it)
+					}
+				}
+				REQUEST_CODE_TIMELINE_FONT -> {
+					handleFontResult(AppSettingItem.TIMELINE_FONT, data, "TimelineFont")
+				}
+				REQUEST_CODE_TIMELINE_FONT_BOLD -> {
+					handleFontResult(AppSettingItem.TIMELINE_FONT_BOLD, data, "TimelineFontBold")
+				}
 			}
-		} else if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_TIMELINE_FONT) {
-			handleFontResult(AppSettingItem.TIMELINE_FONT, data, "TimelineFont")
-		} else if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_TIMELINE_FONT_BOLD) {
-			handleFontResult(AppSettingItem.TIMELINE_FONT_BOLD, data, "TimelineFontBold")
 		}
+		
 		
 		super.onActivityResult(requestCode, resultCode, data)
 	}
@@ -850,7 +856,6 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 					log.trace(ex)
 					showToast(this@ActAppSetting, ex, "exportAppData failed.")
 				}
-				
 			}
 		}
 		

@@ -12,18 +12,16 @@ class NetworkStateTracker(
 
 ) : ConnectivityManager.NetworkCallback() {
 	
-	
 	companion object {
 		private val log = LogCategory("NetworkStateTracker")
 		
-		private val NetworkCapabilities?.isConnected : Boolean
-			get() = if(this == null) {
-				log.e("isConnected: missing NetworkCapabilities.")
-				false
-			} else {
-				this.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-			}
-		
+//		private val NetworkCapabilities?.isConnected : Boolean
+//			get() = if(this == null) {
+//				log.e("isConnected: missing NetworkCapabilities.")
+//				false
+//			} else {
+//				this.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+//			}
 	}
 	
 	private val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE)
@@ -31,7 +29,12 @@ class NetworkStateTracker(
 	
 	init {
 		if(Build.VERSION.SDK_INT >= 28) {
-			cm.registerDefaultNetworkCallback(this)
+			try {
+				cm.registerDefaultNetworkCallback(this)
+			}catch(ex:Throwable){
+				// android.net.ConnectivityManager$TooManyRequestsException:
+				log.e(ex,"registerDefaultNetworkCallback failed.")
+			}
 		}
 	}
 	

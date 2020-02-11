@@ -2263,6 +2263,13 @@ internal class ItemViewHolder(
 		
 		val image = card.image
 		if(flCardImage.vg(image?.isNotEmpty()==true) !=null) {
+			
+			flCardImage.layoutParams.height = if(card.originalStatus!=null){
+				activity.avatarIconSize
+			}else{
+				activity.app_state.media_thumb_height
+			}
+			
 			val imageUrl = access_info.supplyBaseUrl(image)
 			ivCardImage.setImageUrl(activity.pref, 0f, imageUrl, imageUrl)
 			

@@ -21,8 +21,8 @@ android {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
 
-        versionCode 407
-        versionName "4.0.7"
+        versionCode 408
+        versionName "4.0.8"
         applicationId "jp.juggler.subwaytooter"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 

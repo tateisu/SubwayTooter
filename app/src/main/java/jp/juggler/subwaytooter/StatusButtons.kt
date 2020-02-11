@@ -728,7 +728,7 @@ class StatusButtonsViewHolder(
 						
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						contentDescription = context.getString(R.string.conversation_view)
 						
@@ -741,7 +741,7 @@ class StatusButtonsViewHolder(
 						
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER
@@ -754,7 +754,7 @@ class StatusButtonsViewHolder(
 						
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER
@@ -766,7 +766,7 @@ class StatusButtonsViewHolder(
 					btnFavourite = customView<CountImageButton> {
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER
@@ -779,7 +779,7 @@ class StatusButtonsViewHolder(
 					btnBookmark = imageButton {
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER
@@ -798,7 +798,7 @@ class StatusButtonsViewHolder(
 							
 							background = ContextCompat.getDrawable(
 								context,
-								R.drawable.btn_bg_transparent
+								R.drawable.btn_bg_transparent_round6dp
 							)
 							setPadding(paddingH, paddingV, paddingH, paddingV)
 							scaleType = ImageView.ScaleType.FIT_CENTER
@@ -820,7 +820,7 @@ class StatusButtonsViewHolder(
 					btnMore = imageButton {
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER
@@ -836,7 +836,7 @@ class StatusButtonsViewHolder(
 					btnTranslate = imageButton {
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER
@@ -848,7 +848,7 @@ class StatusButtonsViewHolder(
 					btnCustomShare1 = imageButton {
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER
@@ -860,7 +860,7 @@ class StatusButtonsViewHolder(
 					btnCustomShare2 = imageButton {
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER
@@ -872,7 +872,7 @@ class StatusButtonsViewHolder(
 					btnCustomShare3 = imageButton {
 						background = ContextCompat.getDrawable(
 							context,
-							R.drawable.btn_bg_transparent
+							R.drawable.btn_bg_transparent_round6dp
 						)
 						setPadding(paddingH, paddingV, paddingH, paddingV)
 						scaleType = ImageView.ScaleType.FIT_CENTER

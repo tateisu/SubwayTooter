@@ -20,6 +20,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -1598,9 +1599,12 @@ class ActMain : AppCompatActivity()
 				scrollToColumn(idx)
 			}
 			viewRoot.contentDescription = column.getColumnName(true)
-			//
-			
-			column.setHeaderBackground(viewRoot)
+
+			viewRoot.backgroundDrawable = getAdaptiveRippleDrawableRound(
+				this,
+				column.getHeaderBackgroundColor(),
+				column.getHeaderNameColor()
+			)
 			
 			ivIcon.setImageResource(column.getIconId())
 			ivIcon.imageTintList = ColorStateList.valueOf(column.getHeaderNameColor())
@@ -2519,10 +2523,10 @@ class ActMain : AppCompatActivity()
 		)
 		val colorRipple =
 			footer_button_fg_color.notZero() ?: getAttributeColor(this, R.attr.colorRippleEffect)
-		btnMenu.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
-		btnToot.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
-		btnQuickToot.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
-		btnQuickTootMenu.backgroundDrawable = getAdaptiveRippleDrawable(colorBg, colorRipple)
+		btnMenu.backgroundDrawable = getAdaptiveRippleDrawableRound(this,colorBg, colorRipple)
+		btnToot.backgroundDrawable = getAdaptiveRippleDrawableRound(this,colorBg, colorRipple)
+		btnQuickToot.backgroundDrawable = getAdaptiveRippleDrawableRound(this,colorBg, colorRipple)
+		btnQuickTootMenu.backgroundDrawable = getAdaptiveRippleDrawableRound(this,colorBg, colorRipple)
 		
 		val csl = ColorStateList.valueOf(
 			footer_button_fg_color.notZero()

@@ -272,7 +272,7 @@ internal class DlgContextMenu(
 					)
 					b.layoutParams = lp
 					b.backgroundDrawable =
-						ContextCompat.getDrawable(activity, R.drawable.btn_bg_transparent)
+						ContextCompat.getDrawable(activity, R.drawable.btn_bg_transparent_round6dp)
 					b.gravity = Gravity.START or Gravity.CENTER_VERTICAL
 					b.minHeight = (activity.density * 32f + 0.5f).toInt()
 					b.minimumHeight = (activity.density * 32f + 0.5f).toInt()

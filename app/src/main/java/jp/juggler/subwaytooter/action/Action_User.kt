@@ -502,7 +502,7 @@ object Action_User {
 					b.layoutParams = lp
 					b.minHeight = (0.5f + 32f * activity.density).toInt()
 					b.text = activity.getString(R.string.open_in_browser)
-					b.setBackgroundResource(R.drawable.btn_bg_transparent)
+					b.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 					
 					b.setOnClickListener {
 						App1.openCustomTab(activity, original_url)

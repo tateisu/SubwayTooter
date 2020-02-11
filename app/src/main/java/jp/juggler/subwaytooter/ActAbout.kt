@@ -120,7 +120,7 @@ class ActAbout : AppCompatActivity() {
 					if(ll.childCount != 0) topMargin = margin_top
 				}
 				//
-				setBackgroundResource(R.drawable.btn_bg_transparent)
+				setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 				setPadding(padding, padding, padding, padding)
 				isAllCaps = false
 

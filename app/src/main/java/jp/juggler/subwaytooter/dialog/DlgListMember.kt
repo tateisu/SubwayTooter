@@ -135,7 +135,7 @@ class DlgListMember(
 		if(a == null) {
 			btnListOwner.setText(R.string.not_selected)
 			btnListOwner.setTextColor(getAttributeColor(activity, android.R.attr.textColorPrimary))
-			btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent)
+			btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 			//
 			
 		} else {
@@ -145,7 +145,7 @@ class DlgListMember(
 			if(AcctColor.hasColorBackground(ac)) {
 				btnListOwner.setBackgroundColor(ac.color_bg)
 			} else {
-				btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent)
+				btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 			}
 			btnListOwner.textColor = ac.color_fg.notZero()
 				?: getAttributeColor(activity, android.R.attr.textColorPrimary)

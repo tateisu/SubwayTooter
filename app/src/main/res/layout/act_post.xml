@@ -53,7 +53,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginEnd="8dp"
-                        android:background="@drawable/btn_bg_transparent"
+                        android:background="@drawable/btn_bg_transparent_round6dp"
                         android:scaleType="fitCenter" />
 
                     <TextView
@@ -68,7 +68,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginStart="4dp"
-                        android:background="@drawable/btn_bg_transparent"
+                        android:background="@drawable/btn_bg_transparent_round6dp"
                         android:contentDescription="@string/delete"
                         android:gravity="center_vertical"
                         android:src="@drawable/ic_close"
@@ -99,7 +99,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/btn_bg_transparent"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
                     android:gravity="center_vertical"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
@@ -119,7 +119,7 @@
                     android:id="@+id/ivMedia1"
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
-                    android:background="@drawable/btn_bg_transparent"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
 
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
@@ -127,7 +127,7 @@
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
-                    android:background="@drawable/btn_bg_transparent"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
 
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
@@ -135,7 +135,7 @@
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
-                    android:background="@drawable/btn_bg_transparent"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
 
                 <jp.juggler.subwaytooter.view.MyNetworkImageView
@@ -143,7 +143,7 @@
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
-                    android:background="@drawable/btn_bg_transparent"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
 
                 <CheckBox
@@ -194,7 +194,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginStart="8dp"
-                    android:background="@drawable/btn_bg_transparent"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
                     android:contentDescription="@string/open_picker_emoji"
                     android:src="@drawable/ic_hashtag"
                     android:tint="?attr/colorVectorDrawable"
@@ -206,7 +206,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginStart="8dp"
-                    android:background="@drawable/btn_bg_transparent"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
                     android:contentDescription="@string/open_picker_emoji"
                     android:src="@drawable/ic_face"
                     android:tint="?attr/colorVectorDrawable"
@@ -255,7 +255,7 @@
                     android:id="@+id/ibSchedule"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:background="@drawable/btn_bg_transparent"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
                     android:contentDescription="@string/edit"
                     android:src="@drawable/ic_edit"
                     android:tint="?attr/colorVectorDrawable"
@@ -266,7 +266,7 @@
                     android:id="@+id/ibScheduleReset"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:background="@drawable/btn_bg_transparent"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
                     android:contentDescription="@string/reset"
                     android:src="@drawable/ic_close"
                     android:tint="?attr/colorVectorDrawable"
@@ -473,7 +473,7 @@
             android:id="@+id/btnAttachment"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:contentDescription="@string/media_attachment"
             android:src="@drawable/ic_clip"
             android:tint="?attr/colorVectorDrawable" />
@@ -483,7 +483,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginStart="4dp"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:contentDescription="@string/visibility"
             android:minWidth="48dp"
             android:minHeight="48dp"
@@ -495,7 +495,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginStart="4dp"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:contentDescription="@string/plugin"
             android:src="@drawable/ic_extension"
             android:tint="?attr/colorVectorDrawable" />
@@ -505,7 +505,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginStart="4dp"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:contentDescription="@string/more"
             android:src="@drawable/ic_more"
             android:tint="?attr/colorVectorDrawable"
@@ -532,7 +532,7 @@
             android:id="@+id/btnPost"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:contentDescription="@string/toot"
             android:src="@drawable/ic_send"
             android:tint="?attr/colorVectorDrawable"

@@ -94,7 +94,7 @@
         <TextView
             android:id="@+id/tvLanguages"
             style="@style/setting_horizontal_stretch"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:gravity="start|center_vertical"
             android:textAllCaps="false"
             />

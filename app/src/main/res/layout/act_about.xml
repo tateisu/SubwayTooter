@@ -60,7 +60,7 @@
             android:id="@+id/btnRate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:padding="8dp"
             android:textAllCaps="false"
             tools:text="rate_on_store"
@@ -84,7 +84,7 @@
             android:id="@+id/btnReleaseNote"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:padding="8dp"
             android:textAllCaps="false"
             tools:text="https://github.com/tateisu/SubwayTooter/releases"
@@ -108,7 +108,7 @@
             android:id="@+id/btnOfficialAccount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:padding="8dp"
             android:textAllCaps="false"
             tools:text="SubwayTooter@mastodon.juggler.jp"
@@ -132,7 +132,7 @@
             android:id="@+id/btnDeveloper"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:padding="8dp"
             android:textAllCaps="false"
             tools:text="tateisu@mastodon.juggler.jp"
@@ -157,7 +157,7 @@
             android:id="@+id/btnIconDesign"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:padding="8dp"
             android:textAllCaps="false"
             android:layout_marginStart="32dp"
@@ -180,7 +180,7 @@
             <!--android:id="@+id/btnDonate"-->
             <!--android:layout_width="wrap_content"-->
             <!--android:layout_height="wrap_content"-->
-            <!--android:background="@drawable/btn_bg_transparent"-->
+            <!--android:background="@drawable/btn_bg_transparent_round6dp"-->
             <!--android:padding="8dp"-->
             <!--android:textAllCaps="false"-->
             <!--tools:text="enty...."-->
@@ -216,7 +216,7 @@
             android:id="@+id/btnWeblate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:padding="8dp"
             android:textAllCaps="false"
             android:layout_marginStart="32dp"

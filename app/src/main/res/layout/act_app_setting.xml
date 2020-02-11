@@ -27,7 +27,7 @@
 
         <ImageButton
             android:id="@+id/btnSearchReset"
-            android:background="@drawable/btn_bg_transparent"
+            android:background="@drawable/btn_bg_transparent_round6dp"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="6dp"

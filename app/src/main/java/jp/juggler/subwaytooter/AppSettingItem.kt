@@ -829,8 +829,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 							activity,
 							R.attr.colorRippleEffect
 						)
-					ivFooterToot.background = getAdaptiveRippleDrawable(colorBg, colorRipple)
-					ivFooterMenu.background = getAdaptiveRippleDrawable(colorBg, colorRipple)
+					ivFooterToot.background = getAdaptiveRippleDrawableRound(activity,colorBg, colorRipple)
+					ivFooterMenu.background = getAdaptiveRippleDrawableRound(activity,colorBg, colorRipple)
 					
 					val csl = ColorStateList.valueOf(
 						footer_button_fg_color.notZero()

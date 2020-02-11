@@ -87,11 +87,3 @@ var CompoundButton.isCheckedNoAnime : Boolean
 		isChecked = value
 		jumpDrawablesToCurrentState()
 	}
-
-
-fun createRoundDrawable(radius:Float,fillColor:Int?=null, strokeColor:Int?=null, strokeWidth:Int = 4) =
-	GradientDrawable().apply{
-		setCornerRadius(radius)
-		if(fillColor!=null) setColor(fillColor)
-		if( strokeColor!=null) setStroke(strokeWidth,strokeColor)
-	}

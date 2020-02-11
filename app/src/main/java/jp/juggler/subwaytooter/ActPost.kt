@@ -1453,7 +1453,7 @@ class ActPost : AppCompatActivity(),
 			post_helper.setInstance(null, false)
 			btnAccount.text = getString(R.string.not_selected)
 			btnAccount.setTextColor(getAttributeColor(this, android.R.attr.textColorPrimary))
-			btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent)
+			btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 		} else {
 			post_helper.setInstance(a.host, a.isMisskey)
 			
@@ -1466,9 +1466,10 @@ class ActPost : AppCompatActivity(),
 			btnAccount.text = ac.nickname
 			
 			if(AcctColor.hasColorBackground(ac)) {
-				btnAccount.setBackgroundColor(ac.color_bg)
+				btnAccount.background =
+					getAdaptiveRippleDrawableRound(this,ac.color_bg,ac.color_fg)
 			} else {
-				btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent)
+				btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 			}
 			
 			btnAccount.textColor = ac.color_fg.notZero()

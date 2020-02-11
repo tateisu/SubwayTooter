@@ -11,12 +11,15 @@ import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DialogInterfaceCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
 import jp.juggler.util.dismissSafe
+import jp.juggler.util.getAdaptiveRippleDrawable
+import jp.juggler.util.getAdaptiveRippleDrawableRound
 import jp.juggler.util.showToast
 import org.jetbrains.anko.textColor
 import java.util.*
@@ -132,9 +135,9 @@ object AccountPicker {
 			val b = Button(activity)
 			
 			if(AcctColor.hasColorBackground(ac)) {
-				b.setBackgroundColor(ac.color_bg)
+				b.background = getAdaptiveRippleDrawableRound(activity,ac.color_bg,ac.color_fg)
 			} else {
-				b.setBackgroundResource(R.drawable.btn_bg_transparent)
+				b.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 			}
 			if(AcctColor.hasColorForeground(ac)) {
 				b.textColor = ac.color_fg

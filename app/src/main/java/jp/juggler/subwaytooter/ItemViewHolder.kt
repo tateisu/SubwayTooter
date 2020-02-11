@@ -2357,7 +2357,7 @@ internal class ItemViewHolder(
 			b.layoutParams = blp
 			b.background = ContextCompat.getDrawable(
 				activity,
-				R.drawable.btn_bg_transparent
+				R.drawable.btn_bg_transparent_round6dp
 			)
 			
 			val hasMyReaction = status.myReaction?.isNotEmpty() == true
@@ -2421,8 +2421,10 @@ internal class ItemViewHolder(
 					minWidthCompat = buttonHeight
 					background = ContextCompat.getDrawable(
 						this@ItemViewHolder.activity,
-						R.drawable.btn_bg_transparent
+						R.drawable.btn_bg_transparent_round6dp
 					)
+					// TODO 自分がリアクションしたやつは背景を変える
+
 					setTextColor(content_color)
 					setPadding(paddingH, paddingV, paddingH, paddingV)
 					setOnClickListener {
@@ -2453,8 +2455,10 @@ internal class ItemViewHolder(
 					minWidthCompat = buttonHeight
 					background = ContextCompat.getDrawable(
 						this@ItemViewHolder.activity,
-						R.drawable.btn_bg_transparent
+						R.drawable.btn_bg_transparent_round6dp
 					)
+					// TODO 自分がリアクションしたやつは背景を変える
+					
 					setTextColor(content_color)
 					setPadding(paddingH, paddingV, paddingH, paddingV)
 					
@@ -3115,7 +3119,7 @@ internal class ItemViewHolder(
 				lparams(matchParent, wrapContent) {
 					bottomMargin = dip(6)
 				}
-				backgroundResource = R.drawable.btn_bg_transparent
+				backgroundResource = R.drawable.btn_bg_transparent_round6dp
 				gravity = Gravity.CENTER_VERTICAL
 				
 				ivBoosted = imageView {
@@ -3164,7 +3168,7 @@ internal class ItemViewHolder(
 			llFollow = linearLayout {
 				lparams(matchParent, wrapContent)
 				
-				background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+				background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 				gravity = Gravity.CENTER_VERTICAL
 				
 				ivFollow = myNetworkImageView {
@@ -3204,7 +3208,7 @@ internal class ItemViewHolder(
 					
 					btnFollow = imageButton {
 						background =
-							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 						contentDescription = context.getString(R.string.follow)
 						scaleType = ImageView.ScaleType.CENTER
 						// tools:src="?attr/ic_follow_plus"
@@ -3251,7 +3255,7 @@ internal class ItemViewHolder(
 					
 					ivThumbnail = myNetworkImageView {
 						background =
-							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 						contentDescription = context.getString(R.string.thumbnail)
 						scaleType = ImageView.ScaleType.CENTER_CROP
 					}.lparams(dip(48), dip(48)) {
@@ -3293,7 +3297,7 @@ internal class ItemViewHolder(
 							background =
 								ContextCompat.getDrawable(
 									context,
-									R.drawable.btn_bg_transparent
+									R.drawable.btn_bg_transparent_round6dp
 								)
 							gravity = Gravity.CENTER_VERTICAL
 							
@@ -3375,7 +3379,7 @@ internal class ItemViewHolder(
 											
 											background = ContextCompat.getDrawable(
 												context,
-												R.drawable.btn_bg_transparent
+												R.drawable.btn_bg_transparent_round6dp
 											)
 											contentDescription = context.getString(R.string.hide)
 											imageResource = R.drawable.ic_close
@@ -3529,7 +3533,7 @@ internal class ItemViewHolder(
 											
 											background = ContextCompat.getDrawable(
 												context,
-												R.drawable.btn_bg_transparent
+												R.drawable.btn_bg_transparent_round6dp
 											)
 											contentDescription = context.getString(R.string.hide)
 											imageResource = R.drawable.ic_close
@@ -3596,7 +3600,7 @@ internal class ItemViewHolder(
 										btnCardImageHide = imageButton {
 											background = ContextCompat.getDrawable(
 												context,
-												R.drawable.btn_bg_transparent
+												R.drawable.btn_bg_transparent_round6dp
 											)
 											contentDescription = context.getString(R.string.hide)
 											imageResource = R.drawable.ic_close
@@ -3698,7 +3702,7 @@ internal class ItemViewHolder(
 				
 				btnSearchTag = button {
 					background =
-						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 					allCaps = false
 				}.lparams(matchParent, wrapContent)
 			}
@@ -3707,7 +3711,7 @@ internal class ItemViewHolder(
 				lparams(matchParent, wrapContent)
 				
 				gravity = Gravity.CENTER_VERTICAL
-				background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+				background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 				
 				verticalLayout {
 					lparams(0, wrapContent) {
@@ -3742,7 +3746,7 @@ internal class ItemViewHolder(
 				
 				btnListTL = button {
 					background =
-						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 					allCaps = false
 				}.lparams(0, wrapContent) {
 					weight = 1f
@@ -3751,7 +3755,7 @@ internal class ItemViewHolder(
 				btnListMore = imageButton {
 					
 					background =
-						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 					imageResource = R.drawable.ic_more
 					contentDescription = context.getString(R.string.more)
 				}.lparams(dip(40), matchParent) {
@@ -3771,7 +3775,7 @@ internal class ItemViewHolder(
 				
 				btnFollowRequestAccept = imageButton {
 					background =
-						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 					contentDescription = context.getString(R.string.follow_accept)
 					imageResource = R.drawable.ic_check
 					setPadding(0, 0, 0, 0)
@@ -3779,7 +3783,7 @@ internal class ItemViewHolder(
 				
 				btnFollowRequestDeny = imageButton {
 					background =
-						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 					contentDescription = context.getString(R.string.follow_deny)
 					imageResource = R.drawable.ic_close
 					setPadding(0, 0, 0, 0)

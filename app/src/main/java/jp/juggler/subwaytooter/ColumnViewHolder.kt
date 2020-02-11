@@ -1537,15 +1537,15 @@ class ColumnViewHolder(
 			val colorFg = getAttributeColor(activity, R.attr.colorContentText)
 			val colorBgSelected = colorFg.applyAlphaMultiplier(0.25f)
 			val colorFgList = ColorStateList.valueOf(colorFg)
+			val colorBg = getAttributeColor(activity, R.attr.colorColumnSettingBackground)
 			showQuickFilterButton = { btn, iconId, selected ->
-				btn.backgroundDrawable = if(selected) {
-					getAdaptiveRippleDrawable(
-						colorBgSelected,
-						colorFg
+				btn.backgroundDrawable =
+					getAdaptiveRippleDrawableRound(
+						activity,
+						if(selected) colorBgSelected else colorBg,
+						colorFg,
+						roundNormal = true
 					)
-				} else {
-					ContextCompat.getDrawable(activity, R.drawable.btn_bg_transparent)
-				}
 				
 				when(btn) {
 					is TextView -> btn.textColor = colorFg
@@ -1569,7 +1569,8 @@ class ColumnViewHolder(
 			
 			showQuickFilterButton = { btn, iconId, selected ->
 				
-				btn.backgroundDrawable = getAdaptiveRippleDrawable(
+				btn.backgroundDrawable = getAdaptiveRippleDrawableRound(
+					activity,
 					if(selected) colorBgSelected else colorBg,
 					colorFg
 				)
@@ -1719,7 +1720,10 @@ class ColumnViewHolder(
 						
 						btnAnnouncements = imageButton {
 							background =
-								ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								ContextCompat.getDrawable(
+									context,
+									R.drawable.btn_bg_transparent_round6dp
+								)
 							contentDescription = context.getString(R.string.announcements)
 							setImageResource(R.drawable.ic_info_outline)
 							padding = dip(8)
@@ -1769,7 +1773,10 @@ class ColumnViewHolder(
 						
 						btnColumnSetting = imageButton {
 							background =
-								ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								ContextCompat.getDrawable(
+									context,
+									R.drawable.btn_bg_transparent_round6dp
+								)
 							contentDescription = context.getString(R.string.setting)
 							setImageResource(R.drawable.ic_tune)
 							padding = dip(8)
@@ -1804,7 +1811,10 @@ class ColumnViewHolder(
 					
 					btnColumnReload = imageButton {
 						background =
-							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+							ContextCompat.getDrawable(
+								context,
+								R.drawable.btn_bg_transparent_round6dp
+							)
 						contentDescription = context.getString(R.string.reload)
 						setImageResource(R.drawable.ic_refresh)
 						padding = dip(8)
@@ -1818,7 +1828,10 @@ class ColumnViewHolder(
 					
 					btnColumnClose = imageButton {
 						background =
-							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+							ContextCompat.getDrawable(
+								context,
+								R.drawable.btn_bg_transparent_round6dp
+							)
 						contentDescription = context.getString(R.string.close_column)
 						setImageResource(R.drawable.ic_close)
 						padding = dip(8)
@@ -2149,7 +2162,7 @@ class ColumnViewHolder(
 					}
 					
 					btnSearchClear = imageButton {
-						backgroundResource = R.drawable.btn_bg_transparent
+						backgroundResource = R.drawable.btn_bg_transparent_round6dp
 						contentDescription = context.getString(R.string.clear)
 						imageResource = R.drawable.ic_close
 						imageTintList = ColorStateList.valueOf(
@@ -2163,7 +2176,7 @@ class ColumnViewHolder(
 					}
 					
 					btnSearch = imageButton {
-						backgroundResource = R.drawable.btn_bg_transparent
+						backgroundResource = R.drawable.btn_bg_transparent_round6dp
 						contentDescription = context.getString(R.string.search)
 						imageResource = R.drawable.ic_search
 						imageTintList = ColorStateList.valueOf(
@@ -2205,7 +2218,7 @@ class ColumnViewHolder(
 				}
 				
 				btnListAdd = imageButton {
-					backgroundResource = R.drawable.btn_bg_transparent
+					backgroundResource = R.drawable.btn_bg_transparent_round6dp
 					contentDescription = context.getString(R.string.add)
 					imageResource = R.drawable.ic_add
 					imageTintList = ColorStateList.valueOf(
@@ -2226,7 +2239,7 @@ class ColumnViewHolder(
 					lparams(matchParent, dip(40))
 					
 					btnQuickFilterAll = button {
-						backgroundResource = R.drawable.btn_bg_transparent
+						backgroundResource = R.drawable.btn_bg_transparent_round6dp
 						minWidthCompat = dip(40)
 						startPadding = dip(4)
 						endPadding = dip(4)
@@ -2238,35 +2251,35 @@ class ColumnViewHolder(
 					}
 					
 					btnQuickFilterMention = imageButton {
-						backgroundResource = R.drawable.btn_bg_transparent
+						backgroundResource = R.drawable.btn_bg_transparent_round6dp
 						contentDescription = context.getString(R.string.mention2)
 					}.lparams(dip(40), matchParent) {
 						margin = 0
 					}
 					
 					btnQuickFilterFavourite = imageButton {
-						backgroundResource = R.drawable.btn_bg_transparent
+						backgroundResource = R.drawable.btn_bg_transparent_round6dp
 						contentDescription = context.getString(R.string.favourite)
 					}.lparams(dip(40), matchParent) {
 						margin = 0
 					}
 					
 					btnQuickFilterBoost = imageButton {
-						backgroundResource = R.drawable.btn_bg_transparent
+						backgroundResource = R.drawable.btn_bg_transparent_round6dp
 						contentDescription = context.getString(R.string.boost)
 					}.lparams(dip(40), matchParent) {
 						margin = 0
 					}
 					
 					btnQuickFilterFollow = imageButton {
-						backgroundResource = R.drawable.btn_bg_transparent
+						backgroundResource = R.drawable.btn_bg_transparent_round6dp
 						contentDescription = context.getString(R.string.follow)
 					}.lparams(dip(40), matchParent) {
 						margin = 0
 					}
 					
 					btnQuickFilterReaction = imageButton {
-						backgroundResource = R.drawable.btn_bg_transparent
+						backgroundResource = R.drawable.btn_bg_transparent_round6dp
 						contentDescription = context.getString(R.string.reaction)
 					}.lparams(dip(40), matchParent) {
 						margin = 0
@@ -2274,7 +2287,7 @@ class ColumnViewHolder(
 					
 					
 					btnQuickFilterVote = imageButton {
-						backgroundResource = R.drawable.btn_bg_transparent
+						backgroundResource = R.drawable.btn_bg_transparent_round6dp
 						contentDescription = context.getString(R.string.vote_polls)
 					}.lparams(dip(40), matchParent) {
 						margin = 0
@@ -2561,7 +2574,7 @@ class ColumnViewHolder(
 			b.layoutParams = blp
 			b.background = ContextCompat.getDrawable(
 				activity,
-				R.drawable.btn_bg_transparent
+				R.drawable.btn_bg_transparent_round6dp
 			)
 			
 			b.contentDescription = activity.getString(R.string.reaction_add)
@@ -2617,14 +2630,15 @@ class ColumnViewHolder(
 					btn.allCaps = false
 					btn.tag = reaction
 					
-					btn.background = ContextCompat.getDrawable(
-						actMain,
-						if(reaction.me == true) {
-							R.drawable.bg_button_cw
-						} else {
-							R.drawable.btn_bg_transparent
-						}
-					)
+					btn.background = if(reaction.me == true) {
+						getAdaptiveRippleDrawableRound(
+							actMain,
+							getAttributeColor(actMain, R.attr.colorButtonBgCw),
+							getAttributeColor(actMain, R.attr.colorRippleEffect)
+						)
+					} else {
+						ContextCompat.getDrawable(actMain, R.drawable.btn_bg_transparent_round6dp)
+					}
 					
 					btn.setTextColor(content_color)
 					

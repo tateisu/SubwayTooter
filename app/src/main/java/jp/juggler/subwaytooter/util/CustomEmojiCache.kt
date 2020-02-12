@@ -100,7 +100,7 @@ class CustomEmojiCache(val context : Context) {
 									ContentValues().apply {
 										put(COL_TIME_USED, now)
 									},
-									"id=?",
+									"$COL_ID=?",
 									arrayOf(id.toString())
 								)
 							}

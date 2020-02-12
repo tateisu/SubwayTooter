@@ -50,7 +50,6 @@ import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.regex.Pattern
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -60,7 +59,7 @@ class App1 : Application() {
 	override fun onCreate() {
 		log.d("onCreate")
 		super.onCreate()
-		prepare(applicationContext)
+		prepare(applicationContext,"App1.onCreate")
 	}
 	
 	override fun onTerminate() {
@@ -297,9 +296,11 @@ class App1 : Application() {
 		@SuppressLint("StaticFieldLeak")
 		lateinit var custom_emoji_lister : CustomEmojiLister
 		
-		fun prepare(app_context : Context) : AppState {
+		fun prepare(app_context : Context,caller:String) : AppState {
 			var state = appStateX
 			if(state != null) return state
+			
+			log.d("initialize AppState. caller=$caller")
 			
 			// initialize Conscrypt
 			Security.insertProviderAt(
@@ -345,7 +346,7 @@ class App1 : Application() {
 			}
 			
 			
-			log.d("prepareDB")
+			log.d("prepareDB 1")
 			db_open_helper = DBOpenHelper(app_context)
 			
 			//			if( BuildConfig.DEBUG){
@@ -353,6 +354,7 @@ class App1 : Application() {
 			//				db_open_helper.onCreate( db );
 			//			}
 			
+			log.d("prepareDB 2")
 			val now = System.currentTimeMillis()
 			AcctSet.deleteOld(now)
 			UserRelation.deleteOld(now)
@@ -372,6 +374,7 @@ class App1 : Application() {
 			//			);
 			//		}
 			
+			log.d("create okhttp client")
 			run {
 				// API用のHTTP設定はキャッシュを使わない
 				ok_http_client = prepareOkHttp(30, 60)
@@ -393,23 +396,28 @@ class App1 : Application() {
 					.build()
 			}
 			
+			log.d("create custom emoji cache.")
 			custom_emoji_cache = CustomEmojiCache(app_context)
 			
 			custom_emoji_lister = CustomEmojiLister(app_context)
 			
 			ColumnType.dump()
 			
+			log.d("create  AppState.")
 			
 			state = AppState(app_context, pref)
 			appStateX = state
+			
+			log.d("prepare() complete! caller=$caller")
+
 			return state
 		}
 		
 		@SuppressLint("StaticFieldLeak")
 		private var appStateX : AppState? = null
 		
-		fun getAppState(context : Context) : AppState {
-			return prepare(context.applicationContext)
+		fun getAppState(context : Context,caller:String="getAppState") : AppState {
+			return prepare(context.applicationContext,caller)
 		}
 		
 		fun sound(item : HighlightWord) {
@@ -499,7 +507,7 @@ class App1 : Application() {
 			forceDark :Boolean = false
 		) {
 			
-			prepare(activity.applicationContext)
+			prepare(activity.applicationContext,"setActivityTheme")
 			
 			val theme_idx = Pref.ipUiTheme(pref)
 			activity.setTheme(

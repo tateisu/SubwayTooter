@@ -443,24 +443,28 @@ class PollingWorker private constructor(contextArg : Context) {
 		
 		this.context = context
 		
-		this.connectivityManager =
-			context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-				?: error("missing ConnectivityManager system service")
+		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
+		// データベースへアクセスできるようにする
+		this.appState = App1.prepare(context,"PollingWorker.ctor()")
+		this.pref = App1.pref
+		this.handler = Handler(context.mainLooper)
 		
-		this.notification_manager =
-			context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-				?: error("missing NotificationManager system service")
+		this.connectivityManager = systemService(context)
+			?: error("missing ConnectivityManager system service")
+			
 		
-		this.scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as? JobScheduler
+		this.notification_manager = systemService(context)
+			?: error("missing NotificationManager system service")
+		
+		this.scheduler = systemService(context)
 			?: error("missing JobScheduler system service")
 		
-		this.power_manager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+		this.power_manager =  systemService(context)
 			?: error("missing PowerManager system service")
 		
 		// WifiManagerの取得時はgetApplicationContext を使わないとlintに怒られる
-		this.wifi_manager =
-			context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
-				?: error("missing WifiManager system service")
+		this.wifi_manager = systemService(context.applicationContext)
+			?: error("missing WifiManager system service")
 		
 		power_lock = power_manager.newWakeLock(
 			PowerManager.PARTIAL_WAKE_LOCK,
@@ -479,12 +483,6 @@ class PollingWorker private constructor(contextArg : Context) {
 		}
 		
 		wifi_lock.setReferenceCounted(false)
-		
-		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
-		// データベースへアクセスできるようにする
-		this.appState = App1.prepare(context)
-		this.pref = App1.pref
-		this.handler = Handler(context.mainLooper)
 		
 		//
 		worker = Worker()
@@ -743,7 +741,8 @@ class PollingWorker private constructor(contextArg : Context) {
 				
 				val net_wait_start = SystemClock.elapsedRealtime()
 				while(true) {
-					val connectionState = App1.getAppState(context).networkTracker.connectionState
+					val connectionState = App1.getAppState(context,"PollingWorker.JobItem.run()")
+						.networkTracker.connectionState
 						?: break
 					if(isJobCancelled) throw JobCancelledException()
 					val now = SystemClock.elapsedRealtime()

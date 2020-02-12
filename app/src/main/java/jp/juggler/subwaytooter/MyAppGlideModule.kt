@@ -92,7 +92,7 @@ class MyAppGlideModule : AppGlideModule() {
 		super.registerComponents(context, glide, registry)
 		
 		// App1を初期化してからOkHttp3Factoryと連動させる
-		App1.prepare(context.applicationContext)
+		App1.prepare(context.applicationContext,"MyAppGlideModule.registerComponents()")
 		App1.registerGlideComponents(context, glide, registry)
 		
 		//SVGデコーダーの追加
@@ -106,7 +106,7 @@ class MyAppGlideModule : AppGlideModule() {
 		super.applyOptions(context, builder)
 		
 		// App1を初期化してから色々する
-		App1.prepare(context.applicationContext)
+		App1.prepare(context.applicationContext,"MyAppGlideModule.applyOptions()")
 		App1.applyGlideOptions(context, builder)
 	}
 	

@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import kotlin.math.ceil
 
-class CustomEmojiCache(internal val context : Context) {
+class CustomEmojiCache(val context : Context) {
 	
 	companion object {
 		
@@ -166,7 +166,6 @@ class CustomEmojiCache(internal val context : Context) {
 		val onLoadComplete : () -> Unit
 	)
 	
-	
 	// APNGデコード済のキャッシュデータ
 	private val cache = ConcurrentHashMap<String, CacheItem>()
 	
@@ -180,15 +179,16 @@ class CustomEmojiCache(internal val context : Context) {
 	
 	private val handler = Handler(context.mainLooper)
 	
-	private val workerLock = Any()
-	private val workers =
-		(1..4).map{ Worker(workerLock).apply { start() } }.toList()
-	
-
 	private val dbOpenHelper = DbOpenHelper(context)
-
+	
 	private var lastSweepDbCache = 0L
+	
+	private val workerLock = Any()
 
+	// 他の変数より後に初期化すること
+	private val workers =
+		(1 .. 4).map { Worker(workerLock).apply { start() } }.toList()
+	
 	// DB処理を行い、SQLiteDatabaseCorruptExceptionを検出したらDBを削除してリトライする
 	private fun <T : Any> useDbCache(block : (SQLiteDatabase) -> T?) : T? {
 		for(nTry in (1 .. 3)) {
@@ -205,8 +205,6 @@ class CustomEmojiCache(internal val context : Context) {
 		}
 		return null
 	}
-	
-	////////////////////////////////
 	
 	// ネットワーク接続が切り替わったタイミングでエラーキャッシュをクリアする
 	fun onNetworkChanged() {

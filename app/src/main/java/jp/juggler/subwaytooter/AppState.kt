@@ -156,7 +156,6 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			App1.custom_emoji_cache.onNetworkChanged()
 			App1.custom_emoji_lister.onNetworkChanged()
 		}
-		loadColumnList()
 	}
 	
 	//////////////////////////////////////////////////////
@@ -264,7 +263,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		if(bEnableSpeech) enableSpeech()
 	}
 	
-	private fun loadColumnList() {
+	fun loadColumnList() {
 		val list = loadColumnList(context, FILE_COLUMN_LIST)
 			?.objectList()
 			?.mapNotNull { src ->

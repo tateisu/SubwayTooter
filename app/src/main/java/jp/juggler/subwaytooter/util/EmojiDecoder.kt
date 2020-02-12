@@ -343,7 +343,7 @@ object EmojiDecoder {
 		
 		val useEmojioneShortcode = when(val context = options.context) {
 			null -> false
-			else -> Pref.bpEmojioneShortcode(App1.getAppState(context).pref)
+			else -> Pref.bpEmojioneShortcode( Pref.pref(context))
 		}
 		
 		splitShortCode(s, callback = object : ShortCodeSplitterCallback {

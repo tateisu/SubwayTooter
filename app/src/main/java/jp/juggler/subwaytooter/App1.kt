@@ -407,6 +407,10 @@ class App1 : Application() {
 			
 			state = AppState(app_context, pref)
 			appStateX = state
+
+			// getAppState()を使える状態にしてからカラム一覧をロードする
+			log.d("load column list...")
+			state.loadColumnList()
 			
 			log.d("prepare() complete! caller=$caller")
 

@@ -3360,12 +3360,9 @@ internal class ItemViewHolder(
 								topMargin = dip(3)
 							}
 							
-							val actMain = activity as? ActMain
-							val thumbnailHeight =
-								actMain?.app_state?.media_thumb_height ?: dip(64)
-							val verticalArrangeThumbnails = Pref.bpVerticalArrangeThumbnails(
-								actMain?.pref ?: Pref.pref(context)
-							)
+							val thumbnailHeight = activity.app_state.media_thumb_height
+							val verticalArrangeThumbnails =
+								Pref.bpVerticalArrangeThumbnails(activity.pref)
 							
 							flMedia = if(verticalArrangeThumbnails) {
 								frameLayout {

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.view.View
@@ -18,12 +19,16 @@ import jp.juggler.util.*
 
 class DlgAppPicker(
 	val activity : AppCompatActivity,
+	val intent : Intent,
+	val autoSelect : Boolean = false,
+	val filter : (ResolveInfo) -> Boolean = { true },
 	val callback : (String) -> Unit
 ) {
-	companion object{
-		fun Char.isAlpha() = ('A' <= this && this <= 'Z')||('a' <= this && this <= 'z')
+	
+	companion object {
+		fun Char.isAlpha() = ('A' <= this && this <= 'Z') || ('a' <= this && this <= 'z')
 	}
-
+	
 	class ListItem(
 		val icon : Drawable?,
 		val text : String,
@@ -34,11 +39,7 @@ class DlgAppPicker(
 		
 		val pm = activity.packageManager
 		val listResolveInfo = pm.queryIntentActivities(
-			Intent().apply {
-				action = Intent.ACTION_SEND
-				type = "text/plain"
-				putExtra(Intent.EXTRA_TEXT, activity.getString(R.string.content_sample))
-			},
+			intent,
 			if(Build.VERSION.SDK_INT >= 23) {
 				PackageManager.MATCH_ALL
 			} else {
@@ -47,6 +48,7 @@ class DlgAppPicker(
 		)
 		
 		for(it in listResolveInfo) {
+			if(! filter(it)) continue
 			val cn = "${it.activityInfo.packageName}/${it.activityInfo.name}"
 			add(
 				ListItem(
@@ -57,43 +59,52 @@ class DlgAppPicker(
 			)
 		}
 		
-		val (label, icon) = CustomShare.getInfo(activity, CustomShare.CN_CLIPBOARD.cn())
-		add(ListItem(icon, label.toString(), CustomShare.CN_CLIPBOARD))
-		sortWith(Comparator { a, b->
+		if(! autoSelect) {
+			val (label, icon) = CustomShare.getInfo(activity, CustomShare.CN_CLIPBOARD.cn())
+			add(ListItem(icon, label.toString(), CustomShare.CN_CLIPBOARD))
+		}
+		sortWith(Comparator { a, b ->
 			val a1 = a.text.firstOrNull() ?: '\u0000'
 			val b1 = b.text.firstOrNull() ?: '\u0000'
 			when {
-				!a1.isAlpha() && b1.isAlpha() -> -1
-				a1.isAlpha() && !b1.isAlpha() -> 1
-				else -> a.text.compareTo(b.text,ignoreCase = true)
+				! a1.isAlpha() && b1.isAlpha() -> - 1
+				a1.isAlpha() && ! b1.isAlpha() -> 1
+				else -> a.text.compareTo(b.text, ignoreCase = true)
 			}
 		})
 	}
 	
-	val dialog : AlertDialog
+	val dialog : AlertDialog?
 	
 	init {
-		@SuppressLint("InflateParams")
-		val listView : ListView =
-			activity.layoutInflater.inflate(R.layout.dlg_app_picker, null, false).cast() !!
-		val adapter = MyAdapter()
-		listView.adapter = adapter
-		listView.onItemClickListener = adapter
-		
-		
-		dialog = AlertDialog.Builder(activity)
-			.setView(listView)
-			.setNegativeButton(R.string.cancel, null)
-			.create()
+		if(autoSelect && list.size == 1) {
+			callback(list.first().componentName)
+			dialog = null
+		} else {
+			@SuppressLint("InflateParams")
+			val listView : ListView =
+				activity.layoutInflater.inflate(R.layout.dlg_app_picker, null, false).cast() !!
+			val adapter = MyAdapter()
+			listView.adapter = adapter
+			listView.onItemClickListener = adapter
+			
+			
+			dialog = AlertDialog.Builder(activity)
+				.setView(listView)
+				.setNegativeButton(R.string.cancel, null)
+				.create()
+		}
 	}
 	
 	@SuppressLint("InflateParams")
 	fun show() {
-		dialog.window?.setLayout(
-			WindowManager.LayoutParams.MATCH_PARENT,
-			WindowManager.LayoutParams.WRAP_CONTENT
-		)
-		dialog.show()
+		dialog?.run {
+			window?.setLayout(
+				WindowManager.LayoutParams.MATCH_PARENT,
+				WindowManager.LayoutParams.WRAP_CONTENT
+			)
+			this.show()
+		}
 	}
 	
 	private inner class MyAdapter : BaseAdapter(), AdapterView.OnItemClickListener {
@@ -118,7 +129,7 @@ class DlgAppPicker(
 		}
 		
 		override fun onItemClick(parent : AdapterView<*>?, view : View?, idx : Int, id : Long) {
-			dialog.dismissSafe()
+			dialog?.dismissSafe()
 			callback(list[idx].componentName)
 		}
 	}

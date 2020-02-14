@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Host
@@ -18,7 +19,7 @@ import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
 
 class DlgCreateAccount(
-	val activity : Activity,
+	val activity : AppCompatActivity,
 	val instance : Host,
 	val onClickOk : (
 		dialog : Dialog,

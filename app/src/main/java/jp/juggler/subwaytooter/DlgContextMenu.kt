@@ -736,7 +736,7 @@ internal class DlgContextMenu(
 					Action_User.mention(activity, access_info, who)
 				
 				R.id.btnAccountWebPage -> who.url?.let { url ->
-					App1.openCustomTab(activity, url)
+					App1.openCustomTabOrBrowser(activity, url)
 				}
 				
 				R.id.btnFollowRequestOK ->
@@ -973,7 +973,7 @@ internal class DlgContextMenu(
 		when(v.id) {
 			
 			R.id.btnStatusWebPage -> status?.url?.let { url ->
-				App1.openCustomTab(activity, url)
+				App1.openCustomTabOrBrowser(activity, url)
 			}
 			
 			R.id.btnText -> if(status != null) {

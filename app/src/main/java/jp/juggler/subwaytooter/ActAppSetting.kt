@@ -102,11 +102,11 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 		initUi()
 		
 		removeDefaultPref()
-
+		
 		load(null, null)
 	}
 	
-	private fun initUi(){
+	private fun initUi() {
 		setContentView(R.layout.act_app_setting)
 		App1.initEdgeToEdge(this)
 		
@@ -147,11 +147,11 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 		}
 	}
 	
-	private fun removeDefaultPref(){
+	private fun removeDefaultPref() {
 		val e = pref.edit()
 		var changed = false
-		appSettingRoot.scan{
-			if( it.pref?.removeDefault(pref,e) ==true ) changed = true
+		appSettingRoot.scan {
+			if(it.pref?.removeDefault(pref, e) == true) changed = true
 		}
 		if(changed) e.apply()
 	}
@@ -174,16 +174,18 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 	}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
-		if(resultCode == RESULT_OK && data != null  ){
+		if(resultCode == RESULT_OK && data != null) {
 			when(requestCode) {
 				REQUEST_CODE_APP_DATA_IMPORT -> {
 					data.handleGetContentResult(contentResolver).firstOrNull()?.uri?.let {
 						importAppData2(false, it)
 					}
 				}
+				
 				REQUEST_CODE_TIMELINE_FONT -> {
 					handleFontResult(AppSettingItem.TIMELINE_FONT, data, "TimelineFont")
 				}
+				
 				REQUEST_CODE_TIMELINE_FONT_BOLD -> {
 					handleFontResult(AppSettingItem.TIMELINE_FONT_BOLD, data, "TimelineFontBold")
 				}
@@ -339,7 +341,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 		
 		// true if the item at the specified position is not a separator.
 		// (A separator is a non-selectable, non-clickable item).
-		override fun areAllItemsEnabled() : Boolean =false
+		override fun areAllItemsEnabled() : Boolean = false
+		
 		override fun isEnabled(position : Int) : Boolean = list[position] is AppSettingItem
 		
 		override fun getView(position : Int, convertView : View?, parent : ViewGroup?) : View =
@@ -1201,7 +1204,14 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 	
 	fun openCustomShareChooser(target : CustomShareTarget) {
 		try {
-			DlgAppPicker(this){ setCustomShare(target, it) }.show()
+			DlgAppPicker(
+				this,
+				Intent().apply {
+					action = Intent.ACTION_SEND
+					type = "text/plain"
+					putExtra(Intent.EXTRA_TEXT, getString(R.string.content_sample))
+				}
+			) { setCustomShare(target, it) }.show()
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			showToast(this, ex, "openCustomShareChooser failed.")
@@ -1229,7 +1239,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 	fun showCustomShareIcon(tv : TextView?, target : CustomShareTarget) {
 		tv ?: return
 		val cn = CustomShare.getCustomShareComponentName(pref, target)
-		val (label, icon) =CustomShare.getInfo(this, cn)
+		val (label, icon) = CustomShare.getInfo(this, cn)
 		tv.text = label ?: getString(R.string.not_selected)
 		tv.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
 		tv.compoundDrawablePadding = (resources.displayMetrics.density * 4f + 0.5f).toInt()

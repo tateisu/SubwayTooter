@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
@@ -14,6 +15,7 @@ import android.graphics.Color
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -29,8 +31,10 @@ import com.bumptech.glide.load.engine.executor.GlideExecutor
 import com.bumptech.glide.load.engine.executor.GlideExecutor.newDiskCacheExecutor
 import com.bumptech.glide.load.engine.executor.GlideExecutor.newSourceExecutor
 import com.bumptech.glide.load.model.GlideUrl
+import jp.juggler.subwaytooter.action.cn
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootAttachment
+import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.CustomEmojiCache
 import jp.juggler.subwaytooter.util.CustomEmojiLister
@@ -59,7 +63,7 @@ class App1 : Application() {
 	override fun onCreate() {
 		log.d("onCreate")
 		super.onCreate()
-		prepare(applicationContext,"App1.onCreate")
+		prepare(applicationContext, "App1.onCreate")
 	}
 	
 	override fun onTerminate() {
@@ -218,7 +222,7 @@ class App1 : Application() {
 		//		return maxSize * 1024;
 		//	}
 		
-		val reNotAllowedInUserAgent  ="[^\\x21-\\x7e]+".asciiPattern()
+		val reNotAllowedInUserAgent = "[^\\x21-\\x7e]+".asciiPattern()
 		
 		val userAgentDefault =
 			"SubwayTooter/${BuildConfig.VERSION_NAME} Android/${Build.VERSION.RELEASE}"
@@ -296,7 +300,7 @@ class App1 : Application() {
 		@SuppressLint("StaticFieldLeak")
 		lateinit var custom_emoji_lister : CustomEmojiLister
 		
-		fun prepare(app_context : Context,caller:String) : AppState {
+		fun prepare(app_context : Context, caller : String) : AppState {
 			var state = appStateX
 			if(state != null) return state
 			
@@ -407,21 +411,21 @@ class App1 : Application() {
 			
 			state = AppState(app_context, pref)
 			appStateX = state
-
+			
 			// getAppState()を使える状態にしてからカラム一覧をロードする
 			log.d("load column list...")
 			state.loadColumnList()
 			
 			log.d("prepare() complete! caller=$caller")
-
+			
 			return state
 		}
 		
 		@SuppressLint("StaticFieldLeak")
 		private var appStateX : AppState? = null
 		
-		fun getAppState(context : Context,caller:String="getAppState") : AppState {
-			return prepare(context.applicationContext,caller)
+		fun getAppState(context : Context, caller : String = "getAppState") : AppState {
+			return prepare(context.applicationContext, caller)
 		}
 		
 		fun sound(item : HighlightWord) {
@@ -508,21 +512,21 @@ class App1 : Application() {
 		fun setActivityTheme(
 			activity : Activity,
 			noActionBar : Boolean = false,
-			forceDark :Boolean = false
+			forceDark : Boolean = false
 		) {
 			
-			prepare(activity.applicationContext,"setActivityTheme")
+			prepare(activity.applicationContext, "setActivityTheme")
 			
 			val theme_idx = Pref.ipUiTheme(pref)
 			activity.setTheme(
-				if( forceDark || theme_idx ==1){
+				if(forceDark || theme_idx == 1) {
 					if(noActionBar) R.style.AppTheme_Dark_NoActionBar else R.style.AppTheme_Dark
-				}else{
+				} else {
 					if(noActionBar) R.style.AppTheme_Light_NoActionBar else R.style.AppTheme_Light
 				}
 			)
 			
-			setStatusBarColor(activity,forceDark=forceDark)
+			setStatusBarColor(activity, forceDark = forceDark)
 		}
 		
 		internal val CACHE_CONTROL = CacheControl.Builder()
@@ -592,59 +596,114 @@ class App1 : Application() {
 			
 		}
 		
-		fun openBrowser(context : Context, uri : Uri?) {
+		private fun startActivityExcludeMyApp(
+			activity : AppCompatActivity,
+			intent : Intent,
+			startAnimationBundle : Bundle? = null
+		) {
 			try {
-				uri ?: return
-				val intent = Intent(Intent.ACTION_VIEW, uri)
-				context.startActivity(intent)
+				val pm = activity.packageManager!!
+				val flags = PackageManager.MATCH_DEFAULT_ONLY
+				val ri = pm.resolveActivity(intent, flags)
+				if(ri != null && ri.activityInfo.packageName != activity.packageName) {
+					// ST以外が選択された
+					activity.startActivity(intent, startAnimationBundle)
+					return
+				}
+				DlgAppPicker(
+					activity,
+					intent,
+					autoSelect = true,
+					filter = {it.activityInfo.packageName != activity.packageName }
+				) {
+					try {
+						intent.component = it.cn()
+						activity.startActivity(intent, startAnimationBundle)
+					} catch(ex : Throwable) {
+						log.trace(ex)
+						showToast(activity, ex, "can't open. ${intent.data}")
+					}
+				}.show()
+				
 			} catch(ex : Throwable) {
-				log.trace(ex, "openBrowser")
-				showToast(context, true, "missing web browser")
+				log.trace(ex)
+				showToast(activity, ex, "can't open. ${intent.data}")
 			}
 		}
 		
-		fun openBrowser(context : Context, url : String?) =
-			openBrowser(context, url.mayUri())
+		fun openBrowser(activity : AppCompatActivity, uri : Uri?) {
+			if(uri != null) startActivityExcludeMyApp(activity, Intent(Intent.ACTION_VIEW, uri))
+		}
+		
+		fun openBrowser(activity : AppCompatActivity, url : String?) =
+			openBrowser(activity, url.mayUri())
+		
+		// ubway Tooterの「アプリ設定/挙動/リンクを開く際にCustom Tabsを使わない」をONにして
+		// 投稿のコンテキストメニューの「トゥートへのアクション/Webページを開く」「ユーザへのアクション/Webページを開く」を使うと
+		// 投げたインテントをST自身が受け取って「次のアカウントから開く」ダイアログが出て
+		// 「Webページを開く」をまた押すと無限ループしてダイアログの影が徐々に濃くなりそのうち壊れる
+		// これを避けるには、投稿やトゥートを開く際に bpDontUseCustomTabs がオンならST以外のアプリを列挙したアプリ選択ダイアログを出すしかない
+		fun openCustomTabOrBrowser(activity : AppCompatActivity, url : String) {
+			if(! Pref.bpDontUseCustomTabs(pref)) {
+				openCustomTab(activity, url)
+			} else {
+				openBrowser(activity, url)
+			}
+		}
 		
 		// Chrome Custom Tab を開く
-		fun openCustomTab(activity : Activity, url : String) {
+		fun openCustomTab(activity : AppCompatActivity, url : String) {
+			if(Pref.bpDontUseCustomTabs(pref)) {
+				openCustomTabOrBrowser(activity, url)
+				return
+			}
+			
 			try {
-				if(Pref.bpDontUseCustomTabs(pref)) {
-					openBrowser(activity, url)
-				} else {
-					
-					if(url.startsWith("http") && Pref.bpPriorChrome(pref)) {
-						try {
-							// 初回はChrome指定で試す
-							val customTabsIntent = CustomTabsIntent.Builder()
-								.setToolbarColor(
-									getAttributeColor(
-										activity,
-										R.attr.colorPrimary
-									)
+				if(url.startsWith("http") && Pref.bpPriorChrome(pref)) {
+					try {
+						// 初回はChrome指定で試す
+						val customTabsIntent = CustomTabsIntent.Builder()
+							.setToolbarColor(
+								getAttributeColor(
+									activity,
+									R.attr.colorPrimary
 								)
-								.setShowTitle(true)
-								.build()
-							customTabsIntent.intent.component = ComponentName(
-								"com.android.chrome",
-								"com.google.android.apps.chrome.Main"
 							)
-							customTabsIntent.launchUrl(activity, url.toUri())
-							return
-						} catch(ex2 : Throwable) {
-							log.e(ex2, "openChromeTab: missing chrome. retry to other application.")
-						}
+							.setShowTitle(true)
+							.build()
 						
+						startActivityExcludeMyApp(
+							activity,
+							customTabsIntent.intent.also {
+								it.component = ComponentName(
+									"com.android.chrome",
+									"com.google.android.apps.chrome.Main"
+								)
+								it.data = url.toUri()
+							},
+							customTabsIntent.startAnimationBundle
+						)
+						return
+					} catch(ex2 : Throwable) {
+						log.e(ex2, "openChromeTab: missing chrome. retry to other application.")
 					}
 					
-					// Chromeがないようなのでcomponent指定なしでリトライ
-					CustomTabsIntent.Builder()
-						.setToolbarColor(getAttributeColor(activity, R.attr.colorPrimary))
-						.setShowTitle(true)
-						.build()
-						.launchUrl(activity, url.toUri())
-					
 				}
+				
+				// Chromeがないようなのでcomponent指定なしでリトライ
+				val customTabsIntent = CustomTabsIntent.Builder()
+					.setToolbarColor(getAttributeColor(activity, R.attr.colorPrimary))
+					.setShowTitle(true)
+					.build()
+				
+				startActivityExcludeMyApp(
+					activity,
+					customTabsIntent.intent.also {
+						it.data = url.toUri()
+					},
+					customTabsIntent.startAnimationBundle
+				)
+				
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				val scheme = url.mayUri()?.scheme ?: url
@@ -653,7 +712,7 @@ class App1 : Application() {
 			
 		}
 		
-		fun openCustomTab(activity : Activity, ta : TootAttachment) {
+		fun openCustomTab(activity : AppCompatActivity, ta : TootAttachment) {
 			val url = ta.getLargeUrl(pref) ?: return
 			openCustomTab(activity, url)
 		}
@@ -706,14 +765,14 @@ class App1 : Application() {
 			)
 		}
 		
-		fun setStatusBarColor(activity : Activity,forceDark:Boolean=false ) {
+		fun setStatusBarColor(activity : Activity, forceDark : Boolean = false) {
 			
 			activity.window?.apply {
 				
 				// 古い端末ではナビゲーションバーのアイコン色を設定できないため
 				// メディアビューア画面ではステータスバーやナビゲーションバーの色を設定しない…
-				if( forceDark && Build.VERSION.SDK_INT < 26 ) return
-
+				if(forceDark && Build.VERSION.SDK_INT < 26) return
+				
 				clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
 				clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
 				addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
@@ -721,13 +780,13 @@ class App1 : Application() {
 				var c = when {
 					forceDark -> Color.BLACK
 					else -> Pref.ipStatusBarColor(pref).notZero()
-						?: getAttributeColor(activity,R.attr.colorPrimaryDark)
+						?: getAttributeColor(activity, R.attr.colorPrimaryDark)
 				}
 				statusBarColor = c or Color.BLACK
 				
 				if(Build.VERSION.SDK_INT >= 23) {
 					decorView.systemUiVisibility =
-						if( rgbToLab(c).first >= 50f) {
+						if(rgbToLab(c).first >= 50f) {
 							//Dark Text to show up on your light status bar
 							decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 						} else {
@@ -757,7 +816,6 @@ class App1 : Application() {
 				} // else: need restart app.
 			}
 		}
-		
 		
 		fun setSwitchColor1(
 			activity : AppCompatActivity,

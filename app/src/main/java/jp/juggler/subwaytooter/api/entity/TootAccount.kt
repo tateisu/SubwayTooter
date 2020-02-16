@@ -123,6 +123,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	
 	init {
 		this.json = src
+		src.put("_fromStream",parser.fromStream)
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			

@@ -1570,7 +1570,8 @@ class Column(
 					TootNotification.TYPE_FOLLOW,
 					TootNotification.TYPE_UNFOLLOW,
 					TootNotification.TYPE_FOLLOW_REQUEST,
-					TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> dont_show_follow
+					TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
+					TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> dont_show_follow
 					
 					TootNotification.TYPE_MENTION,
 					TootNotification.TYPE_REPLY -> dont_show_reply
@@ -1578,7 +1579,8 @@ class Column(
 					TootNotification.TYPE_REACTION -> dont_show_reaction
 					
 					TootNotification.TYPE_VOTE,
-					TootNotification.TYPE_POLL -> dont_show_vote
+					TootNotification.TYPE_POLL,
+					TootNotification.TYPE_POLL_VOTE_MISSKEY -> dont_show_vote
 					else -> false
 				}
 				
@@ -1591,13 +1593,16 @@ class Column(
 					TootNotification.TYPE_FOLLOW,
 					TootNotification.TYPE_UNFOLLOW,
 					TootNotification.TYPE_FOLLOW_REQUEST,
-					TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> quick_filter != QUICK_FILTER_FOLLOW
+					TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY ,
+					TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> quick_filter != QUICK_FILTER_FOLLOW
 					
 					TootNotification.TYPE_MENTION,
 					TootNotification.TYPE_REPLY -> quick_filter != QUICK_FILTER_MENTION
 					TootNotification.TYPE_REACTION -> quick_filter != QUICK_FILTER_REACTION
+
 					TootNotification.TYPE_VOTE,
-					TootNotification.TYPE_POLL -> quick_filter != QUICK_FILTER_VOTE
+					TootNotification.TYPE_POLL,
+					TootNotification.TYPE_POLL_VOTE_MISSKEY -> quick_filter != QUICK_FILTER_VOTE
 					else -> true
 				}
 			}) {
@@ -1630,10 +1635,10 @@ class Column(
 			TootNotification.TYPE_QUOTE,
 			TootNotification.TYPE_FAVOURITE,
 			TootNotification.TYPE_REACTION,
-			TootNotification.TYPE_VOTE,
 			TootNotification.TYPE_FOLLOW,
 			TootNotification.TYPE_FOLLOW_REQUEST,
-			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> {
+			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
+			TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> {
 				val who = item.account
 				if(who != null && favMuteSet?.contains(access_info.getFullAcct(who)) == true) {
 					log.d("%s is in favMuteSet.", access_info.getFullAcct(who))

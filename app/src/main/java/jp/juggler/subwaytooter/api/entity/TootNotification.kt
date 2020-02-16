@@ -29,6 +29,9 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 		const val TYPE_FOLLOW_REQUEST = "follow_request"
 		const val TYPE_FOLLOW_REQUEST_MISSKEY = "receiveFollowRequest"
 		
+		const val TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY = "followRequestAccepted"
+		const val TYPE_POLL_VOTE_MISSKEY = "pollVote"
+		
 		// 投票
 		const val TYPE_VOTE = "poll_vote"
 		
@@ -62,8 +65,15 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 			created_at = src.string("createdAt")
 			time_created_at = TootStatus.parseTime(created_at)
 			
-			accountRef = TootAccountRef.mayNull(parser, parser.account(src.jsonObject("user")))
-			status = parser.status(src.jsonObject("note"))
+			accountRef = TootAccountRef.mayNull(
+				parser,
+				parser.account(
+					src.jsonObject("user")
+				)
+			)
+			status = parser.status(
+				src.jsonObject("note")
+			)
 			
 			reaction = src.string("reaction")
 			

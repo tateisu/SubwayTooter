@@ -203,6 +203,7 @@
     <string name="display_name_boosted_by">%1$sがブーストしました</string>
     <string name="display_name_favourited_by">%1$sがお気に入りに追加しました</string>
     <string name="display_name_follow_request_by">%1$sがフォローリクエストを申請しました</string>
+    <string name="display_name_follow_request_accepted_by">%1$sがあなたのフォローリクエストを承認しました</string>
     <string name="display_name_followed_by">%1$sにフォローされました</string>
     <string name="display_name_quoted_by">%1$sが引用しました</string>
     <string name="display_name_reaction_by">%1$sがリアクション</string>
@@ -352,7 +353,7 @@
     <string name="hide_media_default">全ての画像を隠す</string>
     <string name="highlight_desc">フリックで削除。登録内容を反映するにはカラムのリロードが必要です</string>
     <string name="highlight_word">強調表示する単語</string>
-    <string name="home">ホーム</string>
+    <string name="home">ホーム</string><!-- ಸ್ಥಳೀಯ ಟೈಮ್ ಲೈನ್ -->
     <string name="ignore_suggestion">提案を無視</string>
     <string name="image">画像</string>
     <string name="image_alpha">画像の不透明度</string>

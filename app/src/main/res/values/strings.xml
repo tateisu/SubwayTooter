@@ -88,6 +88,7 @@
     <string name="display_name_mentioned_by">%1$s mentioned</string>
     <string name="display_name_voted_by">%1$s voted</string>
     <string name="display_name_follow_request_by">%1$s sent follow request</string>
+    <string name="display_name_follow_request_accepted_by">%1$s accepted your follow request</string>
     <string name="display_name_quoted_by">%1$s quoted</string>
     <string name="display_name_reaction_by">%1$s reactioned</string>
     <string name="display_name_followed_by">%1$s is following you</string>

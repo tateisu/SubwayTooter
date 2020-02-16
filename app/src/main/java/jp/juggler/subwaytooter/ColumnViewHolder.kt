@@ -1706,7 +1706,8 @@ class ColumnViewHolder(
 					}
 					
 					tvColumnName = textView {
-					
+						// Kannada語の  "ಸ್ಥಳೀಯ ಟೈಮ್ ಲೈನ್" の上下が途切れることがあるらしい
+						// GS10+では再現しなかった
 					}.lparams(dip(0), wrapContent) {
 						weight = 1f
 					}

@@ -4,6 +4,7 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
+import jp.juggler.util.notZero
 import java.util.concurrent.ConcurrentHashMap
 
 object TootAccountMap{
@@ -17,9 +18,9 @@ object TootAccountMap{
 			
 			this.watcher =when(parser.serviceType){
 				ServiceType.MASTODON -> requireNotNull(parser.accessHost?.ascii)
+				ServiceType.MISSKEY -> requireNotNull(parser.accessHost?.ascii)
 				ServiceType.TOOTSEARCH -> "?tootsearch"
 				ServiceType.MSP -> "?msp"
-				ServiceType.MISSKEY -> "?misskey"
 			}
 		}
 		
@@ -33,13 +34,11 @@ object TootAccountMap{
 		}
 
 		override fun compareTo(other : AccountUniqueKey) : Int {
-			val i1 = acct.compareTo(other.acct)
-			if(i1 != 0) return i1
-			return watcher.compareTo(other.watcher)
+			return acct.compareTo(other.acct).notZero() ?: watcher.compareTo(other.watcher)
 		}
 		
 		override fun hashCode() : Int {
-			val x = 961L + acct.hashCode().toLong() * 31L + watcher.hashCode()
+			val x = acct.hashCode().toLong() * 31L + watcher.hashCode().toLong() + 961L
 			return (x and 0x7fffffffL).toInt()
 		}
 	}

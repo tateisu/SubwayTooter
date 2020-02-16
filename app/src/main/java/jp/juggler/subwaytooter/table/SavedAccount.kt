@@ -973,11 +973,14 @@ class SavedAccount(
 		TootNotification.TYPE_UNFOLLOW -> notification_follow
 		
 		TootNotification.TYPE_FOLLOW_REQUEST,
-		TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> notification_follow_request
+		TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
+		TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> notification_follow_request
 		
 		TootNotification.TYPE_REACTION -> notification_reaction
 		
-		TootNotification.TYPE_VOTE, TootNotification.TYPE_POLL -> notification_vote
+		TootNotification.TYPE_VOTE,
+		TootNotification.TYPE_POLL,
+		TootNotification.TYPE_POLL_VOTE_MISSKEY -> notification_vote
 		
 		else -> false
 	}

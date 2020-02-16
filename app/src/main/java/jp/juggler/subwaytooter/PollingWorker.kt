@@ -1569,15 +1569,16 @@ class PollingWorker private constructor(contextArg : Context) {
 			TootNotification.TYPE_REACTION ->
 				"- " + context.getString(R.string.display_name_reaction_by, name)
 			
-			TootNotification.TYPE_VOTE ->
+			TootNotification.TYPE_VOTE,
+			TootNotification.TYPE_POLL_VOTE_MISSKEY ->
 				"- " + context.getString(R.string.display_name_voted_by, name)
 			
 			TootNotification.TYPE_FOLLOW_REQUEST,
-			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY ->
-				"- " + context.getString(
-					R.string.display_name_follow_request_by,
-					name
-				)
+			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY->
+				"- " + context.getString( R.string.display_name_follow_request_by, name )
+
+			TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY ->
+				"- " + context.getString( R.string.display_name_follow_request_accepted_by, name )
 			
 			TootNotification.TYPE_POLL ->
 				"- " + context.getString(R.string.end_of_polling_from, name)

@@ -575,7 +575,7 @@ internal class ItemViewHolder(
 			val whoRef = TootAccountRef(TootParser(activity, access_info), who)
 			this.status_account = whoRef
 			
-			setAcct(tvAcct, access_info,who)
+			setAcct(tvAcct, access_info, who)
 			
 			tvName.text = whoRef.decoded_display_name
 			name_invalidator.register(whoRef.decoded_display_name)
@@ -927,7 +927,43 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			TootNotification.TYPE_VOTE -> {
+			TootNotification.TYPE_FOLLOW_REQUEST,
+			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> {
+				val colorBg = Pref.ipEventBgColorFollowRequest(activity.pref)
+				if(n_account != null) {
+					showBoost(
+						n_accountRef,
+						n.time_created_at,
+						R.drawable.ic_follow_wait,
+						R.string.display_name_follow_request_by
+					)
+					if(colorBg != 0) this.viewRoot.backgroundColor = colorBg
+					boostedAction = {
+						activity.addColumn(
+							activity.nextPosition(column)
+							, access_info
+							, ColumnType.FOLLOW_REQUESTS
+						)
+					}
+				}
+			}
+			
+			TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> {
+				val colorBg = Pref.ipEventBgColorFollow(activity.pref)
+				if(n_account != null) {
+					showBoost(
+						n_accountRef,
+						n.time_created_at,
+						R.drawable.ic_follow_plus,
+						R.string.display_name_follow_request_accepted_by
+					)
+					showAccount(n_accountRef)
+					if(colorBg != 0) this.viewRoot.backgroundColor = colorBg
+				}
+			}
+			
+			TootNotification.TYPE_VOTE,
+			TootNotification.TYPE_POLL_VOTE_MISSKEY -> {
 				val colorBg = Pref.ipEventBgColorVote(activity.pref)
 				if(n_account != null) showBoost(
 					n_accountRef,
@@ -937,25 +973,6 @@ internal class ItemViewHolder(
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status, colorBg)
-				}
-			}
-			
-			TootNotification.TYPE_FOLLOW_REQUEST,
-			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> {
-				val colorBg = Pref.ipEventBgColorFollowRequest(activity.pref)
-				if(n_account != null) showBoost(
-					n_accountRef,
-					n.time_created_at,
-					R.drawable.ic_follow_wait,
-					R.string.display_name_follow_request_by
-				)
-				viewRoot.backgroundColor = colorBg
-				boostedAction = {
-					activity.addColumn(
-						activity.nextPosition(column)
-						, access_info
-						, ColumnType.FOLLOW_REQUESTS
-					)
 				}
 			}
 			
@@ -1089,7 +1106,7 @@ internal class ItemViewHolder(
 	private fun showReply(reply : TootStatus, accountId : EntityId) {
 		val name = if(accountId == reply.account.id) {
 			// 自己レスなら
-			AcctColor.getNicknameWithColor(access_info,reply.account)
+			AcctColor.getNicknameWithColor(access_info, reply.account)
 		} else {
 			val m = reply.mentions?.find { it.id == accountId }
 			if(m != null) {
@@ -1117,13 +1134,9 @@ internal class ItemViewHolder(
 		boost_account = whoRef
 		val who = whoRef.get()
 		
-		val text : Spannable = if(string_id == R.string.display_name_followed_by) {
-			// フォローの場合 decoded_display_name が2箇所で表示に使われるのを避ける必要がある
-			who.decodeDisplayName(activity)
-		} else {
-			// それ以外の場合は decoded_display_name を再利用して構わない
-			whoRef.decoded_display_name
-		}.intoStringResource(activity, string_id)
+		// フォローの場合 decoded_display_name が2箇所で表示に使われるのを避ける必要がある
+		val text : Spannable =who.decodeDisplayName(activity)
+			.intoStringResource(activity, string_id)
 		
 		val emojiResource = misskeyReaction?.emojiResource
 		if(emojiResource != null) {
@@ -1144,7 +1157,7 @@ internal class ItemViewHolder(
 		showStatusTime(activity, tvBoostedTime, who, time = time, status = boost_status)
 		tvBoosted.text = text
 		boost_invalidator.register(text)
-		setAcct(tvBoostedAcct,  access_info,who)
+		setAcct(tvBoostedAcct, access_info, who)
 	}
 	
 	private fun showAccount(whoRef : TootAccountRef) {
@@ -1162,7 +1175,7 @@ internal class ItemViewHolder(
 		tvFollowerName.text = whoRef.decoded_display_name
 		follow_invalidator.register(whoRef.decoded_display_name)
 		
-		setAcct(tvFollowerAcct, access_info,who)
+		setAcct(tvFollowerAcct, access_info, who)
 		
 		who.setAccountExtra(access_info, tvLastStatusAt, lastActive_invalidator)
 		
@@ -1231,7 +1244,7 @@ internal class ItemViewHolder(
 		val who = whoRef.get()
 		this.status_account = whoRef
 		
-		setAcct(tvAcct,  access_info,who)
+		setAcct(tvAcct, access_info, who)
 		
 		//		if(who == null) {
 		//			tvName.text = "?"
@@ -1623,8 +1636,8 @@ internal class ItemViewHolder(
 	//		}
 	//	}
 	
-	private fun setAcct(tv : TextView,accessInfo:SavedAccount,who:TootAccount) {
-		val ac = AcctColor.load(accessInfo,who)
+	private fun setAcct(tv : TextView, accessInfo : SavedAccount, who : TootAccount) {
+		val ac = AcctColor.load(accessInfo, who)
 		tv.text = when {
 			AcctColor.hasNickname(ac) -> ac.nickname
 			Pref.bpShortAcctLocalUser(App1.pref) -> "@${who.acct.pretty}"
@@ -1767,10 +1780,10 @@ internal class ItemViewHolder(
 		when(v) {
 			
 			btnHideMedia, btnCardImageHide -> {
-				fun hideViews(){
+				fun hideViews() {
 					llMedia.visibility = View.GONE
 					btnShowMedia.visibility = View.VISIBLE
-					llCardImage.visibility =View.GONE
+					llCardImage.visibility = View.GONE
 					btnCardImageShow.visibility = View.VISIBLE
 				}
 				status_showing?.let { status ->
@@ -1784,10 +1797,10 @@ internal class ItemViewHolder(
 			}
 			
 			btnShowMedia, btnCardImageShow -> {
-				fun showViews(){
+				fun showViews() {
 					llMedia.visibility = View.VISIBLE
 					btnShowMedia.visibility = View.GONE
-					llCardImage.visibility =View.VISIBLE
+					llCardImage.visibility = View.VISIBLE
 					btnCardImageShow.visibility = View.GONE
 				}
 				status_showing?.let { status ->
@@ -1887,7 +1900,12 @@ internal class ItemViewHolder(
 				
 				is TootDomainBlock -> {
 					AlertDialog.Builder(activity)
-						.setMessage(activity.getString(R.string.confirm_unblock_domain, item.domain.pretty))
+						.setMessage(
+							activity.getString(
+								R.string.confirm_unblock_domain,
+								item.domain.pretty
+							)
+						)
 						.setNegativeButton(R.string.cancel, null)
 						.setPositiveButton(R.string.ok) { _, _ ->
 							Action_Instance.blockDomain(
@@ -1957,7 +1975,7 @@ internal class ItemViewHolder(
 					activity,
 					activity.getString(
 						R.string.follow_accept_confirm,
-						AcctColor.getNickname(access_info,who)
+						AcctColor.getNickname(access_info, who)
 					)
 				) {
 					Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, true)
@@ -1970,7 +1988,7 @@ internal class ItemViewHolder(
 					activity,
 					activity.getString(
 						R.string.follow_deny_confirm,
-						AcctColor.getNickname(access_info,who)
+						AcctColor.getNickname(access_info, who)
 					)
 				) {
 					Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, false)
@@ -2262,11 +2280,11 @@ internal class ItemViewHolder(
 		}
 		
 		val image = card.image
-		if(flCardImage.vg(image?.isNotEmpty()==true) !=null) {
+		if(flCardImage.vg(image?.isNotEmpty() == true) != null) {
 			
-			flCardImage.layoutParams.height = if(card.originalStatus!=null){
+			flCardImage.layoutParams.height = if(card.originalStatus != null) {
 				activity.avatarIconSize
-			}else{
+			} else {
 				activity.app_state.media_thumb_height
 			}
 			
@@ -2424,7 +2442,7 @@ internal class ItemViewHolder(
 						R.drawable.btn_bg_transparent_round6dp
 					)
 					// TODO 自分がリアクションしたやつは背景を変える
-
+					
 					setTextColor(content_color)
 					setPadding(paddingH, paddingV, paddingH, paddingV)
 					setOnClickListener {
@@ -3168,7 +3186,8 @@ internal class ItemViewHolder(
 			llFollow = linearLayout {
 				lparams(matchParent, wrapContent)
 				
-				background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+				background =
+					ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 				gravity = Gravity.CENTER_VERTICAL
 				
 				ivFollow = myNetworkImageView {
@@ -3208,7 +3227,10 @@ internal class ItemViewHolder(
 					
 					btnFollow = imageButton {
 						background =
-							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+							ContextCompat.getDrawable(
+								context,
+								R.drawable.btn_bg_transparent_round6dp
+							)
 						contentDescription = context.getString(R.string.follow)
 						scaleType = ImageView.ScaleType.CENTER
 						// tools:src="?attr/ic_follow_plus"
@@ -3255,7 +3277,10 @@ internal class ItemViewHolder(
 					
 					ivThumbnail = myNetworkImageView {
 						background =
-							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+							ContextCompat.getDrawable(
+								context,
+								R.drawable.btn_bg_transparent_round6dp
+							)
 						contentDescription = context.getString(R.string.thumbnail)
 						scaleType = ImageView.ScaleType.CENTER_CROP
 					}.lparams(dip(48), dip(48)) {
@@ -3708,7 +3733,8 @@ internal class ItemViewHolder(
 				lparams(matchParent, wrapContent)
 				
 				gravity = Gravity.CENTER_VERTICAL
-				background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
+				background =
+					ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 				
 				verticalLayout {
 					lparams(0, wrapContent) {

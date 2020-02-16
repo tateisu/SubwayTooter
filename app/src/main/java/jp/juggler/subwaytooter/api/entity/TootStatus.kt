@@ -195,6 +195,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	init {
 		this.json = src
 		this.serviceType = parser.serviceType
+		src.put("_fromStream",parser.fromStream)
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			val instance = parser.accessHost

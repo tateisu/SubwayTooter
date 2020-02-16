@@ -16,7 +16,8 @@ class TootParser(
 	var pinned : Boolean = false, // プロフィールカラムからpinned TL を読んだ時だけ真
 	var highlightTrie : WordTrieTree? = null,
 	var serviceType : ServiceType = ServiceType.MASTODON,
-	var misskeyDecodeProfilePin : Boolean = false
+	var misskeyDecodeProfilePin : Boolean = false,
+	var fromStream : Boolean = false
 ) {
 	
 	val misskeyUserRelationMap = HashMap<EntityId, UserRelation>()

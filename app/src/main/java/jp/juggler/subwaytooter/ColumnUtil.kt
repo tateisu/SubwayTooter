@@ -3,13 +3,11 @@ package jp.juggler.subwaytooter
 import jp.juggler.subwaytooter.Column.Companion.READ_LIMIT
 import jp.juggler.subwaytooter.Column.Companion.log
 import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.syncAccountByAcct
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
-import jp.juggler.util.encodePercent
-import jp.juggler.util.jsonArray
+import jp.juggler.util.*
 import java.util.*
 
 internal inline fun <reified T : TimelineItem> addAll(
@@ -20,6 +18,58 @@ internal inline fun <reified T : TimelineItem> addAll(
 	dst.addAll(src)
 	return dst
 }
+
+internal fun Column.loadListInfo(client : TootApiClient, bForceReload : Boolean) {
+	val parser = TootParser(context, access_info)
+	if(bForceReload || this.list_info == null) {
+		val result = if(isMisskey) {
+			client.request(
+				"/api/users/lists/show",
+				makeMisskeyBaseParameter(parser).apply {
+					put("listId", profile_id)
+				}.toPostRequestBuilder()
+			)
+		} else {
+			client.request( "/api/v1/lists/${profile_id.toString()}")
+		}
+
+		val jsonObject = result?.jsonObject
+		if(jsonObject != null) {
+			val data = parseItem(::TootList, parser, jsonObject)
+			if(data != null) {
+				this.list_info = data
+				client.publishApiProgress("") // カラムヘッダの再表示
+			}
+		}
+	}
+}
+
+internal fun Column.loadAntennaInfo(client : TootApiClient, bForceReload : Boolean) {
+	val parser = TootParser(context, access_info)
+	if(bForceReload || this.antenna_info == null) {
+
+		val result = if(isMisskey) {
+			client.request(
+				"/api/antennas/show",
+				makeMisskeyBaseParameter(parser).apply {
+					put("antennaId", profile_id)
+				}.toPostRequestBuilder()
+			)
+		} else {
+			TootApiResult("antenna feature is not supported on Mastodon")
+		}
+
+		val jsonObject = result?.jsonObject
+		if(jsonObject != null) {
+			val data = parseItem(::MisskeyAntenna, parser, jsonObject)
+			if(data != null) {
+				this.antenna_info = data
+				client.publishApiProgress("") // カラムヘッダの再表示
+			}
+		}
+	}
+}
+
 
 internal fun JsonObject.putMisskeyUntil(column : Column, id : EntityId?) : JsonObject {
 	when {

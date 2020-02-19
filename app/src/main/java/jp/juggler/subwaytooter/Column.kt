@@ -117,7 +117,7 @@ class Column(
 		internal const val PATH_STATUSES = "/api/v1/statuses/%s" // 1:status_id
 		internal const val PATH_STATUSES_CONTEXT = "/api/v1/statuses/%s/context" // 1:status_id
 		// search args 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
-		internal const val PATH_LIST_INFO = "/api/v1/lists/%s"
+
 		
 		const val PATH_FILTERS = "/api/v1/filters"
 		
@@ -1744,56 +1744,7 @@ class Column(
 		
 	}
 	
-	internal fun loadListInfo(client : TootApiClient, bForceReload : Boolean) {
-		val parser = TootParser(context, access_info)
-		if(bForceReload || this.list_info == null) {
-			val result = if(isMisskey) {
-				
-				client.request(
-					"/api/users/lists/show",
-					makeMisskeyBaseParameter(parser).apply {
-						put("listId", profile_id)
-					}.toPostRequestBuilder()
-				)
-			} else {
-				client.request(String.format(Locale.JAPAN, PATH_LIST_INFO, profile_id))
-			}
-			val jsonObject = result?.jsonObject
-			if(jsonObject != null) {
-				val data = parseItem(::TootList, parser, jsonObject)
-				if(data != null) {
-					this.list_info = data
-					client.publishApiProgress("") // カラムヘッダの再表示
-				}
-			}
-		}
-	}
-	
-	internal fun loadAntennaInfo(client : TootApiClient, bForceReload : Boolean) {
-		val parser = TootParser(context, access_info)
-		if(bForceReload || this.list_info == null) {
-			val result = if(isMisskey) {
-				
-				client.request(
-					"/api/antennas/show",
-					makeMisskeyBaseParameter(parser).apply {
-						put("antennaId", profile_id)
-					}.toPostRequestBuilder()
-				)
-			} else {
-				client.request(String.format(Locale.JAPAN, PATH_LIST_INFO, profile_id))
-			}
-			val jsonObject = result?.jsonObject
-			if(jsonObject != null) {
-				val data = parseItem(::MisskeyAntenna, parser, jsonObject)
-				if(data != null) {
-					this.antenna_info = data
-					client.publishApiProgress("") // カラムヘッダの再表示
-				}
-			}
-		}
-	}
-	
+
 	private inner class UpdateRelationEnv {
 		internal val who_set = HashSet<EntityId>()
 		internal val acct_set = HashSet<String>()

@@ -540,6 +540,7 @@ internal class ItemViewHolder(
 			is TootSearchGap -> showSearchGap(item)
 			is TootDomainBlock -> showDomainBlock(item)
 			is TootList -> showList(item)
+			is MisskeyAntenna ->showAntenna(item)
 			
 			is TootMessageHolder -> showMessageHolder(item)
 			
@@ -1010,6 +1011,12 @@ internal class ItemViewHolder(
 	private fun showList(list : TootList) {
 		llList.visibility = View.VISIBLE
 		btnListTL.text = list.title
+		btnListTL.textColor = content_color
+		btnListMore.imageTintList = content_color_csl
+	}
+	private fun showAntenna(a : MisskeyAntenna) {
+		llList.visibility = View.VISIBLE
+		btnListTL.text = a.name
 		btnListTL.textColor = content_color
 		btnListMore.imageTintList = content_color_csl
 	}
@@ -1944,6 +1951,9 @@ internal class ItemViewHolder(
 			
 			btnListTL -> if(item is TootList) {
 				activity.addColumn(pos, access_info, ColumnType.LIST_TL, item.id)
+			}else if( item is MisskeyAntenna){
+				// TODO
+				activity.addColumn(pos, access_info, ColumnType.MISSKEY_ANTENNA_TL, item.id)
 			}
 			
 			btnListMore -> if(item is TootList) {
@@ -1967,6 +1977,8 @@ internal class ItemViewHolder(
 						Action_List.delete(activity, access_info, item)
 					}
 					.show(activity, item.title)
+			}else if( item is MisskeyAntenna){
+				// TODO
 			}
 			
 			btnFollowRequestAccept -> follow_account?.let { whoRef ->

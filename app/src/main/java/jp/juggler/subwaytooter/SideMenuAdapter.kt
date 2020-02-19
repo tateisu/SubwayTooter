@@ -111,6 +111,10 @@ class SideMenuAdapter(
 			Action_Account.timeline(this, defaultInsertPosition, ColumnType.LIST_LIST)
 		},
 		
+		Item(icon = R.drawable.ic_satellite, title = R.string.antenna_list_misskey) {
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.MISSKEY_ANTENNA_LIST)
+		},
+		
 		Item(icon = R.drawable.ic_search, title = R.string.search) {
 			Action_Account.timeline(
 				this,

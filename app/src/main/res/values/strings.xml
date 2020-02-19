@@ -1006,4 +1006,8 @@
     <string name="language_filter_quit_waring">Language filter is not saved. exit anyway?</string>
     <string name="import_completed_please_restart_app">Import completed. Please restart app.</string>
     <string name="delete_custom_emoji_cache">Delete custom emoji cache</string>
+    <string name="antenna_list">Antenna list</string>
+    <string name="antenna_timeline">Antenna TL</string>
+    <string name="antenna_timeline_of">Antenna TL \'%1$s\'</string>
+    <string name="antenna_list_misskey">Antenna list (Misskey 12+)</string>
 </resources>

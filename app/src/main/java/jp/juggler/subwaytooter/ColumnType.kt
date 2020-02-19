@@ -1477,6 +1477,87 @@ enum class ColumnType(
 		refresh = { client -> getScheduledStatuses(client) }
 	),
 	
+	
+	MISSKEY_ANTENNA_LIST(39,
+		iconId = { R.drawable.ic_satellite },
+		name1 = { it.getString(R.string.antenna_list) },
+		bAllowPseudo = false,
+		bAllowMastodon = false,
+		
+		loading = { client ->
+			if(isMisskey) {
+				parseAntennaList(
+					client,
+					"/api/antennas/list",
+					misskeyParams = column.makeMisskeyBaseParameter(parser)
+				)
+			} else {
+				TootApiResult("antenna is not supported on Mastodon")
+			}
+		}
+	),
+	
+	MISSKEY_ANTENNA_TL(40,
+		iconId = { R.drawable.ic_satellite },
+		name1 = { it.getString(R.string.antenna_timeline) },
+		name2 = {
+			context.getString(
+				R.string.antenna_timeline_of,
+				antenna_info?.name ?: profile_id.toString()
+			)
+		},
+		
+		loading = { client ->
+			column.loadAntennaInfo(client, true)
+			
+			if(isMisskey) {
+				getStatusList(
+					client,
+					column.makeAntennaTlUrl(),
+					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
+						put("antennaId", column.profile_id)
+					},
+					misskeyCustomParser = misskeyCustomParserAntenna,
+					useDate = false
+				)
+			} else {
+				getStatusList(client, column.makeAntennaTlUrl())
+			}
+		},
+		
+		refresh = { client ->
+			column.loadAntennaInfo(client, false)
+			if(isMisskey) {
+				getStatusList(
+					client,
+					column.makeAntennaTlUrl(),
+					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
+						put("antennaId", column.profile_id)
+					},
+					misskeyCustomParser = misskeyCustomParserAntenna
+				)
+			} else {
+				getStatusList(client, column.makeAntennaTlUrl())
+			}
+		},
+		
+		gap = { client ->
+			if(isMisskey) {
+				getStatusList(
+					client,
+					column.makeAntennaTlUrl(),
+					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
+						put("antennaId", column.profile_id)
+					},
+					misskeyCustomParser = misskeyCustomParserAntenna
+				)
+			} else {
+				getStatusList(client, column.makeAntennaTlUrl())
+			}
+		}
+	),
+	
+	
 	;
 	
 	init {
@@ -1484,6 +1565,7 @@ enum class ColumnType(
 		if(id > 0 && old != null) error("ColumnType: duplicate id $id. name=$name, ${old.name}")
 		Column.typeMap.put(id, this)
 	}
+	
 	
 	companion object {
 		private val log = LogCategory("ColumnType")

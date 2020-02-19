@@ -1001,4 +1001,8 @@
     <string name="language_filter_quit_waring">言語フィルタは保存されていません。構わず閉じますか?</string>
     <string name="import_completed_please_restart_app">インポート完了。アプリを再起動してください</string>
     <string name="delete_custom_emoji_cache">カスタム絵文字のキャッシュを削除</string>
+    <string name="antenna_list">アンテナ一覧</string>
+    <string name="antenna_timeline">アンテナTL</string>
+    <string name="antenna_timeline_of">アンテナTL \'%1$s\'</string>
+    <string name="antenna_list_misskey">アンテナ一覧(Misskey 12+)</string>
 </resources>

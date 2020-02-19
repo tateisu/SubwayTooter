@@ -86,8 +86,6 @@ class Column(
 		internal const val PATH_FAVOURITES = "/api/v1/favourites?limit=$READ_LIMIT"
 		internal const val PATH_BOOKMARKS = "/api/v1/bookmarks?limit=$READ_LIMIT"
 		
-		internal const val PATH_LIST_TL = "/api/v1/timelines/list/%s?limit=$READ_LIMIT"
-		
 		// アカウントのリストを返すAPI
 		internal const val PATH_ACCOUNT_FOLLOWING =
 			"/api/v1/accounts/%s/following?limit=$READ_LIMIT" // 1:account_id
@@ -246,13 +244,13 @@ class Column(
 		private val channelIdSeed = AtomicInteger(0)
 		
 		// より古いデータの取得に使う
-		internal val reMaxId ="""[&?]max_id=([^&?;\s]+)""".asciiPattern()
+		internal val reMaxId = """[&?]max_id=([^&?;\s]+)""".asciiPattern()
 		
 		// より新しいデータの取得に使う (マストドン2.6.0以降)
-		private val reMinId ="""[&?]min_id=([^&?;\s]+)""".asciiPattern()
+		private val reMinId = """[&?]min_id=([^&?;\s]+)""".asciiPattern()
 		
 		// より新しいデータの取得に使う(マストドン2.6.0未満)
-		private val reSinceId ="""[&?]since_id=([^&?;\s]+)""".asciiPattern()
+		private val reSinceId = """[&?]since_id=([^&?;\s]+)""".asciiPattern()
 		
 		val COLUMN_REGEX_FILTER_DEFAULT : (CharSequence?) -> Boolean = { false }
 		
@@ -388,22 +386,30 @@ class Column(
 		get() = if(isMisskey) {
 			val misskeyApiToken = access_info.misskeyApiToken
 			when {
+				
+				// Misskey 11以降
 				access_info.misskeyVersion >= 11 -> when {
 					makeMisskeyChannelArg() == null -> null
 					misskeyApiToken == null -> "/?_=$column_id" // 認証無し
 					else -> "/?_=$column_id&i=$misskeyApiToken"
 				}
-				misskeyApiToken == null -> // Misskey 8.25 からLTLだけ認証なしでも見れるようになった
-					when(type) {
-						ColumnType.LOCAL -> "/local-timeline"
-						else -> null
-					}
-				else -> when(type) {
+				
+				// Misskey 10
+				// 認証あり
+				misskeyApiToken != null -> when(type) {
 					ColumnType.HOME, ColumnType.NOTIFICATIONS -> "/?i=$misskeyApiToken"
 					ColumnType.LOCAL -> "/local-timeline?i=$misskeyApiToken"
 					ColumnType.MISSKEY_HYBRID -> "/hybrid-timeline?i=$misskeyApiToken"
 					ColumnType.FEDERATE -> "/global-timeline?i=$misskeyApiToken"
 					ColumnType.LIST_TL -> "/user-list?i=$misskeyApiToken&listId=$profile_id"
+					ColumnType.MISSKEY_ANTENNA_TL -> "/antenna?i=$misskeyApiToken&listId=$profile_id"
+					else -> null
+				}
+				// Misskey 10
+				// 認証なし
+				// Misskey 8.25 からLTLだけ認証なしでも見れるようになった
+				else -> when(type) {
+					ColumnType.LOCAL -> "/local-timeline"
 					else -> null
 				}
 			}
@@ -520,6 +526,10 @@ class Column(
 	@Volatile
 	internal var list_info : TootList? = null
 	
+	// アンテナカラムでのリスト情報
+	@Volatile
+	internal var antenna_info : MisskeyAntenna? = null
+	
 	// 「インスタンス情報」カラムに表示するインスタンス情報
 	// (SavedAccount中のインスタンス情報とは異なるので注意)
 	internal var instance_information : TootInstance? = null
@@ -610,27 +620,49 @@ class Column(
 	
 	internal var useDate : Boolean = false
 	
-	@Suppress("unused")
-	val listTitle : String
-		get() {
-			return when(type) {
-				ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> {
-					val sv = list_info?.title
-					if(sv != null && sv.isNotEmpty()) sv else profile_id.toString()
-				}
-				
-				else -> "?"
-			}
-		}
-	
-	@Suppress("unused")
-	val listId : EntityId?
-		get() {
-			return when(type) {
-				ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> profile_id
-				else -> null
-			}
-		}
+	//	@Suppress("unused")
+	//	val listTitle : String
+	//		get() {
+	//			return when(type) {
+	//				ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> {
+	//					val sv = list_info?.title
+	//					if(sv != null && sv.isNotEmpty()) sv else profile_id.toString()
+	//				}
+	//
+	//				else -> "?"
+	//			}
+	//		}
+	//
+	//	@Suppress("unused")
+	//	val listId : EntityId?
+	//		get() {
+	//			return when(type) {
+	//				ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> profile_id
+	//				else -> null
+	//			}
+	//		}
+	//
+	//	@Suppress("unused")
+	//	val antennaTitle : String
+	//		get() {
+	//			return when(type) {
+	//				ColumnType.MISSKEY_ANTENNA_TL-> {
+	//					val sv = antenna_info?.name
+	//					if(sv != null && sv.isNotEmpty()) sv else profile_id.toString()
+	//				}
+	//
+	//				else -> "?"
+	//			}
+	//		}
+	//
+	//	@Suppress("unused")
+	//	val antennaId : EntityId?
+	//		get() {
+	//			return when(type) {
+	//				ColumnType.MISSKEY_ANTENNA_TL-> profile_id
+	//				else -> null
+	//			}
+	//		}
 	
 	val isSearchColumn : Boolean
 		get() {
@@ -664,7 +696,8 @@ class Column(
 			ColumnType.ACCOUNT_AROUND ->
 				status_id = getParamEntityId(params, 0)
 			
-			ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER ->
+			ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER,
+			ColumnType.MISSKEY_ANTENNA_TL ->
 				profile_id = getParamEntityId(params, 0)
 			
 			ColumnType.HASHTAG ->
@@ -758,7 +791,8 @@ class Column(
 				profile_tab = ProfileTab.values().find { it.id == tabId } ?: ProfileTab.Status
 			}
 			
-			ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> {
+			ColumnType.LIST_MEMBER, ColumnType.LIST_TL,
+			ColumnType.MISSKEY_ANTENNA_TL -> {
 				profile_id = EntityId.mayNull(src.string(KEY_PROFILE_ID))
 			}
 			
@@ -865,7 +899,8 @@ class Column(
 				dst[KEY_PROFILE_TAB] = profile_tab.id
 			}
 			
-			ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> {
+			ColumnType.LIST_MEMBER, ColumnType.LIST_TL,
+			ColumnType.MISSKEY_ANTENNA_TL -> {
 				dst[KEY_PROFILE_ID] = profile_id.toString()
 			}
 			
@@ -935,7 +970,9 @@ class Column(
 		return try {
 			when(type) {
 				
-				ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER ->
+				ColumnType.PROFILE,
+				ColumnType.LIST_TL, ColumnType.LIST_MEMBER,
+				ColumnType.MISSKEY_ANTENNA_TL ->
 					profile_id == getParamEntityId(params, 0)
 				
 				ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
@@ -1322,7 +1359,8 @@ class Column(
 	}
 	
 	fun onListListUpdated(account : SavedAccount) {
-		if(type == ColumnType.LIST_LIST && access_info == account) {
+		if(account != access_info) return
+		if(type == ColumnType.LIST_LIST || type == ColumnType.MISSKEY_ANTENNA_LIST) {
 			startLoading()
 			val vh = viewHolder
 			vh?.onListListUpdated()
@@ -1330,21 +1368,27 @@ class Column(
 	}
 	
 	fun onListNameUpdated(account : SavedAccount, item : TootList) {
-		if(access_info != account) return
-		when(type) {
-			ColumnType.LIST_LIST -> {
-				startLoading()
+		if(account != access_info) return
+		if(type == ColumnType.LIST_LIST) {
+			startLoading()
+		}
+		else if(type == ColumnType.LIST_TL || type == ColumnType.LIST_MEMBER) {
+			if(item.id == profile_id) {
+				this.list_info = item
+				fireShowColumnHeader()
 			}
-			
-			ColumnType.LIST_TL, ColumnType.LIST_MEMBER -> {
-				if(item.id == profile_id) {
-					this.list_info = item
-					fireShowColumnHeader()
-				}
-			}
-			
-			else -> {
-			
+		}
+	}
+	
+	fun onAntennaNameUpdated(account : SavedAccount, item : MisskeyAntenna) {
+		if(account != access_info) return
+		if(type == ColumnType.MISSKEY_ANTENNA_LIST) {
+			startLoading()
+		}
+		else if(type == ColumnType.MISSKEY_ANTENNA_TL) {
+			if(item.id == profile_id) {
+				this.antenna_info = item
+				fireShowColumnHeader()
 			}
 		}
 	}
@@ -1364,7 +1408,6 @@ class Column(
 				removeAccountInTimeline(account, who.id)
 			}
 		}
-		
 	}
 	
 	fun onLanguageFilterChanged() {
@@ -1593,13 +1636,13 @@ class Column(
 					TootNotification.TYPE_FOLLOW,
 					TootNotification.TYPE_UNFOLLOW,
 					TootNotification.TYPE_FOLLOW_REQUEST,
-					TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY ,
+					TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
 					TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> quick_filter != QUICK_FILTER_FOLLOW
 					
 					TootNotification.TYPE_MENTION,
 					TootNotification.TYPE_REPLY -> quick_filter != QUICK_FILTER_MENTION
 					TootNotification.TYPE_REACTION -> quick_filter != QUICK_FILTER_REACTION
-
+					
 					TootNotification.TYPE_VOTE,
 					TootNotification.TYPE_POLL,
 					TootNotification.TYPE_POLL_VOTE_MISSKEY -> quick_filter != QUICK_FILTER_VOTE
@@ -1720,6 +1763,31 @@ class Column(
 				val data = parseItem(::TootList, parser, jsonObject)
 				if(data != null) {
 					this.list_info = data
+					client.publishApiProgress("") // カラムヘッダの再表示
+				}
+			}
+		}
+	}
+	
+	internal fun loadAntennaInfo(client : TootApiClient, bForceReload : Boolean) {
+		val parser = TootParser(context, access_info)
+		if(bForceReload || this.list_info == null) {
+			val result = if(isMisskey) {
+				
+				client.request(
+					"/api/antennas/show",
+					makeMisskeyBaseParameter(parser).apply {
+						put("antennaId", profile_id)
+					}.toPostRequestBuilder()
+				)
+			} else {
+				client.request(String.format(Locale.JAPAN, PATH_LIST_INFO, profile_id))
+			}
+			val jsonObject = result?.jsonObject
+			if(jsonObject != null) {
+				val data = parseItem(::MisskeyAntenna, parser, jsonObject)
+				if(data != null) {
+					this.antenna_info = data
 					client.publishApiProgress("") // カラムヘッダの再表示
 				}
 			}
@@ -2298,13 +2366,17 @@ class Column(
 	
 	// マストドン2.4.3rcのキーワードフィルタのコンテキスト
 	private fun getFilterContext() = when(type) {
+		
 		ColumnType.HOME, ColumnType.LIST_TL, ColumnType.MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
+		
 		ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> TootFilter.CONTEXT_NOTIFICATIONS
 		ColumnType.CONVERSATION -> TootFilter.CONTEXT_THREAD
 		ColumnType.LOCAL, ColumnType.DOMAIN_TIMELINE, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.HASHTAG_FROM_ACCT, ColumnType.PROFILE, ColumnType.SEARCH -> TootFilter.CONTEXT_PUBLIC
 		ColumnType.DIRECT_MESSAGES -> TootFilter.CONTEXT_PUBLIC
-		else -> TootFilter.CONTEXT_NONE
-		// ColumnType.MISSKEY_HYBRID はHOMEでもPUBLICでもある… Misskeyだし関係ないが、NONEにするとアプリ内で完結するフィルタも働かなくなる
+		
+		else -> TootFilter.CONTEXT_PUBLIC
+		// ColumnType.MISSKEY_HYBRID や ColumnType.MISSKEY_ANTENNA_TL はHOMEでもPUBLICでもある…
+		// Misskeyだし関係ないが、NONEにするとアプリ内で完結するフィルタも働かなくなる
 	}
 	
 	// カラム設定に「すべての画像を隠す」ボタンを含めるなら真
@@ -2315,7 +2387,9 @@ class Column(
 	// カラム設定に「ブーストを表示しない」ボタンを含めるなら真
 	fun canFilterBoost() : Boolean {
 		return when(type) {
-			ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE, ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT, ColumnType.LIST_TL -> true
+			ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE,
+			ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT,
+			ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL -> true
 			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
 			ColumnType.HASHTAG_FROM_ACCT -> false
 			ColumnType.CONVERSATION, ColumnType.DIRECT_MESSAGES -> isMisskey
@@ -2326,7 +2400,9 @@ class Column(
 	// カラム設定に「返信を表示しない」ボタンを含めるなら真
 	fun canFilterReply() : Boolean {
 		return when(type) {
-			ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE, ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT, ColumnType.LIST_TL, ColumnType.DIRECT_MESSAGES -> true
+			ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE,
+			ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT,
+			ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL, ColumnType.DIRECT_MESSAGES -> true
 			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
 			ColumnType.HASHTAG_FROM_ACCT -> true
 			else -> false
@@ -2335,7 +2411,8 @@ class Column(
 	
 	fun canFilterNormalToot() : Boolean {
 		return when(type) {
-			ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.LIST_TL -> true
+			ColumnType.HOME, ColumnType.MISSKEY_HYBRID,
+			ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL -> true
 			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
 			ColumnType.HASHTAG_FROM_ACCT -> true
 			else -> false
@@ -2485,8 +2562,25 @@ class Column(
 					ColumnType.MISSKEY_HYBRID -> createMisskeyConnectChannelMessage("hybridTimeline")
 					ColumnType.FEDERATE -> createMisskeyConnectChannelMessage("globalTimeline")
 					ColumnType.NOTIFICATIONS -> createMisskeyConnectChannelMessage("main")
-					// ColumnType.LIST_TL
-					// ColumnType.HASHTAG
+					
+					ColumnType.MISSKEY_ANTENNA_TL ->
+						createMisskeyConnectChannelMessage(
+							"antenna",
+							jsonObject { put("antennaId", profile_id.toString()) }
+						)
+					
+					ColumnType.LIST_TL ->
+						createMisskeyConnectChannelMessage(
+							"userList",
+							jsonObject { put("listId", profile_id.toString()) }
+						)
+					
+					ColumnType.HASHTAG ->
+						createMisskeyConnectChannelMessage(
+							"hashtag",
+							jsonObject { put("q", hashtag ) }
+						)
+
 					else -> null
 				}
 			}

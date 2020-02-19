@@ -147,13 +147,13 @@ class ColumnTask_Loading(
 		misskeyParams : JsonObject? = null,
 		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootStatus> =
 			{ parser, jsonArray -> parser.statusList(jsonArray) },
-		initialUntilDate : Boolean = false
+		initialUntilDate : Boolean = false,
+		useDate :Boolean = isMisskey // お気に入り一覧などでは変更される
 	) : TootApiResult? {
 		
 		path_base ?: return null // cancelled.
 		
-		column.useDate = isMisskey
-		// お気に入り一覧などでは変更される
+		column.useDate = useDate
 		
 		val params = misskeyParams ?: column.makeMisskeyTimelineParameter(parser)
 		
@@ -598,6 +598,24 @@ class ColumnTask_Loading(
 		return result
 	}
 	
+	internal fun parseAntennaList(
+		client : TootApiClient,
+		path_base : String,
+		misskeyParams : JsonObject? = null
+	) : TootApiResult? {
+		val result = if(misskeyParams != null) {
+			client.request(path_base, misskeyParams.toPostRequestBuilder())
+		} else {
+			client.request(path_base)
+		}
+		if(result != null) {
+			val src = parseList(::MisskeyAntenna, parser, result.jsonArray)
+			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
+			this.list_tmp = addAll(null, src)
+		}
+		return result
+	}
+	
 	internal fun getNotificationList(
 		client : TootApiClient,
 		fromAcct : String? = null
@@ -972,6 +990,12 @@ class ColumnTask_Loading(
 				if(jsonArray != null) {
 					val src = parser.statusList(jsonArray)
 					list_tmp = addWithFilterStatus(list_tmp, src)
+					if(src.isNotEmpty()){
+						val(ti,_)= TootInstance.get(client)
+						if(ti?.versionGE(TootInstance.MISSKEY_VERSION_12)==true){
+							addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Status))
+						}
+					}
 				}
 			}
 			

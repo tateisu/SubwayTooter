@@ -22,23 +22,21 @@ internal inline fun <reified T : TimelineItem> addAll(
 }
 
 internal fun JsonObject.putMisskeyUntil(column : Column, id : EntityId?) : JsonObject {
-	if(id != null) {
-		if(column.useDate) {
-			put("untilDate", id.toString().toLong())
-		} else {
-			put("untilId", id.toString())
+	when {
+		id == null -> {
 		}
+		column.useDate -> put("untilDate", id.toString().toLong())
+		else -> put("untilId", id.toString())
 	}
 	return this
 }
 
 internal fun JsonObject.putMisskeySince(column : Column, id : EntityId?) : JsonObject {
-	if(id != null) {
-		if(column.useDate) {
-			put("sinceDate", id.toString().toLong())
-		} else {
-			put("sinceId", id.toString())
+	when {
+		id == null -> {
 		}
+		column.useDate -> put("sinceDate", id.toString().toLong())
+		else -> put("sinceId", id.toString())
 	}
 	return this
 }
@@ -49,13 +47,15 @@ internal fun JsonObject.addRangeMisskey(column : Column, bBottom : Boolean) : Js
 	} else {
 		putMisskeySince(column, column.idRecent)
 	}
+	
+	
 	return this
 }
 
 internal fun JsonObject.addMisskeyNotificationFilter(column : Column) : JsonObject {
 	when(column.quick_filter) {
 		Column.QUICK_FILTER_ALL -> {
-			val excludeList = jsonArray{
+			val excludeList = jsonArray {
 				// Misskeyのお気に入りは通知されない
 				// if(dont_show_favourite) ...
 				
@@ -83,14 +83,16 @@ internal fun JsonObject.addMisskeyNotificationFilter(column : Column) : JsonObje
 		}
 		
 		// QUICK_FILTER_FAVOURITE // misskeyはお気に入りの通知はない
-		Column.QUICK_FILTER_BOOST -> put("includeTypes",
+		Column.QUICK_FILTER_BOOST -> put(
+			"includeTypes",
 			jsonArray("renote", "quote")
 		)
 		Column.QUICK_FILTER_FOLLOW -> put(
 			"includeTypes",
 			jsonArray("follow", "receiveFollowRequest")
 		)
-		Column.QUICK_FILTER_MENTION -> put("includeTypes",
+		Column.QUICK_FILTER_MENTION -> put(
+			"includeTypes",
 			jsonArray("mention", "reply")
 		)
 		Column.QUICK_FILTER_REACTION -> put("includeTypes", jp.juggler.util.jsonArray("reaction"))
@@ -147,12 +149,12 @@ internal fun Column.makeMisskeyBaseParameter(parser : TootParser?) =
 	}
 
 internal fun Column.makeMisskeyParamsUserId(parser : TootParser) =
-	makeMisskeyBaseParameter(parser).apply{
+	makeMisskeyBaseParameter(parser).apply {
 		put("userId", profile_id.toString())
 	}
 
 internal fun Column.makeMisskeyTimelineParameter(parser : TootParser) =
-	makeMisskeyBaseParameter(parser).apply{
+	makeMisskeyBaseParameter(parser).apply {
 		putMisskeyParamsTimeline(this@makeMisskeyTimelineParameter)
 	}
 
@@ -253,7 +255,15 @@ internal fun Column.makeListTlUrl() : String {
 	return if(isMisskey) {
 		"/api/notes/user-list-timeline"
 	} else {
-		String.format(Locale.JAPAN, Column.PATH_LIST_TL, profile_id)
+		"/api/v1/timelines/list/${profile_id}?limit=$READ_LIMIT"
+	}
+}
+
+internal fun Column.makeAntennaTlUrl() : String {
+	return if(isMisskey) {
+		"/api/antennas/notes"
+	} else {
+		"/nonexistent" // Mastodonにはアンテナ機能はない
 	}
 }
 
@@ -292,7 +302,7 @@ internal fun Column.makeHashtagUrl() : String {
 }
 
 internal fun Column.makeHashtagParams(parser : TootParser) =
-	makeMisskeyTimelineParameter(parser).apply{
+	makeMisskeyTimelineParameter(parser).apply {
 		put("tag", hashtag)
 		put("limit", Column.MISSKEY_HASHTAG_LIMIT)
 	}
@@ -313,7 +323,7 @@ internal val misskeyArrayFinderUsers = { it : JsonObject ->
 internal val misskeyFollowingParser =
 	{ parser : TootParser, jsonArray : JsonArray ->
 		val dst = ArrayList<TootAccountRef>()
-		jsonArray.objectList().forEach { src->
+		jsonArray.objectList().forEach { src ->
 			val accountRef = TootAccountRef.mayNull(
 				parser,
 				parser.account(src.jsonObject("followee"))
@@ -417,3 +427,9 @@ internal val misskeyCustomParserFavorites =
 		dst
 	}
 
+internal val misskeyCustomParserAntenna =
+	{ parser : TootParser, array : JsonArray ->
+		parser.statusList(array).also { list ->
+			list.forEach { it._orderId = it.id }
+		}
+	}

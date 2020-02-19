@@ -16,27 +16,6 @@ class ColumnTask_Gap(
 	
 	private var max_id : EntityId? = (gap as? TootGap)?.max_id
 	private var since_id : EntityId? = (gap as? TootGap)?.since_id
-	private val countTag : Int
-	private val countAccount : Int
-	private val countStatus : Int
-	
-	init {
-		var countTag = 0
-		var countAccount = 0
-		var countStatus = 0
-		if(gap is TootSearchGap) {
-			columnArg.list_data.forEach {
-				when(it) {
-					is TootTag -> ++ countTag
-					is TootAccountRef -> ++ countAccount
-					is TootStatus -> ++ countStatus
-				}
-			}
-		}
-		this.countTag = countTag
-		this.countAccount = countAccount
-		this.countStatus = countStatus
-	}
 	
 	override fun doInBackground(vararg unused : Void) : TootApiResult? {
 		ctStarted.set(true)
@@ -827,27 +806,76 @@ class ColumnTask_Gap(
 	fun getSearchGap(client : TootApiClient) : TootApiResult? {
 		if(gap !is TootSearchGap) return null
 		
-		
-		val (type, offset) = when(gap.type) {
-			TootSearchGap.SearchType.Hashtag -> Pair("hashtags", countTag)
-			TootSearchGap.SearchType.Account -> Pair("accounts", countAccount)
-			TootSearchGap.SearchType.Status -> Pair("statuses", countStatus)
-		}
-		
-		// https://mastodon2.juggler.jp/api/v2/search?q=gargron&type=accounts&offset=5
-		var query = "q=${column.search_query.encodePercent()}&type=$type&offset=$offset"
-		if(column.search_resolve) query += "&resolve=1"
-		
-		val (apiResult, searchResult) = client.requestMastodonSearch(parser, query)
-		if(searchResult != null) {
-			list_tmp = ArrayList()
-			addAll(list_tmp, searchResult.hashtags)
-			addAll(list_tmp, searchResult.accounts)
-			addAll(list_tmp, searchResult.statuses)
-			if(list_tmp?.isNotEmpty() == true) {
-				addOne(list_tmp, TootSearchGap(gap.type))
+		if(isMisskey){
+
+			val countStatuses :(TimelineItem,EntityId?)->EntityId? ={ it,minId ->
+				if(it is TootStatus && ( minId ==null || it.id<minId) ) it.id else minId
 			}
+
+			val (_, counter) = when(gap.type) {
+				TootSearchGap.SearchType.Status -> Pair("statuses", countStatuses)
+
+				//TootSearchGap.SearchType.Hashtag -> Pair("hashtags", countTag)
+				//TootSearchGap.SearchType.Account -> Pair("accounts", countAccount)
+				else -> return TootApiResult("paging for ${gap.type} is not yet supported")
+			}
+			var minId :EntityId? = null
+			for( it in column.list_data) minId = counter(it,minId)
+
+			minId ?: return TootApiResult("can't detect paging parameter.")
+			
+			val result = client.request(
+				"/api/notes/search",
+				access_info.putMisskeyApiToken().apply {
+					put("query", column.search_query)
+					put("untilId", minId.toString())
+				}
+					.toPostRequestBuilder()
+			)
+			
+			val jsonArray = result?.jsonArray
+			if(jsonArray != null) {
+				val src = parser.statusList(jsonArray)
+				list_tmp = addWithFilterStatus(list_tmp, src)
+				if(src.isNotEmpty()){
+					addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Status))
+				}
+			}
+			return result
+
+		}else{
+			var offset = 0
+			
+			val countAccounts : (TimelineItem)->Unit =
+				{if(it is TootAccountRef) ++ offset }
+			val countTags : (TimelineItem)->Unit =
+				{if(it is TootTag) ++ offset }
+			val countStatuses : (TimelineItem)->Unit =
+				{if(it is TootStatus) ++ offset }
+			
+			val (type, counter) = when(gap.type) {
+				TootSearchGap.SearchType.Account -> Pair("accounts", countAccounts)
+				TootSearchGap.SearchType.Hashtag -> Pair("hashtags",countTags)
+				TootSearchGap.SearchType.Status -> Pair("statuses", countStatuses)
+			}
+			column.list_data.forEach{ counter(it)}
+			
+			// https://mastodon2.juggler.jp/api/v2/search?q=gargron&type=accounts&offset=5
+			var query = "q=${column.search_query.encodePercent()}&type=$type&offset=$offset"
+			if(column.search_resolve) query += "&resolve=1"
+			
+			val (apiResult, searchResult) = client.requestMastodonSearch(parser, query)
+			if(searchResult != null) {
+				list_tmp = ArrayList()
+				addAll(list_tmp, searchResult.hashtags)
+				addAll(list_tmp, searchResult.accounts)
+				addAll(list_tmp, searchResult.statuses)
+				if(list_tmp?.isNotEmpty() == true) {
+					addOne(list_tmp, TootSearchGap(gap.type))
+				}
+			}
+			return apiResult
+			
 		}
-		return apiResult
 	}
 }

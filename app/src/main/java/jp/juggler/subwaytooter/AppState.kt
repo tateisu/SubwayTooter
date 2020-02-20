@@ -26,7 +26,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.lang.ref.WeakReference
 import java.util.*
-import java.util.regex.Pattern
 import kotlin.math.max
 
 enum class DedupMode {
@@ -516,22 +515,19 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		if(sv.isEmpty()) return
 		
 		if(dedupMode != DedupMode.None) {
-			val check = duplication_check.find { it.text == sv }
-			if(check == null) {
-				duplication_check.addLast(DedupItem(sv))
-				if(duplication_check.size > 60) {
-					duplication_check.removeFirst()
-				}
-			} else {
-				when(dedupMode) {
-					DedupMode.None -> {
-					}
-					
-					DedupMode.Recent ->
-						return
-					
-					DedupMode.RecentExpire ->
-						if(SystemClock.elapsedRealtime() - check.time < 5000L) return
+			synchronized(this) {
+				val check = duplication_check.find { it.text.equals(sv,ignoreCase = true) }
+				if(check == null) {
+					duplication_check.addLast(DedupItem(sv))
+					if(duplication_check.size > 60) duplication_check.removeFirst()
+				} else{
+					val now = SystemClock.elapsedRealtime()
+					val delta = now - check.time
+					// 古い項目が残っていることがあるので、check.timeの更新は必須
+					check.time = now
+
+					if(dedupMode == DedupMode.Recent) return
+					if(dedupMode == DedupMode.RecentExpire && delta < 5000L ) return
 				}
 			}
 		}

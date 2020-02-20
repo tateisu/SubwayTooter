@@ -46,11 +46,7 @@ class DuplicateMap {
 				if(id.notDefault){
 
 					// Misskeyで時刻順ページングを行う際は重複排除は時刻ではなくオブジェクトIDを使う
-					if( id.fromTime ){
-						when(o) {
-							is TootStatus -> id = o.id
-						}
-					}
+					if( id.fromTime && o is TootStatus) id = o.id
 
 					if(set_id.contains(id)) return true
 					set_id.add(id)

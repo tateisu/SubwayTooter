@@ -620,50 +620,6 @@ class Column(
 	
 	internal var useDate : Boolean = false
 	
-	//	@Suppress("unused")
-	//	val listTitle : String
-	//		get() {
-	//			return when(type) {
-	//				ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> {
-	//					val sv = list_info?.title
-	//					if(sv != null && sv.isNotEmpty()) sv else profile_id.toString()
-	//				}
-	//
-	//				else -> "?"
-	//			}
-	//		}
-	//
-	//	@Suppress("unused")
-	//	val listId : EntityId?
-	//		get() {
-	//			return when(type) {
-	//				ColumnType.LIST_MEMBER, ColumnType.LIST_TL -> profile_id
-	//				else -> null
-	//			}
-	//		}
-	//
-	//	@Suppress("unused")
-	//	val antennaTitle : String
-	//		get() {
-	//			return when(type) {
-	//				ColumnType.MISSKEY_ANTENNA_TL-> {
-	//					val sv = antenna_info?.name
-	//					if(sv != null && sv.isNotEmpty()) sv else profile_id.toString()
-	//				}
-	//
-	//				else -> "?"
-	//			}
-	//		}
-	//
-	//	@Suppress("unused")
-	//	val antennaId : EntityId?
-	//		get() {
-	//			return when(type) {
-	//				ColumnType.MISSKEY_ANTENNA_TL-> profile_id
-	//				else -> null
-	//			}
-	//		}
-	
 	val isSearchColumn : Boolean
 		get() {
 			return when(type) {

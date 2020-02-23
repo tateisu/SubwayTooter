@@ -29,7 +29,6 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.lang.ref.WeakReference
 import java.util.*
-import java.util.regex.Pattern
 import kotlin.math.min
 
 class PostHelper(
@@ -69,7 +68,7 @@ class PostHelper(
 	
 	var emojiMapCustom : HashMap<String, CustomEmoji>? = null
 	var redraft_status_id : EntityId? = null
-	var useQuotedRenote = false
+	var useQuoteToot = false
 	var scheduledAt = 0L
 	var scheduledId : EntityId? = null
 	
@@ -434,7 +433,7 @@ class PostHelper(
 						}
 						
 						if(in_reply_to_id != null) {
-							if(useQuotedRenote) {
+							if(useQuoteToot) {
 								json["renoteId"] = in_reply_to_id.toString()
 							} else {
 								json["replyId"] = in_reply_to_id.toString()
@@ -503,7 +502,11 @@ class PostHelper(
 						)
 						
 						if(in_reply_to_id != null) {
-							json["in_reply_to_id"] = in_reply_to_id.toString()
+							if(useQuoteToot) {
+								json["quote_id"] = in_reply_to_id.toString()
+							} else {
+								json["in_reply_to_id"] = in_reply_to_id.toString()
+							}
 						}
 						
 						if(attachment_list != null) {

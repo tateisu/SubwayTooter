@@ -76,10 +76,10 @@
                 </LinearLayout>
 
                 <CheckBox
-                    android:id="@+id/cbQuoteRenote"
+                    android:id="@+id/cbQuote"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/make_quote_renote" />
+                    android:text="@string/use_quote_toot" />
 
             </LinearLayout>
 

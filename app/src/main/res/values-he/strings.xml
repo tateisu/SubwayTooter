@@ -391,7 +391,7 @@
     <string name="minimum_column_width">רוחב עמודה מזערי (ברירת מחדל היא 300dp, נא הפעל מחדש את היישום)</string>
     <string name="media_thumbnail_height">גובה תמונה מוקטנת עבור מדיה (ברירת מחדל = 64dp, נא הפעל מחדש את האפליקציה)</string>
     <string name="account_picker_reply">השב באמצעות\?</string>
-    <string name="account_picker_quoted_renote">האם להשתמש בחשבון לצורך ציטוט מהגברה\?</string>
+
     <string name="reply_from_another_account">השב מחשבון אחר</string>
     <string name="launcher_icon_by">תודה רבה  ל フ タ バ עבור סמל היישום.</string>
     <string name="timeline_font">גופן ציר הזמן (נא הפעל מחדש את היישום)</string>

@@ -338,7 +338,6 @@
     <string name="minimum_column_width">Minimale kolombreedte (standaard=300dp, app herstart nodig)</string>
     <string name="media_thumbnail_height">Media miniatuur hoogte (standaard=64dp, app herstart nodig)</string>
     <string name="account_picker_reply">Antwoorden met\?</string>
-    <string name="account_picker_quoted_renote">\"quote renote\" met welke account\?</string>
     <string name="reply_from_another_account">Antwoorden vanaf een andere account</string>
     <string name="launcher_icon_by">Met dank aan フタバ voor het icoon van de app.</string>
     <string name="ssl_bug_7_0">Android 7.0 ondersteund alleen de elliptic curve \"prime256v1\".

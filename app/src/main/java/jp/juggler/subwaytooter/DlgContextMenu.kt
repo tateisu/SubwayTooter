@@ -104,7 +104,8 @@ internal class DlgContextMenu(
 		val btnBoostAnotherAccount : View = viewRoot.findViewById(R.id.btnBoostAnotherAccount)
 		val btnReactionAnotherAccount : View = viewRoot.findViewById(R.id.btnReactionAnotherAccount)
 		val btnReplyAnotherAccount : View = viewRoot.findViewById(R.id.btnReplyAnotherAccount)
-		val btnQuotedRenote : View = viewRoot.findViewById(R.id.btnQuotedRenote)
+		val btnQuoteToot : View = viewRoot.findViewById(R.id.btnQuoteToot)
+		val btnQuoteTootBT : View = viewRoot.findViewById(R.id.btnQuoteTootBT)
 		val btnDelete : View = viewRoot.findViewById(R.id.btnDelete)
 		val btnRedraft : View = viewRoot.findViewById(R.id.btnRedraft)
 		
@@ -180,7 +181,8 @@ internal class DlgContextMenu(
 			btnBoostAnotherAccount,
 			btnReactionAnotherAccount,
 			btnReplyAnotherAccount,
-			btnQuotedRenote,
+			btnQuoteToot,
+			btnQuoteTootBT,
 			btnReportStatus,
 			btnReportUser,
 			btnMuteApp,
@@ -301,7 +303,7 @@ internal class DlgContextMenu(
 			
 			btnYourToot.vg(status_by_me)
 			
-			
+			btnQuoteTootBT.vg( status.reblogParent != null )
 			
 			btnBoostWithVisibility.vg(! access_info.isPseudo && ! access_info.isMisskey)
 			
@@ -1008,12 +1010,19 @@ internal class DlgContextMenu(
 				access_info,
 				status
 			)
-			R.id.btnQuotedRenote -> Action_Toot.replyFromAnotherAccount(
+			R.id.btnQuoteToot -> Action_Toot.replyFromAnotherAccount(
 				activity,
 				access_info,
 				status,
-				quotedRenote = true
+				quote = true
 			)
+			R.id.btnQuoteTootBT ->Action_Toot.replyFromAnotherAccount(
+				activity,
+				access_info,
+				status?.reblogParent ,
+				quote = true
+			)
+			
 			R.id.btnConversationAnotherAccount -> status?.let { status ->
 				Action_Toot.conversationOtherInstance(activity, pos, status)
 			}

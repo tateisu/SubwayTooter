@@ -349,7 +349,7 @@
     <string name="minimum_column_width">Minimum column width (default=300dp, app restart required)</string>
     <string name="media_thumbnail_height">Media Thumbnail height (default=64dp, app restart required)</string>
     <string name="account_picker_reply">Reply from?</string>
-    <string name="account_picker_quoted_renote">Account to \"quoted renote\"\?</string>
+    <string name="account_picker_quote_toot">Account to \"quote toot\"\?</string>
     <string name="reply_from_another_account">Reply from another account</string>
     <string name="launcher_icon_by">Thanks to フタバ for the application icon.</string>
     <string name="ssl_bug_7_0">Android 7.0 can only use the elliptic curve \"prime256v1\".\nUnfortunately your server seems to not support it.\nThis bug has been fixed in Android 7.1.1.\nYou can either upgrade your OS or ask the server administrator to add support to the elliptic curve \"prime256v1\".\nSee also https://code.google.com/p/android/issues/detail?id=224438</string>
@@ -759,6 +759,7 @@
     <string name="misskey_hybrid_timeline">Social timeline</string>
     <string name="misskey_hybrid_timeline_long">Social TL (Misskey)</string>
     <string name="renote_to">Renote to %1$s</string>
+    <string name="quote_to">Quote to %1$s</string>
     <string name="reply_to">Reply to %1$s</string>
     <string name="deleted_at">deleted at %1$s</string>
     <string name="already_reactioned">already reacted to.</string>
@@ -802,7 +803,7 @@
     <string name="participants">Participants:</string>
     <string name="participants_and_more">… and more</string>
     <string name="conversation_to">To:</string>
-    <string name="make_quote_renote">Use \"Quoted renote\"</string>
+    <string name="use_quote_toot">Use \"Quote Toot\". (Misskey or some customized Mastodon server)</string>
     <string name="mute_application_confirm">Mute the app \"%1$s\"?</string>
     <string name="boost_button_alpha">Boost button alpha opacity (Unit:%. app restart required. also affected of content text alpha.)</string>
     <string name="toot_background_color">Toot background color</string>
@@ -1010,4 +1011,6 @@
     <string name="antenna_timeline">Antenna TL</string>
     <string name="antenna_timeline_of">Antenna TL \'%1$s\'</string>
     <string name="antenna_list_misskey">Antenna list (Misskey 12+)</string>
+    <string name="quote_toot">Quote toot (Misskey or some customized Mastodon server)</string>
+    <string name="quote_toot_bt" translatable="false">Quote boost outer (debug purpose)</string>
 </resources>

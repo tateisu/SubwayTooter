@@ -166,6 +166,13 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	
 	var myRenoteId : EntityId? = null
 	
+	// reblog,reply された投稿からその外側を参照する
+	var reblogParent : TootStatus? = null
+	
+	// quote toot かどうか。
+	var isQuoteToot = false
+	var quote_id : EntityId? = null
+	
 	///////////////////////////////////////////////////////////////////
 	// 以下はentityから取得したデータではなく、アプリ内部で使う
 	
@@ -195,7 +202,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	init {
 		this.json = src
 		this.serviceType = parser.serviceType
-		src.put("_fromStream",parser.fromStream)
+		src.put("_fromStream", parser.fromStream)
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			val instance = parser.accessHost
@@ -373,12 +380,28 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				reblog.reblogged = true
 			}
 			
+			isQuoteToot = when(reblog) {
+				// 別の投稿を参照していない
+				null -> false
+				
+				// 別の投稿を参照して、かつこの投稿自体が何かコンテンツを持つなら引用トゥートである
+				else -> content?.isNotEmpty() == true
+					|| spoiler_text.isNotEmpty()
+					|| media_attachments?.isNotEmpty() == true
+					|| enquete != null
+			}
+			
+			this.quote_id = if(isQuoteToot) {
+				reblog?.id
+			} else {
+				null
+			}
+			
 			this.deletedAt = src.string("deletedAt")
 			this.time_deleted_at = parseTime(deletedAt)
 			
 			if(card == null) {
-				
-				if(reblog != null && hasAnyContent()) {
+				if(reblog != null && isQuoteToot) {
 					// 引用Renoteにプレビューカードをでっちあげる
 					card = TootCard(parser, reblog)
 				} else if(reply != null) {
@@ -497,8 +520,48 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			) ?: EMPTY_SPANNABLE
 			// this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			
+			val quote = when {
+				! parser.decodeQuote -> null
+				else -> try {
+					parser.decodeQuote = false
+					parser.status(src.jsonObject("quote"))
+				} finally {
+					parser.decodeQuote = true
+				}
+			}
+			
+			this.quote_id = quote?.id ?: EntityId.mayNull(src.string("quote_id"))
+			this.isQuoteToot = quote_id != null
+			
+			// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
+			// Hostdon QT と通常のreblogが同時に出ることはないので、quoteが既出ならreblogのjsonデータは見ない
+			this.reblog = quote ?: parser.status(src.jsonObject("reblog"))
+			
+			var removeQt = false
+			
+			// 2.6.0からステータスにもカード情報が含まれる
+			this.card = parseItem(::TootCard, src.jsonObject("card"))
+			if(card == null && quote != null) {
+				// 引用Renoteにプレビューカードをでっちあげる
+				card = TootCard(parser, quote)
+				removeQt = ! Pref.bpDontShowPreviewCard(Pref.pref(parser.context))
+			}
+			
 			// content
-			this.content = src.string("content")
+			this.content = src.string("content")?.let { sv ->
+				if(removeQt) {
+					log.d("removeQt? $sv")
+					val reQuoteTootRemover =
+						"""(?:\s|<br/>)*QT:\s*\[[^]]+]((?:</\w+>)*)\z""".toRegex()
+					sv.replace(reQuoteTootRemover) {
+						it.groupValues.elementAtOrNull(1) ?: ""
+					}
+						.also { after ->
+							log.d("removeQt? after = $after")
+						}
+				} else
+					sv
+			}
 			
 			var options = DecodeOptions(
 				parser.context,
@@ -564,12 +627,9 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				null
 			}
 			
-			// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
-			this.reblog = parser.status(src.jsonObject("reblog"))
-			
-			// 2.6.0からステータスにもカード情報が含まれる
-			this.card = parseItem(::TootCard, src.jsonObject("card"))
 		}
+		
+		this.reblog?.reblogParent = this
 	}
 	
 	private fun mergeMentions(
@@ -716,16 +776,6 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		return list
 	}
 	
-	fun hasAnyContent() = when {
-		reblog == null -> true // reblog以外はオリジナルコンテンツがあると見なす
-		serviceType != ServiceType.MISSKEY -> false // misskey以外のreblogはコンテンツがないと見なす
-		content?.isNotEmpty() == true
-			|| spoiler_text.isNotEmpty()
-			|| media_attachments?.isNotEmpty() == true
-			|| enquete != null -> true
-		else -> false
-	}
-	
 	// return true if updated
 	fun increaseReaction(reaction : String?, byMe : Boolean, caller : String) : Boolean {
 		reaction ?: return false
@@ -842,25 +892,27 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			.asciiPattern()
 		
 		// 公開ステータスページのURL マストドン
-		private val reStatusPage ="""\Ahttps://([^/]+)/@(\w+)/([^?#/\s]+)(?:\z|[?#])"""
+		private val reStatusPage = """\Ahttps://([^/]+)/@(\w+)/([^?#/\s]+)(?:\z|[?#])"""
 			.asciiPattern()
 		
 		// 公開ステータスページのURL Misskey
-		internal val reStatusPageMisskey = """\Ahttps://([^/]+)/notes/([0-9a-f]{24}|[0-9a-z]{10})\b"""
-			.asciiPattern(Pattern.CASE_INSENSITIVE )
+		internal val reStatusPageMisskey =
+			"""\Ahttps://([^/]+)/notes/([0-9a-f]{24}|[0-9a-z]{10})\b"""
+				.asciiPattern(Pattern.CASE_INSENSITIVE)
 		
 		// PleromaのStatusのUri
-		private val reStatusPageObjects ="""\Ahttps://([^/]+)/objects/([^?#/\s]+)(?:\z|[?#])"""
+		private val reStatusPageObjects = """\Ahttps://([^/]+)/objects/([^?#/\s]+)(?:\z|[?#])"""
 			.asciiPattern()
 		
 		// PleromaのStatusの公開ページ
-		private val reStatusPageNotice ="""\Ahttps://([^/]+)/notice/([^?#/\s]+)(?:\z|[?#])"""
+		private val reStatusPageNotice = """\Ahttps://([^/]+)/notice/([^?#/\s]+)(?:\z|[?#])"""
 			.asciiPattern()
 		
 		// PixelfedのStatusの公開ページ
 		// https://pixelfed.tokyo/p/tateisu/84169185147621376
-		private val reStatusPagePixelfed ="""\Ahttps://([^/]+)/p/([A-Za-z0-9_]+)/([^?#/\s]+)(?:\z|[?#])"""
-			.asciiPattern()
+		private val reStatusPagePixelfed =
+			"""\Ahttps://([^/]+)/p/([A-Za-z0-9_]+)/([^?#/\s]+)(?:\z|[?#])"""
+				.asciiPattern()
 		
 		// returns null or pair( status_id, host ,url )
 		fun String.findStatusIdFromUrl() : FindStatusIdFromUrlResult? {
@@ -934,7 +986,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		
 		private val tz_utc = TimeZone.getTimeZone("UTC")
 		
-		private val reTime ="""\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""
+		private val reTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""
 			.asciiPattern()
 		
 		private val reMSPTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""

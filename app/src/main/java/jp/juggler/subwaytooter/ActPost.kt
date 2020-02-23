@@ -52,7 +52,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.regex.Pattern
 import kotlin.math.max
 
 class ActPost : AppCompatActivity(),
@@ -72,7 +71,7 @@ class ActPost : AppCompatActivity(),
 		internal const val KEY_REDRAFT_STATUS = "redraft_status"
 		internal const val KEY_INITIAL_TEXT = "initial_text"
 		internal const val KEY_SENT_INTENT = "sent_intent"
-		internal const val KEY_QUOTED_RENOTE = "quoted_renote"
+		internal const val KEY_QUOTE = "quote"
 		internal const val KEY_SCHEDULED_STATUS = "scheduled_status"
 		
 		internal const val KEY_ATTACHMENT_LIST = "attachment_list"
@@ -314,7 +313,7 @@ class ActPost : AppCompatActivity(),
 		internal const val DRAFT_POLL_EXPIRE_HOUR = "poll_expire_hour"
 		internal const val DRAFT_POLL_EXPIRE_MINUTE = "poll_expire_minute"
 		internal const val DRAFT_ENQUETE_ITEMS = "enquete_items"
-		internal const val DRAFT_QUOTED_RENOTE = "quotedRenote"
+		internal const val DRAFT_QUOTE = "quotedRenote" // 歴史的な理由で名前がMisskey用になってる
 		
 		private const val STATE_MUSHROOM_INPUT = "mushroom_input"
 		private const val STATE_MUSHROOM_START = "mushroom_start"
@@ -341,8 +340,8 @@ class ActPost : AppCompatActivity(),
 			// 外部アプリから共有されたインテント
 			sent_intent : Intent? = null,
 			
-			// (Misskey) 返信を引用リノートにする
-			quotedRenote : Boolean = false,
+			// 返信ではなく引用トゥートを作成する
+			quote : Boolean = false,
 			
 			//(Mastodon) 予約投稿の編集
 			scheduledStatus : TootScheduled? = null
@@ -357,7 +356,7 @@ class ActPost : AppCompatActivity(),
 			
 			if(reply_status != null) {
 				intent.putExtra(KEY_REPLY_STATUS, reply_status.json.toString())
-				intent.putExtra(KEY_QUOTED_RENOTE, quotedRenote)
+				intent.putExtra(KEY_QUOTE, quote)
 			}
 			
 			if(initial_text != null) {
@@ -404,7 +403,7 @@ class ActPost : AppCompatActivity(),
 	internal lateinit var etContent : MyEditText
 	private lateinit var btnFeaturedTag : ImageButton
 	
-	internal lateinit var cbQuoteRenote : CheckBox
+	internal lateinit var cbQuote : CheckBox
 	
 	internal lateinit var spEnquete : Spinner
 	private lateinit var llEnquete : View
@@ -747,12 +746,12 @@ class ActPost : AppCompatActivity(),
 					val reply_status =
 						TootParser(this@ActPost, account).status(sv.decodeJsonObject())
 					
-					val isQuoterRenote = intent.getBooleanExtra(KEY_QUOTED_RENOTE, false)
+					val isQuote = intent.getBooleanExtra(KEY_QUOTE, false)
 					
 					if(reply_status != null) {
 						
-						if(isQuoterRenote) {
-							cbQuoteRenote.isChecked = true
+						if(isQuote) {
+							cbQuote.isChecked = true
 							
 							// 引用リノートはCWやメンションを引き継がない
 							
@@ -1171,7 +1170,7 @@ class ActPost : AppCompatActivity(),
 		etContent.imeOptions = EditorInfo.IME_ACTION_NONE
 		
 		
-		cbQuoteRenote = findViewById(R.id.cbQuoteRenote)
+		cbQuote = findViewById(R.id.cbQuote)
 		
 		spEnquete = findViewById<Spinner>(R.id.spEnquete).apply {
 			this.adapter = ArrayAdapter(
@@ -2578,7 +2577,7 @@ class ActPost : AppCompatActivity(),
 		
 		post_helper.redraft_status_id = redraft_status_id
 		
-		post_helper.useQuotedRenote = cbQuoteRenote.isChecked
+		post_helper.useQuoteToot = cbQuote.isChecked
 		
 		post_helper.scheduledAt = timeSchedule
 		
@@ -2611,9 +2610,7 @@ class ActPost : AppCompatActivity(),
 	}
 	
 	private fun showQuotedRenote() {
-		val isReply = in_reply_to_id != null
-		val isMisskey = account?.isMisskey == true
-		cbQuoteRenote.visibility = if(isReply && isMisskey) View.VISIBLE else View.GONE
+		cbQuote.visibility = if(in_reply_to_id != null ) View.VISIBLE else View.GONE
 	}
 	
 	internal fun showReplyTo() {
@@ -2684,7 +2681,7 @@ class ActPost : AppCompatActivity(),
 			json[DRAFT_REPLY_IMAGE] = in_reply_to_image
 			json[DRAFT_REPLY_URL] = in_reply_to_url
 			
-			json[DRAFT_QUOTED_RENOTE] = cbQuoteRenote.isChecked
+			json[DRAFT_QUOTE] = cbQuote.isChecked
 			
 			// deprecated. but still used in old draft.
 			// json.put(DRAFT_IS_ENQUETE, isEnquete)
@@ -2860,7 +2857,7 @@ class ActPost : AppCompatActivity(),
 				cbNSFW.isChecked = nsfw_checked
 				if(draft_visibility != null) this@ActPost.visibility = draft_visibility
 				
-				cbQuoteRenote.isChecked = draft.optBoolean(DRAFT_QUOTED_RENOTE)
+				cbQuote.isChecked = draft.optBoolean(DRAFT_QUOTE)
 				
 				val sv = draft.string(DRAFT_POLL_TYPE)
 				if(sv != null) {

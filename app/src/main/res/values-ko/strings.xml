@@ -332,7 +332,6 @@
     <string name="minimum_column_width">최소 칼럼 폭 (기본값=300dp, 앱 재시작 필요)</string>
     <string name="media_thumbnail_height">미디어 썸네일 높이 (기본값=64dp, 앱 재시작 필요)</string>
     <string name="account_picker_reply">어떤 계정으로 답글할까요\?</string>
-    <string name="account_picker_quoted_renote">어떤 계정으로 인용 리노트할까요\?</string>
     <string name="reply_from_another_account">다른 계정으로 답글하기</string>
     <string name="launcher_icon_by">앱 아이콘에 대해 フタバ에게 감사합니다.</string>
     <string name="ssl_bug_7_0">안드로이드 7.0은 타원 곡선 \"prime256v1\"만 사용할 수 있습니다.
@@ -795,7 +794,7 @@
     <string name="participants">참가자들:</string>
     <string name="participants_and_more">… 외 다수</string>
     <string name="conversation_to">받을 이:</string>
-    <string name="make_quote_renote">\"인용 리노트\" 사용</string>
+    <string name="use_quote_toot">\"인용 리노트\" 사용</string>
     <string name="mute_application_confirm">앱 \"%1$s\"를 음소거할까요\?</string>
     <string name="boost_button_alpha">부스트 버튼 알파 불투명도 (단위:%. 앱 재시작 필요. 본문의 알파에 영향을 미침.)</string>
     <string name="toot_background_color">툿 배경색</string>

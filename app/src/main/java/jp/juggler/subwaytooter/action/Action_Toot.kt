@@ -1115,14 +1115,14 @@ object Action_Toot {
 		activity : ActMain,
 		access_info : SavedAccount,
 		status : TootStatus,
-		quotedRenote : Boolean = false
+		quote : Boolean = false
 	) {
 		ActPost.open(
 			activity,
 			ActMain.REQUEST_CODE_POST,
 			access_info.db_id,
 			reply_status = status,
-			quotedRenote = quotedRenote
+			quote = quote
 		)
 	}
 	
@@ -1130,7 +1130,7 @@ object Action_Toot {
 		activity : ActMain,
 		access_info : SavedAccount,
 		remote_status_url : String?,
-		quotedRenote : Boolean = false
+		quote : Boolean = false
 	) {
 		if(remote_status_url == null || remote_status_url.isEmpty()) return
 		
@@ -1152,7 +1152,7 @@ object Action_Toot {
 					
 					val ls = local_status
 					if(ls != null) {
-						reply(activity, access_info, ls, quotedRenote = quotedRenote)
+						reply(activity, access_info, ls, quote = quote)
 					} else {
 						showToast(activity, true, result.error)
 					}
@@ -1164,7 +1164,7 @@ object Action_Toot {
 		activity : ActMain,
 		timeline_account : SavedAccount,
 		status : TootStatus?,
-		quotedRenote : Boolean = false
+		quote : Boolean = false
 	) {
 		status ?: return
 		val who_host = timeline_account.host
@@ -1172,21 +1172,21 @@ object Action_Toot {
 		val accountCallback : SavedAccountCallback = { ai ->
 			if(ai.matchHost(status.host_access)) {
 				// アクセス元ホストが同じならステータスIDを使って返信できる
-				reply(activity, ai, status, quotedRenote = quotedRenote)
+				reply(activity, ai, status, quote = quote)
 			} else {
 				// それ以外の場合、ステータスのURLを検索APIに投げることで返信できる
-				replyRemote(activity, ai, status.url, quotedRenote = quotedRenote)
+				replyRemote(activity, ai, status.url, quote = quote)
 			}
 		}
 		
-		if(quotedRenote) {
+		if(quote) {
 			AccountPicker.pick(
 				activity,
 				bAllowPseudo = false,
 				bAllowMisskey = true,
-				bAllowMastodon = false,
+				bAllowMastodon = true,
 				bAuto = true,
-				message = activity.getString(R.string.account_picker_quoted_renote),
+				message = activity.getString(R.string.account_picker_quote_toot),
 				callback = accountCallback
 			)
 		} else {

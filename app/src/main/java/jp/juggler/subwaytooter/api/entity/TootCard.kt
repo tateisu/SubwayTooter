@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.HTMLDecoder
 import jp.juggler.util.JsonObject
 import jp.juggler.util.filterNotEmpty
@@ -50,7 +51,11 @@ class TootCard(
 			?: if(parser.serviceType == ServiceType.MISSKEY) {
 				src.content
 			} else {
-				HTMLDecoder.encodeEntity(src.content ?: "")
+				val options = DecodeOptions(
+					context = parser.context,
+					decodeEmoji = true
+				)
+				options.decodeHTML(src.content ?: "").toString()
 			},
 		image = src.media_attachments?.firstOrNull()?.urlForThumbnail ?: src.account.avatar_static,
 		type = "photo"

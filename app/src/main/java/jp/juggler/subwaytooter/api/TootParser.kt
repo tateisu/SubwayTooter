@@ -17,7 +17,8 @@ class TootParser(
 	var highlightTrie : WordTrieTree? = null,
 	var serviceType : ServiceType = ServiceType.MASTODON,
 	var misskeyDecodeProfilePin : Boolean = false,
-	var fromStream : Boolean = false
+	var fromStream : Boolean = false,
+	var decodeQuote : Boolean = true
 ) {
 	
 	val misskeyUserRelationMap = HashMap<EntityId, UserRelation>()

@@ -510,10 +510,10 @@ internal class ItemViewHolder(
 				when {
 					reblog == null -> showStatusOrReply(item)
 					
-					item.hasAnyContent() -> {
+					item.isQuoteToot -> {
 						// 引用Renote
 						val colorBg = Pref.ipEventBgColorBoost(activity.pref)
-						showReply(reblog, R.drawable.ic_repeat, R.string.renote_to)
+						showReply(reblog, R.drawable.ic_repeat, R.string.quote_to)
 						showStatus(item, colorBg)
 					}
 					
@@ -785,17 +785,18 @@ internal class ItemViewHolder(
 			when {
 				reblog == null -> showStatusOrReply(item, colorBgDefault)
 				
-				! item.hasAnyContent() -> {
+				item.isQuoteToot -> {
+					// 引用Renote
+					showReply(reblog, R.drawable.ic_repeat, R.string.quote_to)
+					showStatus(item, Pref.ipEventBgColorQuote(activity.pref))
+				}
+
+				else -> {
 					// 通常のブースト。引用なしブースト。
 					// ブースト表示は通知イベントと被るのでしない
 					showStatusOrReply(reblog, Pref.ipEventBgColorBoost(activity.pref))
 				}
 				
-				else -> {
-					// 引用Renote
-					showReply(reblog, R.drawable.ic_repeat, R.string.renote_to)
-					showStatus(item, Pref.ipEventBgColorQuote(activity.pref))
-				}
 			}
 		}
 		

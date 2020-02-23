@@ -461,7 +461,7 @@
                         android:textAllCaps="false" />
 
                     <Button
-                        android:id="@+id/btnQuotedRenote"
+                        android:id="@+id/btnQuoteToot"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/btn_bg_transparent_round6dp"
@@ -471,9 +471,21 @@
                         android:paddingTop="4dp"
                         android:paddingEnd="8dp"
                         android:paddingBottom="4dp"
-                        android:text="@string/quote_renote"
+                        android:text="@string/quote_toot"
                         android:textAllCaps="false" />
-
+                    <Button
+                        android:id="@+id/btnQuoteTootBT"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/btn_bg_transparent_round6dp"
+                        android:gravity="start|center_vertical"
+                        android:minHeight="32dp"
+                        android:paddingStart="8dp"
+                        android:paddingTop="4dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="4dp"
+                        android:text="@string/quote_toot_bt"
+                        android:textAllCaps="false" />
 
                     <Button
                         android:id="@+id/btnMuteApp"

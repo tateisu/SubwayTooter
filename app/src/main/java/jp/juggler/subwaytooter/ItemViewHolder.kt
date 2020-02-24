@@ -1570,6 +1570,16 @@ internal class ItemViewHolder(
 					color = MyClickableSpan.defaultLinkColor
 				)
 			}
+			
+			if( status.isPromoted) {
+				if(sb.isNotEmpty()) sb.append(' ')
+				sb.append(activity.getString(R.string.promoted))
+			}
+			
+			if( status.isFeatured) {
+				if(sb.isNotEmpty()) sb.append(' ')
+				sb.append(activity.getString(R.string.featured))
+			}
 		}
 		
 		if(sb.isNotEmpty()) sb.append(' ')

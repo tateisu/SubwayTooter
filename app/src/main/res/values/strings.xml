@@ -1013,4 +1013,6 @@
     <string name="antenna_list_misskey">Antenna list (Misskey 12+)</string>
     <string name="quote_toot">Quote toot (Misskey or some customized Mastodon server)</string>
     <string name="quote_toot_bt" translatable="false">Quote boost outer (debug purpose)</string>
+    <string name="promoted">Promoted</string>
+    <string name="featured">Featured</string>
 </resources>

@@ -173,6 +173,10 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	var isQuoteToot = false
 	var quote_id : EntityId? = null
 	
+	// Misskey 12.3
+	var isPromoted = false
+	var isFeatured = false
+	
 	///////////////////////////////////////////////////////////////////
 	// 以下はentityから取得したデータではなく、アプリ内部で使う
 	
@@ -409,6 +413,9 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 					card = TootCard(parser, reply !!)
 				}
 			}
+			
+			this.isPromoted = src.string("_prId_")?.isNotEmpty() == true
+			this.isFeatured = src.string("_featuredId_")?.isNotEmpty() == true
 			
 		} else {
 			misskeyVisibleIds = null

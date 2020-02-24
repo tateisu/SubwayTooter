@@ -20,6 +20,7 @@ import jp.juggler.util.*
 class DlgAppPicker(
 	val activity : AppCompatActivity,
 	val intent : Intent,
+	val emptyError: String ,
 	val autoSelect : Boolean = false,
 	val filter : (ResolveInfo) -> Boolean = { true },
 	val callback : (String) -> Unit
@@ -98,12 +99,17 @@ class DlgAppPicker(
 	
 	@SuppressLint("InflateParams")
 	fun show() {
-		dialog?.run {
-			window?.setLayout(
-				WindowManager.LayoutParams.MATCH_PARENT,
-				WindowManager.LayoutParams.WRAP_CONTENT
-			)
-			this.show()
+		if( list.isEmpty()){
+			dialog?.dismissSafe()
+			showToast(activity,true,emptyError)
+		}else {
+			dialog?.run {
+				window?.setLayout(
+					WindowManager.LayoutParams.MATCH_PARENT,
+					WindowManager.LayoutParams.WRAP_CONTENT
+				)
+				this.show()
+			}
 		}
 	}
 	

@@ -599,6 +599,7 @@ class App1 : Application() {
 		private fun startActivityExcludeMyApp(
 			activity : AppCompatActivity,
 			intent : Intent,
+			emptyError:String,
 			startAnimationBundle : Bundle? = null
 		) {
 			try {
@@ -613,6 +614,7 @@ class App1 : Application() {
 				DlgAppPicker(
 					activity,
 					intent,
+					emptyError,
 					autoSelect = true,
 					filter = {it.activityInfo.packageName != activity.packageName }
 				) {
@@ -632,7 +634,7 @@ class App1 : Application() {
 		}
 		
 		fun openBrowser(activity : AppCompatActivity, uri : Uri?) {
-			if(uri != null) startActivityExcludeMyApp(activity, Intent(Intent.ACTION_VIEW, uri))
+			if(uri != null) startActivityExcludeMyApp(activity, Intent(Intent.ACTION_VIEW, uri),"there is no app that can open $uri")
 		}
 		
 		fun openBrowser(activity : AppCompatActivity, url : String?) =
@@ -681,13 +683,13 @@ class App1 : Application() {
 								)
 								it.data = url.toUri()
 							},
+							"chrome(product line) is not installed.",
 							customTabsIntent.startAnimationBundle
 						)
 						return
 					} catch(ex2 : Throwable) {
 						log.e(ex2, "openChromeTab: missing chrome. retry to other application.")
 					}
-					
 				}
 				
 				// Chromeがないようなのでcomponent指定なしでリトライ
@@ -701,6 +703,7 @@ class App1 : Application() {
 					customTabsIntent.intent.also {
 						it.data = url.toUri()
 					},
+					"the app that supports custom tabs is not installed.",
 					customTabsIntent.startAnimationBundle
 				)
 				

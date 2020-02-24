@@ -1008,6 +1008,7 @@
     <string name="antenna_timeline_of">アンテナTL \'%1$s\'</string>
     <string name="antenna_list_misskey">アンテナ一覧(Misskey 12+)</string>
     <string name="quote_toot">引用トゥート(MisskeyまたはカスタマイズされたMastodonサーバ)</string>
+    <string name="quote">引用</string>
     <string name="promoted">宣伝</string>
     <string name="featured">紹介</string>
 </resources>

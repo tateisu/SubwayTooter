@@ -79,6 +79,9 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 	
 	val instanceType : InstanceType
 	
+	var feature_quote = false
+	
+	
 	// XXX: urls をパースしてない。使ってないから…
 	
 	init {
@@ -105,6 +108,7 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 			this.short_description = null
 			this.approval_required = false
 			
+			this.feature_quote = true
 		} else {
 			this.uri = src.string("uri")
 			this.title = src.string("title")
@@ -140,6 +144,8 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 			this.description = src.string("description")
 			this.short_description = src.string("short_description")
 			this.approval_required = src.boolean("approval_required") ?: false
+			
+			this.feature_quote = src.boolean("feature_quote") ?: false
 		}
 	}
 	

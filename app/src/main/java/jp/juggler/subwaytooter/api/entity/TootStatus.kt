@@ -544,14 +544,16 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			// Hostdon QT と通常のreblogが同時に出ることはないので、quoteが既出ならreblogのjsonデータは見ない
 			this.reblog = quote ?: parser.status(src.jsonObject("reblog"))
 			
-			var removeQt = false
+			val removeQt = false
 			
 			// 2.6.0からステータスにもカード情報が含まれる
 			this.card = parseItem(::TootCard, src.jsonObject("card"))
 			if(card == null && quote != null) {
 				// 引用Renoteにプレビューカードをでっちあげる
 				card = TootCard(parser, quote)
-				removeQt = ! Pref.bpDontShowPreviewCard(Pref.pref(parser.context))
+				// content中のQTの表現が四角括弧の有無とか色々あるみたいだし
+				// 選択してコピーのことを考えたらむしろ削らない方が良い気がしてきた
+				// removeQt = ! Pref.bpDontShowPreviewCard(Pref.pref(parser.context))
 			}
 			
 			// content

@@ -1210,7 +1210,8 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 					action = Intent.ACTION_SEND
 					type = "text/plain"
 					putExtra(Intent.EXTRA_TEXT, getString(R.string.content_sample))
-				}
+				},
+				emptyError = "share target app is not installed."
 			) { setCustomShare(target, it) }.show()
 		} catch(ex : Throwable) {
 			log.trace(ex)

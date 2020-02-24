@@ -11,6 +11,7 @@ import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.action.*
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
@@ -48,6 +49,7 @@ internal class StatusButtons(
 	private val btnBoost = holder.btnBoost
 	private val btnFavourite = holder.btnFavourite
 	private val btnBookmark = holder.btnBookmark
+	private val btnQuote = holder.btnQuote
 	private val llFollow2 = holder.llFollow2
 	private val btnFollow2 = holder.btnFollow2
 	private val ivFollowedBy2 = holder.ivFollowedBy2
@@ -71,6 +73,8 @@ internal class StatusButtons(
 		btnFavourite.setOnLongClickListener(this)
 		btnBookmark.setOnClickListener(this)
 		btnBookmark.setOnLongClickListener(this)
+		btnQuote.setOnClickListener(this)
+		btnQuote.setOnLongClickListener(this)
 		btnFollow2.setOnClickListener(this)
 		btnFollow2.setOnLongClickListener(this)
 		btnTranslate.setOnClickListener(this)
@@ -176,6 +180,20 @@ internal class StatusButtons(
 				R.drawable.ic_repeat,
 				status.reblogs_count?.toString() ?: "",
 				activity.getString(R.string.boost)
+			)
+		}
+		
+		val ti = TootInstance.getCached(access_info.host.ascii)
+		
+		when {
+			ti?.feature_quote != true -> btnQuote.vg(false)
+			
+			else -> setButton(
+				btnQuote,
+				true,
+				color_normal,
+				R.drawable.ic_quote,
+				activity.getString(R.string.quote)
 			)
 		}
 		
@@ -432,6 +450,13 @@ internal class StatusButtons(
 				Action_Toot.replyFromAnotherAccount(activity, access_info, status)
 			}
 			
+			btnQuote ->if(! access_info.isPseudo) {
+				Action_Toot.reply(activity, access_info, status,quote = true)
+			} else {
+				Action_Toot.replyFromAnotherAccount(activity, access_info, status,quote = true)
+			}
+			
+			
 			btnBoost -> {
 				if(access_info.isPseudo) {
 					Action_Toot.boostFromAnotherAccount(activity, access_info, status)
@@ -629,6 +654,10 @@ internal class StatusButtons(
 				activity, access_info, status
 			)
 			
+			btnQuote ->Action_Toot.replyFromAnotherAccount(
+				activity, access_info, status ,quote = true
+			)
+			
 			btnFollow2 -> Action_Follow.followFromAnotherAccount(
 				activity, activity.nextPosition(column), access_info, status.account
 			)
@@ -702,6 +731,7 @@ class StatusButtonsViewHolder(
 	lateinit var btnBoost : CountImageButton
 	lateinit var btnFavourite : CountImageButton
 	lateinit var btnBookmark : ImageButton
+	lateinit var btnQuote : ImageButton
 	lateinit var llFollow2 : View
 	lateinit var btnFollow2 : ImageButton
 	lateinit var ivFollowedBy2 : ImageView
@@ -777,6 +807,19 @@ class StatusButtonsViewHolder(
 					}
 					
 					btnBookmark = imageButton {
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent_round6dp
+						)
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						minimumWidth = buttonHeight
+						
+					}.lparams(wrapContent, buttonHeight) {
+						startMargin = marginBetween
+					}
+					
+					btnQuote = imageButton {
 						background = ContextCompat.getDrawable(
 							context,
 							R.drawable.btn_bg_transparent_round6dp

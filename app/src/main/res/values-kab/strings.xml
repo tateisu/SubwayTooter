@@ -1,2 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="action_settings">Iɣewwaṛen</string>
+    <string name="account_add">Rnu amiḍan</string>
+    <string name="account_pick">Fren yiwen umiḍan</string>
+    <string name="choose_account">Fren amiḍan</string>
+    <string name="account_setting">Iɣewwaren n umiḍan</string>
+    <string name="setting">Iɣewwaṛen</string>
+    <string name="app_setting">Iɣewwaren n Subway Tooter</string>
+</resources>

@@ -292,7 +292,7 @@ class App1 : Application() {
 		
 		lateinit var pref : SharedPreferences
 		
-		lateinit var task_executor : ThreadPoolExecutor
+		// lateinit var task_executor : ThreadPoolExecutor
 		
 		@SuppressLint("StaticFieldLeak")
 		lateinit var custom_emoji_cache : CustomEmojiCache
@@ -338,15 +338,15 @@ class App1 : Application() {
 					}
 				}
 				
-				task_executor = ThreadPoolExecutor(
-					CORE_POOL_SIZE  // pool size
-					, MAXIMUM_POOL_SIZE // max pool size
-					, KEEP_ALIVE_SECONDS.toLong() // keep-alive-seconds
-					, TimeUnit.SECONDS // unit of keep-alive-seconds
-					, sPoolWorkQueue, sThreadFactory
-				)
-				
-				task_executor.allowCoreThreadTimeOut(true)
+//				task_executor = ThreadPoolExecutor(
+//					CORE_POOL_SIZE  // pool size
+//					, MAXIMUM_POOL_SIZE // max pool size
+//					, KEEP_ALIVE_SECONDS.toLong() // keep-alive-seconds
+//					, TimeUnit.SECONDS // unit of keep-alive-seconds
+//					, sPoolWorkQueue, sThreadFactory
+//				)
+//
+//				task_executor.allowCoreThreadTimeOut(true)
 			}
 			
 			

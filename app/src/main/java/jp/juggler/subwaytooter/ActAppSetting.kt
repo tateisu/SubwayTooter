@@ -25,6 +25,7 @@ import jp.juggler.subwaytooter.action.CustomShareTarget
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.util.AsyncActivity
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import java.io.File

@@ -213,6 +213,9 @@
     <string name="display_name_unfollowed_by">%1$sにフォロー解除されました</string>
     <string name="display_name_voted_by">%1$sが投票しました</string>
     <string name="display_replies_count">返信の数の表示</string>
+    <string name="display_boost_count">ブーストの数の表示</string>
+    <string name="display_favourite_count">お気に入りの数の表示</string>
+
     <string name="domain_block_from_local">自分のサーバーはドメインブロックできません</string>
     <string name="domain_block_from_pseudo">疑似アカウントではドメインブロックできません</string>
     <string name="domain_count">接続中のサーバー数</string>

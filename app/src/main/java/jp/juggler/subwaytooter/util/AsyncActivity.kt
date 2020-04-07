@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter
+package jp.juggler.subwaytooter.util
 
 import android.os.Bundle
 import android.os.PersistableBundle
@@ -8,7 +8,6 @@ import jp.juggler.util.LogCategory
 import jp.juggler.util.dismissSafe
 import jp.juggler.util.showToast
 import kotlinx.coroutines.*
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
 
 abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
@@ -22,11 +21,11 @@ abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
 	override val coroutineContext : CoroutineContext
 		get() = job + Dispatchers.Main
 	
-	override fun onCreate(savedInstanceState : Bundle?, persistentState : PersistableBundle?) {
-		super.onCreate(savedInstanceState, persistentState)
+	override fun onCreate(savedInstanceState : Bundle?){
 		job = Job()
+		super.onCreate(savedInstanceState)
 	}
-	
+
 	override fun onDestroy() {
 		super.onDestroy()
 		(job + Dispatchers.Default).cancel()

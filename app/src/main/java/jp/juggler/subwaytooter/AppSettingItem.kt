@@ -179,9 +179,9 @@ class AppSettingItem(
 		this.sampleUpdate = sampleUpdate
 	}
 	
-	fun scan(block:(AppSettingItem)->Unit){
+	fun scan(block : (AppSettingItem) -> Unit) {
 		block(this)
-		for( item in items) item.scan(block)
+		for(item in items) item.scan(block)
 	}
 	
 	companion object {
@@ -480,6 +480,20 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		spinner(
 			Pref.ipRepliesCount,
 			R.string.display_replies_count,
+			R.string.replies_count_simple,
+			R.string.replies_count_actual,
+			R.string.replies_count_none
+		)
+		spinner(
+			Pref.ipBoostsCount,
+			R.string.display_boost_count,
+			R.string.replies_count_simple,
+			R.string.replies_count_actual,
+			R.string.replies_count_none
+		)
+		spinner(
+			Pref.ipFavouritesCount,
+			R.string.display_favourite_count,
 			R.string.replies_count_simple,
 			R.string.replies_count_actual,
 			R.string.replies_count_none
@@ -830,8 +844,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 							activity,
 							R.attr.colorRippleEffect
 						)
-					ivFooterToot.background = getAdaptiveRippleDrawableRound(activity,colorBg, colorRipple)
-					ivFooterMenu.background = getAdaptiveRippleDrawableRound(activity,colorBg, colorRipple)
+					ivFooterToot.background =
+						getAdaptiveRippleDrawableRound(activity, colorBg, colorRipple)
+					ivFooterMenu.background =
+						getAdaptiveRippleDrawableRound(activity, colorBg, colorRipple)
 					
 					val csl = ColorStateList.valueOf(
 						footer_button_fg_color.notZero()
@@ -894,8 +910,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		sw(Pref.bpDontUseStreaming, R.string.dont_use_streaming_api)
 		sw(Pref.bpDontRefreshOnResume, R.string.dont_refresh_on_activity_resume)
 		text(Pref.spMediaReadTimeout, R.string.timeout_for_embed_media_viewer, InputTypeEx.number)
-		action(R.string.delete_custom_emoji_cache){
-			action ={
+		action(R.string.delete_custom_emoji_cache) {
+			action = {
 				App1.custom_emoji_cache.delete()
 			}
 		}

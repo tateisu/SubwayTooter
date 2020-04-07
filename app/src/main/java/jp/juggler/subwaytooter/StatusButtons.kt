@@ -103,8 +103,6 @@ internal class StatusButtons(
 		this.status = status
 		this.notification = notification
 		
-		val replies_count = status.replies_count
-		
 		setIconDrawableId(
 			activity,
 			btnConversation,
@@ -132,12 +130,14 @@ internal class StatusButtons(
 		//		btnFollow2.alpha = a
 		//		ivFollowedBy2.alpha = a
 		
+		
+		
 		setButton(
 			btnReply,
 			true,
 			color_normal,
 			R.drawable.ic_reply,
-			when(replies_count) {
+			when(val replies_count = status.replies_count) {
 				null -> ""
 				else -> when(Pref.ipRepliesCount(activity.pref)) {
 					Pref.RC_SIMPLE -> when {
@@ -155,7 +155,8 @@ internal class StatusButtons(
 		// ブーストボタン
 		when {
 			// マストドンではDirectはブーストできない (Misskeyはできる)
-			(! access_info.isMisskey && status.visibility.order <= TootVisibility.DirectSpecified.order) -> setButton(
+			(! access_info.isMisskey && status.visibility.order <= TootVisibility.DirectSpecified.order) ->
+				setButton(
 				btnBoost,
 				false,
 				color_accent,
@@ -164,7 +165,8 @@ internal class StatusButtons(
 				activity.getString(R.string.boost)
 			)
 			
-			activity.app_state.isBusyBoost(access_info, status) -> setButton(
+			activity.app_state.isBusyBoost(access_info, status) ->
+				setButton(
 				btnBoost,
 				false,
 				color_normal,
@@ -178,7 +180,18 @@ internal class StatusButtons(
 				true,
 				if(status.reblogged) color_accent else color_normal,
 				R.drawable.ic_repeat,
-				status.reblogs_count?.toString() ?: "",
+				when(val boosts_count = status.reblogs_count) {
+					null -> ""
+					else -> when(Pref.ipBoostsCount(activity.pref)) {
+						Pref.RC_SIMPLE -> when {
+							boosts_count >= 2L -> "1+"
+							boosts_count == 1L -> "1"
+							else -> ""
+						}
+						Pref.RC_ACTUAL -> boosts_count.toString()
+						else -> ""
+					}
+				},
 				activity.getString(R.string.boost)
 			)
 		}
@@ -217,7 +230,18 @@ internal class StatusButtons(
 				true,
 				if(status.favourited) color_accent else color_normal,
 				fav_icon_drawable,
-				status.favourites_count?.toString() ?: "",
+				when(val favourites_count = status.favourites_count) {
+					null -> ""
+					else -> when(Pref.ipFavouritesCount(activity.pref)) {
+						Pref.RC_SIMPLE -> when {
+							favourites_count >= 2L -> "1+"
+							favourites_count == 1L -> "1"
+							else -> ""
+						}
+						Pref.RC_ACTUAL -> favourites_count.toString()
+						else -> ""
+					}
+				},
 				activity.getString(R.string.favourite)
 			)
 		}

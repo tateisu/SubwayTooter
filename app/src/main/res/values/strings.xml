@@ -733,6 +733,9 @@
     <string name="toot_default_text">Default text when composing toot. (Does not affect to quick toot bar, nor switching account in toot composition screen)</string>
     <string name="list_divider_color">List divider color</string>
     <string name="display_replies_count">Show replies count</string>
+    <string name="display_boost_count">Show boosts count</string>
+    <string name="display_favourite_count">Show favourites count</string>
+
     <string name="replies_count_simple">0/1/1+</string>
     <string name="replies_count_actual">Actual</string>
     <string name="replies_count_none">None</string>

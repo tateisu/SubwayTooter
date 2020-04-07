@@ -230,7 +230,8 @@ class App1 : Application() {
 		private fun getUserAgent() : String {
 			val userAgentCustom = Pref.spUserAgent(pref)
 			return when {
-				userAgentCustom.isNotEmpty() && ! reNotAllowedInUserAgent.matcher(userAgentCustom).find() -> userAgentCustom
+				userAgentCustom.isNotEmpty() && ! reNotAllowedInUserAgent.matcher(userAgentCustom)
+					.find() -> userAgentCustom
 				else -> userAgentDefault
 			}
 		}
@@ -322,31 +323,31 @@ class App1 : Application() {
 				// preferring to have 1 less than the CPU count to avoid saturating
 				// the CPU with background work
 				
-				val CPU_COUNT = Runtime.getRuntime().availableProcessors()
-				val CORE_POOL_SIZE = max(2, min(CPU_COUNT - 1, 4))
-				val MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1
-				val KEEP_ALIVE_SECONDS = 30
+//				val CPU_COUNT = Runtime.getRuntime().availableProcessors()
+//				val CORE_POOL_SIZE = max(2, min(CPU_COUNT - 1, 4))
+//				val MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1
+//				val KEEP_ALIVE_SECONDS = 30
 				
-				// デフォルトだとキューはmax128で、溢れることがある
-				val sPoolWorkQueue = LinkedBlockingQueue<Runnable>(999)
-				
-				val sThreadFactory = object : ThreadFactory {
-					private val mCount = AtomicInteger(1)
-					
-					override fun newThread(r : Runnable) : Thread {
-						return Thread(r, "SubwayTooterTask #" + mCount.getAndIncrement())
-					}
-				}
-				
-//				task_executor = ThreadPoolExecutor(
-//					CORE_POOL_SIZE  // pool size
-//					, MAXIMUM_POOL_SIZE // max pool size
-//					, KEEP_ALIVE_SECONDS.toLong() // keep-alive-seconds
-//					, TimeUnit.SECONDS // unit of keep-alive-seconds
-//					, sPoolWorkQueue, sThreadFactory
-//				)
+//				// デフォルトだとキューはmax128で、溢れることがある
+//				val sPoolWorkQueue = LinkedBlockingQueue<Runnable>(999)
 //
-//				task_executor.allowCoreThreadTimeOut(true)
+//				val sThreadFactory = object : ThreadFactory {
+//					private val mCount = AtomicInteger(1)
+//
+//					override fun newThread(r : Runnable) : Thread {
+//						return Thread(r, "SubwayTooterTask #" + mCount.getAndIncrement())
+//					}
+//				}
+				
+				//				task_executor = ThreadPoolExecutor(
+				//					CORE_POOL_SIZE  // pool size
+				//					, MAXIMUM_POOL_SIZE // max pool size
+				//					, KEEP_ALIVE_SECONDS.toLong() // keep-alive-seconds
+				//					, TimeUnit.SECONDS // unit of keep-alive-seconds
+				//					, sPoolWorkQueue, sThreadFactory
+				//				)
+				//
+				//				task_executor.allowCoreThreadTimeOut(true)
 			}
 			
 			
@@ -602,9 +603,9 @@ class App1 : Application() {
 			activity : AppCompatActivity,
 			intent : Intent,
 			startAnimationBundle : Bundle? = null
-		) :Boolean{
+		) : Boolean {
 			try {
-				val pm = activity.packageManager!!
+				val pm = activity.packageManager !!
 				val flags = PackageManager.MATCH_DEFAULT_ONLY
 				val ri = pm.resolveActivity(intent, flags)
 				if(ri != null && ri.activityInfo.packageName != activity.packageName) {
@@ -616,7 +617,7 @@ class App1 : Application() {
 					activity,
 					intent,
 					autoSelect = true,
-					filter = {it.activityInfo.packageName != activity.packageName }
+					filter = { it.activityInfo.packageName != activity.packageName }
 				) {
 					try {
 						intent.component = it.cn()
@@ -637,9 +638,9 @@ class App1 : Application() {
 		}
 		
 		fun openBrowser(activity : AppCompatActivity, uri : Uri?) {
-			if(uri != null){
-				val rv = startActivityExcludeMyApp(activity, Intent(Intent.ACTION_VIEW, uri) )
-				if(!rv) showToast(activity,true,"there is no app that can open $uri")
+			if(uri != null) {
+				val rv = startActivityExcludeMyApp(activity, Intent(Intent.ACTION_VIEW, uri))
+				if(! rv) showToast(activity, true, "there is no app that can open $uri")
 			}
 		}
 		
@@ -671,12 +672,7 @@ class App1 : Application() {
 					try {
 						// 初回はChrome指定で試す
 						val customTabsIntent = CustomTabsIntent.Builder()
-							.setToolbarColor(
-								getAttributeColor(
-									activity,
-									R.attr.colorPrimary
-								)
-							)
+							.setToolbarColor(getAttributeColor(activity, R.attr.colorPrimary))
 							.setShowTitle(true)
 							.build()
 						
@@ -710,8 +706,8 @@ class App1 : Application() {
 					},
 					customTabsIntent.startAnimationBundle
 				)
-				if(!rv){
-					showToast(activity,true,"the browser app is not installed.")
+				if(! rv) {
+					showToast(activity, true, "the browser app is not installed.")
 				}
 				
 			} catch(ex : Throwable) {

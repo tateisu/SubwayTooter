@@ -133,7 +133,7 @@
     <string name="end_of_list">Fin de la liste</string>
     <string name="exit_app_when_close_protected_column">Quitter l’application lorsque vous essayez de fermer une colonne protégée avec le bouton \"Retour\" et sans confirmation</string>
     <string name="favourite">Favori</string>
-    <string name="favourite_from_another_account">Placer dans les favoris à partir d\'un autre compte</string>
+    <string name="favourite_from_another_account">Ajouter aux favoris via un autre compte</string>
     <string name="favourite_succeeded">Mis en favoris</string>
     <string name="unfavourite_succeeded">Ôté des favoris</string>
     <string name="favourited_by">Mis en favori par …</string>
@@ -175,7 +175,7 @@
     <string name="it_is_you">C\'est vous.</string>
     <string name="last_selection">Dernière sélection</string>
     <string name="led">Diode</string>
-    <string name="list_empty">Aucun élément dans la liste</string>
+    <string name="list_empty">La liste est vide</string>
     <string name="local_timeline">Fil local</string>
     <string name="login_failed">Connexion impossible.</string>
     <string name="login_required">Veuillez mettre à jour votre connexion à partir des paramètres du compte.</string>
@@ -582,7 +582,7 @@
     <string name="open_in_browser">Open in browser</string>
     <string name="share_url">Partager l\'URL</string>
     <string name="share_url_more">Partager l\'URL …</string>
-    <string name="copy_url">Copier l\'URL dans le presse-papiers</string>
+    <string name="copy_url">Copier l’URL dans le presse-papiers</string>
     <string name="media_attachment_empty">Pièces jointes manquantes.</string>
     <string name="media_attachment_type_error">Le type de pièce jointe est \"%1$s\". ST ne peut pas le gérer mais vous pouvez essayer de l’ouvrir dans un navigateur.</string>
     <string name="video_buffering">Mise en mémoire tampon …</string>

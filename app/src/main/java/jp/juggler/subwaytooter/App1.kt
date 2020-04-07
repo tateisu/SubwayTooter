@@ -596,12 +596,13 @@ class App1 : Application() {
 			
 		}
 		
+		// returns true if activity is opened.
+		// returns false if fallback required
 		private fun startActivityExcludeMyApp(
 			activity : AppCompatActivity,
 			intent : Intent,
-			emptyError:String,
 			startAnimationBundle : Bundle? = null
-		) {
+		) :Boolean{
 			try {
 				val pm = activity.packageManager!!
 				val flags = PackageManager.MATCH_DEFAULT_ONLY
@@ -609,12 +610,11 @@ class App1 : Application() {
 				if(ri != null && ri.activityInfo.packageName != activity.packageName) {
 					// ST以外が選択された
 					activity.startActivity(intent, startAnimationBundle)
-					return
+					return true
 				}
-				DlgAppPicker(
+				val rv = DlgAppPicker(
 					activity,
 					intent,
-					emptyError,
 					autoSelect = true,
 					filter = {it.activityInfo.packageName != activity.packageName }
 				) {
@@ -627,14 +627,20 @@ class App1 : Application() {
 					}
 				}.show()
 				
+				return rv
+				
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				showToast(activity, ex, "can't open. ${intent.data}")
+				return true // fallback not required in this case
 			}
 		}
 		
 		fun openBrowser(activity : AppCompatActivity, uri : Uri?) {
-			if(uri != null) startActivityExcludeMyApp(activity, Intent(Intent.ACTION_VIEW, uri),"there is no app that can open $uri")
+			if(uri != null){
+				val rv = startActivityExcludeMyApp(activity, Intent(Intent.ACTION_VIEW, uri) )
+				if(!rv) showToast(activity,true,"there is no app that can open $uri")
+			}
 		}
 		
 		fun openBrowser(activity : AppCompatActivity, url : String?) =
@@ -674,7 +680,7 @@ class App1 : Application() {
 							.setShowTitle(true)
 							.build()
 						
-						startActivityExcludeMyApp(
+						val rv = startActivityExcludeMyApp(
 							activity,
 							customTabsIntent.intent.also {
 								it.component = ComponentName(
@@ -683,10 +689,9 @@ class App1 : Application() {
 								)
 								it.data = url.toUri()
 							},
-							"chrome(product line) is not installed.",
 							customTabsIntent.startAnimationBundle
 						)
-						return
+						if(rv) return
 					} catch(ex2 : Throwable) {
 						log.e(ex2, "openChromeTab: missing chrome. retry to other application.")
 					}
@@ -698,21 +703,22 @@ class App1 : Application() {
 					.setShowTitle(true)
 					.build()
 				
-				startActivityExcludeMyApp(
+				val rv = startActivityExcludeMyApp(
 					activity,
 					customTabsIntent.intent.also {
 						it.data = url.toUri()
 					},
-					"the app that supports custom tabs is not installed.",
 					customTabsIntent.startAnimationBundle
 				)
+				if(!rv){
+					showToast(activity,true,"the browser app is not installed.")
+				}
 				
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				val scheme = url.mayUri()?.scheme ?: url
 				showToast(activity, true, "can't open browser app for %s", scheme)
 			}
-			
 		}
 		
 		fun openCustomTab(activity : AppCompatActivity, ta : TootAttachment) {

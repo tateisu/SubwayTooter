@@ -1165,15 +1165,16 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 	
 	fun openCustomShareChooser(target : CustomShareTarget) {
 		try {
-			DlgAppPicker(
+			val rv = DlgAppPicker(
 				this,
 				Intent().apply {
 					action = Intent.ACTION_SEND
 					type = "text/plain"
 					putExtra(Intent.EXTRA_TEXT, getString(R.string.content_sample))
-				},
-				emptyError = "share target app is not installed."
-			) { setCustomShare(target, it) }.show()
+				}
+			) { setCustomShare(target, it) }
+				.show()
+			if(! rv) showToast(this, true, "share target app is not installed.")
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			showToast(this, ex, "openCustomShareChooser failed.")

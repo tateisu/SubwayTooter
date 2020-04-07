@@ -20,7 +20,6 @@ import jp.juggler.util.*
 class DlgAppPicker(
 	val activity : AppCompatActivity,
 	val intent : Intent,
-	val emptyError: String ,
 	val autoSelect : Boolean = false,
 	val filter : (ResolveInfo) -> Boolean = { true },
 	val callback : (String) -> Unit
@@ -97,11 +96,12 @@ class DlgAppPicker(
 		}
 	}
 	
+	// returns false if list is empty
 	@SuppressLint("InflateParams")
-	fun show() {
+	fun show() =
 		if( list.isEmpty()){
 			dialog?.dismissSafe()
-			showToast(activity,true,emptyError)
+			false
 		}else {
 			dialog?.run {
 				window?.setLayout(
@@ -110,8 +110,9 @@ class DlgAppPicker(
 				)
 				this.show()
 			}
+			true
 		}
-	}
+	
 	
 	private inner class MyAdapter : BaseAdapter(), AdapterView.OnItemClickListener {
 		

@@ -78,7 +78,6 @@ abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
 				}catch(ex:CancellationException){
 					null
 				}
-				// TODO キャンセル時に呼ぶ必要がある利用例があるかどうか調べる
 				if(result!=null) afterProc(result)
 			} catch(ex : Throwable) {
 				showToast(this@AsyncActivity, ex, "$caption failed.")

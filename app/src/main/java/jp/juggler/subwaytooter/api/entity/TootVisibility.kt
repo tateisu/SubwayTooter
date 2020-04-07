@@ -10,6 +10,7 @@ enum class TootVisibility(
 	
 	// IDは下書き保存などで永続化するので、リリース後は変更しないこと！
 	
+	
 	// アカウント設定に合わせる。
 	AccountSetting(- 1, 200, strMastodon = "account_setting", strMisskey = "account_setting"),
 	
@@ -84,6 +85,12 @@ enum class TootVisibility(
 				
 				else -> false
 			}
+	
+	val isPublic : Boolean
+		get()=when(this){
+			Public, LocalPublic, UnlistedHome, LocalHome -> true
+			else->false
+		}
 	
 	companion object {
 		

@@ -631,6 +631,7 @@
     <string name="notification_type_reaction">reaction</string>
     <string name="notification_type_vote">vote</string>
     <string name="dont_show_normal_toot">Don\'t show normal toot</string>
+    <string name="dont_show_non_public_toot">Don\'t show non-public toot</string>
     <string name="set_focus_point">set focus point (Mastodon 2.3+)</string>
     <string name="report_forward_desc">The account is from another server. Send an anonymized copy of the report there as well?</string>
     <string name="report_forward_to">Forward to %1$s</string>

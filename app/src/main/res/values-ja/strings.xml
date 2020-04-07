@@ -232,6 +232,7 @@
     <string name="dont_show_favourite">お気に入りを表示しない</string>
     <string name="dont_show_follow">フォローを表示しない</string>
     <string name="dont_show_normal_toot">通常トゥートを表示しない</string>
+    <string name="dont_show_non_public_toot">非公開トゥートを表示しない</string>
     <string name="dont_show_reaction">リアクションを表示しない</string>
     <string name="dont_show_reply">返信を表示しない</string>
     <string name="dont_show_timeout">\"サーバータイムアウト\"を通知しない</string>

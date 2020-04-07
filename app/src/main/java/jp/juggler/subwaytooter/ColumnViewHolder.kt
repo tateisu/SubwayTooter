@@ -125,6 +125,7 @@ class ColumnViewHolder(
 	private lateinit var cbDontShowReaction : CheckBox
 	private lateinit var cbDontShowVote : CheckBox
 	private lateinit var cbDontShowNormalToot : CheckBox
+	private lateinit var cbDontShowNonPublicToot : CheckBox
 	private lateinit var cbInstanceLocal : CheckBox
 	private lateinit var cbDontStreaming : CheckBox
 	private lateinit var cbDontAutoRefresh : CheckBox
@@ -366,6 +367,7 @@ class ColumnViewHolder(
 		cbDontShowReaction.setOnCheckedChangeListener(this)
 		cbDontShowVote.setOnCheckedChangeListener(this)
 		cbDontShowNormalToot.setOnCheckedChangeListener(this)
+		cbDontShowNonPublicToot.setOnCheckedChangeListener(this)
 		cbInstanceLocal.setOnCheckedChangeListener(this)
 		cbDontStreaming.setOnCheckedChangeListener(this)
 		cbDontAutoRefresh.setOnCheckedChangeListener(this)
@@ -619,6 +621,7 @@ class ColumnViewHolder(
 			cbDontShowReaction.isCheckedNoAnime = column.dont_show_reaction
 			cbDontShowVote.isCheckedNoAnime = column.dont_show_vote
 			cbDontShowNormalToot.isCheckedNoAnime = column.dont_show_normal_toot
+			cbDontShowNonPublicToot.isCheckedNoAnime = column.dont_show_non_public_toot
 			cbInstanceLocal.isCheckedNoAnime = column.instance_local
 			cbDontStreaming.isCheckedNoAnime = column.dont_streaming
 			cbDontAutoRefresh.isCheckedNoAnime = column.dont_auto_refresh
@@ -640,6 +643,7 @@ class ColumnViewHolder(
 			cbDontShowBoost.vg(column.canFilterBoost())
 			cbDontShowReply.vg(column.canFilterReply())
 			cbDontShowNormalToot.vg(column.canFilterNormalToot())
+			cbDontShowNonPublicToot.vg(column.canFilterNonPublicToot())
 			cbDontShowReaction.vg(isNotificationColumn && column.isMisskey)
 			cbDontShowVote.vg(isNotificationColumn)
 			cbDontShowFavourite.vg(isNotificationColumn && ! column.isMisskey)
@@ -964,6 +968,12 @@ class ColumnViewHolder(
 			
 			cbDontShowNormalToot -> {
 				column.dont_show_normal_toot = isChecked
+				activity.app_state.saveColumnList()
+				column.startLoading()
+			}
+			
+			cbDontShowNonPublicToot -> {
+				column.dont_show_non_public_toot = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
@@ -1947,6 +1957,10 @@ class ColumnViewHolder(
 					
 					cbDontShowNormalToot = checkBox {
 						text = context.getString(R.string.dont_show_normal_toot)
+					}.lparams(matchParent, wrapContent)
+					
+					cbDontShowNonPublicToot = checkBox {
+						text = context.getString(R.string.dont_show_non_public_toot)
 					}.lparams(matchParent, wrapContent)
 					
 					cbInstanceLocal = checkBox {

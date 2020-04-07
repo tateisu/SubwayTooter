@@ -145,6 +145,7 @@ class Column(
 		private const val KEY_DONT_SHOW_REACTION = "dont_show_reaction"
 		private const val KEY_DONT_SHOW_VOTE = "dont_show_vote"
 		private const val KEY_DONT_SHOW_NORMAL_TOOT = "dont_show_normal_toot"
+		private const val KEY_DONT_SHOW_NON_PUBLIC_TOOT = "dont_show_non_public_toot"
 		private const val KEY_DONT_STREAMING = "dont_streaming"
 		private const val KEY_DONT_AUTO_REFRESH = "dont_auto_refresh"
 		private const val KEY_HIDE_MEDIA_DEFAULT = "hide_media_default"
@@ -461,6 +462,7 @@ class Column(
 	internal var dont_show_reply : Boolean = false
 	
 	internal var dont_show_normal_toot : Boolean = false
+	internal var dont_show_non_public_toot : Boolean = false
 	
 	internal var dont_show_favourite : Boolean = false // 通知カラムのみ
 	internal var dont_show_follow : Boolean = false // 通知カラムのみ
@@ -580,6 +582,7 @@ class Column(
 			|| with_highlight
 			|| regex_text.isNotEmpty()
 			|| dont_show_normal_toot
+			|| dont_show_non_public_toot
 			|| quick_filter != QUICK_FILTER_ALL
 			|| dont_show_boost
 			|| dont_show_favourite
@@ -712,6 +715,7 @@ class Column(
 		dont_show_reaction = src.optBoolean(KEY_DONT_SHOW_REACTION)
 		dont_show_vote = src.optBoolean(KEY_DONT_SHOW_VOTE)
 		dont_show_normal_toot = src.optBoolean(KEY_DONT_SHOW_NORMAL_TOOT)
+		dont_show_non_public_toot= src.optBoolean(KEY_DONT_SHOW_NON_PUBLIC_TOOT)
 		dont_streaming = src.optBoolean(KEY_DONT_STREAMING)
 		dont_auto_refresh = src.optBoolean(KEY_DONT_AUTO_REFRESH)
 		hide_media_default = src.optBoolean(KEY_HIDE_MEDIA_DEFAULT)
@@ -819,6 +823,7 @@ class Column(
 		dst.putIfTrue(KEY_DONT_SHOW_REACTION, dont_show_reaction)
 		dst.putIfTrue(KEY_DONT_SHOW_VOTE, dont_show_vote)
 		dst.putIfTrue(KEY_DONT_SHOW_NORMAL_TOOT, dont_show_normal_toot)
+		dst.putIfTrue(KEY_DONT_SHOW_NON_PUBLIC_TOOT, dont_show_non_public_toot)
 		dst.putIfTrue(KEY_DONT_STREAMING, dont_streaming)
 		dst.putIfTrue(KEY_DONT_AUTO_REFRESH, dont_auto_refresh)
 		dst.putIfTrue(KEY_HIDE_MEDIA_DEFAULT, hide_media_default)
@@ -1520,6 +1525,9 @@ class Column(
 		
 		if(dont_show_normal_toot) {
 			if(status.in_reply_to_id == null && reblog == null) return true
+		}
+		if(dont_show_non_public_toot) {
+			if(!status.visibility.isPublic ) return true
 		}
 		
 		if(column_regex_filter(status.decoded_content)) return true
@@ -2324,7 +2332,16 @@ class Column(
 			else -> false
 		}
 	}
-	
+	fun canFilterNonPublicToot() : Boolean {
+		return when(type) {
+			ColumnType.HOME, ColumnType.MISSKEY_HYBRID,
+			ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL -> true
+			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
+			ColumnType.HASHTAG_FROM_ACCT -> true
+			else -> false
+		}
+	}
+
 	internal fun canAutoRefresh() : Boolean {
 		return streamPath != null
 	}

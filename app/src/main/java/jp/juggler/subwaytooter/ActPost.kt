@@ -2236,40 +2236,89 @@ class ActPost : AppCompatActivity(),
 					}
 					result
 				} else {
-					
-					val multipart_body = MultipartBody.Builder()
-						.setType(MultipartBody.FORM)
-						.addFormDataPart(
-							"file",
-							fileName,
-							object : RequestBody() {
-								override fun contentType() : MediaType? {
-									return opener.mimeType.toMediaType()
-								}
-								
-								@Throws(IOException::class)
-								override fun contentLength() : Long {
-									return content_length
-								}
-								
-								@Throws(IOException::class)
-								override fun writeTo(sink : BufferedSink) {
-									opener.open().use { inData ->
-										val tmp = ByteArray(4096)
-										while(true) {
-											val r = inData.read(tmp, 0, tmp.size)
-											if(r <= 0) break
-											sink.write(tmp, 0, r)
+					fun postMedia(path : String) = client.request(
+						path,
+						MultipartBody.Builder()
+							.setType(MultipartBody.FORM)
+							.addFormDataPart(
+								"file",
+								fileName,
+								object : RequestBody() {
+									override fun contentType() : MediaType? {
+										return opener.mimeType.toMediaType()
+									}
+									
+									@Throws(IOException::class)
+									override fun contentLength() : Long {
+										return content_length
+									}
+									
+									@Throws(IOException::class)
+									override fun writeTo(sink : BufferedSink) {
+										opener.open().use { inData ->
+											val tmp = ByteArray(4096)
+											while(true) {
+												val r = inData.read(tmp, 0, tmp.size)
+												if(r <= 0) break
+												sink.write(tmp, 0, r)
+											}
 										}
 									}
 								}
-							}
-						)
-					
-					val result = client.request(
-						"/api/v1/media",
-						multipart_body.build().toPost()
+							)
+							.build().toPost()
 					)
+					
+					fun postV1() = postMedia("/api/v1/media")
+					
+					var result : TootApiResult?
+					
+					if(! ti.versionGE(TootInstance.VERSION_3_1_3)) {
+						// 3.1.3未満は v1 APIを使う
+						result = postV1()
+					} else {
+						// v2 APIを試す
+						result = postMedia("/api/v2/media")
+						when(result?.response?.code) {
+							
+							// 404ならv1 APIにフォールバック
+							404 -> result = postV1()
+							
+							// 202 accepted ならポーリングして処理完了を待つ
+							202 -> {
+								val id = parseItem(
+									::TootAttachment,
+									ServiceType.MASTODON,
+									result.jsonObject
+								)
+									?.id
+									?: error("/api/v2/media did not returns media ID.")
+
+								var lastResponse = SystemClock.elapsedRealtime()
+								while(true) {
+									result = client.request("/api/v1/media/$id")
+										?: break // cancelled.
+
+									val code = result.response?.code
+									
+									// complete,or 4xx error
+									if(code == 200 || code in 400 until 500) break
+
+									val now = SystemClock.elapsedRealtime()
+									if( code == 206) {
+										// continue to wait
+										lastResponse = now
+									}else if( now - lastResponse >= 120000L ) {
+										// too many temporary error without 206 response.
+										result = TootApiResult("timeout.")
+										break
+									} // else temporary error
+
+									sleep(1000L)
+								}
+							}
+						}
+					}
 					
 					opener.deleteTempFile()
 					onUploadEnd()
@@ -2278,7 +2327,7 @@ class ActPost : AppCompatActivity(),
 					if(jsonObject != null) {
 						val a = parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)
 						if(a == null) {
-							result.error = "TootAttachment.parse failed"
+							result?.error = "TootAttachment.parse failed"
 						} else {
 							pa.attachment = a
 						}
@@ -2289,7 +2338,6 @@ class ActPost : AppCompatActivity(),
 			} catch(ex : Throwable) {
 				return TootApiResult(ex.withCaption("read failed."))
 			}
-			
 		}
 		
 		private fun AttachmentRequest.handleResult(result : TootApiResult?) {

@@ -540,7 +540,7 @@ internal class ItemViewHolder(
 			is TootSearchGap -> showSearchGap(item)
 			is TootDomainBlock -> showDomainBlock(item)
 			is TootList -> showList(item)
-			is MisskeyAntenna ->showAntenna(item)
+			is MisskeyAntenna -> showAntenna(item)
 			
 			is TootMessageHolder -> showMessageHolder(item)
 			
@@ -790,7 +790,7 @@ internal class ItemViewHolder(
 					showReply(reblog, R.drawable.ic_repeat, R.string.quote_to)
 					showStatus(item, Pref.ipEventBgColorQuote(activity.pref))
 				}
-
+				
 				else -> {
 					// 通常のブースト。引用なしブースト。
 					// ブースト表示は通知イベントと被るのでしない
@@ -1015,6 +1015,7 @@ internal class ItemViewHolder(
 		btnListTL.textColor = content_color
 		btnListMore.imageTintList = content_color_csl
 	}
+	
 	private fun showAntenna(a : MisskeyAntenna) {
 		llList.visibility = View.VISIBLE
 		btnListTL.text = a.name
@@ -1143,7 +1144,7 @@ internal class ItemViewHolder(
 		val who = whoRef.get()
 		
 		// フォローの場合 decoded_display_name が2箇所で表示に使われるのを避ける必要がある
-		val text : Spannable =who.decodeDisplayName(activity)
+		val text : Spannable = who.decodeDisplayName(activity)
 			.intoStringResource(activity, string_id)
 		
 		val emojiResource = misskeyReaction?.emojiResource
@@ -1233,6 +1234,12 @@ internal class ItemViewHolder(
 			)
 		} else {
 			val c = colorBg.notZero()
+
+				?: when(status.bookmarked) {
+					true -> Pref.ipEventBgColorBookmark(App1.pref)
+					false -> 0
+				}.notZero()
+
 				?: when(status.getBackgroundColorType(access_info)) {
 					TootVisibility.UnlistedHome -> toot_color_unlisted
 					TootVisibility.PrivateFollowers -> toot_color_follower
@@ -1520,6 +1527,12 @@ internal class ItemViewHolder(
 				sb.appendColorShadeIcon(activity, R.drawable.ic_mobile, "mobile")
 			}
 			
+			// mobileマーク
+			if(status.bookmarked) {
+				if(sb.isNotEmpty()) sb.append('\u200B')
+				sb.appendColorShadeIcon(activity, R.drawable.ic_bookmark, "bookmarked")
+			}
+			
 			// NSFWマーク
 			if(status.hasMedia() && status.sensitive) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
@@ -1571,12 +1584,12 @@ internal class ItemViewHolder(
 				)
 			}
 			
-			if( status.isPromoted) {
+			if(status.isPromoted) {
 				if(sb.isNotEmpty()) sb.append(' ')
 				sb.append(activity.getString(R.string.promoted))
 			}
 			
-			if( status.isFeatured) {
+			if(status.isFeatured) {
 				if(sb.isNotEmpty()) sb.append(' ')
 				sb.append(activity.getString(R.string.featured))
 			}
@@ -1962,7 +1975,7 @@ internal class ItemViewHolder(
 			
 			btnListTL -> if(item is TootList) {
 				activity.addColumn(pos, access_info, ColumnType.LIST_TL, item.id)
-			}else if( item is MisskeyAntenna){
+			} else if(item is MisskeyAntenna) {
 				// TODO
 				activity.addColumn(pos, access_info, ColumnType.MISSKEY_ANTENNA_TL, item.id)
 			}
@@ -1988,7 +2001,7 @@ internal class ItemViewHolder(
 						Action_List.delete(activity, access_info, item)
 					}
 					.show(activity, item.title)
-			}else if( item is MisskeyAntenna){
+			} else if(item is MisskeyAntenna) {
 				// TODO
 			}
 			

@@ -494,6 +494,7 @@ object Pref {
 	
 	val ipEventBgColorBoost = IntPref("EventBgColorBoost", 0)
 	val ipEventBgColorFavourite = IntPref("EventBgColorFavourite", 0)
+	val ipEventBgColorBookmark = IntPref("EventBgColorBookmark", 0)
 	val ipEventBgColorFollow = IntPref("EventBgColorFollow", 0)
 	val ipEventBgColorMention = IntPref("EventBgColorMention", 0)
 	val ipEventBgColorUnfollow = IntPref("EventBgColorUnfollow", 0)

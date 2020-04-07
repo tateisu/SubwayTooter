@@ -723,6 +723,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		group(R.string.event_background_color) {
 			colorAlpha(Pref.ipEventBgColorBoost, R.string.boost)
 			colorAlpha(Pref.ipEventBgColorFavourite, R.string.favourites)
+			colorAlpha(Pref.ipEventBgColorBookmark, R.string.bookmarks)
 			colorAlpha(Pref.ipEventBgColorMention, R.string.reply)
 			colorAlpha(Pref.ipEventBgColorFollow, R.string.follow)
 			colorAlpha(Pref.ipEventBgColorUnfollow, R.string.unfollow_misskey)

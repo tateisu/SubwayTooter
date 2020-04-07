@@ -11,21 +11,25 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.SystemClock
 import android.provider.MediaStore
-import android.text.*
-import androidx.core.view.inputmethod.InputConnectionCompat
-import androidx.core.view.inputmethod.InputContentInfoCompat
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.view.inputmethod.InputConnectionCompat
+import androidx.core.view.inputmethod.InputContentInfoCompat
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -39,6 +43,7 @@ import jp.juggler.subwaytooter.view.FocusPointView
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
+import kotlinx.coroutines.isActive
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -54,7 +59,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 
-class ActPost : AppCompatActivity(),
+class ActPost : AsyncActivity(),
 	View.OnClickListener,
 	PostAttachment.Callback {
 	
@@ -397,17 +402,17 @@ class ActPost : AppCompatActivity(),
 	private lateinit var btnPost : ImageButton
 	private lateinit var llAttachment : View
 	private lateinit var ivMedia : List<MyNetworkImageView>
-	internal lateinit var cbNSFW : CheckBox
-	internal lateinit var cbContentWarning : CheckBox
-	internal lateinit var etContentWarning : MyEditText
-	internal lateinit var etContent : MyEditText
+	private lateinit var cbNSFW : CheckBox
+	private lateinit var cbContentWarning : CheckBox
+	private lateinit var etContentWarning : MyEditText
+	private lateinit var etContent : MyEditText
 	private lateinit var btnFeaturedTag : ImageButton
 	
-	internal lateinit var cbQuote : CheckBox
+	private lateinit var cbQuote : CheckBox
 	
-	internal lateinit var spEnquete : Spinner
+	private lateinit var spEnquete : Spinner
 	private lateinit var llEnquete : View
-	internal lateinit var list_etChoice : List<MyEditText>
+	private lateinit var list_etChoice : List<MyEditText>
 	
 	private lateinit var cbMultipleChoice : CheckBox
 	private lateinit var cbHideTotals : CheckBox
@@ -433,7 +438,7 @@ class ActPost : AppCompatActivity(),
 	internal lateinit var pref : SharedPreferences
 	internal lateinit var app_state : AppState
 	private lateinit var post_helper : PostHelper
-	internal var attachment_list = ArrayList<PostAttachment>()
+	private var attachment_list = ArrayList<PostAttachment>()
 	private var isPostComplete : Boolean = false
 	
 	internal var density : Float = 0f
@@ -478,9 +483,9 @@ class ActPost : AppCompatActivity(),
 	/////////////////////////////////////////////////
 	
 	internal var in_reply_to_id : EntityId? = null
-	internal var in_reply_to_text : String? = null
-	internal var in_reply_to_image : String? = null
-	internal var in_reply_to_url : String? = null
+	private var in_reply_to_text : String? = null
+	private var in_reply_to_image : String? = null
+	private var in_reply_to_url : String? = null
 	private var mushroom_input : Int = 0
 	private var mushroom_start : Int = 0
 	private var mushroom_end : Int = 0
@@ -812,7 +817,7 @@ class ActPost : AppCompatActivity(),
 							// 比較する前にデフォルトの公開範囲を計算する
 							visibility = visibility
 								?: account.visibility
-									?: TootVisibility.Public
+								//	?: TootVisibility.Public
 							// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになる
 							
 							if(TootVisibility.WebSetting == visibility) {
@@ -1446,7 +1451,7 @@ class ActPost : AppCompatActivity(),
 		etContentWarning.visibility = if(cbContentWarning.isChecked) View.VISIBLE else View.GONE
 	}
 	
-	internal fun selectAccount(a : SavedAccount?) {
+	private fun selectAccount(a : SavedAccount?) {
 		this.account = a
 		if(a == null) {
 			post_helper.setInstance(null, false)
@@ -2661,7 +2666,7 @@ class ActPost : AppCompatActivity(),
 		cbQuote.visibility = if(in_reply_to_id != null) View.VISIBLE else View.GONE
 	}
 	
-	internal fun showReplyTo() {
+	private fun showReplyTo() {
 		if(in_reply_to_id == null) {
 			llReply.visibility = View.GONE
 		} else {
@@ -2773,16 +2778,13 @@ class ActPost : AppCompatActivity(),
 	
 	private fun restoreDraft(draft : JsonObject) {
 		
-		@Suppress("DEPRECATION")
-		val progress = ProgressDialogEx(this)
-		
-		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, String, String?>() {
-			
-			val list_warning = ArrayList<String>()
-			var account : SavedAccount? = null
-			
-			override fun doInBackground(vararg params : Void) : String? {
+		val list_warning = ArrayList<String>()
+		var target_account : SavedAccount? = null
+
+		runWithProgress(
+			"restore from draft",
+			{progress->
+				fun isTaskCancelled() = !this.coroutineContext.isActive
 				
 				var content = draft.string(DRAFT_CONTENT) ?: ""
 				val account_db_id = draft.long(DRAFT_ACCOUNT_DB_ID) ?: - 1L
@@ -2812,15 +2814,16 @@ class ActPost : AppCompatActivity(),
 					} catch(ignored : JsonException) {
 					}
 					
-					return "OK"
+					return@runWithProgress "OK"
 				}
-				this.account = account
+
+				target_account = account
 				
 				// アカウントがあるなら基本的にはすべての情報を復元できるはずだが、いくつか確認が必要だ
 				val api_client = TootApiClient(this@ActPost, callback = object : TootApiCallback {
 					
 					override val isApiCancelled : Boolean
-						get() = isCancelled
+						get() = isTaskCancelled()
 					
 					override fun publishApiProgress(s : String) {
 						runOnMainLooper {
@@ -2833,7 +2836,7 @@ class ActPost : AppCompatActivity(),
 				
 				if(in_reply_to_id != null) {
 					val result = api_client.request("/api/v1/statuses/$in_reply_to_id")
-					if(isCancelled) return null
+					if(isTaskCancelled()) return@runWithProgress null
 					val jsonObject = result?.jsonObject
 					if(jsonObject == null) {
 						list_warning.add(getString(R.string.reply_to_in_draft_is_lost))
@@ -2848,7 +2851,7 @@ class ActPost : AppCompatActivity(),
 						var isSomeAttachmentRemoved = false
 						val it = tmp_attachment_list.iterator()
 						while(it.hasNext()) {
-							if(isCancelled) return null
+							if(isTaskCancelled()) return@runWithProgress null
 							val ta = TootAttachment.decodeJson(it.next())
 							if(check_exist(ta.url)) continue
 							it.remove()
@@ -2869,20 +2872,11 @@ class ActPost : AppCompatActivity(),
 					log.trace(ex)
 				}
 				
-				return "OK"
-			}
-			
-			override fun onCancelled(result : String?) {
-				onPostExecute(result)
-			}
-			
-			override fun onPostExecute(result : String?) {
-				progress.dismissSafe()
-				
-				if(isCancelled || result == null) {
-					// cancelled.
-					return
-				}
+				"OK"
+			},
+			{result->
+				// cancelled.
+				if( result == null) return@runWithProgress
 				
 				val content = draft.string(DRAFT_CONTENT) ?: ""
 				val content_warning = draft.string(DRAFT_CONTENT_WARNING) ?: ""
@@ -2935,7 +2929,7 @@ class ActPost : AppCompatActivity(),
 					}
 				}
 				
-				if(account != null) selectAccount(account)
+				if(target_account != null) selectAccount(target_account)
 				
 				if(tmp_attachment_list?.isNotEmpty() == true) {
 					attachment_list.clear()
@@ -2973,13 +2967,7 @@ class ActPost : AppCompatActivity(),
 						.show()
 				}
 			}
-		}
-		
-		progress.isIndeterminateEx = true
-		progress.setCancelable(true)
-		progress.setOnCancelListener { task.cancel(true) }
-		progress.show()
-		task.executeOnExecutor(App1.task_executor)
+		)
 	}
 	
 	private fun prepareMushroomText(et : EditText) : String {

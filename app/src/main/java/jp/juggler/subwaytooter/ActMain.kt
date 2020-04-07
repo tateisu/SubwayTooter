@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
@@ -19,8 +18,6 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -31,13 +28,17 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromUrl
 import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
-import jp.juggler.subwaytooter.dialog.*
+import jp.juggler.subwaytooter.dialog.AccountPicker
+import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.dialog.DlgQuickTootMenu
+import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
 import jp.juggler.util.*
+import kotlinx.coroutines.delay
 import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.backgroundDrawable
 import java.io.File
@@ -51,7 +52,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class ActMain : AppCompatActivity()
+class ActMain : AsyncActivity()
 	, Column.Callback
 	, View.OnClickListener
 	, ViewPager.OnPageChangeListener
@@ -1320,7 +1321,7 @@ class ActMain : AppCompatActivity()
 		drawer = findViewById(R.id.drawer_layout)
 		drawer.addDrawerListener(this)
 		
-		drawer.setExclusionSize( stripIconSize)
+		drawer.setExclusionSize(stripIconSize)
 		
 		
 		
@@ -1548,7 +1549,7 @@ class ActMain : AppCompatActivity()
 		}
 	)
 	
-	internal fun updateColumnStrip() {
+	private fun updateColumnStrip() {
 		llEmpty.vg(app_state.column_list.isEmpty())
 		
 		val iconSize = stripIconSize
@@ -1599,7 +1600,7 @@ class ActMain : AppCompatActivity()
 				scrollToColumn(idx)
 			}
 			viewRoot.contentDescription = column.getColumnName(true)
-
+			
 			viewRoot.backgroundDrawable = getAdaptiveRippleDrawableRound(
 				this,
 				column.getHeaderBackgroundColor(),
@@ -2523,10 +2524,11 @@ class ActMain : AppCompatActivity()
 		)
 		val colorRipple =
 			footer_button_fg_color.notZero() ?: getAttributeColor(this, R.attr.colorRippleEffect)
-		btnMenu.backgroundDrawable = getAdaptiveRippleDrawableRound(this,colorBg, colorRipple)
-		btnToot.backgroundDrawable = getAdaptiveRippleDrawableRound(this,colorBg, colorRipple)
-		btnQuickToot.backgroundDrawable = getAdaptiveRippleDrawableRound(this,colorBg, colorRipple)
-		btnQuickTootMenu.backgroundDrawable = getAdaptiveRippleDrawableRound(this,colorBg, colorRipple)
+		btnMenu.backgroundDrawable = getAdaptiveRippleDrawableRound(this, colorBg, colorRipple)
+		btnToot.backgroundDrawable = getAdaptiveRippleDrawableRound(this, colorBg, colorRipple)
+		btnQuickToot.backgroundDrawable = getAdaptiveRippleDrawableRound(this, colorBg, colorRipple)
+		btnQuickTootMenu.backgroundDrawable =
+			getAdaptiveRippleDrawableRound(this, colorBg, colorRipple)
 		
 		val csl = ColorStateList.valueOf(
 			footer_button_fg_color.notZero()
@@ -2738,159 +2740,125 @@ class ActMain : AppCompatActivity()
 		uri ?: return
 		
 		// remove all columns
-		run {
-			phoneOnly { env -> env.pager.adapter = null }
-			
-			for(c in app_state.column_list) {
-				c.dispose()
-			}
-			app_state.column_list.clear()
-			
-			phoneTab(
-				{ env -> env.pager.adapter = env.pager_adapter },
-				{ env -> resizeColumnWidth(env) }
-			)
-			
-			
-			updateColumnStrip()
+		phoneOnly { env -> env.pager.adapter = null }
+		
+		for(c in app_state.column_list) {
+			c.dispose()
 		}
+		app_state.column_list.clear()
 		
-		@Suppress("DEPRECATION")
-		val progress = ProgressDialogEx(this)
+		phoneTab(
+			{ env -> env.pager.adapter = env.pager_adapter },
+			{ env -> resizeColumnWidth(env) }
+		)
 		
-		val task = @SuppressLint("StaticFieldLeak") object :
-			AsyncTask<Void, String, ArrayList<Column>?>() {
+		updateColumnStrip()
+		
+		
+		runWithProgress(
+			"importing app data",
 			
-			fun setProgressMessage(sv : String) {
-				runOnMainLooper {
-					progress.setMessageEx(sv)
-				}
-			}
-			
-			override fun doInBackground(vararg params : Void) : ArrayList<Column>? {
+			doInBackground = { progress ->
+				fun setProgressMessage(sv : String) =
+					runOnMainLooper { progress.setMessageEx(sv) }
 				
 				var newColumnList : ArrayList<Column>? = null
 				
+				setProgressMessage("import data to local storage...")
+				
+				// アプリ内領域に一時ファイルを作ってコピーする
+				val cacheDir = cacheDir
+				cacheDir.mkdir()
+				val file = File(
+					cacheDir,
+					"SubwayTooter.${Process.myPid()}.${Process.myTid()}.tmp"
+				)
+				val source = contentResolver.openInputStream(uri)
+				if(source == null) {
+					showToast(true, "openInputStream failed.")
+					return@runWithProgress null
+				}
+				source.use { inStream ->
+					FileOutputStream(file).use { outStream ->
+						IOUtils.copy(inStream, outStream)
+					}
+				}
+				
+				// 通知サービスを止める
+				setProgressMessage("syncing notification poller…")
+				PollingWorker.queueAppDataImportBefore(this@ActMain)
+				while(PollingWorker.mBusyAppDataImportBefore.get()) {
+					delay(1000L)
+					log.d("syncing polling task...")
+				}
+				
+				// データを読み込む
+				setProgressMessage("reading app data...")
+				var zipEntryCount = 0
 				try {
-					
-					setProgressMessage("import data to local storage...")
-					
-					// アプリ内領域に一時ファイルを作ってコピーする
-					val cacheDir = cacheDir
-					cacheDir.mkdir()
-					val file = File(
-						cacheDir,
-						"SubwayTooter.${Process.myPid()}.${Process.myTid()}.tmp"
-					)
-					val source = contentResolver.openInputStream(uri)
-					if(source == null) {
-						showToast(this@ActMain, true, "openInputStream failed.")
-						return null
-					}
-					source.use { inStream ->
-						FileOutputStream(file).use { outStream ->
-							IOUtils.copy(inStream, outStream)
-						}
-					}
-					
-					// 通知サービスを止める
-					setProgressMessage("syncing notification poller…")
-					PollingWorker.queueAppDataImportBefore(this@ActMain)
-					while(PollingWorker.mBusyAppDataImportBefore.get()) {
-						Thread.sleep(1000L)
-						log.d("syncing polling task...")
-					}
-					
-					// データを読み込む
-					setProgressMessage("reading app data...")
-					var zipEntryCount = 0
-					try {
-						ZipInputStream(FileInputStream(file)).use { zipStream ->
-							while(true) {
-								val entry = zipStream.nextEntry ?: break
-								++ zipEntryCount
-								try {
-									//
-									val entryName = entry.name
-									if(entryName.endsWith(".json")) {
-										newColumnList = AppDataExporter.decodeAppData(
-											this@ActMain,
-											JsonReader(InputStreamReader(zipStream, "UTF-8"))
-										)
-										continue
-									}
-									
-									if(AppDataExporter.restoreBackgroundImage(
-											this@ActMain,
-											newColumnList,
-											zipStream,
-											entryName
-										)
-									) {
-										continue
-									}
-								} finally {
-									zipStream.closeEntry()
+					ZipInputStream(FileInputStream(file)).use { zipStream ->
+						while(true) {
+							val entry = zipStream.nextEntry ?: break
+							++ zipEntryCount
+							try {
+								//
+								val entryName = entry.name
+								if(entryName.endsWith(".json")) {
+									newColumnList = AppDataExporter.decodeAppData(
+										this@ActMain,
+										JsonReader(InputStreamReader(zipStream, "UTF-8"))
+									)
+									continue
 								}
+								
+								if(AppDataExporter.restoreBackgroundImage(
+										this@ActMain,
+										newColumnList,
+										zipStream,
+										entryName
+									)
+								) {
+									continue
+								}
+							} finally {
+								zipStream.closeEntry()
 							}
 						}
-					} catch(ex : Throwable) {
-						log.trace(ex)
-						if(zipEntryCount != 0) {
-							showToast(this@ActMain, ex, "importAppData failed.")
-						}
 					}
-					// zipではなかった場合、zipEntryがない状態になる。例外はPH-1では出なかったが、出ても問題ないようにする。
-					if(zipEntryCount == 0) {
-						InputStreamReader(FileInputStream(file), "UTF-8").use { inStream ->
-							newColumnList = AppDataExporter.decodeAppData(
-								this@ActMain,
-								JsonReader(inStream)
-							)
-						}
-					}
-					
 				} catch(ex : Throwable) {
 					log.trace(ex)
-					showToast(this@ActMain, ex, "importAppData failed.")
-				}
-				
-				return newColumnList
-			}
-			
-			override fun onCancelled(result : ArrayList<Column>?) {
-				onPostExecute(result)
-			}
-			
-			override fun onPostExecute(result : ArrayList<Column>?) {
-				
-				progress.dismissSafe()
-				
-				try {
-					window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-				} catch(ignored : Throwable) {
-				}
-				
-				try {
-					if(isCancelled || result == null) {
-						// cancelled.
-						return
+					if(zipEntryCount != 0) {
+						showToast(this@ActMain, ex, "importAppData failed.")
 					}
-					
-					run {
-						
-						phoneOnly { env -> env.pager.adapter = null }
-						
-						app_state.column_list.clear()
-						app_state.column_list.addAll(result)
-						app_state.saveColumnList()
-						
-						phoneTab(
-							{ env -> env.pager.adapter = env.pager_adapter },
-							{ env -> resizeColumnWidth(env) }
+				}
+				// zipではなかった場合、zipEntryがない状態になる。例外はPH-1では出なかったが、出ても問題ないようにする。
+				if(zipEntryCount == 0) {
+					InputStreamReader(FileInputStream(file), "UTF-8").use { inStream ->
+						newColumnList = AppDataExporter.decodeAppData(
+							this@ActMain,
+							JsonReader(inStream)
 						)
-						updateColumnStrip()
 					}
+				}
+				
+				newColumnList
+			},
+			afterProc = {
+				// cancelled.
+				if(it == null) return@runWithProgress
+				
+				try {
+					phoneOnly { env -> env.pager.adapter = null }
+					
+					app_state.column_list.clear()
+					app_state.column_list.addAll(it)
+					app_state.saveColumnList()
+					
+					phoneTab(
+						{ env -> env.pager.adapter = env.pager_adapter },
+						{ env -> resizeColumnWidth(env) }
+					)
+					updateColumnStrip()
 				} finally {
 					// 通知サービスをリスタート
 					PollingWorker.queueAppDataImportAfter(this@ActMain)
@@ -2898,19 +2866,14 @@ class ActMain : AppCompatActivity()
 				
 				showToast(this@ActMain, true, R.string.import_completed_please_restart_app)
 				finish()
+			},
+			preProc = {
+				window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+			},
+			postProc = {
+				window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 			}
-		}
-		
-		try {
-			window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-		} catch(ignored : Throwable) {
-		}
-		
-		progress.isIndeterminateEx = true
-		progress.setCancelable(false)
-		progress.setOnCancelListener { task.cancel(true) }
-		progress.show()
-		task.executeOnExecutor(App1.task_executor)
+		)
 	}
 	
 	override fun onDrawerSlide(drawerView : View, slideOffset : Float) {

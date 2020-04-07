@@ -6,7 +6,7 @@ import jp.juggler.util.JsonObject
 
 class MisskeyAntenna(parser:TootParser,src: JsonObject) :TimelineItem(){
 	
-	val timeCreatedAt:Long // "2020-02-19T09:08:41.929Z"
+	private val timeCreatedAt:Long // "2020-02-19T09:08:41.929Z"
 
 	val id: EntityId
 	
@@ -19,7 +19,7 @@ class MisskeyAntenna(parser:TootParser,src: JsonObject) :TimelineItem(){
 	//	"src":"list",
 	//	"src":"users",
 	
-	val keywords: Array<Array<String>>
+	private val keywords: Array<Array<String>>
 //	"keywords":[[""]],
 //	"keywords":[[""]],
 //	"keywords":[[""]],
@@ -28,20 +28,20 @@ class MisskeyAntenna(parser:TootParser,src: JsonObject) :TimelineItem(){
 //	"keywords":[["test"]],
 
 	// src=="group" の場合。他はnull
-	val userGroupId : EntityId?
+	private val userGroupId : EntityId?
 	
 	// src=="list" の場合。他はnull
-	val userListId : EntityId?
+	private val userListId : EntityId?
 	
 	val users : Array<String>
 //	"users":[""],
 //	"users":["@tateisu","@syuilo"],
 	
-	val caseSensitive:Boolean
-	val hasUnreadNote:Boolean
-	val notify: Boolean
-	val withFile : Boolean
-	val withReplies : Boolean
+	private val caseSensitive:Boolean
+	private val hasUnreadNote:Boolean
+	private val notify: Boolean
+	private val withFile : Boolean
+	private val withReplies : Boolean
 	
 	init{
 		timeCreatedAt = TootStatus.parseTime(src.string("createdAt"))

@@ -26,7 +26,7 @@ class ColumnTask_Refresh(
 	
 	private var filterUpdated = false
 	
-	override fun doInBackground(vararg unused : Void) : TootApiResult? {
+	override fun doInBackground() : TootApiResult? {
 		ctStarted.set(true)
 		
 		val client = TootApiClient(context, callback = object : TootApiCallback {

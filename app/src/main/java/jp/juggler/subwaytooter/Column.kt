@@ -1450,7 +1450,7 @@ class Column(
 	
 	private fun cancelLastTask() {
 		if(lastTask != null) {
-			lastTask?.cancel(true)
+			lastTask?.cancel()
 			lastTask = null
 			//
 			bInitialLoading = false
@@ -1929,7 +1929,7 @@ class Column(
 		@SuppressLint("StaticFieldLeak")
 		val task = ColumnTask_Loading(this)
 		this.lastTask = task
-		task.executeOnExecutor(App1.task_executor)
+		task.start()
 	}
 	
 	private var bMinIdMatched : Boolean = false
@@ -2141,7 +2141,7 @@ class Column(
 		@SuppressLint("StaticFieldLeak")
 		val task = ColumnTask_Refresh(this, bSilent, bBottom, posted_status_id, refresh_after_toot)
 		this.lastTask = task
-		task.executeOnExecutor(App1.task_executor)
+		task.start()
 		fireShowColumnStatus()
 	}
 	
@@ -2165,9 +2165,8 @@ class Column(
 		
 		@SuppressLint("StaticFieldLeak")
 		val task = ColumnTask_Gap(this, gap)
-		
 		this.lastTask = task
-		task.executeOnExecutor(App1.task_executor)
+		task.start()
 		fireShowColumnStatus()
 	}
 	

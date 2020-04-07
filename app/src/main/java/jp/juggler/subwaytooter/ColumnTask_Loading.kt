@@ -18,7 +18,7 @@ class ColumnTask_Loading(
 	
 	internal var list_pinned : ArrayList<TimelineItem>? = null
 	
-	override fun doInBackground(vararg unused : Void) : TootApiResult? {
+	override fun doInBackground() : TootApiResult? {
 		ctStarted.set(true)
 		
 		if(Pref.bpInstanceTicker(pref)) {

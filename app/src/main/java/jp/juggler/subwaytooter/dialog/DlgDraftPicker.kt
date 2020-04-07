@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.database.Cursor
-import android.os.AsyncTask
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -12,16 +11,21 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActPost
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.util.JsonObject
+import jp.juggler.util.LogCategory
 import jp.juggler.util.dismissSafe
 import jp.juggler.util.showToast
+import kotlinx.coroutines.*
 
 class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
 	DialogInterface.OnDismissListener {
+	
+	companion object{
+		private val log = LogCategory("DlgDraftPicker")
+	}
 	
 	private lateinit var activity : ActPost
 	private lateinit var callback : (draft : JsonObject) -> Unit
@@ -32,7 +36,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 	private var cursor : Cursor? = null
 	private var colIdx : PostDraft.ColIdx? = null
 	
-	private var task : AsyncTask<Void, Void, Cursor?>? = null
+	private var task : Job? = null
 	
 	override fun onItemClick(parent : AdapterView<*>, view : View, position : Int, id : Long) {
 		val json = getPostDraft(position)?.json
@@ -61,7 +65,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 	}
 	
 	override fun onDismiss(dialog : DialogInterface) {
-		task?.cancel(true)
+		task?.cancel()
 		task = null
 		
 		lvDraft.adapter = null
@@ -98,37 +102,32 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 	private fun reload() {
 		
 		// cancel old task
-		task?.cancel(true)
+		task?.cancel()
 		
-		val new_task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, Void, Cursor?>() {
-			override fun doInBackground(vararg params : Void) : Cursor? {
-				return PostDraft.createCursor()
+		task = GlobalScope.launch(Dispatchers.Main){
+			val cursor =try {
+				withContext(Dispatchers.IO) {
+					PostDraft.createCursor()
+				} ?: error("cursor is null")
+			}catch(ex:CancellationException) {
+				return@launch
+			}catch(ex:Throwable){
+				log.trace(ex)
+				showToast(activity,ex, "failed to loading drafts.")
+				return@launch
 			}
 			
-			override fun onCancelled(cursor : Cursor?) {
-				onPostExecute(cursor)
-			}
-			
-			override fun onPostExecute(cursor : Cursor?) {
-				if(! dialog.isShowing) {
-					// dialog is already closed.
-					cursor?.close()
-					return
-				}
-				
-				if(cursor == null) {
-					// load failed.
-					showToast(activity, true, "failed to loading drafts.")
-				} else {
-					this@DlgDraftPicker.cursor = cursor
-					colIdx = PostDraft.ColIdx(cursor)
-					adapter.notifyDataSetChanged()
-				}
+			if(! dialog.isShowing) {
+				// dialog is already closed.
+				cursor.close()
+			} else {
+				val old = this@DlgDraftPicker.cursor
+				this@DlgDraftPicker.cursor = cursor
+				colIdx = PostDraft.ColIdx(cursor)
+				adapter.notifyDataSetChanged()
+				old?.close()
 			}
 		}
-		this.task = new_task
-		new_task.executeOnExecutor(App1.task_executor)
 	}
 	
 	private fun getPostDraft(position : Int) : PostDraft? {

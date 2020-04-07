@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
-import android.os.AsyncTask
 import android.os.SystemClock
 import android.text.InputType
 import android.text.Spannable
@@ -38,11 +37,16 @@ import jp.juggler.subwaytooter.dialog.EmojiPicker
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.util.*
-import jp.juggler.subwaytooter.view.*
+import jp.juggler.subwaytooter.view.ListDivider
+import jp.juggler.subwaytooter.view.MyLinkMovementMethod
+import jp.juggler.subwaytooter.view.MyTextView
+import jp.juggler.subwaytooter.view.OutsideDrawerLayout
 import jp.juggler.util.*
+import kotlinx.coroutines.*
 import org.jetbrains.anko.*
 import org.jetbrains.anko.custom.customView
 import java.io.Closeable
+import java.lang.Runnable
 import java.lang.reflect.Field
 import java.util.regex.Pattern
 
@@ -178,7 +182,7 @@ class ColumnViewHolder(
 	
 	private var last_image_uri : String? = null
 	private var last_image_bitmap : Bitmap? = null
-	private var last_image_task : AsyncTask<Void, Void, Bitmap?>? = null
+	private var last_image_task : Job? = null
 	
 	private fun checkRegexFilterError(src : String) : String? {
 		try {
@@ -808,7 +812,7 @@ class ColumnViewHolder(
 			last_image_bitmap?.recycle()
 			last_image_bitmap = null
 			
-			last_image_task?.cancel(true)
+			last_image_task?.cancel()
 			last_image_task = null
 			
 			last_image_uri = null
@@ -842,41 +846,35 @@ class ColumnViewHolder(
 			val screen_h = iv.resources.displayMetrics.heightPixels
 			
 			// 非同期処理を開始
-			val task = object : AsyncTask<Void, Void, Bitmap?>() {
-				override fun doInBackground(vararg params : Void) : Bitmap? {
-					return try {
-						createResizedBitmap(
-							activity, url.toUri(),
-							if(screen_w > screen_h)
-								screen_w
-							else
-								screen_h
-						)
-					} catch(ex : Throwable) {
-						log.trace(ex)
-						null
-					}
-				}
-				
-				override fun onCancelled(bitmap : Bitmap?) {
-					onPostExecute(bitmap)
-				}
-				
-				override fun onPostExecute(bitmap : Bitmap?) {
-					if(bitmap != null) {
-						if(isCancelled || url != last_image_uri) {
-							bitmap.recycle()
-						} else {
-							last_image_bitmap = bitmap
-							iv.setImageBitmap(last_image_bitmap)
-							iv.visibility = View.VISIBLE
+			last_image_task = GlobalScope.launch(Dispatchers.Main){
+				val bitmap = try{
+					withContext(Dispatchers.IO){
+						try {
+							createResizedBitmap(
+								activity, url.toUri(),
+								if(screen_w > screen_h)
+									screen_w
+								else
+									screen_h
+							)
+						} catch(ex : Throwable) {
+							log.trace(ex)
+							null
 						}
+					}
+				}catch(ex:Throwable){
+					null
+				}
+				if(bitmap != null) {
+					if(!coroutineContext.isActive || url != last_image_uri) {
+						bitmap.recycle()
+					} else {
+						last_image_bitmap = bitmap
+						iv.setImageBitmap(last_image_bitmap)
+						iv.visibility = View.VISIBLE
 					}
 				}
 			}
-			last_image_task = task
-			task.executeOnExecutor(App1.task_executor)
-			
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}

@@ -1,12 +1,10 @@
 package jp.juggler.subwaytooter
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
@@ -18,7 +16,6 @@ import android.view.Window
 import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
@@ -26,7 +23,6 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.action.CustomShare
 import jp.juggler.subwaytooter.action.CustomShareTarget
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
-import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
@@ -44,7 +40,7 @@ import kotlin.Comparator
 import kotlin.collections.ArrayList
 import kotlin.math.abs
 
-class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnClickListener {
+class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickListener {
 	
 	companion object {
 		internal val log = LogCategory("ActAppSetting")
@@ -780,93 +776,58 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
 	
 	fun exportAppData() {
 		
-		@Suppress("DEPRECATION")
-		val progress = ProgressDialogEx(this)
-		
-		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, String, File?>() {
-			
-			override fun doInBackground(vararg params : Void) : File? {
+		runWithProgress(
+			"export app data",
+			{
+				val cache_dir = cacheDir
+				cache_dir.mkdir()
 				
-				try {
-					val cache_dir = cacheDir
-					cache_dir.mkdir()
+				val file = File(
+					cache_dir,
+					"SubwayTooter.${android.os.Process.myPid()}.${android.os.Process.myTid()}.zip"
+				)
+				
+				// ZipOutputStreamオブジェクトの作成
+				ZipOutputStream(FileOutputStream(file)).use { zipStream ->
 					
-					val file = File(
-						cache_dir,
-						"SubwayTooter.${android.os.Process.myPid()}.${android.os.Process.myTid()}.zip"
-					)
-					
-					// ZipOutputStreamオブジェクトの作成
-					ZipOutputStream(FileOutputStream(file)).use { zipStream ->
-						
-						// アプリデータjson
-						zipStream.putNextEntry(ZipEntry("AppData.json"))
-						try {
-							val jw = JsonWriter(OutputStreamWriter(zipStream, "UTF-8"))
-							AppDataExporter.encodeAppData(this@ActAppSetting, jw)
-							jw.flush()
-						} finally {
-							zipStream.closeEntry()
-						}
-						
-						// カラム背景画像
-						val appState = App1.getAppState(this@ActAppSetting)
-						for(column in appState.column_list) {
-							AppDataExporter.saveBackgroundImage(
-								this@ActAppSetting,
-								zipStream,
-								column
-							)
-						}
+					// アプリデータjson
+					zipStream.putNextEntry(ZipEntry("AppData.json"))
+					try {
+						val jw = JsonWriter(OutputStreamWriter(zipStream, "UTF-8"))
+						AppDataExporter.encodeAppData(this@ActAppSetting, jw)
+						jw.flush()
+					} finally {
+						zipStream.closeEntry()
 					}
 					
-					return file
-				} catch(ex : Throwable) {
-					log.trace(ex)
-					showToast(this@ActAppSetting, ex, "exportAppData failed.")
+					// カラム背景画像
+					val appState = App1.getAppState(this@ActAppSetting)
+					for(column in appState.column_list) {
+						AppDataExporter.saveBackgroundImage(
+							this@ActAppSetting,
+							zipStream,
+							column
+						)
+					}
 				}
 				
-				return null
-			}
-			
-			override fun onCancelled(result : File?) {
-				onPostExecute(result)
-			}
-			
-			override fun onPostExecute(result : File?) {
-				progress.dismissSafe()
+				file
+			},
+			{
+				val uri = FileProvider.getUriForFile(
+					this@ActAppSetting,
+					App1.FILE_PROVIDER_AUTHORITY,
+					it
+				)
+				val intent = Intent(Intent.ACTION_SEND)
+				intent.type = contentResolver.getType(uri)
+				intent.putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter app data")
+				intent.putExtra(Intent.EXTRA_STREAM, uri)
 				
-				if(isCancelled || result == null) {
-					// cancelled.
-					return
-				}
-				
-				try {
-					val uri = FileProvider.getUriForFile(
-						this@ActAppSetting,
-						App1.FILE_PROVIDER_AUTHORITY,
-						result
-					)
-					val intent = Intent(Intent.ACTION_SEND)
-					intent.type = contentResolver.getType(uri)
-					intent.putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter app data")
-					intent.putExtra(Intent.EXTRA_STREAM, uri)
-					
-					intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-					startActivityForResult(intent, REQUEST_CODE_OTHER)
-				} catch(ex : Throwable) {
-					log.trace(ex)
-					showToast(this@ActAppSetting, ex, "exportAppData failed.")
-				}
+				intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+				startActivityForResult(intent, REQUEST_CODE_OTHER)
 			}
-		}
-		
-		progress.isIndeterminateEx = true
-		progress.setCancelable(true)
-		progress.setOnCancelListener { task.cancel(true) }
-		progress.show()
-		task.executeOnExecutor(App1.task_executor)
+		)
 	}
 	
 	// open data picker

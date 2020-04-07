@@ -2,22 +2,21 @@ package jp.juggler.subwaytooter.api
 
 import android.app.Activity
 import android.content.Context
-import android.os.AsyncTask
 import android.os.Handler
 import android.os.SystemClock
-
-import java.lang.ref.WeakReference
-import java.text.NumberFormat
-
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.dismissSafe
+import jp.juggler.util.withCaption
+import kotlinx.coroutines.*
+import java.lang.Runnable
+import java.lang.ref.WeakReference
+import java.text.NumberFormat
+import java.util.concurrent.atomic.AtomicBoolean
 
 /*
-	非同期タスク(TootTask)を実行します。
-	- 内部でAsyncTaskを使います。Android Lintの警告を抑制します
+	APIクライアントを必要とする非同期タスク(TootTask)を実行します。
 	- ProgressDialogを表示します。抑制することも可能です。
 	- TootApiClientの初期化を行います
 	- TootApiClientからの進捗イベントをProgressDialogに伝達します。
@@ -52,43 +51,15 @@ class TootTaskRunner(
 		internal var max = 1
 	}
 	
-	// has AsyncTask
-	private class MyTask(
-		private val runner : TootTaskRunner
-	) : AsyncTask<Void, Void, TootApiResult?>() {
-		
-		var isActive : Boolean = true
-		
-		override fun doInBackground(vararg voids : Void) : TootApiResult? {
-			val callback = runner.callback
-			return if(callback == null) {
-				TootApiResult("callback is null")
-			} else {
-				callback.background(runner.client)
-			}
-		}
-		
-		override fun onCancelled(result : TootApiResult?) {
-			onPostExecute(result)
-		}
-		
-		override fun onPostExecute(result : TootApiResult?) {
-			isActive = false
-			runner.dismissProgress()
-			runner.callback?.handleResult(result)
-		}
-	}
-	
 	private val handler : Handler
 	private val client : TootApiClient
-	private val task : MyTask
 	private val info = ProgressInfo()
 	private var progress : ProgressDialogEx? = null
 	private var progress_prefix : String? = null
+	private var task : Deferred<TootApiResult?>? = null
 	
 	private val refContext : WeakReference<Context>
 	
-	private var callback : TootTask? = null
 	private var last_message_shown : Long = 0
 	
 	private val proc_progress_message = object : Runnable {
@@ -105,19 +76,29 @@ class TootTaskRunner(
 		this.refContext = WeakReference(context)
 		this.handler = Handler(context.mainLooper)
 		this.client = TootApiClient(context, callback = this)
-		this.task = MyTask(this)
 	}
 	
+	private val _isActive = AtomicBoolean(true)
+	
 	val isActive : Boolean
-		get() = task.isActive
+		get() = _isActive.get()
 	
 	fun run(callback : TootTask) : TootTaskRunner {
-		openProgress()
-		
-		this.callback = callback
-		
-		task.executeOnExecutor(App1.task_executor)
-		
+		GlobalScope.launch(Dispatchers.Main) {
+			openProgress()
+			val result = try {
+				withContext(Dispatchers.IO) {
+					callback.background(client)
+				}
+			}catch(ex:CancellationException){
+				null
+			} catch(ex : Throwable) {
+				TootApiResult(ex.withCaption("error"))
+			}
+			_isActive.set(false)
+			dismissProgress()
+			callback.handleResult(result)
+		}
 		return this
 	}
 	
@@ -141,7 +122,7 @@ class TootTaskRunner(
 	// implements TootApiClient.Callback
 	
 	override val isApiCancelled : Boolean
-		get() = task.isCancelled
+		get() = task?.isActive == false
 	
 	override fun publishApiProgress(s : String) {
 		synchronized(this) {
@@ -171,7 +152,7 @@ class TootTaskRunner(
 				val progress = ProgressDialogEx(context)
 				this.progress = progress
 				progress.setCancelable(true)
-				progress.setOnCancelListener { task.cancel(true) }
+				progress.setOnCancelListener { task?.cancel() }
 				progress.setProgressStyle(progress_style)
 				progressSetupCallback(progress)
 				showProgressMessage()

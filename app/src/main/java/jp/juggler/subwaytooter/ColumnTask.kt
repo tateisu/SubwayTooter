@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.AsyncTask
 import android.os.SystemClock
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
@@ -12,6 +11,8 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.JsonObject
 import jp.juggler.util.WordTrieTree
 import jp.juggler.util.notEmpty
+import jp.juggler.util.withCaption
+import kotlinx.coroutines.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 enum class ColumnTaskType {
@@ -24,14 +25,16 @@ enum class ColumnTaskType {
 abstract class ColumnTask(
 	val column : Column,
 	val ctType : ColumnTaskType
-) : AsyncTask<Void, Void, TootApiResult?>() {
-	
-	override fun onCancelled(result : TootApiResult?) {
-		onPostExecute(null)
-	}
+)  {
 	
 	val ctStarted = AtomicBoolean(false)
 	val ctClosed = AtomicBoolean(false)
+	
+	var job : Job? = null
+
+	val isCancelled :Boolean
+		get()= job?.isCancelled ?: false
+	
 	
 	var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 	
@@ -169,5 +172,29 @@ abstract class ColumnTask(
 			}
 		}
 		return TootApiResult()
+	}
+	
+	fun cancel() {
+		job?.cancel()
+	}
+	
+	abstract fun doInBackground() : TootApiResult?
+	abstract fun onPostExecute(result : TootApiResult?)
+	
+	fun start() {
+		job = GlobalScope.launch(Dispatchers.Main){
+
+			val result = try {
+				withContext(Dispatchers.IO){
+					doInBackground()
+				}
+			}catch(ex:CancellationException){
+				null // キャンセルされたらresult==nullとする
+			}catch(ex:Throwable){
+				// その他のエラー
+				TootApiResult(ex.withCaption("error"))
+			}
+			onPostExecute(result)
+		}
 	}
 }

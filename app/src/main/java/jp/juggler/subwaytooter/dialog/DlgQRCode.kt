@@ -3,22 +3,15 @@ package jp.juggler.subwaytooter.dialog
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Bitmap
-import android.os.AsyncTask
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.LogCategory
-import jp.juggler.util.dismissSafe
-import jp.juggler.util.showToast
 import net.glxn.qrgen.android.QRCode
 
 @SuppressLint("StaticFieldLeak")
 object DlgQRCode {
-	
-	private val log = LogCategory("DlgQRCode")
 	
 	internal interface QrCodeCallback {
 		fun onQrCode(bitmap : Bitmap?)
@@ -30,39 +23,18 @@ object DlgQRCode {
 		url : String,
 		callback : QrCodeCallback
 	) {
-		@Suppress("DEPRECATION")
-		val progress = ProgressDialogEx(activity)
-		val task = object : AsyncTask<Void, Void, Bitmap?>() {
-			
-			override fun doInBackground(vararg params : Void) : Bitmap? {
-				return try {
-					QRCode.from(url).withSize(size, size).bitmap()
-				} catch(ex : Throwable) {
-					log.trace(ex)
-					showToast(activity, ex, "makeQrCode failed.")
-					null
-				}
+		activity.runWithProgress(
+			"making QR code",
+			{
+				QRCode.from(url).withSize(size, size).bitmap()
+			},
+			{
+				if(it != null) callback.onQrCode(it)
+			},
+			progressInitializer = {
+				it.setMessageEx(activity.getString(R.string.generating_qr_code))
 			}
-			
-			override fun onCancelled(result : Bitmap?) {
-				onPostExecute(result)
-			}
-			
-			override fun onPostExecute(result : Bitmap?) {
-				progress.dismissSafe()
-				if(result != null) {
-					callback.onQrCode(result)
-				}
-			}
-			
-		}
-		progress.isIndeterminateEx = true
-		progress.setCancelable(true)
-		progress.setMessageEx(activity.getString(R.string.generating_qr_code))
-		progress.setOnCancelListener { task.cancel(true) }
-		progress.show()
-		
-		task.executeOnExecutor(App1.task_executor)
+		)
 	}
 	
 	fun open(activity : ActMain, message : CharSequence, url : String) {
@@ -96,10 +68,7 @@ object DlgQRCode {
 				viewRoot.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }
 				
 				dialog.show()
-				
 			}
 		})
-		
 	}
-	
 }

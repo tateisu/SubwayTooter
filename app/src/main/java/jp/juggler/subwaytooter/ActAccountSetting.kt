@@ -10,7 +10,6 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.media.RingtoneManager
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -21,19 +20,20 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -44,8 +44,8 @@ import org.jetbrains.anko.textColor
 import java.io.*
 import kotlin.math.max
 
-class ActAccountSetting
-	: AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+class ActAccountSetting : AsyncActivity(), View.OnClickListener,
+	CompoundButton.OnCheckedChangeListener {
 	
 	companion object {
 		
@@ -313,14 +313,14 @@ class ActAccountSetting
 			R.id.etFieldName2,
 			R.id.etFieldName3,
 			R.id.etFieldName4
-		).map { requireNotNull(findViewById<EditText>(it)) }
+		).map { findViewById<EditText>(it) } // 型指定を除去してはいけない
 		
 		listEtFieldValue = arrayOf(
 			R.id.etFieldValue1,
 			R.id.etFieldValue2,
 			R.id.etFieldValue3,
 			R.id.etFieldValue4
-		).map { requireNotNull(findViewById<EditText>(it)) }
+		).map { findViewById<EditText>(it) } // 型指定を除去してはいけない
 		
 		btnFields = findViewById(R.id.btnFields)
 		
@@ -743,63 +743,37 @@ class ActAccountSetting
 				
 				finish()
 				
-				val task = @SuppressLint("StaticFieldLeak")
-				object : AsyncTask<Void, Void, String?>() {
-					
-					fun unregister() {
-						try {
-							
-							val install_id = PrefDevice.prefDevice(this@ActAccountSetting)
-								.getString(PrefDevice.KEY_INSTALL_ID, null)
-							if(install_id?.isEmpty() != false) {
-								log.d("performAccountRemove: missing install_id")
-								return
-							}
-							
-							val tag = account.notification_tag
-							if(tag?.isEmpty() != false) {
-								log.d("performAccountRemove: missing notification_tag")
-								return
-							}
-							
-							val call = App1.ok_http_client.newCall(
-								("instance_url=" + "https://${account.host.ascii}".encodePercent()
-									+ "&app_id=" + packageName.encodePercent()
-									+ "&tag=" + tag
-									)
-									.toFormRequestBody()
-									.toPost()
-									.url(PollingWorker.APP_SERVER + "/unregister")
-									.build()
-							)
-							
-							val response = call.execute()
-							
-							log.e("performAccountRemove: %s", response)
-							
-						} catch(ex : Throwable) {
-							log.trace(ex, "performAccountRemove failed.")
-						}
+				GlobalScope.launch(Dispatchers.IO) {
+					try {
+						val install_id = PrefDevice.prefDevice(this@ActAccountSetting)
+							.getString(PrefDevice.KEY_INSTALL_ID, null)
+						if(install_id?.isEmpty() != false)
+							error("missing install_id")
 						
-					}
-					
-					override fun doInBackground(vararg params : Void) : String? {
-						unregister()
-						return null
-					}
-					
-					override fun onCancelled(s : String?) {
-						onPostExecute(s)
-					}
-					
-					override fun onPostExecute(s : String?) {
-					
+						val tag = account.notification_tag
+						if(tag?.isEmpty() != false)
+							error("missing notification_tag")
+						
+						val call = App1.ok_http_client.newCall(
+							("instance_url=" + "https://${account.host.ascii}".encodePercent()
+								+ "&app_id=" + packageName.encodePercent()
+								+ "&tag=" + tag
+								)
+								.toFormRequestBody()
+								.toPost()
+								.url(PollingWorker.APP_SERVER + "/unregister")
+								.build()
+						)
+						
+						val response = call.execute()
+						
+						log.e("performAccountRemove: %s", response)
+					} catch(ex : Throwable) {
+						log.trace(ex, "performAccountRemove failed.")
 					}
 				}
-				task.executeOnExecutor(App1.task_executor)
 			}
 			.show()
-		
 	}
 	
 	///////////////////////////////////////////////////
@@ -1579,41 +1553,19 @@ class ActAccountSetting
 			return
 		}
 		
-		val progress = ProgressDialogEx(this)
-		
-		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, Void, InputStreamOpener?>() {
-			
-			override fun doInBackground(vararg params : Void) : InputStreamOpener? {
-				return try {
-					createOpener(uri, mime_type)
-				} catch(ex : Throwable) {
-					showToast(this@ActAccountSetting, ex, "image converting failed.")
-					null
-				}
+		runWithProgress(
+			"preparing image",
+			{ createOpener(uri, mime_type) },
+			{
+				updateCredential(
+					when(request_code) {
+						REQUEST_CODE_HEADER_ATTACHMENT, REQUEST_CODE_HEADER_CAMERA -> "header"
+						else -> "avatar"
+					},
+					it
+				)
 			}
-			
-			override fun onPostExecute(opener : InputStreamOpener?) {
-				progress.dismissSafe()
-				if(opener != null) {
-					updateCredential(
-						when(request_code) {
-							REQUEST_CODE_HEADER_ATTACHMENT, REQUEST_CODE_HEADER_CAMERA -> "header"
-							else -> "avatar"
-						},
-						opener
-					)
-				}
-			}
-			
-		}
-		
-		progress.isIndeterminateEx = true
-		progress.setMessageEx("preparing image…")
-		progress.setOnCancelListener { task.cancel(true) }
-		progress.show()
-		
-		task.executeOnExecutor(App1.task_executor)
+		)
 	}
 	
 	@SuppressLint("StaticFieldLeak")

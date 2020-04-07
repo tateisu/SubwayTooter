@@ -5,7 +5,6 @@ import android.content.*
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Handler
 import android.os.SystemClock
 import android.speech.tts.TextToSpeech
@@ -20,6 +19,10 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkStateTracker
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.io.IOUtils
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -352,19 +355,14 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			showToast(context, false, R.string.text_to_speech_initializing)
 			log.d("initializing TextToSpeech…")
 			
-			object : AsyncTask<Void, Void, TextToSpeech?>() {
+			GlobalScope.launch(Dispatchers.IO) {
+
 				var tmp_tts : TextToSpeech? = null
-				
-				override fun doInBackground(vararg params : Void) : TextToSpeech {
-					val tts = TextToSpeech(context, tts_init_listener)
-					this.tmp_tts = tts
-					return tts
-				}
 				
 				val tts_init_listener : TextToSpeech.OnInitListener =
 					TextToSpeech.OnInitListener { status ->
 						
-						val tts = this.tmp_tts
+						val tts = tmp_tts
 						if(tts == null || TextToSpeech.SUCCESS != status) {
 							showToast(
 								context,
@@ -443,8 +441,11 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 						}
 					}
 				
-			}.executeOnExecutor(App1.task_executor)
+				tmp_tts = TextToSpeech(context, tts_init_listener)
+			}
+			return
 		}
+		
 		if(! willSpeechEnabled && tts != null) {
 			showToast(context, false, R.string.text_to_speech_shutdown)
 			log.d("shutdown TextToSpeech…")
@@ -516,18 +517,18 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		
 		if(dedupMode != DedupMode.None) {
 			synchronized(this) {
-				val check = duplication_check.find { it.text.equals(sv,ignoreCase = true) }
+				val check = duplication_check.find { it.text.equals(sv, ignoreCase = true) }
 				if(check == null) {
 					duplication_check.addLast(DedupItem(sv))
 					if(duplication_check.size > 60) duplication_check.removeFirst()
-				} else{
+				} else {
 					val now = SystemClock.elapsedRealtime()
 					val delta = now - check.time
 					// 古い項目が残っていることがあるので、check.timeの更新は必須
 					check.time = now
-
+					
 					if(dedupMode == DedupMode.Recent) return
-					if(dedupMode == DedupMode.RecentExpire && delta < 5000L ) return
+					if(dedupMode == DedupMode.RecentExpire && delta < 5000L) return
 				}
 			}
 		}
@@ -576,7 +577,8 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			return false
 		}
 		
-		if(item.sound_type == HighlightWord.SOUND_TYPE_CUSTOM && item.sound_uri.mayUri().tryRingtone()) return
+		if(item.sound_type == HighlightWord.SOUND_TYPE_CUSTOM && item.sound_uri.mayUri()
+				.tryRingtone()) return
 		
 		RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION).tryRingtone()
 	}

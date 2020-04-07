@@ -17,7 +17,7 @@ class ColumnTask_Gap(
 	private var max_id : EntityId? = (gap as? TootGap)?.max_id
 	private var since_id : EntityId? = (gap as? TootGap)?.since_id
 	
-	override fun doInBackground(vararg unused : Void) : TootApiResult? {
+	override fun doInBackground() : TootApiResult? {
 		ctStarted.set(true)
 		
 		val client = TootApiClient(context, callback = object : TootApiCallback {

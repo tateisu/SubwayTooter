@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.os.Process
@@ -13,11 +12,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.textColor
@@ -27,8 +24,7 @@ import java.io.FileOutputStream
 import java.util.*
 import kotlin.collections.ArrayList
 
-class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
-	
+class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 	
 	private class MyItem(
 		val code : String,
@@ -397,84 +393,42 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 		}
 	}
 	
-	private fun export() {
-		
-		val progress = ProgressDialogEx(this)
-		
-		val data = JsonObject().apply {
-			for(item in languageList) {
-				put(item.code, item.allow)
+	private fun export() = runWithProgress(
+		"export language filter",
+		{
+			val data = JsonObject().apply {
+				for(item in languageList) {
+					put(item.code, item.allow)
+				}
 			}
+				.toString()
+				.encodeUTF8()
+			
+			val cache_dir = cacheDir
+			cache_dir.mkdir()
+			
+			val file = File(
+				cache_dir,
+				"SubwayTooter-language-filter.${Process.myPid()}.${Process.myTid()}.json"
+			)
+			FileOutputStream(file).use { it.write(data) }
+			file
+		},
+		{
+			val uri = FileProvider.getUriForFile(
+				this@ActLanguageFilter,
+				App1.FILE_PROVIDER_AUTHORITY,
+				it
+			)
+			val intent = Intent(Intent.ACTION_SEND)
+			intent.type = contentResolver.getType(uri)
+			intent.putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter language filter data")
+			intent.putExtra(Intent.EXTRA_STREAM, uri)
+			
+			intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+			startActivityForResult(intent, REQUEST_CODE_OTHER)
 		}
-			.toString()
-			.encodeUTF8()
-		
-		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, String, File?>() {
-			
-			override fun doInBackground(vararg params : Void) : File? {
-				
-				try {
-					val cache_dir = cacheDir
-					cache_dir.mkdir()
-					
-					val file = File(
-						cache_dir,
-						"SubwayTooter-language-filter.${Process.myPid()}.${Process.myTid()}.json"
-					)
-					FileOutputStream(file).use { it.write(data) }
-					return file
-				} catch(ex : Throwable) {
-					log.trace(ex)
-					showToast(
-						this@ActLanguageFilter,
-						ex,
-						"can't save filter data to temporary file."
-					)
-				}
-				
-				return null
-			}
-			
-			override fun onCancelled(result : File?) {
-				onPostExecute(result)
-			}
-			
-			override fun onPostExecute(result : File?) {
-				progress.dismissSafe()
-				
-				if(isCancelled || result == null) {
-					// cancelled.
-					return
-				}
-				
-				try {
-					val uri = FileProvider.getUriForFile(
-						this@ActLanguageFilter,
-						App1.FILE_PROVIDER_AUTHORITY,
-						result
-					)
-					val intent = Intent(Intent.ACTION_SEND)
-					intent.type = contentResolver.getType(uri)
-					intent.putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter language filter data")
-					intent.putExtra(Intent.EXTRA_STREAM, uri)
-					
-					intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-					startActivityForResult(intent, REQUEST_CODE_OTHER)
-				} catch(ex : Throwable) {
-					log.trace(ex)
-					showToast(this@ActLanguageFilter, ex, "export failed.")
-				}
-				
-			}
-		}
-		
-		progress.isIndeterminateEx = true
-		progress.setCancelable(true)
-		progress.setOnCancelListener { task.cancel(true) }
-		progress.show()
-		task.executeOnExecutor(App1.task_executor)
-	}
+	)
 	
 	private fun import() {
 		try {
@@ -495,53 +449,22 @@ class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 		super.onActivityResult(requestCode, resultCode, data)
 	}
 	
-	private fun import2(uri : Uri) {
-		
-		val type = contentResolver.getType(uri)
-		log.d("import2 type=%s", type)
-		
-		val progress = ProgressDialogEx(this)
-		
-		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, String, JsonObject?>() {
-			
-			override fun doInBackground(vararg params : Void) : JsonObject? {
-				try {
-					val source = contentResolver.openInputStream(uri)
-					if(source == null) {
-						showToast(this@ActLanguageFilter, true, "openInputStream failed.")
-						return null
-					}
-					return source.use { inStream ->
-						val bao = ByteArrayOutputStream()
-						IOUtils.copy(inStream, bao)
-						bao.toByteArray().decodeUTF8().decodeJsonObject()
-					}
-				} catch(ex : Throwable) {
-					log.trace(ex)
-					showToast(this@ActLanguageFilter, ex, "can't load filter data.")
-					return null
+	private fun import2(uri : Uri) = runWithProgress(
+		"import language filter",
+		{
+			log.d("import2 type=${contentResolver.getType(uri)}")
+			val source = contentResolver.openInputStream(uri)
+			if(source == null) {
+				showToast( true, "openInputStream failed.")
+				null
+			} else {
+				source.use { inStream ->
+					val bao = ByteArrayOutputStream()
+					IOUtils.copy(inStream, bao)
+					bao.toByteArray().decodeUTF8().decodeJsonObject()
 				}
 			}
-			
-			override fun onCancelled(result : JsonObject?) {
-				onPostExecute(result)
-			}
-			
-			override fun onPostExecute(result : JsonObject?) {
-				progress.dismissSafe()
-				
-				// cancelled.
-				if(isCancelled || result == null) return
-				
-				load(result)
-			}
-		}
-		
-		progress.isIndeterminateEx = true
-		progress.setCancelable(true)
-		progress.setOnCancelListener { task.cancel(true) }
-		progress.show()
-		task.executeOnExecutor(App1.task_executor)
-	}
+		},
+		{ if(it != null) load(it) }
+	)
 }

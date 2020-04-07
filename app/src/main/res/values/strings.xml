@@ -718,6 +718,7 @@
     <string name="filter_notification">notification</string>
     <string name="filter_public">public</string>
     <string name="filter_thread">conversation</string>
+    <string name="filter_profile">profile</string>
     <string name="dont_change">Don\'t change</string>
     <string name="filter_expire_unlimited">Unlimited</string>
     <string name="filter_expire_30min">30 minutes after saving</string>

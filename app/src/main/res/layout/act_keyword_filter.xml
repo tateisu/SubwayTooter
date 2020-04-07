@@ -86,6 +86,16 @@
 
             </LinearLayout>
 
+            <LinearLayout style="@style/setting_row_form">
+
+                <CheckBox
+                    android:id="@+id/cbContextProfile"
+                    style="@style/setting_horizontal_stretch"
+                    android:checked="true"
+                    android:text="@string/filter_profile" />
+
+            </LinearLayout>
+
             <View style="@style/setting_divider" />
 
             <TextView

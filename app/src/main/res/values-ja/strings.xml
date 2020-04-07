@@ -320,6 +320,7 @@
     <string name="filter_phrase">フレーズ</string>
     <string name="filter_public">公開TL</string>
     <string name="filter_thread">会話</string>
+    <string name="filter_profile">プロファイル</string>
     <string name="filter_word_match">単語マッチ</string>
     <string name="filter_word_match_long">単語マッチ。英数字だけで構成されるフレーズ以外では無効にすることを推奨します。</string>
     <string name="filtered">フィルタされました</string>

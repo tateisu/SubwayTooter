@@ -63,6 +63,8 @@ class ActKeywordFilter
 	private lateinit var cbContextNotification : CheckBox
 	private lateinit var cbContextPublic : CheckBox
 	private lateinit var cbContextThread : CheckBox
+	private lateinit var cbContextProfile : CheckBox
+	
 	private lateinit var cbFilterIrreversible : CheckBox
 	private lateinit var cbFilterWordMatch : CheckBox
 	private lateinit var tvExpire : TextView
@@ -133,6 +135,7 @@ class ActKeywordFilter
 		cbContextNotification = findViewById(R.id.cbContextNotification)
 		cbContextPublic = findViewById(R.id.cbContextPublic)
 		cbContextThread = findViewById(R.id.cbContextThread)
+		cbContextProfile = findViewById(R.id.cbContextProfile)
 		cbFilterIrreversible = findViewById(R.id.cbFilterIrreversible)
 		cbFilterWordMatch = findViewById(R.id.cbFilterWordMatch)
 		tvExpire = findViewById(R.id.tvExpire)
@@ -193,6 +196,7 @@ class ActKeywordFilter
 		setContextChecked(filter, cbContextNotification, TootFilter.CONTEXT_NOTIFICATIONS)
 		setContextChecked(filter, cbContextPublic, TootFilter.CONTEXT_PUBLIC)
 		setContextChecked(filter, cbContextThread, TootFilter.CONTEXT_THREAD)
+		setContextChecked(filter, cbContextProfile, TootFilter.CONTEXT_PROFILE)
 		
 		cbFilterIrreversible.isChecked = filter.irreversible
 		cbFilterWordMatch.isChecked = filter.whole_word
@@ -230,6 +234,8 @@ class ActKeywordFilter
 				putContextChecked(cbContextNotification, "notifications")
 				putContextChecked(cbContextPublic, "public")
 				putContextChecked(cbContextThread, "thread")
+				putContextChecked(cbContextProfile, "account")
+				
 			})
 			
 			put("irreversible", cbFilterIrreversible.isChecked)

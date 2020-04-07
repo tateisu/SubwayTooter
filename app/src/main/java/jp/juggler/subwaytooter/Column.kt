@@ -2284,9 +2284,12 @@ class Column(
 		ColumnType.HOME, ColumnType.LIST_TL, ColumnType.MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
 		
 		ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> TootFilter.CONTEXT_NOTIFICATIONS
+
 		ColumnType.CONVERSATION -> TootFilter.CONTEXT_THREAD
-		ColumnType.LOCAL, ColumnType.DOMAIN_TIMELINE, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.HASHTAG_FROM_ACCT, ColumnType.PROFILE, ColumnType.SEARCH -> TootFilter.CONTEXT_PUBLIC
-		ColumnType.DIRECT_MESSAGES -> TootFilter.CONTEXT_PUBLIC
+
+		ColumnType.DIRECT_MESSAGES -> TootFilter.CONTEXT_THREAD
+		
+		ColumnType.PROFILE -> TootFilter.CONTEXT_PROFILE
 		
 		else -> TootFilter.CONTEXT_PUBLIC
 		// ColumnType.MISSKEY_HYBRID や ColumnType.MISSKEY_ANTENNA_TL はHOMEでもPUBLICでもある…

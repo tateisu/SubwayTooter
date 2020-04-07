@@ -12,18 +12,20 @@ class TootFilter(src : JsonObject) : TimelineItem() {
 		val log = LogCategory("TootFilter")
 		
 		@Suppress("unused")
-		const val CONTEXT_ALL = 15
+		const val CONTEXT_ALL = 31
 		const val CONTEXT_NONE = 0
 		const val CONTEXT_HOME = 1
 		const val CONTEXT_NOTIFICATIONS = 2
 		const val CONTEXT_PUBLIC = 4
 		const val CONTEXT_THREAD = 8
+		const val CONTEXT_PROFILE = 16
 		
 		private val CONTEXT_LIST = arrayOf(
 			FilterContext("home", CONTEXT_HOME, R.string.filter_home),
 			FilterContext("notifications", CONTEXT_NOTIFICATIONS, R.string.filter_notification),
 			FilterContext("public", CONTEXT_PUBLIC, R.string.filter_public),
-			FilterContext("thread", CONTEXT_THREAD, R.string.filter_thread)
+			FilterContext("thread", CONTEXT_THREAD, R.string.filter_thread),
+			FilterContext("account", CONTEXT_PROFILE, R.string.filter_profile)
 		)
 		
 		private val CONTEXT_MAP = CONTEXT_LIST.map { Pair(it.name, it) }.toMap()

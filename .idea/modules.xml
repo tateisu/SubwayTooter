@@ -2,14 +2,14 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SubwayTooter.iml" filepath="$PROJECT_DIR$/SubwayTooter.iml" />
-      <module fileurl="file://$PROJECT_DIR$/apng/apng.iml" filepath="$PROJECT_DIR$/apng/apng.iml" />
-      <module fileurl="file://$PROJECT_DIR$/apng_android/apng_android.iml" filepath="$PROJECT_DIR$/apng_android/apng_android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/colorpicker/colorpicker.iml" filepath="$PROJECT_DIR$/colorpicker/colorpicker.iml" />
-      <module fileurl="file://$PROJECT_DIR$/emoji/emoji.iml" filepath="$PROJECT_DIR$/emoji/emoji.iml" />
-      <module fileurl="file://$PROJECT_DIR$/exif/exif.iml" filepath="$PROJECT_DIR$/exif/exif.iml" />
-      <module fileurl="file://$PROJECT_DIR$/sample_apng/sample_apng.iml" filepath="$PROJECT_DIR$/sample_apng/sample_apng.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SubwayTooter.iml" filepath="$PROJECT_DIR$/SubwayTooter.iml" group="SubwayTooter" />
+      <module fileurl="file://$PROJECT_DIR$/apng/apng.iml" filepath="$PROJECT_DIR$/apng/apng.iml" group="SubwayTooter/apng" />
+      <module fileurl="file://$PROJECT_DIR$/apng_android/apng_android.iml" filepath="$PROJECT_DIR$/apng_android/apng_android.iml" group="SubwayTooter/apng_android" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="SubwayTooter/app" />
+      <module fileurl="file://$PROJECT_DIR$/colorpicker/colorpicker.iml" filepath="$PROJECT_DIR$/colorpicker/colorpicker.iml" group="SubwayTooter/colorpicker" />
+      <module fileurl="file://$PROJECT_DIR$/emoji/emoji.iml" filepath="$PROJECT_DIR$/emoji/emoji.iml" group="SubwayTooter/emoji" />
+      <module fileurl="file://$PROJECT_DIR$/exif/exif.iml" filepath="$PROJECT_DIR$/exif/exif.iml" group="SubwayTooter/exif" />
+      <module fileurl="file://$PROJECT_DIR$/sample_apng/sample_apng.iml" filepath="$PROJECT_DIR$/sample_apng/sample_apng.iml" group="SubwayTooter/sample_apng" />
     </modules>
   </component>
 </project>

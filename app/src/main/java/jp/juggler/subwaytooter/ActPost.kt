@@ -1466,7 +1466,7 @@ class ActPost : AppCompatActivity(),
 			
 			if(AcctColor.hasColorBackground(ac)) {
 				btnAccount.background =
-					getAdaptiveRippleDrawableRound(this,ac.color_bg,ac.color_fg)
+					getAdaptiveRippleDrawableRound(this, ac.color_bg, ac.color_fg)
 			} else {
 				btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 			}
@@ -2610,7 +2610,7 @@ class ActPost : AppCompatActivity(),
 	}
 	
 	private fun showQuotedRenote() {
-		cbQuote.visibility = if(in_reply_to_id != null ) View.VISIBLE else View.GONE
+		cbQuote.visibility = if(in_reply_to_id != null) View.VISIBLE else View.GONE
 	}
 	
 	internal fun showReplyTo() {

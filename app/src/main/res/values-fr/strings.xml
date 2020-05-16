@@ -149,7 +149,7 @@
     <string name="follow_request_ok">Autoriser demande de suivi</string>
     <string name="follow_request_rejected">Vous venez de rejeter la demande d’abonnement venant de %1$s.</string>
     <string name="follow_requested">Vous avez demandé à suivre un utilisateur verrouillé.</string>
-    <string name="follow_requests">Demandes de suivi</string>
+    <string name="follow_requests">Demandes d’abonnement</string>
     <string name="follow_succeeded">Suivi</string>
     <string name="followers">Abonnés</string>
     <string name="following">Abonnements</string>
@@ -618,7 +618,7 @@
     <string name="report_forward_desc">Le compte provient d’un autre serveur. Envoyer une copie anonyme du rapport à ce serveur aussi \?</string>
     <string name="report_forward_to">Transférer à %1$s</string>
     <string name="locked_account">Compte verrouillé</string>
-    <string name="contact">contact account</string>
+    <string name="contact">Compte de contact</string>
     <string name="languages">langues</string>
     <string name="append_attachment_url_to_content">Ajouter l’URL de la pièce jointe au contenu du pouet</string>
     <string name="hide_favourite_notification_from_user">Désactiver les notifications Fav/Boosts de cet·te utilisateur·rice</string>
@@ -1009,4 +1009,7 @@
     <string name="display_boost_count">Afficher le nombre des boosts</string>
     <string name="filter_profile">profile</string>
     <string name="display_name_follow_request_accepted_by">%1$s a accepté votre demande d’abonnement</string>
+    <string name="no">Non</string>
+    <string name="yes">Oui</string>
+    <string name="invites_enabled">Les utilisateur·rice·s peuvent créer des invitations</string>
 </resources>

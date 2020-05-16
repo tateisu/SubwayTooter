@@ -241,10 +241,14 @@ internal fun Column.makeMisskeyHybridTlUrl() : String {
 }
 
 internal fun Column.makePublicFederateUrl() : String {
-	return when {
-		access_info.isMisskey -> "/api/notes/global-timeline"
-		with_attachment -> "${Column.PATH_TL_FEDERATE}&only_media=true"
-		else -> Column.PATH_TL_FEDERATE
+	
+	return if( access_info.isMisskey){
+		"/api/notes/global-timeline"
+	}else{
+		val sb = StringBuilder("/api/v1/timelines/public?limit=$READ_LIMIT")
+		if(with_attachment) sb.append("&only_media=true")
+		if(remote_only) sb.append("&remote=true")
+		sb.toString()
 	}
 }
 

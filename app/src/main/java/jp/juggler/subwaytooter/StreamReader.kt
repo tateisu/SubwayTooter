@@ -574,19 +574,16 @@ internal class StreamReader(
 		streamCallback : StreamCallback
 	) : StreamingIndicatorState {
 		synchronized(reader_list) {
-			for(reader in reader_list) {
-				if(reader.access_info.db_id == accessInfo.db_id
-					&& reader.end_point == endPoint
-					&& reader.containsCallback(streamCallback)
-				) {
-					return if(reader.bListening.get() && reader.socket.get() != null) {
-						StreamingIndicatorState.LISTENING
-					} else {
-						StreamingIndicatorState.REGISTERED
-					}
-				}
+			val reader = reader_list.find{
+				it.access_info.db_id == accessInfo.db_id
+				it.end_point == endPoint
+				it.containsCallback(streamCallback)
+			}
+			return when{
+				reader ==null ->StreamingIndicatorState.NONE
+				reader.bListening.get() && reader.socket.get() != null -> StreamingIndicatorState.LISTENING
+				else -> StreamingIndicatorState.REGISTERED
 			}
 		}
-		return StreamingIndicatorState.NONE
 	}
 }

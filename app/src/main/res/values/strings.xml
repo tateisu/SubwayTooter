@@ -1021,4 +1021,5 @@
     <string name="quote">Quote</string>
     <string name="promoted">Promoted</string>
     <string name="featured">Featured</string>
+    <string name="remote_only">Remote only</string>
 </resources>

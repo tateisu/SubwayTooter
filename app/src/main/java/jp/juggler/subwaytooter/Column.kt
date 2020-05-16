@@ -82,7 +82,6 @@ class Column(
 		internal const val PATH_DIRECT_MESSAGES2 = "/api/v1/conversations?limit=$READ_LIMIT"
 		
 		internal const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=true"
-		internal const val PATH_TL_FEDERATE = "/api/v1/timelines/public?limit=$READ_LIMIT"
 		internal const val PATH_FAVOURITES = "/api/v1/favourites?limit=$READ_LIMIT"
 		internal const val PATH_BOOKMARKS = "/api/v1/bookmarks?limit=$READ_LIMIT"
 		
@@ -117,7 +116,6 @@ class Column(
 		internal const val PATH_STATUSES = "/api/v1/statuses/%s" // 1:status_id
 		internal const val PATH_STATUSES_CONTEXT = "/api/v1/statuses/%s/context" // 1:status_id
 		// search args 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
-
 		
 		const val PATH_FILTERS = "/api/v1/filters"
 		
@@ -182,6 +180,8 @@ class Column(
 		private const val KEY_SEARCH_RESOLVE = "search_resolve"
 		private const val KEY_INSTANCE_URI = "instance_uri"
 		
+		private const val KEY_REMOTE_ONLY = "remoteOnly"
+		
 		internal const val KEY_COLUMN_ACCESS = "column_access"
 		internal const val KEY_COLUMN_ACCESS_COLOR = "column_access_color"
 		internal const val KEY_COLUMN_ACCESS_COLOR_BG = "column_access_color_bg"
@@ -209,7 +209,10 @@ class Column(
 			return params[idx] as T
 		}
 		
-		private fun getParamEntityId(params : Array<out Any>, @Suppress("SameParameterValue") idx : Int) : EntityId =
+		private fun getParamEntityId(
+			params : Array<out Any>,
+			@Suppress("SameParameterValue") idx : Int
+		) : EntityId =
 			when(val o = params[idx]) {
 				is EntityId -> o
 				is String -> EntityId(o)
@@ -383,6 +386,8 @@ class Column(
 			return callback_ref?.get()?.isActivityStart ?: false
 		}
 	
+	private var lastStreamPath : String? = null
+	
 	private val streamPath : String?
 		get() = if(isMisskey) {
 			val misskeyApiToken = access_info.misskeyApiToken
@@ -418,7 +423,14 @@ class Column(
 			when(type) {
 				ColumnType.HOME, ColumnType.NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
 				ColumnType.LOCAL -> "/api/v1/streaming/?stream=public:local"
-				ColumnType.FEDERATE -> "/api/v1/streaming/?stream=public"
+				
+				ColumnType.FEDERATE -> {
+					when(remote_only) {
+						true -> "/api/v1/streaming/?stream=public:remote"
+						else -> "/api/v1/streaming/?stream=public"
+					}
+				}
+				
 				ColumnType.LIST_TL -> "/api/v1/streaming/?stream=list&list=$profile_id"
 				ColumnType.DOMAIN_TIMELINE -> "/api/v1/streaming/?stream=public:remote&domain=$instance_uri"
 				
@@ -499,6 +511,7 @@ class Column(
 	
 	internal var search_query : String = ""
 	internal var search_resolve : Boolean = false
+	internal var remote_only : Boolean = false
 	internal var instance_uri : String = ""
 	internal var hashtag : String = ""
 	internal var hashtag_any : String = ""
@@ -715,7 +728,7 @@ class Column(
 		dont_show_reaction = src.optBoolean(KEY_DONT_SHOW_REACTION)
 		dont_show_vote = src.optBoolean(KEY_DONT_SHOW_VOTE)
 		dont_show_normal_toot = src.optBoolean(KEY_DONT_SHOW_NORMAL_TOOT)
-		dont_show_non_public_toot= src.optBoolean(KEY_DONT_SHOW_NON_PUBLIC_TOOT)
+		dont_show_non_public_toot = src.optBoolean(KEY_DONT_SHOW_NON_PUBLIC_TOOT)
 		dont_streaming = src.optBoolean(KEY_DONT_STREAMING)
 		dont_auto_refresh = src.optBoolean(KEY_DONT_AUTO_REFRESH)
 		hide_media_default = src.optBoolean(KEY_HIDE_MEDIA_DEFAULT)
@@ -742,8 +755,18 @@ class Column(
 		
 		when(type) {
 			
-			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
+			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY,
+			ColumnType.LOCAL_AROUND, ColumnType.ACCOUNT_AROUND ->
 				status_id = EntityId.mayNull(src.string(KEY_STATUS_ID))
+			
+			ColumnType.FEDERATED_AROUND -> {
+				status_id = EntityId.mayNull(src.string(KEY_STATUS_ID))
+				remote_only = src.optBoolean(KEY_REMOTE_ONLY, false)
+			}
+			
+			ColumnType.FEDERATE -> {
+				remote_only = src.optBoolean(KEY_REMOTE_ONLY, false)
+			}
 			
 			ColumnType.PROFILE -> {
 				profile_id = EntityId.mayNull(src.string(KEY_PROFILE_ID))
@@ -852,8 +875,18 @@ class Column(
 			
 			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY,
 			ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND,
-			ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
+			
+			ColumnType.ACCOUNT_AROUND ->
 				dst[KEY_STATUS_ID] = status_id.toString()
+			
+			ColumnType.FEDERATED_AROUND -> {
+				dst[KEY_STATUS_ID] = status_id.toString()
+				dst[KEY_REMOTE_ONLY] = remote_only
+			}
+			
+			ColumnType.FEDERATE -> {
+				dst[KEY_REMOTE_ONLY] = remote_only
+			}
 			
 			ColumnType.PROFILE -> {
 				dst[KEY_PROFILE_ID] = profile_id.toString()
@@ -1332,8 +1365,7 @@ class Column(
 		if(account != access_info) return
 		if(type == ColumnType.LIST_LIST) {
 			startLoading()
-		}
-		else if(type == ColumnType.LIST_TL || type == ColumnType.LIST_MEMBER) {
+		} else if(type == ColumnType.LIST_TL || type == ColumnType.LIST_MEMBER) {
 			if(item.id == profile_id) {
 				this.list_info = item
 				fireShowColumnHeader()
@@ -1345,8 +1377,7 @@ class Column(
 		if(account != access_info) return
 		if(type == ColumnType.MISSKEY_ANTENNA_LIST) {
 			startLoading()
-		}
-		else if(type == ColumnType.MISSKEY_ANTENNA_TL) {
+		} else if(type == ColumnType.MISSKEY_ANTENNA_TL) {
 			if(item.id == profile_id) {
 				this.antenna_info = item
 				fireShowColumnHeader()
@@ -1527,7 +1558,7 @@ class Column(
 			if(status.in_reply_to_id == null && reblog == null) return true
 		}
 		if(dont_show_non_public_toot) {
-			if(!status.visibility.isPublic ) return true
+			if(! status.visibility.isPublic) return true
 		}
 		
 		if(column_regex_filter(status.decoded_content)) return true
@@ -1708,7 +1739,6 @@ class Column(
 		
 	}
 	
-
 	private inner class UpdateRelationEnv {
 		internal val who_set = HashSet<EntityId>()
 		internal val acct_set = HashSet<String>()
@@ -2284,9 +2314,9 @@ class Column(
 		ColumnType.HOME, ColumnType.LIST_TL, ColumnType.MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
 		
 		ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> TootFilter.CONTEXT_NOTIFICATIONS
-
+		
 		ColumnType.CONVERSATION -> TootFilter.CONTEXT_THREAD
-
+		
 		ColumnType.DIRECT_MESSAGES -> TootFilter.CONTEXT_THREAD
 		
 		ColumnType.PROFILE -> TootFilter.CONTEXT_PROFILE
@@ -2299,6 +2329,11 @@ class Column(
 	// カラム設定に「すべての画像を隠す」ボタンを含めるなら真
 	internal fun canNSFWDefault() : Boolean {
 		return canStatusFilter()
+	}
+	
+	fun canRemoteOnly() = when(type) {
+		ColumnType.FEDERATE, ColumnType.FEDERATED_AROUND -> true
+		else -> false
 	}
 	
 	// カラム設定に「ブーストを表示しない」ボタンを含めるなら真
@@ -2335,6 +2370,7 @@ class Column(
 			else -> false
 		}
 	}
+	
 	fun canFilterNonPublicToot() : Boolean {
 		return when(type) {
 			ColumnType.HOME, ColumnType.MISSKEY_HYBRID,
@@ -2344,7 +2380,7 @@ class Column(
 			else -> false
 		}
 	}
-
+	
 	internal fun canAutoRefresh() : Boolean {
 		return streamPath != null
 	}
@@ -2504,9 +2540,9 @@ class Column(
 					ColumnType.HASHTAG ->
 						createMisskeyConnectChannelMessage(
 							"hashtag",
-							jsonObject { put("q", hashtag ) }
+							jsonObject { put("q", hashtag) }
 						)
-
+					
 					else -> null
 				}
 			}
@@ -2744,9 +2780,9 @@ class Column(
 		}
 		
 		this.bPutGap = bPutGap
+		this.lastStreamPath = stream_path
 		
 		stream_data_queue.clear()
-		
 		streamReader = app_state.stream_reader.register(
 			access_info,
 			stream_path,
@@ -2762,7 +2798,7 @@ class Column(
 	// カラム破棄やリロード開始時は個別にストリーミングを止める必要がある
 	internal fun stopStreaming() {
 		streamReader = null
-		val stream_path = streamPath
+		val stream_path = lastStreamPath
 		if(stream_path != null) {
 			app_state.stream_reader.unregister(access_info, stream_path, streamCallback)
 			fireShowColumnStatus()
@@ -2772,6 +2808,7 @@ class Column(
 	fun getStreamingStatus() : StreamingIndicatorState {
 		if(is_dispose.get() || ! bFirstInitialized) return StreamingIndicatorState.NONE
 		val stream_path = streamPath ?: return StreamingIndicatorState.NONE
+		
 		return app_state.stream_reader.getStreamingStatus(access_info, stream_path, streamCallback)
 	}
 	

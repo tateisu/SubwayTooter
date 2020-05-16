@@ -1016,4 +1016,5 @@
     <string name="quote">引用</string>
     <string name="promoted">宣伝</string>
     <string name="featured">紹介</string>
+    <string name="remote_only">リモートのみ</string>
 </resources>

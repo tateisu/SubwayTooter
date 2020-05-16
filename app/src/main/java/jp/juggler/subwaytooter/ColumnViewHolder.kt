@@ -116,6 +116,7 @@ class ColumnViewHolder(
 	private lateinit var ivColumnBackgroundImage : ImageView
 	private lateinit var llSearch : View
 	private lateinit var cbDontCloseColumn : CheckBox
+	private lateinit var cbRemoteOnly : CheckBox
 	private lateinit var cbWithAttachment : CheckBox
 	private lateinit var cbWithHighlight : CheckBox
 	private lateinit var cbDontShowBoost : CheckBox
@@ -358,6 +359,7 @@ class ColumnViewHolder(
 		btnAnnouncementsNext.setOnClickListener(this)
 		
 		cbDontCloseColumn.setOnCheckedChangeListener(this)
+		cbRemoteOnly.setOnCheckedChangeListener(this)
 		cbWithAttachment.setOnCheckedChangeListener(this)
 		cbWithHighlight.setOnCheckedChangeListener(this)
 		cbDontShowBoost.setOnCheckedChangeListener(this)
@@ -612,6 +614,7 @@ class ColumnViewHolder(
 			
 			
 			cbDontCloseColumn.isCheckedNoAnime = column.dont_close
+			cbRemoteOnly.isCheckedNoAnime = column.remote_only
 			cbWithAttachment.isCheckedNoAnime = column.with_attachment
 			cbWithHighlight.isCheckedNoAnime = column.with_highlight
 			cbDontShowBoost.isCheckedNoAnime = column.dont_show_boost
@@ -633,6 +636,8 @@ class ColumnViewHolder(
 			etRegexFilter.setText(column.regex_text)
 			etSearch.setText(column.search_query)
 			cbResolve.isCheckedNoAnime = column.search_resolve
+			
+			cbRemoteOnly.vg(column.canRemoteOnly())
 			
 			cbWithAttachment.vg(bAllowFilter)
 			cbWithHighlight.vg(bAllowFilter)
@@ -850,9 +855,9 @@ class ColumnViewHolder(
 			val screen_h = iv.resources.displayMetrics.heightPixels
 			
 			// 非同期処理を開始
-			last_image_task = GlobalScope.launch(Dispatchers.Main){
-				val bitmap = try{
-					withContext(Dispatchers.IO){
+			last_image_task = GlobalScope.launch(Dispatchers.Main) {
+				val bitmap = try {
+					withContext(Dispatchers.IO) {
 						try {
 							createResizedBitmap(
 								activity, url.toUri(),
@@ -866,11 +871,11 @@ class ColumnViewHolder(
 							null
 						}
 					}
-				}catch(ex:Throwable){
+				} catch(ex : Throwable) {
 					null
 				}
 				if(bitmap != null) {
-					if(!coroutineContext.isActive || url != last_image_uri) {
+					if(! coroutineContext.isActive || url != last_image_uri) {
 						bitmap.recycle()
 					} else {
 						last_image_bitmap = bitmap
@@ -932,6 +937,12 @@ class ColumnViewHolder(
 			
 			cbWithAttachment -> {
 				column.with_attachment = isChecked
+				activity.app_state.saveColumnList()
+				column.startLoading()
+			}
+			
+			cbRemoteOnly -> {
+				column.remote_only = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
@@ -1921,6 +1932,10 @@ class ColumnViewHolder(
 					
 					cbDontCloseColumn = checkBox {
 						text = context.getString(R.string.dont_close_column)
+					}.lparams(matchParent, wrapContent)
+					
+					cbRemoteOnly = checkBox {
+						text = context.getString(R.string.remote_only)
 					}.lparams(matchParent, wrapContent)
 					
 					cbWithAttachment = checkBox {

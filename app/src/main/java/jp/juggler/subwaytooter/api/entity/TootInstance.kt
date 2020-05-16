@@ -68,6 +68,9 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 	// (Mastodon 3.0.0)
 	val approval_required : Boolean
 	
+	// (Mastodon 3.1.4)
+	val invites_enabled : Boolean?
+	
 	// インスタンスの種別
 	enum class InstanceType {
 		
@@ -109,6 +112,8 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 			this.approval_required = false
 			
 			this.feature_quote = true
+			
+			this.invites_enabled = null
 		} else {
 			this.uri = src.string("uri")
 			this.title = src.string("title")
@@ -146,6 +151,9 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 			this.approval_required = src.boolean("approval_required") ?: false
 			
 			this.feature_quote = src.boolean("feature_quote") ?: false
+			
+			this.invites_enabled = src.boolean("invites_enabled")
+			
 		}
 	}
 	

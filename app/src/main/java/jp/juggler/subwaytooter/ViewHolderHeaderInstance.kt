@@ -40,6 +40,7 @@ internal class ViewHolderHeaderInstance(
 	private val ivThumbnail : MyNetworkImageView = viewRoot.findViewById(R.id.ivThumbnail)
 	private val btnContact : TextView = viewRoot.findViewById(R.id.btnContact)
 	private val tvLanguages : TextView = viewRoot.findViewById(R.id.tvLanguages)
+	private val tvInvitesEnabled : TextView = viewRoot.findViewById(R.id.tvInvitesEnabled)
 	private val tvHandshake : TextView = viewRoot.findViewById(R.id.tvHandshake)
 	
 	private val btnAbout : Button = viewRoot.findViewById(R.id.btnAbout)
@@ -91,6 +92,7 @@ internal class ViewHolderHeaderInstance(
 			tvShortDescription.text = "?"
 			ivThumbnail.setImageUrl(App1.pref, 0f, null)
 			tvLanguages.text = "?"
+			tvInvitesEnabled.text = "?"
 			btnContact.text = "?"
 			btnContact.isEnabled = false
 			btnAbout.isEnabled = false
@@ -101,9 +103,9 @@ internal class ViewHolderHeaderInstance(
 			val hasUri = uri.isNotEmpty()
 			
 			val host = Host.parse(uri)
-			btnInstance.text = if(host.ascii==host.pretty){
+			btnInstance.text = if(host.ascii == host.pretty) {
 				host.pretty
-			}else {
+			} else {
 				"${host.pretty}\n${host.ascii}"
 			}
 			
@@ -125,6 +127,11 @@ internal class ViewHolderHeaderInstance(
 			btnContact.isEnabled = contact_acct.isNotEmpty()
 			
 			tvLanguages.text = instance.languages?.joinToString(", ") ?: ""
+			tvInvitesEnabled.text = when(instance.invites_enabled){
+				null -> "?"
+				true -> activity.getString(R.string.yes)
+				false -> activity.getString(R.string.no)
+			}
 			
 			val options = DecodeOptions(activity, access_info, decodeEmoji = true)
 			

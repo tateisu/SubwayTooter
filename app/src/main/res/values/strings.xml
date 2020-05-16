@@ -1022,4 +1022,7 @@
     <string name="promoted">Promoted</string>
     <string name="featured">Featured</string>
     <string name="remote_only">Remote only</string>
+    <string name="invites_enabled">Users can create invitations</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

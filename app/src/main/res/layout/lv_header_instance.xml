@@ -104,6 +104,24 @@
 
     <TextView
         style="@style/setting_row_label"
+        android:text="@string/invites_enabled"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <TextView
+            android:id="@+id/tvInvitesEnabled"
+            style="@style/setting_horizontal_stretch"
+            android:background="@drawable/btn_bg_transparent_round6dp"
+            android:gravity="start|center_vertical"
+            android:textAllCaps="false"
+            />
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
         android:text="@string/user_count"
         />
 

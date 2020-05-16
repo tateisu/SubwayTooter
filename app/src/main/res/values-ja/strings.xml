@@ -1017,4 +1017,7 @@
     <string name="promoted">宣伝</string>
     <string name="featured">紹介</string>
     <string name="remote_only">リモートのみ</string>
+    <string name="invites_enabled">ユーザが招待を作成できる</string>
+    <string name="yes">はい</string>
+    <string name="no">いいえ</string>
 </resources>

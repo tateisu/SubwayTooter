@@ -156,7 +156,8 @@ open class TootTag constructor(
 			}
 		
 		// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
-		private val reUrlHashTag ="""\Ahttps://([^/]+)/tags/([^?#・\s\-+.,:;/]+)(?:\z|[?#])"""
+		// あるサービスは /tags/... でなく /tag/... を使う
+		private val reUrlHashTag ="""\Ahttps://([^/]+)/tags?/([^?#・\s\-+.,:;/]+)(?:\z|[?#])"""
 			.asciiPattern()
 		
 		// https://pixelfed.tokyo/discover/tags/SubwayTooter?src=hash

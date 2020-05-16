@@ -17,6 +17,7 @@ import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.put
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.view.HeaderGridView
 import jp.juggler.subwaytooter.view.MyViewPager
 import jp.juggler.subwaytooter.view.NetworkEmojiView
@@ -28,8 +29,7 @@ import java.util.*
 @SuppressLint("InflateParams")
 class EmojiPicker(
 	private val activity : Activity,
-	private val instance : String?,
-	@Suppress("CanBeParameter") private val isMisskey : Boolean,
+	private val accessInfo : SavedAccount?,
 	private val onEmojiPicked : (
 		name : String,
 		instance : String?,
@@ -205,9 +205,9 @@ class EmojiPicker(
 		onPageSelected(0)
 		
 		// カスタム絵文字をロードする
-		if(instance != null && instance.isNotEmpty()) {
+		if(accessInfo != null) {
 			setCustomEmojiList(
-				App1.custom_emoji_lister.getList(instance, isMisskey = isMisskey) {
+				App1.custom_emoji_lister.getList(accessInfo) {
 					setCustomEmojiList(it) // ロード完了時に呼ばれる
 				}
 			)
@@ -237,7 +237,7 @@ class EmojiPicker(
 				subList = ArrayList()
 				newList[category] = subList
 			}
-			subList.add(EmojiItem(emoji.shortcode, instance))
+			subList.add(EmojiItem(emoji.shortcode, accessInfo !!.host.ascii))
 			emoji_url_map[emoji.shortcode] = emoji
 		}
 		// compose categories data list
@@ -367,7 +367,7 @@ class EmojiPicker(
 			
 			CATEGORY_RECENT -> ArrayList<EmojiItem>().apply {
 				for(item in recent_list) {
-					if(item.instance != null && item.instance != instance) continue
+					if(item.instance != null && item.instance != accessInfo?.host?.ascii) continue
 					add(item)
 				}
 			}
@@ -521,7 +521,7 @@ class EmojiPicker(
 						}
 					}
 					
-					selected(name, null, unicode= ei.unified)
+					selected(name, null, unicode = ei.unified)
 				}
 			}
 		}
@@ -577,7 +577,7 @@ class EmojiPicker(
 		
 		}
 		
-		onEmojiPicked(name, instance, bInstanceHasCustomEmoji, unicode,customEmoji)
+		onEmojiPicked(name, instance, bInstanceHasCustomEmoji, unicode, customEmoji)
 	}
 	
 	internal inner class EmojiPickerPagerAdapter : androidx.viewpager.widget.PagerAdapter() {

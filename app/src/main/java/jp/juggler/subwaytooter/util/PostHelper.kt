@@ -124,7 +124,7 @@ class PostHelper(
 		if(enquete_items?.isNotEmpty() == true) {
 			
 			val choice_max_chars = when {
-				isMisskey -> 15
+				account.isMisskey -> 15
 				poll_type == TootPollsType.FriendsNico -> 15
 				else -> 25 // TootPollsType.Mastodon
 			}
@@ -181,7 +181,7 @@ class PostHelper(
 		}
 		
 		if(! bConfirmTagCharacter && Pref.bpWarnHashtagAsciiAndNonAscii(App1.pref)) {
-			val tags = TootTag.findHashtags(content, isMisskey)
+			val tags = TootTag.findHashtags(content, account.isMisskey)
 			val badTags = tags
 				?.filter {
 					val hasAscii = reAscii.matcher(it).find()
@@ -317,7 +317,7 @@ class PostHelper(
 				
 				// 元の投稿を削除する
 				if(redraft_status_id != null) {
-					result = if(isMisskey) {
+					result = if(account.isMisskey) {
 						val params = account.putMisskeyApiToken(JsonObject()).apply {
 							put("noteId", redraft_status_id)
 						}
@@ -580,7 +580,7 @@ class PostHelper(
 					request_builder.header("Idempotency-Key", digest)
 				}
 				
-				result = if(isMisskey) {
+				result = if(account.isMisskey) {
 					// log.d("misskey json %s", body_string)
 					client.request("/api/notes/create", request_builder)
 				} else {
@@ -596,7 +596,7 @@ class PostHelper(
 				}
 				
 				val status = parser.status(
-					if(isMisskey) {
+					if(account.isMisskey) {
 						result?.jsonObject?.jsonObject("createdNote") ?: result?.jsonObject
 					} else {
 						result?.jsonObject
@@ -671,8 +671,7 @@ class PostHelper(
 	private var formRoot : View? = null
 	private var bMainScreen : Boolean = false
 	
-	private var instance : Host? = null
-	private var isMisskey = false
+	private var accessInfo : SavedAccount? = null
 	
 	private val onEmojiListLoad : (list : ArrayList<CustomEmoji>) -> Unit =
 		{
@@ -783,7 +782,7 @@ class PostHelper(
 			}
 			
 			val part = src.substring(last_sharp + 1, end)
-			if(! TootTag.isValid(part, isMisskey)) {
+			if(! TootTag.isValid(part, accessInfo?.isMisskey == true)) {
 				checkEmoji(et, src)
 				return
 			}
@@ -835,7 +834,7 @@ class PostHelper(
 			val limit = 100
 			
 			// カスタム絵文字の候補を部分一致検索
-			code_list.addAll(customEmojiCodeList(instance?.ascii, limit, part))
+			code_list.addAll(customEmojiCodeList(accessInfo, limit, part))
 			
 			// 通常の絵文字を部分一致で検索
 			val remain = limit - code_list.size
@@ -859,62 +858,56 @@ class PostHelper(
 		
 		// カスタム絵文字の候補を作る
 		private fun customEmojiCodeList(
-			instance : String?,
+			accessInfo : SavedAccount?,
 			@Suppress("SameParameterValue") limit : Int,
 			needle : String
 		) = ArrayList<CharSequence>().also { dst ->
 			
-			if(instance?.isNotEmpty() == true) {
-				val custom_list = App1.custom_emoji_lister.getListWithAliases(
-					instance,
-					isMisskey,
-					onEmojiListLoad
-				)
-				
-				if(custom_list != null) {
-					
-					for(item in custom_list) {
-						if(dst.size >= limit) break
-						if(! item.shortcode.contains(needle)) continue
-						
-						val sb = SpannableStringBuilder()
-						sb.append(' ')
-						sb.setSpan(
-							NetworkEmojiSpan(item.url),
-							0,
-							sb.length,
-							Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-						)
-						sb.append(' ')
-						if(item.alias != null) {
-							val start = sb.length
-							sb.append(":")
-							sb.append(item.alias)
-							sb.append(": → ")
-							sb.setSpan(
-								ForegroundColorSpan(
-									getAttributeColor(
-										activity,
-										R.attr.colorTimeSmall
-									)
-								),
-								start,
-								sb.length,
-								Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-							)
-						}
-						
-						sb.append(':')
-						sb.append(item.shortcode)
-						sb.append(':')
-						
-						dst.add(sb)
-					}
-				}
-			}
+			accessInfo ?: return@also
 			
+			val custom_list =
+				App1.custom_emoji_lister.getListWithAliases(accessInfo, onEmojiListLoad)
+					?: return@also
+			
+			
+			for(item in custom_list) {
+				if(dst.size >= limit) break
+				if(! item.shortcode.contains(needle)) continue
+				
+				val sb = SpannableStringBuilder()
+				sb.append(' ')
+				sb.setSpan(
+					NetworkEmojiSpan(item.url),
+					0,
+					sb.length,
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+				sb.append(' ')
+				if(item.alias != null) {
+					val start = sb.length
+					sb.append(":")
+					sb.append(item.alias)
+					sb.append(": → ")
+					sb.setSpan(
+						ForegroundColorSpan(
+							getAttributeColor(
+								activity,
+								R.attr.colorTimeSmall
+							)
+						),
+						start,
+						sb.length,
+						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+					)
+				}
+				
+				sb.append(':')
+				sb.append(item.shortcode)
+				sb.append(':')
+				
+				dst.add(sb)
+			}
 		}
-		
 	}
 	
 	private fun openPopup() : PopupAutoCompleteAcct? {
@@ -933,12 +926,11 @@ class PostHelper(
 		fun canOpenPopup() : Boolean
 	}
 	
-	fun setInstance(instanceArg : Host?, isMisskey : Boolean) {
-		this.instance = instanceArg
-		this.isMisskey = isMisskey
+	fun setInstance(accessInfo : SavedAccount?) {
+		this.accessInfo = accessInfo
 		
-		if(instanceArg != null) {
-			App1.custom_emoji_lister.getList(instanceArg.ascii, isMisskey, onEmojiListLoad)
+		if(accessInfo != null) {
+			App1.custom_emoji_lister.getList(accessInfo, onEmojiListLoad)
 		}
 		
 		val popup = this.popup
@@ -1038,11 +1030,7 @@ class PostHelper(
 	}
 	
 	private val open_picker_emoji : Runnable = Runnable {
-		EmojiPicker(
-			activity,
-			instance?.ascii,
-			isMisskey
-		) { name, instance, bInstanceHasCustomEmoji, _, _ ->
+		EmojiPicker(activity, accessInfo) { name, instance, bInstanceHasCustomEmoji, _, _ ->
 			val et = this.et ?: return@EmojiPicker
 			
 			val src = et.text ?: ""
@@ -1070,11 +1058,7 @@ class PostHelper(
 	}
 	
 	fun openEmojiPickerFromMore() {
-		EmojiPicker(
-			activity,
-			instance?.ascii,
-			isMisskey
-		) { name, instance, bInstanceHasCustomEmoji, _, _ ->
+		EmojiPicker(activity, accessInfo) { name, instance, bInstanceHasCustomEmoji, _, _ ->
 			val et = this.et ?: return@EmojiPicker
 			
 			val src = et.text ?: ""

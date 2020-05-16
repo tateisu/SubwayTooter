@@ -1453,16 +1453,17 @@ class ActPost : AsyncActivity(),
 	
 	private fun selectAccount(a : SavedAccount?) {
 		this.account = a
+		
+		post_helper.setInstance(a)
+		
 		if(a == null) {
-			post_helper.setInstance(null, false)
 			btnAccount.text = getString(R.string.not_selected)
 			btnAccount.setTextColor(getAttributeColor(this, android.R.attr.textColorPrimary))
 			btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 		} else {
-			post_helper.setInstance(a.host, a.isMisskey)
 			
 			// 先読みしてキャッシュに保持しておく
-			App1.custom_emoji_lister.getList(a.host.ascii, a.isMisskey) {
+			App1.custom_emoji_lister.getList(a) {
 				// 何もしない
 			}
 			
@@ -2331,7 +2332,7 @@ class ActPost : AsyncActivity(),
 					if(jsonObject != null) {
 						val a = parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)
 						if(a == null) {
-							result?.error = "TootAttachment.parse failed"
+							result.error = "TootAttachment.parse failed"
 						} else {
 							pa.attachment = a
 						}
@@ -2624,8 +2625,7 @@ class ActPost : AsyncActivity(),
 		
 		post_helper.attachment_list = this.attachment_list
 		
-		post_helper.emojiMapCustom =
-			App1.custom_emoji_lister.getMap(account.host.ascii, account.isMisskey)
+		post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account)
 		
 		post_helper.redraft_status_id = redraft_status_id
 		

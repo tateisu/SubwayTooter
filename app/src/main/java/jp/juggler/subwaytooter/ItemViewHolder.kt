@@ -572,8 +572,8 @@ internal class ItemViewHolder(
 			
 			showStatusTimeScheduled(activity, tvTime, item)
 			
-			val who = column.who_account!!.get()
-			val whoRef = TootAccountRef(TootParser(activity, access_info), who )
+			val who = column.who_account !!.get()
+			val whoRef = TootAccountRef(TootParser(activity, access_info), who)
 			this.status_account = whoRef
 			
 			setAcct(tvAcct, access_info, who)
@@ -1234,12 +1234,12 @@ internal class ItemViewHolder(
 			)
 		} else {
 			val c = colorBg.notZero()
-
+				
 				?: when(status.bookmarked) {
 					true -> Pref.ipEventBgColorBookmark(App1.pref)
 					false -> 0
 				}.notZero()
-
+				
 				?: when(status.getBackgroundColorType(access_info)) {
 					TootVisibility.UnlistedHome -> toot_color_unlisted
 					TootVisibility.PrivateFollowers -> toot_color_follower
@@ -2517,7 +2517,7 @@ internal class ItemViewHolder(
 					setPadding(paddingH, paddingV, paddingH, paddingV)
 					
 					val emoji = status.custom_emojis?.get(customCode)
-						?: App1.custom_emoji_lister.getMap(access_info.host.ascii, true)
+						?: App1.custom_emoji_lister.getMap(access_info)
 							?.get(customCode)
 					
 					val emojiUrl = emoji?.let {

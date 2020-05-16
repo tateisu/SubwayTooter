@@ -117,7 +117,7 @@ class TootApiClient(
 				if(error_message != null) {
 					return error_message
 				}
-			}catch(_:Throwable) {
+			} catch(_ : Throwable) {
 			}
 			
 			// HTMLならタグの除去を試みる
@@ -126,7 +126,7 @@ class TootApiClient(
 				val decoded = DecodeOptions().decodeHTML(sv).toString()
 				return reWhiteSpace.matcher(decoded).replaceAll(" ").trim()
 			}
-
+			
 			// XXX: Amazon S3 が403を返した場合にcontent-typeが?/xmlでserverがAmazonならXMLをパースしてエラーを整形することもできるが、多分必要ない
 			
 			return reWhiteSpace.matcher(sv).replaceAll(" ").trim()
@@ -837,7 +837,7 @@ class TootApiClient(
 		log.d("getClientCredential: ${jsonObject}")
 		
 		val sv = jsonObject.string("access_token")?.notEmpty()
-		if(sv != null ) {
+		if(sv != null) {
 			result.data = sv
 		} else {
 			result.data = null
@@ -1093,7 +1093,7 @@ class TootApiClient(
 			
 			// 認証されたアカウントのユーザ情報を取得する
 			if(! sendRequest(result) {
-					JsonObject().apply{
+					JsonObject().apply {
 						put("i", access_token)
 					}
 						.toPostRequestBuilder()
@@ -1260,7 +1260,7 @@ class TootApiClient(
 					if("utoken" == detail) {
 						isUserTokenError = true
 					}
-
+					
 					val type = json.string("type")
 					"API returns error: $type $error"
 				}
@@ -1430,7 +1430,7 @@ fun TootApiClient.syncAccountByUrl(
 			"/api/users/show",
 			accessInfo.putMisskeyApiToken().apply {
 				put("username", acct.username)
-				acct.host?.let{ put("host", it.ascii )}
+				acct.host?.let { put("host", it.ascii) }
 			}.toPostRequestBuilder()
 		)
 			?.apply {
@@ -1460,7 +1460,7 @@ fun TootApiClient.syncAccountByAcct(
 
 fun TootApiClient.syncAccountByAcct(
 	accessInfo : SavedAccount,
-	acct:Acct
+	acct : Acct
 ) : Pair<TootApiResult?, TootAccountRef?> {
 	
 	val parser = TootParser(context, accessInfo)
@@ -1470,8 +1470,8 @@ fun TootApiClient.syncAccountByAcct(
 			"/api/users/show",
 			accessInfo.putMisskeyApiToken()
 				.apply {
-					if( acct.isValid) put("username", acct.username)
-					if( acct.host!=null ) put("host", acct.host.ascii )
+					if(acct.isValid) put("username", acct.username)
+					if(acct.host != null) put("host", acct.host.ascii)
 				}
 				.toPostRequestBuilder()
 		)
@@ -1507,14 +1507,14 @@ fun TootApiClient.syncStatus(
 	// これを投稿元タンスのURLに変換しないと、投稿の同期には使えない
 	val m = TootStatus.reStatusPageMisskey.matcher(urlArg)
 	if(m.find()) {
-		val host = Host.parse(m.groupEx(1)!!)
+		val host = Host.parse(m.groupEx(1) !!)
 		val noteId = m.groupEx(2)
 		
 		TootApiClient(context, callback = callback)
 			.apply { instance = host }
 			.request(
 				"/api/notes/show",
-				JsonObject().apply{
+				JsonObject().apply {
 					put("noteId", noteId)
 				}
 					.toPostRequestBuilder()
@@ -1527,7 +1527,7 @@ fun TootApiClient.syncStatus(
 				)
 					.status(result.jsonObject)
 					?.apply {
-						if( accessInfo.host == host) {
+						if(accessInfo.host == host) {
 							return Pair(result, this)
 						}
 						uri.letNotEmpty { url = it }
@@ -1543,7 +1543,7 @@ fun TootApiClient.syncStatus(
 		var targetStatus : TootStatus? = null
 		val result = request(
 			"/api/ap/show",
-			accessInfo.putMisskeyApiToken().apply{
+			accessInfo.putMisskeyApiToken().apply {
 				put("uri", url)
 			}
 				.toPostRequestBuilder()

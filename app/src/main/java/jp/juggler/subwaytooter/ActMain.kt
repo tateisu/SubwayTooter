@@ -794,13 +794,12 @@ class ActMain : AsyncActivity()
 					column.startLoading()
 				}
 				scrollColumnStrip(position)
-				when {
-					column.access_info.isNA -> post_helper.setInstance(null, false)
-					else -> post_helper.setInstance(
-						column.access_info.host,
-						column.access_info.isMisskey
-					)
-				}
+				post_helper.setInstance(
+					when {
+						column.access_info.isNA -> null
+						else -> column.access_info
+					}
+				)
 			}
 		}
 	}
@@ -968,7 +967,7 @@ class ActMain : AsyncActivity()
 		post_helper.in_reply_to_id = null
 		post_helper.attachment_list = null
 		post_helper.emojiMapCustom =
-			App1.custom_emoji_lister.getMap(account.host.ascii, account.isMisskey)
+			App1.custom_emoji_lister.getMap(account)
 		
 		
 		etQuickToot.hideKeyboard()

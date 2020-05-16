@@ -572,8 +572,8 @@ internal class ItemViewHolder(
 			
 			showStatusTimeScheduled(activity, tvTime, item)
 			
-			val who = access_info.loginAccount !!
-			val whoRef = TootAccountRef(TootParser(activity, access_info), who)
+			val who = column.who_account!!.get()
+			val whoRef = TootAccountRef(TootParser(activity, access_info), who )
 			this.status_account = whoRef
 			
 			setAcct(tvAcct, access_info, who)

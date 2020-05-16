@@ -817,7 +817,7 @@ class ActPost : AsyncActivity(),
 							// 比較する前にデフォルトの公開範囲を計算する
 							visibility = visibility
 								?: account.visibility
-								//	?: TootVisibility.Public
+							//	?: TootVisibility.Public
 							// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになる
 							
 							if(TootVisibility.WebSetting == visibility) {
@@ -2276,55 +2276,54 @@ class ActPost : AsyncActivity(),
 					
 					fun postV1() = postMedia("/api/v1/media")
 					
-					var result : TootApiResult?
-					
-					if(! ti.versionGE(TootInstance.VERSION_3_1_3)) {
+					fun postV2() : TootApiResult? {
 						// 3.1.3未満は v1 APIを使う
-						result = postV1()
-					} else {
+						if(! ti.versionGE(TootInstance.VERSION_3_1_3))
+							return postV1()
+						
 						// v2 APIを試す
-						result = postMedia("/api/v2/media")
-						when(result?.response?.code) {
-							
+						val result = postMedia("/api/v2/media")
+						val code = result?.response?.code // complete,or 4xx error
+						when {
 							// 404ならv1 APIにフォールバック
-							404 -> result = postV1()
+							code == 404 -> return postV1()
+							// 202 accepted 以外はポーリングしない
+							code != 202 -> return result
+						}
+						
+						// ポーリングして処理完了を待つ
+						val id = parseItem(
+							::TootAttachment,
+							ServiceType.MASTODON,
+							result?.jsonObject
+						)
+							?.id
+							?: return TootApiResult("/api/v2/media did not return the media ID.")
+						
+						var lastResponse = SystemClock.elapsedRealtime()
+						loop@ while(true) {
 							
-							// 202 accepted ならポーリングして処理完了を待つ
-							202 -> {
-								val id = parseItem(
-									::TootAttachment,
-									ServiceType.MASTODON,
-									result.jsonObject
-								)
-									?.id
-									?: error("/api/v2/media did not returns media ID.")
-
-								var lastResponse = SystemClock.elapsedRealtime()
-								while(true) {
-									result = client.request("/api/v1/media/$id")
-										?: break // cancelled.
-
-									val code = result.response?.code
-									
-									// complete,or 4xx error
-									if(code == 200 || code in 400 until 500) break
-
-									val now = SystemClock.elapsedRealtime()
-									if( code == 206) {
-										// continue to wait
-										lastResponse = now
-									}else if( now - lastResponse >= 120000L ) {
-										// too many temporary error without 206 response.
-										result = TootApiResult("timeout.")
-										break
-									} // else temporary error
-
-									sleep(1000L)
-								}
+							sleep(1000L)
+							val r2 = client.request("/api/v1/media/$id")
+								?: return null // cancelled
+							
+							val now = SystemClock.elapsedRealtime()
+							when(r2.response?.code) {
+								// complete,or 4xx error
+								200, in 400 until 500 -> return r2
+								
+								// continue to wait
+								206 -> lastResponse = now
+								
+								// too many temporary error without 206 response.
+								else ->
+									if(now - lastResponse >= 120000L)
+										return TootApiResult("timeout.")
 							}
 						}
 					}
 					
+					val result = postV2()
 					opener.deleteTempFile()
 					onUploadEnd()
 					
@@ -2780,11 +2779,11 @@ class ActPost : AsyncActivity(),
 		
 		val list_warning = ArrayList<String>()
 		var target_account : SavedAccount? = null
-
+		
 		runWithProgress(
 			"restore from draft",
-			{progress->
-				fun isTaskCancelled() = !this.coroutineContext.isActive
+			{ progress ->
+				fun isTaskCancelled() = ! this.coroutineContext.isActive
 				
 				var content = draft.string(DRAFT_CONTENT) ?: ""
 				val account_db_id = draft.long(DRAFT_ACCOUNT_DB_ID) ?: - 1L
@@ -2816,7 +2815,7 @@ class ActPost : AsyncActivity(),
 					
 					return@runWithProgress "OK"
 				}
-
+				
 				target_account = account
 				
 				// アカウントがあるなら基本的にはすべての情報を復元できるはずだが、いくつか確認が必要だ
@@ -2874,9 +2873,9 @@ class ActPost : AsyncActivity(),
 				
 				"OK"
 			},
-			{result->
+			{ result ->
 				// cancelled.
-				if( result == null) return@runWithProgress
+				if(result == null) return@runWithProgress
 				
 				val content = draft.string(DRAFT_CONTENT) ?: ""
 				val content_warning = draft.string(DRAFT_CONTENT_WARNING) ?: ""

@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 	- TootApiClientからの進捗イベントをProgressDialogに伝達します。
 */
 
-@Suppress("DEPRECATION", "MemberVisibilityCanPrivate")
 class TootTaskRunner(
 	context : Context,
 	private val progress_style : Int = PROGRESS_SPINNER,
@@ -30,7 +29,6 @@ class TootTaskRunner(
 ) : TootApiCallback {
 	
 	companion object {
-		
 		const val PROGRESS_NONE = - 1
 		const val PROGRESS_SPINNER = ProgressDialogEx.STYLE_SPINNER
 		const val PROGRESS_HORIZONTAL = ProgressDialogEx.STYLE_HORIZONTAL
@@ -153,6 +151,7 @@ class TootTaskRunner(
 				this.progress = progress
 				progress.setCancelable(true)
 				progress.setOnCancelListener { task?.cancel() }
+				@Suppress("DEPRECATION")
 				progress.setProgressStyle(progress_style)
 				progressSetupCallback(progress)
 				showProgressMessage()
@@ -169,6 +168,7 @@ class TootTaskRunner(
 	
 	// ダイアログのメッセージを更新する
 	// 初期化時とメッセージ更新時に呼ばれる
+	@Suppress("DEPRECATION")
 	private fun showProgressMessage() {
 		val progress = this.progress ?: return
 		

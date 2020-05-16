@@ -1473,7 +1473,21 @@ enum class ColumnType(
 		bAllowPseudo = false,
 		bAllowMisskey = false,
 		
-		loading = { client -> getScheduledStatuses(client) },
+		loading = { client ->
+			val result = client.request("/api/v1/accounts/verify_credentials")
+			if(result==null || result.error != null){
+				result
+			}else{
+				val a = parser.account(result.jsonObject) ?: access_info.loginAccount
+				if(a==null){
+					TootApiResult("can't parse account information")
+				}else {
+					column.who_account = TootAccountRef(parser, a)
+					getScheduledStatuses(client)
+				}
+			}
+		},
+		
 		refresh = { client -> getScheduledStatuses(client) }
 	),
 	

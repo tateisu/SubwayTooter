@@ -961,7 +961,7 @@
     <string name="account_picker_bookmark">Compte avec lequel marquer comme un signet \?</string>
     <string name="already_bookmarked">Déjà mis en signet.</string>
     <string name="test">Test</string>
-    <string name="please_help_translation">Veuillez nous aider dans la traduction!</string>
+    <string name="please_help_translation">Veuillez nous aider dans la traduction !</string>
     <string name="enable_domain_timeline">Activer le fil du domaine</string>
     <string name="fedibird_domain_timeline">(fedibird) fil du domaine</string>
     <string name="domain_timeline">Fil du domaine</string>
@@ -980,7 +980,7 @@
     <string name="presets">Pré-réglages</string>
     <string name="custom">Personnalisé</string>
     <string name="language_code_hint">Choisissez un préréglage ou saisissez le code d’une langue</string>
-    <string name="language_is">lan: %1$s</string>
+    <string name="language_is">lang : %1$s</string>
     <string name="always_show_language">Toujours afficher la langue</string>
     <string name="developer_options">Options développeurs</string>
     <string name="follow_request">Demande d’abonnement</string>
@@ -989,4 +989,24 @@
     <string name="announcements_period1">Période de l’événement : %1$s</string>
     <string name="announcements_period2">Période de l’événement : %1$s…%2$s</string>
     <string name="edited_at">Édité : %1$s</string>
+    <string name="featured">Mis en avant</string>
+    <string name="promoted">Promue</string>
+    <string name="quote">Citer</string>
+    <string name="antenna_timeline_of">Fil de l’antenne « %1$s »</string>
+    <string name="antenna_timeline">Fil de l’antenne</string>
+    <string name="delete_custom_emoji_cache">Effacer le cache des émojis personnalisés</string>
+    <string name="import_completed_please_restart_app">Importation terminée. Veuillez redémarrer l’app.</string>
+    <string name="language_filter_quit_waring">Le filtre de langue n’a pas été sauvegardé. Désirez-vous quitter quand-même \?</string>
+    <string name="copied_to_clipboard">A été copié vers le presse-papiers.</string>
+    <string name="copy_to_clipboard">Copier vers le presse-papiers</string>
+    <string name="hide_followers_count">Cacher le nombre des abonné·e·s</string>
+    <string name="divide_notification">Séparer les notifications (Android 6+)</string>
+    <string name="show_bookmark_button">Afficher le bouton des signets (redémarrage requis)</string>
+    <string name="release_notes_updated">Notes de version (v%1$s→v%2$s)</string>
+    <string name="release_notes_latest">Notes de version (v%1$s)</string>
+    <string name="always_expand_context_menu_sub_items">Toujourd déplier les sous-éléments du menu contextuel</string>
+    <string name="display_favourite_count">Afficher le compteur des favoris</string>
+    <string name="display_boost_count">Afficher le nombre des boosts</string>
+    <string name="filter_profile">profile</string>
+    <string name="display_name_follow_request_accepted_by">%1$s a accepté votre demande d’abonnement</string>
 </resources>

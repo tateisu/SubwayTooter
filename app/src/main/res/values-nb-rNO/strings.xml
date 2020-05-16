@@ -109,7 +109,7 @@
     <string name="instance_not_need_slash">Vertsnavn for instans, uten \'/\', \'@\'.</string>
     <string name="mail_address_not_contains_at_mark">Bruk e-poster som inneholder \'@\' og \'.\'</string>
     <string name="instance_hint">f.eks) mastadon.social</string>
-    <string name="mail_hint">f.eks din@e-post.adresse</string>
+    <string name="mail_hint">f.eks. din@e-post.adresse</string>
     <string name="follow_succeeded">Fulgt</string>
     <string name="unfollow_succeeded">Følging opphevet</string>
     <string name="mute">Forstum</string>

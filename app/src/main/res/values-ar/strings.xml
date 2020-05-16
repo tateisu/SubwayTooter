@@ -67,7 +67,7 @@
     <string name="dont_show_boost">لا تقم بإظهار الترقيات</string>
     <string name="dont_show_reply">لا تقم بإظهار الردود</string>
     <string name="contributor">المساهم</string>
-    <string name="thanks_for">الشكر لِكُلٍ مِن %1$s</string>
+    <string name="thanks_for">الشكر لِكُلٍ مِن %1$s.</string>
     <string name="muted_app">التطبيقات المكتومة</string>
     <string name="application_is">التطبيق: %1$s</string>
     <string name="app_was_muted">تم كتم التطبيق.</string>
@@ -491,4 +491,15 @@
     <string name="domain_count">عدد النطاقات المتصلة</string>
     <string name="dont_show_timeout">لا تُظهر إشعار \"انتهاء مهلة الخادم\"</string>
     <string name="default_">افتراضي</string>
+    <string name="short_description">وصف قصير</string>
+    <string name="acct_sample">(مثال) username@server</string>
+    <string name="background_image_alpha">شفافية صورة الخلفية</string>
+    <string name="dont_show_follow">إخفاء المتابِعين</string>
+    <string name="token_not_specified">يرجى إدخال رمز النفاذ.</string>
+    <string name="search_is_not_available_on_pseudo_account">إنّ ميزة البحث غير متاحة في وضع الحساب الزائف.</string>
+    <string name="notification_sound">إشعار صوتي</string>
+    <string name="display_name_follow_request_accepted_by">وافَق %1$s على طلبك للإشتراك بحسابه</string>
+    <string name="confirm_unbookmark_from">هل تريد إزاحة هذا المنشور من المفضلة %1$s ؟</string>
+    <string name="instance_ticker_copyright" translatable="false">#InstanceTicker
+\n(c)2018-2020 MiyonMiyon. Released under the MIT License.</string>
 </resources>

@@ -1012,4 +1012,6 @@
     <string name="no">Non</string>
     <string name="yes">Oui</string>
     <string name="invites_enabled">Les utilisateur·rice·s peuvent créer des invitations</string>
+    <string name="antenna_list_misskey">Liste de l’antenne (Misskey 12+)</string>
+    <string name="antenna_list">Liste de l’antenne</string>
 </resources>

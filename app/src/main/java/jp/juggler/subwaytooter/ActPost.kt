@@ -2350,7 +2350,7 @@ class ActPost : AsyncActivity(),
 			if(pa.attachment == null) {
 				pa.status = PostAttachment.STATUS_UPLOAD_FAILED
 				if(result != null) {
-					showToast(this@ActPost, true, result.error)
+					showToast(this@ActPost, true, "${result.error} ${result.response?.request?.method} ${result.response?.request?.url}" )
 				}
 			} else {
 				pa.status = PostAttachment.STATUS_UPLOADED

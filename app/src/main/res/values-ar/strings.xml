@@ -502,4 +502,28 @@
     <string name="confirm_unbookmark_from">هل تريد إزاحة هذا المنشور من المفضلة %1$s ؟</string>
     <string name="instance_ticker_copyright" translatable="false">#InstanceTicker
 \n(c)2018-2020 MiyonMiyon. Released under the MIT License.</string>
+    <string name="hide_followers_count">إخفاء عدد المتابِعين</string>
+    <string name="show_hide">إظهار/إخفاء</string>
+    <string name="language_hide">إخفاء</string>
+    <string name="language_filter_quit_waring">لم يتم حفظ عامل تصفية اللغة. أتريد الخروج على أي حال؟</string>
+    <string name="language_filter_description">يتوجّب إنعاش العمود لتطبيق عامل التصفية.</string>
+    <string name="language_filter">تصفية اللغات</string>
+    <string name="clear_all">مسح الكل</string>
+    <string name="import_">استيراد</string>
+    <string name="export">تصدير</string>
+    <string name="invites_enabled">يمكن للمستخدمين إنشاء دعوات</string>
+    <string name="about_this_instance">عن هذا الخادم</string>
+    <string name="links">الروابط</string>
+    <string name="contact">حساب التواصل</string>
+    <string name="languages">اللغات</string>
+    <string name="instance_actions_for">الإجراءات على خادم \"%1$s\"</string>
+    <string name="developer_options">خيارات المطوّر</string>
+    <string name="release_notes_updated">ملاحظات الإصدار (v%1$s→v%2$s)</string>
+    <string name="release_notes_latest">ملاحظات الإصدار (v%1$s)</string>
+    <string name="trend_tag">الوسوم المتداولة</string>
+    <string name="already_bookmarked">موجود بالفعل في الفواصل المرجعية.</string>
+    <string name="unbookmark_succeeded">تمت إزالته من الفواصل المرجعية</string>
+    <string name="bookmarks">الفواصل المرجعية</string>
+    <string name="bookmark_succeeded">تمت إضافته إلى الفواصل المرجعية</string>
+    <string name="bookmark">إضافة إلى الفواصل المرجعية</string>
 </resources>

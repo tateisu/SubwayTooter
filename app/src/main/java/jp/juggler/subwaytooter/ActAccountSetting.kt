@@ -783,7 +783,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.authentication1(
 					Pref.spClientName(this@ActAccountSetting),
-					forceUpdateClient = false
+					forceUpdateClient = true
 				)
 			}
 			

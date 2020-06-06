@@ -14,6 +14,10 @@ class ActionsDialog {
 	
 	private class Action internal constructor(internal val caption : CharSequence, internal val r : EmptyCallback)
 	
+	private var choosed =false
+
+	var onCancel :()->Unit = {}
+	
 	fun addAction(caption : CharSequence, r : EmptyCallback) : ActionsDialog {
 		
 		action_list.add(Action(caption, r))
@@ -30,16 +34,21 @@ class ActionsDialog {
 			++ i
 		}
 		val b = AlertDialog.Builder(context)
-			.setNegativeButton(R.string.cancel, null)
+			.setNegativeButton(R.string.cancel,null)
 			.setItems(caption_list) { _, which ->
 				if(which >= 0 && which < action_list.size) {
+					choosed = true
 					action_list[which].r()
 				}
 			}
 		
 		if( title != null && title.isNotEmpty() ) b.setTitle(title)
 		
-		b.show()
+		val d = b.create()
+		d.setOnDismissListener {
+			if(!choosed) onCancel()
+		}
+		d.show()
 		
 		return this
 	}

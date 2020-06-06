@@ -1052,6 +1052,13 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					client.account = account
 					
+					val(ti,ri)= TootInstance.get(client)
+					if(ti!=null && ti.versionGE(TootInstance.VERSION_3_2)){
+						E2EEAccount
+							.load(context, account.acct)
+							.uploadKeys(context, client)
+					}
+					
 					val wps = PushSubscriptionHelper(context, account)
 					
 					if(wps.flags != 0) {

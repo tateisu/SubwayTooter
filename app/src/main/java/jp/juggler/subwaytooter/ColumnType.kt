@@ -399,22 +399,22 @@ enum class ColumnType(
 		name1 = { it.getString(R.string.home) },
 		
 		loading = { client ->
-			val ra = getAnnouncements(client,force=true)
-			if(ra==null||ra.error!=null)
+			val ra = getAnnouncements(client, force = true)
+			if(ra == null || ra.error != null)
 				ra
 			else
 				getStatusList(client, column.makeHomeTlUrl())
 		},
 		refresh = { client ->
 			val ra = getAnnouncements(client)
-			if(ra==null||ra.error!=null)
+			if(ra == null || ra.error != null)
 				ra
 			else
 				getStatusList(client, column.makeHomeTlUrl())
 		},
 		gap = { client ->
 			val ra = getAnnouncements(client)
-			if(ra==null||ra.error!=null)
+			if(ra == null || ra.error != null)
 				ra
 			else
 				getStatusList(client, column.makeHomeTlUrl())
@@ -524,7 +524,7 @@ enum class ColumnType(
 			context.getString(
 				R.string.profile_of,
 				if(who != null)
-					AcctColor.getNickname(access_info,who)
+					AcctColor.getNickname(access_info, who)
 				else
 					profile_id.toString()
 			)
@@ -1279,7 +1279,7 @@ enum class ColumnType(
 					"/api/users/show",
 					misskeyParams = access_info.putMisskeyApiToken().apply {
 						val list = column.list_info?.userIds?.map { it.toString() }?.toJsonArray()
-						if(list !=null) put("userIds",list)
+						if(list != null) put("userIds", list)
 					}
 				)
 				
@@ -1475,13 +1475,13 @@ enum class ColumnType(
 		
 		loading = { client ->
 			val result = client.request("/api/v1/accounts/verify_credentials")
-			if(result==null || result.error != null){
+			if(result == null || result.error != null) {
 				result
-			}else{
+			} else {
 				val a = parser.account(result.jsonObject) ?: access_info.loginAccount
-				if(a==null){
+				if(a == null) {
 					TootApiResult("can't parse account information")
-				}else {
+				} else {
 					column.who_account = TootAccountRef(parser, a)
 					getScheduledStatuses(client)
 				}
@@ -1490,7 +1490,6 @@ enum class ColumnType(
 		
 		refresh = { client -> getScheduledStatuses(client) }
 	),
-	
 	
 	MISSKEY_ANTENNA_LIST(39,
 		iconId = { R.drawable.ic_satellite },
@@ -1571,7 +1570,50 @@ enum class ColumnType(
 		}
 	),
 	
-	
+	E2EE(41,
+		iconId = { R.drawable.ic_mail },
+		name1 = { it.getString(R.string.e2ee_messages) },
+		name2 = { context.getString(R.string.e2ee_messages) },
+		
+		bAllowPseudo = false,
+		bAllowMisskey = false,
+		bAllowMastodon = true,
+		
+		loading = { client ->
+			getE2EEMessages(client)
+		},
+		
+		refresh = { client ->
+			column.loadAntennaInfo(client, false)
+			if(isMisskey) {
+				getStatusList(
+					client,
+					column.makeAntennaTlUrl(),
+					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
+						put("antennaId", column.profile_id)
+					},
+					misskeyCustomParser = misskeyCustomParserAntenna
+				)
+			} else {
+				getStatusList(client, column.makeAntennaTlUrl())
+			}
+		},
+		
+		gap = { client ->
+			if(isMisskey) {
+				getStatusList(
+					client,
+					column.makeAntennaTlUrl(),
+					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
+						put("antennaId", column.profile_id)
+					},
+					misskeyCustomParser = misskeyCustomParserAntenna
+				)
+			} else {
+				getStatusList(client, column.makeAntennaTlUrl())
+			}
+		}
+	),
 	;
 	
 	init {
@@ -1579,7 +1621,6 @@ enum class ColumnType(
 		if(id > 0 && old != null) error("ColumnType: duplicate id $id. name=$name, ${old.name}")
 		Column.typeMap.put(id, this)
 	}
-	
 	
 	companion object {
 		private val log = LogCategory("ColumnType")

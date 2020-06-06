@@ -1020,4 +1020,6 @@
     <string name="invites_enabled">ユーザが招待を作成できる</string>
     <string name="yes">はい</string>
     <string name="no">いいえ</string>
+    <string name="e2ee_messages">E2E暗号化メッセージ</string>
+    <string name="send_e2ee_message">Send E2EE message</string>
 </resources>

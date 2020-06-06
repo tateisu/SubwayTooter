@@ -3,8 +3,11 @@ package jp.juggler.subwaytooter
 import android.os.SystemClock
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.table.E2EEAccount
+import jp.juggler.subwaytooter.table.E2EEMessage
 import jp.juggler.subwaytooter.util.InstanceTicker
 import jp.juggler.util.*
+import org.matrix.olm.OlmMessage
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -148,7 +151,7 @@ class ColumnTask_Loading(
 		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootStatus> =
 			{ parser, jsonArray -> parser.statusList(jsonArray) },
 		initialUntilDate : Boolean = false,
-		useDate :Boolean = isMisskey // お気に入り一覧などでは変更される
+		useDate : Boolean = isMisskey // お気に入り一覧などでは変更される
 	) : TootApiResult? {
 		
 		path_base ?: return null // cancelled.
@@ -990,9 +993,9 @@ class ColumnTask_Loading(
 				if(jsonArray != null) {
 					val src = parser.statusList(jsonArray)
 					list_tmp = addWithFilterStatus(list_tmp, src)
-					if(src.isNotEmpty()){
-						val(ti,_)= TootInstance.get(client)
-						if(ti?.versionGE(TootInstance.MISSKEY_VERSION_12)==true){
+					if(src.isNotEmpty()) {
+						val (ti, _) = TootInstance.get(client)
+						if(ti?.versionGE(TootInstance.MISSKEY_VERSION_12) == true) {
 							addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Status))
 						}
 					}
@@ -1064,5 +1067,123 @@ class ColumnTask_Loading(
 		return getStatusList(client, Column.PATH_DIRECT_MESSAGES)
 	}
 	
-
+	private val reMaxId = """\bmax_id=([^,?&]+)""".toRegex()
+	
+	internal fun getE2EEMessages(client : TootApiClient) : TootApiResult? {
+		
+		// E2EEAccount.reset(context)
+		
+		val (ti, ri) = TootInstance.get(client)
+		if(ti == null) return ri
+		if(! ti.versionGE(TootInstance.VERSION_3_2)) {
+			return TootApiResult("e2ee is not supported on version ${ti.version}")
+		}
+		
+		val e2eeAccount = E2EEAccount.load(context, column.access_info.acct)
+		
+		e2eeAccount.uploadKeys(context, client, dontSkip = true)
+		
+		var result = client.request("/api/v1/crypto/encrypted_messages")
+		// [{"id":"104279502976060064","account_id":"584","device_id":"ff1f3bb8-4165-4fa2-b73b-3a5939a80749","type":0,"body":"AwogNeZGT0jxHs1XCaV6CGCrwRrxYAzs8kR4DxR6PpVBUU8SIEiM6z2wCMX1a5C1uLSwWI5fuervx2O3IAdRvlNFUmxlGiCpcmGCC36fIlpu0HuTG8Iz19vczHCwUgyTEnnWSUViFSI/AwogLwODru5CKgobcH6ufmRtsi4fl9Xh9Zd3ehQ0OQ/rjG0QACIQladzC6/juNgYR5DFxpRuUZqW9JlZyMBb","digest":"36da54f00e91d8fcf204485e43df6325d696630aefd66979a793f80af8d9c78c","message_franking":"oCNtgnCnSg3J1kahgjn+auyOsCB1/xI4SreDZH7bMIPhrxOWitCpBNgQzuPzi1tBhyTWw3X4RLhd1pFndk+aAXrViw/oH4G8Ad5DOmLGcKYKyndIdsov+3G6iApBD9ca0eyAXoHppBCAUU8x1XPVGAB7ok5DQpckdaVSTO0y2W9euMFSvEM/hSPfzk4+gilJ/km7YB+XX6sjQcvAhHCkyhg/NZsKvmqYzQ/cTqjU9moCHwHf1fSMKZk=--7fqsQXwfHDLcK2z0--C9MNP/JWUC7+KXyNYBzbvg=="},{"id":"104279397293198038","account_id":"584","device_id":"ff1f3bb8-4165-4fa2-b73b-3a5939a80749","type":0,"body":"Awog1jprz095x77LNZ9VcJGVMFjlmUo1nAxrtHqkzt/aQxYSICFsdlhfaX+nRZ8jcBzBZyjzszjXIfIhLU2tbGfjAUgvGiCpcmGCC36fIlpu0HuTG8Iz19vczHCwUgyTEnnWSUViFSI/Awog3EOaBaXIXbwnV+xvnnvr8Auk5KEIovpc61acYRlyPFoQACIQBn/eEt1XTBmU59K6WSgvPuQGR52eb66j","digest":"eea2427ccac90d427ddb069bb12b6ae0da0670439e2b454a4bb3fb397a417fd7","message_franking":"uf47khPd1PbKA1wDOyaIpnoXHHccWG7aciGmOOJ02LaW2aabGwv2zZpgnumHAAbBHkYL2ufF+dJJClSsbC9ariqK1QG1cqExpIAJTgg5+qyKYpBz144O/jBw/EF2QCOEZQN+vaHN4Zn700S9cTYunATEBkAX+nj6t1IapGs3mceQIGFDqM5LUe1APZANKtbTodRseaRapEEls72P6BRE4AG4fXI8GZIpnNT6R0HeiOpY0rs3r/kPlZc=--ZY3EG41pTRKpieLF--dtd8Tj8Ifdgo1/2ax+E8Pg=="}]
+		
+		var clearId : EntityId? = null
+		
+		val tmpList = ArrayList<E2EEMessage>()
+		try {
+			while(true) {
+				val jsonArray = result?.jsonArray ?: break
+				for(data in jsonArray.mapNotNull { it as? JsonObject }) {
+					//	{
+					//	"id":"104279397293198038",
+					//	"account_id":"584",
+					//	"device_id":"ff1f3bb8-4165-4fa2-b73b-3a5939a80749",
+					//	"type":0,
+					//	"body":"Awog1jprz095x77LNZ9VcJGVMFjlmUo1nAxrtHqkzt/aQxYSICFsdlhfaX+nRZ8jcBzBZyjzszjXIfIhLU2tbGfjAUgvGiCpcmGCC36fIlpu0HuTG8Iz19vczHCwUgyTEnnWSUViFSI/Awog3EOaBaXIXbwnV+xvnnvr8Auk5KEIovpc61acYRlyPFoQACIQBn/eEt1XTBmU59K6WSgvPuQGR52eb66j",
+					//	"digest":"eea2427ccac90d427ddb069bb12b6ae0da0670439e2b454a4bb3fb397a417fd7",
+					//	"message_franking":"uf47khPd1PbKA1wDOyaIpnoXHHccWG7aciGmOOJ02LaW2aabGwv2zZpgnumHAAbBHkYL2ufF+dJJClSsbC9ariqK1QG1cqExpIAJTgg5+qyKYpBz144O/jBw/EF2QCOEZQN+vaHN4Zn700S9cTYunATEBkAX+nj6t1IapGs3mceQIGFDqM5LUe1APZANKtbTodRseaRapEEls72P6BRE4AG4fXI8GZIpnNT6R0HeiOpY0rs3r/kPlZc=--ZY3EG41pTRKpieLF--dtd8Tj8Ifdgo1/2ax+E8Pg=="
+					//	}
+					// device_id はsenderのもの
+					
+					
+					val message = e2eeAccount.decrypt(
+						context,
+						EntityId.mayDefault(data.string("account_id")),
+						data.string("device_id")!!,
+						OlmMessage().apply {
+							mType = data.long("type") ?: 0L
+							mCipherText = data.string("body")
+						}
+					)
+					
+					val id = EntityId.mayDefault(data.string("id"))
+					if(clearId == null || id > clearId) clearId = id
+					
+					tmpList.add(
+						E2EEMessage(
+							readerAcct = access_info.acct,
+							senderAccountId = EntityId.mayDefault(data.string("account_id")),
+							senderDeviceId = data.string("device_id") ?: "",
+							messageId = id,
+							messageBody = message,
+							createdAt = TootStatus.parseTime(data.string("created_at"))
+						)
+					)
+				}
+				if(tmpList.isNotEmpty()) {
+					log.d("save ${tmpList.size} E2EEMessage")
+					E2EEMessage.saveList(tmpList)
+					tmpList.clear()
+				}
+				
+				fun String?.findMaxId() : String? {
+					this ?: return null
+					return reMaxId.find(this)?.groupValues?.get(1)
+				}
+				
+				log.d("pagination old=${result.link_older}, new=${result.link_newer}")
+				// pagination old=https://mastodon2.juggler.jp/api/v1/crypto/encrypted_messages?max_id=104281880868582829, new=https://mastodon2.juggler.jp/api/v1/crypto/encrypted_messages?min_id=104281892034004625
+				
+				val nextId = result.link_older?.findMaxId()
+				if(nextId == null) {
+					// end page
+					// TODO call clear API
+					if(clearId != null) {
+						client.request(
+							"/api/v1/crypto/encrypted_messages/clear",
+							jsonObject {
+								put("up_to_id", clearId.toString())
+							}.toPostRequestBuilder()
+						)
+					}
+					
+					break
+				}
+				result = client.request("/api/v1/crypto/encrypted_messages?max_id=${nextId}")
+			}
+			
+		} finally {
+		}
+		
+		if(result != null && result.error == null) {
+			list_tmp = addAll(list_tmp, E2EEMessage.load(access_info.acct, null))
+		}
+		
+		return result
+		
+		//			column.loadAntennaInfo(client, true)
+		//
+		//			if(isMisskey) {
+		//				getStatusList(
+		//					client,
+		//					column.makeAntennaTlUrl(),
+		//					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
+		//						put("antennaId", column.profile_id)
+		//					},
+		//					misskeyCustomParser = misskeyCustomParserAntenna,
+		//					useDate = false
+		//				)
+		//			} else {
+		//				getStatusList(client, column.makeAntennaTlUrl())
+		//			}
+	}
 }

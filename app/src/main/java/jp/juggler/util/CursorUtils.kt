@@ -14,11 +14,11 @@ fun Cursor.getIntOrNull(key : String) =
 fun Cursor.getLong(key : String) =
 	getLong(getColumnIndex(key))
 
-//fun Cursor.getLongOrNull(idx:Int) =
-//	if(isNull(idx)) null else getLong(idx)
+fun Cursor.getLongOrNull(idx:Int) =
+	if(isNull(idx)) null else getLong(idx)
 
-//fun Cursor.getLongOrNull(key:String) =
-//	getLongOrNull(getColumnIndex(key))
+fun Cursor.getLongOrNull(key:String) =
+	getLongOrNull(getColumnIndex(key))
 
 fun Cursor.getString(key : String) : String =
 	getString(getColumnIndex(key))

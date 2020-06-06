@@ -132,9 +132,13 @@ class App1 : Application() {
 		// 2019/11/15 42=> 43 HighlightWord テーブルに項目追加。
 		// 2019/12/17 43=> 44 SavedAccount テーブルに項目追加。
 		// 2019/12/18 44=> 45 SavedAccount テーブルに項目追加。
-		// 2019/12/18 44=> 46 SavedAccount テーブルに項目追加。
+		// 2019/12/18 45=> 46 SavedAccount テーブルに項目追加。
+		// 2020/6/3  46 => 50 E2EEAccount
+		// 2020/6/3  50 => 51 E2EEMessage
+		// 2020/6/4  51 => 52 E2EEMessage
+		// 2020/6/6  52 => 54 E2EESession
 		
-		internal const val DB_VERSION = 46
+		internal const val DB_VERSION = 54
 		
 		private val tableList = arrayOf(
 			LogData,
@@ -153,7 +157,10 @@ class App1 : Application() {
 			TagSet,
 			HighlightWord,
 			FavMute,
-			SubscriptionServerKey
+			SubscriptionServerKey,
+			E2EEAccount,
+			E2EEMessage,
+			E2EESession
 		)
 		
 		private lateinit var db_open_helper : DBOpenHelper

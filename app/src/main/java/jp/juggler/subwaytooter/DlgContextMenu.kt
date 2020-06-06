@@ -169,6 +169,7 @@ internal class DlgContextMenu(
 		
 		val btnDomainTimeline = viewRoot.findViewById<View>(R.id.btnDomainTimeline)
 		
+		val btnSendE2EEMessage = viewRoot.findViewById<View>(R.id.btnSendE2EEMessage)
 		arrayOf(
 			btnNotificationFrom,
 			btnAroundAccountTL,
@@ -223,6 +224,7 @@ internal class DlgContextMenu(
 			btnBoostedBy,
 			btnFavouritedBy,
 			btnDomainTimeline,
+			btnSendE2EEMessage,
 			
 			viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus),
 			viewRoot.findViewById<View>(R.id.btnTranslate),
@@ -967,6 +969,14 @@ internal class DlgContextMenu(
 								it
 							)
 						}
+					}
+				}
+				
+				R.id.btnSendE2EEMessage ->{
+					if(access_info.isMisskey) {
+						showToast(activity, false, R.string.misskey_account_not_supported)
+					} else {
+						Action_E2EE.sendMessageUI(activity,access_info,access_info.getFullAcct(who))
 					}
 				}
 			}

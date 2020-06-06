@@ -175,7 +175,9 @@ class SideMenuAdapter(
 		Item(icon = R.drawable.ic_timer, title = R.string.scheduled_status_list) {
 			Action_Account.timeline(this, defaultInsertPosition, ColumnType.SCHEDULED_STATUS)
 		},
-		
+		Item(icon = R.drawable.ic_mail, title = R.string.e2ee_messages) {
+			Action_Account.timeline(this, defaultInsertPosition, ColumnType.E2EE)
+		},
 		Item(),
 		Item(title = R.string.toot_search),
 		

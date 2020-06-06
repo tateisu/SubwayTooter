@@ -175,6 +175,7 @@ class TootApiClient(
 		
 		fun getScopeString(ti : TootInstance) = when {
 			// ti.versionGE(TootInstance.VERSION_2_7_0_rc1) -> "read+write+follow+push+create"
+			ti.versionGE(TootInstance.VERSION_3_2) -> "read+write+follow+push+crypto"
 			ti.versionGE(TootInstance.VERSION_2_4_0_rc1) -> "read+write+follow+push"
 			else -> "read+write+follow"
 		}

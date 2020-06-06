@@ -119,8 +119,6 @@
                     android:text="@string/share_url_more"
                     android:textAllCaps="false" />
 
-
-
                 <Button
                     android:id="@+id/btnCrossAccountActionsForStatus"
                     android:layout_width="match_parent"
@@ -232,7 +230,6 @@
                         android:textAllCaps="false" />
                 </LinearLayout>
 
-
                 <Button
                     android:id="@+id/btnAroundThisToot"
                     android:layout_width="match_parent"
@@ -258,6 +255,7 @@
                     android:paddingStart="24dp"
                     android:visibility="gone"
                     tools:ignore="RtlSymmetry">
+
                     <Button
                         android:id="@+id/btnAroundAccountTL"
                         android:layout_width="match_parent"
@@ -301,7 +299,6 @@
                         android:textAllCaps="false" />
 
                 </LinearLayout>
-
 
                 <Button
                     android:id="@+id/btnYourToot"
@@ -385,11 +382,7 @@
                         android:text="@string/delete"
                         android:textAllCaps="false" />
 
-
-
-
                 </LinearLayout>
-
 
                 <Button
                     android:id="@+id/btnStatusExtraAction"
@@ -445,7 +438,6 @@
                         android:text="@string/favourited_by"
                         android:textAllCaps="false" />
 
-
                     <Button
                         android:id="@+id/btnBoostWithVisibility"
                         android:layout_width="match_parent"
@@ -473,6 +465,7 @@
                         android:paddingBottom="4dp"
                         android:text="@string/quote_toot"
                         android:textAllCaps="false" />
+
                     <Button
                         android:id="@+id/btnQuoteTootBT"
                         android:layout_width="match_parent"
@@ -534,6 +527,7 @@
                         />
 
                 </LinearLayout>
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -646,7 +640,6 @@
 
                 </LinearLayout>
 
-
                 <Button
                     android:id="@+id/btnProfile"
                     android:layout_width="match_parent"
@@ -703,6 +696,19 @@
                     android:text="@string/send_message"
                     android:textAllCaps="false" />
 
+                <Button
+                    android:id="@+id/btnSendE2EEMessage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_bg_transparent_round6dp"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="32dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="4dp"
+                    android:text="@string/send_e2ee_message"
+                    android:textAllCaps="false" />
 
                 <Button
                     android:id="@+id/btnQuoteUrlAccount"
@@ -945,7 +951,6 @@
                         android:text="@string/qr_code"
                         android:textAllCaps="false" />
 
-
                     <Button
                         android:id="@+id/btnNotificationFrom"
                         android:layout_width="match_parent"
@@ -959,7 +964,6 @@
                         android:paddingBottom="4dp"
                         android:text="@string/notifications_from_acct"
                         android:textAllCaps="false" />
-
 
                     <Button
                         android:id="@+id/btnEndorse"
@@ -1031,7 +1035,6 @@
                         android:text="@string/show_favourite_notification_from_user"
                         android:textAllCaps="false" />
 
-
                     <Button
                         android:id="@+id/btnDeleteSuggestion"
                         android:layout_width="match_parent"
@@ -1086,23 +1089,21 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/llInstance"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:layout_marginBottom="6dp"
-                android:orientation="vertical"
-                android:id="@+id/llInstance"
-                >
+                android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/tvInstanceActions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
                     android:textColor="?attr/colorTimeSmall"
-                    android:textSize="12sp"
-                    android:id="@+id/tvInstanceActions"
-                    />
+                    android:textSize="12sp" />
 
                 <Button
                     android:id="@+id/btnOpenTimeline"
@@ -1115,9 +1116,8 @@
                     android:paddingTop="4dp"
                     android:paddingEnd="8dp"
                     android:paddingBottom="4dp"
-                    android:textAllCaps="false"
                     android:text="@string/local_timeline"
-                    />
+                    android:textAllCaps="false" />
 
                 <Button
                     android:id="@+id/btnInstanceInformation"
@@ -1130,9 +1130,8 @@
                     android:paddingTop="4dp"
                     android:paddingEnd="8dp"
                     android:paddingBottom="4dp"
-                    android:textAllCaps="false"
                     android:text="@string/instance_information"
-                    />
+                    android:textAllCaps="false" />
 
                 <Button
                     android:id="@+id/btnProfileDirectory"
@@ -1145,8 +1144,8 @@
                     android:paddingTop="4dp"
                     android:paddingEnd="8dp"
                     android:paddingBottom="4dp"
-                    android:textAllCaps="false"
                     android:text="@string/profile_directory"
+                    android:textAllCaps="false"
 
                     />
 
@@ -1161,9 +1160,8 @@
                     android:paddingTop="4dp"
                     android:paddingEnd="8dp"
                     android:paddingBottom="4dp"
-                    android:textAllCaps="false"
                     android:text="@string/block_domain"
-                    />
+                    android:textAllCaps="false" />
 
                 <Button
                     android:id="@+id/btnOpenInstanceInAdminWebUi"

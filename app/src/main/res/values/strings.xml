@@ -1025,4 +1025,6 @@
     <string name="invites_enabled">Users can create invitations</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="e2ee_messages">E2EE messages</string>
+    <string name="send_e2ee_message">Send E2EE message</string>
 </resources>

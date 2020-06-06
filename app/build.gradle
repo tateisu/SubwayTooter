@@ -87,6 +87,7 @@ kapt {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(include: ['*.aar'], dir: 'libs')
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -95,6 +96,7 @@ dependencies {
     implementation project(':colorpicker')
     implementation project(':emoji')
     implementation project(':apng_android')
+
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
 

@@ -321,6 +321,15 @@ internal fun Column.makeAntennaTlUrl() : String {
 	}
 }
 
+internal fun Column.makeE2eeTlUrl() : String {
+	return if(isMisskey) {
+		"/nonexistent" // Mastodonにはアンテナ機能はない
+	} else {
+		"/api/antennas/notes"
+	}
+}
+
+
 internal fun Column.makeHashtagExtraQuery() : String {
 	val sb = StringBuilder()
 	hashtag_any.split(" ").filter { it.isNotEmpty() }.forEach {

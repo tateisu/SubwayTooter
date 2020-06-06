@@ -557,11 +557,15 @@ internal class ItemViewHolder(
 				showScheduled(item)
 			}
 			
+			is E2EEMessage -> showE2EEMessage(item)
+			
 			else -> {
 			}
 		}
 		b.report()
 	}
+	
+
 	
 	private fun showScheduled(item : TootScheduled) {
 		try {
@@ -1026,6 +1030,11 @@ internal class ItemViewHolder(
 	private fun showDomainBlock(domain_block : TootDomainBlock) {
 		llSearchTag.visibility = View.VISIBLE
 		btnSearchTag.text = domain_block.domain.pretty
+	}
+	
+	private fun showE2EEMessage(item : E2EEMessage) {
+		llSearchTag.visibility = View.VISIBLE
+		btnSearchTag.text = "${item.messageId}\n${TootStatus.formatTime(activity,item.createdAt,bAllowRelative = false)}\nfrom: ${item.senderAccountId} ${item.senderDeviceId}\n${item.messageBody}"
 	}
 	
 	private fun showFilter(filter : TootFilter) {

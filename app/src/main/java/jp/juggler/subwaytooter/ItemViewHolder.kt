@@ -2266,87 +2266,100 @@ internal class ItemViewHolder(
 		var bShowOuter = false
 		
 		val sb = StringBuilder()
+		fun showString(){
+			if(sb.isNotEmpty()) {
+				val text =
+					DecodeOptions(activity, access_info, forceHtml = true)
+						.decodeHTML(sb.toString())
+				if(text.isNotEmpty()) {
+					tvCardText.visibility = View.VISIBLE
+					tvCardText.text = text
+					bShowOuter = true
+				}
+			}
+		}
 		
-		addLinkAndCaption(
-			sb,
-			activity.getString(R.string.card_header_card),
-			card.url,
-			card.title
-		)
-		
-		addLinkAndCaption(
-			sb,
-			activity.getString(R.string.card_header_author),
-			card.author_url,
-			card.author_name
-		)
-		
-		addLinkAndCaption(
-			sb,
-			activity.getString(R.string.card_header_provider),
-			card.provider_url,
-			card.provider_name
-		)
-		
-		val description = card.description
-		if(description != null && description.isNotEmpty()) {
-			if(sb.isNotEmpty()) sb.append("<br>")
+		if( status.reblog?.quote_muted == true){
+			addLinkAndCaption(
+				sb,
+				null,
+				card.url,
+				activity.getString(R.string.muted_quote)
+			)
+			showString()
+		}else{
+			addLinkAndCaption(
+				sb,
+				activity.getString(R.string.card_header_card),
+				card.url,
+				card.title
+			)
 			
-			val limit = Pref.spCardDescriptionLength.toInt(activity.pref)
+			addLinkAndCaption(
+				sb,
+				activity.getString(R.string.card_header_author),
+				card.author_url,
+				card.author_name
+			)
 			
-			sb.append(
-				HTMLDecoder.encodeEntity(
-					ellipsize(
-						description,
-						if(limit <= 0) 64 else limit
+			addLinkAndCaption(
+				sb,
+				activity.getString(R.string.card_header_provider),
+				card.provider_url,
+				card.provider_name
+			)
+			
+			val description = card.description
+			if(description != null && description.isNotEmpty()) {
+				if(sb.isNotEmpty()) sb.append("<br>")
+				
+				val limit = Pref.spCardDescriptionLength.toInt(activity.pref)
+				
+				sb.append(
+					HTMLDecoder.encodeEntity(
+						ellipsize(
+							description,
+							if(limit <= 0) 64 else limit
+						)
 					)
 				)
-			)
-		}
-		
-		if(sb.isNotEmpty()) {
-			val text =
-				DecodeOptions(activity, access_info, forceHtml = true)
-					.decodeHTML(sb.toString())
-			if(text.isNotEmpty()) {
-				tvCardText.visibility = View.VISIBLE
-				tvCardText.text = text
+			}
+			
+			showString()
+			
+			val image = card.image
+			if(flCardImage.vg(image?.isNotEmpty() == true) != null) {
+				
+				flCardImage.layoutParams.height = if(card.originalStatus != null) {
+					activity.avatarIconSize
+				} else {
+					activity.app_state.media_thumb_height
+				}
+				
+				val imageUrl = access_info.supplyBaseUrl(image)
+				ivCardImage.setImageUrl(activity.pref, 0f, imageUrl, imageUrl)
+				
+				// show about card outer
 				bShowOuter = true
+				
+				// show about image content
+				val default_shown = when {
+					column.hide_media_default -> false
+					access_info.dont_hide_nsfw -> true
+					else -> ! status.sensitive
+				}
+				val is_shown = MediaShown.isShown(status, default_shown)
+				llCardImage.vg(is_shown)
+				btnCardImageShow.vg(! is_shown)
 			}
 		}
-		
-		val image = card.image
-		if(flCardImage.vg(image?.isNotEmpty() == true) != null) {
-			
-			flCardImage.layoutParams.height = if(card.originalStatus != null) {
-				activity.avatarIconSize
-			} else {
-				activity.app_state.media_thumb_height
-			}
-			
-			val imageUrl = access_info.supplyBaseUrl(image)
-			ivCardImage.setImageUrl(activity.pref, 0f, imageUrl, imageUrl)
-			
-			// show about card outer
-			bShowOuter = true
-			
-			// show about image content
-			val default_shown = when {
-				column.hide_media_default -> false
-				access_info.dont_hide_nsfw -> true
-				else -> ! status.sensitive
-			}
-			val is_shown = MediaShown.isShown(status, default_shown)
-			llCardImage.vg(is_shown)
-			btnCardImageShow.vg(! is_shown)
-		}
-		
+
 		if(bShowOuter) llCardOuter.visibility = View.VISIBLE
 	}
 	
 	private fun addLinkAndCaption(
 		sb : StringBuilder,
-		header : String,
+		header : String?,
 		url : String?,
 		caption : String?
 	) {
@@ -2355,7 +2368,9 @@ internal class ItemViewHolder(
 		
 		if(sb.isNotEmpty()) sb.append("<br>")
 		
-		sb.append(HTMLDecoder.encodeEntity(header)).append(": ")
+		if( header?.isNotEmpty() == true){
+			sb.append(HTMLDecoder.encodeEntity(header)).append(": ")
+		}
 		
 		if(url != null && url.isNotEmpty()) {
 			sb.append("<a href=\"").append(HTMLDecoder.encodeEntity(url)).append("\">")

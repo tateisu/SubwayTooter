@@ -1025,4 +1025,5 @@
     <string name="invites_enabled">Users can create invitations</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="muted_quote">Muted quote</string>
 </resources>

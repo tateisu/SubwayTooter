@@ -172,6 +172,8 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	// quote toot かどうか。
 	var isQuoteToot = false
 	var quote_id : EntityId? = null
+	// このstatusがquoteだった場合、ミュート済みかどうか示すフラグ
+	var quote_muted = false
 	
 	// Misskey 12.3
 	var isPromoted = false
@@ -384,6 +386,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				reblog.reblogged = true
 			}
 			
+			quote_muted = src.boolean("quote_muted") ?: false
 			isQuoteToot = when(reblog) {
 				// 別の投稿を参照していない
 				null -> false
@@ -539,6 +542,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			
 			this.quote_id = quote?.id ?: EntityId.mayNull(src.string("quote_id"))
 			this.isQuoteToot = quote_id != null
+			this.quote_muted = src.boolean("quote_muted") ?: false
 			
 			// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
 			// Hostdon QT と通常のreblogが同時に出ることはないので、quoteが既出ならreblogのjsonデータは見ない

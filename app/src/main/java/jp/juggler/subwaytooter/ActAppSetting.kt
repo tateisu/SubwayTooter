@@ -576,6 +576,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 						}
 						btnReset.setOnClickListener {
 							pref.edit().remove(ip).apply()
+							showColor()
 							item.changed.invoke(activity)
 						}
 					}

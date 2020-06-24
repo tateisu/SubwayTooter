@@ -1,9 +1,13 @@
 package jp.juggler.subwaytooter.action
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.view.Gravity
+import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.LinearLayout
+import android.widget.TextView
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -22,87 +26,90 @@ object Action_User {
 	fun mute(
 		activity : ActMain,
 		access_info : SavedAccount,
-		who : TootAccount,
+		whoArg : TootAccount,
+		whoAccessInfo : SavedAccount,
 		bMute : Boolean = true,
 		bMuteNotification : Boolean = false
 	) {
+		val whoAcct = whoArg.acct
 		
-		if(access_info.isMe(who)) {
+		if(access_info.isMe(whoAcct)) {
 			showToast(activity, false, R.string.it_is_you)
 			return
 		}
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
-			var relation : UserRelation? = null
+			var relationResult : UserRelation? = null
+			var whoIdResult : EntityId? = null
+			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return when {
-					access_info.isPseudo -> {
-						val acct = access_info.getFullAcct(who)
-						if(acct.ascii.contains('?')) {
-							TootApiResult("acct ${acct.pretty} contains '?'")
-						} else {
-							val relation = UserRelation.loadPseudo(acct)
-							relation.muting = bMute
-							relation.savePseudo(acct.ascii)
-							this.relation = relation
-							TootApiResult()
-						}
+				if(access_info.isPseudo)
+					return if(whoAcct.ascii.contains('?')) {
+						TootApiResult("can't mute pseudo acct ${whoAcct.pretty}")
+					} else {
+						val relation = UserRelation.loadPseudo(whoAcct)
+						relation.muting = bMute
+						relation.savePseudo(whoAcct.ascii)
+						relationResult = relation
+						TootApiResult()
 					}
-					
-					access_info.isMisskey -> {
-						val result = client.request(
-							when(bMute) {
-								true -> "/api/mute/create"
-								else -> "/api/mute/delete"
-							},
-							access_info.putMisskeyApiToken().apply {
-								put("userId", who.id.toString())
-							}.toPostRequestBuilder()
-						)
-						
-						if(result?.jsonObject != null) {
+				
+				val whoId = if(whoAccessInfo.host == access_info.host) {
+					whoArg.id
+				} else {
+					val (result, accountRef) = client.syncAccountByAcct(access_info, whoAcct)
+					accountRef?.get()?.id ?: return result
+				}
+				whoIdResult = whoId
+				
+				return if(access_info.isMisskey) {
+					client.request(
+						when(bMute) {
+							true -> "/api/mute/create"
+							else -> "/api/mute/delete"
+						},
+						access_info.putMisskeyApiToken().apply {
+							put("userId", whoId.toString())
+						}.toPostRequestBuilder()
+					)?.apply {
+						if(jsonObject != null) {
 							// 204 no content
 							
 							// update user relation
-							val ur = UserRelation.load(access_info.db_id, who.id)
+							val ur = UserRelation.load(access_info.db_id, whoId)
 							ur.muting = bMute
 							saveUserRelationMisskey(
 								access_info,
-								who.id,
+								whoId,
 								TootParser(activity, access_info)
 							)
-							this.relation = ur
+							relationResult = ur
 						}
-						result
 					}
-					
-					else -> {
-						val result = client.request(
-							"/api/v1/accounts/${who.id}/${if(bMute) "mute" else "unmute"}",
-							when {
-								! bMute -> "".toFormRequestBody()
-								else ->
-									jsonObject {
-										put("notifications", bMuteNotification)
-									}
-										.toRequestBody()
-							}.toPost()
-						)
-						val jsonObject = result?.jsonObject
+				} else {
+					client.request(
+						"/api/v1/accounts/${whoId}/${if(bMute) "mute" else "unmute"}",
+						when {
+							! bMute -> "".toFormRequestBody()
+							else ->
+								jsonObject {
+									put("notifications", bMuteNotification)
+								}
+									.toRequestBody()
+						}.toPost()
+					)?.apply {
+						val jsonObject = jsonObject
 						if(jsonObject != null) {
-							relation =
-								saveUserRelation(
-									access_info,
-									parseItem(
-										::TootRelationShip,
-										TootParser(activity, access_info),
-										jsonObject
-									)
+							relationResult = saveUserRelation(
+								access_info,
+								parseItem(
+									::TootRelationShip,
+									TootParser(activity, access_info),
+									jsonObject
 								)
+							)
 						}
-						result
-						
 					}
 				}
 			}
@@ -110,8 +117,10 @@ object Action_User {
 			override fun handleResult(result : TootApiResult?) {
 				if(result == null) return  // cancelled.
 				
-				val relation = this.relation
-				if(relation != null) {
+				val relation = relationResult
+				val whoId = whoIdResult
+				
+				if(relation != null && whoId != null) {
 					// 未確認だが、自分をミュートしようとするとリクエストは成功するがレスポンス中のmutingはfalseになるはず
 					if(bMute && ! relation.muting) {
 						showToast(activity, false, R.string.not_muted)
@@ -122,16 +131,16 @@ object Action_User {
 						if(column.access_info.isPseudo) {
 							if(relation.muting) {
 								// ミュートしたユーザの情報はTLから消える
-								column.removeAccountInTimelinePseudo(access_info.getFullAcct(who))
+								column.removeAccountInTimelinePseudo(whoAcct)
 							}
 							// フォローアイコンの表示更新が走る
 							column.updateFollowIcons(access_info)
-						} else if(column.access_info == access_info ) {
+						} else if(column.access_info == access_info) {
 							when {
 								! relation.muting -> {
 									if(column.type == ColumnType.MUTES) {
 										// ミュート解除したら「ミュートしたユーザ」カラムから消える
-										column.removeUser(access_info, ColumnType.MUTES, who.id)
+										column.removeUser(access_info, ColumnType.MUTES, whoId)
 									} else {
 										// 他のカラムではフォローアイコンの表示更新が走る
 										column.updateFollowIcons(access_info)
@@ -139,7 +148,7 @@ object Action_User {
 									
 								}
 								
-								column.type == ColumnType.PROFILE && column.profile_id == who.id -> {
+								column.type == ColumnType.PROFILE && column.profile_id == whoId -> {
 									// 該当ユーザのプロフページのトゥートはミュートしてても見れる
 									// しかしフォローアイコンの表示更新は必要
 									column.updateFollowIcons(access_info)
@@ -147,7 +156,7 @@ object Action_User {
 								
 								else -> {
 									// ミュートしたユーザの情報はTLから消える
-									column.removeAccountInTimeline(access_info, who.id)
+									column.removeAccountInTimeline(access_info, whoId)
 								}
 							}
 						}
@@ -164,70 +173,126 @@ object Action_User {
 				}
 			}
 		})
+	}
+	
+	fun muteConfirm(
+		activity : ActMain,
+		access_info : SavedAccount,
+		who : TootAccount,
+		whoAccessInfo : SavedAccount
+	) {
+		@SuppressLint("InflateParams")
+		val view =
+			activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
 		
+		val tvMessage = view.findViewById<TextView>(R.id.tvMessage)
+		val cbMuteNotification = view.findViewById<CheckBox>(R.id.cbSkipNext)
+		
+		// Misskey には「このユーザからの通知もミュート」オプションはない
+		// 疑似アカウントにもない
+		val hasMuteNotification =
+			! access_info.isMisskey && ! access_info.isPseudo
+		if(hasMuteNotification) {
+			tvMessage.text =
+				activity.getString(R.string.confirm_mute_user, who.username)
+			cbMuteNotification.setText(R.string.confirm_mute_notification_for_user)
+			cbMuteNotification.isChecked = true
+			// オプション指定つきでミュート
+		} else {
+			tvMessage.text =
+				activity.getString(R.string.confirm_mute_user, who.username)
+			cbMuteNotification.visibility = View.GONE
+			cbMuteNotification.isChecked = false
+		}
+		AlertDialog.Builder(activity)
+			.setView(view)
+			.setNegativeButton(R.string.cancel, null)
+			.setPositiveButton(R.string.ok) { _, _ ->
+				mute(
+					activity,
+					access_info,
+					who,
+					whoAccessInfo,
+					bMuteNotification = cbMuteNotification.isChecked
+				)
+			}
+			.show()
+	}
+	
+	fun muteFromAnotherAccount(activity : ActMain, who : TootAccount,whoAccessInfo : SavedAccount) {
+		AccountPicker.pick(
+			activity,
+			bAllowPseudo = false,
+			bAuto = false,
+			message = activity.getString(R.string.account_picker_mute, who.acct.pretty),
+			accountListArg = makeAccountListNonPseudo(activity, who.host)
+		) { ai ->
+			muteConfirm(activity, ai, who,whoAccessInfo)
+		}
 	}
 	
 	// ユーザをブロック/ブロック解除する
 	fun block(
 		activity : ActMain,
 		access_info : SavedAccount,
-		who : TootAccount,
+		whoArg : TootAccount,
+		whoAccessInfo : SavedAccount,
 		bBlock : Boolean
 	) {
-		if(access_info.isMe(who)) {
+		val whoAcct = whoArg.acct
+		
+		if(access_info.isMe(whoAcct)) {
 			showToast(activity, false, R.string.it_is_you)
 			return
 		}
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
-			var relation : UserRelation? = null
+			var relationResult : UserRelation? = null
+			var whoIdResult : EntityId? = null
+			
 			override fun background(client : TootApiClient) : TootApiResult? {
+				if(access_info.isPseudo)
+					return if(whoAcct.ascii.contains('?')) {
+						TootApiResult("can't block pseudo account ${whoAcct.pretty}")
+					} else {
+						val relation = UserRelation.loadPseudo(whoAcct)
+						relation.blocking = bBlock
+						relation.savePseudo(whoAcct.ascii)
+						relationResult = relation
+						TootApiResult()
+					}
 				
-				return when {
-					access_info.isPseudo -> {
-						val acct = access_info.getFullAcct(who)
-						if(acct.ascii.contains('?')) {
-							TootApiResult("acct ${acct.pretty} contains '?'")
-						} else {
-							val relation = UserRelation.loadPseudo(acct)
-							relation.blocking = bBlock
-							relation.savePseudo(acct.ascii)
-							this.relation = relation
-							TootApiResult()
-						}
+				val whoId = if(whoAccessInfo.host == access_info.host) {
+					whoArg.id
+				} else {
+					val (result, accountRef) = client.syncAccountByAcct(access_info, whoAcct)
+					accountRef?.get()?.id ?: return result
+				}
+				whoIdResult = whoId
+				
+				return if(access_info.isMisskey) {
+					
+					fun saveBlock(v : Boolean) {
+						val ur = UserRelation.load(access_info.db_id, whoId)
+						ur.blocking = v
+						UserRelation.save1Misskey(
+							System.currentTimeMillis(),
+							access_info.db_id,
+							whoId.toString(),
+							ur
+						)
+						relationResult = ur
 					}
 					
-					access_info.isMisskey -> {
-						
-						val result = client.request(
-							if(bBlock)
-								"/api/blocking/create"
-							else
-								"/api/blocking/delete",
-							access_info.putMisskeyApiToken().apply {
-								put("userId", who.id)
-							}.toPostRequestBuilder()
-						)
-						
-						fun saveBlock(v : Boolean) {
-							val ur = UserRelation.load(access_info.db_id, who.id)
-							ur.blocking = v
-							UserRelation.save1Misskey(
-								System.currentTimeMillis(),
-								access_info.db_id,
-								who.id.toString(),
-								ur
-							)
-							relation = ur
-						}
-						
-						val error = result?.error
+					client.request(
+						"/api/blocking/${if(bBlock) "create" else "delete"}",
+						access_info.putMisskeyApiToken().apply {
+							put("userId", whoId.toString())
+						}.toPostRequestBuilder()
+					)?.apply {
+						val error = this.error
 						when {
-							// cancelled.
-							result == null -> {
-							}
-							
 							// success
 							error == null -> saveBlock(bBlock)
 							
@@ -237,19 +302,15 @@ object Action_User {
 							
 							// else something error
 						}
-						
-						result
 					}
-					
-					else -> {
-						
-						val result = client.request(
-							"/api/v1/accounts/${who.id}/${if(bBlock) "block" else "unblock"}",
-							"".toFormRequestBody().toPost()
-						)
-						val jsonObject = result?.jsonObject
+				} else {
+					client.request(
+						"/api/v1/accounts/${whoId}/${if(bBlock) "block" else "unblock"}",
+						"".toFormRequestBody().toPost()
+					)?.apply {
+						val jsonObject = this.jsonObject
 						if(jsonObject != null) {
-							relation = saveUserRelation(
+							relationResult = saveUserRelation(
 								access_info,
 								parseItem(
 									::TootRelationShip,
@@ -258,8 +319,6 @@ object Action_User {
 								)
 							)
 						}
-						
-						result
 					}
 				}
 			}
@@ -268,8 +327,9 @@ object Action_User {
 				
 				if(result == null) return  // cancelled.
 				
-				val relation = this.relation
-				if(relation != null) {
+				val relation = relationResult
+				val whoId = whoIdResult
+				if(relation != null && whoId != null) {
 					
 					// 自分をブロックしようとすると、blocking==falseで帰ってくる
 					if(bBlock && ! relation.blocking) {
@@ -281,23 +341,16 @@ object Action_User {
 						if(column.access_info.isPseudo) {
 							if(relation.blocking) {
 								// ミュートしたユーザの情報はTLから消える
-								column.removeAccountInTimelinePseudo(access_info.getFullAcct(who))
+								column.removeAccountInTimelinePseudo(whoAcct)
 							}
 							// フォローアイコンの表示更新が走る
 							column.updateFollowIcons(access_info)
-						} else if(column.access_info  == access_info ) {
-							
+						} else if(column.access_info == access_info) {
 							when {
-								
 								! relation.blocking -> {
-									
 									if(column.type == ColumnType.BLOCKS) {
 										// ブロック解除したら「ブロックしたユーザ」カラムのリストから消える
-										column.removeUser(
-											access_info,
-											ColumnType.BLOCKS,
-											who.id
-										)
+										column.removeUser(access_info, ColumnType.BLOCKS, whoId)
 									} else {
 										// 他のカラムではフォローアイコンの更新を行う
 										column.updateFollowIcons(access_info)
@@ -313,12 +366,12 @@ object Action_User {
 								
 								// 該当ユーザのプロフカラムではブロックしててもトゥートを見れる
 								// しかしカラム中のフォローアイコン表示の更新は必要
-								column.type == ColumnType.PROFILE && who.id == column.profile_id -> {
+								column.type == ColumnType.PROFILE && whoId == column.profile_id -> {
 									column.updateFollowIcons(access_info)
 								}
 								
 								// MastodonではブロックしたらTLからそのアカウントの投稿が消える
-								else -> column.removeAccountInTimeline(access_info, who.id)
+								else -> column.removeAccountInTimeline(access_info, whoId)
 							}
 						}
 					}
@@ -331,13 +384,53 @@ object Action_User {
 						else
 							R.string.unblock_succeeded
 					)
-					
 				} else {
 					showToast(activity, false, result.error)
 				}
 			}
 		})
-		
+	}
+	
+	fun blockConfirm(
+		activity : ActMain,
+		access_info : SavedAccount,
+		who : TootAccount,
+		whoAccessInfo : SavedAccount
+	) {
+		AlertDialog.Builder(activity)
+			.setMessage(
+				activity.getString(
+					R.string.confirm_block_user,
+					who.username
+				)
+			)
+			.setNegativeButton(R.string.cancel, null)
+			.setPositiveButton(R.string.ok) { _, _ ->
+				block(
+					activity,
+					access_info,
+					who,
+					whoAccessInfo,
+					true
+				)
+			}
+			.show()
+	}
+	
+	fun blockFromAnotherAccount(
+		activity : ActMain,
+		who : TootAccount,
+		whoAccessInfo : SavedAccount
+	) {
+		AccountPicker.pick(
+			activity,
+			bAllowPseudo = false,
+			bAuto = false,
+			message = activity.getString(R.string.account_picker_block, who.acct.pretty),
+			accountListArg = makeAccountListNonPseudo(activity, who.host)
+		) { ai ->
+			blockConfirm(activity, ai, who, whoAccessInfo)
+		}
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -397,7 +490,7 @@ object Action_User {
 			bAuto = false,
 			message = activity.getString(
 				R.string.account_picker_open_user_who,
-				AcctColor.getNickname(access_info,who)
+				AcctColor.getNickname(access_info, who)
 			),
 			accountListArg = makeAccountListNonPseudo(activity, who_host)
 		) { ai ->
@@ -433,7 +526,7 @@ object Action_User {
 		user : String,
 		original_url : String = url
 	) {
-		val acct = Acct.parse(user,host)
+		val acct = Acct.parse(user, host)
 		
 		if(access_info?.isPseudo == false) {
 			// 文脈のアカウントがあり、疑似アカウントではない

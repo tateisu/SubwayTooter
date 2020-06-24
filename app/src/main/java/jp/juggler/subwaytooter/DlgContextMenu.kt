@@ -238,6 +238,8 @@ internal class DlgContextMenu(
 		arrayOf(
 			btnFollow,
 			btnProfile,
+			btnMute,
+			btnBlock,
 			btnSendMessage
 		).forEach {
 			it.setOnLongClickListener(this)
@@ -303,7 +305,7 @@ internal class DlgContextMenu(
 			
 			btnYourToot.vg(status_by_me)
 			
-			btnQuoteTootBT.vg( status.reblogParent != null )
+			btnQuoteTootBT.vg(status.reblogParent != null)
 			
 			btnBoostWithVisibility.vg(! access_info.isPseudo && ! access_info.isMisskey)
 			
@@ -407,10 +409,11 @@ internal class DlgContextMenu(
 		
 		val who_host = getUserHost()
 		viewRoot.findViewById<View>(R.id.llInstance)
-			.vg(  who_host.isValid )
+			.vg(who_host.isValid)
 			?.let {
 				val tvInstanceActions : TextView = viewRoot.findViewById(R.id.tvInstanceActions)
-				tvInstanceActions.text = activity.getString(R.string.instance_actions_for, who_host.pretty)
+				tvInstanceActions.text =
+					activity.getString(R.string.instance_actions_for, who_host.pretty)
 				
 				// 疑似アカウントではドメインブロックできない
 				// 自ドメインはブロックできない
@@ -656,85 +659,27 @@ internal class DlgContextMenu(
 				R.id.btnAccountText ->
 					ActText.open(activity, ActMain.REQUEST_CODE_TEXT, access_info, who)
 				
-				R.id.btnMute ->
-					when {
-						
-						//解除
-						relation.muting ->
-							Action_User.mute(
-								activity,
-								access_info,
-								who,
-								bMute = false
-							)
-						
-						else -> {
-							@SuppressLint("InflateParams")
-							val view =
-								activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
-							
-							val tvMessage = view.findViewById<TextView>(R.id.tvMessage)
-							val cbMuteNotification = view.findViewById<CheckBox>(R.id.cbSkipNext)
-							
-							// Misskey には「このユーザからの通知もミュート」オプションはない
-							// 疑似アカウントにもない
-							val hasMuteNotification =
-								! access_info.isMisskey && ! access_info.isPseudo
-							if(hasMuteNotification) {
-								tvMessage.text =
-									activity.getString(R.string.confirm_mute_user, who.username)
-								cbMuteNotification.setText(R.string.confirm_mute_notification_for_user)
-								cbMuteNotification.isChecked = true
-								// オプション指定つきでミュート
-							} else {
-								tvMessage.text =
-									activity.getString(R.string.confirm_mute_user, who.username)
-								cbMuteNotification.visibility = View.GONE
-								cbMuteNotification.isChecked = false
-							}
-							AlertDialog.Builder(activity)
-								.setView(view)
-								.setNegativeButton(R.string.cancel, null)
-								.setPositiveButton(R.string.ok) { _, _ ->
-									Action_User.mute(
-										activity,
-										access_info,
-										who,
-										bMuteNotification = cbMuteNotification.isChecked
-									)
-								}
-								.show()
-							
-						}
-					}
+				R.id.btnMute -> when {
+					relation.muting -> Action_User.mute(
+						activity,
+						access_info,
+						who,
+						access_info,
+						bMute = false
+					)
+					else -> Action_User.muteConfirm(activity, access_info, who, access_info)
+				}
 				
-				R.id.btnBlock ->
-					when {
-						relation.blocking -> Action_User.block(
-							activity,
-							access_info,
-							who,
-							false
-						)
-						
-						else -> AlertDialog.Builder(activity)
-							.setMessage(
-								activity.getString(
-									R.string.confirm_block_user,
-									who.username
-								)
-							)
-							.setNegativeButton(R.string.cancel, null)
-							.setPositiveButton(R.string.ok) { _, _ ->
-								Action_User.block(
-									activity,
-									access_info,
-									who,
-									true
-								)
-							}
-							.show()
-					}
+				R.id.btnBlock -> when {
+					relation.blocking -> Action_User.block(
+						activity,
+						access_info,
+						who,
+						access_info,
+						false
+					)
+					else -> Action_User.blockConfirm(activity, access_info, who, access_info)
+				}
 				
 				R.id.btnProfile ->
 					Action_User.profileLocal(activity, pos, access_info, who)
@@ -802,13 +747,13 @@ internal class DlgContextMenu(
 					}
 				
 				R.id.btnOpenTimeline -> {
-					who.host.valid()?.let{
+					who.host.valid()?.let {
 						Action_Instance.timelineLocal(activity, pos, it)
 					}
 				}
 				
 				R.id.btnDomainTimeline -> {
-					who.host.valid()?.let{
+					who.host.valid()?.let {
 						Action_Instance.timelineDomain(activity, pos, access_info, it)
 					}
 				}
@@ -964,7 +909,7 @@ internal class DlgContextMenu(
 					if(access_info.isMisskey) {
 						showToast(activity, false, R.string.misskey_account_not_supported)
 					} else {
-						access_info.getFullAcct(who).validFull()?.let{
+						access_info.getFullAcct(who).validFull()?.let {
 							activity.addColumn(
 								pos,
 								access_info,
@@ -1021,10 +966,10 @@ internal class DlgContextMenu(
 				status,
 				quote = true
 			)
-			R.id.btnQuoteTootBT ->Action_Toot.replyFromAnotherAccount(
+			R.id.btnQuoteTootBT -> Action_Toot.replyFromAnotherAccount(
 				activity,
 				access_info,
-				status?.reblogParent ,
+				status?.reblogParent,
 				quote = true
 			)
 			
@@ -1111,7 +1056,10 @@ internal class DlgContextMenu(
 	}
 	
 	override fun onLongClick(v : View) : Boolean {
+		
+		val whoRef = this.whoRef
 		val who = whoRef?.get()
+		
 		
 		when(v.id) {
 			R.id.btnFollow -> {
@@ -1141,7 +1089,17 @@ internal class DlgContextMenu(
 				Action_User.mentionFromAnotherAccount(activity, access_info, who)
 				return true
 			}
+			
+			R.id.btnMute -> if(who != null) {
+				Action_User.muteFromAnotherAccount(activity, who, access_info)
+				return true
+			}
+			R.id.btnBlock -> if(who != null) {
+				Action_User.blockFromAnotherAccount(activity, who, access_info)
+				return true
+			}
 		}
+		
 		return false
 	}
 	

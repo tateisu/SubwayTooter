@@ -299,6 +299,8 @@
     <string name="account_picker_reaction">Account to react?</string>
     <string name="account_picker_follow">Account to follow?</string>
     <string name="account_picker_toot">Account to toot?</string>
+    <string name="account_picker_mute">Account to mute user %1$s?</string>
+    <string name="account_picker_block">Account to block user %1$s?</string>
     <string name="qr_code">QR code</string>
     <string name="generating_qr_code">Making QR code…</string>
     <string name="media_attachment">Media attachment</string>

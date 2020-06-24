@@ -675,6 +675,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		
 		text(Pref.spStripIconSize, R.string.strip_icon_size, InputTypeEx.numberDecimal)
 		
+		text(Pref.spScreenBottomPadding, R.string.screen_bottom_padding, InputTypeEx.numberDecimal)
+		
+		
+		
 		sw(Pref.bpInstanceTicker, R.string.show_instance_ticker) {
 			desc = R.string.instance_ticker_copyright
 			descClick = {

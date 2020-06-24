@@ -1032,4 +1032,5 @@
     <string name="conversation_main_toot_background_color">Conversation main toot background color</string>
     <string name="verified_link_background_color">Verified link background color (app restart required)</string>
     <string name="verified_link_foreground_color">Verified link foreground color (app restart required)</string>
+    <string name="screen_bottom_padding">Screen bottom padding (Unit: dp. Default:0. App restart required)</string>
 </resources>

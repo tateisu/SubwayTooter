@@ -100,6 +100,7 @@ class ActMain : AsyncActivity()
 		var replyIconSize = 1
 		var headerIconSize = 1
 		var stripIconSize = 1
+		var screenBottomPadding = 0
 		var timeline_font : Typeface = Typeface.DEFAULT
 		var timeline_font_bold : Typeface = Typeface.DEFAULT_BOLD
 		
@@ -1260,12 +1261,12 @@ class ActMain : AsyncActivity()
 			}
 		}
 		
-		fun parseIconSize(stringPref : StringPref) : Int {
+		fun parseIconSize(stringPref : StringPref, minDp : Float = 1f) : Int {
 			var icon_size_dp = stringPref.defVal.toFloat()
 			try {
 				sv = stringPref(pref)
 				val fv = if(sv.isEmpty()) Float.NaN else sv.toFloat()
-				if(fv.isFinite() && fv >= 1f) {
+				if(fv.isFinite() && fv >= minDp) {
 					icon_size_dp = fv
 				}
 			} catch(ex : Throwable) {
@@ -1280,6 +1281,8 @@ class ActMain : AsyncActivity()
 		replyIconSize = parseIconSize(Pref.spReplyIconSize)
 		headerIconSize = parseIconSize(Pref.spHeaderIconSize)
 		stripIconSize = parseIconSize(Pref.spStripIconSize)
+		screenBottomPadding = parseIconSize(Pref.spScreenBottomPadding, minDp = 0f)
+		
 		run {
 			var round_ratio = 33f
 			try {
@@ -1338,6 +1341,10 @@ class ActMain : AsyncActivity()
 		etQuickToot = findViewById(R.id.etQuickToot)
 		btnQuickToot = findViewById(R.id.btnQuickToot)
 		btnQuickTootMenu = findViewById(R.id.btnQuickTootMenu)
+		
+		val llFormRoot : LinearLayout = findViewById(R.id.llFormRoot)
+		
+		llFormRoot.setPadding(0, 0, 0, screenBottomPadding)
 		
 		
 		when(Pref.ipJustifyWindowContentPortrait(pref)) {
@@ -1527,7 +1534,7 @@ class ActMain : AsyncActivity()
 		showFooterColor()
 		
 		post_helper.attachEditText(
-			findViewById(R.id.llFormRoot),
+			llFormRoot,
 			etQuickToot,
 			true,
 			object : PostHelper.Callback2 {

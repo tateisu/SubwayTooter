@@ -108,6 +108,7 @@ class ColumnViewHolder(
 	
 	private lateinit var btnAnnouncementsBadge : ImageView
 	private lateinit var btnAnnouncements : ImageButton
+	private lateinit var btnAnnouncementsCutout : Paint
 	private lateinit var btnColumnSetting : ImageButton
 	private lateinit var btnColumnReload : ImageButton
 	private lateinit var btnColumnClose : ImageButton
@@ -709,6 +710,41 @@ class ColumnViewHolder(
 			column.addColumnViewHolder(this)
 			
 			lastAnnouncementShown = - 1L
+			
+			fun dip(dp : Int) : Int = (activity.density * dp + 0.5f).toInt()
+			val context = activity
+			
+			val announcementsBgColor = Pref.ipAnnouncementsBgColor(activity.pref).notZero()
+				?: getAttributeColor(context, R.attr.colorSearchFormBackground)
+			
+			btnAnnouncementsCutout.apply {
+				color = announcementsBgColor
+			}
+			
+			llAnnouncementsBox.apply {
+				background = createRoundDrawable( dip(6).toFloat(), announcementsBgColor )
+				val pad_tb = dip(2)
+				setPadding(0, pad_tb, 0, pad_tb)
+			}
+			
+			val searchBgColor = Pref.ipSearchBgColor(activity.pref).notZero()
+				?: getAttributeColor(context, R.attr.colorSearchFormBackground)
+			
+			llSearch.apply {
+				backgroundColor = searchBgColor
+				startPadding = dip(12)
+				endPadding = dip(12)
+				topPadding = dip(3)
+				bottomPadding = dip(3)
+			}
+
+			llListList.apply {
+				backgroundColor = searchBgColor
+				startPadding = dip(12)
+				endPadding = dip(12)
+				topPadding = dip(3)
+				bottomPadding = dip(3)
+			}
 			
 			showColumnColor()
 			
@@ -1749,9 +1785,8 @@ class ColumnViewHolder(
 							padding = dip(8)
 							scaleType = ImageView.ScaleType.FIT_CENTER
 							
-							val paint = Paint().apply {
+							btnAnnouncementsCutout = Paint().apply {
 								isAntiAlias = true
-								color = getAttributeColor(context, R.attr.colorSearchFormBackground)
 							}
 							val path = Path()
 							addOutsideDrawer(this) { canvas, parent, view, left, top ->
@@ -1768,7 +1803,7 @@ class ColumnViewHolder(
 									path.lineTo(triBottomRight, triBottom)
 									path.lineTo(triBottomLeft, triBottom)
 									path.lineTo(triTopX, triTopY)
-									canvas.drawPath(path, paint)
+									canvas.drawPath(path, btnAnnouncementsCutout)
 								}
 							}
 						}.lparams(dip(40), dip(40))
@@ -2060,14 +2095,6 @@ class ColumnViewHolder(
 					bottomMargin = dip(2)
 				}
 				
-				background = createRoundDrawable(
-					dip(6).toFloat(),
-					getAttributeColor(context, R.attr.colorSearchFormBackground)
-				)
-				
-				var pad_tb = dip(2)
-				setPadding(0, pad_tb, 0, pad_tb)
-				
 				val buttonHeight = ActMain.boostButtonSize
 				val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
 				val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
@@ -2131,8 +2158,9 @@ class ColumnViewHolder(
 					lparams(matchParent, wrapContent) {
 						topMargin = dip(1)
 					}
+					
 					val pad_lr = dip(6)
-					pad_tb = dip(2)
+					val pad_tb = dip(2)
 					setPadding(pad_lr, pad_tb, pad_lr, pad_tb)
 					
 					scrollBarStyle = View.SCROLLBARS_OUTSIDE_OVERLAY
@@ -2168,11 +2196,6 @@ class ColumnViewHolder(
 			
 			llSearch = verticalLayout {
 				lparams(matchParent, wrapContent)
-				backgroundColor = getAttributeColor(context, R.attr.colorSearchFormBackground)
-				startPadding = dip(12)
-				endPadding = dip(12)
-				topPadding = dip(3)
-				bottomPadding = dip(3)
 				
 				linearLayout {
 					lparams(matchParent, wrapContent)
@@ -2227,15 +2250,8 @@ class ColumnViewHolder(
 			llListList = linearLayout {
 				lparams(matchParent, wrapContent)
 				
-				startPadding = dip(12)
-				endPadding = dip(12)
-				topPadding = dip(3)
-				bottomPadding = dip(3)
-				
-				backgroundColor = getAttributeColor(context, R.attr.colorSearchFormBackground)
 				isBaselineAligned = false
 				gravity = Gravity.CENTER
-				
 				
 				etListName = editText {
 					hint = context.getString(R.string.list_create_hint)

@@ -488,6 +488,12 @@ object Pref {
 	
 	val ipSwitchOnColor = IntPref("SwitchOnColor", Color.BLACK or 0x0080ff)
 	
+	val ipButtonBoostedColor = IntPref("ButtonBoostedColor", 0)
+	val ipButtonFavoritedColor = IntPref("ButtonFavoritedColor", 0)
+	val ipButtonBookmarkedColor = IntPref("ButtonBookmarkedColor", 0)
+	val ipButtonFollowingColor = IntPref("ButtonFollowingColor", 0)
+	val ipButtonFollowRequestColor = IntPref("ButtonFollowRequestColor", 0)
+	
 	val ipStatusBarColor = IntPref("StatusBarColor", 0)
 	val ipNavigationBarColor = IntPref("NavigationBarColor", 0)
 	
@@ -512,6 +518,13 @@ object Pref {
 	val ipCcdContentBg = IntPref("ipCcdContentBg", 0)
 	val ipCcdContentAcct = IntPref("ipCcdContentAcct", 0)
 	val ipCcdContentText = IntPref("ipCcdContentText", 0)
+	
+	val ipSearchBgColor = IntPref("SearchBgColor", 0)
+	val ipAnnouncementsBgColor = IntPref("AnnouncementsBgColor", 0)
+	val ipConversationMainTootBgColor = IntPref("ConversationMainTootBgColor", 0)
+	val ipVerifiedLinkBgColor = IntPref("VerifiedLinkBgColor", 0)
+	val ipVerifiedLinkFgColor = IntPref("VerifiedLinkFgColor", 0)
+	
 	
 	//	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)
 	//	const val TTCS_WEEKLY = 0

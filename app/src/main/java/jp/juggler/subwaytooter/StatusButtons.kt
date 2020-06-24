@@ -85,8 +85,8 @@ internal class StatusButtons(
 		btnCustomShare1.setOnLongClickListener(this)
 		btnCustomShare2.setOnLongClickListener(this)
 		btnCustomShare3.setOnLongClickListener(this)
-
-
+		
+		
 		btnMore.setOnClickListener(this)
 		btnConversation.setOnClickListener(this)
 		btnConversation.setOnLongClickListener(this)
@@ -103,6 +103,8 @@ internal class StatusButtons(
 		this.status = status
 		this.notification = notification
 		
+		val pref = activity.pref
+		
 		setIconDrawableId(
 			activity,
 			btnConversation,
@@ -110,6 +112,7 @@ internal class StatusButtons(
 			color = color_normal,
 			alphaMultiplier = Styler.boost_alpha
 		)
+		
 		setIconDrawableId(
 			activity,
 			btnMore,
@@ -117,20 +120,6 @@ internal class StatusButtons(
 			color = color_normal,
 			alphaMultiplier = Styler.boost_alpha
 		)
-		
-		//		val a = (((color_normal ushr 24)/255f) * 0.7f)
-		
-		// setIconDrawableId で色を指定するとアルファ値も反映されるらしい
-		//		btnConversation.alpha = a
-		//		btnMore.alpha = a
-		//
-		//		btnReply.alpha = a
-		//		btnBoost.alpha = a
-		//		btnFavourite.alpha = a
-		//		btnFollow2.alpha = a
-		//		ivFollowedBy2.alpha = a
-		
-		
 		
 		setButton(
 			btnReply,
@@ -157,28 +146,31 @@ internal class StatusButtons(
 			// マストドンではDirectはブーストできない (Misskeyはできる)
 			(! access_info.isMisskey && status.visibility.order <= TootVisibility.DirectSpecified.order) ->
 				setButton(
-				btnBoost,
-				false,
-				color_accent,
-				R.drawable.ic_mail,
-				"",
-				activity.getString(R.string.boost)
-			)
+					btnBoost,
+					false,
+					color_accent,
+					R.drawable.ic_mail,
+					"",
+					activity.getString(R.string.boost)
+				)
 			
 			activity.app_state.isBusyBoost(access_info, status) ->
 				setButton(
-				btnBoost,
-				false,
-				color_normal,
-				R.drawable.ic_refresh,
-				"?",
-				activity.getString(R.string.boost)
-			)
+					btnBoost,
+					false,
+					color_normal,
+					R.drawable.ic_refresh,
+					"?",
+					activity.getString(R.string.boost)
+				)
 			
 			else -> setButton(
 				btnBoost,
 				true,
-				if(status.reblogged) color_accent else color_normal,
+				if(status.reblogged)
+					Pref.ipButtonBoostedColor(pref).notZero() ?: color_accent
+				else
+					color_normal,
 				R.drawable.ic_repeat,
 				when(val boosts_count = status.reblogs_count) {
 					null -> ""
@@ -228,7 +220,10 @@ internal class StatusButtons(
 			else -> setButton(
 				btnFavourite,
 				true,
-				if(status.favourited) color_accent else color_normal,
+				if(status.favourited)
+					Pref.ipButtonFavoritedColor(pref).notZero() ?: color_accent
+				else
+					color_normal,
 				fav_icon_drawable,
 				when(val favourites_count = status.favourites_count) {
 					null -> ""
@@ -261,7 +256,10 @@ internal class StatusButtons(
 			else -> setButton(
 				btnBookmark,
 				true,
-				if(status.bookmarked) color_accent else color_normal,
+				if(status.bookmarked)
+					Pref.ipButtonBookmarkedColor(pref).notZero() ?: color_accent
+				else
+					color_normal,
 				R.drawable.ic_bookmark,
 				activity.getString(R.string.bookmark)
 			)
@@ -474,12 +472,11 @@ internal class StatusButtons(
 				Action_Toot.replyFromAnotherAccount(activity, access_info, status)
 			}
 			
-			btnQuote ->if(! access_info.isPseudo) {
-				Action_Toot.reply(activity, access_info, status,quote = true)
+			btnQuote -> if(! access_info.isPseudo) {
+				Action_Toot.reply(activity, access_info, status, quote = true)
 			} else {
-				Action_Toot.replyFromAnotherAccount(activity, access_info, status,quote = true)
+				Action_Toot.replyFromAnotherAccount(activity, access_info, status, quote = true)
 			}
-			
 			
 			btnBoost -> {
 				if(access_info.isPseudo) {
@@ -678,8 +675,8 @@ internal class StatusButtons(
 				activity, access_info, status
 			)
 			
-			btnQuote ->Action_Toot.replyFromAnotherAccount(
-				activity, access_info, status ,quote = true
+			btnQuote -> Action_Toot.replyFromAnotherAccount(
+				activity, access_info, status, quote = true
 			)
 			
 			btnFollow2 -> Action_Follow.followFromAnotherAccount(
@@ -696,7 +693,7 @@ internal class StatusButtons(
 				CustomShareTarget.CustomShare1
 			)
 			
-			btnCustomShare2 ->shareUrl(
+			btnCustomShare2 -> shareUrl(
 				status,
 				CustomShareTarget.CustomShare2
 			)
@@ -716,7 +713,7 @@ internal class StatusButtons(
 	) {
 		val url = status.url ?: status.uri ?: return
 		
-		CustomShare.invoke(activity,url,target)
+		CustomShare.invoke(activity, url, target)
 	}
 }
 

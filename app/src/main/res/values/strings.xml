@@ -1026,4 +1026,10 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="muted_quote">Muted quote</string>
+    <string name="button_accent_color">Button accent color</string>
+    <string name="search_bar_background_color">Search bar background color (app restart required)</string>
+    <string name="announcement_background_color">Announcements background color (app restart required)</string>
+    <string name="conversation_main_toot_background_color">Conversation main toot background color</string>
+    <string name="verified_link_background_color">Verified link background color (app restart required)</string>
+    <string name="verified_link_foreground_color">Verified link foreground color (app restart required)</string>
 </resources>

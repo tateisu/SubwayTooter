@@ -156,9 +156,13 @@ object Styler {
 		, defaultColor : Int
 		, alphaMultiplier : Float
 	) {
+		fun colorAccent() =
+			Pref.ipButtonFollowingColor(Pref.pref(context)).notZero()
+				?: getAttributeColor(context, R.attr.colorImageButtonAccent)
 		
-		fun colorError() = getAttributeColor(context, R.attr.colorRegexFilterError)
-		fun colorAccent() = getAttributeColor(context, R.attr.colorImageButtonAccent)
+		fun colorError() =
+			Pref.ipButtonFollowRequestColor(Pref.pref(context)).notZero()
+			?: getAttributeColor(context, R.attr.colorRegexFilterError)
 		
 		// 被フォロー状態
 		when {

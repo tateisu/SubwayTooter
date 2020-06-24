@@ -1021,4 +1021,10 @@
     <string name="yes">はい</string>
     <string name="no">いいえ</string>
     <string name="muted_quote">ミュートされた引用</string>
+    <string name="button_accent_color">ボタン強調色</string>
+    <string name="search_bar_background_color">検索バーの背景色 (アプリ再起動が必要)</string>
+    <string name="announcement_background_color">告知の背景色 (アプリ再起動が必要)</string>
+    <string name="conversation_main_toot_background_color">会話ビューのメイン投稿の背景色</string>
+    <string name="verified_link_background_color">認証済みリンクの背景色 (アプリ再起動が必要)</string>
+    <string name="verified_link_foreground_color">認証済みリンクの文字色 (アプリ再起動が必要)</string>
 </resources>

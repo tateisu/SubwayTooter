@@ -1226,12 +1226,12 @@ internal class ItemViewHolder(
 		llStatus.visibility = View.VISIBLE
 		
 		if(status.conversation_main) {
-			this.viewRoot.setBackgroundColor(
-				(getAttributeColor(
-					activity,
-					R.attr.colorImageButtonAccent
-				) and 0xffffff) or 0x20000000
-			)
+
+			val conversationMainBgColor = Pref.ipConversationMainTootBgColor(activity.pref).notZero()
+				?: (getAttributeColor(activity,R.attr.colorImageButtonAccent) and 0xffffff) or 0x20000000
+				
+			this.viewRoot.setBackgroundColor( conversationMainBgColor )
+
 		} else {
 			val c = colorBg.notZero()
 				

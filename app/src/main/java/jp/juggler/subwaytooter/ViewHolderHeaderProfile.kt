@@ -414,8 +414,11 @@ internal class ViewHolderHeaderProfile(
 						valueText.append(TootStatus.formatTime(activity, item.verified_at, false))
 						val end = valueText.length
 						
+						val linkFgColor = Pref.ipVerifiedLinkFgColor(activity.pref).notZero()
+							?: (Color.BLACK or 0x7fbc99)
+						
 						valueText.setSpan(
-							ForegroundColorSpan(Color.BLACK or 0x7fbc99)
+							ForegroundColorSpan(linkFgColor)
 							, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 						)
 					}
@@ -431,7 +434,10 @@ internal class ViewHolderHeaderProfile(
 					valueView.movementMethod = MyLinkMovementMethod
 					
 					if(item.verified_at > 0L) {
-						valueView.setBackgroundColor(0x337fbc99)
+						val linkBgColor = Pref.ipVerifiedLinkBgColor(activity.pref).notZero()
+							?: (0x337fbc99)
+						
+						valueView.setBackgroundColor(linkBgColor)
 					}
 					
 					llFields.addView(valueView)
@@ -465,7 +471,7 @@ internal class ViewHolderHeaderProfile(
 		tvMovedName.text = movedRef.decoded_display_name
 		moved_name_invalidator.register(movedRef.decoded_display_name)
 		
-		setAcct(tvMovedAcct, access_info,moved)
+		setAcct(tvMovedAcct, access_info, moved)
 		
 		val relation = UserRelation.load(access_info.db_id, moved.id)
 		Styler.setFollowIcon(
@@ -479,8 +485,8 @@ internal class ViewHolderHeaderProfile(
 		)
 	}
 	
-	private fun setAcct(tv : TextView,accessInfo:SavedAccount,who:TootAccount) {
-		val ac = AcctColor.load(accessInfo,who)
+	private fun setAcct(tv : TextView, accessInfo : SavedAccount, who : TootAccount) {
+		val ac = AcctColor.load(accessInfo, who)
 		tv.text = when {
 			AcctColor.hasNickname(ac) -> ac.nickname
 			Pref.bpShortAcctLocalUser(App1.pref) -> "@${who.acct.pretty}"

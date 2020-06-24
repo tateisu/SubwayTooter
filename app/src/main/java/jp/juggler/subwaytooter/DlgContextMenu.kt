@@ -338,7 +338,19 @@ internal class DlgContextMenu(
 		
 		llNotification.vg(notification != null)
 		
+		val colorButtonAccent =
+			Pref.ipButtonFollowingColor(activity.pref).notZero()
+				?: getAttributeColor(activity, R.attr.colorImageButtonAccent)
+		
+		val colorButtonError =
+			Pref.ipButtonFollowRequestColor(activity.pref).notZero()
+				?: getAttributeColor(activity, R.attr.colorRegexFilterError)
+		
+		val colorButtonNormal =
+			getAttributeColor(activity, R.attr.colorImageButton)
+		
 		fun showRelation(relation : UserRelation) {
+			
 			// 被フォロー状態
 			// Styler.setFollowIconとは異なり細かい状態を表示しない
 			ivFollowedBy.vg(relation.followed_by)
@@ -352,37 +364,30 @@ internal class DlgContextMenu(
 					else -> R.drawable.ic_follow_plus
 				}
 			)
+			
+			
 			btnFollow.imageTintList = ColorStateList.valueOf(
-				getAttributeColor(
-					activity,
-					when {
-						relation.getRequested(who) -> R.attr.colorRegexFilterError
-						relation.getFollowing(who) -> R.attr.colorImageButtonAccent
-						else -> R.attr.colorImageButton
-					}
-				)
+				when {
+					relation.getRequested(who) -> colorButtonError
+					relation.getFollowing(who) -> colorButtonAccent
+					else -> colorButtonNormal
+				}
 			)
 			
 			// ミュート状態
 			btnMute.imageTintList = ColorStateList.valueOf(
-				getAttributeColor(
-					activity,
-					when(relation.muting) {
-						true -> R.attr.colorImageButtonAccent
-						else -> R.attr.colorImageButton
-					}
-				)
+				when(relation.muting) {
+					true -> colorButtonAccent
+					else -> colorButtonNormal
+				}
 			)
 			
 			// ブロック状態
 			btnBlock.imageTintList = ColorStateList.valueOf(
-				getAttributeColor(
-					activity,
-					when(relation.blocking) {
-						true -> R.attr.colorImageButtonAccent
-						else -> R.attr.colorImageButton
-					}
-				)
+				when(relation.blocking) {
+					true -> colorButtonAccent
+					else -> colorButtonNormal
+				}
 			)
 		}
 		

@@ -745,6 +745,18 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 			colorAlpha(Pref.ipEventBgColorReaction, R.string.reaction)
 			colorAlpha(Pref.ipEventBgColorQuote, R.string.quote_renote)
 			colorAlpha(Pref.ipEventBgColorVote, R.string.vote_polls)
+			colorAlpha(
+				Pref.ipConversationMainTootBgColor,
+				R.string.conversation_main_toot_background_color
+			)
+		}
+		
+		group(R.string.button_accent_color) {
+			colorAlpha(Pref.ipButtonBoostedColor, R.string.boost)
+			colorAlpha(Pref.ipButtonFavoritedColor, R.string.favourites)
+			colorAlpha(Pref.ipButtonBookmarkedColor, R.string.bookmarks)
+			colorAlpha(Pref.ipButtonFollowingColor, R.string.follow)
+			colorAlpha(Pref.ipButtonFollowRequestColor, R.string.follow_request)
 		}
 		
 		group(R.string.column_color_default) {
@@ -903,6 +915,11 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		colorOpaque(Pref.ipNavigationBarColor, R.string.navigation_bar_color) {
 			changed = { App1.setStatusBarColor(this) }
 		}
+		
+		colorOpaque(Pref.ipSearchBgColor, R.string.search_bar_background_color)
+		colorAlpha(Pref.ipAnnouncementsBgColor, R.string.announcement_background_color)
+		colorAlpha(Pref.ipVerifiedLinkBgColor, R.string.verified_link_background_color)
+		colorAlpha(Pref.ipVerifiedLinkFgColor, R.string.verified_link_foreground_color)
 	}
 	
 	section(R.string.performance) {

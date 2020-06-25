@@ -30,8 +30,8 @@ while(<$fh>){
 	}elsif( /^##\s*(\S+?)(?:\.\.|$)/ ){
 		my $branch=$1;
 		print "# branch=$branch\n";
-		$branch eq 'master'
-			or die "current branch is not master.\n";
+		$branch eq 'trunk'
+			or die "current branch is not trunk.\n";
 	}else{
 		warn "working tree is not clean.\n";
 		cmd "git status";

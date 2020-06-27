@@ -17,12 +17,15 @@ import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.util.LogCategory
 import jp.juggler.util.asciiPattern
 import jp.juggler.util.codePointBefore
 import java.util.*
 import java.util.regex.Pattern
 
 object EmojiDecoder {
+	
+	private val log = LogCategory("EmojiDecoder")
 	
 	private const val cpColon = ':'.toInt()
 	
@@ -265,20 +268,31 @@ object EmojiDecoder {
 		) // part : ":shortcode:", name : "shortcode"
 	}
 	
+	private val reUrl = """https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+"""
+		.asciiPattern()
+	
 	private fun splitShortCode(
 		s : String,
-		startArg:Int = 0,
-		end :Int = s.length,
 		callback : ShortCodeSplitterCallback
 	) {
-		var i = startArg
+		val urlList = ArrayList<IntRange>().apply{
+			val m = reUrl.matcher(s)
+			while(m.find()){
+				log.d("urlList ${m.start()}..${m.end()}")
+				add( m.start() .. m.end() )
+			}
+		}
+		
+		val end  = s.length
+		var i = 0
 		while(i < end) {
 			
 			// ":"以外を読み飛ばす
+			// URL中のコロンも読み飛ばす
 			var start = i
 			loop@ while(i < end) {
 				val c = s.codePointAt(i)
-				if(c == codepointColon) break@loop
+				if(c == codepointColon && null == urlList.find{ i in it} ) break@loop
 				i += Character.charCount(c)
 			}
 			if(i > start) callback.onString(s.substring(start, i))

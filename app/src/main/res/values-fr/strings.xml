@@ -1014,4 +1014,14 @@
     <string name="invites_enabled">Les utilisateur·rice·s peuvent créer des invitations</string>
     <string name="antenna_list_misskey">Liste de l’antenne (Misskey 12+)</string>
     <string name="antenna_list">Liste de l’antenne</string>
+    <string name="show_filtered_word">Afficher le mot filtré</string>
+    <string name="push_notification_server_key_missing">La notification push ne fonctionnera pas en raison d’une mauvaise configuration du serveur. La clé publique du serveur est manquante.</string>
+    <string name="push_notification_server_key_empty">La notification push ne fonctionnera pas en raison d’une mauvaise configuration du serveur. La clé publique du serveur est vide.</string>
+    <string name="emojione_shortcode_support_desc">Les pouets créés via un ancien Mastodon peuvent contenir des codes courts d’émojione même si le serveur a été mis à jour.</string>
+    <string name="remote_only">Distant uniquement</string>
+    <string name="search_bar_background_color">Couleur de fond de la barre de recherche (redémarrage de l\'app requis)</string>
+    <string name="announcement_background_color">Couleur de fond des annonces (redémarrage de l’app requis)</string>
+    <string name="dont_show_non_public_toot">Ne pas afficher les pouets non-publiques</string>
+    <string name="account_picker_block">Avec quel compte souhaitez-vous bloquer %1$s \?</string>
+    <string name="account_picker_mute">Avec quel compte souhaitez-vous mettre en sourdine %1$s \?</string>
 </resources>

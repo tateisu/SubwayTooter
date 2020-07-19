@@ -1723,7 +1723,7 @@ internal class ItemViewHolder(
 			TootAttachmentType.Audio -> {
 				iv.setMediaType(0)
 				iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_music))
-				iv.setImageUrl(activity.pref, 0f, null)
+				iv.setImageUrl(activity.pref, 0f, ta.urlForThumbnail)
 				showUrl = true
 			}
 			

@@ -97,7 +97,10 @@ class TootAttachment : TootAttachmentLike {
 		get() = remote_url.notEmpty() ?: url
 	
 	override val urlForThumbnail : String?
-		get() = preview_url.notEmpty() ?: remote_url.notEmpty() ?: url
+		get() = preview_url.notEmpty() ?: when(type){
+			TootAttachmentType.Image  -> remote_url.notEmpty() ?: url
+			else -> null
+		}
 	
 	constructor(serviceType : ServiceType, src : JsonObject) {
 		

@@ -92,6 +92,7 @@ class ActPost : AsyncActivity(),
 		private const val REQUEST_CODE_VIDEO = 4
 		private const val REQUEST_CODE_ATTACHMENT_OLD = 5
 		private const val REQUEST_CODE_SOUND = 6
+		private const val REQUEST_CODE_CUSTOM_THUMBNAIL = 7
 		
 		private const val PERMISSION_REQUEST_CODE = 1
 		
@@ -532,6 +533,12 @@ class ActPost : AsyncActivity(),
 			}
 		} else {
 			when(requestCode) {
+				REQUEST_CODE_CUSTOM_THUMBNAIL -> checkCustomThumbnail(
+					data?.handleGetContentResult(
+						contentResolver
+					)
+				)
+				
 				REQUEST_CODE_ATTACHMENT_OLD -> checkAttachments(
 					data?.handleGetContentResult(
 						contentResolver
@@ -1674,6 +1681,17 @@ class ActPost : AsyncActivity(),
 				openFocusPoint(pa)
 			}
 		}
+		if(account?.isMastodon == true) {
+			when(pa.attachment?.type) {
+				TootAttachmentType.Audio, TootAttachmentType.GIFV, TootAttachmentType.Video ->
+					a.addAction(getString(R.string.custom_thumbnail)) {
+						openCustomThumbnail(pa)
+					}
+				
+				else -> {
+				}
+			}
+		}
 		
 		a.addAction(getString(R.string.delete)) {
 			deleteAttachment(pa)
@@ -1683,51 +1701,196 @@ class ActPost : AsyncActivity(),
 	}
 	
 	private fun openFocusPoint(pa : PostAttachment) {
-		val attachment = pa.attachment
-		if(attachment != null) {
-			DlgFocusPoint(this, attachment)
-				.setCallback(object : FocusPointView.Callback {
-					override fun onFocusPointUpdate(x : Float, y : Float) {
-						val account = this@ActPost.account ?: return
-						
-						TootTaskRunner(this@ActPost, TootTaskRunner.PROGRESS_NONE).run(account,
-							object : TootTask {
-								override fun background(client : TootApiClient) : TootApiResult? {
-									try {
-										val result = client.request(
-											"/api/v1/media/${attachment.id}",
-											jsonObject {
-												put("focus", "%.2f,%.2f".format(x, y))
-											}
-												.toPutRequestBuilder()
+		val attachment = pa.attachment ?: return
+		DlgFocusPoint(this, attachment)
+			.setCallback(object : FocusPointView.Callback {
+				override fun onFocusPointUpdate(x : Float, y : Float) {
+					val account = this@ActPost.account ?: return
+					
+					TootTaskRunner(this@ActPost, TootTaskRunner.PROGRESS_NONE).run(account,
+						object : TootTask {
+							override fun background(client : TootApiClient) : TootApiResult? {
+								try {
+									val result = client.request(
+										"/api/v1/media/${attachment.id}",
+										jsonObject {
+											put("focus", "%.2f,%.2f".format(x, y))
+										}
+											.toPutRequestBuilder()
+									)
+									new_attachment =
+										parseItem(
+											::TootAttachment,
+											ServiceType.MASTODON,
+											result?.jsonObject
 										)
-										new_attachment =
-											parseItem(
-												::TootAttachment,
-												ServiceType.MASTODON,
-												result?.jsonObject
-											)
-										return result
-									} catch(ex : Throwable) {
-										return TootApiResult(ex.withCaption("set focus point failed."))
-									}
+									return result
+								} catch(ex : Throwable) {
+									return TootApiResult(ex.withCaption("set focus point failed."))
 								}
-								
-								var new_attachment : TootAttachment? = null
-								
-								override fun handleResult(result : TootApiResult?) {
-									result ?: return
-									if(new_attachment != null) {
-										pa.attachment = attachment
-									} else {
-										showToast(this@ActPost, true, result.error)
-									}
+							}
+							
+							var new_attachment : TootAttachment? = null
+							
+							override fun handleResult(result : TootApiResult?) {
+								result ?: return
+								if(new_attachment != null) {
+									pa.attachment = attachment
+								} else {
+									showToast(this@ActPost, true, result.error)
 								}
-							})
-					}
-				})
-				.show()
+							}
+						})
+				}
+			})
+			.show()
+	}
+	
+	private fun openCustomThumbnail(pa : PostAttachment) {
+
+		lastPostAttachment = pa
+		
+		val permissionCheck =
+			ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+		if(permissionCheck != PackageManager.PERMISSION_GRANTED) {
+			preparePermission()
+			return
 		}
+		
+		// SAFのIntentで開く
+		try {
+			val intent =
+				intentGetContent(false, getString(R.string.pick_images), arrayOf("image/*"))
+			startActivityForResult(intent, REQUEST_CODE_CUSTOM_THUMBNAIL)
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			showToast(this, ex, "ACTION_GET_CONTENT failed.")
+		}
+	}
+	
+	private var lastPostAttachment : PostAttachment? = null
+	
+	private fun checkCustomThumbnail(srcList : ArrayList<GetContentResultEntry>?) {
+		val src = srcList?.elementAtOrNull(0) ?: return
+		
+		val account = this@ActPost.account
+		if(account == null) {
+			showToast(this, false, R.string.account_select_please)
+			return
+		}
+		
+		val mime_type = getMimeType(src.uri, src.mimeType)
+		if(mime_type?.isEmpty() != false) {
+			showToast(this, false, R.string.mime_type_missing)
+			return
+		}
+		
+		val pa = lastPostAttachment
+		if( pa == null || !attachment_list.contains(pa)){
+			showToast(this, true, "lost attachment information")
+			return
+		}
+		
+		TootTaskRunner(this).run(account,object:TootTask{
+			override fun background(client : TootApiClient) : TootApiResult? {
+				try {
+					val (ti, tiResult) = TootInstance.get(client)
+					ti ?: return tiResult
+					
+					val resizeConfig = ResizeConfig(ResizeType.SquarePixel,400)
+					
+					val opener = createOpener(src.uri,mime_type, resizeConfig)
+					
+					val media_size_max = 1000000
+					
+					val content_length = getStreamSize(true, opener.open())
+					if(content_length > media_size_max) {
+						return TootApiResult(
+							getString(
+								R.string.file_size_too_big,
+								media_size_max / 1000000
+							)
+						)
+					}
+					
+					fun fixDocumentName(s : String) : String {
+						val s_length = s.length
+						val m = """([^\x20-\x7f])""".asciiPattern().matcher(s)
+						m.reset()
+						val sb = StringBuilder(s_length)
+						var lastEnd = 0
+						while(m.find()) {
+							sb.append(s.substring(lastEnd, m.start()))
+							val escaped = m.groupEx(1) !!.encodeUTF8().encodeHex()
+							sb.append(escaped)
+							lastEnd = m.end()
+						}
+						if(lastEnd < s_length) sb.append(s.substring(lastEnd, s_length))
+						return sb.toString()
+					}
+					
+					val fileName = fixDocumentName(getDocumentName(contentResolver, src.uri))
+					
+					return if(account.isMisskey) {
+						opener.deleteTempFile()
+						TootApiResult("custom thumbnail is not supported on misskey account.")
+					} else {
+						val result =client.request(
+							"/api/v1/media/${pa.attachment?.id}",
+							MultipartBody.Builder()
+								.setType(MultipartBody.FORM)
+								.addFormDataPart(
+									"thumbnail",
+									fileName,
+									object : RequestBody() {
+										override fun contentType() : MediaType? {
+											return opener.mimeType.toMediaType()
+										}
+										
+										@Throws(IOException::class)
+										override fun contentLength() : Long {
+											return content_length
+										}
+										
+										@Throws(IOException::class)
+										override fun writeTo(sink : BufferedSink) {
+											opener.open().use { inData ->
+												val tmp = ByteArray(4096)
+												while(true) {
+													val r = inData.read(tmp, 0, tmp.size)
+													if(r <= 0) break
+													sink.write(tmp, 0, r)
+												}
+											}
+										}
+									}
+								)
+								.build().toPut()
+						)
+						opener.deleteTempFile()
+						
+						val jsonObject = result?.jsonObject
+						if(jsonObject != null) {
+							val a = parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)
+							if(a == null) {
+								result.error = "TootAttachment.parse failed"
+							} else {
+								pa.attachment = a
+							}
+						}
+						result
+					}
+					
+				} catch(ex : Throwable) {
+					return TootApiResult(ex.withCaption("read failed."))
+				}
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				showMediaAttachment()
+				result?.error?.let{ showToast(this@ActPost,true,it)}
+			}
+		})
 	}
 	
 	private fun deleteAttachment(pa : PostAttachment) {
@@ -1885,7 +2048,7 @@ class ActPost : AsyncActivity(),
 		fun deleteTempFile()
 	}
 	
-	private fun createOpener(uri : Uri, mime_type : String) : InputStreamOpener {
+	private fun createOpener(uri : Uri, mime_type : String,resizeConfig: ResizeConfig) : InputStreamOpener {
 		
 		while(true) {
 			try {
@@ -1898,8 +2061,6 @@ class ActPost : AsyncActivity(),
 					break
 				}
 				
-				// 設定からリサイズ指定を読む
-				val resizeConfig = resizeConfigList[Pref.ipResizeImage(pref)]
 				
 				val bitmap = createResizedBitmap(
 					this,
@@ -2137,8 +2298,10 @@ class ActPost : AsyncActivity(),
 						return TootApiResult(getString(R.string.mime_type_not_acceptable, mimeType))
 					}
 				}
+				// 設定からリサイズ指定を読む
+				val resizeConfig = resizeConfigList[Pref.ipResizeImage(pref)]
 				
-				val opener = createOpener(uri, mimeType)
+				val opener = createOpener(uri, mimeType, resizeConfig)
 				
 				val media_size_max = when {
 					

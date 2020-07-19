@@ -1037,4 +1037,5 @@
     <string name="screen_bottom_padding">Screen bottom padding (Unit: dp. Default:0. App restart required)</string>
     <string name="personal_notes">Personal notes</string>
     <string name="personal_notes_of">Personal notes of %1$s</string>
+    <string name="custom_thumbnail">Custom thumbnail</string>
 </resources>

@@ -119,6 +119,7 @@
                     android:id="@+id/ivMedia1"
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
+                    android:layout_marginEnd="4dp"
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
 
@@ -126,7 +127,7 @@
                     android:id="@+id/ivMedia2"
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
 
@@ -134,7 +135,7 @@
                     android:id="@+id/ivMedia3"
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
 
@@ -142,25 +143,33 @@
                     android:id="@+id/ivMedia4"
                     android:layout_width="48dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:scaleType="fitCenter" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
 
                 <CheckBox
                     android:id="@+id/cbNSFW"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical|start"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
                     android:text="@string/nsfw" />
-            </LinearLayout>
 
-            <CheckBox
-                android:id="@+id/cbContentWarning"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="@string/content_warning" />
+                <CheckBox
+                    android:id="@+id/cbContentWarning"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|start"
+                    android:layout_weight="1"
+                    android:text="@string/content_warning" />
+            </LinearLayout>
 
             <FrameLayout
                 android:layout_width="match_parent"

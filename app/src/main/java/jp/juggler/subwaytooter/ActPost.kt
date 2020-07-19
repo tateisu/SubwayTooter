@@ -877,9 +877,7 @@ class ActPost : AsyncActivity(),
 							}
 						}
 						
-						if(this.attachment_list.isNotEmpty()) {
-							cbNSFW.isChecked = base_status.sensitive == true
-						}
+						cbNSFW.isChecked = base_status.sensitive == true
 						
 						// 再編集の場合はdefault_textは反映されない
 						
@@ -999,9 +997,7 @@ class ActPost : AsyncActivity(),
 								log.trace(ex)
 							}
 						}
-						if(this.attachment_list.isNotEmpty()) {
-							cbNSFW.isChecked = item.sensitive
-						}
+						cbNSFW.isChecked = item.sensitive
 					}
 				} catch(ex : Throwable) {
 					log.trace(ex)
@@ -2350,7 +2346,11 @@ class ActPost : AsyncActivity(),
 			if(pa.attachment == null) {
 				pa.status = PostAttachment.STATUS_UPLOAD_FAILED
 				if(result != null) {
-					showToast(this@ActPost, true, "${result.error} ${result.response?.request?.method} ${result.response?.request?.url}" )
+					showToast(
+						this@ActPost,
+						true,
+						"${result.error} ${result.response?.request?.method} ${result.response?.request?.url}"
+					)
 				}
 			} else {
 				pa.status = PostAttachment.STATUS_UPLOADED

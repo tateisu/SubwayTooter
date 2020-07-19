@@ -128,7 +128,7 @@ internal class ItemViewHolder(
 	private lateinit var llCardImage : View
 	private lateinit var ivCardImage : MyNetworkImageView
 	private lateinit var btnCardImageHide : ImageButton
-	private lateinit var btnCardImageShow : Button
+	private lateinit var btnCardImageShow : BlurhashView
 	
 	private lateinit var llExtra : LinearLayout
 	
@@ -2338,7 +2338,9 @@ internal class ItemViewHolder(
 				
 				val imageUrl = access_info.supplyBaseUrl(image)
 				ivCardImage.setImageUrl(activity.pref, 0f, imageUrl, imageUrl)
-				
+
+				btnCardImageShow.blurhash = card.blurhash
+
 				// show about card outer
 				bShowOuter = true
 				
@@ -3682,13 +3684,12 @@ internal class ItemViewHolder(
 										}
 									}
 									
-									btnCardImageShow = button {
+									btnCardImageShow = blurhashView {
 										
-										backgroundColor = getAttributeColor(
+										errorColor = getAttributeColor(
 											context,
 											R.attr.colorShowMediaBackground
 										)
-										
 										gravity = Gravity.CENTER
 										
 										textColor = getAttributeColor(

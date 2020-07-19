@@ -26,6 +26,8 @@ class TootCard(
 	val provider_name : String? = null,
 	val provider_url : String? = null,
 	
+	val blurhash : String? = null,
+	
 	val originalStatus : TootStatus? = null
 ) {
 	
@@ -39,8 +41,8 @@ class TootCard(
 		author_name = src.string("author_name"),
 		author_url = src.string("author_url"),
 		provider_name = src.string("provider_name"),
-		provider_url = src.string("provider_url")
-	
+		provider_url = src.string("provider_url"),
+		blurhash = src.string("blurhash")
 	)
 	
 	constructor(parser : TootParser, src : TootStatus) : this(

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/viewRoot"
     android:layout_width="match_parent"
@@ -148,11 +149,11 @@
                     android:scaleType="fitCenter" />
             </LinearLayout>
 
-            <LinearLayout
+            <com.google.android.flexbox.FlexboxLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:orientation="horizontal">
+                app:flexWrap="wrap">
 
                 <CheckBox
                     android:id="@+id/cbNSFW"
@@ -164,12 +165,11 @@
 
                 <CheckBox
                     android:id="@+id/cbContentWarning"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical|start"
-                    android:layout_weight="1"
                     android:text="@string/content_warning" />
-            </LinearLayout>
+            </com.google.android.flexbox.FlexboxLayout>
 
             <FrameLayout
                 android:layout_width="match_parent"

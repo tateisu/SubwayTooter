@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.table
 
+import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 
@@ -21,3 +22,6 @@ interface TableCompanion {
 	fun onDBCreate(db : SQLiteDatabase)
 	fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int)
 }
+
+fun ContentValues.putOrNull(key : String, value : String?) =
+	if(value == null) putNull(key) else put(key, value)

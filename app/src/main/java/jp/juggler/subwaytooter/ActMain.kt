@@ -2178,7 +2178,7 @@ class ActMain : AsyncActivity()
 			this,
 			getString(R.string.access_token_or_api_token),
 			null,
-			object : DlgTextInput.Callback {
+			callback = object : DlgTextInput.Callback {
 				override fun onOK(dialog : Dialog, text : String) {
 					checkAccessToken(null, dialog, sa.host, text, sa)
 				}

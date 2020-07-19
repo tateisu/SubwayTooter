@@ -140,7 +140,7 @@ object Action_List {
 			activity,
 			activity.getString(R.string.rename),
 			item.title,
-			object : DlgTextInput.Callback {
+			callback = object : DlgTextInput.Callback {
 				override fun onEmptyError() {
 					showToast(activity, false, R.string.list_name_empty)
 				}

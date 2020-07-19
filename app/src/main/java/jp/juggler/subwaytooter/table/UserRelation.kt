@@ -13,6 +13,7 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getInt
+import jp.juggler.util.getStringOrNull
 
 class UserRelation {
 	
@@ -25,6 +26,8 @@ class UserRelation {
 	var requested_by : Boolean = false  // 相手から認証ユーザへのフォローリクエスト申請中(Misskeyのみ。Mastodonでは常にfalse)
 	var following_reblogs : Int = 0 // このユーザからのブーストをTLに表示する
 	var endorsed : Boolean = false // ユーザをプロフィールで紹介する
+	
+	var note : String? = null
 	
 	// 認証ユーザからのフォロー状態
 	fun getFollowing(who : TootAccount?) : Boolean {
@@ -62,6 +65,7 @@ class UserRelation {
 		private const val COL_ENDORSED = "endorsed"
 		private const val COL_BLOCKED_BY = "blocked_by"
 		private const val COL_REQUESTED_BY = "requested_by"
+		private const val COL_NOTE = "note"
 		
 		private const val DB_ID_PSEUDO = - 2L
 		
@@ -83,6 +87,7 @@ class UserRelation {
 				,$COL_ENDORSED integer default 0
 				,$COL_BLOCKED_BY integer default 0
 				,$COL_REQUESTED_BY integer default 0
+				,$COL_NOTE text default null
 				)"""
 			)
 			db.execSQL(
@@ -115,6 +120,13 @@ class UserRelation {
 			if(oldVersion < 35 && newVersion >= 35) {
 				try {
 					db.execSQL("alter table $table add column $COL_REQUESTED_BY integer default 0")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+			}
+			if(oldVersion < 55 && newVersion >= 55) {
+				try {
+					db.execSQL("alter table $table add column $COL_NOTE text default null")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
@@ -155,6 +167,7 @@ class UserRelation {
 				cv.put(COL_ENDORSED, src.endorsed.b2i())
 				cv.put(COL_BLOCKED_BY, src.blocked_by.b2i())
 				cv.put(COL_REQUESTED_BY, src.requested_by.b2i())
+				cv.putOrNull(COL_NOTE, src.note)
 				App1.database.replaceOrThrow(table, null, cv)
 				
 				val key = String.format("%s:%s", db_id, whoId)
@@ -184,6 +197,7 @@ class UserRelation {
 				cv.put(COL_ENDORSED, src.endorsed.b2i())
 				cv.put(COL_BLOCKED_BY, src.blocked_by.b2i())
 				cv.put(COL_REQUESTED_BY, src.requested_by.b2i())
+				cv.putOrNull(COL_NOTE, src.note)
 				App1.database.replaceOrThrow(table, null, cv)
 				val key = String.format("%s:%s", db_id, id)
 				mMemoryCache.remove(key)
@@ -216,6 +230,7 @@ class UserRelation {
 					cv.put(COL_REQUESTED, src.requested.b2i())
 					cv.put(COL_FOLLOWING_REBLOGS, src.showing_reblogs)
 					cv.put(COL_ENDORSED, src.endorsed.b2i())
+					cv.putOrNull(COL_NOTE, src.note)
 					db.replaceOrThrow(table, null, cv)
 					
 				}
@@ -267,6 +282,7 @@ class UserRelation {
 					cv.put(COL_ENDORSED, src.endorsed.b2i())
 					cv.put(COL_BLOCKED_BY, src.blocked_by.b2i())
 					cv.put(COL_REQUESTED_BY, src.requested_by.b2i())
+					cv.putOrNull(COL_NOTE, src.note)
 					db.replaceOrThrow(table, null, cv)
 				}
 				bOK = true
@@ -307,6 +323,7 @@ class UserRelation {
 					cv.put(COL_ENDORSED, src.endorsed.b2i())
 					cv.put(COL_BLOCKED_BY, src.blocked_by.b2i())
 					cv.put(COL_REQUESTED_BY, src.requested_by.b2i())
+					cv.putOrNull(COL_NOTE, src.note)
 					db.replace(table, null, cv)
 				}
 				bOK = true
@@ -365,6 +382,7 @@ class UserRelation {
 							dst.endorsed = cursor.getBoolean(COL_ENDORSED)
 							dst.blocked_by = cursor.getBoolean(COL_BLOCKED_BY)
 							dst.requested_by = cursor.getBoolean(COL_REQUESTED_BY)
+							dst.note = cursor.getStringOrNull(COL_NOTE)
 							return dst
 						}
 					}

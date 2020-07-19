@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter
 
+import android.app.Dialog
 import android.graphics.Color
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -9,10 +10,11 @@ import android.widget.*
 import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.action.Action_Follow
 import jp.juggler.subwaytooter.action.Action_User
-import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.AcctColor
@@ -68,6 +70,9 @@ internal class ViewHolderHeaderProfile(
 	private val density : Float
 	private val btnMore : ImageButton
 	
+	private val tvPersonalNotes : TextView
+	private val btnPersonalNotesEdit : ImageButton
+	
 	init {
 		ivBackground = viewRoot.findViewById(R.id.ivBackground)
 		llProfile = viewRoot.findViewById(R.id.llProfile)
@@ -95,18 +100,28 @@ internal class ViewHolderHeaderProfile(
 		ivMovedBy = viewRoot.findViewById(R.id.ivMovedBy)
 		llFields = viewRoot.findViewById(R.id.llFields)
 		
+		tvPersonalNotes = viewRoot.findViewById(R.id.tvPersonalNotes)
+		btnPersonalNotesEdit = viewRoot.findViewById(R.id.btnPersonalNotesEdit)
+		
+		
 		density = tvDisplayName.resources.displayMetrics.density
 		
-		ivBackground.setOnClickListener(this)
-		btnFollowing.setOnClickListener(this)
-		btnFollowers.setOnClickListener(this)
-		btnStatusCount.setOnClickListener(this)
-		btnMore.setOnClickListener(this)
-		btnFollow.setOnClickListener(this)
-		tvRemoteProfileWarning.setOnClickListener(this)
-		
-		btnMoved.setOnClickListener(this)
-		llMoved.setOnClickListener(this)
+		for(v in arrayOf(
+			ivBackground,
+			btnFollowing,
+			btnFollowers,
+			btnStatusCount,
+			btnMore,
+			btnFollow,
+			tvRemoteProfileWarning,
+			btnPersonalNotesEdit,
+			
+			btnMoved,
+			llMoved,
+			btnPersonalNotesEdit
+		)) {
+			v.setOnClickListener(this)
+		}
 		
 		btnMoved.setOnLongClickListener(this)
 		btnFollow.setOnLongClickListener(this)
@@ -132,6 +147,8 @@ internal class ViewHolderHeaderProfile(
 	
 	private var contentColor = 0
 	
+	private var relation : UserRelation? = null
+	
 	override fun bindData(column : Column) {
 		super.bindData(column)
 		
@@ -141,6 +158,7 @@ internal class ViewHolderHeaderProfile(
 		if(! f.isNaN()) {
 			tvMovedName.textSize = f
 			tvMoved.textSize = f
+			tvPersonalNotes.textSize = f
 		}
 		
 		f = activity.acct_font_size_sp
@@ -159,6 +177,7 @@ internal class ViewHolderHeaderProfile(
 		val contentColor = column.getContentColor()
 		this.contentColor = contentColor
 		
+		tvPersonalNotes.textColor = contentColor
 		tvMoved.textColor = contentColor
 		tvMovedName.textColor = contentColor
 		tvDisplayName.textColor = contentColor
@@ -175,7 +194,15 @@ internal class ViewHolderHeaderProfile(
 			color = contentColor,
 			alphaMultiplier = Styler.boost_alpha
 		)
-		
+
+		setIconDrawableId(
+			activity,
+			btnPersonalNotesEdit,
+			R.drawable.ic_edit,
+			color = contentColor,
+			alphaMultiplier = Styler.boost_alpha
+		)
+
 		val acctColor = column.getAcctColor()
 		tvCreated.textColor = acctColor
 		tvMovedAcct.textColor = acctColor
@@ -200,6 +227,7 @@ internal class ViewHolderHeaderProfile(
 		llFields.removeAllViews()
 		
 		if(who == null) {
+			relation = null
 			tvCreated.text = ""
 			tvLastStatusAt.vg(false)
 			ivBackground.setImageDrawable(null)
@@ -345,6 +373,8 @@ internal class ViewHolderHeaderProfile(
 			}
 			
 			val relation = UserRelation.load(access_info.db_id, who.id)
+			this.relation = relation
+
 			Styler.setFollowIcon(
 				activity,
 				btnFollow,
@@ -355,6 +385,8 @@ internal class ViewHolderHeaderProfile(
 				alphaMultiplier = Styler.boost_alpha
 			)
 			
+			tvPersonalNotes.text = relation.note ?: ""
+
 			showMoved(who, who.movedRef)
 			
 			val fields = whoDetail?.fields ?: who.fields
@@ -549,6 +581,53 @@ internal class ViewHolderHeaderProfile(
 						movedRef.get()
 					)
 				}
+			}
+			
+			R.id.btnPersonalNotesEdit -> whoRef?.let{ whoRef->
+				val who = whoRef.get()
+				val relation = this.relation
+				val lastColumn = column
+				DlgTextInput.show(
+					activity,
+					AcctColor.getStringWithNickname(activity,R.string.personal_notes_of,who.acct),
+					relation?.note ?: "",
+					allowEmpty = true,
+					callback = object: DlgTextInput.Callback{
+						override fun onEmptyError() {
+						}
+
+						override fun onOK(dialog : Dialog, text : String) {
+							TootTaskRunner(activity).run(column.access_info,object:TootTask{
+								override fun background(client : TootApiClient) : TootApiResult? {
+
+									if(access_info.isPseudo)
+										return TootApiResult("Personal notes is not supported on pseudo account.")
+
+									if(access_info.isMisskey)
+										return TootApiResult("Personal notes is not supported on Misskey account.")
+									
+									return client.request("/api/v1/accounts/${who.id}/note",
+										jsonObject {
+											put("comment",text)
+										}.toPostRequestBuilder()
+									)
+								}
+								
+								override fun handleResult(result : TootApiResult?) {
+									if(result==null) return
+									if(result.error!=null)
+										showToast(activity,true,result.error)
+									else{
+										relation?.note = text
+										dialog.dismissSafe()
+										if(lastColumn==column) bindData(column)
+									}
+								}
+							})
+						}
+					}
+				)
+				
 			}
 		}
 	}

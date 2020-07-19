@@ -1706,35 +1706,31 @@ class Column(
 			// リロード不要なら何もしない
 			null
 		} else if(isMisskey) {
-			val result = client.request(
+			client.request(
 				PATH_MISSKEY_PROFILE,
 				access_info.putMisskeyApiToken().apply {
 					put("userId", profile_id)
 				}.toPostRequestBuilder()
-			)
-			
-			// ユーザリレーションの取り扱いのため、別のparserを作ってはいけない
-			parser.misskeyDecodeProfilePin = true
-			try {
-				val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
-				if(a != null) {
+			)?.also{ result1 ->
+				// ユーザリレーションの取り扱いのため、別のparserを作ってはいけない
+				parser.misskeyDecodeProfilePin = true
+				try {
+					TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also{ a->
+						this.who_account = a
+						client.publishApiProgress("") // カラムヘッダの再表示
+					}
+				} finally {
+					parser.misskeyDecodeProfilePin = false
+				}
+			}
+		} else {
+			client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))?.also{result1 ->
+				TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also{ a->
 					this.who_account = a
 					client.publishApiProgress("") // カラムヘッダの再表示
+					
 				}
-			} finally {
-				parser.misskeyDecodeProfilePin = false
 			}
-			
-			result
-			
-		} else {
-			val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
-			val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
-			if(a != null) {
-				this.who_account = a
-				client.publishApiProgress("") // カラムヘッダの再表示
-			}
-			result
 		}
 		
 	}
@@ -1781,7 +1777,8 @@ class Column(
 				// parser内部にアカウントIDとRelationのマップが生成されるので、それをデータベースに記録する
 				run {
 					val now = System.currentTimeMillis()
-					val who_list = parser.misskeyUserRelationMap.entries.toMutableList()
+					val who_list =
+						parser.misskeyUserRelationMap.entries.toMutableList()
 					var start = 0
 					val end = who_list.size
 					while(start < end) {

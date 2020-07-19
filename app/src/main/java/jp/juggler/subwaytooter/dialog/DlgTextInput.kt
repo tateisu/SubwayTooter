@@ -24,6 +24,7 @@ object DlgTextInput {
 		activity : Activity,
 		caption : CharSequence,
 		initial_text : CharSequence?,
+		allowEmpty : Boolean = false,
 		callback : Callback
 	) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_text_input, null, false)
@@ -51,7 +52,7 @@ object DlgTextInput {
 		btnOk.setOnClickListener {
 			val token = etInput.text.toString().trim { it <= ' ' }
 			
-			if( token.isEmpty() ) {
+			if( token.isEmpty() && !allowEmpty ) {
 				callback.onEmptyError()
 			} else {
 				callback.onOK(dialog, token)

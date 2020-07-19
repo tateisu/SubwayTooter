@@ -1757,7 +1757,7 @@ class ActPost : AsyncActivity(),
 			this,
 			getString(R.string.attachment_description),
 			a.description,
-			object : DlgTextInput.Callback {
+			callback = object : DlgTextInput.Callback {
 				override fun onOK(dialog : Dialog, text : String) {
 					setAttachmentDescription(pa, dialog, text)
 				}

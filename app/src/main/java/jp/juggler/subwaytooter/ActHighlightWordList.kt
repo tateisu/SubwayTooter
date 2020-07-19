@@ -250,7 +250,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	private fun create() {
-		DlgTextInput.show(this, getString(R.string.new_item), "", object : DlgTextInput.Callback {
+		DlgTextInput.show(this, getString(R.string.new_item), "", callback = object : DlgTextInput.Callback {
 			override fun onEmptyError() {
 				showToast(this@ActHighlightWordList, true, R.string.word_empty)
 			}

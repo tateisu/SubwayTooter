@@ -1028,4 +1028,6 @@
     <string name="verified_link_background_color">認証済みリンクの背景色 (アプリ再起動が必要)</string>
     <string name="verified_link_foreground_color">認証済みリンクの文字色 (アプリ再起動が必要)</string>
     <string name="screen_bottom_padding">画面下部の余白(単位:dp。デフォルト:0。アプリ再起動が必要)</string>
+    <string name="personal_notes">覚え書き</string>
+    <string name="personal_notes_of">%1$sに関する覚え書き</string>
 </resources>

@@ -39,6 +39,9 @@ class TootRelationShip(parser:TootParser,src : JsonObject) {
 	
 	// misskey用
 	val requested_by : Boolean
+	
+	// (Mastodon 3.2)
+	var note : String? = null
 
 	init {
 		
@@ -91,6 +94,7 @@ class TootRelationShip(parser:TootParser,src : JsonObject) {
 			this.muting = src.optBoolean("muting")
 			this.requested = src.optBoolean("requested")
 			this.endorsed = src.optBoolean("endorsed")
+			this.note = src.optString( "note")
 			
 			// https://github.com/tootsuite/mastodon/commit/9745de883b198375ba23f7fde879f6d75ce2df0f
 			// Mastodon 2.8.0から

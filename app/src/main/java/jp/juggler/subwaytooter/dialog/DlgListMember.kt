@@ -265,7 +265,7 @@ class DlgListMember(
 			activity,
 			activity.getString(R.string.list_create),
 			null,
-			object : DlgTextInput.Callback {
+			callback = object : DlgTextInput.Callback {
 				
 				override fun onEmptyError() {
 					showToast(activity, false, R.string.list_name_empty)

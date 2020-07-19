@@ -93,7 +93,7 @@ object Action_Account {
 									activity,
 									activity.getString(R.string.access_token_or_api_token),
 									null,
-									object : DlgTextInput.Callback {
+									callback = object : DlgTextInput.Callback {
 										
 										@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
 										override fun onOK(

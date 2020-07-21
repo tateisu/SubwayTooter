@@ -97,5 +97,5 @@
     <string name="post_from">发自</string>
     <string name="status">Toot</string>
     <string name="content_warning_hint">在这里写下你的警告</string>
-    <string name="request_api">正在获取：％1 $ s％2 $ s</string>
+    <string name="request_api">正在获取：%1$s %2$s</string>
 </resources>

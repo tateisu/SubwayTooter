@@ -153,7 +153,7 @@ object Pref {
 	
 	val bpDontCropMediaThumb = BooleanPref(
 		"DontCropMediaThumb",
-		false
+		true
 	)
 	
 	val bpDontDuplicationCheck = BooleanPref(

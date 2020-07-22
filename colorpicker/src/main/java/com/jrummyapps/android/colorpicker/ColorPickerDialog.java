@@ -343,10 +343,14 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
 
   @Override public void afterTextChanged(Editable s) {
     if (hexEditText.isFocused()) {
-      int color = parseColorString(s.toString());
-      if (color != colorPicker.getColor()) {
-        fromEditText = true;
-        colorPicker.setColor(color, true);
+      try{
+        int color = parseColorString( s.toString() );
+        if (color != colorPicker.getColor()) {
+          fromEditText = true;
+          colorPicker.setColor(color, true);
+        }
+      }catch( NumberFormatException ex ){
+        // nothing to do
       }
     }
   }

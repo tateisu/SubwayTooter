@@ -533,7 +533,7 @@ class ActPost : AsyncActivity(),
 			}
 		} else {
 			when(requestCode) {
-				REQUEST_CODE_CUSTOM_THUMBNAIL -> checkCustomThumbnail(
+				REQUEST_CODE_CUSTOM_THUMBNAIL -> uploadCustomThumbnail(
 					data?.handleGetContentResult(
 						contentResolver
 					)
@@ -1770,7 +1770,7 @@ class ActPost : AsyncActivity(),
 	
 	private var lastPostAttachment : PostAttachment? = null
 	
-	private fun checkCustomThumbnail(srcList : ArrayList<GetContentResultEntry>?) {
+	private fun uploadCustomThumbnail(srcList : ArrayList<GetContentResultEntry>?) {
 		val src = srcList?.elementAtOrNull(0) ?: return
 		
 		val account = this@ActPost.account

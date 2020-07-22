@@ -1723,7 +1723,7 @@ internal class ItemViewHolder(
 			TootAttachmentType.Audio -> {
 				iv.setMediaType(0)
 				iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_music))
-				iv.setImageUrl(activity.pref, 0f, ta.urlForThumbnail)
+				iv.setImageUrl(activity.pref, 0f, ta.urlForThumbnail(activity.pref))
 				showUrl = true
 			}
 			
@@ -1734,7 +1734,7 @@ internal class ItemViewHolder(
 				showUrl = true
 			}
 			
-			else -> when(val urlThumbnail = ta.urlForThumbnail) {
+			else -> when(val urlThumbnail = ta.urlForThumbnail(activity.pref)) {
 				null, "" -> {
 					iv.setMediaType(0)
 					iv.setDefaultImage(defaultColorIcon(activity, R.drawable.wide_question))

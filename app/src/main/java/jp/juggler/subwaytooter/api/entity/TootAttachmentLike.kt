@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
+import android.content.SharedPreferences
+
 enum class TootAttachmentType(val id:String){
 	Unknown("unknown"),
 	Image( "image"),
@@ -14,7 +16,7 @@ interface TootAttachmentLike{
 	val description : String?
 	
 	// url for thumbnail, or null or empty
-	val urlForThumbnail : String?
+	fun urlForThumbnail(pref:SharedPreferences) : String?
 	
 	// url for description, or null or empty
 	val urlForDescription :String?

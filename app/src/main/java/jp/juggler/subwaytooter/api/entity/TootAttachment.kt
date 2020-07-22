@@ -24,6 +24,8 @@ class TootAttachment : TootAttachmentLike {
 		private const val KEY_URL = "url"
 		private const val KEY_REMOTE_URL = "remote_url"
 		private const val KEY_PREVIEW_URL = "preview_url"
+		private const val KEY_PREVIEW_REMOTE_URL = "preview_remote_url"
+		
 		private const val KEY_TEXT_URL = "text_url"
 		private const val KEY_DESCRIPTION = "description"
 		private const val KEY_IS_SENSITIVE = "isSensitive"
@@ -68,6 +70,8 @@ class TootAttachment : TootAttachmentLike {
 	// (Misskey v11) audioのpreview_url は null
 	val preview_url : String?
 	
+	val preview_remote_url : String?
+	
 	//	Shorter URL for the image, for insertion into text (only present on local images)
 	val text_url : String?
 	
@@ -89,18 +93,12 @@ class TootAttachment : TootAttachmentLike {
 	///////////////////////////////
 	
 	override fun hasUrl(url : String) : Boolean = when(url) {
-		this.preview_url, this.remote_url, this.url, this.text_url -> true
+		this.preview_url, this.preview_remote_url, this.remote_url, this.url, this.text_url -> true
 		else -> false
 	}
 	
 	override val urlForDescription : String?
 		get() = remote_url.notEmpty() ?: url
-	
-	override val urlForThumbnail : String?
-		get() = preview_url.notEmpty() ?: when(type){
-			TootAttachmentType.Image  -> remote_url.notEmpty() ?: url
-			else -> null
-		}
 	
 	constructor(serviceType : ServiceType, src : JsonObject) {
 		
@@ -119,6 +117,7 @@ class TootAttachment : TootAttachmentLike {
 				
 				url = src.string("url")
 				preview_url = src.string("thumbnailUrl")
+				preview_remote_url = null
 				remote_url = url
 				text_url = url
 				
@@ -141,6 +140,8 @@ class TootAttachment : TootAttachmentLike {
 				url = src.string("url")
 				remote_url = src.string("remote_url")
 				preview_url = src.string("preview_url")
+				preview_remote_url = src.string("preview_remote_url")
+				
 				text_url = src.string("text_url")
 				description = src.string("description")
 				isSensitive = false // Misskey用のパラメータなので、マストドンでは適当な値を使ってOK
@@ -167,6 +168,16 @@ class TootAttachment : TootAttachmentLike {
 	private fun parseType(src : String?) =
 		TootAttachmentType.values().find { it.id == src }
 	
+	override fun urlForThumbnail(pref : SharedPreferences) =
+		if(Pref.bpPriorLocalURL(pref)) {
+			preview_url.notEmpty() ?: preview_remote_url.notEmpty()
+		} else {
+			preview_remote_url.notEmpty() ?: preview_url.notEmpty()
+		} ?: when(type) {
+			TootAttachmentType.Image -> getLargeUrl(pref)
+			else -> null
+		}
+	
 	fun getLargeUrl(pref : SharedPreferences) =
 		if(Pref.bpPriorLocalURL(pref)) {
 			url.notEmpty() ?: remote_url
@@ -192,6 +203,7 @@ class TootAttachment : TootAttachmentLike {
 		put(KEY_URL, url)
 		put(KEY_REMOTE_URL, remote_url)
 		put(KEY_PREVIEW_URL, preview_url)
+		put(KEY_PREVIEW_REMOTE_URL, preview_remote_url)
 		put(KEY_TEXT_URL, text_url)
 		put(KEY_DESCRIPTION, description)
 		put(KEY_IS_SENSITIVE, isSensitive)
@@ -217,6 +229,7 @@ class TootAttachment : TootAttachmentLike {
 		url = src.string(KEY_URL)
 		remote_url = src.string(KEY_REMOTE_URL)
 		preview_url = src.string(KEY_PREVIEW_URL)
+		preview_remote_url = src.string(KEY_PREVIEW_REMOTE_URL)
 		text_url = src.string(KEY_TEXT_URL)
 		
 		type = when(val tmpType = parseType(src.string(KEY_TYPE))) {

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
+import android.content.SharedPreferences
 import jp.juggler.util.JsonArray
 import jp.juggler.util.notBlank
 
@@ -13,8 +14,7 @@ class TootAttachmentMSP(
 	override val description : String?
 		get() = null
 	
-	override val urlForThumbnail : String?
-		get() = preview_url
+	override fun urlForThumbnail(pref : SharedPreferences) = preview_url
 	
 	override val urlForDescription : String?
 		get() = preview_url

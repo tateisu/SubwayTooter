@@ -833,6 +833,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			addMoreMenu(ad, "url", ta.url, Intent.ACTION_VIEW)
 			addMoreMenu(ad, "remote_url", ta.remote_url, Intent.ACTION_VIEW)
 			addMoreMenu(ad, "preview_url", ta.preview_url, Intent.ACTION_VIEW)
+			addMoreMenu(ad, "preview_remote_url", ta.preview_remote_url, Intent.ACTION_VIEW)
 			addMoreMenu(ad, "text_url", ta.text_url, Intent.ACTION_VIEW)
 			
 		} else if(ta is TootAttachmentMSP) {

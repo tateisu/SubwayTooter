@@ -1,2 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="local_timeline">本地時間線</string>
+    <string name="home">主頁</string>
+    <string name="column_empty">點擊左下菜單按鈕以新增欄位</string>
+    <string name="reading_api">讀取中：%1$s %2$s</string>
+    <string name="request_api">取得中: %1$s %2$s</string>
+    <string name="request_access_token">正在請求訪問令牌…</string>
+    <string name="network_error">網路異常。</string>
+    <string name="mail_not_specified">請輸入電郵地址</string>
+    <string name="instance_not_specified">請輸入伺服器名稱</string>
+    <string name="register_app_to_server">正於%1$s註冊此應用…</string>
+    <string name="api_error">API 錯誤 。%1$s</string>
+    <string name="error_response">錯誤回應。</string>
+    <string name="password_not_specified">請輸入密碼</string>
+    <string name="ok">確認</string>
+    <string name="cancel">取消</string>
+    <string name="user_password">密碼</string>
+    <string name="user_mail_address">電子郵件</string>
+    <string name="instance">伺服器</string>
+    <string name="account_add">新增帳戶</string>
+    <string name="action_settings">設定</string>
+    <string name="app_name">地鐵嘟嘟</string>
+</resources>

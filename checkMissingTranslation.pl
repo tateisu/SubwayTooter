@@ -147,7 +147,7 @@ $hasError and die "please fix error(s).\n";
 
 # Weblateの未マージのブランチがあるか調べる
 system qq(git fetch weblate -q);
-my @list = `git branch --no-merged`;
+my @list = `git branch -r --no-merged`;
 for(@list){
 	s/[\x0d\x0a]+//;
 	print "# Unmerged branch: $_\n";

@@ -432,7 +432,9 @@ class Column(
 				}
 				
 				ColumnType.LIST_TL -> "/api/v1/streaming/?stream=list&list=$profile_id"
-				ColumnType.DOMAIN_TIMELINE -> "/api/v1/streaming/?stream=public:remote&domain=$instance_uri"
+				
+				ColumnType.DOMAIN_TIMELINE ->
+					"/api/v1/streaming/?stream=${if(with_attachment) "public:domain:media" else "public:domain"}&domain=$instance_uri"
 				
 				ColumnType.DIRECT_MESSAGES -> "/api/v1/streaming/?stream=direct"
 				

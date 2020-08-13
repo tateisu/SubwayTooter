@@ -2,9 +2,11 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.b2i
-import jp.juggler.util.*
+import jp.juggler.util.JsonObject
+import jp.juggler.util.LogCategory
+import jp.juggler.util.asciiPattern
+import jp.juggler.util.groupEx
 import java.util.*
-import java.util.regex.Pattern
 
 class TootList(parser:TootParser,src : JsonObject): TimelineItem(), Comparable<TootList> {
 

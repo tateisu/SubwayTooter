@@ -1243,7 +1243,7 @@ class ActMain : AsyncActivity()
 		quickTootVisibility =
 			TootVisibility.parseSavedVisibility(Pref.spQuickTootVisibility(pref))
 				?: quickTootVisibility
-		showQuickTootVisibility()
+		
 		
 		Column.reloadDefaultColor(this, pref)
 		
@@ -1555,6 +1555,8 @@ class ActMain : AsyncActivity()
 					return ! drawer.isDrawerOpen(GravityCompat.START)
 				}
 			})
+		
+		showQuickTootVisibility()
 	}
 	
 	private fun isVisibleColumn(idx : Int) = phoneTab(

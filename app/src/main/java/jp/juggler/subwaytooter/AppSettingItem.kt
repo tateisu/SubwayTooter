@@ -393,6 +393,11 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 			Pref.bpWarnHashtagAsciiAndNonAscii,
 			R.string.warn_hashtag_ascii_and_non_ascii
 		)
+		
+		sw(
+			Pref.bpEmojiPickerCloseOnSelected,
+			R.string.close_emoji_picker_when_selected
+		)
 	}
 	
 	section(R.string.tablet_mode) {

@@ -535,15 +535,16 @@ class EmojiPicker(
 		customEmoji : CustomEmoji? = null
 	) {
 		
-		dialog.dismissSafe()
-		
 		val pref = App1.pref
+		
+		if( Pref.bpEmojiPickerCloseOnSelected(pref))
+			dialog.dismissSafe()
 		
 		// Recentをロード(他インスタンスの絵文字を含む)
 		val list : MutableList<JsonObject> = try {
 			Pref.spEmojiPickerRecent(pref).decodeJsonArray().objectList()
 		} catch(_ : Throwable) {
-			emptyList<JsonObject>()
+			emptyList()
 		}.toMutableList()
 		
 		// 選択された絵文字と同じ項目を除去

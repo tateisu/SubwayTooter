@@ -427,6 +427,10 @@ object Pref {
 		true
 	)
 	
+	val bpEmojiPickerCloseOnSelected = BooleanPref(
+		"EmojiPickerCloseOnSelected",
+		true
+	)
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

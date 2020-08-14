@@ -1038,4 +1038,5 @@
     <string name="personal_notes">Personal notes</string>
     <string name="personal_notes_of">Personal notes of %1$s</string>
     <string name="custom_thumbnail">Custom thumbnail</string>
+    <string name="close_emoji_picker_when_selected">Close emoji picker after selecting emoji</string>
 </resources>

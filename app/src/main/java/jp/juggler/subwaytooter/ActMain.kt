@@ -41,6 +41,7 @@ import jp.juggler.util.*
 import kotlinx.coroutines.delay
 import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.backgroundDrawable
+import org.jetbrains.anko.imageResource
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -297,6 +298,18 @@ class ActMain : AsyncActivity()
 		).open()
 	}
 	
+	private fun showQuickTootVisibility() {
+		btnQuickTootMenu.imageResource =
+			when(val resId = Styler.getVisibilityIconId(false, quickTootVisibility)) {
+				R.drawable.ic_question -> R.drawable.ic_description
+				else -> resId
+			}
+	}
+	
+	private fun performQuickTootMenu() {
+		dlgQuickTootMenu.toggle()
+	}
+	
 	private val dlgQuickTootMenu = DlgQuickTootMenu(this, object : DlgQuickTootMenu.Callback {
 		
 		override var visibility : TootVisibility
@@ -305,6 +318,7 @@ class ActMain : AsyncActivity()
 				if(value != quickTootVisibility) {
 					quickTootVisibility = value
 					pref.edit().put(Pref.spQuickTootVisibility, value.id.toString()).apply()
+					showQuickTootVisibility()
 				}
 			}
 		
@@ -928,10 +942,6 @@ class ActMain : AsyncActivity()
 		listItemPopup = null
 	}
 	
-	private fun performQuickTootMenu() {
-		dlgQuickTootMenu.toggle()
-	}
-	
 	private fun performQuickPost(account : SavedAccount?) {
 		if(account == null) {
 			val a = if(tabletEnv != null && ! Pref.bpQuickTootOmitAccountSelection(pref)) {
@@ -1233,6 +1243,7 @@ class ActMain : AsyncActivity()
 		quickTootVisibility =
 			TootVisibility.parseSavedVisibility(Pref.spQuickTootVisibility(pref))
 				?: quickTootVisibility
+		showQuickTootVisibility()
 		
 		Column.reloadDefaultColor(this, pref)
 		

@@ -152,7 +152,7 @@ class DlgQuickTootMenu(
 		AlertDialog.Builder(activity)
 			.setTitle(R.string.choose_visibility)
 			.setItems(caption_list) { _, which ->
-				if(which in 0 until visibilityList.size) {
+				if(which in visibilityList.indices) {
 					callback.visibility = visibilityList[which]
 					showVisibility()
 				}

@@ -57,8 +57,8 @@ class ActColumnList : AppCompatActivity() {
 		super.onSaveInstanceState(outState)
 		
 		outState.putInt(EXTRA_SELECTION, old_selection)
-
-		val array =listAdapter.itemList.map { it.json }.toJsonArray()
+		
+		val array = listAdapter.itemList.map { it.json }.toJsonArray()
 		AppState.saveColumnList(this, TMP_FILE_COLUMN_LIST, array)
 	}
 	
@@ -141,7 +141,7 @@ class ActColumnList : AppCompatActivity() {
 		try {
 			AppState.loadColumnList(this, TMP_FILE_COLUMN_LIST)
 				?.objectList()
-				?.forEachIndexed{index,src->
+				?.forEachIndexed { index, src ->
 					try {
 						val item = MyItem(src, index.toLong(), this)
 						tmp_list.add(item)
@@ -197,21 +197,14 @@ class ActColumnList : AppCompatActivity() {
 	internal class MyItem(val json : JsonObject, val id : Long, context : Context) {
 		
 		val name : String = json.optString(Column.KEY_COLUMN_NAME)
-		val acct : Acct = Acct.parse(json.optString(Column.KEY_COLUMN_ACCESS))
+		val acct : Acct = Acct.parse(json.optString(Column.KEY_COLUMN_ACCESS_ACCT))
+		val acct_name : String = json.optString(Column.KEY_COLUMN_ACCESS_STR)
 		val old_index = json.optInt(Column.KEY_OLD_INDEX)
 		val type = ColumnType.parse(json.optInt(Column.KEY_TYPE))
-		val acct_color_fg : Int
-		val acct_color_bg : Int
+		val acct_color_bg = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR_BG, 0)
+		val acct_color_fg = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR, 0)
+			.notZero() ?: getAttributeColor(context, R.attr.colorColumnListItemText)
 		var bOldSelection : Boolean = false
-		
-		init {
-			var c = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR, 0)
-			this.acct_color_fg =
-				if(c != 0) c else getAttributeColor(context, R.attr.colorColumnListItemText)
-			
-			c = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR_BG, 0)
-			this.acct_color_bg = c
-		}
 		
 		fun setOldSelection(b : Boolean) {
 			bOldSelection = b
@@ -241,7 +234,7 @@ class ActColumnList : AppCompatActivity() {
 		fun bind(item : MyItem) {
 			itemView.tag = item // itemView は親クラスのメンバ変数
 			ivBookmark.visibility = if(item.bOldSelection) View.VISIBLE else View.INVISIBLE
-			tvAccess.text = item.acct.pretty
+			tvAccess.text = item.acct_name
 			tvAccess.setTextColor(item.acct_color_fg)
 			tvAccess.setBackgroundColor(item.acct_color_bg)
 			tvAccess.setPaddingRelative(acct_pad_lr, 0, acct_pad_lr, 0)
@@ -270,7 +263,7 @@ class ActColumnList : AppCompatActivity() {
 			val item = clickedView.tag as MyItem
 			
 			var tv : TextView = dragView.findViewById(R.id.tvAccess)
-			tv.text = item.acct.pretty
+			tv.text = item.acct_name
 			tv.setTextColor(item.acct_color_fg)
 			tv.setBackgroundColor(item.acct_color_bg)
 			

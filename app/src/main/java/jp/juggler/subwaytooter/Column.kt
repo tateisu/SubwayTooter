@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.jvm.Throws
 
 enum class StreamingIndicatorState {
 	NONE,
@@ -182,7 +183,8 @@ class Column(
 		
 		private const val KEY_REMOTE_ONLY = "remoteOnly"
 		
-		internal const val KEY_COLUMN_ACCESS = "column_access"
+		internal const val KEY_COLUMN_ACCESS_ACCT = "column_access"
+		internal const val KEY_COLUMN_ACCESS_STR = "column_access_str"
 		internal const val KEY_COLUMN_ACCESS_COLOR = "column_access_color"
 		internal const val KEY_COLUMN_ACCESS_COLOR_BG = "column_access_color_bg"
 		internal const val KEY_COLUMN_NAME = "column_name"
@@ -949,7 +951,8 @@ class Column(
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
 		val ac = AcctColor.load(access_info)
-		dst[KEY_COLUMN_ACCESS] = ac.nickname
+		dst[KEY_COLUMN_ACCESS_ACCT] = access_info.acct.ascii
+		dst[KEY_COLUMN_ACCESS_STR] = ac.nickname
 		dst[KEY_COLUMN_ACCESS_COLOR] = ac.color_fg
 		dst[KEY_COLUMN_ACCESS_COLOR_BG] = ac.color_bg
 		dst[KEY_COLUMN_NAME] = getColumnName(true)

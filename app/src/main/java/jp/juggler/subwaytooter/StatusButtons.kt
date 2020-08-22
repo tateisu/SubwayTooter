@@ -711,7 +711,7 @@ internal class StatusButtons(
 		status : TootStatus,
 		target : CustomShareTarget
 	) {
-		val url = status.url ?: status.uri ?: return
+		val url = status.url ?: status.uri
 		
 		CustomShare.invoke(activity, url, target)
 	}

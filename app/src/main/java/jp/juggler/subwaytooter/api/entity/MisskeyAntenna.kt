@@ -1,10 +1,9 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.util.JsonArray
 import jp.juggler.util.JsonObject
 
-class MisskeyAntenna(parser:TootParser,src: JsonObject) :TimelineItem(){
+class MisskeyAntenna(src : JsonObject) :TimelineItem(){
 	
 	private val timeCreatedAt:Long // "2020-02-19T09:08:41.929Z"
 

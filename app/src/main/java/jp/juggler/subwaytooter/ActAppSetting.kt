@@ -326,7 +326,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 		override fun getCount() : Int = list.size
 		override fun getItemId(position : Int) : Long = 0
 		override fun getItem(position : Int) : Any = list[position]
-		override fun getViewTypeCount() : Int = SettingType.values().maxBy { it.id } !!.id + 1
+		override fun getViewTypeCount() : Int = SettingType.values().maxByOrNull { it.id } !!.id + 1
 		
 		override fun getItemViewType(position : Int) : Int =
 			when(val item = list[position]) {

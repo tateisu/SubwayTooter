@@ -1091,15 +1091,13 @@ enum class ColumnType(
 				result = TootApiResult()
 			} else {
 				result =
-					client.searchTootsearch(column.search_query, column.idOld?.toLong())
+					client.searchTootsearch(column.search_query, null)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
 					// max_id の更新
 					column.idOld = EntityId.mayNull(
-						TootApiClient.getTootsearchMaxId(
-							jsonObject,
-							column.idOld?.toLong()
-						)?.toString()
+						TootApiClient.getTootsearchMaxId(jsonObject,null)
+							?.toString()
 					)
 					
 					// リストデータの用意

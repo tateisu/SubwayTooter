@@ -61,7 +61,7 @@ internal fun Column.loadAntennaInfo(client : TootApiClient, bForceReload : Boole
 
 		val jsonObject = result?.jsonObject
 		if(jsonObject != null) {
-			val data = parseItem(::MisskeyAntenna, parser, jsonObject)
+			val data = parseItem(::MisskeyAntenna, jsonObject)
 			if(data != null) {
 				this.antenna_info = data
 				client.publishApiProgress("") // カラムヘッダの再表示

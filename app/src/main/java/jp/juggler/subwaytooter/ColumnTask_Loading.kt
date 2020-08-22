@@ -609,7 +609,7 @@ class ColumnTask_Loading(
 			client.request(path_base)
 		}
 		if(result != null) {
-			val src = parseList(::MisskeyAntenna, parser, result.jsonArray)
+			val src = parseList(::MisskeyAntenna, result.jsonArray)
 			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
 			this.list_tmp = addAll(null, src)
 		}

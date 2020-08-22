@@ -17,6 +17,7 @@ import okio.Sink
 import okio.Source
 import okio.Timeout
 import java.nio.ByteBuffer
+import kotlin.jvm.Throws
 import kotlin.math.max
 
 class ProgressResponseBody private constructor(
@@ -29,7 +30,7 @@ class ProgressResponseBody private constructor(
 		
 		// please append this for OkHttpClient.Builder#addInterceptor().
 		// ex) builder.addInterceptor( ProgressResponseBody.makeInterceptor() );
-		fun makeInterceptor() : Interceptor = object:Interceptor{
+		fun makeInterceptor() : Interceptor = object : Interceptor {
 			override fun intercept(chain : Interceptor.Chain) : Response {
 				val originalResponse = chain.proceed(chain.request())
 				
@@ -68,7 +69,62 @@ class ProgressResponseBody private constructor(
 		Make WrappedBufferedSource to capture BufferedSource.readByteArray().
 	 */
 	
-	private var wrappedSource : BufferedSource? = null
+	private val wrappedSource : BufferedSource by lazy {
+		val originalSource = originalBody.source()
+		
+		try {
+			// if it is RealBufferedSource, I can access to source public field via reflection.
+			val field_source = originalSource.javaClass.getField("source")
+			
+			// If there is the method, create the wrapper.
+			object : ForwardingBufferedSource(originalSource) {
+				
+				@Throws(IOException::class)
+				override fun readByteArray() : ByteArray {
+					/*
+						RealBufferedSource.readByteArray() does:
+						- buffer.writeAll(source);
+						- return buffer.readByteArray(buffer.size());
+						
+						We do same things using Reflection, with progress.
+					*/
+					
+					try {
+						val contentLength = originalBody.contentLength()
+						val buffer = originalSource.buffer
+						val source = field_source.get(originalSource) as Source?
+							?: throw IllegalArgumentException("source == null")
+						
+						// same thing of Buffer.writeAll(), with counting.
+						var nRead : Long = 0
+						callback(0, max(contentLength, 1))
+						while(true) {
+							val delta = source.read(buffer, 8192)
+							if(delta == - 1L) break
+							nRead += delta
+							if(nRead > 0) {
+								callback(nRead, max(contentLength, nRead))
+							}
+						}
+						// EOS時の進捗
+						callback(nRead, max(contentLength, nRead))
+						
+						return buffer.readByteArray()
+						
+					} catch(ex : Throwable) {
+						log.trace(ex)
+						log.e("readByteArray() failed. ")
+						return originalSource.readByteArray()
+					}
+					
+				}
+				
+			}
+		} catch(ex : Throwable) {
+			log.e("can't access to RealBufferedSource#source field.")
+			originalSource
+		}
+	}
 	
 	/*
 		then you can read response body's bytes() with progress callback.
@@ -88,68 +144,7 @@ class ProgressResponseBody private constructor(
 		return originalBody.contentLength()
 	}
 	
-	override fun source() : BufferedSource {
-		var ws = wrappedSource
-		if(ws == null) {
-			
-			val originalSource = originalBody.source()
-			
-			ws = try {
-				// if it is RealBufferedSource, I can access to source public field via reflection.
-				val field_source = originalSource.javaClass.getField("source")
-				
-				// If there is the method, create the wrapper.
-				object : ForwardingBufferedSource(originalSource) {
-					
-					@Throws(IOException::class)
-					override fun readByteArray() : ByteArray {
-						/*
-							RealBufferedSource.readByteArray() does:
-						    - buffer.writeAll(source);
-							- return buffer.readByteArray(buffer.size());
-							
-							We do same things using Reflection, with progress.
-						*/
-						
-						try {
-							val contentLength = originalBody.contentLength()
-							val buffer = originalSource.buffer
-							val source = field_source.get(originalSource) as Source?
-								?: throw IllegalArgumentException("source == null")
-							
-							// same thing of Buffer.writeAll(), with counting.
-							var nRead : Long = 0
-							callback(0, max(contentLength, 1))
-							while(true) {
-								val delta = source.read(buffer, 8192)
-								if(delta == - 1L) break
-								nRead += delta
-								if(nRead > 0) {
-									callback(nRead, max(contentLength, nRead))
-								}
-							}
-							// EOS時の進捗
-							callback(nRead, max(contentLength, nRead))
-							
-							return buffer.readByteArray()
-							
-						} catch(ex : Throwable) {
-							log.trace(ex)
-							log.e("readByteArray() failed. ")
-							return originalSource.readByteArray()
-						}
-						
-					}
-					
-				}
-			} catch(ex : Throwable) {
-				log.e("can't access to RealBufferedSource#source field.")
-				originalSource
-			}
-			wrappedSource = ws
-		}
-		return ws
-	}
+	override fun source() : BufferedSource = wrappedSource
 	
 	// To avoid double buffering, We have to make ForwardingBufferedSource.
 	internal open class ForwardingBufferedSource(

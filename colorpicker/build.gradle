@@ -19,7 +19,7 @@ android {
 dependencies {
   implementation "androidx.appcompat:appcompat:$appcompat_version"
 
-  implementation 'com.google.android:flexbox:1.1.0'
+  implementation 'com.google.android:flexbox:2.0.1'
 
 }
 

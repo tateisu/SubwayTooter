@@ -6,7 +6,7 @@ dependencies {
     //noinspection DifferentStdlibGradleVersion
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation "junit:junit:$junit_version"
 }
 
 sourceCompatibility = "1.7"

@@ -1091,12 +1091,10 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 							return opener.mimeType.toMediaType()
 						}
 						
-						@Throws(IOException::class)
 						override fun contentLength() : Long {
 							return size
 						}
 						
-						@Throws(IOException::class)
 						override fun writeTo(sink : BufferedSink) {
 							opener.open().use { inData ->
 								val tmp = ByteArray(4096)
@@ -1449,7 +1447,6 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		
 		val uri : Uri
 		
-		@Throws(IOException::class)
 		fun open() : InputStream
 		
 		fun deleteTempFile()
@@ -1502,7 +1499,6 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 							override val uri : Uri
 								get() = uriArg
 							
-							@Throws(IOException::class)
 							override fun open() = FileInputStream(temp_file)
 							
 							override fun deleteTempFile() {
@@ -1530,7 +1526,6 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			override val uri : Uri
 				get() = uriArg
 			
-			@Throws(IOException::class)
 			override fun open() : InputStream {
 				return contentResolver.openInputStream(uri) ?: error("openInputStream returns null")
 			}

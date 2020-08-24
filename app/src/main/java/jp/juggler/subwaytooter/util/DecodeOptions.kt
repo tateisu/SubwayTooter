@@ -2,6 +2,8 @@ package jp.juggler.subwaytooter.util
 
 import android.content.Context
 import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ReplacementSpan
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji
 import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
@@ -25,7 +27,7 @@ class DecodeOptions(
 	var enlargeEmoji : Float = 1f,
 	var forceHtml : Boolean = false, // force use HTML instead of Misskey Markdown
 	var mentionFullAcct : Boolean = false,
-	var mentions: ArrayList<TootMention>? = null
+	var mentions : ArrayList<TootMention>? = null
 ) {
 	
 	internal fun isMediaAttachment(url : String?) : Boolean {
@@ -38,23 +40,46 @@ class DecodeOptions(
 	}
 	
 	// OUTPUT
-	var highlightSound: HighlightWord? = null
-	var highlightSpeech: HighlightWord? = null
-	var highlightAny: HighlightWord? = null
+	var highlightSound : HighlightWord? = null
+	var highlightSpeech : HighlightWord? = null
+	var highlightAny : HighlightWord? = null
 	
 	////////////////////////
 	// decoder
 	
+	// AndroidのStaticLayoutはパラグラフ中に絵文字が沢山あると異常に遅いので、絵文字が連続して登場したら改行文字を挿入する
+	private fun SpannableStringBuilder.workaroundForEmojiLineBreak() : SpannableStringBuilder {
+		
+		val spans = getSpans(0, length, ReplacementSpan::class.java)
+		if(spans != null) {
+			val insertList = ArrayList<Int>()
+			spans.sortBy { getSpanStart(it) }
+			var repeatCount = 0
+			var preEnd : Int? = null
+			for(span in spans) {
+				val start = getSpanStart(span)
+				if(start != preEnd) {
+					repeatCount = 0
+				} else if(++ repeatCount >= 12) {
+					repeatCount = 0
+					insertList.add(start)
+				}
+				preEnd = getSpanEnd(span)
+			}
+			// 後ろから順に挿入する
+			insertList.reversed().forEach { insert(it, "\n") }
+		}
+		return this
+	}
+	
 	fun decodeHTML(html : String?) =
-		HTMLDecoder.decodeHTML(this, html)
+		HTMLDecoder.decodeHTML(this, html).workaroundForEmojiLineBreak()
 	
 	fun decodeEmoji(s : String?) : Spannable =
-		EmojiDecoder.decodeEmoji(this, s ?: "")
+		EmojiDecoder.decodeEmoji(this, s ?: "").workaroundForEmojiLineBreak()
 	
 	fun decodeEmojiNullable(s : String?) = when(s) {
 		null -> null
 		else -> EmojiDecoder.decodeEmoji(this, s)
 	}
-	
-	
 }

@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.util
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.util.SparseBooleanArray
@@ -348,7 +347,7 @@ object EmojiDecoder {
 	private val reNicoru = """\Anicoru\d*\z""".asciiPattern( Pattern.CASE_INSENSITIVE)
 	private val reHohoemi = """\Ahohoemi\d*\z""".asciiPattern( Pattern.CASE_INSENSITIVE)
 	
-	fun decodeEmoji(options : DecodeOptions, s : String) : Spannable {
+	fun decodeEmoji(options : DecodeOptions, s : String) : SpannableStringBuilder {
 		
 		val builder = EmojiStringBuilder(options)
 		

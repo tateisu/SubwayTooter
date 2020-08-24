@@ -2755,6 +2755,7 @@ class ActMain : AsyncActivity()
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	
+	@Suppress("BlockingMethodInNonBlockingContext")
 	private fun importAppData(uri : Uri?) {
 		uri ?: return
 		
@@ -2931,7 +2932,10 @@ class ActMain : AsyncActivity()
 		}
 		
 		var auto_cw = status.auto_cw
-		if(auto_cw != null && auto_cw.refActivity?.get() === this@ActMain && auto_cw.cell_width == nAutoCwCellWidth) {
+		if(auto_cw != null &&
+			auto_cw.refActivity?.get() === this@ActMain &&
+			auto_cw.cell_width == nAutoCwCellWidth
+		) {
 			// 以前に計算した値がまだ使える
 			return
 		}
@@ -2947,19 +2951,18 @@ class ActMain : AsyncActivity()
 		auto_cw.decoded_spoiler_text = null
 		
 		// テキストをレイアウトして行数を測定
-		
-		val lp = LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
-		val tv = TextView(this)
-		tv.layoutParams = lp
-		if(! timeline_font_size_sp.isNaN()) {
-			tv.textSize = timeline_font_size_sp
+		val tv = TextView(this).apply{
+			layoutParams = LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
+			if(! timeline_font_size_sp.isNaN())
+				textSize = timeline_font_size_sp
+			
+			val fv = timeline_spacing
+			if(fv != null) setLineSpacing(0f, fv)
+			
+			typeface = timeline_font
+			this.text = text
 		}
 		
-		val fv = timeline_spacing
-		if(fv != null) tv.setLineSpacing(0f, fv)
-		
-		tv.typeface = timeline_font
-		tv.text = text
 		tv.measure(
 			View.MeasureSpec.makeMeasureSpec(nAutoCwCellWidth, View.MeasureSpec.EXACTLY),
 			View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)

@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <ScrollView
@@ -619,7 +620,7 @@
                             android:layout_height="match_parent"
                             android:scaleType="center"
                             android:src="@drawable/ic_followed_by"
-                            android:tint="?attr/colorImageButtonAccent"
+                            app:tint="?attr/colorImageButtonAccent"
                             tools:ignore="ContentDescription" />
                     </FrameLayout>
 

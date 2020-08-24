@@ -53,7 +53,7 @@
             android:scaleType="center"
             android:src="@drawable/ic_order"
             android:visibility="gone"
-            android:tint="?attr/colorVectorDrawable"
+            app:tint="?attr/colorVectorDrawable"
             />
 
         <TextView

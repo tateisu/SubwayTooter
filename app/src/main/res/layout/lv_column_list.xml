@@ -64,7 +64,7 @@
             android:contentDescription="@string/drag_handle"
             android:scaleType="center"
             android:src="@drawable/ic_order"
-            android:tint="?attr/colorVectorDrawable"
+            app:tint="?attr/colorVectorDrawable"
             />
 
         <LinearLayout
@@ -94,7 +94,7 @@
                     android:layout_marginEnd="4dp"
                     android:id="@+id/ivColumnIcon"
                     android:importantForAccessibility="no"
-                    android:tint="?attr/colorVectorDrawable"
+                    app:tint="?attr/colorVectorDrawable"
                     />
                 <TextView
                     android:id="@+id/tvName"
@@ -111,7 +111,7 @@
                     android:contentDescription="@string/last_selection"
                     android:scaleType="center"
                     android:src="@drawable/ic_bookmark"
-                    android:tint="?attr/colorVectorDrawable"
+                    app:tint="?attr/colorVectorDrawable"
                     />
             </LinearLayout>
         </LinearLayout>

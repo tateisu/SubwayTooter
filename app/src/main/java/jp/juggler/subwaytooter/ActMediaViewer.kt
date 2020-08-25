@@ -511,7 +511,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				@Suppress("SameParameterValue") pixel_max : Int
 			) : Pair<Bitmap?, String?> {
 				
-				val orientation : Int? = ByteArrayInputStream(data).imageOrientation
+				val orientation : Int? = ByteArrayInputStream(data).imageOrientation()
 				
 				// detects image size
 				options.inJustDecodeBounds = true

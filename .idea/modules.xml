@@ -8,7 +8,6 @@
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="SubwayTooter/app" />
       <module fileurl="file://$PROJECT_DIR$/colorpicker/colorpicker.iml" filepath="$PROJECT_DIR$/colorpicker/colorpicker.iml" group="SubwayTooter/colorpicker" />
       <module fileurl="file://$PROJECT_DIR$/emoji/emoji.iml" filepath="$PROJECT_DIR$/emoji/emoji.iml" group="SubwayTooter/emoji" />
-      <module fileurl="file://$PROJECT_DIR$/exif/exif.iml" filepath="$PROJECT_DIR$/exif/exif.iml" group="SubwayTooter/exif" />
       <module fileurl="file://$PROJECT_DIR$/sample_apng/sample_apng.iml" filepath="$PROJECT_DIR$/sample_apng/sample_apng.iml" group="SubwayTooter/sample_apng" />
     </modules>
   </component>

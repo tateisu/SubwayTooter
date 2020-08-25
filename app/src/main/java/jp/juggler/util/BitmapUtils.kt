@@ -2,8 +2,9 @@ package jp.juggler.util
 
 import android.content.Context
 import android.graphics.*
+import    androidx.exifinterface.media.ExifInterface
 import android.net.Uri
-import it.sephiroth.android.library.exif2.ExifInterface
+//import it.sephiroth.android.library.exif2.ExifInterface
 import java.io.FileNotFoundException
 import java.io.InputStream
 import kotlin.math.max
@@ -11,16 +12,17 @@ import kotlin.math.sqrt
 
 private val log = LogCategory("BitmapUtils")
 
-val InputStream.imageOrientation : Int?
-	get() = try {
-		ExifInterface()
-			.readExif(
-				this@imageOrientation,
-				ExifInterface.Options.OPTION_IFD_0
-					or ExifInterface.Options.OPTION_IFD_1
-					or ExifInterface.Options.OPTION_IFD_EXIF
-			)
-			.getTagIntValue(ExifInterface.TAG_ORIENTATION)
+fun InputStream.imageOrientation() : Int? =
+	try {
+		ExifInterface(this)
+			//			.readExif(
+			//				this@imageOrientation,
+			//				ExifInterface.Options.OPTION_IFD_0
+			//					or ExifInterface.Options.OPTION_IFD_1
+			//					or ExifInterface.Options.OPTION_IFD_EXIF
+			//			)
+			.getAttributeInt(ExifInterface.TAG_ORIENTATION, - 1)
+			.takeIf { it >= 0 }
 	} catch(ex : Throwable) {
 		log.w(ex, "imageOrientation: exif parse failed.")
 		null
@@ -60,8 +62,10 @@ fun Matrix.resolveOrientation(orientation : Int?) : Matrix {
 enum class ResizeType {
 	// リサイズなし
 	None,
+	
 	// 長辺がsize以下になるようリサイズ
 	LongSide,
+	
 	// 平方ピクセルが size*size 以下になるようリサイズ
 	SquarePixel,
 }
@@ -104,7 +108,7 @@ fun createResizedBitmap(
 	try {
 		
 		val orientation : Int? = context.contentResolver.openInputStream(uri)?.use {
-			it.imageOrientation
+			it.imageOrientation()
 		}
 		
 		// 画像のサイズを調べる

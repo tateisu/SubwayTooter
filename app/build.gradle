@@ -91,10 +91,11 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-    implementation project(':exif')
+    // implementation project(':exif')
     implementation project(':colorpicker')
     implementation project(':emoji')
     implementation project(':apng_android')
+
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
 
@@ -106,6 +107,8 @@ dependencies {
 
     // PreferenceManager
     implementation "androidx.preference:preference-ktx:1.1.1"
+
+    implementation "androidx.exifinterface:exifinterface:1.2.0"
 
     // CustomTabs
     implementation "androidx.browser:browser:1.2.0"

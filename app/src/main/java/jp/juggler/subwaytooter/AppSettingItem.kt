@@ -947,6 +947,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		action(R.string.drawable_list) {
 			action = { startActivity(Intent(this, ActDrawableList::class.java)) }
 		}
+		sw(Pref.bpCheckBetaVersion, R.string.check_beta_release)
+		
 	}
 	
 	action(R.string.app_data_export) {

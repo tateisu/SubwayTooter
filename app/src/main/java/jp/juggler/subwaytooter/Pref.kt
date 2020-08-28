@@ -431,6 +431,12 @@ object Pref {
 		"EmojiPickerCloseOnSelected",
 		true
 	)
+	
+	val bpCheckBetaVersion = BooleanPref(
+		"CheckBetaVersion",
+		false
+	)
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)
@@ -558,9 +564,7 @@ object Pref {
 	val spBoostAlpha = StringPref("BoostAlpha", "60")
 	
 	val spScreenBottomPadding = StringPref("ScreenBottomPadding", "0")
-	
-	val spVersionNameWhenReleaseNoteTap = StringPref("VersionNameWhenReleaseNoteTap", "")
-	
+
 	val spPullNotificationCheckInterval = StringPref("PullNotificationCheckInterval", "15")
 	val spUserAgent = StringPref("UserAgent", "")
 	

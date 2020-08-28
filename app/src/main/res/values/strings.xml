@@ -1039,4 +1039,9 @@
     <string name="personal_notes_of">Personal notes of %1$s</string>
     <string name="custom_thumbnail">Custom thumbnail</string>
     <string name="close_emoji_picker_when_selected">Close emoji picker after selecting emoji</string>
+    <string name="new_version_available">New version available! %1$s</string>
+    <string name="app_name_with_version">%1$s %2$s</string>
+    <string name="release_note_with_assets">Release note (Please find the APK file in assets section.)</string>
+    <string name="release_note">Release note</string>
+    <string name="check_beta_release">Check beta release</string>
 </resources>

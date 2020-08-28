@@ -1,10 +1,15 @@
 package jp.juggler.subwaytooter
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.StateListDrawable
+import android.os.Handler
 import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.view.ViewGroup
@@ -17,26 +22,157 @@ import androidx.drawerlayout.widget.DrawerLayout
 import jp.juggler.subwaytooter.action.Action_Account
 import jp.juggler.subwaytooter.action.Action_App
 import jp.juggler.subwaytooter.action.Action_Instance
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.createColoredDrawable
-import jp.juggler.util.getAttributeColor
+import jp.juggler.subwaytooter.util.VersionString
+import jp.juggler.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.backgroundColor
+import java.lang.ref.WeakReference
 
 class SideMenuAdapter(
-	val activity : ActMain,
+	private val actMain : ActMain,
+	val handler : Handler,
 	navigationView : ViewGroup,
 	private val drawer : DrawerLayout
 ) : BaseAdapter() {
+	
+	companion object {
+		private val itemTypeCount = ItemType.values().size
+		
+		private var lastVersionView : WeakReference<TextView>? = null
+		
+		private var versionRow = SpannableStringBuilder("")
+		private fun getVersionRow() = versionRow
+		
+		private var releaseInfo : JsonObject? = null
+		
+		private fun checkVersion(appContext : Context, handler : Handler) {
+			val currentVersion = try {
+				val pInfo = appContext.packageManager.getPackageInfo(appContext.packageName, 0)
+				pInfo.versionName
+			} catch(ex : PackageManager.NameNotFoundException) {
+				"??"
+			}
+			
+			versionRow = SpannableStringBuilder().apply {
+				append(
+					appContext.getString(
+						R.string.app_name_with_version,
+						appContext.getString(R.string.app_name),
+						currentVersion
+					)
+				)
+			}
+			
+			fun afterGet() {
+				
+				versionRow = SpannableStringBuilder().apply {
+					
+					append(
+						appContext.getString(
+							R.string.app_name_with_version,
+							appContext.getString(R.string.app_name),
+							currentVersion
+						)
+					)
+					val newRelease = when(Pref.bpCheckBetaVersion(Pref.pref(appContext))){
+						false -> releaseInfo ?.jsonObject("stable")
+						else -> releaseInfo ?.jsonObject("beta")
+					}
+					
+					val newVersion = newRelease
+						?.string("name")
+						?.replace("""version\s*""".toRegex(RegexOption.IGNORE_CASE), "")
+						?.trim()
+					
+					if( newVersion?.isNotEmpty() != true || VersionString(currentVersion) >= VersionString(newVersion) ) {
+						val url =  "https://github.com/tateisu/SubwayTooter/releases"
+						append("\n")
+						val start = length
+						append(appContext.getString(R.string.release_note))
+						setSpan(
+							object:ClickableSpan() {
+								override fun onClick(widget : View) {
+									App1.openBrowser(widget.activity as ActMain, url)
+								}
+								
+								override fun updateDrawState(ds : TextPaint) {
+									super.updateDrawState(ds)
+									ds.isUnderlineText = false
+								}
+							},
+							start, length,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+						)
+					} else {
+						
+						append("\n")
+						var start = length
+						append(
+							appContext.getString(
+								R.string.new_version_available,
+								newVersion
+							)
+						)
+						setSpan(
+							ForegroundColorSpan(
+								getAttributeColor(
+									appContext,
+									R.attr.colorRegexFilterError
+								)
+							),
+							start, length,
+							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+						)
+						
+						newRelease.string("html_url")?.let{url->
+							append("\n")
+							start = length
+							append(appContext.getString(R.string.release_note_with_assets))
+							setSpan(
+								object:ClickableSpan() {
+									override fun onClick(widget : View) {
+										App1.openBrowser(widget.activity as ActMain, url)
+									}
+									
+									override fun updateDrawState(ds : TextPaint) {
+										super.updateDrawState(ds)
+										ds.isUnderlineText = false
+									}
+								},
+								start, length,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+							)
+						}
+					}
+				}
+				handler.post { lastVersionView?.get()?.let { it.text = versionRow } }
+			}
+			
+			val lastUpdated = releaseInfo?.string("updated_at")?.let { TootStatus.parseTime(it) }
+			if(lastUpdated != null && System.currentTimeMillis() - lastUpdated < 86400000L) {
+				afterGet()
+			} else {
+				GlobalScope.launch(Dispatchers.IO) {
+					val json =
+						App1.getHttpCached("https://mastodon-msg.juggler.jp/appVersion/appVersion.json")
+							?.decodeUTF8()?.decodeJsonObject()
+					if(json != null) {
+						releaseInfo = json
+						afterGet()
+					}
+				}
+			}
+		}
+		
+	}
 	
 	private enum class ItemType(val id : Int) {
 		IT_NORMAL(0),
 		IT_GROUP_HEADER(1),
 		IT_DIVIDER(2),
 		IT_VERSION(3)
-	}
-	
-	companion object {
-		private val itemTypeCount = ItemType.values().size
 	}
 	
 	private class Item(
@@ -62,6 +198,9 @@ class SideMenuAdapter(
 	
 	private val list = arrayOf(
 		
+		Item(icon = R.drawable.ic_info, title = 1) ,
+		
+		Item(),
 		Item(title = R.string.account),
 		
 		Item(title = R.string.account_add, icon = R.drawable.ic_account_add) {
@@ -220,10 +359,6 @@ class SideMenuAdapter(
 			)
 		},
 		
-		Item(icon = R.drawable.ic_info, title = 1) {
-			App1.openCustomTab(this, "https://github.com/tateisu/SubwayTooter/releases")
-		},
-		
 		Item(icon = R.drawable.ic_info, title = R.string.oss_license) {
 			startActivity(Intent(this, ActOSSLicense::class.java))
 		},
@@ -233,14 +368,7 @@ class SideMenuAdapter(
 		}
 	)
 	
-	private val iconColor = getAttributeColor(activity, R.attr.colorTimeSmall)
-	
-	private val currentVersion = try {
-		val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
-		pInfo.versionName
-	} catch(ex : PackageManager.NameNotFoundException) {
-		"??"
-	}
+	private val iconColor = getAttributeColor(actMain, R.attr.colorTimeSmall)
 	
 	override fun getCount() : Int = list.size
 	override fun getItem(position : Int) : Any = list[position]
@@ -254,7 +382,7 @@ class SideMenuAdapter(
 		parent : ViewGroup?,
 		resId : Int
 	) : T =
-		(view ?: activity.layoutInflater.inflate(resId, parent, false))
+		(view ?: actMain.layoutInflater.inflate(resId, parent, false))
 			as? T ?: error("invalid view type! ${T::class.java.simpleName}")
 	
 	override fun getView(position : Int, view : View?, parent : ViewGroup?) : View =
@@ -263,97 +391,67 @@ class SideMenuAdapter(
 				ItemType.IT_DIVIDER ->
 					viewOrInflate(view, parent, R.layout.lv_sidemenu_separator)
 				ItemType.IT_GROUP_HEADER ->
-					viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_group)
-						.apply {
-							text = activity.getString(title)
-						}
+					viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_group).apply {
+						text = actMain.getString(title)
+					}
 				ItemType.IT_NORMAL ->
-					viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item)
-						.apply {
-							isAllCaps = false
-							text = activity.getString(title)
-							val drawable = createColoredDrawable(activity, icon, iconColor, 1f)
-							setCompoundDrawablesRelativeWithIntrinsicBounds(
-								drawable,
-								null,
-								null,
-								null
-							)
-							
-							setOnClickListener {
-								action(activity)
-								drawer.closeDrawer(GravityCompat.START)
-							}
-						}
-				ItemType.IT_VERSION ->
 					viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item).apply {
-						text = SpannableStringBuilder().apply {
-							val lastVersion = Pref.spVersionNameWhenReleaseNoteTap(activity.pref)
-							if(lastVersion.isNotEmpty() && lastVersion != currentVersion) {
-								append(
-									activity.getString(
-										R.string.release_notes_updated,
-										lastVersion,
-										currentVersion
-									)
-								)
-								setSpan(
-									ForegroundColorSpan(
-										getAttributeColor(
-											activity,
-											R.attr.colorRegexFilterError
-										)
-									),
-									0, length,
-									Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-								)
-							} else {
-								append(
-									activity.getString(
-										R.string.release_notes_latest,
-										currentVersion
-									)
-								)
-							}
-						}
 						isAllCaps = false
-						val drawable = createColoredDrawable(activity, icon, iconColor, 1f)
+						text = actMain.getString(title)
+						val drawable = createColoredDrawable(actMain, icon, iconColor, 1f)
 						setCompoundDrawablesRelativeWithIntrinsicBounds(
 							drawable,
 							null,
 							null,
 							null
 						)
+						
 						setOnClickListener {
-							activity.pref.edit()
-								.put(Pref.spVersionNameWhenReleaseNoteTap, currentVersion)
-								.apply()
-							notifyDataSetChanged()
-							action(activity)
+							action(actMain)
 							drawer.closeDrawer(GravityCompat.START)
 						}
+					}
+				ItemType.IT_VERSION ->
+					viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item).apply {
+						lastVersionView = WeakReference(this)
+						movementMethod = LinkMovementMethod.getInstance();
+						textSize = 18f
+						isAllCaps = false
+						background= null
+						//						val drawable = createColoredDrawable(actMain, icon, iconColor, 1f)
+						//						setCompoundDrawablesRelativeWithIntrinsicBounds(
+						//							drawable,
+						//							null,
+						//							null,
+						//							null
+						//						)
+
+						text = getVersionRow()
 					}
 			}
 		}
 	
 	init {
-		ListView(activity).apply {
+		checkVersion(actMain.applicationContext, handler)
+		
+		ListView(actMain).apply {
 			adapter = this@SideMenuAdapter
 			layoutParams = FrameLayout.LayoutParams(
 				FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT
 			)
-			backgroundColor = getAttributeColor(activity, R.attr.colorWindowBackground)
+			backgroundColor = getAttributeColor(actMain, R.attr.colorWindowBackground)
 			selector = StateListDrawable()
 			divider = null
 			dividerHeight = 0
 			
-			val pad_tb = (activity.density * 12f + 0.5f).toInt()
+			val pad_tb = (actMain.density * 12f + 0.5f).toInt()
 			setPadding(0, pad_tb, 0, pad_tb)
 			clipToPadding = false
 			scrollBarStyle = ListView.SCROLLBARS_OUTSIDE_OVERLAY
 			
 			navigationView.addView(this)
 		}
+		
 	}
 }

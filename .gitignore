@@ -4,6 +4,8 @@
 /.idea/workspace.xml
 /.idea/libraries
 /.idea/assetWizardSettings.xml
+/.idea/jarRepositories.xml
+
 .DS_Store
 /build
 /captures

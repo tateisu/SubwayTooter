@@ -1340,7 +1340,7 @@ class ActMain : AsyncActivity()
 		
 		
 		
-		SideMenuAdapter(this, findViewById(R.id.nav_view), drawer)
+		SideMenuAdapter(this, handler, findViewById(R.id.nav_view), drawer)
 		
 		btnMenu = findViewById(R.id.btnMenu)
 		btnToot = findViewById(R.id.btnToot)

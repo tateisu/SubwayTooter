@@ -1032,4 +1032,9 @@
     <string name="personal_notes_of">%1$sに関する覚え書き</string>
     <string name="custom_thumbnail">カスタムサムネイル</string>
     <string name="close_emoji_picker_when_selected">絵文字を選択したら絵文字ピッカーを閉じる</string>
+    <string name="new_version_available">新バージョンがあります %1$s</string>
+    <string name="app_name_with_version">%1$s %2$s</string>
+    <string name="release_note_with_assets">更新履歴 (AssetsセクションにAPKファイルがあります)</string>
+    <string name="release_note">更新履歴</string>
+    <string name="check_beta_release">ベータ版を確認する</string>
 </resources>

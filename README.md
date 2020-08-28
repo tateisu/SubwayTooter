@@ -23,7 +23,7 @@ Mastodon client app for Android phone/tablet.
 - Fastest support for Mastodon's new feature
 
 ## Install
-- Play store: https://play.google.com/store/apps/details?id=jp.juggler.subwaytooter
+- get APK file in Assets section on each release. https://github.com/tateisu/SubwayTooter/releases
 - IzzyOnDroid: https://android.izzysoft.de/repo/apk/jp.juggler.subwaytooter
 
 ## Author
@@ -38,5 +38,4 @@ Mastodon client app for Android phone/tablet.
 ## Donation?
 - Amazon(jp) wish list http://amzn.asia/axmNivM
 - Fantia https://fantia.jp/fanclubs/8239
-- Kyash ID: tateisu
 

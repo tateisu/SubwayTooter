@@ -56,18 +56,6 @@
             android:text="@string/please_rate"
             />
 
-        <Button
-            android:id="@+id/btnRate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/btn_bg_transparent_round6dp"
-            android:padding="8dp"
-            android:textAllCaps="false"
-            tools:text="rate_on_store"
-            android:layout_marginStart="32dp"
-            android:gravity="start|center_vertical"
-            />
-
         <View
             android:layout_width="0dp"
             android:layout_height="8dp"

@@ -24,9 +24,6 @@ class ActAbout : AppCompatActivity() {
 		
 		const val EXTRA_SEARCH = "search"
 		
-		const val url_store =
-			"https://play.google.com/store/apps/details?id=jp.juggler.subwaytooter"
-		
 		const val developer_acct = "tateisu@mastodon.juggler.jp"
 		const val official_acct = "SubwayTooter@mastodon.juggler.jp"
 		
@@ -100,7 +97,6 @@ class ActAbout : AppCompatActivity() {
 		) { searchAcct(official_acct) }
 		
 		
-		setButton(R.id.btnRate, url_store) { openUrl(url_store) }
 		setButton(R.id.btnReleaseNote, url_release) { openUrl(url_release) }
 		setButton(R.id.btnIconDesign, url_futaba) { openUrl(url_futaba) }
 		setButton(R.id.btnWeblate, getString(R.string.please_help_translation) ) { openUrl(url_weblate) }

@@ -29,8 +29,6 @@ class ActAbout : AppCompatActivity() {
 		
 		const val url_release = "https://github.com/tateisu/SubwayTooter/releases"
 		
-		const val url_futaba = "https://www.instagram.com/hinomoto_hutaba/"
-		
 		const val url_weblate = "https://hosted.weblate.org/projects/subway-tooter/"
 		
 		// git log --pretty=format:"%an %s" |grep "Translated using Weblate"|sort|uniq
@@ -71,7 +69,7 @@ class ActAbout : AppCompatActivity() {
 			log.trace(ex, "getPackageInfo failed.")
 		}
 		
-		fun setButton(btnId : Int, caption : String, onClick : () -> Unit) {
+		fun setButton(btnId : Int, caption : String, onClick : () -> Unit ) {
 			val b : Button = findViewById(btnId)
 			b.text = caption
 			b.setOnClickListener { onClick() }
@@ -98,7 +96,7 @@ class ActAbout : AppCompatActivity() {
 		
 		
 		setButton(R.id.btnReleaseNote, url_release) { openUrl(url_release) }
-		setButton(R.id.btnIconDesign, url_futaba) { openUrl(url_futaba) }
+		// setButton(R.id.btnIconDesign, url_futaba) { openUrl(url_futaba) }
 		setButton(R.id.btnWeblate, getString(R.string.please_help_translation) ) { openUrl(url_weblate) }
 		
 		val ll = findViewById<LinearLayout>(R.id.llContributors)

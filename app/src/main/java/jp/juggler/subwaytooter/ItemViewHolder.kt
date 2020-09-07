@@ -295,6 +295,7 @@ internal class ItemViewHolder(
 			tvConversationParticipants.setLineSpacing(0f, spacing)
 			tvBoosted.setLineSpacing(0f, spacing)
 			tvReply.setLineSpacing(0f, spacing)
+			tvLastStatusAt.setLineSpacing(0f, spacing)
 		}
 		
 		var s = activity.avatarIconSize

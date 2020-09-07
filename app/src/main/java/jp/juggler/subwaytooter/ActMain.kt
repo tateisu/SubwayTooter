@@ -53,18 +53,17 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class ActMain : AsyncActivity()
-	, Column.Callback
-	, View.OnClickListener
-	, ViewPager.OnPageChangeListener
-	, DrawerLayout.DrawerListener {
+class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
+	ViewPager.OnPageChangeListener, DrawerLayout.DrawerListener {
 	
 	class PhoneEnv {
+		
 		internal lateinit var pager : MyViewPager
 		internal lateinit var pager_adapter : ColumnPagerAdapter
 	}
 	
 	class TabletEnv {
+		
 		internal lateinit var tablet_pager : RecyclerView
 		internal lateinit var tablet_pager_adapter : TabletColumnPagerAdapter
 		internal lateinit var tablet_layout_manager : LinearLayoutManager
@@ -925,8 +924,8 @@ class ActMain : AsyncActivity()
 				this,
 				bAllowPseudo = false,
 				bAuto = true,
-				message = getString(R.string.account_picker_toot)
-				, dismiss_callback = { sent_intent2 = null }
+				message = getString(R.string.account_picker_toot),
+				dismiss_callback = { sent_intent2 = null }
 			) { ai ->
 				sent_intent2 = null
 				ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id, sent_intent = intent)
@@ -1936,8 +1935,8 @@ class ActMain : AsyncActivity()
 					val result =
 						client.authentication2Misskey(client_name, token, ti.misskeyVersion)
 					this.ta = TootParser(
-						this@ActMain
-						, LinkHelper.newLinkHelper(instance, misskeyVersion = ti.misskeyVersion)
+						this@ActMain,
+						LinkHelper.newLinkHelper(instance, misskeyVersion = ti.misskeyVersion)
 					).account(result?.jsonObject)
 					return result
 					
@@ -2000,8 +1999,7 @@ class ActMain : AsyncActivity()
 					val client_name = Pref.spClientName(this@ActMain)
 					val result = client.authentication2(client_name, code)
 					this.ta = TootParser(
-						this@ActMain
-						, LinkHelper.newLinkHelper(instance)
+						this@ActMain, LinkHelper.newLinkHelper(instance)
 					).account(result?.jsonObject)
 					return result
 				}
@@ -2531,23 +2529,33 @@ class ActMain : AsyncActivity()
 	}
 	
 	private fun showFooterColor() {
+		
 		val footer_button_bg_color = Pref.ipFooterButtonBgColor(pref)
 		val footer_button_fg_color = Pref.ipFooterButtonFgColor(pref)
 		val footer_tab_bg_color = Pref.ipFooterTabBgColor(pref)
 		val footer_tab_divider_color = Pref.ipFooterTabDividerColor(pref)
 		val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
 		
-		val colorBg = footer_button_bg_color.notZero() ?: getAttributeColor(
-			this,
-			R.attr.colorStatusButtonsPopupBg
-		)
-		val colorRipple =
-			footer_button_fg_color.notZero() ?: getAttributeColor(this, R.attr.colorRippleEffect)
-		btnMenu.backgroundDrawable = getAdaptiveRippleDrawableRound(this, colorBg, colorRipple)
-		btnToot.backgroundDrawable = getAdaptiveRippleDrawableRound(this, colorBg, colorRipple)
-		btnQuickToot.backgroundDrawable = getAdaptiveRippleDrawableRound(this, colorBg, colorRipple)
+		val colorColumnStripBackground = footer_tab_bg_color.notZero()
+			?: getAttributeColor(this, R.attr.colorColumnStripBackground)
+		
+		svColumnStrip.setBackgroundColor(colorColumnStripBackground)
+		llQuickTootBar.setBackgroundColor(colorColumnStripBackground)
+		
+		val colorButtonBg = footer_button_bg_color.notZero()
+			?: colorColumnStripBackground
+		
+		val colorButtonFg = footer_button_fg_color.notZero()
+			?: getAttributeColor(this, R.attr.colorRippleEffect)
+		
+		btnMenu.backgroundDrawable =
+			getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
+		btnToot.backgroundDrawable =
+			getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
+		btnQuickToot.backgroundDrawable =
+			getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
 		btnQuickTootMenu.backgroundDrawable =
-			getAdaptiveRippleDrawableRound(this, colorBg, colorRipple)
+			getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
 		
 		val csl = ColorStateList.valueOf(
 			footer_button_fg_color.notZero()
@@ -2558,17 +2566,13 @@ class ActMain : AsyncActivity()
 		btnQuickToot.imageTintList = csl
 		btnQuickTootMenu.imageTintList = csl
 		
-		var c = footer_tab_bg_color.notZero()
-			?: getAttributeColor(this, R.attr.colorColumnStripBackground)
-		svColumnStrip.setBackgroundColor(c)
-		llQuickTootBar.setBackgroundColor(c)
-		
-		c = footer_tab_divider_color.notZero()
-			?: getAttributeColor(this, R.attr.colorImageButton)
+		val c = footer_tab_divider_color.notZero()
+			?: colorColumnStripBackground
 		vFooterDivider1.setBackgroundColor(c)
 		vFooterDivider2.setBackgroundColor(c)
 		
-		llColumnStrip.indicatorColor = footer_tab_indicator_color
+		llColumnStrip.indicatorColor = footer_tab_indicator_color.notZero()
+			?: getAttributeColor(this, R.attr.colorAccent)
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -2951,8 +2955,9 @@ class ActMain : AsyncActivity()
 		auto_cw.decoded_spoiler_text = null
 		
 		// テキストをレイアウトして行数を測定
-		val tv = TextView(this).apply{
-			layoutParams = LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
+		val tv = TextView(this).apply {
+			layoutParams =
+				LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
 			if(! timeline_font_size_sp.isNaN())
 				textSize = timeline_font_size_sp
 			

@@ -563,7 +563,7 @@ object Pref {
 	val spRoundRatio = StringPref("round_ratio", "33")
 	val spBoostAlpha = StringPref("BoostAlpha", "60")
 	
-	val spScreenBottomPadding = StringPref("ScreenBottomPadding", "0")
+	val spScreenBottomPadding = StringPref("ScreenBottomPadding", "8")
 
 	val spPullNotificationCheckInterval = StringPref("PullNotificationCheckInterval", "15")
 	val spUserAgent = StringPref("UserAgent", "")

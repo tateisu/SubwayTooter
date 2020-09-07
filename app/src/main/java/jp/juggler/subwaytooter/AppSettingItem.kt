@@ -11,6 +11,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.widget.AppCompatImageView
 import jp.juggler.subwaytooter.action.CustomShareTarget
 import jp.juggler.util.*
+import org.jetbrains.anko.backgroundDrawable
 
 enum class SettingType(val id : Int) {
 	Path(0),
@@ -843,12 +844,6 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 			AppSettingItem.SAMPLE_FOOTER =
 				sample(R.layout.setting_sample_footer) { activity, viewRoot ->
 					val pref = activity.pref
-					val footer_button_bg_color = Pref.ipFooterButtonBgColor(pref)
-					val footer_button_fg_color = Pref.ipFooterButtonFgColor(pref)
-					val footer_tab_bg_color = Pref.ipFooterTabBgColor(pref)
-					val footer_tab_divider_color = Pref.ipFooterTabDividerColor(pref)
-					val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
-					
 					val ivFooterToot : AppCompatImageView = viewRoot.findViewById(R.id.ivFooterToot)
 					val ivFooterMenu : AppCompatImageView = viewRoot.findViewById(R.id.ivFooterMenu)
 					val llFooterBG : View = viewRoot.findViewById(R.id.llFooterBG)
@@ -856,19 +851,27 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 					val vFooterDivider2 : View = viewRoot.findViewById(R.id.vFooterDivider2)
 					val vIndicator : View = viewRoot.findViewById(R.id.vIndicator)
 					
-					val colorBg = footer_button_bg_color.notZero() ?: getAttributeColor(
-						activity,
-						R.attr.colorStatusButtonsPopupBg
-					)
-					val colorRipple =
-						footer_button_fg_color.notZero() ?: getAttributeColor(
-							activity,
-							R.attr.colorRippleEffect
-						)
-					ivFooterToot.background =
-						getAdaptiveRippleDrawableRound(activity, colorBg, colorRipple)
-					ivFooterMenu.background =
-						getAdaptiveRippleDrawableRound(activity, colorBg, colorRipple)
+					val footer_button_bg_color = Pref.ipFooterButtonBgColor(pref)
+					val footer_button_fg_color = Pref.ipFooterButtonFgColor(pref)
+					val footer_tab_bg_color = Pref.ipFooterTabBgColor(pref)
+					val footer_tab_divider_color = Pref.ipFooterTabDividerColor(pref)
+					val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
+					
+					val colorColumnStripBackground = footer_tab_bg_color.notZero()
+						?: getAttributeColor(activity, R.attr.colorColumnStripBackground)
+					
+					llFooterBG.setBackgroundColor(colorColumnStripBackground)
+					
+					val colorButtonBg = footer_button_bg_color.notZero()
+						?: colorColumnStripBackground
+					
+					val colorButtonFg = footer_button_fg_color.notZero()
+						?: getAttributeColor(activity, R.attr.colorRippleEffect)
+					
+					ivFooterMenu.backgroundDrawable =
+						getAdaptiveRippleDrawableRound(activity, colorButtonBg, colorButtonFg)
+					ivFooterToot.backgroundDrawable =
+						getAdaptiveRippleDrawableRound(activity, colorButtonBg, colorButtonFg)
 					
 					val csl = ColorStateList.valueOf(
 						footer_button_fg_color.notZero()
@@ -877,16 +880,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 					ivFooterToot.imageTintList = csl
 					ivFooterMenu.imageTintList = csl
 					
-					llFooterBG.setBackgroundColor(
-						footer_tab_bg_color.notZero()
-							?: getAttributeColor(activity, R.attr.colorColumnStripBackground)
-					)
-					
-					val c =
-						footer_tab_divider_color.notZero() ?: getAttributeColor(
-							activity,
-							R.attr.colorImageButton
-						)
+					val c = footer_tab_divider_color.notZero()
+						?: colorColumnStripBackground
 					vFooterDivider1.setBackgroundColor(c)
 					vFooterDivider2.setBackgroundColor(c)
 					

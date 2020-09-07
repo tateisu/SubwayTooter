@@ -12,6 +12,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.showToast
 
 object ReportForm {
@@ -33,7 +34,7 @@ object ReportForm {
 		
 		val cbForward : CheckBox = view.findViewById(R.id.cbForward)
 		val tvForwardDesc:TextView = view.findViewById(R.id.tvForwardDesc)
-		val canForward = !access_info.matchHost( who.apDomain)
+		val canForward = !access_info.matchHost( who)
 		
 		cbForward.isChecked = false
 		if(!canForward){

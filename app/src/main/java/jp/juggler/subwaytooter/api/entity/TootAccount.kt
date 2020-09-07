@@ -14,6 +14,7 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
+import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.util.*
 import java.util.*
@@ -143,9 +144,10 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 
 			this.apDomain = apiHost // FIXME apiHostとapDomainが異なる場合はMisskeyだとどうなの…？
 			
+			@Suppress("LeakingThis")
 			this.acct = when {
 				// アクセス元から見て内部ユーザなら short acct
-				parser.linkHelper.matchHost(this.apDomain) -> Acct.parse(username)
+				parser.linkHelper.matchHost(this) -> Acct.parse(username)
 				
 				// アクセス元から見て外部ユーザならfull acct
 				else -> Acct.parse(username, apDomain)

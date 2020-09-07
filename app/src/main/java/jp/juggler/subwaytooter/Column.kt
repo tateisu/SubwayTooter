@@ -14,6 +14,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.ScrollPosition
+import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.*
 import okhttp3.Handshake
 import org.jetbrains.anko.backgroundDrawable

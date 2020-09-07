@@ -40,19 +40,30 @@ class SideMenuAdapter(
 ) : BaseAdapter() {
 	
 	companion object {
+		
 		private val itemTypeCount = ItemType.values().size
 		
 		private var lastVersionView : WeakReference<TextView>? = null
 		
 		private var versionRow = SpannableStringBuilder("")
-		private fun getVersionRow() = versionRow
 		
 		private var releaseInfo : JsonObject? = null
 		
+		private fun clickableSpan(url : String) =
+			object : ClickableSpan() {
+				override fun onClick(widget : View) {
+					App1.openBrowser(widget.activity as ActMain, url)
+				}
+				
+				override fun updateDrawState(ds : TextPaint) {
+					super.updateDrawState(ds)
+					ds.isUnderlineText = false
+				}
+			}
+		
 		private fun checkVersion(appContext : Context, handler : Handler) {
 			val currentVersion = try {
-				val pInfo = appContext.packageManager.getPackageInfo(appContext.packageName, 0)
-				pInfo.versionName
+				appContext.packageManager.getPackageInfo(appContext.packageName, 0).versionName
 			} catch(ex : PackageManager.NameNotFoundException) {
 				"??"
 			}
@@ -78,33 +89,26 @@ class SideMenuAdapter(
 							currentVersion
 						)
 					)
-					val newRelease = when(Pref.bpCheckBetaVersion(Pref.pref(appContext))){
-						false -> releaseInfo ?.jsonObject("stable")
-						else -> releaseInfo ?.jsonObject("beta")
+					val newRelease = when(Pref.bpCheckBetaVersion(Pref.pref(appContext))) {
+						false -> releaseInfo?.jsonObject("stable")
+						else -> releaseInfo?.jsonObject("beta")
 					}
 					
-					val newVersion = newRelease
-						?.string("name")
-						?.replace("""version\s*""".toRegex(RegexOption.IGNORE_CASE), "")
-						?.trim()
+					val newVersion =
+						(newRelease?.string("name")?.notEmpty() ?: newRelease?.string("tag_name"))
+							?.replace("""(v|version)\s*""".toRegex(RegexOption.IGNORE_CASE), "")
+							?.trim()
 					
-					if( newVersion?.isNotEmpty() != true || VersionString(currentVersion) >= VersionString(newVersion) ) {
-						val url =  "https://github.com/tateisu/SubwayTooter/releases"
+					if(newVersion == null || newVersion.isEmpty() || VersionString(currentVersion) >= VersionString(
+							newVersion
+						)) {
+						val url = "https://github.com/tateisu/SubwayTooter/releases"
 						append("\n")
 						val start = length
 						append(appContext.getString(R.string.release_note))
 						setSpan(
-							object:ClickableSpan() {
-								override fun onClick(widget : View) {
-									App1.openBrowser(widget.activity as ActMain, url)
-								}
-								
-								override fun updateDrawState(ds : TextPaint) {
-									super.updateDrawState(ds)
-									ds.isUnderlineText = false
-								}
-							},
-							start, length,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+							clickableSpan(url),
+							start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
 						)
 					} else {
 						
@@ -127,27 +131,18 @@ class SideMenuAdapter(
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
 						)
 						
-						newRelease.string("html_url")?.let{url->
+						newRelease?.string("html_url")?.let { url ->
 							append("\n")
 							start = length
 							append(appContext.getString(R.string.release_note_with_assets))
 							setSpan(
-								object:ClickableSpan() {
-									override fun onClick(widget : View) {
-										App1.openBrowser(widget.activity as ActMain, url)
-									}
-									
-									override fun updateDrawState(ds : TextPaint) {
-										super.updateDrawState(ds)
-										ds.isUnderlineText = false
-									}
-								},
-								start, length,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+								clickableSpan(url),
+								start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
 							)
 						}
 					}
 				}
-				handler.post { lastVersionView?.get()?.let { it.text = versionRow } }
+				handler.post { lastVersionView?.get()?.text = versionRow }
 			}
 			
 			val lastUpdated = releaseInfo?.string("updated_at")?.let { TootStatus.parseTime(it) }
@@ -165,7 +160,6 @@ class SideMenuAdapter(
 				}
 			}
 		}
-		
 	}
 	
 	private enum class ItemType(val id : Int) {
@@ -181,7 +175,7 @@ class SideMenuAdapter(
 		val action : ActMain.() -> Unit = {}
 	) {
 		
-		internal val itemType : ItemType
+		val itemType : ItemType
 			get() = when {
 				title == 0 -> ItemType.IT_DIVIDER
 				title == 1 -> ItemType.IT_VERSION
@@ -198,7 +192,7 @@ class SideMenuAdapter(
 	
 	private val list = arrayOf(
 		
-		Item(icon = R.drawable.ic_info, title = 1) ,
+		Item(icon = R.drawable.ic_info, title = 1),
 		
 		Item(),
 		Item(title = R.string.account),
@@ -411,22 +405,15 @@ class SideMenuAdapter(
 							drawer.closeDrawer(GravityCompat.START)
 						}
 					}
+				
 				ItemType.IT_VERSION ->
 					viewOrInflate<TextView>(view, parent, R.layout.lv_sidemenu_item).apply {
 						lastVersionView = WeakReference(this)
-						movementMethod = LinkMovementMethod.getInstance();
+						movementMethod = LinkMovementMethod.getInstance()
 						textSize = 18f
 						isAllCaps = false
-						background= null
-						//						val drawable = createColoredDrawable(actMain, icon, iconColor, 1f)
-						//						setCompoundDrawablesRelativeWithIntrinsicBounds(
-						//							drawable,
-						//							null,
-						//							null,
-						//							null
-						//						)
-
-						text = getVersionRow()
+						background = null
+						text = versionRow
 					}
 			}
 		}
@@ -452,6 +439,5 @@ class SideMenuAdapter(
 			
 			navigationView.addView(this)
 		}
-		
 	}
 }

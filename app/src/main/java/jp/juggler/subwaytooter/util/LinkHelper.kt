@@ -25,9 +25,7 @@ interface LinkHelper {
 	val isMastodon : Boolean
 		get() = misskeyVersion <= 0
 	
-	fun matchHost(src : String?) = apiHost.match(src) || apDomain.match(src)
-	fun matchHost(src : Host?) = apiHost == src || apDomain == src
-	
+
 	// user とか user@host とかを user@host に変換する
 	// nullや空文字列なら ?@? を返す
 	fun getFullAcct(src : Acct?) : Acct = when {
@@ -57,6 +55,17 @@ interface LinkHelper {
 		}
 	}
 }
+
+fun LinkHelper.matchHost(src : String?) = apiHost.match(src) || apDomain.match(src)
+fun LinkHelper.matchHost(src : Host?) = apiHost == src || apDomain == src
+fun LinkHelper.matchHost(src : LinkHelper) =
+	apiHost == src.apiHost || apDomain == src.apDomain ||
+		apDomain == src.apiHost || apiHost == src.apDomain
+
+fun LinkHelper.matchHost(src:TootAccount) =
+	apiHost == src.apiHost || apDomain == src.apDomain ||
+		apDomain == src.apiHost || apiHost == src.apDomain
+	
 
 // user や user@host から user@host を返す
 fun getFullAcctOrNull(

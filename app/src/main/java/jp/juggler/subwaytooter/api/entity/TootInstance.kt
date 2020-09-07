@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.VersionString
+import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.JsonObject
 import jp.juggler.util.asciiPattern
 import jp.juggler.util.groupEx

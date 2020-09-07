@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
+import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.*
 import okhttp3.Request
 import java.util.*

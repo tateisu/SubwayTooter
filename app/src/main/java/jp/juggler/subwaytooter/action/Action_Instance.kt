@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.*
 import java.util.*
 
@@ -266,7 +267,7 @@ object Action_Instance {
 				a.isMisskey -> continue@label
 				
 				// 閲覧アカウントとホスト名が同じならステータスIDの変換が必要ない
-				a.matchHost(access_info.apDomain) -> {
+				a.matchHost(access_info) -> {
 					if(! allowPseudo && a.isPseudo) continue@label
 					account_list1.add(a)
 				}
@@ -288,7 +289,7 @@ object Action_Instance {
 				message = "select account to read timeline",
 				accountListArg = account_list1
 			) { ai ->
-				if(! ai.isNA && ai.matchHost(access_info.apDomain)) {
+				if(! ai.isNA && ai.matchHost(access_info)) {
 					timelinePublicAround2(activity, ai, pos, status.id, type)
 				} else {
 					timelinePublicAround3(activity, ai, pos, status, type)

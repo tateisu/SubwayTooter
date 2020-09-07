@@ -17,6 +17,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.TootApiResultCallback
+import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.*
 import okhttp3.Request
 
@@ -55,7 +56,7 @@ object Action_User {
 						TootApiResult()
 					}
 				
-				val whoId = if(access_info.matchHost(whoAccessInfo.apDomain) ) {
+				val whoId = if(access_info.matchHost(whoAccessInfo) ) {
 					whoArg.id
 				} else {
 					val (result, accountRef) = client.syncAccountByAcct(access_info, whoAcct)
@@ -263,7 +264,7 @@ object Action_User {
 						TootApiResult()
 					}
 				
-				val whoId = if(access_info.matchHost(whoAccessInfo.apDomain) ) {
+				val whoId = if(access_info.matchHost(whoAccessInfo) ) {
 					whoArg.id
 				} else {
 					val (result, accountRef) = client.syncAccountByAcct(access_info, whoAcct)
@@ -494,7 +495,7 @@ object Action_User {
 			),
 			accountListArg = makeAccountListNonPseudo(activity, who.apDomain)
 		) { ai ->
-			if(ai.matchHost(access_info.apDomain)) {
+			if(ai.matchHost(access_info)) {
 				activity.addColumn(pos, ai, ColumnType.PROFILE, who.id)
 			} else {
 				profileFromUrlOrAcct(activity, pos, ai, who.url, access_info.getFullAcct(who))

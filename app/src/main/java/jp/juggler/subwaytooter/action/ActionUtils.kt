@@ -5,6 +5,7 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 import jp.juggler.util.jsonObject
@@ -154,7 +155,6 @@ internal fun calcCrossAccountMode(
 	action_account : SavedAccount
 ) : Int = when {
 	timeline_account == action_account -> NOT_CROSS_ACCOUNT
-	timeline_account.matchHost(action_account.apiHost) ||
-	timeline_account.matchHost(action_account.apDomain)  -> CROSS_ACCOUNT_SAME_INSTANCE
+	timeline_account.matchHost(action_account) -> CROSS_ACCOUNT_SAME_INSTANCE
 	else -> CROSS_ACCOUNT_REMOTE_INSTANCE
 }

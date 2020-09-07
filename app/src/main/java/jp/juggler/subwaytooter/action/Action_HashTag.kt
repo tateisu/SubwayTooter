@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.encodePercent
 import java.util.*
 

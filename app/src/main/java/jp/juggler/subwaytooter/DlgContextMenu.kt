@@ -19,6 +19,7 @@ import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.FavMute
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.util.matchHost
 import jp.juggler.util.*
 import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.backgroundDrawable

@@ -988,7 +988,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					for(t in thread_list) {
 						if(! t.isAlive) continue
 						if(job.isJobCancelled) t.cancel()
-						liveSet.add(t.account.host)
+						liveSet.add(t.account.apiHost)
 					}
 					if(liveSet.isEmpty()) break
 					

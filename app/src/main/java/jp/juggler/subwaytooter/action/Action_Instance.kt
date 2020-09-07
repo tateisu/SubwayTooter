@@ -84,7 +84,7 @@ object Action_Instance {
 				ColumnType.PROFILE_DIRECTORY.name1(activity)
 			)
 		) { ai ->
-			profileDirectory(activity, ai, ai.host)
+			profileDirectory(activity, ai, ai.apiHost)
 		}
 	}
 	
@@ -266,7 +266,7 @@ object Action_Instance {
 				a.isMisskey -> continue@label
 				
 				// 閲覧アカウントとホスト名が同じならステータスIDの変換が必要ない
-				a.matchHost(access_info.host) -> {
+				a.matchHost(access_info.apDomain) -> {
 					if(! allowPseudo && a.isPseudo) continue@label
 					account_list1.add(a)
 				}
@@ -288,7 +288,7 @@ object Action_Instance {
 				message = "select account to read timeline",
 				accountListArg = account_list1
 			) { ai ->
-				if(! ai.isNA && ai.matchHost(access_info.host)) {
+				if(! ai.isNA && ai.matchHost(access_info.apDomain)) {
 					timelinePublicAround2(activity, ai, pos, status.id, type)
 				} else {
 					timelinePublicAround3(activity, ai, pos, status, type)

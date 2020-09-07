@@ -57,10 +57,11 @@ internal fun addPseudoAccount(
 		}
 		
 		val row_id = SavedAccount.insert(
-			host.ascii,
-			acct.ascii,
-			account_info,
-			JsonObject(),
+			acct =acct.ascii,
+			host = host.ascii,
+			domain = instanceInfo.uri,
+			account = account_info,
+			token = JsonObject(),
 			misskeyVersion = instanceInfo.misskeyVersion
 		)
 		
@@ -97,7 +98,7 @@ fun makeAccountListNonPseudo(
 	for(a in SavedAccount.loadAccountList(context)) {
 		if(a.isPseudo) continue
 		when(pickup_host) {
-			null, a.host -> list_same_host
+			null, a.apDomain,a.apiHost -> list_same_host
 			else -> list_other_host
 		}.add(a)
 	}
@@ -153,6 +154,7 @@ internal fun calcCrossAccountMode(
 	action_account : SavedAccount
 ) : Int = when {
 	timeline_account == action_account -> NOT_CROSS_ACCOUNT
-	timeline_account.matchHost(action_account.host) -> CROSS_ACCOUNT_SAME_INSTANCE
+	timeline_account.matchHost(action_account.apiHost) ||
+	timeline_account.matchHost(action_account.apDomain)  -> CROSS_ACCOUNT_SAME_INSTANCE
 	else -> CROSS_ACCOUNT_REMOTE_INSTANCE
 }

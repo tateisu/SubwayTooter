@@ -125,7 +125,7 @@ object Action_HashTag {
 		for(a in account_list) {
 			if( acct == null){
 				when {
-					a.host != host -> list_other.add(a)
+					!a.matchHost(host) -> list_other.add(a)
 					a.isPseudo -> list_original_pseudo.add(a)
 					else -> list_original.add(a)
 				}
@@ -139,8 +139,8 @@ object Action_HashTag {
 					// ミスキーのアカウント別タグTLは未対応
 					a.isMisskey -> {
 					}
-
-					a.host != host -> list_other.add(a)
+					
+					!a.matchHost(host) -> list_other.add(a)
 					else -> list_original.add(a)
 				}
 			}

@@ -995,7 +995,7 @@ class TestTootApiClient {
 			callback = callback
 		)
 		val instance = Host.parse("unit-test")
-		client.instance = instance
+		client.apiHost = instance
 		val clientName = "SubwayTooterUnitTest"
 		val scope_string = "read+write+follow+push"
 		
@@ -1072,7 +1072,7 @@ class TestTootApiClient {
 			callback = callback
 		)
 		val instance = Host.parse("unit-test")
-		client.instance = instance
+		client.apiHost = instance
 		val (instanceInfo, instanceResult) = TootInstance.get(client)
 		assertNotNull(instanceInfo)
 		assertNotNull(instanceResult)

@@ -69,7 +69,7 @@ class CustomEmojiLister(internal val context : Context) {
 	}
 	
 	private fun getCached(now : Long, accessInfo : SavedAccount) : CacheItem? {
-		val host = accessInfo.host.ascii
+		val host = accessInfo.apiHost.ascii
 		
 		// 成功キャッシュ
 		val item = cache[host]
@@ -177,7 +177,7 @@ class CustomEmojiLister(internal val context : Context) {
 					if(cached) continue
 					
 					val accessInfo = request.accessInfo
-					val cacheKey = accessInfo.host.ascii
+					val cacheKey = accessInfo.apiHost.ascii
 					var list : ArrayList<CustomEmoji>? = null
 					var listWithAlias : ArrayList<CustomEmoji>? = null
 					try {
@@ -285,7 +285,7 @@ class CustomEmojiLister(internal val context : Context) {
 				list.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.shortcode })
 				list
 			} catch(ex : Throwable) {
-				log.e(ex, "decodeEmojiList failed. instance=%s", accessInfo.host.ascii)
+				log.e(ex, "decodeEmojiList failed. instance=%s", accessInfo.apiHost.ascii)
 				null
 			}
 		}

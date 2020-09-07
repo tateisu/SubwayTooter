@@ -1464,18 +1464,21 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 		
 		val sw = dm.widthPixels
 		
+		
 		if(Pref.bpDisableTabletMode(pref) || sw < column_w_min * 2) {
 			// SmartPhone mode
-			findViewById<View>(R.id.rvPager).visibility = View.GONE
 			phoneEnv = PhoneEnv()
 		} else {
 			// Tablet mode
-			findViewById<View>(R.id.viewPager).visibility = View.GONE
 			tabletEnv = TabletEnv()
 		}
 		
+		val tmpPhonePager :MyViewPager = findViewById(R.id.viewPager)
+		val tmpTabletPager  :RecyclerView = findViewById(R.id.rvPager)
+		
 		phoneTab({ env ->
-			env.pager = findViewById(R.id.viewPager)
+			tmpTabletPager.visibility = View.GONE
+			env.pager = tmpPhonePager
 			env.pager_adapter = ColumnPagerAdapter(this)
 			env.pager.adapter = env.pager_adapter
 			env.pager.addOnPageChangeListener(this)
@@ -1483,7 +1486,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 			resizeAutoCW(sw)
 			
 		}, { env ->
-			env.tablet_pager = findViewById(R.id.rvPager)
+			tmpPhonePager.visibility = View.GONE
+			env.tablet_pager = tmpTabletPager
 			env.tablet_pager_adapter = TabletColumnPagerAdapter(this)
 			env.tablet_layout_manager =
 				LinearLayoutManager(
@@ -1891,6 +1895,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 			var ta : TootAccount? = null
 			var sa : SavedAccount? = null
 			var host : Host? = null
+			var ti : TootInstance? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
@@ -1924,12 +1929,13 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 							return TootApiResult(ex.withCaption("invalid state"))
 						}
 					} else {
-						client.instance = instance
+						client.apiHost = instance
 					}
 					
 					val (ti, r2) = TootInstance.get(client)
 					ti ?: return r2
 					
+					this.ti = ti
 					this.host = instance
 					val client_name = Pref.spClientName(this@ActMain)
 					val result =
@@ -1983,7 +1989,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 							
 							param.startsWith("host:") -> {
 								val host = Host.parse(param.substring(5))
-								client.instance = host
+								client.apiHost = host
 							}
 							
 							else -> {
@@ -1992,9 +1998,13 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 						}
 					}
 					
-					val instance = client.instance
+					val instance = client.apiHost
 						?: return TootApiResult("missing instance in callback url.")
 					
+					val (ti, r2) = TootInstance.get(client)
+					ti ?: return r2
+					
+					this.ti = ti
 					this.host = instance
 					val client_name = Pref.spClientName(this@ActMain)
 					val result = client.authentication2(client_name, code)
@@ -2017,7 +2027,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 					sa = SavedAccount.loadAccountByAcct(this@ActMain, acct.ascii)
 				}
 				
-				afterAccountVerify(result, ta, sa, host)
+				afterAccountVerify(result, ta, sa, ti, host)
 			}
 			
 		})
@@ -2027,6 +2037,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 		result : TootApiResult?,
 		ta : TootAccount?,
 		sa : SavedAccount?,
+		ti : TootInstance?,
 		host : Host?
 	) : Boolean {
 		
@@ -2089,11 +2100,18 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				// アカウント追加時
 				val user = Acct.parse(ta.username, host)
 				
+				val apDomain = ti?.uri
+				if(apDomain == null) {
+					showToast(this@ActMain, false, "Can't get ActivityPub domain name.")
+					return false
+				}
+				
 				val row_id = SavedAccount.insert(
-					host.ascii,
-					user.ascii,
-					jsonObject,
-					token_info,
+					acct = user.ascii,
+					host = host.ascii,
+					domain = apDomain,
+					account = jsonObject,
+					token = token_info,
 					misskeyVersion = TootInstance.parseMisskeyVersion(token_info)
 				)
 				val account = SavedAccount.loadAccount(this@ActMain, row_id)
@@ -2149,22 +2167,28 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 	fun checkAccessToken(
 		dialog_host : Dialog?,
 		dialog_token : Dialog?,
-		host : Host,
+		apiHost : Host,
 		access_token : String,
 		sa : SavedAccount?
 	) {
 		
-		TootTaskRunner(this@ActMain).run(host, object : TootTask {
+		TootTaskRunner(this@ActMain).run(apiHost, object : TootTask {
 			
 			var ta : TootAccount? = null
+			var ti : TootInstance? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				val (instance, instanceResult) = TootInstance.get(client, host)
+				val (instance, instanceResult) = TootInstance.get(client, apiHost)
 				instance ?: return instanceResult
+				this.ti = instance
 				
 				val misskeyVersion = instance.misskeyVersion
-				val linkHelper = LinkHelper.newLinkHelper(host, misskeyVersion = misskeyVersion)
+				val linkHelper = LinkHelper.newLinkHelper(
+					apiHost,
+					apDomainArg = instance.uri?.let { Host.parse(it) },
+					misskeyVersion = misskeyVersion
+				)
 				val result = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
 				this.ta = TootParser(this@ActMain, linkHelper)
 					.account(result?.jsonObject)
@@ -2172,7 +2196,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
-				if(afterAccountVerify(result, ta, sa, host)) {
+				if(afterAccountVerify(result, ta, sa, ti, apiHost)) {
 					dialog_host?.dismissSafe()
 					dialog_token?.dismissSafe()
 				}
@@ -2191,7 +2215,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 			null,
 			callback = object : DlgTextInput.Callback {
 				override fun onOK(dialog : Dialog, text : String) {
-					checkAccessToken(null, dialog, sa.host, text, sa)
+					checkAccessToken(null, dialog, sa.apiHost, text, sa)
 				}
 				
 				override fun onEmptyError() {
@@ -2396,7 +2420,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				if(statusInfo != null) {
 					if(accessInfo.isNA ||
 						statusInfo.statusId == null ||
-						statusInfo.host != accessInfo.host
+						! accessInfo.matchHost(statusInfo.host)
 					) {
 						Action_Toot.conversationOtherInstance(
 							this@ActMain,

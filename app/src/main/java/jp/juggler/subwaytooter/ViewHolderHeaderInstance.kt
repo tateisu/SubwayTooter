@@ -122,7 +122,7 @@ internal class ViewHolderHeaderInstance(
 			btnEmail.isEnabled = email.isNotEmpty()
 			
 			val contact_acct =
-				instance.contact_account?.let { who -> "@${who.username}@${who.host.pretty}" } ?: ""
+				instance.contact_account?.let { who -> "@${who.username}@${who.apDomain.pretty}" } ?: ""
 			btnContact.text = contact_acct
 			btnContact.isEnabled = contact_acct.isNotEmpty()
 			
@@ -232,7 +232,7 @@ internal class ViewHolderHeaderInstance(
 					activity
 					, activity.nextPosition(column)
 					, ColumnType.SEARCH
-					, args = arrayOf("@${who.username}@${who.host.ascii}", true)
+					, args = arrayOf("@${who.username}@${who.apDomain.ascii}", true)
 				)
 			}
 			

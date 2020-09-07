@@ -178,7 +178,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		
 		initializeProfile()
 		
-		btnOpenBrowser.text = getString(R.string.open_instance_website, account.host.pretty)
+		btnOpenBrowser.text = getString(R.string.open_instance_website, account.apiHost.pretty)
 	}
 	
 	override fun onStop() {
@@ -444,7 +444,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 	private fun loadUIFromData(a : SavedAccount) {
 		this.account = a
 		
-		tvInstance.text = a.host.pretty
+		tvInstance.text = a.apiHost.pretty
 		tvUser.text = a.acct.pretty
 		
 		this.visibility = a.visibility
@@ -583,7 +583,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			R.id.btnVisibility -> performVisibility()
 			R.id.btnOpenBrowser -> App1.openBrowser(
 				this@ActAccountSetting,
-				"https://${account.host.ascii}/"
+				"https://${account.apiHost.ascii}/"
 			)
 			R.id.btnPushSubscription -> startTest()
 			
@@ -755,7 +755,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 							error("missing notification_tag")
 						
 						val call = App1.ok_http_client.newCall(
-							("instance_url=" + "https://${account.host.ascii}".encodePercent()
+							("instance_url=" + "https://${account.apiHost.ascii}".encodePercent()
 								+ "&app_id=" + packageName.encodePercent()
 								+ "&tag=" + tag
 								)

@@ -65,6 +65,7 @@ class Column(
 ) {
 	
 	companion object {
+		
 		internal val log = LogCategory("Column")
 		
 		private const val DIR_BACKGROUND_IMAGE = "columnBackground"
@@ -649,6 +650,7 @@ class Column(
 		}
 	
 	internal interface Callback {
+		
 		val isActivityStart : Boolean
 	}
 	
@@ -1083,12 +1085,12 @@ class Column(
 	
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
 	fun findStatus(
-		target_instance : Host,
+		target_apDomain : Host,
 		target_status_id : EntityId,
 		callback : (account : SavedAccount, status : TootStatus) -> Boolean
 		// callback return true if rebind view required
 	) {
-		if(! access_info.matchHost(target_instance)) return
+		if(! access_info.matchHost(target_apDomain)) return
 		
 		var bChanged = false
 		
@@ -1198,30 +1200,28 @@ class Column(
 		
 		if(is_dispose.get() || bInitialLoading || bRefreshLoading) return
 		
-		if(tl_host == access_info.host) {
-			val tmp_list = ArrayList<TimelineItem>(list_data.size)
-			for(o in list_data) {
-				if(o is TootStatus) {
-					if(status_id == o.id) continue
-					if(status_id == (o.reblog?.id ?: - 1L)) continue
-				} else if(o is TootNotification) {
-					val s = o.status
-					if(s != null) {
-						if(status_id == s.id) continue
-						if(status_id == (s.reblog?.id ?: - 1L)) continue
-					}
+		if(! access_info.matchHost(tl_host)) return
+		
+		val tmp_list = ArrayList<TimelineItem>(list_data.size)
+		for(o in list_data) {
+			if(o is TootStatus) {
+				if(status_id == o.id) continue
+				if(status_id == (o.reblog?.id ?: - 1L)) continue
+			} else if(o is TootNotification) {
+				val s = o.status
+				if(s != null) {
+					if(status_id == s.id) continue
+					if(status_id == (s.reblog?.id ?: - 1L)) continue
 				}
-				
-				tmp_list.add(o)
-			}
-			if(tmp_list.size != list_data.size) {
-				list_data.clear()
-				list_data.addAll(tmp_list)
-				fireShowContent(reason = "removeStatus")
 			}
 			
+			tmp_list.add(o)
 		}
-		
+		if(tmp_list.size != list_data.size) {
+			list_data.clear()
+			list_data.addAll(tmp_list)
+			fireShowContent(reason = "removeStatus")
+		}
 	}
 	
 	fun removeNotifications() {
@@ -1320,7 +1320,7 @@ class Column(
 		bBlocked : Boolean
 	) {
 		
-		if(target_account.host != access_info.host) return
+		if(target_account.apiHost != access_info.apiHost) return
 		if(access_info.isPseudo) return
 		
 		if(type == ColumnType.DOMAIN_BLOCKS) {
@@ -1378,17 +1378,17 @@ class Column(
 		}
 	}
 	
-	fun onAntennaNameUpdated(account : SavedAccount, item : MisskeyAntenna) {
-		if(account != access_info) return
-		if(type == ColumnType.MISSKEY_ANTENNA_LIST) {
-			startLoading()
-		} else if(type == ColumnType.MISSKEY_ANTENNA_TL) {
-			if(item.id == profile_id) {
-				this.antenna_info = item
-				fireShowColumnHeader()
-			}
-		}
-	}
+	//	fun onAntennaNameUpdated(account : SavedAccount, item : MisskeyAntenna) {
+	//		if(account != access_info) return
+	//		if(type == ColumnType.MISSKEY_ANTENNA_LIST) {
+	//			startLoading()
+	//		} else if(type == ColumnType.MISSKEY_ANTENNA_TL) {
+	//			if(item.id == profile_id) {
+	//				this.antenna_info = item
+	//				fireShowColumnHeader()
+	//			}
+	//		}
+	//	}
 	
 	fun onListMemberUpdated(
 		account : SavedAccount,
@@ -1716,11 +1716,11 @@ class Column(
 				access_info.putMisskeyApiToken().apply {
 					put("userId", profile_id)
 				}.toPostRequestBuilder()
-			)?.also{ result1 ->
+			)?.also { result1 ->
 				// ユーザリレーションの取り扱いのため、別のparserを作ってはいけない
 				parser.misskeyDecodeProfilePin = true
 				try {
-					TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also{ a->
+					TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
 						this.who_account = a
 						client.publishApiProgress("") // カラムヘッダの再表示
 					}
@@ -1729,8 +1729,8 @@ class Column(
 				}
 			}
 		} else {
-			client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))?.also{result1 ->
-				TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also{ a->
+			client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))?.also { result1 ->
+				TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
 					this.who_account = a
 					client.publishApiProgress("") // カラムヘッダの再表示
 					
@@ -1741,15 +1741,16 @@ class Column(
 	}
 	
 	private inner class UpdateRelationEnv {
-		internal val who_set = HashSet<EntityId>()
-		internal val acct_set = HashSet<String>()
-		internal val tag_set = HashSet<String>()
 		
-		internal fun add(whoRef : TootAccountRef?) {
+		val who_set = HashSet<EntityId>()
+		val acct_set = HashSet<String>()
+		val tag_set = HashSet<String>()
+		
+		fun add(whoRef : TootAccountRef?) {
 			add(whoRef?.get())
 		}
 		
-		internal fun add(who : TootAccount?) {
+		fun add(who : TootAccount?) {
 			who ?: return
 			who_set.add(who.id)
 			val fullAcct = access_info.getFullAcct(who)
@@ -1759,20 +1760,20 @@ class Column(
 			add(who.movedRef)
 		}
 		
-		internal fun add(s : TootStatus?) {
+		fun add(s : TootStatus?) {
 			if(s == null) return
 			add(s.accountRef)
 			add(s.reblog)
 			s.tags?.forEach { tag_set.add(it.name) }
 		}
 		
-		internal fun add(n : TootNotification?) {
+		fun add(n : TootNotification?) {
 			if(n == null) return
 			add(n.accountRef)
 			add(n.status)
 		}
 		
-		internal fun update(client : TootApiClient, parser : TootParser) {
+		fun update(client : TootApiClient, parser : TootParser) {
 			
 			var n : Int
 			var size : Int

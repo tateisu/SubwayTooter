@@ -839,11 +839,11 @@ object MisskeyMarkdownDecoder {
 			}
 			
 			// 長いacct
-			val fullAcct = rawAcct.followHost(linkHelper.host)
+			val fullAcct = rawAcct.followHost(linkHelper.apDomain)
 			
 			// mentionsメタデータに含まれるacct
 			// ユーザの記述に因らず、サーバのホスト名同じなら短い、そうでなければ長いメンション
-			val shortAcct = if(fullAcct.host == linkHelper.host)
+			val shortAcct = if( linkHelper.matchHost(fullAcct.host) )
 				Acct.parse(username)
 			else
 				fullAcct
@@ -936,7 +936,7 @@ object MisskeyMarkdownDecoder {
 			if(tag.isNotEmpty() && linkHelper != null) {
 				appendLink(
 					"#$tag",
-					"https://${linkHelper.host?.ascii}/tags/" + tag.encodePercent()
+					"https://${linkHelper.apiHost.ascii}/tags/" + tag.encodePercent()
 				)
 			}
 		}),

@@ -106,7 +106,7 @@ class TootTaskRunner(
 	}
 	
 	fun run(instance : Host, callback : TootTask) : TootTaskRunner {
-		client.instance = instance
+		client.apiHost = instance
 		return run(callback)
 		
 	}

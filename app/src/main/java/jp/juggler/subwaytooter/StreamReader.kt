@@ -156,7 +156,7 @@ internal class StreamReader(
 		
 		private fun fireDeleteId(id : EntityId) {
 
-			val tl_host = access_info.host
+			val tl_host = access_info.apiHost
 			runOnMainLooper {
 				synchronized(this) {
 					if(bDisposed.get()) return@synchronized
@@ -237,7 +237,7 @@ internal class StreamReader(
 						log.e("handleMisskeyMessage: notification body is null")
 						return
 					}
-					log.d("misskey notification: ${parser.accessHost} ${body}")
+					log.d("misskey notification: ${parser.apiHost} ${body}")
 					fireTimelineItem(parser.notification(body), channelId)
 				}
 				

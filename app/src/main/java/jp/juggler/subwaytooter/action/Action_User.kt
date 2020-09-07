@@ -55,7 +55,7 @@ object Action_User {
 						TootApiResult()
 					}
 				
-				val whoId = if(whoAccessInfo.host == access_info.host) {
+				val whoId = if(access_info.matchHost(whoAccessInfo.apDomain) ) {
 					whoArg.id
 				} else {
 					val (result, accountRef) = client.syncAccountByAcct(access_info, whoAcct)
@@ -225,7 +225,7 @@ object Action_User {
 			bAllowPseudo = false,
 			bAuto = false,
 			message = activity.getString(R.string.account_picker_mute, who.acct.pretty),
-			accountListArg = makeAccountListNonPseudo(activity, who.host)
+			accountListArg = makeAccountListNonPseudo(activity, who.apDomain)
 		) { ai ->
 			muteConfirm(activity, ai, who,whoAccessInfo)
 		}
@@ -263,7 +263,7 @@ object Action_User {
 						TootApiResult()
 					}
 				
-				val whoId = if(whoAccessInfo.host == access_info.host) {
+				val whoId = if(access_info.matchHost(whoAccessInfo.apDomain) ) {
 					whoArg.id
 				} else {
 					val (result, accountRef) = client.syncAccountByAcct(access_info, whoAcct)
@@ -427,7 +427,7 @@ object Action_User {
 			bAllowPseudo = false,
 			bAuto = false,
 			message = activity.getString(R.string.account_picker_block, who.acct.pretty),
-			accountListArg = makeAccountListNonPseudo(activity, who.host)
+			accountListArg = makeAccountListNonPseudo(activity, who.apDomain)
 		) { ai ->
 			blockConfirm(activity, ai, who, whoAccessInfo)
 		}
@@ -482,7 +482,7 @@ object Action_User {
 		who : TootAccount?
 	) {
 		if(who?.url == null) return
-		val who_host = who.host
+		
 		
 		AccountPicker.pick(
 			activity,
@@ -492,9 +492,9 @@ object Action_User {
 				R.string.account_picker_open_user_who,
 				AcctColor.getNickname(access_info, who)
 			),
-			accountListArg = makeAccountListNonPseudo(activity, who_host)
+			accountListArg = makeAccountListNonPseudo(activity, who.apDomain)
 		) { ai ->
-			if(ai.matchHost(access_info.host)) {
+			if(ai.matchHost(access_info.apDomain)) {
 				activity.addColumn(pos, ai, ColumnType.PROFILE, who.id)
 			} else {
 				profileFromUrlOrAcct(activity, pos, ai, who.url, access_info.getFullAcct(who))
@@ -749,7 +749,7 @@ object Action_User {
 		activity : ActMain, access_info : SavedAccount, who : TootAccount?
 	) {
 		if(who == null) return
-		val who_host = who.host
+		
 		
 		val initial_text = "@${access_info.getFullAcct(who).ascii} "
 		AccountPicker.pick(
@@ -757,7 +757,7 @@ object Action_User {
 			bAllowPseudo = false,
 			bAuto = false,
 			message = activity.getString(R.string.account_picker_toot),
-			accountListArg = makeAccountListNonPseudo(activity, who_host)
+			accountListArg = makeAccountListNonPseudo(activity, who.apDomain)
 		) { ai ->
 			mention(activity, ai, initial_text)
 		}

@@ -23,7 +23,7 @@ class TootScheduled(parser : TootParser, val src : JsonObject) : TimelineItem() 
 	
 	init {
 		id = EntityId.mayDefault(src.string("id"))
-		uri = "scheduled://${parser.accessHost}/$id"
+		uri = "scheduled://${parser.apiHost}/$id"
 		
 		scheduled_at = src.string("scheduled_at")
 		timeScheduledAt = TootStatus.parseTime(scheduled_at)

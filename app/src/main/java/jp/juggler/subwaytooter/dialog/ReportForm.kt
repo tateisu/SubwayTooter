@@ -33,8 +33,7 @@ object ReportForm {
 		
 		val cbForward : CheckBox = view.findViewById(R.id.cbForward)
 		val tvForwardDesc:TextView = view.findViewById(R.id.tvForwardDesc)
-		val canForward = access_info.host != who.host
-		
+		val canForward = !access_info.matchHost( who.apDomain)
 		
 		cbForward.isChecked = false
 		if(!canForward){
@@ -43,7 +42,7 @@ object ReportForm {
 		}else{
 			cbForward.visibility = View.VISIBLE
 			tvForwardDesc.visibility = View.VISIBLE
-			cbForward.text = activity.getString(R.string.report_forward_to,who.host.pretty)
+			cbForward.text = activity.getString(R.string.report_forward_to,who.apDomain.pretty)
 		}
 		
 		tvUser.text = who.acct.pretty

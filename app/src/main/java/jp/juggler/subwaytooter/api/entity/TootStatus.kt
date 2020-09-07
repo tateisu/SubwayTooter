@@ -44,11 +44,11 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	val url : String?
 	
 	// 投稿元タンスのホスト名
-	val host_original : Host
-		get() = account.host
+	val originalApDomain : Host
+		get() = account.apDomain
 	
 	// 取得タンスのホスト名。トゥート検索サービスでは提供されずnullになる
-	val host_access : Host?
+	val readerApDomain : Host?
 	
 	// ステータスID。
 	// host_access が null の場合は投稿元タンスでのIDかもしれない。
@@ -208,12 +208,12 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	init {
 		this.json = src
 		this.serviceType = parser.serviceType
-		src.put("_fromStream", parser.fromStream)
+		src["_fromStream"] = parser.fromStream
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
-			val instance = parser.accessHost
+			val apiHost = parser.apiHost
 			val misskeyId = src.string("id")
-			this.host_access = parser.accessHost
+			this.readerApDomain = parser.apDomain
 			
 			val uri = src.string("uri")
 			if(uri != null) {
@@ -222,8 +222,8 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				this.url = uri
 			} else {
 				
-				this.uri = "https://$instance/notes/$misskeyId"
-				this.url = "https://$instance/notes/$misskeyId"
+				this.uri = "https://$apiHost/notes/$misskeyId"
+				this.url = "https://$apiHost/notes/$misskeyId"
 			}
 			
 			this.created_at = src.string("createdAt")
@@ -450,7 +450,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			
 			when(parser.serviceType) {
 				ServiceType.MASTODON -> {
-					this.host_access = parser.accessHost
+					this.readerApDomain = parser.apDomain
 					
 					this.id = EntityId.mayDefault(src.string("id"))
 					this.uri = src.string("uri") ?: error("missing uri")
@@ -474,7 +474,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				}
 				
 				ServiceType.TOOTSEARCH -> {
-					this.host_access = null
+					this.readerApDomain = null
 					
 					// 投稿元タンスでのIDを調べる。失敗するかもしれない
 					// FIXME: Pleromaだとダメそうな印象
@@ -494,13 +494,14 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				}
 				
 				ServiceType.MSP -> {
-					this.host_access = parser.accessHost
+					this.readerApDomain = parser.apDomain
 					
 					// MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
 					this.id = EntityId.mayDefault(src.string("id"))
+					
 					// MSPだとuriは提供されない。LTL限定なのでURL的なものを作れるはず
 					this.uri =
-						"https://${parser.accessHost}/users/${who.username}/statuses/$id"
+						"https://${account.apiHost}/users/${who.username}/statuses/$id"
 					
 					this.time_created_at = parseTimeMSP(created_at)
 					this.media_attachments =
@@ -660,8 +661,10 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	///////////////////////////////////////////////////
 	// ユーティリティ
 	
+	// メディア表示を隠したかどうかのキーに使われる
+	// APドメイン名
 	val hostAccessOrOriginal : Host
-		get() = host_access?.valid() ?: host_original.valid() ?: Host.UNKNOWN
+		get() = readerApDomain?.valid() ?: originalApDomain.valid() ?: Host.UNKNOWN
 	
 	val busyKey : String
 		get() = "${hostAccessOrOriginal.ascii}:$id"

@@ -224,12 +224,12 @@ internal class DlgContextMenu(
 			btnFavouritedBy,
 			btnDomainTimeline,
 			
-			viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus),
-			viewRoot.findViewById<View>(R.id.btnTranslate),
-			viewRoot.findViewById<View>(R.id.btnQuoteUrlAccount),
-			viewRoot.findViewById<View>(R.id.btnShareUrlStatus),
-			viewRoot.findViewById<View>(R.id.btnShareUrlAccount),
-			viewRoot.findViewById<View>(R.id.btnQuoteName)
+			viewRoot.findViewById(R.id.btnQuoteUrlStatus),
+			viewRoot.findViewById(R.id.btnTranslate),
+			viewRoot.findViewById(R.id.btnQuoteUrlAccount),
+			viewRoot.findViewById(R.id.btnShareUrlStatus),
+			viewRoot.findViewById(R.id.btnShareUrlAccount),
+			viewRoot.findViewById(R.id.btnQuoteName)
 		
 		).forEach {
 			it.setOnClickListener(this@DlgContextMenu)
@@ -407,18 +407,20 @@ internal class DlgContextMenu(
 			showRelation(relation)
 		}
 		
-		val who_host = getUserHost()
+		val whoApiHost = getUserApiHost()
+		val whoApDomain = getUserApDomain()
+
 		viewRoot.findViewById<View>(R.id.llInstance)
-			.vg(who_host.isValid)
+			.vg(whoApiHost.isValid)
 			?.let {
 				val tvInstanceActions : TextView = viewRoot.findViewById(R.id.tvInstanceActions)
 				tvInstanceActions.text =
-					activity.getString(R.string.instance_actions_for, who_host.pretty)
+					activity.getString(R.string.instance_actions_for, whoApDomain.pretty)
 				
 				// 疑似アカウントではドメインブロックできない
 				// 自ドメインはブロックできない
 				btnDomainBlock.vg(
-					! (access_info.isPseudo || access_info.matchHost(who_host))
+					! (access_info.isPseudo || access_info.matchHost(whoApiHost))
 				)
 				
 				btnDomainTimeline.vg(
@@ -530,13 +532,20 @@ internal class DlgContextMenu(
 		dialog.show()
 	}
 	
-	private fun getUserHost() : Host =
-		when(val who_host = whoRef?.get()?.host) {
+	private fun getUserApiHost() : Host =
+		when(val who_host = whoRef?.get()?.apiHost) {
 			Host.UNKNOWN -> Host.parse(column.instance_uri)
-			Host.EMPTY, null -> access_info.host
+			Host.EMPTY, null -> access_info.apiHost
 			else -> who_host
 		}
-	
+
+	private fun getUserApDomain() : Host =
+		when(val who_host = whoRef?.get()?.apDomain) {
+			Host.UNKNOWN -> Host.parse(column.instance_uri)
+			Host.EMPTY, null -> access_info.apDomain
+			else -> who_host
+		}
+
 	private fun updateGroup(btn : Button, group : View, toggle : Boolean = false) {
 		
 		if(btn.visibility != View.VISIBLE) {
@@ -730,30 +739,29 @@ internal class DlgContextMenu(
 						showToast(activity, false, R.string.domain_block_from_pseudo)
 						return
 					} else {
-						val who_host = who.host
-						
+						val whoApDomain  = who.apDomain
 						// 自分のドメインではブロックできない
-						if(access_info.matchHost(who_host)) {
+						if(access_info.matchHost(whoApDomain)) {
 							showToast(activity, false, R.string.domain_block_from_local)
 							return
 						}
 						AlertDialog.Builder(activity)
-							.setMessage(activity.getString(R.string.confirm_block_domain, who_host))
+							.setMessage(activity.getString(R.string.confirm_block_domain, whoApDomain))
 							.setNegativeButton(R.string.cancel, null)
 							.setPositiveButton(R.string.ok) { _, _ ->
-								Action_Instance.blockDomain(activity, access_info, who_host, true)
+								Action_Instance.blockDomain(activity, access_info, whoApDomain, true)
 							}
 							.show()
 					}
 				
 				R.id.btnOpenTimeline -> {
-					who.host.valid()?.let {
+					who.apiHost.valid()?.let {
 						Action_Instance.timelineLocal(activity, pos, it)
 					}
 				}
 				
 				R.id.btnDomainTimeline -> {
-					who.host.valid()?.let {
+					who.apiHost.valid()?.let {
 						Action_Instance.timelineDomain(activity, pos, access_info, it)
 					}
 				}
@@ -802,14 +810,14 @@ internal class DlgContextMenu(
 					DlgListMember(activity, who, access_info).show()
 				
 				R.id.btnInstanceInformation -> {
-					Action_Instance.information(activity, pos, getUserHost())
+					Action_Instance.information(activity, pos, getUserApiHost())
 				}
 				
 				R.id.btnProfileDirectory -> {
 					Action_Instance.profileDirectoryFromInstanceInformation(
 						activity,
 						column,
-						getUserHost()
+						getUserApiHost()
 					)
 				}
 				
@@ -824,7 +832,7 @@ internal class DlgContextMenu(
 					activity,
 					access_info,
 					pos,
-					who.host,
+					who.apiHost,
 					status,
 					ColumnType.ACCOUNT_AROUND
 					, allowPseudo = false
@@ -834,7 +842,7 @@ internal class DlgContextMenu(
 					activity,
 					access_info,
 					pos,
-					who.host,
+					who.apiHost,
 					status,
 					ColumnType.LOCAL_AROUND
 				)
@@ -843,7 +851,7 @@ internal class DlgContextMenu(
 					activity,
 					access_info,
 					pos,
-					who.host,
+					who.apiHost,
 					status,
 					ColumnType.FEDERATED_AROUND
 				)
@@ -853,13 +861,13 @@ internal class DlgContextMenu(
 				R.id.btnOpenAccountInAdminWebUi ->
 					App1.openBrowser(
 						activity,
-						"https://${access_info.host.ascii}/admin/accounts/${who.id}"
+						"https://${access_info.apiHost.ascii}/admin/accounts/${who.id}"
 					)
 				
 				R.id.btnOpenInstanceInAdminWebUi ->
 					App1.openBrowser(
 						activity,
-						"https://${access_info.host.ascii}/admin/instances/${who.host.ascii}"
+						"https://${access_info.apiHost.ascii}/admin/instances/${who.apDomain.ascii}"
 					)
 				
 				R.id.btnBoostWithVisibility -> {

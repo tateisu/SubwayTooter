@@ -3,15 +3,17 @@ package jp.juggler.subwaytooter.util
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.groupEx
-import jp.juggler.util.notEmpty
 
 interface LinkHelper {
 	
 	// SavedAccountのロード時にhostを供給する必要があった
-	val host : Host?
+	val apiHost : Host
 	//	fun findAcct(url : String?) : String? = null
 	//	fun colorFromAcct(acct : String?) : AcctColor? = null
+	
+	val apDomain : Host
 	
 	val misskeyVersion : Int
 		get() = 0
@@ -23,29 +25,35 @@ interface LinkHelper {
 	val isMastodon : Boolean
 		get() = misskeyVersion <= 0
 	
-	fun matchHost(src : String?) = host?.match(src) ?: false
-	fun matchHost(src : Host?) = host?.equals(src) ?: false
+	fun matchHost(src : String?) = apiHost.match(src) || apDomain.match(src)
+	fun matchHost(src : Host?) = apiHost == src || apDomain == src
 	
 	// user とか user@host とかを user@host に変換する
 	// nullや空文字列なら ?@? を返す
-	fun getFullAcct(src : Acct?) : Acct =when{
+	fun getFullAcct(src : Acct?) : Acct = when {
 		src?.username?.isEmpty() != false -> Acct.UNKNOWN
-		src.host?.isValid ==true -> src
-		else -> src.followHost(host?.valid() ?: Host.UNKNOWN)
+		src.host?.isValid == true -> src
+		else -> src.followHost(apDomain.valid() ?: apiHost.valid() ?: Host.UNKNOWN)
 	}
 	
 	companion object {
 		
-		fun newLinkHelper(hostArg : Host?, misskeyVersion : Int = 0) = object : LinkHelper {
-			
-			override val host = hostArg
-			
-			override val misskeyVersion : Int
-				get() = misskeyVersion
-		}
+		fun newLinkHelper(apiHostArg : Host, apDomainArg : Host? = null, misskeyVersion : Int = 0) =
+			object : LinkHelper {
+				
+				override val apiHost : Host = apiHostArg
+				//	fun findAcct(url : String?) : String? = null
+				//	fun colorFromAcct(acct : String?) : AcctColor? = null
+				
+				override val apDomain : Host = apDomainArg ?: apiHostArg
+				
+				override val misskeyVersion : Int
+					get() = misskeyVersion
+			}
 		
 		val nullHost = object : LinkHelper {
-			override val host : Host? = null
+			override val apiHost : Host = Host.parse("")
+			override val apDomain : Host = Host.parse("")
 		}
 	}
 }
@@ -61,6 +69,11 @@ fun getFullAcctOrNull(
 	if(src.contains('@'))
 		return Acct.parse(src)
 	
+	// トゥート検索等でないならアクセス元ホストを補って良いはず
+	if(linkHelper is SavedAccount && ! linkHelper.isNA) {
+		return Acct.parse(src, linkHelper.apDomain)
+	}
+	
 	// URLが既知のパターンだった
 	val fullAcct = TootAccount.getAcctFromUrl(url)
 	if(fullAcct != null) return fullAcct
@@ -72,8 +85,8 @@ fun getFullAcctOrNull(
 	// https://fedibird.com/@noellabo/103350050191159092
 	// に含まれるメンションををリモートから見るとmentions メタデータがない。
 	// この場合アクセス元のホストを補うのは誤りなのだが、他の方法で解決できないなら仕方ない…
-	val host = linkHelper?.host
-	if(host?.isValid == true) return Acct.parse(src, host)
+	val apDomain = linkHelper?.apDomain
+	if(apDomain?.isValid == true) return Acct.parse(src, apDomain)
 	
 	return null
 }
@@ -88,6 +101,13 @@ fun getFullAcctOrNull(
 	// 既にFull Acctだった
 	if(src.host != null) return src
 	
+	val apDomain = linkHelper?.apDomain
+	
+	// トゥート検索等でないならアクセス元ホストを補って良いはず
+	if(linkHelper is SavedAccount && ! linkHelper.isNA && apDomain != null) {
+		return Acct.parse(src.username, apDomain)
+	}
+	
 	// URLが既知のパターンだった
 	val fullAcct = TootAccount.getAcctFromUrl(url)
 	if(fullAcct != null) return fullAcct
@@ -99,8 +119,7 @@ fun getFullAcctOrNull(
 	// https://fedibird.com/@noellabo/103350050191159092
 	// に含まれるメンションををリモートから見るとmentions メタデータがない。
 	// この場合アクセス元のホストを補うのは誤りなのだが、他の方法で解決できないなら仕方ない…
-	val host = linkHelper?.host
-	if(host?.isValid == true) return src.followHost(host)
+	if(apDomain?.isValid == true) return src.followHost(apDomain)
 	
 	return null
 }

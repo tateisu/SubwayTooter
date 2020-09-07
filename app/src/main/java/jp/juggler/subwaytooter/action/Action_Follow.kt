@@ -571,7 +571,7 @@ object Action_Follow {
 			activity,
 			bAuto = false,
 			message = activity.getString(R.string.account_picker_follow),
-			accountListArg = makeAccountListNonPseudo(activity, account.host)
+			accountListArg = makeAccountListNonPseudo(activity, account.apiHost)
 		) { ai ->
 			followRemote(
 				activity,

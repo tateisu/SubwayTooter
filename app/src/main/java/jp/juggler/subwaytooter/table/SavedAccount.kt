@@ -18,15 +18,22 @@ import java.util.*
 class SavedAccount(
 	val db_id : Long,
 	acctArg : String,
-	hostArg : String? = null,
+	apiHostArg : String? = null,
+	apDomainArg 	: String? = null,
 	var token_info : JsonObject? = null,
 	var loginAccount : TootAccount? = null, // 疑似アカウントではnull
 	override val misskeyVersion : Int = 0
 ) : LinkHelper {
 	
+	// SavedAccountのロード時にhostを供給する必要があった
+	override val apiHost : Host
+	//	fun findAcct(url : String?) : String? = null
+	//	fun colorFromAcct(acct : String?) : AcctColor? = null
+	
+	override val apDomain : Host
+	
 	val username : String
 	
-	override val host : Host
 	val acct : Acct
 	
 	var visibility : TootVisibility = TootVisibility.Public
@@ -69,20 +76,24 @@ class SavedAccount(
 	
 	init {
 		val tmpAcct = Acct.parse(acctArg)
-		val tmpHost = hostArg?.notEmpty()?.let{ Host.parse(it)}
-		this.host = tmpHost ?: tmpAcct.host ?: error("missing host in acct")
-		
 		this.username = tmpAcct.username
-		this.acct = tmpAcct.followHost(host)
-
 		if(username.isEmpty()) throw RuntimeException("missing username in acct")
+
+		val tmpApiHost = apiHostArg?.notEmpty()?.let{ Host.parse(it)}
+		val tmpApDomain = apDomainArg?.notEmpty()?.let{ Host.parse(it)}
+		
+		this.apiHost = tmpApiHost ?: tmpApDomain ?: tmpAcct.host ?: error("missing apiHost")
+		this.apDomain = tmpApDomain ?: tmpApiHost ?: tmpAcct.host ?: error("missing apDomain")
+		
+		this.acct = tmpAcct.followHost(apDomain)
 	}
 	
 	constructor(context : Context, cursor : Cursor) : this(
-		cursor.getLong(COL_ID), // db_id
-		cursor.getString(COL_USER), // acct
-		cursor.getString(COL_HOST) // host
-		, misskeyVersion = cursor.getInt(COL_MISSKEY_VERSION)
+		db_id = cursor.getLong(COL_ID), // db_id
+		acctArg = cursor.getString(COL_USER), // acct
+		apiHostArg = cursor.getStringOrNull(COL_HOST), // host
+		apDomainArg = cursor.getStringOrNull(COL_DOMAIN), // host
+		misskeyVersion = cursor.getInt(COL_MISSKEY_VERSION)
 	) {
 		val strAccount = cursor.getString(COL_ACCOUNT)
 		val jsonAccount = strAccount.decodeJsonObject()
@@ -92,7 +103,11 @@ class SavedAccount(
 		} else {
 			TootParser(
 				context,
-				LinkHelper.newLinkHelper(this@SavedAccount.host, misskeyVersion = misskeyVersion)
+				LinkHelper.newLinkHelper(
+					apiHostArg = this@SavedAccount.apiHost,
+					apDomainArg =  this@SavedAccount.apDomain,
+					misskeyVersion = misskeyVersion
+				)
 			).account(jsonAccount)
 				?: error("missing loginAccount for $strAccount")
 		}
@@ -269,7 +284,7 @@ class SavedAccount(
 	fun isLocalUser(who : TootAccount?) : Boolean = isLocalUser(who?.acct)
 	private fun isLocalUser(acct : Acct?) : Boolean {
 		acct ?: return false
-		return acct.host == null || acct.host == this.host
+		return acct.host == null || acct.host == this.apDomain
 	}
 	
 	
@@ -278,7 +293,7 @@ class SavedAccount(
 	//	}
 	
 	fun isMe(who : TootAccount?) : Boolean = isMe(who?.acct)
-	fun isMe(who_acct : String) : Boolean  = isMe(Acct.parse(who_acct))
+//	fun isMe(who_acct : String) : Boolean  = isMe(Acct.parse(who_acct))
 
 	fun isMe(who_acct : Acct?):Boolean{
 		who_acct?:return false
@@ -289,12 +304,12 @@ class SavedAccount(
 	fun supplyBaseUrl(url : String?) : String? {
 		return when {
 			url == null || url.isEmpty() -> return null
-			url[0] == '/' -> "https://${host.ascii}$url"
+			url[0] == '/' -> "https://${apiHost.ascii}$url"
 			else -> url
 		}
 	}
 	
-	fun isNicoru(account : TootAccount?) : Boolean = account?.host == Host.FRIENDS_NICO
+	fun isNicoru(account : TootAccount?) : Boolean = account?.apiHost == Host.FRIENDS_NICO
 	
 	companion object : TableCompanion {
 		private val log = LogCategory("SavedAccount")
@@ -303,6 +318,7 @@ class SavedAccount(
 		
 		private const val COL_ID = BaseColumns._ID
 		private const val COL_HOST = "h"
+		private const val COL_DOMAIN = "d"
 		private const val COL_USER = "u"
 		private const val COL_ACCOUNT = "a"
 		private const val COL_TOKEN = "t"
@@ -442,6 +458,9 @@ class SavedAccount(
 					
 					// スキーマ46から
 					+ ",$COL_LAST_PUSH_ENDPOINT text"
+					
+					// スキーマ66から
+					+ ",$COL_DOMAIN text"
 					
 					+ ")"
 			)
@@ -642,7 +661,13 @@ class SavedAccount(
 					log.trace(ex)
 				}
 			}
-			
+			if(oldVersion < 56 && newVersion >= 56) {
+				try {
+					db.execSQL("alter table $table add column $COL_DOMAIN text")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+			}
 		}
 		
 		// 横断検索用の、何とも紐ついていないアカウント
@@ -671,16 +696,18 @@ class SavedAccount(
 		}
 		
 		fun insert(
-			host : String,
 			acct : String,
+			host : String,
+			domain:String?,
 			account : JsonObject,
 			token : JsonObject,
 			misskeyVersion : Int = 0
 		) : Long {
 			try {
 				val cv = ContentValues()
-				cv.put(COL_HOST, host)
 				cv.put(COL_USER, acct)
+				cv.put(COL_HOST, host)
+				cv.putOrNull(COL_DOMAIN,domain)
 				cv.put(COL_ACCOUNT, account.toString())
 				cv.put(COL_TOKEN, token.toString())
 				cv.put(COL_MISSKEY_VERSION, misskeyVersion)
@@ -852,43 +879,43 @@ class SavedAccount(
 			return acct.host == Host.FRIENDS_NICO
 		}
 		
-		private fun charAtLower(src : CharSequence, pos : Int) : Char {
-			val c = src[pos]
-			return if(c >= 'a' && c <= 'z') c - ('a' - 'A') else c
-		}
-		
-		@Suppress("SameParameterValue")
-		private fun host_match(
-			a : CharSequence,
-			a_startArg : Int,
-			b : CharSequence,
-			b_startArg : Int
-		) : Boolean {
-			var a_start = a_startArg
-			var b_start = b_startArg
-			
-			val a_end = a.length
-			val b_end = b.length
-			
-			var a_remain = a_end - a_start
-			val b_remain = b_end - b_start
-			
-			// 文字数が違う
-			if(a_remain != b_remain) return false
-			
-			// 文字数がゼロ
-			if(a_remain <= 0) return true
-			
-			// 末尾の文字が違う
-			if(charAtLower(a, a_end - 1) != charAtLower(b, b_end - 1)) return false
-			
-			// 先頭からチェック
-			while(a_remain -- > 0) {
-				if(charAtLower(a, a_start ++) != charAtLower(b, b_start ++)) return false
-			}
-			
-			return true
-		}
+//		private fun charAtLower(src : CharSequence, pos : Int) : Char {
+//			val c = src[pos]
+//			return if(c >= 'a' && c <= 'z') c - ('a' - 'A') else c
+//		}
+//
+//		@Suppress("SameParameterValue")
+//		private fun host_match(
+//			a : CharSequence,
+//			a_startArg : Int,
+//			b : CharSequence,
+//			b_startArg : Int
+//		) : Boolean {
+//			var a_start = a_startArg
+//			var b_start = b_startArg
+//
+//			val a_end = a.length
+//			val b_end = b.length
+//
+//			var a_remain = a_end - a_start
+//			val b_remain = b_end - b_start
+//
+//			// 文字数が違う
+//			if(a_remain != b_remain) return false
+//
+//			// 文字数がゼロ
+//			if(a_remain <= 0) return true
+//
+//			// 末尾の文字が違う
+//			if(charAtLower(a, a_end - 1) != charAtLower(b, b_end - 1)) return false
+//
+//			// 先頭からチェック
+//			while(a_remain -- > 0) {
+//				if(charAtLower(a, a_start ++) != charAtLower(b, b_start ++)) return false
+//			}
+//
+//			return true
+//		}
 		
 		private val account_comparator = Comparator<SavedAccount> { a, b ->
 			var i : Int

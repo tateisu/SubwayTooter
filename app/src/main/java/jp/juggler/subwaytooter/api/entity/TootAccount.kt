@@ -12,6 +12,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.util.*
@@ -31,7 +32,8 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	// 	The username of the account  /[A-Za-z0-9_]{1,30}/
 	val username : String
 	
-	val host : Host
+	val apiHost : Host
+	val apDomain : Host
 	
 	//	Equals username for local users, includes @domain for remote ones
 	val acct : Acct
@@ -103,7 +105,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	val isRemote : Boolean
 		get() = acct.host != null
 	
-	fun getUserUrl() = url ?: "https://${host.pretty}/@${username}"
+	fun getUserUrl() = url ?: "https://${apDomain.pretty}/@${username}"
 	
 	// user_hides_network is preference, not exposed in API
 	// val user_hides_network : Boolean
@@ -123,7 +125,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	
 	init {
 		this.json = src
-		src.put("_fromStream",parser.fromStream)
+		src["_fromStream"] = parser.fromStream
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			
@@ -132,17 +134,21 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			this.profile_emojis = null
 			
 			this.username = src.notEmptyOrThrow("username")
-			this.host = src.string("host")?.let { Host.parse(it) }
-				?: parser.accessHost
-				?: error("missing host")
-			this.url = "https://${host.ascii}/@$username"
 			
-			this.acct = when(host) {
+			this.apiHost = src.string("host")?.let { Host.parse(it) }
+				?: parser.apiHost
+				?: error("missing host")
+
+			this.url = "https://${apiHost.ascii}/@$username"
+
+			this.apDomain = apiHost // FIXME apiHostとapDomainが異なる場合はMisskeyだとどうなの…？
+			
+			this.acct = when {
 				// アクセス元から見て内部ユーザなら short acct
-				parser.accessHost -> Acct.parse(username)
+				parser.linkHelper.matchHost(this.apDomain) -> Acct.parse(username)
 				
 				// アクセス元から見て外部ユーザならfull acct
-				else -> Acct.parse(username, host)
+				else -> Acct.parse(username, apDomain)
 			}
 			
 			//
@@ -179,7 +185,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			fun String.getStaticImageUrl() : String? {
 				val uri = this.mayUri() ?: return null
 				val dummy = "${uri.encodedAuthority}${uri.encodedPath}"
-				return "https://${parser.linkHelper.host?.ascii}/proxy/$dummy?url=${encodePercent()}&static=1"
+				return "https://${parser.linkHelper.apiHost.ascii}/proxy/$dummy?url=${encodePercent()}&static=1"
 			}
 			
 			this.avatar = src.string("avatarUrl")
@@ -255,10 +261,14 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					this.id = EntityId.mayDefault(src.string("id"))
 					
 					val tmpAcct = src.notEmptyOrThrow("acct")
-					this.host = findHostFromUrl(tmpAcct, parser.accessHost, url)
-						?: error("can't get host from acct or url")
 					
-					this.acct = Acct.parse(username, if(tmpAcct.contains('@')) this.host else null)
+					val(apiHost,apDomain) = findHostFromUrl(tmpAcct, parser.linkHelper, url)
+					apiHost ?: error("can't get apiHost from acct or url")
+					apDomain ?: error("can't get apDomain from acct or url")
+					this.apiHost = apiHost
+					this.apDomain = apDomain
+					
+					this.acct = Acct.parse(username, if(tmpAcct.contains('@')) apDomain else null)
 					
 					this.followers_count = src.long("followers_count")
 					this.following_count = src.long("following_count")
@@ -279,10 +289,14 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					this.id = EntityId.DEFAULT
 					
 					val tmpAcct = src.notEmptyOrThrow("acct")
-					this.host = findHostFromUrl(tmpAcct, null, url)
-						?: error("can't get host from acct or url")
 					
-					this.acct = Acct.parse(this.username, this.host)
+					val(apiHost,apDomain) = findHostFromUrl(tmpAcct, null, url)
+					apiHost ?: error("can't get apiHost from acct or url")
+					apDomain ?: error("can't get apDomain from acct or url")
+					this.apiHost = apiHost
+					this.apDomain = apDomain
+					
+					this.acct = Acct.parse(this.username, this.apDomain)
 					
 					this.followers_count = src.long("followers_count")
 					this.following_count = src.long("following_count")
@@ -301,10 +315,14 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					this.id = EntityId.mayDefault(src.string("id"))
 					
 					// MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
-					this.host = findHostFromUrl(null, null, url)
-						?: error("can't get host from url")
+					val(apiHost,apDomain) = findHostFromUrl(null,null, url)
+					apiHost ?: error("can't get apiHost from acct or url")
+					apDomain ?: error("can't get apDomain from acct or url")
 					
-					this.acct = Acct.parse(this.username, this.host)
+					this.apiHost = apiHost
+					this.apDomain = apiHost
+					
+					this.acct = Acct.parse(this.username, this.apDomain)
 					
 					this.followers_count = null
 					this.following_count = null
@@ -577,26 +595,34 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			}
 		}
 		
-		// Tootsearch用。URLやUriを使ってアカウントのインスタンス名を調べる
-		fun findHostFromUrl(acctArg : String?, accessHost : Host?, url : String?) : Host? {
-			
+		
+		private fun findApDomain(acctArg : String?, linkHelper : LinkHelper?):Host?{
 			// acctから調べる
 			if(acctArg != null) {
 				val acct = Acct.parse(acctArg)
 				if(acct.host != null) return acct.host
 			}
+
+			// Acctはnullか、hostを含まない
+			if(linkHelper != null) return linkHelper.apDomain
 			
-			// accessHostから調べる
-			if(accessHost != null) {
-				return accessHost
-			}
-			
+			return null
+		}
+		
+		private fun findApiHost( url:String?):Host?{
 			// URLから調べる
 			// たぶんどんなURLでもauthorityの部分にホスト名が来るだろう(慢心)
 			url.mayUri()?.authority?.notEmpty()?.let { return Host.parse(it) }
-			
-			log.e("findHostFromUrl: can't parse host from URL $url")
+
+			log.e("findApiHost: can't parse host from URL $url")
 			return null
+		}
+		
+		// Tootsearch用。URLやUriを使ってアカウントのインスタンス名を調べる
+		fun findHostFromUrl(acctArg : String?, linkHelper : LinkHelper?, url : String?) : Pair<Host?,Host?> {
+			val apDomain = findApDomain(acctArg,linkHelper)
+			val apiHost = findApiHost(url)
+			return Pair( apiHost?: apDomain, apDomain ?: apiHost )
 		}
 		
 		fun parseFields(src : JsonArray?) : ArrayList<Field>? {

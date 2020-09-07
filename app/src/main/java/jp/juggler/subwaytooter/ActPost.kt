@@ -1311,7 +1311,7 @@ class ActPost : AsyncActivity(),
 			
 			else -> {
 				// インスタンス情報を確認する
-				val info = TootInstance.getCached(account.host.ascii)
+				val info = TootInstance.getCached(account.apiHost.ascii)
 				if(info == null || info.isExpire) {
 					// 情報がないか古いなら再取得
 					
@@ -1515,7 +1515,7 @@ class ActPost : AsyncActivity(),
 		) { ai ->
 			
 			// 別タンスのアカウントに変更したならならin_reply_toの変換が必要
-			if(in_reply_to_id != null && ! ai.matchHost(account?.host)) {
+			if(in_reply_to_id != null && ai.apiHost != account?.apiHost) {
 				startReplyConversion(ai)
 			} else {
 				setAccountWithVisibilityConversion(ai)
@@ -2198,7 +2198,7 @@ class ActPost : AsyncActivity(),
 			return
 		}
 		
-		val instance = TootInstance.getCached(account.host.ascii)
+		val instance = TootInstance.getCached(account.apiHost.ascii)
 		if(instance?.instanceType == TootInstance.InstanceType.Pixelfed) {
 			if(in_reply_to_id != null) {
 				showToast(this, true, R.string.pixelfed_does_not_allow_reply_with_media)

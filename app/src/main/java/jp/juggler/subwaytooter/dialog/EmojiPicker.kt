@@ -237,7 +237,7 @@ class EmojiPicker(
 				subList = ArrayList()
 				newList[category] = subList
 			}
-			subList.add(EmojiItem(emoji.shortcode, accessInfo !!.host.ascii))
+			subList.add(EmojiItem(emoji.shortcode, accessInfo !!.apiHost.ascii))
 			emoji_url_map[emoji.shortcode] = emoji
 		}
 		// compose categories data list
@@ -367,7 +367,7 @@ class EmojiPicker(
 			
 			CATEGORY_RECENT -> ArrayList<EmojiItem>().apply {
 				for(item in recent_list) {
-					if(item.instance != null && item.instance != accessInfo?.host?.ascii) continue
+					if(item.instance != null && item.instance != accessInfo?.apiHost?.ascii) continue
 					add(item)
 				}
 			}

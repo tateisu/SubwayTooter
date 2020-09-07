@@ -31,14 +31,13 @@ object Action_Toot {
 		status : TootStatus?
 	) {
 		if(status == null) return
-		val who_host = timeline_account.host
 		
 		AccountPicker.pick(
 			activity,
 			bAllowPseudo = false,
 			bAuto = false,
 			message = activity.getString(R.string.account_picker_favourite),
-			accountListArg = makeAccountListNonPseudo(activity, who_host)
+			accountListArg = makeAccountListNonPseudo(activity, timeline_account.apDomain)
 		) { action_account ->
 			favourite(
 				activity,
@@ -193,13 +192,16 @@ object Action_Toot {
 						}
 						
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status.id) { account, status ->
+							column.findStatus(
+								access_info.apDomain,
+								new_status.id
+							) { account, status ->
 								
 								// 同タンス別アカウントでもカウントは変化する
 								status.favourites_count = new_status.favourites_count
 								
 								// 同アカウントならfav状態を変化させる
-								if(access_info  == account ) {
+								if(access_info == account) {
 									status.favourited = new_status.favourited
 								}
 								
@@ -228,15 +230,14 @@ object Action_Toot {
 		timeline_account : SavedAccount,
 		status : TootStatus?
 	) {
-		if(status == null) return
-		val who_host = timeline_account.host
+		status ?: return
 		
 		AccountPicker.pick(
 			activity,
 			bAllowPseudo = false,
 			bAuto = false,
 			message = activity.getString(R.string.account_picker_bookmark),
-			accountListArg = makeAccountListNonPseudo(activity, who_host)
+			accountListArg = makeAccountListNonPseudo(activity, timeline_account.apDomain)
 		) { action_account ->
 			bookmark(
 				activity,
@@ -329,10 +330,13 @@ object Action_Toot {
 					
 					new_status != null -> {
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status.id) { account, status ->
+							column.findStatus(
+								access_info.apDomain,
+								new_status.id
+							) { account, status ->
 								
 								// 同アカウントならブックマーク状態を伝播する
-								if(access_info  == account ) {
+								if(access_info == account) {
 									status.bookmarked = new_status.bookmarked
 								}
 								
@@ -361,7 +365,6 @@ object Action_Toot {
 	) {
 		status ?: return
 		
-		val who_host = timeline_account.host
 		val status_owner = timeline_account.getFullAcct(status.account)
 		
 		val isPrivateToot = timeline_account.isMastodon &&
@@ -398,7 +401,7 @@ object Action_Toot {
 				bAllowPseudo = false,
 				bAuto = false,
 				message = activity.getString(R.string.account_picker_boost),
-				accountListArg = makeAccountListNonPseudo(activity, who_host)
+				accountListArg = makeAccountListNonPseudo(activity, timeline_account.apDomain)
 			) { action_account ->
 				boost(
 					activity,
@@ -586,13 +589,16 @@ object Action_Toot {
 						val count = max(0, (arg_status.reblogs_count ?: 1) - 1)
 						
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, arg_status.id) { account, status ->
+							column.findStatus(
+								access_info.apDomain,
+								arg_status.id
+							) { account, status ->
 								
 								// 同タンス別アカウントでもカウントは変化する
 								status.reblogs_count = count
 								
 								// 同アカウントならreblogged状態を変化させる
-								if(access_info == account && status.myRenoteId == unrenoteId ) {
+								if(access_info == account && status.myRenoteId == unrenoteId) {
 									status.myRenoteId = null
 									status.reblogged = false
 								}
@@ -620,12 +626,15 @@ object Action_Toot {
 						}
 						
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status.id) { account, status ->
+							column.findStatus(
+								access_info.apDomain,
+								new_status.id
+							) { account, status ->
 								
 								// 同タンス別アカウントでもカウントは変化する
 								status.reblogs_count = new_status.reblogs_count
 								
-								if(access_info  == account ) {
+								if(access_info == account) {
 									
 									// 同アカウントならreblog状態を変化させる
 									when {
@@ -686,7 +695,7 @@ object Action_Toot {
 				if(result.jsonObject != null) {
 					showToast(activity, false, R.string.delete_succeeded)
 					for(column in App1.getAppState(activity).column_list) {
-						column.onStatusRemoved(access_info.host, status_id)
+						column.onStatusRemoved(access_info.apDomain, status_id)
 					}
 				} else {
 					showToast(activity, false, result.error)
@@ -728,7 +737,7 @@ object Action_Toot {
 		access_info : SavedAccount,
 		status : TootStatus
 	) {
-		if(access_info.isNA || ! access_info.matchHost(status.host_access)) {
+		if(access_info.isNA || ! access_info.matchHost(status.readerApDomain)) {
 			conversationOtherInstance(activity, pos, status)
 		} else {
 			
@@ -761,12 +770,9 @@ object Action_Toot {
 		when {
 			
 			// 検索サービスではステータスTLをどのタンスから読んだのか分からない
-			status.host_access == null ->
+			status.readerApDomain == null ->
 				conversationOtherInstance(
-					activity
-					, pos
-					, url
-					, TootStatus.validStatusId(status.id)
+					activity, pos, url, TootStatus.validStatusId(status.id)
 						?: TootStatus.findStatusIdFromUri(
 							status.uri,
 							status.url
@@ -774,12 +780,9 @@ object Action_Toot {
 				)
 			
 			// TLアカウントのホストとトゥートのアカウントのホストが同じ
-			status.host_original == status.host_access ->
+			status.originalApDomain == status.readerApDomain ->
 				conversationOtherInstance(
-					activity
-					, pos
-					, url
-					, TootStatus.validStatusId(status.id)
+					activity, pos, url, TootStatus.validStatusId(status.id)
 						?: TootStatus.findStatusIdFromUri(
 							status.uri,
 							status.url
@@ -792,15 +795,10 @@ object Action_Toot {
 				// 投稿元タンスでのIDはuriやURLから調べる
 				// pleromaではIDがuuidなので失敗する(その時はURLを検索してIDを見つける)
 				conversationOtherInstance(
-					activity
-					, pos
-					, url
-					, TootStatus.findStatusIdFromUri(
+					activity, pos, url, TootStatus.findStatusIdFromUri(
 						status.uri,
 						status.url
-					)
-					, status.host_access
-					, TootStatus.validStatusId(status.id)
+					), status.readerApDomain, TootStatus.validStatusId(status.id)
 				)
 			}
 		}
@@ -818,8 +816,8 @@ object Action_Toot {
 		
 		val dialog = ActionsDialog()
 		
-		val host_original = Host.parse( url.toUri().authority ?: "" )
-
+		val host_original = Host.parse(url.toUri().authority ?: "")
+		
 		// 選択肢：ブラウザで表示する
 		dialog.addAction(
 			activity.getString(
@@ -1006,7 +1004,7 @@ object Action_Toot {
 		
 		// step 1: choose account
 		
-		val host = statusArg.account.host
+		val host = statusArg.account.apDomain
 		val local_account_list = ArrayList<SavedAccount>()
 		val other_account_list = ArrayList<SavedAccount>()
 		
@@ -1085,9 +1083,9 @@ object Action_Toot {
 						
 						new_status != null -> {
 							for(column in App1.getAppState(activity).column_list) {
-								if(access_info  == column.access_info ) {
+								if(access_info == column.access_info) {
 									column.findStatus(
-										access_info.host,
+										access_info.apDomain,
 										new_status.id
 									) { _, status ->
 										status.pinned = bSet
@@ -1167,10 +1165,9 @@ object Action_Toot {
 		quote : Boolean = false
 	) {
 		status ?: return
-		val who_host = timeline_account.host
 		
 		val accountCallback : SavedAccountCallback = { ai ->
-			if(ai.matchHost(status.host_access)) {
+			if(ai.matchHost(status.readerApDomain)) {
 				// アクセス元ホストが同じならステータスIDを使って返信できる
 				reply(activity, ai, status, quote = quote)
 			} else {
@@ -1195,7 +1192,7 @@ object Action_Toot {
 				bAllowPseudo = false,
 				bAuto = false,
 				message = activity.getString(R.string.account_picker_reply),
-				accountListArg = makeAccountListNonPseudo(activity, who_host),
+				accountListArg = makeAccountListNonPseudo(activity, timeline_account.apDomain),
 				callback = accountCallback
 			)
 		}
@@ -1288,8 +1285,8 @@ object Action_Toot {
 				val ls = local_status
 				if(ls != null) {
 					for(column in App1.getAppState(activity).column_list) {
-						if(access_info  == column.access_info ) {
-							column.findStatus(access_info.host, ls.id) { _, status ->
+						if(access_info == column.access_info) {
+							column.findStatus(access_info.apDomain, ls.id) { _, status ->
 								status.muted = bMute
 								true
 							}

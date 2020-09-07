@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
@@ -346,6 +347,7 @@ internal class ItemViewHolder(
 	
 	}
 	
+	@SuppressLint("ClickableViewAccessibility")
 	fun bind(
 		list_adapter : ItemListAdapter,
 		column : Column,
@@ -1438,12 +1440,12 @@ internal class ItemViewHolder(
 		try {
 			if(! Column.useInstanceTicker) return
 			
-			val host = who.host
+			val host = who.apDomain
 			
 			// LTLでホスト名が同じならTickerを表示しない
 			when(column.type) {
 				ColumnType.LOCAL, ColumnType.LOCAL_AROUND -> {
-					if(host == access_info.host) return
+					if(host == access_info.apDomain) return
 				}
 				
 				else -> {
@@ -2181,12 +2183,12 @@ internal class ItemViewHolder(
 					is TootTag -> {
 						// search_tag は#を含まない
 						val tagEncoded = item.name.encodePercent()
-						val url = "https://${access_info.host.ascii}/tags/$tagEncoded"
+						val url = "https://${access_info.apiHost.ascii}/tags/$tagEncoded"
 						Action_HashTag.timelineOtherInstance(
 							activity = activity,
 							pos = activity.nextPosition(column),
 							url = url,
-							host = access_info.host,
+							host = access_info.apiHost,
 							tag_without_sharp = item.name
 						)
 					}

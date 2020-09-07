@@ -154,6 +154,7 @@ object Action_Account {
 			TootTaskRunner(activity).run(instance, object : TootTask {
 				
 				var ta : TootAccount? = null
+				var ti : TootInstance? = null
 				
 				override fun background(client : TootApiClient) : TootApiResult? {
 					val r1 = client.createUser2Mastodon(
@@ -169,12 +170,15 @@ object Action_Account {
 					val misskeyVersion = TootInstance.parseMisskeyVersion(ti)
 					val linkHelper =
 						LinkHelper.newLinkHelper(instance, misskeyVersion = misskeyVersion)
+					val parser =TootParser(activity, linkHelper)
+
+					this.ti = TootInstance(parser,ti)
 					
 					val access_token = ti.string("access_token")
 						?: return TootApiResult("can't get user access token")
 					
 					val r2 = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
-					this.ta = TootParser(activity, linkHelper).account(r2?.jsonObject)
+					this.ta = parser.account(r2?.jsonObject)
 					if(this.ta != null) return r2
 					
 					val jsonObject = jsonObject {
@@ -189,12 +193,11 @@ object Action_Account {
 					r1.data = jsonObject
 					r1.tokenInfo = ti
 					return r1
-					
 				}
 				
 				override fun handleResult(result : TootApiResult?) {
 					val sa : SavedAccount? = null
-					if(activity.afterAccountVerify(result, ta, sa, instance)) {
+					if(activity.afterAccountVerify(result, ta, sa, ti,instance)) {
 						dialog_host.dismissSafe()
 						dialog_create.dismissSafe()
 					}
@@ -239,9 +242,9 @@ object Action_Account {
 					if(id != null) activity.addColumn(pos, ai, type, id)
 				}
 				
-				ColumnType.PROFILE_DIRECTORY -> {
-					activity.addColumn(pos, ai, type, ai.host)
-				}
+				ColumnType.PROFILE_DIRECTORY ->
+					activity.addColumn(pos, ai, type, ai.apiHost)
+				
 				
 				else -> activity.addColumn(pos, ai, type, *args)
 			}

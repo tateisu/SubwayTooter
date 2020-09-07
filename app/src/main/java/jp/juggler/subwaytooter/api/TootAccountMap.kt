@@ -12,7 +12,7 @@ object TootAccountMap {
 		val watcher = when(parser.serviceType) {
 			ServiceType.TOOTSEARCH -> "?tootsearch"
 			ServiceType.MSP -> "?msp"
-			else -> requireNotNull(parser.accessHost).ascii
+			else -> requireNotNull(parser.apDomain).ascii
 		}
 		return "$acct!$watcher"
 	}

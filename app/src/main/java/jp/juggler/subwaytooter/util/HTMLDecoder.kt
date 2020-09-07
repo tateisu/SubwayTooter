@@ -16,6 +16,7 @@ import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import java.util.*
 import java.util.regex.Pattern
@@ -504,6 +505,8 @@ object HTMLDecoder {
 		val sb = SpannableStringBuilder()
 		for(item in mentionList) {
 			if(sb.isNotEmpty()) sb.append(" ")
+			
+			
 			
 			val fullAcct = getFullAcctOrNull(linkHelper, item.acct, item.url)
 			

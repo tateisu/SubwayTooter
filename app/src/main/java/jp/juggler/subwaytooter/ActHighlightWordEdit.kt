@@ -109,6 +109,9 @@ class ActHighlightWordEdit
 		swSpeech = findViewById(R.id.swSpeech)
 		swSpeech.setOnCheckedChangeListener(this)
 		
+		App1.setSwitchColor(this,App1.pref,swSound)
+		App1.setSwitchColor(this,App1.pref,swSpeech)
+		
 		intArrayOf(
 			R.id.btnTextColorEdit,
 			R.id.btnTextColorReset,

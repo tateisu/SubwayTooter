@@ -1806,33 +1806,30 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 			// queryIntentActivities に渡すURLは実在しないホストのものにする
 			val intent = Intent(Intent.ACTION_VIEW, "https://dummy.subwaytooter.club/".toUri())
 			intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+			
+			val my_name = packageName
 			val resolveInfoList = packageManager.queryIntentActivities(intent, query_flag)
+				.filter{ my_name != it.activityInfo.packageName}
+
 			if(resolveInfoList.isEmpty()) {
 				throw RuntimeException("resolveInfoList is empty.")
 			}
 			
 			// このアプリ以外の選択肢を集める
-			val my_name = packageName
-			val choice_list = ArrayList<Intent>()
-			for(ri in resolveInfoList) {
-				
-				// 選択肢からこのアプリを除外
-				if(my_name == ri.activityInfo.packageName) continue
-				
-				// 選択肢のIntentは目的のUriで作成する
-				val choice = Intent(Intent.ACTION_VIEW, uri)
-				intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-				choice.`package` = ri.activityInfo.packageName
-				choice.setClassName(ri.activityInfo.packageName, ri.activityInfo.name)
-				choice_list.add(choice)
-			}
+			val choice_list = resolveInfoList
+				.map{
+					Intent(Intent.ACTION_VIEW, uri).apply{
+						addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+						`package` = it.activityInfo.packageName
+						setClassName(it.activityInfo.packageName, it.activityInfo.name)
+					}
+				}.toMutableList()
 			
-			if(choice_list.isEmpty()) {
-				throw RuntimeException("choice_list is empty.")
-			}
-			// 指定した選択肢でチューザーを作成して開く
 			val chooser = Intent.createChooser(choice_list.removeAt(0), error_message)
+			// 2つめ以降はEXTRAに渡す
 			chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, choice_list.toTypedArray())
+			
+			// 指定した選択肢でチューザーを作成して開く
 			startActivity(chooser)
 			return
 		} catch(ex : Throwable) {

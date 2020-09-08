@@ -446,7 +446,7 @@
     <string name="missing_fcm_device_id">FCMのデバイスIDを準備できません。しばらく後に試してください。</string>
     <string name="missing_install_id">インストールIDを準備できません。しばらく後に試してください。</string>
     <string name="missing_mail_app">メールアドレスを共有できるアプリがありません</string>
-    <string name="missing_permission_to_access_media">メディアアクセスに必要なアプリ権限がありません</string>
+    <string name="missing_permission_to_access_media">メディアアクセスに必要なアプリ権限がありません。端末の設定でアプリに権限を許可してください。</string>
     <string name="missing_push_api">このサーバーにはプッシュ購読APIがありません。</string>
     <string name="missing_push_scope">このアクセストークンは古いのでプッシュ購読の権限がありません。アクセストークンの更新をおすすめします。</string>
     <string name="misskey">Misskey</string>

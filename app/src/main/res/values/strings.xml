@@ -243,7 +243,7 @@
     <string name="image_capture">Take a picture</string>
     <string name="video_capture">Capture a video</string>
     <string name="voice_capture">Capture a voice</string>
-    <string name="missing_permission_to_access_media">Missing app permission to access media.</string>
+    <string name="missing_permission_to_access_media">Missing app permission to access media. Please grant the permission to the app in the device settings.</string>
     <string name="attachment_uploading">Uploading media attachment…</string>
     <string name="attachment_uploaded">Media attachment was uploaded.</string>
     <string name="actions_for_status">Actions for this toot</string>

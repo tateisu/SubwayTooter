@@ -24,6 +24,7 @@ class ActHighlightWordEdit
 	CompoundButton.OnCheckedChangeListener {
 	
 	companion object {
+		
 		internal val log = LogCategory("ActHighlightWordEdit")
 		
 		const val EXTRA_ITEM = "item"
@@ -72,10 +73,16 @@ class ActHighlightWordEdit
 		App1.setActivityTheme(this)
 		initUI()
 		
-		item = HighlightWord(
-			(savedInstanceState?.getString(EXTRA_ITEM) ?: intent.getStringExtra(EXTRA_ITEM))
-				.decodeJsonObject()
-		)
+		val src = (savedInstanceState?.getString(EXTRA_ITEM) ?: intent.getStringExtra(EXTRA_ITEM))
+			?.decodeJsonObject()
+		
+		if(src == null) {
+			log.d("missing source data")
+			finish()
+			return
+		}
+		
+		item = HighlightWord(src)
 		showSampleText()
 	}
 	
@@ -109,8 +116,8 @@ class ActHighlightWordEdit
 		swSpeech = findViewById(R.id.swSpeech)
 		swSpeech.setOnCheckedChangeListener(this)
 		
-		App1.setSwitchColor(this,App1.pref,swSound)
-		App1.setSwitchColor(this,App1.pref,swSpeech)
+		App1.setSwitchColor(this, App1.pref, swSound)
+		App1.setSwitchColor(this, App1.pref, swSpeech)
 		
 		intArrayOf(
 			R.id.btnTextColorEdit,

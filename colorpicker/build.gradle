@@ -3,6 +3,11 @@ apply plugin: 'com.android.library'
 android {
   compileSdkVersion target_sdk_version
 
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+
   defaultConfig {
     targetSdkVersion target_sdk_version
     minSdkVersion min_sdk_version

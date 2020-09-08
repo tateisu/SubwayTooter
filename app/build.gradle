@@ -14,6 +14,7 @@ android {
     // Invoke-customs are only supported starting with Android O (--min-api 26)
     // Default interface methods are only supported starting with Android N (--min-api 24)
     compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
@@ -100,10 +101,10 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appcompat_version"
 
     // DrawerLayout
-    implementation "androidx.drawerlayout:drawerlayout:1.1.0"
+    implementation "androidx.drawerlayout:drawerlayout:1.1.1"
 
     // NavigationView
-    implementation "com.google.android.material:material:1.2.0"
+    implementation "com.google.android.material:material:1.2.1"
 
     // PreferenceManager
     implementation "androidx.preference:preference-ktx:1.1.1"
@@ -139,12 +140,12 @@ dependencies {
 
     testImplementation "junit:junit:$junit_version" // しばらくはkotlin-testとjunitを併用
 
-    implementation 'com.squareup.okhttp3:okhttp:4.1.0'
-    implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.1.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.8.1'
+    implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.8.1'
     testImplementation 'com.squareup.okhttp3:mockwebserver:3.12.1'
     androidTestImplementation 'com.squareup.okhttp3:mockwebserver:3.12.1'
 
-    def glide_version = '4.9.0'
+    def glide_version = '4.11.0'
     implementation "com.github.bumptech.glide:glide:$glide_version"
     implementation "com.github.bumptech.glide:annotations:$glide_version"
     implementation( "com.github.bumptech.glide:okhttp3-integration:$glide_version"){
@@ -156,7 +157,7 @@ dependencies {
     kapt "com.github.bumptech.glide:compiler:$glide_version"
 
 
-    implementation "org.conscrypt:conscrypt-android:2.2.1"
+    implementation "org.conscrypt:conscrypt-android:2.5.0"
 
     implementation 'io.github.inflationx:calligraphy3:3.1.1'
     implementation 'io.github.inflationx:viewpump:2.0.3'

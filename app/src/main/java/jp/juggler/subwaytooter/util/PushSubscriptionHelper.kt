@@ -332,9 +332,14 @@ class PushSubscriptionHelper(
 				.url("${PollingWorker.APP_SERVER}/webpushtokencheck")
 				.build()
 		) ?: return null
-		
 		res = r.response ?: return r
-		if(res.code != 200) {
+		
+		if(res.code == 200) {
+			try{
+				res.close()
+			}catch(_:Throwable){
+			}
+		}else{
 			if(res.code == 403) addLog(context.getString(R.string.token_exported))
 			r.caption = "(SubwayTooter App server)"
 			client.readBodyString(r)

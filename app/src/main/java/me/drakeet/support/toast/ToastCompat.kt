@@ -1,33 +1,121 @@
+// original implementation is https://github.com/PureWriter/ToastCompat
+/*
+	modification:
+	- convert from java to kotlin
+	- because Android 11's Toast.getView() returns null, we need to support view==null case.
+	- only in case of API 25 device, we have to create custom context and set it to view.
+*/
+
 package me.drakeet.support.toast
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.res.Resources
 import android.os.Build
+import android.util.Log
+import android.view.Display
 import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.view.WindowManager.BadTokenException
 import android.widget.Toast
 import androidx.annotation.StringRes
 
-// original implementation is https://github.com/PureWriter/ToastCompat
-// Android 11 でgetViewがnullを返すことが増えたので
-/**
- * @author drakeet
- */
-/**
- * Construct an empty Toast object.  You must call [.setView] before you
- * can call [.show].
- *
- * @param context The context to use.  Usually your [android.app.Application]
- * or [android.app.Activity] object.
- * @param baseToast The base toast
- */
+fun interface BadTokenListener {
+	
+	fun onBadTokenCaught(toast : Toast)
+}
+
+internal class SafeToastContext(base : Context, private val toast : Toast) : ContextWrapper(base) {
+	
+	companion object {
+		
+		private const val TAG = "WindowManagerWrapper"
+	}
+	
+	private var badTokenListener : BadTokenListener? = null
+	
+	fun setBadTokenListener(badTokenListener : BadTokenListener?) {
+		this.badTokenListener = badTokenListener
+	}
+	
+	override fun getApplicationContext() : Context =
+		ApplicationContextWrapper(baseContext.applicationContext)
+	
+	inner class ApplicationContextWrapper(base : Context) : ContextWrapper(base) {
+		
+		override fun getSystemService(name : String) : Any? =
+			if(WINDOW_SERVICE == name) {
+				// noinspection ConstantConditions
+				WindowManagerWrapper(baseContext.getSystemService(name) as WindowManager)
+			} else {
+				super.getSystemService(name)
+			}
+	}
+	
+	inner class WindowManagerWrapper(private val base : WindowManager) : WindowManager {
+		
+		@Suppress("DEPRECATION")
+		override fun getDefaultDisplay() : Display? =
+			base.defaultDisplay
+		
+		override fun removeViewImmediate(view : View) =
+			base.removeViewImmediate(view)
+		
+		override fun updateViewLayout(view : View, params : ViewGroup.LayoutParams) =
+			base.updateViewLayout(view, params)
+		
+		override fun removeView(view : View) =
+			base.removeView(view)
+		
+		override fun addView(view : View, params : ViewGroup.LayoutParams) {
+			try {
+				Log.d(TAG, "WindowManager's addView(view, params) has been hooked.")
+				base.addView(view, params)
+			} catch(e : BadTokenException) {
+				e.message?.let { Log.i(TAG, it) }
+				badTokenListener?.onBadTokenCaught(toast)
+			} catch(throwable : Throwable) {
+				Log.e(TAG, "[addView]", throwable)
+			}
+		}
+	}
+}
+
 @Suppress("DEPRECATION")
-class ToastCompat(
+class ToastCompat private constructor(
 	context : Context,
-	private val baseToast : Toast
+	private val original : Toast
 ) : Toast(context) {
 	
 	companion object {
+		
+		private fun setContextCompat(view : View?, contextCreator : () -> Context) {
+			if(view != null && Build.VERSION.SDK_INT == 25) {
+				try {
+					val field = View::class.java.getDeclaredField("mContext")
+					field.isAccessible = true
+					field[view] = contextCreator()
+				} catch(throwable : Throwable) {
+					throwable.printStackTrace()
+				}
+			}
+		}
+		
+		/**
+		 * Make a standard toast that just contains a text view with the text from a resource.
+		 *
+		 * @param context The context to use.  Usually your [android.app.Application]
+		 * or [android.app.Activity] object.
+		 * @param resId The resource id of the string resource to use.  Can be formatted text.
+		 * @param duration How long to display the message.  Either [.LENGTH_SHORT] or
+		 * [.LENGTH_LONG]
+		 * @throws Resources.NotFoundException if the resource can't be found.
+		 */
+		@Suppress("unused")
+		fun makeText(context : Context, @StringRes resId : Int, duration : Int) =
+			makeText(context, context.resources.getText(resId), duration)
 		
 		/**
 		 * Make a standard toast that just contains a text view.
@@ -47,80 +135,56 @@ class ToastCompat(
 			return ToastCompat(context, toast)
 		}
 		
-		/**
-		 * Make a standard toast that just contains a text view with the text from a resource.
-		 *
-		 * @param context The context to use.  Usually your [android.app.Application]
-		 * or [android.app.Activity] object.
-		 * @param resId The resource id of the string resource to use.  Can be formatted text.
-		 * @param duration How long to display the message.  Either [.LENGTH_SHORT] or
-		 * [.LENGTH_LONG]
-		 * @throws Resources.NotFoundException if the resource can't be found.
-		 */
-		@Suppress("unused")
-		fun makeText(context : Context, @StringRes resId : Int, duration : Int) : Toast {
-			return makeText(context, context.resources.getText(resId), duration)
-		}
-		
-		private fun setContextCompat(view : View?, contextCreator : () -> Context) {
-			if(view != null && Build.VERSION.SDK_INT == 25) {
-				try {
-					val field = View::class.java.getDeclaredField("mContext")
-					field.isAccessible = true
-					field[view] = contextCreator()
-				} catch(throwable : Throwable) {
-					throwable.printStackTrace()
-				}
-			}
-		}
 	}
 	
 	fun setBadTokenListener(listener : BadTokenListener?) : ToastCompat {
-		(baseToast.view?.context as? SafeToastContext)
+		(original.view?.context as? SafeToastContext)
 			?.setBadTokenListener(listener)
 		return this
 	}
 	
 	override fun setView(view : View) {
-		baseToast.view = view
-		setContextCompat(baseToast.view) { SafeToastContext(view.context, this) }
+		original.view = view
+		setContextCompat(original.view) { SafeToastContext(view.context, original) }
 	}
 	
-	override fun getView() : View? = baseToast.view
+	override fun getView() : View? =
+		original.view
 	
-	override fun show() = baseToast.show()
+	override fun show() =
+		original.show()
 	
 	override fun setDuration(duration : Int) {
-		baseToast.duration = duration
+		original.duration = duration
 	}
 	
 	override fun setGravity(gravity : Int, xOffset : Int, yOffset : Int) =
-		baseToast.setGravity(gravity, xOffset, yOffset)
+		original.setGravity(gravity, xOffset, yOffset)
 	
 	override fun setMargin(horizontalMargin : Float, verticalMargin : Float) =
-		baseToast.setMargin(horizontalMargin, verticalMargin)
+		original.setMargin(horizontalMargin, verticalMargin)
 	
 	override fun setText(resId : Int) =
-		baseToast.setText(resId)
+		original.setText(resId)
 	
 	override fun setText(s : CharSequence) =
-		baseToast.setText(s)
+		original.setText(s)
 	
-	override fun getHorizontalMargin() : Float =
-		baseToast.horizontalMargin
+	override fun getHorizontalMargin() =
+		original.horizontalMargin
 	
-	override fun getVerticalMargin() : Float =
-		baseToast.verticalMargin
+	override fun getVerticalMargin() =
+		original.verticalMargin
 	
-	override fun getDuration() : Int =
-		baseToast.duration
+	override fun getDuration() =
+		original.duration
 	
-	override fun getGravity() : Int =
-		baseToast.gravity
+	override fun getGravity() =
+		original.gravity
 	
-	override fun getXOffset() : Int =
-		baseToast.xOffset
+	override fun getXOffset() =
+		original.xOffset
 	
-	override fun getYOffset() : Int =
-		baseToast.yOffset
+	override fun getYOffset() =
+		original.yOffset
 }

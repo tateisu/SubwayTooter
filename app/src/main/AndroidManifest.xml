@@ -30,6 +30,10 @@
             <data android:mimeType="text/plain" />
         </intent>
 
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+
         <!--        <intent>-->
         <!--            <action android:name="android.intent.action.SEND" />-->
         <!--            <data android:mimeType="video/*" />-->

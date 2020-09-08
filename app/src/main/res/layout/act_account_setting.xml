@@ -388,7 +388,7 @@
 
         <LinearLayout style="@style/setting_row_form">
 
-            <Switch
+            <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/swMarkSensitive"
                 style="@style/setting_wrap" />
 
@@ -406,7 +406,7 @@
 
         <LinearLayout style="@style/setting_row_form">
 
-            <Switch
+            <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/swNSFWOpen"
                 style="@style/setting_wrap" />
 
@@ -424,7 +424,7 @@
 
         <LinearLayout style="@style/setting_row_form">
 
-            <Switch
+            <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/swExpandCW"
                 style="@style/setting_wrap" />
 
@@ -442,7 +442,7 @@
 
         <LinearLayout style="@style/setting_row_form">
 
-            <Switch
+            <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/swDontShowTimeout"
                 style="@style/setting_wrap" />
 
@@ -836,7 +836,7 @@
 
         <!--<LinearLayout style="@style/setting_row_form">-->
 
-        <!--<Switch-->
+        <!--<androidx.appcompat.widget.SwitchCompat-->
         <!--android:id="@+id/swForceWifi"-->
         <!--style="@style/setting_horizontal_stretch"-->
         <!--android:gravity="center"-->
@@ -887,7 +887,7 @@
 
         <!--<LinearLayout style="@style/setting_row_form">-->
 
-        <!--<Switch-->
+        <!--<androidx.appcompat.widget.SwitchCompat-->
         <!--android:id="@+id/swThumbnailAutoRotate"-->
         <!--style="@style/setting_horizontal_stretch"-->
         <!--android:gravity="center"-->
@@ -908,7 +908,7 @@
 
         <!--<LinearLayout style="@style/setting_row_form">-->
 
-        <!--<Switch-->
+        <!--<androidx.appcompat.widget.SwitchCompat-->
         <!--android:id="@+id/swCopyBeforeViewSend"-->
         <!--style="@style/setting_horizontal_stretch"-->
         <!--android:gravity="center"-->

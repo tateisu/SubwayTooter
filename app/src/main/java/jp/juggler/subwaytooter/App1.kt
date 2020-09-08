@@ -19,8 +19,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
-import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import androidx.browser.customtabs.CustomTabsIntent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
@@ -617,7 +617,8 @@ class App1 : Application() {
 					activity.startActivity(intent, startAnimationBundle)
 					return true
 				}
-				val rv = DlgAppPicker(
+				
+				return DlgAppPicker(
 					activity,
 					intent,
 					autoSelect = true,
@@ -631,8 +632,6 @@ class App1 : Application() {
 						showToast(activity, ex, "can't open. ${intent.data}")
 					}
 				}.show()
-				
-				return rv
 				
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -826,21 +825,19 @@ class App1 : Application() {
 			}
 		}
 		
-		fun setSwitchColor1(
+		fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
+			(Color.red(col1) + Color.red(col2)) ushr 1,
+			(Color.green(col1) + Color.green(col2)) ushr 1,
+			(Color.blue(col1) + Color.blue(col2)) ushr 1
+		)
+		
+		fun setSwitchColor(
 			activity : AppCompatActivity,
 			pref : SharedPreferences,
-			view : Switch?
+			root : View?
 		) {
-			fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
-				(Color.red(col1) + Color.red(col2)) ushr 1,
-				(Color.green(col1) + Color.green(col2)) ushr 1,
-				(Color.blue(col1) + Color.blue(col2)) ushr 1
-			)
-			
 			val colorBg = getAttributeColor(activity, R.attr.colorWindowBackground)
-			
 			val colorOn = Pref.ipSwitchOnColor(pref)
-			
 			val colorOff = /* Pref.ipSwitchOffColor(pref).notZero() ?: */
 				getAttributeColor(activity, android.R.attr.colorPrimary)
 			
@@ -850,73 +847,6 @@ class App1 : Application() {
 			val colorTrackOn = mixColor(colorBg, colorOn)
 			val colorTrackOff = mixColor(colorBg, colorOff)
 			
-			// set Switch Color
-			// https://stackoverflow.com/a/25635526/9134243
-			val thumbStates = ColorStateList(
-				arrayOf(
-					intArrayOf(- android.R.attr.state_enabled),
-					intArrayOf(android.R.attr.state_checked),
-					intArrayOf()
-				),
-				intArrayOf(
-					colorDisabled,
-					colorOn,
-					colorOff
-				)
-			)
-			
-			val trackStates = ColorStateList(
-				arrayOf(
-					intArrayOf(- android.R.attr.state_enabled),
-					intArrayOf(android.R.attr.state_checked),
-					intArrayOf()
-				),
-				intArrayOf(
-					colorTrackDisabled,
-					colorTrackOn,
-					colorTrackOff
-				)
-			)
-			
-			view?.apply {
-				if(Build.VERSION.SDK_INT < 23) {
-					// android 5
-					thumbDrawable?.setTintList(thumbStates)
-					trackDrawable?.setTintList(thumbStates) // not trackState
-				} else {
-					// android 6
-					thumbTintList = thumbStates
-					if(Build.VERSION.SDK_INT >= 24) {
-						// android 7
-						trackTintList = trackStates
-						trackTintMode = PorterDuff.Mode.SRC_OVER
-					}
-				}
-			}
-		}
-		
-		fun setSwitchColor(activity : AppCompatActivity, pref : SharedPreferences, root : View?) {
-			
-			fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
-				(Color.red(col1) + Color.red(col2)) ushr 1,
-				(Color.green(col1) + Color.green(col2)) ushr 1,
-				(Color.blue(col1) + Color.blue(col2)) ushr 1
-			)
-			
-			val colorBg = getAttributeColor(activity, R.attr.colorWindowBackground)
-			
-			val colorOn = Pref.ipSwitchOnColor(pref)
-			
-			val colorOff = /* Pref.ipSwitchOffColor(pref).notZero() ?: */
-				getAttributeColor(activity, android.R.attr.colorPrimary)
-			
-			val colorDisabled = mixColor(colorBg, colorOff)
-			
-			val colorTrackDisabled = mixColor(colorBg, colorDisabled)
-			val colorTrackOn = mixColor(colorBg, colorOn)
-			val colorTrackOff = mixColor(colorBg, colorOff)
-			
-			// set Switch Color
 			// https://stackoverflow.com/a/25635526/9134243
 			val thumbStates = ColorStateList(
 				arrayOf(
@@ -945,20 +875,9 @@ class App1 : Application() {
 			)
 			
 			root?.scan {
-				(it as? Switch)?.apply {
-					if(Build.VERSION.SDK_INT < 23) {
-						// android 5
-						thumbDrawable?.setTintList(thumbStates)
-						trackDrawable?.setTintList(thumbStates) // not trackState
-					} else {
-						// android 6
-						thumbTintList = thumbStates
-						if(Build.VERSION.SDK_INT >= 24) {
-							// android 7
-							trackTintList = trackStates
-							trackTintMode = PorterDuff.Mode.SRC_OVER
-						}
-					}
+				(it as? SwitchCompat)?.apply {
+					thumbTintList = thumbStates
+					trackTintList = trackStates
 				}
 			}
 		}

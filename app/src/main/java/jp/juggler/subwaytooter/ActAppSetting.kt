@@ -16,6 +16,7 @@ import android.view.Window
 import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
@@ -37,7 +38,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import kotlin.Comparator
 import kotlin.collections.ArrayList
 import kotlin.math.abs
 
@@ -438,7 +438,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 		private val checkBox : CheckBox = viewRoot.findViewById<CheckBox>(R.id.checkBox)
 			.also { it.setOnCheckedChangeListener(this) }
 		
-		private val swSwitch : Switch = viewRoot.findViewById<Switch>(R.id.swSwitch)
+		private val swSwitch : SwitchCompat = viewRoot.findViewById<SwitchCompat>(R.id.swSwitch)
 			.also { it.setOnCheckedChangeListener(this) }
 		
 		val llExtra : LinearLayout = viewRoot.findViewById(R.id.llExtra)
@@ -537,7 +537,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 							item.pref.cast() ?: error("$name has no boolean pref")
 						showCaption(name)
 						swSwitch.vg(false) // skip animation
-						App1.setSwitchColor1(activity, pref, swSwitch)
+						App1.setSwitchColor(activity, pref, swSwitch)
 						swSwitch.isEnabled = item.enabled
 						swSwitch.isChecked = bp(pref)
 						swSwitch.vg(true)
@@ -776,6 +776,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 	
 	///////////////////////////////////////////////////////////////
 	
+	@Suppress("BlockingMethodInNonBlockingContext")
 	fun exportAppData() {
 		
 		runWithProgress(
@@ -1117,9 +1118,9 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 				}
 			}
 			
-			list.sortWith(Comparator { a, b ->
+			list.sortWith { a, b ->
 				(a.offset - b.offset).notZero() ?: a.caption.compareTo(b.caption)
-			})
+			}
 			
 			list.add(0, Item("", getString(R.string.device_timezone), 0))
 		}

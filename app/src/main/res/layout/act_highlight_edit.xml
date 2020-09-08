@@ -95,7 +95,7 @@
 
         <LinearLayout style="@style/setting_row_form">
 
-            <Switch
+            <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/swSound"
                 style="@style/setting_horizontal_stretch"
                 android:gravity="center"
@@ -132,7 +132,7 @@
 
         <LinearLayout style="@style/setting_row_form">
 
-            <Switch
+            <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/swSpeech"
                 style="@style/setting_horizontal_stretch"
                 android:gravity="center"

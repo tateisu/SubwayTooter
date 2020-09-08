@@ -28,7 +28,7 @@
         android:id="@+id/checkBox"
         style="@style/setting_row_form" />
 
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/swSwitch"
         style="@style/setting_row_form"
         android:gravity="center"
@@ -46,6 +46,7 @@
         style="@style/setting_row_form"
         android:gravity="center"
         android:importantForAutofill="no"
+        android:inputType="text"
          />
 
     <TextView

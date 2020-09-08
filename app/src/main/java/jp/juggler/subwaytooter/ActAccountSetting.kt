@@ -20,6 +20,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
@@ -93,10 +94,10 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 	
 	private lateinit var btnVisibility : Button
 	
-	private lateinit var swNSFWOpen : Switch
-	private lateinit var swDontShowTimeout : Switch
-	private lateinit var swExpandCW : Switch
-	private lateinit var swMarkSensitive : Switch
+	private lateinit var swNSFWOpen : SwitchCompat
+	private lateinit var swDontShowTimeout : SwitchCompat
+	private lateinit var swExpandCW : SwitchCompat
+	private lateinit var swMarkSensitive : SwitchCompat
 	
 	private lateinit var btnOpenBrowser : Button
 	private lateinit var btnPushSubscription : Button
@@ -313,14 +314,14 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			R.id.etFieldName2,
 			R.id.etFieldName3,
 			R.id.etFieldName4
-		).map { findViewById<EditText>(it) } // 型指定を除去してはいけない
+		).map { findViewById(it) }
 		
 		listEtFieldValue = arrayOf(
 			R.id.etFieldValue1,
 			R.id.etFieldValue2,
 			R.id.etFieldValue3,
 			R.id.etFieldValue4
-		).map { findViewById<EditText>(it) } // 型指定を除去してはいけない
+		).map { findViewById(it) }
 		
 		btnFields = findViewById(R.id.btnFields)
 		

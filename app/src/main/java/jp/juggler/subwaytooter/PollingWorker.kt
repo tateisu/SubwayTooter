@@ -44,6 +44,7 @@ import kotlin.math.min
 class PollingWorker private constructor(contextArg : Context) {
 	
 	interface JobStatusCallback {
+		
 		fun onStatus(sv : String)
 	}
 	
@@ -53,6 +54,7 @@ class PollingWorker private constructor(contextArg : Context) {
 		NotReply("notReply");
 		
 		companion object {
+			
 			fun parseStr(str : String?) : TrackingType {
 				for(v in values()) {
 					if(v.str == str) return v
@@ -64,6 +66,7 @@ class PollingWorker private constructor(contextArg : Context) {
 	}
 	
 	companion object {
+		
 		internal val log = LogCategory("PollingWorker")
 		
 		private const val FCM_SENDER_ID = "433682361381"
@@ -245,7 +248,11 @@ class PollingWorker private constructor(contextArg : Context) {
 					.setOverrideDeadline(60000L)
 			}
 			val jobInfo = builder.build()
-			scheduler.schedule(jobInfo)
+			
+			val rv = scheduler.schedule(jobInfo)
+			if(rv != JobScheduler.RESULT_SUCCESS) {
+				log.w("scheduler.schedule failed. rv=$rv")
+			}
 		}
 		
 		// タスクの追加
@@ -302,7 +309,7 @@ class PollingWorker private constructor(contextArg : Context) {
 			
 		}
 		
-		private fun decodeNotificationUri(uri:Uri?):JsonObject?{
+		private fun decodeNotificationUri(uri : Uri?) : JsonObject? {
 			uri ?: return null
 			return jsonObject {
 				putNotNull(
@@ -323,13 +330,13 @@ class PollingWorker private constructor(contextArg : Context) {
 		fun queueNotificationDeleted(context : Context, uri : Uri?) {
 			try {
 				val params = decodeNotificationUri(uri) ?: return
-				addTask(context,false,TASK_NOTIFICATION_DELETE,params)
+				addTask(context, false, TASK_NOTIFICATION_DELETE, params)
 			} catch(ex : JsonException) {
 				log.trace(ex)
 			}
 		}
 		
-		fun queueNotificationClicked(context : Context, uri:Uri?) {
+		fun queueNotificationClicked(context : Context, uri : Uri?) {
 			try {
 				val params = decodeNotificationUri(uri) ?: return
 				addTask(context, true, TASK_NOTIFICATION_CLICK, params)
@@ -432,6 +439,7 @@ class PollingWorker private constructor(contextArg : Context) {
 	internal class Data(val access_info : SavedAccount, val notification : TootNotification)
 	
 	internal class InjectData {
+		
 		var account_db_id : Long = 0
 		val list = ArrayList<TootNotification>()
 	}
@@ -445,13 +453,13 @@ class PollingWorker private constructor(contextArg : Context) {
 		
 		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
 		// データベースへアクセスできるようにする
-		this.appState = App1.prepare(context,"PollingWorker.ctor()")
+		this.appState = App1.prepare(context, "PollingWorker.ctor()")
 		this.pref = App1.pref
 		this.handler = Handler(context.mainLooper)
 		
 		this.connectivityManager = systemService(context)
 			?: error("missing ConnectivityManager system service")
-			
+		
 		
 		this.notification_manager = systemService(context)
 			?: error("missing NotificationManager system service")
@@ -459,7 +467,7 @@ class PollingWorker private constructor(contextArg : Context) {
 		this.scheduler = systemService(context)
 			?: error("missing JobScheduler system service")
 		
-		this.power_manager =  systemService(context)
+		this.power_manager = systemService(context)
 			?: error("missing PowerManager system service")
 		
 		// WifiManagerの取得時はgetApplicationContext を使わないとlintに怒られる
@@ -676,6 +684,7 @@ class PollingWorker private constructor(contextArg : Context) {
 	internal class JobCancelledException : RuntimeException("job is cancelled.")
 	
 	inner class JobItem {
+		
 		val jobId : Int
 		private val refJobService : WeakReference<JobService>?
 		private val jobParams : JobParameters?
@@ -741,7 +750,7 @@ class PollingWorker private constructor(contextArg : Context) {
 				
 				val net_wait_start = SystemClock.elapsedRealtime()
 				while(true) {
-					val connectionState = App1.getAppState(context,"PollingWorker.JobItem.run()")
+					val connectionState = App1.getAppState(context, "PollingWorker.JobItem.run()")
 						.networkTracker.connectionState
 						?: break
 					if(isJobCancelled) throw JobCancelledException()
@@ -824,10 +833,10 @@ class PollingWorker private constructor(contextArg : Context) {
 		
 	}
 	
-	private fun TrackingType.trackingTypeName()=when(this){
-		TrackingType.NotReply ->NotificationHelper.TRACKING_NAME_DEFAULT
+	private fun TrackingType.trackingTypeName() = when(this) {
+		TrackingType.NotReply -> NotificationHelper.TRACKING_NAME_DEFAULT
 		TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
-		TrackingType.All ->  NotificationHelper.TRACKING_NAME_DEFAULT
+		TrackingType.All -> NotificationHelper.TRACKING_NAME_DEFAULT
 	}
 	
 	internal inner class TaskRunner {
@@ -836,8 +845,6 @@ class PollingWorker private constructor(contextArg : Context) {
 		private var taskId : Int = 0
 		
 		val error_instance = ArrayList<String>()
-		
-		
 		
 		fun runTask(job : JobItem, taskId : Int, taskData : JsonObject) {
 			try {
@@ -949,10 +956,10 @@ class PollingWorker private constructor(contextArg : Context) {
 								"" -> "${db_id}/_"
 								else -> "${db_id}/$typeName"
 							}
-							if( id != null){
+							if(id != null) {
 								val itemTag = "$notification_tag/$id"
 								notification_manager.cancel(itemTag, NOTIFICATION_ID)
-							}else{
+							} else {
 								notification_manager.cancel(notification_tag, NOTIFICATION_ID)
 							}
 							// DB更新処理
@@ -1297,7 +1304,10 @@ class PollingWorker private constructor(contextArg : Context) {
 								continue
 							}
 							
-							createNotification(itemTag,notificationId = item.notification.id.toString()) { builder ->
+							createNotification(
+								itemTag,
+								notificationId = item.notification.id.toString()
+							) { builder ->
 								
 								builder.setWhen(item.notification.time_created_at)
 								
@@ -1373,7 +1383,7 @@ class PollingWorker private constructor(contextArg : Context) {
 							
 							if(dataList.size == 1) {
 								builder.setContentTitle(a)
-								builder.setContentText( account.acct.pretty)
+								builder.setContentText(account.acct.pretty)
 							} else {
 								val header =
 									context.getString(R.string.notification_count, dataList.size)
@@ -1382,7 +1392,7 @@ class PollingWorker private constructor(contextArg : Context) {
 								
 								val style = NotificationCompat.InboxStyle()
 									.setBigContentTitle(header)
-									.setSummaryText( account.acct.pretty)
+									.setSummaryText(account.acct.pretty)
 								for(i in 0 .. 4) {
 									if(i >= dataList.size) break
 									val item = dataList[i]
@@ -1468,11 +1478,11 @@ class PollingWorker private constructor(contextArg : Context) {
 							"db_id" to account.db_id.toString(),
 							"type" to trackingType.str,
 							"notificationId" to notificationId
-						).mapNotNull{
+						).mapNotNull {
 							val second = it.second
-							if( second == null ){
+							if(second == null) {
 								null
-							}else{
+							} else {
 								"${it.first.encodePercent()}=${second.encodePercent()}"
 							}
 						}.joinToString("&")
@@ -1574,11 +1584,11 @@ class PollingWorker private constructor(contextArg : Context) {
 				"- " + context.getString(R.string.display_name_voted_by, name)
 			
 			TootNotification.TYPE_FOLLOW_REQUEST,
-			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY->
-				"- " + context.getString( R.string.display_name_follow_request_by, name )
-
+			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY ->
+				"- " + context.getString(R.string.display_name_follow_request_by, name)
+			
 			TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY ->
-				"- " + context.getString( R.string.display_name_follow_request_accepted_by, name )
+				"- " + context.getString(R.string.display_name_follow_request_accepted_by, name)
 			
 			TootNotification.TYPE_POLL ->
 				"- " + context.getString(R.string.end_of_polling_from, name)

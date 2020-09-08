@@ -12,7 +12,6 @@ import android.content.res.ColorStateList
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -825,7 +824,7 @@ class App1 : Application() {
 			}
 		}
 		
-		fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
+		private fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
 			(Color.red(col1) + Color.red(col2)) ushr 1,
 			(Color.green(col1) + Color.green(col2)) ushr 1,
 			(Color.blue(col1) + Color.blue(col2)) ushr 1

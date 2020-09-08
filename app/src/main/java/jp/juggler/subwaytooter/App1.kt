@@ -609,10 +609,22 @@ class App1 : Application() {
 		) : Boolean {
 			try {
 				val pm = activity.packageManager !!
-				val flags = PackageManager.MATCH_DEFAULT_ONLY
-				val ri = pm.resolveActivity(intent, flags)
-				if(ri != null && ri.activityInfo.packageName != activity.packageName) {
-					// ST以外が選択された
+				val myName = activity.packageName
+				
+				// resolveActivity がこのアプリ以外のActivityを返すなら、それがベストなんだろう
+				// ただしAndroid M以降はMATCH_DEFAULT_ONLYだと「常時」が設定されてないとnullを返す
+				
+				val ri = pm.resolveActivity(
+					intent,
+					if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+						PackageManager.MATCH_ALL
+					} else {
+						PackageManager.MATCH_DEFAULT_ONLY
+					}
+				) ?.takeIf { it.activityInfo.packageName != myName }
+
+				if(ri != null) {
+					intent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name)
 					activity.startActivity(intent, startAnimationBundle)
 					return true
 				}
@@ -621,7 +633,7 @@ class App1 : Application() {
 					activity,
 					intent,
 					autoSelect = true,
-					filter = { it.activityInfo.packageName != activity.packageName }
+					filter = { it.activityInfo.packageName != myName }
 				) {
 					try {
 						intent.component = it.cn()

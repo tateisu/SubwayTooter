@@ -43,7 +43,7 @@ class DlgAppPicker(
 			if(Build.VERSION.SDK_INT >= 23) {
 				PackageManager.MATCH_ALL
 			} else {
-				0 // PackageManager.MATCH_DEFAULT_ONLY
+				0
 			}
 		)
 		

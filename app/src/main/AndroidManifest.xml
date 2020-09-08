@@ -1,18 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="jp.juggler.subwaytooter"
-    >
+    package="jp.juggler.subwaytooter">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- CAMERAパーミッションをつけるとPlayストアにプライバシーポリシーを記載する必要がある -->
     <!--<uses-permission android:name="android.permission.CAMERA"/>-->
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+
+<!--        <intent>-->
+<!--            <action android:name="android.intent.action.SEND" />-->
+<!--            <data android:mimeType="video/*" />-->
+<!--        </intent>-->
+<!--        <intent>-->
+<!--            <action android:name="android.intent.action.VIEW" />-->
+<!--            <data android:mimeType="video/*" />-->
+<!--        </intent>-->
+    </queries>
 
     <application
         android:name=".App1"
@@ -21,44 +36,40 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
+        android:maxAspectRatio="100"
+        android:resizeableActivity="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.Light"
-        android:resizeableActivity="true"
-        android:maxAspectRatio="100"
         tools:ignore="UnusedAttribute">
 
         <receiver android:name=".EventReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
             <intent-filter>
-                <action android:name="android.intent.action.ACTION_MY_PACKAGE_REPLACED"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.ACTION_MY_PACKAGE_REPLACED" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
         </receiver>
 
         <service
             android:name=".PollingService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            />
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
-        <service
-            android:name=".PollingForegrounder"
-            />
+        <service android:name=".PollingForegrounder" />
 
         <activity
             android:name=".ActMain"
             android:label="@string/app_name"
             android:launchMode="singleTask"
 
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            >
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
@@ -68,29 +79,27 @@
 
             >
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
                     android:host="*"
                     android:pathPattern=".*"
-                    android:scheme="subwaytooter"
-                    />
+                    android:scheme="subwaytooter" />
             </intent-filter>
 
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
                     android:host="*"
                     android:pathPrefix="/@"
-                    android:scheme="https"
-                    />
+                    android:scheme="https" />
             </intent-filter>
 
             <!-- https://mstdn.kemono-friends.info/users/tocchi/updates/695489 -->
@@ -108,45 +117,45 @@
             <!--</intent-filter>-->
 
             <intent-filter>
-                <action android:name="android.intent.action.SEND"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="text/plain"/>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
             </intent-filter>
 
             <intent-filter>
-                <action android:name="android.intent.action.SEND"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="image/*"/>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
             </intent-filter>
 
             <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="image/*"/>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
             </intent-filter>
 
             <intent-filter>
-                <action android:name="android.intent.action.SEND"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="video/*"/>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
             </intent-filter>
 
             <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="video/*"/>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
             </intent-filter>
 
             <intent-filter>
-                <action android:name="android.intent.action.SEND"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="audio/*"/>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="audio/*" />
             </intent-filter>
 
             <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="audio/*"/>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="audio/*" />
             </intent-filter>
 
         </activity>
@@ -155,28 +164,24 @@
             android:name=".ActPost"
             android:label="@string/act_post"
 
-            android:windowSoftInputMode="adjustResize"
-            />
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".ActAccountSetting"
             android:label="@string/account_setting"
 
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            />
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActAppSetting"
             android:label="@string/app_setting"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            />
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActColumnList"
             android:label="@string/column_list"
 
-            android:windowSoftInputMode="adjustResize"
-            />
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ActAbout"
             android:label="@string/app_about"
@@ -189,103 +194,86 @@
             />
         <activity
             android:name=".ActMutedApp"
-            android:label="@string/muted_app"
-            />
+            android:label="@string/muted_app" />
         <activity
             android:name=".ActMutedPseudoAccount"
-            android:label="@string/muted_users_from_pseudo_account"
-            />
+            android:label="@string/muted_users_from_pseudo_account" />
 
         <activity
             android:name=".ActMutedWord"
-            android:label="@string/muted_word"
-            />
+            android:label="@string/muted_word" />
 
         <activity
             android:name=".ActFavMute"
-            android:label="@string/fav_muted_user_long"
-            />
+            android:label="@string/fav_muted_user_long" />
 
         <activity
             android:name=".ActKeywordFilter"
             android:label="@string/keyword_filter_new"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            />
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActHighlightWordList"
-            android:label="@string/highlight_word"
-            />
+            android:label="@string/highlight_word" />
         <activity
             android:name=".ActHighlightWordEdit"
-            android:label="@string/highlight_word"
-            />
+            android:label="@string/highlight_word" />
 
         <activity
             android:name=".ActColumnCustomize"
             android:label="@string/color_and_background"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            />
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActLanguageFilter"
             android:label="@string/language_filter"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            />
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActDrawableList"
             android:label="@string/drawable_list"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            />
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActNickname"
             android:label="@string/nickname_and_color_and_notification_sound"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            />
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActText"
             android:label="@string/select_and_copy"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            />
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActMediaViewer"
-            android:theme="@style/AppTheme.Dark.NoActionBar"
-            />
+            android:theme="@style/AppTheme.Dark.NoActionBar" />
 
         <meta-data
             android:name="android.max_aspect"
-            android:value="100.0"
-            />
+            android:value="100.0" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="jp.juggler.subwaytooter.FileProvider"
             android:exported="false"
-            android:grantUriPermissions="true"
-            >
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_provider_path"
-                />
+                android:resource="@xml/file_provider_path" />
         </provider>
 
         <receiver android:name=".DownloadReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED"/>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
+                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED" />
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
             </intent-filter>
         </receiver>
 
         <service
             android:name=".MyFirebaseMessagingService"
-            tools:ignore="ExportedService"
-            >
+            tools:ignore="ExportedService">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
@@ -293,21 +281,18 @@
              See README(https://goo.gl/l4GJaQ) for more. -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/ic_notification"
-            />
+            android:resource="@drawable/ic_notification" />
 
         <!-- Set color used with incoming notification messages. This is used when no color is set for the incoming
              notification message. See README(https://goo.gl/6BKBk7) for more. -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/Light_colorAccent"
-            />
+            android:resource="@color/Light_colorAccent" />
 
         <!--https://android-developers.googleblog.com/2018/11/get-your-app-ready-for-foldable-phones.html-->
         <meta-data
             android:name="android.allow_multiple_resumed_activities"
-            android:value="true"
-            />
+            android:value="true" />
 
     </application>
 

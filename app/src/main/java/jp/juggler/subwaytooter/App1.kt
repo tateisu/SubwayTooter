@@ -380,7 +380,7 @@ class App1 : Application() {
 			log.d("create okhttp client")
 			run {
 				// API用のHTTP設定はキャッシュを使わない
-				ok_http_client = prepareOkHttp(30, 60)
+				ok_http_client = prepareOkHttp(60, 60)
 					.build()
 				
 				// ディスクキャッシュ
@@ -388,7 +388,7 @@ class App1 : Application() {
 				val cache = Cache(cacheDir, 30000000L)
 				
 				// カスタム絵文字用のHTTP設定はキャッシュを使う
-				ok_http_client2 = prepareOkHttp(30, 60)
+				ok_http_client2 = prepareOkHttp(60, 60)
 					.cache(cache)
 					.build()
 				

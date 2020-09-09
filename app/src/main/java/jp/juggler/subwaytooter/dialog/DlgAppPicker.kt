@@ -13,8 +13,8 @@ import android.view.WindowManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.action.CustomShare
-import jp.juggler.subwaytooter.action.cn
+import jp.juggler.subwaytooter.util.CustomShare
+import jp.juggler.subwaytooter.util.cn
 import jp.juggler.util.*
 
 class DlgAppPicker(

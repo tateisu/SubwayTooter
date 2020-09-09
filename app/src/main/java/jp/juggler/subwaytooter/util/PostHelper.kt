@@ -1052,7 +1052,7 @@ class PostHelper(
 			proc_text_changed.run()
 			
 			// キーボードを再度表示する
-			Handler(activity.mainLooper).post { et.showKeyboard() }
+			App1.getAppState(activity,"PostHelper/EmojiPicker/cb").handler.post { et.showKeyboard() }
 			
 		}.show()
 	}

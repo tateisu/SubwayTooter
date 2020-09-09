@@ -24,7 +24,10 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import kotlin.math.ceil
 
-class CustomEmojiCache(val context : Context) {
+class CustomEmojiCache(
+	val context : Context,
+	private val handler : Handler
+) {
 	
 	companion object {
 		
@@ -157,6 +160,7 @@ class CustomEmojiCache(val context : Context) {
 	}
 	
 	private class CacheItem(val url : String, var frames : ApngFrames?) {
+		
 		var time_used : Long = elapsedTime
 	}
 	
@@ -177,14 +181,12 @@ class CustomEmojiCache(val context : Context) {
 	// キャンセル操作の都合上、アクセス時に排他が必要
 	private val queue = LinkedList<Request>()
 	
-	private val handler = Handler(context.mainLooper)
-	
 	private val dbOpenHelper = DbOpenHelper(context)
 	
 	private var lastSweepDbCache = 0L
 	
 	private val workerLock = Any()
-
+	
 	// 他の変数より後に初期化すること
 	private val workers =
 		(1 .. 4).map { Worker(workerLock).apply { start() } }.toList()

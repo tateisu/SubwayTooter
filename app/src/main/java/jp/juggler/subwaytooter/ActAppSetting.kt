@@ -21,8 +21,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
-import jp.juggler.subwaytooter.action.CustomShare
-import jp.juggler.subwaytooter.action.CustomShareTarget
+import jp.juggler.subwaytooter.util.CustomShare
+import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -44,6 +44,7 @@ import kotlin.math.abs
 class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickListener {
 	
 	companion object {
+		
 		internal val log = LogCategory("ActAppSetting")
 		
 		fun open(activity : ActMain, request_code : Int) {

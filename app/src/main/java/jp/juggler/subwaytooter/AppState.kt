@@ -42,7 +42,11 @@ class DedupItem(
 	var time : Long = SystemClock.elapsedRealtime()
 )
 
-class AppState(internal val context : Context, internal val pref : SharedPreferences) {
+class AppState(
+	internal val context : Context,
+	internal val handler : Handler,
+	internal val pref : SharedPreferences
+) {
 	
 	companion object {
 		internal val log = LogCategory("AppState")
@@ -118,7 +122,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	}
 	
 	internal val density : Float
-	internal val handler : Handler
+	
 	internal val stream_reader : StreamReader
 	
 	internal var media_thumb_height : Int = 0
@@ -151,7 +155,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	// そしてその他のメソッドからval プロパティにアクセスする場合、そのプロパティはメソッドより上で初期化されていないとダメっぽい
 	
 	init {
-		this.handler = Handler()
+		
 		this.density = context.resources.displayMetrics.density
 		this.stream_reader = StreamReader(context, handler, pref)
 		this.networkTracker = NetworkStateTracker(context) {

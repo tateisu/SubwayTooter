@@ -1144,7 +1144,7 @@ class ActPost : AsyncActivity(),
 	}
 	
 	private fun initUI() {
-		handler = Handler()
+		handler = App1.getAppState(this).handler
 		density = resources.displayMetrics.density
 		
 		setContentView(R.layout.act_post)

@@ -12,41 +12,44 @@
     <!-- CAMERAパーミッションをつけるとPlayストアにプライバシーポリシーを記載する必要がある -->
     <!--<uses-permission android:name="android.permission.CAMERA"/>-->
 
-    <!--suppress AndroidElementNotAllowed -->
     <queries>
 
+        <!-- (自アプリ以外で)指定URLを開けるアプリの存在確認 -->
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.BROWSABLE" />
         </intent>
 
+        <!-- Chrome Custom Tabs の存在確認 -->
         <intent>
             <action android:name="android.support.customtabs.action.CustomTabsService" />
         </intent>
 
+        <!-- カスタム共有ボタンのアプリ選択 -->
         <intent>
             <action android:name="android.intent.action.SEND" />
             <data android:mimeType="text/plain" />
         </intent>
 
+        <!-- TTS読み上げに必要 -->
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
 
+        <!-- Simejiマッシュルームプラグインの存在確認 -->
         <intent>
             <action android:name="com.adamrocker.android.simeji.ACTION_INTERCEPT" />
             <category android:name="com.adamrocker.android.simeji.REPLACE"/>
         </intent>
 
-
-        <!--        <intent>-->
-        <!--            <action android:name="android.intent.action.SEND" />-->
-        <!--            <data android:mimeType="video/*" />-->
-        <!--        </intent>-->
-        <!--        <intent>-->
-        <!--            <action android:name="android.intent.action.VIEW" />-->
-        <!--            <data android:mimeType="video/*" />-->
-        <!--        </intent>-->
+        <!-- <intent>-->
+        <!-- <action android:name="android.intent.action.SEND" />-->
+        <!-- <data android:mimeType="video/*" />-->
+        <!-- </intent>-->
+        <!-- <intent>-->
+        <!-- <action android:name="android.intent.action.VIEW" />-->
+        <!-- <data android:mimeType="video/*" />-->
+        <!-- </intent>-->
     </queries>
 
     <application

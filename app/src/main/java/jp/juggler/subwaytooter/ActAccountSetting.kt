@@ -253,7 +253,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 	
 	private fun initUI() {
 		this.density = resources.displayMetrics.density
-		this.handler = Handler()
+		this.handler = App1.getAppState(this).handler
 		setContentView(R.layout.act_account_setting)
 		App1.initEdgeToEdge(this)
 		

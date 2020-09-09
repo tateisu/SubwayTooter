@@ -455,7 +455,7 @@ class PollingWorker private constructor(contextArg : Context) {
 		// データベースへアクセスできるようにする
 		this.appState = App1.prepare(context, "PollingWorker.ctor()")
 		this.pref = App1.pref
-		this.handler = Handler(context.mainLooper)
+		this.handler = appState.handler
 		
 		this.connectivityManager = systemService(context)
 			?: error("missing ConnectivityManager system service")

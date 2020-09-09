@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.SystemClock
+import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -43,10 +44,10 @@ class TootTaskRunner(
 	private class ProgressInfo {
 		
 		// HORIZONTALスタイルの場合、初期メッセージがないと後からメッセージを指定しても表示されない
-		internal var message = " "
-		internal var isIndeterminate = true
-		internal var value = 0
-		internal var max = 1
+		var message = " "
+		var isIndeterminate = true
+		var value = 0
+		var max = 1
 	}
 	
 	private val handler : Handler
@@ -72,7 +73,7 @@ class TootTaskRunner(
 	
 	init {
 		this.refContext = WeakReference(context)
-		this.handler = Handler(context.mainLooper)
+		this.handler = App1.getAppState(context,"TootTaskRunner.ctor").handler
 		this.client = TootApiClient(context, callback = this)
 	}
 	

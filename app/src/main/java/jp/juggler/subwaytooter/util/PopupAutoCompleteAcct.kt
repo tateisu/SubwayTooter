@@ -13,6 +13,7 @@ import android.widget.CheckedTextView
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Acct
@@ -64,7 +65,7 @@ internal class PopupAutoCompleteAcct(
 	
 	init {
 		this.density = activity.resources.displayMetrics.density
-		this.handler = Handler(activity.mainLooper)
+		this.handler = App1.getAppState(activity,"PopupAutoCompleteAcct.ctor").handler
 		
 		popup_width = (0.5f + 240f * density).toInt()
 		

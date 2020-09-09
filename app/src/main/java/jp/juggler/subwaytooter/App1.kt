@@ -15,8 +15,10 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.View
+import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
@@ -27,10 +29,7 @@ import com.bumptech.glide.Registry
 import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
 import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
 import com.bumptech.glide.load.engine.executor.GlideExecutor
-import com.bumptech.glide.load.engine.executor.GlideExecutor.newDiskCacheExecutor
-import com.bumptech.glide.load.engine.executor.GlideExecutor.newSourceExecutor
 import com.bumptech.glide.load.model.GlideUrl
-import jp.juggler.subwaytooter.action.cn
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
@@ -38,6 +37,7 @@ import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.CustomEmojiCache
 import jp.juggler.subwaytooter.util.CustomEmojiLister
 import jp.juggler.subwaytooter.util.ProgressResponseBody
+import jp.juggler.subwaytooter.util.cn
 import jp.juggler.util.*
 import okhttp3.*
 import org.conscrypt.Conscrypt
@@ -398,16 +398,17 @@ class App1 : Application() {
 					.build()
 			}
 			
-			log.d("create custom emoji cache.")
-			custom_emoji_cache = CustomEmojiCache(app_context)
+			val handler = Handler(app_context.mainLooper)
 			
-			custom_emoji_lister = CustomEmojiLister(app_context)
+			log.d("create custom emoji cache.")
+			custom_emoji_cache = CustomEmojiCache(app_context,handler)
+			custom_emoji_lister = CustomEmojiLister(app_context,handler)
 			
 			ColumnType.dump()
 			
 			log.d("create  AppState.")
 			
-			state = AppState(app_context, pref)
+			state = AppState(app_context, handler,pref)
 			appStateX = state
 			
 			// getAppState()を使える状態にしてからカラム一覧をロードする
@@ -456,8 +457,14 @@ class App1 : Application() {
 			val catcher = GlideExecutor.UncaughtThrowableStrategy { ex ->
 				log.trace(ex)
 			}
-			builder.setDiskCacheExecutor(newDiskCacheExecutor(catcher))
-			builder.setSourceExecutor(newSourceExecutor(catcher))
+			builder.setDiskCacheExecutor(
+				GlideExecutor.newDiskCacheBuilder()
+					.setUncaughtThrowableStrategy(catcher).build()
+			)
+			builder.setSourceExecutor(
+				GlideExecutor.newSourceBuilder()
+					.setUncaughtThrowableStrategy(catcher).build()
+			)
 			
 			builder.setDiskCache(InternalCacheDiskCacheFactory(context, 10 * 1024 * 1024))
 			
@@ -621,8 +628,8 @@ class App1 : Application() {
 					} else {
 						PackageManager.MATCH_DEFAULT_ONLY
 					}
-				) ?.takeIf { it.activityInfo.packageName != myName }
-
+				)?.takeIf { it.activityInfo.packageName != myName }
+				
 				if(ri != null) {
 					intent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name)
 					activity.startActivity(intent, startAnimationBundle)
@@ -792,8 +799,11 @@ class App1 : Application() {
 				// メディアビューア画面ではステータスバーやナビゲーションバーの色を設定しない…
 				if(forceDark && Build.VERSION.SDK_INT < 26) return
 				
-				clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-				clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+				if(Build.VERSION.SDK_INT < 30) {
+					@Suppress("DEPRECATION")
+					clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+				}
+				
 				addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 				
 				var c = when {
@@ -803,14 +813,22 @@ class App1 : Application() {
 				}
 				statusBarColor = c or Color.BLACK
 				
-				if(Build.VERSION.SDK_INT >= 23) {
+				if(Build.VERSION.SDK_INT >= 30) {
+					decorView.windowInsetsController?.run {
+						val bit = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+						setSystemBarsAppearance(if(rgbToLab(c).first >= 50f) bit else 0, bit)
+					}
+				} else if(Build.VERSION.SDK_INT >= 23) {
+					@Suppress("DEPRECATION")
+					val bit = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+					@Suppress("DEPRECATION")
 					decorView.systemUiVisibility =
 						if(rgbToLab(c).first >= 50f) {
 							//Dark Text to show up on your light status bar
-							decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+							decorView.systemUiVisibility or bit
 						} else {
 							//Light Text to show up on your dark status bar
-							decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+							decorView.systemUiVisibility and bit.inv()
 						}
 				}
 				
@@ -822,14 +840,22 @@ class App1 : Application() {
 				if(c != 0) {
 					navigationBarColor = c or Color.BLACK
 					
-					if(Build.VERSION.SDK_INT >= 26) {
+					if(Build.VERSION.SDK_INT >= 30) {
+						decorView.windowInsetsController?.run {
+							val bit = WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+							setSystemBarsAppearance(if(rgbToLab(c).first >= 50f) bit else 0, bit)
+						}
+					} else if(Build.VERSION.SDK_INT >= 26) {
+						@Suppress("DEPRECATION")
+						val bit = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+						@Suppress("DEPRECATION")
 						decorView.systemUiVisibility =
 							if(rgbToLab(c).first >= 50f) {
 								//Dark Text to show up on your light status bar
-								decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+								decorView.systemUiVisibility or bit
 							} else {
 								//Light Text to show up on your dark status bar
-								decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+								decorView.systemUiVisibility and bit.inv()
 							}
 					}
 				} // else: need restart app.

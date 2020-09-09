@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter.action
+package jp.juggler.subwaytooter.util
 
 import android.content.*
 import android.graphics.PorterDuff
@@ -9,7 +9,6 @@ import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.TootTextEncoder
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getAttributeColor
 import jp.juggler.util.showToast
@@ -22,7 +21,6 @@ enum class CustomShareTarget {
 	CustomShare3,
 }
 
-
 object CustomShare {
 	
 	val log = LogCategory("CustomShare")
@@ -31,8 +29,6 @@ object CustomShare {
 	
 	private const val translate_app_component_default =
 		"com.google.android.apps.translate/com.google.android.apps.translate.TranslateActivity"
-	
-
 	
 	fun getCustomShareComponentName(
 		pref : SharedPreferences,
@@ -74,8 +70,8 @@ object CustomShare {
 				if(cnStr == CN_CLIPBOARD) {
 					label =
 						"${context.getString(R.string.copy_to_clipboard)}(${context.getString(R.string.app_name)})"
-					icon = ContextCompat.getDrawable(context, R.drawable.ic_copy)?.mutate()?.apply{
-						setTint(getAttributeColor(context,R.attr.colorVectorDrawable))
+					icon = ContextCompat.getDrawable(context, R.drawable.ic_copy)?.mutate()?.apply {
+						setTint(getAttributeColor(context, R.attr.colorVectorDrawable))
 						setTintMode(PorterDuff.Mode.SRC_IN)
 					}
 				} else {

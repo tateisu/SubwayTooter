@@ -8,8 +8,8 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.subwaytooter.action.CustomShare
-import jp.juggler.subwaytooter.action.CustomShareTarget
+import jp.juggler.subwaytooter.util.CustomShare
+import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.MutedWord

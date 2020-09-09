@@ -12,7 +12,10 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class CustomEmojiLister(internal val context : Context) {
+class CustomEmojiLister(
+	val context : Context,
+	private val handler : Handler
+) {
 	
 	companion object {
 		
@@ -53,12 +56,9 @@ class CustomEmojiLister(internal val context : Context) {
 	// ロード要求
 	internal val queue = ConcurrentLinkedQueue<Request>()
 	
-	private val handler : Handler
-	
 	private val worker : Worker
 	
 	init {
-		this.handler = Handler(context.mainLooper)
 		this.worker = Worker()
 		worker.start()
 	}

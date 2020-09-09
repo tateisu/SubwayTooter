@@ -9,7 +9,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.AppCompatImageView
-import jp.juggler.subwaytooter.action.CustomShareTarget
+import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.util.*
 import org.jetbrains.anko.backgroundDrawable
 

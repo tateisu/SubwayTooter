@@ -444,7 +444,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 		requestWindowFeature(Window.FEATURE_NO_TITLE)
 		App1.setActivityTheme(this, noActionBar = true)
 		
-		handler = Handler()
+		handler = App1.getAppState(this).handler
 		app_state = App1.getAppState(this)
 		pref = App1.pref
 		

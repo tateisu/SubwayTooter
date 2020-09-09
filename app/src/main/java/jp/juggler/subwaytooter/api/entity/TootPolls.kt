@@ -7,7 +7,6 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.*
-import java.util.regex.Pattern
 
 enum class TootPollsType {
 	Mastodon, // Mastodon 2.8
@@ -211,6 +210,7 @@ class TootPolls private constructor(
 	}
 	
 	companion object {
+		
 		internal val log = LogCategory("TootPolls")
 		
 		const val ENQUETE_EXPIRE = 30000L

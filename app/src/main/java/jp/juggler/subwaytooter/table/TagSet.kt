@@ -108,10 +108,11 @@ object TagSet :TableCompanion{
 		val sb = StringBuilder()
 		
 		// エスケープしながらコピー
-		for(i in 0 until src.length) {
-			val c = src[i]
-			if(c == '%' || c == '_' || c == '$') sb.append('$')
-			sb.append(c)
+		for(element in src) {
+			when(element) {
+				'%', '_', '$' -> sb.append('$')
+			}
+			sb.append(element)
 		}
 		
 		// 前方一致検索にするため、末尾に%をつける

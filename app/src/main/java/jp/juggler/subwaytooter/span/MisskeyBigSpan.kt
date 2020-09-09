@@ -5,6 +5,7 @@ import android.graphics.Typeface
 import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
 import java.lang.ref.WeakReference
+import kotlin.math.sin
 
 class MisskeyBigSpan (
 	private val typeface : Typeface
@@ -41,7 +42,7 @@ class MisskeyBigSpan (
 				invalidate_callback?.delayInvalidate(100L)
 				val t = (invalidate_callback?.timeFromStart ?: 0L) /500f
 				
-				textScalingMax * ( Math.sin(t.toDouble()).toFloat() * 0.1f + 0.9f)
+				textScalingMax * ( sin(t.toDouble()).toFloat() * 0.1f + 0.9f)
 			}
 		}
 		

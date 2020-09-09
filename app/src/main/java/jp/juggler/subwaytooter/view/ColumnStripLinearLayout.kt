@@ -6,9 +6,6 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.widget.LinearLayout
-import jp.juggler.subwaytooter.R
-import jp.juggler.util.getAttributeColor
-import jp.juggler.util.notZero
 
 // 画面下のカラムストリップのLinearLayout
 // 可視範囲を示すインジケーターを表示する

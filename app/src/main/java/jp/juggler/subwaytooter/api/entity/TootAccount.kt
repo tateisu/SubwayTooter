@@ -494,7 +494,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 		private val reNoteLineFeed : Pattern = """[\x00-\x20\x7f　]+""".asciiPattern()
 		
 		// IDNドメインを含むホスト名の正規表現
-		const val reHostIdn = """(?:(?:[\p{L}\p{N}][\p{L}\p{N}-_]*\.)+[\p{L}\p{N}]{2,})"""
+		private const val reHostIdn = """(?:(?:[\p{L}\p{N}][\p{L}\p{N}-_]*\.)+[\p{L}\p{N}]{2,})"""
 		
 		internal val reHostInUrl : Pattern = """\Ahttps://($reHostIdn)/"""
 			.asciiPattern()

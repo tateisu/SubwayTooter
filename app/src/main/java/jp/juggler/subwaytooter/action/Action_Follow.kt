@@ -169,11 +169,10 @@ object Action_Follow {
 		
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
-			val parser = TootParser(activity, access_info)
-			
 			var relation : UserRelation? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
+				val parser = TootParser(activity, access_info)
 				
 				var userId = who.id
 				if(who.isRemote) {

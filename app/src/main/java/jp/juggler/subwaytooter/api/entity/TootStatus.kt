@@ -171,7 +171,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	
 	// quote toot かどうか。
 	var isQuoteToot = false
-	var quote_id : EntityId? = null
+	private var quote_id : EntityId? = null
 	// このstatusがquoteだった場合、ミュート済みかどうか示すフラグ
 	var quote_muted = false
 	
@@ -893,7 +893,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 		
 		val EMPTY_SPANNABLE = SpannableString("")
 		
-		val reHostIdn = TootAccount.reHostIdn
+		// val reHostIdn = TootAccount.reHostIdn
 		
 		// OStatus
 		private val reTootUriOS = """tag:([^,]*),[^:]*:objectId=([^:?#/\s]+):objectType=Status"""

@@ -5,9 +5,6 @@ import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import androidx.annotation.ColorInt
-import androidx.core.view.ViewCompat
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -15,20 +12,21 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.annotation.ColorInt
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
-import jp.juggler.util.createResizedBitmap
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
 import java.text.NumberFormat
-import java.util.*
 import kotlin.math.max
 
 class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {

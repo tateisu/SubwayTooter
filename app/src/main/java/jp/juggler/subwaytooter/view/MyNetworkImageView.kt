@@ -8,11 +8,9 @@ import android.graphics.Matrix
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.PictureDrawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
@@ -32,6 +30,7 @@ import jp.juggler.util.clipRange
 class MyNetworkImageView : AppCompatImageView {
 	
 	companion object {
+		
 		internal val log = LogCategory("MyNetworkImageView")
 	}
 	
@@ -230,11 +229,13 @@ class MyNetworkImageView : AppCompatImageView {
 			// 別の画像を表示するよう指定が変化していたなら何もしない
 			if(urlLoading != mUrl) return
 			
-			if(mErrorImage != null) {
-				// エラー表示用の画像リソースが指定されていたら使う
-				setImageDrawable(mErrorImage)
-			} else {
-				// このタイミングでImageViewのDrawableを変更するとチラつきの元になるので何もしない
+			// エラー表示用の画像リソースが指定されていたら使う
+			when(val drawable = mErrorImage) {
+				null -> {
+					// このタイミングでImageViewのDrawableを変更するとチラつきの元になるので何もしない
+				}
+				
+				else -> setImageDrawable(drawable)
 			}
 		} catch(ex : Throwable) {
 			log.trace(ex)
@@ -242,11 +243,12 @@ class MyNetworkImageView : AppCompatImageView {
 	}
 	
 	private interface UrlTarget {
+		
 		val urlLoading : String
 	}
 	
 	// 静止画用のターゲット
-	private inner class MyTarget internal constructor(
+	private inner class MyTarget(
 		override val urlLoading : String
 	) : ImageViewTarget<Drawable>(this@MyNetworkImageView), UrlTarget {
 		
@@ -281,7 +283,7 @@ class MyNetworkImageView : AppCompatImageView {
 		
 	}
 	
-	private inner class MyTargetGif internal constructor(
+	private inner class MyTargetGif(
 		override val urlLoading : String
 	) : ImageViewTarget<Drawable>(this@MyNetworkImageView), UrlTarget {
 		
@@ -515,7 +517,7 @@ class MyNetworkImageView : AppCompatImageView {
 		if(drawable_w <= 0f || drawable_h <= 0f) return
 		
 		when(scaleType) {
-			ImageView.ScaleType.CENTER_CROP, ImageView.ScaleType.MATRIX -> {
+			ScaleType.CENTER_CROP, ScaleType.MATRIX -> {
 				val view_aspect = view_w / view_h
 				val drawable_aspect = drawable_w / drawable_h
 				
@@ -523,7 +525,7 @@ class MyNetworkImageView : AppCompatImageView {
 					// ビューより画像の方が横長
 					val focus_x = this.focusX
 					if(focus_x == 0f) {
-						scaleType = ImageView.ScaleType.CENTER_CROP
+						scaleType = ScaleType.CENTER_CROP
 					} else {
 						val matrix = Matrix()
 						val scale = view_h / drawable_h
@@ -532,14 +534,14 @@ class MyNetworkImageView : AppCompatImageView {
 						matrix.postTranslate(drawable_w / - 2f, drawable_h / - 2f)
 						matrix.postScale(scale, scale)
 						matrix.postTranslate((view_w - delta) / 2f, view_h / 2f)
-						scaleType = ImageView.ScaleType.MATRIX
+						scaleType = ScaleType.MATRIX
 						imageMatrix = matrix
 					}
 				} else {
 					// ビューより画像の方が縦長
 					val focus_y = this.focusY
 					if(focus_y == 0f) {
-						scaleType = ImageView.ScaleType.CENTER_CROP
+						scaleType = ScaleType.CENTER_CROP
 					} else {
 						val matrix = Matrix()
 						val scale = view_w / drawable_w
@@ -547,7 +549,7 @@ class MyNetworkImageView : AppCompatImageView {
 						matrix.postTranslate(drawable_w / - 2f, drawable_h / - 2f)
 						matrix.postScale(scale, scale)
 						matrix.postTranslate(view_w / 2f, (view_h - delta) / 2f)
-						scaleType = ImageView.ScaleType.MATRIX
+						scaleType = ScaleType.MATRIX
 						imageMatrix = matrix
 					}
 				}
@@ -561,12 +563,12 @@ class MyNetworkImageView : AppCompatImageView {
 	
 	fun setScaleTypeForMedia() {
 		when(scaleType) {
-			ImageView.ScaleType.CENTER_CROP, ImageView.ScaleType.MATRIX -> {
+			ScaleType.CENTER_CROP, ScaleType.MATRIX -> {
 				// nothing to do
 			}
 			
 			else -> {
-				scaleType = ImageView.ScaleType.CENTER_CROP
+				scaleType = ScaleType.CENTER_CROP
 			}
 		}
 	}

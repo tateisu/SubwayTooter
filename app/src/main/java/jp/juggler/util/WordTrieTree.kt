@@ -44,16 +44,16 @@ class WordTrieTree {
 	private class Node {
 		
 		// 続くノード
-		internal val child_nodes = androidx.collection.SparseArrayCompat<Node>()
+		val child_nodes = androidx.collection.SparseArrayCompat<Node>()
 		
 		// このノードが終端なら、マッチした単語の元の表記がある
-		internal var match_word : String? = null
+		var match_word : String? = null
 		
 		// Trieツリー的には終端単語と続くノードの両方が存在する場合がありうる。
 		// たとえば ABC と ABCDEF を登録してから ABCDEFG を探索したら、単語 ABC と単語 ABCDEF にマッチする。
 		
 		// このノードが終端なら、単語マッチの有無を覚えておく
-		internal var validator : (src : CharSequence, start : Int, end : Int) -> Boolean =
+		var validator : (src : CharSequence, start : Int, end : Int) -> Boolean =
 			EMPTY_VALIDATOR
 	}
 	

@@ -4,19 +4,17 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.R
 import jp.juggler.util.getAttributeDrawable
 
-class ListDivider(context : Context) : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
+class ListDivider(context : Context) : RecyclerView.ItemDecoration() {
 	
 	companion object {
-
-		var color :Int =0
 		
+		var color : Int = 0
 		var height : Int = 0
-
 		var marginH : Int = 0
 	}
 	
@@ -26,8 +24,8 @@ class ListDivider(context : Context) : androidx.recyclerview.widget.RecyclerView
 	
 	init {
 		val density = context.resources.displayMetrics.density
-		height = ( density * 1f + 0.5f).toInt()
-		marginH = ( density * 12f + 0.5f).toInt()
+		height = (density * 1f + 0.5f).toInt()
+		marginH = (density * 12f + 0.5f).toInt()
 		paint.style = Paint.Style.FILL
 		paint.isAntiAlias = true
 	}
@@ -35,29 +33,29 @@ class ListDivider(context : Context) : androidx.recyclerview.widget.RecyclerView
 	override fun getItemOffsets(
 		outRect : Rect,
 		view : View,
-		parent : androidx.recyclerview.widget.RecyclerView,
-		state : androidx.recyclerview.widget.RecyclerView.State
+		parent : RecyclerView,
+		state : RecyclerView.State
 	) {
 		outRect.set(0, 0, 0, height)
 	}
 	
-	override fun onDraw(canvas : Canvas, parent : androidx.recyclerview.widget.RecyclerView, state : androidx.recyclerview.widget.RecyclerView.State) {
-		val left = parent.paddingLeft +marginH
-		val right = parent.width - parent.paddingRight -marginH
+	override fun onDraw(canvas : Canvas, parent : RecyclerView, state : RecyclerView.State) {
+		val left = parent.paddingLeft + marginH
+		val right = parent.width - parent.paddingRight - marginH
 		
-		if( color != 0){
+		if(color != 0) {
 			paint.color = color
 		}
 		
 		for(i in 0 until parent.childCount) {
 			val child = parent.getChildAt(i)
-			val params = child.layoutParams as androidx.recyclerview.widget.RecyclerView.LayoutParams
+			val params = child.layoutParams as RecyclerView.LayoutParams
 			val top = child.bottom + params.bottomMargin
 			val bottom = top + height
-			if( color != 0){
+			if(color != 0) {
 				rect.set(left, top, right, bottom)
-				canvas.drawRect(rect,paint)
-			}else {
+				canvas.drawRect(rect, paint)
+			} else {
 				drawable.setBounds(left, top, right, bottom)
 				drawable.draw(canvas)
 			}

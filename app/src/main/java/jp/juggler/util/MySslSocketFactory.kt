@@ -9,7 +9,7 @@ import javax.net.ssl.*
 
 object MySslSocketFactory : SSLSocketFactory() {
 	
-	var debugCipherSuites = false
+	private var debugCipherSuites = false
 	
 	private val log = LogCategory("MySslSocketFactory")
 	

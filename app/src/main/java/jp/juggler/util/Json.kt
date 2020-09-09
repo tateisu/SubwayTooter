@@ -3,7 +3,6 @@ package jp.juggler.util
 import java.io.*
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.util.regex.Pattern
 
 class JsonException : RuntimeException {
 	constructor(message : String?) : super(message)
@@ -106,6 +105,7 @@ class JsonArray : ArrayList<Any?> {
 	fun int(key : Int) : Int? = JsonObject.castInt(this[key])
 	fun long(key : Int) : Long? = JsonObject.castLong(this[key])
 	fun float(key : Int) : Float? = JsonObject.castFloat(this[key])
+	
 	@Suppress("MemberVisibilityCanBePrivate")
 	fun double(key : Int) : Double? = JsonObject.castDouble(this[key])
 	
@@ -114,6 +114,7 @@ class JsonArray : ArrayList<Any?> {
 	
 	fun optString(key : Int, defVal : String = "") = string(key) ?: defVal
 	fun optBoolean(key : Int, defVal : Boolean = false) = boolean(key) ?: defVal
+	
 	@Suppress("unused")
 	fun optInt(key : Int, defVal : Int = 0) = int(key) ?: defVal
 	
@@ -140,6 +141,7 @@ class JsonArray : ArrayList<Any?> {
 class JsonObject : LinkedHashMap<String, Any?>() {
 	
 	companion object {
+		
 		fun castBoolean(o : Any?) : Boolean? =
 			when(o) {
 				null -> null
@@ -264,6 +266,7 @@ class JsonObject : LinkedHashMap<String, Any?>() {
 	fun optInt(name : String, defVal : Int = 0) = int(name) ?: defVal
 	fun optLong(name : String, defVal : Long = 0L) = long(name) ?: defVal
 	fun optFloat(name : String, defVal : Float = 0f) = float(name) ?: defVal
+	
 	@Suppress("unused")
 	fun optDouble(name : String, defVal : Double = 0.0) = double(name) ?: defVal
 	
@@ -317,18 +320,25 @@ class JsonTokenizer(reader : Reader) {
 	
 	/** current read character position on the current line.  */
 	private var character = 1L
+	
 	/** flag to indicate if the end of the input has been found.  */
 	private var eof = false
+	
 	/** current read index of the input.  */
 	private var index = 0L
+	
 	/** current line of the input.  */
 	private var line = 1L
+	
 	/** previous character read from the input.  */
 	private var previous = char0
+	
 	/** Reader for the input.  */
 	private val reader = if(reader.markSupported()) reader else BufferedReader(reader)
+	
 	/** flag to indicate that a previous character was requested.  */
 	private var usePrevious = false
+	
 	/** the number of characters read in the previous line.  */
 	private var characterPreviousLine = 0L
 	
@@ -1075,8 +1085,8 @@ inline fun jsonArray(initializer : JsonArray.() -> Unit) =
 
 fun jsonArray(vararg args : String) = JsonArray(args)
 
-fun jsonObject(vararg args : Pair<String,*>) = JsonObject().apply {
-	for(pair in args){
-		put(pair.first,pair.second)
+fun jsonObject(vararg args : Pair<String, *>) = JsonObject().apply {
+	for(pair in args) {
+		put(pair.first, pair.second)
 	}
 }

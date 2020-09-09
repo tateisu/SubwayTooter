@@ -16,7 +16,7 @@ object Action_ListMember {
 	
 	private val reFollowError = "follow".asciiPattern(Pattern.CASE_INSENSITIVE)
 	
-	interface Callback {
+	fun interface Callback {
 		fun onListMemberUpdated(willRegistered : Boolean, bSuccess : Boolean)
 	}
 	

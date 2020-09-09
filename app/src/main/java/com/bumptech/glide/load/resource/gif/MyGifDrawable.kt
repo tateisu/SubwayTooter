@@ -1,5 +1,6 @@
 package com.bumptech.glide.load.resource.gif
 
+import android.annotation.SuppressLint
 import com.bumptech.glide.gifdecoder.GifDecoder.TOTAL_ITERATION_COUNT_FOREVER
 
 import android.content.Context
@@ -26,21 +27,24 @@ class MyGifDrawable internal constructor(
 ) : Drawable(), GifFrameLoader.FrameCallback, Animatable {
 	
 	private val state : GifDrawable.GifState
+	
 	/**
 	 * True if the drawable is currently animating.
 	 */
 	private var isRunning : Boolean = false
+	
 	/**
 	 * True if the drawable should animate while visible.
 	 */
 	private var isStarted : Boolean = false
+	
 	/**
 	 * True if the drawable's resources have been recycled.
 	 */
-
+	
 	// For testing.
 	private var isRecycled : Boolean = false
-
+	
 	/**
 	 * True if the drawable is currently visible. Default to true because on certain platforms (at
 	 * least 4.1.1), setVisible is not called on [Drawables][android.graphics.drawable.Drawable]
@@ -48,10 +52,12 @@ class MyGifDrawable internal constructor(
 	 * See issue #130.
 	 */
 	private var isVisibleX = true
+	
 	/**
 	 * The number of times we've looped over all the frames in the GIF.
 	 */
 	private var loopCount : Int = 0
+	
 	/**
 	 * The number of times to loop through the GIF animation.
 	 */
@@ -61,22 +67,26 @@ class MyGifDrawable internal constructor(
 	
 	private var destRect : Rect? = null
 	
-	val size : Int
-		get() = state.frameLoader.size
-	
 	private var mCornerRadius : Float = 0f
 	
+	private val stateFrameLoader : GifFrameLoader
+		@SuppressLint("VisibleForTests")
+		get() = state.frameLoader
+	
+	val size : Int
+		get() = stateFrameLoader.size
+	
 	val firstFrame : Bitmap
-		get() = state.frameLoader.firstFrame
+		get() = stateFrameLoader.firstFrame
 	
 	val frameTransformation : Transformation<Bitmap>
-		get() = state.frameLoader.frameTransformation
+		get() = stateFrameLoader.frameTransformation
 	
 	val buffer : ByteBuffer
-		get() = state.frameLoader.buffer
+		get() = stateFrameLoader.buffer
 	
 	private val frameCount : Int
-		get() = state.frameLoader.frameCount
+		get() = stateFrameLoader.frameCount
 	
 	/**
 	 * Returns the current frame index in the range 0..[.getFrameCount] - 1, or -1 if no frame
@@ -84,7 +94,7 @@ class MyGifDrawable internal constructor(
 	 */
 	// Public API.
 	private val frameIndex : Int
-		get() = state.frameLoader.currentIndex
+		get() = stateFrameLoader.currentIndex
 	
 	/**
 	 * Constructor for GifDrawable.
@@ -113,7 +123,15 @@ class MyGifDrawable internal constructor(
 		frameTransformation : Transformation<Bitmap>,
 		targetFrameWidth : Int,
 		targetFrameHeight : Int,
-		firstFrame : Bitmap) : this(context, gifDecoder, frameTransformation, targetFrameWidth, targetFrameHeight, firstFrame)
+		firstFrame : Bitmap
+	) : this(
+		context,
+		gifDecoder,
+		frameTransformation,
+		targetFrameWidth,
+		targetFrameHeight,
+		firstFrame
+	)
 	
 	/**
 	 * Constructor for GifDrawable.
@@ -149,7 +167,8 @@ class MyGifDrawable internal constructor(
 				targetFrameWidth,
 				targetFrameHeight,
 				frameTransformation,
-				firstFrame)
+				firstFrame
+			)
 		)
 	)
 	
@@ -162,14 +181,20 @@ class MyGifDrawable internal constructor(
 	}
 	
 	@VisibleForTesting
-	internal constructor(frameLoader : GifFrameLoader, paint : Paint) : this(GifDrawable.GifState(frameLoader)) {
+	internal constructor(frameLoader : GifFrameLoader, paint : Paint) : this(
+		GifDrawable.GifState(
+			frameLoader
+		)
+	) {
 		this.paintX = paint
 	}
 	
 	// Public API.
-	fun setFrameTransformation(frameTransformation : Transformation<Bitmap>,
-	                           firstFrame : Bitmap) {
-		state.frameLoader.setFrameTransformation(frameTransformation, firstFrame)
+	fun setFrameTransformation(
+		frameTransformation : Transformation<Bitmap>,
+		firstFrame : Bitmap
+	) {
+		stateFrameLoader.setFrameTransformation(frameTransformation, firstFrame)
 	}
 	
 	private fun resetLoopCount() {
@@ -181,8 +206,11 @@ class MyGifDrawable internal constructor(
 	 */
 	// Public API.
 	fun startFromFirstFrame() {
-		Preconditions.checkArgument(! isRunning, "You cannot restart a currently running animation.")
-		state.frameLoader.setNextStartFromFirstFrame()
+		Preconditions.checkArgument(
+			! isRunning,
+			"You cannot restart a currently running animation."
+		)
+		stateFrameLoader.setNextStartFromFirstFrame()
 		start()
 	}
 	
@@ -200,26 +228,31 @@ class MyGifDrawable internal constructor(
 	}
 	
 	private fun startRunning() {
-		Preconditions.checkArgument(! isRecycled, "You cannot start a recycled Drawable. Ensure that" + "you clear any references to the Drawable when clearing the corresponding request.")
+		Preconditions.checkArgument(
+			! isRecycled,
+			"You cannot start a recycled Drawable. Ensure that" + "you clear any references to the Drawable when clearing the corresponding request."
+		)
 		// If we have only a single frame, we don't want to decode it endlessly.
-		if(state.frameLoader.frameCount == 1) {
+		if(stateFrameLoader.frameCount == 1) {
 			invalidateSelf()
 		} else if(! isRunning) {
 			isRunning = true
-			state.frameLoader.subscribe(this)
+			stateFrameLoader.subscribe(this)
 			invalidateSelf()
 		}
 	}
 	
 	private fun stopRunning() {
 		isRunning = false
-		state.frameLoader.unsubscribe(this)
+		stateFrameLoader.unsubscribe(this)
 	}
 	
 	override fun setVisible(visible : Boolean, restart : Boolean) : Boolean {
-		Preconditions.checkArgument(! isRecycled, "Cannot change the visibility of a recycled resource."
-			+ " Ensure that you unset the Drawable from your View before changing the View's"
-			+ " visibility.")
+		Preconditions.checkArgument(
+			! isRecycled, "Cannot change the visibility of a recycled resource."
+				+ " Ensure that you unset the Drawable from your View before changing the View's"
+				+ " visibility."
+		)
 		isVisibleX = visible
 		if(! visible) {
 			stopRunning()
@@ -229,17 +262,11 @@ class MyGifDrawable internal constructor(
 		return super.setVisible(visible, restart)
 	}
 	
-	override fun getIntrinsicWidth() : Int {
-		return state.frameLoader.width
-	}
+	override fun getIntrinsicWidth() : Int = stateFrameLoader.width
 	
-	override fun getIntrinsicHeight() : Int {
-		return state.frameLoader.height
-	}
+	override fun getIntrinsicHeight() : Int = stateFrameLoader.height
 	
-	override fun isRunning() : Boolean {
-		return isRunning
-	}
+	override fun isRunning() : Boolean = isRunning
 	
 	// For testing.
 	internal fun setIsRunning(isRunning : Boolean) {
@@ -261,7 +288,7 @@ class MyGifDrawable internal constructor(
 			applyGravity = false
 		}
 		
-		val currentFrame = state.frameLoader.currentFrame
+		val currentFrame = stateFrameLoader.currentFrame
 		
 		if(mCornerRadius <= 0f) {
 			val paint = getPaint()
@@ -284,7 +311,7 @@ class MyGifDrawable internal constructor(
 		//		int outWidth = destRect.width();
 		//		int outHeight = destRect.height();
 		
-		mDstRectF.set(destRect!!)
+		mDstRectF.set(destRect !!)
 		mShaderMatrix.reset()
 		mShaderMatrix.preScale(mDstRectF.width() / src_w, mDstRectF.height() / src_h)
 		
@@ -330,8 +357,8 @@ class MyGifDrawable internal constructor(
 	}
 	
 	// See #1087.
-	private fun findCallback() : Drawable.Callback? {
-		var callback : Drawable.Callback? = callback
+	private fun findCallback() : Callback? {
+		var callback : Callback? = callback
 		while(callback is Drawable) {
 			callback = (callback as Drawable).callback
 		}
@@ -356,7 +383,7 @@ class MyGifDrawable internal constructor(
 		}
 	}
 	
-	override fun getConstantState() : Drawable.ConstantState? {
+	override fun getConstantState() : ConstantState? {
 		return state
 	}
 	
@@ -365,7 +392,7 @@ class MyGifDrawable internal constructor(
 	 */
 	fun recycle() {
 		isRecycled = true
-		state.frameLoader.clear()
+		stateFrameLoader.clear()
 	}
 	
 	// Public API.
@@ -375,7 +402,7 @@ class MyGifDrawable internal constructor(
 		}
 		
 		maxLoopCount = if(loopCount == LOOP_INTRINSIC) {
-			val intrinsicCount = state.frameLoader.loopCount
+			val intrinsicCount = stateFrameLoader.loopCount
 			if(intrinsicCount == TOTAL_ITERATION_COUNT_FOREVER) LOOP_FOREVER else intrinsicCount
 		} else {
 			loopCount
@@ -399,9 +426,10 @@ class MyGifDrawable internal constructor(
 	//	}
 	
 	companion object {
+		
 		const val LOOP_FOREVER = GifDrawable.LOOP_FOREVER
 		const val LOOP_INTRINSIC = GifDrawable.LOOP_INTRINSIC
-
+		
 		private const val GRAVITY = Gravity.FILL
 		
 		//////////////////////////////////////////////////////////////////
@@ -417,6 +445,8 @@ class MyGifDrawable internal constructor(
 		internal fun cloneState(other : GifDrawable) : GifDrawable.GifState {
 			try {
 				val other_state = field_state.get(other) as GifDrawable.GifState
+				
+				@SuppressLint("VisibleForTests")
 				val frameLoader : GifFrameLoader = other_state.frameLoader
 				
 				return GifDrawable.GifState(frameLoader)

@@ -107,7 +107,7 @@
     <string name="cw_default_open">Expand CWed content by default</string>
     <string name="user">User</string>
     <string name="confirm_account_remove">This account will be deleted and all the columns will be removed.\nAre you sure?</string>
-    <string name="user_name_not_match">Username doesn\'t match</string>
+    <string name="user_name_not_match">Username not match</string>
     <string name="access_token_updated_for">%1$s\'s access token was updated.</string>
     <string name="back_to_column_list">Go to column list when pressing \"Back\"</string>
     <string name="account_empty">Account is not set up.Please add account.</string>

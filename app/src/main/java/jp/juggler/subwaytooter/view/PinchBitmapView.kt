@@ -165,8 +165,8 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 	override fun onSizeChanged(w : Int, h : Int, oldw : Int, oldh : Int) {
 		super.onSizeChanged(w, h, oldw, oldh)
 		
-		view_w = Math.max(1f, w.toFloat())
-		view_h = Math.max(1f, h.toFloat())
+		view_w = max(1f, w.toFloat())
+		view_h = max(1f, h.toFloat())
 		view_aspect = view_w / view_h
 		
 		initializeScale()
@@ -188,8 +188,8 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 		val bitmap = this.bitmap
 		if(bitmap != null && ! bitmap.isRecycled && view_w >= 1f) {
 			
-			bitmap_w = Math.max(1f, bitmap.width.toFloat())
-			bitmap_h = Math.max(1f, bitmap.height.toFloat())
+			bitmap_w = max(1f, bitmap.width.toFloat())
+			bitmap_h = max(1f, bitmap.height.toFloat())
 			bitmap_aspect = bitmap_w / bitmap_h
 			
 			if(view_aspect > bitmap_aspect) {
@@ -420,7 +420,7 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 					val radius = dx * dx + dy * dy
 					if(radius > max_radius) max_radius = radius
 				}
-				max_radius = Math.sqrt(max_radius.toDouble()).toFloat()
+				max_radius = sqrt(max_radius.toDouble()).toFloat()
 				if(max_radius < 1f) max_radius = 1f
 			}
 		}
@@ -488,7 +488,7 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 			val move_y = pos.avg[1] - start_pos.avg[1]
 			
 			// 「指を動かした」と判断したらフラグを立てる
-			if(Math.abs(move_x) >= drag_length || Math.abs(move_y) >= drag_length) {
+			if(abs(move_x) >= drag_length || abs(move_y) >= drag_length) {
 				bDrag = true
 			}
 			

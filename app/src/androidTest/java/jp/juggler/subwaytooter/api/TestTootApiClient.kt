@@ -1103,7 +1103,7 @@ class TestTootApiClient {
 		val accessInfo = SavedAccount(
 			db_id = 1,
 			acctArg = "user1@host1",
-			hostArg = null,
+			apiHostArg = null,
 			token_info = tokenInfo
 		)
 		val callback = ProgressRecordTootApiCallback()
@@ -1130,7 +1130,7 @@ class TestTootApiClient {
 		val accessInfo = SavedAccount(
 			db_id = 1,
 			acctArg = "user1@host1",
-			hostArg = null,
+			apiHostArg = null,
 			token_info = tokenInfo
 		)
 		val callback = ProgressRecordTootApiCallback()

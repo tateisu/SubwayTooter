@@ -30,7 +30,7 @@ abstract class ColumnTask(
 	val ctStarted = AtomicBoolean(false)
 	val ctClosed = AtomicBoolean(false)
 	
-	var job : Job? = null
+	private var job : Job? = null
 
 	val isCancelled :Boolean
 		get()= job?.isCancelled ?: false
@@ -52,7 +52,7 @@ abstract class ColumnTask(
 	val isPseudo : Boolean
 		get() = access_info.isPseudo
 	
-	val isMastodon : Boolean
+	private val isMastodon : Boolean
 		get() = access_info.isMastodon
 	
 	val isMisskey : Boolean
@@ -152,8 +152,7 @@ abstract class ColumnTask(
 				if(instance?.versionGE(TootInstance.VERSION_3_1_0_rc1) == true) {
 					val result = client.request("/api/v1/announcements")
 						?: return null // cancelled.
-					val code = result.response?.code ?: 0
-					when(code) {
+					when(result.response?.code ?: 0) {
 						// just skip load announcements for 4xx error if server does not support announcements.
 						in 400 until 500 -> {
 						}

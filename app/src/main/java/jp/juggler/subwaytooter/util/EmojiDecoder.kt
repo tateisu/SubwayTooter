@@ -88,10 +88,10 @@ object EmojiDecoder {
 		}
 	}
 	
-	private class EmojiStringBuilder(internal val options : DecodeOptions) {
+	private class EmojiStringBuilder(val options : DecodeOptions) {
 		
-		internal val sb = SpannableStringBuilder()
-		internal var normal_char_start = - 1
+		val sb = SpannableStringBuilder()
+		var normal_char_start = - 1
 		
 		private fun openNormalText() {
 			if(normal_char_start == - 1) {
@@ -99,7 +99,7 @@ object EmojiDecoder {
 			}
 		}
 		
-		internal fun closeNormalText() {
+		fun closeNormalText() {
 			if(normal_char_start != - 1) {
 				val end = sb.length
 				applyHighlight(normal_char_start, end)
@@ -130,7 +130,7 @@ object EmojiDecoder {
 			}
 		}
 		
-		internal fun addNetworkEmojiSpan(text : String, url : String) {
+		fun addNetworkEmojiSpan(text : String, url : String) {
 			closeNormalText()
 			val start = sb.length
 			sb.append(text)
@@ -143,7 +143,7 @@ object EmojiDecoder {
 			)
 		}
 		
-		internal fun addImageSpan(text : String, @DrawableRes res_id : Int) {
+		fun addImageSpan(text : String, @DrawableRes res_id : Int) {
 			val context = options.context
 			if(context == null) {
 				openNormalText()
@@ -162,7 +162,7 @@ object EmojiDecoder {
 			}
 		}
 		
-		internal fun addImageSpan(text : String, er : EmojiMap.EmojiResource) {
+		fun addImageSpan(text : String, er : EmojiMap.EmojiResource) {
 			val context = options.context
 			if(context == null) {
 				openNormalText()
@@ -183,7 +183,7 @@ object EmojiDecoder {
 		
 		val evs = EmojiMap.EmojiResource(0)
 		
-		internal fun addUnicodeString(s : String) {
+		fun addUnicodeString(s : String) {
 			var i = 0
 			val end = s.length
 			while(i < end) {

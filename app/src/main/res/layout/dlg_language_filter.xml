@@ -25,6 +25,7 @@
             android:layout_height="wrap_content"
             android:inputType="text"
             android:hint="@string/language_code_hint"
+            android:importantForAutofill="no"
             />
         <ImageButton
             android:layout_width="wrap_content"

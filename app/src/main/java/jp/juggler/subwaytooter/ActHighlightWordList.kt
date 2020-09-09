@@ -202,7 +202,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	// ドラッグ操作中のデータ
-	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) :
+	private inner class MyDragItem(context : Context, layoutId : Int) :
 		DragItem(context, layoutId) {
 		
 		override fun onBindDragView(clickedView : View, dragView : View) {
@@ -225,7 +225,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		}
 	}
 	
-	private inner class MyListAdapter internal constructor() :
+	private inner class MyListAdapter :
 		DragItemAdapter<HighlightWord, MyViewHolder>() {
 		
 		init {

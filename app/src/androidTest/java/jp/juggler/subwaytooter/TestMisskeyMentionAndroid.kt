@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter
 
 import androidx.test.runner.AndroidJUnit4
 import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.util.asciiPattern
 import jp.juggler.util.asciiPatternString
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -96,5 +95,5 @@ class TestMisskeyMentionAndroid {
 			findMention("@tateisu@xn--3-pfuzbe6htf.juggler.jp")
 		)
 	}
-
+	
 }

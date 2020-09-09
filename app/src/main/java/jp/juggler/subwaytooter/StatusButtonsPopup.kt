@@ -3,13 +3,13 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.graphics.drawable.ColorDrawable
 import android.os.SystemClock
-import androidx.recyclerview.widget.RecyclerView
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.util.LogCategory
@@ -23,6 +23,7 @@ internal class StatusButtonsPopup(
 ) {
 	
 	companion object {
+		
 		@Suppress("unused")
 		private var log = LogCategory("StatusButtonsPopup")
 		
@@ -43,8 +44,9 @@ internal class StatusButtonsPopup(
 	init {
 		@SuppressLint("InflateParams")
 		this.viewRoot = activity.layoutInflater.inflate(R.layout.list_item_popup, null, false)
-		val statusButtonsViewHolder = StatusButtonsViewHolder(activity, matchParent,0f)
-		viewRoot.findViewById<LinearLayout>(R.id.llBarPlaceHolder).addView(statusButtonsViewHolder.viewRoot)
+		val statusButtonsViewHolder = StatusButtonsViewHolder(activity, matchParent, 0f)
+		viewRoot.findViewById<LinearLayout>(R.id.llBarPlaceHolder)
+			.addView(statusButtonsViewHolder.viewRoot)
 		this.buttons_for_status = StatusButtons(
 			activity,
 			column,
@@ -61,12 +63,12 @@ internal class StatusButtonsPopup(
 		}
 	}
 	
-	@SuppressLint("RtlHardcoded")
+	@SuppressLint("RtlHardcoded", "ClickableViewAccessibility")
 	fun show(
-		listView : androidx.recyclerview.widget.RecyclerView
-		, anchor : View
-		, status : TootStatus
-		, notification : TootNotification?
+		listView : RecyclerView,
+		anchor : View,
+		status : TootStatus,
+		notification : TootNotification?
 	) {
 		
 		val window = PopupWindow(activity)
@@ -78,16 +80,17 @@ internal class StatusButtonsPopup(
 		window.setBackgroundDrawable(ColorDrawable(0x00000000))
 		window.isTouchable = true
 		window.isOutsideTouchable = true
-		window.setTouchInterceptor(View.OnTouchListener { _, event ->
+		window.setTouchInterceptor { _, event ->
 			if(event.action == MotionEvent.ACTION_OUTSIDE) {
 				// ポップアップの外側をタッチしたらポップアップを閉じる
 				// また、そのタッチイベントがlistViewに影響しないようにする
 				window.dismiss()
 				last_popup_close = SystemClock.elapsedRealtime()
-				return@OnTouchListener true
+				true
+			} else {
+				false
 			}
-			false
-		})
+		}
 		
 		buttons_for_status.bind(status, notification)
 		buttons_for_status.close_window = window

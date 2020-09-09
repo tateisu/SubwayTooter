@@ -3,10 +3,9 @@ package jp.juggler.subwaytooter.view
 import android.content.Context
 import android.content.res.TypedArray
 import android.util.AttributeSet
-import android.view.View
 import android.widget.ScrollView
-
 import jp.juggler.subwaytooter.R
+import kotlin.math.min
 
 class MaxHeightScrollView : ScrollView {
 	
@@ -31,13 +30,12 @@ class MaxHeightScrollView : ScrollView {
 	override fun onMeasure(widthMeasureSpec : Int, heightMeasureSpec : Int) {
 		var heightMeasureSpec2 = heightMeasureSpec
 		if(maxHeight > 0) {
-			val hSize = View.MeasureSpec.getSize(heightMeasureSpec)
-			val hMode = View.MeasureSpec.getMode(heightMeasureSpec)
+			val hSize = MeasureSpec.getSize(heightMeasureSpec)
 			
-			when(hMode) {
-				View.MeasureSpec.AT_MOST -> heightMeasureSpec2 = View.MeasureSpec.makeMeasureSpec(Math.min(hSize, maxHeight), View.MeasureSpec.AT_MOST)
-				View.MeasureSpec.UNSPECIFIED -> heightMeasureSpec2 = View.MeasureSpec.makeMeasureSpec(maxHeight, View.MeasureSpec.AT_MOST)
-				View.MeasureSpec.EXACTLY -> heightMeasureSpec2 = View.MeasureSpec.makeMeasureSpec(Math.min(hSize, maxHeight), View.MeasureSpec.EXACTLY)
+			when(MeasureSpec.getMode(heightMeasureSpec)) {
+				MeasureSpec.AT_MOST -> heightMeasureSpec2 = MeasureSpec.makeMeasureSpec(min(hSize, maxHeight), MeasureSpec.AT_MOST)
+				MeasureSpec.UNSPECIFIED -> heightMeasureSpec2 = MeasureSpec.makeMeasureSpec(maxHeight, MeasureSpec.AT_MOST)
+				MeasureSpec.EXACTLY -> heightMeasureSpec2 = MeasureSpec.makeMeasureSpec(min(hSize, maxHeight), MeasureSpec.EXACTLY)
 			}
 		}
 		

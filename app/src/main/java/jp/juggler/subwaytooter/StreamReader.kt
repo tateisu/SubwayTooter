@@ -25,22 +25,24 @@ internal class StreamReader(
 ) {
 	
 	internal interface StreamCallback {
+		
 		fun channelId() : String?
-
+		
 		fun onTimelineItem(item : TimelineItem)
 		fun onListeningStateChanged(bListen : Boolean)
 		fun onNoteUpdated(ev : MisskeyNoteUpdate)
-		fun onAnnouncementUpdate( item: TootAnnouncement)
-		fun onAnnouncementDelete( id: EntityId)
+		fun onAnnouncementUpdate(item : TootAnnouncement)
+		fun onAnnouncementDelete(id : EntityId)
 		fun onAnnouncementReaction(reaction : Reaction)
 	}
 	
 	companion object {
+		
 		val log = LogCategory("StreamReader")
 		
 		const val MISSKEY_ALIVE_INTERVAL = 60000L
 		
-		val reAuthorizeError = "authorize".asciiPattern(Pattern.CASE_INSENSITIVE )
+		val reAuthorizeError = "authorize".asciiPattern(Pattern.CASE_INSENSITIVE)
 	}
 	
 	private val reader_list = LinkedList<Reader>()
@@ -55,7 +57,8 @@ internal class StreamReader(
 		internal val bListening = AtomicBoolean()
 		internal val socket = AtomicReference<WebSocket>(null)
 		internal val callback_list = LinkedList<StreamCallback>()
-		internal val parser : TootParser = TootParser(context, access_info, highlightTrie = highlight_trie,fromStream=true)
+		internal val parser : TootParser =
+			TootParser(context, access_info, highlightTrie = highlight_trie, fromStream = true)
 		
 		internal fun dispose() {
 			bDisposed.set(true)
@@ -133,7 +136,7 @@ internal class StreamReader(
 			}
 		}
 		
-		private inline fun eachCallback(block:(callback:StreamCallback)->Unit){
+		private inline fun eachCallback(block : (callback : StreamCallback) -> Unit) {
 			synchronized(this) {
 				if(bDisposed.get()) return@synchronized
 				for(callback in callback_list) {
@@ -148,14 +151,14 @@ internal class StreamReader(
 		
 		private fun fireTimelineItem(item : TimelineItem?, channelId : String? = null) {
 			item ?: return
-			eachCallback{ callback->
+			eachCallback { callback ->
 				if(channelId != null && channelId != callback.channelId()) return@eachCallback
 				callback.onTimelineItem(item)
 			}
 		}
 		
 		private fun fireDeleteId(id : EntityId) {
-
+			
 			val tl_host = access_info.apiHost
 			runOnMainLooper {
 				synchronized(this) {
@@ -174,7 +177,7 @@ internal class StreamReader(
 		
 		private fun fireNoteUpdated(ev : MisskeyNoteUpdate, channelId : String? = null) {
 			runOnMainLooper {
-				eachCallback { callback->
+				eachCallback { callback ->
 					if(channelId != null && channelId != callback.channelId()) return@eachCallback
 					callback.onNoteUpdated(ev)
 				}
@@ -183,8 +186,8 @@ internal class StreamReader(
 		
 		private fun handleMisskeyMessage(obj : JsonObject, channelId : String? = null) {
 			val type = obj.string("type")
-			when( type){
-				null,"" -> {
+			when(type) {
+				null, "" -> {
 					log.d("handleMisskeyMessage: missing type parameter")
 					return
 				}
@@ -206,17 +209,17 @@ internal class StreamReader(
 				
 				// 通知IDも日時もないイベントを受け取っても通知TLに反映させられないから無視するしかない
 				// https://github.com/syuilo/misskey/issues/4802
-				"followed", "renote", "mention", "meUpdated", "follow", "unfollow"-> return
-					
-					// 特にすることはない
+				"followed", "renote", "mention", "meUpdated", "follow", "unfollow" -> return
+				
+				// 特にすることはない
 				"readAllNotifications",
 				"readAllUnreadMentions",
-					"readAllUnreadSpecifiedNotes" -> return
+				"readAllUnreadSpecifiedNotes" -> return
 				
 			}
 			
 			when(type) {
-			
+				
 				"note" -> {
 					val body = obj.jsonObject("body")
 					fireTimelineItem(parser.status(body), channelId)
@@ -248,14 +251,14 @@ internal class StreamReader(
 			
 		}
 		
-		private fun handleMastodonMessage(obj:JsonObject,text:String){
+		private fun handleMastodonMessage(obj : JsonObject, text : String) {
 			
 			when(val event = obj.string("event")) {
-				null,"" -> log.d("onMessage: missing event parameter")
+				null, "" -> log.d("onMessage: missing event parameter")
 				
 				"filters_changed" ->
 					Column.onFiltersChanged(context, access_info)
-
+				
 				else -> {
 					val payload = TootPayload.parsePayload(parser, event, obj, text)
 					
@@ -267,8 +270,8 @@ internal class StreamReader(
 						}
 						
 						// {"event":"announcement","payload":"{\"id\":\"3\",\"content\":\"<p>追加</p>\",\"starts_at\":null,\"ends_at\":null,\"all_day\":false,\"mentions\":[],\"tags\":[],\"emojis\":[],\"reactions\":[]}"}
-						"announcement"->{
-							if( payload is TootAnnouncement) {
+						"announcement" -> {
+							if(payload is TootAnnouncement) {
 								runOnMainLooper {
 									eachCallback { it.onAnnouncementUpdate(payload) }
 								}
@@ -276,9 +279,9 @@ internal class StreamReader(
 						}
 						
 						// {"event":"announcement.delete","payload":"2"}
-						"announcement.delete"->{
+						"announcement.delete" -> {
 							val id = EntityId.mayNull(payload?.toString())
-							if( id != null){
+							if(id != null) {
 								runOnMainLooper {
 									eachCallback { it.onAnnouncementDelete(id) }
 								}
@@ -286,8 +289,8 @@ internal class StreamReader(
 						}
 						
 						// {"event":"announcement.reaction","payload":"{\"name\":\"hourglass_gif\",\"count\":1,\"url\":\"https://m2j.zzz.ac/...\",\"static_url\":\"https://m2j.zzz.ac/...\",\"announcement_id\":\"9\"}"}
-						"announcement.reaction"->{
-							if( payload is Reaction) {
+						"announcement.reaction" -> {
+							if(payload is Reaction) {
 								runOnMainLooper {
 									eachCallback { it.onAnnouncementReaction(payload) }
 								}
@@ -314,8 +317,7 @@ internal class StreamReader(
 				if(access_info.isMisskey) {
 					handleMisskeyMessage(obj)
 				} else {
-					handleMastodonMessage(obj,text)
-				
+					handleMastodonMessage(obj, text)
 					
 				}
 			} catch(ex : Throwable) {
@@ -366,9 +368,9 @@ internal class StreamReader(
 		 * listener will be made.
 		 */
 		override fun onFailure(webSocket : WebSocket, t : Throwable, response : Response?) {
-			if( t is SocketException && t.message == "Socket is closed"){
+			if(t is SocketException && t.message == "Socket is closed") {
 				log.w("WebSocket is closed. url=${webSocket.request().url}")
-			}else {
+			} else {
 				log.e(t, "WebSocket onFailure. url=${webSocket.request().url}")
 			}
 			
@@ -574,14 +576,16 @@ internal class StreamReader(
 		streamCallback : StreamCallback
 	) : StreamingIndicatorState {
 		synchronized(reader_list) {
-			val reader = reader_list.find{
-				it.access_info.db_id == accessInfo.db_id
-				it.end_point == endPoint
-				it.containsCallback(streamCallback)
+			val reader = reader_list.find {
+				it.access_info.db_id == accessInfo.db_id &&
+					it.end_point == endPoint &&
+					it.containsCallback(streamCallback)
 			}
-			return when{
-				reader ==null ->StreamingIndicatorState.NONE
-				reader.bListening.get() && reader.socket.get() != null -> StreamingIndicatorState.LISTENING
+			return when {
+				reader == null -> StreamingIndicatorState.NONE
+				reader.bListening.get() &&
+					reader.socket.get() != null ->
+					StreamingIndicatorState.LISTENING
 				else -> StreamingIndicatorState.REGISTERED
 			}
 		}

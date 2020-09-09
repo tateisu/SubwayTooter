@@ -1,9 +1,6 @@
 package jp.juggler.subwaytooter.view
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
 import androidx.core.view.ViewCompat
@@ -13,6 +10,7 @@ import jp.juggler.util.LogCategory
 class MyDrawerLayout : DrawerLayout {
 	
 	companion object {
+		
 		private val log = LogCategory("MyDrawerLayout")
 	}
 	
@@ -73,20 +71,20 @@ class MyDrawerLayout : DrawerLayout {
 			setWillNotDraw(false)
 		}
 	}
-
+	
 	// デバッグ用
-//	val paint = Paint()
-//	override fun dispatchDraw(canvas : Canvas?) {
-//		super.dispatchDraw(canvas)
-//
-//		canvas ?: return
-//
-//		log.d("dispatchDraw")
-//		for(rect in exclusionRects) {
-//			paint.color = 0x40ff0000
-//			canvas.drawRect(rect, paint)
-//		}
-//	}
+	//	val paint = Paint()
+	//	override fun dispatchDraw(canvas : Canvas?) {
+	//		super.dispatchDraw(canvas)
+	//
+	//		canvas ?: return
+	//
+	//		log.d("dispatchDraw")
+	//		for(rect in exclusionRects) {
+	//			paint.color = 0x40ff0000
+	//			canvas.drawRect(rect, paint)
+	//		}
+	//	}
 	
 	fun setExclusionSize(sizeDp : Int) {
 		val w = (sizeDp * 1.25f + 0.5f).toInt()

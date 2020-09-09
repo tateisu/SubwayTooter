@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter.api
 
 import jp.juggler.util.*
-import java.util.regex.Pattern
-
 import okhttp3.Response
 import okhttp3.WebSocket
 
@@ -12,7 +10,9 @@ open class TootApiResult(
 	var response : Response? = null,
 	var bodyString : String? = null
 ) {
+	
 	companion object {
+		
 		private val log = LogCategory("TootApiResult")
 		
 		private val reLinkURL = """<([^>]+)>;\s*rel="([^"]+)"""".asciiPattern()
@@ -80,7 +80,7 @@ open class TootApiResult(
 	private fun parseLinkHeader(response : Response?, array : JsonArray) {
 		response ?: return
 		
-		log.d("array size=${array.size}" )
+		log.d("array size=${array.size}")
 		
 		val sv = response.header("Link")
 		if(sv == null) {

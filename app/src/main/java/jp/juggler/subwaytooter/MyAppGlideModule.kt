@@ -69,7 +69,7 @@ class MyAppGlideModule : AppGlideModule() {
 	}
 	
 	// Convert the [SVG]'s internal representation to an Android-compatible one ([Picture]).
-	inner class SvgDrawableTranscoder : ResourceTranscoder<SVG, PictureDrawable> {
+	class SvgDrawableTranscoder : ResourceTranscoder<SVG, PictureDrawable> {
 		
 		@Nullable
 		override fun transcode(

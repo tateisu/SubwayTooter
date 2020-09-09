@@ -12,7 +12,6 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.util.*
 import java.util.*
-import kotlin.Comparator
 import kotlin.collections.ArrayList
 
 class NotificationCache(private val account_db_id : Long) {
@@ -211,7 +210,7 @@ class NotificationCache(private val account_db_id : Long) {
 	private fun normalize(account : SavedAccount) {
 		
 		// 新しい順に並べる
-		data.sortWith(Comparator { a, b ->
+		data.sortWith { a, b ->
 			val la = a.optLong(KEY_TIME_CREATED_AT)
 			val lb = b.optLong(KEY_TIME_CREATED_AT)
 			when {
@@ -219,7 +218,7 @@ class NotificationCache(private val account_db_id : Long) {
 				la > lb -> - 1
 				else -> 0
 			}
-		})
+		}
 		
 		val typeCount = HashMap<String, Int>()
 		val it = data.iterator()

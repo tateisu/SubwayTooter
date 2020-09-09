@@ -16,8 +16,8 @@ import java.util.*
 
 class AcctColor {
 	
-	var acctAscii : String
-	var acctPretty: String
+	private var acctAscii : String
+	private var acctPretty: String
 	var color_fg : Int = 0
 	var color_bg : Int = 0
 	var nicknameSave : String? = null
@@ -182,7 +182,7 @@ class AcctColor {
 //			return if(nickname != null && nickname.isNotEmpty()) nickname.sanitizeBDI() else acct
 //		}
 
-		fun getNickname(acctAscii:String,acctPretty:String) : String =
+		private fun getNickname(acctAscii:String, acctPretty:String) : String =
 			load(acctAscii,acctPretty).nickname
 		fun getNickname(acct: Acct) : String =
 			getNickname(acct.ascii,acct.pretty)
@@ -194,8 +194,8 @@ class AcctColor {
 		
 		fun getNicknameWithColor(sa:SavedAccount,who:TootAccount)  =
 			getNicknameWithColor(sa.getFullAcct(who))
-		fun getNicknameWithColor(sa:SavedAccount,acctArg:String)  =
-			getNicknameWithColor(sa.getFullAcct(Acct.parse(acctArg)))
+//		fun getNicknameWithColor(sa:SavedAccount,acctArg:String)  =
+//			getNicknameWithColor(sa.getFullAcct(Acct.parse(acctArg)))
 		fun getNicknameWithColor(acct:Acct)  =
 			getNicknameWithColor(acct.ascii,acct.pretty)
 		private fun getNicknameWithColor(acctAscii : String,acctPretty : String) : CharSequence {
@@ -224,10 +224,10 @@ class AcctColor {
 			return load(acct).notification_sound?.notEmpty()
 		}
 
-		fun getNotificationSound(acctAscii : String) : String? {
-			return load(acctAscii,"").notification_sound?.notEmpty()
-			// acctPretty is not used in this case
-		}
+//		fun getNotificationSound(acctAscii : String) : String? {
+//			return load(acctAscii,"").notification_sound?.notEmpty()
+//			// acctPretty is not used in this case
+//		}
 		
 		fun hasNickname(ac : AcctColor?) : Boolean =
 			null != ac?.nicknameSave?.notEmpty()

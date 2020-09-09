@@ -55,12 +55,12 @@ object MutedWord :TableCompanion{
 	}
 	
 	fun createCursor() : Cursor {
-		return App1.database.query(table, null, null, null, null, null, COL_NAME + " asc")
+		return App1.database.query(table, null, null, null, null, null, "$COL_NAME asc")
 	}
 	
 	fun delete(name : String) {
 		try {
-			App1.database.delete(table, COL_NAME + "=?", arrayOf(name))
+			App1.database.delete(table, "$COL_NAME=?", arrayOf(name))
 		} catch(ex : Throwable) {
 			log.e(ex, "delete failed.")
 		}

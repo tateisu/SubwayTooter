@@ -282,13 +282,11 @@ class DlgListMember(
 					Action_List.create(
 						activity,
 						list_owner,
-						text,
-						object : Action_List.CreateCallback {
-							override fun onCreated(list : TootList) {
-								dialog.dismissSafe()
-								loadLists()
-							}
-						})
+						text
+					) {
+						dialog.dismissSafe()
+						loadLists()
+					}
 				}
 				
 			})
@@ -298,7 +296,7 @@ class DlgListMember(
 	
 	private inner class MyListAdapter : BaseAdapter() {
 
-		internal val item_list = ArrayList<Any>()
+		val item_list = ArrayList<Any>()
 		
 		override fun getCount() : Int = item_list.size
 		

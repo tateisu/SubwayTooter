@@ -11,7 +11,6 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.*
 import android.graphics.drawable.shapes.RectShape
-import android.os.Build
 import android.os.SystemClock
 import android.text.Editable
 import android.text.TextWatcher
@@ -23,6 +22,7 @@ import jp.juggler.subwaytooter.R
 import java.util.*
 
 object UiUtils {
+	
 	val log = LogCategory("UiUtils")
 }
 
@@ -77,14 +77,14 @@ fun getAttributeDrawable(context : Context, attrId : Int) : Drawable {
 /////////////////////////////////////////////////////////
 
 // 後方互換用にボタン背景Drawableを生成する
-private fun getStateListDrawable(normalColor : Int, pressedColor : Int) : StateListDrawable {
-	val states = StateListDrawable()
-	states.addState(intArrayOf(android.R.attr.state_pressed), ColorDrawable(pressedColor))
-	states.addState(intArrayOf(android.R.attr.state_focused), ColorDrawable(pressedColor))
-	states.addState(intArrayOf(android.R.attr.state_activated), ColorDrawable(pressedColor))
-	states.addState(intArrayOf(), ColorDrawable(normalColor))
-	return states
-}
+//private fun getStateListDrawable(normalColor : Int, pressedColor : Int) : StateListDrawable {
+//	val states = StateListDrawable()
+//	states.addState(intArrayOf(android.R.attr.state_pressed), ColorDrawable(pressedColor))
+//	states.addState(intArrayOf(android.R.attr.state_focused), ColorDrawable(pressedColor))
+//	states.addState(intArrayOf(android.R.attr.state_activated), ColorDrawable(pressedColor))
+//	states.addState(intArrayOf(), ColorDrawable(normalColor))
+//	return states
+//}
 
 // 色を指定してRectShapeを生成する
 private fun getRectShape(color : Int) : Drawable {
@@ -132,7 +132,7 @@ fun getAdaptiveRippleDrawableRound(
 		return RippleDrawable(
 			ColorStateList.valueOf(pressedColor),
 			getRectShape(normalColor),
-			createRoundDrawable(dp6,Color.WHITE)
+			createRoundDrawable(dp6, Color.WHITE)
 		)
 	}
 }

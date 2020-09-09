@@ -394,6 +394,7 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 		}
 	}
 	
+	@Suppress("BlockingMethodInNonBlockingContext")
 	private fun export() = runWithProgress(
 		"export language filter",
 		{
@@ -412,7 +413,9 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 				cache_dir,
 				"SubwayTooter-language-filter.${Process.myPid()}.${Process.myTid()}.json"
 			)
-			FileOutputStream(file).use { it.write(data) }
+			FileOutputStream(file).use {
+				it.write(data)
+			}
 			file
 		},
 		{
@@ -450,6 +453,7 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 		super.onActivityResult(requestCode, resultCode, data)
 	}
 	
+	@Suppress("BlockingMethodInNonBlockingContext")
 	private fun import2(uri : Uri) = runWithProgress(
 		"import language filter",
 		{

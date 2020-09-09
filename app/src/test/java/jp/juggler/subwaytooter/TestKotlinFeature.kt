@@ -139,7 +139,7 @@ class TestKotlinFeature {
 		
 		// 同じ型に変換すると数値が同じだと判定できる
 		assertEquals(true, int10.toLong() == long10)
-		assertEquals(true, int10.toLong().equals(long10))
+		assertEquals(true, int10.toLong() == long10)
 		
 		// === 演算子 とプリミティブ型
 		
@@ -223,6 +223,7 @@ class TestKotlinFeature {
 	}
 	
 	interface MyKotlinInterface {
+		
 		fun method(x : Int) : Int
 	}
 	
@@ -230,11 +231,11 @@ class TestKotlinFeature {
 	fun testSAM() {
 		
 		// 定義例(文脈あり)
-		Thread({ println("SAM 1") }).start()
+		Thread { println("SAM 1") }.start()
 		Thread { println("SAM 2") }.start()
 		
 		// 定義例(文脈不明)
-		val a = Runnable({ println("SAM a") })
+		val a = Runnable { println("SAM a") }
 		
 		// 参照型の定義
 		val ref : Runnable = a
@@ -249,9 +250,7 @@ class TestKotlinFeature {
 			Thread(refNullable).start()
 		}
 		
-		View.OnClickListener { _ ->
-			println("clicked")
-		}.onClick(null)
+		View.OnClickListener { println("clicked") }.onClick(null)
 		
 		// kotlinで定義したインタフェースに対してSAMコンストラクタを使えるか？
 		// ダメでした
@@ -265,7 +264,7 @@ class TestKotlinFeature {
 		// 定義例(文脈あり)
 		thread(start = true) { println("testLambda") }
 		println(10.let { x -> x * x })
-		10.let { println(it) }
+		println(10)
 		// 定義例(文脈不明)
 		val a = { println("testLambda") }
 		
@@ -288,7 +287,7 @@ class TestKotlinFeature {
 		// 定義例(文脈あり)
 		thread(start = true, block = fun() { println("testAnonymousFunction") })
 		println(10.let(fun(x : Int) = x * x))
-		10.let { println(it) }
+		println(10)
 		// 定義例(文脈不明)
 		val a = fun(x : Int) = x * x
 		
@@ -344,6 +343,7 @@ class TestKotlinFeature {
 	}
 	
 	private fun member(x : Int) = x * x
+	
 	@Test
 	fun testMemberReference() {
 		fun caller(a : (receiver : TestKotlinFeature, x : Int) -> Int) {
@@ -445,7 +445,7 @@ class TestKotlinFeature {
 	fun testRawArray() {
 		// サイズを指定して生成
 		val a = IntArray(4)
-		for(i in 0 until a.size) {
+		for(i in a.indices) {
 			a[i] = i * 2
 		}
 		println(a.joinToString(","))
@@ -486,7 +486,7 @@ class TestKotlinFeature {
 			}
 			println(sb)
 			println(args.contains(6)) // 禁止されていない。inポジションって何だ…？
-			// arggs[0]=6 //禁止されている
+			// args[0]=6 //禁止されている
 		}
 		foo(arrayOf(1, 2, 3))
 		foo(arrayOf(1f, 2f, 3f))

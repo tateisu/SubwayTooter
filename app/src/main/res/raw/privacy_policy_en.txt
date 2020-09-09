@@ -25,7 +25,7 @@ Subway Tooter has the function to read / update the activities from login accoun
 
 Subway Tooter will not send these information to outside the application EXCEPT in the following cases.
 - With user's explicit intent, sending activity update/delete request to relevant SNS service.
-- With user's explicit intent, sharing URLs or datas to external web browser or other applications.
+- With user's explicit intent, sharing URLs or data to external web browser or other applications.
 - With user's explicit intent, downloading data to the folder that is accessible by other applications.
 
 #### Information coming from the input plugin

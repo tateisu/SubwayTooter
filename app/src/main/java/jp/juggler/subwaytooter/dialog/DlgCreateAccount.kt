@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.dialog
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Dialog
 import android.view.View
 import android.view.WindowManager
@@ -16,7 +15,10 @@ import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
-import jp.juggler.util.*
+import jp.juggler.util.neatSpaces
+import jp.juggler.util.notBlank
+import jp.juggler.util.showToast
+import jp.juggler.util.vg
 
 class DlgCreateAccount(
 	val activity : AppCompatActivity,

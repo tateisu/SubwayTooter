@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.SharedPreferences
 import android.os.Handler
-import androidx.core.content.ContextCompat
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.view.Gravity
@@ -13,6 +12,7 @@ import android.widget.CheckedTextView
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
@@ -23,7 +23,6 @@ import jp.juggler.util.asciiPattern
 import jp.juggler.util.getAttributeColor
 import jp.juggler.util.groupEx
 import java.util.*
-import java.util.regex.Pattern
 import kotlin.math.min
 
 @SuppressLint("InflateParams")
@@ -65,7 +64,7 @@ internal class PopupAutoCompleteAcct(
 	
 	init {
 		this.density = activity.resources.displayMetrics.density
-		this.handler = App1.getAppState(activity,"PopupAutoCompleteAcct.ctor").handler
+		this.handler = App1.getAppState(activity, "PopupAutoCompleteAcct.ctor").handler
 		
 		popup_width = (0.5f + 240f * density).toInt()
 		
@@ -146,16 +145,16 @@ internal class PopupAutoCompleteAcct(
 					
 					if(acct[0] == ' ') {
 						// 絵文字ショートコード
-						val separator =  EmojiDecoder.customEmojiSeparator(pref)
+						val separator = EmojiDecoder.customEmojiSeparator(pref)
 						if(! EmojiDecoder.canStartShortCode(sb, start)) sb.append(separator)
 						sb.append(findShortCode(acct.toString()))
 						// セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
-						if( separator != ' ') sb.append(separator)
-					} else if(acct[0] == '@' && null != acct.find{ it >= 0x80.toChar() } ) {
+						if(separator != ' ') sb.append(separator)
+					} else if(acct[0] == '@' && null != acct.find { it >= 0x80.toChar() }) {
 						// @user@host IDNドメインを含む
 						// 直後に空白を付与する
-						sb.append("@"  + Acct.parse(acct.toString().substring(1)).ascii).append(" ")
-					}else{
+						sb.append("@" + Acct.parse(acct.toString().substring(1)).ascii).append(" ")
+					} else {
 						// @user@host
 						// #hashtag
 						// 直後に空白を付与する
@@ -181,7 +180,7 @@ internal class PopupAutoCompleteAcct(
 	
 	private fun findShortCode(acct : String) : String {
 		val m = reLastShortCode.matcher(acct)
-		if(m.find()) return m.groupEx(0)!!
+		if(m.find()) return m.groupEx(0) !!
 		return acct
 	}
 	

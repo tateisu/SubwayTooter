@@ -1,18 +1,19 @@
 package jp.juggler.subwaytooter
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.LogCategory
 import jp.juggler.util.scan
 
 internal abstract class ViewHolderHeaderBase(val activity : ActMain, val viewRoot : View) :
-	androidx.recyclerview.widget.RecyclerView.ViewHolder(viewRoot) {
+	RecyclerView.ViewHolder(viewRoot) {
 	
 	companion object {
+		
 		private val log = LogCategory("HeaderViewHolderBase")
 	}
 	
@@ -31,7 +32,7 @@ internal abstract class ViewHolderHeaderBase(val activity : ActMain, val viewRoo
 					}
 					
 					val fv = activity.timeline_spacing
-					if( fv != null) v.setLineSpacing(0f,fv)
+					if(fv != null) v.setLineSpacing(0f, fv)
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)

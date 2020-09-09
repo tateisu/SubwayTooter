@@ -20,7 +20,7 @@ internal class ItemListAdapter(
 		private val log = LogCategory("ItemListAdapter")
 	}
 	
-	private inner class DiffCallback(
+	private class DiffCallback(
 		val oldList : List<TimelineItem>,
 		val newList : List<TimelineItem>,
 		val biasListIndex : Int

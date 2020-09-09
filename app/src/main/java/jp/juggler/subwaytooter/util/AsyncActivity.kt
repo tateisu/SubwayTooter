@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.util
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.util.LogCategory
@@ -12,8 +11,9 @@ import kotlin.coroutines.CoroutineContext
 
 abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
 	
-	companion object{
-		private val log =LogCategory("AsyncActivity")
+	companion object {
+		
+		private val log = LogCategory("AsyncActivity")
 	}
 	
 	private lateinit var job : Job
@@ -21,11 +21,11 @@ abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
 	override val coroutineContext : CoroutineContext
 		get() = job + Dispatchers.Main
 	
-	override fun onCreate(savedInstanceState : Bundle?){
+	override fun onCreate(savedInstanceState : Bundle?) {
 		job = Job()
 		super.onCreate(savedInstanceState)
 	}
-
+	
 	override fun onDestroy() {
 		super.onDestroy()
 		(job + Dispatchers.Default).cancel()
@@ -48,8 +48,8 @@ abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
 		doInBackground : suspend CoroutineScope.(ProgressDialogEx) -> T,
 		afterProc : suspend CoroutineScope.(result : T) -> Unit = {},
 		progressInitializer : suspend CoroutineScope.(ProgressDialogEx) -> Unit = {},
-		preProc : suspend CoroutineScope.() -> Unit ={},
-		postProc : suspend CoroutineScope.() -> Unit ={}
+		preProc : suspend CoroutineScope.() -> Unit = {},
+		postProc : suspend CoroutineScope.() -> Unit = {}
 	) {
 		
 		val progress = ProgressDialogEx(this)
@@ -59,13 +59,13 @@ abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
 		}
 		
 		launch {
-			try{
+			try {
 				preProc()
-			}catch(ex:Throwable){
+			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
 			progress.setCancelable(true)
-			progress.setOnCancelListener {task.cancel()}
+			progress.setOnCancelListener { task.cancel() }
 			progress.isIndeterminateEx = true
 			progress.setMessageEx("${caption}…")
 			progressInitializer(progress)
@@ -74,17 +74,17 @@ abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
 			try {
 				val result = try {
 					task.await()
-				}catch(ex:CancellationException){
+				} catch(ex : CancellationException) {
 					null
 				}
-				if(result!=null) afterProc(result)
+				if(result != null) afterProc(result)
 			} catch(ex : Throwable) {
 				showToast(this@AsyncActivity, ex, "$caption failed.")
 			} finally {
 				progress.dismissSafe()
-				try{
+				try {
 					postProc()
-				}catch(ex:Throwable){
+				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
 			}

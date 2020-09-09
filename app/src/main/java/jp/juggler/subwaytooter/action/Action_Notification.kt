@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.action
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Column
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
@@ -14,7 +13,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.showToast
 import jp.juggler.util.toFormRequestBody
 import jp.juggler.util.toPost
-import jp.juggler.util.toRequestBody
 
 object Action_Notification {
 	

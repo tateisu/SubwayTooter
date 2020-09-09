@@ -1,12 +1,9 @@
 package jp.juggler.subwaytooter.table
 
-import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
-import android.util.Log
 
-@Suppress("UNUSED_PARAMETER")
 object LogData :TableCompanion{
-	private const val TAG = "SubwayTooter"
+	// private const val TAG = "SubwayTooter"
 	
 	internal const val table = "warning"
 	
@@ -17,12 +14,12 @@ object LogData :TableCompanion{
 	
 	@Suppress("unused")
 	const val LEVEL_ERROR = 100
-	const val LEVEL_WARNING = 200
-	const val LEVEL_INFO = 300
-	const val LEVEL_VERBOSE = 400
-	const val LEVEL_DEBUG = 500
-	const val LEVEL_HEARTBEAT = 600
-	const val LEVEL_FLOOD = 700
+	private const val LEVEL_WARNING = 200
+	private const val LEVEL_INFO = 300
+	private const val LEVEL_VERBOSE = 400
+	private const val LEVEL_DEBUG = 500
+	private const val LEVEL_HEARTBEAT = 600
+	private const val LEVEL_FLOOD = 700
 	
 	override fun onDBCreate(db : SQLiteDatabase) {
 		db.execSQL(
@@ -46,34 +43,34 @@ object LogData :TableCompanion{
 	
 	}
 	
-	fun insert(cv : ContentValues, time : Long, level : Int, category : String, message : String) : Long {
-		try {
-			Log.d(TAG, category + ": " + message)
-			//		try{
-			//			cv.clear();
-			//			cv.put( COL_TIME, time );
-			//			cv.put( COL_LEVEL, level );
-			//			cv.put( COL_MESSAGE, message );
-			//			cv.put( COL_CATEGORY, category );
-			//			return App1.getDB().insert( table, null, cv );
-			//		}catch( Throwable ignored ){
-			//		}
-		}catch(ex:Throwable){
-			// PC上で行う単体テストにはLog クラスがない
-			println(category + ": " + message)
-		}
-		return - 1L
-	}
+//	fun insert(cv : ContentValues, time : Long, level : Int, category : String, message : String) : Long {
+//		try {
+//			Log.d(TAG, "$category: $message")
+//			//		try{
+//			//			cv.clear();
+//			//			cv.put( COL_TIME, time );
+//			//			cv.put( COL_LEVEL, level );
+//			//			cv.put( COL_MESSAGE, message );
+//			//			cv.put( COL_CATEGORY, category );
+//			//			return App1.getDB().insert( table, null, cv );
+//			//		}catch( Throwable ignored ){
+//			//		}
+//		}catch(ex:Throwable){
+//			// PC上で行う単体テストにはLog クラスがない
+//			println("$category: $message")
+//		}
+//		return - 1L
+//	}
 	
 	@Suppress("unused")
 	private fun getLogLevelString(level : Int) :String {
 		return when {
-			level >= LogData.LEVEL_FLOOD -> "Flood"
-			level >= LogData.LEVEL_HEARTBEAT -> "HeartBeat"
-			level >= LogData.LEVEL_DEBUG -> "Debug"
-			level >= LogData.LEVEL_VERBOSE -> "Verbose"
-			level >= LogData.LEVEL_INFO -> "Info"
-			level >= LogData.LEVEL_WARNING -> "Warning"
+			level >= LEVEL_FLOOD -> "Flood"
+			level >= LEVEL_HEARTBEAT -> "HeartBeat"
+			level >= LEVEL_DEBUG -> "Debug"
+			level >= LEVEL_VERBOSE -> "Verbose"
+			level >= LEVEL_INFO -> "Info"
+			level >= LEVEL_WARNING -> "Warning"
 			else -> "Error"
 		}
 	}

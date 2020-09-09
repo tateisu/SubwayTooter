@@ -3,8 +3,7 @@ package jp.juggler.subwaytooter.util
 import jp.juggler.util.asciiPattern
 import jp.juggler.util.groupEx
 import java.math.BigInteger
-import java.util.ArrayList
-import java.util.regex.Pattern
+import java.util.*
 
 class VersionString(src : String?) : Comparable<VersionString> {
 	
@@ -20,6 +19,7 @@ class VersionString(src : String?) : Comparable<VersionString> {
 	}
 	
 	private class RC(val x : Int) : Comparable<RC> {
+		
 		override fun compareTo(other : RC) : Int {
 			val i = x - other.x
 			return if(i > 0) 1 else if(i < 0) - 1 else 0
@@ -61,7 +61,7 @@ class VersionString(src : String?) : Comparable<VersionString> {
 						
 						if(DUMP) {
 							if(m.find(next)) {
-								println("next=$next, matct_start=${m.start()}")
+								println("next=$next, match_start=${m.start()}")
 							} else {
 								println("next=$next, not match.")
 							}

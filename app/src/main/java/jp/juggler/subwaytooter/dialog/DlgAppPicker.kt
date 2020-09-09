@@ -63,7 +63,7 @@ class DlgAppPicker(
 			val (label, icon) = CustomShare.getInfo(activity, CustomShare.CN_CLIPBOARD.cn())
 			add(ListItem(icon, label.toString(), CustomShare.CN_CLIPBOARD))
 		}
-		sortWith(Comparator { a, b ->
+		sortWith{ a, b ->
 			val a1 = a.text.firstOrNull() ?: '\u0000'
 			val b1 = b.text.firstOrNull() ?: '\u0000'
 			when {
@@ -71,7 +71,7 @@ class DlgAppPicker(
 				a1.isAlpha() && ! b1.isAlpha() -> 1
 				else -> a.text.compareTo(b.text, ignoreCase = true)
 			}
-		})
+		}
 	}
 	
 	val dialog : AlertDialog?

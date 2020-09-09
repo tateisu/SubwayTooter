@@ -4,18 +4,17 @@ import android.content.Context
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.util.Base64
-import android.util.SparseBooleanArray
 import java.security.MessageDigest
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 object StringUtils {
+	
 	val log = LogCategory("StringUtils")
 	
 	val hexLower =
@@ -72,7 +71,7 @@ fun ByteArray.startWith(
 // 各要素の下位8ビットを使ってバイト配列を作る
 fun IntArray.toByteArray() : ByteArray {
 	val dst = ByteArray(this.size)
-	for(i in 0 until this.size) {
+	for(i in this.indices) {
 		dst[i] = this[i].toByte()
 	}
 	return dst
@@ -81,7 +80,7 @@ fun IntArray.toByteArray() : ByteArray {
 // 各要素の下位8ビットを使ってバイト配列を作る
 fun CharArray.toLowerByteArray() : ByteArray {
 	val dst = ByteArray(this.size)
-	for(i in 0 until this.size) {
+	for(i in this.indices) {
 		dst[i] = this[i].toByte()
 	}
 	return dst
@@ -303,33 +302,37 @@ fun String.decodePercent() : String =
 
 fun Throwable.withCaption(fmt : String?, vararg args : Any) =
 	"${
-	if(fmt == null || args.isEmpty())
-		fmt
-	else
-		String.format(fmt, *args)
+		if(fmt == null || args.isEmpty())
+			fmt
+		else
+			String.format(fmt, *args)
 	}: ${this.javaClass.simpleName} ${this.message}"
 
 fun Throwable.withCaption(resources : Resources, string_id : Int, vararg args : Any) =
 	"${
-	resources.getString(string_id, *args)
+		resources.getString(string_id, *args)
 	}: ${this.javaClass.simpleName} ${this.message}"
 
 ////////////////////////////////////////////////////////////////////
 // Bundle
 
-fun Bundle.parseString(key : String) : String? {
-	return try {
-		this.getString(key)
-	} catch(ignored : Throwable) {
-		null
-	}
-}
+//fun Bundle.parseString(key : String) : String? {
+//	return try {
+//		this.getString(key)
+//	} catch(ignored : Throwable) {
+//		null
+//	}
+//}
 
 ////////////////////////////////////////////////////////////////
 // Pattern
 
 fun Matcher.groupEx(g : Int) : String? =
-	try { group(g) } catch(ex : Throwable) { null }
+	try {
+		group(g)
+	} catch(ex : Throwable) {
+		null
+	}
 
 // make Array<String> to HashSet<String>
 fun <T> Array<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
@@ -337,10 +340,10 @@ fun <T> Array<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
 //fun <T> Iterable<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
 //fun <T> Sequence<T>.toHashSet() = HashSet<T>().also { it.addAll(this) }
 
-fun defaultLocale(context:Context)=
-	if( Build.VERSION.SDK_INT >= 24){
+fun defaultLocale(context : Context) : Locale =
+	if(Build.VERSION.SDK_INT >= 24) {
 		context.resources.configuration.locales[0]
-	}else{
+	} else {
 		@Suppress("DEPRECATION")
 		context.resources.configuration.locale
 	}

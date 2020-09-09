@@ -6,9 +6,9 @@ import jp.juggler.util.LogCategory
 class Benchmark(
 	val log : LogCategory,
 	val caption :String,
-	val minMs :Long = 33L
+	private val minMs :Long = 33L
 ){
-	val timeStart = SystemClock.elapsedRealtime()
+	private val timeStart = SystemClock.elapsedRealtime()
 	
 	fun report(){
 		val duration = SystemClock.elapsedRealtime() - timeStart

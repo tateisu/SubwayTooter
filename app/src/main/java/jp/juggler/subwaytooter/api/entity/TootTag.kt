@@ -32,7 +32,7 @@ open class TootTag constructor(
 	}
 	
 	class History(src : JsonObject) {
-		val day : Long
+		private val day : Long
 		val uses : Int
 		val accounts : Int
 		

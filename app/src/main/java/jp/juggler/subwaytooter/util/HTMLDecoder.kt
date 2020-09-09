@@ -16,12 +16,12 @@ import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import java.util.*
 import java.util.regex.Pattern
 
 object HTMLDecoder {
+	
 	private val log = LogCategory("HTMLDecoder")
 	
 	private const val DEBUG_HTML_PARSER = false
@@ -204,19 +204,19 @@ object HTMLDecoder {
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
-	private val reDoctype = """\A\s*<!doctype[^>]*>""".asciiPattern( Pattern.CASE_INSENSITIVE)
-	private val reComment = """<!--.*?-->""".asciiPattern( Pattern.DOTALL)
+	private val reDoctype = """\A\s*<!doctype[^>]*>""".asciiPattern(Pattern.CASE_INSENSITIVE)
+	private val reComment = """<!--.*?-->""".asciiPattern(Pattern.DOTALL)
 	
 	private fun String.quoteMeta() = Pattern.quote(this)
 	
 	private class TokenParser(srcArg : String) {
 		
-		internal val src : String
-		internal var next : Int = 0
+		val src : String
+		var next : Int = 0
 		
-		internal var open_type = OpenType.OpenClose
-		internal var tag = ""
-		internal var text = ""
+		var open_type = OpenType.OpenClose
+		var tag = ""
+		var text = ""
 		
 		init {
 			this.src = srcArg
@@ -225,7 +225,7 @@ object HTMLDecoder {
 			eat()
 		}
 		
-		internal fun eat() {
+		fun eat() {
 			// end?
 			if(next >= src.length) {
 				tag = TAG_END
@@ -280,10 +280,11 @@ object HTMLDecoder {
 	}
 	
 	private class Node {
-		internal val child_nodes = ArrayList<Node>()
 		
-		internal val tag : String
-		internal val text : String
+		val child_nodes = ArrayList<Node>()
+		
+		val tag : String
+		val text : String
 		
 		private val href : String?
 			get() {
@@ -297,17 +298,17 @@ object HTMLDecoder {
 				return null
 			}
 		
-		internal constructor() {
+		constructor() {
 			tag = "<>root"
 			text = ""
 		}
 		
-		internal constructor(t : TokenParser) {
+		constructor(t : TokenParser) {
 			this.tag = t.tag
 			this.text = t.text
 		}
 		
-		internal fun addChild(t : TokenParser, indent : String) {
+		fun addChild(t : TokenParser, indent : String) {
 			if(DEBUG_HTML_PARSER) log.d("addChild: $indent($tag")
 			while(t.tag != TAG_END) {
 				
@@ -339,7 +340,7 @@ object HTMLDecoder {
 			if(DEBUG_HTML_PARSER) log.d("addChild: $indent)$tag")
 		}
 		
-		internal fun encodeSpan(
+		fun encodeSpan(
 			options : DecodeOptions,
 			sb : SpannableStringBuilder
 		) {
@@ -506,8 +507,6 @@ object HTMLDecoder {
 		for(item in mentionList) {
 			if(sb.isNotEmpty()) sb.append(" ")
 			
-			
-			
 			val fullAcct = getFullAcctOrNull(linkHelper, item.acct, item.url)
 			
 			val linkInfo = if(fullAcct != null) {
@@ -608,7 +607,7 @@ object HTMLDecoder {
 				
 				// Account.note does not have mentions metadata.
 				// fallback to resolve acct by mention URL.
-				val rawAcct = mention?.acct ?: Acct.parse( originalCaption.toString().substring(1) )
+				val rawAcct = mention?.acct ?: Acct.parse(originalCaption.toString().substring(1))
 				val fullAcct = getFullAcctOrNull(options.linkHelper, rawAcct, href)
 				
 				if(fullAcct != null) {
@@ -658,7 +657,11 @@ object HTMLDecoder {
 						when {
 							m.find() -> {
 								linkInfo.caption =
-									SpannableString("${m.groupEx(1) !!.decodePercent()}:nicodic:").apply {
+									SpannableString(
+										"${
+											m.groupEx(1) !!.decodePercent()
+										}:nicodic:"
+									).apply {
 										setSpan(
 											EmojiImageSpan(context, R.drawable.nicodic),
 											length - 9,

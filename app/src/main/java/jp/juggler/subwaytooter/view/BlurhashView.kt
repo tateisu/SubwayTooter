@@ -6,7 +6,8 @@ import android.util.AttributeSet
 import android.util.SparseIntArray
 import androidx.appcompat.widget.AppCompatTextView
 import jp.juggler.util.LogCategory
-import java.lang.Math.pow
+import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sign
 
 class Blurhash(blurhash : String, punch : Float = 1f) {
@@ -36,16 +37,18 @@ class Blurhash(blurhash : String, punch : Float = 1f) {
 		}
 		
 		// array to convert gamma curve from sRGB(0..255) to linear(0..1f)
+		
 		private val arraySRGB2Linear = FloatArray(256) { i ->
 			val v = i.toDouble() / 255.0
 			if(v <= 0.04045) {
 				v / 12.92
 			} else {
-				pow(((v + 0.055) / 1.055), 2.4)
+				((v + 0.055) / 1.055).pow(2.4)
 			}
 				.toFloat()
 		}
 		
+		@Suppress("SameParameterValue")
 		private fun clip(min : Int, max : Int, value : Int) =
 			if(value < min) min else if(value > max) max else value
 		
@@ -126,7 +129,7 @@ class Blurhash(blurhash : String, punch : Float = 1f) {
 				var b = 0f
 				for(j in 0 until height) {
 					for(i in 0 until width) {
-						val basis = (Math.cos(kx * i) * Math.cos(ky * j)).toFloat()
+						val basis = (cos(kx * i) * cos(ky * j)).toFloat()
 						val color = colors[i + j * width]
 						r += color[0] * basis
 						g += color[1] * basis

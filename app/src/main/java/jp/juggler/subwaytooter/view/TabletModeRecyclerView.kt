@@ -1,13 +1,13 @@
 package jp.juggler.subwaytooter.view
 
 import android.content.Context
-import androidx.recyclerview.widget.RecyclerView
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ViewConfiguration
+import androidx.recyclerview.widget.RecyclerView
+import kotlin.math.abs
 
-class TabletModeRecyclerView : androidx.recyclerview.widget.RecyclerView {
-	
+class TabletModeRecyclerView : RecyclerView {
 	
 	private var mForbidStartDragging : Boolean = false
 	private var mScrollPointerId : Int = 0
@@ -19,12 +19,15 @@ class TabletModeRecyclerView : androidx.recyclerview.widget.RecyclerView {
 		init(context)
 	}
 	
-	
 	constructor(context : Context, attrs : AttributeSet?) : super(context, attrs) {
 		init(context)
 	}
 	
-	constructor(context : Context, attrs : AttributeSet?, defStyle : Int) : super(context, attrs, defStyle) {
+	constructor(context : Context, attrs : AttributeSet?, defStyle : Int) : super(
+		context,
+		attrs,
+		defStyle
+	) {
 		init(context)
 	}
 	
@@ -34,10 +37,9 @@ class TabletModeRecyclerView : androidx.recyclerview.widget.RecyclerView {
 	}
 	
 	override fun onInterceptTouchEvent(e : MotionEvent) : Boolean {
-		val action = e.action
 		// final int actionIndex = e.getActionIndex( );
 		
-		when(action) {
+		when(e.action) {
 			
 			MotionEvent.ACTION_DOWN -> {
 				mForbidStartDragging = false
@@ -61,7 +63,9 @@ class TabletModeRecyclerView : androidx.recyclerview.widget.RecyclerView {
 					val dx = x - mInitialTouchX
 					val dy = y - mInitialTouchY
 					
-					if(! canScrollVertically && Math.abs(dy) > mTouchSlop || ! canScrollHorizontally && Math.abs(dx) > mTouchSlop) {
+					if(! canScrollVertically && abs(dy) > mTouchSlop || ! canScrollHorizontally && abs(
+							dx
+						) > mTouchSlop) {
 						mForbidStartDragging = true
 						return false
 					}

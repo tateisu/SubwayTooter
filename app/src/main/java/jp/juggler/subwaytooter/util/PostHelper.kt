@@ -301,17 +301,18 @@ class PostHelper(
 			
 			var credential_tmp : TootAccount? = null
 			
-			val parser = TootParser(activity, account)
+			
 			
 			var scheduledStatusSucceeded = false
 			
-			fun getCredential(client : TootApiClient) : TootApiResult? {
+			fun getCredential(client : TootApiClient,parser:TootParser) : TootApiResult? {
 				val result = client.request("/api/v1/accounts/verify_credentials")
 				credential_tmp = parser.account(result?.jsonObject)
 				return result
 			}
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
+				val parser = TootParser(activity, account)
 				
 				var result : TootApiResult?
 				
@@ -362,7 +363,7 @@ class PostHelper(
 						if(account.isMisskey || instance.versionGE(TootInstance.VERSION_1_6)) {
 							null
 						} else {
-							val r2 = getCredential(client)
+							val r2 = getCredential(client,parser)
 							val credential_tmp = this.credential_tmp ?: return r2
 							val privacy = credential_tmp.source?.privacy
 								?: return TootApiResult(activity.getString(R.string.cant_get_web_setting_visibility))

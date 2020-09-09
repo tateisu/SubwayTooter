@@ -164,7 +164,7 @@ class ActFavMute : AppCompatActivity() {
 	}
 	
 	// ドラッグ操作中のデータ
-	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) :
+	private inner class MyDragItem(context : Context, layoutId : Int) :
 		DragItem(context, layoutId) {
 		
 		override fun onBindDragView(clickedView : View, dragView : View) {
@@ -177,7 +177,7 @@ class ActFavMute : AppCompatActivity() {
 		}
 	}
 	
-	private inner class MyListAdapter internal constructor() :
+	private inner class MyListAdapter :
 		DragItemAdapter<MyItem, MyViewHolder>() {
 		
 		init {

@@ -12,7 +12,7 @@ class ActionsDialog {
 	
 	private val action_list = ArrayList<Action>()
 	
-	private class Action internal constructor(internal val caption : CharSequence, internal val r : EmptyCallback)
+	private class Action(val caption : CharSequence, val r : EmptyCallback)
 	
 	fun addAction(caption : CharSequence, r : EmptyCallback) : ActionsDialog {
 		

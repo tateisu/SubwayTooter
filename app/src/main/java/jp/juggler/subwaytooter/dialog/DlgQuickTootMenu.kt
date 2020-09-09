@@ -53,10 +53,10 @@ class DlgQuickTootMenu(
 		var visibility : TootVisibility
 	}
 	
-	var dialogRef : WeakReference<Dialog>? = null
+	private var refDialog : WeakReference<Dialog>? = null
 	
 	fun toggle() {
-		val dialog = dialogRef?.get()
+		val dialog = refDialog?.get()
 		if(dialog != null && dialog.isShowing) {
 			dialog.dismissSafe()
 		} else {
@@ -64,7 +64,7 @@ class DlgQuickTootMenu(
 		}
 	}
 	
-	val etText = arrayOfNulls<EditText>(6)
+	private val etText = arrayOfNulls<EditText>(6)
 	private lateinit var btnVisibility :Button
 	
 	@SuppressLint("InflateParams")
@@ -76,7 +76,7 @@ class DlgQuickTootMenu(
 		val btnListener :View.OnClickListener = View.OnClickListener{ v ->
 			val text = etText[v.tag as? Int ?: 0]?.text?.toString()
 			if(text!= null) {
-				dialogRef?.get()?.dismissSafe()
+				refDialog?.get()?.dismissSafe()
 				callback.onMacro(text)
 			}
 		}
@@ -102,7 +102,7 @@ class DlgQuickTootMenu(
 		showVisibility()
 		
 		val dialog = Dialog(activity)
-		this.dialogRef = WeakReference(dialog)
+		this.refDialog = WeakReference(dialog)
 		dialog.setCanceledOnTouchOutside(true)
 		dialog.setContentView(view)
 		
@@ -136,7 +136,7 @@ class DlgQuickTootMenu(
 	override fun onClick(v : View?) { // TODO
 		when(v?.id){
 
-			R.id.btnCancel-> dialogRef?.get()?.dismissSafe()
+			R.id.btnCancel-> refDialog?.get()?.dismissSafe()
 
 			R.id.btnVisibility -> performVisibility()
 		}

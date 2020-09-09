@@ -2,11 +2,11 @@ package jp.juggler.util
 
 import android.content.Context
 import android.widget.Toast
-import me.drakeet.support.toast.BadTokenListener
-import java.lang.ref.WeakReference
 import me.drakeet.support.toast.ToastCompat
+import java.lang.ref.WeakReference
 
 object ToastUtils {
+	
 	private val log = LogCategory("ToastUtils")
 	private var refToast : WeakReference<Toast>? = null
 	
@@ -26,7 +26,7 @@ object ToastUtils {
 			try {
 				val duration = if(bLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
 				val t = ToastCompat.makeText(context, message, duration)
-				t.setBadTokenListener{  }
+				t.setBadTokenListener { }
 				t.show()
 				refToast = WeakReference(t)
 			} catch(ex : Throwable) {

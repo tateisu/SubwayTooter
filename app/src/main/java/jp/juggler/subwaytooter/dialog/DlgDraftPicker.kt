@@ -135,9 +135,9 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 		return if(cursor == null) null else PostDraft.loadFromCursor(cursor, colIdx, position)
 	}
 	
-	private inner class MyViewHolder internal constructor(view : View) {
-		internal val tvTime : TextView
-		internal val tvText : TextView
+	private inner class MyViewHolder(view : View) {
+		val tvTime : TextView
+		val tvText : TextView
 		
 		init {
 			tvTime = view.findViewById(R.id.tvTime)

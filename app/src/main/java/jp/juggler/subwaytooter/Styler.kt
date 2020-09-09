@@ -4,21 +4,23 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
-import androidx.core.content.ContextCompat
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.util.*
-import kotlin.coroutines.Continuation
+import jp.juggler.util.LogCategory
+import jp.juggler.util.getAttributeColor
+import jp.juggler.util.notZero
+import jp.juggler.util.setIconDrawableId
 import kotlin.math.max
 import kotlin.math.min
 
@@ -148,13 +150,13 @@ object Styler {
 	}
 	
 	fun setFollowIcon(
-		context : Context
-		, ibFollow : ImageButton
-		, ivDot : ImageView
-		, relation : UserRelation
-		, who : TootAccount
-		, defaultColor : Int
-		, alphaMultiplier : Float
+		context : Context,
+		ibFollow : ImageButton,
+		ivDot : ImageView,
+		relation : UserRelation,
+		who : TootAccount,
+		defaultColor : Int,
+		alphaMultiplier : Float
 	) {
 		fun colorAccent() =
 			Pref.ipButtonFollowingColor(Pref.pref(context)).notZero()
@@ -162,7 +164,7 @@ object Styler {
 		
 		fun colorError() =
 			Pref.ipButtonFollowRequestColor(Pref.pref(context)).notZero()
-			?: getAttributeColor(context, R.attr.colorRegexFilterError)
+				?: getAttributeColor(context, R.attr.colorRegexFilterError)
 		
 		// 被フォロー状態
 		when {
@@ -256,7 +258,7 @@ object Styler {
 		ibFollow.contentDescription = contentDescription
 	}
 	
-	private fun getHorizontalPadding(v : View, delta_dp : Float ) : Int {
+	private fun getHorizontalPadding(v : View, delta_dp : Float) : Int {
 		// Essential Phone PH-1は 短辺439dp
 		val form_width_max = 460f
 		val dm = v.resources.displayMetrics
@@ -274,7 +276,7 @@ object Styler {
 		else -> orientation.toString()
 	}
 	
-	fun fixHorizontalPadding(v : View,delta_dp:Float = 12f) {
+	fun fixHorizontalPadding(v : View, delta_dp : Float = 12f) {
 		val pad_t = v.paddingTop
 		val pad_b = v.paddingBottom
 		
@@ -284,12 +286,12 @@ object Styler {
 			val pad_lr = (0.5f + delta_dp * dm.density).toInt()
 			when(Pref.ipJustifyWindowContentPortrait(App1.pref)) {
 				Pref.JWCP_START -> {
-					v.setPaddingRelative(pad_lr, pad_t, pad_lr+ dm.widthPixels / 2, pad_b)
+					v.setPaddingRelative(pad_lr, pad_t, pad_lr + dm.widthPixels / 2, pad_b)
 					return
 				}
 				
 				Pref.JWCP_END -> {
-					v.setPaddingRelative( pad_lr+dm.widthPixels / 2, pad_t,  pad_lr, pad_b)
+					v.setPaddingRelative(pad_lr + dm.widthPixels / 2, pad_t, pad_lr, pad_b)
 					return
 				}
 			}
@@ -299,7 +301,7 @@ object Styler {
 		v.setPaddingRelative(pad_lr, pad_t, pad_lr, pad_b)
 	}
 	
-	fun fixHorizontalPadding0(v : View)  = fixHorizontalPadding(v,0f)
+	fun fixHorizontalPadding0(v : View) = fixHorizontalPadding(v, 0f)
 	
 	fun fixHorizontalMargin(v : View) {
 		val lp = v.layoutParams

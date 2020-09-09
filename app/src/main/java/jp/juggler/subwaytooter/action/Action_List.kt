@@ -14,7 +14,7 @@ import okhttp3.Request
 
 object Action_List {
 	
-	interface CreateCallback {
+	fun interface CreateCallback {
 		fun onCreated(list : TootList)
 	}
 	

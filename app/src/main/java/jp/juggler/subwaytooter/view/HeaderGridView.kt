@@ -249,7 +249,7 @@ class HeaderGridView : GridView {
 		// This is used to notify the container of updates relating to number of columns
 		// or headers changing, which changes the number of placeholders needed
 		private val mDataSetObservable = DataSetObservable()
-		internal var mAreAllFixedViewsSelectable : Boolean = false
+		var mAreAllFixedViewsSelectable : Boolean = false
 		private val mIsFilterable : Boolean
 		
 		init {

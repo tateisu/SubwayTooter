@@ -939,10 +939,20 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 	}
 	
 	section(R.string.developer_options) {
+		sw(Pref.bpCheckBetaVersion, R.string.check_beta_release)
+
 		action(R.string.drawable_list) {
 			action = { startActivity(Intent(this, ActDrawableList::class.java)) }
 		}
-		sw(Pref.bpCheckBetaVersion, R.string.check_beta_release)
+		action(R.string.exit_reasons) {
+			action = {
+				if(Build.VERSION.SDK_INT >= 30 ){
+					startActivity(Intent(this, ActExitReasons::class.java))
+				}else{
+					showToast(false, "this feature requires Android 11")
+				}
+			}
+		}
 		
 	}
 	

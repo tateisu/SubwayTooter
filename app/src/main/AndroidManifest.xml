@@ -263,6 +263,11 @@
             android:name=".ActMediaViewer"
             android:theme="@style/AppTheme.Dark.NoActionBar" />
 
+        <activity
+            android:name=".ActExitReasons"
+            android:label="@string/exit_reasons"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+
         <meta-data
             android:name="android.max_aspect"
             android:value="100.0" />

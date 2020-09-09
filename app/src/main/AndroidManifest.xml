@@ -34,6 +34,12 @@
             <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
 
+        <intent>
+            <action android:name="com.adamrocker.android.simeji.ACTION_INTERCEPT" />
+            <category android:name="com.adamrocker.android.simeji.REPLACE"/>
+        </intent>
+
+
         <!--        <intent>-->
         <!--            <action android:name="android.intent.action.SEND" />-->
         <!--            <data android:mimeType="video/*" />-->

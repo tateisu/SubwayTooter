@@ -1,7 +1,8 @@
-// original implementation is https://github.com/PureWriter/ToastCompat
 /*
+	original implementation is https://github.com/PureWriter/ToastCompat
+
 	modification:
-	- convert from java to kotlin
+	- convert from Java to Kotlin
 	- because Android 11's Toast.getView() returns null, we need to support view==null case.
 	- only in case of API 25 device, we have to create custom context and set it to view.
 */
@@ -43,7 +44,7 @@ internal class SafeToastContext(base : Context, private val toast : Toast) : Con
 	override fun getApplicationContext() : Context =
 		ApplicationContextWrapper(baseContext.applicationContext)
 	
-	inner class ApplicationContextWrapper(base : Context) : ContextWrapper(base) {
+	private inner class ApplicationContextWrapper(base : Context) : ContextWrapper(base) {
 		
 		override fun getSystemService(name : String) : Any? =
 			if(WINDOW_SERVICE == name) {
@@ -54,7 +55,7 @@ internal class SafeToastContext(base : Context, private val toast : Toast) : Con
 			}
 	}
 	
-	inner class WindowManagerWrapper(private val base : WindowManager) : WindowManager {
+	private inner class WindowManagerWrapper(private val base : WindowManager) : WindowManager {
 		
 		@Suppress("DEPRECATION")
 		override fun getDefaultDisplay() : Display? =
@@ -83,10 +84,9 @@ internal class SafeToastContext(base : Context, private val toast : Toast) : Con
 	}
 }
 
-@Suppress("DEPRECATION")
 class ToastCompat private constructor(
 	context : Context,
-	private val original : Toast
+	private val base : Toast
 ) : Toast(context) {
 	
 	companion object {
@@ -127,64 +127,50 @@ class ToastCompat private constructor(
 		 * [.LENGTH_LONG]
 		 */
 		@SuppressLint("ShowToast")
+		@Suppress("DEPRECATION")
 		fun makeText(context : Context, text : CharSequence?, duration : Int) : ToastCompat {
 			// We cannot pass the SafeToastContext to Toast.makeText() because
 			// the View will unwrap the base context and we are in vain.
-			val toast = Toast.makeText(context, text, duration)
-			setContextCompat(toast.view) { SafeToastContext(context, toast) }
-			return ToastCompat(context, toast)
+			val base = Toast.makeText(context, text, duration)
+			setContextCompat(base.view) { SafeToastContext(context, base) }
+			return ToastCompat(context, base)
 		}
-		
 	}
 	
+	@Suppress("DEPRECATION")
 	fun setBadTokenListener(listener : BadTokenListener?) : ToastCompat {
-		(original.view?.context as? SafeToastContext)
+		(base.view?.context as? SafeToastContext)
 			?.setBadTokenListener(listener)
 		return this
 	}
 	
+	@Suppress("DEPRECATION")
 	override fun setView(view : View) {
-		original.view = view
-		setContextCompat(original.view) { SafeToastContext(view.context, original) }
+		base.view = view
+		setContextCompat(base.view) { SafeToastContext(view.context, base) }
 	}
 	
-	override fun getView() : View? =
-		original.view
+	@Suppress("DEPRECATION")
+	override fun getView() : View? = base.view
 	
-	override fun show() =
-		original.show()
+	override fun show() = base.show()
 	
 	override fun setDuration(duration : Int) {
-		original.duration = duration
+		base.duration = duration
 	}
 	
 	override fun setGravity(gravity : Int, xOffset : Int, yOffset : Int) =
-		original.setGravity(gravity, xOffset, yOffset)
+		base.setGravity(gravity, xOffset, yOffset)
 	
 	override fun setMargin(horizontalMargin : Float, verticalMargin : Float) =
-		original.setMargin(horizontalMargin, verticalMargin)
+		base.setMargin(horizontalMargin, verticalMargin)
 	
-	override fun setText(resId : Int) =
-		original.setText(resId)
-	
-	override fun setText(s : CharSequence) =
-		original.setText(s)
-	
-	override fun getHorizontalMargin() =
-		original.horizontalMargin
-	
-	override fun getVerticalMargin() =
-		original.verticalMargin
-	
-	override fun getDuration() =
-		original.duration
-	
-	override fun getGravity() =
-		original.gravity
-	
-	override fun getXOffset() =
-		original.xOffset
-	
-	override fun getYOffset() =
-		original.yOffset
+	override fun setText(resId : Int) = base.setText(resId)
+	override fun setText(s : CharSequence) = base.setText(s)
+	override fun getHorizontalMargin() = base.horizontalMargin
+	override fun getVerticalMargin() = base.verticalMargin
+	override fun getDuration() = base.duration
+	override fun getGravity() = base.gravity
+	override fun getXOffset() = base.xOffset
+	override fun getYOffset() = base.yOffset
 }

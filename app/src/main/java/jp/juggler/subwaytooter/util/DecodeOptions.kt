@@ -9,7 +9,6 @@ import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji
 import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.util.CharacterGroup
 import jp.juggler.util.WordTrieTree
 import java.util.*
 

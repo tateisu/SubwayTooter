@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji
 import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.util.CharacterGroup
 import jp.juggler.util.WordTrieTree
 import java.util.*
 
@@ -51,16 +52,27 @@ class DecodeOptions(
 	private fun SpannableStringBuilder.workaroundForEmojiLineBreak() : SpannableStringBuilder {
 		
 		val spans = getSpans(0, length, ReplacementSpan::class.java)
-		if(spans != null) {
+		if(spans != null && spans.size >= 40) {
+			val wrapCount = 12 // if(linkHelper?.isMisskey == true ) 6 else 12
+			
+			fun hasLineBreak(start : Int?, end : Int) : Boolean {
+				if(start != null)
+					for(i in start until end) {
+						if(get(i) == '\n') return true
+					}
+				return false
+			}
+			
 			val insertList = ArrayList<Int>()
 			spans.sortBy { getSpanStart(it) }
 			var repeatCount = 0
 			var preEnd : Int? = null
 			for(span in spans) {
 				val start = getSpanStart(span)
-				if(start != preEnd) {
+				val hasLf = hasLineBreak(preEnd, start)
+				if(hasLf) {
 					repeatCount = 0
-				} else if(++ repeatCount >= 12) {
+				} else if(++ repeatCount >= wrapCount) {
 					repeatCount = 0
 					insertList.add(start)
 				}

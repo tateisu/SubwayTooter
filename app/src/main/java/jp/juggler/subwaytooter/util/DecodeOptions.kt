@@ -52,28 +52,28 @@ class DecodeOptions(
 		
 		val spans = getSpans(0, length, ReplacementSpan::class.java)
 		if(spans != null && spans.size >= 40) {
-			val wrapCount = if(linkHelper?.isMisskey == true) 5 else 12
 			
-			fun hasLineBreak(start : Int, end : Int) : Boolean {
-				for(i in start until end) {
-					if(get(i) == '\n') return true
-				}
-				return false
-			}
-			
+			val maxEmojiPerLine = if(linkHelper?.isMisskey == true) 5 else 12
 			val insertList = ArrayList<Int>()
-			spans.sortBy { getSpanStart(it) }
-			var repeatCount = 0
+			var emojiCount = 1
 			var preEnd : Int? = null
-			for(span in spans) {
+			for(span in spans.sortedBy { getSpanStart(it) }) {
 				val start = getSpanStart(span)
 				if(preEnd != null) {
-					val hasLf = hasLineBreak(preEnd, start)
-					if(hasLf) {
-						repeatCount = 0
-					} else if(++ repeatCount >= wrapCount) {
-						repeatCount = 0
+					
+					// true if specified range includes line feed
+					fun containsLineFeed(start : Int, end : Int) : Boolean {
+						for(i in start until end) {
+							if(get(i) == '\n') return true
+						}
+						return false
+					}
+					
+					if(containsLineFeed(preEnd, start)) {
+						emojiCount = 1
+					} else if(++ emojiCount > maxEmojiPerLine) {
 						insertList.add(start)
+						emojiCount = 1
 					}
 				}
 				preEnd = getSpanEnd(span)

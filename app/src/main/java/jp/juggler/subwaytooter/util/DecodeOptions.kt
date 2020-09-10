@@ -90,8 +90,8 @@ class DecodeOptions(
 	fun decodeEmoji(s : String?) : Spannable =
 		EmojiDecoder.decodeEmoji(this, s ?: "").workaroundForEmojiLineBreak()
 	
-	fun decodeEmojiNullable(s : String?) = when(s) {
-		null -> null
-		else -> EmojiDecoder.decodeEmoji(this, s)
-	}
+//	fun decodeEmojiNullable(s : String?) = when(s) {
+//		null -> null
+//		else -> EmojiDecoder.decodeEmoji(this, s)
+//	}
 }

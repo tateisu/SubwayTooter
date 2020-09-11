@@ -42,6 +42,7 @@ internal class ItemViewHolder(
 ) : View.OnClickListener, View.OnLongClickListener {
 	
 	companion object {
+		
 		private val log = LogCategory("ItemViewHolder")
 		var toot_color_unlisted : Int = 0
 		var toot_color_follower : Int = 0
@@ -103,6 +104,8 @@ internal class ItemViewHolder(
 	
 	private lateinit var llSearchTag : View
 	private lateinit var btnSearchTag : Button
+	private lateinit var btnGapHead : ImageButton
+	private lateinit var btnGapTail : ImageButton
 	private lateinit var llTrendTag : View
 	private lateinit var tvTrendTagName : TextView
 	private lateinit var tvTrendTagDesc : TextView
@@ -181,45 +184,49 @@ internal class ItemViewHolder(
 	init {
 		this.viewRoot = inflate(activity)
 		
-		btnListTL.setOnClickListener(this)
-		btnListMore.setOnClickListener(this)
+		for(v in arrayOf(
+			btnListTL,
+			btnListMore,
+			btnSearchTag,
+			btnGapHead,
+			btnGapTail,
+			btnContentWarning,
+			btnShowMedia,
+			ivMedia1,
+			ivMedia2,
+			ivMedia3,
+			ivMedia4,
+			btnFollow,
+			ivCardImage,
+			btnCardImageHide,
+			btnCardImageShow,
+			ivThumbnail,
+			llBoosted,
+			llReply,
+			llFollow,
+			btnFollow,
+			btnFollowRequestAccept,
+			btnFollowRequestDeny,
+			btnHideMedia,
+			llTrendTag,
+			llFilter
+		)) {
+			v.setOnClickListener(this)
+		}
 		
-		btnSearchTag.setOnClickListener(this)
-		btnSearchTag.setOnLongClickListener(this)
-		btnContentWarning.setOnClickListener(this)
-		btnShowMedia.setOnClickListener(this)
-		ivMedia1.setOnClickListener(this)
-		ivMedia2.setOnClickListener(this)
-		ivMedia3.setOnClickListener(this)
-		ivMedia4.setOnClickListener(this)
-		btnFollow.setOnClickListener(this)
-		btnFollow.setOnLongClickListener(this)
-		
-		ivCardImage.setOnClickListener(this)
-		ivCardImage.setOnLongClickListener(this)
-		btnCardImageHide.setOnClickListener(this)
-		btnCardImageShow.setOnClickListener(this)
-		
-		
-		ivThumbnail.setOnClickListener(this)
-		
-		llBoosted.setOnClickListener(this)
-		llBoosted.setOnLongClickListener(this)
-		
-		llReply.setOnClickListener(this)
-		llReply.setOnLongClickListener(this)
-		
-		llFollow.setOnClickListener(this)
-		llFollow.setOnLongClickListener(this)
-		llConversationIcons.setOnLongClickListener(this)
-		btnFollow.setOnClickListener(this)
-		
-		
-		btnFollowRequestAccept.setOnClickListener(this)
-		btnFollowRequestDeny.setOnClickListener(this)
-		
-		// ロングタップ
-		ivThumbnail.setOnLongClickListener(this)
+		for(v in arrayOf(
+			btnSearchTag,
+			btnFollow,
+			ivCardImage,
+			llBoosted,
+			llReply,
+			llFollow,
+			llConversationIcons,
+			ivThumbnail,
+			llTrendTag
+		)) {
+			v.setOnLongClickListener(this)
+		}
 		
 		//
 		tvContent.movementMethod = MyLinkMovementMethod
@@ -227,12 +234,6 @@ internal class ItemViewHolder(
 		tvContentWarning.movementMethod = MyLinkMovementMethod
 		tvMediaDescription.movementMethod = MyLinkMovementMethod
 		tvCardText.movementMethod = MyLinkMovementMethod
-		
-		btnHideMedia.setOnClickListener(this)
-		
-		llTrendTag.setOnClickListener(this)
-		llTrendTag.setOnLongClickListener(this)
-		llFilter.setOnClickListener(this)
 		
 		var f : Float
 		
@@ -450,6 +451,8 @@ internal class ItemViewHolder(
 		llFollow.visibility = View.GONE
 		llStatus.visibility = View.GONE
 		llSearchTag.visibility = View.GONE
+		btnGapHead.visibility = View.GONE
+		btnGapTail.visibility = View.GONE
 		llList.visibility = View.GONE
 		llFollowRequest.visibility = View.GONE
 		tvMessageHolder.visibility = View.GONE
@@ -539,7 +542,7 @@ internal class ItemViewHolder(
 			
 			is TootNotification -> showNotification(item)
 			
-			is TootGap -> showGap()
+			is TootGap -> showGap(item)
 			is TootSearchGap -> showSearchGap(item)
 			is TootDomainBlock -> showDomainBlock(item)
 			is TootList -> showList(item)
@@ -945,9 +948,7 @@ internal class ItemViewHolder(
 					if(colorBg != 0) this.viewRoot.backgroundColor = colorBg
 					boostedAction = {
 						activity.addColumn(
-							activity.nextPosition(column)
-							, access_info
-							, ColumnType.FOLLOW_REQUESTS
+							activity.nextPosition(column), access_info, ColumnType.FOLLOW_REQUESTS
 						)
 					}
 				}
@@ -1074,9 +1075,13 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun showGap() {
+	private fun showGap(item : TootGap) {
 		llSearchTag.visibility = View.VISIBLE
 		btnSearchTag.text = activity.getString(R.string.read_gap)
+		btnGapHead.vg(item.max_id != null)
+		btnGapTail.vg(true )
+		btnGapHead.imageTintList = content_color_csl
+		btnGapTail.imageTintList = content_color_csl
 	}
 	
 	private fun showSearchGap(item : TootSearchGap) {
@@ -1229,12 +1234,16 @@ internal class ItemViewHolder(
 		llStatus.visibility = View.VISIBLE
 		
 		if(status.conversation_main) {
-
-			val conversationMainBgColor = Pref.ipConversationMainTootBgColor(activity.pref).notZero()
-				?: (getAttributeColor(activity,R.attr.colorImageButtonAccent) and 0xffffff) or 0x20000000
-				
-			this.viewRoot.setBackgroundColor( conversationMainBgColor )
-
+			
+			val conversationMainBgColor =
+				Pref.ipConversationMainTootBgColor(activity.pref).notZero()
+					?: (getAttributeColor(
+						activity,
+						R.attr.colorImageButtonAccent
+					) and 0xffffff) or 0x20000000
+			
+			this.viewRoot.setBackgroundColor(conversationMainBgColor)
+			
 		} else {
 			val c = colorBg.notZero()
 				
@@ -1925,6 +1934,14 @@ internal class ItemViewHolder(
 				DlgContextMenu(activity, column, who, null, notification, tvContent).show()
 			}
 			
+			btnGapHead -> when(item) {
+				is TootGap -> column.startGap(item, isHead = true)
+			}
+			
+			btnGapTail -> when(item) {
+				is TootGap -> column.startGap(item, isHead = false)
+			}
+			
 			btnSearchTag, llTrendTag -> when(item) {
 				
 				is TootConversationSummary -> openConversationSummary()
@@ -1983,29 +2000,33 @@ internal class ItemViewHolder(
 				activity.addColumn(pos, access_info, ColumnType.MISSKEY_ANTENNA_TL, item.id)
 			}
 			
-			btnListMore -> if(item is TootList) {
-				ActionsDialog()
-					.addAction(activity.getString(R.string.list_timeline)) {
-						activity.addColumn(pos, access_info, ColumnType.LIST_TL, item.id)
-					}
-					.addAction(activity.getString(R.string.list_member)) {
-						activity.addColumn(
-							false,
-							pos,
-							access_info,
-							ColumnType.LIST_MEMBER,
-							item.id
-						)
-					}
-					.addAction(activity.getString(R.string.rename)) {
-						Action_List.rename(activity, access_info, item)
-					}
-					.addAction(activity.getString(R.string.delete)) {
-						Action_List.delete(activity, access_info, item)
-					}
-					.show(activity, item.title)
-			} else if(item is MisskeyAntenna) {
-				// TODO
+			btnListMore -> when(item) {
+				is TootList -> {
+					ActionsDialog()
+						.addAction(activity.getString(R.string.list_timeline)) {
+							activity.addColumn(pos, access_info, ColumnType.LIST_TL, item.id)
+						}
+						.addAction(activity.getString(R.string.list_member)) {
+							activity.addColumn(
+								false,
+								pos,
+								access_info,
+								ColumnType.LIST_MEMBER,
+								item.id
+							)
+						}
+						.addAction(activity.getString(R.string.rename)) {
+							Action_List.rename(activity, access_info, item)
+						}
+						.addAction(activity.getString(R.string.delete)) {
+							Action_List.delete(activity, access_info, item)
+						}
+						.show(activity, item.title)
+				}
+				
+				is MisskeyAntenna -> {
+					// TODO
+				}
 			}
 			
 			btnFollowRequestAccept -> follow_account?.let { whoRef ->
@@ -2269,7 +2290,7 @@ internal class ItemViewHolder(
 		var bShowOuter = false
 		
 		val sb = StringBuilder()
-		fun showString(){
+		fun showString() {
 			if(sb.isNotEmpty()) {
 				val text =
 					DecodeOptions(activity, access_info, forceHtml = true)
@@ -2282,7 +2303,7 @@ internal class ItemViewHolder(
 			}
 		}
 		
-		if( status.reblog?.quote_muted == true){
+		if(status.reblog?.quote_muted == true) {
 			addLinkAndCaption(
 				sb,
 				null,
@@ -2290,7 +2311,7 @@ internal class ItemViewHolder(
 				activity.getString(R.string.muted_quote)
 			)
 			showString()
-		}else{
+		} else {
 			addLinkAndCaption(
 				sb,
 				activity.getString(R.string.card_header_card),
@@ -2341,9 +2362,9 @@ internal class ItemViewHolder(
 				
 				val imageUrl = access_info.supplyBaseUrl(image)
 				ivCardImage.setImageUrl(activity.pref, 0f, imageUrl, imageUrl)
-
+				
 				btnCardImageShow.blurhash = card.blurhash
-
+				
 				// show about card outer
 				bShowOuter = true
 				
@@ -2358,7 +2379,7 @@ internal class ItemViewHolder(
 				btnCardImageShow.vg(! is_shown)
 			}
 		}
-
+		
 		if(bShowOuter) llCardOuter.visibility = View.VISIBLE
 	}
 	
@@ -2373,7 +2394,7 @@ internal class ItemViewHolder(
 		
 		if(sb.isNotEmpty()) sb.append("<br>")
 		
-		if( header?.isNotEmpty() == true){
+		if(header?.isNotEmpty() == true) {
 			sb.append(HTMLDecoder.encodeEntity(header)).append(": ")
 		}
 		
@@ -3715,10 +3736,10 @@ internal class ItemViewHolder(
 						
 						// button bar
 						statusButtonsViewHolder = StatusButtonsViewHolder(
-							activity
-							, matchParent
-							, 3f
-							, justifyContent = when(Pref.ipBoostButtonJustify(App1.pref)) {
+							activity,
+							matchParent,
+							3f,
+							justifyContent = when(Pref.ipBoostButtonJustify(App1.pref)) {
 								0 -> JustifyContent.FLEX_START
 								1 -> JustifyContent.CENTER
 								else -> JustifyContent.FLEX_END
@@ -3781,7 +3802,32 @@ internal class ItemViewHolder(
 					background =
 						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent_round6dp)
 					allCaps = false
-				}.lparams(matchParent, wrapContent)
+				}.lparams(0, wrapContent) {
+					weight = 1f
+				}
+				
+				btnGapHead = imageButton {
+					
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent_round6dp
+					)
+					contentDescription = context.getString(R.string.read_gap_head)
+					imageResource = R.drawable.ic_arrow_drop_down
+				}.lparams(dip(32), matchParent) {
+					startMargin = dip(8)
+				}
+				
+				btnGapTail = imageButton {
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent_round6dp
+					)
+					contentDescription = context.getString(R.string.read_gap_tail)
+					imageResource = R.drawable.ic_arrow_drop_up
+				}.lparams(dip(32), matchParent) {
+					startMargin = dip(8)
+				}
 			}
 			
 			llTrendTag = linearLayout {

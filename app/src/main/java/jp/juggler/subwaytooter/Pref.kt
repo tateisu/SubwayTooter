@@ -487,12 +487,16 @@ object Pref {
 	val ipLastColumnPos = IntPref("last_column_pos", - 1)
 	val ipBoostButtonJustify = IntPref("ipBoostButtonJustify", 0) // 0=左,1=中央,2=右
 	
-	@Suppress("unused")
-	const val JWCP_DEFAULT = 0
+	private const val JWCP_DEFAULT = 0
 	const val JWCP_START = 1
 	const val JWCP_END = 2
 	val ipJustifyWindowContentPortrait =
-		IntPref("JustifyWindowContentPortrait", 0) // 0=default,1=start,2=end
+		IntPref("JustifyWindowContentPortrait", JWCP_DEFAULT) // 0=default,1=start,2=end
+	
+	const val GSP_HEAD = 0
+	private const val GSP_TAIL = 1
+	val ipGapHeadScrollPosition = IntPref("GapHeadScrollPosition", GSP_TAIL)
+	val ipGapTailScrollPosition = IntPref("GapTailScrollPosition", GSP_TAIL)
 	
 	val ipLinkColor = IntPref("LinkColor", 0)
 	
@@ -534,6 +538,7 @@ object Pref {
 	val ipConversationMainTootBgColor = IntPref("ConversationMainTootBgColor", 0)
 	val ipVerifiedLinkBgColor = IntPref("VerifiedLinkBgColor", 0)
 	val ipVerifiedLinkFgColor = IntPref("VerifiedLinkFgColor", 0)
+	
 	
 	
 	//	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)

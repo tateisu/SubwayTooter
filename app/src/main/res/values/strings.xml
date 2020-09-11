@@ -1045,4 +1045,10 @@
     <string name="release_note">Release note</string>
     <string name="check_beta_release">Check beta release</string>
     <string name="exit_reasons" translatable="false">Exit reasons</string>
+    <string name="read_gap_head">Read gap head</string>
+    <string name="read_gap_tail">Read gap tail</string>
+    <string name="scroll_position_after_read_gap_from_head">Scroll position after read gap from head</string>
+    <string name="scroll_position_after_read_gap_from_tail">Scroll position after read gap from tail</string>
+    <string name="gap_head">Head of gap</string>
+    <string name="gap_tail">Tail of gap</string>
 </resources>

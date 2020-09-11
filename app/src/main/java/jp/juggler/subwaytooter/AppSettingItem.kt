@@ -260,7 +260,18 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		sw(Pref.bpPriorChrome, R.string.prior_chrome_custom_tabs)
 		sw(Pref.bpAllowColumnDuplication, R.string.allow_column_duplication)
 		sw(Pref.bpForceGap, R.string.force_gap_when_refresh)
-		
+		spinner(
+			Pref.ipGapHeadScrollPosition,
+			R.string.scroll_position_after_read_gap_from_head,
+			R.string.gap_head,
+			R.string.gap_tail,
+		)
+		spinner(
+			Pref.ipGapTailScrollPosition,
+			R.string.scroll_position_after_read_gap_from_tail,
+			R.string.gap_head,
+			R.string.gap_tail,
+		)
 		text(Pref.spClientName, R.string.client_name, InputTypeEx.text)
 		
 		text(Pref.spUserAgent, R.string.user_agent, InputTypeEx.textMultiLine) {

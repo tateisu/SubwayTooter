@@ -52,7 +52,7 @@ enum class ColumnType(
 	val bAllowPseudo : Boolean = true,
 	val bAllowMisskey : Boolean = true,
 	val bAllowMastodon : Boolean = true,
-	val headerType : HeaderType? = null
+	val headerType : HeaderType? = null,
 ) {
 	
 	ProfileStatusMastodon(
@@ -440,6 +440,7 @@ enum class ColumnType(
 		
 		loading = { client -> getStatusList(client, column.makePublicFederateUrl()) },
 		refresh = { client -> getStatusList(client, column.makePublicFederateUrl()) },
+		
 		gap = { client -> getStatusList(client, column.makePublicFederateUrl()) }
 	),
 	
@@ -591,7 +592,7 @@ enum class ColumnType(
 					client,
 					Column.PATH_MISSKEY_FAVORITES
 					, misskeyParams = column.makeMisskeyTimelineParameter(parser)
-					, misskeyCustomParser = misskeyCustomParserFavorites
+					, listParser = misskeyCustomParserFavorites
 				)
 			} else {
 				getStatusList(client, Column.PATH_FAVOURITES)
@@ -1561,7 +1562,7 @@ enum class ColumnType(
 					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
 						put("antennaId", column.profile_id)
 					},
-					misskeyCustomParser = misskeyCustomParserAntenna
+					listParser = misskeyCustomParserAntenna
 				)
 			} else {
 				getStatusList(client, column.makeAntennaTlUrl())

@@ -2187,7 +2187,7 @@ class Column(
 		fireShowColumnStatus()
 	}
 	
-	internal fun startGap(gap : TimelineItem?) {
+	internal fun startGap(gap : TimelineItem?,isHead:Boolean? = null) {
 		
 		if(gap == null) {
 			showToast(context, true, "gap is null")
@@ -2206,7 +2206,7 @@ class Column(
 		mRefreshLoadingError = ""
 		
 		@SuppressLint("StaticFieldLeak")
-		val task = ColumnTask_Gap(this, gap)
+		val task = ColumnTask_Gap(this, gap,isHeadArg = isHead)
 		this.lastTask = task
 		task.start()
 		fireShowColumnStatus()
@@ -3022,16 +3022,19 @@ class Column(
 		if(list.isNotEmpty()) streamReader?.capture(list)
 	}
 	
+	// 既存データ中の会話サマリ項目と追加データの中にIDが同じものがあれば
+	// 既存データを入れ替えて追加データから削除するか
+	// 既存データを削除するかする
 	internal fun replaceConversationSummary(
 		changeList : ArrayList<AdapterChange>,
 		list_new : ArrayList<TimelineItem>,
 		list_data : BucketList<TimelineItem>
 	) {
 		
-		val newMap = HashMap<EntityId, TootConversationSummary>()
-		
-		for(o in list_new) {
-			if(o is TootConversationSummary) newMap[o.id] = o
+		val newMap = HashMap<EntityId, TootConversationSummary>().apply{
+			for(o in list_new) {
+				if(o is TootConversationSummary) this[o.id] = o
+			}
 		}
 		
 		if(list_data.isEmpty() || newMap.isEmpty()) return
@@ -3054,6 +3057,7 @@ class Column(
 				log.d("replaceConversationSummary: order change")
 			}
 		}
+		
 		val it = list_new.iterator()
 		while(it.hasNext()) {
 			val o = it.next() as? TootConversationSummary ?: continue

@@ -1037,4 +1037,10 @@
     <string name="release_note_with_assets">更新履歴 (AssetsセクションにAPKファイルがあります)</string>
     <string name="release_note">更新履歴</string>
     <string name="check_beta_release">ベータ版を確認する</string>
+    <string name="read_gap_head">ギャップを始端から読む</string>
+    <string name="read_gap_tail">ギャップを終端から読む</string>
+    <string name="scroll_position_after_read_gap_from_head">ギャップを始端から読んだ後のスクロール位置</string>
+    <string name="scroll_position_after_read_gap_from_tail">ギャップを終端から読んだ後のスクロール位置</string>
+    <string name="gap_head">ギャップの始端</string>
+    <string name="gap_tail">ギャップの終端</string>
 </resources>

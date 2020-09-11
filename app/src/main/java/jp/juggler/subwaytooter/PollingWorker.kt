@@ -284,7 +284,7 @@ class PollingWorker private constructor(contextArg : Context) {
 		fun injectData(
 			context : Context,
 			account : SavedAccount,
-			src : ArrayList<TootNotification>
+			src : List<TootNotification>
 		) {
 			
 			if(src.isEmpty()) return

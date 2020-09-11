@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package jp.juggler.subwaytooter
 
 import android.app.IntentService

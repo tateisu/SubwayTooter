@@ -5,9 +5,11 @@ import android.app.Activity
 import android.app.Dialog
 import android.graphics.Typeface
 import android.graphics.drawable.PictureDrawable
+import android.os.Build
 import android.util.SparseArray
 import android.view.*
 import android.widget.*
+import androidx.core.view.ViewCompat
 import androidx.viewpager.widget.ViewPager
 import com.astuetz.PagerSlidingTabStrip
 import com.bumptech.glide.Glide
@@ -218,7 +220,10 @@ class EmojiPicker(
 		dialog.setCancelable(true)
 		dialog.setCanceledOnTouchOutside(true)
 		val w = dialog.window
+		
+		
 		w?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+		// TODO Android 11 で SOFT_INPUT_ADJUST_RESIZE はdeprecatedになった
 	}
 	
 	private var bInstanceHasCustomEmoji = false

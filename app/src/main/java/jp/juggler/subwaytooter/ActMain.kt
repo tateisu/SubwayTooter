@@ -1356,6 +1356,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 		
 		llFormRoot.setPadding(0, 0, 0, screenBottomPadding)
 		
+		etQuickToot.typeface = timeline_font
 		
 		when(Pref.ipJustifyWindowContentPortrait(pref)) {
 			Pref.JWCP_START -> {

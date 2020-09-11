@@ -109,11 +109,11 @@ class ColumnTask_Gap(
 				return
 			}
 			
-			val iv = if(isHead){
+			val iv = if(isHead) {
 				Pref.ipGapHeadScrollPosition
-			}else{
+			} else {
 				Pref.ipGapTailScrollPosition
-			}.invoke( pref )
+			}.invoke(pref)
 			val scrollHead = iv == Pref.GSP_HEAD
 			
 			if(scrollHead) {
@@ -188,7 +188,7 @@ class ColumnTask_Gap(
 					}
 				}
 			}
-
+			
 			column.updateMisskeyCapture()
 		} finally {
 			column.fireShowColumnStatus()
@@ -219,7 +219,7 @@ class ColumnTask_Gap(
 				break
 			}
 			
-			val r2 = requester(max_id )
+			val r2 = requester(max_id)
 			
 			val jsonObject = r2?.jsonObject
 			if(jsonObject != null) r2.data = arrayFinder(jsonObject)
@@ -254,7 +254,7 @@ class ColumnTask_Gap(
 			
 			val tmpMaxId = max_id
 			val tmpSinceId = since_id
-			if( tmpMaxId!= null && tmpSinceId!=null && tmpMaxId <= tmpSinceId ){
+			if(tmpMaxId != null && tmpSinceId != null && tmpMaxId <= tmpSinceId) {
 				log.d("$logCaption: max_id <= since_id. $tmpMaxId <= $tmpSinceId")
 				break
 			}
@@ -292,7 +292,7 @@ class ColumnTask_Gap(
 				break
 			}
 			
-			val r2 = requester(since_id !!)
+			val r2 = requester(since_id)
 			
 			val jsonObject = r2?.jsonObject
 			if(jsonObject != null) r2.data = arrayFinder(jsonObject)
@@ -327,7 +327,7 @@ class ColumnTask_Gap(
 			
 			val tmpMaxId = max_id
 			val tmpSinceId = since_id
-			if( tmpMaxId!= null && tmpSinceId!=null && tmpMaxId >= tmpSinceId ){
+			if(tmpMaxId != null && tmpSinceId != null && tmpMaxId >= tmpSinceId) {
 				log.d("$logCaption: max_id >= since_id. $tmpMaxId >= $tmpSinceId")
 				break
 			}
@@ -358,8 +358,8 @@ class ColumnTask_Gap(
 					if(it != null) list.add("max_id=$it")
 					if(since_id != null) list.add("since_id=$since_id")
 					list.forEachIndexed { index, s ->
-						append( if(index == 0) delimiter else '&' )
-						append( s)
+						append(if(index == 0) delimiter else '&')
+						append(s)
 					}
 				}.toString()
 			)
@@ -387,7 +387,7 @@ class ColumnTask_Gap(
 				break
 			}
 			
-			val r2 = requester(max_id !!)
+			val r2 = requester(max_id)
 			
 			val jsonArray = r2?.jsonArray
 			if(jsonArray == null) {
@@ -419,7 +419,7 @@ class ColumnTask_Gap(
 			
 			val tmpMaxId = max_id
 			val tmpSinceId = since_id
-			if( tmpMaxId!= null && tmpSinceId!=null && tmpMaxId <= tmpSinceId ){
+			if(tmpMaxId != null && tmpSinceId != null && tmpMaxId <= tmpSinceId) {
 				log.d("$logCaption: max_id <= since_id. $tmpMaxId <= $tmpSinceId")
 				break
 			}
@@ -449,8 +449,8 @@ class ColumnTask_Gap(
 					if(it != null) list.add("min_id=$it")
 					if(max_id != null) list.add("max_id=$max_id")
 					list.forEachIndexed { index, s ->
-						append( if(index == 0) delimiter else '&' )
-						append( s)
+						append(if(index == 0) delimiter else '&')
+						append(s)
 					}
 				}.toString()
 			)
@@ -471,7 +471,7 @@ class ColumnTask_Gap(
 				break
 			}
 			
-			val r2 = requester(since_id !!)
+			val r2 = requester(since_id)
 			
 			val jsonArray = r2?.jsonArray
 			if(jsonArray == null) {
@@ -503,7 +503,7 @@ class ColumnTask_Gap(
 			
 			val tmpMaxId = max_id
 			val tmpSinceId = since_id
-			if( tmpMaxId!= null && tmpSinceId!=null && tmpMaxId >= tmpSinceId ){
+			if(tmpMaxId != null && tmpSinceId != null && tmpMaxId >= tmpSinceId) {
 				log.d("$logCaption: max_id >= since_id. $tmpMaxId >= $tmpSinceId")
 				break
 			}

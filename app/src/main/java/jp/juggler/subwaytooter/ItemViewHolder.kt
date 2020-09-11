@@ -1078,8 +1078,8 @@ internal class ItemViewHolder(
 	private fun showGap(item : TootGap) {
 		llSearchTag.visibility = View.VISIBLE
 		btnSearchTag.text = activity.getString(R.string.read_gap)
-		btnGapHead.vg(item.max_id != null)
-		btnGapTail.vg(true )
+		btnGapHead.vg(true)
+		btnGapTail.vg(true)
 		btnGapHead.imageTintList = content_color_csl
 		btnGapTail.imageTintList = content_color_csl
 	}

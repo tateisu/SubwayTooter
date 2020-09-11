@@ -4,10 +4,9 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
-import androidx.annotation.IntRange
 import android.text.style.ReplacementSpan
+import androidx.annotation.IntRange
 import jp.juggler.apng.ApngFrames
-
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.util.LogCategory

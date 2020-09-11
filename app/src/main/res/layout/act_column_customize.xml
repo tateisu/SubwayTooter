@@ -225,6 +225,7 @@
                 android:inputType="numberDecimal"
                 android:maxLines="1"
                 android:minWidth="64dp"
+                android:imeOptions="actionDone"
                 android:minLines="1" />
 
             <SeekBar

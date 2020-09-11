@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.SeekBar
@@ -393,7 +394,18 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 				
 			}
 		})
+		
+		etAlpha.setOnEditorActionListener{ _,  actionId, _->
+			when(actionId) {
+				EditorInfo.IME_ACTION_DONE -> {
+					etAlpha.hideKeyboard()
+					true
+				}
+				else -> false
+			}
+		}
 	}
+	
 	
 	private fun show() {
 		try {

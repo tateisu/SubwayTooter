@@ -410,6 +410,8 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 			Pref.bpEmojiPickerCloseOnSelected,
 			R.string.close_emoji_picker_when_selected
 		)
+		
+		sw(Pref.bpIgnoreTextInSharedMedia, R.string.ignore_text_in_shared_media)
 	}
 	
 	section(R.string.tablet_mode) {

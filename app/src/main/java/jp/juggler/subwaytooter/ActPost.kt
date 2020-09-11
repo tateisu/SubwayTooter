@@ -722,29 +722,47 @@ class ActPost : AsyncActivity(),
 			val sent_intent = intent.getParcelableExtra<Intent>(KEY_SENT_INTENT)
 			if(sent_intent != null) {
 				
-				appendContentText(sent_intent)
-				when(sent_intent.action) {
+				val hasUri = when(sent_intent.action) {
 					Intent.ACTION_VIEW -> {
 						val uri = sent_intent.data
 						val type = sent_intent.type
-						if(uri != null) addAttachment(uri, type)
+						if(uri != null){
+							addAttachment(uri, type)
+							true
+						}else{
+							false
+						}
 					}
 					
 					Intent.ACTION_SEND -> {
 						val uri = sent_intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
 						val type = sent_intent.type
-						if(uri != null) addAttachment(uri, type)
+						if(uri != null){
+							addAttachment(uri, type)
+							true
+						}else{
+							false
+						}
 					}
 					
 					Intent.ACTION_SEND_MULTIPLE -> {
 						val list_uri =
 							sent_intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
-						if(list_uri != null) {
+								?.filterNotNull()
+						if(list_uri?.isNotEmpty() == true ) {
 							for(uri in list_uri) {
-								if(uri != null) addAttachment(uri)
+								addAttachment(uri)
 							}
+							true
+						}else{
+							false
 						}
 					}
+					else ->false
+				}
+				
+				if(!hasUri || !Pref.bpIgnoreTextInSharedMedia(pref)) {
+					appendContentText(sent_intent)
 				}
 			}
 			

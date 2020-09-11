@@ -437,6 +437,11 @@ object Pref {
 		false
 	)
 	
+	val bpIgnoreTextInSharedMedia = BooleanPref(
+		"IgnoreTextInSharedMedia",
+		false
+	)
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

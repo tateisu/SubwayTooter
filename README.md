@@ -24,7 +24,7 @@ Mastodon client app for Android phone/tablet.
 
 ## Install
 - Get APK file from assets section in release pages. https://github.com/tateisu/SubwayTooter/releases 
-- IzzyOnDroid: https://android.izzysoft.de/repo/apk/jp.juggler.subwaytooter
+- add IzzyOnDroid repo to F-Droid app. https://android.izzysoft.de/repo/apk/jp.juggler.subwaytooter
 
 ## Author
 <ul>

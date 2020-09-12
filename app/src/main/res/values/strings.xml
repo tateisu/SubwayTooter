@@ -1051,5 +1051,5 @@
     <string name="scroll_position_after_read_gap_from_tail">Scroll position after read gap from tail</string>
     <string name="gap_head">Head of gap</string>
     <string name="gap_tail">Tail of gap</string>
-    <string name="ignore_text_in_shared_media">Don\'t append text attached to media shared from external apps</string>
+    <string name="ignore_text_in_shared_media">Don\'t append extra text that come with shared media from external apps</string>
 </resources>

@@ -1043,5 +1043,5 @@
     <string name="scroll_position_after_read_gap_from_tail">ギャップを終端から読んだ後のスクロール位置</string>
     <string name="gap_head">ギャップの始端</string>
     <string name="gap_tail">ギャップの終端</string>
-    <string name="ignore_text_in_shared_media">外部アプリから共有されたメディアに添付されたテキストを追加しない</string>
+    <string name="ignore_text_in_shared_media">外部アプリから共有されたメディアに付属する余計なテキストを追加しない</string>
 </resources>

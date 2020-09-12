@@ -25,16 +25,15 @@ enum class ColumnTaskType {
 abstract class ColumnTask(
 	val column : Column,
 	val ctType : ColumnTaskType
-)  {
+) {
 	
 	val ctStarted = AtomicBoolean(false)
 	val ctClosed = AtomicBoolean(false)
 	
 	private var job : Job? = null
-
-	val isCancelled :Boolean
-		get()= job?.isCancelled ?: false
 	
+	val isCancelled : Boolean
+		get() = job?.isCancelled ?: false
 	
 	var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 	
@@ -69,61 +68,6 @@ abstract class ColumnTask(
 	internal fun JsonObject.addMisskeyNotificationFilter() = addMisskeyNotificationFilter(column)
 	internal fun JsonObject.addRangeMisskey(bBottom : Boolean) = addRangeMisskey(column, bBottom)
 	
-	internal fun addOne(
-		dstArg : ArrayList<TimelineItem>?,
-		item : TimelineItem?
-	) : ArrayList<TimelineItem> {
-		val dst = dstArg ?: ArrayList()
-		if(item != null) dst.add(item)
-		return dst
-	}
-	
-	internal fun addOneFirst(
-		dstArg : ArrayList<TimelineItem>?,
-		item : TimelineItem?
-	) : ArrayList<TimelineItem> {
-		val dst = dstArg ?: ArrayList()
-		if(item != null) dst.add(0, item)
-		return dst
-	}
-	
-	internal fun addWithFilterStatus(
-		dstArg : ArrayList<TimelineItem>?,
-		src : List<TootStatus>
-	) : ArrayList<TimelineItem> {
-		val dst = dstArg ?: ArrayList(src.size)
-		for(status in src) {
-			if(! column.isFiltered(status)) {
-				dst.add(status)
-			}
-		}
-		return dst
-	}
-	
-	internal fun addWithFilterConversationSummary(
-		dstArg : ArrayList<TimelineItem>?,
-		src : List<TootConversationSummary>
-	) : ArrayList<TimelineItem> {
-		val dst = dstArg ?: ArrayList(src.size)
-		for(cs in src) {
-			if(! column.isFiltered(cs.last_status)) {
-				dst.add(cs)
-			}
-		}
-		return dst
-	}
-	
-	internal fun addWithFilterNotification(
-		dstArg : ArrayList<TimelineItem>?,
-		src : List<TootNotification>
-	) : ArrayList<TimelineItem> {
-		val dst = dstArg ?: ArrayList(src.size)
-		for(item in src) {
-			if(! column.isFiltered(item)) dst.add(item)
-		}
-		return dst
-	}
-	
 	internal val profileDirectoryPath : String
 		get() {
 			val order = when(val q = column.search_query) {
@@ -156,7 +100,7 @@ abstract class ColumnTask(
 						// just skip load announcements for 4xx error if server does not support announcements.
 						in 400 until 500 -> {
 						}
-
+						
 						else -> {
 							column.announcements =
 								parseList(::TootAnnouncement, parser, result.jsonArray)
@@ -181,15 +125,15 @@ abstract class ColumnTask(
 	abstract fun onPostExecute(result : TootApiResult?)
 	
 	fun start() {
-		job = GlobalScope.launch(Dispatchers.Main){
-
+		job = GlobalScope.launch(Dispatchers.Main) {
+			
 			val result = try {
-				withContext(Dispatchers.IO){
+				withContext(Dispatchers.IO) {
 					doInBackground()
 				}
-			}catch(ex:CancellationException){
+			} catch(ex : CancellationException) {
 				null // キャンセルされたらresult==nullとする
-			}catch(ex:Throwable){
+			} catch(ex : Throwable) {
 				// その他のエラー
 				TootApiResult(ex.withCaption("error"))
 			}

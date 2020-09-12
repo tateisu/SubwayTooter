@@ -542,7 +542,7 @@ internal class ItemViewHolder(
 			
 			is TootNotification -> showNotification(item)
 			
-			is TootGap -> showGap(item)
+			is TootGap -> showGap()
 			is TootSearchGap -> showSearchGap(item)
 			is TootDomainBlock -> showDomainBlock(item)
 			is TootList -> showList(item)
@@ -1075,13 +1075,15 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun showGap(item : TootGap) {
+	private fun showGap() {
 		llSearchTag.visibility = View.VISIBLE
 		btnSearchTag.text = activity.getString(R.string.read_gap)
-		btnGapHead.vg(true)
-		btnGapTail.vg(true)
-		btnGapHead.imageTintList = content_color_csl
-		btnGapTail.imageTintList = content_color_csl
+		
+		btnGapHead.vg(column.type.gapDirection(column, true))
+			?.imageTintList = content_color_csl
+		
+		btnGapTail.vg(column.type.gapDirection(column, false))
+			?.imageTintList = content_color_csl
 	}
 	
 	private fun showSearchGap(item : TootSearchGap) {
@@ -1946,8 +1948,18 @@ internal class ItemViewHolder(
 				
 				is TootConversationSummary -> openConversationSummary()
 				
-				is TootGap -> column.startGap(item)
-				is TootSearchGap -> column.startGap(item)
+				is TootGap -> when {
+					column.type.gapDirection(column, true) ->
+						column.startGap(item, isHead = true)
+					
+					column.type.gapDirection(column, false) ->
+						column.startGap(item, isHead = false)
+					
+					else ->
+						showToast(activity, true, "This column can't support gap reading.")
+				}
+				
+				is TootSearchGap -> column.startGap(item,isHead = true)
 				
 				is TootDomainBlock -> {
 					AlertDialog.Builder(activity)

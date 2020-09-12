@@ -12,12 +12,106 @@ import java.util.*
 
 internal inline fun <reified T : TimelineItem> addAll(
 	dstArg : ArrayList<TimelineItem>?,
-	src : List<T>
-) : ArrayList<TimelineItem> {
-	val dst = dstArg ?: ArrayList(src.size)
-	dst.addAll(src)
-	return dst
-}
+	src : List<T>,
+	head : Boolean = false
+) : ArrayList<TimelineItem> =
+	(dstArg ?: ArrayList(src.size)).apply {
+		if(head){
+			addAll(0,src)
+		}else{
+			addAll(src)
+		}
+	}
+
+
+internal fun addOne(
+	dstArg : ArrayList<TimelineItem>?,
+	item : TimelineItem?,
+	head : Boolean = false
+) : ArrayList<TimelineItem> =
+	(dstArg ?: ArrayList()).apply {
+		if(item != null) {
+			if(head) {
+				add(0, item)
+			} else {
+				add(item)
+			}
+		}
+	}
+
+internal fun ColumnTask.addWithFilterStatus(
+	dstArg : ArrayList<TimelineItem>?,
+	srcArg : List<TootStatus>,
+	head : Boolean = false
+) : ArrayList<TimelineItem> =
+	(dstArg ?: ArrayList(srcArg.size)).apply {
+		val src = srcArg.filter { ! column.isFiltered(it) }
+		if(head) {
+			addAll(0, src)
+		} else {
+			addAll(src)
+		}
+	}
+
+internal fun ColumnTask.addWithFilterConversationSummary(
+	dstArg : ArrayList<TimelineItem>?,
+	srcArg : List<TootConversationSummary>,
+	head : Boolean = false
+) : ArrayList<TimelineItem> =
+	(dstArg ?: ArrayList(srcArg.size)).apply {
+		val src = srcArg.filter { ! column.isFiltered(it.last_status) }
+		if(head) {
+			addAll(0, src)
+		} else {
+			addAll(src)
+		}
+		
+	}
+
+internal fun ColumnTask.addWithFilterNotification(
+	dstArg : ArrayList<TimelineItem>?,
+	srcArg : List<TootNotification>,
+	head : Boolean = false
+) : ArrayList<TimelineItem> =
+	(dstArg ?: ArrayList(srcArg.size)).apply {
+		val src = srcArg.filter { ! column.isFiltered(it) }
+		if(head) {
+			addAll(0, src)
+		} else {
+			addAll(src)
+		}
+	}
+
+internal fun Column.dispatchProfileTabStatus() =
+	when {
+		isMisskey -> ColumnType.ProfileStatusMisskey
+		else -> ColumnType.ProfileStatusMastodon
+	}
+
+internal fun Column.dispatchProfileTabFollowing() =
+	when {
+		misskeyVersion >= 11 -> ColumnType.FollowingMisskey11
+		isMisskey -> ColumnType.FollowingMisskey10
+		access_info.isPseudo -> ColumnType.FollowingMastodonPseudo
+		else -> ColumnType.FollowingMastodon
+	}
+
+internal fun Column.dispatchProfileTabFollowers() =
+	when {
+		misskeyVersion >= 11 -> ColumnType.FollowersMisskey11
+		isMisskey -> ColumnType.FollowersMisskey10
+		access_info.isPseudo -> ColumnType.FollowersMastodonPseudo
+		else -> ColumnType.FollowersMastodon
+	}
+
+internal fun ColumnTask.dispatchProfileTabStatus() =
+	column.dispatchProfileTabStatus()
+
+internal fun ColumnTask.dispatchProfileTabFollowing() =
+	column.dispatchProfileTabFollowing()
+
+internal fun ColumnTask.dispatchProfileTabFollowers() =
+	column.dispatchProfileTabFollowers()
 
 internal fun Column.loadListInfo(client : TootApiClient, bForceReload : Boolean) {
 	val parser = TootParser(context, access_info)

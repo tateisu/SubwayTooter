@@ -1986,6 +1986,10 @@ class Column(
 		if(isMisskey && list != null) {
 			// MisskeyはLinkヘッダがないので、常にデータからIDを読む
 			for(item in list) {
+
+				// injectされたデータをデータ範囲に追加しない
+				if( item .isInjected() ) continue
+
 				val id = item.getOrderId()
 				if(idMin == null || id < idMin) idMin = id
 				if(idMax == null || id > idMax) idMax = id
@@ -2187,7 +2191,7 @@ class Column(
 		fireShowColumnStatus()
 	}
 	
-	internal fun startGap(gap : TimelineItem?,isHead:Boolean? = null) {
+	internal fun startGap(gap : TimelineItem?, isHead : Boolean) {
 		
 		if(gap == null) {
 			showToast(context, true, "gap is null")
@@ -2206,7 +2210,7 @@ class Column(
 		mRefreshLoadingError = ""
 		
 		@SuppressLint("StaticFieldLeak")
-		val task = ColumnTask_Gap(this, gap,isHeadArg = isHead)
+		val task = ColumnTask_Gap(this, gap, isHead = isHead)
 		this.lastTask = task
 		task.start()
 		fireShowColumnStatus()
@@ -3031,7 +3035,7 @@ class Column(
 		list_data : BucketList<TimelineItem>
 	) {
 		
-		val newMap = HashMap<EntityId, TootConversationSummary>().apply{
+		val newMap = HashMap<EntityId, TootConversationSummary>().apply {
 			for(o in list_new) {
 				if(o is TootConversationSummary) this[o.id] = o
 			}

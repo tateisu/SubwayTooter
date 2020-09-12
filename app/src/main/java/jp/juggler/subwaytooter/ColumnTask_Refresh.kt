@@ -21,6 +21,7 @@ class ColumnTask_Refresh(
 ) {
 	
 	companion object {
+		
 		internal val log = LogCategory("CT_Refresh")
 	}
 	
@@ -360,7 +361,7 @@ class ColumnTask_Refresh(
 						&& list_tmp?.isNotEmpty() == true
 						&& (bHeadGap || Pref.bpForceGap(context))
 					) {
-						addOneFirst(list_tmp, TootGap.mayNull(null, column.idRecent))
+						addOne(list_tmp, TootGap.mayNull(null, column.idRecent), head = true)
 					}
 					
 				} else {
@@ -688,7 +689,7 @@ class ColumnTask_Refresh(
 						&& list_tmp?.isNotEmpty() == true
 						&& (bHeadGap || Pref.bpForceGap(context))
 					) {
-						addOneFirst(list_tmp, TootGap.mayNull(null, column.idRecent))
+						addOne(list_tmp, TootGap.mayNull(null, column.idRecent), head = true)
 					}
 					
 				} else {
@@ -912,7 +913,7 @@ class ColumnTask_Refresh(
 						&& list_tmp?.isNotEmpty() == true
 						&& (bHeadGap || Pref.bpForceGap(context))
 					) {
-						addOneFirst(list_tmp, TootGap.mayNull(null, column.idRecent))
+						addOne(list_tmp, TootGap.mayNull(null, column.idRecent), head = true)
 					}
 					
 				} else if(aroundMin) {
@@ -1195,7 +1196,7 @@ class ColumnTask_Refresh(
 						&& list_tmp?.isNotEmpty() == true
 						&& (bHeadGap || Pref.bpForceGap(context))
 					) {
-						addOneFirst(list_tmp, TootGap.mayNull(null, column.idRecent))
+						addOne(list_tmp, TootGap.mayNull(null, column.idRecent), head = true)
 					}
 					
 				} else if(aroundMin) {

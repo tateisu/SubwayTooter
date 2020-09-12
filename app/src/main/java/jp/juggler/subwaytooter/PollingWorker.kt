@@ -225,23 +225,32 @@ class PollingWorker private constructor(contextArg : Context) {
 				.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
 			
 			if(job_id == JOB_POLLING) {
-				val intervalMillis =
-					60000L * Pref.spPullNotificationCheckInterval.toInt(Pref.pref(context))
 				
-				if(Build.VERSION.SDK_INT >= 24) {
-					/// val minInterval = JobInfo.getMinPeriodMillis() // 15 min
-					/// val minFlex = JobInfo.getMinFlexMillis()  // 5 min
-					val minInterval = 300000L // 5 min
-					val minFlex = 60000L // 1 min
-					builder.setPeriodic(
-						max(minInterval, intervalMillis),
-						max(minFlex, intervalMillis shr 1)
-					)
-				} else {
-					val minInterval = 300000L // 5 min
-					builder.setPeriodic(max(minInterval, intervalMillis))
-				}
-				builder.setPersisted(true)
+				val minute = 60000L
+				
+				val intervalMillis = max(
+					minute * 5L,
+					minute * Pref.spPullNotificationCheckInterval.toInt(Pref.pref(context))
+				)
+				
+				val flexMillis = max(
+					minute,
+					intervalMillis shr 1
+				)
+				
+				fun JobInfo.Builder.setPeriodicCompat(intervalMillis : Long, flexMillis : Long) =
+					this.apply {
+						if(Build.VERSION.SDK_INT >= 24) {
+							builder.setPeriodic(intervalMillis, flexMillis)
+						} else {
+							builder.setPeriodic(intervalMillis)
+						}
+					}
+				
+				builder
+					.setPeriodicCompat(intervalMillis, flexMillis)
+					.setPersisted(true)
+				
 			} else {
 				builder
 					.setMinimumLatency(0)

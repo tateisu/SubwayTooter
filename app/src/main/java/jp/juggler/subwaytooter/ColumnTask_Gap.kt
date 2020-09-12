@@ -416,13 +416,6 @@ class ColumnTask_Gap(
 			max_id = column.parseRange(result, src).first
 			
 			adder(src)
-			
-			val tmpMaxId = max_id
-			val tmpSinceId = since_id
-			if(tmpMaxId != null && tmpSinceId != null && tmpMaxId <= tmpSinceId) {
-				log.d("$logCaption: max_id <= since_id. $tmpMaxId <= $tmpSinceId")
-				break
-			}
 		}
 		
 		if(sortAllowed) list_tmp?.sortByDescending { it.getOrderId() }
@@ -501,12 +494,6 @@ class ColumnTask_Gap(
 			
 			adder(src)
 			
-			val tmpMaxId = max_id
-			val tmpSinceId = since_id
-			if(tmpMaxId != null && tmpSinceId != null && tmpMaxId >= tmpSinceId) {
-				log.d("$logCaption: max_id >= since_id. $tmpMaxId >= $tmpSinceId")
-				break
-			}
 		}
 		
 		if(sortAllowed) list_tmp?.sortByDescending { it.getOrderId() }

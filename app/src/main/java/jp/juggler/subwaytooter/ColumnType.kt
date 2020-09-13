@@ -41,7 +41,6 @@ private val unusedName : (context : Context) -> String =
 private val unusedName2 : Column.(long : Boolean) -> String? =
 	{ null }
 
-
 private val gapDirectionNone : Column.(head : Boolean) -> Boolean = { false }
 
 private val gapDirectionBoth : Column.(head : Boolean) -> Boolean = { true }
@@ -172,18 +171,19 @@ enum class ColumnType(
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
 	
-	FollowingMastodonPseudo(
-		
-		loading = {
-			column.idRecent = null
-			column.idOld = null
-			list_tmp = addOne(
-				list_tmp,
-				TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
-			)
-			TootApiResult()
-		}
-	),
+	// いつからか認証なしでも読めるようになった
+	//	FollowingMastodonPseudo(
+	//
+	//		loading = {
+	//			column.idRecent = null
+	//			column.idOld = null
+	//			list_tmp = addOne(
+	//				list_tmp,
+	//				TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
+	//			)
+	//			TootApiResult()
+	//		}
+	//	),
 	
 	FollowingMisskey10(
 		
@@ -317,18 +317,19 @@ enum class ColumnType(
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
 	
-	FollowersMastodonPseudo(
-		
-		loading = {
-			column.idRecent = null
-			column.idOld = null
-			list_tmp = addOne(
-				list_tmp,
-				TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
-			)
-			TootApiResult()
-		}
-	),
+	// いつからか認証なしでも読めるようになった
+	//	FollowersMastodonPseudo(
+	//
+	//		loading = {
+	//			column.idRecent = null
+	//			column.idOld = null
+	//			list_tmp = addOne(
+	//				list_tmp,
+	//				TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
+	//			)
+	//			TootApiResult()
+	//		}
+	//	),
 	
 	FollowersMastodon(
 		

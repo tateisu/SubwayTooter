@@ -92,7 +92,7 @@ internal fun Column.dispatchProfileTabFollowing() =
 	when {
 		misskeyVersion >= 11 -> ColumnType.FollowingMisskey11
 		isMisskey -> ColumnType.FollowingMisskey10
-		access_info.isPseudo -> ColumnType.FollowingMastodonPseudo
+		// いつからか認証なしでも読めるようになった access_info.isPseudo -> ColumnType.FollowingMastodonPseudo
 		else -> ColumnType.FollowingMastodon
 	}
 
@@ -100,7 +100,7 @@ internal fun Column.dispatchProfileTabFollowers() =
 	when {
 		misskeyVersion >= 11 -> ColumnType.FollowersMisskey11
 		isMisskey -> ColumnType.FollowersMisskey10
-		access_info.isPseudo -> ColumnType.FollowersMastodonPseudo
+		// いつからか認証なしでも読めるようになった access_info.isPseudo -> ColumnType.FollowersMastodonPseudo
 		else -> ColumnType.FollowersMastodon
 	}
 

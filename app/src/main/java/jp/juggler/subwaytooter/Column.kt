@@ -80,11 +80,9 @@ class Column(
 		internal const val MISSKEY_HASHTAG_LIMIT = 30
 		
 		// ステータスのリストを返すAPI
-		internal const val PATH_HOME = "/api/v1/timelines/home?limit=$READ_LIMIT"
 		internal const val PATH_DIRECT_MESSAGES = "/api/v1/timelines/direct?limit=$READ_LIMIT"
 		internal const val PATH_DIRECT_MESSAGES2 = "/api/v1/conversations?limit=$READ_LIMIT"
 		
-		internal const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=true"
 		internal const val PATH_FAVOURITES = "/api/v1/favourites?limit=$READ_LIMIT"
 		internal const val PATH_BOOKMARKS = "/api/v1/bookmarks?limit=$READ_LIMIT"
 		

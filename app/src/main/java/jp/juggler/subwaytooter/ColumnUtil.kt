@@ -23,7 +23,6 @@ internal inline fun <reified T : TimelineItem> addAll(
 		}
 	}
 
-
 internal fun addOne(
 	dstArg : ArrayList<TimelineItem>?,
 	item : TimelineItem?,
@@ -309,16 +308,25 @@ internal fun Column.makeMisskeyParamsProfileStatuses(parser : TootParser) =
 		if(! dont_show_boost) put("includeMyRenotes", true)
 	}
 
+const val PATH_LOCAL = "/api/v1/timelines/public?local=true&limit=$READ_LIMIT"
+
 internal fun Column.makePublicLocalUrl() : String {
 	return when {
 		access_info.isMisskey -> "/api/notes/local-timeline"
-		with_attachment -> "${Column.PATH_LOCAL}&only_media=true" // mastodon 2.3 or later
-		else -> Column.PATH_LOCAL
+		with_attachment -> "${PATH_LOCAL}&only_media=true" // mastodon 2.3 or later
+		else -> PATH_LOCAL
+	}
+}
+internal fun Column.makeMisskeyHybridTlUrl() : String {
+	return when {
+		access_info.isMisskey -> "/api/notes/hybrid-timeline"
+		else -> makePublicLocalUrl()
 	}
 }
 
+
 internal fun Column.makeDomainTimelineUrl() : String {
-	val base = "/api/v1/timelines/public?limit=$READ_LIMIT&domain=$instance_uri"
+	val base = "/api/v1/timelines/public?domain=$instance_uri&limit=$READ_LIMIT"
 	return when {
 		access_info.isMisskey -> "/api/notes/local-timeline"
 		with_attachment -> "$base&only_media=true"
@@ -326,13 +334,6 @@ internal fun Column.makeDomainTimelineUrl() : String {
 	}
 }
 
-internal fun Column.makeMisskeyHybridTlUrl() : String {
-	return when {
-		access_info.isMisskey -> "/api/notes/hybrid-timeline"
-		with_attachment -> "${Column.PATH_LOCAL}&only_media=true" // mastodon 2.3 or later
-		else -> Column.PATH_LOCAL
-	}
-}
 
 internal fun Column.makePublicFederateUrl() : String {
 	
@@ -346,11 +347,13 @@ internal fun Column.makePublicFederateUrl() : String {
 	}
 }
 
+const val PATH_HOME = "/api/v1/timelines/home?limit=$READ_LIMIT"
+
 internal fun Column.makeHomeTlUrl() : String {
 	return when {
 		access_info.isMisskey -> "/api/notes/timeline"
-		with_attachment -> "${Column.PATH_HOME}&only_media=true"
-		else -> Column.PATH_HOME
+		with_attachment -> "$PATH_HOME&only_media=true"
+		else -> PATH_HOME
 	}
 }
 

@@ -213,7 +213,7 @@ class ColumnTask_Refresh(
 		path_base : String,
 		misskeyParams : JsonObject? = null,
 		misskeyArrayFinder : (JsonObject) -> JsonArray? = { null },
-		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootAccountRef> =
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootAccountRef> =
 			{ parser, jsonArray -> parser.accountList(jsonArray) }
 	) : TootApiResult? {
 		
@@ -1101,8 +1101,8 @@ class ColumnTask_Refresh(
 		path_base : String?,
 		aroundMin : Boolean = false,
 		misskeyParams : JsonObject? = null,
-		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootStatus> =
-			{ parser, jsonArray -> parser.statusList(jsonArray) }
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootStatus> =
+			defaultStatusListParser
 	) : TootApiResult? {
 		
 		path_base ?: return null // cancelled.

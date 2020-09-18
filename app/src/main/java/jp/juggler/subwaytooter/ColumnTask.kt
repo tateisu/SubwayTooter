@@ -15,11 +15,11 @@ import jp.juggler.util.withCaption
 import kotlinx.coroutines.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-enum class ColumnTaskType {
-	LOADING,
-	REFRESH_TOP,
-	REFRESH_BOTTOM,
-	GAP
+enum class ColumnTaskType(val marker:Char) {
+	LOADING('L'),
+	REFRESH_TOP('T'),
+	REFRESH_BOTTOM('B'),
+	GAP('G')
 }
 
 abstract class ColumnTask(
@@ -63,8 +63,6 @@ abstract class ColumnTask(
 	val pref : SharedPreferences
 		get() = column.app_state.pref
 	
-	internal fun JsonObject.putMisskeyUntil(id : EntityId?) = putMisskeyUntil(column, id)
-	internal fun JsonObject.putMisskeySince(id : EntityId?) = putMisskeySince(column, id)
 	internal fun JsonObject.addMisskeyNotificationFilter() = addMisskeyNotificationFilter(column)
 	internal fun JsonObject.addRangeMisskey(bBottom : Boolean) = addRangeMisskey(column, bBottom)
 	

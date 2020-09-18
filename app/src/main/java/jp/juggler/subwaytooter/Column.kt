@@ -252,11 +252,8 @@ class Column(
 		// より古いデータの取得に使う
 		internal val reMaxId = """[&?]max_id=([^&?;\s]+)""".asciiPattern()
 		
-		// より新しいデータの取得に使う (マストドン2.6.0以降)
-		private val reMinId = """[&?]min_id=([^&?;\s]+)""".asciiPattern()
-		
-		// より新しいデータの取得に使う(マストドン2.6.0未満)
-		private val reSinceId = """[&?]since_id=([^&?;\s]+)""".asciiPattern()
+		// より新しいデータの取得に使う
+		private val reMinId = """[&?](min_id|since_id)=([^&?;\s]+)""".asciiPattern()
 		
 		val COLUMN_REGEX_FILTER_DEFAULT : (CharSequence?) -> Boolean = { false }
 		
@@ -637,8 +634,6 @@ class Column(
 	private val stream_data_queue = ConcurrentLinkedQueue<TimelineItem>()
 	
 	private var bPutGap : Boolean = false
-	
-	internal var useDate : Boolean = false
 	
 	val isSearchColumn : Boolean
 		get() {
@@ -1989,39 +1984,24 @@ class Column(
 				if( item .isInjected() ) continue
 
 				val id = item.getOrderId()
-				if(idMin == null || id < idMin) idMin = id
-				if(idMax == null || id > idMax) idMax = id
+				if( id.notDefaultOrConfirming){
+					if(idMin == null || id < idMin) idMin = id
+					if(idMax == null || id > idMax) idMax = id
+				}
 			}
 		} else if(result != null) {
 			// Linkヘッダを読む
-			idMin = if(result.link_older == null) {
-				null
-			} else {
-				val m = reMaxId.matcher(result.link_older ?: "")
-				if(m.find()) {
-					EntityId(m.groupEx(1) !!)
-				} else {
-					null
+			idMin = reMaxId.matcher(result?.link_older?:"").findOrNull()
+				?.let{
+					EntityId(it.groupEx(1) !!)
 				}
-			}
+
+			idMax =reMinId.matcher(result.link_newer ?: "").findOrNull()
+				?.let {
+					bMinIdMatched = it.groupEx(1)=="min_id"
+					EntityId(it.groupEx(2) !!)
+				}
 			
-			idMax = if(result.link_newer == null) {
-				null
-			} else {
-				var m = reMinId.matcher(result.link_newer ?: "")
-				if(m.find()) {
-					bMinIdMatched = true
-					EntityId(m.groupEx(1) !!)
-				} else {
-					m = reSinceId.matcher(result.link_newer ?: "")
-					if(m.find()) {
-						bMinIdMatched = false
-						EntityId(m.groupEx(1) !!)
-					} else {
-						null
-					}
-				}
-			}
 		}
 		
 		return Pair(idMin, idMax)
@@ -2839,8 +2819,8 @@ class Column(
 			// キューから読めた件数が0の場合を除き、少し後に再処理させることでマージ漏れを防ぐ
 			handler.postDelayed(this, 333L)
 			
-			tmpList.sortBy { it.getOrderId() }
-			tmpList.reverse()
+			// ストリーミングされるデータは全てID順に並んでいるはず
+			tmpList.sortByDescending { it.getOrderId() }
 			
 			val list_new = duplicate_map.filterDuplicate(tmpList)
 			if(list_new.isEmpty()) return

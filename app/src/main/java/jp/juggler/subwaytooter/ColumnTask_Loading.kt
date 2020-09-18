@@ -145,15 +145,11 @@ class ColumnTask_Loading(
 		aroundMax : Boolean = false,
 		
 		misskeyParams : JsonObject? = null,
-		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootStatus> =
-			{ parser, jsonArray -> parser.statusList(jsonArray) },
-		initialUntilDate : Boolean = false,
-		useDate :Boolean = isMisskey // お気に入り一覧などでは変更される
+		arrayParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootStatus> =
+			defaultStatusListParser
 	) : TootApiResult? {
 		
 		path_base ?: return null // cancelled.
-		
-		column.useDate = useDate
 		
 		val params = misskeyParams ?: column.makeMisskeyTimelineParameter(parser)
 		
@@ -163,13 +159,7 @@ class ColumnTask_Loading(
 		
 		// 初回の取得
 		val result = when {
-			isMisskey -> {
-				if(initialUntilDate) {
-					params["untilDate"] = System.currentTimeMillis() + (86400000L * 365)
-				}
-				client.request(path_base, params.toPostRequestBuilder())
-			}
-			
+			isMisskey -> client.request(path_base, params.toPostRequestBuilder())
 			aroundMin -> client.request("$path_base&min_id=${column.status_id}")
 			aroundMax -> client.request("$path_base&max_id=${column.status_id}")
 			else -> client.request(path_base)
@@ -178,7 +168,7 @@ class ColumnTask_Loading(
 		var jsonArray = result?.jsonArray
 		if(jsonArray != null) {
 			
-			var src = misskeyCustomParser(parser, jsonArray)
+			var src = arrayParser(parser, jsonArray)
 			
 			if(list_tmp == null) {
 				list_tmp = ArrayList(src.size)
@@ -238,7 +228,7 @@ class ColumnTask_Loading(
 						break
 					}
 					
-					src = misskeyCustomParser(parser, jsonArray)
+					src = arrayParser(parser, jsonArray)
 					
 					addWithFilterStatus(list_tmp, src)
 					
@@ -300,7 +290,7 @@ class ColumnTask_Loading(
 						break
 					}
 					
-					src = misskeyCustomParser(parser, jsonArray)
+					src = arrayParser(parser, jsonArray)
 					
 					addWithFilterStatus(list_tmp, src)
 					
@@ -485,7 +475,7 @@ class ColumnTask_Loading(
 		emptyMessage : String? = null,
 		misskeyParams : JsonObject? = null,
 		misskeyArrayFinder : (JsonObject) -> JsonArray? = { null },
-		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootAccountRef> =
+		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootAccountRef> =
 			{ parser, jsonArray -> parser.accountList(jsonArray) }
 	) : TootApiResult? {
 		

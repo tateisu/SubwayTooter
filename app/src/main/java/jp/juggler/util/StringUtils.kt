@@ -347,3 +347,5 @@ fun defaultLocale(context : Context) : Locale =
 		@Suppress("DEPRECATION")
 		context.resources.configuration.locale
 	}
+
+fun Matcher.findOrNull() = if(find()) this else null

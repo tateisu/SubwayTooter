@@ -16,10 +16,10 @@ class ColumnTask_Gap(
 		
 		internal val log = LogCategory("CT_Gap")
 		
-		private val reIToken=""""i":"[^"]+"""".toRegex()
+		private val reIToken = """"i":"[^"]+"""".toRegex()
 		
 		private fun String.removeIToken() =
-			reIToken.replace(this,""""i":"**"""")
+			reIToken.replace(this, """"i":"**"""")
 	}
 	
 	private var max_id : EntityId? = (gap as? TootGap)?.max_id
@@ -213,7 +213,7 @@ class ColumnTask_Gap(
 		path_base : String,
 		paramsCreator : (EntityId?) -> JsonObject,
 		arrayFinder : (JsonObject) -> JsonArray? = { null },
-		listParser : (TootParser, JsonArray) -> ArrayList<T>,
+		listParser : (TootParser, JsonArray) -> List<T>,
 		adder : (List<T>) -> Unit
 	) : TootApiResult? {
 		list_tmp = ArrayList()
@@ -297,7 +297,7 @@ class ColumnTask_Gap(
 		path_base : String,
 		paramsCreator : (EntityId?) -> JsonObject,
 		arrayFinder : (JsonObject) -> JsonArray? = { null },
-		listParser : (TootParser, JsonArray) -> ArrayList<T>,
+		listParser : (TootParser, JsonArray) -> List<T>,
 		adder : (List<T>) -> Unit
 	) : TootApiResult? {
 		list_tmp = ArrayList()
@@ -377,7 +377,7 @@ class ColumnTask_Gap(
 		client : TootApiClient,
 		path_base : String,
 		filterByIdRange : Boolean,
-		listParser : (TootParser, JsonArray) -> ArrayList<T>,
+		listParser : (TootParser, JsonArray) -> List<T>,
 		adder : (List<T>) -> Unit,
 	) : TootApiResult? {
 		list_tmp = ArrayList()
@@ -470,7 +470,7 @@ class ColumnTask_Gap(
 		client : TootApiClient,
 		path_base : String,
 		filterByIdRange : Boolean,
-		listParser : (TootParser, JsonArray) -> ArrayList<T>,
+		listParser : (TootParser, JsonArray) -> List<T>,
 		adder : (List<T>) -> Unit
 	) : TootApiResult? {
 		list_tmp = ArrayList()
@@ -558,17 +558,12 @@ class ColumnTask_Gap(
 		mastodonFilterByIdRange : Boolean,
 		misskeyParams : JsonObject? = null,
 		arrayFinder : (jsonObject : JsonObject) -> JsonArray? = { null },
-		listParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootAccountRef> =
+		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootAccountRef> =
 			{ parser, jsonArray -> parser.accountList(jsonArray) }
 	) : TootApiResult? {
 		
-		@Suppress("NON_EXHAUSTIVE_WHEN")
-		when(column.pagingType) {
-			ColumnPagingType.Offset,
-			ColumnPagingType.Cursor,
-			ColumnPagingType.None -> {
-				return TootApiResult("can't support gap")
-			}
+		if( column.pagingType != ColumnPagingType.Default ) {
+			return TootApiResult("can't support gap")
 		}
 		
 		val adder : (List<TootAccountRef>) -> Unit =
@@ -683,11 +678,12 @@ class ColumnTask_Gap(
 		client : TootApiClient,
 		fromAcct : String? = null,
 		mastodonFilterByIdRange : Boolean,
-		listParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootNotification> =
-			{ parser, jsonArray -> parser.notificationList(jsonArray) }
 	) : TootApiResult? {
 		
 		val path_base : String = column.makeNotificationUrl(client, fromAcct)
+		
+		val listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootNotification> =
+			defaultNotificationListParser
 		
 		val adder : (List<TootNotification>) -> Unit =
 			{ addWithFilterNotification(list_tmp, it, head = ! isHead) }
@@ -750,8 +746,8 @@ class ColumnTask_Gap(
 		path_base : String?,
 		mastodonFilterByIdRange : Boolean,
 		misskeyParams : JsonObject? = null,
-		listParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootStatus> =
-			{ parser, jsonArray -> parser.statusList(jsonArray) }
+		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootStatus> =
+			defaultStatusListParser
 	) : TootApiResult? {
 		
 		path_base ?: return null // cancelled.

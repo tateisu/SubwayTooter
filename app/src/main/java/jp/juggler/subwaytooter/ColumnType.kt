@@ -124,8 +124,7 @@ enum class ColumnType(
 			getStatusList(
 				client,
 				Column.PATH_MISSKEY_PROFILE_STATUSES,
-				misskeyParams = column.makeMisskeyParamsProfileStatuses(parser),
-				initialUntilDate = true
+				misskeyParams = column.makeMisskeyParamsProfileStatuses(parser)
 			)
 		},
 		refresh = { client ->
@@ -220,22 +219,20 @@ enum class ColumnType(
 		
 		loading = { client ->
 			column.pagingType = ColumnPagingType.Default
-			column.useDate = false
 			getAccountList(
 				client,
 				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
 				emptyMessage = context.getString(R.string.none_or_hidden_following),
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyCustomParser = misskeyFollowingParser
+				misskeyCustomParser = misskey11FollowingParser
 			)
 		},
 		refresh = { client ->
-			column.useDate = false
 			getAccountList(
 				client,
 				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyCustomParser = misskeyFollowingParser
+				misskeyCustomParser = misskey11FollowingParser
 			)
 		},
 		gap = { client ->
@@ -244,7 +241,7 @@ enum class ColumnType(
 				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
 				mastodonFilterByIdRange = false,
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				listParser = misskeyFollowingParser
+				listParser = misskey11FollowingParser
 			)
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
@@ -259,17 +256,16 @@ enum class ColumnType(
 				Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
 				emptyMessage = context.getString(R.string.none_or_hidden_followers),
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyCustomParser = misskeyFollowersParser
+				misskeyCustomParser = misskey11FollowersParser
 			)
 		},
 		
 		refresh = { client ->
-			column.useDate = false
 			getAccountList(
 				client,
 				Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyCustomParser = misskeyFollowersParser
+				misskeyCustomParser = misskey11FollowersParser
 			)
 		},
 		gap = { client ->
@@ -278,7 +274,7 @@ enum class ColumnType(
 				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
 				mastodonFilterByIdRange = false,
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				listParser = misskeyFollowersParser
+				listParser = misskey11FollowersParser
 			)
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
@@ -578,12 +574,11 @@ enum class ColumnType(
 		
 		loading = { client ->
 			if(isMisskey) {
-				column.useDate = false
 				getStatusList(
 					client,
 					Column.PATH_MISSKEY_FAVORITES,
 					misskeyParams = column.makeMisskeyTimelineParameter(parser),
-					misskeyCustomParser = misskeyCustomParserFavorites
+					arrayParser = misskeyCustomParserFavorites
 				)
 			} else {
 				getStatusList(client, Column.PATH_FAVOURITES)
@@ -592,7 +587,6 @@ enum class ColumnType(
 		
 		refresh = { client ->
 			if(isMisskey) {
-				column.useDate = false
 				getStatusList(
 					client,
 					Column.PATH_MISSKEY_FAVORITES,
@@ -606,7 +600,6 @@ enum class ColumnType(
 		
 		gap = { client ->
 			if(isMisskey) {
-				column.useDate = false
 				getStatusList(
 					client,
 					Column.PATH_MISSKEY_FAVORITES,
@@ -1626,9 +1619,7 @@ enum class ColumnType(
 					column.makeAntennaTlUrl(),
 					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
 						put("antennaId", column.profile_id)
-					},
-					misskeyCustomParser = misskeyCustomParserAntenna,
-					useDate = false
+					}
 				)
 			} else {
 				getStatusList(client, column.makeAntennaTlUrl())
@@ -1643,8 +1634,7 @@ enum class ColumnType(
 					column.makeAntennaTlUrl(),
 					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
 						put("antennaId", column.profile_id)
-					},
-					misskeyCustomParser = misskeyCustomParserAntenna
+					}
 				)
 			} else {
 				getStatusList(client, column.makeAntennaTlUrl())
@@ -1659,8 +1649,7 @@ enum class ColumnType(
 					mastodonFilterByIdRange = true,
 					misskeyParams = column.makeMisskeyTimelineParameter(parser).apply {
 						put("antennaId", column.profile_id)
-					},
-					listParser = misskeyCustomParserAntenna
+					}
 				)
 			} else {
 				getStatusList(client, column.makeAntennaTlUrl(), mastodonFilterByIdRange = true)

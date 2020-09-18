@@ -8,10 +8,7 @@ import jp.juggler.util.JsonObject
 import jp.juggler.util.getStringOrNull
 import jp.juggler.util.notZero
 
-class EntityId(
-	val x : String,
-	val fromTime : Boolean = false
-) : Comparable<EntityId> {
+class EntityId(val x : String) : Comparable<EntityId> {
 	
 	companion object {
 		
@@ -20,7 +17,7 @@ class EntityId(
 		
 		// マストドンのアカウント作成APIで作成した直後は「IDが発行されてない」状態になる
 		internal val CONFIRMING = EntityId("<>confirming")
-		
+
 		fun mayDefault(x : String?) = if(x == null) DEFAULT else EntityId(x)
 		
 		fun mayNull(x : String?) = if(x == null) null else EntityId(x)
@@ -71,6 +68,9 @@ class EntityId(
 	
 	val notDefault : Boolean
 		get() = this != DEFAULT
+
+	val notDefaultOrConfirming : Boolean
+		get() = this != DEFAULT && this != CONFIRMING
 	
 	override fun compareTo(other : EntityId) : Int =
 		(x.length - other.x.length).notZero() ?: x.compareTo(other.x)

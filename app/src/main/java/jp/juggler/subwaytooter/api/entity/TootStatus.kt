@@ -56,10 +56,10 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	// Misskeyでは文字列のID。
 	val id : EntityId
 	
-	// misskey ではページネーションにIDではなくエポック秒を使う
-	internal var _orderId : EntityId
+	// misskeyではページングIDにRelation ID が別途提供されることがある
+	internal var _orderId : EntityId? = null
 	
-	override fun getOrderId() = _orderId
+	override fun getOrderId() = _orderId ?: id
 	
 	// The TootAccount which posted the status
 	val accountRef : TootAccountRef
@@ -221,7 +221,6 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				this.uri = uri
 				this.url = uri
 			} else {
-				
 				this.uri = "https://$apiHost/notes/$misskeyId"
 				this.url = "https://$apiHost/notes/$misskeyId"
 			}
@@ -229,9 +228,6 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			this.created_at = src.string("createdAt")
 			this.time_created_at = parseTime(this.created_at)
 			this.id = EntityId.mayDefault(misskeyId)
-			
-			// ページネーションには日時を使う
-			this._orderId = EntityId(time_created_at.toString(), fromTime = true)
 			
 			// お気に入りカラムなどではパース直後に変更することがある
 			
@@ -513,7 +509,6 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				ServiceType.MISSKEY -> error("will not happen")
 			}
 			
-			this._orderId = this.id
 			this.in_reply_to_id = EntityId.mayNull(src.string("in_reply_to_id"))
 			this.in_reply_to_account_id =
 				EntityId.mayNull(src.string("in_reply_to_account_id"))

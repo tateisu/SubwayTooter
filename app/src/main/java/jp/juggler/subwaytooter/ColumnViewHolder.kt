@@ -764,14 +764,7 @@ class ColumnViewHolder(
 			
 			val task = column.lastTask
 			if(task != null) {
-				sb.append(
-					when(task.ctType) {
-						ColumnTaskType.LOADING -> 'L'
-						ColumnTaskType.REFRESH_TOP -> 'T'
-						ColumnTaskType.REFRESH_BOTTOM -> 'B'
-						ColumnTaskType.GAP -> 'G'
-					}
-				)
+				sb.append(task.ctType.marker) // L,T,B,G
 				sb.append(
 					when {
 						task.isCancelled -> "~"

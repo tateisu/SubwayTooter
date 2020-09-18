@@ -138,7 +138,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	var mentions : ArrayList<TootMention>? = null
 	
 	//An array of Tags
-	var tags : ArrayList<TootTag>? = null
+	var tags : List<TootTag>? = null
 	
 	// public Spannable decoded_tags;
 	var decoded_mentions : Spannable = EMPTY_SPANNABLE
@@ -513,7 +513,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			this.in_reply_to_account_id =
 				EntityId.mayNull(src.string("in_reply_to_account_id"))
 			this.mentions = parseListOrNull(::TootMention, src.jsonArray("mentions"), log)
-			this.tags = parseListOrNull(::TootTag, src.jsonArray("tags"))
+			this.tags = TootTag.parseListOrNull(parser,src.jsonArray("tags"))
 			this.application =
 				parseItem(::TootApplication, parser, src.jsonObject("application"), log)
 			this.pinned = parser.pinned || src.optBoolean("pinned")

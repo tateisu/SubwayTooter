@@ -1090,9 +1090,8 @@ class PostHelper(
 	}
 	
 	fun openFeaturedTagList(list : List<TootTag>?) {
-		if(list?.isEmpty() != false) return
 		val ad = ActionsDialog()
-		for(tag in list) {
+		list?.forEach {tag->
 			ad.addAction("#${tag.name}") {
 				val et = this.et ?: return@addAction
 				
@@ -1112,6 +1111,27 @@ class PostHelper(
 				
 				proc_text_changed.run()
 			}
+		}
+		ad.addAction( activity.getString(R.string.input_sharp_itself)){
+			val et = this.et ?: return@addAction
+			
+			val src = et.text ?: ""
+			val src_length = src.length
+			val start = min(src_length, et.selectionStart)
+			val end = min(src_length, et.selectionEnd)
+			
+			val sb = SpannableStringBuilder()
+			sb.append(src.subSequence(0, start))
+			if(! EmojiDecoder.canStartHashtag(sb, sb.length)) sb.append(' ')
+			sb.append('#')
+
+			val newSelection = sb.length
+			if(end < src_length) sb.append(src.subSequence(end, src_length))
+			et.text = sb
+			et.setSelection(newSelection)
+			
+			proc_text_changed.run()
+			
 		}
 		ad.show(activity, activity.getString(R.string.featured_hashtags))
 	}

@@ -1428,13 +1428,10 @@ class ActPost : AsyncActivity(),
 		
 		val account = account
 		if(account == null || account.isPseudo) {
-			btnFeaturedTag.vg(false)
 			return
 		}
 		
 		val cache = featuredTagCache[account.acct.ascii]
-		
-		btnFeaturedTag.vg(cache?.list?.isNotEmpty() == true)
 		
 		val now = SystemClock.elapsedRealtime()
 		if(cache != null && now - cache.time <= 300000L) return
@@ -1448,12 +1445,18 @@ class ActPost : AsyncActivity(),
 				
 				override fun background(client : TootApiClient) : TootApiResult? {
 					return if(account.isMisskey) {
-						featuredTagCache[account.acct.ascii] =
-							FeaturedTagCache(emptyList(), SystemClock.elapsedRealtime())
-						TootApiResult()
+						client.request(
+							"/api/hashtags/trend",
+							jsonObject {  }
+								.toPostRequestBuilder()
+						)?.also { result ->
+							val list = TootTag.parseList( TootParser(this@ActPost,account), result.jsonArray)
+							featuredTagCache[account.acct.ascii] =
+								FeaturedTagCache(list, SystemClock.elapsedRealtime())
+						}
 					} else {
 						client.request("/api/v1/featured_tags")?.also { result ->
-							val list = parseList(::TootTag, result.jsonArray)
+							val list = TootTag.parseList( TootParser(this@ActPost,account), result.jsonArray)
 							featuredTagCache[account.acct.ascii] =
 								FeaturedTagCache(list, SystemClock.elapsedRealtime())
 						}

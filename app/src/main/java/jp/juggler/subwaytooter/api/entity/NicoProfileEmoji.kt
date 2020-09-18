@@ -10,8 +10,8 @@ class NicoProfileEmoji(
 ) : Mappable<String> {
 	
 	constructor(src : JsonObject, shortcode : String? = null) : this(
-		url = src.notEmptyOrThrow("url"),
-		shortcode = shortcode ?: src.notEmptyOrThrow("shortcode"),
+		url = src.stringOrThrow("url"),
+		shortcode = shortcode ?: src.stringOrThrow("shortcode"),
 		account_url = src.string("account_url"),
 		account_id = EntityId.mayDefault(src.string("account_id"))
 	)

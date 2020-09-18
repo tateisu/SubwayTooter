@@ -134,7 +134,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 				parseMapOrNull(CustomEmoji.decodeMisskey, src.jsonArray("emojis"))
 			this.profile_emojis = null
 			
-			this.username = src.notEmptyOrThrow("username")
+			this.username = src.stringOrThrow("username")
 			
 			this.apiHost = src.string("host")?.let { Host.parse(it) }
 				?: parser.apiHost
@@ -229,7 +229,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 			
 			// 疑似アカウントにacctとusernameだけ
 			this.url = src.string("url")
-			this.username = src.notEmptyOrThrow("username")
+			this.username = src.stringOrThrow("username")
 			
 			//
 			val sv = src.string("display_name")
@@ -262,7 +262,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					
 					this.id = EntityId.mayDefault(src.string("id"))
 					
-					val tmpAcct = src.notEmptyOrThrow("acct")
+					val tmpAcct = src.stringOrThrow("acct")
 					
 					val(apiHost,apDomain) = findHostFromUrl(tmpAcct, parser.linkHelper, url)
 					apiHost ?: error("can't get apiHost from acct or url")
@@ -290,7 +290,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					// tootsearch のアカウントのIDはどのタンス上のものか分からないので役に立たない
 					this.id = EntityId.DEFAULT
 					
-					val tmpAcct = src.notEmptyOrThrow("acct")
+					val tmpAcct = src.stringOrThrow("acct")
 					
 					val(apiHost,apDomain) = findHostFromUrl(tmpAcct, null, url)
 					apiHost ?: error("can't get apiHost from acct or url")

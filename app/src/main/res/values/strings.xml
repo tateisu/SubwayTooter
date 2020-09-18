@@ -1052,4 +1052,5 @@
     <string name="gap_head">Head of gap</string>
     <string name="gap_tail">Tail of gap</string>
     <string name="ignore_text_in_shared_media">Don\'t append extra text that come with shared media from external apps</string>
+    <string name="input_sharp_itself">Input \'#\' itself</string>
 </resources>

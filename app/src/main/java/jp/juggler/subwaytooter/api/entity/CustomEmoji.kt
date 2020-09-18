@@ -28,8 +28,8 @@ class CustomEmoji(
 		
 		val decode : (JsonObject) -> CustomEmoji = { src ->
 			CustomEmoji(
-				shortcode = src.notEmptyOrThrow("shortcode"),
-				url = src.notEmptyOrThrow("url"),
+				shortcode = src.stringOrThrow("shortcode"),
+				url = src.stringOrThrow("url"),
 				static_url = src.string("static_url"),
 				visible_in_picker = src.optBoolean("visible_in_picker", true),
 				category =src.string("category")

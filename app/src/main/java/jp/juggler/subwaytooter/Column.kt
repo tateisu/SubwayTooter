@@ -1502,9 +1502,10 @@ class Column(
 				val re = Pattern.compile(regex_text)
 				column_regex_filter =
 					{ text : CharSequence? ->
-						if(text?.isEmpty() != false) false else re.matcher(
-							text
-						).find()
+						if(text?.isEmpty() != false)
+							false
+						else
+							re.matcher(text).find()
 					}
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -1967,8 +1968,6 @@ class Column(
 		task.start()
 	}
 	
-	private var bMinIdMatched : Boolean = false
-	
 	internal fun parseRange(
 		result : TootApiResult?,
 		list : List<TimelineItem>?
@@ -1978,30 +1977,29 @@ class Column(
 		
 		if(isMisskey && list != null) {
 			// MisskeyはLinkヘッダがないので、常にデータからIDを読む
+			
 			for(item in list) {
-
 				// injectされたデータをデータ範囲に追加しない
-				if( item .isInjected() ) continue
-
+				if(item.isInjected()) continue
+				
 				val id = item.getOrderId()
-				if( id.notDefaultOrConfirming){
+				if(id.notDefaultOrConfirming) {
 					if(idMin == null || id < idMin) idMin = id
 					if(idMax == null || id > idMax) idMax = id
 				}
 			}
-		} else if(result != null) {
+		} else {
 			// Linkヘッダを読む
-			idMin = reMaxId.matcher(result?.link_older?:"").findOrNull()
-				?.let{
+			idMin = reMaxId.matcher(result?.link_older ?: "").findOrNull()
+				?.let {
 					EntityId(it.groupEx(1) !!)
 				}
-
-			idMax =reMinId.matcher(result.link_newer ?: "").findOrNull()
+			
+			idMax = reMinId.matcher(result?.link_newer ?: "").findOrNull()
 				?.let {
-					bMinIdMatched = it.groupEx(1)=="min_id"
+					// min_idとsince_idの読み分けは現在利用してない it.groupEx(1)=="min_id"
 					EntityId(it.groupEx(2) !!)
 				}
-			
 		}
 		
 		return Pair(idMin, idMax)

@@ -44,7 +44,7 @@ class MisskeyAntenna(src : JsonObject) :TimelineItem(){
 	
 	init{
 		timeCreatedAt = TootStatus.parseTime(src.string("createdAt"))
-		id = EntityId(src.notEmptyOrThrow("id"))
+		id = EntityId(src.stringOrThrow("id"))
 		name = src.string("name") ?: "?"
 		this.src = src.string("src") ?: "?"
 		

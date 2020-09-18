@@ -18,13 +18,13 @@ class TestEntityUtils {
 	
 	class TestEntity(val s : String, val l : Long) : Mappable<String> {
 		constructor(src : JsonObject) : this(
-			s = src.notEmptyOrThrow("s"),
+			s = src.stringOrThrow("s"),
 			l = src.long("l") ?: 0L
 		)
 		
 		@Suppress("UNUSED_PARAMETER")
 		constructor(parser : TootParser, src : JsonObject) : this(
-			s = src.notEmptyOrThrow("s"),
+			s = src.stringOrThrow("s"),
 			l = src.long("l") ?: 0L
 		)
 		
@@ -254,16 +254,16 @@ class TestEntityUtils {
 	
 	@Test(expected = RuntimeException::class)
 	fun testNotEmptyOrThrow4() {
-		println("""{"param1":null}""".decodeJsonObject().notEmptyOrThrow("param1"))
+		println("""{"param1":null}""".decodeJsonObject().stringOrThrow("param1"))
 	}
 	
 	@Test(expected = RuntimeException::class)
 	fun testNotEmptyOrThrow5() {
-		println("""{"param1":""}""".decodeJsonObject().notEmptyOrThrow("param1"))
+		println("""{"param1":""}""".decodeJsonObject().stringOrThrow("param1"))
 	}
 	
 	@Test
 	fun testNotEmptyOrThrow6() {
-		assertEquals("A", """{"param1":"A"}""".decodeJsonObject().notEmptyOrThrow("param1"))
+		assertEquals("A", """{"param1":"A"}""".decodeJsonObject().stringOrThrow("param1"))
 	}
 }

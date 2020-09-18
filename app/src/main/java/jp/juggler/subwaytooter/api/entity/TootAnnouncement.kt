@@ -50,11 +50,10 @@ class TootAnnouncement(parser : TootParser, src : JsonObject) {
 	val decoded_content : Spannable
 	
 	//An array of Tags
-	val tags : ArrayList<TootTag>?
+	val tags : List<TootTag>?
 	
 	//	An array of Mentions
 	val mentions : ArrayList<TootMention>?
-	
 	
 	var reactions : MutableList<Reaction>? = null
 	
@@ -63,7 +62,7 @@ class TootAnnouncement(parser : TootParser, src : JsonObject) {
 		this.custom_emojis =
 			parseMapOrNull(CustomEmoji.decode, src.jsonArray("emojis"), log)
 		
-		this.tags = parseListOrNull(::TootTag, src.jsonArray("tags"))
+		this.tags = TootTag.parseListOrNull(parser,src.jsonArray("tags"))
 		
 		this.mentions = parseListOrNull(::TootMention, src.jsonArray("mentions"), log)
 		

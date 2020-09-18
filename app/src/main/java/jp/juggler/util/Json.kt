@@ -270,7 +270,7 @@ class JsonObject : LinkedHashMap<String, Any?>() {
 	@Suppress("unused")
 	fun optDouble(name : String, defVal : Double = 0.0) = double(name) ?: defVal
 	
-	fun notEmptyOrThrow(name : String) = notEmptyOrThrow(name, string(name))
+	fun stringOrThrow(name : String) = notEmptyOrThrow(name, string(name))
 	fun isNull(name : String) = this[name] == null
 	fun putNotNull(name : String, value : Any?) {
 		if(value != null) put(name, value)

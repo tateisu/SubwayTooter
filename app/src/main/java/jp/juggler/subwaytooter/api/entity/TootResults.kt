@@ -10,7 +10,7 @@ class TootResults private constructor(
 	// An array of matched Statuses
 	val statuses : ArrayList<TootStatus>,
 	// An array of matched hashtags
-	val hashtags : ArrayList<TootTag>
+	val hashtags : List<TootTag>
 ) {
 	
 	var searchApiVersion = 0 // 0 means not from search API. such as trend tags.

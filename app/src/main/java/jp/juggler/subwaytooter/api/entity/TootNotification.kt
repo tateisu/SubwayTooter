@@ -60,7 +60,7 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			id = EntityId.mayDefault(src.string("id"))
 			
-			type = src.notEmptyOrThrow("type")
+			type = src.stringOrThrow("type")
 			
 			created_at = src.string("createdAt")
 			time_created_at = TootStatus.parseTime(created_at)
@@ -83,7 +83,7 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 		} else {
 			id = EntityId.mayDefault(src.string("id"))
 			
-			type = src.notEmptyOrThrow("type")
+			type = src.stringOrThrow("type")
 			
 			created_at = src.string("created_at")
 			time_created_at = TootStatus.parseTime(created_at)

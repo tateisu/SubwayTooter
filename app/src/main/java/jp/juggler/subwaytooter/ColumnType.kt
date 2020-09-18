@@ -171,19 +171,18 @@ enum class ColumnType(
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
 	
-	// いつからか認証なしでも読めるようになった
-	//	FollowingMastodonPseudo(
-	//
-	//		loading = {
-	//			column.idRecent = null
-	//			column.idOld = null
-	//			list_tmp = addOne(
-	//				list_tmp,
-	//				TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
-	//			)
-	//			TootApiResult()
-	//		}
-	//	),
+	FollowingMastodonPseudo(
+		
+		loading = {
+			column.idRecent = null
+			column.idOld = null
+			list_tmp = addOne(
+				list_tmp,
+				TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
+			)
+			TootApiResult()
+		}
+	),
 	
 	FollowingMisskey10(
 		
@@ -317,19 +316,18 @@ enum class ColumnType(
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
 	
-	// いつからか認証なしでも読めるようになった
-	//	FollowersMastodonPseudo(
-	//
-	//		loading = {
-	//			column.idRecent = null
-	//			column.idOld = null
-	//			list_tmp = addOne(
-	//				list_tmp,
-	//				TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
-	//			)
-	//			TootApiResult()
-	//		}
-	//	),
+	FollowersMastodonPseudo(
+		
+		loading = {
+			column.idRecent = null
+			column.idOld = null
+			list_tmp = addOne(
+				list_tmp,
+				TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
+			)
+			TootApiResult()
+		}
+	),
 	
 	FollowersMastodon(
 		

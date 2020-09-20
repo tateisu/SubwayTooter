@@ -7,9 +7,7 @@ import android.text.Spanned
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.entity.Acct
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootMention
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.LinkInfo
@@ -507,7 +505,11 @@ object HTMLDecoder {
 		for(item in mentionList) {
 			if(sb.isNotEmpty()) sb.append(" ")
 			
-			val fullAcct = getFullAcctOrNull(linkHelper, item.acct, item.url)
+			val fullAcct = getFullAcctOrNull(
+				item.acct,
+				item.url,
+				linkHelper, // メンション情報がある場合、ドメインが省略されたら閲覧者のドメインを補う。投稿者のドメインではない
+			).validFull()
 			
 			val linkInfo = if(fullAcct != null) {
 				LinkInfo(
@@ -603,35 +605,51 @@ object HTMLDecoder {
 				// https://github.com/tateisu/SubwayTooter/issues/108
 				// check mentions to skip getAcctFromUrl
 				val mention = options.mentions?.find { it.url == href }
-				linkInfo.mention = mention
-				
-				// Account.note does not have mentions metadata.
-				// fallback to resolve acct by mention URL.
-				val rawAcct = mention?.acct
-					?: Acct.parse(originalCaption.toString().substring(1))
+				if( mention != null ){
+					// メンション情報がある場合、ドメイン省略時のデフォルトは閲覧者のドメイン
+					getFullAcctOrNull(
+						mention.acct,
+						href,
+						defaultHostDomain = options.linkHelper ?: unknownHostAndDomain
+					).validFull()?.let{fullAcct ->
+						linkInfo.ac = AcctColor.load(fullAcct)
+						if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
+							linkInfo.caption = "@${fullAcct.pretty}"
+						}
+					}
+				}else{
 
-				val fullAcct = getFullAcctOrNull(
-					options.linkHelper,
-					rawAcct,
-					href,
-					mentionDefaultDomain = options.mentionDefaultDomain
-				)
-				
-				if(fullAcct != null) {
+					// case A
+					// Account.note does not have mentions metadata.
+					// fallback to resolve acct by mention URL.
 					
-					// リモートの投稿の一部で、mentionsメタデータに情報が含まれない場合がある
-					if(mention == null) {
+					// case B
+					// https://mastodon.juggler.jp/@tateisu/104897039191509317
+					// リモートのMisskeyからMastodonに流れてきた投稿をSTで見ると
+					// (元タンスでの)ローカルメンションに対して間違って閲覧者のドメインが補われる
+					// STのバグかと思ったけど、データみたらmentionsメタデータに一つ目のメンションのURLが含まれてない。
+					// どっちかのサーバにも問題があるらしい。
+					// 閲覧者ではなく投稿者のドメインを補うべき
+
+					// 上記の理由から
+					// メンション情報がない場合は閲覧者ではなく投稿者のドメインを補うべき
+					
+					val rawAcct = Acct.parse(originalCaption.toString().substring(1))
+					getFullAcctOrNull(
+						rawAcct,
+						href,
+						defaultHostDomain = options.mentionDefaultHostDomain
+					).validFull()?.let{ fullAcct ->
 						linkInfo.mention = TootMention(
 							id = EntityId.DEFAULT,
 							url = href,
 							acct = fullAcct,
 							username = rawAcct.username
 						)
-					}
-					
-					linkInfo.ac = AcctColor.load(fullAcct)
-					if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
-						linkInfo.caption = "@${fullAcct.pretty}"
+						linkInfo.ac = AcctColor.load(fullAcct)
+						if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
+							linkInfo.caption = "@${fullAcct.pretty}"
+						}
 					}
 				}
 			}

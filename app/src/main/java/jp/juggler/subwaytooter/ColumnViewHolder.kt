@@ -2657,7 +2657,8 @@ class ColumnViewHolder(
 				activity,
 				column.access_info,
 				decodeEmoji = true,
-				enlargeEmoji = 1.5f
+				enlargeEmoji = 1.5f,
+				mentionDefaultHostDomain = column.access_info
 			)
 			
 			val actMain = activity

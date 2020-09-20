@@ -954,7 +954,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 				context = this@ActAccountSetting,
 				linkHelper = account,
 				emojiMapProfile = src.profile_emojis,
-				emojiMapCustom = src.custom_emojis
+				emojiMapCustom = src.custom_emojis,
+				mentionDefaultHostDomain = account
 			)
 			
 			val display_name = src.display_name

@@ -15,10 +15,7 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.entity.Acct
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootMention
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
@@ -801,14 +798,22 @@ object MisskeyMarkdownDecoder {
 				else -> appendText(text)
 			}
 			
-			val fullAcct = getFullAcctFromMention(options.linkHelper, text, url)
+			val fullAcct = if(! text.startsWith('@')){
+				null
+				//リンクキャプションがメンション風でないならメンションとは扱わない
+			}else{
+				// 通称と色を調べる
+				getFullAcctOrNull(
+					rawAcct = Acct.parse(text.substring(1)),
+					url = url,
+					defaultHostDomain = options.mentionDefaultHostDomain
+				).validFull()
+			}
 			
 			val linkInfo = LinkInfo(
 				caption = text,
 				url = url,
-				ac = fullAcct?.let {
-					AcctColor.load(fullAcct)
-				},
+				ac = fullAcct?.let { AcctColor.load(fullAcct) },
 				tag = options.linkTag,
 				mention = mention
 			)
@@ -831,7 +836,6 @@ object MisskeyMarkdownDecoder {
 		) {
 			// ユーザが記述したacct
 			val rawAcct = Acct.parse(username, strHost)
-				.followHost(options.mentionDefaultDomain)
 			
 			val linkHelper = linkHelper
 			if(linkHelper == null) {
@@ -840,6 +844,7 @@ object MisskeyMarkdownDecoder {
 			}
 			
 			// 長いacct
+			// MFMでは投稿者のドメインを補うのはサーバ側の仕事の筈なので、options.mentionDefault…は見ない
 			val fullAcct = rawAcct.followHost(linkHelper.apDomain)
 			
 			// mentionsメタデータに含まれるacct

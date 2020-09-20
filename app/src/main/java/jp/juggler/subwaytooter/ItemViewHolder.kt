@@ -940,10 +940,10 @@ internal class ItemViewHolder(
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
-					if(n_status==null){
+					if(n_status == null) {
 						R.drawable.ic_question
-					}else{
-						Styler.getVisibilityIconId(access_info.isMisskey,n_status.visibility)
+					} else {
+						Styler.getVisibilityIconId(access_info.isMisskey, n_status.visibility)
 					},
 					R.string.display_name_posted_by
 				)
@@ -1976,7 +1976,7 @@ internal class ItemViewHolder(
 						showToast(activity, true, "This column can't support gap reading.")
 				}
 				
-				is TootSearchGap -> column.startGap(item,isHead = true)
+				is TootSearchGap -> column.startGap(item, isHead = true)
 				
 				is TootDomainBlock -> {
 					AlertDialog.Builder(activity)
@@ -2321,9 +2321,11 @@ internal class ItemViewHolder(
 		val sb = StringBuilder()
 		fun showString() {
 			if(sb.isNotEmpty()) {
-				val text =
-					DecodeOptions(activity, access_info, forceHtml = true)
-						.decodeHTML(sb.toString())
+				val text = DecodeOptions(
+					activity, access_info,
+					forceHtml = true,
+					mentionDefaultHostDomain = status.account
+				).decodeHTML(sb.toString())
 				if(text.isNotEmpty()) {
 					tvCardText.visibility = View.VISIBLE
 					tvCardText.text = text
@@ -2525,7 +2527,8 @@ internal class ItemViewHolder(
 				activity,
 				access_info,
 				decodeEmoji = true,
-				enlargeEmoji = 1.5f
+				enlargeEmoji = 1.5f,
+				mentionDefaultHostDomain = status.account
 			)
 			
 			// 通常の絵文字はUnicodeを使う

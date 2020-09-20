@@ -27,7 +27,7 @@ class TootAccountRef(parser: TootParser, account:TootAccount) : TimelineItem() {
 			emojiMapProfile = account.profile_emojis,
 			emojiMapCustom = account.custom_emojis,
 			unwrapEmojiImageTag = true,
-			mentionDefaultDomain = account.apDomain,
+			mentionDefaultHostDomain = account,
 		).decodeHTML(account.note)
 	}
 	

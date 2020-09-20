@@ -107,7 +107,8 @@ class TootPolls private constructor(
 					linkTag = status,
 					emojiMapCustom = status.custom_emojis,
 					emojiMapProfile = status.profile_emojis,
-					mentions = status.mentions
+					mentions = status.mentions,
+					mentionDefaultHostDomain = status.account
 				).decodeHTML(this.question ?: "?")
 				
 			}
@@ -125,7 +126,8 @@ class TootPolls private constructor(
 					linkTag = status,
 					emojiMapCustom = status.custom_emojis,
 					emojiMapProfile = status.profile_emojis,
-					mentions = status.mentions
+					mentions = status.mentions,
+					mentionDefaultHostDomain = status.account
 				).decodeHTML(this.question ?: "?")
 				
 				this.items = parseChoiceListMastodon(
@@ -191,7 +193,8 @@ class TootPolls private constructor(
 					linkTag = status,
 					emojiMapCustom = status.custom_emojis,
 					emojiMapProfile = status.profile_emojis,
-					mentions = status.mentions
+					mentions = status.mentions,
+					mentionDefaultHostDomain = status.account
 				).decodeHTML(this.question ?: "?")
 				
 				this.items = parseChoiceListFriendsNico(
@@ -257,7 +260,8 @@ class TootPolls private constructor(
 					context,
 					emojiMapCustom = status.custom_emojis,
 					emojiMapProfile = status.profile_emojis,
-					decodeEmoji = true
+					decodeEmoji = true,
+					mentionDefaultHostDomain = status.account
 				)
 				for(o in objectArray) {
 					val text = reWhitespace
@@ -290,7 +294,8 @@ class TootPolls private constructor(
 					context,
 					emojiMapCustom = status.custom_emojis,
 					emojiMapProfile = status.profile_emojis,
-					decodeEmoji = true
+					decodeEmoji = true,
+					mentionDefaultHostDomain = status.account
 				)
 				for(i in 0 until size) {
 					val text = reWhitespace

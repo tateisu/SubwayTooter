@@ -53,11 +53,11 @@ class TootCard(
 			?: if(parser.serviceType == ServiceType.MISSKEY) {
 				src.content
 			} else {
-				val options = DecodeOptions(
+				DecodeOptions(
 					context = parser.context,
-					decodeEmoji = true
-				)
-				options.decodeHTML(src.content ?: "").toString()
+					decodeEmoji = true,
+					mentionDefaultHostDomain = src.account
+				).decodeHTML(src.content ?: "").toString()
 			},
 		image = src.media_attachments
 			?.firstOrNull()

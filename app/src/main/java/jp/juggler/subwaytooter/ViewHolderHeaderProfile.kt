@@ -403,7 +403,8 @@ internal class ViewHolderHeaderProfile(
 					linkHelper = access_info,
 					short = true,
 					emojiMapCustom = who.custom_emojis,
-					emojiMapProfile = who.profile_emojis
+					emojiMapProfile = who.profile_emojis,
+					mentionDefaultHostDomain = who
 				)
 				
 				val nameTypeface = ActMain.timeline_font_bold

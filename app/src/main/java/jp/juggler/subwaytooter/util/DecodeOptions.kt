@@ -26,7 +26,7 @@ class DecodeOptions(
 	var mentionFullAcct : Boolean = false,
 	var mentions : ArrayList<TootMention>? = null,
 	// Account.note などmentionsがない状況でメンションリンクをfull acct化するにはアカウント等からapDomainを補う必要がある
-	var mentionDefaultDomain : Host? = null,
+	var mentionDefaultHostDomain: HostAndDomain,
 ) {
 	
 	internal fun isMediaAttachment(url : String?) : Boolean {

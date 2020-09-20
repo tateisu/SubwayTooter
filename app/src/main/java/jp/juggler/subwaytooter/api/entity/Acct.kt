@@ -85,6 +85,7 @@ class Acct private constructor(
 	
 	fun validFull() : Acct? = if(isValidFull) this else null
 	
+	
 	companion object {
 		// declare this first!
 		private val acctSet = ConcurrentHashMap<String, Acct>()
@@ -112,4 +113,14 @@ class Acct private constructor(
 		
 		fun parse(user : String, host : Host?) = Acct(user, host)
 	}
+}
+
+interface HostAndDomain{
+	val apiHost: Host
+	val apDomain: Host
+}
+
+val unknownHostAndDomain = object:HostAndDomain{
+	override val apiHost = Host.UNKNOWN
+	override val apDomain = Host.UNKNOWN
 }

@@ -1474,8 +1474,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 			tabletEnv = TabletEnv()
 		}
 		
-		val tmpPhonePager :MyViewPager = findViewById(R.id.viewPager)
-		val tmpTabletPager  :RecyclerView = findViewById(R.id.rvPager)
+		val tmpPhonePager : MyViewPager = findViewById(R.id.viewPager)
+		val tmpTabletPager : RecyclerView = findViewById(R.id.rvPager)
 		
 		phoneTab({ env ->
 			tmpTabletPager.visibility = View.GONE
@@ -1810,16 +1810,16 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 			
 			val my_name = packageName
 			val resolveInfoList = packageManager.queryIntentActivities(intent, query_flag)
-				.filter{ my_name != it.activityInfo.packageName}
-
+				.filter { my_name != it.activityInfo.packageName }
+			
 			if(resolveInfoList.isEmpty()) {
 				throw RuntimeException("resolveInfoList is empty.")
 			}
 			
 			// このアプリ以外の選択肢を集める
 			val choice_list = resolveInfoList
-				.map{
-					Intent(Intent.ACTION_VIEW, uri).apply{
+				.map {
+					Intent(Intent.ACTION_VIEW, uri).apply {
 						addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 						`package` = it.activityInfo.packageName
 						setClassName(it.activityInfo.packageName, it.activityInfo.name)
@@ -2442,7 +2442,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				// opener.linkInfo をチェックしてメンションを判別する
 				val mention = opener.linkInfo?.mention
 				if(mention != null) {
-					val fullAcct = getFullAcctOrNull(accessInfo, mention.acct.ascii, mention.url)
+					val fullAcct = getFullAcctOrNull(mention.acct,mention.url,accessInfo)
+						.validFull()
 					if(fullAcct != null) {
 						if(fullAcct.host != null) {
 							when(fullAcct.host.ascii) {

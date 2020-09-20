@@ -20,7 +20,7 @@ import jp.juggler.util.*
 import java.util.*
 import java.util.regex.Pattern
 
-open class TootAccount(parser : TootParser, src : JsonObject) {
+open class TootAccount(parser : TootParser, src : JsonObject) : HostAndDomain {
 	
 	//URL of the user's profile page (can be remote)
 	// https://mastodon.juggler.jp/@tateisu
@@ -33,8 +33,8 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 	// 	The username of the account  /[A-Za-z0-9_]{1,30}/
 	val username : String
 	
-	val apiHost : Host
-	val apDomain : Host
+	final override val apiHost : Host
+	final override val apDomain : Host
 	
 	//	Equals username for local users, includes @domain for remote ones
 	val acct : Acct
@@ -381,7 +381,8 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 		return DecodeOptions(
 			context,
 			emojiMapProfile = profile_emojis,
-			emojiMapCustom = custom_emojis
+			emojiMapCustom = custom_emojis,
+			mentionDefaultHostDomain = this
 		).decodeEmoji(sv)
 	}
 	
@@ -460,7 +461,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) {
 					emojiMapProfile = profile_emojis,
 					emojiMapCustom = custom_emojis,
 					unwrapEmojiImageTag = true,
-					mentionDefaultDomain = apDomain,
+					mentionDefaultHostDomain = this,
 				).decodeHTML(note)
 					.replaceAllEx(reNoteLineFeed, " ")
 					.trimEx()

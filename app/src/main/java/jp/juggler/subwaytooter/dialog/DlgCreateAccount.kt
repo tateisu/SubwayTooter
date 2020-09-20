@@ -13,6 +13,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.unknownHostAndDomain
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.neatSpaces
@@ -70,7 +71,8 @@ class DlgCreateAccount(
 				activity,
 				LinkHelper.newLinkHelper(
 					instance, misskeyVersion = instanceInfo?.misskeyVersion ?: 0
-				)
+				),
+				mentionDefaultHostDomain = unknownHostAndDomain
 			)
 				.decodeHTML(
 					instanceInfo?.short_description?.notBlank()

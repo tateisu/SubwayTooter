@@ -221,9 +221,9 @@ class EmojiPicker(
 		dialog.setCanceledOnTouchOutside(true)
 		val w = dialog.window
 		
-		
-		w?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 		// TODO Android 11 で SOFT_INPUT_ADJUST_RESIZE はdeprecatedになった
+		@Suppress("DEPRECATION")
+		w?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 	}
 	
 	private var bInstanceHasCustomEmoji = false

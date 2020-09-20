@@ -64,6 +64,7 @@ class ActPost : AsyncActivity(),
 	PostAttachment.Callback {
 	
 	companion object {
+		
 		internal val log = LogCategory("ActPost")
 		
 		internal const val EXTRA_POSTED_ACCT = "posted_acct"
@@ -726,10 +727,10 @@ class ActPost : AsyncActivity(),
 					Intent.ACTION_VIEW -> {
 						val uri = sent_intent.data
 						val type = sent_intent.type
-						if(uri != null){
+						if(uri != null) {
 							addAttachment(uri, type)
 							true
-						}else{
+						} else {
 							false
 						}
 					}
@@ -737,10 +738,10 @@ class ActPost : AsyncActivity(),
 					Intent.ACTION_SEND -> {
 						val uri = sent_intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
 						val type = sent_intent.type
-						if(uri != null){
+						if(uri != null) {
 							addAttachment(uri, type)
 							true
-						}else{
+						} else {
 							false
 						}
 					}
@@ -749,19 +750,20 @@ class ActPost : AsyncActivity(),
 						val list_uri =
 							sent_intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
 								?.filterNotNull()
-						if(list_uri?.isNotEmpty() == true ) {
+						if(list_uri?.isNotEmpty() == true) {
 							for(uri in list_uri) {
 								addAttachment(uri)
 							}
 							true
-						}else{
+						} else {
 							false
 						}
 					}
-					else ->false
+					
+					else -> false
 				}
 				
-				if(!hasUri || !Pref.bpIgnoreTextInSharedMedia(pref)) {
+				if(! hasUri || ! Pref.bpIgnoreTextInSharedMedia(pref)) {
 					appendContentText(sent_intent)
 				}
 			}
@@ -909,7 +911,8 @@ class ActPost : AsyncActivity(),
 						val decodeOptions = DecodeOptions(
 							this,
 							mentionFullAcct = true,
-							mentions = base_status.mentions
+							mentions = base_status.mentions,
+							mentionDefaultHostDomain = account
 						)
 						
 						var text : CharSequence = if(account.isMisskey) {
@@ -1109,7 +1112,11 @@ class ActPost : AsyncActivity(),
 		selectBefore : Boolean = false
 	) {
 		if(src?.isEmpty() != false) return
-		val svEmoji = DecodeOptions(context = this, decodeEmoji = true).decodeEmoji(src)
+		val svEmoji = DecodeOptions(
+			context = this,
+			decodeEmoji = true,
+			mentionDefaultHostDomain = account ?: unknownHostAndDomain
+		).decodeEmoji(src)
 		if(svEmoji.isEmpty()) return
 		
 		val editable = etContent.text
@@ -1447,16 +1454,22 @@ class ActPost : AsyncActivity(),
 					return if(account.isMisskey) {
 						client.request(
 							"/api/hashtags/trend",
-							jsonObject {  }
+							jsonObject { }
 								.toPostRequestBuilder()
 						)?.also { result ->
-							val list = TootTag.parseList( TootParser(this@ActPost,account), result.jsonArray)
+							val list = TootTag.parseList(
+								TootParser(this@ActPost, account),
+								result.jsonArray
+							)
 							featuredTagCache[account.acct.ascii] =
 								FeaturedTagCache(list, SystemClock.elapsedRealtime())
 						}
 					} else {
 						client.request("/api/v1/featured_tags")?.also { result ->
-							val list = TootTag.parseList( TootParser(this@ActPost,account), result.jsonArray)
+							val list = TootTag.parseList(
+								TootParser(this@ActPost, account),
+								result.jsonArray
+							)
 							featuredTagCache[account.acct.ascii] =
 								FeaturedTagCache(list, SystemClock.elapsedRealtime())
 						}
@@ -1768,7 +1781,7 @@ class ActPost : AsyncActivity(),
 	}
 	
 	private fun openCustomThumbnail(pa : PostAttachment) {
-
+		
 		lastPostAttachment = pa
 		
 		val permissionCheck =
@@ -1807,20 +1820,20 @@ class ActPost : AsyncActivity(),
 		}
 		
 		val pa = lastPostAttachment
-		if( pa == null || !attachment_list.contains(pa)){
+		if(pa == null || ! attachment_list.contains(pa)) {
 			showToast(this, true, "lost attachment information")
 			return
 		}
 		
-		TootTaskRunner(this).run(account,object:TootTask{
+		TootTaskRunner(this).run(account, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				try {
 					val (ti, tiResult) = TootInstance.get(client)
 					ti ?: return tiResult
 					
-					val resizeConfig = ResizeConfig(ResizeType.SquarePixel,400)
+					val resizeConfig = ResizeConfig(ResizeType.SquarePixel, 400)
 					
-					val opener = createOpener(src.uri,mime_type, resizeConfig)
+					val opener = createOpener(src.uri, mime_type, resizeConfig)
 					
 					val media_size_max = 1000000
 					
@@ -1856,7 +1869,7 @@ class ActPost : AsyncActivity(),
 						opener.deleteTempFile()
 						TootApiResult("custom thumbnail is not supported on misskey account.")
 					} else {
-						val result =client.request(
+						val result = client.request(
 							"/api/v1/media/${pa.attachment?.id}",
 							MultipartBody.Builder()
 								.setType(MultipartBody.FORM)
@@ -1909,7 +1922,7 @@ class ActPost : AsyncActivity(),
 			
 			override fun handleResult(result : TootApiResult?) {
 				showMediaAttachment()
-				result?.error?.let{ showToast(this@ActPost,true,it)}
+				result?.error?.let { showToast(this@ActPost, true, it) }
 			}
 		})
 	}
@@ -2069,7 +2082,11 @@ class ActPost : AsyncActivity(),
 		fun deleteTempFile()
 	}
 	
-	private fun createOpener(uri : Uri, mime_type : String,resizeConfig: ResizeConfig) : InputStreamOpener {
+	private fun createOpener(
+		uri : Uri,
+		mime_type : String,
+		resizeConfig : ResizeConfig
+	) : InputStreamOpener {
 		
 		while(true) {
 			try {
@@ -2081,7 +2098,6 @@ class ActPost : AsyncActivity(),
 					log.d("createOpener: source is not jpeg or png")
 					break
 				}
-				
 				
 				val bitmap = createResizedBitmap(
 					this,
@@ -2662,8 +2678,7 @@ class ActPost : AsyncActivity(),
 	private fun showVisibility() {
 		btnVisibility.setImageResource(
 			Styler.getVisibilityIconId(
-				account?.isMisskey == true
-				, visibility ?: TootVisibility.Public
+				account?.isMisskey == true, visibility ?: TootVisibility.Public
 			)
 		)
 	}
@@ -2858,8 +2873,8 @@ class ActPost : AsyncActivity(),
 				this@ActPost,
 				linkHelper = account,
 				short = true,
-				decodeEmoji = true
-			
+				decodeEmoji = true,
+				mentionDefaultHostDomain = account ?: unknownHostAndDomain
 			).decodeHTML(in_reply_to_text)
 			ivReply.setImageUrl(pref, Styler.calcIconRound(ivReply.layoutParams), in_reply_to_image)
 		}
@@ -3073,7 +3088,11 @@ class ActPost : AsyncActivity(),
 				val draft_visibility = TootVisibility
 					.parseSavedVisibility(draft.string(DRAFT_VISIBILITY))
 				
-				val evEmoji = DecodeOptions(this@ActPost, decodeEmoji = true).decodeEmoji(content)
+				val evEmoji = DecodeOptions(
+					this@ActPost,
+					decodeEmoji = true,
+					mentionDefaultHostDomain = unknownHostAndDomain
+				).decodeEmoji(content)
 				etContent.setText(evEmoji)
 				etContent.setSelection(evEmoji.length)
 				etContentWarning.setText(content_warning)
@@ -3252,7 +3271,11 @@ class ActPost : AsyncActivity(),
 			
 			val tvText = viewRoot.findViewById<TextView>(R.id.tvText)
 			
-			val sv = DecodeOptions(this@ActPost, LinkHelper.nullHost).decodeHTML(text)
+			val sv = DecodeOptions(
+				this@ActPost,
+				LinkHelper.nullHost,
+				mentionDefaultHostDomain = unknownHostAndDomain
+			).decodeHTML(text)
 			tvText.text = sv
 			tvText.movementMethod = LinkMovementMethod.getInstance()
 			

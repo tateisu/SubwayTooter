@@ -75,7 +75,8 @@ class TootAnnouncement(parser : TootParser, src : JsonObject) {
 			// emojiMapProfile = profile_emojis,
 			// attachmentList = media_attachments,
 			highlightTrie = parser.highlightTrie,
-			mentions = mentions
+			mentions = mentions,
+			mentionDefaultHostDomain = parser.linkHelper
 		)
 		
 		

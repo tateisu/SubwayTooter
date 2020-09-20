@@ -44,6 +44,7 @@ class TootApiClient(
 	}
 	
 	companion object {
+		
 		private val log = LogCategory("TootApiClient")
 		
 		private const val DEFAULT_CLIENT_NAME = "SubwayTooter"
@@ -122,7 +123,9 @@ class TootApiClient(
 			// HTMLならタグの除去を試みる
 			val ct = response.body?.contentType()
 			if(ct?.subtype == "html") {
-				val decoded = DecodeOptions().decodeHTML(sv).toString()
+				val decoded =
+					DecodeOptions(mentionDefaultHostDomain = unknownHostAndDomain).decodeHTML(sv)
+						.toString()
 				return reWhiteSpace.matcher(decoded).replaceAll(" ").trim()
 			}
 			
@@ -283,9 +286,7 @@ class TootApiClient(
 			
 			callback.publishApiProgress(
 				context.getString(
-					R.string.request_api
-					, request.method
-					, progressPath ?: request.url.encodedPath
+					R.string.request_api, request.method, progressPath ?: request.url.encodedPath
 				)
 			)
 			
@@ -296,10 +297,12 @@ class TootApiClient(
 			
 		} catch(ex : Throwable) {
 			result.setError(
-				"${result.caption}: ${ex.withCaption(
-					context.resources,
-					R.string.network_error
-				)}"
+				"${result.caption}: ${
+					ex.withCaption(
+						context.resources,
+						R.string.network_error
+					)
+				}"
 			)
 			false
 		}
@@ -472,7 +475,9 @@ class TootApiClient(
 				// HTMLならタグを除去する
 				val ct = response.body?.contentType()
 				if(ct?.subtype == "html") {
-					val decoded = DecodeOptions().decodeHTML(bodyString).toString()
+					val decoded = DecodeOptions(
+						mentionDefaultHostDomain = unknownHostAndDomain
+					).decodeHTML(bodyString).toString()
 						.replace("""[\s　]+""".toRegex(), " ")
 					bodyString = decoded
 				}
@@ -1082,9 +1087,7 @@ class TootApiClient(
 	
 	// アクセストークン手動入力でアカウントを更新する場合、アカウントの情報を取得する
 	fun getUserCredential(
-		access_token : String
-		, tokenInfo : JsonObject = JsonObject()
-		, misskeyVersion : Int = 0
+		access_token : String, tokenInfo : JsonObject = JsonObject(), misskeyVersion : Int = 0
 	) : TootApiResult? {
 		if(misskeyVersion > 0) {
 			val result = TootApiResult.makeWithCaption(apiHost?.pretty)
@@ -1526,7 +1529,7 @@ fun TootApiClient.syncStatus(
 				)
 					.status(result.jsonObject)
 					?.apply {
-						if(accessInfo.matchHost(host) ) {
+						if(accessInfo.matchHost(host)) {
 							return Pair(result, this)
 						}
 						uri.letNotEmpty { url = it }

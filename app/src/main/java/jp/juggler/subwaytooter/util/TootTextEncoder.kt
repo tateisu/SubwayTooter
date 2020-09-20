@@ -70,7 +70,8 @@ object TootTextEncoder {
 			DecodeOptions(
 				context,
 				access_info,
-				mentions = status.mentions
+				mentions = status.mentions,
+				mentionDefaultHostDomain = status.account
 			).decodeHTML(status.content)
 		)
 		
@@ -101,7 +102,8 @@ object TootTextEncoder {
 			DecodeOptions(
 				context,
 				access_info,
-				mentions = status.mentions
+				mentions = status.mentions,
+				mentionDefaultHostDomain = status.account
 			).decodeHTML(status.content)
 		)
 		
@@ -273,7 +275,7 @@ object TootTextEncoder {
 			DecodeOptions(
 				context,
 				access_info,
-				mentionDefaultDomain = who.apDomain
+				mentionDefaultHostDomain = who
 			).decodeHTML(who.note)
 		)
 		

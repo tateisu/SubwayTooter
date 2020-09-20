@@ -133,7 +133,12 @@ internal class ViewHolderHeaderInstance(
 				false -> activity.getString(R.string.no)
 			}
 			
-			val options = DecodeOptions(activity, access_info, decodeEmoji = true)
+			val options = DecodeOptions(
+				activity,
+				access_info,
+				decodeEmoji = true,
+				mentionDefaultHostDomain = access_info
+			)
 			
 			tvShortDescription.text = options
 				.decodeHTML("<p>${instance.short_description ?: ""}</p>")

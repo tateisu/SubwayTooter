@@ -2,20 +2,19 @@ package jp.juggler.subwaytooter.util
 
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.Host
+import jp.juggler.subwaytooter.api.entity.HostAndDomain
 import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootMention
-import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.findOrNull
 import jp.juggler.util.groupEx
-import java.util.ArrayList
 
-interface LinkHelper {
+interface LinkHelper : HostAndDomain {
 	
 	// SavedAccountのロード時にhostを供給する必要があった
-	val apiHost : Host
+	override val apiHost : Host
 	//	fun findAcct(url : String?) : String? = null
 	//	fun colorFromAcct(acct : String?) : AcctColor? = null
 	
-	val apDomain : Host
+	override val apDomain : Host
 	
 	val misskeyVersion : Int
 		get() = 0
@@ -27,7 +26,6 @@ interface LinkHelper {
 	val isMastodon : Boolean
 		get() = misskeyVersion <= 0
 	
-
 	// user とか user@host とかを user@host に変換する
 	// nullや空文字列なら ?@? を返す
 	fun getFullAcct(src : Acct?) : Acct = when {
@@ -64,88 +62,33 @@ fun LinkHelper.matchHost(src : LinkHelper) =
 	apiHost == src.apiHost || apDomain == src.apDomain ||
 		apDomain == src.apiHost || apiHost == src.apDomain
 
-fun LinkHelper.matchHost(src:TootAccount) =
+fun LinkHelper.matchHost(src : TootAccount) =
 	apiHost == src.apiHost || apDomain == src.apDomain ||
 		apDomain == src.apiHost || apiHost == src.apDomain
-	
 
 // user や user@host から user@host を返す
 fun getFullAcctOrNull(
-	linkHelper : LinkHelper?,
-	src : String,
-	url : String
-) : Acct? {
-	
-	// 既にFull Acctだった
-	if(src.contains('@'))
-		return Acct.parse(src)
-	
-	// トゥート検索等でないならアクセス元ホストを補って良いはず
-	if(linkHelper is SavedAccount && ! linkHelper.isNA) {
-		return Acct.parse(src, linkHelper.apDomain)
-	}
-	
-	// URLが既知のパターンだった
-	val fullAcct = TootAccount.getAcctFromUrl(url)
-	if(fullAcct != null) return fullAcct
-	
-	// URLのホスト名部分を補う
-	val m = TootAccount.reHostInUrl.matcher(url)
-	if(m.find()) return Acct.parse(src, m.groupEx(1))
-	
-	// https://fedibird.com/@noellabo/103350050191159092
-	// に含まれるメンションををリモートから見るとmentions メタデータがない。
-	// この場合アクセス元のホストを補うのは誤りなのだが、他の方法で解決できないなら仕方ない…
-	val apDomain = linkHelper?.apDomain
-	if(apDomain?.isValid == true) return Acct.parse(src, apDomain)
-	
-	return null
-}
-
-// user や user@host から user@host を返す
-fun getFullAcctOrNull(
-	linkHelper : LinkHelper?,
-	src : Acct,
+	rawAcct : Acct,
 	url : String,
-	mentionDefaultDomain: Host? = null
-) : Acct? {
+	// 以下の2つは閲覧者や投稿者のホストとドメインを指定する。
+	// 閲覧者と投稿者のどちらを使うべきかは状況により異なる。
+	defaultHostDomain : HostAndDomain,
+) : Acct {
 	
-	// 既にFull Acctだった
-	if(src.host != null) return src
+	// 記載がfull acctならそれを使う
+	if(rawAcct.host != null) return rawAcct
 	
-	// Account.noteなどメンション情報が含まれない場合、デフォルトのドメインは投稿者のドメインである
-	if(mentionDefaultDomain!=null){
-		return src.followHost( mentionDefaultDomain)
-	}
+	// URLのホスト名部分を見つける
+	val urlHost =
+		TootAccount.reHostInUrl.matcher(url).findOrNull()?.groupEx(1)?.let { Host.parse(it) }
 	
-	// トゥート検索等でないならアクセス元ホストを補って良いはず
-	val apDomain = linkHelper?.apDomain
-	if(apDomain != null && linkHelper is SavedAccount && ! linkHelper.isNA ) {
-		return Acct.parse(src.username, apDomain)
-	}
-	
-	// URLが既知のパターンだった
-	val fullAcct = TootAccount.getAcctFromUrl(url)
-	if(fullAcct != null) return fullAcct
-	
-	// URLのホスト名部分を補う
-	val m = TootAccount.reHostInUrl.matcher(url)
-	if(m.find()) return src.followHost(Host.parse(m.groupEx(1) !!))
-	
-	// https://fedibird.com/@noellabo/103350050191159092
-	// に含まれるメンションををリモートから見るとmentions メタデータがない。
-	// この場合アクセス元のホストを補うのは誤りなのだが、他の方法で解決できないなら仕方ない…
-	if(apDomain?.isValid == true) return src.followHost(apDomain)
-	
-	return null
+	// URLのホストが見つかって、mentionDefaultApiHostではないならそれを使う。
+	// さもなくば mentionDefaultApDomain を補う。
+	return rawAcct.followHost(
+		when(urlHost) {
+			defaultHostDomain.apiHost, null -> defaultHostDomain.apDomain
+			else -> urlHost
+		}
+	)
 }
 
-// @user や @user@host から user@host を返す
-fun getFullAcctFromMention(
-	linkHelper : LinkHelper?,
-	text : String,
-	url : String
-) = when {
-	text.startsWith('@') -> getFullAcctOrNull(linkHelper, text.substring(1), url)
-	else -> null
-}

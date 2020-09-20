@@ -203,6 +203,7 @@ class Column(
 		internal const val QUICK_FILTER_FOLLOW = 4
 		internal const val QUICK_FILTER_REACTION = 5
 		internal const val QUICK_FILTER_VOTE = 6
+		internal const val QUICK_FILTER_POST = 7
 		
 		internal const val HASHTAG_ELLIPSIZE = 26
 		
@@ -1059,6 +1060,7 @@ class Column(
 			QUICK_FILTER_FOLLOW -> sb.append(context.getString(R.string.notification_type_follow))
 			QUICK_FILTER_REACTION -> sb.append(context.getString(R.string.notification_type_reaction))
 			QUICK_FILTER_VOTE -> sb.append(context.getString(R.string.notification_type_vote))
+			QUICK_FILTER_POST -> sb.append(context.getString(R.string.notification_type_post))
 		}
 		
 		sb.append(")")
@@ -1619,6 +1621,8 @@ class Column(
 					TootNotification.TYPE_VOTE,
 					TootNotification.TYPE_POLL,
 					TootNotification.TYPE_POLL_VOTE_MISSKEY -> dont_show_vote
+					
+					TootNotification.TYPE_STATUS -> dont_show_normal_toot
 					else -> false
 				}
 				
@@ -1641,6 +1645,8 @@ class Column(
 					TootNotification.TYPE_VOTE,
 					TootNotification.TYPE_POLL,
 					TootNotification.TYPE_POLL_VOTE_MISSKEY -> quick_filter != QUICK_FILTER_VOTE
+					
+					TootNotification.TYPE_STATUS -> quick_filter != QUICK_FILTER_POST
 					else -> true
 				}
 			}) {
@@ -2347,6 +2353,7 @@ class Column(
 	
 	fun canFilterNormalToot() : Boolean {
 		return when(type) {
+			ColumnType.NOTIFICATIONS -> true
 			ColumnType.HOME, ColumnType.MISSKEY_HYBRID,
 			ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL -> true
 			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey

@@ -135,8 +135,10 @@ class App1 : Application() {
 		// 2020/6/8 46 => 54 別ブランチで色々してた。このブランチには影響ないが onDowngrade()を実装してないので上げてしまう
 		// 2020/7/19 54=>55 UserRelation テーブルに項目追加。
 		// 2020/9/7 55=>56 SavedAccountテーブルにCOL_DOMAINを追加。
+		// 2020/9/20 56=>57 SavedAccountテーブルに項目追加
+		// 2020/9/20 57=>58 UserRelationテーブルに項目追加
 		
-		internal const val DB_VERSION = 56
+		internal const val DB_VERSION = 58
 		
 		private val tableList = arrayOf(
 			LogData,

@@ -935,6 +935,23 @@ internal class ItemViewHolder(
 				}
 			}
 			
+			TootNotification.TYPE_STATUS -> {
+				val colorBg = Pref.ipEventBgColorStatus(activity.pref)
+				if(n_account != null) showBoost(
+					n_accountRef,
+					n.time_created_at,
+					if(n_status==null){
+						R.drawable.ic_question
+					}else{
+						Styler.getVisibilityIconId(access_info.isMisskey,n_status.visibility)
+					},
+					R.string.display_name_posted_by
+				)
+				if(n_status != null) {
+					showNotificationStatus(n_status, colorBg)
+				}
+			}
+			
 			TootNotification.TYPE_FOLLOW_REQUEST,
 			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> {
 				val colorBg = Pref.ipEventBgColorFollowRequest(activity.pref)

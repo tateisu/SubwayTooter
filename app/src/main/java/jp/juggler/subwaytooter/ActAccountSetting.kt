@@ -108,6 +108,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 	private lateinit var cbNotificationFollowRequest : CheckBox
 	private lateinit var cbNotificationReaction : CheckBox
 	private lateinit var cbNotificationVote : CheckBox
+	private lateinit var cbNotificationPost : CheckBox
 	
 	private lateinit var cbConfirmFollow : CheckBox
 	private lateinit var cbConfirmFollowLockedUser : CheckBox
@@ -284,6 +285,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		
 		cbNotificationReaction = findViewById(R.id.cbNotificationReaction)
 		cbNotificationVote = findViewById(R.id.cbNotificationVote)
+		cbNotificationPost = findViewById(R.id.cbNotificationPost)
 		
 		cbConfirmFollow = findViewById(R.id.cbConfirmFollow)
 		cbConfirmFollowLockedUser = findViewById(R.id.cbConfirmFollowLockedUser)
@@ -350,7 +352,10 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		cbNotificationFollowRequest.setOnCheckedChangeListener(this)
 		cbNotificationReaction.setOnCheckedChangeListener(this)
 		cbNotificationVote.setOnCheckedChangeListener(this)
+		cbNotificationPost.setOnCheckedChangeListener(this)
+		
 		cbLocked.setOnCheckedChangeListener(this)
+		
 		
 		cbConfirmFollow.setOnCheckedChangeListener(this)
 		cbConfirmFollowLockedUser.setOnCheckedChangeListener(this)
@@ -463,6 +468,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		cbNotificationFollowRequest.isChecked = a.notification_follow_request
 		cbNotificationReaction.isChecked = a.notification_reaction
 		cbNotificationVote.isChecked = a.notification_vote
+		cbNotificationPost.isChecked = a.notification_post
 		
 		cbConfirmFollow.isChecked = a.confirm_follow
 		cbConfirmFollowLockedUser.isChecked = a.confirm_follow_locked
@@ -500,6 +506,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		cbNotificationFollowRequest.isEnabled = enabled
 		cbNotificationReaction.isEnabled = enabled
 		cbNotificationVote.isEnabled = enabled
+		cbNotificationPost.isEnabled = enabled
 		
 		cbConfirmFollow.isEnabled = enabled
 		cbConfirmFollowLockedUser.isEnabled = enabled
@@ -542,6 +549,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		account.notification_follow_request = cbNotificationFollowRequest.isChecked
 		account.notification_reaction = cbNotificationReaction.isChecked
 		account.notification_vote = cbNotificationVote.isChecked
+		account.notification_post = cbNotificationPost.isChecked
 		
 		account.sound_uri = notification_sound_uri ?: ""
 		
@@ -1574,7 +1582,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			)
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return wps.updateSubscription(client)
+				return wps.updateSubscription(client,true)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

@@ -593,6 +593,13 @@
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
+            <CheckBox
+                android:id="@+id/cbNotificationPost"
+                style="@style/setting_horizontal_stretch"
+                android:text="@string/notification_type_post" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
 
             <Button
                 android:id="@+id/btnPushSubscription"

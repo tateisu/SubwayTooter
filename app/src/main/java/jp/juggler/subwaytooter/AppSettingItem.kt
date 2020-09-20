@@ -772,6 +772,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 				Pref.ipConversationMainTootBgColor,
 				R.string.conversation_main_toot_background_color
 			)
+			colorAlpha(Pref.ipEventBgColorStatus, R.string.status)
 		}
 		
 		group(R.string.button_accent_color) {

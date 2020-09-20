@@ -77,6 +77,7 @@ internal fun addPseudoAccount(
 		account.notification_mention = false
 		account.notification_reaction = false
 		account.notification_vote = false
+		account.notification_post = false
 		account.saveSetting()
 		callback(account)
 		return

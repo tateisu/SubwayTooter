@@ -207,6 +207,7 @@
     <string name="display_name_follow_request_accepted_by">%1$sがあなたのフォローリクエストを承認しました</string>
     <string name="display_name_followed_by">%1$sにフォローされました</string>
     <string name="display_name_quoted_by">%1$sが引用しました</string>
+    <string name="display_name_posted_by">%1$sが投稿しました</string>
     <string name="display_name_reaction_by">%1$sがリアクション</string>
     <string name="display_name_replied_by">%1$sからの返信</string>
     <string name="display_name_mentioned_by">%1$sからのメンション</string>
@@ -500,6 +501,7 @@
     <string name="notification_type_mention">返信</string>
     <string name="notification_type_reaction">リアクション</string>
     <string name="notification_type_vote">投票</string>
+    <string name="notification_type_post">投稿</string>
     <string name="notifications">通知</string>
     <string name="nsfw">NSFW</string>
     <string name="ok">OK</string>
@@ -1045,4 +1047,6 @@
     <string name="gap_tail">ギャップの終端</string>
     <string name="ignore_text_in_shared_media">外部アプリから共有されたメディアに付属する余計なテキストを追加しない</string>
     <string name="input_sharp_itself">\'#\'だけを入力</string>
+    <string name="notify_posts_from_this_user">このユーザの投稿を通知する</string>
+    <string name="stop_notify_posts_from_this_user">このユーザの投稿の通知を解除</string>
 </resources>

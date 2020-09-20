@@ -146,6 +146,8 @@ class ColumnViewHolder(
 	private lateinit var btnQuickFilterFavourite : ImageButton
 	private lateinit var btnQuickFilterBoost : ImageButton
 	private lateinit var btnQuickFilterFollow : ImageButton
+	private lateinit var btnQuickFilterPost : ImageButton
+	
 	private lateinit var btnQuickFilterReaction : ImageButton
 	private lateinit var btnQuickFilterVote : ImageButton
 	
@@ -337,6 +339,7 @@ class ColumnViewHolder(
 		btnQuickFilterFavourite.setOnClickListener(this)
 		btnQuickFilterBoost.setOnClickListener(this)
 		btnQuickFilterFollow.setOnClickListener(this)
+		btnQuickFilterPost.setOnClickListener(this)
 		btnQuickFilterReaction.setOnClickListener(this)
 		btnQuickFilterVote.setOnClickListener(this)
 		
@@ -1158,6 +1161,7 @@ class ColumnViewHolder(
 			btnQuickFilterFavourite -> clickQuickFilter(Column.QUICK_FILTER_FAVOURITE)
 			btnQuickFilterBoost -> clickQuickFilter(Column.QUICK_FILTER_BOOST)
 			btnQuickFilterFollow -> clickQuickFilter(Column.QUICK_FILTER_FOLLOW)
+			btnQuickFilterPost-> clickQuickFilter(Column.QUICK_FILTER_POST)
 			btnQuickFilterReaction -> clickQuickFilter(Column.QUICK_FILTER_REACTION)
 			btnQuickFilterVote -> clickQuickFilter(Column.QUICK_FILTER_VOTE)
 			
@@ -1662,6 +1666,12 @@ class ColumnViewHolder(
 			btnQuickFilterFollow,
 			R.drawable.ic_follow_plus,
 			column.quick_filter == Column.QUICK_FILTER_FOLLOW
+		)
+		
+		showQuickFilterButton(
+			btnQuickFilterPost,
+			R.drawable.ic_send,
+			column.quick_filter == Column.QUICK_FILTER_POST
 		)
 		
 		showQuickFilterButton(
@@ -2311,6 +2321,13 @@ class ColumnViewHolder(
 					btnQuickFilterFollow = imageButton {
 						backgroundResource = R.drawable.btn_bg_transparent_round6dp
 						contentDescription = context.getString(R.string.follow)
+					}.lparams(dip(40), matchParent) {
+						margin = 0
+					}
+					
+					btnQuickFilterPost = imageButton {
+						backgroundResource = R.drawable.btn_bg_transparent_round6dp
+						contentDescription = context.getString(R.string.notification_type_post)
 					}.lparams(dip(40), matchParent) {
 						margin = 0
 					}

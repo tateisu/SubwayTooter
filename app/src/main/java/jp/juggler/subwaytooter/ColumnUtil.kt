@@ -208,6 +208,9 @@ internal fun JsonObject.addMisskeyNotificationFilter(column : Column) : JsonObje
 				if(column.dont_show_vote) {
 					add("poll_vote")
 				}
+				if( column.dont_show_normal_toot){
+					// FIXME Misskeyには特定フォロー者からの投稿を通知する機能があるのか？
+				}
 			}
 			
 			if(excludeList.isNotEmpty()) put("excludeTypes", excludeList)
@@ -228,6 +231,9 @@ internal fun JsonObject.addMisskeyNotificationFilter(column : Column) : JsonObje
 		)
 		Column.QUICK_FILTER_REACTION -> put("includeTypes", jp.juggler.util.jsonArray("reaction"))
 		Column.QUICK_FILTER_VOTE -> put("includeTypes", jp.juggler.util.jsonArray("poll_vote"))
+		Column.QUICK_FILTER_POST ->{
+			// FIXME Misskeyには特定フォロー者からの投稿を通知する機能があるのか？
+		}
 	}
 	
 	return this
@@ -360,6 +366,7 @@ internal fun Column.makeNotificationUrl(
 					if(dont_show_follow) sb.append("&exclude_types[]=follow")
 					if(dont_show_reply) sb.append("&exclude_types[]=mention")
 					if(dont_show_vote) sb.append("&exclude_types[]=poll")
+					if(dont_show_normal_toot) sb.append("&exclude_types[]=status")
 				}
 				
 				else -> {
@@ -367,6 +374,7 @@ internal fun Column.makeNotificationUrl(
 					if(quick_filter != Column.QUICK_FILTER_BOOST) sb.append("&exclude_types[]=reblog")
 					if(quick_filter != Column.QUICK_FILTER_FOLLOW) sb.append("&exclude_types[]=follow")
 					if(quick_filter != Column.QUICK_FILTER_MENTION) sb.append("&exclude_types[]=mention")
+					if(quick_filter != Column.QUICK_FILTER_POST) sb.append("&exclude_types[]=status")
 				}
 			}
 			

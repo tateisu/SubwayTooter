@@ -58,7 +58,8 @@ class PushSubscriptionHelper(
 			account.notification_mention.booleanToInt(8) +
 			(account.isMisskey && account.notification_reaction).booleanToInt(16) +
 			account.notification_vote.booleanToInt(32) +
-			account.notification_follow_request.booleanToInt(64)
+			account.notification_follow_request.booleanToInt(64) +
+			account.notification_post.booleanToInt(128)
 	}
 	
 	val log : String
@@ -224,7 +225,7 @@ class PushSubscriptionHelper(
 		}
 	}
 	
-	private fun updateSubscriptionMastodon(client : TootApiClient) : TootApiResult? {
+	private fun updateSubscriptionMastodon(client : TootApiClient,force:Boolean) : TootApiResult? {
 		// 現在の購読状態を取得
 		// https://github.com/tootsuite/mastodon/pull/7471
 		// https://github.com/tootsuite/mastodon/pull/7472
@@ -315,7 +316,7 @@ class PushSubscriptionHelper(
 		val endpoint =
 			"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.ascii.encodePercent()}/$flags/$clientIdentifier"
 		
-		if(oldSubscription?.endpoint == endpoint) {
+		if(oldSubscription?.endpoint == endpoint && !force) {
 			// 既に登録済みで、endpointも一致している
 			subscribed = true
 			if(verbose) addLog(context.getString(R.string.push_subscription_already_exists))
@@ -382,31 +383,33 @@ class PushSubscriptionHelper(
 		} else {
 			// 通知設定が空ではないので購読を行いたい
 			
+			val params = JsonObject().apply {
+				put("subscription", JsonObject().apply {
+					put("endpoint", endpoint)
+					put("keys", JsonObject().apply {
+						put(
+							"p256dh",
+							"BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
+						)
+						put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
+					})
+				})
+				put("data", JsonObject().apply {
+					put("alerts", JsonObject().apply {
+						put("follow", account.notification_follow)
+						put("favourite", account.notification_favourite)
+						put("reblog", account.notification_boost)
+						put("mention", account.notification_mention)
+						put("poll", account.notification_vote)
+						put("follow_request", account.notification_follow_request)
+						put("status",account.notification_post)
+					})
+				})
+			}
+			
 			r = client.request(
 				"/api/v1/push/subscription",
-				JsonObject().apply {
-					put("subscription", JsonObject().apply {
-						put("endpoint", endpoint)
-						put("keys", JsonObject().apply {
-							put(
-								"p256dh",
-								"BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
-							)
-							put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
-						})
-					})
-					put("data", JsonObject().apply {
-						put("alerts", JsonObject().apply {
-							put("follow", account.notification_follow)
-							put("favourite", account.notification_favourite)
-							put("reblog", account.notification_boost)
-							put("mention", account.notification_mention)
-							put("poll", account.notification_vote)
-							put("follow_request", account.notification_follow_request)
-						})
-					})
-				}
-					.toPostRequestBuilder()
+				params.toPostRequestBuilder()
 			) ?: return null
 			
 			res = r.response ?: return r
@@ -444,7 +447,7 @@ class PushSubscriptionHelper(
 		}
 	}
 	
-	fun updateSubscription(client : TootApiClient) : TootApiResult? =
+	fun updateSubscription(client : TootApiClient,force:Boolean = false) : TootApiResult? =
 		try {
 			when {
 				isRecentlyChecked() ->
@@ -457,7 +460,7 @@ class PushSubscriptionHelper(
 					updateSubscriptionMisskey(client)
 				
 				else ->
-					updateSubscriptionMastodon(client)
+					updateSubscriptionMastodon(client,force)
 			}
 		} catch(ex : Throwable) {
 			TootApiResult(ex.withCaption("error."))

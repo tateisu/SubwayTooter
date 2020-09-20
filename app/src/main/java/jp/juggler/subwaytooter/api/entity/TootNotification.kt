@@ -37,6 +37,8 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 		
 		// (Mastodon 2.8)投票完了
 		const val TYPE_POLL = "poll"
+		
+		const val TYPE_STATUS = "status"
 	}
 	
 	val json : JsonObject

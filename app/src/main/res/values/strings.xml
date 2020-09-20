@@ -90,6 +90,7 @@
     <string name="display_name_follow_request_by">%1$s sent follow request</string>
     <string name="display_name_follow_request_accepted_by">%1$s accepted your follow request</string>
     <string name="display_name_quoted_by">%1$s quoted</string>
+    <string name="display_name_posted_by">%1$s posted</string>
     <string name="display_name_reaction_by">%1$s reactioned</string>
     <string name="display_name_followed_by">%1$s is following you</string>
     <string name="display_name_unfollowed_by">%1$s unfollowed you</string>
@@ -632,6 +633,8 @@
     <string name="notification_type_favourite">fav.</string>
     <string name="notification_type_reaction">reaction</string>
     <string name="notification_type_vote">vote</string>
+    <string name="notification_type_post">post</string>
+
     <string name="dont_show_normal_toot">Don\'t show normal toot</string>
     <string name="dont_show_non_public_toot">Don\'t show non-public toot</string>
     <string name="set_focus_point">set focus point (Mastodon 2.3+)</string>
@@ -1053,4 +1056,6 @@
     <string name="gap_tail">Tail of gap</string>
     <string name="ignore_text_in_shared_media">Don\'t append extra text that come with shared media from external apps</string>
     <string name="input_sharp_itself">Input \'#\' itself</string>
+    <string name="notify_posts_from_this_user">Notify posts from this user</string>
+    <string name="stop_notify_posts_from_this_user">Stop notify posts from this user</string>
 </resources>

@@ -40,6 +40,8 @@ class TootRelationShip(parser:TootParser,src : JsonObject) {
 	// misskey用
 	val requested_by : Boolean
 	
+	val notifying : Boolean
+	
 	// (Mastodon 3.2)
 	var note : String? = null
 
@@ -55,7 +57,8 @@ class TootRelationShip(parser:TootParser,src : JsonObject) {
 			blocked_by = src.optBoolean("isBlocked")
 			requested = src.optBoolean("hasPendingFollowRequestFromYou")
 			requested_by = src.optBoolean("hasPendingFollowRequestToYou")
-			
+
+			notifying = false
 			endorsed = false
 			showing_reblogs = UserRelation.REBLOG_UNKNOWN
 			
@@ -95,6 +98,7 @@ class TootRelationShip(parser:TootParser,src : JsonObject) {
 			this.requested = src.optBoolean("requested")
 			this.endorsed = src.optBoolean("endorsed")
 			this.note = src.optString( "note")
+			this.notifying =  src.optBoolean("notifying")
 			
 			// https://github.com/tootsuite/mastodon/commit/9745de883b198375ba23f7fde879f6d75ce2df0f
 			// Mastodon 2.8.0から

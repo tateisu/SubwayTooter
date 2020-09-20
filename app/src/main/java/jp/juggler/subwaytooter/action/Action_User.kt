@@ -807,4 +807,41 @@ object Action_User {
 			}
 		})
 	}
+	
+	fun statusNotification(
+		activity : ActMain,
+		accessInfo : SavedAccount,
+		whoId : EntityId,
+		enabled : Boolean
+	) {
+		TootTaskRunner(activity).run(accessInfo, object : TootTask {
+			override fun background(client : TootApiClient) : TootApiResult? {
+				return client.request(
+					"/api/v1/accounts/$whoId/follow",
+					jsonObject {
+						put("notify",enabled)
+					}.toPostRequestBuilder()
+				)?.also{ result->
+					val relation = parseItem( ::TootRelationShip, TootParser(activity,accessInfo),result.jsonObject)
+					if(relation!=null){
+						UserRelation.save1Mastodon(System.currentTimeMillis(),accessInfo.db_id,relation)
+					}
+				}
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				// cancelled
+				result ?: return
+				
+				// error
+				val error = result.error
+				if(error != null) {
+					showToast(activity, true, result.error)
+					return
+				}
+				
+				showToast(activity, false, R.string.operation_succeeded)
+			}
+		})
+	}
 }

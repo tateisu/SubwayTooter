@@ -52,6 +52,7 @@ class SavedAccount(
 	var notification_follow_request : Boolean = false
 	var notification_reaction : Boolean = false
 	var notification_vote : Boolean = false
+	var notification_post : Boolean = false
 	var sound_uri = ""
 	
 	var confirm_follow : Boolean = false
@@ -131,6 +132,7 @@ class SavedAccount(
 		notification_follow_request = cursor.getBoolean(COL_NOTIFICATION_FOLLOW_REQUEST)
 		notification_reaction = cursor.getBoolean(COL_NOTIFICATION_REACTION)
 		notification_vote = cursor.getBoolean(COL_NOTIFICATION_VOTE)
+		notification_post = cursor.getBoolean(COL_NOTIFICATION_POST)
 		
 		dont_hide_nsfw = cursor.getBoolean(COL_DONT_HIDE_NSFW)
 		dont_show_timeout = cursor.getBoolean(COL_DONT_SHOW_TIMEOUT)
@@ -204,6 +206,7 @@ class SavedAccount(
 		cv.put(COL_NOTIFICATION_FOLLOW_REQUEST, notification_follow_request.b2i())
 		cv.put(COL_NOTIFICATION_REACTION, notification_reaction.b2i())
 		cv.put(COL_NOTIFICATION_VOTE, notification_vote.b2i())
+		cv.put(COL_NOTIFICATION_POST, notification_post.b2i())
 		
 		cv.put(COL_CONFIRM_FOLLOW, confirm_follow.b2i())
 		cv.put(COL_CONFIRM_FOLLOW_LOCKED, confirm_follow_locked.b2i())
@@ -270,6 +273,8 @@ class SavedAccount(
 		this.notification_follow_request = b.notification_follow_request
 		this.notification_reaction = b.notification_reaction
 		this.notification_vote = b.notification_vote
+		this.notification_post = b.notification_post
+		
 		this.notification_tag = b.notification_tag
 		this.default_text = b.default_text
 		this.default_sensitive = b.default_sensitive
@@ -334,6 +339,7 @@ class SavedAccount(
 		private const val COL_NOTIFICATION_FOLLOW_REQUEST = "notification_follow_request" // スキーマ44
 		private const val COL_NOTIFICATION_REACTION = "notification_reaction" // スキーマ33
 		private const val COL_NOTIFICATION_VOTE = "notification_vote" // スキーマ33
+		private const val COL_NOTIFICATION_POST = "notification_post" // スキーマ57
 		
 		private const val COL_CONFIRM_FOLLOW = "confirm_follow" // スキーマ10
 		private const val COL_CONFIRM_FOLLOW_LOCKED = "confirm_follow_locked" // スキーマ10
@@ -459,9 +465,12 @@ class SavedAccount(
 					// スキーマ46から
 					+ ",$COL_LAST_PUSH_ENDPOINT text"
 					
-					// スキーマ66から
+					// スキーマ56から
 					+ ",$COL_DOMAIN text"
 					
+					// スキーマ57から
+					+ ",$COL_NOTIFICATION_POST integer default 1"
+
 					+ ")"
 			)
 			db.execSQL("create index if not exists ${table}_user on ${table}(u)")
@@ -594,8 +603,8 @@ class SavedAccount(
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
-				
 			}
+
 			if(oldVersion < 33 && newVersion >= 33) {
 				try {
 					db.execSQL("alter table $table add column $COL_NOTIFICATION_REACTION integer default 1")
@@ -607,8 +616,8 @@ class SavedAccount(
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
-				
 			}
+
 			if(oldVersion < 38 && newVersion >= 38) {
 				try {
 					db.execSQL("alter table $table add column $COL_DEFAULT_SENSITIVE integer default 0")
@@ -668,6 +677,14 @@ class SavedAccount(
 					log.trace(ex)
 				}
 			}
+			if(oldVersion < 57 && newVersion >= 57) {
+				try {
+					db.execSQL("alter table $table add column $COL_NOTIFICATION_POST integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
 		}
 		
 		// 横断検索用の、何とも紐ついていないアカウント
@@ -681,6 +698,7 @@ class SavedAccount(
 			dst.notification_mention = false
 			dst.notification_reaction = false
 			dst.notification_vote = false
+			dst.notification_post = false
 			
 			dst
 		}
@@ -1008,6 +1026,8 @@ class SavedAccount(
 		TootNotification.TYPE_VOTE,
 		TootNotification.TYPE_POLL,
 		TootNotification.TYPE_POLL_VOTE_MISSKEY -> notification_vote
+		
+		TootNotification.TYPE_STATUS -> notification_post
 		
 		else -> false
 	}

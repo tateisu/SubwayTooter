@@ -38,6 +38,7 @@ internal class DlgContextMenu(
 ) : View.OnClickListener, View.OnLongClickListener {
 	
 	companion object {
+		
 		private val log = LogCategory("DlgContextMenu")
 	}
 	
@@ -77,6 +78,8 @@ internal class DlgContextMenu(
 		viewRoot.findViewById(R.id.btnAccountExtraAction)
 	private val llAccountExtraAction : View =
 		viewRoot.findViewById(R.id.llAccountExtraAction)
+	
+	private val btnPostNotification : Button = viewRoot.findViewById(R.id.btnPostNotification)
 	
 	init {
 		this.access_info = column.access_info
@@ -226,6 +229,7 @@ internal class DlgContextMenu(
 			btnBoostedBy,
 			btnFavouritedBy,
 			btnDomainTimeline,
+			btnPostNotification,
 			
 			viewRoot.findViewById(R.id.btnQuoteUrlStatus),
 			viewRoot.findViewById(R.id.btnTranslate),
@@ -412,7 +416,7 @@ internal class DlgContextMenu(
 		
 		val whoApiHost = getUserApiHost()
 		val whoApDomain = getUserApDomain()
-
+		
 		viewRoot.findViewById<View>(R.id.llInstance)
 			.vg(whoApiHost.isValid)
 			?.let {
@@ -449,6 +453,15 @@ internal class DlgContextMenu(
 			btnOpenInstanceInAdminWebUi.vg(! access_info.isPseudo)
 			
 			btnReportUser.vg(! (access_info.isPseudo || access_info.isMe(who)))
+			
+			btnPostNotification.vg(! access_info.isPseudo && access_info.isMastodon && relation.following)
+				?.let {
+					it.text = when(relation.notifying) {
+						true -> activity.getString(R.string.stop_notify_posts_from_this_user)
+						else -> activity.getString(R.string.notify_posts_from_this_user)
+					}
+				}
+			
 		}
 		
 		viewRoot.findViewById<View>(R.id.btnAccountText).setOnClickListener(this)
@@ -541,14 +554,14 @@ internal class DlgContextMenu(
 			Host.EMPTY, null -> access_info.apiHost
 			else -> who_host
 		}
-
+	
 	private fun getUserApDomain() : Host =
 		when(val who_host = whoRef?.get()?.apDomain) {
 			Host.UNKNOWN -> Host.parse(column.instance_uri)
 			Host.EMPTY, null -> access_info.apDomain
 			else -> who_host
 		}
-
+	
 	private fun updateGroup(btn : Button, group : View, toggle : Boolean = false) {
 		
 		if(btn.visibility != View.VISIBLE) {
@@ -742,17 +755,27 @@ internal class DlgContextMenu(
 						showToast(activity, false, R.string.domain_block_from_pseudo)
 						return
 					} else {
-						val whoApDomain  = who.apDomain
+						val whoApDomain = who.apDomain
 						// 自分のドメインではブロックできない
 						if(access_info.matchHost(whoApDomain)) {
 							showToast(activity, false, R.string.domain_block_from_local)
 							return
 						}
 						AlertDialog.Builder(activity)
-							.setMessage(activity.getString(R.string.confirm_block_domain, whoApDomain))
+							.setMessage(
+								activity.getString(
+									R.string.confirm_block_domain,
+									whoApDomain
+								)
+							)
 							.setNegativeButton(R.string.cancel, null)
 							.setPositiveButton(R.string.ok) { _, _ ->
-								Action_Instance.blockDomain(activity, access_info, whoApDomain, true)
+								Action_Instance.blockDomain(
+									activity,
+									access_info,
+									whoApDomain,
+									true
+								)
 							}
 							.show()
 					}
@@ -837,8 +860,7 @@ internal class DlgContextMenu(
 					pos,
 					who.apiHost,
 					status,
-					ColumnType.ACCOUNT_AROUND
-					, allowPseudo = false
+					ColumnType.ACCOUNT_AROUND, allowPseudo = false
 				)
 				
 				R.id.btnAroundLTL -> Action_Instance.timelinePublicAround(
@@ -930,6 +952,12 @@ internal class DlgContextMenu(
 						}
 					}
 				}
+				
+				R.id.btnPostNotification ->
+					if(! access_info.isPseudo && access_info.isMastodon && relation.following) {
+						val toggle = ! relation.notifying
+						Action_User.statusNotification(activity, access_info, who.id, toggle)
+					}
 			}
 		}
 		

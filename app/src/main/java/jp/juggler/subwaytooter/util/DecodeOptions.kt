@@ -4,10 +4,7 @@ import android.content.Context
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ReplacementSpan
-import jp.juggler.subwaytooter.api.entity.CustomEmoji
-import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji
-import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
-import jp.juggler.subwaytooter.api.entity.TootMention
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.WordTrieTree
 import java.util.*
@@ -27,7 +24,9 @@ class DecodeOptions(
 	var enlargeEmoji : Float = 1f,
 	var forceHtml : Boolean = false, // force use HTML instead of Misskey Markdown
 	var mentionFullAcct : Boolean = false,
-	var mentions : ArrayList<TootMention>? = null
+	var mentions : ArrayList<TootMention>? = null,
+	// Account.note などmentionsがない状況でメンションリンクをfull acct化するにはアカウント等からapDomainを補う必要がある
+	var mentionDefaultDomain : Host? = null,
 ) {
 	
 	internal fun isMediaAttachment(url : String?) : Boolean {

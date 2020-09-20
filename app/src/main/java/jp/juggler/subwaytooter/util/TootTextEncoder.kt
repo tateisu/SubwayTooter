@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import java.util.*
 
 object TootTextEncoder {
+	
 	private fun StringBuilder.addAfterLine(text : CharSequence) {
 		if(isNotEmpty() && this[length - 1] != '\n') {
 			append('\n')
@@ -268,7 +269,13 @@ object TootTextEncoder {
 		
 		sb.addAfterLine("\n")
 		
-		sb.append(DecodeOptions(context, access_info).decodeHTML(who.note))
+		sb.append(
+			DecodeOptions(
+				context,
+				access_info,
+				mentionDefaultDomain = who.apDomain
+			).decodeHTML(who.note)
+		)
 		
 		sb.addAfterLine("\n")
 		
@@ -294,7 +301,7 @@ object TootTextEncoder {
 		addHeader(context, sb, R.string.send_header_account_created_at, who.created_at)
 		addHeader(context, sb, R.string.send_header_account_statuses_count, who.statuses_count)
 		
-		if(! Pref.bpHideFollowCount( App1.getAppState(context).pref)) {
+		if(! Pref.bpHideFollowCount(App1.getAppState(context).pref)) {
 			addHeader(
 				context,
 				sb,

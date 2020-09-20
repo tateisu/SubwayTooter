@@ -3,8 +3,10 @@ package jp.juggler.subwaytooter.util
 import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.groupEx
+import java.util.ArrayList
 
 interface LinkHelper {
 	
@@ -104,16 +106,21 @@ fun getFullAcctOrNull(
 fun getFullAcctOrNull(
 	linkHelper : LinkHelper?,
 	src : Acct,
-	url : String
+	url : String,
+	mentionDefaultDomain: Host? = null
 ) : Acct? {
 	
 	// 既にFull Acctだった
 	if(src.host != null) return src
 	
-	val apDomain = linkHelper?.apDomain
+	// Account.noteなどメンション情報が含まれない場合、デフォルトのドメインは投稿者のドメインである
+	if(mentionDefaultDomain!=null){
+		return src.followHost( mentionDefaultDomain)
+	}
 	
 	// トゥート検索等でないならアクセス元ホストを補って良いはず
-	if(linkHelper is SavedAccount && ! linkHelper.isNA && apDomain != null) {
+	val apDomain = linkHelper?.apDomain
+	if(apDomain != null && linkHelper is SavedAccount && ! linkHelper.isNA ) {
 		return Acct.parse(src.username, apDomain)
 	}
 	

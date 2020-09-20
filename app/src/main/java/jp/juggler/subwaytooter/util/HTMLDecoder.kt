@@ -607,8 +607,15 @@ object HTMLDecoder {
 				
 				// Account.note does not have mentions metadata.
 				// fallback to resolve acct by mention URL.
-				val rawAcct = mention?.acct ?: Acct.parse(originalCaption.toString().substring(1))
-				val fullAcct = getFullAcctOrNull(options.linkHelper, rawAcct, href)
+				val rawAcct = mention?.acct
+					?: Acct.parse(originalCaption.toString().substring(1))
+
+				val fullAcct = getFullAcctOrNull(
+					options.linkHelper,
+					rawAcct,
+					href,
+					mentionDefaultDomain = options.mentionDefaultDomain
+				)
 				
 				if(fullAcct != null) {
 					

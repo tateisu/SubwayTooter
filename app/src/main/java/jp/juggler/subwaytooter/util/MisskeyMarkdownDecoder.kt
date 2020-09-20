@@ -831,6 +831,7 @@ object MisskeyMarkdownDecoder {
 		) {
 			// ユーザが記述したacct
 			val rawAcct = Acct.parse(username, strHost)
+				.followHost(options.mentionDefaultDomain)
 			
 			val linkHelper = linkHelper
 			if(linkHelper == null) {

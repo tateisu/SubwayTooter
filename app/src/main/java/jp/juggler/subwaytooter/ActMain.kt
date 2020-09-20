@@ -1940,7 +1940,10 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 						client.authentication2Misskey(client_name, token, ti.misskeyVersion)
 					this.ta = TootParser(
 						this@ActMain,
-						LinkHelper.newLinkHelper(instance, misskeyVersion = ti.misskeyVersion)
+						linkHelper = LinkHelper.create(
+							instance,
+							misskeyVersion = ti.misskeyVersion
+						)
 					).account(result?.jsonObject)
 					return result
 					
@@ -2007,7 +2010,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 					val client_name = Pref.spClientName(this@ActMain)
 					val result = client.authentication2(client_name, code)
 					this.ta = TootParser(
-						this@ActMain, LinkHelper.newLinkHelper(instance)
+						this@ActMain,
+						linkHelper = LinkHelper.create(instance)
 					).account(result?.jsonObject)
 					return result
 				}
@@ -2182,14 +2186,18 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				this.ti = instance
 				
 				val misskeyVersion = instance.misskeyVersion
-				val linkHelper = LinkHelper.newLinkHelper(
-					apiHost,
-					apDomainArg = instance.uri?.let { Host.parse(it) },
-					misskeyVersion = misskeyVersion
-				)
+				
 				val result = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
-				this.ta = TootParser(this@ActMain, linkHelper)
-					.account(result?.jsonObject)
+				
+				this.ta = TootParser(
+					this@ActMain,
+					LinkHelper.create(
+						apiHost,
+						apDomainArg = instance.uri?.let { Host.parse(it) },
+						misskeyVersion = misskeyVersion
+					)
+				).account(result?.jsonObject)
+				
 				return result
 			}
 			
@@ -2442,7 +2450,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				// opener.linkInfo をチェックしてメンションを判別する
 				val mention = opener.linkInfo?.mention
 				if(mention != null) {
-					val fullAcct = getFullAcctOrNull(mention.acct,mention.url,accessInfo)
+					val fullAcct = getFullAcctOrNull(mention.acct, mention.url, accessInfo)
 						.validFull()
 					if(fullAcct != null) {
 						if(fullAcct.host != null) {

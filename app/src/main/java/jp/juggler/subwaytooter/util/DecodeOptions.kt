@@ -11,7 +11,7 @@ import java.util.*
 
 class DecodeOptions(
 	val context : Context? = null,
-	var linkHelper : LinkHelper? = null,
+	var linkHelper : LinkHelper? = null ,
 	var short : Boolean = false,
 	var decodeEmoji : Boolean = false,
 	var attachmentList : ArrayList<TootAttachmentLike>? = null,
@@ -26,7 +26,7 @@ class DecodeOptions(
 	var mentionFullAcct : Boolean = false,
 	var mentions : ArrayList<TootMention>? = null,
 	// Account.note などmentionsがない状況でメンションリンクをfull acct化するにはアカウント等からapDomainを補う必要がある
-	var mentionDefaultHostDomain: HostAndDomain,
+	var mentionDefaultHostDomain : HostAndDomain = linkHelper ?: unknownHostAndDomain,
 ) {
 	
 	internal fun isMediaAttachment(url : String?) : Boolean {
@@ -89,8 +89,8 @@ class DecodeOptions(
 	fun decodeEmoji(s : String?) : Spannable =
 		EmojiDecoder.decodeEmoji(this, s ?: "").workaroundForEmojiLineBreak()
 	
-//	fun decodeEmojiNullable(s : String?) = when(s) {
-//		null -> null
-//		else -> EmojiDecoder.decodeEmoji(this, s)
-//	}
+	//	fun decodeEmojiNullable(s : String?) = when(s) {
+	//		null -> null
+	//		else -> EmojiDecoder.decodeEmoji(this, s)
+	//	}
 }

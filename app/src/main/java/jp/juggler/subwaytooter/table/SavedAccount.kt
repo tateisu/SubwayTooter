@@ -104,7 +104,7 @@ class SavedAccount(
 		} else {
 			TootParser(
 				context,
-				LinkHelper.newLinkHelper(
+				LinkHelper.create(
 					apiHostArg = this@SavedAccount.apiHost,
 					apDomainArg =  this@SavedAccount.apDomain,
 					misskeyVersion = misskeyVersion

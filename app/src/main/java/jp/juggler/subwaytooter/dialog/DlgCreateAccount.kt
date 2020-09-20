@@ -13,7 +13,6 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.unknownHostAndDomain
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.neatSpaces
@@ -69,17 +68,15 @@ class DlgCreateAccount(
 		tvDescription.text =
 			DecodeOptions(
 				activity,
-				LinkHelper.newLinkHelper(
-					instance, misskeyVersion = instanceInfo?.misskeyVersion ?: 0
-				),
-				mentionDefaultHostDomain = unknownHostAndDomain
-			)
-				.decodeHTML(
-					instanceInfo?.short_description?.notBlank()
-						?: instanceInfo?.description?.notBlank()
-						?: TootInstance.DESCRIPTION_DEFAULT
+				linkHelper = LinkHelper.create(
+					instance,
+					misskeyVersion = instanceInfo?.misskeyVersion ?: 0
 				)
-				.neatSpaces()
+			).decodeHTML(
+				instanceInfo?.short_description?.notBlank()
+					?: instanceInfo?.description?.notBlank()
+					?: TootInstance.DESCRIPTION_DEFAULT
+			).neatSpaces()
 		
 		val showReason = instanceInfo?.approval_required ?: false
 		tvReasonCaption.vg(showReason)

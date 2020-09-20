@@ -168,11 +168,13 @@ object Action_Account {
 					val ti = r1?.jsonObject ?: return r1
 					
 					val misskeyVersion = TootInstance.parseMisskeyVersion(ti)
-					val linkHelper =
-						LinkHelper.newLinkHelper(instance, misskeyVersion = misskeyVersion)
-					val parser =TootParser(activity, linkHelper)
-
-					this.ti = TootInstance(parser,ti)
+					
+					val parser = TootParser(
+						activity,
+						linkHelper = LinkHelper.create(instance, misskeyVersion = misskeyVersion)
+					)
+					
+					this.ti = TootInstance(parser, ti)
 					
 					val access_token = ti.string("access_token")
 						?: return TootApiResult("can't get user access token")
@@ -189,7 +191,7 @@ object Action_Account {
 						put("url", "https://$instance/@$username")
 					}
 					
-					this.ta = TootParser(activity, linkHelper).account(jsonObject)
+					this.ta = parser.account(jsonObject)
 					r1.data = jsonObject
 					r1.tokenInfo = ti
 					return r1
@@ -197,7 +199,7 @@ object Action_Account {
 				
 				override fun handleResult(result : TootApiResult?) {
 					val sa : SavedAccount? = null
-					if(activity.afterAccountVerify(result, ta, sa, ti,instance)) {
+					if(activity.afterAccountVerify(result, ta, sa, ti, instance)) {
 						dialog_host.dismissSafe()
 						dialog_create.dismissSafe()
 					}
@@ -244,7 +246,6 @@ object Action_Account {
 				
 				ColumnType.PROFILE_DIRECTORY ->
 					activity.addColumn(pos, ai, type, ai.apiHost)
-				
 				
 				else -> activity.addColumn(pos, ai, type, *args)
 			}

@@ -1019,12 +1019,12 @@ class PostHelper(
 		} else if(! bInstanceHasCustomEmoji) {
 			// 古いタンスだとshortcodeを使う。見た目は絵文字に変える。
 			if(! EmojiDecoder.canStartShortCode(this, this.length)) append(separator)
-			this.append(DecodeOptions(activity,mentionDefaultHostDomain = unknownHostAndDomain).decodeEmoji(":$name:"))
+			this.append(DecodeOptions(activity).decodeEmoji(":$name:"))
 			// セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
 			if(separator != ' ') append(separator)
 		} else {
 			// 十分に新しいタンスなら絵文字のunicodeを使う。見た目は絵文字に変える。
-			this.append(DecodeOptions(activity,mentionDefaultHostDomain = unknownHostAndDomain).decodeEmoji(item.unified))
+			this.append(DecodeOptions(activity).decodeEmoji(item.unified))
 		}
 		return this
 		

@@ -3090,8 +3090,7 @@ class ActPost : AsyncActivity(),
 				
 				val evEmoji = DecodeOptions(
 					this@ActPost,
-					decodeEmoji = true,
-					mentionDefaultHostDomain = unknownHostAndDomain
+					decodeEmoji = true
 				).decodeEmoji(content)
 				etContent.setText(evEmoji)
 				etContent.setSelection(evEmoji.length)
@@ -3273,9 +3272,9 @@ class ActPost : AsyncActivity(),
 			
 			val sv = DecodeOptions(
 				this@ActPost,
-				LinkHelper.nullHost,
-				mentionDefaultHostDomain = unknownHostAndDomain
+				linkHelper = LinkHelper.unknown,
 			).decodeHTML(text)
+			
 			tvText.text = sv
 			tvText.movementMethod = LinkMovementMethod.getInstance()
 			

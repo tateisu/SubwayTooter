@@ -34,9 +34,13 @@ interface LinkHelper : HostAndDomain {
 		else -> src.followHost(apDomain.valid() ?: apiHost.valid() ?: Host.UNKNOWN)
 	}
 	
-	companion object {
+	companion object{
+		val unknown = object : LinkHelper {
+			override val apiHost : Host = Host.UNKNOWN
+			override val apDomain : Host = Host.UNKNOWN
+		}
 		
-		fun newLinkHelper(apiHostArg : Host, apDomainArg : Host? = null, misskeyVersion : Int = 0) =
+		fun create(apiHostArg : Host, apDomainArg : Host? = null, misskeyVersion : Int = 0) =
 			object : LinkHelper {
 				
 				override val apiHost : Host = apiHostArg
@@ -48,13 +52,11 @@ interface LinkHelper : HostAndDomain {
 				override val misskeyVersion : Int
 					get() = misskeyVersion
 			}
-		
-		val nullHost = object : LinkHelper {
-			override val apiHost : Host = Host.parse("")
-			override val apDomain : Host = Host.parse("")
-		}
 	}
 }
+
+
+
 
 fun LinkHelper.matchHost(src : String?) = apiHost.match(src) || apDomain.match(src)
 fun LinkHelper.matchHost(src : Host?) = apiHost == src || apDomain == src

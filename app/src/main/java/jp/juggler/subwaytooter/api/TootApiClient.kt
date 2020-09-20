@@ -123,9 +123,7 @@ class TootApiClient(
 			// HTMLならタグの除去を試みる
 			val ct = response.body?.contentType()
 			if(ct?.subtype == "html") {
-				val decoded =
-					DecodeOptions(mentionDefaultHostDomain = unknownHostAndDomain).decodeHTML(sv)
-						.toString()
+				val decoded = DecodeOptions().decodeHTML(sv).toString()
 				return reWhiteSpace.matcher(decoded).replaceAll(" ").trim()
 			}
 			
@@ -475,9 +473,7 @@ class TootApiClient(
 				// HTMLならタグを除去する
 				val ct = response.body?.contentType()
 				if(ct?.subtype == "html") {
-					val decoded = DecodeOptions(
-						mentionDefaultHostDomain = unknownHostAndDomain
-					).decodeHTML(bodyString).toString()
+					val decoded = DecodeOptions().decodeHTML(bodyString).toString()
 						.replace("""[\s　]+""".toRegex(), " ")
 					bodyString = decoded
 				}
@@ -1524,7 +1520,7 @@ fun TootApiClient.syncStatus(
 			?.also { result ->
 				TootParser(
 					context,
-					LinkHelper.newLinkHelper(host, misskeyVersion = 10),
+					linkHelper = LinkHelper.create(host, misskeyVersion = 10),
 					serviceType = ServiceType.MISSKEY
 				)
 					.status(result.jsonObject)

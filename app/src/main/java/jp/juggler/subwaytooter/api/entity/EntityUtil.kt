@@ -29,7 +29,7 @@ inline fun <reified T> parseItem(
 	}
 }
 
-inline fun <reified T> parseList(
+inline fun <reified T > parseList(
 	factory : (src : JsonObject) -> T,
 	src : JsonArray?,
 	log : LogCategory = EntityUtil.log

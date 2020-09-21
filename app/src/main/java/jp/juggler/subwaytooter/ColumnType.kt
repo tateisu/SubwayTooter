@@ -192,7 +192,7 @@ enum class ColumnType(
 				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
 				emptyMessage = context.getString(R.string.none_or_hidden_following),
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyArrayFinder = misskeyArrayFinderUsers
+				arrayFinder = misskeyArrayFinderUsers
 			)
 		},
 		refresh = { client ->
@@ -224,7 +224,7 @@ enum class ColumnType(
 				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
 				emptyMessage = context.getString(R.string.none_or_hidden_following),
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyCustomParser = misskey11FollowingParser
+				listParser = misskey11FollowingParser
 			)
 		},
 		refresh = { client ->
@@ -256,7 +256,7 @@ enum class ColumnType(
 				Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
 				emptyMessage = context.getString(R.string.none_or_hidden_followers),
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyCustomParser = misskey11FollowersParser
+				listParser = misskey11FollowersParser
 			)
 		},
 		
@@ -289,7 +289,7 @@ enum class ColumnType(
 				Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
 				emptyMessage = context.getString(R.string.none_or_hidden_followers),
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyArrayFinder = misskeyArrayFinderUsers
+				arrayFinder = misskeyArrayFinderUsers
 			)
 		},
 		
@@ -495,7 +495,7 @@ enum class ColumnType(
 			)
 		},
 		
-		loading = { client -> getPublicAroundStatuses(client, column.makePublicLocalUrl()) },
+		loading = { client -> getPublicTlAroundTime(client, column.makePublicLocalUrl()) },
 		refresh = { client -> getStatusList(client, column.makePublicLocalUrl(), useMinId = true) }
 	),
 	
@@ -509,7 +509,7 @@ enum class ColumnType(
 			)
 		},
 		
-		loading = { client -> getPublicAroundStatuses(client, column.makePublicFederateUrl()) },
+		loading = { client -> getPublicTlAroundTime(client, column.makePublicFederateUrl()) },
 		refresh = { client ->
 			getStatusList(client, column.makePublicFederateUrl(), useMinId = true)
 		}
@@ -563,7 +563,7 @@ enum class ColumnType(
 					client,
 					Column.PATH_MISSKEY_FAVORITES,
 					misskeyParams = column.makeMisskeyTimelineParameter(parser),
-					arrayParser = misskeyCustomParserFavorites
+					listParser = misskeyCustomParserFavorites
 				)
 			} else {
 				getStatusList(client, Column.PATH_FAVOURITES)
@@ -816,7 +816,7 @@ enum class ColumnType(
 						client,
 						Column.PATH_MISSKEY_MUTES,
 						misskeyParams = access_info.putMisskeyApiToken(),
-						misskeyCustomParser = misskeyCustomParserMutes
+						listParser = misskeyCustomParserMutes
 					)
 					
 				}
@@ -872,7 +872,7 @@ enum class ColumnType(
 						client,
 						Column.PATH_MISSKEY_BLOCKS,
 						misskeyParams = access_info.putMisskeyApiToken(),
-						misskeyCustomParser = misskeyCustomParserBlocks
+						listParser = misskeyCustomParserBlocks
 					)
 				}
 				
@@ -926,7 +926,7 @@ enum class ColumnType(
 					client,
 					Column.PATH_MISSKEY_FOLLOW_REQUESTS,
 					misskeyParams = access_info.putMisskeyApiToken(),
-					misskeyCustomParser = misskeyCustomParserFollowRequest
+					listParser = misskeyCustomParserFollowRequest
 				)
 			} else {
 				getAccountList(client, Column.PATH_FOLLOW_REQUESTS)
@@ -1024,7 +1024,7 @@ enum class ColumnType(
 		bAllowPseudo = false,
 		bAllowMisskey = false,
 		
-		loading = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) },
+		loading = { client -> getDomainBlockList(client, Column.PATH_DOMAIN_BLOCK) },
 		refresh = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) }
 	),
 	
@@ -1161,13 +1161,13 @@ enum class ColumnType(
 		
 		loading = { client ->
 			if(isMisskey) {
-				parseListList(
+				getListList(
 					client,
 					"/api/users/lists/list",
 					misskeyParams = column.makeMisskeyBaseParameter(parser)
 				)
 			} else {
-				parseListList(client, Column.PATH_LIST_LIST)
+				getListList(client, Column.PATH_LIST_LIST)
 			}
 		}
 	),
@@ -1276,8 +1276,26 @@ enum class ColumnType(
 		name1 = { it.getString(R.string.direct_messages) },
 		
 		loading = { client ->
-			getDirectMessages(client)
-			
+			column.useConversationSummarys = false
+			if( column.use_old_api) {
+				getStatusList(client, Column.PATH_DIRECT_MESSAGES)
+			}else{
+				// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
+				val result = getConversationSummary(client, Column.PATH_DIRECT_MESSAGES2)
+				when {
+					// cancelled
+					result == null -> null
+					
+					//  not error
+					result.error.isNullOrBlank() -> {
+						column.useConversationSummarys = true
+						result
+					}
+					
+					// fallback to old api
+					else-> getStatusList(client, Column.PATH_DIRECT_MESSAGES)
+				}
+			}
 		},
 		
 		refresh = { client ->
@@ -1423,7 +1441,7 @@ enum class ColumnType(
 			context.getString(R.string.account_tl_around_of, id)
 		},
 		
-		loading = { client -> getAccountAroundStatuses(client) },
+		loading = { client -> getAccountTlAroundTime(client) },
 		
 		refresh = { client ->
 			getStatusList(client, column.makeProfileStatusesUrl(column.profile_id), useMinId = true)
@@ -1455,7 +1473,7 @@ enum class ColumnType(
 		bAllowMisskey = false,
 		headerType = HeaderType.Filter,
 		
-		loading = { client -> parseFilterList(client, Column.PATH_FILTERS) }
+		loading = { client -> getFilterList(client, Column.PATH_FILTERS) }
 	),
 	
 	SCHEDULED_STATUS(33,
@@ -1490,7 +1508,7 @@ enum class ColumnType(
 		
 		loading = { client ->
 			if(isMisskey) {
-				parseAntennaList(
+				getAntennaList(
 					client,
 					"/api/antennas/list",
 					misskeyParams = column.makeMisskeyBaseParameter(parser)

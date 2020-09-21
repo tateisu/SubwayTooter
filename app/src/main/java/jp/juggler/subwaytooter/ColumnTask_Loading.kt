@@ -13,6 +13,7 @@ class ColumnTask_Loading(
 ) : ColumnTask(columnArg, ColumnTaskType.LOADING) {
 	
 	companion object {
+		
 		internal val log = LogCategory("CT_Loading")
 	}
 	
@@ -117,7 +118,446 @@ class ColumnTask_Loading(
 	}
 	
 	/////////////////////////////////////////////////////////////////
-	// functions that called from ColumnTask.loading lambda.
+	
+	private fun addEmptyMessage(emptyMessage : String? = null) {
+		if(emptyMessage != null && list_tmp?.isEmpty() == true) {
+			// フォロー/フォロワー一覧には警告の表示が必要だった
+			val who = column.who_account?.get()
+			if(! access_info.isMe(who)) {
+				if(who != null && access_info.isRemoteUser(who)) {
+					list_tmp?.add(
+						TootMessageHolder(
+							context.getString(R.string.follow_follower_list_may_restrict)
+						)
+					)
+				}
+				list_tmp?.add(TootMessageHolder(emptyMessage))
+			}
+		}
+	}
+	
+	private fun <T : TimelineItem> loadMisskeyMaxId(
+		logCaption : String,
+		requester : (EntityId?, EntityId?) -> TootApiResult?,
+		arrayFinder : (JsonObject) -> JsonArray?,
+		emptyMessage : String? = null,
+		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<T>,
+		adder : (List<T>, Boolean) -> Unit,
+		initialMaxId : EntityId? = null
+	) : TootApiResult? {
+		val time_start = SystemClock.elapsedRealtime()
+		
+		val addToHead = false
+		
+		// 初回の取得
+		var result = requester(initialMaxId, null)
+		val firstResult = result
+		
+		var jsonObject = result?.jsonObject
+		if(jsonObject != null) {
+			if(column.pagingType == ColumnPagingType.Cursor) {
+				column.idOld = EntityId.mayNull(jsonObject.string("next"))
+			}
+			result?.data = arrayFinder(jsonObject)
+		}
+		
+		var array = result?.jsonArray
+		
+		if(array != null) {
+			var src = listParser(parser, array)
+			
+			if(list_tmp == null) list_tmp = ArrayList(src.size)
+			adder(src, addToHead)
+			
+			addEmptyMessage(emptyMessage)
+			
+			
+			when(column.pagingType) {
+				ColumnPagingType.Default -> {
+					column.saveRange(bBottom = true, bTop = true, result = result, list = src)
+				}
+				
+				ColumnPagingType.Offset -> {
+					column.offsetNext += src.size
+				}
+				
+				else -> {
+				}
+			}
+			
+			while(true) {
+				if(isCancelled) {
+					log.d("$logCaption: cancelled.")
+					break
+				}
+				
+				if(! column.isFilterEnabled) {
+					log.d("$logCaption: isFiltered is false.")
+					break
+				}
+				
+				if(column.idOld == null) {
+					log.d("$logCaption: idOld is empty.")
+					break
+				}
+				
+				if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
+					log.d("$logCaption: read enough data.")
+					break
+				}
+				
+				if(src.isEmpty()) {
+					log.d("$logCaption: previous response is empty.")
+					break
+				}
+				
+				if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
+					log.d("$logCaption: timeout.")
+					break
+				}
+				
+				// フィルタなどが有効な場合は2回目以降の取得
+				result = requester(column.idOld, null)
+				
+				jsonObject = result?.jsonObject
+				if(jsonObject != null) {
+					if(column.pagingType == ColumnPagingType.Cursor) {
+						column.idOld = EntityId.mayNull(jsonObject.string("next"))
+					}
+					result?.data = arrayFinder(jsonObject)
+				}
+				array = result?.jsonArray
+				
+				if(array == null) {
+					log.d("$logCaption: error or cancelled.")
+					break
+				}
+				
+				src = listParser(parser, array)
+				adder(src, addToHead)
+				
+				if(! column.saveRangeBottom(result, src)) {
+					log.d("$logCaption: saveRangeBottom returns false, no more items.")
+					break
+				}
+			}
+			
+		}
+		return firstResult
+	}
+	
+	private fun <T : TimelineItem> loadMisskeyMinId(
+		logCaption : String,
+		requester : (EntityId?, EntityId?) -> TootApiResult?,
+		arrayFinder : (JsonObject) -> JsonArray?,
+		emptyMessage : String? = null,
+		
+		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<T>,
+		adder : (List<T>, Boolean) -> Unit,
+		initialMinId : EntityId? = null
+	) : TootApiResult? {
+		
+		val addToHead = true
+		val time_start = SystemClock.elapsedRealtime()
+		
+		// 初回の取得
+		var result = requester(null, initialMinId)
+		val firstResult = result
+		
+		var jsonObject = result?.jsonObject
+		if(jsonObject != null) result?.data = arrayFinder(jsonObject)
+		
+		var array = result?.jsonArray
+		if(array != null) {
+			
+			var src = listParser(parser, array)
+			
+			if(list_tmp == null) list_tmp = ArrayList(src.size)
+			adder(src, addToHead)
+			
+			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
+			
+			if(emptyMessage != null && list_tmp?.isEmpty() == true) {
+				// フォロー/フォロワー一覧には警告の表示が必要だった
+				val who = column.who_account?.get()
+				if(! access_info.isMe(who)) {
+					if(who != null && access_info.isRemoteUser(who)) {
+						list_tmp?.add(
+							TootMessageHolder(
+								context.getString(R.string.follow_follower_list_may_restrict)
+							)
+						)
+					}
+					list_tmp?.add(TootMessageHolder(emptyMessage))
+				}
+			}
+			
+			while(true) {
+				if(isCancelled) {
+					log.d("$logCaption: cancelled.")
+					break
+				}
+				
+				if(! column.isFilterEnabled) {
+					log.d("$logCaption: isFiltered is false.")
+					break
+				}
+				
+				if(column.idRecent == null) {
+					log.d("$logCaption: idRecent is empty.")
+					break
+				}
+				
+				if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
+					log.d("$logCaption: read enough data.")
+					break
+				}
+				
+				if(src.isEmpty()) {
+					log.d("$logCaption: previous response is empty.")
+					break
+				}
+				
+				if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
+					log.d("$logCaption: timeout.")
+					break
+				}
+				
+				// フィルタなどが有効な場合は2回目以降の取得
+				result = requester(null, column.idRecent)
+				
+				jsonObject = result?.jsonObject
+				if(jsonObject != null) result?.data = arrayFinder(jsonObject)
+				
+				array = result?.jsonArray
+				
+				if(array == null) {
+					log.d("$logCaption: error or cancelled.")
+					break
+				}
+				
+				src = listParser(parser, array)
+				adder(src, addToHead)
+				
+				if(! column.saveRangeTop(result, src)) {
+					log.d("$logCaption: saveRangeTop returns false, no more items.")
+					break
+				}
+			}
+			list_tmp?.sortByDescending { it.getOrderId() }
+		}
+		return firstResult
+	}
+	
+	private fun <T : TimelineItem> loadMastodonMaxId(
+		logCaption : String,
+		requester : (maxId : EntityId?, minId : EntityId?) -> TootApiResult?,
+		arrayFinder : (JsonObject) -> JsonArray?,
+		emptyMessage : String? = null,
+		
+		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<T>,
+		adder : (List<T>, Boolean) -> Unit,
+		initialMaxId : EntityId? = null
+	) : TootApiResult? {
+		val time_start = SystemClock.elapsedRealtime()
+		
+		val addToHead = false
+		// 初回の取得
+		var result = requester(initialMaxId, null)
+		val firstResult = result
+		
+		var jsonObject = result?.jsonObject
+		if(jsonObject != null) {
+			if(column.pagingType == ColumnPagingType.Cursor) {
+				column.idOld = EntityId.mayNull(jsonObject.string("next"))
+			}
+			result?.data = arrayFinder(jsonObject)
+		}
+		
+		var array = result?.jsonArray
+		if(array != null) {
+			
+			var src = listParser(parser, array)
+			
+			if(list_tmp == null) list_tmp = ArrayList(src.size)
+			adder(src, addToHead)
+			
+			addEmptyMessage(emptyMessage)
+			
+			when(column.pagingType) {
+				ColumnPagingType.Default -> {
+					column.saveRange(bBottom = true, bTop = true, result = result, list = src)
+				}
+				
+				ColumnPagingType.Offset -> {
+					column.offsetNext += src.size
+				}
+				
+				else -> {
+				}
+			}
+			
+			// フィルタなどが有効な場合は2回目以降の取得
+			while(true) {
+				if(isCancelled) {
+					log.d("$logCaption: cancelled.")
+					break
+				}
+				
+				if(! column.isFilterEnabled) {
+					// フィルタしない場合は繰り返さない
+					log.d("$logCaption: isFiltered is false.")
+					break
+				}
+				
+				if(column.idOld == null) {
+					log.d("$logCaption: idOld is empty.")
+					break
+				}
+				
+				if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
+					log.d("$logCaption: read enough data.")
+					break
+				}
+				
+				if(src.isEmpty()) {
+					log.d("$logCaption: previous response is empty.")
+					break
+				}
+				
+				if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
+					log.d("$logCaption: timeout.")
+					break
+				}
+				
+				result = requester(column.idOld, null)
+				jsonObject = result?.jsonObject
+				if(jsonObject != null) {
+					if(column.pagingType == ColumnPagingType.Cursor) {
+						column.idOld = EntityId.mayNull(jsonObject.string("next"))
+					}
+					result?.data = arrayFinder(jsonObject)
+				}
+				
+				array = result?.jsonArray
+				if(array == null) {
+					log.d("$logCaption: error or cancelled.")
+					break
+				}
+				
+				src = listParser(parser, array)
+				adder(src, addToHead)
+				
+				if(! column.saveRangeBottom(result, src)) {
+					log.d("$logCaption: saveRangeBottom returns false, no more items")
+					break
+				}
+			}
+		}
+		return firstResult
+	}
+	
+	private fun <T : TimelineItem> loadMastodonMinId(
+		logCaption : String,
+		requester : (maxId : EntityId?, minId : EntityId?) -> TootApiResult?,
+		arrayFinder : (JsonObject) -> JsonArray?,
+		emptyMessage : String? = null,
+		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<T>,
+		adder : (List<T>, Boolean) -> Unit,
+		initialMinId : EntityId? = null
+	) : TootApiResult? {
+		val time_start = SystemClock.elapsedRealtime()
+		
+		val addToHead = true
+		// 初回の取得
+		var result = requester(null, initialMinId)
+		val firstResult = result
+		
+		var jsonObject = result?.jsonObject
+		if(jsonObject != null) result?.data = arrayFinder(jsonObject)
+		
+		var array = result?.jsonArray
+		if(array != null) {
+			
+			var src = listParser(parser, array)
+			
+			if(list_tmp == null) list_tmp = ArrayList(src.size)
+			adder(src, addToHead)
+			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
+			
+			if(emptyMessage != null && list_tmp?.isEmpty() == true) {
+				// フォロー/フォロワー一覧には警告の表示が必要だった
+				val who = column.who_account?.get()
+				if(! access_info.isMe(who)) {
+					if(who != null && access_info.isRemoteUser(who)) {
+						list_tmp?.add(
+							TootMessageHolder(
+								context.getString(R.string.follow_follower_list_may_restrict)
+							)
+						)
+					}
+					list_tmp?.add(TootMessageHolder(emptyMessage))
+				}
+			}
+			
+			while(true) {
+				if(isCancelled) {
+					log.d("$logCaption: cancelled.")
+					break
+				}
+				
+				if(! column.isFilterEnabled) {
+					log.d("$logCaption: isFiltered is false.")
+					break
+				}
+				
+				if(column.idRecent == null) {
+					log.d("$logCaption: idRecent is empty.")
+					break
+				}
+				
+				if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
+					log.d("$logCaption: read enough data.")
+					break
+				}
+				
+				if(src.isEmpty()) {
+					log.d("$logCaption: previous response is empty.")
+					break
+				}
+				
+				if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
+					log.d("$logCaption: timeout.")
+					break
+				}
+				
+				// フィルタなどが有効な場合は2回目以降の取得
+				result = requester(null, column.idRecent)
+				
+				
+				jsonObject = result?.jsonObject
+				if(jsonObject != null) result?.data = arrayFinder(jsonObject)
+				
+				array = result?.jsonArray
+				if(array == null) {
+					log.d("$logCaption: error or cancelled.")
+					break
+				}
+				
+				src = listParser(parser, array)
+				adder(src, addToHead)
+				
+				if(! column.saveRangeTop(result, src)) {
+					log.d("$logCaption: saveRangeTop returns false, no more items.")
+					break
+				}
+			}
+		}
+		return firstResult
+	}
+	
+	/////////////////////////////////////////////////////////////////
+	// functions that called from ColumnType.loading lambda.
 	
 	internal fun getStatusesPinned(client : TootApiClient, path_base : String) {
 		val result = client.request(path_base)
@@ -141,332 +581,176 @@ class ColumnTask_Loading(
 	internal fun getStatusList(
 		client : TootApiClient,
 		path_base : String?,
-		aroundMin : Boolean = false,
-		aroundMax : Boolean = false,
-		
+		initialMinId : EntityId? = null,
+		initialMaxId : EntityId? = null,
 		misskeyParams : JsonObject? = null,
-		arrayParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootStatus> =
+		arrayFinder : (JsonObject) -> JsonArray? =
+			nullArrayFinder,
+		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootStatus> =
 			defaultStatusListParser
 	) : TootApiResult? {
 		
 		path_base ?: return null // cancelled.
 		
-		val params = misskeyParams ?: column.makeMisskeyTimelineParameter(parser)
+		val logCaption = "getStatusList"
 		
-		val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
-		
-		val time_start = SystemClock.elapsedRealtime()
-		
-		// 初回の取得
-		val result = when {
-			isMisskey -> client.request(path_base, params.toPostRequestBuilder())
-			aroundMin -> client.request("$path_base&min_id=${column.status_id}")
-			aroundMax -> client.request("$path_base&max_id=${column.status_id}")
-			else -> client.request(path_base)
+		val adder : (List<TootStatus>, Boolean) -> Unit = { src, head ->
+			this.list_tmp = addWithFilterStatus(list_tmp, src, head = head)
 		}
 		
-		var jsonArray = result?.jsonArray
-		if(jsonArray != null) {
-			
-			var src = arrayParser(parser, jsonArray)
-			
-			if(list_tmp == null) {
-				list_tmp = ArrayList(src.size)
+		return if(isMisskey) {
+			val params = misskeyParams ?: column.makeMisskeyTimelineParameter(parser)
+			val requester : (EntityId?, EntityId?) -> TootApiResult? = { maxId, minId ->
+				client.request(
+					path_base,
+					params.apply {
+						when {
+							maxId != null -> putMisskeyUntil(maxId)
+							minId != null -> putMisskeySince(minId)
+						}
+					}.toPostRequestBuilder()
+				)
 			}
-			this.list_tmp = addWithFilterStatus(list_tmp, src)
 			
-			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
-			
-			if(aroundMin) {
-				while(true) {
-					if(client.isApiCancelled) {
-						log.d("loading-statuses: cancelled.")
-						break
-					}
-					
-					if(! column.isFilterEnabled) {
-						log.d("loading-statuses: isFiltered is false.")
-						break
-					}
-					
-					if(column.idRecent == null) {
-						log.d("loading-statuses: idRecent is empty.")
-						break
-					}
-					
-					if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
-						log.d("loading-statuses: read enough data.")
-						break
-					}
-					
-					if(src.isEmpty()) {
-						log.d("loading-statuses: previous response is empty.")
-						break
-					}
-					
-					if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
-						log.d("loading-statuses: timeout.")
-						break
-					}
-					
-					// フィルタなどが有効な場合は2回目以降の取得
-					val result2 = if(isMisskey) {
-						client.request(
-							path_base,
-							params
-								.putMisskeyUntil(column.idOld)
-								.toPostRequestBuilder()
-						)
-					} else {
-						client.request("$path_base${delimiter}min_id=${column.idRecent}")
-					}
-					
-					jsonArray = result2?.jsonArray
-					
-					if(jsonArray == null) {
-						log.d("loading-statuses: error or cancelled.")
-						break
-					}
-					
-					src = arrayParser(parser, jsonArray)
-					
-					addWithFilterStatus(list_tmp, src)
-					
-					if(! column.saveRangeTop(result = result2, list = src)) {
-						log.d("loading-statuses: missing range info.")
-						break
-					}
+			when {
+				initialMinId != null -> loadMisskeyMinId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMinId = initialMinId
+				)
+				else -> loadMisskeyMaxId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMaxId = initialMaxId
+				)
+			}
+		} else {
+			val delimiter = if(- 1 == path_base.indexOf('?')) '?' else '&'
+			val requester : (maxId : EntityId?, minId : EntityId?) -> TootApiResult? =
+				{ maxId, minId ->
+					client.request(
+						when {
+							maxId != null -> "$path_base${delimiter}max_id=$maxId"
+							minId != null -> "$path_base${delimiter}min_id=$minId"
+							else -> path_base
+						}
+					)
 				}
-				
-			} else {
-				while(true) {
-					
-					if(client.isApiCancelled) {
-						log.d("loading-statuses: cancelled.")
-						break
-					}
-					
-					if(! column.isFilterEnabled) {
-						log.d("loading-statuses: isFiltered is false.")
-						break
-					}
-					
-					if(column.idOld == null) {
-						log.d("loading-statuses: idOld is empty.")
-						break
-					}
-					
-					if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
-						log.d("loading-statuses: read enough data.")
-						break
-					}
-					
-					if(src.isEmpty()) {
-						log.d("loading-statuses: previous response is empty.")
-						break
-					}
-					
-					if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
-						log.d("loading-statuses: timeout.")
-						break
-					}
-					
-					// フィルタなどが有効な場合は2回目以降の取得
-					val result2 = if(isMisskey) {
-						client.request(
-							path_base,
-							params
-								.putMisskeyUntil(column.idOld)
-								.toPostRequestBuilder()
-						)
-					} else {
-						client.request("$path_base${delimiter}max_id=${column.idOld}")
-					}
-					
-					jsonArray = result2?.jsonArray
-					
-					if(jsonArray == null) {
-						log.d("loading-statuses: error or cancelled.")
-						break
-					}
-					
-					src = arrayParser(parser, jsonArray)
-					
-					addWithFilterStatus(list_tmp, src)
-					
-					if(! column.saveRangeBottom(result = result2, list = src)) {
-						log.d("loading-statuses: missing range info.")
-						break
-					}
-				}
+			when {
+				initialMinId != null -> loadMastodonMinId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMinId = initialMinId
+				)
+				else -> loadMastodonMaxId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMaxId = initialMaxId
+				)
 			}
 		}
-		return result
 	}
 	
-	private fun getConversationSummary(
+	internal fun getNotificationList(
 		client : TootApiClient,
-		path_base : String,
-		aroundMin : Boolean = false,
-		aroundMax : Boolean = false,
-		misskeyParams : JsonObject? = null,
-		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootConversationSummary> =
-			{ parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
+		fromAcct : String? = null,
+		initialMinId : EntityId? = null,
+		initialMaxId : EntityId? = null,
 	) : TootApiResult? {
 		
-		val params = misskeyParams ?: column.makeMisskeyTimelineParameter(parser)
+		val logCaption = "getNotificationList"
 		
-		val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
+		val path_base = column.makeNotificationUrl(client, fromAcct)
 		
-		val time_start = SystemClock.elapsedRealtime()
+		val arrayFinder = nullArrayFinder
 		
-		// 初回の取得
-		val result = when {
-			isMisskey -> client.request(path_base, params.toPostRequestBuilder())
-			aroundMin -> client.request("$path_base&min_id=${column.status_id}")
-			aroundMax -> client.request("$path_base&max_id=${column.status_id}")
+		val listParser : (TootParser, JsonArray) -> List<TootNotification> =
+			defaultNotificationListParser
+		
+		val adder : (List<TootNotification>, Boolean) -> Unit =
+			{ src, head -> addWithFilterNotification(list_tmp, src, head = head) }
+		
+		return if(isMisskey) {
+			val params = column
+				.makeMisskeyBaseParameter(parser)
+				.addMisskeyNotificationFilter()
 			
-			else -> client.request(path_base)
-		}
-		
-		var jsonArray = result?.jsonArray
-		if(jsonArray != null) {
-			
-			var src = misskeyCustomParser(parser, jsonArray)
-			
-			if(list_tmp == null) {
-				list_tmp = ArrayList(src.size)
+			val requester : (EntityId?, EntityId?) -> TootApiResult? = { maxId, minId ->
+				client.request(
+					path_base,
+					params.apply {
+						when {
+							maxId != null -> putMisskeyUntil(maxId)
+							minId != null -> putMisskeySince(minId)
+						}
+					}.toPostRequestBuilder()
+				)
 			}
-			this.list_tmp = addWithFilterConversationSummary(list_tmp, src)
 			
-			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
-			
-			if(aroundMin) {
-				while(true) {
-					if(client.isApiCancelled) {
-						log.d("loading-ConversationSummary: cancelled.")
-						break
+			when {
+				initialMinId != null -> loadMisskeyMinId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMinId = initialMinId
+				)
+				else -> loadMisskeyMaxId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMaxId = initialMaxId
+				)
+			}
+		} else {
+			val delimiter = if(- 1 == path_base.indexOf('?')) '?' else '&'
+			val requester : (EntityId?, EntityId?) -> TootApiResult? = { maxId, minId ->
+				client.request(
+					when {
+						maxId != null -> "$path_base${delimiter}max_id=$maxId"
+						minId != null -> "$path_base${delimiter}min_id=$minId"
+						else -> path_base
 					}
-					
-					if(! column.isFilterEnabled) {
-						log.d("loading-ConversationSummary: isFiltered is false.")
-						break
-					}
-					
-					if(column.idRecent == null) {
-						log.d("loading-ConversationSummary: idRecent is empty.")
-						break
-					}
-					
-					if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
-						log.d("loading-ConversationSummary: read enough data.")
-						break
-					}
-					
-					if(src.isEmpty()) {
-						log.d("loading-ConversationSummary: previous response is empty.")
-						break
-					}
-					
-					if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
-						log.d("loading-ConversationSummary: timeout.")
-						break
-					}
-					
-					// フィルタなどが有効な場合は2回目以降の取得
-					val result2 = if(isMisskey) {
-						client.request(
-							path_base,
-							params
-								.putMisskeyUntil(column.idOld)
-								.toPostRequestBuilder()
-						)
-					} else {
-						client.request("$path_base${delimiter}min_id=${column.idRecent}")
-					}
-					
-					jsonArray = result2?.jsonArray
-					
-					if(jsonArray == null) {
-						log.d("loading-ConversationSummary: error or cancelled.")
-						break
-					}
-					
-					src = misskeyCustomParser(parser, jsonArray)
-					
-					addWithFilterConversationSummary(list_tmp, src)
-					
-					if(! column.saveRangeTop(result = result2, list = src)) {
-						log.d("loading-ConversationSummary: missing range info.")
-						break
-					}
-				}
-				
-			} else {
-				while(true) {
-					
-					if(client.isApiCancelled) {
-						log.d("loading-ConversationSummary: cancelled.")
-						break
-					}
-					
-					if(! column.isFilterEnabled) {
-						log.d("loading-ConversationSummary: isFiltered is false.")
-						break
-					}
-					
-					if(column.idOld == null) {
-						log.d("loading-ConversationSummary: idOld is empty.")
-						break
-					}
-					
-					if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
-						log.d("loading-ConversationSummary: read enough data.")
-						break
-					}
-					
-					if(src.isEmpty()) {
-						log.d("loading-ConversationSummary: previous response is empty.")
-						break
-					}
-					
-					if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
-						log.d("loading-ConversationSummary: timeout.")
-						break
-					}
-					
-					// フィルタなどが有効な場合は2回目以降の取得
-					val result2 = if(isMisskey) {
-						client.request(
-							path_base,
-							params
-								.putMisskeyUntil(column.idOld)
-								.toPostRequestBuilder()
-						)
-					} else {
-						val path = "$path_base${delimiter}max_id=${column.idOld}"
-						client.request(path)
-					}
-					
-					jsonArray = result2?.jsonArray
-					
-					if(jsonArray == null) {
-						log.d("loading-ConversationSummary: error or cancelled.")
-						break
-					}
-					
-					src = misskeyCustomParser(parser, jsonArray)
-					
-					addWithFilterConversationSummary(list_tmp, src)
-					
-					if(! column.saveRangeBottom(result = result2, list = src)) {
-						log.d("loading-ConversationSummary: missing range info.")
-						break
-					}
-				}
+				)
+			}
+			when {
+				initialMinId != null -> loadMastodonMinId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMinId = initialMinId
+				)
+				else -> loadMastodonMaxId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMaxId = initialMaxId
+				)
+			}
+		}.also {
+			list_tmp?.mapNotNull { it as? TootNotification }?.let {
+				PollingWorker.injectData(context, access_info, it)
 			}
 		}
-		return result
 	}
 	
 	internal fun getAccountList(
@@ -474,102 +758,199 @@ class ColumnTask_Loading(
 		path_base : String,
 		emptyMessage : String? = null,
 		misskeyParams : JsonObject? = null,
-		misskeyArrayFinder : (JsonObject) -> JsonArray? = { null },
-		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootAccountRef> =
-			{ parser, jsonArray -> parser.accountList(jsonArray) }
+		arrayFinder : (JsonObject) -> JsonArray? =
+			nullArrayFinder,
+		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootAccountRef> =
+			defaultAccountListParser,
+		initialMinId : EntityId? = null,
+		initialMaxId : EntityId? = null,
 	) : TootApiResult? {
 		
-		val result = if(misskeyParams != null) {
-			client.request(path_base, misskeyParams.toPostRequestBuilder())
+		val logCaption = "getAccountList"
+		
+		val adder : (List<TootAccountRef>, Boolean) -> Unit =
+			{ src, head -> addAll(list_tmp, src, head = head) }
+		
+		return if(isMisskey) {
+			val params = misskeyParams ?: column.makeMisskeyBaseParameter(parser)
+			
+			val requester : (EntityId?, EntityId?) -> TootApiResult? = { maxId, minId ->
+				client.request(
+					path_base,
+					params.apply {
+						when {
+							maxId != null -> putMisskeyUntil(maxId)
+							minId != null -> putMisskeySince(minId)
+						}
+					}.toPostRequestBuilder()
+				)
+			}
+			
+			when {
+				initialMinId != null -> loadMisskeyMinId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					emptyMessage = emptyMessage,
+					listParser = listParser,
+					adder = adder,
+					initialMinId = initialMinId
+				)
+				else -> loadMisskeyMaxId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					emptyMessage = emptyMessage,
+					listParser = listParser,
+					adder = adder,
+					initialMaxId = initialMaxId
+				)
+			}
 		} else {
-			client.request(path_base)
-		}
-		
-		if(result != null && result.error == null) {
-			val jsonObject = result.jsonObject
-			if(jsonObject != null) {
-				if(column.pagingType == ColumnPagingType.Cursor) {
-					column.idOld = EntityId.mayNull(jsonObject.string("next"))
-				}
-				result.data = misskeyArrayFinder(jsonObject)
-			}
-			val jsonArray = result.jsonArray
-				?: return result.setError("missing JSON data.")
-			
-			val src = misskeyCustomParser(parser, jsonArray)
-			when(column.pagingType) {
-				ColumnPagingType.Default -> {
-					column.saveRange(bBottom = true, bTop = true, result = result, list = src)
-				}
-				
-				ColumnPagingType.Offset -> {
-					column.offsetNext += src.size
-				}
-				
-				else -> {
-				}
-			}
-			
-			val tmp = ArrayList<TimelineItem>()
-			
-			if(emptyMessage != null) {
-				// フォロー/フォロワー一覧には警告の表示が必要だった
-				val who = column.who_account?.get()
-				if(! access_info.isMe(who)) {
-					if(who != null && access_info.isRemoteUser(who)) tmp.add(
-						TootMessageHolder(
-							context.getString(R.string.follow_follower_list_may_restrict)
-						)
-					)
-					
-					if(src.isEmpty()) {
-						tmp.add(TootMessageHolder(emptyMessage))
-						
+			val delimiter = if(- 1 == path_base.indexOf('?')) '?' else '&'
+			val requester : (EntityId?, EntityId?) -> TootApiResult? = { maxId, minId ->
+				client.request(
+					when {
+						maxId != null -> "$path_base${delimiter}max_id=$maxId"
+						minId != null -> "$path_base${delimiter}min_id=$minId"
+						else -> path_base
 					}
-				}
+				)
 			}
-			tmp.addAll(src)
-			list_tmp = addAll(null, tmp)
+			when {
+				initialMinId != null -> loadMastodonMinId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					emptyMessage = emptyMessage,
+					listParser = listParser,
+					adder = adder,
+					initialMinId = initialMinId
+				)
+				else -> loadMastodonMaxId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					emptyMessage = emptyMessage,
+					listParser = listParser,
+					adder = adder,
+					initialMaxId = initialMaxId
+				)
+			}
 		}
-		return result
 	}
 	
-	internal fun parseFilterList(
+	fun getConversationSummary(
+		client : TootApiClient,
+		path_base : String,
+		initialMinId : EntityId? = null,
+		initialMaxId : EntityId? = null,
+		misskeyParams : JsonObject? = null,
+		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootConversationSummary> =
+			defaultConversationSummaryListParser
+	) : TootApiResult? {
+		
+		val logCaption = "getConversationSummary"
+		
+		val arrayFinder = nullArrayFinder
+		
+		val adder : (List<TootConversationSummary>, Boolean) -> Unit =
+			{ src, head -> addWithFilterConversationSummary(list_tmp, src, head = head) }
+		
+		return if(isMisskey) {
+			val params = misskeyParams ?: column.makeMisskeyTimelineParameter(parser)
+			
+			val requester : (EntityId?, EntityId?) -> TootApiResult? = { maxId, minId ->
+				client.request(
+					path_base,
+					params.apply {
+						when {
+							maxId != null -> putMisskeyUntil(maxId)
+							minId != null -> putMisskeySince(minId)
+						}
+					}.toPostRequestBuilder()
+				)
+			}
+			
+			when {
+				initialMinId != null -> loadMisskeyMinId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMinId = initialMinId
+				)
+				else -> loadMisskeyMaxId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMaxId = initialMaxId
+				)
+			}
+		} else {
+			val delimiter = if(- 1 == path_base.indexOf('?')) '?' else '&'
+			val requester : (EntityId?, EntityId?) -> TootApiResult? = { maxId, minId ->
+				client.request(
+					when {
+						maxId != null -> "$path_base${delimiter}max_id=$maxId"
+						minId != null -> "$path_base${delimiter}min_id=$minId"
+						else -> path_base
+					}
+				)
+			}
+			when {
+				initialMinId != null -> loadMastodonMinId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMinId = initialMinId
+				)
+				else -> loadMastodonMaxId(
+					logCaption = logCaption,
+					requester = requester,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
+					adder = adder,
+					initialMaxId = initialMaxId
+				)
+			}
+		}
+	}
+	
+	internal fun getDomainBlockList(
 		client : TootApiClient,
 		path_base : String
-	) : TootApiResult? {
-		val result = client.request(path_base)
-		if(result != null) {
-			val src = TootFilter.parseList(result.jsonArray)
-			this.list_tmp = addAll(null, src)
-		}
-		return result
+	) = client.request(path_base)?.also { result ->
+		val src = TootDomainBlock.parseList(result.jsonArray)
+		column.saveRange(bBottom = true, bTop = true, result = result, list = src)
+		list_tmp = addAll(null, src)
 	}
 	
-	internal fun getDomainList(
+	internal fun getReportList(
 		client : TootApiClient,
 		path_base : String
-	) : TootApiResult? {
-		val result = client.request(path_base)
-		if(result != null) {
-			val src = TootDomainBlock.parseList(result.jsonArray)
-			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
-			this.list_tmp = addAll(null, src)
-		}
+	) = client.request(path_base)?.also { result ->
+		val src = parseList(::TootReport, result.jsonArray)
+		column.saveRange(bBottom = true, bTop = true, result = result, list = src)
+		list_tmp = addAll(null, src)
+	}
+	
+	internal fun getScheduledStatuses(client : TootApiClient) : TootApiResult? {
+		val result = client.request(Column.PATH_SCHEDULED_STATUSES)
+		val src = parseList(::TootScheduled, parser, result?.jsonArray)
+		list_tmp = addAll(list_tmp, src)
+		
+		column.saveRange(bBottom = true, bTop = true, result = result, list = src)
+		
 		return result
 	}
 	
-	internal fun getReportList(client : TootApiClient, path_base : String) : TootApiResult? {
-		val result = client.request(path_base)
-		if(result != null) {
-			val src = parseList(::TootReport, result.jsonArray)
-			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
-			list_tmp = addAll(null, src)
-		}
-		return result
-	}
-	
-	internal fun parseListList(
+	internal fun getListList(
 		client : TootApiClient,
 		path_base : String,
 		misskeyParams : JsonObject? = null
@@ -588,7 +969,19 @@ class ColumnTask_Loading(
 		return result
 	}
 	
-	internal fun parseAntennaList(
+	internal fun getFilterList(
+		client : TootApiClient,
+		path_base : String
+	) : TootApiResult? {
+		val result = client.request(path_base)
+		if(result != null) {
+			val src = TootFilter.parseList(result.jsonArray)
+			this.list_tmp = addAll(null, src)
+		}
+		return result
+	}
+	
+	internal fun getAntennaList(
 		client : TootApiClient,
 		path_base : String,
 		misskeyParams : JsonObject? = null
@@ -606,91 +999,7 @@ class ColumnTask_Loading(
 		return result
 	}
 	
-	internal fun getNotificationList(
-		client : TootApiClient,
-		fromAcct : String? = null
-	) : TootApiResult? {
-		
-		val params = column
-			.makeMisskeyBaseParameter(parser)
-			.addMisskeyNotificationFilter()
-		
-		val path_base = column.makeNotificationUrl(client, fromAcct)
-		
-		val time_start = SystemClock.elapsedRealtime()
-		val result = if(isMisskey) {
-			client.request(path_base, params.toPostRequestBuilder())
-		} else {
-			client.request(path_base)
-		}
-		var jsonArray = result?.jsonArray
-		if(jsonArray != null) {
-			var src = parser.notificationList(jsonArray)
-			column.saveRange(bBottom = true, bTop = true, result = result, list = src)
-			this.list_tmp = addWithFilterNotification(null, src)
-			//
-			if(src.isNotEmpty()) {
-				PollingWorker.injectData(context, access_info, src)
-			}
-			//
-			val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
-			while(true) {
-				if(client.isApiCancelled) {
-					log.d("loading-notifications: cancelled.")
-					break
-				}
-				if(! column.isFilterEnabled) {
-					log.d("loading-notifications: isFiltered is false.")
-					break
-				}
-				if(column.idOld == null) {
-					log.d("loading-notifications: max_id is empty.")
-					break
-				}
-				if((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
-					log.d("loading-notifications: read enough data.")
-					break
-				}
-				if(src.isEmpty()) {
-					log.d("loading-notifications: previous response is empty.")
-					break
-				}
-				if(SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
-					log.d("loading-notifications: timeout.")
-					break
-				}
-				
-				val result2 = if(isMisskey) {
-					client.request(
-						path_base,
-						params
-							.putMisskeyUntil(column.idOld)
-							.toPostRequestBuilder()
-					)
-				} else {
-					client.request("$path_base${delimiter}max_id=${column.idOld}")
-				}
-				
-				jsonArray = result2?.jsonArray
-				if(jsonArray == null) {
-					log.d("loading-notifications: error or cancelled.")
-					break
-				}
-				
-				src = parser.notificationList(jsonArray)
-				
-				addWithFilterNotification(list_tmp, src)
-				
-				if(! column.saveRangeBottom(result2, src)) {
-					log.d("loading-notifications: missing range info.")
-					break
-				}
-			}
-		}
-		return result
-	}
-	
-	internal fun getPublicAroundStatuses(
+	internal fun getPublicTlAroundTime(
 		client : TootApiClient,
 		url : String
 	) : TootApiResult? {
@@ -714,18 +1023,17 @@ class ColumnTask_Loading(
 		var bInstanceTooOld = false
 		if(instance.versionGE(TootInstance.VERSION_2_6_0)) {
 			// 指定より新しいトゥート
-			result = getStatusList(client, url, aroundMin = true)
+			result = getStatusList(client, url, initialMinId = column.status_id)
 			if(result == null || result.error != null) return result
 		} else {
 			bInstanceTooOld = true
 		}
 		
 		// 指定位置より古いトゥート
-		result = getStatusList(client, url, aroundMax = true)
+		result = getStatusList(client, url, initialMaxId = column.status_id)
 		if(result == null || result.error != null) return result
 		
-		list_tmp?.sortBy { it.getOrderId() }
-		list_tmp?.reverse()
+		list_tmp?.sortByDescending { it.getOrderId() }
 		if(bInstanceTooOld) {
 			list_tmp?.add(
 				0,
@@ -737,7 +1045,7 @@ class ColumnTask_Loading(
 		
 	}
 	
-	internal fun getAccountAroundStatuses(client : TootApiClient) : TootApiResult? {
+	internal fun getAccountTlAroundTime(client : TootApiClient) : TootApiResult? {
 		// (Mastodonのみ対応)
 		
 		val (instance, instanceResult) = TootInstance.get(client)
@@ -760,18 +1068,17 @@ class ColumnTask_Loading(
 		var bInstanceTooOld = false
 		if(instance.versionGE(TootInstance.VERSION_2_6_0)) {
 			// 指定より新しいトゥート
-			result = getStatusList(client, path, aroundMin = true)
+			result = getStatusList(client, path, initialMinId = column.status_id)
 			if(result == null || result.error != null) return result
 		} else {
 			bInstanceTooOld = true
 		}
 		
 		// 指定位置より古いトゥート
-		result = getStatusList(client, path, aroundMax = true)
+		result = getStatusList(client, path, initialMaxId = column.status_id)
 		if(result == null || result.error != null) return result
 		
-		list_tmp?.sortBy { it.getOrderId() }
-		list_tmp?.reverse()
+		list_tmp?.sortByDescending { it.getOrderId() }
 		if(bInstanceTooOld) {
 			list_tmp?.add(
 				0,
@@ -783,16 +1090,6 @@ class ColumnTask_Loading(
 		
 	}
 	
-	internal fun getScheduledStatuses(client : TootApiClient) : TootApiResult? {
-		val result = client.request(Column.PATH_SCHEDULED_STATUSES)
-		val src = parseList(::TootScheduled, parser, result?.jsonArray)
-		list_tmp = addAll(list_tmp, src)
-		
-		column.saveRange(bBottom = true, bTop = true, result = result, list = src)
-		
-		return result
-	}
-	
 	internal fun getConversation(client : TootApiClient) : TootApiResult? {
 		return if(isMisskey) {
 			// 指定された発言そのもの
@@ -801,8 +1098,7 @@ class ColumnTask_Loading(
 			}
 			
 			var result = client.request(
-				"/api/notes/show"
-				, queryParams.toPostRequestBuilder()
+				"/api/notes/show", queryParams.toPostRequestBuilder()
 			)
 			val jsonObject = result?.jsonObject ?: return result
 			val target_status = parser.status(jsonObject)
@@ -815,8 +1111,7 @@ class ColumnTask_Loading(
 				if(client.isApiCancelled) return null
 				queryParams["offset"] = list_asc.size
 				result = client.request(
-					"/api/notes/conversation"
-					, queryParams.toPostRequestBuilder()
+					"/api/notes/conversation", queryParams.toPostRequestBuilder()
 				)
 				val jsonArray = result?.jsonArray ?: return result
 				val src = parser.statusList(jsonArray)
@@ -846,8 +1141,7 @@ class ColumnTask_Loading(
 				}
 				
 				result = client.request(
-					"/api/notes/replies"
-					, queryParams.toPostRequestBuilder()
+					"/api/notes/replies", queryParams.toPostRequestBuilder()
 				)
 				val jsonArray = result?.jsonArray ?: return result
 				val src = parser.statusList(jsonArray)
@@ -935,7 +1229,7 @@ class ColumnTask_Loading(
 			var result : TootApiResult? = TootApiResult()
 			val parser = TootParser(context, access_info)
 			
-			list_tmp = java.util.ArrayList()
+			list_tmp = ArrayList()
 			
 			val queryAccount = column.search_query.trim().replace("^@".toRegex(), "")
 			if(queryAccount.isNotEmpty()) {
@@ -980,9 +1274,9 @@ class ColumnTask_Loading(
 				if(jsonArray != null) {
 					val src = parser.statusList(jsonArray)
 					list_tmp = addWithFilterStatus(list_tmp, src)
-					if(src.isNotEmpty()){
-						val(ti,_)= TootInstance.get(client)
-						if(ti?.versionGE(TootInstance.MISSKEY_VERSION_12)==true){
+					if(src.isNotEmpty()) {
+						val (ti, _) = TootInstance.get(client)
+						if(ti?.versionGE(TootInstance.MISSKEY_VERSION_12) == true) {
 							addOne(list_tmp, TootSearchGap(TootSearchGap.SearchType.Status))
 						}
 					}
@@ -1024,35 +1318,6 @@ class ColumnTask_Loading(
 				}
 			}
 			return apiResult
-			
 		}
-		
 	}
-	
-	internal fun getDirectMessages(client : TootApiClient) : TootApiResult? {
-		column.useConversationSummarys = false
-		if(! column.use_old_api) {
-			
-			// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
-			val result = getConversationSummary(client, Column.PATH_DIRECT_MESSAGES2)
-			
-			when {
-				// cancelled
-				result == null -> return null
-				
-				//  not error
-				result.error.isNullOrBlank() -> {
-					column.useConversationSummarys = true
-					return result
-				}
-				
-				// else fall thru
-			}
-		}
-		
-		// fallback to old api
-		return getStatusList(client, Column.PATH_DIRECT_MESSAGES)
-	}
-	
-
 }

@@ -1142,8 +1142,8 @@ class ColumnTask_Refresh(
 	) : TootApiResult? {
 		val logCaption = "getConversationSummaryList"
 		
-		val listParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootConversationSummary> =
-			{ parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
+		val listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootConversationSummary> =
+			defaultConversationSummaryListParser
 		
 		val adder : (List<TootConversationSummary>, Boolean) -> Unit =
 			{ src, head -> addWithFilterConversationSummary(list_tmp, src, head = head) }

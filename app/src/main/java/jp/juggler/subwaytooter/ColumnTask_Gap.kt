@@ -622,7 +622,7 @@ class ColumnTask_Gap(
 		client : TootApiClient,
 		path_base : String,
 		mastodonFilterByIdRange : Boolean,
-		listParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootReport> =
+		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootReport> =
 			defaultReportListParser
 	) : TootApiResult? {
 		
@@ -808,8 +808,8 @@ class ColumnTask_Gap(
 		path_base : String,
 		mastodonFilterByIdRange : Boolean,
 		misskeyParams : JsonObject? = null,
-		listParser : (TootParser, JsonArray) -> ArrayList<TootConversationSummary> =
-			{ parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
+		listParser : (TootParser, JsonArray) -> List<TootConversationSummary> =
+			defaultConversationSummaryListParser
 	) : TootApiResult? {
 		
 		val adder : (List<TootConversationSummary>) -> Unit =

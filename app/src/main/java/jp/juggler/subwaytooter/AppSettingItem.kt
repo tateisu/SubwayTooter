@@ -768,12 +768,16 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 			colorAlpha(Pref.ipEventBgColorReaction, R.string.reaction)
 			colorAlpha(Pref.ipEventBgColorQuote, R.string.quote_renote)
 			colorAlpha(Pref.ipEventBgColorVote, R.string.vote_polls)
+			colorAlpha(Pref.ipEventBgColorStatus, R.string.status)
+
 			colorAlpha(
 				Pref.ipConversationMainTootBgColor,
 				R.string.conversation_main_toot_background_color
 			)
-			colorAlpha(Pref.ipEventBgColorStatus, R.string.status)
+
+			colorAlpha(Pref.ipEventBgColorGap, R.string.gap)
 		}
+		
 		
 		group(R.string.button_accent_color) {
 			colorAlpha(Pref.ipButtonBoostedColor, R.string.boost)

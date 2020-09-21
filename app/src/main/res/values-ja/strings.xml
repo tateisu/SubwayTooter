@@ -1049,4 +1049,5 @@
     <string name="input_sharp_itself">\'#\'だけを入力</string>
     <string name="notify_posts_from_this_user">このユーザの投稿を通知する</string>
     <string name="stop_notify_posts_from_this_user">このユーザの投稿の通知を解除</string>
+    <string name="gap">ギャップ</string>
 </resources>

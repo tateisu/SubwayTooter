@@ -1058,4 +1058,5 @@
     <string name="input_sharp_itself">Input \'#\' itself</string>
     <string name="notify_posts_from_this_user">Notify posts from this user</string>
     <string name="stop_notify_posts_from_this_user">Stop notify posts from this user</string>
+    <string name="gap">Gap</string>
 </resources>

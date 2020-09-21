@@ -533,6 +533,8 @@ object Pref {
 	val ipEventBgColorFollowRequest = IntPref("EventBgColorFollowRequest", 0)
 	val ipEventBgColorStatus = IntPref("EventBgColorStatus", 0)
 	
+	val ipEventBgColorGap = IntPref("EventBgColorGap", 0)
+	
 	val ipCcdHeaderBg = IntPref("ipCcdHeaderBg", 0)
 	val ipCcdHeaderFg = IntPref("ipCcdHeaderFg", 0)
 	val ipCcdContentBg = IntPref("ipCcdContentBg", 0)

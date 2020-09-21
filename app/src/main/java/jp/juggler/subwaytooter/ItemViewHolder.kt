@@ -1101,6 +1101,9 @@ internal class ItemViewHolder(
 		
 		btnGapTail.vg(column.type.gapDirection(column, false))
 			?.imageTintList = content_color_csl
+		
+		val c = Pref.ipEventBgColorGap(App1.pref)
+		if(c != 0) this.viewRoot.backgroundColor = c
 	}
 	
 	private fun showSearchGap(item : TootSearchGap) {

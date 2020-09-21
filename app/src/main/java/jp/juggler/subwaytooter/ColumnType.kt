@@ -200,7 +200,7 @@ enum class ColumnType(
 				client,
 				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyArrayFinder = misskeyArrayFinderUsers
+				arrayFinder = misskeyArrayFinderUsers
 			)
 		},
 		gap = { client ->
@@ -232,7 +232,7 @@ enum class ColumnType(
 				client,
 				Column.PATH_MISSKEY_PROFILE_FOLLOWING,
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyCustomParser = misskey11FollowingParser
+				listParser = misskey11FollowingParser
 			)
 		},
 		gap = { client ->
@@ -265,7 +265,7 @@ enum class ColumnType(
 				client,
 				Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyCustomParser = misskey11FollowersParser
+				listParser = misskey11FollowersParser
 			)
 		},
 		gap = { client ->
@@ -298,7 +298,7 @@ enum class ColumnType(
 				client,
 				Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
 				misskeyParams = column.makeMisskeyParamsUserId(parser),
-				misskeyArrayFinder = misskeyArrayFinderUsers
+				arrayFinder = misskeyArrayFinderUsers
 			)
 		},
 		gap = { client ->
@@ -831,8 +831,8 @@ enum class ColumnType(
 					client,
 					Column.PATH_MISSKEY_MUTES,
 					misskeyParams = access_info.putMisskeyApiToken(),
-					misskeyArrayFinder = misskeyArrayFinderUsers,
-					misskeyCustomParser = misskeyCustomParserMutes
+					arrayFinder = misskeyArrayFinderUsers,
+					listParser = misskeyCustomParserMutes
 				)
 				else -> getAccountList(client, Column.PATH_MUTES)
 			}
@@ -887,7 +887,7 @@ enum class ColumnType(
 						client,
 						Column.PATH_MISSKEY_BLOCKS,
 						misskeyParams = access_info.putMisskeyApiToken(),
-						misskeyCustomParser = misskeyCustomParserBlocks
+						listParser = misskeyCustomParserBlocks
 					)
 				}
 				
@@ -938,7 +938,7 @@ enum class ColumnType(
 					client,
 					Column.PATH_MISSKEY_FOLLOW_REQUESTS,
 					misskeyParams = access_info.putMisskeyApiToken(),
-					misskeyCustomParser = misskeyCustomParserFollowRequest
+					listParser = misskeyCustomParserFollowRequest
 				)
 			} else {
 				getAccountList(client, Column.PATH_FOLLOW_REQUESTS)

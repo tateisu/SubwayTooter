@@ -208,7 +208,7 @@ internal fun JsonObject.addMisskeyNotificationFilter(column : Column) : JsonObje
 				if(column.dont_show_vote) {
 					add("poll_vote")
 				}
-				if( column.dont_show_normal_toot){
+				if(column.dont_show_normal_toot) {
 					// FIXME Misskeyには特定フォロー者からの投稿を通知する機能があるのか？
 				}
 			}
@@ -231,7 +231,8 @@ internal fun JsonObject.addMisskeyNotificationFilter(column : Column) : JsonObje
 		)
 		Column.QUICK_FILTER_REACTION -> put("includeTypes", jp.juggler.util.jsonArray("reaction"))
 		Column.QUICK_FILTER_VOTE -> put("includeTypes", jp.juggler.util.jsonArray("poll_vote"))
-		Column.QUICK_FILTER_POST ->{
+		
+		Column.QUICK_FILTER_POST -> {
 			// FIXME Misskeyには特定フォロー者からの投稿を通知する機能があるのか？
 		}
 	}
@@ -469,6 +470,12 @@ internal val misskeyArrayFinderUsers = { it : JsonObject ->
 ////////////////////////////////////////////////////////////////////////////////
 // account list parser
 
+internal val nullArrayFinder : (JsonObject) -> JsonArray? =
+	{ null }
+
+internal val defaultAccountListParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootAccountRef> =
+	{ parser, jsonArray -> parser.accountList(jsonArray) }
+
 private fun misskeyUnwrapRelationAccount(parser : TootParser, srcList : JsonArray, key : String) =
 	srcList.objectList().mapNotNull {
 		when(val relationId = EntityId.mayNull(it.string("id"))) {
@@ -517,3 +524,6 @@ internal val misskeyCustomParserFavorites : (TootParser, JsonArray) -> List<Toot
 
 val defaultNotificationListParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootNotification> =
 	{ parser, jsonArray -> parser.notificationList(jsonArray) }
+
+val defaultDomainBlockListParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootDomainBlock> =
+	{ _, jsonArray -> TootDomainBlock.parseList(jsonArray) }

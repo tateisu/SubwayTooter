@@ -12,7 +12,7 @@ import jp.juggler.util.*
 class ColumnTask_Refresh(
 	columnArg : Column,
 	private val bSilent : Boolean,
-	internal val bBottom : Boolean,
+	private val bBottom : Boolean,
 	internal val posted_status_id : EntityId? = null,
 	internal val refresh_after_toot : Int = - 1
 ) : ColumnTask(
@@ -723,12 +723,6 @@ class ColumnTask_Refresh(
 		return firstResult
 	}
 	
-	private val nullArrayFinder : (JsonObject) -> JsonArray? =
-		{ null }
-	
-	private val defaultListParserAccount : (parser : TootParser, jsonArray : JsonArray) -> List<TootAccountRef> =
-		{ parser, jsonArray -> parser.accountList(jsonArray) }
-	
 	private fun defaultRequesterMisskey(
 		client : TootApiClient,
 		path_base : String,
@@ -889,7 +883,7 @@ class ColumnTask_Refresh(
 		val logCaption = "getNotificationList"
 		
 		val listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootNotification> =
-			{ parser, jsonArray -> parser.notificationList(jsonArray) }
+			defaultNotificationListParser
 		
 		val adder : (List<TootNotification>, Boolean) -> Unit =
 			{ src, head -> addWithFilterNotification(list_tmp, src, head = head) }
@@ -970,10 +964,10 @@ class ColumnTask_Refresh(
 		client : TootApiClient,
 		path_base : String,
 		misskeyParams : JsonObject? = null,
-		misskeyArrayFinder : (JsonObject) -> JsonArray? =
+		arrayFinder : (JsonObject) -> JsonArray? =
 			nullArrayFinder,
-		misskeyCustomParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootAccountRef> =
-			defaultListParserAccount
+		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootAccountRef> =
+			defaultAccountListParser
 	) : TootApiResult? {
 		
 		val logCaption = "getAccountList"
@@ -988,15 +982,15 @@ class ColumnTask_Refresh(
 				bBottom -> refreshBottomMisskey(
 					logCaption,
 					requester = requester,
-					arrayFinder = misskeyArrayFinder,
-					listParser = misskeyCustomParser,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
 					adder = adder
 				)
 				else -> refreshTopMisskey(
 					logCaption,
 					requester = requester,
-					arrayFinder = misskeyArrayFinder,
-					listParser = misskeyCustomParser,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
 					adder = adder
 				)
 			}
@@ -1019,15 +1013,15 @@ class ColumnTask_Refresh(
 				bBottom -> refreshBottomMastodon(
 					logCaption,
 					requester = requester,
-					arrayFinder = misskeyArrayFinder,
-					listParser = misskeyCustomParser,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
 					adder = adder
 				)
 				else -> refreshTopMastodon(
 					logCaption,
 					requester = requester,
-					arrayFinder = misskeyArrayFinder,
-					listParser = misskeyCustomParser,
+					arrayFinder = arrayFinder,
+					listParser = listParser,
 					adder = adder
 				)
 			}
@@ -1038,11 +1032,13 @@ class ColumnTask_Refresh(
 		client : TootApiClient,
 		path_base : String
 	) : TootApiResult? {
+		
 		val logCaption = "getDomainList"
+		
 		val adder : (List<TimelineItem>, Boolean) -> Unit =
 			{ src, head -> addAll(list_tmp, src, head = head) }
-		val listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootDomainBlock> =
-			{ _, jsonArray -> TootDomainBlock.parseList(jsonArray) }
+		
+		val listParser = defaultDomainBlockListParser
 		
 		return if(isMisskey) {
 			TootApiResult("misskey support is not yet implemented.")
@@ -1229,7 +1225,7 @@ class ColumnTask_Refresh(
 			return TootApiResult(context.getString(R.string.end_of_list))
 		}
 		
-		return client.searchMsp(q, old)?.also{ result->
+		return client.searchMsp(q, old)?.also { result ->
 			val jsonArray = result.jsonArray
 			if(jsonArray != null) {
 				// max_id の更新
@@ -1246,17 +1242,17 @@ class ColumnTask_Refresh(
 		}
 	}
 	
-	fun getTootSearch(client : TootApiClient) :TootApiResult? {
+	fun getTootSearch(client : TootApiClient) : TootApiResult? {
 		if(! bBottom) return TootApiResult("head of list.")
 		
 		val q = column.search_query.trim { it <= ' ' }
 		val old = column.idOld?.toString()?.toLong()
-		if(q.isEmpty() || old==null) {
+		if(q.isEmpty() || old == null) {
 			list_tmp = ArrayList()
 			return TootApiResult(context.getString(R.string.end_of_list))
 		}
 		
-		return client.searchTootsearch(q,old)?.also { result ->
+		return client.searchTootsearch(q, old)?.also { result ->
 			val jsonObject = result.jsonObject
 			if(jsonObject != null) {
 				// max_id の更新

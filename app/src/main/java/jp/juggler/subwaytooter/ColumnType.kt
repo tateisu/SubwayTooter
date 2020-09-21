@@ -496,16 +496,7 @@ enum class ColumnType(
 		},
 		
 		loading = { client -> getPublicAroundStatuses(client, column.makePublicLocalUrl()) },
-		refresh = { client ->
-			if(bBottom) {
-				getStatusList(client, column.makePublicLocalUrl())
-			} else {
-				val rv = getStatusList(client, column.makePublicLocalUrl(), useMinId = true)
-				list_tmp?.sortBy { it.getOrderId() }
-				list_tmp?.reverse()
-				rv
-			}
-		}
+		refresh = { client -> getStatusList(client, column.makePublicLocalUrl(), useMinId = true) }
 	),
 	
 	FEDERATED_AROUND(30,
@@ -520,15 +511,9 @@ enum class ColumnType(
 		
 		loading = { client -> getPublicAroundStatuses(client, column.makePublicFederateUrl()) },
 		refresh = { client ->
-			if(bBottom) {
-				getStatusList(client, column.makePublicFederateUrl())
-			} else {
-				val rv = getStatusList(client, column.makePublicFederateUrl(), useMinId = true)
-				list_tmp?.sortBy { it.getOrderId() }
-				list_tmp?.reverse()
-				rv
-			}
+			getStatusList(client, column.makePublicFederateUrl(), useMinId = true)
 		}
+	
 	),
 	
 	PROFILE(
@@ -770,47 +755,29 @@ enum class ColumnType(
 		},
 		
 		loading = { client ->
-			if(isMisskey) {
-				// currently not supported
-				getStatusList(
-					client,
-					column.makeHashtagAcctUrl(client),
-					misskeyParams = column.makeHashtagParams(parser)
-				)
-			} else {
-				getStatusList(client, column.makeHashtagAcctUrl(client))
-			}
+			getStatusList(
+				client,
+				column.makeHashtagAcctUrl(client), // null if misskey
+				misskeyParams = column.makeHashtagParams(parser)
+			)
 		},
-		
 		refresh = { client ->
-			if(isMisskey) {
-				getStatusList(
-					client,
-					column.makeHashtagAcctUrl(client),
-					misskeyParams = column.makeHashtagParams(parser)
-				)
-			} else {
-				getStatusList(client, column.makeHashtagAcctUrl(client))
-			}
+			getStatusList(
+				client,
+				column.makeHashtagAcctUrl(client), // null if misskey
+				misskeyParams = column.makeHashtagParams(parser)
+			)
 		},
-		
 		gap = { client ->
-			if(isMisskey) {
-				getStatusList(
-					client,
-					column.makeHashtagAcctUrl(client),
-					mastodonFilterByIdRange = true,
-					misskeyParams = column.makeHashtagParams(parser)
-				)
-			} else {
-				getStatusList(
-					client,
-					column.makeHashtagAcctUrl(client),
-					mastodonFilterByIdRange = true
-				)
-			}
+			getStatusList(
+				client,
+				column.makeHashtagAcctUrl(client), // null if misskey
+				mastodonFilterByIdRange = true,
+				misskeyParams = column.makeHashtagParams(parser)
+			)
 		},
 		gapDirection = gapDirectionBoth,
+		bAllowMisskey = false,
 	),
 	
 	SEARCH(
@@ -1061,7 +1028,8 @@ enum class ColumnType(
 		refresh = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) }
 	),
 	
-	SEARCH_MSP(17,
+	SEARCH_MSP(
+		17,
 		iconId = { R.drawable.ic_search },
 		name1 = { it.getString(R.string.toot_search_msp) },
 		name2 = { long ->
@@ -1099,35 +1067,7 @@ enum class ColumnType(
 			result
 		},
 		
-		refresh = { client ->
-			
-			if(! bBottom) {
-				TootApiResult("head of list.")
-			} else {
-				val result : TootApiResult?
-				val q = column.search_query.trim { it <= ' ' }
-				if(q.isEmpty()) {
-					list_tmp = ArrayList()
-					result = TootApiResult(context.getString(R.string.end_of_list))
-				} else {
-					result = client.searchMsp(column.search_query, column.idOld?.toString())
-					val jsonArray = result?.jsonArray
-					if(jsonArray != null) {
-						// max_id の更新
-						column.idOld = EntityId.mayNull(
-							TootApiClient.getMspMaxId(
-								jsonArray,
-								column.idOld?.toString()
-							)
-						)
-						// リストデータの用意
-						parser.serviceType = ServiceType.MSP
-						list_tmp = addWithFilterStatus(list_tmp, parser.statusList(jsonArray))
-					}
-				}
-				result
-			}
-		}
+		refresh = { client -> getMSP(client) },
 	),
 	
 	SEARCH_TS(22,
@@ -1171,37 +1111,7 @@ enum class ColumnType(
 			result
 		},
 		
-		refresh = { client ->
-			if(! bBottom) {
-				TootApiResult("head of list.")
-			} else {
-				val result : TootApiResult?
-				val q = column.search_query.trim { it <= ' ' }
-				if(q.isEmpty() || column.idOld == null) {
-					list_tmp = ArrayList()
-					result = TootApiResult(context.getString(R.string.end_of_list))
-				} else {
-					result = client.searchTootsearch(
-						column.search_query,
-						column.idOld?.toString()?.toLong()
-					)
-					val jsonObject = result?.jsonObject
-					if(jsonObject != null) {
-						// max_id の更新
-						column.idOld = EntityId.mayNull(
-							TootApiClient.getTootsearchMaxId(
-								jsonObject,
-								column.idOld?.toString()?.toLong()
-							)?.toString()
-						)
-						// リストデータの用意
-						val search_result = TootStatus.parseListTootsearch(parser, jsonObject)
-						list_tmp = addWithFilterStatus(list_tmp, search_result)
-					}
-				}
-				result
-			}
-		}
+		refresh = { client -> getTootSearch(client) }
 	),
 	
 	INSTANCE_INFORMATION(18,
@@ -1516,15 +1426,7 @@ enum class ColumnType(
 		loading = { client -> getAccountAroundStatuses(client) },
 		
 		refresh = { client ->
-			val path = column.makeProfileStatusesUrl(column.profile_id)
-			if(bBottom) {
-				getStatusList(client, path)
-			} else {
-				val rv = getStatusList(client, path, useMinId = true)
-				list_tmp?.sortBy { it.getOrderId() }
-				list_tmp?.reverse()
-				rv
-			}
+			getStatusList(client, column.makeProfileStatusesUrl(column.profile_id), useMinId = true)
 		}
 	),
 	

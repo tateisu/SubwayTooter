@@ -1218,4 +1218,58 @@ class ColumnTask_Refresh(
 		column.saveRange(bBottom, ! bBottom, result, src)
 		return result
 	}
+	
+	fun getMSP(client : TootApiClient) : TootApiResult? {
+		if(! bBottom) return TootApiResult("head of list.")
+		
+		val q = column.search_query.trim()
+		val old = column.idOld?.toString()
+		if(q.isEmpty() || old == null) {
+			list_tmp = ArrayList()
+			return TootApiResult(context.getString(R.string.end_of_list))
+		}
+		
+		return client.searchMsp(q, old)?.also{ result->
+			val jsonArray = result.jsonArray
+			if(jsonArray != null) {
+				// max_id の更新
+				column.idOld = EntityId.mayNull(
+					TootApiClient.getMspMaxId(
+						jsonArray,
+						column.idOld?.toString()
+					)
+				)
+				// リストデータの用意
+				parser.serviceType = ServiceType.MSP
+				list_tmp = addWithFilterStatus(list_tmp, parser.statusList(jsonArray))
+			}
+		}
+	}
+	
+	fun getTootSearch(client : TootApiClient) :TootApiResult? {
+		if(! bBottom) return TootApiResult("head of list.")
+		
+		val q = column.search_query.trim { it <= ' ' }
+		val old = column.idOld?.toString()?.toLong()
+		if(q.isEmpty() || old==null) {
+			list_tmp = ArrayList()
+			return TootApiResult(context.getString(R.string.end_of_list))
+		}
+		
+		return client.searchTootsearch(q,old)?.also { result ->
+			val jsonObject = result.jsonObject
+			if(jsonObject != null) {
+				// max_id の更新
+				column.idOld = EntityId.mayNull(
+					TootApiClient.getTootsearchMaxId(
+						jsonObject,
+						old
+					)?.toString()
+				)
+				// リストデータの用意
+				val search_result = TootStatus.parseListTootsearch(parser, jsonObject)
+				list_tmp = addWithFilterStatus(list_tmp, search_result)
+			}
+		}
+	}
 }

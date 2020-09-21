@@ -557,9 +557,10 @@ class ColumnTask_Gap(
 		path_base : String,
 		mastodonFilterByIdRange : Boolean,
 		misskeyParams : JsonObject? = null,
-		arrayFinder : (jsonObject : JsonObject) -> JsonArray? = { null },
+		arrayFinder : (jsonObject : JsonObject) -> JsonArray? =
+			nullArrayFinder,
 		listParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootAccountRef> =
-			{ parser, jsonArray -> parser.accountList(jsonArray) }
+			defaultAccountListParser
 	) : TootApiResult? {
 		
 		if( column.pagingType != ColumnPagingType.Default ) {
@@ -622,7 +623,7 @@ class ColumnTask_Gap(
 		path_base : String,
 		mastodonFilterByIdRange : Boolean,
 		listParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootReport> =
-			{ _, jsonArray -> parseList(::TootReport, jsonArray) }
+			defaultReportListParser
 	) : TootApiResult? {
 		
 		val adder : (List<TootReport>) -> Unit =

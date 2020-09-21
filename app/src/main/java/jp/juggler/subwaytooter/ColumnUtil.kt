@@ -527,3 +527,7 @@ val defaultNotificationListParser : (parser : TootParser, jsonArray : JsonArray)
 
 val defaultDomainBlockListParser : (parser : TootParser, jsonArray : JsonArray) -> List<TootDomainBlock> =
 	{ _, jsonArray -> TootDomainBlock.parseList(jsonArray) }
+
+val defaultReportListParser : (parser : TootParser, jsonArray : JsonArray) -> ArrayList<TootReport> =
+	{ _, jsonArray -> parseList(::TootReport, jsonArray) }
+

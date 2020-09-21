@@ -500,7 +500,7 @@ enum class ColumnType(
 			if(bBottom) {
 				getStatusList(client, column.makePublicLocalUrl())
 			} else {
-				val rv = getStatusList(client, column.makePublicLocalUrl(), aroundMin = true)
+				val rv = getStatusList(client, column.makePublicLocalUrl(), useMinId = true)
 				list_tmp?.sortBy { it.getOrderId() }
 				list_tmp?.reverse()
 				rv
@@ -523,7 +523,7 @@ enum class ColumnType(
 			if(bBottom) {
 				getStatusList(client, column.makePublicFederateUrl())
 			} else {
-				val rv = getStatusList(client, column.makePublicFederateUrl(), aroundMin = true)
+				val rv = getStatusList(client, column.makePublicFederateUrl(), useMinId = true)
 				list_tmp?.sortBy { it.getOrderId() }
 				list_tmp?.reverse()
 				rv
@@ -591,7 +591,7 @@ enum class ColumnType(
 					client,
 					Column.PATH_MISSKEY_FAVORITES,
 					misskeyParams = column.makeMisskeyTimelineParameter(parser),
-					misskeyCustomParser = misskeyCustomParserFavorites
+					listParser = misskeyCustomParserFavorites
 				)
 			} else {
 				getStatusList(client, Column.PATH_FAVOURITES)
@@ -1520,7 +1520,7 @@ enum class ColumnType(
 			if(bBottom) {
 				getStatusList(client, path)
 			} else {
-				val rv = getStatusList(client, path, aroundMin = true)
+				val rv = getStatusList(client, path, useMinId = true)
 				list_tmp?.sortBy { it.getOrderId() }
 				list_tmp?.reverse()
 				rv

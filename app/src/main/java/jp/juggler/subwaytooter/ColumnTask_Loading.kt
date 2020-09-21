@@ -232,7 +232,7 @@ class ColumnTask_Loading(
 					
 					addWithFilterStatus(list_tmp, src)
 					
-					if(! column.saveRangeStart(result = result2, list = src)) {
+					if(! column.saveRangeTop(result = result2, list = src)) {
 						log.d("loading-statuses: missing range info.")
 						break
 					}
@@ -294,7 +294,7 @@ class ColumnTask_Loading(
 					
 					addWithFilterStatus(list_tmp, src)
 					
-					if(! column.saveRangeEnd(result = result2, list = src)) {
+					if(! column.saveRangeBottom(result = result2, list = src)) {
 						log.d("loading-statuses: missing range info.")
 						break
 					}
@@ -396,7 +396,7 @@ class ColumnTask_Loading(
 					
 					addWithFilterConversationSummary(list_tmp, src)
 					
-					if(! column.saveRangeStart(result = result2, list = src)) {
+					if(! column.saveRangeTop(result = result2, list = src)) {
 						log.d("loading-ConversationSummary: missing range info.")
 						break
 					}
@@ -459,7 +459,7 @@ class ColumnTask_Loading(
 					
 					addWithFilterConversationSummary(list_tmp, src)
 					
-					if(! column.saveRangeEnd(result = result2, list = src)) {
+					if(! column.saveRangeBottom(result = result2, list = src)) {
 						log.d("loading-ConversationSummary: missing range info.")
 						break
 					}
@@ -681,7 +681,7 @@ class ColumnTask_Loading(
 				
 				addWithFilterNotification(list_tmp, src)
 				
-				if(! column.saveRangeEnd(result2, src)) {
+				if(! column.saveRangeBottom(result2, src)) {
 					log.d("loading-notifications: missing range info.")
 					break
 				}

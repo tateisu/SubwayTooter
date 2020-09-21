@@ -2051,28 +2051,27 @@ class Column(
 	}
 	
 	// return true if list bottom may have unread remain
-	internal fun saveRangeEnd(result : TootApiResult?, list : List<TimelineItem>?) =
+	internal fun saveRangeBottom(result : TootApiResult?, list : List<TimelineItem>?) =
 		saveRange(true, bTop = false, result = result, list = list)
 	
 	// return true if list bottom may have unread remain
-	internal fun saveRangeStart(result : TootApiResult?, list : List<TimelineItem>?) =
+	internal fun saveRangeTop(result : TootApiResult?, list : List<TimelineItem>?) =
 		saveRange(false, bTop = true, result = result, list = list)
 	
-	internal fun addRange(bBottom : Boolean, path : String) : String {
-		val delimiter = if(- 1 != path.indexOf('?')) '&' else '?'
-		if(bBottom) {
-			if(idOld != null) return "$path${delimiter}max_id=${idOld}"
-		} else {
-			if(idRecent != null) return "$path${delimiter}since_id=${idRecent}"
-		}
-		return path
+	internal fun addRange(
+		bBottom : Boolean,
+		path : String,
+		delimiter : Char = if(- 1 == path.indexOf('?')) '?' else '&'
+	) = if(bBottom) {
+		if(idOld != null) "$path${delimiter}max_id=${idOld}" else path
+	} else {
+		if(idRecent != null) "$path${delimiter}since_id=${idRecent}" else path
 	}
 	
-	internal fun addRangeMin(path : String) : String {
-		val delimiter = if(- 1 != path.indexOf('?')) '&' else '?'
-		if(idRecent != null) return "$path${delimiter}min_id=${idRecent}"
-		return path
-	}
+	internal fun addRangeMin(
+		path : String,
+		delimiter : Char = if(- 1 != path.indexOf('?')) '&' else '?'
+	) = if(idRecent == null) path else "$path${delimiter}min_id=${idRecent}"
 	
 	internal fun startRefreshForPost(
 		refresh_after_post : Int,

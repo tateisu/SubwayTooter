@@ -80,7 +80,7 @@ class Acct private constructor(
 	@Suppress("unused")
 	private fun valid() : Acct? = if(isValid) this else null
 	
-	private val isValidFull : Boolean
+	val isValidFull : Boolean
 		get() = username.isNotEmpty() && username != "?" && (host?.isValid == true)
 	
 	fun validFull() : Acct? = if(isValidFull) this else null

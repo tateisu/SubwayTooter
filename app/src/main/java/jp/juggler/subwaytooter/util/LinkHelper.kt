@@ -34,7 +34,8 @@ interface LinkHelper : HostAndDomain {
 		else -> src.followHost(apDomain.valid() ?: apiHost.valid() ?: Host.UNKNOWN)
 	}
 	
-	companion object{
+	companion object {
+		
 		val unknown = object : LinkHelper {
 			override val apiHost : Host = Host.UNKNOWN
 			override val apDomain : Host = Host.UNKNOWN
@@ -55,9 +56,6 @@ interface LinkHelper : HostAndDomain {
 	}
 }
 
-
-
-
 fun LinkHelper.matchHost(src : String?) = apiHost.match(src) || apDomain.match(src)
 fun LinkHelper.matchHost(src : Host?) = apiHost == src || apDomain == src
 fun LinkHelper.matchHost(src : LinkHelper) =
@@ -72,25 +70,22 @@ fun LinkHelper.matchHost(src : TootAccount) =
 fun getFullAcctOrNull(
 	rawAcct : Acct,
 	url : String,
-	// 以下の2つは閲覧者や投稿者のホストとドメインを指定する。
-	// 閲覧者と投稿者のどちらを使うべきかは状況により異なる。
-	defaultHostDomain : HostAndDomain,
-) : Acct {
-	
-	// 記載がfull acctならそれを使う
-	if(rawAcct.host != null) return rawAcct
-	
-	// URLのホスト名部分を見つける
-	val urlHost =
-		TootAccount.reHostInUrl.matcher(url).findOrNull()?.groupEx(1)?.let { Host.parse(it) }
-	
-	// URLのホストが見つかって、mentionDefaultApiHostではないならそれを使う。
-	// さもなくば mentionDefaultApDomain を補う。
-	return rawAcct.followHost(
-		when(urlHost) {
-			defaultHostDomain.apiHost, null -> defaultHostDomain.apDomain
-			else -> urlHost
-		}
-	)
-}
-
+	hostDomain1 : HostAndDomain? = null,
+	hostDomain2 : HostAndDomain? = null
+) =
+	if(rawAcct.isValidFull) {
+		// 記載がfull acctならそれを使う
+		rawAcct
+	} else {
+		// URL中のホスト名を使うが、引数でホストとドメインの対応が提供されていればドメインへの変換を試みる
+		rawAcct.followHost(
+			when(val host = TootAccount.reHostInUrl.matcher(url)
+				.findOrNull()?.groupEx(1)?.let { Host.parse(it) }
+				?: Host.UNKNOWN
+				) {
+				hostDomain1?.apiHost -> hostDomain1.apDomain
+				hostDomain2?.apiHost -> hostDomain2.apDomain
+				else -> host
+			}
+		).validFull()
+	}

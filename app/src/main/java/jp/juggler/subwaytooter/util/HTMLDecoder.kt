@@ -497,10 +497,13 @@ object HTMLDecoder {
 	
 	fun decodeMentions(
 		linkHelper : LinkHelper,
-		mentionList : List<TootMention>?,
-		link_tag : Any?
+		status:TootStatus
 	) : Spannable? {
+		val mentionList : List<TootMention>? = status.mentions
+		val link_tag : Any? = status
+
 		if(mentionList == null || mentionList.isEmpty()) return null
+
 		val sb = SpannableStringBuilder()
 		for(item in mentionList) {
 			if(sb.isNotEmpty()) sb.append(" ")
@@ -508,8 +511,9 @@ object HTMLDecoder {
 			val fullAcct = getFullAcctOrNull(
 				item.acct,
 				item.url,
-				linkHelper, // メンション情報がある場合、ドメインが省略されたら閲覧者のドメインを補う。投稿者のドメインではない
-			).validFull()
+				linkHelper,
+				status.account
+			)
 			
 			val linkInfo = if(fullAcct != null) {
 				LinkInfo(
@@ -602,21 +606,24 @@ object HTMLDecoder {
 			
 			// @mention
 			'@' -> {
+				
+				fun afterFullAcctResolved(fullAcct:Acct){
+					linkInfo.ac = AcctColor.load(fullAcct)
+					if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
+						linkInfo.caption = "@${fullAcct.pretty}"
+					}
+				}
+
 				// https://github.com/tateisu/SubwayTooter/issues/108
 				// check mentions to skip getAcctFromUrl
 				val mention = options.mentions?.find { it.url == href }
 				if( mention != null ){
-					// メンション情報がある場合、ドメイン省略時のデフォルトは閲覧者のドメイン
 					getFullAcctOrNull(
 						mention.acct,
 						href,
-						defaultHostDomain = options.linkHelper ?: unknownHostAndDomain
-					).validFull()?.let{fullAcct ->
-						linkInfo.ac = AcctColor.load(fullAcct)
-						if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
-							linkInfo.caption = "@${fullAcct.pretty}"
-						}
-					}
+						options.linkHelper,
+						options.mentionDefaultHostDomain
+					)?.let{afterFullAcctResolved(it)}
 				}else{
 
 					// case A
@@ -628,28 +635,28 @@ object HTMLDecoder {
 					// リモートのMisskeyからMastodonに流れてきた投稿をSTで見ると
 					// (元タンスでの)ローカルメンションに対して間違って閲覧者のドメインが補われる
 					// STのバグかと思ったけど、データみたらmentionsメタデータに一つ目のメンションのURLが含まれてない。
-					// どっちかのサーバにも問題があるらしい。
-					// 閲覧者ではなく投稿者のドメインを補うべき
+					// 閲覧サーバがメンションに含まれるアカウントを解決できなかった際に発生するらしい。
 
-					// 上記の理由から
-					// メンション情報がない場合は閲覧者ではなく投稿者のドメインを補うべき
+					// メンション情報がない場合がありうる。
+					// acctのドメイン部分を補う際、閲覧者のドメインや投稿者のドメインへの変換を試みる
 					
 					val rawAcct = Acct.parse(originalCaption.toString().substring(1))
 					getFullAcctOrNull(
 						rawAcct,
 						href,
-						defaultHostDomain = options.mentionDefaultHostDomain
-					).validFull()?.let{ fullAcct ->
+						options.linkHelper,
+						options.mentionDefaultHostDomain
+					)?.let{ fullAcct ->
+
+						// mentionメタデータを捏造する
 						linkInfo.mention = TootMention(
 							id = EntityId.DEFAULT,
 							url = href,
 							acct = fullAcct,
 							username = rawAcct.username
 						)
-						linkInfo.ac = AcctColor.load(fullAcct)
-						if(options.mentionFullAcct || Pref.bpMentionFullAcct(App1.pref)) {
-							linkInfo.caption = "@${fullAcct.pretty}"
-						}
+
+						afterFullAcctResolved(fullAcct)
 					}
 				}
 			}

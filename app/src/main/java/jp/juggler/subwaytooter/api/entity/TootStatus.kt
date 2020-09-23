@@ -172,6 +172,7 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 	// quote toot かどうか。
 	var isQuoteToot = false
 	private var quote_id : EntityId? = null
+	
 	// このstatusがquoteだった場合、ミュート済みかどうか示すフラグ
 	var quote_muted = false
 	
@@ -348,11 +349,9 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 				(decoded_spoiler_text as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
 			
 			this.mentions = mergeMentions(mentions1, mentions2)
-			this.decoded_mentions = HTMLDecoder.decodeMentions(
-				parser.linkHelper,
-				this.mentions,
-				this
-			) ?: EMPTY_SPANNABLE
+			this.decoded_mentions =
+				HTMLDecoder.decodeMentions(parser.linkHelper, this)
+					?: EMPTY_SPANNABLE
 			
 			// contentを読んだ後にアンケートのデコード
 			this.enquete = TootPolls.parse(
@@ -515,18 +514,15 @@ class TootStatus(parser : TootParser, src : JsonObject) : TimelineItem() {
 			this.in_reply_to_account_id =
 				EntityId.mayNull(src.string("in_reply_to_account_id"))
 			this.mentions = parseListOrNull(::TootMention, src.jsonArray("mentions"), log)
-			this.tags = TootTag.parseListOrNull(parser,src.jsonArray("tags"))
+			this.tags = TootTag.parseListOrNull(parser, src.jsonArray("tags"))
 			this.application =
 				parseItem(::TootApplication, parser, src.jsonObject("application"), log)
 			this.pinned = parser.pinned || src.optBoolean("pinned")
 			this.muted = src.optBoolean("muted")
 			this.language = src.string("language")?.notEmpty()
-			this.decoded_mentions = HTMLDecoder.decodeMentions(
-				parser.linkHelper,
-				this.mentions,
-				this
-			) ?: EMPTY_SPANNABLE
-			// this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
+			this.decoded_mentions =
+				HTMLDecoder.decodeMentions(parser.linkHelper, this)
+					?: EMPTY_SPANNABLE
 			
 			val quote = when {
 				! parser.decodeQuote -> null

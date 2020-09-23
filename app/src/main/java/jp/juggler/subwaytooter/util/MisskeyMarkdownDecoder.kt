@@ -806,8 +806,9 @@ object MisskeyMarkdownDecoder {
 				getFullAcctOrNull(
 					rawAcct = Acct.parse(text.substring(1)),
 					url = url,
-					defaultHostDomain = options.mentionDefaultHostDomain
-				).validFull()
+					options.linkHelper,
+					options.mentionDefaultHostDomain,
+				)
 			}
 			
 			val linkInfo = LinkInfo(

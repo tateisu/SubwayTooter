@@ -2451,7 +2451,6 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				val mention = opener.linkInfo?.mention
 				if(mention != null) {
 					val fullAcct = getFullAcctOrNull(mention.acct, mention.url, accessInfo)
-						.validFull()
 					if(fullAcct != null) {
 						if(fullAcct.host != null) {
 							when(fullAcct.host.ascii) {

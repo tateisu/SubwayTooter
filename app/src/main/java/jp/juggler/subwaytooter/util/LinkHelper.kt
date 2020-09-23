@@ -74,18 +74,22 @@ fun getFullAcctOrNull(
 	hostDomain2 : HostAndDomain? = null
 ) =
 	if(rawAcct.isValidFull) {
-		// 記載がfull acctならそれを使う
+		// 最初から有効なfull acctがあればそれを使う
 		rawAcct
 	} else {
 		// URL中のホスト名を使うが、引数でホストとドメインの対応が提供されていればドメインへの変換を試みる
-		rawAcct.followHost(
-			when(val host = TootAccount.reHostInUrl.matcher(url)
-				.findOrNull()?.groupEx(1)?.let { Host.parse(it) }
-				?: Host.UNKNOWN
-				) {
-				hostDomain1?.apiHost -> hostDomain1.apDomain
-				hostDomain2?.apiHost -> hostDomain2.apDomain
-				else -> host
-			}
-		).validFull()
+		val host = TootAccount.reHostInUrl.matcher(url)
+			.findOrNull()?.groupEx(1)?.let { Host.parse(it) }
+		if(host == null) {
+			null
+		} else {
+			Acct.parse(
+				rawAcct.username,
+				when(host) {
+					hostDomain1?.apiHost -> hostDomain1.apDomain
+					hostDomain2?.apiHost -> hostDomain2.apDomain
+					else -> host
+				}
+			).validFull() // apDomainが ? だった場合など
+		}
 	}

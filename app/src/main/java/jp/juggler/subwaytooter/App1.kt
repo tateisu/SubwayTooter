@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.content.res.ColorStateList
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
@@ -620,9 +621,14 @@ class App1 : Application() {
 				val pm = activity.packageManager !!
 				val myName = activity.packageName
 				
+				val filter : (ResolveInfo)->Boolean ={
+					it.activityInfo.packageName != myName &&
+						it.activityInfo.exported &&
+						-1 == it.activityInfo.packageName.indexOf("com.huawei.android.internal")
+				}
+
 				// resolveActivity がこのアプリ以外のActivityを返すなら、それがベストなんだろう
 				// ただしAndroid M以降はMATCH_DEFAULT_ONLYだと「常時」が設定されてないとnullを返す
-				
 				val ri = pm.resolveActivity(
 					intent,
 					if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -630,7 +636,7 @@ class App1 : Application() {
 					} else {
 						PackageManager.MATCH_DEFAULT_ONLY
 					}
-				)?.takeIf { it.activityInfo.packageName != myName }
+				)?.takeIf(filter)
 				
 				if(ri != null) {
 					intent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name)
@@ -642,7 +648,7 @@ class App1 : Application() {
 					activity,
 					intent,
 					autoSelect = true,
-					filter = { it.activityInfo.packageName != myName }
+					filter = filter
 				) {
 					try {
 						intent.component = it.cn()

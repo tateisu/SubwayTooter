@@ -57,9 +57,7 @@ object Action_Account {
 						when(action) {
 							LoginForm.Action.Existing -> if(data is String) {
 								// ブラウザ用URLが生成された
-								val intent = Intent()
-								intent.data = data.toUri()
-								activity.startAccessTokenUpdate(intent)
+								App1.openBrowser(activity, data.toUri())
 								dialog.dismissSafe()
 								return
 							}

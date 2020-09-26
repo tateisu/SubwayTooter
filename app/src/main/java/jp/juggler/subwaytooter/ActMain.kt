@@ -1099,7 +1099,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				}
 				
 				if(resultCode == Activity.RESULT_OK && data != null) {
-					startAccessTokenUpdate(data)
+					App1.openBrowser(this, data.data)
 				} else if(resultCode == ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN && data != null) {
 					val db_id = data.getLongExtra(ActAccountSetting.EXTRA_DB_ID, - 1L)
 					checkAccessToken2(db_id)
@@ -1705,10 +1705,6 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 		val sx = icon_left + icon_width / 2 - sv_width / 2
 		svColumnStrip.smoothScrollTo(sx, 0)
 		
-	}
-	
-	fun startAccessTokenUpdate(data : Intent) {
-		App1.openBrowser(this, data.data)
 	}
 	
 	// ActOAuthCallbackで受け取ったUriを処理する

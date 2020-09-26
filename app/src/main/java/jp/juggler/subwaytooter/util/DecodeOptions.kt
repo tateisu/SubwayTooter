@@ -7,6 +7,7 @@ import android.text.style.ReplacementSpan
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.WordTrieTree
+import org.jetbrains.anko.collections.forEachReversedByIndex
 import java.util.*
 
 class DecodeOptions(
@@ -49,10 +50,11 @@ class DecodeOptions(
 	// AndroidのStaticLayoutはパラグラフ中に絵文字が沢山あると異常に遅いので、絵文字が連続して登場したら改行文字を挿入する
 	private fun SpannableStringBuilder.workaroundForEmojiLineBreak() : SpannableStringBuilder {
 		
+		val maxEmojiPerLine = if(linkHelper?.isMisskey == true) 5 else 12
+
 		val spans = getSpans(0, length, ReplacementSpan::class.java)
-		if(spans != null && spans.size >= 40) {
-			
-			val maxEmojiPerLine = if(linkHelper?.isMisskey == true) 5 else 12
+		if(spans != null && spans.size > maxEmojiPerLine) {
+
 			val insertList = ArrayList<Int>()
 			var emojiCount = 1
 			var preEnd : Int? = null
@@ -78,7 +80,7 @@ class DecodeOptions(
 				preEnd = getSpanEnd(span)
 			}
 			// 後ろから順に挿入する
-			insertList.reversed().forEach { insert(it, "\n") }
+			insertList.forEachReversedByIndex { insert(it, "\n") }
 		}
 		return this
 	}

@@ -931,11 +931,11 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		}
 		
 		colorOpaque(Pref.ipStatusBarColor, R.string.status_bar_color) {
-			changed = { App1.setStatusBarColor(this) }
+			changed = { setStatusBarColor(this) }
 		}
 		
 		colorOpaque(Pref.ipNavigationBarColor, R.string.navigation_bar_color) {
-			changed = { App1.setStatusBarColor(this) }
+			changed = { setStatusBarColor(this) }
 		}
 		
 		colorOpaque(Pref.ipSearchBgColor, R.string.search_bar_background_color)

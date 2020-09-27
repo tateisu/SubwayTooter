@@ -262,7 +262,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		
 		Styler.fixHorizontalPadding(root)
 		
-		App1.setSwitchColor(this, pref, root)
+		setSwitchColor(this, pref, root)
 		
 		tvInstance = findViewById(R.id.tvInstance)
 		tvUser = findViewById(R.id.tvUser)

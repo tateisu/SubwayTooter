@@ -538,7 +538,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 							item.pref.cast() ?: error("$name has no boolean pref")
 						showCaption(name)
 						swSwitch.vg(false) // skip animation
-						App1.setSwitchColor(activity, pref, swSwitch)
+						setSwitchColor(activity, pref, swSwitch)
 						swSwitch.isEnabled = item.enabled
 						swSwitch.isChecked = bp(pref)
 						swSwitch.vg(true)
@@ -883,9 +883,8 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 		}
 	}
 	
-	fun setSwitchColor() {
-		App1.setSwitchColor(this@ActAppSetting, pref, lvList)
-	}
+	fun setSwitchColor() =
+		setSwitchColor(this@ActAppSetting, pref, lvList)
 	
 	//////////////////////////////////////////////////////
 	

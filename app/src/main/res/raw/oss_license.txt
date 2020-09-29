@@ -287,10 +287,10 @@ https://icons8.com/license/
 https://icons8.com/articles/weve-contributed-an-icon-to-imageoptim/
 
 ====================================================
-#InstanceTicker
-https://wee.jp/mastodon/
+OpenSticker
+https://opensticker.0px.io/
 
-Copyright 2018 weepjp, kyori19.
+(c) 2020 weep, kyori19, cutls
 
 ====================================================
 BigBadaboom/AndroidSVG

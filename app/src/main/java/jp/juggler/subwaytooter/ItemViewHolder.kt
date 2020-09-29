@@ -148,9 +148,9 @@ internal class ItemViewHolder(
 	
 	private lateinit var tvMessageHolder : TextView
 	
-	private lateinit var llInstanceTicker : View
-	private lateinit var ivInstanceTicker : MyNetworkImageView
-	private lateinit var tvInstanceTicker : TextView
+	private lateinit var llOpenSticker : View
+	private lateinit var ivOpenSticker : MyNetworkImageView
+	private lateinit var tvOpenSticker : TextView
 	
 	private lateinit var tvLastStatusAt : TextView
 	
@@ -445,7 +445,7 @@ internal class ItemViewHolder(
 		this.viewRoot.setBackgroundColor(0)
 		this.boostedAction = defaultBoostedAction
 		
-		llInstanceTicker.visibility = View.GONE
+		llOpenSticker.visibility = View.GONE
 		llBoosted.visibility = View.GONE
 		llReply.visibility = View.GONE
 		llFollow.visibility = View.GONE
@@ -1307,7 +1307,7 @@ internal class ItemViewHolder(
 		)
 		//		}
 		
-		showInstanceTicker(who)
+		showOpenSticker(who)
 		
 		var content = status.decoded_content
 		
@@ -1464,9 +1464,9 @@ internal class ItemViewHolder(
 		tvApplication.vg(sb != null)?.text = sb
 	}
 	
-	private fun showInstanceTicker(who : TootAccount) {
+	private fun showOpenSticker(who : TootAccount) {
 		try {
-			if(! Column.useInstanceTicker) return
+			if(! Column.showOpenSticker) return
 			
 			val host = who.apDomain
 			
@@ -1481,39 +1481,38 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			val item = InstanceTicker.lastList[host.ascii] ?: return
+			val item = OpenSticker.lastList[host.ascii] ?: return
 			
-			tvInstanceTicker.text = item.name
-			tvInstanceTicker.textColor = item.colorText
+			tvOpenSticker.text = item.name
+			tvOpenSticker.textColor = item.fontColor
 			
 			val density = activity.density
 			
-			val lp = ivInstanceTicker.layoutParams
+			val lp = ivOpenSticker.layoutParams
 			lp.height = (density * 16f + 0.5f).toInt()
 			lp.width = (density * item.imageWidth + 0.5f).toInt()
 			
-			ivInstanceTicker.layoutParams = lp
-			ivInstanceTicker.setImageUrl(activity.pref, 0f, item.image)
-			val colorBg = item.colorBg
+			ivOpenSticker.layoutParams = lp
+			ivOpenSticker.setImageUrl(activity.pref, 0f, item.favicon)
+			val colorBg = item.bgColor
 			when {
 				colorBg.isEmpty() -> {
-					tvInstanceTicker.background = null
-					ivInstanceTicker.background = null
+					tvOpenSticker.background = null
+					ivOpenSticker.background = null
 				}
 				
 				colorBg.size == 1 -> {
-					tvInstanceTicker.setBackgroundColor(colorBg.first())
-					ivInstanceTicker.setBackgroundColor(colorBg.first())
+					tvOpenSticker.setBackgroundColor(colorBg.first())
+					ivOpenSticker.setBackgroundColor(colorBg.first())
 				}
 				
 				else -> {
-					ivInstanceTicker.setBackgroundColor(colorBg.last())
-					tvInstanceTicker.background = colorBg.getGradation()
-					
+					ivOpenSticker.setBackgroundColor(colorBg.last())
+					tvOpenSticker.background = colorBg.getGradation()
 				}
 			}
-			llInstanceTicker.visibility = View.VISIBLE
-			llInstanceTicker.requestLayout()
+			llOpenSticker.visibility = View.VISIBLE
+			llOpenSticker.requestLayout()
 			
 		} catch(ex : Throwable) {
 			log.trace(ex)
@@ -3403,15 +3402,15 @@ internal class ItemViewHolder(
 						tvName = textView {
 						}.lparams(matchParent, wrapContent)
 						
-						llInstanceTicker = linearLayout {
+						llOpenSticker = linearLayout {
 							lparams(matchParent, wrapContent)
 							
-							ivInstanceTicker = myNetworkImageView {
+							ivOpenSticker = myNetworkImageView {
 							}.lparams(dip(16), dip(16)) {
 								isBaselineAligned = false
 							}
 							
-							tvInstanceTicker = textView {
+							tvOpenSticker = textView {
 								setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10f)
 								gravity = Gravity.CENTER_VERTICAL
 								setPaddingStartEnd(dip(4f), dip(4f))

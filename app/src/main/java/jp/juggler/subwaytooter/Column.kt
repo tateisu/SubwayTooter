@@ -194,7 +194,7 @@ class Column(
 		
 		val typeMap : SparseArray<ColumnType> = SparseArray()
 		
-		internal var useInstanceTicker = false
+		internal var showOpenSticker = false
 		
 		internal const val QUICK_FILTER_ALL = 0
 		internal const val QUICK_FILTER_MENTION = 1
@@ -1951,7 +1951,7 @@ class Column(
 		
 		initFilter()
 		
-		useInstanceTicker = Pref.bpInstanceTicker(app_state.pref)
+		showOpenSticker = Pref.bpOpenSticker(app_state.pref)
 		
 		mRefreshLoadingErrorPopupState = 0
 		mRefreshLoadingError = ""

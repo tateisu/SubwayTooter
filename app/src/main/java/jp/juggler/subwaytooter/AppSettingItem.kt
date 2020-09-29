@@ -699,11 +699,9 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		
 		
 		
-		sw(Pref.bpInstanceTicker, R.string.show_instance_ticker) {
-			desc = R.string.instance_ticker_copyright
-			descClick = {
-				openBrowser("https://github.com/MiyonMiyon/InstanceTicker_List")
-			}
+		sw(Pref.bpOpenSticker, R.string.show_open_sticker) {
+			desc = R.string.powered_by_open_sticker
+			descClick = {openBrowser("https://github.com/cutls/OpenSticker") }
 		}
 		
 		sw(Pref.bpLinksInContextMenu, R.string.show_links_in_context_menu)

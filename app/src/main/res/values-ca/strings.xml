@@ -842,7 +842,7 @@
     <string name="profile_directory_of">Directori de \"%1$s\"</string>
     <string name="about_this_instance">Sobre el servidor</string>
     <string name="top_page">Primera plana</string>
-    <string name="show_instance_ticker">Mostra #InstanceTicker (cal refrescar columna)</string>
+    <string name="show_open_sticker">Mostra OpenSticker (cal refrescar columna)</string>
     <string name="location">Ubicació</string>
     <string name="birthday">Aniversari</string>
     <string name="existing_account">Iniciar sessió</string>

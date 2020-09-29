@@ -303,10 +303,12 @@ object Pref {
 		false
 	)
 	
-	val bpInstanceTicker = BooleanPref(
-		"InstanceTicker",
+	val bpOpenSticker = BooleanPref(
+		"InstanceTicker", // 歴史的な理由でキー名が異なる
 		false
 	)
+	
+	
 	val bpLinksInContextMenu = BooleanPref(
 		"LinksInContextMenu",
 		false

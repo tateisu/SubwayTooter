@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter
 import android.os.SystemClock
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.util.InstanceTicker
+import jp.juggler.subwaytooter.util.OpenSticker
 import jp.juggler.util.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -22,8 +22,8 @@ class ColumnTask_Loading(
 	override fun doInBackground() : TootApiResult? {
 		ctStarted.set(true)
 		
-		if(Pref.bpInstanceTicker(pref)) {
-			InstanceTicker.load()
+		if(Pref.bpOpenSticker(pref)) {
+			OpenSticker.load()
 		}
 		
 		val client = TootApiClient(context, callback = object : TootApiCallback {

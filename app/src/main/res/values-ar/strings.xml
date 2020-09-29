@@ -500,8 +500,6 @@
     <string name="notification_sound">إشعار صوتي</string>
     <string name="display_name_follow_request_accepted_by">وافَق %1$s على طلبك للإشتراك بحسابه</string>
     <string name="confirm_unbookmark_from">هل تريد إزاحة هذا المنشور من المفضلة %1$s ؟</string>
-    <string name="instance_ticker_copyright" translatable="false">#InstanceTicker
-\n(c)2018-2020 MiyonMiyon. Released under the MIT License.</string>
     <string name="hide_followers_count">إخفاء عدد المتابِعين</string>
     <string name="show_hide">إظهار/إخفاء</string>
     <string name="language_hide">إخفاء</string>

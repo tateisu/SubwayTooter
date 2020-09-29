@@ -6,6 +6,9 @@ import android.graphics.Color
 import androidx.preference.PreferenceManager
 import jp.juggler.util.optInt
 
+fun Context.pref() : SharedPreferences =
+	PreferenceManager.getDefaultSharedPreferences(this)
+
 @Suppress("EqualsOrHashCode")
 abstract class BasePref<T>(val key : String, val defVal : T) {
 	
@@ -17,28 +20,25 @@ abstract class BasePref<T>(val key : String, val defVal : T) {
 			Pref.map[key] = this
 	}
 	
-	override fun equals(other : Any?) : Boolean {
-		return this === other
-	}
-	
-	fun remove(e : SharedPreferences.Editor) {
-		e.remove(key)
-	}
-	
 	abstract fun put(editor : SharedPreferences.Editor, v : T)
 	abstract fun invoke(pref : SharedPreferences) : T
+
+	override fun equals(other : Any?) =
+		this === other
 	
-	operator fun invoke(context : Context) : T {
-		return invoke(Pref.pref(context))
-	}
+	operator fun invoke(context : Context) : T =
+		invoke(context.pref())
 	
-	fun removeDefault(pref : SharedPreferences, e : SharedPreferences.Editor) : Boolean {
+	fun remove(e : SharedPreferences.Editor) : SharedPreferences.Editor =
+		e.remove(key)
+	
+	fun removeDefault(pref : SharedPreferences, e : SharedPreferences.Editor) =
 		if(pref.contains(key) && this.invoke(pref) == defVal) {
 			e.remove(key)
-			return true
+			true
+		}else {
+			false
 		}
-		return false
-	}
 }
 
 fun SharedPreferences.Editor.remove(item : BasePref<*>) : SharedPreferences.Editor {
@@ -124,10 +124,6 @@ fun SharedPreferences.Editor.put(item : FloatPref, v : Float) =
 	this.apply { item.put(this, v) }
 
 object Pref {
-	
-	fun pref(context : Context) : SharedPreferences {
-		return PreferenceManager.getDefaultSharedPreferences(context)
-	}
 	
 	// キー名と設定項目のマップ。インポートやアプリ設定で使う
 	val map = HashMap<String, BasePref<*>>()
@@ -445,6 +441,7 @@ object Pref {
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)
+	
 	@Suppress("unused")
 	const val BACK_ASK_ALWAYS = 0
 	const val BACK_CLOSE_COLUMN = 1
@@ -454,18 +451,18 @@ object Pref {
 	val ipUiTheme = IntPref("ui_theme", 0)
 	val ipResizeImage = IntPref("resize_image", 4)
 	
-	
 	const val RC_SIMPLE = 0
 	const val RC_ACTUAL = 1
+	
 	@Suppress("unused")
 	const val RC_NONE = 2
 	val ipRepliesCount = IntPref("RepliesCount", RC_SIMPLE)
 	val ipBoostsCount = IntPref("BoostsCount", RC_ACTUAL)
 	val ipFavouritesCount = IntPref("FavouritesCount", RC_ACTUAL)
 	
-	
 	val ipRefreshAfterToot = IntPref("refresh_after_toot", 0)
 	const val RAT_REFRESH_SCROLL = 0
+	
 	@Suppress("unused")
 	const val RAT_REFRESH_DONT_SCROLL = 1
 	const val RAT_DONT_REFRESH = 2
@@ -477,6 +474,7 @@ object Pref {
 	val ipVisibilityStyle = IntPref("ipVisibilityStyle", VS_BY_ACCOUNT)
 	
 	const val ABP_TOP = 0
+	
 	@Suppress("unused")
 	const val ABP_BOTTOM = 1
 	const val ABP_START = 2
@@ -547,8 +545,6 @@ object Pref {
 	val ipVerifiedLinkBgColor = IntPref("VerifiedLinkBgColor", 0)
 	val ipVerifiedLinkFgColor = IntPref("VerifiedLinkFgColor", 0)
 	
-	
-	
 	//	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)
 	//	const val TTCS_WEEKLY = 0
 	//	const val TTCS_DAILY = 1
@@ -577,7 +573,7 @@ object Pref {
 	val spBoostAlpha = StringPref("BoostAlpha", "60")
 	
 	val spScreenBottomPadding = StringPref("ScreenBottomPadding", "8")
-
+	
 	val spPullNotificationCheckInterval = StringPref("PullNotificationCheckInterval", "15")
 	val spUserAgent = StringPref("UserAgent", "")
 	
@@ -611,3 +607,4 @@ object Pref {
 	internal const val default_header_font_size = 14f
 	
 }
+

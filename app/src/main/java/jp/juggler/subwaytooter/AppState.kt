@@ -48,6 +48,7 @@ class AppState(
 ) {
 	
 	companion object {
+		
 		internal val log = LogCategory("AppState")
 		
 		private const val FILE_COLUMN_LIST = "column_list"
@@ -86,7 +87,7 @@ class AppState(
 					}
 				} catch(ex : Throwable) {
 					log.trace(ex)
-					showToast(context, ex, "saveColumnList failed.")
+					context.showToast(ex, "saveColumnList failed.")
 				}
 			}
 		}
@@ -102,7 +103,7 @@ class AppState(
 				} catch(ignored : FileNotFoundException) {
 				} catch(ex : Throwable) {
 					log.trace(ex)
-					showToast(context, ex, "loadColumnList failed.")
+					context.showToast(ex, "loadColumnList failed.")
 				}
 				
 				return null
@@ -355,11 +356,11 @@ class AppState(
 		
 		if(willSpeechEnabled && tts == null && tts_status == TTS_STATUS_NONE) {
 			tts_status = TTS_STATUS_INITIALIZING
-			showToast(context, false, R.string.text_to_speech_initializing)
+			context.showToast(false, R.string.text_to_speech_initializing)
 			log.d("initializing TextToSpeech…")
 			
 			GlobalScope.launch(Dispatchers.IO) {
-
+				
 				var tmp_tts : TextToSpeech? = null
 				
 				val tts_init_listener : TextToSpeech.OnInitListener =
@@ -367,8 +368,7 @@ class AppState(
 						
 						val tts = tmp_tts
 						if(tts == null || TextToSpeech.SUCCESS != status) {
-							showToast(
-								context,
+							context.showToast(
 								false,
 								R.string.text_to_speech_initialize_failed,
 								status
@@ -379,7 +379,7 @@ class AppState(
 						
 						runOnMainLooper {
 							if(! willSpeechEnabled) {
-								showToast(context, false, R.string.text_to_speech_shutdown)
+								context.showToast(false, R.string.text_to_speech_shutdown)
 								log.d("shutdown TextToSpeech…")
 								tts.shutdown()
 							} else {
@@ -450,7 +450,7 @@ class AppState(
 		}
 		
 		if(! willSpeechEnabled && tts != null) {
-			showToast(context, false, R.string.text_to_speech_shutdown)
+			context.showToast(false, R.string.text_to_speech_shutdown)
 			log.d("shutdown TextToSpeech…")
 			tts?.shutdown()
 			tts = null

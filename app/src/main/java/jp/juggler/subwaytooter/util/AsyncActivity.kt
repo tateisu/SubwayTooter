@@ -31,18 +31,6 @@ abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
 		(job + Dispatchers.Default).cancel()
 	}
 	
-	fun showToast(bLong : Boolean, fmt : String?, vararg args : Any) =
-		showToast(this, bLong, fmt, *args)
-	
-	fun showToast(ex : Throwable, fmt : String?, vararg args : Any) =
-		showToast(this, ex, fmt, *args)
-	
-	fun showToast(bLong : Boolean, string_id : Int, vararg args : Any) =
-		showToast(this, bLong, string_id, *args)
-	
-	fun showToast(ex : Throwable, string_id : Int, vararg args : Any) =
-		showToast(this, ex, string_id, *args)
-	
 	fun <T : Any?> runWithProgress(
 		caption : String,
 		doInBackground : suspend CoroutineScope.(ProgressDialogEx) -> T,
@@ -79,7 +67,7 @@ abstract class AsyncActivity : AppCompatActivity(), CoroutineScope {
 				}
 				if(result != null) afterProc(result)
 			} catch(ex : Throwable) {
-				showToast(this@AsyncActivity, ex, "$caption failed.")
+				showToast(ex, "$caption failed.")
 			} finally {
 				progress.dismissSafe()
 				try {

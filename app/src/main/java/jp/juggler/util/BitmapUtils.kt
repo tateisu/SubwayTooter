@@ -124,7 +124,7 @@ fun createResizedBitmap(
 		var src_width = options.outWidth
 		var src_height = options.outHeight
 		if(src_width <= 0 || src_height <= 0) {
-			showToast(context, false, "could not get image bounds.")
+			context.showToast(false, "could not get image bounds.")
 			return null
 		}
 		
@@ -204,7 +204,7 @@ fun createResizedBitmap(
 			}
 		
 		if(sourceBitmap == null) {
-			showToast(context, false, "could not decode image.")
+			context.showToast(false, "could not decode image.")
 			return null
 		}
 		try {
@@ -234,7 +234,7 @@ fun createResizedBitmap(
 				Bitmap.createBitmap(dstSizeInt.x, dstSizeInt.y, Bitmap.Config.ARGB_8888)
 			try {
 				return if(dst == null) {
-					showToast(context, false, "bitmap creation failed.")
+					context.showToast(false, "bitmap creation failed.")
 					null
 				} else {
 					val canvas = Canvas(dst)

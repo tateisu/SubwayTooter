@@ -19,7 +19,7 @@ class SavedAccount(
 	val db_id : Long,
 	acctArg : String,
 	apiHostArg : String? = null,
-	apDomainArg 	: String? = null,
+	apDomainArg : String? = null,
 	var token_info : JsonObject? = null,
 	var loginAccount : TootAccount? = null, // 疑似アカウントではnull
 	override val misskeyVersion : Int = 0
@@ -74,14 +74,13 @@ class SavedAccount(
 	var last_subscription_error : String? = null
 	var last_push_endpoint : String? = null
 	
-	
 	init {
 		val tmpAcct = Acct.parse(acctArg)
 		this.username = tmpAcct.username
 		if(username.isEmpty()) throw RuntimeException("missing username in acct")
-
-		val tmpApiHost = apiHostArg?.notEmpty()?.let{ Host.parse(it)}
-		val tmpApDomain = apDomainArg?.notEmpty()?.let{ Host.parse(it)}
+		
+		val tmpApiHost = apiHostArg?.notEmpty()?.let { Host.parse(it) }
+		val tmpApDomain = apDomainArg?.notEmpty()?.let { Host.parse(it) }
 		
 		this.apiHost = tmpApiHost ?: tmpApDomain ?: tmpAcct.host ?: error("missing apiHost")
 		this.apDomain = tmpApDomain ?: tmpApiHost ?: tmpAcct.host ?: error("missing apDomain")
@@ -106,7 +105,7 @@ class SavedAccount(
 				context,
 				LinkHelper.create(
 					apiHostArg = this@SavedAccount.apiHost,
-					apDomainArg =  this@SavedAccount.apDomain,
+					apDomainArg = this@SavedAccount.apDomain,
 					misskeyVersion = misskeyVersion
 				)
 			).account(jsonAccount)
@@ -292,20 +291,19 @@ class SavedAccount(
 		return acct.host == null || acct.host == this.apDomain
 	}
 	
-	
 	//	fun isRemoteUser(acct : String) : Boolean {
 	//		return ! isLocalUser(acct)
 	//	}
 	
 	fun isMe(who : TootAccount?) : Boolean = isMe(who?.acct)
-//	fun isMe(who_acct : String) : Boolean  = isMe(Acct.parse(who_acct))
-
-	fun isMe(who_acct : Acct?):Boolean{
-		who_acct?:return false
-		if( who_acct.username != this.acct.username) return false
+	//	fun isMe(who_acct : String) : Boolean  = isMe(Acct.parse(who_acct))
+	
+	fun isMe(who_acct : Acct?) : Boolean {
+		who_acct ?: return false
+		if(who_acct.username != this.acct.username) return false
 		return who_acct.host == null || who_acct.host == this.acct.host
 	}
-
+	
 	fun supplyBaseUrl(url : String?) : String? {
 		return when {
 			url == null || url.isEmpty() -> return null
@@ -317,6 +315,7 @@ class SavedAccount(
 	fun isNicoru(account : TootAccount?) : Boolean = account?.apiHost == Host.FRIENDS_NICO
 	
 	companion object : TableCompanion {
+		
 		private val log = LogCategory("SavedAccount")
 		
 		const val table = "access_info"
@@ -470,7 +469,7 @@ class SavedAccount(
 					
 					// スキーマ57から
 					+ ",$COL_NOTIFICATION_POST integer default 1"
-
+					
 					+ ")"
 			)
 			db.execSQL("create index if not exists ${table}_user on ${table}(u)")
@@ -604,7 +603,7 @@ class SavedAccount(
 					log.trace(ex)
 				}
 			}
-
+			
 			if(oldVersion < 33 && newVersion >= 33) {
 				try {
 					db.execSQL("alter table $table add column $COL_NOTIFICATION_REACTION integer default 1")
@@ -617,7 +616,7 @@ class SavedAccount(
 					log.trace(ex)
 				}
 			}
-
+			
 			if(oldVersion < 38 && newVersion >= 38) {
 				try {
 					db.execSQL("alter table $table add column $COL_DEFAULT_SENSITIVE integer default 0")
@@ -716,7 +715,7 @@ class SavedAccount(
 		fun insert(
 			acct : String,
 			host : String,
-			domain:String?,
+			domain : String?,
 			account : JsonObject,
 			token : JsonObject,
 			misskeyVersion : Int = 0
@@ -725,7 +724,7 @@ class SavedAccount(
 				val cv = ContentValues()
 				cv.put(COL_USER, acct)
 				cv.put(COL_HOST, host)
-				cv.putOrNull(COL_DOMAIN,domain)
+				cv.putOrNull(COL_DOMAIN, domain)
 				cv.put(COL_ACCOUNT, account.toString())
 				cv.put(COL_TOKEN, token.toString())
 				cv.put(COL_MISSKEY_VERSION, misskeyVersion)
@@ -792,7 +791,7 @@ class SavedAccount(
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				log.e(ex, "loadAccountList failed.")
-				showToast(context, true, ex.withCaption("(SubwayTooter) broken in-app database?"))
+				context.showToast(true, ex.withCaption("(SubwayTooter) broken in-app database?"))
 			}
 			
 			return result
@@ -893,47 +892,47 @@ class SavedAccount(
 				return 0L
 			}
 		
-		fun isNicoru(acct:Acct) : Boolean {
+		fun isNicoru(acct : Acct) : Boolean {
 			return acct.host == Host.FRIENDS_NICO
 		}
 		
-//		private fun charAtLower(src : CharSequence, pos : Int) : Char {
-//			val c = src[pos]
-//			return if(c >= 'a' && c <= 'z') c - ('a' - 'A') else c
-//		}
-//
-//		@Suppress("SameParameterValue")
-//		private fun host_match(
-//			a : CharSequence,
-//			a_startArg : Int,
-//			b : CharSequence,
-//			b_startArg : Int
-//		) : Boolean {
-//			var a_start = a_startArg
-//			var b_start = b_startArg
-//
-//			val a_end = a.length
-//			val b_end = b.length
-//
-//			var a_remain = a_end - a_start
-//			val b_remain = b_end - b_start
-//
-//			// 文字数が違う
-//			if(a_remain != b_remain) return false
-//
-//			// 文字数がゼロ
-//			if(a_remain <= 0) return true
-//
-//			// 末尾の文字が違う
-//			if(charAtLower(a, a_end - 1) != charAtLower(b, b_end - 1)) return false
-//
-//			// 先頭からチェック
-//			while(a_remain -- > 0) {
-//				if(charAtLower(a, a_start ++) != charAtLower(b, b_start ++)) return false
-//			}
-//
-//			return true
-//		}
+		//		private fun charAtLower(src : CharSequence, pos : Int) : Char {
+		//			val c = src[pos]
+		//			return if(c >= 'a' && c <= 'z') c - ('a' - 'A') else c
+		//		}
+		//
+		//		@Suppress("SameParameterValue")
+		//		private fun host_match(
+		//			a : CharSequence,
+		//			a_startArg : Int,
+		//			b : CharSequence,
+		//			b_startArg : Int
+		//		) : Boolean {
+		//			var a_start = a_startArg
+		//			var b_start = b_startArg
+		//
+		//			val a_end = a.length
+		//			val b_end = b.length
+		//
+		//			var a_remain = a_end - a_start
+		//			val b_remain = b_end - b_start
+		//
+		//			// 文字数が違う
+		//			if(a_remain != b_remain) return false
+		//
+		//			// 文字数がゼロ
+		//			if(a_remain <= 0) return true
+		//
+		//			// 末尾の文字が違う
+		//			if(charAtLower(a, a_end - 1) != charAtLower(b, b_end - 1)) return false
+		//
+		//			// 先頭からチェック
+		//			while(a_remain -- > 0) {
+		//				if(charAtLower(a, a_start ++) != charAtLower(b, b_start ++)) return false
+		//			}
+		//
+		//			return true
+		//		}
 		
 		private val account_comparator = Comparator<SavedAccount> { a, b ->
 			var i : Int
@@ -1065,7 +1064,7 @@ class SavedAccount(
 	
 	fun updateNotificationError(text : String?) {
 		this.last_notification_error = text
-		if(db_id != INVALID_DB_ID){
+		if(db_id != INVALID_DB_ID) {
 			val cv = ContentValues()
 			when(text) {
 				null -> cv.putNull(COL_LAST_NOTIFICATION_ERROR)
@@ -1077,7 +1076,7 @@ class SavedAccount(
 	
 	fun updateSubscriptionError(text : String?) {
 		this.last_subscription_error = text
-		if(db_id != INVALID_DB_ID){
+		if(db_id != INVALID_DB_ID) {
 			val cv = ContentValues()
 			when(text) {
 				null -> cv.putNull(COL_LAST_SUBSCRIPTION_ERROR)
@@ -1089,7 +1088,7 @@ class SavedAccount(
 	
 	fun updateLastPushEndpoint(text : String?) {
 		this.last_push_endpoint = text
-		if(db_id != INVALID_DB_ID){
+		if(db_id != INVALID_DB_ID) {
 			val cv = ContentValues()
 			when(text) {
 				null -> cv.putNull(COL_LAST_PUSH_ENDPOINT)
@@ -1106,6 +1105,5 @@ class SavedAccount(
 		}
 	
 	override fun hashCode() : Int = acct.hashCode()
-	
 	
 }

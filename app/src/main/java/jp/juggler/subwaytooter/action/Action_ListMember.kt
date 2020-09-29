@@ -17,6 +17,7 @@ object Action_ListMember {
 	private val reFollowError = "follow".asciiPattern(Pattern.CASE_INSENSITIVE)
 	
 	fun interface Callback {
+		
 		fun onListMemberUpdated(willRegistered : Boolean, bSuccess : Boolean)
 	}
 	
@@ -51,13 +52,13 @@ object Action_ListMember {
 				} else {
 					
 					val isMe = access_info.isMe(local_who)
-					if( isMe ) {
+					if(isMe) {
 						val (ti, ri) = TootInstance.get(client)
 						if(ti == null) return ri
 						if(! ti.versionGE(TootInstance.VERSION_3_1_0_rc1)) {
 							return TootApiResult(activity.getString(R.string.it_is_you))
 						}
-					}else if(bFollow) {
+					} else if(bFollow) {
 						// リモートユーザの解決
 						if(! access_info.isLocalUser(local_who)) {
 							val (r2, ar) = client.syncAccountByAcct(access_info, local_who.acct)
@@ -119,7 +120,7 @@ object Action_ListMember {
 						// フォロー状態の更新を表示に反映させる
 						if(bFollow) activity.showColumnMatchAccount(access_info)
 						
-						showToast(activity, false, R.string.list_member_added)
+						activity.showToast(false, R.string.list_member_added)
 						
 						bSuccess = true
 						
@@ -159,7 +160,7 @@ object Action_ListMember {
 							return
 						}
 						
-						showToast(activity, true, error)
+						activity.showToast(true, error)
 						
 					}
 				} finally {
@@ -209,12 +210,12 @@ object Action_ListMember {
 							column.onListMemberUpdated(access_info, list_id, local_who, false)
 						}
 						
-						showToast(activity, false, R.string.delete_succeeded)
+						activity.showToast(false, R.string.delete_succeeded)
 						
 						bSuccess = true
 						
 					} else {
-						showToast(activity, false, result.error)
+						activity.showToast(false, result.error)
 					}
 				} finally {
 					callback?.onListMemberUpdated(false, bSuccess)

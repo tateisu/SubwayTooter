@@ -21,6 +21,7 @@ import java.util.*
 class ActColumnList : AppCompatActivity() {
 	
 	companion object {
+		
 		private val log = LogCategory("ActColumnList")
 		internal const val TMP_FILE_COLUMN_LIST = "tmp_column_list"
 		
@@ -119,11 +120,7 @@ class ActColumnList : AppCompatActivity() {
 				if(swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
 					val adapterItem = item.tag as MyItem
 					if(adapterItem.json.optBoolean(Column.KEY_DONT_CLOSE, false)) {
-						showToast(
-							this@ActColumnList,
-							false,
-							R.string.column_has_dont_close_option
-						)
+						showToast(false, R.string.column_has_dont_close_option)
 						listView.resetSwipedViews(null)
 						return
 					}
@@ -203,7 +200,7 @@ class ActColumnList : AppCompatActivity() {
 		val type = ColumnType.parse(json.optInt(Column.KEY_TYPE))
 		val acct_color_bg = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR_BG, 0)
 		val acct_color_fg = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR, 0)
-			.notZero() ?: getAttributeColor(context, R.attr.colorColumnListItemText)
+			.notZero() ?: context.getAttributeColor(R.attr.colorColumnListItemText)
 		var bOldSelection : Boolean = false
 		
 		fun setOldSelection(b : Boolean) {
@@ -276,15 +273,13 @@ class ActColumnList : AppCompatActivity() {
 			dragView.findViewById<View>(R.id.ivBookmark).visibility =
 				clickedView.findViewById<View>(R.id.ivBookmark).visibility
 			
-			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
-				getAttributeColor(this@ActColumnList, R.attr.list_item_bg_pressed_dragged)
-			)
+			dragView.findViewById<View>(R.id.item_layout)
+				.setBackgroundColor(getAttributeColor(R.attr.list_item_bg_pressed_dragged))
 		}
 	}
 	
 	private inner class MyListAdapter :
 		DragItemAdapter<MyItem, MyViewHolder>() {
-		
 		
 		init {
 			setHasStableIds(true)

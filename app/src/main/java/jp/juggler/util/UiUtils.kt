@@ -37,8 +37,7 @@ fun Int.applyAlphaMultiplier(alphaMultiplier : Float? = null) : Int {
 	}
 }
 
-fun getAttributeColor(context : Context, attrId : Int) : Int {
-	val theme = context.theme
+fun Context.getAttributeColor(attrId : Int) : Int {
 	val a = theme.obtainStyledAttributes(intArrayOf(attrId))
 	val color = a.getColor(0, Color.BLACK)
 	a.recycle()
@@ -298,10 +297,10 @@ fun CharSequence.copyToClipboard(context : Context) {
 		
 		clipboard.setPrimaryClip(clip)
 		
-		showToast(context, false, R.string.copy_complete)
+		context.showToast(false, R.string.copy_complete)
 	} catch(ex : Throwable) {
 		UiUtils.log.trace(ex)
-		showToast(context, ex, "copy failed.")
+		context.showToast(ex, "copy failed.")
 	}
 	
 }

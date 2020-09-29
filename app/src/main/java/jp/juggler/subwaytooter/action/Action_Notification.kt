@@ -44,13 +44,13 @@ object Action_Notification {
 				if(result.jsonObject != null) {
 					// ok. api have return empty object.
 					for(column in App1.getAppState(activity).column_list) {
-						if(column.isNotificationColumn && column.access_info == target_account ) {
+						if(column.isNotificationColumn && column.access_info == target_account) {
 							column.removeNotifications()
 						}
 					}
-					showToast(activity, false, R.string.delete_succeeded)
+					activity.showToast(false, R.string.delete_succeeded)
 				} else {
-					showToast(activity, false, result.error)
+					activity.showToast(false, result.error)
 				}
 				
 			}
@@ -92,9 +92,9 @@ object Action_Notification {
 					for(column in App1.getAppState(activity).column_list) {
 						column.removeNotificationOne(access_info, notification)
 					}
-					showToast(activity, true, R.string.delete_succeeded)
+					activity.showToast(true, R.string.delete_succeeded)
 				} else {
-					showToast(activity, true, result.error)
+					activity.showToast(true, result.error)
 				}
 				
 			}

@@ -176,41 +176,41 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 	//////////////////////////////////////////////////////////////////
 	// 変更しない変数
 	
-	val follow_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.follow_succeeded)
+	val follow_complete_callback : ()->Unit = {
+		showToast(false, R.string.follow_succeeded)
 	}
 	
-	val unfollow_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.unfollow_succeeded)
+	val unfollow_complete_callback : ()->Unit = {
+		showToast(false, R.string.unfollow_succeeded)
 	}
-	val cancel_follow_request_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.follow_request_cancelled)
-	}
-	
-	val favourite_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.favourite_succeeded)
-	}
-	val unfavourite_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.unfavourite_succeeded)
+	val cancel_follow_request_complete_callback : ()->Unit = {
+		showToast(false, R.string.follow_request_cancelled)
 	}
 	
-	val bookmark_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.bookmark_succeeded)
+	val favourite_complete_callback : ()->Unit = {
+		showToast(false, R.string.favourite_succeeded)
 	}
-	val unbookmark_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.unbookmark_succeeded)
-	}
-	
-	val boost_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.boost_succeeded)
+	val unfavourite_complete_callback : ()->Unit = {
+		showToast(false, R.string.unfavourite_succeeded)
 	}
 	
-	val unboost_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.unboost_succeeded)
+	val bookmark_complete_callback : ()->Unit = {
+		showToast(false, R.string.bookmark_succeeded)
+	}
+	val unbookmark_complete_callback : ()->Unit = {
+		showToast(false, R.string.unbookmark_succeeded)
 	}
 	
-	val reaction_complete_callback : EmptyCallback = {
-		showToast(this@ActMain, false, R.string.reaction_succeeded)
+	val boost_complete_callback : ()->Unit = {
+		showToast(false, R.string.boost_succeeded)
+	}
+	
+	val unboost_complete_callback : ()->Unit = {
+		showToast(false, R.string.unboost_succeeded)
+	}
+	
+	val reaction_complete_callback : ()->Unit = {
+		showToast(false, R.string.reaction_succeeded)
 	}
 	
 	// 相対時刻の表記を定期的に更新する
@@ -566,7 +566,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 		ItemViewHolder.toot_color_direct_me = Pref.ipTootColorDirectMe(pref)
 		MyClickableSpan.showLinkUnderline = Pref.bpShowLinkUnderline(pref)
 		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
-			?: getAttributeColor(this, R.attr.colorLink)
+			?: getAttributeColor(R.attr.colorLink)
+		
 		CustomShare.reloadCache(this, pref)
 		
 		te = SystemClock.elapsedRealtime()
@@ -1099,7 +1100,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				}
 				
 				if(resultCode == Activity.RESULT_OK && data != null) {
-					App1.openBrowser(this, data.data)
+					openBrowser(data.data)
 				} else if(resultCode == ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN && data != null) {
 					val db_id = data.getLongExtra(ActAccountSetting.EXTRA_DB_ID, - 1L)
 					checkAccessToken2(db_id)
@@ -1195,7 +1196,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 						) {
 							this@ActMain.finish()
 						} else {
-							showToast(this@ActMain, false, R.string.missing_closeable_column)
+							showToast(false, R.string.missing_closeable_column)
 						}
 					}
 					
@@ -1205,7 +1206,6 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 					
 					else -> {
 						showToast(
-							this@ActMain,
 							false,
 							R.string.cant_close_column_by_back_button_when_multiple_column_shown
 						)
@@ -2048,28 +2048,25 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				// cancelled.
 			}
 			
-			error != null -> showToast(
-				this@ActMain,
-				true,
-				"${result.error} ${result.requestInfo}".trim()
-			)
+			error != null ->
+				showToast(true, "${result.error} ${result.requestInfo}".trim())
 			
-			token_info == null -> showToast(this@ActMain, true, "can't get access token.")
+			token_info == null -> showToast(true, "can't get access token.")
 			
-			jsonObject == null -> showToast(this@ActMain, true, "can't parse json response.")
+			jsonObject == null -> showToast(true, "can't parse json response.")
 			
 			// 自分のユーザネームを取れなかった
 			// …普通はエラーメッセージが設定されてるはずだが
-			ta == null -> showToast(this@ActMain, true, "can't verify user credential.")
+			ta == null -> showToast(true, "can't verify user credential.")
 			
 			// アクセストークン更新時
 			// インスタンスは同じだと思うが、ユーザ名が異なる可能性がある
 			sa != null ->
 				if(sa.username != ta.username) {
-					showToast(this@ActMain, true, R.string.user_name_not_match)
+					showToast(true, R.string.user_name_not_match)
 				} else {
 					showToast(
-						this@ActMain,
+						
 						false,
 						R.string.access_token_updated_for,
 						sa.acct.pretty
@@ -2100,7 +2097,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				
 				val apDomain = ti?.uri
 				if(apDomain == null) {
-					showToast(this@ActMain, false, "Can't get ActivityPub domain name.")
+					showToast(false, "Can't get ActivityPub domain name.")
 					return false
 				}
 				
@@ -2138,7 +2135,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 						}
 					}
 					
-					showToast(this@ActMain, false, R.string.account_confirmed)
+					showToast(false, R.string.account_confirmed)
 					
 					// 通知の更新が必要かもしれない
 					PollingWorker.queueUpdateNotification(this@ActMain)
@@ -2221,7 +2218,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				}
 				
 				override fun onEmptyError() {
-					showToast(this@ActMain, true, R.string.token_not_specified)
+					showToast(true, R.string.token_not_specified)
 				}
 			})
 	}
@@ -2252,7 +2249,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 	fun closeColumn(column : Column, bConfirmed : Boolean = false) {
 		
 		if(column.dont_close) {
-			showToast(this, false, R.string.column_has_dont_close_option)
+			showToast(false, R.string.column_has_dont_close_option)
 			return
 		}
 		
@@ -2452,9 +2449,9 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 							when(fullAcct.host.ascii) {
 								"github.com",
 								"twitter.com" ->
-									App1.openCustomTab(this, mention.url)
+									openCustomTab(mention.url)
 								"gmail.com" ->
-									App1.openBrowser(this, "mailto:${fullAcct.pretty}")
+									openBrowser("mailto:${fullAcct.pretty}")
 								
 								else ->
 									Action_User.profile(
@@ -2485,11 +2482,11 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 						val instanceHost = Host.parse(instance)
 						when(instanceHost.ascii) {
 							"github.com", "twitter.com" -> {
-								App1.openCustomTab(this, "https://$instance/$user")
+								openCustomTab("https://$instance/$user")
 							}
 							
 							"gmail.com" -> {
-								App1.openBrowser(this, "mailto:$user@$instance")
+								openBrowser("mailto:$user@$instance")
 							}
 							
 							else -> {
@@ -2535,7 +2532,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				
 			}
 			
-			App1.openCustomTab(this, opener.url)
+			openCustomTab(opener.url)
 			
 		} catch(ex : Throwable) {
 			// warning.trace( ex );
@@ -2563,7 +2560,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 		val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
 		
 		val colorColumnStripBackground = footer_tab_bg_color.notZero()
-			?: getAttributeColor(this, R.attr.colorColumnStripBackground)
+			?: getAttributeColor(R.attr.colorColumnStripBackground)
 		
 		svColumnStrip.setBackgroundColor(colorColumnStripBackground)
 		llQuickTootBar.setBackgroundColor(colorColumnStripBackground)
@@ -2572,7 +2569,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 			?: colorColumnStripBackground
 		
 		val colorButtonFg = footer_button_fg_color.notZero()
-			?: getAttributeColor(this, R.attr.colorRippleEffect)
+			?: getAttributeColor(R.attr.colorRippleEffect)
 		
 		btnMenu.backgroundDrawable =
 			getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
@@ -2585,7 +2582,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 		
 		val csl = ColorStateList.valueOf(
 			footer_button_fg_color.notZero()
-				?: getAttributeColor(this, R.attr.colorVectorDrawable)
+				?: getAttributeColor(R.attr.colorVectorDrawable)
 		)
 		btnToot.imageTintList = csl
 		btnMenu.imageTintList = csl
@@ -2598,7 +2595,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 		vFooterDivider2.setBackgroundColor(c)
 		
 		llColumnStrip.indicatorColor = footer_tab_indicator_color.notZero()
-			?: getAttributeColor(this, R.attr.colorAccent)
+			?: getAttributeColor(R.attr.colorAccent)
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -2878,7 +2875,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				} catch(ex : Throwable) {
 					log.trace(ex)
 					if(zipEntryCount != 0) {
-						showToast(this@ActMain, ex, "importAppData failed.")
+						showToast(ex, "importAppData failed.")
 					}
 				}
 				// zipではなかった場合、zipEntryがない状態になる。例外はPH-1では出なかったが、出ても問題ないようにする。
@@ -2914,7 +2911,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 					PollingWorker.queueAppDataImportAfter(this@ActMain)
 				}
 				
-				showToast(this@ActMain, true, R.string.import_completed_please_restart_app)
+				showToast(true, R.string.import_completed_please_restart_app)
 				finish()
 			},
 			preProc = {

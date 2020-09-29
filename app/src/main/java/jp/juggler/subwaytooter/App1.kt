@@ -3,27 +3,14 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
-import android.content.res.ColorStateList
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.graphics.Color
-import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.View
-import android.view.WindowInsetsController
-import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
-import androidx.browser.customtabs.CustomTabsIntent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
 import com.bumptech.glide.Registry
@@ -32,13 +19,10 @@ import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
 import com.bumptech.glide.load.engine.executor.GlideExecutor
 import com.bumptech.glide.load.model.GlideUrl
 import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.entity.TootAttachment
-import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.CustomEmojiCache
 import jp.juggler.subwaytooter.util.CustomEmojiLister
 import jp.juggler.subwaytooter.util.ProgressResponseBody
-import jp.juggler.subwaytooter.util.cn
 import jp.juggler.util.*
 import okhttp3.*
 import org.conscrypt.Conscrypt
@@ -51,7 +35,6 @@ import java.security.Security
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
-import kotlin.math.pow
 
 class App1 : Application() {
 	
@@ -315,7 +298,7 @@ class App1 : Application() {
 			
 			initializeFont()
 			
-			pref = Pref.pref(app_context)
+			pref = app_context.pref()
 			
 			run {
 				
@@ -518,7 +501,7 @@ class App1 : Application() {
 		}
 		
 		fun setActivityTheme(
-			activity : Activity,
+			activity : AppCompatActivity,
 			noActionBar : Boolean = false,
 			forceDark : Boolean = false
 		) {
@@ -534,7 +517,7 @@ class App1 : Application() {
 				}
 			)
 			
-			setStatusBarColor(activity, forceDark = forceDark)
+			activity.setStatusBarColor(forceDark = forceDark)
 		}
 		
 		internal val CACHE_CONTROL = CacheControl.Builder()
@@ -608,147 +591,6 @@ class App1 : Application() {
 				null
 			}
 			
-		}
-		
-		// returns true if activity is opened.
-		// returns false if fallback required
-		private fun startActivityExcludeMyApp(
-			activity : AppCompatActivity,
-			intent : Intent,
-			startAnimationBundle : Bundle? = null
-		) : Boolean {
-			try {
-				val pm = activity.packageManager !!
-				val myName = activity.packageName
-				
-				val filter : (ResolveInfo) -> Boolean = {
-					it.activityInfo.packageName != myName &&
-						it.activityInfo.exported &&
-						- 1 == it.activityInfo.packageName.indexOf("com.huawei.android.internal")
-				}
-				
-				// resolveActivity がこのアプリ以外のActivityを返すなら、それがベストなんだろう
-				// ただしAndroid M以降はMATCH_DEFAULT_ONLYだと「常時」が設定されてないとnullを返す
-				val ri = pm.resolveActivity(
-					intent,
-					if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-						PackageManager.MATCH_ALL
-					} else {
-						PackageManager.MATCH_DEFAULT_ONLY
-					}
-				)?.takeIf(filter)
-				
-				if(ri != null) {
-					intent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name)
-					activity.startActivity(intent, startAnimationBundle)
-					return true
-				}
-				
-				return DlgAppPicker(
-					activity,
-					intent,
-					autoSelect = true,
-					filter = filter
-				) {
-					try {
-						intent.component = it.cn()
-						activity.startActivity(intent, startAnimationBundle)
-					} catch(ex : Throwable) {
-						log.trace(ex)
-						showToast(activity, ex, "can't open. ${intent.data}")
-					}
-				}.show()
-				
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				showToast(activity, ex, "can't open. ${intent.data}")
-				return true // fallback not required in this case
-			}
-		}
-		
-		fun openBrowser(activity : AppCompatActivity, uri : Uri?) {
-			if(uri != null) {
-				val rv = startActivityExcludeMyApp(activity, Intent(Intent.ACTION_VIEW, uri))
-				if(! rv) showToast(activity, true, "there is no app that can open $uri")
-			}
-		}
-		
-		fun openBrowser(activity : AppCompatActivity, url : String?) =
-			openBrowser(activity, url.mayUri())
-		
-		// ubway Tooterの「アプリ設定/挙動/リンクを開く際にCustom Tabsを使わない」をONにして
-		// 投稿のコンテキストメニューの「トゥートへのアクション/Webページを開く」「ユーザへのアクション/Webページを開く」を使うと
-		// 投げたインテントをST自身が受け取って「次のアカウントから開く」ダイアログが出て
-		// 「Webページを開く」をまた押すと無限ループしてダイアログの影が徐々に濃くなりそのうち壊れる
-		// これを避けるには、投稿やトゥートを開く際に bpDontUseCustomTabs がオンならST以外のアプリを列挙したアプリ選択ダイアログを出すしかない
-		fun openCustomTabOrBrowser(activity : AppCompatActivity, url : String) {
-			if(! Pref.bpDontUseCustomTabs(pref)) {
-				openCustomTab(activity, url)
-			} else {
-				openBrowser(activity, url)
-			}
-		}
-		
-		// Chrome Custom Tab を開く
-		fun openCustomTab(activity : AppCompatActivity, url : String) {
-			if(Pref.bpDontUseCustomTabs(pref)) {
-				openCustomTabOrBrowser(activity, url)
-				return
-			}
-			
-			try {
-				if(url.startsWith("http") && Pref.bpPriorChrome(pref)) {
-					try {
-						// 初回はChrome指定で試す
-						val customTabsIntent = CustomTabsIntent.Builder()
-							.setToolbarColor(getAttributeColor(activity, R.attr.colorPrimary))
-							.setShowTitle(true)
-							.build()
-						
-						val rv = startActivityExcludeMyApp(
-							activity,
-							customTabsIntent.intent.also {
-								it.component = ComponentName(
-									"com.android.chrome",
-									"com.google.android.apps.chrome.Main"
-								)
-								it.data = url.toUri()
-							},
-							customTabsIntent.startAnimationBundle
-						)
-						if(rv) return
-					} catch(ex2 : Throwable) {
-						log.e(ex2, "openChromeTab: missing chrome. retry to other application.")
-					}
-				}
-				
-				// Chromeがないようなのでcomponent指定なしでリトライ
-				val customTabsIntent = CustomTabsIntent.Builder()
-					.setToolbarColor(getAttributeColor(activity, R.attr.colorPrimary))
-					.setShowTitle(true)
-					.build()
-				
-				val rv = startActivityExcludeMyApp(
-					activity,
-					customTabsIntent.intent.also {
-						it.data = url.toUri()
-					},
-					customTabsIntent.startAnimationBundle
-				)
-				if(! rv) {
-					showToast(activity, true, "the browser app is not installed.")
-				}
-				
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				val scheme = url.mayUri()?.scheme ?: url
-				showToast(activity, true, "can't open browser app for %s", scheme)
-			}
-		}
-		
-		fun openCustomTab(activity : AppCompatActivity, ta : TootAttachment) {
-			val url = ta.getLargeUrl(pref) ?: return
-			openCustomTab(activity, url)
 		}
 		
 		// https://developer.android.com/preview/features/gesturalnav?hl=ja

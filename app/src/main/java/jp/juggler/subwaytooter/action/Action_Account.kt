@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.action
 
 import android.app.Dialog
-import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
@@ -14,6 +13,7 @@ import jp.juggler.subwaytooter.dialog.LoginForm
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LinkHelper
+import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
 
 object Action_Account {
@@ -57,7 +57,7 @@ object Action_Account {
 						when(action) {
 							LoginForm.Action.Existing -> if(data is String) {
 								// ブラウザ用URLが生成された
-								App1.openBrowser(activity, data.toUri())
+								activity.openBrowser(data.toUri())
 								dialog.dismissSafe()
 								return
 							}
@@ -79,7 +79,7 @@ object Action_Account {
 									instance,
 									instanceInfo = data
 								) { a ->
-									showToast(activity, false, R.string.server_confirmed)
+									activity.showToast(false, R.string.server_confirmed)
 									val pos = App1.getAppState(activity).column_list.size
 									activity.addColumn(pos, a, ColumnType.LOCAL)
 									dialog.dismissSafe()
@@ -111,7 +111,7 @@ object Action_Account {
 										}
 										
 										override fun onEmptyError() {
-											showToast(activity, true, R.string.token_not_specified)
+											activity.showToast(true, R.string.token_not_specified)
 										}
 									}
 								)
@@ -131,7 +131,7 @@ object Action_Account {
 							.setNeutralButton(R.string.close, null)
 							.show()
 					} else {
-						showToast(activity, true, "$errorText ${result.requestInfo}".trim())
+						activity.showToast(true, "$errorText ${result.requestInfo}".trim())
 					}
 				}
 			})
@@ -284,7 +284,7 @@ object Action_Account {
 		bSet : Boolean
 	) {
 		if(access_info.isMisskey) {
-			showToast(activity, false, "This feature is not provided on Misskey account.")
+			activity.showToast(false, "This feature is not provided on Misskey account.")
 			return
 		}
 		
@@ -319,10 +319,10 @@ object Action_Account {
 				result ?: return
 				
 				if(result.error != null) {
-					showToast(activity, true, result.error)
+					activity.showToast(true, result.error)
 				} else {
-					showToast(
-						activity, false, when(bSet) {
+					activity.showToast(
+						false, when(bSet) {
 							true -> R.string.endorse_succeeded
 							else -> R.string.remove_endorse_succeeded
 						}

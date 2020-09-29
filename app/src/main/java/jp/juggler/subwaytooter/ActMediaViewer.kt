@@ -107,9 +107,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	private lateinit var svDescription : View
 	private lateinit var tvDescription : TextView
 	private lateinit var tvStatus : TextView
-	private lateinit var cbMute: CheckBox
-	private var lastVolume  = Float.NaN
-	
+	private lateinit var cbMute : CheckBox
+	private var lastVolume = Float.NaN
 	
 	internal var buffering_last_shown : Long = 0
 	
@@ -149,7 +148,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				val now = SystemClock.elapsedRealtime()
 				if(now - buffering_last_shown >= short_limit && exoPlayer.duration >= short_limit) {
 					buffering_last_shown = now
-					showToast(this@ActMediaViewer, false, R.string.video_buffering)
+					showToast(false, R.string.video_buffering)
 				}
 				/*
 					exoPlayer.getDuration() may returns negative value (TIME_UNSET ,same as Long.MIN_VALUE + 1).
@@ -163,7 +162,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		override fun onPlayerError(error : ExoPlaybackException) {
 			log.d("exoPlayer onPlayerError")
-			showToast(this@ActMediaViewer, error, "player error.")
+			showToast(error, "player error.")
 		}
 		
 		override fun onPositionDiscontinuity(reason : Int) {
@@ -187,7 +186,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		outState.putLong(STATE_PLAYER_POS, exoPlayer.currentPosition)
 		outState.putBoolean(STATE_PLAYER_PLAY_WHEN_READY, exoPlayer.playWhenReady)
-		outState.putFloat(STATE_LAST_VOLUME,lastVolume)
+		outState.putFloat(STATE_LAST_VOLUME, lastVolume)
 	}
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
@@ -252,14 +251,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		findViewById<View>(R.id.btnDownload).setOnClickListener(this)
 		findViewById<View>(R.id.btnMore).setOnClickListener(this)
 		
-		cbMute.setOnCheckedChangeListener{_,isChecked->
+		cbMute.setOnCheckedChangeListener { _, isChecked ->
 			if(isChecked) {
 				// mute
 				lastVolume = exoPlayer.volume
 				exoPlayer.volume = 0f
-			}else{
+			} else {
 				// unmute
-				exoPlayer.volume = when{
+				exoPlayer.volume = when {
 					lastVolume.isNaN() -> 1f
 					lastVolume <= 0f -> 1f
 					else -> lastVolume
@@ -361,7 +360,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	private fun loadVideo(ta : TootAttachment, state : Bundle? = null) {
 		
 		cbMute.vg(true)
-		if(cbMute.isChecked && lastVolume.isFinite() ) {
+		if(cbMute.isChecked && lastVolume.isFinite()) {
 			exoPlayer.volume = 0f
 		}
 		
@@ -399,7 +398,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		} else {
 			exoPlayer.playWhenReady = state.getBoolean(STATE_PLAYER_PLAY_WHEN_READY, true)
 			exoPlayer.seekTo(max(0L, state.getLong(STATE_PLAYER_POS, 0L)))
-			lastVolume = state.getFloat(STATE_LAST_VOLUME,1f)
+			lastVolume = state.getFloat(STATE_LAST_VOLUME, 1f)
 		}
 	}
 	
@@ -486,7 +485,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	@SuppressLint("StaticFieldLeak")
 	private fun loadBitmap(ta : TootAttachment) {
 		
-		cbMute.visibility=View.INVISIBLE
+		cbMute.visibility = View.INVISIBLE
 		
 		val urlList = ta.getLargeUrlList(App1.pref)
 		if(urlList.isEmpty()) {
@@ -546,7 +545,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					return Pair(null, "image size <= 0")
 				}
 				
-				val dstSize = rotateSize(orientation,srcWidth,srcHeight)
+				val dstSize = rotateSize(orientation, srcWidth, srcHeight)
 				val dstSizeInt = Point(
 					max(1, (dstSize.x + 0.5f).toInt()),
 					max(1, (dstSize.y + 0.5f).toInt())
@@ -599,13 +598,13 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			) : Pair<TootApiResult?, ByteArray?> {
 				val result = TootApiResult.makeWithCaption(url)
 				
-				val request = try{
+				val request = try {
 					Request.Builder()
 						.url(url)
 						.cacheControl(App1.CACHE_CONTROL)
 						.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
 						.build()
-				}catch(ex:Throwable){
+				} catch(ex : Throwable) {
 					result.setError(ex.withCaption("incorrect URL."))
 					return Pair(result, null)
 				}
@@ -667,7 +666,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				if(bitmap != null) {
 					pbvImage.setBitmap(bitmap)
 				} else if(result != null) {
-					showToast(this@ActMediaViewer, true, result.error)
+					showToast(true, result.error)
 				}
 			}
 		})
@@ -684,7 +683,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				R.id.btnMore -> more(media_list[idx])
 			}
 		} catch(ex : Throwable) {
-			showToast(this, ex, "action failed.")
+			showToast(ex, "action failed.")
 		}
 		
 	}
@@ -702,7 +701,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			return
 		}
 		
-		val downLoadManager :DownloadManager = systemService(this)
+		val downLoadManager : DownloadManager = systemService(this)
 			?: error("missing DownloadManager system service")
 		
 		val url = if(ta is TootAttachment) {
@@ -724,7 +723,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					it.remove()
 				} else if(url == dh.url) {
 					// 履歴に同じURLがあればエラーとする
-					showToast(this, false, R.string.dont_repeat_download_to_same_url)
+					showToast(false, R.string.dont_repeat_download_to_same_url)
 					return
 				}
 			}
@@ -773,7 +772,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
 		
 		downLoadManager.enqueue(request)
-		showToast(this, false, R.string.downloading)
+		showToast(false, R.string.downloading)
 	}
 	
 	private fun share(action : String, url : String) {
@@ -790,7 +789,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			
 			startActivity(intent)
 		} catch(ex : Throwable) {
-			showToast(this, ex, "can't open app.")
+			showToast(ex, "can't open app.")
 		}
 		
 	}
@@ -812,10 +811,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			//クリップボードにデータを格納
 			cm.setPrimaryClip(cd)
 			
-			showToast(this, false, R.string.url_is_copied)
+			showToast(false, R.string.url_is_copied)
 			
 		} catch(ex : Throwable) {
-			showToast(this, ex, "clipboard access failed.")
+			showToast(ex, "clipboard access failed.")
 		}
 		
 	}
@@ -862,7 +861,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 				startActivity(intent)
 			} catch(ex : Throwable) {
-				showToast(this@ActMediaViewer, ex, "can't open app.")
+				showToast(ex, "can't open app.")
 			}
 		}
 	}
@@ -873,7 +872,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE
 			)
 		} else {
-			showToast(this, true, R.string.missing_permission_to_access_media)
+			showToast(true, R.string.missing_permission_to_access_media)
 		}
 	}
 	
@@ -892,7 +891,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					++ i
 				}
 				if(bNotGranted) {
-					showToast(this, true, R.string.missing_permission_to_access_media)
+					showToast(true, R.string.missing_permission_to_access_media)
 				} else {
 					download(media_list[idx])
 				}

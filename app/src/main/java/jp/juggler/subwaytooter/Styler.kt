@@ -30,7 +30,7 @@ object Styler {
 	
 	fun defaultColorIcon(context : Context, iconId : Int) : Drawable? =
 		ContextCompat.getDrawable(context, iconId)?.also {
-			it.setTint(getAttributeColor(context, R.attr.colorVectorDrawable))
+			it.setTint(context.getAttributeColor(R.attr.colorVectorDrawable))
 			it.setTintMode(PorterDuff.Mode.SRC_IN)
 		}
 	
@@ -123,7 +123,7 @@ object Styler {
 		
 		val icon_id = getVisibilityIconId(isMisskeyData, visibility)
 		val sv = getVisibilityString(context, isMisskeyData, visibility)
-		val color = getAttributeColor(context, R.attr.colorVectorDrawable)
+		val color = context.getAttributeColor(R.attr.colorVectorDrawable)
 		val sb = SpannableStringBuilder()
 		
 		// アイコン部分
@@ -159,12 +159,12 @@ object Styler {
 		alphaMultiplier : Float
 	) {
 		fun colorAccent() =
-			Pref.ipButtonFollowingColor(Pref.pref(context)).notZero()
-				?: getAttributeColor(context, R.attr.colorImageButtonAccent)
+			Pref.ipButtonFollowingColor(context.pref()).notZero()
+				?: context.getAttributeColor(R.attr.colorImageButtonAccent)
 		
 		fun colorError() =
-			Pref.ipButtonFollowRequestColor(Pref.pref(context)).notZero()
-				?: getAttributeColor(context, R.attr.colorRegexFilterError)
+			Pref.ipButtonFollowRequestColor(context.pref()).notZero()
+				?: context.getAttributeColor(R.attr.colorRegexFilterError)
 		
 		// 被フォロー状態
 		when {

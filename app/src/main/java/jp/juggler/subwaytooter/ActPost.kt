@@ -493,7 +493,7 @@ class ActPost : AsyncActivity(),
 	private var mushroom_end : Int = 0
 	
 	private val link_click_listener : (View, MyClickableSpan) -> Unit = { _, span ->
-		App1.openBrowser(this@ActPost, span.linkInfo.url)
+		openBrowser(span.linkInfo.url)
 	}
 	
 	////////////////////////////////////////////////////////////////
@@ -557,7 +557,7 @@ class ActPost : AsyncActivity(),
 					if(uri != null) {
 						addAttachment(uri)
 					} else {
-						showToast(this@ActPost, false, "missing image uri")
+						showToast(false, "missing image uri")
 					}
 				}
 				
@@ -612,7 +612,7 @@ class ActPost : AsyncActivity(),
 		}
 		
 		if(account_list.isEmpty()) {
-			showToast(this, true, R.string.please_add_account)
+			showToast(true, R.string.please_add_account)
 			finish()
 			return
 		}
@@ -1413,7 +1413,6 @@ class ActPost : AsyncActivity(),
 		tvCharCount.text = remain.toString()
 		tvCharCount.setTextColor(
 			getAttributeColor(
-				this,
 				if(remain < 0)
 					R.attr.colorRegexFilterError
 				else
@@ -1495,7 +1494,7 @@ class ActPost : AsyncActivity(),
 		
 		if(a == null) {
 			btnAccount.text = getString(R.string.not_selected)
-			btnAccount.setTextColor(getAttributeColor(this, android.R.attr.textColorPrimary))
+			btnAccount.setTextColor(getAttributeColor(android.R.attr.textColorPrimary))
 			btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 		} else {
 			
@@ -1515,7 +1514,7 @@ class ActPost : AsyncActivity(),
 			}
 			
 			btnAccount.textColor = ac.color_fg.notZero()
-				?: getAttributeColor(this, android.R.attr.textColorPrimary)
+				?: getAttributeColor(android.R.attr.textColorPrimary)
 		}
 		updateTextCount()
 		updateFeaturedTags()
@@ -1525,19 +1524,19 @@ class ActPost : AsyncActivity(),
 		
 		if(scheduledStatus != null) {
 			// 予約投稿の再編集ではアカウントを切り替えられない
-			showToast(this, false, R.string.cant_change_account_when_editing_scheduled_status)
+			showToast(false, R.string.cant_change_account_when_editing_scheduled_status)
 			return
 		}
 		
 		if(attachment_list.isNotEmpty()) {
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
-			showToast(this, false, R.string.cant_change_account_when_attachment_specified)
+			showToast(false, R.string.cant_change_account_when_attachment_specified)
 			return
 		}
 		
 		if(redraft_status_id != null) {
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
-			showToast(this, false, R.string.cant_change_account_when_redraft)
+			showToast(false, R.string.cant_change_account_when_redraft)
 			return
 		}
 		
@@ -1598,7 +1597,7 @@ class ActPost : AsyncActivity(),
 		selectAccount(a)
 		try {
 			if(TootVisibility.isVisibilitySpoilRequired(this.visibility, a.visibility)) {
-				showToast(this@ActPost, true, R.string.spoil_visibility_for_account)
+				showToast(true, R.string.spoil_visibility_for_account)
 				this.visibility = a.visibility
 			}
 			
@@ -1644,7 +1643,6 @@ class ActPost : AsyncActivity(),
 						setAccountWithVisibilityConversion(access_info)
 					} else {
 						showToast(
-							this@ActPost,
 							true,
 							getString(R.string.in_reply_to_id_conversion_failed) + "\n" + result.error
 						)
@@ -1701,7 +1699,7 @@ class ActPost : AsyncActivity(),
 		val pa = try {
 			attachment_list[idx]
 		} catch(ex : Throwable) {
-			showToast(this, false, ex.withCaption("can't get attachment item[$idx]."))
+			showToast(false, ex.withCaption("can't get attachment item[$idx]."))
 			return
 		}
 		
@@ -1771,7 +1769,7 @@ class ActPost : AsyncActivity(),
 								if(new_attachment != null) {
 									pa.attachment = attachment
 								} else {
-									showToast(this@ActPost, true, result.error)
+									showToast(true, result.error)
 								}
 							}
 						})
@@ -1798,7 +1796,7 @@ class ActPost : AsyncActivity(),
 			startActivityForResult(intent, REQUEST_CODE_CUSTOM_THUMBNAIL)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(this, ex, "ACTION_GET_CONTENT failed.")
+			showToast(ex, "ACTION_GET_CONTENT failed.")
 		}
 	}
 	
@@ -1809,19 +1807,19 @@ class ActPost : AsyncActivity(),
 		
 		val account = this@ActPost.account
 		if(account == null) {
-			showToast(this, false, R.string.account_select_please)
+			showToast(false, R.string.account_select_please)
 			return
 		}
 		
 		val mime_type = getMimeType(src.uri, src.mimeType)
 		if(mime_type?.isEmpty() != false) {
-			showToast(this, false, R.string.mime_type_missing)
+			showToast(false, R.string.mime_type_missing)
 			return
 		}
 		
 		val pa = lastPostAttachment
 		if(pa == null || ! attachment_list.contains(pa)) {
-			showToast(this, true, "lost attachment information")
+			showToast(true, "lost attachment information")
 			return
 		}
 		
@@ -1922,7 +1920,7 @@ class ActPost : AsyncActivity(),
 			
 			override fun handleResult(result : TootApiResult?) {
 				showMediaAttachment()
-				result?.error?.let { showToast(this@ActPost, true, it) }
+				result?.error?.let { showToast(true, it) }
 			}
 		})
 	}
@@ -1946,7 +1944,7 @@ class ActPost : AsyncActivity(),
 	private fun editAttachmentDescription(pa : PostAttachment) {
 		val a = pa.attachment
 		if(a == null) {
-			showToast(this, true, R.string.attachment_description_cant_edit_while_uploading)
+			showToast(true, R.string.attachment_description_cant_edit_while_uploading)
 			return
 		}
 		
@@ -1960,7 +1958,7 @@ class ActPost : AsyncActivity(),
 				}
 				
 				override fun onEmptyError() {
-					showToast(this@ActPost, true, R.string.description_empty)
+					showToast(true, R.string.description_empty)
 				}
 			})
 	}
@@ -1998,7 +1996,7 @@ class ActPost : AsyncActivity(),
 					dialog.dismissSafe()
 					
 				} else {
-					showToast(this@ActPost, true, result.error)
+					showToast(true, result.error)
 				}
 			}
 		})
@@ -2007,12 +2005,12 @@ class ActPost : AsyncActivity(),
 	private fun openAttachment() {
 		
 		if(attachment_list.size >= 4) {
-			showToast(this, false, R.string.attachment_too_many)
+			showToast(false, R.string.attachment_too_many)
 			return
 		}
 		
 		if(account == null) {
-			showToast(this, false, R.string.account_select_please)
+			showToast(false, R.string.account_select_please)
 			return
 		}
 		
@@ -2068,7 +2066,7 @@ class ActPost : AsyncActivity(),
 			startActivityForResult(intent, REQUEST_CODE_ATTACHMENT_OLD)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(this, ex, "ACTION_GET_CONTENT failed.")
+			showToast(ex, "ACTION_GET_CONTENT failed.")
 		}
 	}
 	
@@ -2109,7 +2107,7 @@ class ActPost : AsyncActivity(),
 					try {
 						val cache_dir = externalCacheDir
 						if(cache_dir == null) {
-							showToast(this, false, "getExternalCacheDir returns null.")
+							showToast(false, "getExternalCacheDir returns null.")
 							break
 						}
 						
@@ -2145,7 +2143,7 @@ class ActPost : AsyncActivity(),
 				
 			} catch(ex : Throwable) {
 				log.trace(ex)
-				showToast(this, ex, "Resizing image failed.")
+				showToast(ex, "Resizing image failed.")
 			}
 			
 			break
@@ -2219,35 +2217,35 @@ class ActPost : AsyncActivity(),
 	) {
 		
 		if(attachment_list.size >= 4) {
-			showToast(this, false, R.string.attachment_too_many)
+			showToast(false, R.string.attachment_too_many)
 			return
 		}
 		
 		val account = this@ActPost.account
 		if(account == null) {
-			showToast(this, false, R.string.account_select_please)
+			showToast(false, R.string.account_select_please)
 			return
 		}
 		
 		val mime_type = getMimeType(uri, mimeTypeArg)
 		if(mime_type?.isEmpty() != false) {
-			showToast(this, false, R.string.mime_type_missing)
+			showToast(false, R.string.mime_type_missing)
 			return
 		}
 		
 		val instance = TootInstance.getCached(account.apiHost.ascii)
 		if(instance?.instanceType == TootInstance.InstanceType.Pixelfed) {
 			if(in_reply_to_id != null) {
-				showToast(this, true, R.string.pixelfed_does_not_allow_reply_with_media)
+				showToast(true, R.string.pixelfed_does_not_allow_reply_with_media)
 				return
 			}
 			if(! acceptable_mime_types_pixelfed.contains(mime_type)) {
-				showToast(this, true, R.string.mime_type_not_acceptable, mime_type)
+				showToast(true, R.string.mime_type_not_acceptable, mime_type)
 				return
 			}
 		} else {
 			if(! acceptable_mime_types.contains(mime_type)) {
-				showToast(this, true, R.string.mime_type_not_acceptable, mime_type)
+				showToast(true, R.string.mime_type_not_acceptable, mime_type)
 				return
 			}
 		}
@@ -2261,7 +2259,7 @@ class ActPost : AsyncActivity(),
 		// アップロード開始トースト(連発しない)
 		val now = System.currentTimeMillis()
 		if(now - lastAttachmentAdd >= 5000L) {
-			showToast(this, false, R.string.attachment_uploading)
+			showToast(false, R.string.attachment_uploading)
 		}
 		lastAttachmentAdd = now
 		
@@ -2547,7 +2545,6 @@ class ActPost : AsyncActivity(),
 				pa.status = PostAttachment.STATUS_UPLOAD_FAILED
 				if(result != null) {
 					showToast(
-						this@ActPost,
 						true,
 						"${result.error} ${result.response?.request?.method} ${result.response?.request?.url}"
 					)
@@ -2581,7 +2578,7 @@ class ActPost : AsyncActivity(),
 					
 					val now = System.currentTimeMillis()
 					if(now - lastAttachmentComplete >= 5000L) {
-						showToast(this@ActPost, false, R.string.attachment_uploaded)
+						showToast(false, R.string.attachment_uploaded)
 					}
 					lastAttachmentComplete = now
 					
@@ -2626,7 +2623,7 @@ class ActPost : AsyncActivity(),
 			startActivityForResult(intent, REQUEST_CODE_CAMERA)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(this, ex, "opening camera app failed.")
+			showToast(ex, "opening camera app failed.")
 		}
 		
 	}
@@ -2636,7 +2633,7 @@ class ActPost : AsyncActivity(),
 			startActivityForResult(Intent(action), requestCode)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(this, ex, errorCaption)
+			showToast(ex, errorCaption)
 		}
 	}
 	
@@ -2648,7 +2645,7 @@ class ActPost : AsyncActivity(),
 				PERMISSION_REQUEST_CODE
 			)
 		} else {
-			showToast(this, true, R.string.missing_permission_to_access_media)
+			showToast(true, R.string.missing_permission_to_access_media)
 		}
 	}
 	
@@ -2667,7 +2664,7 @@ class ActPost : AsyncActivity(),
 					++ i
 				}
 				if(bNotGranted) {
-					showToast(this, true, R.string.missing_permission_to_access_media)
+					showToast(true, R.string.missing_permission_to_access_media)
 				} else {
 					openAttachment()
 				}
@@ -2763,7 +2760,7 @@ class ActPost : AsyncActivity(),
 		// アップロード中は投稿できない
 		for(pa in attachment_list) {
 			if(pa.status == PostAttachment.STATUS_UPLOADING) {
-				showToast(this, false, R.string.media_attachment_still_uploading)
+				showToast(false, R.string.media_attachment_still_uploading)
 				return
 			}
 		}
@@ -2850,7 +2847,7 @@ class ActPost : AsyncActivity(),
 			}
 			
 			override fun onScheduledPostComplete(target_account : SavedAccount) {
-				showToast(this@ActPost, false, getString(R.string.scheduled_status_sent))
+				showToast(false, getString(R.string.scheduled_status_sent))
 				val data = Intent()
 				data.putExtra(EXTRA_POSTED_ACCT, target_account.acct.ascii)
 				setResult(RESULT_OK, data)

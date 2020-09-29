@@ -352,22 +352,22 @@ class Column(
 		fun reloadDefaultColor(activity : AppCompatActivity, pref : SharedPreferences) {
 			
 			defaultColorHeaderBg = Pref.ipCcdHeaderBg(pref).notZero()
-				?: getAttributeColor(activity, R.attr.color_column_header)
+				?: activity.getAttributeColor(R.attr.color_column_header)
 			
 			defaultColorHeaderName = Pref.ipCcdHeaderFg(pref).notZero()
-				?: getAttributeColor(activity, R.attr.colorColumnHeaderName)
+				?: activity.getAttributeColor(R.attr.colorColumnHeaderName)
 			
 			defaultColorHeaderPageNumber = Pref.ipCcdHeaderFg(pref).notZero()
-				?: getAttributeColor(activity, R.attr.colorColumnHeaderPageNumber)
+				?: activity.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
 			
 			defaultColorContentBg = Pref.ipCcdContentBg(pref)
 			// may zero
 			
 			defaultColorContentAcct = Pref.ipCcdContentAcct(pref).notZero()
-				?: getAttributeColor(activity, R.attr.colorTimeSmall)
+				?: activity.getAttributeColor(R.attr.colorTimeSmall)
 			
 			defaultColorContentText = Pref.ipCcdContentText(pref).notZero()
-				?: getAttributeColor(activity, R.attr.colorContentText)
+				?: activity.getAttributeColor(R.attr.colorContentText)
 			
 		}
 	}
@@ -2131,14 +2131,14 @@ class Column(
 		
 		if(lastTask != null) {
 			if(! bSilent) {
-				showToast(context, true, R.string.column_is_busy)
+				context.showToast(true, R.string.column_is_busy)
 				val holder = viewHolder
 				if(holder != null) holder.refreshLayout.isRefreshing = false
 			}
 			return
 		} else if(bBottom && ! canRefreshBottom()) {
 			if(! bSilent) {
-				showToast(context, true, R.string.end_of_list)
+				context.showToast(true, R.string.end_of_list)
 				val holder = viewHolder
 				if(holder != null) holder.refreshLayout.isRefreshing = false
 			}
@@ -2175,12 +2175,12 @@ class Column(
 	internal fun startGap(gap : TimelineItem?, isHead : Boolean) {
 		
 		if(gap == null) {
-			showToast(context, true, "gap is null")
+			context.showToast(true, "gap is null")
 			return
 		}
 		
 		if(lastTask != null) {
-			showToast(context, true, R.string.column_is_busy)
+			context.showToast(true, R.string.column_is_busy)
 			return
 		}
 		

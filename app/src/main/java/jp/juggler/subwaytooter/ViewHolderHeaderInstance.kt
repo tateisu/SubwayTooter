@@ -10,6 +10,8 @@ import jp.juggler.subwaytooter.action.Action_Instance
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
+import jp.juggler.subwaytooter.util.openBrowser
+import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.LogCategory
@@ -20,10 +22,10 @@ import org.conscrypt.OpenSSLX509Certificate
 internal class ViewHolderHeaderInstance(
 	arg_activity : ActMain,
 	viewRoot : View
-) : ViewHolderHeaderBase(arg_activity, viewRoot)
-	, View.OnClickListener {
+) : ViewHolderHeaderBase(arg_activity, viewRoot), View.OnClickListener {
 	
 	companion object {
+		
 		private val log = LogCategory("ViewHolderHeaderInstance")
 		
 	}
@@ -122,12 +124,13 @@ internal class ViewHolderHeaderInstance(
 			btnEmail.isEnabled = email.isNotEmpty()
 			
 			val contact_acct =
-				instance.contact_account?.let { who -> "@${who.username}@${who.apDomain.pretty}" } ?: ""
+				instance.contact_account?.let { who -> "@${who.username}@${who.apDomain.pretty}" }
+					?: ""
 			btnContact.text = contact_acct
 			btnContact.isEnabled = contact_acct.isNotEmpty()
 			
 			tvLanguages.text = instance.languages?.joinToString(", ") ?: ""
-			tvInvitesEnabled.text = when(instance.invites_enabled){
+			tvInvitesEnabled.text = when(instance.invites_enabled) {
 				null -> "?"
 				true -> activity.getString(R.string.yes)
 				false -> activity.getString(R.string.no)
@@ -183,15 +186,15 @@ internal class ViewHolderHeaderInstance(
 						Certificate : ${cert.type}
 						subject : ${cert.subjectDN}
 						subjectAlternativeNames : ${
-						cert.subjectAlternativeNames
-							?.joinToString(", ") {
-								try {
-									it?.last()
-								} catch(ignored : Throwable) {
-									it
+							cert.subjectAlternativeNames
+								?.joinToString(", ") {
+									try {
+										it?.last()
+									} catch(ignored : Throwable) {
+										it
+									}
+										?.toString() ?: "null"
 								}
-									?.toString() ?: "null"
-							}
 						}
 						issuer : ${cert.issuerX500Principal}
 						end : ${cert.notAfter}
@@ -216,7 +219,7 @@ internal class ViewHolderHeaderInstance(
 			R.id.btnEmail -> instance?.email?.let { email ->
 				try {
 					if(email.contains("://")) {
-						App1.openCustomTab(activity, email)
+						activity.openCustomTab(email)
 					} else {
 						val intent = Intent(Intent.ACTION_SEND)
 						intent.type = "text/plain"
@@ -227,28 +230,31 @@ internal class ViewHolderHeaderInstance(
 					
 				} catch(ex : Throwable) {
 					log.e(ex, "startActivity failed. mail=$email")
-					showToast(activity, true, R.string.missing_mail_app)
+					activity.showToast(true, R.string.missing_mail_app)
 				}
 				
 			}
 			
 			R.id.btnContact -> instance?.contact_account?.let { who ->
 				Action_Account.timeline(
-					activity
-					, activity.nextPosition(column)
-					, ColumnType.SEARCH
-					, args = arrayOf("@${who.username}@${who.apDomain.ascii}", true)
+					activity,
+					activity.nextPosition(column),
+					ColumnType.SEARCH,
+					args = arrayOf("@${who.username}@${who.apDomain.ascii}", true)
 				)
 			}
 			
-			R.id.btnInstance -> App1.openBrowser(activity, "https://${host.pretty}/about")
-			R.id.ivThumbnail -> App1.openBrowser(activity, instance?.thumbnail)
+			R.id.btnInstance ->
+				activity.openBrowser("https://${host.ascii}/about")
+			
+			R.id.ivThumbnail ->
+				activity.openBrowser(instance?.thumbnail)
 			
 			R.id.btnAbout ->
-				App1.openBrowser(activity, "https://${host.pretty}/about")
+				activity.openBrowser("https://${host.ascii}/about")
 			
 			R.id.btnAboutMore ->
-				App1.openBrowser(activity, "https://${host.pretty}/about/more")
+				activity.openBrowser("https://${host.ascii}/about/more")
 			
 			R.id.btnExplore -> Action_Instance.profileDirectoryFromInstanceInformation(
 				activity,

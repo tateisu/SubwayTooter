@@ -38,6 +38,7 @@ class PostHelper(
 ) {
 	
 	companion object {
+		
 		private val log = LogCategory("PostHelper")
 		
 		private val reCharsNotEmoji = "[^0-9A-Za-z_-]".asciiPattern()
@@ -47,6 +48,7 @@ class PostHelper(
 	}
 	
 	interface PostCompleteCallback {
+		
 		fun onPostComplete(target_account : SavedAccount, status : TootStatus)
 		fun onScheduledPostComplete(target_account : SavedAccount)
 	}
@@ -110,14 +112,14 @@ class PostHelper(
 		val hasAttachment = attachment_list?.isNotEmpty() ?: false
 		
 		if(! hasAttachment && content.isEmpty()) {
-			showToast(activity, true, R.string.post_error_contents_empty)
+			activity.showToast(true, R.string.post_error_contents_empty)
 			return
 		}
 		
 		// nullはCWチェックなしを示す
 		// nullじゃなくてカラならエラー
 		if(spoiler_text != null && spoiler_text.isEmpty()) {
-			showToast(activity, true, R.string.post_error_contents_warning_empty)
+			activity.showToast(true, R.string.post_error_contents_warning_empty)
 			return
 		}
 		
@@ -134,19 +136,19 @@ class PostHelper(
 				
 				if(item.isEmpty()) {
 					if(n < 2) {
-						showToast(activity, true, R.string.enquete_item_is_empty, n + 1)
+						activity.showToast(true, R.string.enquete_item_is_empty, n + 1)
 						return
 					}
 				} else {
 					val code_count = item.codePointCount(0, item.length)
 					if(code_count > choice_max_chars) {
 						val over = code_count - choice_max_chars
-						showToast(activity, true, R.string.enquete_item_too_long, n + 1, over)
+						activity.showToast(true, R.string.enquete_item_too_long, n + 1, over)
 						return
 					} else if(n > 0) {
 						for(i in 0 until n) {
 							if(item == enquete_items[i]) {
-								showToast(activity, true, R.string.enquete_item_duplicate, n + 1)
+								activity.showToast(true, R.string.enquete_item_duplicate, n + 1)
 								return
 							}
 						}
@@ -278,7 +280,7 @@ class PostHelper(
 		// 確認を終えたらボタン連打判定
 		
 		if(last_post_task?.get()?.isActive == true) {
-			showToast(activity, false, R.string.post_button_tapped_repeatly)
+			activity.showToast(false, R.string.post_button_tapped_repeatly)
 			return
 		}
 		
@@ -286,371 +288,372 @@ class PostHelper(
 		val delta = now - last_post_tapped
 		last_post_tapped = now
 		if(delta < 1000L) {
-			showToast(activity, false, R.string.post_button_tapped_repeatly)
+			activity.showToast(false, R.string.post_button_tapped_repeatly)
 			return
 		}
 		
 		// 全ての確認を終えたらバックグラウンドでの処理を開始する
-		last_post_task = WeakReference(TootTaskRunner(activity
-			, progressSetupCallback = { progressDialog ->
+		last_post_task =
+			WeakReference(TootTaskRunner(activity, progressSetupCallback = { progressDialog ->
 				progressDialog.setCanceledOnTouchOutside(false)
 			}
-		).run(account, object : TootTask {
-			
-			var status : TootStatus? = null
-			
-			var credential_tmp : TootAccount? = null
-			
-			
-			
-			var scheduledStatusSucceeded = false
-			
-			fun getCredential(client : TootApiClient,parser:TootParser) : TootApiResult? {
-				val result = client.request("/api/v1/accounts/verify_credentials")
-				credential_tmp = parser.account(result?.jsonObject)
-				return result
-			}
-			
-			override fun background(client : TootApiClient) : TootApiResult? {
-				val parser = TootParser(activity, account)
+			).run(account, object : TootTask {
 				
-				var result : TootApiResult?
+				var status : TootStatus? = null
 				
-				// 元の投稿を削除する
-				if(redraft_status_id != null) {
-					result = if(account.isMisskey) {
-						val params = account.putMisskeyApiToken(JsonObject()).apply {
-							put("noteId", redraft_status_id)
-						}
-						client.request(
-							"/api/notes/delete",
-							params.toPostRequestBuilder()
-						)
-					} else {
-						client.request(
-							"/api/v1/statuses/$redraft_status_id",
-							Request.Builder().delete()
-						)
-						
-					}
-					log.d("delete redraft. result=$result")
-					Thread.sleep(2000L)
-				} else if(scheduledId != null) {
-					val r1 = client.request(
-						"/api/v1/scheduled_statuses/$scheduledId",
-						Request.Builder().delete()
-					)
-					log.d("delete old scheduled status. result=$r1")
-					Thread.sleep(2000L)
-				}
+				var credential_tmp : TootAccount? = null
 				
-				var visibility_checked : TootVisibility? = visibility
+				var scheduledStatusSucceeded = false
 				
-				val (instance, ri) = TootInstance.get(client)
-				instance ?: return ri
-				
-				if(instance.instanceType == TootInstance.InstanceType.Pixelfed) {
-					if(in_reply_to_id != null && attachment_list?.isNotEmpty() == true) {
-						return TootApiResult(activity.getString(R.string.pixelfed_does_not_allow_reply_with_media))
-					}
-					if(in_reply_to_id == null && attachment_list?.isNotEmpty() != true) {
-						return TootApiResult(activity.getString(R.string.pixelfed_does_not_allow_post_without_media))
-					}
-				}
-				
-				if(visibility == TootVisibility.WebSetting) {
-					visibility_checked =
-						if(account.isMisskey || instance.versionGE(TootInstance.VERSION_1_6)) {
-							null
-						} else {
-							val r2 = getCredential(client,parser)
-							val credential_tmp = this.credential_tmp ?: return r2
-							val privacy = credential_tmp.source?.privacy
-								?: return TootApiResult(activity.getString(R.string.cant_get_web_setting_visibility))
-							TootVisibility.parseMastodon(privacy)
-						}
-				}
-				
-				val json = JsonObject()
-				try {
-					if(account.isMisskey) {
-						account.putMisskeyApiToken(json)
-						json["text"] = EmojiDecoder.decodeShortCode(
-							content,
-							emojiMapCustom = emojiMapCustom
-						)
-						if(visibility_checked != null) {
-							
-							if(visibility_checked == TootVisibility.DirectSpecified || visibility_checked == TootVisibility.DirectPrivate) {
-								val userIds = JsonArray()
-								
-								val m = TootAccount.reMisskeyMentionPost.matcher(content)
-								while(m.find()) {
-									val username = m.groupEx(1)
-									val host = m.groupEx(2) // may null
-									
-									result = client.request(
-										"/api/users/show",
-										account.putMisskeyApiToken().apply {
-											if(username?.isNotEmpty() == true)
-												put("username", username)
-											if(host?.isNotEmpty() == true)
-												put("host", host)
-										}.toPostRequestBuilder()
-									)
-									val id = result?.jsonObject?.string("id")
-									if(id?.isNotEmpty() == true) {
-										userIds.add(id)
-									}
-								}
-								json["visibility"] = when {
-									userIds.isNotEmpty() -> {
-										json["visibleUserIds"] = userIds
-										"specified"
-									}
-									
-									account.misskeyVersion >= 11 -> "specified"
-									else -> "private"
-								}
-							} else {
-								val localVis = visibility_checked.strMisskey.replace(
-									"^local-".toRegex(),
-									""
-								)
-								if(localVis != visibility_checked.strMisskey) {
-									json["localOnly"] = true
-									json["visibility"] = localVis
-								} else {
-									json["visibility"] = visibility_checked.strMisskey
-								}
-							}
-						}
-						
-						if(spoiler_text?.isNotEmpty() == true) {
-							json["cw"] = EmojiDecoder.decodeShortCode(
-								spoiler_text,
-								emojiMapCustom = emojiMapCustom
-							)
-						}
-						
-						if(in_reply_to_id != null) {
-							if(useQuoteToot) {
-								json["renoteId"] = in_reply_to_id.toString()
-							} else {
-								json["replyId"] = in_reply_to_id.toString()
-							}
-						}
-						
-						json["viaMobile"] = true
-						
-						if(attachment_list != null) {
-							val array = JsonArray()
-							for(pa in attachment_list) {
-								val a = pa.attachment ?: continue
-								// Misskeyは画像の再利用に問題がないので redraftとバージョンのチェックは行わない
-								array.add(a.id.toString())
-								
-								// Misskeyの場合、NSFWするにはアップロード済みの画像を drive/files/update で更新する
-								if(bNSFW) {
-									val r = client.request(
-										"/api/drive/files/update",
-										account.putMisskeyApiToken().apply {
-											put("fileId", a.id.toString())
-											put("isSensitive", true)
-										}
-											.toPostRequestBuilder()
-									)
-									if(r == null || r.error != null) return r
-								}
-							}
-							if(array.isNotEmpty()) json["mediaIds"] = array
-						}
-						
-						if(enquete_items?.isNotEmpty() == true) {
-							val choices = JsonArray().apply {
-								for(item in enquete_items) {
-									val text = EmojiDecoder.decodeShortCode(
-										item,
-										emojiMapCustom = emojiMapCustom
-									)
-									if(text.isEmpty()) continue
-									add(text)
-								}
-							}
-							if(choices.isNotEmpty()) {
-								json["poll"] = jsonObject {
-									put("choices", choices)
-								}
-							}
-						}
-						
-						if(scheduledAt != 0L) {
-							return TootApiResult("misskey has no scheduled status API")
-						}
-						
-					} else {
-						json["status"] = EmojiDecoder.decodeShortCode(
-							content,
-							emojiMapCustom = emojiMapCustom
-						)
-						if(visibility_checked != null) {
-							json["visibility"] = visibility_checked.strMastodon
-						}
-						json["sensitive"] = bNSFW
-						json["spoiler_text"] = EmojiDecoder.decodeShortCode(
-							spoiler_text ?: "",
-							emojiMapCustom = emojiMapCustom
-						)
-						
-						if(in_reply_to_id != null) {
-							if(useQuoteToot) {
-								json["quote_id"] = in_reply_to_id.toString()
-							} else {
-								json["in_reply_to_id"] = in_reply_to_id.toString()
-							}
-						}
-						
-						if(attachment_list != null) {
-							json["media_ids"] = jsonArray {
-								for(pa in attachment_list) {
-									val a = pa.attachment ?: continue
-									if(a.redraft && ! instance.versionGE(TootInstance.VERSION_2_4_1)) continue
-									add(a.id.toString())
-								}
-							}
-						}
-						
-						if(enquete_items?.isNotEmpty() == true) {
-							if(poll_type == TootPollsType.Mastodon) {
-								json["poll"] = jsonObject {
-									put("multiple", poll_multiple_choice)
-									put("hide_totals", poll_hide_totals)
-									put("expires_in", poll_expire_seconds)
-									put("options",
-										enquete_items.map {
-											EmojiDecoder.decodeShortCode(
-												it,
-												emojiMapCustom = emojiMapCustom
-											)
-										}
-											.toJsonArray()
-									)
-								}
-							} else {
-								json["isEnquete"] = true
-								json["enquete_items"] = enquete_items.map {
-									EmojiDecoder.decodeShortCode(
-										it,
-										emojiMapCustom = emojiMapCustom
-									)
-								}.toJsonArray()
-							}
-						}
-						
-						if(scheduledAt != 0L) {
-							if(! instance.versionGE(TootInstance.VERSION_2_7_0_rc1)) {
-								return TootApiResult(activity.getString(R.string.scheduled_status_requires_mastodon_2_7_0))
-							}
-							// UTCの日時を渡す
-							val c = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"))
-							c.timeInMillis = scheduledAt
-							val sv = String.format(
-								"%d-%02d-%02d %02d:%02d:%02d",
-								c.get(Calendar.YEAR),
-								c.get(Calendar.MONTH) + 1,
-								c.get(Calendar.DAY_OF_MONTH),
-								c.get(Calendar.HOUR_OF_DAY),
-								c.get(Calendar.MINUTE),
-								c.get(Calendar.SECOND)
-							)
-							json["scheduled_at"] = sv
-						}
-						
-					}
-				} catch(ex : JsonException) {
-					log.trace(ex)
-					log.e(ex, "status encoding failed.")
-				}
-				
-				val body_string = json.toString()
-				
-				val request_builder = body_string.toRequestBody(MEDIA_TYPE_JSON).toPost()
-				
-				if(! Pref.bpDontDuplicationCheck(pref)) {
-					val digest = (body_string + account.acct.ascii).digestSHA256Hex()
-					request_builder.header("Idempotency-Key", digest)
-				}
-				
-				result = if(account.isMisskey) {
-					// log.d("misskey json %s", body_string)
-					client.request("/api/notes/create", request_builder)
-				} else {
-					client.request("/api/v1/statuses", request_builder)
-				}
-				
-				val jsonObject = result?.jsonObject
-				
-				if(scheduledAt != 0L && jsonObject != null) {
-					// {"id":"3","scheduled_at":"2019-01-06T07:08:00.000Z","media_attachments":[]}
-					scheduledStatusSucceeded = true
+				fun getCredential(
+					client : TootApiClient,
+					parser : TootParser
+				) : TootApiResult? {
+					val result = client.request("/api/v1/accounts/verify_credentials")
+					credential_tmp = parser.account(result?.jsonObject)
 					return result
 				}
 				
-				val status = parser.status(
-					if(account.isMisskey) {
-						result?.jsonObject?.jsonObject("createdNote") ?: result?.jsonObject
-					} else {
-						result?.jsonObject
-					}
-				)
-				this.status = status
-				if(status != null) {
+				override fun background(client : TootApiClient) : TootApiResult? {
+					val parser = TootParser(activity, account)
 					
-					// タグを覚えておく
-					val s = status.decoded_content
-					val span_list = s.getSpans(0, s.length, MyClickableSpan::class.java)
-					if(span_list != null) {
-						val tag_list = ArrayList<String?>(span_list.size)
-						for(span in span_list) {
-							val start = s.getSpanStart(span)
-							val end = s.getSpanEnd(span)
-							val text = s.subSequence(start, end).toString()
-							if(text.startsWith("#")) {
-								tag_list.add(text.substring(1))
+					var result : TootApiResult?
+					
+					// 元の投稿を削除する
+					if(redraft_status_id != null) {
+						result = if(account.isMisskey) {
+							val params = account.putMisskeyApiToken(JsonObject()).apply {
+								put("noteId", redraft_status_id)
 							}
+							client.request(
+								"/api/notes/delete",
+								params.toPostRequestBuilder()
+							)
+						} else {
+							client.request(
+								"/api/v1/statuses/$redraft_status_id",
+								Request.Builder().delete()
+							)
+							
 						}
-						val count = tag_list.size
-						if(count > 0) {
-							TagSet.saveList(System.currentTimeMillis(), tag_list, 0, count)
+						log.d("delete redraft. result=$result")
+						Thread.sleep(2000L)
+					} else if(scheduledId != null) {
+						val r1 = client.request(
+							"/api/v1/scheduled_statuses/$scheduledId",
+							Request.Builder().delete()
+						)
+						log.d("delete old scheduled status. result=$r1")
+						Thread.sleep(2000L)
+					}
+					
+					var visibility_checked : TootVisibility? = visibility
+					
+					val (instance, ri) = TootInstance.get(client)
+					instance ?: return ri
+					
+					if(instance.instanceType == TootInstance.InstanceType.Pixelfed) {
+						if(in_reply_to_id != null && attachment_list?.isNotEmpty() == true) {
+							return TootApiResult(activity.getString(R.string.pixelfed_does_not_allow_reply_with_media))
+						}
+						if(in_reply_to_id == null && attachment_list?.isNotEmpty() != true) {
+							return TootApiResult(activity.getString(R.string.pixelfed_does_not_allow_post_without_media))
+						}
+					}
+					
+					if(visibility == TootVisibility.WebSetting) {
+						visibility_checked =
+							if(account.isMisskey || instance.versionGE(TootInstance.VERSION_1_6)) {
+								null
+							} else {
+								val r2 = getCredential(client, parser)
+								val credential_tmp = this.credential_tmp ?: return r2
+								val privacy = credential_tmp.source?.privacy
+									?: return TootApiResult(activity.getString(R.string.cant_get_web_setting_visibility))
+								TootVisibility.parseMastodon(privacy)
+							}
+					}
+					
+					val json = JsonObject()
+					try {
+						if(account.isMisskey) {
+							account.putMisskeyApiToken(json)
+							json["text"] = EmojiDecoder.decodeShortCode(
+								content,
+								emojiMapCustom = emojiMapCustom
+							)
+							if(visibility_checked != null) {
+								
+								if(visibility_checked == TootVisibility.DirectSpecified || visibility_checked == TootVisibility.DirectPrivate) {
+									val userIds = JsonArray()
+									
+									val m = TootAccount.reMisskeyMentionPost.matcher(content)
+									while(m.find()) {
+										val username = m.groupEx(1)
+										val host = m.groupEx(2) // may null
+										
+										result = client.request(
+											"/api/users/show",
+											account.putMisskeyApiToken().apply {
+												if(username?.isNotEmpty() == true)
+													put("username", username)
+												if(host?.isNotEmpty() == true)
+													put("host", host)
+											}.toPostRequestBuilder()
+										)
+										val id = result?.jsonObject?.string("id")
+										if(id?.isNotEmpty() == true) {
+											userIds.add(id)
+										}
+									}
+									json["visibility"] = when {
+										userIds.isNotEmpty() -> {
+											json["visibleUserIds"] = userIds
+											"specified"
+										}
+										
+										account.misskeyVersion >= 11 -> "specified"
+										else -> "private"
+									}
+								} else {
+									val localVis = visibility_checked.strMisskey.replace(
+										"^local-".toRegex(),
+										""
+									)
+									if(localVis != visibility_checked.strMisskey) {
+										json["localOnly"] = true
+										json["visibility"] = localVis
+									} else {
+										json["visibility"] = visibility_checked.strMisskey
+									}
+								}
+							}
+							
+							if(spoiler_text?.isNotEmpty() == true) {
+								json["cw"] = EmojiDecoder.decodeShortCode(
+									spoiler_text,
+									emojiMapCustom = emojiMapCustom
+								)
+							}
+							
+							if(in_reply_to_id != null) {
+								if(useQuoteToot) {
+									json["renoteId"] = in_reply_to_id.toString()
+								} else {
+									json["replyId"] = in_reply_to_id.toString()
+								}
+							}
+							
+							json["viaMobile"] = true
+							
+							if(attachment_list != null) {
+								val array = JsonArray()
+								for(pa in attachment_list) {
+									val a = pa.attachment ?: continue
+									// Misskeyは画像の再利用に問題がないので redraftとバージョンのチェックは行わない
+									array.add(a.id.toString())
+									
+									// Misskeyの場合、NSFWするにはアップロード済みの画像を drive/files/update で更新する
+									if(bNSFW) {
+										val r = client.request(
+											"/api/drive/files/update",
+											account.putMisskeyApiToken().apply {
+												put("fileId", a.id.toString())
+												put("isSensitive", true)
+											}
+												.toPostRequestBuilder()
+										)
+										if(r == null || r.error != null) return r
+									}
+								}
+								if(array.isNotEmpty()) json["mediaIds"] = array
+							}
+							
+							if(enquete_items?.isNotEmpty() == true) {
+								val choices = JsonArray().apply {
+									for(item in enquete_items) {
+										val text = EmojiDecoder.decodeShortCode(
+											item,
+											emojiMapCustom = emojiMapCustom
+										)
+										if(text.isEmpty()) continue
+										add(text)
+									}
+								}
+								if(choices.isNotEmpty()) {
+									json["poll"] = jsonObject {
+										put("choices", choices)
+									}
+								}
+							}
+							
+							if(scheduledAt != 0L) {
+								return TootApiResult("misskey has no scheduled status API")
+							}
+							
+						} else {
+							json["status"] = EmojiDecoder.decodeShortCode(
+								content,
+								emojiMapCustom = emojiMapCustom
+							)
+							if(visibility_checked != null) {
+								json["visibility"] = visibility_checked.strMastodon
+							}
+							json["sensitive"] = bNSFW
+							json["spoiler_text"] = EmojiDecoder.decodeShortCode(
+								spoiler_text ?: "",
+								emojiMapCustom = emojiMapCustom
+							)
+							
+							if(in_reply_to_id != null) {
+								if(useQuoteToot) {
+									json["quote_id"] = in_reply_to_id.toString()
+								} else {
+									json["in_reply_to_id"] = in_reply_to_id.toString()
+								}
+							}
+							
+							if(attachment_list != null) {
+								json["media_ids"] = jsonArray {
+									for(pa in attachment_list) {
+										val a = pa.attachment ?: continue
+										if(a.redraft && ! instance.versionGE(TootInstance.VERSION_2_4_1)) continue
+										add(a.id.toString())
+									}
+								}
+							}
+							
+							if(enquete_items?.isNotEmpty() == true) {
+								if(poll_type == TootPollsType.Mastodon) {
+									json["poll"] = jsonObject {
+										put("multiple", poll_multiple_choice)
+										put("hide_totals", poll_hide_totals)
+										put("expires_in", poll_expire_seconds)
+										put("options",
+											enquete_items.map {
+												EmojiDecoder.decodeShortCode(
+													it,
+													emojiMapCustom = emojiMapCustom
+												)
+											}
+												.toJsonArray()
+										)
+									}
+								} else {
+									json["isEnquete"] = true
+									json["enquete_items"] = enquete_items.map {
+										EmojiDecoder.decodeShortCode(
+											it,
+											emojiMapCustom = emojiMapCustom
+										)
+									}.toJsonArray()
+								}
+							}
+							
+							if(scheduledAt != 0L) {
+								if(! instance.versionGE(TootInstance.VERSION_2_7_0_rc1)) {
+									return TootApiResult(activity.getString(R.string.scheduled_status_requires_mastodon_2_7_0))
+								}
+								// UTCの日時を渡す
+								val c = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"))
+								c.timeInMillis = scheduledAt
+								val sv = String.format(
+									"%d-%02d-%02d %02d:%02d:%02d",
+									c.get(Calendar.YEAR),
+									c.get(Calendar.MONTH) + 1,
+									c.get(Calendar.DAY_OF_MONTH),
+									c.get(Calendar.HOUR_OF_DAY),
+									c.get(Calendar.MINUTE),
+									c.get(Calendar.SECOND)
+								)
+								json["scheduled_at"] = sv
+							}
+							
+						}
+					} catch(ex : JsonException) {
+						log.trace(ex)
+						log.e(ex, "status encoding failed.")
+					}
+					
+					val body_string = json.toString()
+					
+					val request_builder = body_string.toRequestBody(MEDIA_TYPE_JSON).toPost()
+					
+					if(! Pref.bpDontDuplicationCheck(pref)) {
+						val digest = (body_string + account.acct.ascii).digestSHA256Hex()
+						request_builder.header("Idempotency-Key", digest)
+					}
+					
+					result = if(account.isMisskey) {
+						// log.d("misskey json %s", body_string)
+						client.request("/api/notes/create", request_builder)
+					} else {
+						client.request("/api/v1/statuses", request_builder)
+					}
+					
+					val jsonObject = result?.jsonObject
+					
+					if(scheduledAt != 0L && jsonObject != null) {
+						// {"id":"3","scheduled_at":"2019-01-06T07:08:00.000Z","media_attachments":[]}
+						scheduledStatusSucceeded = true
+						return result
+					}
+					
+					val status = parser.status(
+						if(account.isMisskey) {
+							result?.jsonObject?.jsonObject("createdNote") ?: result?.jsonObject
+						} else {
+							result?.jsonObject
+						}
+					)
+					this.status = status
+					if(status != null) {
+						
+						// タグを覚えておく
+						val s = status.decoded_content
+						val span_list = s.getSpans(0, s.length, MyClickableSpan::class.java)
+						if(span_list != null) {
+							val tag_list = ArrayList<String?>(span_list.size)
+							for(span in span_list) {
+								val start = s.getSpanStart(span)
+								val end = s.getSpanEnd(span)
+								val text = s.subSequence(start, end).toString()
+								if(text.startsWith("#")) {
+									tag_list.add(text.substring(1))
+								}
+							}
+							val count = tag_list.size
+							if(count > 0) {
+								TagSet.saveList(System.currentTimeMillis(), tag_list, 0, count)
+							}
+							
 						}
 						
 					}
-					
+					return result
 				}
-				return result
-			}
-			
-			override fun handleResult(result : TootApiResult?) {
-				result ?: return
-				val status = this.status
-				when {
-					status != null -> {
-						// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
-						callback.onPostComplete(account, status)
-						return
-					}
-					
-					scheduledStatusSucceeded -> {
-						callback.onScheduledPostComplete(account)
-						return
+				
+				override fun handleResult(result : TootApiResult?) {
+					result ?: return
+					val status = this.status
+					when {
+						status != null -> {
+							// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
+							callback.onPostComplete(account, status)
+							return
+						}
 						
+						scheduledStatusSucceeded -> {
+							callback.onScheduledPostComplete(account)
+							return
+							
+						}
+						
+						else -> activity.showToast(true, result.error)
 					}
-					
-					else -> showToast(activity, true, result.error)
 				}
-			}
-		})
-		)
+			})
+			)
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////
@@ -890,12 +893,7 @@ class PostHelper(
 					sb.append(item.alias)
 					sb.append(": → ")
 					sb.setSpan(
-						ForegroundColorSpan(
-							getAttributeColor(
-								activity,
-								R.attr.colorTimeSmall
-							)
-						),
+						ForegroundColorSpan(activity.getAttributeColor(R.attr.colorTimeSmall)),
 						start,
 						sb.length,
 						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -922,6 +920,7 @@ class PostHelper(
 	}
 	
 	interface Callback2 {
+		
 		fun onTextUpdate()
 		
 		fun canOpenPopup() : Boolean
@@ -1053,7 +1052,10 @@ class PostHelper(
 			proc_text_changed.run()
 			
 			// キーボードを再度表示する
-			App1.getAppState(activity,"PostHelper/EmojiPicker/cb").handler.post { et.showKeyboard() }
+			App1.getAppState(
+				activity,
+				"PostHelper/EmojiPicker/cb"
+			).handler.post { et.showKeyboard() }
 			
 		}.show()
 	}
@@ -1091,7 +1093,7 @@ class PostHelper(
 	
 	fun openFeaturedTagList(list : List<TootTag>?) {
 		val ad = ActionsDialog()
-		list?.forEach {tag->
+		list?.forEach { tag ->
 			ad.addAction("#${tag.name}") {
 				val et = this.et ?: return@addAction
 				
@@ -1112,7 +1114,7 @@ class PostHelper(
 				proc_text_changed.run()
 			}
 		}
-		ad.addAction( activity.getString(R.string.input_sharp_itself)){
+		ad.addAction(activity.getString(R.string.input_sharp_itself)) {
 			val et = this.et ?: return@addAction
 			
 			val src = et.text ?: ""
@@ -1124,7 +1126,7 @@ class PostHelper(
 			sb.append(src.subSequence(0, start))
 			if(! EmojiDecoder.canStartHashtag(sb, sb.length)) sb.append(' ')
 			sb.append('#')
-
+			
 			val newSelection = sb.length
 			if(end < src_length) sb.append(src.subSequence(end, src_length))
 			et.text = sb

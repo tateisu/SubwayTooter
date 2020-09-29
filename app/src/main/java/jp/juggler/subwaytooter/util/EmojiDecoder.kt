@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
+import jp.juggler.subwaytooter.pref
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
@@ -356,7 +357,7 @@ object EmojiDecoder {
 		
 		val useEmojioneShortcode = when(val context = options.context) {
 			null -> false
-			else -> Pref.bpEmojioneShortcode( Pref.pref(context))
+			else -> Pref.bpEmojioneShortcode( context.pref())
 		}
 		
 		splitShortCode(s, callback = object : ShortCodeSplitterCallback {

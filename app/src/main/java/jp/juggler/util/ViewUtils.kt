@@ -98,23 +98,20 @@ var CompoundButton.isCheckedNoAnime : Boolean
 		jumpDrawablesToCurrentState()
 	}
 
-
-
 private fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
 	(Color.red(col1) + Color.red(col2)) ushr 1,
 	(Color.green(col1) + Color.green(col2)) ushr 1,
 	(Color.blue(col1) + Color.blue(col2)) ushr 1
 )
 
-fun setSwitchColor(
-	activity : AppCompatActivity,
+fun Context.setSwitchColor(
 	pref : SharedPreferences,
 	root : View?
 ) {
-	val colorBg = getAttributeColor(activity, R.attr.colorWindowBackground)
+	val colorBg = getAttributeColor(R.attr.colorWindowBackground)
 	val colorOn = Pref.ipSwitchOnColor(pref)
 	val colorOff = /* Pref.ipSwitchOffColor(pref).notZero() ?: */
-		getAttributeColor(activity, android.R.attr.colorPrimary)
+		getAttributeColor(android.R.attr.colorPrimary)
 	
 	val colorDisabled = mixColor(colorBg, colorOff)
 	
@@ -157,7 +154,6 @@ fun setSwitchColor(
 	}
 }
 
-
 private fun rgbToLab(rgb : Int) : Triple<Float, Float, Float> {
 	
 	fun Int.revGamma() : Float {
@@ -193,9 +189,9 @@ private fun rgbToLab(rgb : Int) : Triple<Float, Float, Float> {
 	)
 }
 
-fun setStatusBarColor(activity : Activity, forceDark : Boolean = false) {
+fun AppCompatActivity.setStatusBarColor(forceDark : Boolean = false) {
 	
-	activity.window?.apply {
+	window?.apply {
 		
 		// 古い端末ではナビゲーションバーのアイコン色を設定できないため
 		// メディアビューア画面ではステータスバーやナビゲーションバーの色を設定しない…
@@ -211,7 +207,7 @@ fun setStatusBarColor(activity : Activity, forceDark : Boolean = false) {
 		var c = when {
 			forceDark -> Color.BLACK
 			else -> Pref.ipStatusBarColor(App1.pref).notZero()
-				?: getAttributeColor(activity, R.attr.colorPrimaryDark)
+				?: getAttributeColor(R.attr.colorPrimaryDark)
 		}
 		statusBarColor = c or Color.BLACK
 		

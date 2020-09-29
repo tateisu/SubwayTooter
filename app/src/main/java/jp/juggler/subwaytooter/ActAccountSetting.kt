@@ -262,7 +262,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		
 		Styler.fixHorizontalPadding(root)
 		
-		setSwitchColor(this, pref, root)
+		setSwitchColor(pref, root)
 		
 		tvInstance = findViewById(R.id.tvInstance)
 		tvUser = findViewById(R.id.tvUser)
@@ -529,7 +529,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		tvUserCustom.backgroundColor = ac.color_bg
 		tvUserCustom.text = ac.nickname
 		tvUserCustom.textColor = ac.color_fg.notZero()
-			?: getAttributeColor(this, R.attr.colorTimeSmall)
+			?: getAttributeColor(R.attr.colorTimeSmall)
 	}
 	
 	private fun saveUIToData() {
@@ -590,10 +590,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			R.id.btnAccountRemove -> performAccountRemove()
 			R.id.btnLoadPreference -> performLoadPreference()
 			R.id.btnVisibility -> performVisibility()
-			R.id.btnOpenBrowser -> App1.openBrowser(
-				this@ActAccountSetting,
-				"https://${account.apiHost.ascii}/"
-			)
+			R.id.btnOpenBrowser -> openBrowser("https://${account.apiHost.ascii}/")
 			R.id.btnPushSubscription -> startTest()
 			
 			R.id.btnUserCustom -> ActNickname.open(
@@ -694,7 +691,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 				
 				val json = result.jsonObject
 				if(json == null) {
-					showToast(this@ActAccountSetting, true, result.error)
+					showToast(true, result.error)
 					return
 				}
 				
@@ -745,7 +742,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			.setPositiveButton(R.string.ok) { _, _ ->
 				account.delete()
 				
-				val pref = Pref.pref(this@ActAccountSetting)
+				val pref = pref()
 				if(account.db_id == Pref.lpTabletTootDefaultAccount(pref)) {
 					pref.edit().put(Pref.lpTabletTootDefaultAccount, - 1L).apply()
 				}
@@ -810,7 +807,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 					}
 					
 					error != null -> {
-						showToast(this@ActAccountSetting, true, error)
+						showToast(true, error)
 						log.e("can't get oauth browser URL. $error")
 					}
 				}
@@ -921,7 +918,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 				if(data != null) {
 					showProfile(data)
 				} else {
-					showToast(this@ActAccountSetting, true, result.error)
+					showToast(true, result.error)
 				}
 				
 			}
@@ -1248,7 +1245,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 				if(data != null) {
 					showProfile(data)
 				} else {
-					showToast(this@ActAccountSetting, true, result.error)
+					showToast(true, result.error)
 					for(arg in args) {
 						val key = arg.first
 						val value = arg.second
@@ -1401,7 +1398,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			)
 			return
 		}
-		showToast(this, true, R.string.missing_permission_to_access_media)
+		showToast(true, R.string.missing_permission_to_access_media)
 	}
 	
 	override fun onRequestPermissionsResult(
@@ -1413,7 +1410,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 				if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 					openPicker(requestCode)
 				} else {
-					showToast(this, true, R.string.missing_permission_to_access_media)
+					showToast(true, R.string.missing_permission_to_access_media)
 				}
 		}
 	}
@@ -1424,7 +1421,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			startActivityForResult(intent, request_code)
 		} catch(ex : Throwable) {
 			log.trace(ex, "performAttachment failed.")
-			showToast(this, ex, "performAttachment failed.")
+			showToast(ex, "performAttachment failed.")
 		}
 		
 	}
@@ -1446,7 +1443,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			startActivityForResult(intent, request_code)
 		} catch(ex : Throwable) {
 			log.trace(ex, "opening camera app failed.")
-			showToast(this, ex, "opening camera app failed.")
+			showToast(ex, "opening camera app failed.")
 		}
 		
 	}
@@ -1483,7 +1480,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 					try {
 						val cache_dir = externalCacheDir
 						if(cache_dir == null) {
-							showToast(this, false, "getExternalCacheDir returns null.")
+							showToast(false, "getExternalCacheDir returns null.")
 							break
 						}
 						
@@ -1522,7 +1519,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 				
 			} catch(ex : Throwable) {
 				log.trace(ex, "Resizing image failed.")
-				showToast(this, ex, "Resizing image failed.")
+				showToast(ex, "Resizing image failed.")
 			}
 			
 			break
@@ -1549,12 +1546,12 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 	private fun addAttachment(request_code : Int, uri : Uri, mime_type : String?) {
 		
 		if(mime_type == null) {
-			showToast(this, false, "mime type is not provided.")
+			showToast(false, "mime type is not provided.")
 			return
 		}
 		
 		if(! mime_type.startsWith("image/")) {
-			showToast(this, false, "mime type is not image.")
+			showToast(false, "mime type is not image.")
 			return
 		}
 		
@@ -1583,7 +1580,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			)
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return wps.updateSubscription(client,true)
+				return wps.updateSubscription(client, true)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

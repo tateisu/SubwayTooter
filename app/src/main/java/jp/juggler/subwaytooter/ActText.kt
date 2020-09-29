@@ -161,7 +161,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(this, ex, "send failed.")
+			showToast(ex, "send failed.")
 		}
 		
 	}
@@ -169,7 +169,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	private fun search() {
 		val sv = selection
 		if(sv.isEmpty()) {
-			showToast(this, false, "please select search keyword")
+			showToast(false, "please select search keyword")
 			return
 		}
 		try {
@@ -180,7 +180,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			}
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(this, ex, "search failed.")
+			showToast(ex, "search failed.")
 		}
 		
 	}
@@ -188,7 +188,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	private fun searchToot(@Suppress("SameParameterValue") resultCode : Int) {
 		val sv = selection
 		if(sv.isEmpty()) {
-			showToast(this, false, "please select search keyword")
+			showToast(false, "please select search keyword")
 			return
 		}
 		try {
@@ -206,10 +206,10 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		try {
 			MutedWord.save(selection)
 			App1.getAppState(this).onMuteUpdated()
-			showToast(this, false, R.string.word_was_muted)
+			showToast(false, R.string.word_was_muted)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(this, ex, "muteWord failed.")
+			showToast(ex, "muteWord failed.")
 		}
 		
 	}

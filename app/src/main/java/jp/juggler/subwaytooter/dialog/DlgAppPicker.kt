@@ -11,14 +11,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
+import android.app.Activity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.cn
 import jp.juggler.util.*
 
 class DlgAppPicker(
-	val activity : AppCompatActivity,
+	val activity : Activity,
 	val intent : Intent,
 	val autoSelect : Boolean = false,
 	val filter : (ResolveInfo) -> Boolean = { true },
@@ -26,6 +26,7 @@ class DlgAppPicker(
 ) {
 	
 	companion object {
+		
 		fun Char.isAlpha() = ('A' <= this && this <= 'Z') || ('a' <= this && this <= 'z')
 	}
 	
@@ -63,7 +64,7 @@ class DlgAppPicker(
 			val (label, icon) = CustomShare.getInfo(activity, CustomShare.CN_CLIPBOARD.cn())
 			add(ListItem(icon, label.toString(), CustomShare.CN_CLIPBOARD))
 		}
-		sortWith{ a, b ->
+		sortWith { a, b ->
 			val a1 = a.text.firstOrNull() ?: '\u0000'
 			val b1 = b.text.firstOrNull() ?: '\u0000'
 			when {
@@ -99,10 +100,10 @@ class DlgAppPicker(
 	// returns false if list is empty
 	@SuppressLint("InflateParams")
 	fun show() =
-		if( list.isEmpty()){
+		if(list.isEmpty()) {
 			dialog?.dismissSafe()
 			false
-		}else {
+		} else {
 			dialog?.run {
 				window?.setLayout(
 					WindowManager.LayoutParams.MATCH_PARENT,
@@ -112,7 +113,6 @@ class DlgAppPicker(
 			}
 			true
 		}
-	
 	
 	private inner class MyAdapter : BaseAdapter(), AdapterView.OnItemClickListener {
 		
@@ -142,6 +142,7 @@ class DlgAppPicker(
 	}
 	
 	private inner class MyViewHolder(viewRoot : View) {
+		
 		val ivImage : ImageView = viewRoot.findViewById(R.id.ivImage)
 		val tvText : TextView = viewRoot.findViewById(R.id.tvText)
 		var item : ListItem? = null
@@ -155,7 +156,7 @@ class DlgAppPicker(
 					activity,
 					ivImage,
 					R.drawable.ic_question,
-					color = getAttributeColor(activity, R.attr.colorVectorDrawable),
+					color = activity.getAttributeColor(R.attr.colorVectorDrawable),
 					alphaMultiplier = 1f
 				)
 			}

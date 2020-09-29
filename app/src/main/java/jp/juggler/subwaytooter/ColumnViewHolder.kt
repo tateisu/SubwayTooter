@@ -59,6 +59,7 @@ class ColumnViewHolder(
 	CompoundButton.OnCheckedChangeListener, View.OnLongClickListener {
 	
 	companion object {
+		
 		private val log = LogCategory("ColumnViewHolder")
 		
 		val fieldRecycler : Field by lazy {
@@ -540,8 +541,8 @@ class ColumnViewHolder(
 				//				}
 				
 				log.d(
-					"restoreScrollPosition [$page_idx] %s , column has no saved scroll position."
-					, column.getColumnName(true)
+					"restoreScrollPosition [$page_idx] %s , column has no saved scroll position.",
+					column.getColumnName(true)
 				)
 				return
 			}
@@ -550,18 +551,18 @@ class ColumnViewHolder(
 			
 			if(listView.visibility != View.VISIBLE) {
 				log.d(
-					"restoreScrollPosition [$page_idx] %s , listView is not visible. saved position %s,%s is dropped."
-					, column.getColumnName(true)
-					, sp.adapterIndex
-					, sp.offset
+					"restoreScrollPosition [$page_idx] %s , listView is not visible. saved position %s,%s is dropped.",
+					column.getColumnName(true),
+					sp.adapterIndex,
+					sp.offset
 				)
 			} else {
 				log.d(
-					"restoreScrollPosition [%d] %s , listView is visible. resume %s,%s"
-					, page_idx
-					, column.getColumnName(true)
-					, sp.adapterIndex
-					, sp.offset
+					"restoreScrollPosition [%d] %s , listView is visible. resume %s,%s",
+					page_idx,
+					column.getColumnName(true),
+					sp.adapterIndex,
+					sp.offset
 				)
 				sp.restore(this@ColumnViewHolder)
 			}
@@ -717,21 +718,21 @@ class ColumnViewHolder(
 			fun dip(dp : Int) : Int = (activity.density * dp + 0.5f).toInt()
 			val context = activity
 			
-			val announcementsBgColor = Pref.ipAnnouncementsBgColor(activity.pref).notZero()
-				?: getAttributeColor(context, R.attr.colorSearchFormBackground)
+			val announcementsBgColor = Pref.ipAnnouncementsBgColor(App1.pref).notZero()
+				?: context.getAttributeColor(R.attr.colorSearchFormBackground)
 			
 			btnAnnouncementsCutout.apply {
 				color = announcementsBgColor
 			}
 			
 			llAnnouncementsBox.apply {
-				background = createRoundDrawable( dip(6).toFloat(), announcementsBgColor )
+				background = createRoundDrawable(dip(6).toFloat(), announcementsBgColor)
 				val pad_tb = dip(2)
 				setPadding(0, pad_tb, 0, pad_tb)
 			}
 			
-			val searchBgColor = Pref.ipSearchBgColor(activity.pref).notZero()
-				?: getAttributeColor(context, R.attr.colorSearchFormBackground)
+			val searchBgColor = Pref.ipSearchBgColor(App1.pref).notZero()
+				?: context.getAttributeColor(R.attr.colorSearchFormBackground)
 			
 			llSearch.apply {
 				backgroundColor = searchBgColor
@@ -740,7 +741,7 @@ class ColumnViewHolder(
 				topPadding = dip(3)
 				bottomPadding = dip(3)
 			}
-
+			
 			llListList.apply {
 				backgroundColor = searchBgColor
 				startPadding = dip(12)
@@ -1145,7 +1146,7 @@ class ColumnViewHolder(
 			btnListAdd -> {
 				val tv = etListName.text.toString().trim { it <= ' ' }
 				if(tv.isEmpty()) {
-					showToast(activity, true, R.string.list_name_empty)
+					activity.showToast(true, R.string.list_name_empty)
 					return
 				}
 				Action_List.create(activity, column.access_info, tv, null)
@@ -1161,7 +1162,7 @@ class ColumnViewHolder(
 			btnQuickFilterFavourite -> clickQuickFilter(Column.QUICK_FILTER_FAVOURITE)
 			btnQuickFilterBoost -> clickQuickFilter(Column.QUICK_FILTER_BOOST)
 			btnQuickFilterFollow -> clickQuickFilter(Column.QUICK_FILTER_FOLLOW)
-			btnQuickFilterPost-> clickQuickFilter(Column.QUICK_FILTER_POST)
+			btnQuickFilterPost -> clickQuickFilter(Column.QUICK_FILTER_POST)
 			btnQuickFilterReaction -> clickQuickFilter(Column.QUICK_FILTER_REACTION)
 			btnQuickFilterVote -> clickQuickFilter(Column.QUICK_FILTER_VOTE)
 			
@@ -1232,7 +1233,7 @@ class ColumnViewHolder(
 		tvColumnContext.text = ac.nickname
 		tvColumnContext.setTextColor(
 			ac.color_fg.notZero()
-				?: getAttributeColor(activity, R.attr.colorTimeSmall)
+				?: activity.getAttributeColor(R.attr.colorTimeSmall)
 		)
 		
 		tvColumnContext.setBackgroundColor(ac.color_bg)
@@ -1393,11 +1394,11 @@ class ColumnViewHolder(
 				val scroll_save = ScrollPosition()
 				column.scroll_save = scroll_save
 				log.d(
-					"saveScrollPosition [%d] %s , listView is not visible, save %s,%s"
-					, page_idx
-					, column.getColumnName(true)
-					, scroll_save.adapterIndex
-					, scroll_save.offset
+					"saveScrollPosition [%d] %s , listView is not visible, save %s,%s",
+					page_idx,
+					column.getColumnName(true),
+					scroll_save.adapterIndex,
+					scroll_save.offset
 				)
 				return true
 			}
@@ -1406,11 +1407,11 @@ class ColumnViewHolder(
 				val scroll_save = ScrollPosition(this)
 				column.scroll_save = scroll_save
 				log.d(
-					"saveScrollPosition [%d] %s , listView is visible, save %s,%s"
-					, page_idx
-					, column.getColumnName(true)
-					, scroll_save.adapterIndex
-					, scroll_save.offset
+					"saveScrollPosition [%d] %s , listView is visible, save %s,%s",
+					page_idx,
+					column.getColumnName(true),
+					scroll_save.adapterIndex,
+					scroll_save.offset
 				)
 				return true
 			}
@@ -1586,10 +1587,10 @@ class ColumnViewHolder(
 		if(insideColumnSetting) {
 			svQuickFilter.setBackgroundColor(0)
 			
-			val colorFg = getAttributeColor(activity, R.attr.colorContentText)
+			val colorFg = activity.getAttributeColor(R.attr.colorContentText)
 			val colorBgSelected = colorFg.applyAlphaMultiplier(0.25f)
 			val colorFgList = ColorStateList.valueOf(colorFg)
-			val colorBg = getAttributeColor(activity, R.attr.colorColumnSettingBackground)
+			val colorBg = activity.getAttributeColor(R.attr.colorColumnSettingBackground)
 			showQuickFilterButton = { btn, iconId, selected ->
 				btn.backgroundDrawable =
 					getAdaptiveRippleDrawableRound(
@@ -1721,7 +1722,7 @@ class ColumnViewHolder(
 						gravity = Gravity.END
 						startPadding = dip(4)
 						endPadding = dip(4)
-						textColor = getAttributeColor(context, R.attr.colorColumnHeaderAcct)
+						textColor = context.getAttributeColor(R.attr.colorColumnHeaderAcct)
 						textSize = 12f
 						
 					}.lparams(0, wrapContent) {
@@ -1730,7 +1731,7 @@ class ColumnViewHolder(
 					
 					tvColumnStatus = textView {
 						gravity = Gravity.END
-						textColor = getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
+						textColor = context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
 						textSize = 12f
 						
 					}.lparams(wrapContent, wrapContent) {
@@ -1739,7 +1740,7 @@ class ColumnViewHolder(
 					
 					tvColumnIndex = textView {
 						gravity = Gravity.END
-						textColor = getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
+						textColor = context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
 						textSize = 12f
 						
 					}.lparams(wrapContent, wrapContent) {
@@ -1843,7 +1844,7 @@ class ColumnViewHolder(
 							val paint = Paint().apply {
 								isAntiAlias = true
 								color =
-									getAttributeColor(context, R.attr.colorColumnSettingBackground)
+									context.getAttributeColor(R.attr.colorColumnSettingBackground)
 							}
 							val path = Path()
 							addOutsideDrawer(this) { canvas, parent, view, left, top ->
@@ -1909,7 +1910,7 @@ class ColumnViewHolder(
 				maxHeight = dip(240)
 				
 				backgroundColor =
-					getAttributeColor(context, R.attr.colorColumnSettingBackground)
+					context.getAttributeColor(R.attr.colorColumnSettingBackground)
 				
 				llColumnSettingInside = verticalLayout {
 					lparams(matchParent, wrapContent)
@@ -1924,7 +1925,7 @@ class ColumnViewHolder(
 						
 						label = textView {
 							textColor =
-								getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
+								context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
 							text = context.getString(R.string.hashtag_extra_any)
 						}.lparams(matchParent, wrapContent)
 						
@@ -1939,7 +1940,7 @@ class ColumnViewHolder(
 						
 						label = textView {
 							textColor =
-								getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
+								context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
 							text = context.getString(R.string.hashtag_extra_all)
 						}.lparams(matchParent, wrapContent)
 						
@@ -1954,7 +1955,7 @@ class ColumnViewHolder(
 						
 						label = textView {
 							textColor =
-								getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
+								context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
 							text = context.getString(R.string.hashtag_extra_none)
 						}.lparams(matchParent, wrapContent)
 						
@@ -2049,12 +2050,12 @@ class ColumnViewHolder(
 						
 						label = textView {
 							textColor =
-								getAttributeColor(context, R.attr.colorColumnHeaderPageNumber)
+								context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
 							text = context.getString(R.string.regex_filter)
 						}.lparams(wrapContent, wrapContent)
 						
 						tvRegexFilterError = textView {
-							textColor = getAttributeColor(context, R.attr.colorRegexFilterError)
+							textColor = context.getAttributeColor(R.attr.colorRegexFilterError)
 						}.lparams(0, wrapContent) {
 							weight = 1f
 							startMargin = dip(4)
@@ -2220,10 +2221,7 @@ class ColumnViewHolder(
 						contentDescription = context.getString(R.string.clear)
 						imageResource = R.drawable.ic_close
 						imageTintList = ColorStateList.valueOf(
-							getAttributeColor(
-								context,
-								R.attr.colorVectorDrawable
-							)
+							context.getAttributeColor(R.attr.colorVectorDrawable)
 						)
 					}.lparams(dip(40), dip(40)) {
 						startMargin = dip(4)
@@ -2234,10 +2232,7 @@ class ColumnViewHolder(
 						contentDescription = context.getString(R.string.search)
 						imageResource = R.drawable.ic_search
 						imageTintList = ColorStateList.valueOf(
-							getAttributeColor(
-								context,
-								R.attr.colorVectorDrawable
-							)
+							context.getAttributeColor(R.attr.colorVectorDrawable)
 						)
 					}.lparams(dip(40), dip(40)) {
 						startMargin = dip(4)
@@ -2269,8 +2264,7 @@ class ColumnViewHolder(
 					contentDescription = context.getString(R.string.add)
 					imageResource = R.drawable.ic_add
 					imageTintList = ColorStateList.valueOf(
-						getAttributeColor(
-							context,
+						context.getAttributeColor(
 							R.attr.colorVectorDrawable
 						)
 					)
@@ -2688,8 +2682,8 @@ class ColumnViewHolder(
 					btn.background = if(reaction.me == true) {
 						getAdaptiveRippleDrawableRound(
 							actMain,
-							getAttributeColor(actMain, R.attr.colorButtonBgCw),
-							getAttributeColor(actMain, R.attr.colorRippleEffect)
+							actMain.getAttributeColor(R.attr.colorButtonBgCw),
+							actMain.getAttributeColor(R.attr.colorRippleEffect)
 						)
 					} else {
 						ContextCompat.getDrawable(actMain, R.drawable.btn_bg_transparent_round6dp)
@@ -2775,7 +2769,7 @@ class ColumnViewHolder(
 			override fun handleResult(result : TootApiResult?) {
 				result ?: return
 				if(result.jsonObject == null) {
-					showToast(activity, true, result.error)
+					activity.showToast(true, result.error)
 				} else {
 					sample.count = 0
 					val list = item.reactions
@@ -2811,7 +2805,7 @@ class ColumnViewHolder(
 			override fun handleResult(result : TootApiResult?) {
 				result ?: return
 				if(result.jsonObject == null) {
-					showToast(activity, true, result.error)
+					activity.showToast(true, result.error)
 				} else {
 					val it = item.reactions?.iterator() ?: return
 					while(it.hasNext()) {

@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
+import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
 import java.util.*
 
@@ -35,7 +36,7 @@ object Action_Instance {
 				override fun handleResult(result : TootApiResult?) {
 					result ?: return // cancelled.
 					when(val ti = targetInstance) {
-						null -> showToast(activity, true, result.error)
+						null -> activity.showToast(true, result.error)
 						else -> profileDirectory(activity, accessInfo, host, ti, pos)
 					}
 				}
@@ -43,11 +44,11 @@ object Action_Instance {
 			
 			// Misskey非対応
 			instance.instanceType == TootInstance.InstanceType.Misskey ->
-				showToast(activity, false, R.string.profile_directory_not_supported_on_misskey)
+				activity.showToast(false, R.string.profile_directory_not_supported_on_misskey)
 			
 			// バージョンが足りないならWebページを開く
 			! instance.versionGE(TootInstance.VERSION_3_0_0_rc1) ->
-				App1.openBrowser(activity, "https://${host.ascii}/explore")
+				activity.openBrowser("https://${host.ascii}/explore")
 			
 			// ホスト名部分が一致するならそのアカウントで開く
 			accessInfo.matchHost(host) ->
@@ -123,10 +124,10 @@ object Action_Instance {
 	fun timelineDomain(
 		activity : ActMain,
 		pos : Int,
-		accessInfo: SavedAccount,
+		accessInfo : SavedAccount,
 		host : Host
-	){
-		activity.addColumn(pos, accessInfo, ColumnType.DOMAIN_TIMELINE,host)
+	) {
+		activity.addColumn(pos, accessInfo, ColumnType.DOMAIN_TIMELINE, host)
 	}
 	
 	// 指定タンスのローカルタイムラインを開く
@@ -167,7 +168,7 @@ object Action_Instance {
 	) {
 		
 		if(access_info.matchHost(domain)) {
-			showToast(activity, false, R.string.it_is_you)
+			activity.showToast(false, R.string.it_is_you)
 			return
 		}
 		
@@ -190,14 +191,13 @@ object Action_Instance {
 						column.onDomainBlockChanged(access_info, domain, bBlock)
 					}
 					
-					showToast(
-						activity,
+					activity.showToast(
 						false,
 						if(bBlock) R.string.block_succeeded else R.string.unblock_succeeded
 					)
 					
 				} else {
-					showToast(activity, false, result.error)
+					activity.showToast(false, result.error)
 				}
 			}
 		})
@@ -235,7 +235,7 @@ object Action_Instance {
 				if(localStatus != null) {
 					timelinePublicAround2(activity, access_info, pos, localStatus.id, type)
 				} else {
-					showToast(activity, true, result.error)
+					activity.showToast(true, result.error)
 				}
 			}
 		})
@@ -298,7 +298,7 @@ object Action_Instance {
 			return
 		}
 		
-		showToast(activity, false, R.string.missing_available_account)
+		activity.showToast(false, R.string.missing_available_account)
 	}
 	
 }

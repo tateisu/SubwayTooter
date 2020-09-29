@@ -134,7 +134,7 @@ class DlgListMember(
 		this.list_owner = a
 		if(a == null) {
 			btnListOwner.setText(R.string.not_selected)
-			btnListOwner.setTextColor(getAttributeColor(activity, android.R.attr.textColorPrimary))
+			btnListOwner.setTextColor(activity.getAttributeColor( android.R.attr.textColorPrimary))
 			btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 			//
 			
@@ -148,7 +148,7 @@ class DlgListMember(
 				btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 			}
 			btnListOwner.textColor = ac.color_fg.notZero()
-				?: getAttributeColor(activity, android.R.attr.textColorPrimary)
+				?: activity.getAttributeColor( android.R.attr.textColorPrimary)
 		}
 		
 		loadLists()
@@ -175,7 +175,7 @@ class DlgListMember(
 				val (r1, ar) = client.syncAccountByAcct(list_owner, target_user_full_acct)
 				r1 ?: return null // cancelled.
 				val local_who = ar?.get() // may null
-				if(local_who == null) showToast(activity, true, r1.error)
+				if(local_who == null) activity.showToast( true, r1.error)
 				
 				this@DlgListMember.local_who = local_who
 				
@@ -241,7 +241,7 @@ class DlgListMember(
 				
 				val error = result.error
 				if(error?.isNotEmpty() == true) {
-					showToast(activity, true, result.error)
+					activity.showToast( true, result.error)
 				}
 				
 			}
@@ -268,14 +268,14 @@ class DlgListMember(
 			callback = object : DlgTextInput.Callback {
 				
 				override fun onEmptyError() {
-					showToast(activity, false, R.string.list_name_empty)
+					activity.showToast( false, R.string.list_name_empty)
 				}
 				
 				override fun onOK(dialog : Dialog, text : String) {
 					val list_owner = this@DlgListMember.list_owner
 					
 					if(list_owner == null) {
-						showToast(activity, false, "list owner is not selected.")
+						activity.showToast( false, "list owner is not selected.")
 						return
 					}
 					
@@ -376,14 +376,14 @@ class DlgListMember(
 			
 			val list_owner = this@DlgListMember.list_owner
 			if(list_owner == null) {
-				showToast(activity, false, "list owner is not selected")
+				activity.showToast( false, "list owner is not selected")
 				revokeCheckedChanged(isChecked)
 				return
 			}
 			
 			val local_who = this@DlgListMember.local_who
 			if(local_who == null) {
-				showToast(activity, false, "target user is not synchronized")
+				activity.showToast( false, "target user is not synchronized")
 				revokeCheckedChanged(isChecked)
 				return
 			}

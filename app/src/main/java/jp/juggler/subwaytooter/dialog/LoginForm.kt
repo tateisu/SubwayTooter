@@ -19,6 +19,7 @@ import java.net.IDN
 import java.util.*
 
 object LoginForm {
+	
 	private val log = LogCategory("LoginForm")
 	
 	private class StringArray : ArrayList<String>()
@@ -107,10 +108,10 @@ object LoginForm {
 			when {
 				
 				instance.isEmpty() ->
-					showToast(activity, true, R.string.instance_not_specified)
+					activity.showToast(true, R.string.instance_not_specified)
 				
 				instance.contains("/") || instance.contains("@") ->
-					showToast(activity, true, R.string.instance_not_need_slash)
+					activity.showToast(true, R.string.instance_not_need_slash)
 				
 				else -> {
 					val actionPos = spAction.selectedItemPosition
@@ -124,7 +125,7 @@ object LoginForm {
 		}
 		view.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }
 		
-		val instance_list = HashSet<String>().apply{
+		val instance_list = HashSet<String>().apply {
 			try {
 				activity.resources.openRawResource(R.raw.server_list).use { inStream ->
 					val br = BufferedReader(InputStreamReader(inStream, "UTF-8"))
@@ -133,8 +134,8 @@ object LoginForm {
 							br.readLine()?.trim { it <= ' ' }?.toLowerCase(Locale.JAPAN) ?: break
 						if(s.isEmpty()) continue
 						add(s)
-						add(IDN.toASCII(s,IDN.ALLOW_UNASSIGNED))
-						add(IDN.toUnicode(s,IDN.ALLOW_UNASSIGNED))
+						add(IDN.toASCII(s, IDN.ALLOW_UNASSIGNED))
+						add(IDN.toUnicode(s, IDN.ALLOW_UNASSIGNED))
 					}
 				}
 			} catch(ex : Throwable) {

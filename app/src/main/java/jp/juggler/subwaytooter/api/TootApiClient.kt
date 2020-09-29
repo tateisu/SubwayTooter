@@ -40,7 +40,7 @@ class TootApiClient(
 		}
 	
 	init {
-		pref = Pref.pref(context)
+		pref = context.pref()
 	}
 	
 	companion object {
@@ -566,7 +566,7 @@ class TootApiClient(
 		val result = TootApiResult.makeWithCaption(apiHost?.pretty)
 		
 		if(result.error != null) {
-			showToast(context, false, result.error)
+			context.showToast(false, result.error)
 			return null
 		}
 		
@@ -583,7 +583,7 @@ class TootApiClient(
 		) {
 			val error = result.error
 			if(error != null) {
-				showToast(context, false, error)
+				context.showToast(false, error)
 				return null
 			}
 			return null
@@ -593,7 +593,7 @@ class TootApiClient(
 		
 		val jsonObject = result.jsonObject
 		if(jsonObject == null) {
-			showToast(context, false, result.error)
+			context.showToast(false, result.error)
 			return null
 		}
 		// {"token":"0ba88e2d-4b7d-4599-8d90-dc341a005637","url":"https://misskey.xyz/auth/0ba88e2d-4b7d-4599-8d90-dc341a005637"}
@@ -601,7 +601,7 @@ class TootApiClient(
 		// ブラウザで開くURL
 		val url = jsonObject.string("url")
 		if(url?.isEmpty() != false) {
-			showToast(context, false, "missing 'url' in auth session response.")
+			context.showToast(false, "missing 'url' in auth session response.")
 			return null
 		}
 		
@@ -690,7 +690,7 @@ class TootApiClient(
 		
 		val appSecret = jsonObject.string(KEY_MISSKEY_APP_SECRET)
 		if(appSecret?.isEmpty() != false) {
-			showToast(context, true, context.getString(R.string.cant_get_misskey_app_secret))
+			context.showToast(true, context.getString(R.string.cant_get_misskey_app_secret))
 			return null
 		}
 		//		{

@@ -415,7 +415,7 @@ class ColumnTask_Gap(
 			}
 			
 			if(max_id == null) {
-				showToast(context, false, "gap-getConversationSummaryList: missing max_id")
+				context.showToast(false, "$logCaption: missing max_id")
 				log.d("$logCaption: missing max_id")
 				break
 			}
@@ -563,7 +563,7 @@ class ColumnTask_Gap(
 			defaultAccountListParser
 	) : TootApiResult? {
 		
-		if( column.pagingType != ColumnPagingType.Default ) {
+		if(column.pagingType != ColumnPagingType.Default) {
 			return TootApiResult("can't support gap")
 		}
 		

@@ -171,9 +171,8 @@ class ActFavMute : AppCompatActivity() {
 			dragView.findViewById<TextView>(R.id.tvName).text =
 				clickedView.findViewById<TextView>(R.id.tvName).text
 			
-			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
-				getAttributeColor(this@ActFavMute, R.attr.list_item_bg_pressed_dragged)
-			)
+			dragView.findViewById<View>(R.id.item_layout)
+				.setBackgroundColor(getAttributeColor(R.attr.list_item_bg_pressed_dragged))
 		}
 	}
 	

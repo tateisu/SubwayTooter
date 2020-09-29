@@ -25,6 +25,7 @@ import jp.juggler.subwaytooter.action.Action_Instance
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.VersionString
+import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -52,7 +53,7 @@ class SideMenuAdapter(
 		private fun clickableSpan(url : String) =
 			object : ClickableSpan() {
 				override fun onClick(widget : View) {
-					App1.openBrowser(widget.activity as ActMain, url)
+					widget.activity?.openBrowser(url)
 				}
 				
 				override fun updateDrawState(ds : TextPaint) {
@@ -89,10 +90,9 @@ class SideMenuAdapter(
 							currentVersion
 						)
 					)
-					val newRelease = when(Pref.bpCheckBetaVersion(Pref.pref(appContext))) {
-						false -> releaseInfo?.jsonObject("stable")
-						else -> releaseInfo?.jsonObject("beta")
-					}
+					val newRelease = releaseInfo?.jsonObject(
+						if(Pref.bpCheckBetaVersion(App1.pref)) "beta" else "stable"
+					)
 					
 					val newVersion =
 						(newRelease?.string("name")?.notEmpty() ?: newRelease?.string("tag_name"))
@@ -122,10 +122,7 @@ class SideMenuAdapter(
 						)
 						setSpan(
 							ForegroundColorSpan(
-								getAttributeColor(
-									appContext,
-									R.attr.colorRegexFilterError
-								)
+								appContext.getAttributeColor(R.attr.colorRegexFilterError)
 							),
 							start, length,
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -362,7 +359,7 @@ class SideMenuAdapter(
 		}
 	)
 	
-	private val iconColor = getAttributeColor(actMain, R.attr.colorTimeSmall)
+	private val iconColor = actMain.getAttributeColor(R.attr.colorTimeSmall)
 	
 	override fun getCount() : Int = list.size
 	override fun getItem(position : Int) : Any = list[position]
@@ -427,7 +424,7 @@ class SideMenuAdapter(
 				FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT
 			)
-			backgroundColor = getAttributeColor(actMain, R.attr.colorWindowBackground)
+			backgroundColor = actMain.getAttributeColor(R.attr.colorWindowBackground)
 			selector = StateListDrawable()
 			divider = null
 			dividerHeight = 0

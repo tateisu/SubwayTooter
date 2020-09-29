@@ -12,6 +12,7 @@ import jp.juggler.util.showToast
 class DownloadReceiver : BroadcastReceiver() {
 	
 	companion object {
+		
 		private val log = LogCategory("DownloadReceiver")
 	}
 	
@@ -33,8 +34,7 @@ class DownloadReceiver : BroadcastReceiver() {
 						}
 						val title = cursor.getStringOrNull(DownloadManager.COLUMN_TITLE)
 						val status = cursor.getIntOrNull(DownloadManager.COLUMN_STATUS)
-						showToast(
-							context,
+						context.showToast(
 							false,
 							if(status == DownloadManager.STATUS_SUCCESSFUL) {
 								context.getString(R.string.download_complete, title)

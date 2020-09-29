@@ -22,7 +22,7 @@ internal fun addPseudoAccount(
 	callback : (SavedAccount) -> Unit
 ) {
 	try {
-		val acct = Acct.parse("?",host)
+		val acct = Acct.parse("?", host)
 		
 		var account = SavedAccount.loadAccountByAcct(context, acct.ascii)
 		if(account != null) {
@@ -45,7 +45,7 @@ internal fun addPseudoAccount(
 					result == null -> {
 					}
 					
-					targetInstance == null -> showToast(context, false, result.error)
+					targetInstance == null -> context.showToast(false, result.error)
 					else -> addPseudoAccount(context, host, targetInstance, callback)
 				}
 			})
@@ -58,7 +58,7 @@ internal fun addPseudoAccount(
 		}
 		
 		val row_id = SavedAccount.insert(
-			acct =acct.ascii,
+			acct = acct.ascii,
 			host = host.ascii,
 			domain = instanceInfo.uri,
 			account = account_info,
@@ -85,7 +85,7 @@ internal fun addPseudoAccount(
 		val log = LogCategory("addPseudoAccount")
 		log.trace(ex)
 		log.e(ex, "failed.")
-		showToast(context, ex, "addPseudoAccount failed.")
+		context.showToast(ex, "addPseudoAccount failed.")
 	}
 	return
 }
@@ -100,7 +100,7 @@ fun makeAccountListNonPseudo(
 	for(a in SavedAccount.loadAccountList(context)) {
 		if(a.isPseudo) continue
 		when(pickup_host) {
-			null, a.apDomain,a.apiHost -> list_same_host
+			null, a.apDomain, a.apiHost -> list_same_host
 			else -> list_other_host
 		}.add(a)
 	}

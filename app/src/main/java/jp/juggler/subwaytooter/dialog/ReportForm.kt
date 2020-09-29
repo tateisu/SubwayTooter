@@ -23,35 +23,35 @@ object ReportForm {
 		access_info : SavedAccount,
 		who : TootAccount,
 		status : TootStatus?,
-		onClickOk : (dialog : Dialog, comment : String,forward:Boolean) -> Unit
+		onClickOk : (dialog : Dialog, comment : String, forward : Boolean) -> Unit
 	) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_report_user, null, false)
 		
-		val tvUser :TextView = view.findViewById(R.id.tvUser)
-		val tvStatusCaption :TextView = view.findViewById(R.id.tvStatusCaption)
-		val tvStatus :TextView = view.findViewById(R.id.tvStatus)
-		val etComment :EditText = view.findViewById(R.id.etComment)
+		val tvUser : TextView = view.findViewById(R.id.tvUser)
+		val tvStatusCaption : TextView = view.findViewById(R.id.tvStatusCaption)
+		val tvStatus : TextView = view.findViewById(R.id.tvStatus)
+		val etComment : EditText = view.findViewById(R.id.etComment)
 		
 		val cbForward : CheckBox = view.findViewById(R.id.cbForward)
-		val tvForwardDesc:TextView = view.findViewById(R.id.tvForwardDesc)
-		val canForward = !access_info.matchHost( who)
+		val tvForwardDesc : TextView = view.findViewById(R.id.tvForwardDesc)
+		val canForward = ! access_info.matchHost(who)
 		
 		cbForward.isChecked = false
-		if(!canForward){
+		if(! canForward) {
 			cbForward.visibility = View.GONE
 			tvForwardDesc.visibility = View.GONE
-		}else{
+		} else {
 			cbForward.visibility = View.VISIBLE
 			tvForwardDesc.visibility = View.VISIBLE
-			cbForward.text = activity.getString(R.string.report_forward_to,who.apDomain.pretty)
+			cbForward.text = activity.getString(R.string.report_forward_to, who.apDomain.pretty)
 		}
 		
 		tvUser.text = who.acct.pretty
 		
-		if( status == null){
+		if(status == null) {
 			tvStatusCaption.visibility = View.GONE
 			tvStatus.visibility = View.GONE
-		}else{
+		} else {
 			tvStatus.text = status.decoded_content
 		}
 		
@@ -60,11 +60,11 @@ object ReportForm {
 		view.findViewById<View>(R.id.btnOk).setOnClickListener(View.OnClickListener {
 			val comment = etComment.text.toString().trim()
 			if(comment.isEmpty()) {
-				showToast(activity, true, R.string.comment_empty)
+				activity.showToast(true, R.string.comment_empty)
 				return@OnClickListener
 			}
 			
-			onClickOk(dialog, comment,cbForward.isChecked)
+			onClickOk(dialog, comment, cbForward.isChecked)
 		})
 		view.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }
 		

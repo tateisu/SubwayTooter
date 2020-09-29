@@ -19,6 +19,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
+import jp.juggler.subwaytooter.util.emptyCallback
 import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.CountImageButton
 import jp.juggler.util.*
@@ -36,6 +37,7 @@ internal class StatusButtons(
 ) : View.OnClickListener, View.OnLongClickListener {
 	
 	companion object {
+		
 		val log = LogCategory("StatusButtons")
 	}
 	
@@ -64,7 +66,7 @@ internal class StatusButtons(
 	private val color_normal = column.getContentColor()
 	
 	private val color_accent : Int
-		get() = getAttributeColor(activity, R.attr.colorImageButtonAccent)
+		get() = activity.getAttributeColor(R.attr.colorImageButtonAccent)
 	
 	init {
 		this.access_info = column.access_info
@@ -494,13 +496,13 @@ internal class StatusButtons(
 						status,
 						access_info.getFullAcct(status.account),
 						NOT_CROSS_ACCOUNT,
-						when {
-							! bSimpleList -> null
+						bSet = bSet,
+						callback = when {
+							! bSimpleList -> emptyCallback
 							// 簡略表示なら結果をトースト表示
 							bSet -> activity.boost_complete_callback
 							else -> activity.unboost_complete_callback
 						},
-						bSet = bSet
 					)
 				}
 			}
@@ -518,13 +520,13 @@ internal class StatusButtons(
 						access_info,
 						status,
 						NOT_CROSS_ACCOUNT,
-						when {
-							! bSimpleList -> null
+						bSet = bSet,
+						callback = when {
+							! bSimpleList -> emptyCallback
 							// 簡略表示なら結果をトースト表示
 							bSet -> activity.favourite_complete_callback
 							else -> activity.unfavourite_complete_callback
 						},
-						bSet = bSet
 					)
 				}
 			}
@@ -542,13 +544,13 @@ internal class StatusButtons(
 						access_info,
 						status,
 						NOT_CROSS_ACCOUNT,
-						when {
-							! bSimpleList -> null
+						bSet = bSet,
+						callback = when {
+							! bSimpleList -> emptyCallback
 							// 簡略表示なら結果をトースト表示
 							bSet -> activity.bookmark_complete_callback
 							else -> activity.unbookmark_complete_callback
 						},
-						bSet = bSet
 					)
 				}
 			}
@@ -720,6 +722,7 @@ internal class StatusButtons(
 }
 
 open class _FlexboxLayout(ctx : Context) : FlexboxLayout(ctx) {
+	
 	inline fun <T : View> T.lparams(
 		width : Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
 		height : Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -733,10 +736,10 @@ open class _FlexboxLayout(ctx : Context) : FlexboxLayout(ctx) {
 }
 
 class StatusButtonsViewHolder(
-	activity : ActMain
-	, lpWidth : Int
-	, topMarginDp : Float
-	, @JustifyContent justifyContent : Int = JustifyContent.CENTER
+	activity : ActMain,
+	lpWidth : Int,
+	topMarginDp : Float,
+	@JustifyContent justifyContent : Int = JustifyContent.CENTER
 ) {
 	
 	private val buttonHeight = ActMain.boostButtonSize

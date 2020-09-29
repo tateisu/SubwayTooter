@@ -116,8 +116,8 @@ class ActHighlightWordEdit
 		swSpeech = findViewById(R.id.swSpeech)
 		swSpeech.setOnCheckedChangeListener(this)
 		
-		setSwitchColor(this, App1.pref, swSound)
-		setSwitchColor(this, App1.pref, swSpeech)
+		setSwitchColor(App1.pref, swSound)
+		setSwitchColor(App1.pref, swSpeech)
 		
 		intArrayOf(
 			R.id.btnTextColorEdit,
@@ -142,7 +142,7 @@ class ActHighlightWordEdit
 			tvName.text = item.name
 			tvName.setBackgroundColor(item.color_bg) // may 0
 			tvName.textColor = item.color_fg.notZero()
-				?: getAttributeColor(this, android.R.attr.textColorPrimary)
+				?: getAttributeColor(android.R.attr.textColorPrimary)
 			
 		} finally {
 			bBusy = false

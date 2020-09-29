@@ -15,6 +15,7 @@ import okhttp3.Request
 object Action_List {
 	
 	fun interface CreateCallback {
+		
 		fun onCreated(list : TootList)
 	}
 	
@@ -65,11 +66,11 @@ object Action_List {
 						column.onListListUpdated(access_info)
 					}
 					
-					showToast(activity, false, R.string.list_created)
+					activity.showToast(false, R.string.list_created)
 					
 					callback?.onCreated(list)
 				} else {
-					showToast(activity, false, result.error)
+					activity.showToast(false, result.error)
 				}
 			}
 		})
@@ -85,8 +86,7 @@ object Action_List {
 		
 		if(! bConfirmed) {
 			DlgConfirm.openSimple(
-				activity
-				, activity.getString(R.string.list_delete_confirm, list.title)
+				activity, activity.getString(R.string.list_delete_confirm, list.title)
 			) {
 				delete(activity, access_info, list, bConfirmed = true)
 			}
@@ -121,10 +121,10 @@ object Action_List {
 						column.onListListUpdated(access_info)
 					}
 					
-					showToast(activity, false, R.string.delete_succeeded)
+					activity.showToast(false, R.string.delete_succeeded)
 					
 				} else {
-					showToast(activity, false, result.error)
+					activity.showToast(false, result.error)
 				}
 			}
 		})
@@ -142,7 +142,7 @@ object Action_List {
 			item.title,
 			callback = object : DlgTextInput.Callback {
 				override fun onEmptyError() {
-					showToast(activity, false, R.string.list_name_empty)
+					activity.showToast(false, R.string.list_name_empty)
 				}
 				
 				override fun onOK(dialog : Dialog, text : String) {
@@ -191,7 +191,7 @@ object Action_List {
 								}
 								dialog.dismissSafe()
 							} else {
-								showToast(activity, false, result.error)
+								activity.showToast(false, result.error)
 							}
 						}
 					})

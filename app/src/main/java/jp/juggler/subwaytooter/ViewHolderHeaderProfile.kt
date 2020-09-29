@@ -22,6 +22,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
+import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
@@ -139,7 +140,7 @@ internal class ViewHolderHeaderProfile(
 	override fun showColor() {
 		llProfile.setBackgroundColor(
 			when(val c = column.column_bg_color) {
-				0 -> getAttributeColor(activity, R.attr.colorProfileBackgroundMask)
+				0 -> activity.getAttributeColor(R.attr.colorProfileBackgroundMask)
 				else -> - 0x40000000 or (0x00ffffff and c)
 			}
 		)
@@ -194,7 +195,7 @@ internal class ViewHolderHeaderProfile(
 			color = contentColor,
 			alphaMultiplier = Styler.boost_alpha
 		)
-
+		
 		setIconDrawableId(
 			activity,
 			btnPersonalNotesEdit,
@@ -202,7 +203,7 @@ internal class ViewHolderHeaderProfile(
 			color = contentColor,
 			alphaMultiplier = Styler.boost_alpha
 		)
-
+		
 		val acctColor = column.getAcctColor()
 		tvCreated.textColor = acctColor
 		tvMovedAcct.textColor = acctColor
@@ -354,8 +355,10 @@ internal class ViewHolderHeaderProfile(
 			tvMisskeyExtra.vg(tvMisskeyExtra.text.isNotEmpty())
 			
 			btnStatusCount.text =
-				"${activity.getString(R.string.statuses)}\n${whoDetail?.statuses_count
-					?: who.statuses_count}"
+				"${activity.getString(R.string.statuses)}\n${
+					whoDetail?.statuses_count
+						?: who.statuses_count
+				}"
 			
 			if(Pref.bpHideFollowCount(activity.pref)) {
 				btnFollowing.text = activity.getString(R.string.following)
@@ -363,18 +366,18 @@ internal class ViewHolderHeaderProfile(
 			} else {
 				btnFollowing.text =
 					"${activity.getString(R.string.following)}\n${
-					whoDetail?.following_count ?: who.following_count
+						whoDetail?.following_count ?: who.following_count
 					}"
 				btnFollowers.text =
 					"${activity.getString(R.string.followers)}\n${
-					whoDetail?.followers_count ?: who.followers_count
+						whoDetail?.followers_count ?: who.followers_count
 					}"
 				
 			}
 			
 			val relation = UserRelation.load(access_info.db_id, who.id)
 			this.relation = relation
-
+			
 			Styler.setFollowIcon(
 				activity,
 				btnFollow,
@@ -386,7 +389,7 @@ internal class ViewHolderHeaderProfile(
 			)
 			
 			tvPersonalNotes.text = relation.note ?: ""
-
+			
 			showMoved(who, who.movedRef)
 			
 			val fields = whoDetail?.fields ?: who.fields
@@ -451,8 +454,10 @@ internal class ViewHolderHeaderProfile(
 							?: (Color.BLACK or 0x7fbc99)
 						
 						valueText.setSpan(
-							ForegroundColorSpan(linkFgColor)
-							, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+							ForegroundColorSpan(linkFgColor),
+							start,
+							end,
+							Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 						)
 					}
 					
@@ -537,9 +542,8 @@ internal class ViewHolderHeaderProfile(
 		
 		when(v.id) {
 			
-			R.id.ivBackground, R.id.tvRemoteProfileWarning -> whoRef?.get()?.url?.let { url ->
-				App1.openCustomTab(activity, url)
-			}
+			R.id.ivBackground, R.id.tvRemoteProfileWarning ->
+				activity.openCustomTab(whoRef?.get()?.url)
 			
 			R.id.btnFollowing -> {
 				column.profile_tab = ProfileTab.Following
@@ -584,44 +588,45 @@ internal class ViewHolderHeaderProfile(
 				}
 			}
 			
-			R.id.btnPersonalNotesEdit -> whoRef?.let{ whoRef->
+			R.id.btnPersonalNotesEdit -> whoRef?.let { whoRef ->
 				val who = whoRef.get()
 				val relation = this.relation
 				val lastColumn = column
 				DlgTextInput.show(
 					activity,
-					AcctColor.getStringWithNickname(activity,R.string.personal_notes_of,who.acct),
+					AcctColor.getStringWithNickname(activity, R.string.personal_notes_of, who.acct),
 					relation?.note ?: "",
 					allowEmpty = true,
-					callback = object: DlgTextInput.Callback{
+					callback = object : DlgTextInput.Callback {
 						override fun onEmptyError() {
 						}
-
+						
 						override fun onOK(dialog : Dialog, text : String) {
-							TootTaskRunner(activity).run(column.access_info,object:TootTask{
+							TootTaskRunner(activity).run(column.access_info, object : TootTask {
 								override fun background(client : TootApiClient) : TootApiResult? {
-
+									
 									if(access_info.isPseudo)
 										return TootApiResult("Personal notes is not supported on pseudo account.")
-
+									
 									if(access_info.isMisskey)
 										return TootApiResult("Personal notes is not supported on Misskey account.")
 									
-									return client.request("/api/v1/accounts/${who.id}/note",
+									return client.request(
+										"/api/v1/accounts/${who.id}/note",
 										jsonObject {
-											put("comment",text)
+											put("comment", text)
 										}.toPostRequestBuilder()
 									)
 								}
 								
 								override fun handleResult(result : TootApiResult?) {
-									if(result==null) return
-									if(result.error!=null)
-										showToast(activity,true,result.error)
-									else{
+									if(result == null) return
+									if(result.error != null)
+										activity.showToast(true, result.error)
+									else {
 										relation?.note = text
 										dialog.dismissSafe()
-										if(lastColumn==column) bindData(column)
+										if(lastColumn == column) bindData(column)
 									}
 								}
 							})

@@ -81,7 +81,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 		App1.setActivityTheme(this, noActionBar = true)
 		
 		this.handler = App1.getAppState(this).handler
-		this.pref = Pref.pref(this)
+		this.pref = pref()
 		
 		//		val intent = this.intent
 		//		val layoutId = intent.getIntExtra(EXTRA_LAYOUT_ID, 0)
@@ -373,7 +373,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 					val margin_tb = dip(6)
 					setMargins(margin_lr, margin_tb, margin_lr, margin_tb)
 				}
-				setBackgroundColor(getAttributeColor(context, R.attr.colorSettingDivider))
+				setBackgroundColor(context.getAttributeColor(R.attr.colorSettingDivider))
 			})
 		}
 	
@@ -538,7 +538,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 							item.pref.cast() ?: error("$name has no boolean pref")
 						showCaption(name)
 						swSwitch.vg(false) // skip animation
-						setSwitchColor(activity, pref, swSwitch)
+						setSwitchColor(pref, swSwitch)
 						swSwitch.isEnabled = item.enabled
 						swSwitch.isChecked = bp(pref)
 						swSwitch.vg(true)
@@ -840,7 +840,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 			val intent = intentOpenDocument("*/*")
 			startActivityForResult(intent, REQUEST_CODE_APP_DATA_IMPORT)
 		} catch(ex : Throwable) {
-			showToast(this, ex, "importAppData(1) failed.")
+			showToast(ex, "importAppData(1) failed.")
 		}
 	}
 	
@@ -884,7 +884,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 	}
 	
 	fun setSwitchColor() =
-		setSwitchColor(this@ActAppSetting, pref, lvList)
+		setSwitchColor(pref, lvList)
 	
 	//////////////////////////////////////////////////////
 	
@@ -955,7 +955,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 	private fun saveTimelineFont(uri : Uri?, file_name : String) : File? {
 		try {
 			if(uri == null) {
-				showToast(this, false, "missing uri.")
+				showToast(false, "missing uri.")
 				return null
 			}
 			
@@ -969,7 +969,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 			
 			val source : InputStream? = contentResolver.openInputStream(uri)
 			if(source == null) {
-				showToast(this, false, "openInputStream returns null. uri=%s", uri)
+				showToast(false, "openInputStream returns null. uri=%s", uri)
 				return null
 			} else {
 				source.use { inStream ->
@@ -981,20 +981,20 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 			
 			val face = Typeface.createFromFile(tmp_file)
 			if(face == null) {
-				showToast(this, false, "Typeface.createFromFile() failed.")
+				showToast(false, "Typeface.createFromFile() failed.")
 				return null
 			}
 			
 			val file = File(dir, file_name)
 			if(! tmp_file.renameTo(file)) {
-				showToast(this, false, "File operation failed.")
+				showToast(false, "File operation failed.")
 				return null
 			}
 			
 			return file
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(this, ex, "saveTimelineFont failed.")
+			showToast(ex, "saveTimelineFont failed.")
 			return null
 		}
 		
@@ -1177,10 +1177,10 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 				}
 			) { setCustomShare(target, it) }
 				.show()
-			if(! rv) showToast(this, true, "share target app is not installed.")
+			if(! rv) showToast(true, "share target app is not installed.")
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(this, ex, "openCustomShareChooser failed.")
+			showToast(ex, "openCustomShareChooser failed.")
 		}
 	}
 	

@@ -23,7 +23,8 @@ import kotlinx.coroutines.*
 class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
 	DialogInterface.OnDismissListener {
 	
-	companion object{
+	companion object {
+		
 		private val log = LogCategory("DlgDraftPicker")
 	}
 	
@@ -55,7 +56,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 		
 		val draft = getPostDraft(position)
 		if(draft != null) {
-			showToast(activity, false, R.string.draft_deleted)
+			activity.showToast(false, R.string.draft_deleted)
 			draft.delete()
 			reload()
 			return true
@@ -104,16 +105,16 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 		// cancel old task
 		task?.cancel()
 		
-		task = GlobalScope.launch(Dispatchers.Main){
-			val cursor =try {
+		task = GlobalScope.launch(Dispatchers.Main) {
+			val cursor = try {
 				withContext(Dispatchers.IO) {
 					PostDraft.createCursor()
 				} ?: error("cursor is null")
-			}catch(ex:CancellationException) {
+			} catch(ex : CancellationException) {
 				return@launch
-			}catch(ex:Throwable){
+			} catch(ex : Throwable) {
 				log.trace(ex)
-				showToast(activity,ex, "failed to loading drafts.")
+				activity.showToast(ex, "failed to loading drafts.")
 				return@launch
 			}
 			
@@ -136,6 +137,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 	}
 	
 	private inner class MyViewHolder(view : View) {
+		
 		val tvTime : TextView
 		val tvText : TextView
 		

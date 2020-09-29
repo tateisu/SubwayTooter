@@ -24,6 +24,7 @@ class DlgFocusPoint(val activity : Activity, val attachment : TootAttachment) :
 	View.OnClickListener {
 	
 	companion object {
+		
 		val log = LogCategory("DlgFocusPoint")
 	}
 	
@@ -57,7 +58,7 @@ class DlgFocusPoint(val activity : Activity, val attachment : TootAttachment) :
 	fun show() {
 		val url = attachment.preview_url
 		if(url == null) {
-			showToast(activity, false, "missing image url")
+			activity.showToast(false, "missing image url")
 			return
 		}
 		
@@ -65,7 +66,10 @@ class DlgFocusPoint(val activity : Activity, val attachment : TootAttachment) :
 			
 			private val options = BitmapFactory.Options()
 			
-			private fun decodeBitmap(data : ByteArray, pixel_max : Int) : Bitmap? {
+			private fun decodeBitmap(
+				data : ByteArray,
+				@Suppress("SameParameterValue") pixel_max : Int
+			) : Bitmap? {
 				options.inJustDecodeBounds = true
 				options.inScaled = false
 				options.outWidth = 0
@@ -92,7 +96,7 @@ class DlgFocusPoint(val activity : Activity, val attachment : TootAttachment) :
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				try {
-					val(result,data) = client.getHttpBytes(url)
+					val (result, data) = client.getHttpBytes(url)
 					data ?: return result
 					bitmap = decodeBitmap(data, 1024)
 					if(bitmap == null) return TootApiResult("image decode failed.")
@@ -105,7 +109,7 @@ class DlgFocusPoint(val activity : Activity, val attachment : TootAttachment) :
 			override fun handleResult(result : TootApiResult?) {
 				val bitmap = this.bitmap
 				if(bitmap == null) {
-					showToast(activity, true, result?.error ?: "?")
+					activity.showToast(true, result?.error ?: "?")
 					dialog.dismissSafe()
 					return
 				}

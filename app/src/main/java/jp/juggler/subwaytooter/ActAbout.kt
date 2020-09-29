@@ -9,17 +9,19 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.LogCategory
 
 class ActAbout : AppCompatActivity() {
 	
 	class Translators(
-		val name:String,
-		val acct:String?,
-		val lang:String
+		val name : String,
+		val acct : String?,
+		val lang : String
 	)
 	
 	companion object {
+		
 		val log = LogCategory("ActAbout")
 		
 		const val EXTRA_SEARCH = "search"
@@ -33,22 +35,22 @@ class ActAbout : AppCompatActivity() {
 		
 		// git log --pretty=format:"%an %s" |grep "Translated using Weblate"|sort|uniq
 		val translators = arrayOf(
-			Translators("Allan Nordhøy",null,"English & Norwegian Bokmål"),
-			Translators("ButterflyOfFire","@ButterflyOfFire@mstdn.fr", "Arabic & French"),
-			Translators("Ch",null,"Korean"),
-			Translators("Elizabeth Sherrock",null,"Chinese (Simplified)"),
-			Translators("Gennady Archangorodsky",null,"Hebrew"),
-			Translators("inqbs Siina",null,"Korean"),
-			Translators("Jeong Arm","@jarm@qdon.space","Korean"),
-			Translators("Joan Pujolar","@jpujolar@mastodont.cat","Catalan"),
-			Translators("Kai Zhang","@bearzk@mastodon.social","Chinese (Simplified)"),
-			Translators("lptprjh",null,"Korean"),
-			Translators("mynameismonkey",null,"Welsh"),
-			Translators("Nathan",null,"French"),
-			Translators("Owain Rhys Lewis",null,"Welsh"),
-			Translators("Swann Martinet",null,"French"),
-			Translators("takubunn",null,"Chinese (Simplified)"),
-			Translators("배태길",null,"Korea")
+			Translators("Allan Nordhøy", null, "English & Norwegian Bokmål"),
+			Translators("ButterflyOfFire", "@ButterflyOfFire@mstdn.fr", "Arabic & French"),
+			Translators("Ch", null, "Korean"),
+			Translators("Elizabeth Sherrock", null, "Chinese (Simplified)"),
+			Translators("Gennady Archangorodsky", null, "Hebrew"),
+			Translators("inqbs Siina", null, "Korean"),
+			Translators("Jeong Arm", "@jarm@qdon.space", "Korean"),
+			Translators("Joan Pujolar", "@jpujolar@mastodont.cat", "Catalan"),
+			Translators("Kai Zhang", "@bearzk@mastodon.social", "Chinese (Simplified)"),
+			Translators("lptprjh", null, "Korean"),
+			Translators("mynameismonkey", null, "Welsh"),
+			Translators("Nathan", null, "French"),
+			Translators("Owain Rhys Lewis", null, "Welsh"),
+			Translators("Swann Martinet", null, "French"),
+			Translators("takubunn", null, "Chinese (Simplified)"),
+			Translators("배태길", null, "Korea")
 		)
 	}
 	
@@ -69,7 +71,7 @@ class ActAbout : AppCompatActivity() {
 			log.trace(ex, "getPackageInfo failed.")
 		}
 		
-		fun setButton(btnId : Int, caption : String, onClick : () -> Unit ) {
+		fun setButton(btnId : Int, caption : String, onClick : () -> Unit) {
 			val b : Button = findViewById(btnId)
 			b.text = caption
 			b.setOnClickListener { onClick() }
@@ -80,9 +82,6 @@ class ActAbout : AppCompatActivity() {
 			finish()
 		}
 		
-		fun openUrl(url : String) {
-			App1.openBrowser(this@ActAbout, url)
-		}
 		
 		setButton(
 			R.id.btnDeveloper,
@@ -94,10 +93,14 @@ class ActAbout : AppCompatActivity() {
 			getString(R.string.search_for, official_acct)
 		) { searchAcct(official_acct) }
 		
+		setButton(R.id.btnReleaseNote, url_release)
+		{ openBrowser(url_release) }
 		
-		setButton(R.id.btnReleaseNote, url_release) { openUrl(url_release) }
-		// setButton(R.id.btnIconDesign, url_futaba) { openUrl(url_futaba) }
-		setButton(R.id.btnWeblate, getString(R.string.please_help_translation) ) { openUrl(url_weblate) }
+		// setButton(R.id.btnIconDesign, url_futaba)
+		//   { openUrl(url_futaba) }
+		
+		setButton(R.id.btnWeblate, getString(R.string.please_help_translation))
+		{ openBrowser(url_weblate) }
 		
 		val ll = findViewById<LinearLayout>(R.id.llContributors)
 		val density = resources.displayMetrics.density
@@ -117,7 +120,7 @@ class ActAbout : AppCompatActivity() {
 				setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 				setPadding(padding, padding, padding, padding)
 				isAllCaps = false
-
+				
 				//
 				val acct = who.acct ?: "@?@?"
 				text = "${who.name}\n$acct\n${getString(R.string.thanks_for, who.lang)}"

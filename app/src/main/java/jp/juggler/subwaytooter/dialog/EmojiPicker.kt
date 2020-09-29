@@ -5,11 +5,9 @@ import android.app.Activity
 import android.app.Dialog
 import android.graphics.Typeface
 import android.graphics.drawable.PictureDrawable
-import android.os.Build
 import android.util.SparseArray
 import android.view.*
 import android.widget.*
-import androidx.core.view.ViewCompat
 import androidx.viewpager.widget.ViewPager
 import com.astuetz.PagerSlidingTabStrip
 import com.bumptech.glide.Glide
@@ -44,6 +42,7 @@ class EmojiPicker(
 	
 	class SkinTone(val suffix_list : Array<out String>) {
 		companion object {
+			
 			fun create(vararg suffix_list : String) : SkinTone {
 				return SkinTone(suffix_list)
 			}
@@ -269,8 +268,7 @@ class EmojiPicker(
 					
 					setTypeface(typeface, Typeface.BOLD)
 					
-					textColor =
-						getAttributeColor(this@EmojiPicker.activity, R.attr.colorContentText)
+					textColor = this@EmojiPicker.activity.getAttributeColor(R.attr.colorContentText)
 					textSize = 16f // SP単位
 					
 					text = when(val name = it.key) {
@@ -542,7 +540,7 @@ class EmojiPicker(
 		
 		val pref = App1.pref
 		
-		if( Pref.bpEmojiPickerCloseOnSelected(pref))
+		if(Pref.bpEmojiPickerCloseOnSelected(pref))
 			dialog.dismissSafe()
 		
 		// Recentをロード(他インスタンスの絵文字を含む)

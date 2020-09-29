@@ -1,7 +1,10 @@
 package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.ColumnType
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker
@@ -9,8 +12,10 @@ import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.EmptyCallback
-import jp.juggler.util.*
+import jp.juggler.util.showToast
+import jp.juggler.util.toFormRequestBody
+import jp.juggler.util.toPost
+import jp.juggler.util.toPostRequestBuilder
 
 object Action_Follow {
 	
@@ -22,12 +27,12 @@ object Action_Follow {
 		bFollow : Boolean = true,
 		bConfirmMoved : Boolean = false,
 		bConfirmed : Boolean = false,
-		callback : EmptyCallback? = null
+		callback : () -> Unit = {}
 	) {
 		val who = whoRef.get()
 		
 		if(access_info.isMe(who)) {
-			showToast(activity, false, R.string.it_is_you)
+			activity.showToast(false, R.string.it_is_you)
 			return
 		}
 		
@@ -73,8 +78,7 @@ object Action_Follow {
 						R.string.confirm_follow_request_who_from,
 						whoRef.decoded_display_name,
 						AcctColor.getNickname(access_info)
-					)
-					, object : DlgConfirm.Callback {
+					), object : DlgConfirm.Callback {
 						
 						override fun onOK() {
 							follow(
@@ -242,8 +246,8 @@ object Action_Follow {
 					
 				} else {
 					client.request(
-						"/api/v1/accounts/${userId}/${if(bFollow) "follow" else "unfollow"}"
-						, "".toFormRequestBody().toPost()
+						"/api/v1/accounts/${userId}/${if(bFollow) "follow" else "unfollow"}",
+						"".toFormRequestBody().toPost()
 					)?.also { result ->
 						val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
 						if(newRelation != null) {
@@ -262,21 +266,21 @@ object Action_Follow {
 					
 					if(bFollow && relation.getRequested(who)) {
 						// 鍵付きアカウントにフォローリクエストを申請した状態
-						showToast(activity, false, R.string.follow_requested)
+						activity.showToast(false, R.string.follow_requested)
 					} else if(! bFollow && relation.getRequested(who)) {
-						showToast(activity, false, R.string.follow_request_cant_remove_by_sender)
+						activity.showToast(false, R.string.follow_request_cant_remove_by_sender)
 					} else {
 						// ローカル操作成功、もしくはリモートフォロー成功
 						
-						if(callback != null) callback()
+						callback()
 					}
 					
 					activity.showColumnMatchAccount(access_info)
 					
 				} else if(bFollow && who.locked && (result.response?.code ?: - 1) == 422) {
-					showToast(activity, false, R.string.cant_follow_locked_user)
+					activity.showToast(false, R.string.cant_follow_locked_user)
 				} else {
-					showToast(activity, false, result.error)
+					activity.showToast(false, result.error)
 				}
 				
 			}
@@ -289,7 +293,7 @@ object Action_Follow {
 		access_info : SavedAccount,
 		whoRef : TootAccountRef,
 		bConfirmed : Boolean = false,
-		callback : EmptyCallback? = null
+		callback : () -> Unit = {}
 	) {
 		if(! access_info.isMisskey) {
 			follow(
@@ -307,7 +311,7 @@ object Action_Follow {
 		val who = whoRef.get()
 		
 		if(access_info.isMe(who)) {
-			showToast(activity, false, R.string.it_is_you)
+			activity.showToast(false, R.string.it_is_you)
 			return
 		}
 		
@@ -350,8 +354,7 @@ object Action_Follow {
 					}
 					
 					client.request(
-						"/api/following/requests/cancel"
-						, access_info.putMisskeyApiToken().apply {
+						"/api/following/requests/cancel", access_info.putMisskeyApiToken().apply {
 							put("userId", userId)
 						}
 							.toPostRequestBuilder()
@@ -375,16 +378,15 @@ object Action_Follow {
 				val relation = this.relation
 				if(relation != null) {
 					// ローカル操作成功、もしくはリモートフォロー成功
-					if(callback != null) callback()
+					callback()
 					activity.showColumnMatchAccount(access_info)
 				} else {
-					showToast(activity, false, result.error)
+					activity.showToast(false, result.error)
 				}
 				
 			}
 		})
 	}
-
 	
 	// acct で指定したユーザをリモートフォローする
 	fun followRemote(
@@ -393,11 +395,11 @@ object Action_Follow {
 		acct : Acct,
 		locked : Boolean,
 		bConfirmed : Boolean = false,
-		callback : EmptyCallback? = null
+		callback : () -> Unit = {}
 	) {
 		
 		if(access_info.isMe(acct)) {
-			showToast(activity, false, R.string.it_is_you)
+			activity.showToast(false, R.string.it_is_you)
 			return
 		}
 		
@@ -499,8 +501,7 @@ object Action_Follow {
 					}
 				} else {
 					client.request(
-						"/api/v1/accounts/${userId}/follow"
-						, "".toFormRequestBody().toPost()
+						"/api/v1/accounts/${userId}/follow", "".toFormRequestBody().toPost()
 					)?.also { result ->
 						val newRelation = parseItem(::TootRelationShip, parser, result.jsonObject)
 						if(newRelation != null) {
@@ -515,15 +516,12 @@ object Action_Follow {
 				if(result == null) return  // cancelled.
 				
 				if(relation != null) {
-					
+					callback()
 					activity.showColumnMatchAccount(access_info)
-					
-					if(callback != null) callback()
-					
 				} else if(locked && (result.response?.code ?: - 1) == 422) {
-					showToast(activity, false, R.string.cant_follow_locked_user)
+					activity.showToast(false, R.string.cant_follow_locked_user)
 				} else {
-					showToast(activity, false, result.error)
+					activity.showToast(false, result.error)
 				}
 				
 			}
@@ -590,7 +588,7 @@ object Action_Follow {
 	) {
 		val who = whoRef.get()
 		if(access_info.isMe(who)) {
-			showToast(activity, false, R.string.it_is_you)
+			activity.showToast(false, R.string.it_is_you)
 			return
 		}
 		
@@ -647,14 +645,13 @@ object Action_Follow {
 						}
 					}
 					
-					showToast(
-						activity,
+					activity.showToast(
 						false,
 						if(bAllow) R.string.follow_request_authorized else R.string.follow_request_rejected,
 						whoRef.decoded_display_name
 					)
 				} else {
-					showToast(activity, false, result.error)
+					activity.showToast(false, result.error)
 				}
 			}
 		})

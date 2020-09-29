@@ -9,9 +9,9 @@ import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
 import jp.juggler.subwaytooter.util.matchHost
+import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.*
 import okhttp3.Request
 import java.util.*
@@ -56,12 +56,12 @@ object Action_Toot {
 		access_info : SavedAccount,
 		arg_status : TootStatus,
 		nCrossAccountMode : Int,
-		callback : EmptyCallback?,
+		callback : () -> Unit,
 		bSet : Boolean = true,
 		bConfirmed : Boolean = false
 	) {
 		if(App1.getAppState(activity).isBusyFav(access_info, arg_status)) {
-			showToast(activity, false, R.string.wait_previous_operation)
+			activity.showToast(false, R.string.wait_previous_operation)
 			return
 		}
 		
@@ -209,11 +209,10 @@ object Action_Toot {
 								true
 							}
 						}
-						if(callback != null) callback()
-						
+						callback()
 					}
 					
-					else -> showToast(activity, true, result.error)
+					else -> activity.showToast(true, result.error)
 				}
 				// 結果に関わらず、更新中状態から復帰させる
 				activity.showColumnMatchAccount(access_info)
@@ -256,16 +255,16 @@ object Action_Toot {
 		access_info : SavedAccount,
 		arg_status : TootStatus,
 		nCrossAccountMode : Int,
-		callback : EmptyCallback?,
+		callback : () -> Unit,
 		bSet : Boolean = true,
 		bConfirmed : Boolean = false
 	) {
 		if(App1.getAppState(activity).isBusyFav(access_info, arg_status)) {
-			showToast(activity, false, R.string.wait_previous_operation)
+			activity.showToast(false, R.string.wait_previous_operation)
 			return
 		}
 		if(access_info.isMisskey) {
-			showToast(activity, false, R.string.misskey_account_not_supported)
+			activity.showToast(false, R.string.misskey_account_not_supported)
 			return
 		}
 		
@@ -344,10 +343,10 @@ object Action_Toot {
 								true
 							}
 						}
-						if(callback != null) callback()
+						callback()
 					}
 					
-					else -> showToast(activity, true, result.error)
+					else -> activity.showToast(true, result.error)
 				}
 				
 				// 結果に関わらず、更新中状態から復帰させる
@@ -377,7 +376,7 @@ object Action_Toot {
 				if(a.acct == status_owner) list.add(a)
 			}
 			if(list.isEmpty()) {
-				showToast(activity, false, R.string.boost_private_toot_not_allowed)
+				activity.showToast(false, R.string.boost_private_toot_not_allowed)
 				return
 			}
 			AccountPicker.pick(
@@ -393,7 +392,7 @@ object Action_Toot {
 					status,
 					status_owner,
 					calcCrossAccountMode(timeline_account, action_account),
-					activity.boost_complete_callback
+					callback = activity.boost_complete_callback
 				)
 			}
 		} else {
@@ -410,7 +409,7 @@ object Action_Toot {
 					status,
 					status_owner,
 					calcCrossAccountMode(timeline_account, action_account),
-					activity.boost_complete_callback
+					callback = activity.boost_complete_callback
 				)
 			}
 		}
@@ -422,15 +421,15 @@ object Action_Toot {
 		arg_status : TootStatus,
 		status_owner : Acct,
 		nCrossAccountMode : Int,
-		callback : EmptyCallback?,
 		bSet : Boolean = true,
 		bConfirmed : Boolean = false,
-		visibility : TootVisibility? = null
+		visibility : TootVisibility? = null,
+		callback : () -> Unit
 	) {
 		
 		// アカウントからステータスにブースト操作を行っているなら、何もしない
 		if(App1.getAppState(activity).isBusyBoost(access_info, arg_status)) {
-			showToast(activity, false, R.string.wait_previous_operation)
+			activity.showToast(false, R.string.wait_previous_operation)
 			return
 		}
 		
@@ -438,7 +437,7 @@ object Action_Toot {
 		val isPrivateToot = access_info.isMastodon &&
 			arg_status.visibility == TootVisibility.PrivateFollowers
 		if(isPrivateToot && access_info.acct != status_owner) {
-			showToast(activity, false, R.string.boost_private_toot_not_allowed)
+			activity.showToast(false, R.string.boost_private_toot_not_allowed)
 			return
 		}
 		
@@ -463,10 +462,10 @@ object Action_Toot {
 							arg_status,
 							status_owner,
 							nCrossAccountMode,
-							callback,
 							bSet = bSet,
 							bConfirmed = true,
-							visibility = visibility
+							visibility = visibility,
+							callback = callback,
 						)
 					}
 					
@@ -606,7 +605,7 @@ object Action_Toot {
 								true
 							}
 						}
-						if(callback != null) callback()
+						callback()
 					}
 					
 					new_status != null -> {
@@ -652,10 +651,10 @@ object Action_Toot {
 								true
 							}
 						}
-						if(callback != null) callback()
+						callback()
 					}
 					
-					else -> showToast(activity, true, result.error)
+					else -> activity.showToast(true, result.error)
 				}
 				
 				// 結果に関わらず、更新中状態から復帰させる
@@ -694,12 +693,12 @@ object Action_Toot {
 				if(result == null) return  // cancelled.
 				
 				if(result.jsonObject != null) {
-					showToast(activity, false, R.string.delete_succeeded)
+					activity.showToast(false, R.string.delete_succeeded)
 					for(column in App1.getAppState(activity).column_list) {
 						column.onStatusRemoved(access_info.apDomain, status_id)
 					}
 				} else {
-					showToast(activity, false, result.error)
+					activity.showToast(false, result.error)
 				}
 				
 			}
@@ -820,12 +819,8 @@ object Action_Toot {
 		val host_original = Host.parse(url.toUri().authority ?: "")
 		
 		// 選択肢：ブラウザで表示する
-		dialog.addAction(
-			activity.getString(
-				R.string.open_web_on_host,
-				host_original.pretty
-			)
-		) { App1.openCustomTab(activity, url) }
+		dialog.addAction(activity.getString(R.string.open_web_on_host, host_original.pretty))
+		{ activity.openCustomTab(url) }
 		
 		// トゥートの投稿元タンスにあるアカウント
 		val local_account_list = ArrayList<SavedAccount>()
@@ -962,7 +957,7 @@ object Action_Toot {
 					if(local_status_id != null) {
 						conversationLocal(activity, pos, access_info, local_status_id)
 					} else {
-						showToast(activity, true, result.error)
+						activity.showToast(true, result.error)
 					}
 				}
 			})
@@ -993,9 +988,9 @@ object Action_Toot {
 				val status = tmp
 				val replyId = status?.in_reply_to_id
 				when {
-					status == null -> showToast(activity, true, result.error ?: "?")
-					replyId == null -> showToast(
-						activity, true,
+					status == null -> activity.showToast(true, result.error ?: "?")
+					replyId == null -> activity.showToast(
+						true,
 						"showReplyTootsearch: in_reply_to_id is null"
 					)
 					else -> conversationLocal(activity, pos, a, replyId)
@@ -1096,7 +1091,7 @@ object Action_Toot {
 							}
 						}
 						
-						else -> showToast(activity, true, result.error)
+						else -> activity.showToast(true, result.error)
 					}
 					
 					// 結果に関わらず、更新中状態から復帰させる
@@ -1153,7 +1148,7 @@ object Action_Toot {
 					if(ls != null) {
 						reply(activity, access_info, ls, quote = quote)
 					} else {
-						showToast(activity, true, result.error)
+						activity.showToast(true, result.error)
 					}
 				}
 			})
@@ -1252,7 +1247,7 @@ object Action_Toot {
 					return
 				}
 				val error = result.error ?: "(no information)"
-				showToast(activity, true, activity.getString(R.string.cant_sync_toot) + " : $error")
+				activity.showToast(true, activity.getString(R.string.cant_sync_toot) + " : $error")
 			}
 		})
 	}
@@ -1293,13 +1288,12 @@ object Action_Toot {
 							}
 						}
 					}
-					showToast(
-						activity,
+					activity.showToast(
 						true,
 						if(bMute) R.string.mute_succeeded else R.string.unmute_succeeded
 					)
 				} else {
-					showToast(activity, true, result.error)
+					activity.showToast(true, result.error)
 				}
 			}
 		})
@@ -1311,7 +1305,7 @@ object Action_Toot {
 		arg_status : TootStatus,
 		status_owner_acct : Acct,
 		nCrossAccountMode : Int,
-		callback : EmptyCallback?,
+		callback : () -> Unit,
 		bSet : Boolean = true,
 		code : String? = null
 	) {
@@ -1319,7 +1313,7 @@ object Action_Toot {
 		
 		// 自分の投稿にはリアクション出来ない
 		if(access_info.acct == status_owner_acct) {
-			showToast(activity, false, R.string.it_is_you)
+			activity.showToast(false, R.string.it_is_you)
 			return
 		}
 		
@@ -1404,11 +1398,11 @@ object Action_Toot {
 				
 				val error = result.error
 				if(error != null) {
-					showToast(activity, false, error)
+					activity.showToast(false, error)
 					return
 				}
 				
-				if(callback != null) callback()
+				callback()
 			}
 		})
 	}
@@ -1481,7 +1475,7 @@ object Action_Toot {
 				
 				val error = result.error
 				if(error != null) {
-					showToast(activity, false, error)
+					activity.showToast(false, error)
 					return
 				}
 				
@@ -1512,7 +1506,7 @@ object Action_Toot {
 				
 				val error = result.error
 				if(error != null) {
-					showToast(activity, false, error)
+					activity.showToast(false, error)
 					return
 				}
 				

@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.AppCompatImageView
 import jp.juggler.subwaytooter.util.CustomShareTarget
+import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
 import org.jetbrains.anko.backgroundDrawable
 
@@ -537,7 +538,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 					val intent = intentOpenDocument("*/*")
 					startActivityForResult(intent, ActAppSetting.REQUEST_CODE_TIMELINE_FONT)
 				} catch(ex : Throwable) {
-					showToast(this, ex, "could not open picker for font")
+					showToast(ex, "could not open picker for font")
 				}
 			}
 			onClickReset = {
@@ -559,7 +560,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 					val intent = intentOpenDocument("*/*")
 					startActivityForResult(intent, ActAppSetting.REQUEST_CODE_TIMELINE_FONT_BOLD)
 				} catch(ex : Throwable) {
-					showToast(this, ex, "could not open picker for font")
+					showToast(ex, "could not open picker for font")
 				}
 			}
 			onClickReset = {
@@ -701,10 +702,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		sw(Pref.bpInstanceTicker, R.string.show_instance_ticker) {
 			desc = R.string.instance_ticker_copyright
 			descClick = {
-				App1.openBrowser(
-					this,
-					"https://github.com/MiyonMiyon/InstanceTicker_List"
-				)
+				openBrowser("https://github.com/MiyonMiyon/InstanceTicker_List")
 			}
 		}
 		
@@ -769,12 +767,12 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 			colorAlpha(Pref.ipEventBgColorQuote, R.string.quote_renote)
 			colorAlpha(Pref.ipEventBgColorVote, R.string.vote_polls)
 			colorAlpha(Pref.ipEventBgColorStatus, R.string.status)
-
+			
 			colorAlpha(
 				Pref.ipConversationMainTootBgColor,
 				R.string.conversation_main_toot_background_color
 			)
-
+			
 			colorAlpha(Pref.ipEventBgColorGap, R.string.gap)
 		}
 		
@@ -800,12 +798,12 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 					
 					val header_bg = when {
 						color_column_header_bg != 0 -> color_column_header_bg
-						else -> getAttributeColor(activity, R.attr.color_column_header)
+						else -> activity.getAttributeColor(R.attr.color_column_header)
 					}
 					
 					val header_fg = when {
 						color_column_header_fg != 0 -> color_column_header_fg
-						else -> getAttributeColor(activity, R.attr.colorColumnHeaderName)
+						else -> activity.getAttributeColor(R.attr.colorColumnHeaderName)
 					}
 					
 					llColumnHeader.background = getAdaptiveRippleDrawable(header_bg, header_fg)
@@ -836,12 +834,12 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 					
 					tvSampleAcct.setTextColor(
 						color_column_acct.notZero()
-							?: getAttributeColor(activity, R.attr.colorTimeSmall)
+							?: activity.getAttributeColor(R.attr.colorTimeSmall)
 					)
 					
 					tvSampleContent.setTextColor(
 						color_column_text.notZero()
-							?: getAttributeColor(activity, R.attr.colorContentText)
+							?: activity.getAttributeColor(R.attr.colorContentText)
 					)
 				}
 			
@@ -876,7 +874,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 					val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
 					
 					val colorColumnStripBackground = footer_tab_bg_color.notZero()
-						?: getAttributeColor(activity, R.attr.colorColumnStripBackground)
+						?: activity.getAttributeColor(R.attr.colorColumnStripBackground)
 					
 					llFooterBG.setBackgroundColor(colorColumnStripBackground)
 					
@@ -884,7 +882,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 						?: colorColumnStripBackground
 					
 					val colorButtonFg = footer_button_fg_color.notZero()
-						?: getAttributeColor(activity, R.attr.colorRippleEffect)
+						?: activity.getAttributeColor(R.attr.colorRippleEffect)
 					
 					ivFooterMenu.backgroundDrawable =
 						getAdaptiveRippleDrawableRound(activity, colorButtonBg, colorButtonFg)
@@ -893,7 +891,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 					
 					val csl = ColorStateList.valueOf(
 						footer_button_fg_color.notZero()
-							?: getAttributeColor(activity, R.attr.colorVectorDrawable)
+							?: activity.getAttributeColor(R.attr.colorVectorDrawable)
 					)
 					ivFooterToot.imageTintList = csl
 					ivFooterMenu.imageTintList = csl
@@ -905,7 +903,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 					
 					vIndicator.setBackgroundColor(
 						footer_tab_indicator_color.notZero()
-							?: getAttributeColor(activity, R.attr.colorAccent)
+							?: activity.getAttributeColor(R.attr.colorAccent)
 					)
 				}
 			
@@ -931,11 +929,11 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 		}
 		
 		colorOpaque(Pref.ipStatusBarColor, R.string.status_bar_color) {
-			changed = { setStatusBarColor(this) }
+			changed = { setStatusBarColor() }
 		}
 		
 		colorOpaque(Pref.ipNavigationBarColor, R.string.navigation_bar_color) {
-			changed = { setStatusBarColor(this) }
+			changed = { setStatusBarColor() }
 		}
 		
 		colorOpaque(Pref.ipSearchBgColor, R.string.search_bar_background_color)
@@ -958,15 +956,15 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 	
 	section(R.string.developer_options) {
 		sw(Pref.bpCheckBetaVersion, R.string.check_beta_release)
-
+		
 		action(R.string.drawable_list) {
 			action = { startActivity(Intent(this, ActDrawableList::class.java)) }
 		}
 		action(R.string.exit_reasons) {
 			action = {
-				if(Build.VERSION.SDK_INT >= 30 ){
+				if(Build.VERSION.SDK_INT >= 30) {
 					startActivity(Intent(this, ActExitReasons::class.java))
-				}else{
+				} else {
 					showToast(false, "this feature requires Android 11")
 				}
 			}

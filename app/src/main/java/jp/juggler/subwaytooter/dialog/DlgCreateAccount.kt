@@ -9,12 +9,12 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LinkHelper
+import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.neatSpaces
 import jp.juggler.util.notBlank
 import jp.juggler.util.showToast
@@ -97,10 +97,10 @@ class DlgCreateAccount(
 	override fun onClick(v : View?) {
 		when(v?.id) {
 			R.id.btnRules ->
-				App1.openCustomTab(activity, "https://$instance/about/more")
+				activity.openCustomTab("https://$instance/about/more")
 			
 			R.id.btnTerms ->
-				App1.openCustomTab(activity, "https://$instance/terms")
+				activity.openCustomTab("https://$instance/terms")
 			
 			R.id.btnCancel ->
 				dialog.cancel()
@@ -112,16 +112,16 @@ class DlgCreateAccount(
 				
 				when {
 					username.isEmpty() ->
-						showToast(activity, true, R.string.username_empty)
+						activity.showToast(true, R.string.username_empty)
 					
 					email.isEmpty() ->
-						showToast(activity, true, R.string.email_empty)
+						activity.showToast(true, R.string.email_empty)
 					
 					password.isEmpty() ->
-						showToast(activity, true, R.string.password_empty)
+						activity.showToast(true, R.string.password_empty)
 					
 					username.contains("/") || username.contains("@") ->
-						showToast(activity, true, R.string.username_not_need_atmark)
+						activity.showToast(true, R.string.username_not_need_atmark)
 					
 					else -> onClickOk(
 						dialog,

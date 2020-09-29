@@ -2,26 +2,23 @@ package jp.juggler.subwaytooter.dialog
 
 import android.content.Context
 import androidx.appcompat.app.AlertDialog
-
-import java.util.ArrayList
-
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.util.EmptyCallback
+import java.util.*
 
 class ActionsDialog {
 	
 	private val action_list = ArrayList<Action>()
 	
-	private class Action(val caption : CharSequence, val r : EmptyCallback)
+	private class Action(val caption : CharSequence, val action : () -> Unit)
 	
-	fun addAction(caption : CharSequence, r : EmptyCallback) : ActionsDialog {
+	fun addAction(caption : CharSequence, action : () -> Unit) : ActionsDialog {
 		
-		action_list.add(Action(caption, r))
+		action_list.add(Action(caption, action))
 		
 		return this
 	}
 	
-	fun show(context : Context, title : CharSequence? = null ) : ActionsDialog {
+	fun show(context : Context, title : CharSequence? = null) : ActionsDialog {
 		val caption_list = arrayOfNulls<CharSequence>(action_list.size)
 		var i = 0
 		val ie = caption_list.size
@@ -33,11 +30,11 @@ class ActionsDialog {
 			.setNegativeButton(R.string.cancel, null)
 			.setItems(caption_list) { _, which ->
 				if(which >= 0 && which < action_list.size) {
-					action_list[which].r()
+					action_list[which].action()
 				}
 			}
 		
-		if( title != null && title.isNotEmpty() ) b.setTitle(title)
+		if(title != null && title.isNotEmpty()) b.setTitle(title)
 		
 		b.show()
 		

@@ -33,6 +33,7 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 	)
 	
 	companion object {
+		
 		internal val log = LogCategory("ActLanguageFilter")
 		
 		internal const val EXTRA_COLUMN_INDEX = "column_index"
@@ -240,7 +241,7 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 				getString(if(item.allow) R.string.language_show else R.string.language_hide)
 			)
 			tv.textColor = getAttributeColor(
-				this@ActLanguageFilter, when(item.allow) {
+				when(item.allow) {
 					true -> R.attr.colorContentText
 					false -> R.attr.colorRegexFilterError
 				}
@@ -310,6 +311,7 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 	private object DlgLanguageFilter {
 		
 		interface Callback {
+			
 			fun onOK(code : String, allow : Boolean)
 			fun onDelete(code : String)
 		}
@@ -371,7 +373,7 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 				btnPresets.setEnabledColor(
 					activity,
 					R.drawable.ic_edit,
-					getAttributeColor(activity, R.attr.colorVectorDrawable),
+					activity.getAttributeColor(R.attr.colorVectorDrawable),
 					false
 				)
 			}
@@ -439,9 +441,8 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 			val intent = intentOpenDocument("*/*")
 			startActivityForResult(intent, REQUEST_CODE_IMPORT)
 		} catch(ex : Throwable) {
-			showToast(this, ex, "import failed.")
+			showToast(ex, "import failed.")
 		}
-		
 	}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
@@ -460,7 +461,7 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 			log.d("import2 type=${contentResolver.getType(uri)}")
 			val source = contentResolver.openInputStream(uri)
 			if(source == null) {
-				showToast( true, "openInputStream failed.")
+				showToast(true, "openInputStream failed.")
 				null
 			} else {
 				source.use { inStream ->

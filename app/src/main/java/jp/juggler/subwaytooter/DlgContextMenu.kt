@@ -19,9 +19,7 @@ import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.FavMute
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.CustomShare
-import jp.juggler.subwaytooter.util.CustomShareTarget
-import jp.juggler.subwaytooter.util.matchHost
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import org.jetbrains.anko.allCaps
 import org.jetbrains.anko.backgroundDrawable
@@ -349,14 +347,14 @@ internal class DlgContextMenu(
 		
 		val colorButtonAccent =
 			Pref.ipButtonFollowingColor(activity.pref).notZero()
-				?: getAttributeColor(activity, R.attr.colorImageButtonAccent)
+				?: activity.getAttributeColor(R.attr.colorImageButtonAccent)
 		
 		val colorButtonError =
 			Pref.ipButtonFollowRequestColor(activity.pref).notZero()
-				?: getAttributeColor(activity, R.attr.colorRegexFilterError)
+				?: activity.getAttributeColor(R.attr.colorRegexFilterError)
 		
 		val colorButtonNormal =
-			getAttributeColor(activity, R.attr.colorImageButton)
+			activity.getAttributeColor(R.attr.colorImageButton)
 		
 		fun showRelation(relation : UserRelation) {
 			
@@ -407,7 +405,7 @@ internal class DlgContextMenu(
 			ivFollowedBy.vg(false)
 			btnFollow.setImageResource(R.drawable.ic_follow_plus)
 			btnFollow.imageTintList =
-				ColorStateList.valueOf(getAttributeColor(activity, R.attr.colorImageButton))
+				ColorStateList.valueOf(activity.getAttributeColor(R.attr.colorImageButton))
 			
 			btnNotificationFrom.visibility = View.GONE
 		} else {
@@ -585,7 +583,7 @@ internal class DlgContextMenu(
 			R.drawable.ic_arrow_drop_down
 		}
 		
-		val iconColor = getAttributeColor(activity, R.attr.colorTimeSmall)
+		val iconColor = activity.getAttributeColor(R.attr.colorTimeSmall)
 		val drawable = createColoredDrawable(activity, iconId, iconColor, 1f)
 		btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
 	}
@@ -713,7 +711,7 @@ internal class DlgContextMenu(
 					Action_User.mention(activity, access_info, who)
 				
 				R.id.btnAccountWebPage -> who.url?.let { url ->
-					App1.openCustomTabOrBrowser(activity, url)
+					activity.openCustomTabOrBrowser(url)
 				}
 				
 				R.id.btnFollowRequestOK ->
@@ -752,13 +750,13 @@ internal class DlgContextMenu(
 				R.id.btnDomainBlock ->
 					if(access_info.isPseudo) {
 						// 疑似アカウントではドメインブロックできない
-						showToast(activity, false, R.string.domain_block_from_pseudo)
+						activity.showToast(false, R.string.domain_block_from_pseudo)
 						return
 					} else {
 						val whoApDomain = who.apDomain
 						// 自分のドメインではブロックできない
 						if(access_info.matchHost(whoApDomain)) {
-							showToast(activity, false, R.string.domain_block_from_local)
+							activity.showToast(false, R.string.domain_block_from_local)
 							return
 						}
 						AlertDialog.Builder(activity)
@@ -794,7 +792,7 @@ internal class DlgContextMenu(
 				
 				R.id.btnAvatarImage -> {
 					val url = if(! who.avatar.isNullOrEmpty()) who.avatar else who.avatar_static
-					if(url != null && url.isNotEmpty()) App1.openCustomTab(activity, url)
+					activity.openCustomTab(url)
 					// XXX: 設定によっては内蔵メディアビューアで開けないか？
 				}
 				
@@ -821,7 +819,7 @@ internal class DlgContextMenu(
 				R.id.btnHideFavourite -> {
 					val acct = access_info.getFullAcct(who)
 					FavMute.save(acct)
-					showToast(activity, false, R.string.changed)
+					activity.showToast(false, R.string.changed)
 					for(column in activity.app_state.column_list) {
 						column.onHideFavouriteNotification(acct)
 					}
@@ -829,7 +827,7 @@ internal class DlgContextMenu(
 				
 				R.id.btnShowFavourite -> {
 					FavMute.delete(access_info.getFullAcct(who))
-					showToast(activity, false, R.string.changed)
+					activity.showToast(false, R.string.changed)
 				}
 				
 				R.id.btnListMemberAddRemove ->
@@ -884,14 +882,12 @@ internal class DlgContextMenu(
 				R.id.btnCopyAccountId -> who.id.toString().copyToClipboard(activity)
 				
 				R.id.btnOpenAccountInAdminWebUi ->
-					App1.openBrowser(
-						activity,
+					activity.openBrowser(
 						"https://${access_info.apiHost.ascii}/admin/accounts/${who.id}"
 					)
 				
 				R.id.btnOpenInstanceInAdminWebUi ->
-					App1.openBrowser(
-						activity,
+					activity.openBrowser(
 						"https://${access_info.apiHost.ascii}/admin/instances/${who.apDomain.ascii}"
 					)
 				
@@ -929,8 +925,8 @@ internal class DlgContextMenu(
 									status,
 									access_info.getFullAcct(status.account),
 									NOT_CROSS_ACCOUNT,
-									activity.boost_complete_callback,
-									visibility = list[which]
+									visibility = list[which],
+									callback =activity.boost_complete_callback,
 								)
 							}
 						}
@@ -940,7 +936,7 @@ internal class DlgContextMenu(
 				
 				R.id.btnNotificationFrom -> {
 					if(access_info.isMisskey) {
-						showToast(activity, false, R.string.misskey_account_not_supported)
+						activity.showToast(false, R.string.misskey_account_not_supported)
 					} else {
 						access_info.getFullAcct(who).validFull()?.let {
 							activity.addColumn(
@@ -963,9 +959,8 @@ internal class DlgContextMenu(
 		
 		when(v.id) {
 			
-			R.id.btnStatusWebPage -> status?.url?.let { url ->
-				App1.openCustomTabOrBrowser(activity, url)
-			}
+			R.id.btnStatusWebPage ->
+				activity.openCustomTabOrBrowser(status?.url)
 			
 			R.id.btnText -> if(status != null) {
 				ActText.open(activity, ActMain.REQUEST_CODE_TEXT, access_info, status)

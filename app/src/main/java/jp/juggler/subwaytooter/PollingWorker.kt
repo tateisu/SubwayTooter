@@ -230,7 +230,7 @@ class PollingWorker private constructor(contextArg : Context) {
 				
 				val intervalMillis = max(
 					minute * 5L,
-					minute * Pref.spPullNotificationCheckInterval.toInt(Pref.pref(context))
+					minute * Pref.spPullNotificationCheckInterval.toInt(context.pref())
 				)
 				
 				val flexMillis = max(

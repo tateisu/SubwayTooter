@@ -330,7 +330,7 @@ internal class ItemViewHolder(
 		
 		val textShowMedia = SpannableString(activity.getString(R.string.tap_to_show))
 			.apply {
-				val colorBg = getAttributeColor(activity, R.attr.colorShowMediaBackground)
+				val colorBg = activity.getAttributeColor(R.attr.colorShowMediaBackground)
 					.applyAlphaMultiplier(0.5f)
 				setSpan(
 					BackgroundColorSpan(colorBg),
@@ -1259,10 +1259,7 @@ internal class ItemViewHolder(
 			
 			val conversationMainBgColor =
 				Pref.ipConversationMainTootBgColor(activity.pref).notZero()
-					?: (getAttributeColor(
-						activity,
-						R.attr.colorImageButtonAccent
-					) and 0xffffff) or 0x20000000
+					?: (activity.getAttributeColor(R.attr.colorImageButtonAccent) and 0xffffff) or 0x20000000
 			
 			this.viewRoot.setBackgroundColor(conversationMainBgColor)
 			
@@ -1976,7 +1973,7 @@ internal class ItemViewHolder(
 						column.startGap(item, isHead = false)
 					
 					else ->
-						showToast(activity, true, "This column can't support gap reading.")
+						activity.showToast(true, "This column can't support gap reading.")
 				}
 				
 				is TootSearchGap -> column.startGap(item, isHead = true)
@@ -2018,7 +2015,7 @@ internal class ItemViewHolder(
 						.addAction(activity.getString(R.string.delete)) {
 							Action_Toot.deleteScheduledPost(activity, access_info, item) {
 								column.onScheduleDeleted(item)
-								showToast(activity, false, R.string.scheduled_post_deleted)
+								activity.showToast(false, R.string.scheduled_post_deleted)
 							}
 						}
 						.show(activity)
@@ -2279,8 +2276,8 @@ internal class ItemViewHolder(
 						// メディアタイプがunknownの場合、そのほとんどはリモートから来たURLである
 						// Pref.bpPriorLocalURL の状態に関わらずリモートURLがあればそれをブラウザで開く
 						when(val remoteUrl = item.remote_url.notEmpty()) {
-							null -> App1.openCustomTab(activity, item)
-							else -> App1.openCustomTab(activity, remoteUrl)
+							null -> activity.openCustomTab(item)
+							else -> activity.openCustomTab(remoteUrl)
 						}
 					}
 					
@@ -2297,7 +2294,7 @@ internal class ItemViewHolder(
 						)
 					
 					// ブラウザで開く
-					else -> App1.openCustomTab(activity, item)
+					else -> activity.openCustomTab(item)
 				}
 			}
 		} catch(ex : Throwable) {
@@ -2674,7 +2671,7 @@ internal class ItemViewHolder(
 	private fun addReaction(status : TootStatus, code : String?) {
 		
 		if(status.myReaction?.isNotEmpty() == true) {
-			showToast(activity, false, R.string.already_reactioned)
+			activity.showToast(false, R.string.already_reactioned)
 			return
 		}
 		
@@ -2718,7 +2715,7 @@ internal class ItemViewHolder(
 					
 					val error = result.error
 					if(error != null) {
-						showToast(activity, false, error)
+						activity.showToast(false, error)
 						return
 					}
 					
@@ -2739,7 +2736,7 @@ internal class ItemViewHolder(
 		val reaction = status.myReaction
 		
 		if(reaction?.isNotEmpty() != true) {
-			showToast(activity, false, R.string.not_reactioned)
+			activity.showToast(false, R.string.not_reactioned)
 			return
 		}
 		
@@ -2773,7 +2770,7 @@ internal class ItemViewHolder(
 					
 					val error = result.error
 					if(error != null) {
-						showToast(activity, false, error)
+						activity.showToast(false, error)
 						return
 					}
 					
@@ -3050,7 +3047,7 @@ internal class ItemViewHolder(
 		idx : Int
 	) {
 		if(enquete.ownVoted) {
-			showToast(context, false, R.string.already_voted)
+			context.showToast(false, R.string.already_voted)
 			return
 		}
 		
@@ -3064,14 +3061,14 @@ internal class ItemViewHolder(
 			TootPollsType.FriendsNico -> {
 				val remain = enquete.time_start + TootPolls.ENQUETE_EXPIRE - now
 				if(remain <= 0L) {
-					showToast(context, false, R.string.enquete_was_end)
+					context.showToast(false, R.string.enquete_was_end)
 					return
 				}
 			}
 			
 			TootPollsType.Mastodon -> {
 				if(enquete.expired || now >= enquete.expired_at) {
-					showToast(context, false, R.string.enquete_was_end)
+					context.showToast(false, R.string.enquete_was_end)
 					return
 				}
 			}
@@ -3108,7 +3105,7 @@ internal class ItemViewHolder(
 				if(data != null) {
 					when(enquete.pollType) {
 						TootPollsType.Misskey -> if(enquete.increaseVote(activity, idx, true)) {
-							showToast(context, false, R.string.enquete_voted)
+							context.showToast(false, R.string.enquete_voted)
 							
 							// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
 							list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
@@ -3130,7 +3127,7 @@ internal class ItemViewHolder(
 									reset = true
 								)
 							} else if(result.error != null) {
-								showToast(context, true, "response parse error")
+								context.showToast(true, "response parse error")
 							}
 						}
 						
@@ -3138,14 +3135,14 @@ internal class ItemViewHolder(
 							val message = data.string("message") ?: "?"
 							val valid = data.optBoolean("valid")
 							if(valid) {
-								showToast(context, false, R.string.enquete_voted)
+								context.showToast(false, R.string.enquete_voted)
 							} else {
-								showToast(context, true, R.string.enquete_vote_failed, message)
+								context.showToast(true, R.string.enquete_vote_failed, message)
 							}
 						}
 					}
 				} else {
-					showToast(context, true, result.error)
+					context.showToast(true, result.error)
 				}
 				
 			}
@@ -3160,12 +3157,12 @@ internal class ItemViewHolder(
 	) {
 		val now = System.currentTimeMillis()
 		if(now >= enquete.expired_at) {
-			showToast(context, false, R.string.enquete_was_end)
+			context.showToast(false, R.string.enquete_was_end)
 			return
 		}
 		
 		if(enquete.items?.find { it.checked } == null) {
-			showToast(context, false, R.string.polls_choice_not_selected)
+			context.showToast(false, R.string.polls_choice_not_selected)
 			return
 		}
 		
@@ -3207,7 +3204,7 @@ internal class ItemViewHolder(
 					// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
 					list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
 				} else if(result.error != null) {
-					showToast(context, true, result.error)
+					context.showToast(true, result.error)
 				}
 			}
 		})
@@ -3322,13 +3319,11 @@ internal class ItemViewHolder(
 					tvFollowerAcct = textView {
 						setPaddingStartEnd(dip(4), dip(4))
 						textSize = 12f // SP
-						// tools:text="aaaaaaaaaaaaaaaa"
 					}.lparams(matchParent, wrapContent)
 					
 					tvLastStatusAt = myTextView {
 						setPaddingStartEnd(dip(4), dip(4))
 						textSize = 12f // SP
-						// tools:text="aaaaaaaaaaaaaaaa"
 					}.lparams(matchParent, wrapContent)
 				}
 				
@@ -3580,14 +3575,14 @@ internal class ItemViewHolder(
 									
 									btnShowMedia = blurhashView {
 										
-										errorColor = getAttributeColor(
-											context,
+										errorColor = context.getAttributeColor(
+											
 											R.attr.colorShowMediaBackground
 										)
 										gravity = Gravity.CENTER
 										
-										textColor = getAttributeColor(
-											context,
+										textColor = context.getAttributeColor(
+											
 											R.attr.colorShowMediaText
 										)
 										
@@ -3678,14 +3673,12 @@ internal class ItemViewHolder(
 									
 									btnShowMedia = blurhashView {
 										
-										errorColor = getAttributeColor(
-											context,
+										errorColor = context.getAttributeColor(
 											R.attr.colorShowMediaBackground
 										)
 										gravity = Gravity.CENTER
 										
-										textColor = getAttributeColor(
-											context,
+										textColor = context.getAttributeColor(
 											R.attr.colorShowMediaText
 										)
 										
@@ -3745,14 +3738,12 @@ internal class ItemViewHolder(
 									
 									btnCardImageShow = blurhashView {
 										
-										errorColor = getAttributeColor(
-											context,
+										errorColor = context.getAttributeColor(
 											R.attr.colorShowMediaBackground
 										)
 										gravity = Gravity.CENTER
 										
-										textColor = getAttributeColor(
-											context,
+										textColor = context.getAttributeColor(
 											R.attr.colorShowMediaText
 										)
 										

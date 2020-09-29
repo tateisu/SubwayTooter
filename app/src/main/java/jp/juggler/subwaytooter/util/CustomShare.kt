@@ -71,7 +71,7 @@ object CustomShare {
 					label =
 						"${context.getString(R.string.copy_to_clipboard)}(${context.getString(R.string.app_name)})"
 					icon = ContextCompat.getDrawable(context, R.drawable.ic_copy)?.mutate()?.apply {
-						setTint(getAttributeColor(context, R.attr.colorVectorDrawable))
+						setTint(context.getAttributeColor(R.attr.colorVectorDrawable))
 						setTintMode(PorterDuff.Mode.SRC_IN)
 					}
 				} else {
@@ -105,7 +105,7 @@ object CustomShare {
 		// convert "pkgName/className" string to ComponentName object.
 		val cn = getCustomShareComponentName(App1.pref, target)
 		if(cn == null) {
-			showToast(context, true, R.string.custom_share_app_not_found)
+			context.showToast(true, R.string.custom_share_app_not_found)
 			return
 		}
 		val cnStr = "${cn.packageName}/${cn.className}"
@@ -113,9 +113,9 @@ object CustomShare {
 			try {
 				val cm : ClipboardManager = systemService(context) !!
 				cm.setPrimaryClip(ClipData.newPlainText("", text))
-				showToast(context, false, R.string.copied_to_clipboard)
+				context.showToast(false, R.string.copied_to_clipboard)
 			} catch(ex : Throwable) {
-				showToast(context, ex, "copy to clipboard failed.")
+				context.showToast(ex, "copy to clipboard failed.")
 			}
 			return
 		}
@@ -128,10 +128,10 @@ object CustomShare {
 			context.startActivity(intent)
 		} catch(ex : ActivityNotFoundException) {
 			log.trace(ex)
-			showToast(context, true, R.string.custom_share_app_not_found)
+			context.showToast(true, R.string.custom_share_app_not_found)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(context, ex, "invoke() failed.")
+			context.showToast(ex, "invoke() failed.")
 		}
 		
 	}
@@ -147,7 +147,7 @@ object CustomShare {
 			// convert "pkgName/className" string to ComponentName object.
 			val cn = getCustomShareComponentName(App1.pref, target)
 			if(cn == null) {
-				showToast(context, true, R.string.custom_share_app_not_found)
+				context.showToast(true, R.string.custom_share_app_not_found)
 				return
 			}
 			
@@ -155,7 +155,7 @@ object CustomShare {
 			invoke(context, sv, target)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			showToast(context, ex, "invoke() failed.")
+			context.showToast(ex, "invoke() failed.")
 		}
 	}
 	

@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.TootApiResultCallback
 import jp.juggler.subwaytooter.util.matchHost
+import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.*
 import okhttp3.Request
 
@@ -35,7 +36,7 @@ object Action_User {
 		val whoAcct = whoArg.acct
 		
 		if(access_info.isMe(whoAcct)) {
-			showToast(activity, false, R.string.it_is_you)
+			activity.showToast(false, R.string.it_is_you)
 			return
 		}
 		
@@ -56,7 +57,7 @@ object Action_User {
 						TootApiResult()
 					}
 				
-				val whoId = if(access_info.matchHost(whoAccessInfo) ) {
+				val whoId = if(access_info.matchHost(whoAccessInfo)) {
 					whoArg.id
 				} else {
 					val (result, accountRef) = client.syncAccountByAcct(access_info, whoAcct)
@@ -124,7 +125,7 @@ object Action_User {
 				if(relation != null && whoId != null) {
 					// 未確認だが、自分をミュートしようとするとリクエストは成功するがレスポンス中のmutingはfalseになるはず
 					if(bMute && ! relation.muting) {
-						showToast(activity, false, R.string.not_muted)
+						activity.showToast(false, R.string.not_muted)
 						return
 					}
 					
@@ -163,14 +164,13 @@ object Action_User {
 						}
 					}
 					
-					showToast(
-						activity,
+					activity.showToast(
 						false,
 						if(relation.muting) R.string.mute_succeeded else R.string.unmute_succeeded
 					)
 					
 				} else {
-					showToast(activity, false, result.error)
+					activity.showToast(false, result.error)
 				}
 			}
 		})
@@ -220,7 +220,11 @@ object Action_User {
 			.show()
 	}
 	
-	fun muteFromAnotherAccount(activity : ActMain, who : TootAccount,whoAccessInfo : SavedAccount) {
+	fun muteFromAnotherAccount(
+		activity : ActMain,
+		who : TootAccount,
+		whoAccessInfo : SavedAccount
+	) {
 		AccountPicker.pick(
 			activity,
 			bAllowPseudo = false,
@@ -228,7 +232,7 @@ object Action_User {
 			message = activity.getString(R.string.account_picker_mute, who.acct.pretty),
 			accountListArg = makeAccountListNonPseudo(activity, who.apDomain)
 		) { ai ->
-			muteConfirm(activity, ai, who,whoAccessInfo)
+			muteConfirm(activity, ai, who, whoAccessInfo)
 		}
 	}
 	
@@ -243,7 +247,7 @@ object Action_User {
 		val whoAcct = whoArg.acct
 		
 		if(access_info.isMe(whoAcct)) {
-			showToast(activity, false, R.string.it_is_you)
+			activity.showToast(false, R.string.it_is_you)
 			return
 		}
 		
@@ -264,7 +268,7 @@ object Action_User {
 						TootApiResult()
 					}
 				
-				val whoId = if(access_info.matchHost(whoAccessInfo) ) {
+				val whoId = if(access_info.matchHost(whoAccessInfo)) {
 					whoArg.id
 				} else {
 					val (result, accountRef) = client.syncAccountByAcct(access_info, whoAcct)
@@ -334,7 +338,7 @@ object Action_User {
 					
 					// 自分をブロックしようとすると、blocking==falseで帰ってくる
 					if(bBlock && ! relation.blocking) {
-						showToast(activity, false, R.string.not_blocked)
+						activity.showToast(false, R.string.not_blocked)
 						return
 					}
 					
@@ -377,8 +381,7 @@ object Action_User {
 						}
 					}
 					
-					showToast(
-						activity,
+					activity.showToast(
 						false,
 						if(relation.blocking)
 							R.string.block_succeeded
@@ -386,7 +389,7 @@ object Action_User {
 							R.string.unblock_succeeded
 					)
 				} else {
-					showToast(activity, false, result.error)
+					activity.showToast(false, result.error)
 				}
 			}
 		})
@@ -464,9 +467,9 @@ object Action_User {
 				
 				when(val who = this.who) {
 					null -> {
-						showToast(activity, true, result.error)
+						activity.showToast(true, result.error)
 						// 仕方ないのでchrome tab で開く
-						App1.openCustomTab(activity, who_url)
+						activity.openCustomTab(who_url)
 					}
 					
 					else -> activity.addColumn(pos, access_info, ColumnType.PROFILE, who.id)
@@ -550,7 +553,7 @@ object Action_User {
 						when(val who = this.who) {
 							null -> {
 								// ダメならchromeで開く
-								App1.openCustomTab(activity, url)
+								activity.openCustomTab(url)
 							}
 							
 							else -> profileLocal(activity, pos, access_info, who)
@@ -570,7 +573,7 @@ object Action_User {
 		if(! SavedAccount.hasRealAccount()) {
 			// 疑似アカウントしか登録されていない
 			// chrome tab で開く
-			App1.openCustomTab(activity, original_url)
+			activity.openCustomTab(original_url)
 		} else {
 			AccountPicker.pick(
 				activity,
@@ -599,7 +602,7 @@ object Action_User {
 					b.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 					
 					b.setOnClickListener {
-						App1.openCustomTab(activity, original_url)
+						activity.openCustomTab(original_url)
 					}
 					ll.addView(b, 0)
 				}
@@ -636,7 +639,7 @@ object Action_User {
 		onReportComplete : TootApiResultCallback
 	) {
 		if(access_info.isMe(who)) {
-			showToast(activity, false, R.string.it_is_you)
+			activity.showToast(false, R.string.it_is_you)
 			return
 		}
 		
@@ -663,9 +666,9 @@ object Action_User {
 				if(result.jsonObject != null) {
 					onReportComplete(result)
 					
-					showToast(activity, false, R.string.report_completed)
+					activity.showToast(false, R.string.report_completed)
 				} else {
-					showToast(activity, true, result.error)
+					activity.showToast(true, result.error)
 				}
 			}
 		})
@@ -676,7 +679,7 @@ object Action_User {
 		activity : ActMain, access_info : SavedAccount, who : TootAccount, bShow : Boolean
 	) {
 		if(access_info.isMe(who)) {
-			showToast(activity, false, R.string.it_is_you)
+			activity.showToast(false, R.string.it_is_you)
 			return
 		}
 		
@@ -716,9 +719,9 @@ object Action_User {
 				if(result == null) return  // cancelled.
 				
 				if(relation != null) {
-					showToast(activity, true, R.string.operation_succeeded)
+					activity.showToast(true, R.string.operation_succeeded)
 				} else {
-					showToast(activity, true, result.error)
+					activity.showToast(true, result.error)
 				}
 			}
 		})
@@ -750,7 +753,6 @@ object Action_User {
 		activity : ActMain, access_info : SavedAccount, who : TootAccount?
 	) {
 		if(who == null) return
-		
 		
 		val initial_text = "@${access_info.getFullAcct(who).ascii} "
 		AccountPicker.pick(
@@ -794,11 +796,11 @@ object Action_User {
 				// error
 				val error = result.error
 				if(error != null) {
-					showToast(activity, true, result.error)
+					activity.showToast(true, result.error)
 					return
 				}
 				
-				showToast(activity, false, R.string.delete_succeeded)
+				activity.showToast(false, R.string.delete_succeeded)
 				
 				// update suggestion column
 				for(column in activity.app_state.column_list) {
@@ -819,12 +821,20 @@ object Action_User {
 				return client.request(
 					"/api/v1/accounts/$whoId/follow",
 					jsonObject {
-						put("notify",enabled)
+						put("notify", enabled)
 					}.toPostRequestBuilder()
-				)?.also{ result->
-					val relation = parseItem( ::TootRelationShip, TootParser(activity,accessInfo),result.jsonObject)
-					if(relation!=null){
-						UserRelation.save1Mastodon(System.currentTimeMillis(),accessInfo.db_id,relation)
+				)?.also { result ->
+					val relation = parseItem(
+						::TootRelationShip,
+						TootParser(activity, accessInfo),
+						result.jsonObject
+					)
+					if(relation != null) {
+						UserRelation.save1Mastodon(
+							System.currentTimeMillis(),
+							accessInfo.db_id,
+							relation
+						)
 					}
 				}
 			}
@@ -836,11 +846,11 @@ object Action_User {
 				// error
 				val error = result.error
 				if(error != null) {
-					showToast(activity, true, result.error)
+					activity.showToast(true, result.error)
 					return
 				}
 				
-				showToast(activity, false, R.string.operation_succeeded)
+				activity.showToast(false, R.string.operation_succeeded)
 			}
 		})
 	}

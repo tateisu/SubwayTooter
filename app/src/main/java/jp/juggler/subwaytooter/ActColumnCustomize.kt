@@ -33,6 +33,7 @@ import kotlin.math.max
 class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
 	
 	companion object {
+		
 		internal val log = LogCategory("ActColumnCustomize")
 		
 		internal const val EXTRA_COLUMN_INDEX = "column_index"
@@ -298,7 +299,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 						show()
 					}
 					
-					else -> showToast(this@ActColumnCustomize, true, result.error ?: "?")
+					else -> showToast(true, result.error ?: "?")
 				}
 			}
 		})
@@ -395,17 +396,17 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			}
 		})
 		
-		etAlpha.setOnEditorActionListener{ _,  actionId, _->
+		etAlpha.setOnEditorActionListener { _, actionId, _ ->
 			when(actionId) {
 				EditorInfo.IME_ACTION_DONE -> {
 					etAlpha.hideKeyboard()
 					true
 				}
+				
 				else -> false
 			}
 		}
 	}
-	
 	
 	private fun show() {
 		try {

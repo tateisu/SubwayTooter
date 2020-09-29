@@ -3,7 +3,6 @@ import java.text.SimpleDateFormat
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-// apply plugin: 'kotlin-android-extensions'
 
 android {
 
@@ -22,13 +21,10 @@ android {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
 
-        versionCode 430
-        versionName "4.3.0"
+        versionCode 431
+        versionName "4.3.1"
         applicationId "jp.juggler.subwaytooter"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        // https://stackoverflow.com/questions/47791227/java-lang-illegalstateexception-dex-archives-setting-dex-extension-only-for
-        // multiDexEnabled true
     }
 
     buildTypes {

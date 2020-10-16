@@ -1495,15 +1495,11 @@ internal class ItemViewHolder(
 			ivOpenSticker.layoutParams = lp
 			ivOpenSticker.setImageUrl(activity.pref, 0f, item.favicon)
 			val colorBg = item.bgColor
-			when {
-				colorBg.isEmpty() -> {
-					tvOpenSticker.background = null
-					ivOpenSticker.background = null
-				}
-				
-				colorBg.size == 1 -> {
-					tvOpenSticker.setBackgroundColor(colorBg.first())
-					ivOpenSticker.setBackgroundColor(colorBg.first())
+			when(colorBg.size) {
+				1 -> {
+					val c = colorBg.first()
+					tvOpenSticker.setBackgroundColor(c)
+					ivOpenSticker.setBackgroundColor(c)
 				}
 				
 				else -> {

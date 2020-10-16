@@ -17,7 +17,7 @@ fun Double.notZero() : Double? = if(this != .0) this else null
 
 // usage: boolean.truth() ?: fallback()
 // equivalent: if(this != 0 ) this else null
-fun Boolean.truth() : Boolean? = if(this) this else null
+// fun Boolean.truth() : Boolean? = if(this) this else null
 
 ////////////////////////////////////////////////////////////////////
 // long

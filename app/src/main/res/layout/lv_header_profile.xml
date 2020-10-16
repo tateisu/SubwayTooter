@@ -250,6 +250,7 @@
             android:layout_marginStart="4dp"
             android:id="@+id/btnPersonalNotesEdit"
             android:src="@drawable/ic_edit"
+            android:contentDescription="@string/edit"
             />
     </LinearLayout>
 

@@ -27,13 +27,13 @@ class TestTootAccount {
 		// find from accessHost
 		assertEquals(
 			"",
-			TootAccount.findHostFromUrl(null, LinkHelper.newLinkHelper(Host.parse("")), null).first
+			TootAccount.findHostFromUrl(null, LinkHelper.create(Host.parse("")), null).first
 		)
 		assertEquals(
 			"any string is allowed",
 			TootAccount.findHostFromUrl(
 				null,
-				LinkHelper.newLinkHelper(Host.parse("any string is allowed")),
+				LinkHelper.create(Host.parse("any string is allowed")),
 				null
 			).first
 		)

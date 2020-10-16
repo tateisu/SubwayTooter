@@ -26,7 +26,7 @@ class TestHtmlDecoder {
 		// Context of the app under test.
 		val appContext = InstrumentationRegistry.getTargetContext()
 		
-		val options = DecodeOptions(appContext,LinkHelper.newLinkHelper(Host.parse("instance.test")))
+		val options = DecodeOptions(appContext,LinkHelper.create(Host.parse("instance.test")))
 		
 		val html = """
 			日本語で楽しめるMastodonサーバを提供しています。

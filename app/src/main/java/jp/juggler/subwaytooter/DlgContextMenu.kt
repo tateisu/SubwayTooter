@@ -400,7 +400,7 @@ internal class DlgContextMenu(
 		
 		if(access_info.isPseudo) {
 			// 疑似アカミュートができたのでアカウントアクションを表示する
-			showRelation(UserRelation())
+			showRelation( relation)
 			llAccountActionBar.visibility = View.VISIBLE
 			ivFollowedBy.vg(false)
 			btnFollow.setImageResource(R.drawable.ic_follow_plus)
@@ -690,7 +690,12 @@ internal class DlgContextMenu(
 						access_info,
 						bMute = false
 					)
-					else -> Action_User.muteConfirm(activity, access_info, who, access_info)
+					else -> Action_User.muteConfirm(
+						activity,
+						access_info,
+						who,
+						access_info
+					)
 				}
 				
 				R.id.btnBlock -> when {

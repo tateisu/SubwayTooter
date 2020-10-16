@@ -33,8 +33,7 @@ object Action_User {
 		bMute : Boolean = true,
 		bMuteNotification : Boolean = false
 	) {
-		val whoAcct = whoArg.acct
-		
+		val whoAcct = whoAccessInfo.getFullAcct(whoArg)
 		if(access_info.isMe(whoAcct)) {
 			activity.showToast(false, R.string.it_is_you)
 			return
@@ -46,71 +45,73 @@ object Action_User {
 			var whoIdResult : EntityId? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				if(access_info.isPseudo)
-					return if(whoAcct.ascii.contains('?')) {
+				return if(access_info.isPseudo) {
+					if(! whoAcct.isValidFull) {
 						TootApiResult("can't mute pseudo acct ${whoAcct.pretty}")
 					} else {
 						val relation = UserRelation.loadPseudo(whoAcct)
 						relation.muting = bMute
 						relation.savePseudo(whoAcct.ascii)
 						relationResult = relation
+						whoIdResult = whoArg.id
 						TootApiResult()
 					}
-				
-				val whoId = if(access_info.matchHost(whoAccessInfo)) {
-					whoArg.id
-				} else {
-					val (result, accountRef) = client.syncAccountByAcct(access_info, whoAcct)
-					accountRef?.get()?.id ?: return result
-				}
-				whoIdResult = whoId
-				
-				return if(access_info.isMisskey) {
-					client.request(
-						when(bMute) {
-							true -> "/api/mute/create"
-							else -> "/api/mute/delete"
-						},
-						access_info.putMisskeyApiToken().apply {
-							put("userId", whoId.toString())
-						}.toPostRequestBuilder()
-					)?.apply {
-						if(jsonObject != null) {
-							// 204 no content
-							
-							// update user relation
-							val ur = UserRelation.load(access_info.db_id, whoId)
-							ur.muting = bMute
-							saveUserRelationMisskey(
-								access_info,
-								whoId,
-								TootParser(activity, access_info)
-							)
-							relationResult = ur
-						}
+				}else{
+					val whoId = if(access_info.matchHost(whoAccessInfo)) {
+						whoArg.id
+					} else {
+						val (result, accountRef) = client.syncAccountByAcct(access_info, whoAcct)
+						accountRef?.get()?.id ?: return result
 					}
-				} else {
-					client.request(
-						"/api/v1/accounts/${whoId}/${if(bMute) "mute" else "unmute"}",
-						when {
-							! bMute -> "".toFormRequestBody()
-							else ->
-								jsonObject {
-									put("notifications", bMuteNotification)
-								}
-									.toRequestBody()
-						}.toPost()
-					)?.apply {
-						val jsonObject = jsonObject
-						if(jsonObject != null) {
-							relationResult = saveUserRelation(
-								access_info,
-								parseItem(
-									::TootRelationShip,
-									TootParser(activity, access_info),
-									jsonObject
+					whoIdResult = whoId
+					
+					if(access_info.isMisskey) {
+						client.request(
+							when(bMute) {
+								true -> "/api/mute/create"
+								else -> "/api/mute/delete"
+							},
+							access_info.putMisskeyApiToken().apply {
+								put("userId", whoId.toString())
+							}.toPostRequestBuilder()
+						)?.apply {
+							if(jsonObject != null) {
+								// 204 no content
+								
+								// update user relation
+								val ur = UserRelation.load(access_info.db_id, whoId)
+								ur.muting = bMute
+								saveUserRelationMisskey(
+									access_info,
+									whoId,
+									TootParser(activity, access_info)
 								)
-							)
+								relationResult = ur
+							}
+						}
+					} else {
+						client.request(
+							"/api/v1/accounts/${whoId}/${if(bMute) "mute" else "unmute"}",
+							when {
+								! bMute -> "".toFormRequestBody()
+								else ->
+									jsonObject {
+										put("notifications", bMuteNotification)
+									}
+										.toRequestBody()
+							}.toPost()
+						)?.apply {
+							val jsonObject = jsonObject
+							if(jsonObject != null) {
+								relationResult = saveUserRelation(
+									access_info,
+									parseItem(
+										::TootRelationShip,
+										TootParser(activity, access_info),
+										jsonObject
+									)
+								)
+							}
 						}
 					}
 				}
@@ -131,7 +132,7 @@ object Action_User {
 					
 					for(column in App1.getAppState(activity).column_list) {
 						if(column.access_info.isPseudo) {
-							if(relation.muting) {
+							if(relation.muting && column.type != ColumnType.PROFILE) {
 								// ミュートしたユーザの情報はTLから消える
 								column.removeAccountInTimelinePseudo(whoAcct)
 							}

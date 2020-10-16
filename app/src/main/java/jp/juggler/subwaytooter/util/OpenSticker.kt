@@ -20,7 +20,7 @@ object OpenSticker {
 	
 	private val reColor3 = """#($alnum)($alnum)($alnum)\b"""
 		.asciiPattern(Pattern.CASE_INSENSITIVE)
-
+	
 	private fun parseHex(group : String?) : Int = group?.toInt(16) ?: 0
 	
 	private fun String.parseColor() : Int? {
@@ -66,7 +66,6 @@ object OpenSticker {
 		
 		val size = array.size
 		
-		fun isEmpty() = size == 0
 		fun first() = array.first()
 		fun last() = array.last()
 		
@@ -91,7 +90,6 @@ object OpenSticker {
 		mapNotNull { it.cast<String>()?.parseColor() }
 			.takeIf { it.isNotEmpty() }
 			?.let { ColorBg(it) }
-	
 	
 	class Default(
 		val fontColor : Int,

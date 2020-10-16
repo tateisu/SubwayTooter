@@ -22,7 +22,7 @@ class TootParser(
 ) {
 	
 	val misskeyUserRelationMap = HashMap<EntityId, UserRelation>()
-	val misskeyAccountDetailMap = HashMap<EntityId, TootAccount>()
+	// val misskeyAccountDetailMap = HashMap<EntityId, TootAccount>()
 	
 	val apiHost : Host?
 		get() = linkHelper.apiHost

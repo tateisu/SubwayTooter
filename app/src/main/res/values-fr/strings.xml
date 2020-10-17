@@ -157,8 +157,8 @@
     <string name="foreground_color">Couleur du texte</string>
     <string name="generating_qr_code">Créer un code QR…</string>
     <string name="hashtag">Hashtag</string>
-    <string name="hashtag_and_visibility_not_match">Ce message contient des hashtags, mais sa visibilité n\'est pas publique. \nNormalement les hashtags peuvent être recherchés uniquement dans les messages publiques.\nÊtes-vous sur ?</string>
-    <string name="hashtag_of">Hashtag: #%1$s</string>
+    <string name="hashtag_and_visibility_not_match">Ce message contient des hashtags, mais sa visibilité n\'est pas publique. Normalement les hashtags peuvent être recherchés uniquement dans les messages publiques. Êtes-vous sur \?</string>
+    <string name="hashtag_of">Hashtag : #%1$s</string>
     <string name="help_translation">Aider à améliorer la traduction</string>
     <string name="hide">Masquer</string>
     <string name="hide_media_default">Ne pas afficher les pièces jointes</string>
@@ -311,7 +311,7 @@
     <string name="user_mail_address">Adresse e-mail</string>
     <string name="user_name_not_match">Le nom d\'utilisateur ne correspond pas</string>
     <string name="user_password">Mot de passe de l’utilisateur</string>
-    <string name="version_is">Version: %1$s</string>
+    <string name="version_is">Version %1$s</string>
     <string name="vibration">Vibration</string>
     <string name="visibility">Visibilité</string>
     <string name="visibility_direct">Direct</string>
@@ -325,10 +325,11 @@
     <string name="word_was_muted">Ce mot a été interdit.</string>
     <string name="your_statuses">Vos statuts</string>
     <string name="launcher_icon_by">Merci à フタバ pour l’icône de l’application.</string>
-    <string name="ssl_bug_7_0">Android 7.0 ne peut utiliser que les courbes elliptiques « prime256v1 » pour les connexions sécurisées. 
-\nL’instance à laquelle vous voulez vous connecter semble ne pas les gérer. 
-\nVous pouvez mettre à jour le système d’exploitation vers Android 7.1.1 ou demander à l’administrateur de votre instance de prendre en charge les courbes elliptiques « prime256v1 ». 
-\nPlus de détails ici : https://code.google.com/p/android/issues/detail\?id=224438</string>
+    <string name="ssl_bug_7_0">Android 7.0 ne peut utiliser que la courbe elliptique \"prime256v1\".
+\nMalheureusement, votre serveur ne semble pas la prendre en charge.
+\nCe bogue a été corrigé dans Android 7.1.1.
+\nVous pouvez soit mettre à jour votre OS, soit demander à l’administrateur du serveur d’ajouter le support de la courbe elliptique \"prime256v1\".
+\nVoir aussi https://code.google.com/p/android/issues/detail\?id=224438</string>
     <string name="timeline_font">Police de caractères des fils (redémarrage nécessaire)</string>
     <string name="timeline_font_bold">Police de caractères des fils (grasse) (redémarrage nécessaire)</string>
     <string name="account_in_draft_is_lost">Le compte utilisé pour la création de ce brouillon a été supprimé de cette application. Le lien avec le pouet d’origine ne peut être restauré : in_reply_to, media joint</string>
@@ -590,7 +591,7 @@
     <string name="zooming_of">×%3$.1f\n%1$d×%2$d</string>
     <string name="media_attachment_still_uploading">En cours de téléchargement de médias.</string>
     <string name="highlight_word">Mettre en évidence le mot-clé</string>
-    <string name="new_item">New item…</string>
+    <string name="new_item">Nouvel élément …</string>
     <string name="word_empty">Veuillez entrer un mot-clé.</string>
     <string name="already_exist">déjà existant.</string>
     <string name="highlight_desc">Glissez à gauche pour supprimer. Il se peut que vous ayez besoin de recharger afin de vérifier le paramètre.</string>
@@ -950,7 +951,7 @@
     <string name="resize_square_pixels">Redimensionner en %1$d pixels carrés (équivalent %2$dx%2$d)</string>
     <string name="status_bar_color">Couleur de la barre d’état (redémarrage de l\'app requis. pre-Android 6 ne peut pas ajuster l’icône et la couleur du texte)</string>
     <string name="navigation_bar_color">Couleur de la barre de navigation (redémarrage de l’app requis. pre-Android 8 ne peut pas ajuster la couleur des icônes)</string>
-    <string name="quick_toot_omit_account_selection">Lorsque vous utilisez le pouet rapide, omettez la sélection de compte si possible</string>
+    <string name="quick_toot_omit_account_selection">Lorsque vous utilisez la fonction de pouet rapide, omettez si possible la sélection du compte</string>
     <string name="default_">Par défaut</string>
     <string name="confirm_unbookmark_from">Retirer ce statut comme un signet à partir de %1$s \?</string>
     <string name="bookmark">Ajouter aux signets</string>
@@ -1007,7 +1008,7 @@
     <string name="always_expand_context_menu_sub_items">Toujourd déplier les sous-éléments du menu contextuel</string>
     <string name="display_favourite_count">Afficher le compteur des favoris</string>
     <string name="display_boost_count">Afficher le nombre des boosts</string>
-    <string name="filter_profile">profile</string>
+    <string name="filter_profile">profil</string>
     <string name="display_name_follow_request_accepted_by">%1$s a accepté votre demande d’abonnement</string>
     <string name="no">Non</string>
     <string name="yes">Oui</string>
@@ -1024,4 +1025,16 @@
     <string name="dont_show_non_public_toot">Ne pas afficher les pouets non-publiques</string>
     <string name="account_picker_block">Avec quel compte souhaitez-vous bloquer %1$s \?</string>
     <string name="account_picker_mute">Avec quel compte souhaitez-vous mettre en sourdine %1$s \?</string>
+    <string name="powered_by_open_sticker">Utilise l’API d’OpenSticker.</string>
+    <string name="release_note">Note de version</string>
+    <string name="app_name_with_version">%1$s %2$s</string>
+    <string name="new_version_available">Nouvelle version disponible ! %1$s</string>
+    <string name="close_emoji_picker_when_selected">Fermer le sélecteur d’emoji après en avoir sélectionné un</string>
+    <string name="custom_thumbnail">Vignette personnalisée</string>
+    <string name="personal_notes">Notes personnelles</string>
+    <string name="conversation_main_toot_background_color">Couleur d’arrière-plan du pouet principal de la conversation</string>
+    <string name="separate_notification_group_for_reply">Groupes de notification distincts pour la réponse (Android 8+)</string>
+    <string name="warn_hashtag_ascii_and_non_ascii">Avertir si le hashtag contient à la fois des caractères ASCII et non-ASCII</string>
+    <string name="hashtag_contains_ascii_and_not_ascii">Le Hashtag %1$s contient à la fois des caractères ASCII et non ASCII. Il peut s’agir d’une faute de frappe. En êtes-vous sûr \?</string>
+    <string name="direct_with_user_visibility">Visibilité \"direct aux utilisateur·rice·s\"</string>
 </resources>

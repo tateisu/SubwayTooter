@@ -116,7 +116,7 @@ dependencies {
     kapt 'androidx.annotation:annotation:1.1.0'
 
     // https://firebase.google.com/support/release-notes/android
-    implementation "com.google.firebase:firebase-messaging:20.2.4"
+    implementation "com.google.firebase:firebase-messaging:20.3.0"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
@@ -152,8 +152,7 @@ dependencies {
     }
     kapt "com.github.bumptech.glide:compiler:$glide_version"
 
-
-    implementation "org.conscrypt:conscrypt-android:2.5.0"
+    implementation "org.conscrypt:conscrypt-android:2.5.1"
 
     implementation 'io.github.inflationx:calligraphy3:3.1.1'
     implementation 'io.github.inflationx:viewpump:2.0.3'
@@ -172,7 +171,13 @@ dependencies {
 
     implementation 'com.astuetz:pagerslidingtabstrip:1.0.1'
 
-    implementation 'com.google.android.exoplayer:exoplayer:2.10.4'
+    implementation 'com.google.android.exoplayer:exoplayer:2.12.0'
+    /*
+    WARNING: [Processor] Library '…\exoplayer-ui-2.12.0.aar' contains references to both AndroidX and old support library. This seems like the library is partially migrated. Jetifier will try to rewrite the library anyway.
+    Example of androidX reference: 'androidx/core/app/NotificationCompat$Builder'
+    Example of support library reference: 'android/support/v4/media/session/MediaSessionCompat$Token'
+    …expPlayerも苦労してるんだなあ…
+    */
 
     implementation 'com.caverock:androidsvg-aar:1.4'
 }

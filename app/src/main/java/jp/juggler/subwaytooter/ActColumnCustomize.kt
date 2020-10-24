@@ -114,12 +114,12 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
 			R.id.btnHeaderBackgroundEdit -> {
 				ColorPickerDialog.newBuilder()
-						.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-						.setAllowPresets(true)
-						.setShowAlphaSlider(false)
-						.setDialogId(COLOR_DIALOG_ID_HEADER_BACKGROUND)
-						.setColor(column.getHeaderBackgroundColor())
-						.show(this)
+					.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
+					.setAllowPresets(true)
+					.setShowAlphaSlider(false)
+					.setDialogId(COLOR_DIALOG_ID_HEADER_BACKGROUND)
+					.setColor(column.getHeaderBackgroundColor())
+					.show(this)
 			}
 
 			R.id.btnHeaderBackgroundReset -> {
@@ -129,12 +129,12 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
 			R.id.btnHeaderTextEdit -> {
 				ColorPickerDialog.newBuilder()
-						.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-						.setAllowPresets(true)
-						.setShowAlphaSlider(false)
-						.setDialogId(COLOR_DIALOG_ID_HEADER_FOREGROUND)
-						.setColor(column.getHeaderNameColor())
-						.show(this)
+					.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
+					.setAllowPresets(true)
+					.setShowAlphaSlider(false)
+					.setDialogId(COLOR_DIALOG_ID_HEADER_FOREGROUND)
+					.setColor(column.getHeaderNameColor())
+					.show(this)
 			}
 
 			R.id.btnHeaderTextReset -> {
@@ -144,10 +144,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
 			R.id.btnColumnBackgroundColor -> {
 				builder = ColorPickerDialog.newBuilder()
-						.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-						.setAllowPresets(true)
-						.setShowAlphaSlider(false)
-						.setDialogId(COLOR_DIALOG_ID_COLUMN_BACKGROUND)
+					.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
+					.setAllowPresets(true)
+					.setShowAlphaSlider(false)
+					.setDialogId(COLOR_DIALOG_ID_COLUMN_BACKGROUND)
 				if (column.column_bg_color != 0) builder.setColor(column.column_bg_color)
 				builder.show(this)
 			}
@@ -159,12 +159,12 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
 			R.id.btnAcctColor -> {
 				ColorPickerDialog.newBuilder()
-						.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-						.setAllowPresets(true)
-						.setShowAlphaSlider(true)
-						.setDialogId(COLOR_DIALOG_ID_ACCT_TEXT)
-						.setColor(column.getAcctColor())
-						.show(this)
+					.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
+					.setAllowPresets(true)
+					.setShowAlphaSlider(true)
+					.setDialogId(COLOR_DIALOG_ID_ACCT_TEXT)
+					.setColor(column.getAcctColor())
+					.show(this)
 			}
 
 			R.id.btnAcctColorReset -> {
@@ -174,12 +174,12 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
 			R.id.btnContentColor -> {
 				ColorPickerDialog.newBuilder()
-						.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-						.setAllowPresets(true)
-						.setShowAlphaSlider(true)
-						.setDialogId(COLOR_DIALOG_ID_CONTENT_TEXT)
-						.setColor(column.getContentColor())
-						.show(this)
+					.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
+					.setAllowPresets(true)
+					.setShowAlphaSlider(true)
+					.setDialogId(COLOR_DIALOG_ID_CONTENT_TEXT)
+					.setColor(column.getContentColor())
+					.show(this)
 			}
 
 			R.id.btnContentColorReset -> {
@@ -189,7 +189,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
 			R.id.btnColumnBackgroundImage -> {
 				val intent =
-						intentGetContent(false, getString(R.string.pick_image), arrayOf("image/*"))
+					intentGetContent(false, getString(R.string.pick_image), arrayOf("image/*"))
 				startActivityForResult(intent, REQUEST_CODE_PICK_BACKGROUND)
 			}
 
@@ -206,11 +206,11 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
     override fun onColorSelected(dialogId: Int, @ColorInt colorSelected: Int) {
         when (dialogId) {
 			COLOR_DIALOG_ID_HEADER_BACKGROUND -> column.header_bg_color = colorFF000000 or
-					colorSelected
+				colorSelected
 			COLOR_DIALOG_ID_HEADER_FOREGROUND -> column.header_fg_color = colorFF000000 or
-					colorSelected
+				colorSelected
 			COLOR_DIALOG_ID_COLUMN_BACKGROUND -> column.column_bg_color = colorFF000000 or
-					colorSelected
+				colorSelected
 
 			COLOR_DIALOG_ID_ACCT_TEXT -> {
 				column.acct_color = colorSelected.notZero() ?: 1
@@ -228,10 +228,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when {
             requestCode == REQUEST_CODE_PICK_BACKGROUND &&
-                    data != null &&
-                    resultCode == RESULT_OK ->
+                data != null &&
+                resultCode == RESULT_OK ->
                 data.handleGetContentResult(contentResolver)
-                        .firstOrNull()?.uri?.let { updateBackground(it) }
+                    .firstOrNull()?.uri?.let { updateBackground(it) }
 
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
@@ -246,7 +246,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 				try {
 					val backgroundDir = Column.getBackgroundImageDir(this@ActColumnCustomize)
 					val file =
-							File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
+						File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
 					val fileUri = Uri.fromFile(file)
 
 					client.publishApiProgress("loading image from ${uriArg}")
@@ -260,15 +260,15 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 					client.publishApiProgress("check resize/rotation…")
 
 					val size = (max(
-							resources.displayMetrics.widthPixels,
-							resources.displayMetrics.heightPixels
+						resources.displayMetrics.widthPixels,
+						resources.displayMetrics.heightPixels
 					) * 1.5f).toInt()
 
 					val bitmap = createResizedBitmap(
-							this@ActColumnCustomize,
-							fileUri,
-							size,
-							skipIfNoNeedToResizeAndRotate = true
+						this@ActColumnCustomize,
+						fileUri,
+						size,
+						skipIfNoNeedToResizeAndRotate = true
 					)
 					if (bitmap != null) {
 						try {
@@ -337,7 +337,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         sbColumnBackgroundAlpha.max = PROGRESS_MAX
 
         sbColumnBackgroundAlpha.setOnSeekBarChangeListener(object :
-				SeekBar.OnSeekBarChangeListener {
+			SeekBar.OnSeekBarChangeListener {
 			override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
 			override fun onStopTrackingTouch(seekBar: SeekBar) {
@@ -350,11 +350,11 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 				column.column_bg_image_alpha = progress / PROGRESS_MAX.toFloat()
 				ivColumnBackground.alpha = column.column_bg_image_alpha
 				etAlpha.setText(
-						String.format(
-								defaultLocale(this@ActColumnCustomize),
-								"%.4f",
-								column.column_bg_image_alpha
-						)
+					String.format(
+						defaultLocale(this@ActColumnCustomize),
+						"%.4f",
+						column.column_bg_image_alpha
+					)
 				)
 			}
 
@@ -363,10 +363,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         etAlpha = findViewById(R.id.etAlpha)
         etAlpha.addTextChangedListener(object : TextWatcher {
 			override fun beforeTextChanged(
-					s: CharSequence,
-					start: Int,
-					count: Int,
-					after: Int
+				s: CharSequence,
+				start: Int,
+				count: Int,
+				after: Int
 			) {
 
 			}
@@ -380,7 +380,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 				try {
 
 					var f = NumberFormat.getInstance(defaultLocale(this@ActColumnCustomize))
-							.parse(etAlpha.text.toString())?.toFloat()
+						.parse(etAlpha.text.toString())?.toFloat()
 
 					if (f != null && !f.isNaN()) {
 						if (f < 0f) f = 0f
@@ -436,11 +436,11 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
             sbColumnBackgroundAlpha.progress = (0.5f + alpha * PROGRESS_MAX).toInt()
 
             etAlpha.setText(
-					String.format(
-							defaultLocale(this@ActColumnCustomize),
-							"%.4f",
-							column.column_bg_image_alpha
-					)
+				String.format(
+					defaultLocale(this@ActColumnCustomize),
+					"%.4f",
+					column.column_bg_image_alpha
+				)
 			)
 
             loadImage(ivColumnBackground, column.column_bg_image)

@@ -2,13 +2,13 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SubwayTooter.iml" filepath="$PROJECT_DIR$/SubwayTooter.iml" group="SubwayTooter" />
-      <module fileurl="file://$PROJECT_DIR$/apng/apng.iml" filepath="$PROJECT_DIR$/apng/apng.iml" group="SubwayTooter/apng" />
-      <module fileurl="file://$PROJECT_DIR$/apng_android/apng_android.iml" filepath="$PROJECT_DIR$/apng_android/apng_android.iml" group="SubwayTooter/apng_android" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="SubwayTooter/app" />
-      <module fileurl="file://$PROJECT_DIR$/colorpicker/colorpicker.iml" filepath="$PROJECT_DIR$/colorpicker/colorpicker.iml" group="SubwayTooter/colorpicker" />
-      <module fileurl="file://$PROJECT_DIR$/emoji/emoji.iml" filepath="$PROJECT_DIR$/emoji/emoji.iml" group="SubwayTooter/emoji" />
-      <module fileurl="file://$PROJECT_DIR$/sample_apng/sample_apng.iml" filepath="$PROJECT_DIR$/sample_apng/sample_apng.iml" group="SubwayTooter/sample_apng" />
+      <module fileurl="file://$PROJECT_DIR$/SubwayTooter.iml" filepath="$PROJECT_DIR$/SubwayTooter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/apng/SubwayTooter.apng.iml" filepath="$PROJECT_DIR$/.idea/modules/apng/SubwayTooter.apng.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/apng_android/SubwayTooter.apng_android.iml" filepath="$PROJECT_DIR$/.idea/modules/apng_android/SubwayTooter.apng_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/SubwayTooter.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/SubwayTooter.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.iml" filepath="$PROJECT_DIR$/.idea/modules/colorpicker/SubwayTooter.colorpicker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/emoji/SubwayTooter.emoji.iml" filepath="$PROJECT_DIR$/.idea/modules/emoji/SubwayTooter.emoji.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.iml" filepath="$PROJECT_DIR$/.idea/modules/sample_apng/SubwayTooter.sample_apng.iml" />
     </modules>
   </component>
 </project>

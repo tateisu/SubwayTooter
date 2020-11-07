@@ -1534,6 +1534,7 @@
 		code( "\ud83d\udc06", "emj_1f406.svg" );
 		code( "\ud83d\udc07", "emj_1f407.svg" );
 		code( "\ud83d\udc08", "emj_1f408.svg" );
+		code( "\ud83d\udc08\u200d\u2b1b", "emj_1f408_200d_2b1b.svg" );
 		code( "\ud83d\udc09", "emj_1f409.svg" );
 		code( "\ud83d\udc0a", "emj_1f40a.svg" );
 		code( "\ud83d\udc0b", "emj_1f40b.svg" );
@@ -1541,9 +1542,9 @@
 		code( "\ue74e", "emj_1f40c.svg" );
 		code( "\ueb7e", "emj_1f40c.svg" );
 		code( "\udbb8\uddb9", "emj_1f40c.svg" );
-		code( "\ud83d\udc0d", "emj_1f40d.svg" );
 	}
 	private static void init16(){
+		code( "\ud83d\udc0d", "emj_1f40d.svg" );
 		code( "\ue52d", "emj_1f40d.svg" );
 		code( "\ueb22", "emj_1f40d.svg" );
 		code( "\udbb8\uddd3", "emj_1f40d.svg" );
@@ -1644,9 +1645,9 @@
 		code( "\ud83d\udc2b", "emj_1f42b.svg" );
 		code( "\ue530", "emj_1f42b.svg" );
 		code( "\ueb25", "emj_1f42b.svg" );
-		code( "\udbb8\uddd6", "emj_1f42b.svg" );
 	}
 	private static void init17(){
+		code( "\udbb8\uddd6", "emj_1f42b.svg" );
 		code( "\ud83d\udc2c", "emj_1f42c.svg" );
 		code( "\ue520", "emj_1f42c.svg" );
 		code( "\ueb1b", "emj_1f42c.svg" );
@@ -1713,6 +1714,7 @@
 		code( "\ue051", "emj_1f43b.svg" );
 		code( "\ue5c1", "emj_1f43b.svg" );
 		code( "\udbb8\uddc1", "emj_1f43b.svg" );
+		code( "\ud83d\udc3b\u200d\u2744\ufe0f", "emj_1f43b_200d_2744_fe0f.svg" );
 		code( "\ud83d\udc3c", "emj_1f43c.svg" );
 		code( "\ueb46", "emj_1f43c.svg" );
 		code( "\udbb8\udddf", "emj_1f43c.svg" );
@@ -1746,10 +1748,10 @@
 		code( "\ud83d\udc42\ud83c\udffe", "emj_1f442_1f3fe.svg" );
 		code( "\ud83d\udc42\ud83c\udfff", "emj_1f442_1f3ff.svg" );
 		code( "\ud83d\udc43", "emj_1f443.svg" );
-		code( "\ue41a", "emj_1f443.svg" );
-		code( "\uead0", "emj_1f443.svg" );
 	}
 	private static void init18(){
+		code( "\ue41a", "emj_1f443.svg" );
+		code( "\uead0", "emj_1f443.svg" );
 		code( "\udbb8\udd92", "emj_1f443.svg" );
 		code( "\ud83d\udc43\ud83c\udffb", "emj_1f443_1f3fb.svg" );
 		code( "\ud83d\udc43\ud83c\udffc", "emj_1f443_1f3fc.svg" );
@@ -1849,10 +1851,10 @@
 		code( "\ud83d\udc4f", "emj_1f44f.svg" );
 		code( "\ue41f", "emj_1f44f.svg" );
 		code( "\uead3", "emj_1f44f.svg" );
-		code( "\udbba\udf9e", "emj_1f44f.svg" );
-		code( "\ud83d\udc4f\ud83c\udffb", "emj_1f44f_1f3fb.svg" );
 	}
 	private static void init19(){
+		code( "\udbba\udf9e", "emj_1f44f.svg" );
+		code( "\ud83d\udc4f\ud83c\udffb", "emj_1f44f_1f3fb.svg" );
 		code( "\ud83d\udc4f\ud83c\udffc", "emj_1f44f_1f3fc.svg" );
 		code( "\ud83d\udc4f\ud83c\udffd", "emj_1f44f_1f3fd.svg" );
 		code( "\ud83d\udc4f\ud83c\udffe", "emj_1f44f_1f3fe.svg" );
@@ -1952,10 +1954,10 @@
 		code( "\ue001", "emj_1f466.svg" );
 		code( "\ue4fc", "emj_1f466.svg" );
 		code( "\udbb8\udd9b", "emj_1f466.svg" );
-		code( "\ud83d\udc66\ud83c\udffb", "emj_1f466_1f3fb.svg" );
-		code( "\ud83d\udc66\ud83c\udffc", "emj_1f466_1f3fc.svg" );
 	}
 	private static void init20(){
+		code( "\ud83d\udc66\ud83c\udffb", "emj_1f466_1f3fb.svg" );
+		code( "\ud83d\udc66\ud83c\udffc", "emj_1f466_1f3fc.svg" );
 		code( "\ud83d\udc66\ud83c\udffd", "emj_1f466_1f3fd.svg" );
 		code( "\ud83d\udc66\ud83c\udffe", "emj_1f466_1f3fe.svg" );
 		code( "\ud83d\udc66\ud83c\udfff", "emj_1f466_1f3ff.svg" );
@@ -1977,6 +1979,8 @@
 		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf3e", "emj_1f468_1f3fb_200d_1f33e.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\ud83c\udf73", "emj_1f468_1f3fb_200d_1f373.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf73", "emj_1f468_1f3fb_200d_1f373.svg" );
+		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf7c", "emj_1f468_1f3fb_200d_1f37c.svg" );
+		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf84", "emj_1f468_1f3fb_200d_1f384.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\ud83c\udf93", "emj_1f468_1f3fb_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf93", "emj_1f468_1f3fb_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udffb\ud83c\udfa4", "emj_1f468_1f3fb_200d_1f3a4.svg" );
@@ -2021,6 +2025,8 @@
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf3e", "emj_1f468_1f3fc_200d_1f33e.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\ud83c\udf73", "emj_1f468_1f3fc_200d_1f373.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf73", "emj_1f468_1f3fc_200d_1f373.svg" );
+		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf7c", "emj_1f468_1f3fc_200d_1f37c.svg" );
+		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf84", "emj_1f468_1f3fc_200d_1f384.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\ud83c\udf93", "emj_1f468_1f3fc_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf93", "emj_1f468_1f3fc_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\ud83c\udfa4", "emj_1f468_1f3fc_200d_1f3a4.svg" );
@@ -2051,14 +2057,14 @@
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb0", "emj_1f468_1f3fc_200d_1f9b0.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb1", "emj_1f468_1f3fc_200d_1f9b1.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb2", "emj_1f468_1f3fc_200d_1f9b2.svg" );
+	}
+	private static void init21(){
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb3", "emj_1f468_1f3fc_200d_1f9b3.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddbc", "emj_1f468_1f3fc_200d_1f9bc.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddbd", "emj_1f468_1f3fc_200d_1f9bd.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\u2695\ufe0f", "emj_1f468_1f3fc_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u2695", "emj_1f468_1f3fc_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\u2696\ufe0f", "emj_1f468_1f3fc_200d_2696_fe0f.svg" );
-	}
-	private static void init21(){
 		code( "\ud83d\udc68\ud83c\udffc\u2696", "emj_1f468_1f3fc_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u200d\u2708\ufe0f", "emj_1f468_1f3fc_200d_2708_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffc\u2708", "emj_1f468_1f3fc_200d_2708_fe0f.svg" );
@@ -2067,6 +2073,8 @@
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf3e", "emj_1f468_1f3fd_200d_1f33e.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\ud83c\udf73", "emj_1f468_1f3fd_200d_1f373.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf73", "emj_1f468_1f3fd_200d_1f373.svg" );
+		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf7c", "emj_1f468_1f3fd_200d_1f37c.svg" );
+		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf84", "emj_1f468_1f3fd_200d_1f384.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\ud83c\udf93", "emj_1f468_1f3fd_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf93", "emj_1f468_1f3fd_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udffd\ud83c\udfa4", "emj_1f468_1f3fd_200d_1f3a4.svg" );
@@ -2111,6 +2119,8 @@
 		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf3e", "emj_1f468_1f3fe_200d_1f33e.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\ud83c\udf73", "emj_1f468_1f3fe_200d_1f373.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf73", "emj_1f468_1f3fe_200d_1f373.svg" );
+		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf7c", "emj_1f468_1f3fe_200d_1f37c.svg" );
+		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf84", "emj_1f468_1f3fe_200d_1f384.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\ud83c\udf93", "emj_1f468_1f3fe_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf93", "emj_1f468_1f3fe_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\ud83c\udfa4", "emj_1f468_1f3fe_200d_1f3a4.svg" );
@@ -2150,18 +2160,20 @@
 		code( "\ud83d\udc68\ud83c\udffe\u2696", "emj_1f468_1f3fe_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u200d\u2708\ufe0f", "emj_1f468_1f3fe_200d_2708_fe0f.svg" );
 		code( "\ud83d\udc68\ud83c\udffe\u2708", "emj_1f468_1f3fe_200d_2708_fe0f.svg" );
+	}
+	private static void init22(){
 		code( "\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3ff.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\ud83c\udf3e", "emj_1f468_1f3ff_200d_1f33e.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf3e", "emj_1f468_1f3ff_200d_1f33e.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\ud83c\udf73", "emj_1f468_1f3ff_200d_1f373.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf73", "emj_1f468_1f3ff_200d_1f373.svg" );
+		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf7c", "emj_1f468_1f3ff_200d_1f37c.svg" );
+		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf84", "emj_1f468_1f3ff_200d_1f384.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\ud83c\udf93", "emj_1f468_1f3ff_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf93", "emj_1f468_1f3ff_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\ud83c\udfa4", "emj_1f468_1f3ff_200d_1f3a4.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfa4", "emj_1f468_1f3ff_200d_1f3a4.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\ud83c\udfa8", "emj_1f468_1f3ff_200d_1f3a8.svg" );
-	}
-	private static void init22(){
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfa8", "emj_1f468_1f3ff_200d_1f3a8.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\ud83c\udfeb", "emj_1f468_1f3ff_200d_1f3eb.svg" );
 		code( "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfeb", "emj_1f468_1f3ff_200d_1f3eb.svg" );
@@ -2200,6 +2212,8 @@
 		code( "\ud83d\udc68\u200d\ud83c\udf3e", "emj_1f468_200d_1f33e.svg" );
 		code( "\ud83d\udc68\ud83c\udf73", "emj_1f468_200d_1f373.svg" );
 		code( "\ud83d\udc68\u200d\ud83c\udf73", "emj_1f468_200d_1f373.svg" );
+		code( "\ud83d\udc68\u200d\ud83c\udf7c", "emj_1f468_200d_1f37c.svg" );
+		code( "\ud83d\udc68\u200d\ud83c\udf84", "emj_1f468_200d_1f384.svg" );
 		code( "\ud83d\udc68\ud83c\udf93", "emj_1f468_200d_1f393.svg" );
 		code( "\ud83d\udc68\u200d\ud83c\udf93", "emj_1f468_200d_1f393.svg" );
 		code( "\ud83d\udc68\ud83c\udfa4", "emj_1f468_200d_1f3a4.svg" );
@@ -2249,6 +2263,8 @@
 		code( "\ud83d\udc68\ud83d\udd2c", "emj_1f468_200d_1f52c.svg" );
 		code( "\ud83d\udc68\u200d\ud83d\udd2c", "emj_1f468_200d_1f52c.svg" );
 		code( "\ud83d\udc68\ud83d\ude80", "emj_1f468_200d_1f680.svg" );
+	}
+	private static void init23(){
 		code( "\ud83d\udc68\u200d\ud83d\ude80", "emj_1f468_200d_1f680.svg" );
 		code( "\ud83d\udc68\ud83d\ude92", "emj_1f468_200d_1f692.svg" );
 		code( "\ud83d\udc68\u200d\ud83d\ude92", "emj_1f468_200d_1f692.svg" );
@@ -2263,8 +2279,6 @@
 		code( "\ud83d\udc68\u2695", "emj_1f468_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc68\u200d\u2696\ufe0f", "emj_1f468_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc68\u2696", "emj_1f468_200d_2696_fe0f.svg" );
-	}
-	private static void init23(){
 		code( "\ud83d\udc68\u200d\u2708\ufe0f", "emj_1f468_200d_2708_fe0f.svg" );
 		code( "\ud83d\udc68\u2708", "emj_1f468_200d_2708_fe0f.svg" );
 		code( "\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc68", "emj_1f468_200d_2764_fe0f_200d_1f468.svg" );
@@ -2280,6 +2294,8 @@
 		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf3e", "emj_1f469_1f3fb_200d_1f33e.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\ud83c\udf73", "emj_1f469_1f3fb_200d_1f373.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf73", "emj_1f469_1f3fb_200d_1f373.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf7c", "emj_1f469_1f3fb_200d_1f37c.svg" );
+		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf84", "emj_1f469_1f3fb_200d_1f384.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\ud83c\udf93", "emj_1f469_1f3fb_200d_1f393.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf93", "emj_1f469_1f3fb_200d_1f393.svg" );
 		code( "\ud83d\udc69\ud83c\udffb\ud83c\udfa4", "emj_1f469_1f3fb_200d_1f3a4.svg" );
@@ -2328,6 +2344,8 @@
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf3e", "emj_1f469_1f3fc_200d_1f33e.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\ud83c\udf73", "emj_1f469_1f3fc_200d_1f373.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf73", "emj_1f469_1f3fc_200d_1f373.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf7c", "emj_1f469_1f3fc_200d_1f37c.svg" );
+		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf84", "emj_1f469_1f3fc_200d_1f384.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\ud83c\udf93", "emj_1f469_1f3fc_200d_1f393.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf93", "emj_1f469_1f3fc_200d_1f393.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\ud83c\udfa4", "emj_1f469_1f3fc_200d_1f3a4.svg" );
@@ -2348,6 +2366,8 @@
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83d\udd2c", "emj_1f469_1f3fc_200d_1f52c.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\ud83d\ude80", "emj_1f469_1f3fc_200d_1f680.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83d\ude80", "emj_1f469_1f3fc_200d_1f680.svg" );
+	}
+	private static void init24(){
 		code( "\ud83d\udc69\ud83c\udffc\ud83d\ude92", "emj_1f469_1f3fc_200d_1f692.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83d\ude92", "emj_1f469_1f3fc_200d_1f692.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fc_200d_1f91d_200d_1f468_1f3fb.svg" );
@@ -2366,8 +2386,6 @@
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddbc", "emj_1f469_1f3fc_200d_1f9bc.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddbd", "emj_1f469_1f3fc_200d_1f9bd.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\u2695\ufe0f", "emj_1f469_1f3fc_200d_2695_fe0f.svg" );
-	}
-	private static void init24(){
 		code( "\ud83d\udc69\ud83c\udffc\u2695", "emj_1f469_1f3fc_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u200d\u2696\ufe0f", "emj_1f469_1f3fc_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffc\u2696", "emj_1f469_1f3fc_200d_2696_fe0f.svg" );
@@ -2378,6 +2396,8 @@
 		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf3e", "emj_1f469_1f3fd_200d_1f33e.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\ud83c\udf73", "emj_1f469_1f3fd_200d_1f373.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf73", "emj_1f469_1f3fd_200d_1f373.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf7c", "emj_1f469_1f3fd_200d_1f37c.svg" );
+		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf84", "emj_1f469_1f3fd_200d_1f384.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\ud83c\udf93", "emj_1f469_1f3fd_200d_1f393.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf93", "emj_1f469_1f3fd_200d_1f393.svg" );
 		code( "\ud83d\udc69\ud83c\udffd\ud83c\udfa4", "emj_1f469_1f3fd_200d_1f3a4.svg" );
@@ -2426,6 +2446,8 @@
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf3e", "emj_1f469_1f3fe_200d_1f33e.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\ud83c\udf73", "emj_1f469_1f3fe_200d_1f373.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf73", "emj_1f469_1f3fe_200d_1f373.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf7c", "emj_1f469_1f3fe_200d_1f37c.svg" );
+		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf84", "emj_1f469_1f3fe_200d_1f384.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\ud83c\udf93", "emj_1f469_1f3fe_200d_1f393.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf93", "emj_1f469_1f3fe_200d_1f393.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\ud83c\udfa4", "emj_1f469_1f3fe_200d_1f3a4.svg" );
@@ -2447,6 +2469,8 @@
 		code( "\ud83d\udc69\ud83c\udffe\ud83d\ude80", "emj_1f469_1f3fe_200d_1f680.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83d\ude80", "emj_1f469_1f3fe_200d_1f680.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\ud83d\ude92", "emj_1f469_1f3fe_200d_1f692.svg" );
+	}
+	private static void init25(){
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83d\ude92", "emj_1f469_1f3fe_200d_1f692.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fe_200d_1f91d_200d_1f468_1f3fb.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fe_200d_1f91d_200d_1f468_1f3fc.svg" );
@@ -2469,13 +2493,13 @@
 		code( "\ud83d\udc69\ud83c\udffe\u2696", "emj_1f469_1f3fe_200d_2696_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u200d\u2708\ufe0f", "emj_1f469_1f3fe_200d_2708_fe0f.svg" );
 		code( "\ud83d\udc69\ud83c\udffe\u2708", "emj_1f469_1f3fe_200d_2708_fe0f.svg" );
-	}
-	private static void init25(){
 		code( "\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3ff.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\ud83c\udf3e", "emj_1f469_1f3ff_200d_1f33e.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf3e", "emj_1f469_1f3ff_200d_1f33e.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\ud83c\udf73", "emj_1f469_1f3ff_200d_1f373.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf73", "emj_1f469_1f3ff_200d_1f373.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf7c", "emj_1f469_1f3ff_200d_1f37c.svg" );
+		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf84", "emj_1f469_1f3ff_200d_1f384.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\ud83c\udf93", "emj_1f469_1f3ff_200d_1f393.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf93", "emj_1f469_1f3ff_200d_1f393.svg" );
 		code( "\ud83d\udc69\ud83c\udfff\ud83c\udfa4", "emj_1f469_1f3ff_200d_1f3a4.svg" );
@@ -2523,6 +2547,8 @@
 		code( "\ud83d\udc69\u200d\ud83c\udf3e", "emj_1f469_200d_1f33e.svg" );
 		code( "\ud83d\udc69\ud83c\udf73", "emj_1f469_200d_1f373.svg" );
 		code( "\ud83d\udc69\u200d\ud83c\udf73", "emj_1f469_200d_1f373.svg" );
+		code( "\ud83d\udc69\u200d\ud83c\udf7c", "emj_1f469_200d_1f37c.svg" );
+		code( "\ud83d\udc69\u200d\ud83c\udf84", "emj_1f469_200d_1f384.svg" );
 		code( "\ud83d\udc69\ud83c\udf93", "emj_1f469_200d_1f393.svg" );
 		code( "\ud83d\udc69\u200d\ud83c\udf93", "emj_1f469_200d_1f393.svg" );
 		code( "\ud83d\udc69\ud83c\udfa4", "emj_1f469_200d_1f3a4.svg" );
@@ -2546,6 +2572,8 @@
 		code( "\ud83d\udc69\ud83d\udc69\ud83d\udc66", "emj_1f469_200d_1f469_200d_1f466.svg" );
 		code( "\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc66", "emj_1f469_200d_1f469_200d_1f466.svg" );
 		code( "\ud83d\udc69\ud83d\udc69\ud83d\udc66\ud83d\udc66", "emj_1f469_200d_1f469_200d_1f466_200d_1f466.svg" );
+	}
+	private static void init26(){
 		code( "\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66", "emj_1f469_200d_1f469_200d_1f466_200d_1f466.svg" );
 		code( "\ud83d\udc69\ud83d\udc69\ud83d\udc67", "emj_1f469_200d_1f469_200d_1f467.svg" );
 		code( "\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc67", "emj_1f469_200d_1f469_200d_1f467.svg" );
@@ -2572,8 +2600,6 @@
 		code( "\ud83d\udc69\u200d\ud83e\uddb3", "emj_1f469_200d_1f9b3.svg" );
 		code( "\ud83d\udc69\u200d\ud83e\uddbc", "emj_1f469_200d_1f9bc.svg" );
 		code( "\ud83d\udc69\u200d\ud83e\uddbd", "emj_1f469_200d_1f9bd.svg" );
-	}
-	private static void init26(){
 		code( "\ud83d\udc69\u200d\u2695\ufe0f", "emj_1f469_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\u2695", "emj_1f469_200d_2695_fe0f.svg" );
 		code( "\ud83d\udc69\u200d\u2696\ufe0f", "emj_1f469_200d_2696_fe0f.svg" );
@@ -2649,6 +2675,8 @@
 		code( "\ueadb", "emj_1f46f.svg" );
 		code( "\udbb8\udda2", "emj_1f46f.svg" );
 		code( "\ud83d\udc6f\u200d\u2640\ufe0f", "emj_1f46f_200d_2640_fe0f.svg" );
+	}
+	private static void init27(){
 		code( "\ud83d\udc6f\u2640", "emj_1f46f_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc6f\u200d\u2642\ufe0f", "emj_1f46f_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc6f\u2642", "emj_1f46f_200d_2642_fe0f.svg" );
@@ -2656,10 +2684,22 @@
 		code( "\ueae9", "emj_1f470.svg" );
 		code( "\udbb8\udda3", "emj_1f470.svg" );
 		code( "\ud83d\udc70\ud83c\udffb", "emj_1f470_1f3fb.svg" );
+		code( "\ud83d\udc70\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f470_1f3fb_200d_2640_fe0f.svg" );
+		code( "\ud83d\udc70\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f470_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc70\ud83c\udffc", "emj_1f470_1f3fc.svg" );
+		code( "\ud83d\udc70\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f470_1f3fc_200d_2640_fe0f.svg" );
+		code( "\ud83d\udc70\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f470_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc70\ud83c\udffd", "emj_1f470_1f3fd.svg" );
+		code( "\ud83d\udc70\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f470_1f3fd_200d_2640_fe0f.svg" );
+		code( "\ud83d\udc70\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f470_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc70\ud83c\udffe", "emj_1f470_1f3fe.svg" );
+		code( "\ud83d\udc70\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f470_1f3fe_200d_2640_fe0f.svg" );
+		code( "\ud83d\udc70\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f470_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc70\ud83c\udfff", "emj_1f470_1f3ff.svg" );
+		code( "\ud83d\udc70\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f470_1f3ff_200d_2640_fe0f.svg" );
+		code( "\ud83d\udc70\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f470_1f3ff_200d_2642_fe0f.svg" );
+		code( "\ud83d\udc70\u200d\u2640\ufe0f", "emj_1f470_200d_2640_fe0f.svg" );
+		code( "\ud83d\udc70\u200d\u2642\ufe0f", "emj_1f470_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc71", "emj_1f471.svg" );
 		code( "\ue515", "emj_1f471.svg" );
 		code( "\ueb13", "emj_1f471.svg" );
@@ -2675,8 +2715,6 @@
 		code( "\ud83d\udc71\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f471_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udffc\u2642", "emj_1f471_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udffd", "emj_1f471_1f3fd.svg" );
-	}
-	private static void init27(){
 		code( "\ud83d\udc71\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f471_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udffd\u2640", "emj_1f471_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc71\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f471_1f3fd_200d_2642_fe0f.svg" );
@@ -2740,6 +2778,8 @@
 		code( "\ud83d\udc74", "emj_1f474.svg" );
 		code( "\ue518", "emj_1f474.svg" );
 		code( "\ueb16", "emj_1f474.svg" );
+	}
+	private static void init28(){
 		code( "\udbb8\udda7", "emj_1f474.svg" );
 		code( "\ud83d\udc74\ud83c\udffb", "emj_1f474_1f3fb.svg" );
 		code( "\ud83d\udc74\ud83c\udffc", "emj_1f474_1f3fc.svg" );
@@ -2778,8 +2818,6 @@
 		code( "\ud83d\udc77\ud83c\udffc\u2640", "emj_1f477_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc77\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f477_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc77\ud83c\udffc\u2642", "emj_1f477_1f3fc_200d_2642_fe0f.svg" );
-	}
-	private static void init28(){
 		code( "\ud83d\udc77\ud83c\udffd", "emj_1f477_1f3fd.svg" );
 		code( "\ud83d\udc77\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f477_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc77\ud83c\udffd\u2640", "emj_1f477_1f3fd_200d_2640_fe0f.svg" );
@@ -2843,6 +2881,8 @@
 		code( "\ue11c", "emj_1f480.svg" );
 		code( "\ue4f8", "emj_1f480.svg" );
 		code( "\udbb8\uddb3", "emj_1f480.svg" );
+	}
+	private static void init29(){
 		code( "\ud83d\udc81", "emj_1f481.svg" );
 		code( "\ue253", "emj_1f481.svg" );
 		code( "\udbb8\uddb4", "emj_1f481.svg" );
@@ -2881,8 +2921,6 @@
 		code( "\ud83d\udc82\ud83c\udffb", "emj_1f482_1f3fb.svg" );
 		code( "\ud83d\udc82\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f482_1f3fb_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc82\ud83c\udffb\u2640", "emj_1f482_1f3fb_200d_2640_fe0f.svg" );
-	}
-	private static void init29(){
 		code( "\ud83d\udc82\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f482_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc82\ud83c\udffb\u2642", "emj_1f482_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc82\ud83c\udffc", "emj_1f482_1f3fc.svg" );
@@ -2946,6 +2984,8 @@
 		code( "\ud83d\udc86\ud83c\udffc\u2640", "emj_1f486_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc86\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f486_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc86\ud83c\udffc\u2642", "emj_1f486_1f3fc_200d_2642_fe0f.svg" );
+	}
+	private static void init30(){
 		code( "\ud83d\udc86\ud83c\udffd", "emj_1f486_1f3fd.svg" );
 		code( "\ud83d\udc86\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f486_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc86\ud83c\udffd\u2640", "emj_1f486_1f3fd_200d_2640_fe0f.svg" );
@@ -2984,8 +3024,6 @@
 		code( "\ud83d\udc87\ud83c\udffd\u2640", "emj_1f487_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc87\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f487_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\udc87\ud83c\udffd\u2642", "emj_1f487_1f3fd_200d_2642_fe0f.svg" );
-	}
-	private static void init30(){
 		code( "\ud83d\udc87\ud83c\udffe", "emj_1f487_1f3fe.svg" );
 		code( "\ud83d\udc87\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f487_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83d\udc87\ud83c\udffe\u2640", "emj_1f487_1f3fe_200d_2640_fe0f.svg" );
@@ -3049,6 +3087,8 @@
 		code( "\ud83d\udc93", "emj_1f493.svg" );
 		code( "\ue327", "emj_1f493.svg" );
 		code( "\ueb75", "emj_1f493.svg" );
+	}
+	private static void init31(){
 		code( "\udbba\udf0d", "emj_1f493.svg" );
 		code( "\ud83d\udc94", "emj_1f494.svg" );
 		code( "\ue023", "emj_1f494.svg" );
@@ -3087,8 +3127,6 @@
 		code( "\ueaaa", "emj_1f49c.svg" );
 		code( "\udbba\udf16", "emj_1f49c.svg" );
 		code( "\ud83d\udc9d", "emj_1f49d.svg" );
-	}
-	private static void init31(){
 		code( "\ue437", "emj_1f49d.svg" );
 		code( "\ueb54", "emj_1f49d.svg" );
 		code( "\udbba\udf17", "emj_1f49d.svg" );
@@ -3152,6 +3190,8 @@
 		code( "\ud83d\udcaa\ud83c\udffc", "emj_1f4aa_1f3fc.svg" );
 		code( "\ud83d\udcaa\ud83c\udffd", "emj_1f4aa_1f3fd.svg" );
 		code( "\ud83d\udcaa\ud83c\udffe", "emj_1f4aa_1f3fe.svg" );
+	}
+	private static void init32(){
 		code( "\ud83d\udcaa\ud83c\udfff", "emj_1f4aa_1f3ff.svg" );
 		code( "\ud83d\udcab", "emj_1f4ab.svg" );
 		code( "\ueb5c", "emj_1f4ab.svg" );
@@ -3190,8 +3230,6 @@
 		code( "\ud83d\udcb6", "emj_1f4b6.svg" );
 		code( "\ud83d\udcb7", "emj_1f4b7.svg" );
 		code( "\ud83d\udcb8", "emj_1f4b8.svg" );
-	}
-	private static void init32(){
 		code( "\ueb5b", "emj_1f4b8.svg" );
 		code( "\udbb9\udce4", "emj_1f4b8.svg" );
 		code( "\ud83d\udcb9", "emj_1f4b9.svg" );
@@ -3255,6 +3293,8 @@
 		code( "\ud83d\udcc9", "emj_1f4c9.svg" );
 		code( "\ue576", "emj_1f4c9.svg" );
 		code( "\udbb9\udd4c", "emj_1f4c9.svg" );
+	}
+	private static void init33(){
 		code( "\ud83d\udcca", "emj_1f4ca.svg" );
 		code( "\ue574", "emj_1f4ca.svg" );
 		code( "\udbb9\udd4a", "emj_1f4ca.svg" );
@@ -3293,8 +3333,6 @@
 		code( "\ue568", "emj_1f4d5.svg" );
 		code( "\udbb9\udd02", "emj_1f4d5.svg" );
 		code( "\ud83d\udcd6", "emj_1f4d6.svg" );
-	}
-	private static void init33(){
 		code( "\ue148", "emj_1f4d6.svg" );
 		code( "\ue49f", "emj_1f4d6.svg" );
 		code( "\udbb9\udd46", "emj_1f4d6.svg" );
@@ -3358,6 +3396,8 @@
 		code( "\ue6d3", "emj_1f4e7.svg" );
 		code( "\ueb71", "emj_1f4e7.svg" );
 		code( "\udbba\udf92", "emj_1f4e7.svg" );
+	}
+	private static void init34(){
 		code( "\ud83d\udce8", "emj_1f4e8.svg" );
 		code( "\ue591", "emj_1f4e8.svg" );
 		code( "\udbb9\udd2a", "emj_1f4e8.svg" );
@@ -3396,8 +3436,6 @@
 		code( "\ue6ce", "emj_1f4f2.svg" );
 		code( "\ueb08", "emj_1f4f2.svg" );
 		code( "\udbb9\udd26", "emj_1f4f2.svg" );
-	}
-	private static void init34(){
 		code( "\ud83d\udcf3", "emj_1f4f3.svg" );
 		code( "\ue250", "emj_1f4f3.svg" );
 		code( "\uea90", "emj_1f4f3.svg" );
@@ -3461,6 +3499,8 @@
 		code( "\ud83d\udd0d", "emj_1f50d.svg" );
 		code( "\ue114", "emj_1f50d.svg" );
 		code( "\ue518", "emj_1f50d.svg" );
+	}
+	private static void init35(){
 		code( "\ue6dc", "emj_1f50d.svg" );
 		code( "\udbba\udf85", "emj_1f50d.svg" );
 		code( "\ud83d\udd0e", "emj_1f50e.svg" );
@@ -3499,8 +3539,6 @@
 		code( "\udbba\udf4b", "emj_1f517.svg" );
 		code( "\ud83d\udd18", "emj_1f518.svg" );
 		code( "\ueb04", "emj_1f518.svg" );
-	}
-	private static void init35(){
 		code( "\udbba\udf8c", "emj_1f518.svg" );
 		code( "\ud83d\udd19", "emj_1f519.svg" );
 		code( "\ueb06", "emj_1f519.svg" );
@@ -3564,6 +3602,8 @@
 		code( "\ue113", "emj_1f52b.svg" );
 		code( "\ue50a", "emj_1f52b.svg" );
 		code( "\udbb9\udcf5", "emj_1f52b.svg" );
+	}
+	private static void init36(){
 		code( "\ud83d\udd2c", "emj_1f52c.svg" );
 		code( "\ud83d\udd2d", "emj_1f52d.svg" );
 		code( "\ud83d\udd2e", "emj_1f52e.svg" );
@@ -3602,8 +3642,6 @@
 		code( "\udbba\udf74", "emj_1f537.svg" );
 		code( "\ud83d\udd38", "emj_1f538.svg" );
 		code( "\ue536", "emj_1f538.svg" );
-	}
-	private static void init36(){
 		code( "\udbba\udf75", "emj_1f538.svg" );
 		code( "\ud83d\udd39", "emj_1f539.svg" );
 		code( "\ue537", "emj_1f539.svg" );
@@ -3667,6 +3705,8 @@
 		code( "\ud83d\udd59", "emj_1f559.svg" );
 		code( "\ue02d", "emj_1f559.svg" );
 		code( "\ue594", "emj_1f559.svg" );
+	}
+	private static void init37(){
 		code( "\udbb8\udc27", "emj_1f559.svg" );
 		code( "\ud83d\udd5a", "emj_1f55a.svg" );
 		code( "\ue02e", "emj_1f55a.svg" );
@@ -3705,8 +3745,6 @@
 		code( "\ud83d\udd74\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f574_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\udd74\ud83c\udffe", "emj_1f574_1f3fe.svg" );
 		code( "\ud83d\udd74\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f574_1f3fe_200d_2640_fe0f.svg" );
-	}
-	private static void init37(){
 		code( "\ud83d\udd74\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f574_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83d\udd74\ud83c\udfff", "emj_1f574_1f3ff.svg" );
 		code( "\ud83d\udd74\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f574_1f3ff_200d_2640_fe0f.svg" );
@@ -3770,6 +3808,8 @@
 		code( "\ud83d\udd8c\ufe0f", R.drawable.emj_1f58c_fe0f );
 		code( "\ud83d\udd8d", R.drawable.emj_1f58d_fe0f );
 		code( "\ud83d\udd8d\ufe0f", R.drawable.emj_1f58d_fe0f );
+	}
+	private static void init38(){
 		code( "\ud83d\udd90\ud83c\udffb", "emj_1f590_1f3fb.svg" );
 		code( "\ud83d\udd90\ud83c\udffc", "emj_1f590_1f3fc.svg" );
 		code( "\ud83d\udd90\ud83c\udffd", "emj_1f590_1f3fd.svg" );
@@ -3808,8 +3848,6 @@
 		code( "\ud83d\uddc4\ufe0f", R.drawable.emj_1f5c4_fe0f );
 		code( "\ud83d\uddd1", R.drawable.emj_1f5d1_fe0f );
 		code( "\ud83d\uddd1\ufe0f", R.drawable.emj_1f5d1_fe0f );
-	}
-	private static void init38(){
 		code( "\ud83d\uddd2", R.drawable.emj_1f5d2_fe0f );
 		code( "\ud83d\uddd2\ufe0f", R.drawable.emj_1f5d2_fe0f );
 		code( "\ud83d\uddd3", R.drawable.emj_1f5d3_fe0f );
@@ -3873,6 +3911,8 @@
 		code( "\ue471\ue5b1", "emj_1f605.svg" );
 		code( "\ue722", "emj_1f605.svg" );
 		code( "\udbb8\udf31", "emj_1f605.svg" );
+	}
+	private static void init39(){
 		code( "\ud83d\ude06", "emj_1f606.svg" );
 		code( "\ue72a", "emj_1f606.svg" );
 		code( "\udbb8\udf32", "emj_1f606.svg" );
@@ -3911,8 +3951,6 @@
 		code( "\ud83d\ude12", "emj_1f612.svg" );
 		code( "\ue40e", "emj_1f612.svg" );
 		code( "\ue725", "emj_1f612.svg" );
-	}
-	private static void init39(){
 		code( "\ueac9", "emj_1f612.svg" );
 		code( "\udbb8\udf26", "emj_1f612.svg" );
 		code( "\ud83d\ude13", "emj_1f613.svg" );
@@ -3976,6 +4014,8 @@
 		code( "\ue72b", "emj_1f623.svg" );
 		code( "\ueac2", "emj_1f623.svg" );
 		code( "\udbb8\udf3c", "emj_1f623.svg" );
+	}
+	private static void init40(){
 		code( "\ud83d\ude24", "emj_1f624.svg" );
 		code( "\ueac1", "emj_1f624.svg" );
 		code( "\udbb8\udf28", "emj_1f624.svg" );
@@ -4014,8 +4054,6 @@
 		code( "\ud83d\ude31", "emj_1f631.svg" );
 		code( "\ue107", "emj_1f631.svg" );
 		code( "\ue5c5", "emj_1f631.svg" );
-	}
-	private static void init40(){
 		code( "\ue757", "emj_1f631.svg" );
 		code( "\udbb8\udf41", "emj_1f631.svg" );
 		code( "\ud83d\ude32", "emj_1f632.svg" );
@@ -4079,6 +4117,8 @@
 		code( "\ud83d\ude45\ud83c\udffc", "emj_1f645_1f3fc.svg" );
 		code( "\ud83d\ude45\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f645_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83d\ude45\ud83c\udffc\u2640", "emj_1f645_1f3fc_200d_2640_fe0f.svg" );
+	}
+	private static void init41(){
 		code( "\ud83d\ude45\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f645_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude45\ud83c\udffc\u2642", "emj_1f645_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude45\ud83c\udffd", "emj_1f645_1f3fd.svg" );
@@ -4117,8 +4157,6 @@
 		code( "\ud83d\ude46\ud83c\udffd", "emj_1f646_1f3fd.svg" );
 		code( "\ud83d\ude46\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f646_1f3fd_200d_2640_fe0f.svg" );
 		code( "\ud83d\ude46\ud83c\udffd\u2640", "emj_1f646_1f3fd_200d_2640_fe0f.svg" );
-	}
-	private static void init41(){
 		code( "\ud83d\ude46\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f646_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude46\ud83c\udffd\u2642", "emj_1f646_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude46\ud83c\udffe", "emj_1f646_1f3fe.svg" );
@@ -4182,6 +4220,8 @@
 		code( "\udbb8\udf57", "emj_1f64b.svg" );
 		code( "\ud83d\ude4b\ud83c\udffb", "emj_1f64b_1f3fb.svg" );
 		code( "\ud83d\ude4b\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f64b_1f3fb_200d_2640_fe0f.svg" );
+	}
+	private static void init42(){
 		code( "\ud83d\ude4b\ud83c\udffb\u2640", "emj_1f64b_1f3fb_200d_2640_fe0f.svg" );
 		code( "\ud83d\ude4b\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f64b_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude4b\ud83c\udffb\u2642", "emj_1f64b_1f3fb_200d_2642_fe0f.svg" );
@@ -4220,8 +4260,6 @@
 		code( "\ud83d\ude4c\ud83c\udfff", "emj_1f64c_1f3ff.svg" );
 		code( "\ud83d\ude4d", "emj_1f64d.svg" );
 		code( "\ueb87", "emj_1f64d.svg" );
-	}
-	private static void init42(){
 		code( "\udbb8\udf59", "emj_1f64d.svg" );
 		code( "\ud83d\ude4d\ud83c\udffb", "emj_1f64d_1f3fb.svg" );
 		code( "\ud83d\ude4d\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f64d_1f3fb_200d_2640_fe0f.svg" );
@@ -4285,6 +4323,8 @@
 		code( "\ud83d\ude4e\u200d\u2642\ufe0f", "emj_1f64e_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude4e\u2642", "emj_1f64e_200d_2642_fe0f.svg" );
 		code( "\ud83d\ude4f", "emj_1f64f.svg" );
+	}
+	private static void init43(){
 		code( "\ue41d", "emj_1f64f.svg" );
 		code( "\uead2", "emj_1f64f.svg" );
 		code( "\udbb8\udf5b", "emj_1f64f.svg" );
@@ -4323,8 +4363,6 @@
 		code( "\ud83d\ude88", "emj_1f688.svg" );
 		code( "\ud83d\ude89", "emj_1f689.svg" );
 		code( "\ue039", "emj_1f689.svg" );
-	}
-	private static void init43(){
 		code( "\ueb6d", "emj_1f689.svg" );
 		code( "\udbb9\udfec", "emj_1f689.svg" );
 		code( "\ud83d\ude8a", "emj_1f68a.svg" );
@@ -4388,6 +4426,8 @@
 		code( "\uea82", "emj_1f6a2.svg" );
 		code( "\udbb9\udfe8", "emj_1f6a2.svg" );
 		code( "\ud83d\udea3", "emj_1f6a3.svg" );
+	}
+	private static void init44(){
 		code( "\ud83d\udea3\ud83c\udffb", "emj_1f6a3_1f3fb.svg" );
 		code( "\ud83d\udea3\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f6a3_1f3fb_200d_2640_fe0f.svg" );
 		code( "\ud83d\udea3\ud83c\udffb\u2640", "emj_1f6a3_1f3fb_200d_2640_fe0f.svg" );
@@ -4426,8 +4466,6 @@
 		code( "\ue46a", "emj_1f6a5.svg" );
 		code( "\ue66d", "emj_1f6a5.svg" );
 		code( "\udbb9\udff7", "emj_1f6a5.svg" );
-	}
-	private static void init44(){
 		code( "\ud83d\udea6", "emj_1f6a6.svg" );
 		code( "\ud83d\udea7", "emj_1f6a7.svg" );
 		code( "\ue137", "emj_1f6a7.svg" );
@@ -4491,6 +4529,8 @@
 		code( "\ud83d\udeb4\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f6b4_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83d\udeb4\ud83c\udfff\u2640", "emj_1f6b4_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83d\udeb4\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f6b4_1f3ff_200d_2642_fe0f.svg" );
+	}
+	private static void init45(){
 		code( "\ud83d\udeb4\ud83c\udfff\u2642", "emj_1f6b4_1f3ff_200d_2642_fe0f.svg" );
 		code( "\ud83d\udeb4\u200d\u2640\ufe0f", "emj_1f6b4_200d_2640_fe0f.svg" );
 		code( "\ud83d\udeb4\u2640", "emj_1f6b4_200d_2640_fe0f.svg" );
@@ -4529,8 +4569,6 @@
 		code( "\ud83d\udeb6", "emj_1f6b6.svg" );
 		code( "\ue201", "emj_1f6b6.svg" );
 		code( "\ueb72", "emj_1f6b6.svg" );
-	}
-	private static void init45(){
 		code( "\udbb9\udff0", "emj_1f6b6.svg" );
 		code( "\ud83d\udeb6\ud83c\udffb", "emj_1f6b6_1f3fb.svg" );
 		code( "\ud83d\udeb6\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f6b6_1f3fb_200d_2640_fe0f.svg" );
@@ -4594,6 +4632,8 @@
 		code( "\udbb9\udd05", "emj_1f6c0.svg" );
 		code( "\ud83d\udec0\ud83c\udffb", "emj_1f6c0_1f3fb.svg" );
 		code( "\ud83d\udec0\ud83c\udffc", "emj_1f6c0_1f3fc.svg" );
+	}
+	private static void init46(){
 		code( "\ud83d\udec0\ud83c\udffd", "emj_1f6c0_1f3fd.svg" );
 		code( "\ud83d\udec0\ud83c\udffe", "emj_1f6c0_1f3fe.svg" );
 		code( "\ud83d\udec0\ud83c\udfff", "emj_1f6c0_1f3ff.svg" );
@@ -4620,6 +4660,8 @@
 		code( "\ud83d\uded1", "emj_1f6d1.svg" );
 		code( "\ud83d\uded2", "emj_1f6d2.svg" );
 		code( "\ud83d\uded5", "emj_1f6d5.svg" );
+		code( "\ud83d\uded6", "emj_1f6d6.svg" );
+		code( "\ud83d\uded7", "emj_1f6d7.svg" );
 		code( "\ud83d\udee0", R.drawable.emj_1f6e0_fe0f );
 		code( "\ud83d\udee0\ufe0f", R.drawable.emj_1f6e0_fe0f );
 		code( "\ud83d\udee1", R.drawable.emj_1f6e1_fe0f );
@@ -4632,8 +4674,6 @@
 		code( "\ud83d\udee4\ufe0f", R.drawable.emj_1f6e4_fe0f );
 		code( "\ud83d\udee5", R.drawable.emj_1f6e5_fe0f );
 		code( "\ud83d\udee5\ufe0f", R.drawable.emj_1f6e5_fe0f );
-	}
-	private static void init46(){
 		code( "\ud83d\udee9", R.drawable.emj_1f6e9_fe0f );
 		code( "\ud83d\udee9\ufe0f", R.drawable.emj_1f6e9_fe0f );
 		code( "\ud83d\udeeb", "emj_1f6eb.svg" );
@@ -4649,6 +4689,8 @@
 		code( "\ud83d\udef8", "emj_1f6f8.svg" );
 		code( "\ud83d\udef9", "emj_1f6f9.svg" );
 		code( "\ud83d\udefa", "emj_1f6fa.svg" );
+		code( "\ud83d\udefb", "emj_1f6fb.svg" );
+		code( "\ud83d\udefc", "emj_1f6fc.svg" );
 		code( "\ud83d\udfe0", "emj_1f7e0.svg" );
 		code( "\ud83d\udfe1", "emj_1f7e1.svg" );
 		code( "\ud83d\udfe2", "emj_1f7e2.svg" );
@@ -4661,6 +4703,12 @@
 		code( "\ud83d\udfe9", "emj_1f7e9.svg" );
 		code( "\ud83d\udfea", "emj_1f7ea.svg" );
 		code( "\ud83d\udfeb", "emj_1f7eb.svg" );
+		code( "\ud83e\udd0c", "emj_1f90c.svg" );
+		code( "\ud83e\udd0c\ud83c\udffb", "emj_1f90c_1f3fb.svg" );
+		code( "\ud83e\udd0c\ud83c\udffc", "emj_1f90c_1f3fc.svg" );
+		code( "\ud83e\udd0c\ud83c\udffd", "emj_1f90c_1f3fd.svg" );
+		code( "\ud83e\udd0c\ud83c\udffe", "emj_1f90c_1f3fe.svg" );
+		code( "\ud83e\udd0c\ud83c\udfff", "emj_1f90c_1f3ff.svg" );
 		code( "\ud83e\udd0d", "emj_1f90d.svg" );
 		code( "\ud83e\udd0e", "emj_1f90e.svg" );
 		code( "\ud83e\udd0f", "emj_1f90f.svg" );
@@ -4687,6 +4735,8 @@
 		code( "\ud83e\udd19\ud83c\udffb", "emj_1f919_1f3fb.svg" );
 		code( "\ud83e\udd19\ud83c\udffc", "emj_1f919_1f3fc.svg" );
 		code( "\ud83e\udd19\ud83c\udffd", "emj_1f919_1f3fd.svg" );
+	}
+	private static void init47(){
 		code( "\ud83e\udd19\ud83c\udffe", "emj_1f919_1f3fe.svg" );
 		code( "\ud83e\udd19\ud83c\udfff", "emj_1f919_1f3ff.svg" );
 		code( "\ud83e\udd1a", "emj_1f91a.svg" );
@@ -4735,8 +4785,6 @@
 		code( "\ud83e\udd26\ud83c\udffc", "emj_1f926_1f3fc.svg" );
 		code( "\ud83e\udd26\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f926_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd26\ud83c\udffc\u2640", "emj_1f926_1f3fc_200d_2640_fe0f.svg" );
-	}
-	private static void init47(){
 		code( "\ud83e\udd26\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f926_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd26\ud83c\udffc\u2642", "emj_1f926_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd26\ud83c\udffd", "emj_1f926_1f3fd.svg" );
@@ -4790,6 +4838,8 @@
 		code( "\ud83e\udd33\ud83c\udffc", "emj_1f933_1f3fc.svg" );
 		code( "\ud83e\udd33\ud83c\udffd", "emj_1f933_1f3fd.svg" );
 		code( "\ud83e\udd33\ud83c\udffe", "emj_1f933_1f3fe.svg" );
+	}
+	private static void init48(){
 		code( "\ud83e\udd33\ud83c\udfff", "emj_1f933_1f3ff.svg" );
 		code( "\ud83e\udd34", "emj_1f934.svg" );
 		code( "\ud83e\udd34\ud83c\udffb", "emj_1f934_1f3fb.svg" );
@@ -4838,8 +4888,6 @@
 		code( "\ud83e\udd37\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f937_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd37\ud83c\udffd\u2642", "emj_1f937_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd37\ud83c\udffe", "emj_1f937_1f3fe.svg" );
-	}
-	private static void init48(){
 		code( "\ud83e\udd37\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f937_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd37\ud83c\udffe\u2640", "emj_1f937_1f3fe_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd37\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f937_1f3fe_200d_2642_fe0f.svg" );
@@ -4893,6 +4941,8 @@
 		code( "\ud83e\udd39\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f939_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd39\ud83c\udffc\u2640", "emj_1f939_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd39\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f939_1f3fc_200d_2642_fe0f.svg" );
+	}
+	private static void init49(){
 		code( "\ud83e\udd39\ud83c\udffc\u2642", "emj_1f939_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd39\ud83c\udffd", "emj_1f939_1f3fd.svg" );
 		code( "\ud83e\udd39\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f939_1f3fd_200d_2640_fe0f.svg" );
@@ -4941,8 +4991,6 @@
 		code( "\ud83e\udd3d\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f93d_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd3d\ud83c\udffe\u2642", "emj_1f93d_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83e\udd3d\ud83c\udfff", "emj_1f93d_1f3ff.svg" );
-	}
-	private static void init49(){
 		code( "\ud83e\udd3d\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f93d_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd3d\ud83c\udfff\u2640", "emj_1f93d_1f3ff_200d_2640_fe0f.svg" );
 		code( "\ud83e\udd3d\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f93d_1f3ff_200d_2642_fe0f.svg" );
@@ -4996,6 +5044,8 @@
 		code( "\ud83e\udd4c", "emj_1f94c.svg" );
 		code( "\ud83e\udd4d", "emj_1f94d.svg" );
 		code( "\ud83e\udd4e", "emj_1f94e.svg" );
+	}
+	private static void init50(){
 		code( "\ud83e\udd4f", "emj_1f94f.svg" );
 		code( "\ud83e\udd50", "emj_1f950.svg" );
 		code( "\ud83e\udd51", "emj_1f951.svg" );
@@ -5031,10 +5081,18 @@
 		code( "\ud83e\udd6f", "emj_1f96f.svg" );
 		code( "\ud83e\udd70", "emj_1f970.svg" );
 		code( "\ud83e\udd71", "emj_1f971.svg" );
+		code( "\ud83e\udd72", "emj_1f972.svg" );
 		code( "\ud83e\udd73", "emj_1f973.svg" );
 		code( "\ud83e\udd74", "emj_1f974.svg" );
 		code( "\ud83e\udd75", "emj_1f975.svg" );
 		code( "\ud83e\udd76", "emj_1f976.svg" );
+		code( "\ud83e\udd77", "emj_1f977.svg" );
+		code( "\ud83e\udd77\ud83c\udffb", "emj_1f977_1f3fb.svg" );
+		code( "\ud83e\udd77\ud83c\udffc", "emj_1f977_1f3fc.svg" );
+		code( "\ud83e\udd77\ud83c\udffd", "emj_1f977_1f3fd.svg" );
+		code( "\ud83e\udd77\ud83c\udffe", "emj_1f977_1f3fe.svg" );
+		code( "\ud83e\udd77\ud83c\udfff", "emj_1f977_1f3ff.svg" );
+		code( "\ud83e\udd78", "emj_1f978.svg" );
 		code( "\ud83e\udd7a", "emj_1f97a.svg" );
 		code( "\ud83e\udd7b", "emj_1f97b.svg" );
 		code( "\ud83e\udd7c", "emj_1f97c.svg" );
@@ -5044,8 +5102,6 @@
 		code( "\ud83e\udd80", "emj_1f980.svg" );
 		code( "\ud83e\udd81", "emj_1f981.svg" );
 		code( "\ud83e\udd82", "emj_1f982.svg" );
-	}
-	private static void init50(){
 		code( "\ud83e\udd83", "emj_1f983.svg" );
 		code( "\ud83e\udd84", "emj_1f984.svg" );
 		code( "\ud83e\udd85", "emj_1f985.svg" );
@@ -5078,14 +5134,21 @@
 		code( "\ud83e\udda0", "emj_1f9a0.svg" );
 		code( "\ud83e\udda1", "emj_1f9a1.svg" );
 		code( "\ud83e\udda2", "emj_1f9a2.svg" );
+		code( "\ud83e\udda3", "emj_1f9a3.svg" );
+		code( "\ud83e\udda4", "emj_1f9a4.svg" );
 		code( "\ud83e\udda5", "emj_1f9a5.svg" );
 		code( "\ud83e\udda6", "emj_1f9a6.svg" );
 		code( "\ud83e\udda7", "emj_1f9a7.svg" );
 		code( "\ud83e\udda8", "emj_1f9a8.svg" );
 		code( "\ud83e\udda9", "emj_1f9a9.svg" );
 		code( "\ud83e\uddaa", "emj_1f9aa.svg" );
+		code( "\ud83e\uddab", "emj_1f9ab.svg" );
+		code( "\ud83e\uddac", "emj_1f9ac.svg" );
+		code( "\ud83e\uddad", "emj_1f9ad.svg" );
 		code( "\ud83e\uddae", "emj_1f9ae.svg" );
 		code( "\ud83e\uddaf", "emj_1f9af.svg" );
+	}
+	private static void init51(){
 		code( "\ud83e\uddb0", "emj_1f9b0.svg" );
 		code( "\ud83e\uddb1", "emj_1f9b1.svg" );
 		code( "\ud83e\uddb2", "emj_1f9b2.svg" );
@@ -5147,8 +5210,6 @@
 		code( "\ud83e\uddbb\ud83c\udffd", "emj_1f9bb_1f3fd.svg" );
 		code( "\ud83e\uddbb\ud83c\udffe", "emj_1f9bb_1f3fe.svg" );
 		code( "\ud83e\uddbb\ud83c\udfff", "emj_1f9bb_1f3ff.svg" );
-	}
-	private static void init51(){
 		code( "\ud83e\uddbc", "emj_1f9bc.svg" );
 		code( "\ud83e\uddbd", "emj_1f9bd.svg" );
 		code( "\ud83e\uddbe", "emj_1f9be.svg" );
@@ -5164,6 +5225,7 @@
 		code( "\ud83e\uddc8", "emj_1f9c8.svg" );
 		code( "\ud83e\uddc9", "emj_1f9c9.svg" );
 		code( "\ud83e\uddca", "emj_1f9ca.svg" );
+		code( "\ud83e\uddcb", "emj_1f9cb.svg" );
 		code( "\ud83e\uddcd", "emj_1f9cd.svg" );
 		code( "\ud83e\uddcd\ud83c\udffb", "emj_1f9cd_1f3fb.svg" );
 		code( "\ud83e\uddcd\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9cd_1f3fb_200d_2640_fe0f.svg" );
@@ -5188,6 +5250,8 @@
 		code( "\ud83e\uddce\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9ce_1f3fb_200d_2642_fe0f.svg" );
 		code( "\ud83e\uddce\ud83c\udffc", "emj_1f9ce_1f3fc.svg" );
 		code( "\ud83e\uddce\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9ce_1f3fc_200d_2640_fe0f.svg" );
+	}
+	private static void init52(){
 		code( "\ud83e\uddce\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9ce_1f3fc_200d_2642_fe0f.svg" );
 		code( "\ud83e\uddce\ud83c\udffd", "emj_1f9ce_1f3fd.svg" );
 		code( "\ud83e\uddce\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f9ce_1f3fd_200d_2640_fe0f.svg" );
@@ -5221,38 +5285,190 @@
 		code( "\ud83e\uddd0", "emj_1f9d0.svg" );
 		code( "\ud83e\uddd1", "emj_1f9d1.svg" );
 		code( "\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf3e", "emj_1f9d1_1f3fb_200d_1f33e.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf73", "emj_1f9d1_1f3fb_200d_1f373.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf7c", "emj_1f9d1_1f3fb_200d_1f37c.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf84", "emj_1f9d1_1f3fb_200d_1f384.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf93", "emj_1f9d1_1f3fb_200d_1f393.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfa4", "emj_1f9d1_1f3fb_200d_1f3a4.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfa8", "emj_1f9d1_1f3fb_200d_1f3a8.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfeb", "emj_1f9d1_1f3fb_200d_1f3eb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfed", "emj_1f9d1_1f3fb_200d_1f3ed.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udcbb", "emj_1f9d1_1f3fb_200d_1f4bb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udcbc", "emj_1f9d1_1f3fb_200d_1f4bc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udd27", "emj_1f9d1_1f3fb_200d_1f527.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udd2c", "emj_1f9d1_1f3fb_200d_1f52c.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\ude80", "emj_1f9d1_1f3fb_200d_1f680.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\ude92", "emj_1f9d1_1f3fb_200d_1f692.svg" );
 		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fb_200d_1f91d_200d_1f9d1_1f3fb.svg" );
 		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fb_200d_1f91d_200d_1f9d1_1f3fc.svg" );
 		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fb_200d_1f91d_200d_1f9d1_1f3fd.svg" );
 		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fb_200d_1f91d_200d_1f9d1_1f3fe.svg" );
 		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fb_200d_1f91d_200d_1f9d1_1f3ff.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddaf", "emj_1f9d1_1f3fb_200d_1f9af.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb0", "emj_1f9d1_1f3fb_200d_1f9b0.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb1", "emj_1f9d1_1f3fb_200d_1f9b1.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb2", "emj_1f9d1_1f3fb_200d_1f9b2.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb3", "emj_1f9d1_1f3fb_200d_1f9b3.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddbc", "emj_1f9d1_1f3fb_200d_1f9bc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddbd", "emj_1f9d1_1f3fb_200d_1f9bd.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\u2695\ufe0f", "emj_1f9d1_1f3fb_200d_2695_fe0f.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\u2696\ufe0f", "emj_1f9d1_1f3fb_200d_2696_fe0f.svg" );
+		code( "\ud83e\uddd1\ud83c\udffb\u200d\u2708\ufe0f", "emj_1f9d1_1f3fb_200d_2708_fe0f.svg" );
 		code( "\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf3e", "emj_1f9d1_1f3fc_200d_1f33e.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf73", "emj_1f9d1_1f3fc_200d_1f373.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf7c", "emj_1f9d1_1f3fc_200d_1f37c.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf84", "emj_1f9d1_1f3fc_200d_1f384.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf93", "emj_1f9d1_1f3fc_200d_1f393.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfa4", "emj_1f9d1_1f3fc_200d_1f3a4.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfa8", "emj_1f9d1_1f3fc_200d_1f3a8.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfeb", "emj_1f9d1_1f3fc_200d_1f3eb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfed", "emj_1f9d1_1f3fc_200d_1f3ed.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udcbb", "emj_1f9d1_1f3fc_200d_1f4bb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udcbc", "emj_1f9d1_1f3fc_200d_1f4bc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udd27", "emj_1f9d1_1f3fc_200d_1f527.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udd2c", "emj_1f9d1_1f3fc_200d_1f52c.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\ude80", "emj_1f9d1_1f3fc_200d_1f680.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\ude92", "emj_1f9d1_1f3fc_200d_1f692.svg" );
 		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fc_200d_1f91d_200d_1f9d1_1f3fb.svg" );
 		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fc_200d_1f91d_200d_1f9d1_1f3fc.svg" );
 		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fc_200d_1f91d_200d_1f9d1_1f3fd.svg" );
 		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fc_200d_1f91d_200d_1f9d1_1f3fe.svg" );
 		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fc_200d_1f91d_200d_1f9d1_1f3ff.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddaf", "emj_1f9d1_1f3fc_200d_1f9af.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb0", "emj_1f9d1_1f3fc_200d_1f9b0.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb1", "emj_1f9d1_1f3fc_200d_1f9b1.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb2", "emj_1f9d1_1f3fc_200d_1f9b2.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb3", "emj_1f9d1_1f3fc_200d_1f9b3.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddbc", "emj_1f9d1_1f3fc_200d_1f9bc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddbd", "emj_1f9d1_1f3fc_200d_1f9bd.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\u2695\ufe0f", "emj_1f9d1_1f3fc_200d_2695_fe0f.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\u2696\ufe0f", "emj_1f9d1_1f3fc_200d_2696_fe0f.svg" );
+		code( "\ud83e\uddd1\ud83c\udffc\u200d\u2708\ufe0f", "emj_1f9d1_1f3fc_200d_2708_fe0f.svg" );
 		code( "\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fd.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf3e", "emj_1f9d1_1f3fd_200d_1f33e.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf73", "emj_1f9d1_1f3fd_200d_1f373.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf7c", "emj_1f9d1_1f3fd_200d_1f37c.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf84", "emj_1f9d1_1f3fd_200d_1f384.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf93", "emj_1f9d1_1f3fd_200d_1f393.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfa4", "emj_1f9d1_1f3fd_200d_1f3a4.svg" );
+	}
+	private static void init53(){
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfa8", "emj_1f9d1_1f3fd_200d_1f3a8.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfeb", "emj_1f9d1_1f3fd_200d_1f3eb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfed", "emj_1f9d1_1f3fd_200d_1f3ed.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udcbb", "emj_1f9d1_1f3fd_200d_1f4bb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udcbc", "emj_1f9d1_1f3fd_200d_1f4bc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udd27", "emj_1f9d1_1f3fd_200d_1f527.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udd2c", "emj_1f9d1_1f3fd_200d_1f52c.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\ude80", "emj_1f9d1_1f3fd_200d_1f680.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\ude92", "emj_1f9d1_1f3fd_200d_1f692.svg" );
 		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fd_200d_1f91d_200d_1f9d1_1f3fb.svg" );
 		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fd_200d_1f91d_200d_1f9d1_1f3fc.svg" );
 		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fd_200d_1f91d_200d_1f9d1_1f3fd.svg" );
 		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fd_200d_1f91d_200d_1f9d1_1f3fe.svg" );
 		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fd_200d_1f91d_200d_1f9d1_1f3ff.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddaf", "emj_1f9d1_1f3fd_200d_1f9af.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb0", "emj_1f9d1_1f3fd_200d_1f9b0.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb1", "emj_1f9d1_1f3fd_200d_1f9b1.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb2", "emj_1f9d1_1f3fd_200d_1f9b2.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb3", "emj_1f9d1_1f3fd_200d_1f9b3.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddbc", "emj_1f9d1_1f3fd_200d_1f9bc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddbd", "emj_1f9d1_1f3fd_200d_1f9bd.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\u2695\ufe0f", "emj_1f9d1_1f3fd_200d_2695_fe0f.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\u2696\ufe0f", "emj_1f9d1_1f3fd_200d_2696_fe0f.svg" );
+		code( "\ud83e\uddd1\ud83c\udffd\u200d\u2708\ufe0f", "emj_1f9d1_1f3fd_200d_2708_fe0f.svg" );
 		code( "\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fe.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf3e", "emj_1f9d1_1f3fe_200d_1f33e.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf73", "emj_1f9d1_1f3fe_200d_1f373.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf7c", "emj_1f9d1_1f3fe_200d_1f37c.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf84", "emj_1f9d1_1f3fe_200d_1f384.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf93", "emj_1f9d1_1f3fe_200d_1f393.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfa4", "emj_1f9d1_1f3fe_200d_1f3a4.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfa8", "emj_1f9d1_1f3fe_200d_1f3a8.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfeb", "emj_1f9d1_1f3fe_200d_1f3eb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfed", "emj_1f9d1_1f3fe_200d_1f3ed.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udcbb", "emj_1f9d1_1f3fe_200d_1f4bb.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udcbc", "emj_1f9d1_1f3fe_200d_1f4bc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udd27", "emj_1f9d1_1f3fe_200d_1f527.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udd2c", "emj_1f9d1_1f3fe_200d_1f52c.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\ude80", "emj_1f9d1_1f3fe_200d_1f680.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\ude92", "emj_1f9d1_1f3fe_200d_1f692.svg" );
 		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fe_200d_1f91d_200d_1f9d1_1f3fb.svg" );
 		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fe_200d_1f91d_200d_1f9d1_1f3fc.svg" );
 		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fe_200d_1f91d_200d_1f9d1_1f3fd.svg" );
 		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fe_200d_1f91d_200d_1f9d1_1f3fe.svg" );
 		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fe_200d_1f91d_200d_1f9d1_1f3ff.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddaf", "emj_1f9d1_1f3fe_200d_1f9af.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb0", "emj_1f9d1_1f3fe_200d_1f9b0.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb1", "emj_1f9d1_1f3fe_200d_1f9b1.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb2", "emj_1f9d1_1f3fe_200d_1f9b2.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb3", "emj_1f9d1_1f3fe_200d_1f9b3.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddbc", "emj_1f9d1_1f3fe_200d_1f9bc.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddbd", "emj_1f9d1_1f3fe_200d_1f9bd.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\u2695\ufe0f", "emj_1f9d1_1f3fe_200d_2695_fe0f.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\u2696\ufe0f", "emj_1f9d1_1f3fe_200d_2696_fe0f.svg" );
+		code( "\ud83e\uddd1\ud83c\udffe\u200d\u2708\ufe0f", "emj_1f9d1_1f3fe_200d_2708_fe0f.svg" );
 		code( "\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3ff.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf3e", "emj_1f9d1_1f3ff_200d_1f33e.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf73", "emj_1f9d1_1f3ff_200d_1f373.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf7c", "emj_1f9d1_1f3ff_200d_1f37c.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf84", "emj_1f9d1_1f3ff_200d_1f384.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf93", "emj_1f9d1_1f3ff_200d_1f393.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfa4", "emj_1f9d1_1f3ff_200d_1f3a4.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfa8", "emj_1f9d1_1f3ff_200d_1f3a8.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfeb", "emj_1f9d1_1f3ff_200d_1f3eb.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfed", "emj_1f9d1_1f3ff_200d_1f3ed.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udcbb", "emj_1f9d1_1f3ff_200d_1f4bb.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udcbc", "emj_1f9d1_1f3ff_200d_1f4bc.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udd27", "emj_1f9d1_1f3ff_200d_1f527.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udd2c", "emj_1f9d1_1f3ff_200d_1f52c.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\ude80", "emj_1f9d1_1f3ff_200d_1f680.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\ude92", "emj_1f9d1_1f3ff_200d_1f692.svg" );
 		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3fb.svg" );
 		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3fc.svg" );
 		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3fd.svg" );
 		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3fe.svg" );
 		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3ff_200d_1f91d_200d_1f9d1_1f3ff.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddaf", "emj_1f9d1_1f3ff_200d_1f9af.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb0", "emj_1f9d1_1f3ff_200d_1f9b0.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb1", "emj_1f9d1_1f3ff_200d_1f9b1.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb2", "emj_1f9d1_1f3ff_200d_1f9b2.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb3", "emj_1f9d1_1f3ff_200d_1f9b3.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddbc", "emj_1f9d1_1f3ff_200d_1f9bc.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddbd", "emj_1f9d1_1f3ff_200d_1f9bd.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\u2695\ufe0f", "emj_1f9d1_1f3ff_200d_2695_fe0f.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\u2696\ufe0f", "emj_1f9d1_1f3ff_200d_2696_fe0f.svg" );
+		code( "\ud83e\uddd1\ud83c\udfff\u200d\u2708\ufe0f", "emj_1f9d1_1f3ff_200d_2708_fe0f.svg" );
+		code( "\ud83e\uddd1\u200d\ud83c\udf3e", "emj_1f9d1_200d_1f33e.svg" );
+		code( "\ud83e\uddd1\u200d\ud83c\udf73", "emj_1f9d1_200d_1f373.svg" );
+		code( "\ud83e\uddd1\u200d\ud83c\udf7c", "emj_1f9d1_200d_1f37c.svg" );
+		code( "\ud83e\uddd1\u200d\ud83c\udf84", "emj_1f9d1_200d_1f384.svg" );
+		code( "\ud83e\uddd1\u200d\ud83c\udf93", "emj_1f9d1_200d_1f393.svg" );
+		code( "\ud83e\uddd1\u200d\ud83c\udfa4", "emj_1f9d1_200d_1f3a4.svg" );
+		code( "\ud83e\uddd1\u200d\ud83c\udfa8", "emj_1f9d1_200d_1f3a8.svg" );
+		code( "\ud83e\uddd1\u200d\ud83c\udfeb", "emj_1f9d1_200d_1f3eb.svg" );
+		code( "\ud83e\uddd1\u200d\ud83c\udfed", "emj_1f9d1_200d_1f3ed.svg" );
+		code( "\ud83e\uddd1\u200d\ud83d\udcbb", "emj_1f9d1_200d_1f4bb.svg" );
+		code( "\ud83e\uddd1\u200d\ud83d\udcbc", "emj_1f9d1_200d_1f4bc.svg" );
+		code( "\ud83e\uddd1\u200d\ud83d\udd27", "emj_1f9d1_200d_1f527.svg" );
+		code( "\ud83e\uddd1\u200d\ud83d\udd2c", "emj_1f9d1_200d_1f52c.svg" );
+		code( "\ud83e\uddd1\u200d\ud83d\ude80", "emj_1f9d1_200d_1f680.svg" );
+		code( "\ud83e\uddd1\u200d\ud83d\ude92", "emj_1f9d1_200d_1f692.svg" );
 	}
-	private static void init52(){
+	private static void init54(){
 		code( "\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1", "emj_1f9d1_200d_1f91d_200d_1f9d1.svg" );
+		code( "\ud83e\uddd1\u200d\ud83e\uddaf", "emj_1f9d1_200d_1f9af.svg" );
+		code( "\ud83e\uddd1\u200d\ud83e\uddb0", "emj_1f9d1_200d_1f9b0.svg" );
+		code( "\ud83e\uddd1\u200d\ud83e\uddb1", "emj_1f9d1_200d_1f9b1.svg" );
+		code( "\ud83e\uddd1\u200d\ud83e\uddb2", "emj_1f9d1_200d_1f9b2.svg" );
+		code( "\ud83e\uddd1\u200d\ud83e\uddb3", "emj_1f9d1_200d_1f9b3.svg" );
+		code( "\ud83e\uddd1\u200d\ud83e\uddbc", "emj_1f9d1_200d_1f9bc.svg" );
+		code( "\ud83e\uddd1\u200d\ud83e\uddbd", "emj_1f9d1_200d_1f9bd.svg" );
+		code( "\ud83e\uddd1\u200d\u2695\ufe0f", "emj_1f9d1_200d_2695_fe0f.svg" );
+		code( "\ud83e\uddd1\u200d\u2696\ufe0f", "emj_1f9d1_200d_2696_fe0f.svg" );
+		code( "\ud83e\uddd1\u200d\u2708\ufe0f", "emj_1f9d1_200d_2708_fe0f.svg" );
 		code( "\ud83e\uddd2", "emj_1f9d2.svg" );
 		code( "\ud83e\uddd2\ud83c\udffb", "emj_1f9d2_1f3fb.svg" );
 		code( "\ud83e\uddd2\ud83c\udffc", "emj_1f9d2_1f3fc.svg" );
@@ -5343,6 +5559,8 @@
 		code( "\ud83e\uddd9\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f9d9_1f3fd_200d_2642_fe0f.svg" );
 		code( "\ud83e\uddd9\ud83c\udffe", "emj_1f9d9_1f3fe.svg" );
 		code( "\ud83e\uddd9\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f9d9_1f3fe_200d_2640_fe0f.svg" );
+	}
+	private static void init55(){
 		code( "\ud83e\uddd9\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f9d9_1f3fe_200d_2642_fe0f.svg" );
 		code( "\ud83e\uddd9\ud83c\udfff", "emj_1f9d9_1f3ff.svg" );
 		code( "\ud83e\uddd9\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f9d9_1f3ff_200d_2640_fe0f.svg" );
@@ -5353,8 +5571,6 @@
 		code( "\ud83e\uddda\ud83c\udffb", "emj_1f9da_1f3fb.svg" );
 		code( "\ud83e\uddda\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9da_1f3fb_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddda\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9da_1f3fb_200d_2642_fe0f.svg" );
-	}
-	private static void init53(){
 		code( "\ud83e\uddda\ud83c\udffc", "emj_1f9da_1f3fc.svg" );
 		code( "\ud83e\uddda\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9da_1f3fc_200d_2640_fe0f.svg" );
 		code( "\ud83e\uddda\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9da_1f3fc_200d_2642_fe0f.svg" );
@@ -5446,6 +5662,8 @@
 		code( "\ud83e\uddee", "emj_1f9ee.svg" );
 		code( "\ud83e\uddef", "emj_1f9ef.svg" );
 		code( "\ud83e\uddf0", "emj_1f9f0.svg" );
+	}
+	private static void init56(){
 		code( "\ud83e\uddf1", "emj_1f9f1.svg" );
 		code( "\ud83e\uddf2", "emj_1f9f2.svg" );
 		code( "\ud83e\uddf3", "emj_1f9f3.svg" );
@@ -5456,8 +5674,6 @@
 		code( "\ud83e\uddf8", "emj_1f9f8.svg" );
 		code( "\ud83e\uddf9", "emj_1f9f9.svg" );
 		code( "\ud83e\uddfa", "emj_1f9fa.svg" );
-	}
-	private static void init54(){
 		code( "\ud83e\uddfb", "emj_1f9fb.svg" );
 		code( "\ud83e\uddfc", "emj_1f9fc.svg" );
 		code( "\ud83e\uddfd", "emj_1f9fd.svg" );
@@ -5467,18 +5683,59 @@
 		code( "\ud83e\ude71", "emj_1fa71.svg" );
 		code( "\ud83e\ude72", "emj_1fa72.svg" );
 		code( "\ud83e\ude73", "emj_1fa73.svg" );
+		code( "\ud83e\ude74", "emj_1fa74.svg" );
 		code( "\ud83e\ude78", "emj_1fa78.svg" );
 		code( "\ud83e\ude79", "emj_1fa79.svg" );
 		code( "\ud83e\ude7a", "emj_1fa7a.svg" );
 		code( "\ud83e\ude80", "emj_1fa80.svg" );
 		code( "\ud83e\ude81", "emj_1fa81.svg" );
 		code( "\ud83e\ude82", "emj_1fa82.svg" );
+		code( "\ud83e\ude83", "emj_1fa83.svg" );
+		code( "\ud83e\ude84", "emj_1fa84.svg" );
+		code( "\ud83e\ude85", "emj_1fa85.svg" );
+		code( "\ud83e\ude86", "emj_1fa86.svg" );
 		code( "\ud83e\ude90", "emj_1fa90.svg" );
 		code( "\ud83e\ude91", "emj_1fa91.svg" );
 		code( "\ud83e\ude92", "emj_1fa92.svg" );
 		code( "\ud83e\ude93", "emj_1fa93.svg" );
 		code( "\ud83e\ude94", "emj_1fa94.svg" );
 		code( "\ud83e\ude95", "emj_1fa95.svg" );
+		code( "\ud83e\ude96", "emj_1fa96.svg" );
+		code( "\ud83e\ude97", "emj_1fa97.svg" );
+		code( "\ud83e\ude98", "emj_1fa98.svg" );
+		code( "\ud83e\ude99", "emj_1fa99.svg" );
+		code( "\ud83e\ude9a", "emj_1fa9a.svg" );
+		code( "\ud83e\ude9b", "emj_1fa9b.svg" );
+		code( "\ud83e\ude9c", "emj_1fa9c.svg" );
+		code( "\ud83e\ude9d", "emj_1fa9d.svg" );
+		code( "\ud83e\ude9e", "emj_1fa9e.svg" );
+		code( "\ud83e\ude9f", "emj_1fa9f.svg" );
+		code( "\ud83e\udea0", "emj_1faa0.svg" );
+		code( "\ud83e\udea1", "emj_1faa1.svg" );
+		code( "\ud83e\udea2", "emj_1faa2.svg" );
+		code( "\ud83e\udea3", "emj_1faa3.svg" );
+		code( "\ud83e\udea4", "emj_1faa4.svg" );
+		code( "\ud83e\udea5", "emj_1faa5.svg" );
+		code( "\ud83e\udea6", "emj_1faa6.svg" );
+		code( "\ud83e\udea7", "emj_1faa7.svg" );
+		code( "\ud83e\udea8", "emj_1faa8.svg" );
+		code( "\ud83e\udeb0", "emj_1fab0.svg" );
+		code( "\ud83e\udeb1", "emj_1fab1.svg" );
+		code( "\ud83e\udeb2", "emj_1fab2.svg" );
+		code( "\ud83e\udeb3", "emj_1fab3.svg" );
+		code( "\ud83e\udeb4", "emj_1fab4.svg" );
+		code( "\ud83e\udeb5", "emj_1fab5.svg" );
+		code( "\ud83e\udeb6", "emj_1fab6.svg" );
+		code( "\ud83e\udec0", "emj_1fac0.svg" );
+		code( "\ud83e\udec1", "emj_1fac1.svg" );
+		code( "\ud83e\udec2", "emj_1fac2.svg" );
+		code( "\ud83e\uded0", "emj_1fad0.svg" );
+		code( "\ud83e\uded1", "emj_1fad1.svg" );
+		code( "\ud83e\uded2", "emj_1fad2.svg" );
+		code( "\ud83e\uded3", "emj_1fad3.svg" );
+		code( "\ud83e\uded4", "emj_1fad4.svg" );
+		code( "\ud83e\uded5", "emj_1fad5.svg" );
+		code( "\ud83e\uded6", "emj_1fad6.svg" );
 		code( "\u203c", R.drawable.emj_203c_fe0f );
 		code( "\u203c\ufe0f", R.drawable.emj_203c_fe0f );
 		code( "\ue704", R.drawable.emj_203c_fe0f );
@@ -5508,6 +5765,8 @@
 		code( "\u2195\ufe0f", R.drawable.emj_2195_fe0f );
 		code( "\ue73d", R.drawable.emj_2195_fe0f );
 		code( "\ueb7b", R.drawable.emj_2195_fe0f );
+	}
+	private static void init57(){
 		code( "\udbba\udef7", R.drawable.emj_2195_fe0f );
 		code( "\u2196", R.drawable.emj_2196_fe0f );
 		code( "\u2196\ufe0f", R.drawable.emj_2196_fe0f );
@@ -5559,8 +5818,6 @@
 		code( "\ue23c", "emj_23e9.svg" );
 		code( "\ue530", "emj_23e9.svg" );
 		code( "\udbba\udefe", "emj_23e9.svg" );
-	}
-	private static void init55(){
 		code( "\u23ea", "emj_23ea.svg" );
 		code( "\ue23d", "emj_23ea.svg" );
 		code( "\ue52f", "emj_23ea.svg" );
@@ -5611,6 +5868,8 @@
 		code( "\u25b6\ufe0f", R.drawable.emj_25b6_fe0f );
 		code( "\ue23a", R.drawable.emj_25b6_fe0f );
 		code( "\ue52e", R.drawable.emj_25b6_fe0f );
+	}
+	private static void init58(){
 		code( "\udbba\udefc", R.drawable.emj_25b6_fe0f );
 		code( "\u25c0", R.drawable.emj_25c0_fe0f );
 		code( "\u25c0\ufe0f", R.drawable.emj_25c0_fe0f );
@@ -5662,8 +5921,6 @@
 		code( "\u2614", "emj_2614.svg" );
 		code( "\ue04b", "emj_2614.svg" );
 		code( "\ue48c", "emj_2614.svg" );
-	}
-	private static void init56(){
 		code( "\ue640", "emj_2614.svg" );
 		code( "\udbb8\udc02", "emj_2614.svg" );
 		code( "\u2615", "emj_2615.svg" );
@@ -5714,6 +5971,8 @@
 		code( "\ue23f", "emj_2648.svg" );
 		code( "\ue48f", "emj_2648.svg" );
 		code( "\ue646", "emj_2648.svg" );
+	}
+	private static void init59(){
 		code( "\udbb8\udc2b", "emj_2648.svg" );
 		code( "\u2649", "emj_2649.svg" );
 		code( "\ue240", "emj_2649.svg" );
@@ -5765,8 +6024,6 @@
 		code( "\ue499", "emj_2652.svg" );
 		code( "\ue650", "emj_2652.svg" );
 		code( "\udbb8\udc35", "emj_2652.svg" );
-	}
-	private static void init57(){
 		code( "\u2653", "emj_2653.svg" );
 		code( "\ue24a", "emj_2653.svg" );
 		code( "\ue49a", "emj_2653.svg" );
@@ -5817,6 +6074,8 @@
 		code( "\u2692", R.drawable.emj_2692_fe0f );
 		code( "\u2692\ufe0f", R.drawable.emj_2692_fe0f );
 		code( "\u2693", "emj_2693.svg" );
+	}
+	private static void init60(){
 		code( "\ue4a9", "emj_2693.svg" );
 		code( "\ue661", "emj_2693.svg" );
 		code( "\udbb9\udcc1", "emj_2693.svg" );
@@ -5845,7 +6104,7 @@
 		code( "\ue487", "emj_26a1.svg" );
 		code( "\ue642", "emj_26a1.svg" );
 		code( "\udbb8\udc04", "emj_26a1.svg" );
-		code( "\u26a7", "emj_26a7.svg" );
+		code( "\u26a7\ufe0f", R.drawable.emj_26a7_fe0f );
 		code( "\u26aa", "emj_26aa.svg" );
 		code( "\ue53a", "emj_26aa.svg" );
 		code( "\udbba\udf65", "emj_26aa.svg" );
@@ -5868,8 +6127,6 @@
 		code( "\udbb9\udfd1", "emj_26be.svg" );
 		code( "\u26c4", "emj_26c4.svg" );
 		code( "\ue048", "emj_26c4.svg" );
-	}
-	private static void init58(){
 		code( "\ue485", "emj_26c4.svg" );
 		code( "\ue641", "emj_26c4.svg" );
 		code( "\udbb8\udc03", "emj_26c4.svg" );
@@ -5920,6 +6177,8 @@
 		code( "\udbb9\udfea", "emj_26f5.svg" );
 		code( "\u26f7\ud83c\udffb", "emj_26f7_1f3fb.svg" );
 		code( "\u26f7\ud83c\udffc", "emj_26f7_1f3fc.svg" );
+	}
+	private static void init61(){
 		code( "\u26f7\ud83c\udffd", "emj_26f7_1f3fd.svg" );
 		code( "\u26f7\ud83c\udffe", "emj_26f7_1f3fe.svg" );
 		code( "\u26f7\ud83c\udfff", "emj_26f7_1f3ff.svg" );
@@ -5971,8 +6230,6 @@
 		code( "\u2702\ufe0f", R.drawable.emj_2702_fe0f );
 		code( "\ue313", R.drawable.emj_2702_fe0f );
 		code( "\ue516", R.drawable.emj_2702_fe0f );
-	}
-	private static void init59(){
 		code( "\ue675", R.drawable.emj_2702_fe0f );
 		code( "\udbb9\udd3e", R.drawable.emj_2702_fe0f );
 		code( "\u2705", "emj_2705.svg" );
@@ -6023,6 +6280,8 @@
 		code( "\u270d\ud83c\udffc", "emj_270d_1f3fc.svg" );
 		code( "\u270d\ud83c\udffd", "emj_270d_1f3fd.svg" );
 		code( "\u270d\ud83c\udffe", "emj_270d_1f3fe.svg" );
+	}
+	private static void init62(){
 		code( "\u270d\ud83c\udfff", "emj_270d_1f3ff.svg" );
 		code( "\u270d", R.drawable.emj_270d_fe0f );
 		code( "\u270d\ufe0f", R.drawable.emj_270d_fe0f );
@@ -6074,8 +6333,6 @@
 		code( "\udbba\udf77", R.drawable.emj_2747_fe0f );
 		code( "\u274c", "emj_274c.svg" );
 		code( "\ue333", "emj_274c.svg" );
-	}
-	private static void init60(){
 		code( "\ue550", "emj_274c.svg" );
 		code( "\udbba\udf45", "emj_274c.svg" );
 		code( "\u274e", "emj_274e.svg" );
@@ -6126,6 +6383,8 @@
 		code( "\u27bf", "emj_27bf.svg" );
 		code( "\ue211", "emj_27bf.svg" );
 		code( "\ue6df", "emj_27bf.svg" );
+	}
+	private static void init63(){
 		code( "\udbba\udc2b", "emj_27bf.svg" );
 		code( "\u2934", R.drawable.emj_2934_fe0f );
 		code( "\u2934\ufe0f", R.drawable.emj_2934_fe0f );
@@ -6177,8 +6436,6 @@
 		code( "\udbba\udc1b", R.drawable.emj_303d_fe0f );
 		code( "\u0030\u20e3", "emj_30_20e3.svg" );
 		code( "\u0031\u20e3", "emj_31_20e3.svg" );
-	}
-	private static void init61(){
 		code( "\u3297", R.drawable.emj_3297_fe0f );
 		code( "\u3297\ufe0f", R.drawable.emj_3297_fe0f );
 		code( "\ue30d", R.drawable.emj_3297_fe0f );
@@ -6229,10 +6486,14 @@
 		name( "ab", "\ud83c\udd8e" );
 		name( "abacus", "\ud83e\uddee" );
 		name( "abc", "\ud83d\udd24" );
+	}
+	private static void init64(){
 		name( "abcd", "\ud83d\udd21" );
 		name( "ac", "\ud83c\udde6\ud83c\udde8" );
 		name( "accept", "\ud83c\ude51" );
+		name( "accordion", "\ud83e\ude97" );
 		name( "ad", "\ud83c\udde6\ud83c\udde9" );
+		name( "adhesive_bandage", "\ud83e\ude79" );
 		name( "admission_tickets", "\ud83c\udf9f\ufe0f" );
 		name( "adult", "\ud83e\uddd1" );
 		name( "adult_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff" );
@@ -6261,6 +6522,7 @@
 		name( "am", "\ud83c\udde6\ud83c\uddf2" );
 		name( "ambulance", "\ud83d\ude91" );
 		name( "amphora", "\ud83c\udffa" );
+		name( "anatomical_heart", "\ud83e\udec0" );
 		name( "anchor", "\u2693" );
 		name( "angel", "\ud83d\udc7c" );
 		name( "angel_dark_skin_tone", "\ud83d\udc7c\ud83c\udfff" );
@@ -6280,8 +6542,6 @@
 		name( "ant", "\ud83d\udc1c" );
 		name( "ao", "\ud83c\udde6\ud83c\uddf4" );
 		name( "apple", "\ud83c\udf4e" );
-	}
-	private static void init62(){
 		name( "aq", "\ud83c\udde6\ud83c\uddf6" );
 		name( "aquarius", "\u2652" );
 		name( "ar", "\ud83c\udde6\ud83c\uddf7" );
@@ -6309,19 +6569,45 @@
 		name( "arrows_counterclockwise", "\ud83d\udd04" );
 		name( "art", "\ud83c\udfa8" );
 		name( "articulated_lorry", "\ud83d\ude9b" );
+		name( "artist", "\ud83e\uddd1\u200d\ud83c\udfa8" );
+		name( "artist_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfa8" );
+		name( "artist_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfa8" );
+		name( "artist_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfa8" );
+		name( "artist_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfa8" );
+		name( "artist_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfa8" );
+		name( "artist_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfa8" );
+		name( "artist_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfa8" );
+		name( "artist_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfa8" );
+		name( "artist_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfa8" );
+		name( "artist_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfa8" );
 		name( "as", "\ud83c\udde6\ud83c\uddf8" );
 		name( "asterisk", "\u002a\ufe0f\u20e3" );
 		name( "asterisk_symbol", "\u002a" );
 		name( "astonished", "\ud83d\ude32" );
+		name( "astronaut", "\ud83e\uddd1\u200d\ud83d\ude80" );
+		name( "astronaut_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\ude80" );
+		name( "astronaut_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\ude80" );
+		name( "astronaut_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\ude80" );
+		name( "astronaut_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\ude80" );
+	}
+	private static void init65(){
+		name( "astronaut_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\ude80" );
+		name( "astronaut_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\ude80" );
+		name( "astronaut_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\ude80" );
+		name( "astronaut_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\ude80" );
+		name( "astronaut_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\ude80" );
+		name( "astronaut_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\ude80" );
 		name( "at", "\ud83c\udde6\ud83c\uddf9" );
 		name( "athletic_shoe", "\ud83d\udc5f" );
 		name( "atm", "\ud83c\udfe7" );
 		name( "atom", "\u269b\ufe0f" );
 		name( "atom_symbol", "\u269b\ufe0f" );
 		name( "au", "\ud83c\udde6\ud83c\uddfa" );
+		name( "auto_rickshaw", "\ud83d\udefa" );
 		name( "avocado", "\ud83e\udd51" );
 		name( "aw", "\ud83c\udde6\ud83c\uddfc" );
 		name( "ax", "\ud83c\udde6\ud83c\uddfd" );
+		name( "axe", "\ud83e\ude93" );
 		name( "az", "\ud83c\udde6\ud83c\uddff" );
 		name( "b", "\ud83c\udd71\ufe0f" );
 		name( "ba", "\ud83c\udde7\ud83c\udde6" );
@@ -6353,6 +6639,40 @@
 		name( "bagel", "\ud83e\udd6f" );
 		name( "baggage_claim", "\ud83d\udec4" );
 		name( "baguette_bread", "\ud83e\udd56" );
+		name( "bald_man", "\ud83d\udc68\u200d\ud83e\uddb2" );
+		name( "bald_man_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb2" );
+		name( "bald_man_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb2" );
+		name( "bald_man_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb2" );
+		name( "bald_man_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb2" );
+		name( "bald_man_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb2" );
+		name( "bald_man_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb2" );
+		name( "bald_man_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb2" );
+		name( "bald_man_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb2" );
+		name( "bald_man_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb2" );
+		name( "bald_man_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb2" );
+		name( "bald_person", "\ud83e\uddd1\u200d\ud83e\uddb2" );
+		name( "bald_person_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb2" );
+		name( "bald_person_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb2" );
+		name( "bald_person_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb2" );
+		name( "bald_person_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb2" );
+		name( "bald_person_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb2" );
+		name( "bald_person_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb2" );
+		name( "bald_person_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb2" );
+		name( "bald_person_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb2" );
+		name( "bald_person_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb2" );
+		name( "bald_person_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb2" );
+		name( "bald_woman", "\ud83d\udc69\u200d\ud83e\uddb2" );
+		name( "bald_woman_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb2" );
+		name( "bald_woman_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb2" );
+		name( "bald_woman_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb2" );
+		name( "bald_woman_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb2" );
+		name( "bald_woman_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb2" );
+		name( "bald_woman_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb2" );
+		name( "bald_woman_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb2" );
+		name( "bald_woman_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb2" );
+		name( "bald_woman_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb2" );
+		name( "bald_woman_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb2" );
+		name( "ballet_shoes", "\ud83e\ude70" );
 		name( "balloon", "\ud83c\udf88" );
 		name( "ballot_box", "\ud83d\uddf3\ufe0f" );
 		name( "ballot_box_with_ballot", "\ud83d\uddf3\ufe0f" );
@@ -6360,6 +6680,7 @@
 		name( "bamboo", "\ud83c\udf8d" );
 		name( "banana", "\ud83c\udf4c" );
 		name( "bangbang", "\u203c\ufe0f" );
+		name( "banjo", "\ud83e\ude95" );
 		name( "bank", "\ud83c\udfe6" );
 		name( "bar_chart", "\ud83d\udcca" );
 		name( "barber", "\ud83d\udc88" );
@@ -6371,6 +6692,8 @@
 		name( "basketball_player_tone1", "\u26f9\ud83c\udffb" );
 		name( "basketball_player_tone2", "\u26f9\ud83c\udffc" );
 		name( "basketball_player_tone3", "\u26f9\ud83c\udffd" );
+	}
+	private static void init66(){
 		name( "basketball_player_tone4", "\u26f9\ud83c\udffe" );
 		name( "basketball_player_tone5", "\u26f9\ud83c\udfff" );
 		name( "bat", "\ud83e\udd87" );
@@ -6383,8 +6706,6 @@
 		name( "bath_tone1", "\ud83d\udec0\ud83c\udffb" );
 		name( "bath_tone2", "\ud83d\udec0\ud83c\udffc" );
 		name( "bath_tone3", "\ud83d\udec0\ud83c\udffd" );
-	}
-	private static void init63(){
 		name( "bath_tone4", "\ud83d\udec0\ud83c\udffe" );
 		name( "bath_tone5", "\ud83d\udec0\ud83c\udfff" );
 		name( "bathtub", "\ud83d\udec1" );
@@ -6407,16 +6728,19 @@
 		name( "bearded_person_tone3", "\ud83e\uddd4\ud83c\udffd" );
 		name( "bearded_person_tone4", "\ud83e\uddd4\ud83c\udffe" );
 		name( "bearded_person_tone5", "\ud83e\uddd4\ud83c\udfff" );
+		name( "beaver", "\ud83e\uddab" );
 		name( "bed", "\ud83d\udecf\ufe0f" );
 		name( "bee", "\ud83d\udc1d" );
 		name( "beer", "\ud83c\udf7a" );
 		name( "beers", "\ud83c\udf7b" );
-		name( "beetle", "\ud83d\udc1e" );
+		name( "beetle", "\ud83e\udeb2" );
 		name( "beginner", "\ud83d\udd30" );
 		name( "bell", "\ud83d\udd14" );
+		name( "bell_pepper", "\ud83e\uded1" );
 		name( "bellhop", "\ud83d\udece\ufe0f" );
 		name( "bellhop_bell", "\ud83d\udece\ufe0f" );
 		name( "bento", "\ud83c\udf71" );
+		name( "beverage_box", "\ud83e\uddc3" );
 		name( "bf", "\ud83c\udde7\ud83c\uddeb" );
 		name( "bg", "\ud83c\udde7\ud83c\uddec" );
 		name( "bh", "\ud83c\udde7\ud83c\udded" );
@@ -6439,8 +6763,10 @@
 		name( "biohazard_sign", "\u2623\ufe0f" );
 		name( "bird", "\ud83d\udc26" );
 		name( "birthday", "\ud83c\udf82" );
+		name( "bison", "\ud83e\uddac" );
 		name( "bj", "\ud83c\udde7\ud83c\uddef" );
 		name( "bl", "\ud83c\udde7\ud83c\uddf1" );
+		name( "black_cat", "\ud83d\udc08\u200d\u2b1b" );
 		name( "black_circle", "\u26ab" );
 		name( "black_circle_for_record", "\u23fa\ufe0f" );
 		name( "black_heart", "\ud83d\udda4" );
@@ -6469,6 +6795,8 @@
 		name( "blond_haired_woman", "\ud83d\udc71\u200d\u2640\ufe0f" );
 		name( "blond_haired_woman_dark_skin_tone", "\ud83d\udc71\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "blond_haired_woman_light_skin_tone", "\ud83d\udc71\ud83c\udffb\u200d\u2640\ufe0f" );
+	}
+	private static void init67(){
 		name( "blond_haired_woman_medium_dark_skin_tone", "\ud83d\udc71\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "blond_haired_woman_medium_light_skin_tone", "\ud83d\udc71\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "blond_haired_woman_medium_skin_tone", "\ud83d\udc71\ud83c\udffd\u200d\u2640\ufe0f" );
@@ -6483,11 +6811,10 @@
 		name( "blue_car", "\ud83d\ude99" );
 		name( "blue_circle", "\ud83d\udd35" );
 		name( "blue_heart", "\ud83d\udc99" );
+		name( "blueberries", "\ud83e\uded0" );
 		name( "blush", "\ud83d\ude0a" );
 		name( "bm", "\ud83c\udde7\ud83c\uddf2" );
 		name( "bn", "\ud83c\udde7\ud83c\uddf3" );
-	}
-	private static void init64(){
 		name( "bo", "\ud83c\udde7\ud83c\uddf4" );
 		name( "boar", "\ud83d\udc17" );
 		name( "boat", "\u26f5" );
@@ -6498,6 +6825,7 @@
 		name( "bookmark_tabs", "\ud83d\udcd1" );
 		name( "books", "\ud83d\udcda" );
 		name( "boom", "\ud83d\udca5" );
+		name( "boomerang", "\ud83e\ude83" );
 		name( "boot", "\ud83d\udc62" );
 		name( "bottle_with_popping_cork", "\ud83c\udf7e" );
 		name( "bouquet", "\ud83d\udc90" );
@@ -6557,21 +6885,28 @@
 		name( "bride_with_veil_tone5", "\ud83d\udc70\ud83c\udfff" );
 		name( "bridge_at_night", "\ud83c\udf09" );
 		name( "briefcase", "\ud83d\udcbc" );
+		name( "briefs", "\ud83e\ude72" );
 		name( "broccoli", "\ud83e\udd66" );
 		name( "broken_heart", "\ud83d\udc94" );
 		name( "broom", "\ud83e\uddf9" );
+		name( "brown_heart", "\ud83e\udd0e" );
 		name( "bs", "\ud83c\udde7\ud83c\uddf8" );
 		name( "bt", "\ud83c\udde7\ud83c\uddf9" );
+		name( "bubble_tea", "\ud83e\uddcb" );
+		name( "bucket", "\ud83e\udea3" );
 		name( "bug", "\ud83d\udc1b" );
 		name( "building_construction", "\ud83c\udfd7\ufe0f" );
 		name( "bulb", "\ud83d\udca1" );
 		name( "bullettrain_front", "\ud83d\ude85" );
+	}
+	private static void init68(){
 		name( "bullettrain_side", "\ud83d\ude84" );
 		name( "burrito", "\ud83c\udf2f" );
 		name( "bus", "\ud83d\ude8c" );
 		name( "busstop", "\ud83d\ude8f" );
 		name( "bust_in_silhouette", "\ud83d\udc64" );
 		name( "busts_in_silhouette", "\ud83d\udc65" );
+		name( "butter", "\ud83e\uddc8" );
 		name( "butterfly", "\ud83e\udd8b" );
 		name( "bv", "\ud83c\udde7\ud83c\uddfb" );
 		name( "bw", "\ud83c\udde7\ud83c\uddfc" );
@@ -6589,8 +6924,6 @@
 		name( "call_me_hand_medium_dark_skin_tone", "\ud83e\udd19\ud83c\udffe" );
 		name( "call_me_hand_medium_light_skin_tone", "\ud83e\udd19\ud83c\udffc" );
 		name( "call_me_hand_medium_skin_tone", "\ud83e\udd19\ud83c\udffd" );
-	}
-	private static void init65(){
 		name( "call_me_hand_tone1", "\ud83e\udd19\ud83c\udffb" );
 		name( "call_me_hand_tone2", "\ud83e\udd19\ud83c\udffc" );
 		name( "call_me_hand_tone3", "\ud83e\udd19\ud83c\udffd" );
@@ -6619,6 +6952,7 @@
 		name( "card_index", "\ud83d\udcc7" );
 		name( "card_index_dividers", "\ud83d\uddc2\ufe0f" );
 		name( "carousel_horse", "\ud83c\udfa0" );
+		name( "carpentry_saw", "\ud83e\ude9a" );
 		name( "carrot", "\ud83e\udd55" );
 		name( "cartwheel", "\ud83e\udd38" );
 		name( "cartwheel_tone1", "\ud83e\udd38\ud83c\udffb" );
@@ -6634,6 +6968,7 @@
 		name( "cg", "\ud83c\udde8\ud83c\uddec" );
 		name( "ch", "\ud83c\udde8\ud83c\udded" );
 		name( "chains", "\u26d3\ufe0f" );
+		name( "chair", "\ud83e\ude91" );
 		name( "champagne", "\ud83c\udf7e" );
 		name( "champagne_glass", "\ud83e\udd42" );
 		name( "chart", "\ud83d\udcb9" );
@@ -6666,6 +7001,8 @@
 		name( "christmas_tree", "\ud83c\udf84" );
 		name( "church", "\u26ea" );
 		name( "ci", "\ud83c\udde8\ud83c\uddee" );
+	}
+	private static void init69(){
 		name( "cinema", "\ud83c\udfa6" );
 		name( "circus_tent", "\ud83c\udfaa" );
 		name( "city_dusk", "\ud83c\udf06" );
@@ -6692,8 +7029,6 @@
 		name( "clipboard", "\ud83d\udccb" );
 		name( "clock", "\ud83d\udd70\ufe0f" );
 		name( "clock1", "\ud83d\udd50" );
-	}
-	private static void init66(){
 		name( "clock10", "\ud83d\udd59" );
 		name( "clock1030", "\ud83d\udd65" );
 		name( "clock11", "\ud83d\udd5a" );
@@ -6736,10 +7071,12 @@
 		name( "cn", "\ud83c\udde8\ud83c\uddf3" );
 		name( "co", "\ud83c\udde8\ud83c\uddf4" );
 		name( "coat", "\ud83e\udde5" );
+		name( "cockroach", "\ud83e\udeb3" );
 		name( "cocktail", "\ud83c\udf78" );
 		name( "coconut", "\ud83e\udd65" );
 		name( "coffee", "\u2615" );
 		name( "coffin", "\u26b0\ufe0f" );
+		name( "coin", "\ud83e\ude99" );
 		name( "cold_face", "\ud83e\udd76" );
 		name( "cold_sweat", "\ud83d\ude30" );
 		name( "collision", "\ud83d\udca5" );
@@ -6767,6 +7104,19 @@
 		name( "construction_worker_tone5", "\ud83d\udc77\ud83c\udfff" );
 		name( "control_knobs", "\ud83c\udf9b\ufe0f" );
 		name( "convenience_store", "\ud83c\udfea" );
+	}
+	private static void init70(){
+		name( "cook", "\ud83e\uddd1\u200d\ud83c\udf73" );
+		name( "cook_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf73" );
+		name( "cook_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf73" );
+		name( "cook_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf73" );
+		name( "cook_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf73" );
+		name( "cook_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf73" );
+		name( "cook_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf73" );
+		name( "cook_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf73" );
+		name( "cook_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf73" );
+		name( "cook_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf73" );
+		name( "cook_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf73" );
 		name( "cookie", "\ud83c\udf6a" );
 		name( "cooking", "\ud83c\udf73" );
 		name( "cool", "\ud83c\udd92" );
@@ -6786,7 +7136,17 @@
 		name( "couch", "\ud83d\udecb\ufe0f" );
 		name( "couch_and_lamp", "\ud83d\udecb\ufe0f" );
 		name( "couple", "\ud83d\udc6b" );
+		name( "couple_dark_skin_tone", "\ud83d\udc6b\ud83c\udfff" );
+		name( "couple_light_skin_tone", "\ud83d\udc6b\ud83c\udffb" );
+		name( "couple_medium_dark_skin_tone", "\ud83d\udc6b\ud83c\udffe" );
+		name( "couple_medium_light_skin_tone", "\ud83d\udc6b\ud83c\udffc" );
+		name( "couple_medium_skin_tone", "\ud83d\udc6b\ud83c\udffd" );
 		name( "couple_mm", "\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc68" );
+		name( "couple_tone1", "\ud83d\udc6b\ud83c\udffb" );
+		name( "couple_tone2", "\ud83d\udc6b\ud83c\udffc" );
+		name( "couple_tone3", "\ud83d\udc6b\ud83c\udffd" );
+		name( "couple_tone4", "\ud83d\udc6b\ud83c\udffe" );
+		name( "couple_tone5", "\ud83d\udc6b\ud83c\udfff" );
 		name( "couple_with_heart", "\ud83d\udc91" );
 		name( "couple_with_heart_mm", "\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc68" );
 		name( "couple_with_heart_woman_man", "\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc68" );
@@ -6795,8 +7155,6 @@
 		name( "couplekiss", "\ud83d\udc8f" );
 		name( "couplekiss_mm", "\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68" );
 		name( "couplekiss_ww", "\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69" );
-	}
-	private static void init67(){
 		name( "cow", "\ud83d\udc2e" );
 		name( "cow2", "\ud83d\udc04" );
 		name( "cowboy", "\ud83e\udd20" );
@@ -6836,6 +7194,41 @@
 		name( "cupcake", "\ud83e\uddc1" );
 		name( "cupid", "\ud83d\udc98" );
 		name( "curling_stone", "\ud83e\udd4c" );
+		name( "curly_haired_man", "\ud83d\udc68\u200d\ud83e\uddb1" );
+		name( "curly_haired_man_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb1" );
+		name( "curly_haired_man_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb1" );
+		name( "curly_haired_man_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb1" );
+		name( "curly_haired_man_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb1" );
+		name( "curly_haired_man_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb1" );
+		name( "curly_haired_man_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb1" );
+		name( "curly_haired_man_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb1" );
+		name( "curly_haired_man_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb1" );
+		name( "curly_haired_man_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb1" );
+		name( "curly_haired_man_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb1" );
+		name( "curly_haired_person", "\ud83e\uddd1\u200d\ud83e\uddb1" );
+		name( "curly_haired_person_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb1" );
+	}
+	private static void init71(){
+		name( "curly_haired_person_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb1" );
+		name( "curly_haired_person_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb1" );
+		name( "curly_haired_person_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb1" );
+		name( "curly_haired_person_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb1" );
+		name( "curly_haired_person_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb1" );
+		name( "curly_haired_person_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb1" );
+		name( "curly_haired_person_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb1" );
+		name( "curly_haired_person_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb1" );
+		name( "curly_haired_person_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb1" );
+		name( "curly_haired_woman", "\ud83d\udc69\u200d\ud83e\uddb1" );
+		name( "curly_haired_woman_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb1" );
+		name( "curly_haired_woman_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb1" );
+		name( "curly_haired_woman_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb1" );
+		name( "curly_haired_woman_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb1" );
+		name( "curly_haired_woman_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb1" );
+		name( "curly_haired_woman_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb1" );
+		name( "curly_haired_woman_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb1" );
+		name( "curly_haired_woman_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb1" );
+		name( "curly_haired_woman_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb1" );
+		name( "curly_haired_woman_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb1" );
 		name( "curly_loop", "\u27b0" );
 		name( "currency_exchange", "\ud83d\udcb1" );
 		name( "curry", "\ud83c\udf5b" );
@@ -6868,6 +7261,39 @@
 		name( "dash", "\ud83d\udca8" );
 		name( "date", "\ud83d\udcc5" );
 		name( "de", "\ud83c\udde9\ud83c\uddea" );
+		name( "deaf_man", "\ud83e\uddcf\u200d\u2642\ufe0f" );
+		name( "deaf_man_dark_skin_tone", "\ud83e\uddcf\ud83c\udfff\u200d\u2642\ufe0f" );
+		name( "deaf_man_light_skin_tone", "\ud83e\uddcf\ud83c\udffb\u200d\u2642\ufe0f" );
+		name( "deaf_man_medium_dark_skin_tone", "\ud83e\uddcf\ud83c\udffe\u200d\u2642\ufe0f" );
+		name( "deaf_man_medium_light_skin_tone", "\ud83e\uddcf\ud83c\udffc\u200d\u2642\ufe0f" );
+		name( "deaf_man_medium_skin_tone", "\ud83e\uddcf\ud83c\udffd\u200d\u2642\ufe0f" );
+		name( "deaf_man_tone1", "\ud83e\uddcf\ud83c\udffb\u200d\u2642\ufe0f" );
+		name( "deaf_man_tone2", "\ud83e\uddcf\ud83c\udffc\u200d\u2642\ufe0f" );
+		name( "deaf_man_tone3", "\ud83e\uddcf\ud83c\udffd\u200d\u2642\ufe0f" );
+		name( "deaf_man_tone4", "\ud83e\uddcf\ud83c\udffe\u200d\u2642\ufe0f" );
+		name( "deaf_man_tone5", "\ud83e\uddcf\ud83c\udfff\u200d\u2642\ufe0f" );
+		name( "deaf_person", "\ud83e\uddcf" );
+		name( "deaf_person_dark_skin_tone", "\ud83e\uddcf\ud83c\udfff" );
+		name( "deaf_person_light_skin_tone", "\ud83e\uddcf\ud83c\udffb" );
+		name( "deaf_person_medium_dark_skin_tone", "\ud83e\uddcf\ud83c\udffe" );
+		name( "deaf_person_medium_light_skin_tone", "\ud83e\uddcf\ud83c\udffc" );
+		name( "deaf_person_medium_skin_tone", "\ud83e\uddcf\ud83c\udffd" );
+		name( "deaf_person_tone1", "\ud83e\uddcf\ud83c\udffb" );
+		name( "deaf_person_tone2", "\ud83e\uddcf\ud83c\udffc" );
+		name( "deaf_person_tone3", "\ud83e\uddcf\ud83c\udffd" );
+		name( "deaf_person_tone4", "\ud83e\uddcf\ud83c\udffe" );
+		name( "deaf_person_tone5", "\ud83e\uddcf\ud83c\udfff" );
+		name( "deaf_woman", "\ud83e\uddcf\u200d\u2640\ufe0f" );
+		name( "deaf_woman_dark_skin_tone", "\ud83e\uddcf\ud83c\udfff\u200d\u2640\ufe0f" );
+		name( "deaf_woman_light_skin_tone", "\ud83e\uddcf\ud83c\udffb\u200d\u2640\ufe0f" );
+		name( "deaf_woman_medium_dark_skin_tone", "\ud83e\uddcf\ud83c\udffe\u200d\u2640\ufe0f" );
+		name( "deaf_woman_medium_light_skin_tone", "\ud83e\uddcf\ud83c\udffc\u200d\u2640\ufe0f" );
+		name( "deaf_woman_medium_skin_tone", "\ud83e\uddcf\ud83c\udffd\u200d\u2640\ufe0f" );
+		name( "deaf_woman_tone1", "\ud83e\uddcf\ud83c\udffb\u200d\u2640\ufe0f" );
+		name( "deaf_woman_tone2", "\ud83e\uddcf\ud83c\udffc\u200d\u2640\ufe0f" );
+		name( "deaf_woman_tone3", "\ud83e\uddcf\ud83c\udffd\u200d\u2640\ufe0f" );
+		name( "deaf_woman_tone4", "\ud83e\uddcf\ud83c\udffe\u200d\u2640\ufe0f" );
+		name( "deaf_woman_tone5", "\ud83e\uddcf\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "deciduous_tree", "\ud83c\udf33" );
 		name( "deer", "\ud83e\udd8c" );
 		name( "department_store", "\ud83c\udfec" );
@@ -6884,6 +7310,8 @@
 		name( "digit_four", "\u0034" );
 		name( "digit_nine", "\u0039" );
 		name( "digit_one", "\u0031" );
+	}
+	private static void init72(){
 		name( "digit_seven", "\u0037" );
 		name( "digit_six", "\u0036" );
 		name( "digit_three", "\u0033" );
@@ -6891,17 +7319,19 @@
 		name( "digit_zero", "\u0030" );
 		name( "disappointed", "\ud83d\ude1e" );
 		name( "disappointed_relieved", "\ud83d\ude25" );
+		name( "disguised_face", "\ud83e\udd78" );
 		name( "dividers", "\ud83d\uddc2\ufe0f" );
+		name( "diving_mask", "\ud83e\udd3f" );
+		name( "diya_lamp", "\ud83e\ude94" );
 		name( "dizzy", "\ud83d\udcab" );
 		name( "dizzy_face", "\ud83d\ude35" );
 		name( "dj", "\ud83c\udde9\ud83c\uddef" );
 		name( "dk", "\ud83c\udde9\ud83c\uddf0" );
 		name( "dm", "\ud83c\udde9\ud83c\uddf2" );
 		name( "dna", "\ud83e\uddec" );
-	}
-	private static void init68(){
 		name( "do", "\ud83c\udde9\ud83c\uddf4" );
 		name( "do_not_litter", "\ud83d\udeaf" );
+		name( "dodo", "\ud83e\udda4" );
 		name( "dog", "\ud83d\udc36" );
 		name( "dog2", "\ud83d\udc15" );
 		name( "dollar", "\ud83d\udcb5" );
@@ -6918,6 +7348,7 @@
 		name( "dromedary_camel", "\ud83d\udc2a" );
 		name( "drool", "\ud83e\udd24" );
 		name( "drooling_face", "\ud83e\udd24" );
+		name( "drop_of_blood", "\ud83e\ude78" );
 		name( "droplet", "\ud83d\udca7" );
 		name( "drum", "\ud83e\udd41" );
 		name( "drum_with_drumsticks", "\ud83e\udd41" );
@@ -6940,6 +7371,17 @@
 		name( "ear_tone3", "\ud83d\udc42\ud83c\udffd" );
 		name( "ear_tone4", "\ud83d\udc42\ud83c\udffe" );
 		name( "ear_tone5", "\ud83d\udc42\ud83c\udfff" );
+		name( "ear_with_hearing_aid", "\ud83e\uddbb" );
+		name( "ear_with_hearing_aid_dark_skin_tone", "\ud83e\uddbb\ud83c\udfff" );
+		name( "ear_with_hearing_aid_light_skin_tone", "\ud83e\uddbb\ud83c\udffb" );
+		name( "ear_with_hearing_aid_medium_dark_skin_tone", "\ud83e\uddbb\ud83c\udffe" );
+		name( "ear_with_hearing_aid_medium_light_skin_tone", "\ud83e\uddbb\ud83c\udffc" );
+		name( "ear_with_hearing_aid_medium_skin_tone", "\ud83e\uddbb\ud83c\udffd" );
+		name( "ear_with_hearing_aid_tone1", "\ud83e\uddbb\ud83c\udffb" );
+		name( "ear_with_hearing_aid_tone2", "\ud83e\uddbb\ud83c\udffc" );
+		name( "ear_with_hearing_aid_tone3", "\ud83e\uddbb\ud83c\udffd" );
+		name( "ear_with_hearing_aid_tone4", "\ud83e\uddbb\ud83c\udffe" );
+		name( "ear_with_hearing_aid_tone5", "\ud83e\uddbb\ud83c\udfff" );
 		name( "earth_africa", "\ud83c\udf0d" );
 		name( "earth_americas", "\ud83c\udf0e" );
 		name( "earth_asia", "\ud83c\udf0f" );
@@ -6956,6 +7398,7 @@
 		name( "eject_symbol", "\u23cf\ufe0f" );
 		name( "electric_plug", "\ud83d\udd0c" );
 		name( "elephant", "\ud83d\udc18" );
+		name( "elevator", "\ud83d\uded7" );
 		name( "elf", "\ud83e\udddd" );
 		name( "elf_dark_skin_tone", "\ud83e\udddd\ud83c\udfff" );
 		name( "elf_light_skin_tone", "\ud83e\udddd\ud83c\udffb" );
@@ -6970,6 +7413,8 @@
 		name( "email", "\ud83d\udce7" );
 		name( "end", "\ud83d\udd1a" );
 		name( "envelope", "\u2709\ufe0f" );
+	}
+	private static void init73(){
 		name( "envelope_with_arrow", "\ud83d\udce9" );
 		name( "er", "\ud83c\uddea\ud83c\uddf7" );
 		name( "es", "\ud83c\uddea\ud83c\uddf8" );
@@ -6989,7 +7434,7 @@
 		name( "exploding_head", "\ud83e\udd2f" );
 		name( "expressionless", "\ud83d\ude11" );
 		name( "eye", "\ud83d\udc41\ufe0f" );
-		name( "eye_in_speech_bubble", "\ud83d\udc41\u200d\ud83d\udde8" );
+		name( "eye_in_speech_bubble", "\ud83d\udc41\ufe0f\u200d\ud83d\udde8\ufe0f" );
 		name( "eyeglasses", "\ud83d\udc53" );
 		name( "eyes", "\ud83d\udc40" );
 		name( "face_palm", "\ud83e\udd26" );
@@ -7001,8 +7446,6 @@
 		name( "face_palm_tone1", "\ud83e\udd26\ud83c\udffb" );
 		name( "face_palm_tone2", "\ud83e\udd26\ud83c\udffc" );
 		name( "face_palm_tone3", "\ud83e\udd26\ud83c\udffd" );
-	}
-	private static void init69(){
 		name( "face_palm_tone4", "\ud83e\udd26\ud83c\udffe" );
 		name( "face_palm_tone5", "\ud83e\udd26\ud83c\udfff" );
 		name( "face_vomiting", "\ud83e\udd2e" );
@@ -7035,6 +7478,17 @@
 		name( "facepunch_tone4", "\ud83d\udc4a\ud83c\udffe" );
 		name( "facepunch_tone5", "\ud83d\udc4a\ud83c\udfff" );
 		name( "factory", "\ud83c\udfed" );
+		name( "factory_worker", "\ud83e\uddd1\u200d\ud83c\udfed" );
+		name( "factory_worker_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfed" );
+		name( "factory_worker_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfed" );
+		name( "factory_worker_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfed" );
+		name( "factory_worker_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfed" );
+		name( "factory_worker_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfed" );
+		name( "factory_worker_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfed" );
+		name( "factory_worker_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfed" );
+		name( "factory_worker_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfed" );
+		name( "factory_worker_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfed" );
+		name( "factory_worker_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfed" );
 		name( "fairy", "\ud83e\uddda" );
 		name( "fairy_dark_skin_tone", "\ud83e\uddda\ud83c\udfff" );
 		name( "fairy_light_skin_tone", "\ud83e\uddda\ud83c\udffb" );
@@ -7046,6 +7500,7 @@
 		name( "fairy_tone3", "\ud83e\uddda\ud83c\udffd" );
 		name( "fairy_tone4", "\ud83e\uddda\ud83c\udffe" );
 		name( "fairy_tone5", "\ud83e\uddda\ud83c\udfff" );
+		name( "falafel", "\ud83e\uddc6" );
 		name( "fallen_leaf", "\ud83c\udf42" );
 		name( "family", "\ud83d\udc6a" );
 		name( "family_man_boy", "\ud83d\udc68\u200d\ud83d\udc66" );
@@ -7061,6 +7516,8 @@
 		name( "family_mmgg", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d\udc67" );
 		name( "family_mwbb", "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66" );
 		name( "family_mwg", "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67" );
+	}
+	private static void init74(){
 		name( "family_mwgb", "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc66" );
 		name( "family_mwgg", "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc67" );
 		name( "family_woman_boy", "\ud83d\udc69\u200d\ud83d\udc66" );
@@ -7073,9 +7530,21 @@
 		name( "family_wwg", "\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc67" );
 		name( "family_wwgb", "\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc66" );
 		name( "family_wwgg", "\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc67" );
+		name( "farmer", "\ud83e\uddd1\u200d\ud83c\udf3e" );
+		name( "farmer_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf3e" );
+		name( "farmer_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf3e" );
+		name( "farmer_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf3e" );
+		name( "farmer_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf3e" );
+		name( "farmer_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf3e" );
+		name( "farmer_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf3e" );
+		name( "farmer_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf3e" );
+		name( "farmer_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf3e" );
+		name( "farmer_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf3e" );
+		name( "farmer_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf3e" );
 		name( "fast_forward", "\u23e9" );
 		name( "fax", "\ud83d\udce0" );
 		name( "fearful", "\ud83d\ude28" );
+		name( "feather", "\ud83e\udeb6" );
 		name( "feet", "\ud83d\udc3e" );
 		name( "female_artist", "\ud83d\udc69\u200d\ud83c\udfa8" );
 		name( "female_artist_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udfa8" );
@@ -7099,19 +7568,6 @@
 		name( "female_astronaut_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83d\ude80" );
 		name( "female_astronaut_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83d\ude80" );
 		name( "female_astronaut_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83d\ude80" );
-		name( "female_bald", "\ud83d\udc69\u200d\ud83e\uddb2" );
-		name( "female_bald_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb2" );
-		name( "female_bald_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb2" );
-		name( "female_bald_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb2" );
-		name( "female_bald_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb2" );
-	}
-	private static void init70(){
-		name( "female_bald_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb2" );
-		name( "female_bald_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb2" );
-		name( "female_bald_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb2" );
-		name( "female_bald_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb2" );
-		name( "female_bald_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb2" );
-		name( "female_bald_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb2" );
 		name( "female_construction_worker", "\ud83d\udc77\u200d\u2640\ufe0f" );
 		name( "female_construction_worker_dark_skin_tone", "\ud83d\udc77\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "female_construction_worker_light_skin_tone", "\ud83d\udc77\ud83c\udffb\u200d\u2640\ufe0f" );
@@ -7134,17 +7590,6 @@
 		name( "female_cook_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf73" );
 		name( "female_cook_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf73" );
 		name( "female_cook_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf73" );
-		name( "female_curly_haired", "\ud83d\udc69\u200d\ud83e\uddb1" );
-		name( "female_curly_haired_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb1" );
-		name( "female_curly_haired_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb1" );
-		name( "female_curly_haired_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb1" );
-		name( "female_curly_haired_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb1" );
-		name( "female_curly_haired_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb1" );
-		name( "female_curly_haired_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb1" );
-		name( "female_curly_haired_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb1" );
-		name( "female_curly_haired_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb1" );
-		name( "female_curly_haired_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb1" );
-		name( "female_curly_haired_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb1" );
 		name( "female_detective", "\ud83d\udd75\ufe0f\u200d\u2640\ufe0f" );
 		name( "female_detective_dark_skin_tone", "\ud83d\udd75\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "female_detective_light_skin_tone", "\ud83d\udd75\ud83c\udffb\u200d\u2640\ufe0f" );
@@ -7174,6 +7619,8 @@
 		name( "female_elf_medium_light_skin_tone", "\ud83e\udddd\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "female_elf_medium_skin_tone", "\ud83e\udddd\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "female_elf_tone1", "\ud83e\udddd\ud83c\udffb\u200d\u2640\ufe0f" );
+	}
+	private static void init75(){
 		name( "female_elf_tone2", "\ud83e\udddd\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "female_elf_tone3", "\ud83e\udddd\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "female_elf_tone4", "\ud83e\udddd\ud83c\udffe\u200d\u2640\ufe0f" );
@@ -7207,8 +7654,6 @@
 		name( "female_farmer_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf3e" );
 		name( "female_farmer_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf3e" );
 		name( "female_farmer_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf3e" );
-	}
-	private static void init71(){
 		name( "female_farmer_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf3e" );
 		name( "female_farmer_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf3e" );
 		name( "female_farmer_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf3e" );
@@ -7277,6 +7722,8 @@
 		name( "female_office_worker_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83d\udcbc" );
 		name( "female_office_worker_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83d\udcbc" );
 		name( "female_office_worker_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83d\udcbc" );
+	}
+	private static void init76(){
 		name( "female_office_worker_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83d\udcbc" );
 		name( "female_office_worker_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83d\udcbc" );
 		name( "female_office_worker_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83d\udcbc" );
@@ -7302,19 +7749,6 @@
 		name( "female_police_officer_tone3", "\ud83d\udc6e\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "female_police_officer_tone4", "\ud83d\udc6e\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "female_police_officer_tone5", "\ud83d\udc6e\ud83c\udfff\u200d\u2640\ufe0f" );
-		name( "female_red_haired", "\ud83d\udc69\u200d\ud83e\uddb0" );
-		name( "female_red_haired_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb0" );
-		name( "female_red_haired_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb0" );
-		name( "female_red_haired_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb0" );
-		name( "female_red_haired_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb0" );
-		name( "female_red_haired_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb0" );
-		name( "female_red_haired_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb0" );
-		name( "female_red_haired_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb0" );
-	}
-	private static void init72(){
-		name( "female_red_haired_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb0" );
-		name( "female_red_haired_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb0" );
-		name( "female_red_haired_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb0" );
 		name( "female_scientist", "\ud83d\udc69\u200d\ud83d\udd2c" );
 		name( "female_scientist_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83d\udd2c" );
 		name( "female_scientist_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83d\udd2c" );
@@ -7391,6 +7825,8 @@
 		name( "female_technologist_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83d\udcbb" );
 		name( "female_technologist_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83d\udcbb" );
 		name( "female_technologist_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83d\udcbb" );
+	}
+	private static void init77(){
 		name( "female_technologist_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83d\udcbb" );
 		name( "female_technologist_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83d\udcbb" );
 		name( "female_vampire", "\ud83e\udddb\u200d\u2640\ufe0f" );
@@ -7404,19 +7840,6 @@
 		name( "female_vampire_tone3", "\ud83e\udddb\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "female_vampire_tone4", "\ud83e\udddb\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "female_vampire_tone5", "\ud83e\udddb\ud83c\udfff\u200d\u2640\ufe0f" );
-		name( "female_white_haired", "\ud83d\udc69\u200d\ud83e\uddb3" );
-		name( "female_white_haired_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb3" );
-		name( "female_white_haired_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb3" );
-		name( "female_white_haired_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb3" );
-		name( "female_white_haired_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb3" );
-		name( "female_white_haired_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb3" );
-		name( "female_white_haired_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb3" );
-		name( "female_white_haired_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb3" );
-		name( "female_white_haired_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb3" );
-	}
-	private static void init73(){
-		name( "female_white_haired_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb3" );
-		name( "female_white_haired_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb3" );
 		name( "female_zombie", "\ud83e\udddf\u200d\u2640\ufe0f" );
 		name( "fencer", "\ud83e\udd3a" );
 		name( "fencing", "\ud83e\udd3a" );
@@ -7439,6 +7862,17 @@
 		name( "fire_engine", "\ud83d\ude92" );
 		name( "fire_extinguisher", "\ud83e\uddef" );
 		name( "firecracker", "\ud83e\udde8" );
+		name( "firefighter", "\ud83e\uddd1\u200d\ud83d\ude92" );
+		name( "firefighter_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\ude92" );
+		name( "firefighter_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\ude92" );
+		name( "firefighter_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\ude92" );
+		name( "firefighter_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\ude92" );
+		name( "firefighter_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\ude92" );
+		name( "firefighter_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\ude92" );
+		name( "firefighter_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\ude92" );
+		name( "firefighter_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\ude92" );
+		name( "firefighter_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\ude92" );
+		name( "firefighter_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\ude92" );
 		name( "fireworks", "\ud83c\udf86" );
 		name( "first_place", "\ud83e\udd47" );
 		name( "first_place_medal", "\ud83e\udd47" );
@@ -7494,6 +7928,8 @@
 		name( "flag_bo", "\ud83c\udde7\ud83c\uddf4" );
 		name( "flag_bq", "\ud83c\udde7\ud83c\uddf6" );
 		name( "flag_br", "\ud83c\udde7\ud83c\uddf7" );
+	}
+	private static void init78(){
 		name( "flag_bs", "\ud83c\udde7\ud83c\uddf8" );
 		name( "flag_bt", "\ud83c\udde7\ud83c\uddf9" );
 		name( "flag_bv", "\ud83c\udde7\ud83c\uddfb" );
@@ -7516,8 +7952,6 @@
 		name( "flag_cr", "\ud83c\udde8\ud83c\uddf7" );
 		name( "flag_cu", "\ud83c\udde8\ud83c\uddfa" );
 		name( "flag_cv", "\ud83c\udde8\ud83c\uddfb" );
-	}
-	private static void init74(){
 		name( "flag_cw", "\ud83c\udde8\ud83c\uddfc" );
 		name( "flag_cx", "\ud83c\udde8\ud83c\uddfd" );
 		name( "flag_cy", "\ud83c\udde8\ud83c\uddfe" );
@@ -7597,6 +8031,8 @@
 		name( "flag_ky", "\ud83c\uddf0\ud83c\uddfe" );
 		name( "flag_kz", "\ud83c\uddf0\ud83c\uddff" );
 		name( "flag_la", "\ud83c\uddf1\ud83c\udde6" );
+	}
+	private static void init79(){
 		name( "flag_lb", "\ud83c\uddf1\ud83c\udde7" );
 		name( "flag_lc", "\ud83c\uddf1\ud83c\udde8" );
 		name( "flag_li", "\ud83c\uddf1\ud83c\uddee" );
@@ -7619,8 +8055,6 @@
 		name( "flag_mm", "\ud83c\uddf2\ud83c\uddf2" );
 		name( "flag_mn", "\ud83c\uddf2\ud83c\uddf3" );
 		name( "flag_mo", "\ud83c\uddf2\ud83c\uddf4" );
-	}
-	private static void init75(){
 		name( "flag_mp", "\ud83c\uddf2\ud83c\uddf5" );
 		name( "flag_mq", "\ud83c\uddf2\ud83c\uddf6" );
 		name( "flag_mr", "\ud83c\uddf2\ud83c\uddf7" );
@@ -7700,6 +8134,8 @@
 		name( "flag_tn", "\ud83c\uddf9\ud83c\uddf3" );
 		name( "flag_to", "\ud83c\uddf9\ud83c\uddf4" );
 		name( "flag_tr", "\ud83c\uddf9\ud83c\uddf7" );
+	}
+	private static void init80(){
 		name( "flag_tt", "\ud83c\uddf9\ud83c\uddf9" );
 		name( "flag_tv", "\ud83c\uddf9\ud83c\uddfb" );
 		name( "flag_tw", "\ud83c\uddf9\ud83c\uddfc" );
@@ -7722,8 +8158,6 @@
 		name( "flag_wf", "\ud83c\uddfc\ud83c\uddeb" );
 		name( "flag_white", "\ud83c\udff3\ufe0f" );
 		name( "flag_ws", "\ud83c\uddfc\ud83c\uddf8" );
-	}
-	private static void init76(){
 		name( "flag_xk", "\ud83c\uddfd\ud83c\uddf0" );
 		name( "flag_ye", "\ud83c\uddfe\ud83c\uddea" );
 		name( "flag_yt", "\ud83c\uddfe\ud83c\uddf9" );
@@ -7732,19 +8166,23 @@
 		name( "flag_zw", "\ud83c\uddff\ud83c\uddfc" );
 		name( "flags", "\ud83c\udf8f" );
 		name( "flame", "\ud83d\udd25" );
+		name( "flamingo", "\ud83e\udda9" );
 		name( "flan", "\ud83c\udf6e" );
 		name( "flashlight", "\ud83d\udd26" );
+		name( "flatbread", "\ud83e\uded3" );
 		name( "fleur_de_lis", "\u269c\ufe0f" );
 		name( "flipper", "\ud83d\udc2c" );
 		name( "floppy_disk", "\ud83d\udcbe" );
 		name( "flower_playing_cards", "\ud83c\udfb4" );
 		name( "flushed", "\ud83d\ude33" );
+		name( "fly", "\ud83e\udeb0" );
 		name( "flying_disc", "\ud83e\udd4f" );
 		name( "flying_saucer", "\ud83d\udef8" );
 		name( "fm", "\ud83c\uddeb\ud83c\uddf2" );
 		name( "fo", "\ud83c\uddeb\ud83c\uddf4" );
 		name( "fog", "\ud83c\udf2b\ufe0f" );
 		name( "foggy", "\ud83c\udf01" );
+		name( "fondue", "\ud83e\uded5" );
 		name( "foot", "\ud83e\uddb6" );
 		name( "foot_dark_skin_tone", "\ud83e\uddb6\ud83c\udfff" );
 		name( "foot_light_skin_tone", "\ud83e\uddb6\ud83c\udffb" );
@@ -7784,6 +8222,7 @@
 		name( "funeral_urn", "\u26b1\ufe0f" );
 		name( "ga", "\ud83c\uddec\ud83c\udde6" );
 		name( "game_die", "\ud83c\udfb2" );
+		name( "garlic", "\ud83e\uddc4" );
 		name( "gay_pride_flag", "\ud83c\udff3\ufe0f\u200d\ud83c\udf08" );
 		name( "gb", "\ud83c\uddec\ud83c\udde7" );
 		name( "gd", "\ud83c\uddec\ud83c\udde9" );
@@ -7798,6 +8237,8 @@
 		name( "ghost", "\ud83d\udc7b" );
 		name( "gi", "\ud83c\uddec\ud83c\uddee" );
 		name( "gift", "\ud83c\udf81" );
+	}
+	private static void init81(){
 		name( "gift_heart", "\ud83d\udc9d" );
 		name( "giraffe_face", "\ud83e\udd92" );
 		name( "girl", "\ud83d\udc67" );
@@ -7825,8 +8266,6 @@
 		name( "golfer", "\ud83c\udfcc\ufe0f" );
 		name( "golfer_dark_skin_tone", "\ud83c\udfcc\ud83c\udfff" );
 		name( "golfer_light_skin_tone", "\ud83c\udfcc\ud83c\udffb" );
-	}
-	private static void init77(){
 		name( "golfer_medium_dark_skin_tone", "\ud83c\udfcc\ud83c\udffe" );
 		name( "golfer_medium_light_skin_tone", "\ud83c\udfcc\ud83c\udffc" );
 		name( "golfer_medium_skin_tone", "\ud83c\udfcc\ud83c\udffd" );
@@ -7871,6 +8310,7 @@
 		name( "guardsman_tone3", "\ud83d\udc82\ud83c\udffd" );
 		name( "guardsman_tone4", "\ud83d\udc82\ud83c\udffe" );
 		name( "guardsman_tone5", "\ud83d\udc82\ud83c\udfff" );
+		name( "guide_dog", "\ud83e\uddae" );
 		name( "guitar", "\ud83c\udfb8" );
 		name( "gun", "\ud83d\udd2b" );
 		name( "gw", "\ud83c\uddec\ud83c\uddfc" );
@@ -7900,6 +8340,8 @@
 		name( "hand_medium_skin_tone", "\u270b\ud83c\udffd" );
 		name( "hand_splayed", "\ud83d\udd90\ufe0f" );
 		name( "hand_splayed_tone1", "\ud83d\udd90\ud83c\udffb" );
+	}
+	private static void init82(){
 		name( "hand_splayed_tone2", "\ud83d\udd90\ud83c\udffc" );
 		name( "hand_splayed_tone3", "\ud83d\udd90\ud83c\udffd" );
 		name( "hand_splayed_tone4", "\ud83d\udd90\ud83c\udffe" );
@@ -7928,8 +8370,6 @@
 		name( "handball_medium_dark_skin_tone", "\ud83e\udd3e\ud83c\udffe" );
 		name( "handball_medium_light_skin_tone", "\ud83e\udd3e\ud83c\udffc" );
 		name( "handball_medium_skin_tone", "\ud83e\udd3e\ud83c\udffd" );
-	}
-	private static void init78(){
 		name( "handball_tone1", "\ud83e\udd3e\ud83c\udffb" );
 		name( "handball_tone2", "\ud83e\udd3e\ud83c\udffc" );
 		name( "handball_tone3", "\ud83e\udd3e\ud83c\udffd" );
@@ -7942,6 +8382,18 @@
 		name( "hatching_chick", "\ud83d\udc23" );
 		name( "head_bandage", "\ud83e\udd15" );
 		name( "headphones", "\ud83c\udfa7" );
+		name( "headstone", "\ud83e\udea6" );
+		name( "health_worker", "\ud83e\uddd1\u200d\u2695\ufe0f" );
+		name( "health_worker_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2695\ufe0f" );
+		name( "health_worker_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2695\ufe0f" );
+		name( "health_worker_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2695\ufe0f" );
+		name( "health_worker_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2695\ufe0f" );
+		name( "health_worker_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2695\ufe0f" );
+		name( "health_worker_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\u2695\ufe0f" );
+		name( "health_worker_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\u2695\ufe0f" );
+		name( "health_worker_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\u2695\ufe0f" );
+		name( "health_worker_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\u2695\ufe0f" );
+		name( "health_worker_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\u2695\ufe0f" );
 		name( "hear_no_evil", "\ud83d\ude49" );
 		name( "heart", "\u2764\ufe0f" );
 		name( "heart_decoration", "\ud83d\udc9f" );
@@ -7968,6 +8420,7 @@
 		name( "high_brightness", "\ud83d\udd06" );
 		name( "high_heel", "\ud83d\udc60" );
 		name( "hiking_boot", "\ud83e\udd7e" );
+		name( "hindu_temple", "\ud83d\uded5" );
 		name( "hippopotamus", "\ud83e\udd9b" );
 		name( "hk", "\ud83c\udded\ud83c\uddf0" );
 		name( "hm", "\ud83c\udded\ud83c\uddf2" );
@@ -7978,6 +8431,7 @@
 		name( "homes", "\ud83c\udfd8\ufe0f" );
 		name( "honey_pot", "\ud83c\udf6f" );
 		name( "honeybee", "\ud83d\udc1d" );
+		name( "hook", "\ud83e\ude9d" );
 		name( "horse", "\ud83d\udc34" );
 		name( "horse_racing", "\ud83c\udfc7" );
 		name( "horse_racing_dark_skin_tone", "\ud83c\udfc7\ud83c\udfff" );
@@ -7989,6 +8443,8 @@
 		name( "horse_racing_tone2", "\ud83c\udfc7\ud83c\udffc" );
 		name( "horse_racing_tone3", "\ud83c\udfc7\ud83c\udffd" );
 		name( "horse_racing_tone4", "\ud83c\udfc7\ud83c\udffe" );
+	}
+	private static void init83(){
 		name( "horse_racing_tone5", "\ud83c\udfc7\ud83c\udfff" );
 		name( "hospital", "\ud83c\udfe5" );
 		name( "hot_dog", "\ud83c\udf2d" );
@@ -8009,6 +8465,7 @@
 		name( "hugging", "\ud83e\udd17" );
 		name( "hugging_face", "\ud83e\udd17" );
 		name( "hushed", "\ud83d\ude2f" );
+		name( "hut", "\ud83d\uded6" );
 		name( "i_love_you_hand_sign", "\ud83e\udd1f" );
 		name( "i_love_you_hand_sign_dark_skin_tone", "\ud83e\udd1f\ud83c\udfff" );
 		name( "i_love_you_hand_sign_light_skin_tone", "\ud83e\udd1f\ud83c\udffb" );
@@ -8022,6 +8479,7 @@
 		name( "i_love_you_hand_sign_tone5", "\ud83e\udd1f\ud83c\udfff" );
 		name( "ic", "\ud83c\uddee\ud83c\udde8" );
 		name( "ice_cream", "\ud83c\udf68" );
+		name( "ice_cube", "\ud83e\uddca" );
 		name( "ice_hockey_stick_and_puck", "\ud83c\udfd2" );
 		name( "ice_skate", "\u26f8\ufe0f" );
 		name( "icecream", "\ud83c\udf66" );
@@ -8031,8 +8489,6 @@
 		name( "il", "\ud83c\uddee\ud83c\uddf1" );
 		name( "im", "\ud83c\uddee\ud83c\uddf2" );
 		name( "imp", "\ud83d\udc7f" );
-	}
-	private static void init79(){
 		name( "in", "\ud83c\uddee\ud83c\uddf3" );
 		name( "inbox_tray", "\ud83d\udce5" );
 		name( "incoming_envelope", "\ud83d\udce8" );
@@ -8074,11 +8530,24 @@
 		name( "joy_cat", "\ud83d\ude39" );
 		name( "joystick", "\ud83d\udd79\ufe0f" );
 		name( "jp", "\ud83c\uddef\ud83c\uddf5" );
+		name( "judge", "\ud83e\uddd1\u200d\u2696\ufe0f" );
+		name( "judge_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2696\ufe0f" );
+		name( "judge_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2696\ufe0f" );
+		name( "judge_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2696\ufe0f" );
+		name( "judge_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2696\ufe0f" );
+		name( "judge_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2696\ufe0f" );
+		name( "judge_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\u2696\ufe0f" );
+		name( "judge_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\u2696\ufe0f" );
+		name( "judge_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\u2696\ufe0f" );
+		name( "judge_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\u2696\ufe0f" );
+		name( "judge_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\u2696\ufe0f" );
 		name( "juggler", "\ud83e\udd39" );
 		name( "juggler_tone1", "\ud83e\udd39\ud83c\udffb" );
 		name( "juggler_tone2", "\ud83e\udd39\ud83c\udffc" );
 		name( "juggler_tone3", "\ud83e\udd39\ud83c\udffd" );
 		name( "juggler_tone4", "\ud83e\udd39\ud83c\udffe" );
+	}
+	private static void init84(){
 		name( "juggler_tone5", "\ud83e\udd39\ud83c\udfff" );
 		name( "juggling", "\ud83e\udd39" );
 		name( "juggling_dark_skin_tone", "\ud83e\udd39\ud83c\udfff" );
@@ -8115,12 +8584,25 @@
 		name( "kissing_closed_eyes", "\ud83d\ude1a" );
 		name( "kissing_heart", "\ud83d\ude18" );
 		name( "kissing_smiling_eyes", "\ud83d\ude19" );
+		name( "kite", "\ud83e\ude81" );
 		name( "kiwi", "\ud83e\udd5d" );
 		name( "kiwifruit", "\ud83e\udd5d" );
 		name( "km", "\ud83c\uddf0\ud83c\uddf2" );
 		name( "kn", "\ud83c\uddf0\ud83c\uddf3" );
+		name( "kneeling_person", "\ud83e\uddce" );
+		name( "kneeling_person_dark_skin_tone", "\ud83e\uddce\ud83c\udfff" );
+		name( "kneeling_person_light_skin_tone", "\ud83e\uddce\ud83c\udffb" );
+		name( "kneeling_person_medium_dark_skin_tone", "\ud83e\uddce\ud83c\udffe" );
+		name( "kneeling_person_medium_light_skin_tone", "\ud83e\uddce\ud83c\udffc" );
+		name( "kneeling_person_medium_skin_tone", "\ud83e\uddce\ud83c\udffd" );
+		name( "kneeling_person_tone1", "\ud83e\uddce\ud83c\udffb" );
+		name( "kneeling_person_tone2", "\ud83e\uddce\ud83c\udffc" );
+		name( "kneeling_person_tone3", "\ud83e\uddce\ud83c\udffd" );
+		name( "kneeling_person_tone4", "\ud83e\uddce\ud83c\udffe" );
+		name( "kneeling_person_tone5", "\ud83e\uddce\ud83c\udfff" );
 		name( "knife", "\ud83d\udd2a" );
 		name( "knife_fork_plate", "\ud83c\udf7d\ufe0f" );
+		name( "knot", "\ud83e\udea2" );
 		name( "koala", "\ud83d\udc28" );
 		name( "koko", "\ud83c\ude01" );
 		name( "kp", "\ud83c\uddf0\ud83c\uddf5" );
@@ -8132,12 +8614,23 @@
 		name( "lab_coat", "\ud83e\udd7c" );
 		name( "label", "\ud83c\udff7\ufe0f" );
 		name( "lacrosse", "\ud83e\udd4d" );
+		name( "ladder", "\ud83e\ude9c" );
 		name( "lantern", "\ud83c\udfee" );
 		name( "large_blue_circle", "\ud83d\udd35" );
-	}
-	private static void init80(){
 		name( "large_blue_diamond", "\ud83d\udd37" );
+		name( "large_blue_square", "\ud83d\udfe6" );
+		name( "large_brown_circle", "\ud83d\udfe4" );
+		name( "large_brown_square", "\ud83d\udfeb" );
+		name( "large_green_circle", "\ud83d\udfe2" );
+		name( "large_green_square", "\ud83d\udfe9" );
+		name( "large_orange_circle", "\ud83d\udfe0" );
 		name( "large_orange_diamond", "\ud83d\udd36" );
+		name( "large_orange_square", "\ud83d\udfe7" );
+		name( "large_purple_circle", "\ud83d\udfe3" );
+		name( "large_purple_square", "\ud83d\udfea" );
+		name( "large_red_square", "\ud83d\udfe5" );
+		name( "large_yellow_circle", "\ud83d\udfe1" );
+		name( "large_yellow_square", "\ud83d\udfe8" );
 		name( "last_quarter_moon", "\ud83c\udf17" );
 		name( "last_quarter_moon_with_face", "\ud83c\udf1c" );
 		name( "latin_cross", "\u271d\ufe0f" );
@@ -8156,6 +8649,8 @@
 		name( "left_facing_fist_tone1", "\ud83e\udd1b\ud83c\udffb" );
 		name( "left_facing_fist_tone2", "\ud83e\udd1b\ud83c\udffc" );
 		name( "left_facing_fist_tone3", "\ud83e\udd1b\ud83c\udffd" );
+	}
+	private static void init85(){
 		name( "left_facing_fist_tone4", "\ud83e\udd1b\ud83c\udffe" );
 		name( "left_facing_fist_tone5", "\ud83e\udd1b\ud83c\udfff" );
 		name( "left_fist", "\ud83e\udd1b" );
@@ -8209,6 +8704,7 @@
 		name( "lock", "\ud83d\udd12" );
 		name( "lock_with_ink_pen", "\ud83d\udd0f" );
 		name( "lollipop", "\ud83c\udf6d" );
+		name( "long_drum", "\ud83e\ude98" );
 		name( "loop", "\u27bf" );
 		name( "lotion_bottle", "\ud83e\uddf4" );
 		name( "loud_sound", "\ud83d\udd0a" );
@@ -8225,6 +8721,7 @@
 		name( "lt", "\ud83c\uddf1\ud83c\uddf9" );
 		name( "lu", "\ud83c\uddf1\ud83c\uddfa" );
 		name( "luggage", "\ud83e\uddf3" );
+		name( "lungs", "\ud83e\udec1" );
 		name( "lv", "\ud83c\uddf1\ud83c\uddfb" );
 		name( "ly", "\ud83c\uddf1\ud83c\uddfe" );
 		name( "lying_face", "\ud83e\udd25" );
@@ -8237,14 +8734,13 @@
 		name( "mage_light_skin_tone", "\ud83e\uddd9\ud83c\udffb" );
 		name( "mage_medium_dark_skin_tone", "\ud83e\uddd9\ud83c\udffe" );
 		name( "mage_medium_light_skin_tone", "\ud83e\uddd9\ud83c\udffc" );
-	}
-	private static void init81(){
 		name( "mage_medium_skin_tone", "\ud83e\uddd9\ud83c\udffd" );
 		name( "mage_tone1", "\ud83e\uddd9\ud83c\udffb" );
 		name( "mage_tone2", "\ud83e\uddd9\ud83c\udffc" );
 		name( "mage_tone3", "\ud83e\uddd9\ud83c\udffd" );
 		name( "mage_tone4", "\ud83e\uddd9\ud83c\udffe" );
 		name( "mage_tone5", "\ud83e\uddd9\ud83c\udfff" );
+		name( "magic_wand", "\ud83e\ude84" );
 		name( "magnet", "\ud83e\uddf2" );
 		name( "mahjong", "\ud83c\udc04" );
 		name( "mailbox", "\ud83d\udceb" );
@@ -8256,6 +8752,8 @@
 		name( "male_artist_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udfa8" );
 		name( "male_artist_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfa8" );
 		name( "male_artist_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfa8" );
+	}
+	private static void init86(){
 		name( "male_artist_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udfa8" );
 		name( "male_artist_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udfa8" );
 		name( "male_artist_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfa8" );
@@ -8273,17 +8771,6 @@
 		name( "male_astronaut_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83d\ude80" );
 		name( "male_astronaut_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83d\ude80" );
 		name( "male_astronaut_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83d\ude80" );
-		name( "male_bald", "\ud83d\udc68\u200d\ud83e\uddb2" );
-		name( "male_bald_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb2" );
-		name( "male_bald_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb2" );
-		name( "male_bald_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb2" );
-		name( "male_bald_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb2" );
-		name( "male_bald_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb2" );
-		name( "male_bald_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb2" );
-		name( "male_bald_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb2" );
-		name( "male_bald_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb2" );
-		name( "male_bald_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb2" );
-		name( "male_bald_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb2" );
 		name( "male_construction_worker", "\ud83d\udc77\u200d\u2642\ufe0f" );
 		name( "male_construction_worker_dark_skin_tone", "\ud83d\udc77\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "male_construction_worker_light_skin_tone", "\ud83d\udc77\ud83c\udffb\u200d\u2642\ufe0f" );
@@ -8306,17 +8793,6 @@
 		name( "male_cook_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf73" );
 		name( "male_cook_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf73" );
 		name( "male_cook_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf73" );
-		name( "male_curly_haired", "\ud83d\udc68\u200d\ud83e\uddb1" );
-		name( "male_curly_haired_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb1" );
-		name( "male_curly_haired_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb1" );
-		name( "male_curly_haired_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb1" );
-		name( "male_curly_haired_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb1" );
-		name( "male_curly_haired_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb1" );
-		name( "male_curly_haired_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb1" );
-		name( "male_curly_haired_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb1" );
-		name( "male_curly_haired_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb1" );
-		name( "male_curly_haired_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb1" );
-		name( "male_curly_haired_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb1" );
 		name( "male_dancer", "\ud83d\udd7a" );
 		name( "male_dancer_tone1", "\ud83d\udd7a\ud83c\udffb" );
 		name( "male_dancer_tone2", "\ud83d\udd7a\ud83c\udffc" );
@@ -8340,8 +8816,6 @@
 		name( "male_doctor_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2695\ufe0f" );
 		name( "male_doctor_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2695\ufe0f" );
 		name( "male_doctor_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2695\ufe0f" );
-	}
-	private static void init82(){
 		name( "male_doctor_tone1", "\ud83d\udc68\ud83c\udffb\u200d\u2695\ufe0f" );
 		name( "male_doctor_tone2", "\ud83d\udc68\ud83c\udffc\u200d\u2695\ufe0f" );
 		name( "male_doctor_tone3", "\ud83d\udc68\ud83c\udffd\u200d\u2695\ufe0f" );
@@ -8381,6 +8855,8 @@
 		name( "male_fairy_tone4", "\ud83e\uddda\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "male_fairy_tone5", "\ud83e\uddda\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "male_farmer", "\ud83d\udc68\u200d\ud83c\udf3e" );
+	}
+	private static void init87(){
 		name( "male_farmer_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf3e" );
 		name( "male_farmer_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf3e" );
 		name( "male_farmer_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf3e" );
@@ -8443,8 +8919,6 @@
 		name( "male_mechanic_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udd27" );
 		name( "male_mechanic_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83d\udd27" );
 		name( "male_mechanic_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83d\udd27" );
-	}
-	private static void init83(){
 		name( "male_mechanic_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udd27" );
 		name( "male_mechanic_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83d\udd27" );
 		name( "male_mechanic_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83d\udd27" );
@@ -8482,19 +8956,10 @@
 		name( "male_police_officer_tone3", "\ud83d\udc6e\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "male_police_officer_tone4", "\ud83d\udc6e\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "male_police_officer_tone5", "\ud83d\udc6e\ud83c\udfff\u200d\u2642\ufe0f" );
-		name( "male_red_haired", "\ud83d\udc68\u200d\ud83e\uddb0" );
-		name( "male_red_haired_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb0" );
-		name( "male_red_haired_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb0" );
-		name( "male_red_haired_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb0" );
-		name( "male_red_haired_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb0" );
-		name( "male_red_haired_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb0" );
-		name( "male_red_haired_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb0" );
-		name( "male_red_haired_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb0" );
-		name( "male_red_haired_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb0" );
-		name( "male_red_haired_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb0" );
-		name( "male_red_haired_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb0" );
 		name( "male_scientist", "\ud83d\udc68\u200d\ud83d\udd2c" );
 		name( "male_scientist_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83d\udd2c" );
+	}
+	private static void init88(){
 		name( "male_scientist_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83d\udd2c" );
 		name( "male_scientist_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83d\udd2c" );
 		name( "male_scientist_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udd2c" );
@@ -8546,8 +9011,6 @@
 		name( "male_supervillain_medium_skin_tone", "\ud83e\uddb9\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "male_supervillain_tone1", "\ud83e\uddb9\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "male_supervillain_tone2", "\ud83e\uddb9\ud83c\udffc\u200d\u2642\ufe0f" );
-	}
-	private static void init84(){
 		name( "male_supervillain_tone3", "\ud83e\uddb9\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "male_supervillain_tone4", "\ud83e\uddb9\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "male_supervillain_tone5", "\ud83e\uddb9\ud83c\udfff\u200d\u2642\ufe0f" );
@@ -8584,20 +9047,22 @@
 		name( "male_vampire_tone3", "\ud83e\udddb\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "male_vampire_tone4", "\ud83e\udddb\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "male_vampire_tone5", "\ud83e\udddb\ud83c\udfff\u200d\u2642\ufe0f" );
-		name( "male_white_haired", "\ud83d\udc68\u200d\ud83e\uddb3" );
-		name( "male_white_haired_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb3" );
-		name( "male_white_haired_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb3" );
-		name( "male_white_haired_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb3" );
-		name( "male_white_haired_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb3" );
-		name( "male_white_haired_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb3" );
-		name( "male_white_haired_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb3" );
-		name( "male_white_haired_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb3" );
-		name( "male_white_haired_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb3" );
-		name( "male_white_haired_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb3" );
-		name( "male_white_haired_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb3" );
 		name( "male_zombie", "\ud83e\udddf\u200d\u2642\ufe0f" );
+		name( "mammoth", "\ud83e\udda3" );
 		name( "man", "\ud83d\udc68" );
 		name( "man_and_woman_holding_hands", "\ud83d\udc6b" );
+		name( "man_and_woman_holding_hands_dark_skin_tone", "\ud83d\udc6b\ud83c\udfff" );
+		name( "man_and_woman_holding_hands_light_skin_tone", "\ud83d\udc6b\ud83c\udffb" );
+		name( "man_and_woman_holding_hands_medium_dark_skin_tone", "\ud83d\udc6b\ud83c\udffe" );
+		name( "man_and_woman_holding_hands_medium_light_skin_tone", "\ud83d\udc6b\ud83c\udffc" );
+		name( "man_and_woman_holding_hands_medium_skin_tone", "\ud83d\udc6b\ud83c\udffd" );
+		name( "man_and_woman_holding_hands_tone1", "\ud83d\udc6b\ud83c\udffb" );
+		name( "man_and_woman_holding_hands_tone2", "\ud83d\udc6b\ud83c\udffc" );
+		name( "man_and_woman_holding_hands_tone3", "\ud83d\udc6b\ud83c\udffd" );
+		name( "man_and_woman_holding_hands_tone4", "\ud83d\udc6b\ud83c\udffe" );
+		name( "man_and_woman_holding_hands_tone5", "\ud83d\udc6b\ud83c\udfff" );
+	}
+	private static void init89(){
 		name( "man_artist", "\ud83d\udc68\u200d\ud83c\udfa8" );
 		name( "man_artist_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfa8" );
 		name( "man_artist_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udfa8" );
@@ -8649,8 +9114,6 @@
 		name( "man_bowing_medium_light_skin_tone", "\ud83d\ude47\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_bowing_medium_skin_tone", "\ud83d\ude47\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_bowing_tone1", "\ud83d\ude47\ud83c\udffb\u200d\u2642\ufe0f" );
-	}
-	private static void init85(){
 		name( "man_bowing_tone2", "\ud83d\ude47\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_bowing_tone3", "\ud83d\ude47\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_bowing_tone4", "\ud83d\ude47\ud83c\udffe\u200d\u2642\ufe0f" );
@@ -8701,6 +9164,8 @@
 		name( "man_cook_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf73" );
 		name( "man_cook_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf73" );
 		name( "man_cook_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf73" );
+	}
+	private static void init90(){
 		name( "man_dancing", "\ud83d\udd7a" );
 		name( "man_dancing_dark_skin_tone", "\ud83d\udd7a\ud83c\udfff" );
 		name( "man_dancing_light_skin_tone", "\ud83d\udd7a\ud83c\udffb" );
@@ -8752,13 +9217,22 @@
 		name( "man_farmer_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf3e" );
 		name( "man_farmer_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf3e" );
 		name( "man_farmer_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf3e" );
-	}
-	private static void init86(){
 		name( "man_farmer_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf3e" );
 		name( "man_farmer_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf3e" );
 		name( "man_farmer_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf3e" );
 		name( "man_farmer_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf3e" );
 		name( "man_farmer_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf3e" );
+		name( "man_feeding_baby", "\ud83d\udc68\u200d\ud83c\udf7c" );
+		name( "man_feeding_baby_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf7c" );
+		name( "man_feeding_baby_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf7c" );
+		name( "man_feeding_baby_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf7c" );
+		name( "man_feeding_baby_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf7c" );
+		name( "man_feeding_baby_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf7c" );
+		name( "man_feeding_baby_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf7c" );
+		name( "man_feeding_baby_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf7c" );
+		name( "man_feeding_baby_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf7c" );
+		name( "man_feeding_baby_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf7c" );
+		name( "man_feeding_baby_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf7c" );
 		name( "man_firefighter", "\ud83d\udc68\u200d\ud83d\ude92" );
 		name( "man_firefighter_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83d\ude92" );
 		name( "man_firefighter_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83d\ude92" );
@@ -8793,6 +9267,8 @@
 		name( "man_gesturing_no_tone4", "\ud83d\ude45\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_gesturing_no_tone5", "\ud83d\ude45\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_gesturing_ok", "\ud83d\ude46\u200d\u2642\ufe0f" );
+	}
+	private static void init91(){
 		name( "man_gesturing_ok_dark_skin_tone", "\ud83d\ude46\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_gesturing_ok_light_skin_tone", "\ud83d\ude46\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_gesturing_ok_medium_dark_skin_tone", "\ud83d\ude46\ud83c\udffe\u200d\u2642\ufe0f" );
@@ -8855,8 +9331,6 @@
 		name( "man_guard_light_skin_tone", "\ud83d\udc82\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_guard_medium_dark_skin_tone", "\ud83d\udc82\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_guard_medium_light_skin_tone", "\ud83d\udc82\ud83c\udffc\u200d\u2642\ufe0f" );
-	}
-	private static void init87(){
 		name( "man_guard_medium_skin_tone", "\ud83d\udc82\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_guard_tone1", "\ud83d\udc82\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_guard_tone2", "\ud83d\udc82\ud83c\udffc\u200d\u2642\ufe0f" );
@@ -8896,7 +9370,31 @@
 		name( "man_in_lotus_position_tone2", "\ud83e\uddd8\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_in_lotus_position_tone3", "\ud83e\uddd8\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_in_lotus_position_tone4", "\ud83e\uddd8\ud83c\udffe\u200d\u2642\ufe0f" );
+	}
+	private static void init92(){
 		name( "man_in_lotus_position_tone5", "\ud83e\uddd8\ud83c\udfff\u200d\u2642\ufe0f" );
+		name( "man_in_manual_wheelchair", "\ud83d\udc68\u200d\ud83e\uddbd" );
+		name( "man_in_manual_wheelchair_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddbd" );
+		name( "man_in_manual_wheelchair_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddbd" );
+		name( "man_in_manual_wheelchair_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddbd" );
+		name( "man_in_manual_wheelchair_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddbd" );
+		name( "man_in_manual_wheelchair_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddbd" );
+		name( "man_in_manual_wheelchair_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddbd" );
+		name( "man_in_manual_wheelchair_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddbd" );
+		name( "man_in_manual_wheelchair_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddbd" );
+		name( "man_in_manual_wheelchair_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddbd" );
+		name( "man_in_manual_wheelchair_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddbd" );
+		name( "man_in_motorized_wheelchair", "\ud83d\udc68\u200d\ud83e\uddbc" );
+		name( "man_in_motorized_wheelchair_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddbc" );
+		name( "man_in_motorized_wheelchair_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddbc" );
+		name( "man_in_motorized_wheelchair_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddbc" );
+		name( "man_in_motorized_wheelchair_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddbc" );
+		name( "man_in_motorized_wheelchair_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddbc" );
+		name( "man_in_motorized_wheelchair_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddbc" );
+		name( "man_in_motorized_wheelchair_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddbc" );
+		name( "man_in_motorized_wheelchair_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddbc" );
+		name( "man_in_motorized_wheelchair_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddbc" );
+		name( "man_in_motorized_wheelchair_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddbc" );
 		name( "man_in_steamy_room", "\ud83e\uddd6\u200d\u2642\ufe0f" );
 		name( "man_in_steamy_room_dark_skin_tone", "\ud83e\uddd6\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_in_steamy_room_light_skin_tone", "\ud83e\uddd6\ud83c\udffb\u200d\u2642\ufe0f" );
@@ -8908,17 +9406,17 @@
 		name( "man_in_steamy_room_tone3", "\ud83e\uddd6\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_in_steamy_room_tone4", "\ud83e\uddd6\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_in_steamy_room_tone5", "\ud83e\uddd6\ud83c\udfff\u200d\u2642\ufe0f" );
-		name( "man_in_tuxedo", "\ud83e\udd35" );
-		name( "man_in_tuxedo_dark_skin_tone", "\ud83e\udd35\ud83c\udfff" );
+		name( "man_in_tuxedo", "\ud83e\udd35\u200d\u2642\ufe0f" );
+		name( "man_in_tuxedo_dark_skin_tone", "\ud83e\udd35\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_in_tuxedo_light_skin_tone", "\ud83e\udd35\ud83c\udffb" );
 		name( "man_in_tuxedo_medium_dark_skin_tone", "\ud83e\udd35\ud83c\udffe" );
-		name( "man_in_tuxedo_medium_light_skin_tone", "\ud83e\udd35\ud83c\udffc" );
+		name( "man_in_tuxedo_medium_light_skin_tone", "\ud83e\udd35\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_in_tuxedo_medium_skin_tone", "\ud83e\udd35\ud83c\udffd" );
 		name( "man_in_tuxedo_tone1", "\ud83e\udd35\ud83c\udffb" );
-		name( "man_in_tuxedo_tone2", "\ud83e\udd35\ud83c\udffc" );
-		name( "man_in_tuxedo_tone3", "\ud83e\udd35\ud83c\udffd" );
+		name( "man_in_tuxedo_tone2", "\ud83e\udd35\ud83c\udffc\u200d\u2642\ufe0f" );
+		name( "man_in_tuxedo_tone3", "\ud83e\udd35\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_in_tuxedo_tone4", "\ud83e\udd35\ud83c\udffe" );
-		name( "man_in_tuxedo_tone5", "\ud83e\udd35\ud83c\udfff" );
+		name( "man_in_tuxedo_tone5", "\ud83e\udd35\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_judge", "\ud83d\udc68\u200d\u2696\ufe0f" );
 		name( "man_judge_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2696\ufe0f" );
 		name( "man_judge_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2696\ufe0f" );
@@ -8942,6 +9440,17 @@
 		name( "man_juggling_tone4", "\ud83e\udd39\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_juggling_tone5", "\ud83e\udd39\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_kiss_man", "\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68" );
+		name( "man_kneeling", "\ud83e\uddce\u200d\u2642\ufe0f" );
+		name( "man_kneeling_dark_skin_tone", "\ud83e\uddce\ud83c\udfff\u200d\u2642\ufe0f" );
+		name( "man_kneeling_light_skin_tone", "\ud83e\uddce\ud83c\udffb\u200d\u2642\ufe0f" );
+		name( "man_kneeling_medium_dark_skin_tone", "\ud83e\uddce\ud83c\udffe\u200d\u2642\ufe0f" );
+		name( "man_kneeling_medium_light_skin_tone", "\ud83e\uddce\ud83c\udffc\u200d\u2642\ufe0f" );
+		name( "man_kneeling_medium_skin_tone", "\ud83e\uddce\ud83c\udffd\u200d\u2642\ufe0f" );
+		name( "man_kneeling_tone1", "\ud83e\uddce\ud83c\udffb\u200d\u2642\ufe0f" );
+		name( "man_kneeling_tone2", "\ud83e\uddce\ud83c\udffc\u200d\u2642\ufe0f" );
+		name( "man_kneeling_tone3", "\ud83e\uddce\ud83c\udffd\u200d\u2642\ufe0f" );
+		name( "man_kneeling_tone4", "\ud83e\uddce\ud83c\udffe\u200d\u2642\ufe0f" );
+		name( "man_kneeling_tone5", "\ud83e\uddce\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_lifting_weights", "\ud83c\udfcb\ufe0f\u200d\u2642\ufe0f" );
 		name( "man_lifting_weights_dark_skin_tone", "\ud83c\udfcb\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_lifting_weights_light_skin_tone", "\ud83c\udfcb\ud83c\udffb\u200d\u2642\ufe0f" );
@@ -8958,14 +9467,14 @@
 		name( "man_man_boy_boy", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66" );
 		name( "man_man_girl", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67" );
 		name( "man_man_girl_boy", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d\udc66" );
-	}
-	private static void init88(){
 		name( "man_man_girl_girl", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d\udc67" );
 		name( "man_mechanic", "\ud83d\udc68\u200d\ud83d\udd27" );
 		name( "man_mechanic_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83d\udd27" );
 		name( "man_mechanic_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83d\udd27" );
 		name( "man_mechanic_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83d\udd27" );
 		name( "man_mechanic_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udd27" );
+	}
+	private static void init93(){
 		name( "man_mechanic_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83d\udd27" );
 		name( "man_mechanic_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83d\udd27" );
 		name( "man_mechanic_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udd27" );
@@ -9061,14 +9570,14 @@
 		name( "man_raising_hand_tone1", "\ud83d\ude4b\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_raising_hand_tone2", "\ud83d\ude4b\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_raising_hand_tone3", "\ud83d\ude4b\ud83c\udffd\u200d\u2642\ufe0f" );
-	}
-	private static void init89(){
 		name( "man_raising_hand_tone4", "\ud83d\ude4b\ud83c\udffe\u200d\u2642\ufe0f" );
 		name( "man_raising_hand_tone5", "\ud83d\ude4b\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_rowing_boat", "\ud83d\udea3\u200d\u2642\ufe0f" );
 		name( "man_rowing_boat_dark_skin_tone", "\ud83d\udea3\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_rowing_boat_light_skin_tone", "\ud83d\udea3\ud83c\udffb\u200d\u2642\ufe0f" );
 		name( "man_rowing_boat_medium_dark_skin_tone", "\ud83d\udea3\ud83c\udffe\u200d\u2642\ufe0f" );
+	}
+	private static void init94(){
 		name( "man_rowing_boat_medium_light_skin_tone", "\ud83d\udea3\ud83c\udffc\u200d\u2642\ufe0f" );
 		name( "man_rowing_boat_medium_skin_tone", "\ud83d\udea3\ud83c\udffd\u200d\u2642\ufe0f" );
 		name( "man_rowing_boat_tone1", "\ud83d\udea3\ud83c\udffb\u200d\u2642\ufe0f" );
@@ -9120,6 +9629,17 @@
 		name( "man_singer_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udfa4" );
 		name( "man_singer_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfa4" );
 		name( "man_singer_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfa4" );
+		name( "man_standing", "\ud83e\uddcd\u200d\u2642\ufe0f" );
+		name( "man_standing_dark_skin_tone", "\ud83e\uddcd\ud83c\udfff\u200d\u2642\ufe0f" );
+		name( "man_standing_light_skin_tone", "\ud83e\uddcd\ud83c\udffb\u200d\u2642\ufe0f" );
+		name( "man_standing_medium_dark_skin_tone", "\ud83e\uddcd\ud83c\udffe\u200d\u2642\ufe0f" );
+		name( "man_standing_medium_light_skin_tone", "\ud83e\uddcd\ud83c\udffc\u200d\u2642\ufe0f" );
+		name( "man_standing_medium_skin_tone", "\ud83e\uddcd\ud83c\udffd\u200d\u2642\ufe0f" );
+		name( "man_standing_tone1", "\ud83e\uddcd\ud83c\udffb\u200d\u2642\ufe0f" );
+		name( "man_standing_tone2", "\ud83e\uddcd\ud83c\udffc\u200d\u2642\ufe0f" );
+		name( "man_standing_tone3", "\ud83e\uddcd\ud83c\udffd\u200d\u2642\ufe0f" );
+		name( "man_standing_tone4", "\ud83e\uddcd\ud83c\udffe\u200d\u2642\ufe0f" );
+		name( "man_standing_tone5", "\ud83e\uddcd\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_student", "\ud83d\udc68\u200d\ud83c\udf93" );
 		name( "man_student_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf93" );
 		name( "man_student_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf93" );
@@ -9159,13 +9679,13 @@
 		name( "man_teacher_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfeb" );
 		name( "man_teacher_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfeb" );
 		name( "man_teacher_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udfeb" );
+	}
+	private static void init95(){
 		name( "man_teacher_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udfeb" );
 		name( "man_teacher_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfeb" );
 		name( "man_teacher_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udfeb" );
 		name( "man_teacher_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfeb" );
 		name( "man_teacher_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfeb" );
-	}
-	private static void init90(){
 		name( "man_technologist", "\ud83d\udc68\u200d\ud83d\udcbb" );
 		name( "man_technologist_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83d\udcbb" );
 		name( "man_technologist_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83d\udcbb" );
@@ -9227,6 +9747,17 @@
 		name( "man_with_gua_pi_mao_tone3", "\ud83d\udc72\ud83c\udffd" );
 		name( "man_with_gua_pi_mao_tone4", "\ud83d\udc72\ud83c\udffe" );
 		name( "man_with_gua_pi_mao_tone5", "\ud83d\udc72\ud83c\udfff" );
+		name( "man_with_probing_cane", "\ud83d\udc68\u200d\ud83e\uddaf" );
+		name( "man_with_probing_cane_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddaf" );
+		name( "man_with_probing_cane_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddaf" );
+		name( "man_with_probing_cane_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddaf" );
+		name( "man_with_probing_cane_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddaf" );
+		name( "man_with_probing_cane_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddaf" );
+		name( "man_with_probing_cane_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddaf" );
+		name( "man_with_probing_cane_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddaf" );
+		name( "man_with_probing_cane_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddaf" );
+		name( "man_with_probing_cane_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddaf" );
+		name( "man_with_probing_cane_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddaf" );
 		name( "man_with_turban", "\ud83d\udc73" );
 		name( "man_with_turban_dark_skin_tone", "\ud83d\udc73\ud83c\udfff" );
 		name( "man_with_turban_light_skin_tone", "\ud83d\udc73\ud83c\udffb" );
@@ -9238,8 +9769,21 @@
 		name( "man_with_turban_tone3", "\ud83d\udc73\ud83c\udffd" );
 		name( "man_with_turban_tone4", "\ud83d\udc73\ud83c\udffe" );
 		name( "man_with_turban_tone5", "\ud83d\udc73\ud83c\udfff" );
+		name( "man_with_veil", "\ud83d\udc70\u200d\u2642\ufe0f" );
+		name( "man_with_veil_dark_skin_tone", "\ud83d\udc70\ud83c\udfff\u200d\u2642\ufe0f" );
+		name( "man_with_veil_light_skin_tone", "\ud83d\udc70\ud83c\udffb\u200d\u2642\ufe0f" );
+		name( "man_with_veil_medium_dark_skin_tone", "\ud83d\udc70\ud83c\udffe\u200d\u2642\ufe0f" );
+		name( "man_with_veil_medium_light_skin_tone", "\ud83d\udc70\ud83c\udffc\u200d\u2642\ufe0f" );
+		name( "man_with_veil_medium_skin_tone", "\ud83d\udc70\ud83c\udffd\u200d\u2642\ufe0f" );
+		name( "man_with_veil_tone1", "\ud83d\udc70\ud83c\udffb\u200d\u2642\ufe0f" );
+		name( "man_with_veil_tone2", "\ud83d\udc70\ud83c\udffc\u200d\u2642\ufe0f" );
+		name( "man_with_veil_tone3", "\ud83d\udc70\ud83c\udffd\u200d\u2642\ufe0f" );
+		name( "man_with_veil_tone4", "\ud83d\udc70\ud83c\udffe\u200d\u2642\ufe0f" );
+		name( "man_with_veil_tone5", "\ud83d\udc70\ud83c\udfff\u200d\u2642\ufe0f" );
 		name( "man_woman_boy", "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66" );
 		name( "man_woman_boy_boy", "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66" );
+	}
+	private static void init96(){
 		name( "man_woman_girl", "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67" );
 		name( "man_woman_girl_boy", "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc66" );
 		name( "man_woman_girl_girl", "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc67" );
@@ -9248,6 +9792,7 @@
 		name( "mans_shoe", "\ud83d\udc5e" );
 		name( "mantelpiece_clock", "\ud83d\udd70\ufe0f" );
 		name( "mantlepiece_clock", "\ud83d\udd70\ufe0f" );
+		name( "manual_wheelchair", "\ud83e\uddbd" );
 		name( "map", "\ud83d\uddfa\ufe0f" );
 		name( "maple_leaf", "\ud83c\udf41" );
 		name( "martial_arts_uniform", "\ud83e\udd4b" );
@@ -9263,17 +9808,40 @@
 		name( "massage_tone3", "\ud83d\udc86\ud83c\udffd" );
 		name( "massage_tone4", "\ud83d\udc86\ud83c\udffe" );
 		name( "massage_tone5", "\ud83d\udc86\ud83c\udfff" );
+		name( "mate_drink", "\ud83e\uddc9" );
 		name( "mc", "\ud83c\uddf2\ud83c\udde8" );
 		name( "md", "\ud83c\uddf2\ud83c\udde9" );
 		name( "me", "\ud83c\uddf2\ud83c\uddea" );
 		name( "meat_on_bone", "\ud83c\udf56" );
-	}
-	private static void init91(){
+		name( "mechanic", "\ud83e\uddd1\u200d\ud83d\udd27" );
+		name( "mechanic_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udd27" );
+		name( "mechanic_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udd27" );
+		name( "mechanic_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udd27" );
+		name( "mechanic_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udd27" );
+		name( "mechanic_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udd27" );
+		name( "mechanic_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udd27" );
+		name( "mechanic_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udd27" );
+		name( "mechanic_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udd27" );
+		name( "mechanic_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udd27" );
+		name( "mechanic_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udd27" );
+		name( "mechanical_arm", "\ud83e\uddbe" );
+		name( "mechanical_leg", "\ud83e\uddbf" );
 		name( "medal", "\ud83c\udfc5" );
 		name( "medical_symbol", "\u2695\ufe0f" );
 		name( "mega", "\ud83d\udce3" );
 		name( "melon", "\ud83c\udf48" );
 		name( "memo", "\ud83d\udcdd" );
+		name( "men_holding_hands", "\ud83d\udc6c" );
+		name( "men_holding_hands_dark_skin_tone", "\ud83d\udc6c\ud83c\udfff" );
+		name( "men_holding_hands_light_skin_tone", "\ud83d\udc6c\ud83c\udffb" );
+		name( "men_holding_hands_medium_dark_skin_tone", "\ud83d\udc6c\ud83c\udffe" );
+		name( "men_holding_hands_medium_light_skin_tone", "\ud83d\udc6c\ud83c\udffc" );
+		name( "men_holding_hands_medium_skin_tone", "\ud83d\udc6c\ud83c\udffd" );
+		name( "men_holding_hands_tone1", "\ud83d\udc6c\ud83c\udffb" );
+		name( "men_holding_hands_tone2", "\ud83d\udc6c\ud83c\udffc" );
+		name( "men_holding_hands_tone3", "\ud83d\udc6c\ud83c\udffd" );
+		name( "men_holding_hands_tone4", "\ud83d\udc6c\ud83c\udffe" );
+		name( "men_holding_hands_tone5", "\ud83d\udc6c\ud83c\udfff" );
 		name( "men_with_bunny_ears_partying", "\ud83d\udc6f\u200d\u2642\ufe0f" );
 		name( "men_wrestling", "\ud83e\udd3c\u200d\u2642\ufe0f" );
 		name( "menorah", "\ud83d\udd4e" );
@@ -9317,6 +9885,8 @@
 		name( "metal_tone2", "\ud83e\udd18\ud83c\udffc" );
 		name( "metal_tone3", "\ud83e\udd18\ud83c\udffd" );
 		name( "metal_tone4", "\ud83e\udd18\ud83c\udffe" );
+	}
+	private static void init97(){
 		name( "metal_tone5", "\ud83e\udd18\ud83c\udfff" );
 		name( "metro", "\ud83d\ude87" );
 		name( "mf", "\ud83c\uddf2\ud83c\uddeb" );
@@ -9337,11 +9907,13 @@
 		name( "middle_finger_tone3", "\ud83d\udd95\ud83c\udffd" );
 		name( "middle_finger_tone4", "\ud83d\udd95\ud83c\udffe" );
 		name( "middle_finger_tone5", "\ud83d\udd95\ud83c\udfff" );
+		name( "military_helmet", "\ud83e\ude96" );
 		name( "military_medal", "\ud83c\udf96\ufe0f" );
 		name( "milk", "\ud83e\udd5b" );
 		name( "milky_way", "\ud83c\udf0c" );
 		name( "minibus", "\ud83d\ude90" );
 		name( "minidisc", "\ud83d\udcbd" );
+		name( "mirror", "\ud83e\ude9e" );
 		name( "mk", "\ud83c\uddf2\ud83c\uddf0" );
 		name( "ml", "\ud83c\uddf2\ud83c\uddf1" );
 		name( "mm", "\ud83c\uddf2\ud83c\uddf2" );
@@ -9370,8 +9942,6 @@
 		name( "mother_christmas_tone1", "\ud83e\udd36\ud83c\udffb" );
 		name( "mother_christmas_tone2", "\ud83e\udd36\ud83c\udffc" );
 		name( "mother_christmas_tone3", "\ud83e\udd36\ud83c\udffd" );
-	}
-	private static void init92(){
 		name( "mother_christmas_tone4", "\ud83e\udd36\ud83c\udffe" );
 		name( "mother_christmas_tone5", "\ud83e\udd36\ud83c\udfff" );
 		name( "motor_boat", "\ud83d\udee5\ufe0f" );
@@ -9379,6 +9949,7 @@
 		name( "motorbike", "\ud83d\udef5" );
 		name( "motorboat", "\ud83d\udee5\ufe0f" );
 		name( "motorcycle", "\ud83c\udfcd\ufe0f" );
+		name( "motorized_wheelchair", "\ud83e\uddbc" );
 		name( "motorway", "\ud83d\udee3\ufe0f" );
 		name( "mount_fuji", "\ud83d\uddfb" );
 		name( "mountain", "\u26f0\ufe0f" );
@@ -9399,6 +9970,7 @@
 		name( "mouse", "\ud83d\udc2d" );
 		name( "mouse2", "\ud83d\udc01" );
 		name( "mouse_three_button", "\ud83d\uddb1\ufe0f" );
+		name( "mouse_trap", "\ud83e\udea4" );
 		name( "movie_camera", "\ud83c\udfa5" );
 		name( "moyai", "\ud83d\uddff" );
 		name( "mp", "\ud83c\uddf2\ud83c\uddf5" );
@@ -9416,6 +9988,8 @@
 		name( "mrs_claus_tone4", "\ud83e\udd36\ud83c\udffe" );
 		name( "mrs_claus_tone5", "\ud83e\udd36\ud83c\udfff" );
 		name( "ms", "\ud83c\uddf2\ud83c\uddf8" );
+	}
+	private static void init98(){
 		name( "mt", "\ud83c\uddf2\ud83c\uddf9" );
 		name( "mu", "\ud83c\uddf2\ud83c\uddfa" );
 		name( "muscle", "\ud83d\udcaa" );
@@ -9437,6 +10011,17 @@
 		name( "mv", "\ud83c\uddf2\ud83c\uddfb" );
 		name( "mw", "\ud83c\uddf2\ud83c\uddfc" );
 		name( "mx", "\ud83c\uddf2\ud83c\uddfd" );
+		name( "mx_claus", "\ud83e\uddd1\u200d\ud83c\udf84" );
+		name( "mx_claus_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf84" );
+		name( "mx_claus_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf84" );
+		name( "mx_claus_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf84" );
+		name( "mx_claus_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf84" );
+		name( "mx_claus_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf84" );
+		name( "mx_claus_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf84" );
+		name( "mx_claus_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf84" );
+		name( "mx_claus_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf84" );
+		name( "mx_claus_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf84" );
+		name( "mx_claus_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf84" );
 		name( "my", "\ud83c\uddf2\ud83c\uddfe" );
 		name( "mz", "\ud83c\uddf2\ud83c\uddff" );
 		name( "na", "\ud83c\uddf3\ud83c\udde6" );
@@ -9461,6 +10046,7 @@
 		name( "negative_squared_cross_mark", "\u274e" );
 		name( "nerd", "\ud83e\udd13" );
 		name( "nerd_face", "\ud83e\udd13" );
+		name( "nesting_dolls", "\ud83e\ude86" );
 		name( "neutral_face", "\ud83d\ude10" );
 		name( "new", "\ud83c\udd95" );
 		name( "new_moon", "\ud83c\udf11" );
@@ -9473,9 +10059,18 @@
 		name( "ni", "\ud83c\uddf3\ud83c\uddee" );
 		name( "nigeria", "\ud83c\uddf3\ud83c\uddec" );
 		name( "night_with_stars", "\ud83c\udf03" );
-	}
-	private static void init93(){
 		name( "nine", "\u0039\ufe0f\u20e3" );
+		name( "ninja", "\ud83e\udd77" );
+		name( "ninja_dark_skin_tone", "\ud83e\udd77\ud83c\udfff" );
+		name( "ninja_light_skin_tone", "\ud83e\udd77\ud83c\udffb" );
+		name( "ninja_medium_dark_skin_tone", "\ud83e\udd77\ud83c\udffe" );
+		name( "ninja_medium_light_skin_tone", "\ud83e\udd77\ud83c\udffc" );
+		name( "ninja_medium_skin_tone", "\ud83e\udd77\ud83c\udffd" );
+		name( "ninja_tone1", "\ud83e\udd77\ud83c\udffb" );
+		name( "ninja_tone2", "\ud83e\udd77\ud83c\udffc" );
+		name( "ninja_tone3", "\ud83e\udd77\ud83c\udffd" );
+		name( "ninja_tone4", "\ud83e\udd77\ud83c\udffe" );
+		name( "ninja_tone5", "\ud83e\udd77\ud83c\udfff" );
 		name( "nl", "\ud83c\uddf3\ud83c\uddf1" );
 		name( "no", "\ud83c\uddf3\ud83c\uddf4" );
 		name( "no_bell", "\ud83d\udd15" );
@@ -9496,6 +10091,8 @@
 		name( "no_mobile_phones", "\ud83d\udcf5" );
 		name( "no_mouth", "\ud83d\ude36" );
 		name( "no_pedestrians", "\ud83d\udeb7" );
+	}
+	private static void init99(){
 		name( "no_smoking", "\ud83d\udead" );
 		name( "non_potable_water", "\ud83d\udeb1" );
 		name( "nose", "\ud83d\udc43" );
@@ -9525,6 +10122,17 @@
 		name( "octopus", "\ud83d\udc19" );
 		name( "oden", "\ud83c\udf62" );
 		name( "office", "\ud83c\udfe2" );
+		name( "office_worker", "\ud83e\uddd1\u200d\ud83d\udcbc" );
+		name( "office_worker_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udcbc" );
+		name( "office_worker_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udcbc" );
+		name( "office_worker_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udcbc" );
+		name( "office_worker_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udcbc" );
+		name( "office_worker_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udcbc" );
+		name( "office_worker_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udcbc" );
+		name( "office_worker_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udcbc" );
+		name( "office_worker_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udcbc" );
+		name( "office_worker_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udcbc" );
+		name( "office_worker_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udcbc" );
 		name( "oil", "\ud83d\udee2\ufe0f" );
 		name( "oil_drum", "\ud83d\udee2\ufe0f" );
 		name( "ok", "\ud83c\udd97" );
@@ -9576,8 +10184,6 @@
 		name( "older_woman", "\ud83d\udc75" );
 		name( "older_woman_dark_skin_tone", "\ud83d\udc75\ud83c\udfff" );
 		name( "older_woman_light_skin_tone", "\ud83d\udc75\ud83c\udffb" );
-	}
-	private static void init94(){
 		name( "older_woman_medium_dark_skin_tone", "\ud83d\udc75\ud83c\udffe" );
 		name( "older_woman_medium_light_skin_tone", "\ud83d\udc75\ud83c\udffc" );
 		name( "older_woman_medium_skin_tone", "\ud83d\udc75\ud83c\udffd" );
@@ -9586,7 +10192,10 @@
 		name( "older_woman_tone3", "\ud83d\udc75\ud83c\udffd" );
 		name( "older_woman_tone4", "\ud83d\udc75\ud83c\udffe" );
 		name( "older_woman_tone5", "\ud83d\udc75\ud83c\udfff" );
+		name( "olive", "\ud83e\uded2" );
 		name( "om", "\ud83c\uddf4\ud83c\uddf2" );
+	}
+	private static void init100(){
 		name( "om_symbol", "\ud83d\udd49\ufe0f" );
 		name( "on", "\ud83d\udd1b" );
 		name( "oncoming_automobile", "\ud83d\ude98" );
@@ -9594,6 +10203,8 @@
 		name( "oncoming_police_car", "\ud83d\ude94" );
 		name( "oncoming_taxi", "\ud83d\ude96" );
 		name( "one", "\u0031\ufe0f\u20e3" );
+		name( "one_piece_swimsuit", "\ud83e\ude71" );
+		name( "onion", "\ud83e\uddc5" );
 		name( "open_book", "\ud83d\udcd6" );
 		name( "open_file_folder", "\ud83d\udcc2" );
 		name( "open_hands", "\ud83d\udc50" );
@@ -9611,10 +10222,13 @@
 		name( "ophiuchus", "\u26ce" );
 		name( "orange_book", "\ud83d\udcd9" );
 		name( "orange_heart", "\ud83e\udde1" );
+		name( "orangutan", "\ud83e\udda7" );
 		name( "orthodox_cross", "\u2626\ufe0f" );
+		name( "otter", "\ud83e\udda6" );
 		name( "outbox_tray", "\ud83d\udce4" );
 		name( "owl", "\ud83e\udd89" );
 		name( "ox", "\ud83d\udc02" );
+		name( "oyster", "\ud83e\uddaa" );
 		name( "pa", "\ud83c\uddf5\ud83c\udde6" );
 		name( "package", "\ud83d\udce6" );
 		name( "paella", "\ud83e\udd58" );
@@ -9638,6 +10252,7 @@
 		name( "panda_face", "\ud83d\udc3c" );
 		name( "paperclip", "\ud83d\udcce" );
 		name( "paperclips", "\ud83d\udd87\ufe0f" );
+		name( "parachute", "\ud83e\ude82" );
 		name( "park", "\ud83c\udfde\ufe0f" );
 		name( "parking", "\ud83c\udd7f\ufe0f" );
 		name( "parrot", "\ud83e\udd9c" );
@@ -9662,6 +10277,8 @@
 		name( "pencil2", "\u270f\ufe0f" );
 		name( "penguin", "\ud83d\udc27" );
 		name( "pensive", "\ud83d\ude14" );
+		name( "people_holding_hands", "\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1" );
+		name( "people_hugging", "\ud83e\udec2" );
 		name( "performing_arts", "\ud83c\udfad" );
 		name( "persevere", "\ud83d\ude23" );
 		name( "person_climbing", "\ud83e\uddd7" );
@@ -9679,15 +10296,26 @@
 		name( "person_doing_cartwheel_dark_skin_tone", "\ud83e\udd38\ud83c\udfff" );
 		name( "person_doing_cartwheel_light_skin_tone", "\ud83e\udd38\ud83c\udffb" );
 		name( "person_doing_cartwheel_medium_dark_skin_tone", "\ud83e\udd38\ud83c\udffe" );
-	}
-	private static void init95(){
 		name( "person_doing_cartwheel_medium_light_skin_tone", "\ud83e\udd38\ud83c\udffc" );
+	}
+	private static void init101(){
 		name( "person_doing_cartwheel_medium_skin_tone", "\ud83e\udd38\ud83c\udffd" );
 		name( "person_doing_cartwheel_tone1", "\ud83e\udd38\ud83c\udffb" );
 		name( "person_doing_cartwheel_tone2", "\ud83e\udd38\ud83c\udffc" );
 		name( "person_doing_cartwheel_tone3", "\ud83e\udd38\ud83c\udffd" );
 		name( "person_doing_cartwheel_tone4", "\ud83e\udd38\ud83c\udffe" );
 		name( "person_doing_cartwheel_tone5", "\ud83e\udd38\ud83c\udfff" );
+		name( "person_feeding_baby", "\ud83e\uddd1\u200d\ud83c\udf7c" );
+		name( "person_feeding_baby_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf7c" );
+		name( "person_feeding_baby_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf7c" );
+		name( "person_feeding_baby_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf7c" );
+		name( "person_feeding_baby_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf7c" );
+		name( "person_feeding_baby_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf7c" );
+		name( "person_feeding_baby_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf7c" );
+		name( "person_feeding_baby_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf7c" );
+		name( "person_feeding_baby_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf7c" );
+		name( "person_feeding_baby_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf7c" );
+		name( "person_feeding_baby_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf7c" );
 		name( "person_frowning", "\ud83d\ude4d" );
 		name( "person_frowning_dark_skin_tone", "\ud83d\ude4d\ud83c\udfff" );
 		name( "person_frowning_light_skin_tone", "\ud83d\ude4d\ud83c\udffb" );
@@ -9730,6 +10358,28 @@
 		name( "person_in_lotus_position_tone3", "\ud83e\uddd8\ud83c\udffd" );
 		name( "person_in_lotus_position_tone4", "\ud83e\uddd8\ud83c\udffe" );
 		name( "person_in_lotus_position_tone5", "\ud83e\uddd8\ud83c\udfff" );
+		name( "person_in_manual_wheelchair", "\ud83e\uddd1\u200d\ud83e\uddbd" );
+		name( "person_in_manual_wheelchair_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddbd" );
+		name( "person_in_manual_wheelchair_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddbd" );
+		name( "person_in_manual_wheelchair_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddbd" );
+		name( "person_in_manual_wheelchair_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddbd" );
+		name( "person_in_manual_wheelchair_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddbd" );
+		name( "person_in_manual_wheelchair_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddbd" );
+		name( "person_in_manual_wheelchair_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddbd" );
+		name( "person_in_manual_wheelchair_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddbd" );
+		name( "person_in_manual_wheelchair_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddbd" );
+		name( "person_in_manual_wheelchair_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddbd" );
+		name( "person_in_motorized_wheelchair", "\ud83e\uddd1\u200d\ud83e\uddbc" );
+		name( "person_in_motorized_wheelchair_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddbc" );
+		name( "person_in_motorized_wheelchair_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddbc" );
+		name( "person_in_motorized_wheelchair_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddbc" );
+		name( "person_in_motorized_wheelchair_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddbc" );
+		name( "person_in_motorized_wheelchair_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddbc" );
+		name( "person_in_motorized_wheelchair_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddbc" );
+		name( "person_in_motorized_wheelchair_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddbc" );
+		name( "person_in_motorized_wheelchair_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddbc" );
+		name( "person_in_motorized_wheelchair_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddbc" );
+		name( "person_in_motorized_wheelchair_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddbc" );
 		name( "person_in_steamy_room", "\ud83e\uddd6" );
 		name( "person_in_steamy_room_dark_skin_tone", "\ud83e\uddd6\ud83c\udfff" );
 		name( "person_in_steamy_room_light_skin_tone", "\ud83e\uddd6\ud83c\udffb" );
@@ -9750,6 +10400,8 @@
 		name( "person_with_ball_tone1", "\u26f9\ud83c\udffb" );
 		name( "person_with_ball_tone2", "\u26f9\ud83c\udffc" );
 		name( "person_with_ball_tone3", "\u26f9\ud83c\udffd" );
+	}
+	private static void init102(){
 		name( "person_with_ball_tone4", "\u26f9\ud83c\udffe" );
 		name( "person_with_ball_tone5", "\u26f9\ud83c\udfff" );
 		name( "person_with_blond_hair", "\ud83d\udc71" );
@@ -9782,22 +10434,66 @@
 		name( "person_with_pouting_face_medium_skin_tone", "\ud83d\ude4e\ud83c\udffd" );
 		name( "person_with_pouting_face_tone1", "\ud83d\ude4e\ud83c\udffb" );
 		name( "person_with_pouting_face_tone2", "\ud83d\ude4e\ud83c\udffc" );
-	}
-	private static void init96(){
 		name( "person_with_pouting_face_tone3", "\ud83d\ude4e\ud83c\udffd" );
 		name( "person_with_pouting_face_tone4", "\ud83d\ude4e\ud83c\udffe" );
 		name( "person_with_pouting_face_tone5", "\ud83d\ude4e\ud83c\udfff" );
+		name( "person_with_probing_cane", "\ud83e\uddd1\u200d\ud83e\uddaf" );
+		name( "person_with_probing_cane_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddaf" );
+		name( "person_with_probing_cane_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddaf" );
+		name( "person_with_probing_cane_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddaf" );
+		name( "person_with_probing_cane_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddaf" );
+		name( "person_with_probing_cane_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddaf" );
+		name( "person_with_probing_cane_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddaf" );
+		name( "person_with_probing_cane_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddaf" );
+		name( "person_with_probing_cane_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddaf" );
+		name( "person_with_probing_cane_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddaf" );
+		name( "person_with_probing_cane_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddaf" );
 		name( "petri_dish", "\ud83e\uddeb" );
 		name( "pf", "\ud83c\uddf5\ud83c\uddeb" );
 		name( "pg", "\ud83c\uddf5\ud83c\uddec" );
 		name( "ph", "\ud83c\uddf5\ud83c\udded" );
 		name( "phone", "\u260e\ufe0f" );
 		name( "pick", "\u26cf\ufe0f" );
+		name( "pickup_truck", "\ud83d\udefb" );
 		name( "pie", "\ud83e\udd67" );
 		name( "pig", "\ud83d\udc37" );
 		name( "pig2", "\ud83d\udc16" );
 		name( "pig_nose", "\ud83d\udc3d" );
 		name( "pill", "\ud83d\udc8a" );
+		name( "pilot", "\ud83e\uddd1\u200d\u2708\ufe0f" );
+		name( "pilot_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2708\ufe0f" );
+		name( "pilot_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2708\ufe0f" );
+		name( "pilot_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2708\ufe0f" );
+		name( "pilot_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2708\ufe0f" );
+		name( "pilot_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2708\ufe0f" );
+		name( "pilot_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\u2708\ufe0f" );
+		name( "pilot_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\u2708\ufe0f" );
+		name( "pilot_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\u2708\ufe0f" );
+		name( "pilot_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\u2708\ufe0f" );
+		name( "pilot_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\u2708\ufe0f" );
+		name( "pinata", "\ud83e\ude85" );
+		name( "pinched_fingers", "\ud83e\udd0c" );
+		name( "pinched_fingers_dark_skin_tone", "\ud83e\udd0c\ud83c\udfff" );
+		name( "pinched_fingers_light_skin_tone", "\ud83e\udd0c\ud83c\udffb" );
+		name( "pinched_fingers_medium_dark_skin_tone", "\ud83e\udd0c\ud83c\udffe" );
+		name( "pinched_fingers_medium_light_skin_tone", "\ud83e\udd0c\ud83c\udffc" );
+		name( "pinched_fingers_medium_skin_tone", "\ud83e\udd0c\ud83c\udffd" );
+		name( "pinched_fingers_tone1", "\ud83e\udd0c\ud83c\udffb" );
+		name( "pinched_fingers_tone2", "\ud83e\udd0c\ud83c\udffc" );
+		name( "pinched_fingers_tone3", "\ud83e\udd0c\ud83c\udffd" );
+		name( "pinched_fingers_tone4", "\ud83e\udd0c\ud83c\udffe" );
+		name( "pinched_fingers_tone5", "\ud83e\udd0c\ud83c\udfff" );
+		name( "pinching_hand", "\ud83e\udd0f" );
+		name( "pinching_hand_dark_skin_tone", "\ud83e\udd0f\ud83c\udfff" );
+		name( "pinching_hand_light_skin_tone", "\ud83e\udd0f\ud83c\udffb" );
+		name( "pinching_hand_medium_dark_skin_tone", "\ud83e\udd0f\ud83c\udffe" );
+		name( "pinching_hand_medium_light_skin_tone", "\ud83e\udd0f\ud83c\udffc" );
+		name( "pinching_hand_medium_skin_tone", "\ud83e\udd0f\ud83c\udffd" );
+		name( "pinching_hand_tone1", "\ud83e\udd0f\ud83c\udffb" );
+		name( "pinching_hand_tone2", "\ud83e\udd0f\ud83c\udffc" );
+		name( "pinching_hand_tone3", "\ud83e\udd0f\ud83c\udffd" );
+		name( "pinching_hand_tone4", "\ud83e\udd0f\ud83c\udffe" );
+		name( "pinching_hand_tone5", "\ud83e\udd0f\ud83c\udfff" );
 		name( "pineapple", "\ud83c\udf4d" );
 		name( "ping_pong", "\ud83c\udfd3" );
 		name( "pirate_flag", "\ud83c\udff4\u200d\u2620\ufe0f" );
@@ -9805,9 +10501,13 @@
 		name( "pizza", "\ud83c\udf55" );
 		name( "pk", "\ud83c\uddf5\ud83c\uddf0" );
 		name( "pl", "\ud83c\uddf5\ud83c\uddf1" );
+		name( "placard", "\ud83e\udea7" );
 		name( "place_of_worship", "\ud83d\uded0" );
+	}
+	private static void init103(){
 		name( "play_pause", "\u23ef\ufe0f" );
 		name( "pleading_face", "\ud83e\udd7a" );
+		name( "plunger", "\ud83e\udea0" );
 		name( "pm", "\ud83c\uddf5\ud83c\uddf2" );
 		name( "pn", "\ud83c\uddf5\ud83c\uddf3" );
 		name( "point_down", "\ud83d\udc47" );
@@ -9865,6 +10565,7 @@
 		name( "point_up_tone3", "\u261d\ud83c\udffd" );
 		name( "point_up_tone4", "\u261d\ud83c\udffe" );
 		name( "point_up_tone5", "\u261d\ud83c\udfff" );
+		name( "polar_bear", "\ud83d\udc3b\u200d\u2744\ufe0f" );
 		name( "police_car", "\ud83d\ude93" );
 		name( "poo", "\ud83d\udca9" );
 		name( "poodle", "\ud83d\udc29" );
@@ -9875,6 +10576,7 @@
 		name( "postbox", "\ud83d\udcee" );
 		name( "potable_water", "\ud83d\udeb0" );
 		name( "potato", "\ud83e\udd54" );
+		name( "potted_plant", "\ud83e\udeb4" );
 		name( "pouch", "\ud83d\udc5d" );
 		name( "poultry_leg", "\ud83c\udf57" );
 		name( "pound", "\ud83d\udcb7" );
@@ -9885,8 +10587,6 @@
 		name( "pray_dark_skin_tone", "\ud83d\ude4f\ud83c\udfff" );
 		name( "pray_light_skin_tone", "\ud83d\ude4f\ud83c\udffb" );
 		name( "pray_medium_dark_skin_tone", "\ud83d\ude4f\ud83c\udffe" );
-	}
-	private static void init97(){
 		name( "pray_medium_light_skin_tone", "\ud83d\ude4f\ud83c\udffc" );
 		name( "pray_medium_skin_tone", "\ud83d\ude4f\ud83c\udffd" );
 		name( "pray_tone1", "\ud83d\ude4f\ud83c\udffb" );
@@ -9906,6 +10606,8 @@
 		name( "pregnant_woman_tone3", "\ud83e\udd30\ud83c\udffd" );
 		name( "pregnant_woman_tone4", "\ud83e\udd30\ud83c\udffe" );
 		name( "pregnant_woman_tone5", "\ud83e\udd30\ud83c\udfff" );
+	}
+	private static void init104(){
 		name( "pretzel", "\ud83e\udd68" );
 		name( "previous_track", "\u23ee\ufe0f" );
 		name( "prince", "\ud83e\udd34" );
@@ -9931,6 +10633,7 @@
 		name( "princess_tone4", "\ud83d\udc78\ud83c\udffe" );
 		name( "princess_tone5", "\ud83d\udc78\ud83c\udfff" );
 		name( "printer", "\ud83d\udda8\ufe0f" );
+		name( "probing_cane", "\ud83e\uddaf" );
 		name( "projector", "\ud83d\udcfd\ufe0f" );
 		name( "ps", "\ud83c\uddf5\ud83c\uddf8" );
 		name( "pt", "\ud83c\uddf5\ud83c\uddf9" );
@@ -9988,8 +10691,6 @@
 		name( "raised_hand_light_skin_tone", "\u270b\ud83c\udffb" );
 		name( "raised_hand_medium_dark_skin_tone", "\u270b\ud83c\udffe" );
 		name( "raised_hand_medium_light_skin_tone", "\u270b\ud83c\udffc" );
-	}
-	private static void init98(){
 		name( "raised_hand_medium_skin_tone", "\u270b\ud83c\udffd" );
 		name( "raised_hand_tone1", "\u270b\ud83c\udffb" );
 		name( "raised_hand_tone2", "\u270b\ud83c\udffc" );
@@ -10008,6 +10709,8 @@
 		name( "raised_hand_with_fingers_splayed_tone4", "\ud83d\udd90\ud83c\udffe" );
 		name( "raised_hand_with_fingers_splayed_tone5", "\ud83d\udd90\ud83c\udfff" );
 		name( "raised_hand_with_part_between_middle_and_ring_fingers", "\ud83d\udd96" );
+	}
+	private static void init105(){
 		name( "raised_hand_with_part_between_middle_and_ring_fingers_tone1", "\ud83d\udd96\ud83c\udffb" );
 		name( "raised_hand_with_part_between_middle_and_ring_fingers_tone2", "\ud83d\udd96\ud83c\udffc" );
 		name( "raised_hand_with_part_between_middle_and_ring_fingers_tone3", "\ud83d\udd96\ud83c\udffd" );
@@ -10038,6 +10741,7 @@
 		name( "ram", "\ud83d\udc0f" );
 		name( "ramen", "\ud83c\udf5c" );
 		name( "rat", "\ud83d\udc00" );
+		name( "razor", "\ud83e\ude92" );
 		name( "re", "\ud83c\uddf7\ud83c\uddea" );
 		name( "receipt", "\ud83e\uddfe" );
 		name( "record_button", "\u23fa\ufe0f" );
@@ -10045,6 +10749,39 @@
 		name( "red_car", "\ud83d\ude97" );
 		name( "red_circle", "\ud83d\udd34" );
 		name( "red_envelope", "\ud83e\udde7" );
+		name( "red_haired_man", "\ud83d\udc68\u200d\ud83e\uddb0" );
+		name( "red_haired_man_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb0" );
+		name( "red_haired_man_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb0" );
+		name( "red_haired_man_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb0" );
+		name( "red_haired_man_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb0" );
+		name( "red_haired_man_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb0" );
+		name( "red_haired_man_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb0" );
+		name( "red_haired_man_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb0" );
+		name( "red_haired_man_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb0" );
+		name( "red_haired_man_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb0" );
+		name( "red_haired_man_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb0" );
+		name( "red_haired_person", "\ud83e\uddd1\u200d\ud83e\uddb0" );
+		name( "red_haired_person_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb0" );
+		name( "red_haired_person_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb0" );
+		name( "red_haired_person_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb0" );
+		name( "red_haired_person_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb0" );
+		name( "red_haired_person_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb0" );
+		name( "red_haired_person_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb0" );
+		name( "red_haired_person_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb0" );
+		name( "red_haired_person_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb0" );
+		name( "red_haired_person_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb0" );
+		name( "red_haired_person_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb0" );
+		name( "red_haired_woman", "\ud83d\udc69\u200d\ud83e\uddb0" );
+		name( "red_haired_woman_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb0" );
+		name( "red_haired_woman_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb0" );
+		name( "red_haired_woman_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb0" );
+		name( "red_haired_woman_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb0" );
+		name( "red_haired_woman_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb0" );
+		name( "red_haired_woman_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb0" );
+		name( "red_haired_woman_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb0" );
+		name( "red_haired_woman_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb0" );
+		name( "red_haired_woman_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb0" );
+		name( "red_haired_woman_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb0" );
 		name( "regional_indicator_a", "\ud83c\udde6" );
 		name( "regional_indicator_b", "\ud83c\udde7" );
 		name( "regional_indicator_c", "\ud83c\udde8" );
@@ -10075,6 +10812,8 @@
 		name( "relaxed", "\u263a\ufe0f" );
 		name( "relieved", "\ud83d\ude0c" );
 		name( "reminder_ribbon", "\ud83c\udf97\ufe0f" );
+	}
+	private static void init106(){
 		name( "repeat", "\ud83d\udd01" );
 		name( "repeat_one", "\ud83d\udd02" );
 		name( "restroom", "\ud83d\udebb" );
@@ -10091,8 +10830,6 @@
 		name( "reversed_hand_with_middle_finger_extended_tone5", "\ud83d\udd95\ud83c\udfff" );
 		name( "revolving_hearts", "\ud83d\udc9e" );
 		name( "rewind", "\u23ea" );
-	}
-	private static void init99(){
 		name( "rhino", "\ud83e\udd8f" );
 		name( "rhinoceros", "\ud83e\udd8f" );
 		name( "ribbon", "\ud83c\udf80" );
@@ -10119,14 +10856,17 @@
 		name( "right_fist_tone4", "\ud83e\udd1c\ud83c\udffe" );
 		name( "right_fist_tone5", "\ud83e\udd1c\ud83c\udfff" );
 		name( "ring", "\ud83d\udc8d" );
+		name( "ringed_planet", "\ud83e\ude90" );
 		name( "ro", "\ud83c\uddf7\ud83c\uddf4" );
 		name( "robot", "\ud83e\udd16" );
 		name( "robot_face", "\ud83e\udd16" );
+		name( "rock", "\ud83e\udea8" );
 		name( "rocket", "\ud83d\ude80" );
 		name( "rofl", "\ud83e\udd23" );
 		name( "roll_of_paper", "\ud83e\uddfb" );
 		name( "rolled_up_newspaper", "\ud83d\uddde\ufe0f" );
 		name( "roller_coaster", "\ud83c\udfa2" );
+		name( "roller_skate", "\ud83d\udefc" );
 		name( "rolling_eyes", "\ud83d\ude44" );
 		name( "rolling_on_the_floor_laughing", "\ud83e\udd23" );
 		name( "rooster", "\ud83d\udc13" );
@@ -10174,6 +10914,9 @@
 		name( "rw", "\ud83c\uddf7\ud83c\uddfc" );
 		name( "sa", "\ud83c\ude02\ufe0f" );
 		name( "safety_pin", "\ud83e\uddf7" );
+		name( "safety_vest", "\ud83e\uddba" );
+	}
+	private static void init107(){
 		name( "sagittarius", "\u2650" );
 		name( "sailboat", "\u26f5" );
 		name( "sake", "\ud83c\udf76" );
@@ -10192,10 +10935,9 @@
 		name( "santa_tone3", "\ud83c\udf85\ud83c\udffd" );
 		name( "santa_tone4", "\ud83c\udf85\ud83c\udffe" );
 		name( "santa_tone5", "\ud83c\udf85\ud83c\udfff" );
+		name( "sari", "\ud83e\udd7b" );
 		name( "satellite", "\ud83d\udef0\ufe0f" );
 		name( "satellite_antenna", "\ud83d\udce1" );
-	}
-	private static void init100(){
 		name( "satellite_orbital", "\ud83d\udef0\ufe0f" );
 		name( "satisfied", "\ud83d\ude06" );
 		name( "saudi", "\ud83c\uddf8\ud83c\udde6" );
@@ -10208,15 +10950,28 @@
 		name( "scarf", "\ud83e\udde3" );
 		name( "school", "\ud83c\udfeb" );
 		name( "school_satchel", "\ud83c\udf92" );
+		name( "scientist", "\ud83e\uddd1\u200d\ud83d\udd2c" );
+		name( "scientist_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udd2c" );
+		name( "scientist_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udd2c" );
+		name( "scientist_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udd2c" );
+		name( "scientist_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udd2c" );
+		name( "scientist_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udd2c" );
+		name( "scientist_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udd2c" );
+		name( "scientist_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udd2c" );
+		name( "scientist_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udd2c" );
+		name( "scientist_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udd2c" );
+		name( "scientist_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udd2c" );
 		name( "scissors", "\u2702\ufe0f" );
 		name( "scooter", "\ud83d\udef4" );
 		name( "scorpion", "\ud83e\udd82" );
 		name( "scorpius", "\u264f" );
 		name( "scream", "\ud83d\ude31" );
 		name( "scream_cat", "\ud83d\ude40" );
+		name( "screwdriver", "\ud83e\ude9b" );
 		name( "scroll", "\ud83d\udcdc" );
 		name( "sd", "\ud83c\uddf8\ud83c\udde9" );
 		name( "se", "\ud83c\uddf8\ud83c\uddea" );
+		name( "seal", "\ud83e\uddad" );
 		name( "seat", "\ud83d\udcba" );
 		name( "second_place", "\ud83e\udd48" );
 		name( "second_place_medal", "\ud83e\udd48" );
@@ -10235,7 +10990,9 @@
 		name( "selfie_tone4", "\ud83e\udd33\ud83c\udffe" );
 		name( "selfie_tone5", "\ud83e\udd33\ud83c\udfff" );
 		name( "serious_face_with_symbols_covering_mouth", "\ud83e\udd2c" );
+		name( "service_dog", "\ud83d\udc15\u200d\ud83e\uddba" );
 		name( "seven", "\u0037\ufe0f\u20e3" );
+		name( "sewing_needle", "\ud83e\udea1" );
 		name( "sg", "\ud83c\uddf8\ud83c\uddec" );
 		name( "sh", "\ud83c\uddf8\ud83c\udded" );
 		name( "shaking_hands", "\ud83e\udd1d" );
@@ -10256,10 +11013,13 @@
 		name( "shopping_bags", "\ud83d\udecd\ufe0f" );
 		name( "shopping_cart", "\ud83d\uded2" );
 		name( "shopping_trolley", "\ud83d\uded2" );
+		name( "shorts", "\ud83e\ude73" );
 		name( "shower", "\ud83d\udebf" );
 		name( "shrimp", "\ud83e\udd90" );
 		name( "shrug", "\ud83e\udd37" );
 		name( "shrug_dark_skin_tone", "\ud83e\udd37\ud83c\udfff" );
+	}
+	private static void init108(){
 		name( "shrug_light_skin_tone", "\ud83e\udd37\ud83c\udffb" );
 		name( "shrug_medium_dark_skin_tone", "\ud83e\udd37\ud83c\udffe" );
 		name( "shrug_medium_light_skin_tone", "\ud83e\udd37\ud83c\udffc" );
@@ -10284,6 +11044,17 @@
 		name( "sign_of_the_horns_tone4", "\ud83e\udd18\ud83c\udffe" );
 		name( "sign_of_the_horns_tone5", "\ud83e\udd18\ud83c\udfff" );
 		name( "signal_strength", "\ud83d\udcf6" );
+		name( "singer", "\ud83e\uddd1\u200d\ud83c\udfa4" );
+		name( "singer_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfa4" );
+		name( "singer_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfa4" );
+		name( "singer_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfa4" );
+		name( "singer_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfa4" );
+		name( "singer_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfa4" );
+		name( "singer_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfa4" );
+		name( "singer_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfa4" );
+		name( "singer_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfa4" );
+		name( "singer_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfa4" );
+		name( "singer_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfa4" );
 		name( "six", "\u0036\ufe0f\u20e3" );
 		name( "six_pointed_star", "\ud83d\udd2f" );
 		name( "sj", "\ud83c\uddf8\ud83c\uddef" );
@@ -10297,11 +11068,10 @@
 		name( "skin_tone_4", "\ud83c\udffd" );
 		name( "skin_tone_5", "\ud83c\udffe" );
 		name( "skin_tone_6", "\ud83c\udfff" );
-	}
-	private static void init101(){
 		name( "skull", "\ud83d\udc80" );
 		name( "skull_and_crossbones", "\u2620\ufe0f" );
 		name( "skull_crossbones", "\u2620\ufe0f" );
+		name( "skunk", "\ud83e\udda8" );
 		name( "sl", "\ud83c\uddf8\ud83c\uddf1" );
 		name( "sled", "\ud83d\udef7" );
 		name( "sleeping", "\ud83d\ude34" );
@@ -10333,6 +11103,7 @@
 		name( "slightly_frowning_face", "\ud83d\ude41" );
 		name( "slightly_smiling_face", "\ud83d\ude42" );
 		name( "slot_machine", "\ud83c\udfb0" );
+		name( "sloth", "\ud83e\udda5" );
 		name( "sm", "\ud83c\uddf8\ud83c\uddf2" );
 		name( "small_airplane", "\ud83d\udee9\ufe0f" );
 		name( "small_blue_diamond", "\ud83d\udd39" );
@@ -10345,10 +11116,13 @@
 		name( "smiley_cat", "\ud83d\ude3a" );
 		name( "smiling_face_with_3_hearts", "\ud83e\udd70" );
 		name( "smiling_face_with_smiling_eyes_and_hand_covering_mouth", "\ud83e\udd2d" );
+		name( "smiling_face_with_tear", "\ud83e\udd72" );
 		name( "smiling_imp", "\ud83d\ude08" );
 		name( "smirk", "\ud83d\ude0f" );
 		name( "smirk_cat", "\ud83d\ude3c" );
 		name( "smoking", "\ud83d\udeac" );
+	}
+	private static void init109(){
 		name( "sn", "\ud83c\uddf8\ud83c\uddf3" );
 		name( "snail", "\ud83d\udc0c" );
 		name( "snake", "\ud83d\udc0d" );
@@ -10400,8 +11174,6 @@
 		name( "spiral_note_pad", "\ud83d\uddd2\ufe0f" );
 		name( "spock_hand", "\ud83d\udd96" );
 		name( "spock_hand_dark_skin_tone", "\ud83d\udd96\ud83c\udfff" );
-	}
-	private static void init102(){
 		name( "spock_hand_light_skin_tone", "\ud83d\udd96\ud83c\udffb" );
 		name( "spock_hand_medium_dark_skin_tone", "\ud83d\udd96\ud83c\udffe" );
 		name( "spock_hand_medium_light_skin_tone", "\ud83d\udd96\ud83c\udffc" );
@@ -10426,6 +11198,17 @@
 		name( "st", "\ud83c\uddf8\ud83c\uddf9" );
 		name( "stadium", "\ud83c\udfdf\ufe0f" );
 		name( "staff_of_aesculapius", "\u2695\ufe0f" );
+		name( "standing_person", "\ud83e\uddcd" );
+		name( "standing_person_dark_skin_tone", "\ud83e\uddcd\ud83c\udfff" );
+		name( "standing_person_light_skin_tone", "\ud83e\uddcd\ud83c\udffb" );
+		name( "standing_person_medium_dark_skin_tone", "\ud83e\uddcd\ud83c\udffe" );
+		name( "standing_person_medium_light_skin_tone", "\ud83e\uddcd\ud83c\udffc" );
+		name( "standing_person_medium_skin_tone", "\ud83e\uddcd\ud83c\udffd" );
+		name( "standing_person_tone1", "\ud83e\uddcd\ud83c\udffb" );
+		name( "standing_person_tone2", "\ud83e\uddcd\ud83c\udffc" );
+		name( "standing_person_tone3", "\ud83e\uddcd\ud83c\udffd" );
+		name( "standing_person_tone4", "\ud83e\uddcd\ud83c\udffe" );
+		name( "standing_person_tone5", "\ud83e\uddcd\ud83c\udfff" );
 		name( "star", "\u2b50" );
 		name( "star2", "\ud83c\udf1f" );
 		name( "star_and_crescent", "\u262a\ufe0f" );
@@ -10435,15 +11218,29 @@
 		name( "station", "\ud83d\ude89" );
 		name( "statue_of_liberty", "\ud83d\uddfd" );
 		name( "steam_locomotive", "\ud83d\ude82" );
+		name( "stethoscope", "\ud83e\ude7a" );
 		name( "stew", "\ud83c\udf72" );
 		name( "stop_button", "\u23f9\ufe0f" );
 		name( "stop_sign", "\ud83d\uded1" );
 		name( "stopwatch", "\u23f1\ufe0f" );
 		name( "straight_ruler", "\ud83d\udccf" );
+	}
+	private static void init110(){
 		name( "strawberry", "\ud83c\udf53" );
 		name( "stuck_out_tongue", "\ud83d\ude1b" );
 		name( "stuck_out_tongue_closed_eyes", "\ud83d\ude1d" );
 		name( "stuck_out_tongue_winking_eye", "\ud83d\ude1c" );
+		name( "student", "\ud83e\uddd1\u200d\ud83c\udf93" );
+		name( "student_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf93" );
+		name( "student_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf93" );
+		name( "student_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf93" );
+		name( "student_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf93" );
+		name( "student_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf93" );
+		name( "student_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf93" );
+		name( "student_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf93" );
+		name( "student_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf93" );
+		name( "student_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf93" );
+		name( "student_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf93" );
 		name( "studio_microphone", "\ud83c\udf99\ufe0f" );
 		name( "stuffed_flatbread", "\ud83e\udd59" );
 		name( "stuffed_pita", "\ud83e\udd59" );
@@ -10456,6 +11253,28 @@
 		name( "sunny", "\u2600\ufe0f" );
 		name( "sunrise", "\ud83c\udf05" );
 		name( "sunrise_over_mountains", "\ud83c\udf04" );
+		name( "superhero", "\ud83e\uddb8" );
+		name( "superhero_dark_skin_tone", "\ud83e\uddb8\ud83c\udfff" );
+		name( "superhero_light_skin_tone", "\ud83e\uddb8\ud83c\udffb" );
+		name( "superhero_medium_dark_skin_tone", "\ud83e\uddb8\ud83c\udffe" );
+		name( "superhero_medium_light_skin_tone", "\ud83e\uddb8\ud83c\udffc" );
+		name( "superhero_medium_skin_tone", "\ud83e\uddb8\ud83c\udffd" );
+		name( "superhero_tone1", "\ud83e\uddb8\ud83c\udffb" );
+		name( "superhero_tone2", "\ud83e\uddb8\ud83c\udffc" );
+		name( "superhero_tone3", "\ud83e\uddb8\ud83c\udffd" );
+		name( "superhero_tone4", "\ud83e\uddb8\ud83c\udffe" );
+		name( "superhero_tone5", "\ud83e\uddb8\ud83c\udfff" );
+		name( "supervillain", "\ud83e\uddb9" );
+		name( "supervillain_dark_skin_tone", "\ud83e\uddb9\ud83c\udfff" );
+		name( "supervillain_light_skin_tone", "\ud83e\uddb9\ud83c\udffb" );
+		name( "supervillain_medium_dark_skin_tone", "\ud83e\uddb9\ud83c\udffe" );
+		name( "supervillain_medium_light_skin_tone", "\ud83e\uddb9\ud83c\udffc" );
+		name( "supervillain_medium_skin_tone", "\ud83e\uddb9\ud83c\udffd" );
+		name( "supervillain_tone1", "\ud83e\uddb9\ud83c\udffb" );
+		name( "supervillain_tone2", "\ud83e\uddb9\ud83c\udffc" );
+		name( "supervillain_tone3", "\ud83e\uddb9\ud83c\udffd" );
+		name( "supervillain_tone4", "\ud83e\uddb9\ud83c\udffe" );
+		name( "supervillain_tone5", "\ud83e\uddb9\ud83c\udfff" );
 		name( "surfer", "\ud83c\udfc4" );
 		name( "surfer_dark_skin_tone", "\ud83c\udfc4\ud83c\udfff" );
 		name( "surfer_light_skin_tone", "\ud83c\udfc4\ud83c\udffb" );
@@ -10499,15 +11318,39 @@
 		name( "taco", "\ud83c\udf2e" );
 		name( "tada", "\ud83c\udf89" );
 		name( "takeout_box", "\ud83e\udd61" );
+		name( "tamale", "\ud83e\uded4" );
 		name( "tanabata_tree", "\ud83c\udf8b" );
 		name( "tangerine", "\ud83c\udf4a" );
 		name( "taurus", "\u2649" );
 		name( "taxi", "\ud83d\ude95" );
-	}
-	private static void init103(){
 		name( "tc", "\ud83c\uddf9\ud83c\udde8" );
 		name( "td", "\ud83c\uddf9\ud83c\udde9" );
 		name( "tea", "\ud83c\udf75" );
+		name( "teacher", "\ud83e\uddd1\u200d\ud83c\udfeb" );
+	}
+	private static void init111(){
+		name( "teacher_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfeb" );
+		name( "teacher_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfeb" );
+		name( "teacher_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfeb" );
+		name( "teacher_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfeb" );
+		name( "teacher_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfeb" );
+		name( "teacher_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfeb" );
+		name( "teacher_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfeb" );
+		name( "teacher_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfeb" );
+		name( "teacher_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfeb" );
+		name( "teacher_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfeb" );
+		name( "teapot", "\ud83e\uded6" );
+		name( "technologist", "\ud83e\uddd1\u200d\ud83d\udcbb" );
+		name( "technologist_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udcbb" );
+		name( "technologist_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udcbb" );
+		name( "technologist_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udcbb" );
+		name( "technologist_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udcbb" );
+		name( "technologist_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udcbb" );
+		name( "technologist_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udcbb" );
+		name( "technologist_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udcbb" );
+		name( "technologist_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83d\udcbb" );
+		name( "technologist_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83d\udcbb" );
+		name( "technologist_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83d\udcbb" );
 		name( "teddy_bear", "\ud83e\uddf8" );
 		name( "telephone", "\u260e\ufe0f" );
 		name( "telephone_receiver", "\ud83d\udcde" );
@@ -10535,6 +11378,7 @@
 		name( "thinking_face", "\ud83e\udd14" );
 		name( "third_place", "\ud83e\udd49" );
 		name( "third_place_medal", "\ud83e\udd49" );
+		name( "thong_sandal", "\ud83e\ude74" );
 		name( "thought_balloon", "\ud83d\udcad" );
 		name( "thread", "\ud83e\uddf5" );
 		name( "three", "\u0033\ufe0f\u20e3" );
@@ -10586,6 +11430,8 @@
 		name( "tk", "\ud83c\uddf9\ud83c\uddf0" );
 		name( "tl", "\ud83c\uddf9\ud83c\uddf1" );
 		name( "tm", "\u2122\ufe0f" );
+	}
+	private static void init112(){
 		name( "tn", "\ud83c\uddf9\ud83c\uddf3" );
 		name( "to", "\ud83c\uddf9\ud83c\uddf4" );
 		name( "toilet", "\ud83d\udebd" );
@@ -10600,14 +11446,13 @@
 		name( "toolbox", "\ud83e\uddf0" );
 		name( "tools", "\ud83d\udee0\ufe0f" );
 		name( "tooth", "\ud83e\uddb7" );
+		name( "toothbrush", "\ud83e\udea5" );
 		name( "top", "\ud83d\udd1d" );
 		name( "tophat", "\ud83c\udfa9" );
 		name( "tornado", "\ud83c\udf2a\ufe0f" );
 		name( "tornado_cloud", "\ud83c\udf2a\ufe0f" );
 		name( "tr", "\ud83c\uddf9\ud83c\uddf7" );
 		name( "track_next", "\u23ed\ufe0f" );
-	}
-	private static void init104(){
 		name( "track_previous", "\u23ee\ufe0f" );
 		name( "trackball", "\ud83d\uddb2\ufe0f" );
 		name( "tractor", "\ud83d\ude9c" );
@@ -10615,6 +11460,8 @@
 		name( "train", "\ud83d\ude8b" );
 		name( "train2", "\ud83d\ude86" );
 		name( "tram", "\ud83d\ude8a" );
+		name( "transgender_flag", "\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f" );
+		name( "transgender_symbol", "\u26a7\ufe0f" );
 		name( "triangular_flag_on_post", "\ud83d\udea9" );
 		name( "triangular_ruler", "\ud83d\udcd0" );
 		name( "trident", "\ud83d\udd31" );
@@ -10644,7 +11491,27 @@
 		name( "two", "\u0032\ufe0f\u20e3" );
 		name( "two_hearts", "\ud83d\udc95" );
 		name( "two_men_holding_hands", "\ud83d\udc6c" );
+		name( "two_men_holding_hands_dark_skin_tone", "\ud83d\udc6c\ud83c\udfff" );
+		name( "two_men_holding_hands_light_skin_tone", "\ud83d\udc6c\ud83c\udffb" );
+		name( "two_men_holding_hands_medium_dark_skin_tone", "\ud83d\udc6c\ud83c\udffe" );
+		name( "two_men_holding_hands_medium_light_skin_tone", "\ud83d\udc6c\ud83c\udffc" );
+		name( "two_men_holding_hands_medium_skin_tone", "\ud83d\udc6c\ud83c\udffd" );
+		name( "two_men_holding_hands_tone1", "\ud83d\udc6c\ud83c\udffb" );
+		name( "two_men_holding_hands_tone2", "\ud83d\udc6c\ud83c\udffc" );
+		name( "two_men_holding_hands_tone3", "\ud83d\udc6c\ud83c\udffd" );
+		name( "two_men_holding_hands_tone4", "\ud83d\udc6c\ud83c\udffe" );
+		name( "two_men_holding_hands_tone5", "\ud83d\udc6c\ud83c\udfff" );
 		name( "two_women_holding_hands", "\ud83d\udc6d" );
+		name( "two_women_holding_hands_dark_skin_tone", "\ud83d\udc6d\ud83c\udfff" );
+		name( "two_women_holding_hands_light_skin_tone", "\ud83d\udc6d\ud83c\udffb" );
+		name( "two_women_holding_hands_medium_dark_skin_tone", "\ud83d\udc6d\ud83c\udffe" );
+		name( "two_women_holding_hands_medium_light_skin_tone", "\ud83d\udc6d\ud83c\udffc" );
+		name( "two_women_holding_hands_medium_skin_tone", "\ud83d\udc6d\ud83c\udffd" );
+		name( "two_women_holding_hands_tone1", "\ud83d\udc6d\ud83c\udffb" );
+		name( "two_women_holding_hands_tone2", "\ud83d\udc6d\ud83c\udffc" );
+		name( "two_women_holding_hands_tone3", "\ud83d\udc6d\ud83c\udffd" );
+		name( "two_women_holding_hands_tone4", "\ud83d\udc6d\ud83c\udffe" );
+		name( "two_women_holding_hands_tone5", "\ud83d\udc6d\ud83c\udfff" );
 		name( "tz", "\ud83c\uddf9\ud83c\uddff" );
 		name( "u5272", "\ud83c\ude39" );
 		name( "u5408", "\ud83c\ude34" );
@@ -10666,6 +11533,8 @@
 		name( "umbrella_on_ground", "\u26f1\ufe0f" );
 		name( "umbrella_with_rain_drops", "\u2614" );
 		name( "unamused", "\ud83d\ude12" );
+	}
+	private static void init113(){
 		name( "underage", "\ud83d\udd1e" );
 		name( "unicorn", "\ud83e\udd84" );
 		name( "unicorn_face", "\ud83e\udd84" );
@@ -10709,8 +11578,6 @@
 		name( "vi", "\ud83c\uddfb\ud83c\uddee" );
 		name( "vibration_mode", "\ud83d\udcf3" );
 		name( "video_camera", "\ud83d\udcf9" );
-	}
-	private static void init105(){
 		name( "video_game", "\ud83c\udfae" );
 		name( "violin", "\ud83c\udfbb" );
 		name( "virgo", "\u264d" );
@@ -10725,6 +11592,7 @@
 		name( "vulcan_tone3", "\ud83d\udd96\ud83c\udffd" );
 		name( "vulcan_tone4", "\ud83d\udd96\ud83c\udffe" );
 		name( "vulcan_tone5", "\ud83d\udd96\ud83c\udfff" );
+		name( "waffle", "\ud83e\uddc7" );
 		name( "walking", "\ud83d\udeb6" );
 		name( "walking_dark_skin_tone", "\ud83d\udeb6\ud83c\udfff" );
 		name( "walking_light_skin_tone", "\ud83d\udeb6\ud83c\udffb" );
@@ -10768,6 +11636,8 @@
 		name( "waving_black_flag", "\ud83c\udff4" );
 		name( "waving_white_flag", "\ud83c\udff3\ufe0f" );
 		name( "wavy_dash", "\u3030\ufe0f" );
+	}
+	private static void init114(){
 		name( "waxing_crescent_moon", "\ud83c\udf12" );
 		name( "waxing_gibbous_moon", "\ud83c\udf14" );
 		name( "wc", "\ud83d\udebe" );
@@ -10794,6 +11664,40 @@
 		name( "white_circle", "\u26aa" );
 		name( "white_flower", "\ud83d\udcae" );
 		name( "white_frowning_face", "\u2639\ufe0f" );
+		name( "white_haired_man", "\ud83d\udc68\u200d\ud83e\uddb3" );
+		name( "white_haired_man_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb3" );
+		name( "white_haired_man_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb3" );
+		name( "white_haired_man_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb3" );
+		name( "white_haired_man_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb3" );
+		name( "white_haired_man_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb3" );
+		name( "white_haired_man_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddb3" );
+		name( "white_haired_man_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddb3" );
+		name( "white_haired_man_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddb3" );
+		name( "white_haired_man_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddb3" );
+		name( "white_haired_man_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddb3" );
+		name( "white_haired_person", "\ud83e\uddd1\u200d\ud83e\uddb3" );
+		name( "white_haired_person_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb3" );
+		name( "white_haired_person_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb3" );
+		name( "white_haired_person_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb3" );
+		name( "white_haired_person_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb3" );
+		name( "white_haired_person_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb3" );
+		name( "white_haired_person_tone1", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb3" );
+		name( "white_haired_person_tone2", "\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb3" );
+		name( "white_haired_person_tone3", "\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddb3" );
+		name( "white_haired_person_tone4", "\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddb3" );
+		name( "white_haired_person_tone5", "\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddb3" );
+		name( "white_haired_woman", "\ud83d\udc69\u200d\ud83e\uddb3" );
+		name( "white_haired_woman_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb3" );
+		name( "white_haired_woman_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb3" );
+		name( "white_haired_woman_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb3" );
+		name( "white_haired_woman_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb3" );
+		name( "white_haired_woman_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb3" );
+		name( "white_haired_woman_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddb3" );
+		name( "white_haired_woman_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddb3" );
+		name( "white_haired_woman_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb3" );
+		name( "white_haired_woman_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddb3" );
+		name( "white_haired_woman_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddb3" );
+		name( "white_heart", "\ud83e\udd0d" );
 		name( "white_large_square", "\u2b1c" );
 		name( "white_medium_small_square", "\u25fd" );
 		name( "white_medium_square", "\u25fb\ufe0f" );
@@ -10809,12 +11713,22 @@
 		name( "wilted_rose", "\ud83e\udd40" );
 		name( "wind_blowing_face", "\ud83c\udf2c\ufe0f" );
 		name( "wind_chime", "\ud83c\udf90" );
+		name( "window", "\ud83e\ude9f" );
 		name( "wine_glass", "\ud83c\udf77" );
 		name( "wink", "\ud83d\ude09" );
 		name( "wolf", "\ud83d\udc3a" );
-	}
-	private static void init106(){
 		name( "woman", "\ud83d\udc69" );
+		name( "woman_and_man_holding_hands", "\ud83d\udc6b" );
+		name( "woman_and_man_holding_hands_dark_skin_tone", "\ud83d\udc6b\ud83c\udfff" );
+		name( "woman_and_man_holding_hands_light_skin_tone", "\ud83d\udc6b\ud83c\udffb" );
+		name( "woman_and_man_holding_hands_medium_dark_skin_tone", "\ud83d\udc6b\ud83c\udffe" );
+		name( "woman_and_man_holding_hands_medium_light_skin_tone", "\ud83d\udc6b\ud83c\udffc" );
+		name( "woman_and_man_holding_hands_medium_skin_tone", "\ud83d\udc6b\ud83c\udffd" );
+		name( "woman_and_man_holding_hands_tone1", "\ud83d\udc6b\ud83c\udffb" );
+		name( "woman_and_man_holding_hands_tone2", "\ud83d\udc6b\ud83c\udffc" );
+		name( "woman_and_man_holding_hands_tone3", "\ud83d\udc6b\ud83c\udffd" );
+		name( "woman_and_man_holding_hands_tone4", "\ud83d\udc6b\ud83c\udffe" );
+		name( "woman_and_man_holding_hands_tone5", "\ud83d\udc6b\ud83c\udfff" );
 		name( "woman_artist", "\ud83d\udc69\u200d\ud83c\udfa8" );
 		name( "woman_artist_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udfa8" );
 		name( "woman_artist_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udfa8" );
@@ -10825,6 +11739,8 @@
 		name( "woman_artist_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udfa8" );
 		name( "woman_artist_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udfa8" );
 		name( "woman_artist_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udfa8" );
+	}
+	private static void init115(){
 		name( "woman_artist_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udfa8" );
 		name( "woman_astronaut", "\ud83d\udc69\u200d\ud83d\ude80" );
 		name( "woman_astronaut_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83d\ude80" );
@@ -10915,8 +11831,6 @@
 		name( "woman_cook_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf73" );
 		name( "woman_cook_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf73" );
 		name( "woman_cook_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf73" );
-	}
-	private static void init107(){
 		name( "woman_cook_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf73" );
 		name( "woman_dark_skin_tone", "\ud83d\udc69\ud83c\udfff" );
 		name( "woman_detective", "\ud83d\udd75\ufe0f\u200d\u2640\ufe0f" );
@@ -10928,6 +11842,8 @@
 		name( "woman_detective_tone1", "\ud83d\udd75\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_detective_tone2", "\ud83d\udd75\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_detective_tone3", "\ud83d\udd75\ud83c\udffd\u200d\u2640\ufe0f" );
+	}
+	private static void init116(){
 		name( "woman_detective_tone4", "\ud83d\udd75\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_detective_tone5", "\ud83d\udd75\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_facepalming", "\ud83e\udd26\u200d\u2640\ufe0f" );
@@ -10963,6 +11879,17 @@
 		name( "woman_farmer_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf3e" );
 		name( "woman_farmer_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf3e" );
 		name( "woman_farmer_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf3e" );
+		name( "woman_feeding_baby", "\ud83d\udc69\u200d\ud83c\udf7c" );
+		name( "woman_feeding_baby_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf7c" );
+		name( "woman_feeding_baby_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf7c" );
+		name( "woman_feeding_baby_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf7c" );
+		name( "woman_feeding_baby_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf7c" );
+		name( "woman_feeding_baby_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf7c" );
+		name( "woman_feeding_baby_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf7c" );
+		name( "woman_feeding_baby_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf7c" );
+		name( "woman_feeding_baby_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf7c" );
+		name( "woman_feeding_baby_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf7c" );
+		name( "woman_feeding_baby_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf7c" );
 		name( "woman_firefighter", "\ud83d\udc69\u200d\ud83d\ude92" );
 		name( "woman_firefighter_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83d\ude92" );
 		name( "woman_firefighter_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83d\ude92" );
@@ -11019,7 +11946,7 @@
 		name( "woman_getting_face_massage_tone4", "\ud83d\udc86\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_getting_face_massage_tone5", "\ud83d\udc86\ud83c\udfff\u200d\u2640\ufe0f" );
 	}
-	private static void init108(){
+	private static void init117(){
 		name( "woman_getting_haircut", "\ud83d\udc87\u200d\u2640\ufe0f" );
 		name( "woman_getting_haircut_dark_skin_tone", "\ud83d\udc87\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_getting_haircut_light_skin_tone", "\ud83d\udc87\ud83c\udffb\u200d\u2640\ufe0f" );
@@ -11091,6 +12018,28 @@
 		name( "woman_in_lotus_position_tone3", "\ud83e\uddd8\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_in_lotus_position_tone4", "\ud83e\uddd8\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_in_lotus_position_tone5", "\ud83e\uddd8\ud83c\udfff\u200d\u2640\ufe0f" );
+		name( "woman_in_manual_wheelchair", "\ud83d\udc69\u200d\ud83e\uddbd" );
+		name( "woman_in_manual_wheelchair_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddbd" );
+		name( "woman_in_manual_wheelchair_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddbd" );
+		name( "woman_in_manual_wheelchair_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddbd" );
+		name( "woman_in_manual_wheelchair_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddbd" );
+		name( "woman_in_manual_wheelchair_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddbd" );
+		name( "woman_in_manual_wheelchair_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddbd" );
+		name( "woman_in_manual_wheelchair_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddbd" );
+		name( "woman_in_manual_wheelchair_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddbd" );
+		name( "woman_in_manual_wheelchair_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddbd" );
+		name( "woman_in_manual_wheelchair_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddbd" );
+		name( "woman_in_motorized_wheelchair", "\ud83d\udc69\u200d\ud83e\uddbc" );
+		name( "woman_in_motorized_wheelchair_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddbc" );
+		name( "woman_in_motorized_wheelchair_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddbc" );
+		name( "woman_in_motorized_wheelchair_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddbc" );
+		name( "woman_in_motorized_wheelchair_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddbc" );
+		name( "woman_in_motorized_wheelchair_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddbc" );
+		name( "woman_in_motorized_wheelchair_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddbc" );
+		name( "woman_in_motorized_wheelchair_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddbc" );
+		name( "woman_in_motorized_wheelchair_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddbc" );
+		name( "woman_in_motorized_wheelchair_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddbc" );
+		name( "woman_in_motorized_wheelchair_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddbc" );
 		name( "woman_in_steamy_room", "\ud83e\uddd6\u200d\u2640\ufe0f" );
 		name( "woman_in_steamy_room_dark_skin_tone", "\ud83e\uddd6\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_in_steamy_room_light_skin_tone", "\ud83e\uddd6\ud83c\udffb\u200d\u2640\ufe0f" );
@@ -11099,9 +12048,22 @@
 		name( "woman_in_steamy_room_medium_skin_tone", "\ud83e\uddd6\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_in_steamy_room_tone1", "\ud83e\uddd6\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_in_steamy_room_tone2", "\ud83e\uddd6\ud83c\udffc\u200d\u2640\ufe0f" );
+	}
+	private static void init118(){
 		name( "woman_in_steamy_room_tone3", "\ud83e\uddd6\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_in_steamy_room_tone4", "\ud83e\uddd6\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_in_steamy_room_tone5", "\ud83e\uddd6\ud83c\udfff\u200d\u2640\ufe0f" );
+		name( "woman_in_tuxedo", "\ud83e\udd35\u200d\u2640\ufe0f" );
+		name( "woman_in_tuxedo_dark_skin_tone", "\ud83e\udd35\ud83c\udfff\u200d\u2640\ufe0f" );
+		name( "woman_in_tuxedo_light_skin_tone", "\ud83e\udd35\ud83c\udffb\u200d\u2640\ufe0f" );
+		name( "woman_in_tuxedo_medium_dark_skin_tone", "\ud83e\udd35\ud83c\udffe\u200d\u2640\ufe0f" );
+		name( "woman_in_tuxedo_medium_light_skin_tone", "\ud83e\udd35\ud83c\udffc\u200d\u2640\ufe0f" );
+		name( "woman_in_tuxedo_medium_skin_tone", "\ud83e\udd35\ud83c\udffd\u200d\u2640\ufe0f" );
+		name( "woman_in_tuxedo_tone1", "\ud83e\udd35\ud83c\udffb\u200d\u2640\ufe0f" );
+		name( "woman_in_tuxedo_tone2", "\ud83e\udd35\ud83c\udffc\u200d\u2640\ufe0f" );
+		name( "woman_in_tuxedo_tone3", "\ud83e\udd35\ud83c\udffd\u200d\u2640\ufe0f" );
+		name( "woman_in_tuxedo_tone4", "\ud83e\udd35\ud83c\udffe\u200d\u2640\ufe0f" );
+		name( "woman_in_tuxedo_tone5", "\ud83e\udd35\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_judge", "\ud83d\udc69\u200d\u2696\ufe0f" );
 		name( "woman_judge_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2696\ufe0f" );
 		name( "woman_judge_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2696\ufe0f" );
@@ -11121,13 +12083,22 @@
 		name( "woman_juggling_medium_skin_tone", "\ud83e\udd39\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_juggling_tone1", "\ud83e\udd39\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_juggling_tone2", "\ud83e\udd39\ud83c\udffc\u200d\u2640\ufe0f" );
-	}
-	private static void init109(){
 		name( "woman_juggling_tone3", "\ud83e\udd39\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_juggling_tone4", "\ud83e\udd39\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_juggling_tone5", "\ud83e\udd39\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_kiss_man", "\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68" );
 		name( "woman_kiss_woman", "\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69" );
+		name( "woman_kneeling", "\ud83e\uddce\u200d\u2640\ufe0f" );
+		name( "woman_kneeling_dark_skin_tone", "\ud83e\uddce\ud83c\udfff\u200d\u2640\ufe0f" );
+		name( "woman_kneeling_light_skin_tone", "\ud83e\uddce\ud83c\udffb\u200d\u2640\ufe0f" );
+		name( "woman_kneeling_medium_dark_skin_tone", "\ud83e\uddce\ud83c\udffe\u200d\u2640\ufe0f" );
+		name( "woman_kneeling_medium_light_skin_tone", "\ud83e\uddce\ud83c\udffc\u200d\u2640\ufe0f" );
+		name( "woman_kneeling_medium_skin_tone", "\ud83e\uddce\ud83c\udffd\u200d\u2640\ufe0f" );
+		name( "woman_kneeling_tone1", "\ud83e\uddce\ud83c\udffb\u200d\u2640\ufe0f" );
+		name( "woman_kneeling_tone2", "\ud83e\uddce\ud83c\udffc\u200d\u2640\ufe0f" );
+		name( "woman_kneeling_tone3", "\ud83e\uddce\ud83c\udffd\u200d\u2640\ufe0f" );
+		name( "woman_kneeling_tone4", "\ud83e\uddce\ud83c\udffe\u200d\u2640\ufe0f" );
+		name( "woman_kneeling_tone5", "\ud83e\uddce\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_lifting_weights", "\ud83c\udfcb\ufe0f\u200d\u2640\ufe0f" );
 		name( "woman_lifting_weights_dark_skin_tone", "\ud83c\udfcb\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_lifting_weights_light_skin_tone", "\ud83c\udfcb\ud83c\udffb\u200d\u2640\ufe0f" );
@@ -11180,6 +12151,8 @@
 		name( "woman_pilot_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2708\ufe0f" );
 		name( "woman_pilot_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2708\ufe0f" );
 		name( "woman_pilot_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2708\ufe0f" );
+	}
+	private static void init119(){
 		name( "woman_pilot_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2708\ufe0f" );
 		name( "woman_pilot_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2708\ufe0f" );
 		name( "woman_pilot_tone1", "\ud83d\udc69\ud83c\udffb\u200d\u2708\ufe0f" );
@@ -11224,8 +12197,6 @@
 		name( "woman_pouting_dark_skin_tone", "\ud83d\ude4e\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_pouting_light_skin_tone", "\ud83d\ude4e\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_pouting_medium_dark_skin_tone", "\ud83d\ude4e\ud83c\udffe\u200d\u2640\ufe0f" );
-	}
-	private static void init110(){
 		name( "woman_pouting_medium_light_skin_tone", "\ud83d\ude4e\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_pouting_medium_skin_tone", "\ud83d\ude4e\ud83c\udffd\u200d\u2640\ufe0f" );
 		name( "woman_pouting_tone1", "\ud83d\ude4e\ud83c\udffb\u200d\u2640\ufe0f" );
@@ -11283,6 +12254,8 @@
 		name( "woman_shrugging_medium_dark_skin_tone", "\ud83e\udd37\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_shrugging_medium_light_skin_tone", "\ud83e\udd37\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_shrugging_medium_skin_tone", "\ud83e\udd37\ud83c\udffd\u200d\u2640\ufe0f" );
+	}
+	private static void init120(){
 		name( "woman_shrugging_tone1", "\ud83e\udd37\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_shrugging_tone2", "\ud83e\udd37\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_shrugging_tone3", "\ud83e\udd37\ud83c\udffd\u200d\u2640\ufe0f" );
@@ -11299,6 +12272,17 @@
 		name( "woman_singer_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udfa4" );
 		name( "woman_singer_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udfa4" );
 		name( "woman_singer_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udfa4" );
+		name( "woman_standing", "\ud83e\uddcd\u200d\u2640\ufe0f" );
+		name( "woman_standing_dark_skin_tone", "\ud83e\uddcd\ud83c\udfff\u200d\u2640\ufe0f" );
+		name( "woman_standing_light_skin_tone", "\ud83e\uddcd\ud83c\udffb\u200d\u2640\ufe0f" );
+		name( "woman_standing_medium_dark_skin_tone", "\ud83e\uddcd\ud83c\udffe\u200d\u2640\ufe0f" );
+		name( "woman_standing_medium_light_skin_tone", "\ud83e\uddcd\ud83c\udffc\u200d\u2640\ufe0f" );
+		name( "woman_standing_medium_skin_tone", "\ud83e\uddcd\ud83c\udffd\u200d\u2640\ufe0f" );
+		name( "woman_standing_tone1", "\ud83e\uddcd\ud83c\udffb\u200d\u2640\ufe0f" );
+		name( "woman_standing_tone2", "\ud83e\uddcd\ud83c\udffc\u200d\u2640\ufe0f" );
+		name( "woman_standing_tone3", "\ud83e\uddcd\ud83c\udffd\u200d\u2640\ufe0f" );
+		name( "woman_standing_tone4", "\ud83e\uddcd\ud83c\udffe\u200d\u2640\ufe0f" );
+		name( "woman_standing_tone5", "\ud83e\uddcd\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_student", "\ud83d\udc69\u200d\ud83c\udf93" );
 		name( "woman_student_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf93" );
 		name( "woman_student_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf93" );
@@ -11327,8 +12311,6 @@
 		name( "woman_swimming_medium_dark_skin_tone", "\ud83c\udfca\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_swimming_medium_light_skin_tone", "\ud83c\udfca\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_swimming_medium_skin_tone", "\ud83c\udfca\ud83c\udffd\u200d\u2640\ufe0f" );
-	}
-	private static void init111(){
 		name( "woman_swimming_tone1", "\ud83c\udfca\ud83c\udffb\u200d\u2640\ufe0f" );
 		name( "woman_swimming_tone2", "\ud83c\udfca\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_swimming_tone3", "\ud83c\udfca\ud83c\udffd\u200d\u2640\ufe0f" );
@@ -11375,6 +12357,8 @@
 		name( "woman_walking", "\ud83d\udeb6\u200d\u2640\ufe0f" );
 		name( "woman_walking_dark_skin_tone", "\ud83d\udeb6\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_walking_light_skin_tone", "\ud83d\udeb6\ud83c\udffb\u200d\u2640\ufe0f" );
+	}
+	private static void init121(){
 		name( "woman_walking_medium_dark_skin_tone", "\ud83d\udeb6\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_walking_medium_light_skin_tone", "\ud83d\udeb6\ud83c\udffc\u200d\u2640\ufe0f" );
 		name( "woman_walking_medium_skin_tone", "\ud83d\udeb6\ud83c\udffd\u200d\u2640\ufe0f" );
@@ -11395,6 +12379,28 @@
 		name( "woman_wearing_turban_tone4", "\ud83d\udc73\ud83c\udffe\u200d\u2640\ufe0f" );
 		name( "woman_wearing_turban_tone5", "\ud83d\udc73\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_with_bunny_ears_partying", "\ud83d\udc6f\u200d\u2640\ufe0f" );
+		name( "woman_with_probing_cane", "\ud83d\udc69\u200d\ud83e\uddaf" );
+		name( "woman_with_probing_cane_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddaf" );
+		name( "woman_with_probing_cane_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddaf" );
+		name( "woman_with_probing_cane_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddaf" );
+		name( "woman_with_probing_cane_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddaf" );
+		name( "woman_with_probing_cane_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddaf" );
+		name( "woman_with_probing_cane_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddaf" );
+		name( "woman_with_probing_cane_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddaf" );
+		name( "woman_with_probing_cane_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddaf" );
+		name( "woman_with_probing_cane_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddaf" );
+		name( "woman_with_probing_cane_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddaf" );
+		name( "woman_with_veil", "\ud83d\udc70\u200d\u2640\ufe0f" );
+		name( "woman_with_veil_dark_skin_tone", "\ud83d\udc70\ud83c\udfff\u200d\u2640\ufe0f" );
+		name( "woman_with_veil_light_skin_tone", "\ud83d\udc70\ud83c\udffb\u200d\u2640\ufe0f" );
+		name( "woman_with_veil_medium_dark_skin_tone", "\ud83d\udc70\ud83c\udffe\u200d\u2640\ufe0f" );
+		name( "woman_with_veil_medium_light_skin_tone", "\ud83d\udc70\ud83c\udffc\u200d\u2640\ufe0f" );
+		name( "woman_with_veil_medium_skin_tone", "\ud83d\udc70\ud83c\udffd\u200d\u2640\ufe0f" );
+		name( "woman_with_veil_tone1", "\ud83d\udc70\ud83c\udffb\u200d\u2640\ufe0f" );
+		name( "woman_with_veil_tone2", "\ud83d\udc70\ud83c\udffc\u200d\u2640\ufe0f" );
+		name( "woman_with_veil_tone3", "\ud83d\udc70\ud83c\udffd\u200d\u2640\ufe0f" );
+		name( "woman_with_veil_tone4", "\ud83d\udc70\ud83c\udffe\u200d\u2640\ufe0f" );
+		name( "woman_with_veil_tone5", "\ud83d\udc70\ud83c\udfff\u200d\u2640\ufe0f" );
 		name( "woman_woman_boy", "\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc66" );
 		name( "woman_woman_boy_boy", "\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66" );
 		name( "woman_woman_girl", "\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc67" );
@@ -11404,11 +12410,24 @@
 		name( "womans_clothes", "\ud83d\udc5a" );
 		name( "womans_flat_shoe", "\ud83e\udd7f" );
 		name( "womans_hat", "\ud83d\udc52" );
+		name( "women_holding_hands", "\ud83d\udc6d" );
+		name( "women_holding_hands_dark_skin_tone", "\ud83d\udc6d\ud83c\udfff" );
+		name( "women_holding_hands_light_skin_tone", "\ud83d\udc6d\ud83c\udffb" );
+		name( "women_holding_hands_medium_dark_skin_tone", "\ud83d\udc6d\ud83c\udffe" );
+		name( "women_holding_hands_medium_light_skin_tone", "\ud83d\udc6d\ud83c\udffc" );
+		name( "women_holding_hands_medium_skin_tone", "\ud83d\udc6d\ud83c\udffd" );
+		name( "women_holding_hands_tone1", "\ud83d\udc6d\ud83c\udffb" );
+		name( "women_holding_hands_tone2", "\ud83d\udc6d\ud83c\udffc" );
+		name( "women_holding_hands_tone3", "\ud83d\udc6d\ud83c\udffd" );
+		name( "women_holding_hands_tone4", "\ud83d\udc6d\ud83c\udffe" );
+		name( "women_holding_hands_tone5", "\ud83d\udc6d\ud83c\udfff" );
 		name( "women_with_bunny_ears_partying", "\ud83d\udc6f\u200d\u2640\ufe0f" );
 		name( "women_wrestling", "\ud83e\udd3c\u200d\u2640\ufe0f" );
 		name( "womens", "\ud83d\udeba" );
+		name( "wood", "\ud83e\udeb5" );
 		name( "woozy_face", "\ud83e\udd74" );
 		name( "world_map", "\ud83d\uddfa\ufe0f" );
+		name( "worm", "\ud83e\udeb1" );
 		name( "worried", "\ud83d\ude1f" );
 		name( "worship_symbol", "\ud83d\uded0" );
 		name( "wrench", "\ud83d\udd27" );
@@ -11429,18 +12448,20 @@
 		name( "x", "\u274c" );
 		name( "xk", "\ud83c\uddfd\ud83c\uddf0" );
 		name( "yarn", "\ud83e\uddf6" );
+		name( "yawning_face", "\ud83e\udd71" );
 		name( "ye", "\ud83c\uddfe\ud83c\uddea" );
-	}
-	private static void init112(){
 		name( "yellow_heart", "\ud83d\udc9b" );
 		name( "yen", "\ud83d\udcb4" );
 		name( "yin_yang", "\u262f\ufe0f" );
+		name( "yo_yo", "\ud83e\ude80" );
 		name( "yt", "\ud83c\uddfe\ud83c\uddf9" );
 		name( "yum", "\ud83d\ude0b" );
 		name( "za", "\ud83c\uddff\ud83c\udde6" );
 		name( "zany_face", "\ud83e\udd2a" );
 		name( "zap", "\u26a1" );
 		name( "zebra_face", "\ud83e\udd93" );
+	}
+	private static void init122(){
 		name( "zero", "\u0030\ufe0f\u20e3" );
 		name( "zipper_mouth", "\ud83e\udd10" );
 		name( "zipper_mouth_face", "\ud83e\udd10" );
@@ -11533,8 +12554,6 @@
 		category(CATEGORY_PEOPLE, "face_with_monocle");
 		category(CATEGORY_PEOPLE, "nerd_face");
 		category(CATEGORY_PEOPLE, "smiling_imp");
-	}
-	private static void init113(){
 		category(CATEGORY_PEOPLE, "imp");
 		category(CATEGORY_PEOPLE, "japanese_ogre");
 		category(CATEGORY_PEOPLE, "japanese_goblin");
@@ -11544,6 +12563,8 @@
 		category(CATEGORY_PEOPLE, "alien");
 		category(CATEGORY_PEOPLE, "space_invader");
 		category(CATEGORY_PEOPLE, "robot_face");
+	}
+	private static void init123(){
 		category(CATEGORY_PEOPLE, "hankey");
 		category(CATEGORY_PEOPLE, "smiley_cat");
 		category(CATEGORY_PEOPLE, "smile_cat");
@@ -11636,8 +12657,6 @@
 		category(CATEGORY_PEOPLE, "female_fairy");
 		category(CATEGORY_PEOPLE, "male_fairy");
 		category(CATEGORY_PEOPLE, "vampire");
-	}
-	private static void init114(){
 		category(CATEGORY_PEOPLE, "female_vampire");
 		category(CATEGORY_PEOPLE, "male_vampire");
 		category(CATEGORY_PEOPLE, "merperson");
@@ -11647,6 +12666,8 @@
 		category(CATEGORY_PEOPLE, "female_elf");
 		category(CATEGORY_PEOPLE, "male_elf");
 		category(CATEGORY_PEOPLE, "genie");
+	}
+	private static void init124(){
 		category(CATEGORY_PEOPLE, "female_genie");
 		category(CATEGORY_PEOPLE, "male_genie");
 		category(CATEGORY_PEOPLE, "zombie");
@@ -11739,8 +12760,6 @@
 		category(CATEGORY_PEOPLE, "mountain_bicyclist");
 		category(CATEGORY_PEOPLE, "man_mountain_biking");
 		category(CATEGORY_PEOPLE, "woman_mountain_biking");
-	}
-	private static void init115(){
 		category(CATEGORY_PEOPLE, "racing_car");
 		category(CATEGORY_PEOPLE, "racing_motorcycle");
 		category(CATEGORY_PEOPLE, "person_doing_cartwheel");
@@ -11750,6 +12769,8 @@
 		category(CATEGORY_PEOPLE, "man_wrestling");
 		category(CATEGORY_PEOPLE, "woman_wrestling");
 		category(CATEGORY_PEOPLE, "water_polo");
+	}
+	private static void init125(){
 		category(CATEGORY_PEOPLE, "man_playing_water_polo");
 		category(CATEGORY_PEOPLE, "woman_playing_water_polo");
 		category(CATEGORY_PEOPLE, "handball");
@@ -11842,8 +12863,6 @@
 		category(CATEGORY_PEOPLE, "heart");
 		category(CATEGORY_PEOPLE, "heartbeat");
 		category(CATEGORY_PEOPLE, "broken_heart");
-	}
-	private static void init116(){
 		category(CATEGORY_PEOPLE, "two_hearts");
 		category(CATEGORY_PEOPLE, "sparkling_heart");
 		category(CATEGORY_PEOPLE, "heartpulse");
@@ -11853,6 +12872,8 @@
 		category(CATEGORY_PEOPLE, "orange_heart");
 		category(CATEGORY_PEOPLE, "purple_heart");
 		category(CATEGORY_PEOPLE, "black_heart");
+	}
+	private static void init126(){
 		category(CATEGORY_PEOPLE, "gift_heart");
 		category(CATEGORY_PEOPLE, "revolving_hearts");
 		category(CATEGORY_PEOPLE, "heart_decoration");
@@ -11945,8 +12966,6 @@
 		category(CATEGORY_NATURE, "rabbit");
 		category(CATEGORY_NATURE, "rabbit2");
 		category(CATEGORY_NATURE, "chipmunk");
-	}
-	private static void init117(){
 		category(CATEGORY_NATURE, "hedgehog");
 		category(CATEGORY_NATURE, "bat");
 		category(CATEGORY_NATURE, "bear");
@@ -11956,6 +12975,8 @@
 		category(CATEGORY_NATURE, "turkey");
 		category(CATEGORY_NATURE, "chicken");
 		category(CATEGORY_NATURE, "rooster");
+	}
+	private static void init127(){
 		category(CATEGORY_NATURE, "hatching_chick");
 		category(CATEGORY_NATURE, "baby_chick");
 		category(CATEGORY_NATURE, "hatched_chick");
@@ -12048,8 +13069,6 @@
 		category(CATEGORY_FOODS, "bread");
 		category(CATEGORY_FOODS, "croissant");
 		category(CATEGORY_FOODS, "baguette_bread");
-	}
-	private static void init118(){
 		category(CATEGORY_FOODS, "pretzel");
 		category(CATEGORY_FOODS, "pancakes");
 		category(CATEGORY_FOODS, "cheese_wedge");
@@ -12059,6 +13078,8 @@
 		category(CATEGORY_FOODS, "bacon");
 		category(CATEGORY_FOODS, "hamburger");
 		category(CATEGORY_FOODS, "fries");
+	}
+	private static void init128(){
 		category(CATEGORY_FOODS, "pizza");
 		category(CATEGORY_FOODS, "hotdog");
 		category(CATEGORY_FOODS, "sandwich");
@@ -12151,8 +13172,6 @@
 		category(CATEGORY_ACTIVITY, "baseball");
 		category(CATEGORY_ACTIVITY, "basketball");
 		category(CATEGORY_ACTIVITY, "volleyball");
-	}
-	private static void init119(){
 		category(CATEGORY_ACTIVITY, "football");
 		category(CATEGORY_ACTIVITY, "rugby_football");
 		category(CATEGORY_ACTIVITY, "tennis");
@@ -12162,6 +13181,8 @@
 		category(CATEGORY_ACTIVITY, "field_hockey_stick_and_ball");
 		category(CATEGORY_ACTIVITY, "ice_hockey_stick_and_puck");
 		category(CATEGORY_ACTIVITY, "table_tennis_paddle_and_ball");
+	}
+	private static void init129(){
 		category(CATEGORY_ACTIVITY, "badminton_racquet_and_shuttlecock");
 		category(CATEGORY_ACTIVITY, "boxing_glove");
 		category(CATEGORY_ACTIVITY, "martial_arts_uniform");
@@ -12254,8 +13275,6 @@
 		category(CATEGORY_PLACES, "bullettrain_front");
 		category(CATEGORY_PLACES, "train2");
 		category(CATEGORY_PLACES, "metro");
-	}
-	private static void init120(){
 		category(CATEGORY_PLACES, "light_rail");
 		category(CATEGORY_PLACES, "station");
 		category(CATEGORY_PLACES, "tram");
@@ -12265,6 +13284,8 @@
 		category(CATEGORY_PLACES, "bus");
 		category(CATEGORY_PLACES, "oncoming_bus");
 		category(CATEGORY_PLACES, "trolleybus");
+	}
+	private static void init130(){
 		category(CATEGORY_PLACES, "minibus");
 		category(CATEGORY_PLACES, "ambulance");
 		category(CATEGORY_PLACES, "fire_engine");
@@ -12357,8 +13378,6 @@
 		category(CATEGORY_PLACES, "last_quarter_moon");
 		category(CATEGORY_PLACES, "waning_crescent_moon");
 		category(CATEGORY_PLACES, "crescent_moon");
-	}
-	private static void init121(){
 		category(CATEGORY_PLACES, "new_moon_with_face");
 		category(CATEGORY_PLACES, "first_quarter_moon_with_face");
 		category(CATEGORY_PLACES, "last_quarter_moon_with_face");
@@ -12368,6 +13387,8 @@
 		category(CATEGORY_PLACES, "sun_with_face");
 		category(CATEGORY_PLACES, "star");
 		category(CATEGORY_PLACES, "star2");
+	}
+	private static void init131(){
 		category(CATEGORY_PLACES, "stars");
 		category(CATEGORY_PLACES, "cloud");
 		category(CATEGORY_PLACES, "partly_sunny");
@@ -12460,8 +13481,6 @@
 		category(CATEGORY_OBJECTS, "book");
 		category(CATEGORY_OBJECTS, "green_book");
 		category(CATEGORY_OBJECTS, "blue_book");
-	}
-	private static void init122(){
 		category(CATEGORY_OBJECTS, "orange_book");
 		category(CATEGORY_OBJECTS, "books");
 		category(CATEGORY_OBJECTS, "notebook");
@@ -12471,6 +13490,8 @@
 		category(CATEGORY_OBJECTS, "page_facing_up");
 		category(CATEGORY_OBJECTS, "newspaper");
 		category(CATEGORY_OBJECTS, "rolled_up_newspaper");
+	}
+	private static void init132(){
 		category(CATEGORY_OBJECTS, "bookmark_tabs");
 		category(CATEGORY_OBJECTS, "bookmark");
 		category(CATEGORY_OBJECTS, "label");
@@ -12563,8 +13584,6 @@
 		category(CATEGORY_SYMBOLS, "put_litter_in_its_place");
 		category(CATEGORY_SYMBOLS, "potable_water");
 		category(CATEGORY_SYMBOLS, "wheelchair");
-	}
-	private static void init123(){
 		category(CATEGORY_SYMBOLS, "mens");
 		category(CATEGORY_SYMBOLS, "womens");
 		category(CATEGORY_SYMBOLS, "restroom");
@@ -12574,6 +13593,8 @@
 		category(CATEGORY_SYMBOLS, "customs");
 		category(CATEGORY_SYMBOLS, "baggage_claim");
 		category(CATEGORY_SYMBOLS, "left_luggage");
+	}
+	private static void init133(){
 		category(CATEGORY_SYMBOLS, "warning");
 		category(CATEGORY_SYMBOLS, "children_crossing");
 		category(CATEGORY_SYMBOLS, "no_entry");
@@ -12666,8 +13687,6 @@
 		category(CATEGORY_SYMBOLS, "name_badge");
 		category(CATEGORY_SYMBOLS, "beginner");
 		category(CATEGORY_SYMBOLS, "o");
-	}
-	private static void init124(){
 		category(CATEGORY_SYMBOLS, "white_check_mark");
 		category(CATEGORY_SYMBOLS, "ballot_box_with_check");
 		category(CATEGORY_SYMBOLS, "heavy_check_mark");
@@ -12677,6 +13696,8 @@
 		category(CATEGORY_SYMBOLS, "heavy_plus_sign");
 		category(CATEGORY_SYMBOLS, "heavy_minus_sign");
 		category(CATEGORY_SYMBOLS, "heavy_division_sign");
+	}
+	private static void init134(){
 		category(CATEGORY_SYMBOLS, "curly_loop");
 		category(CATEGORY_SYMBOLS, "loop");
 		category(CATEGORY_SYMBOLS, "part_alternation_mark");
@@ -12769,8 +13790,6 @@
 		category(CATEGORY_SYMBOLS, "red_circle");
 		category(CATEGORY_SYMBOLS, "large_blue_circle");
 		category(CATEGORY_FLAGS, "checkered_flag");
-	}
-	private static void init125(){
 		category(CATEGORY_FLAGS, "cn");
 		category(CATEGORY_FLAGS, "crossed_flags");
 		category(CATEGORY_FLAGS, "de");
@@ -12780,6 +13799,8 @@
 		category(CATEGORY_FLAGS, "flag_ae");
 		category(CATEGORY_FLAGS, "flag_af");
 		category(CATEGORY_FLAGS, "flag_ag");
+	}
+	private static void init135(){
 		category(CATEGORY_FLAGS, "flag_ai");
 		category(CATEGORY_FLAGS, "flag_al");
 		category(CATEGORY_FLAGS, "flag_am");
@@ -12872,8 +13893,6 @@
 		category(CATEGORY_FLAGS, "flag_gy");
 		category(CATEGORY_FLAGS, "flag_hk");
 		category(CATEGORY_FLAGS, "flag_hm");
-	}
-	private static void init126(){
 		category(CATEGORY_FLAGS, "flag_hn");
 		category(CATEGORY_FLAGS, "flag_hr");
 		category(CATEGORY_FLAGS, "flag_ht");
@@ -12883,6 +13902,8 @@
 		category(CATEGORY_FLAGS, "flag_ie");
 		category(CATEGORY_FLAGS, "flag_il");
 		category(CATEGORY_FLAGS, "flag_im");
+	}
+	private static void init136(){
 		category(CATEGORY_FLAGS, "flag_in");
 		category(CATEGORY_FLAGS, "flag_io");
 		category(CATEGORY_FLAGS, "flag_iq");
@@ -12975,8 +13996,6 @@
 		category(CATEGORY_FLAGS, "flag_se");
 		category(CATEGORY_FLAGS, "flag_sg");
 		category(CATEGORY_FLAGS, "flag_sh");
-	}
-	private static void init127(){
 		category(CATEGORY_FLAGS, "flag_si");
 		category(CATEGORY_FLAGS, "flag_sj");
 		category(CATEGORY_FLAGS, "flag_sk");
@@ -12986,6 +14005,8 @@
 		category(CATEGORY_FLAGS, "flag_so");
 		category(CATEGORY_FLAGS, "flag_sr");
 		category(CATEGORY_FLAGS, "flag_ss");
+	}
+	private static void init137(){
 		category(CATEGORY_FLAGS, "flag_st");
 		category(CATEGORY_FLAGS, "flag_sv");
 		category(CATEGORY_FLAGS, "flag_sx");
@@ -13171,4 +14192,14 @@
 		init125();
 		init126();
 		init127();
+		init128();
+		init129();
+		init130();
+		init131();
+		init132();
+		init133();
+		init134();
+		init135();
+		init136();
+		init137();
 	}

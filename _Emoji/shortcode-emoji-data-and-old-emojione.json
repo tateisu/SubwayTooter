@@ -128,8 +128,16 @@
       "unicode" : "1F251"
    },
    {
+      "shortcode" : "accordion",
+      "unicode" : "1FA97"
+   },
+   {
       "shortcode" : "ad",
       "unicode" : "1F1E6-1F1E9"
+   },
+   {
+      "shortcode" : "adhesive_bandage",
+      "unicode" : "1FA79"
    },
    {
       "shortcode" : "admission_tickets",
@@ -242,6 +250,10 @@
    {
       "shortcode" : "amphora",
       "unicode" : "1F3FA"
+   },
+   {
+      "shortcode" : "anatomical_heart",
+      "unicode" : "1FAC0"
    },
    {
       "shortcode" : "anchor",
@@ -428,6 +440,50 @@
       "unicode" : "1F69B"
    },
    {
+      "shortcode" : "artist",
+      "unicode" : "1F9D1-200D-1F3A8"
+   },
+   {
+      "shortcode" : "artist_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F3A8"
+   },
+   {
+      "shortcode" : "artist_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F3A8"
+   },
+   {
+      "shortcode" : "artist_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F3A8"
+   },
+   {
+      "shortcode" : "artist_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F3A8"
+   },
+   {
+      "shortcode" : "artist_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F3A8"
+   },
+   {
+      "shortcode" : "artist_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F3A8"
+   },
+   {
+      "shortcode" : "artist_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F3A8"
+   },
+   {
+      "shortcode" : "artist_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F3A8"
+   },
+   {
+      "shortcode" : "artist_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F3A8"
+   },
+   {
+      "shortcode" : "artist_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F3A8"
+   },
+   {
       "shortcode" : "as",
       "unicode" : "1F1E6-1F1F8"
    },
@@ -442,6 +498,50 @@
    {
       "shortcode" : "astonished",
       "unicode" : "1F632"
+   },
+   {
+      "shortcode" : "astronaut",
+      "unicode" : "1F9D1-200D-1F680"
+   },
+   {
+      "shortcode" : "astronaut_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F680"
+   },
+   {
+      "shortcode" : "astronaut_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F680"
+   },
+   {
+      "shortcode" : "astronaut_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F680"
+   },
+   {
+      "shortcode" : "astronaut_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F680"
+   },
+   {
+      "shortcode" : "astronaut_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F680"
+   },
+   {
+      "shortcode" : "astronaut_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F680"
+   },
+   {
+      "shortcode" : "astronaut_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F680"
+   },
+   {
+      "shortcode" : "astronaut_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F680"
+   },
+   {
+      "shortcode" : "astronaut_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F680"
+   },
+   {
+      "shortcode" : "astronaut_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F680"
    },
    {
       "shortcode" : "at",
@@ -468,6 +568,10 @@
       "unicode" : "1F1E6-1F1FA"
    },
    {
+      "shortcode" : "auto_rickshaw",
+      "unicode" : "1F6FA"
+   },
+   {
       "shortcode" : "avocado",
       "unicode" : "1F951"
    },
@@ -478,6 +582,10 @@
    {
       "shortcode" : "ax",
       "unicode" : "1F1E6-1F1FD"
+   },
+   {
+      "shortcode" : "axe",
+      "unicode" : "1FA93"
    },
    {
       "shortcode" : "az",
@@ -604,6 +712,142 @@
       "unicode" : "1F956"
    },
    {
+      "shortcode" : "bald_man",
+      "unicode" : "1F468-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_man_dark_skin_tone",
+      "unicode" : "1F468-1F3FF-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_man_light_skin_tone",
+      "unicode" : "1F468-1F3FB-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_man_medium_dark_skin_tone",
+      "unicode" : "1F468-1F3FE-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_man_medium_light_skin_tone",
+      "unicode" : "1F468-1F3FC-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_man_medium_skin_tone",
+      "unicode" : "1F468-1F3FD-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_man_tone1",
+      "unicode" : "1F468-1F3FB-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_man_tone2",
+      "unicode" : "1F468-1F3FC-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_man_tone3",
+      "unicode" : "1F468-1F3FD-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_man_tone4",
+      "unicode" : "1F468-1F3FE-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_man_tone5",
+      "unicode" : "1F468-1F3FF-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_person",
+      "unicode" : "1F9D1-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_person_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_person_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_person_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_person_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_person_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_person_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_person_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_person_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_person_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_person_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_woman",
+      "unicode" : "1F469-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_woman_dark_skin_tone",
+      "unicode" : "1F469-1F3FF-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_woman_light_skin_tone",
+      "unicode" : "1F469-1F3FB-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_woman_medium_dark_skin_tone",
+      "unicode" : "1F469-1F3FE-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_woman_medium_light_skin_tone",
+      "unicode" : "1F469-1F3FC-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_woman_medium_skin_tone",
+      "unicode" : "1F469-1F3FD-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_woman_tone1",
+      "unicode" : "1F469-1F3FB-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_woman_tone2",
+      "unicode" : "1F469-1F3FC-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_woman_tone3",
+      "unicode" : "1F469-1F3FD-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_woman_tone4",
+      "unicode" : "1F469-1F3FE-200D-1F9B2"
+   },
+   {
+      "shortcode" : "bald_woman_tone5",
+      "unicode" : "1F469-1F3FF-200D-1F9B2"
+   },
+   {
+      "shortcode" : "ballet_shoes",
+      "unicode" : "1FA70"
+   },
+   {
       "shortcode" : "balloon",
       "unicode" : "1F388"
    },
@@ -630,6 +874,10 @@
    {
       "shortcode" : "bangbang",
       "unicode" : "203C-FE0F"
+   },
+   {
+      "shortcode" : "banjo",
+      "unicode" : "1FA95"
    },
    {
       "shortcode" : "bank",
@@ -812,6 +1060,10 @@
       "unicode" : "1F9D4-1F3FF"
    },
    {
+      "shortcode" : "beaver",
+      "unicode" : "1F9AB"
+   },
+   {
       "shortcode" : "bed",
       "unicode" : "1F6CF-FE0F"
    },
@@ -829,7 +1081,7 @@
    },
    {
       "shortcode" : "beetle",
-      "unicode" : "1F41E"
+      "unicode" : "1FAB2"
    },
    {
       "shortcode" : "beginner",
@@ -838,6 +1090,10 @@
    {
       "shortcode" : "bell",
       "unicode" : "1F514"
+   },
+   {
+      "shortcode" : "bell_pepper",
+      "unicode" : "1FAD1"
    },
    {
       "shortcode" : "bellhop",
@@ -850,6 +1106,10 @@
    {
       "shortcode" : "bento",
       "unicode" : "1F371"
+   },
+   {
+      "shortcode" : "beverage_box",
+      "unicode" : "1F9C3"
    },
    {
       "shortcode" : "bf",
@@ -940,12 +1200,20 @@
       "unicode" : "1F382"
    },
    {
+      "shortcode" : "bison",
+      "unicode" : "1F9AC"
+   },
+   {
       "shortcode" : "bj",
       "unicode" : "1F1E7-1F1EF"
    },
    {
       "shortcode" : "bl",
       "unicode" : "1F1E7-1F1F1"
+   },
+   {
+      "shortcode" : "black_cat",
+      "unicode" : "1F408-200D-2B1B"
    },
    {
       "shortcode" : "black_circle",
@@ -1116,6 +1384,10 @@
       "unicode" : "1F499"
    },
    {
+      "shortcode" : "blueberries",
+      "unicode" : "1FAD0"
+   },
+   {
       "shortcode" : "blush",
       "unicode" : "1F60A"
    },
@@ -1166,6 +1438,10 @@
    {
       "shortcode" : "boom",
       "unicode" : "1F4A5"
+   },
+   {
+      "shortcode" : "boomerang",
+      "unicode" : "1FA83"
    },
    {
       "shortcode" : "boot",
@@ -1404,6 +1680,10 @@
       "unicode" : "1F4BC"
    },
    {
+      "shortcode" : "briefs",
+      "unicode" : "1FA72"
+   },
+   {
       "shortcode" : "broccoli",
       "unicode" : "1F966"
    },
@@ -1416,12 +1696,24 @@
       "unicode" : "1F9F9"
    },
    {
+      "shortcode" : "brown_heart",
+      "unicode" : "1F90E"
+   },
+   {
       "shortcode" : "bs",
       "unicode" : "1F1E7-1F1F8"
    },
    {
       "shortcode" : "bt",
       "unicode" : "1F1E7-1F1F9"
+   },
+   {
+      "shortcode" : "bubble_tea",
+      "unicode" : "1F9CB"
+   },
+   {
+      "shortcode" : "bucket",
+      "unicode" : "1FAA3"
    },
    {
       "shortcode" : "bug",
@@ -1462,6 +1754,10 @@
    {
       "shortcode" : "busts_in_silhouette",
       "unicode" : "1F465"
+   },
+   {
+      "shortcode" : "butter",
+      "unicode" : "1F9C8"
    },
    {
       "shortcode" : "butterfly",
@@ -1644,6 +1940,10 @@
       "unicode" : "1F3A0"
    },
    {
+      "shortcode" : "carpentry_saw",
+      "unicode" : "1FA9A"
+   },
+   {
       "shortcode" : "carrot",
       "unicode" : "1F955"
    },
@@ -1702,6 +2002,10 @@
    {
       "shortcode" : "chains",
       "unicode" : "26D3-FE0F"
+   },
+   {
+      "shortcode" : "chair",
+      "unicode" : "1FA91"
    },
    {
       "shortcode" : "champagne",
@@ -2104,6 +2408,10 @@
       "unicode" : "1F9E5"
    },
    {
+      "shortcode" : "cockroach",
+      "unicode" : "1FAB3"
+   },
+   {
       "shortcode" : "cocktail",
       "unicode" : "1F378"
    },
@@ -2118,6 +2426,10 @@
    {
       "shortcode" : "coffin",
       "unicode" : "26B0-FE0F"
+   },
+   {
+      "shortcode" : "coin",
+      "unicode" : "1FA99"
    },
    {
       "shortcode" : "cold_face",
@@ -2228,6 +2540,50 @@
       "unicode" : "1F3EA"
    },
    {
+      "shortcode" : "cook",
+      "unicode" : "1F9D1-200D-1F373"
+   },
+   {
+      "shortcode" : "cook_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F373"
+   },
+   {
+      "shortcode" : "cook_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F373"
+   },
+   {
+      "shortcode" : "cook_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F373"
+   },
+   {
+      "shortcode" : "cook_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F373"
+   },
+   {
+      "shortcode" : "cook_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F373"
+   },
+   {
+      "shortcode" : "cook_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F373"
+   },
+   {
+      "shortcode" : "cook_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F373"
+   },
+   {
+      "shortcode" : "cook_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F373"
+   },
+   {
+      "shortcode" : "cook_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F373"
+   },
+   {
+      "shortcode" : "cook_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F373"
+   },
+   {
       "shortcode" : "cookie",
       "unicode" : "1F36A"
    },
@@ -2304,8 +2660,48 @@
       "unicode" : "1F46B"
    },
    {
+      "shortcode" : "couple_dark_skin_tone",
+      "unicode" : "1F46B-1F3FF"
+   },
+   {
+      "shortcode" : "couple_light_skin_tone",
+      "unicode" : "1F46B-1F3FB"
+   },
+   {
+      "shortcode" : "couple_medium_dark_skin_tone",
+      "unicode" : "1F46B-1F3FE"
+   },
+   {
+      "shortcode" : "couple_medium_light_skin_tone",
+      "unicode" : "1F46B-1F3FC"
+   },
+   {
+      "shortcode" : "couple_medium_skin_tone",
+      "unicode" : "1F46B-1F3FD"
+   },
+   {
       "shortcode" : "couple_mm",
       "unicode" : "1F468-200D-2764-FE0F-200D-1F468"
+   },
+   {
+      "shortcode" : "couple_tone1",
+      "unicode" : "1F46B-1F3FB"
+   },
+   {
+      "shortcode" : "couple_tone2",
+      "unicode" : "1F46B-1F3FC"
+   },
+   {
+      "shortcode" : "couple_tone3",
+      "unicode" : "1F46B-1F3FD"
+   },
+   {
+      "shortcode" : "couple_tone4",
+      "unicode" : "1F46B-1F3FE"
+   },
+   {
+      "shortcode" : "couple_tone5",
+      "unicode" : "1F46B-1F3FF"
    },
    {
       "shortcode" : "couple_with_heart",
@@ -2496,6 +2892,138 @@
       "unicode" : "1F94C"
    },
    {
+      "shortcode" : "curly_haired_man",
+      "unicode" : "1F468-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_man_dark_skin_tone",
+      "unicode" : "1F468-1F3FF-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_man_light_skin_tone",
+      "unicode" : "1F468-1F3FB-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_man_medium_dark_skin_tone",
+      "unicode" : "1F468-1F3FE-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_man_medium_light_skin_tone",
+      "unicode" : "1F468-1F3FC-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_man_medium_skin_tone",
+      "unicode" : "1F468-1F3FD-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_man_tone1",
+      "unicode" : "1F468-1F3FB-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_man_tone2",
+      "unicode" : "1F468-1F3FC-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_man_tone3",
+      "unicode" : "1F468-1F3FD-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_man_tone4",
+      "unicode" : "1F468-1F3FE-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_man_tone5",
+      "unicode" : "1F468-1F3FF-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_person",
+      "unicode" : "1F9D1-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_person_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_person_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_person_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_person_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_person_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_person_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_person_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_person_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_person_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_person_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_woman",
+      "unicode" : "1F469-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_woman_dark_skin_tone",
+      "unicode" : "1F469-1F3FF-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_woman_light_skin_tone",
+      "unicode" : "1F469-1F3FB-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_woman_medium_dark_skin_tone",
+      "unicode" : "1F469-1F3FE-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_woman_medium_light_skin_tone",
+      "unicode" : "1F469-1F3FC-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_woman_medium_skin_tone",
+      "unicode" : "1F469-1F3FD-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_woman_tone1",
+      "unicode" : "1F469-1F3FB-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_woman_tone2",
+      "unicode" : "1F469-1F3FC-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_woman_tone3",
+      "unicode" : "1F469-1F3FD-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_woman_tone4",
+      "unicode" : "1F469-1F3FE-200D-1F9B1"
+   },
+   {
+      "shortcode" : "curly_haired_woman_tone5",
+      "unicode" : "1F469-1F3FF-200D-1F9B1"
+   },
+   {
       "shortcode" : "curly_loop",
       "unicode" : "27B0"
    },
@@ -2624,6 +3152,138 @@
       "unicode" : "1F1E9-1F1EA"
    },
    {
+      "shortcode" : "deaf_man",
+      "unicode" : "1F9CF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "deaf_man_dark_skin_tone",
+      "unicode" : "1F9CF-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "deaf_man_light_skin_tone",
+      "unicode" : "1F9CF-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "deaf_man_medium_dark_skin_tone",
+      "unicode" : "1F9CF-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "deaf_man_medium_light_skin_tone",
+      "unicode" : "1F9CF-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "deaf_man_medium_skin_tone",
+      "unicode" : "1F9CF-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "deaf_man_tone1",
+      "unicode" : "1F9CF-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "deaf_man_tone2",
+      "unicode" : "1F9CF-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "deaf_man_tone3",
+      "unicode" : "1F9CF-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "deaf_man_tone4",
+      "unicode" : "1F9CF-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "deaf_man_tone5",
+      "unicode" : "1F9CF-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "deaf_person",
+      "unicode" : "1F9CF"
+   },
+   {
+      "shortcode" : "deaf_person_dark_skin_tone",
+      "unicode" : "1F9CF-1F3FF"
+   },
+   {
+      "shortcode" : "deaf_person_light_skin_tone",
+      "unicode" : "1F9CF-1F3FB"
+   },
+   {
+      "shortcode" : "deaf_person_medium_dark_skin_tone",
+      "unicode" : "1F9CF-1F3FE"
+   },
+   {
+      "shortcode" : "deaf_person_medium_light_skin_tone",
+      "unicode" : "1F9CF-1F3FC"
+   },
+   {
+      "shortcode" : "deaf_person_medium_skin_tone",
+      "unicode" : "1F9CF-1F3FD"
+   },
+   {
+      "shortcode" : "deaf_person_tone1",
+      "unicode" : "1F9CF-1F3FB"
+   },
+   {
+      "shortcode" : "deaf_person_tone2",
+      "unicode" : "1F9CF-1F3FC"
+   },
+   {
+      "shortcode" : "deaf_person_tone3",
+      "unicode" : "1F9CF-1F3FD"
+   },
+   {
+      "shortcode" : "deaf_person_tone4",
+      "unicode" : "1F9CF-1F3FE"
+   },
+   {
+      "shortcode" : "deaf_person_tone5",
+      "unicode" : "1F9CF-1F3FF"
+   },
+   {
+      "shortcode" : "deaf_woman",
+      "unicode" : "1F9CF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "deaf_woman_dark_skin_tone",
+      "unicode" : "1F9CF-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "deaf_woman_light_skin_tone",
+      "unicode" : "1F9CF-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "deaf_woman_medium_dark_skin_tone",
+      "unicode" : "1F9CF-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "deaf_woman_medium_light_skin_tone",
+      "unicode" : "1F9CF-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "deaf_woman_medium_skin_tone",
+      "unicode" : "1F9CF-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "deaf_woman_tone1",
+      "unicode" : "1F9CF-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "deaf_woman_tone2",
+      "unicode" : "1F9CF-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "deaf_woman_tone3",
+      "unicode" : "1F9CF-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "deaf_woman_tone4",
+      "unicode" : "1F9CF-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "deaf_woman_tone5",
+      "unicode" : "1F9CF-1F3FF-200D-2640-FE0F"
+   },
+   {
       "shortcode" : "deciduous_tree",
       "unicode" : "1F333"
    },
@@ -2716,8 +3376,20 @@
       "unicode" : "1F625"
    },
    {
+      "shortcode" : "disguised_face",
+      "unicode" : "1F978"
+   },
+   {
       "shortcode" : "dividers",
       "unicode" : "1F5C2-FE0F"
+   },
+   {
+      "shortcode" : "diving_mask",
+      "unicode" : "1F93F"
+   },
+   {
+      "shortcode" : "diya_lamp",
+      "unicode" : "1FA94"
    },
    {
       "shortcode" : "dizzy",
@@ -2750,6 +3422,10 @@
    {
       "shortcode" : "do_not_litter",
       "unicode" : "1F6AF"
+   },
+   {
+      "shortcode" : "dodo",
+      "unicode" : "1F9A4"
    },
    {
       "shortcode" : "dog",
@@ -2814,6 +3490,10 @@
    {
       "shortcode" : "drooling_face",
       "unicode" : "1F924"
+   },
+   {
+      "shortcode" : "drop_of_blood",
+      "unicode" : "1FA78"
    },
    {
       "shortcode" : "droplet",
@@ -2904,6 +3584,50 @@
       "unicode" : "1F442-1F3FF"
    },
    {
+      "shortcode" : "ear_with_hearing_aid",
+      "unicode" : "1F9BB"
+   },
+   {
+      "shortcode" : "ear_with_hearing_aid_dark_skin_tone",
+      "unicode" : "1F9BB-1F3FF"
+   },
+   {
+      "shortcode" : "ear_with_hearing_aid_light_skin_tone",
+      "unicode" : "1F9BB-1F3FB"
+   },
+   {
+      "shortcode" : "ear_with_hearing_aid_medium_dark_skin_tone",
+      "unicode" : "1F9BB-1F3FE"
+   },
+   {
+      "shortcode" : "ear_with_hearing_aid_medium_light_skin_tone",
+      "unicode" : "1F9BB-1F3FC"
+   },
+   {
+      "shortcode" : "ear_with_hearing_aid_medium_skin_tone",
+      "unicode" : "1F9BB-1F3FD"
+   },
+   {
+      "shortcode" : "ear_with_hearing_aid_tone1",
+      "unicode" : "1F9BB-1F3FB"
+   },
+   {
+      "shortcode" : "ear_with_hearing_aid_tone2",
+      "unicode" : "1F9BB-1F3FC"
+   },
+   {
+      "shortcode" : "ear_with_hearing_aid_tone3",
+      "unicode" : "1F9BB-1F3FD"
+   },
+   {
+      "shortcode" : "ear_with_hearing_aid_tone4",
+      "unicode" : "1F9BB-1F3FE"
+   },
+   {
+      "shortcode" : "ear_with_hearing_aid_tone5",
+      "unicode" : "1F9BB-1F3FF"
+   },
+   {
       "shortcode" : "earth_africa",
       "unicode" : "1F30D"
    },
@@ -2966,6 +3690,10 @@
    {
       "shortcode" : "elephant",
       "unicode" : "1F418"
+   },
+   {
+      "shortcode" : "elevator",
+      "unicode" : "1F6D7"
    },
    {
       "shortcode" : "elf",
@@ -3101,7 +3829,7 @@
    },
    {
       "shortcode" : "eye_in_speech_bubble",
-      "unicode" : "1f441-200d-1f5e8"
+      "unicode" : "1F441-FE0F-200D-1F5E8-FE0F"
    },
    {
       "shortcode" : "eyeglasses",
@@ -3276,6 +4004,50 @@
       "unicode" : "1F3ED"
    },
    {
+      "shortcode" : "factory_worker",
+      "unicode" : "1F9D1-200D-1F3ED"
+   },
+   {
+      "shortcode" : "factory_worker_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F3ED"
+   },
+   {
+      "shortcode" : "factory_worker_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F3ED"
+   },
+   {
+      "shortcode" : "factory_worker_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F3ED"
+   },
+   {
+      "shortcode" : "factory_worker_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F3ED"
+   },
+   {
+      "shortcode" : "factory_worker_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F3ED"
+   },
+   {
+      "shortcode" : "factory_worker_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F3ED"
+   },
+   {
+      "shortcode" : "factory_worker_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F3ED"
+   },
+   {
+      "shortcode" : "factory_worker_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F3ED"
+   },
+   {
+      "shortcode" : "factory_worker_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F3ED"
+   },
+   {
+      "shortcode" : "factory_worker_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F3ED"
+   },
+   {
       "shortcode" : "fairy",
       "unicode" : "1F9DA"
    },
@@ -3318,6 +4090,10 @@
    {
       "shortcode" : "fairy_tone5",
       "unicode" : "1F9DA-1F3FF"
+   },
+   {
+      "shortcode" : "falafel",
+      "unicode" : "1F9C6"
    },
    {
       "shortcode" : "fallen_leaf",
@@ -3428,6 +4204,50 @@
       "unicode" : "1F469-200D-1F469-200D-1F467-200D-1F467"
    },
    {
+      "shortcode" : "farmer",
+      "unicode" : "1F9D1-200D-1F33E"
+   },
+   {
+      "shortcode" : "farmer_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F33E"
+   },
+   {
+      "shortcode" : "farmer_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F33E"
+   },
+   {
+      "shortcode" : "farmer_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F33E"
+   },
+   {
+      "shortcode" : "farmer_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F33E"
+   },
+   {
+      "shortcode" : "farmer_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F33E"
+   },
+   {
+      "shortcode" : "farmer_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F33E"
+   },
+   {
+      "shortcode" : "farmer_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F33E"
+   },
+   {
+      "shortcode" : "farmer_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F33E"
+   },
+   {
+      "shortcode" : "farmer_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F33E"
+   },
+   {
+      "shortcode" : "farmer_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F33E"
+   },
+   {
       "shortcode" : "fast_forward",
       "unicode" : "23E9"
    },
@@ -3438,6 +4258,10 @@
    {
       "shortcode" : "fearful",
       "unicode" : "1F628"
+   },
+   {
+      "shortcode" : "feather",
+      "unicode" : "1FAB6"
    },
    {
       "shortcode" : "feet",
@@ -3532,50 +4356,6 @@
       "unicode" : "1F469-1F3FF-200D-1F680"
    },
    {
-      "shortcode" : "female_bald",
-      "unicode" : "1F469-200D-1F9B2"
-   },
-   {
-      "shortcode" : "female_bald_dark_skin_tone",
-      "unicode" : "1F469-1F3FF-200D-1F9B2"
-   },
-   {
-      "shortcode" : "female_bald_light_skin_tone",
-      "unicode" : "1F469-1F3FB-200D-1F9B2"
-   },
-   {
-      "shortcode" : "female_bald_medium_dark_skin_tone",
-      "unicode" : "1F469-1F3FE-200D-1F9B2"
-   },
-   {
-      "shortcode" : "female_bald_medium_light_skin_tone",
-      "unicode" : "1F469-1F3FC-200D-1F9B2"
-   },
-   {
-      "shortcode" : "female_bald_medium_skin_tone",
-      "unicode" : "1F469-1F3FD-200D-1F9B2"
-   },
-   {
-      "shortcode" : "female_bald_tone1",
-      "unicode" : "1F469-1F3FB-200D-1F9B2"
-   },
-   {
-      "shortcode" : "female_bald_tone2",
-      "unicode" : "1F469-1F3FC-200D-1F9B2"
-   },
-   {
-      "shortcode" : "female_bald_tone3",
-      "unicode" : "1F469-1F3FD-200D-1F9B2"
-   },
-   {
-      "shortcode" : "female_bald_tone4",
-      "unicode" : "1F469-1F3FE-200D-1F9B2"
-   },
-   {
-      "shortcode" : "female_bald_tone5",
-      "unicode" : "1F469-1F3FF-200D-1F9B2"
-   },
-   {
       "shortcode" : "female_construction_worker",
       "unicode" : "1F477-200D-2640-FE0F"
    },
@@ -3662,50 +4442,6 @@
    {
       "shortcode" : "female_cook_tone5",
       "unicode" : "1F469-1F3FF-200D-1F373"
-   },
-   {
-      "shortcode" : "female_curly_haired",
-      "unicode" : "1F469-200D-1F9B1"
-   },
-   {
-      "shortcode" : "female_curly_haired_dark_skin_tone",
-      "unicode" : "1F469-1F3FF-200D-1F9B1"
-   },
-   {
-      "shortcode" : "female_curly_haired_light_skin_tone",
-      "unicode" : "1F469-1F3FB-200D-1F9B1"
-   },
-   {
-      "shortcode" : "female_curly_haired_medium_dark_skin_tone",
-      "unicode" : "1F469-1F3FE-200D-1F9B1"
-   },
-   {
-      "shortcode" : "female_curly_haired_medium_light_skin_tone",
-      "unicode" : "1F469-1F3FC-200D-1F9B1"
-   },
-   {
-      "shortcode" : "female_curly_haired_medium_skin_tone",
-      "unicode" : "1F469-1F3FD-200D-1F9B1"
-   },
-   {
-      "shortcode" : "female_curly_haired_tone1",
-      "unicode" : "1F469-1F3FB-200D-1F9B1"
-   },
-   {
-      "shortcode" : "female_curly_haired_tone2",
-      "unicode" : "1F469-1F3FC-200D-1F9B1"
-   },
-   {
-      "shortcode" : "female_curly_haired_tone3",
-      "unicode" : "1F469-1F3FD-200D-1F9B1"
-   },
-   {
-      "shortcode" : "female_curly_haired_tone4",
-      "unicode" : "1F469-1F3FE-200D-1F9B1"
-   },
-   {
-      "shortcode" : "female_curly_haired_tone5",
-      "unicode" : "1F469-1F3FF-200D-1F9B1"
    },
    {
       "shortcode" : "female_detective",
@@ -4328,50 +5064,6 @@
       "unicode" : "1F46E-1F3FF-200D-2640-FE0F"
    },
    {
-      "shortcode" : "female_red_haired",
-      "unicode" : "1F469-200D-1F9B0"
-   },
-   {
-      "shortcode" : "female_red_haired_dark_skin_tone",
-      "unicode" : "1F469-1F3FF-200D-1F9B0"
-   },
-   {
-      "shortcode" : "female_red_haired_light_skin_tone",
-      "unicode" : "1F469-1F3FB-200D-1F9B0"
-   },
-   {
-      "shortcode" : "female_red_haired_medium_dark_skin_tone",
-      "unicode" : "1F469-1F3FE-200D-1F9B0"
-   },
-   {
-      "shortcode" : "female_red_haired_medium_light_skin_tone",
-      "unicode" : "1F469-1F3FC-200D-1F9B0"
-   },
-   {
-      "shortcode" : "female_red_haired_medium_skin_tone",
-      "unicode" : "1F469-1F3FD-200D-1F9B0"
-   },
-   {
-      "shortcode" : "female_red_haired_tone1",
-      "unicode" : "1F469-1F3FB-200D-1F9B0"
-   },
-   {
-      "shortcode" : "female_red_haired_tone2",
-      "unicode" : "1F469-1F3FC-200D-1F9B0"
-   },
-   {
-      "shortcode" : "female_red_haired_tone3",
-      "unicode" : "1F469-1F3FD-200D-1F9B0"
-   },
-   {
-      "shortcode" : "female_red_haired_tone4",
-      "unicode" : "1F469-1F3FE-200D-1F9B0"
-   },
-   {
-      "shortcode" : "female_red_haired_tone5",
-      "unicode" : "1F469-1F3FF-200D-1F9B0"
-   },
-   {
       "shortcode" : "female_scientist",
       "unicode" : "1F469-200D-1F52C"
    },
@@ -4728,50 +5420,6 @@
       "unicode" : "1F9DB-1F3FF-200D-2640-FE0F"
    },
    {
-      "shortcode" : "female_white_haired",
-      "unicode" : "1F469-200D-1F9B3"
-   },
-   {
-      "shortcode" : "female_white_haired_dark_skin_tone",
-      "unicode" : "1F469-1F3FF-200D-1F9B3"
-   },
-   {
-      "shortcode" : "female_white_haired_light_skin_tone",
-      "unicode" : "1F469-1F3FB-200D-1F9B3"
-   },
-   {
-      "shortcode" : "female_white_haired_medium_dark_skin_tone",
-      "unicode" : "1F469-1F3FE-200D-1F9B3"
-   },
-   {
-      "shortcode" : "female_white_haired_medium_light_skin_tone",
-      "unicode" : "1F469-1F3FC-200D-1F9B3"
-   },
-   {
-      "shortcode" : "female_white_haired_medium_skin_tone",
-      "unicode" : "1F469-1F3FD-200D-1F9B3"
-   },
-   {
-      "shortcode" : "female_white_haired_tone1",
-      "unicode" : "1F469-1F3FB-200D-1F9B3"
-   },
-   {
-      "shortcode" : "female_white_haired_tone2",
-      "unicode" : "1F469-1F3FC-200D-1F9B3"
-   },
-   {
-      "shortcode" : "female_white_haired_tone3",
-      "unicode" : "1F469-1F3FD-200D-1F9B3"
-   },
-   {
-      "shortcode" : "female_white_haired_tone4",
-      "unicode" : "1F469-1F3FE-200D-1F9B3"
-   },
-   {
-      "shortcode" : "female_white_haired_tone5",
-      "unicode" : "1F469-1F3FF-200D-1F9B3"
-   },
-   {
       "shortcode" : "female_zombie",
       "unicode" : "1F9DF-200D-2640-FE0F"
    },
@@ -4858,6 +5506,50 @@
    {
       "shortcode" : "firecracker",
       "unicode" : "1F9E8"
+   },
+   {
+      "shortcode" : "firefighter",
+      "unicode" : "1F9D1-200D-1F692"
+   },
+   {
+      "shortcode" : "firefighter_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F692"
+   },
+   {
+      "shortcode" : "firefighter_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F692"
+   },
+   {
+      "shortcode" : "firefighter_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F692"
+   },
+   {
+      "shortcode" : "firefighter_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F692"
+   },
+   {
+      "shortcode" : "firefighter_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F692"
+   },
+   {
+      "shortcode" : "firefighter_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F692"
+   },
+   {
+      "shortcode" : "firefighter_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F692"
+   },
+   {
+      "shortcode" : "firefighter_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F692"
+   },
+   {
+      "shortcode" : "firefighter_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F692"
+   },
+   {
+      "shortcode" : "firefighter_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F692"
    },
    {
       "shortcode" : "fireworks",
@@ -6008,12 +6700,20 @@
       "unicode" : "1F525"
    },
    {
+      "shortcode" : "flamingo",
+      "unicode" : "1F9A9"
+   },
+   {
       "shortcode" : "flan",
       "unicode" : "1F36E"
    },
    {
       "shortcode" : "flashlight",
       "unicode" : "1F526"
+   },
+   {
+      "shortcode" : "flatbread",
+      "unicode" : "1FAD3"
    },
    {
       "shortcode" : "fleur_de_lis",
@@ -6034,6 +6734,10 @@
    {
       "shortcode" : "flushed",
       "unicode" : "1F633"
+   },
+   {
+      "shortcode" : "fly",
+      "unicode" : "1FAB0"
    },
    {
       "shortcode" : "flying_disc",
@@ -6058,6 +6762,10 @@
    {
       "shortcode" : "foggy",
       "unicode" : "1F301"
+   },
+   {
+      "shortcode" : "fondue",
+      "unicode" : "1FAD5"
    },
    {
       "shortcode" : "foot",
@@ -6214,6 +6922,10 @@
    {
       "shortcode" : "game_die",
       "unicode" : "1F3B2"
+   },
+   {
+      "shortcode" : "garlic",
+      "unicode" : "1F9C4"
    },
    {
       "shortcode" : "gay_pride_flag",
@@ -6556,6 +7268,10 @@
       "unicode" : "1F482-1F3FF"
    },
    {
+      "shortcode" : "guide_dog",
+      "unicode" : "1F9AE"
+   },
+   {
       "shortcode" : "guitar",
       "unicode" : "1F3B8"
    },
@@ -6832,6 +7548,54 @@
       "unicode" : "1F3A7"
    },
    {
+      "shortcode" : "headstone",
+      "unicode" : "1FAA6"
+   },
+   {
+      "shortcode" : "health_worker",
+      "unicode" : "1F9D1-200D-2695-FE0F"
+   },
+   {
+      "shortcode" : "health_worker_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-2695-FE0F"
+   },
+   {
+      "shortcode" : "health_worker_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-2695-FE0F"
+   },
+   {
+      "shortcode" : "health_worker_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-2695-FE0F"
+   },
+   {
+      "shortcode" : "health_worker_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-2695-FE0F"
+   },
+   {
+      "shortcode" : "health_worker_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-2695-FE0F"
+   },
+   {
+      "shortcode" : "health_worker_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-2695-FE0F"
+   },
+   {
+      "shortcode" : "health_worker_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-2695-FE0F"
+   },
+   {
+      "shortcode" : "health_worker_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-2695-FE0F"
+   },
+   {
+      "shortcode" : "health_worker_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-2695-FE0F"
+   },
+   {
+      "shortcode" : "health_worker_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-2695-FE0F"
+   },
+   {
       "shortcode" : "hear_no_evil",
       "unicode" : "1F649"
    },
@@ -6936,6 +7700,10 @@
       "unicode" : "1F97E"
    },
    {
+      "shortcode" : "hindu_temple",
+      "unicode" : "1F6D5"
+   },
+   {
       "shortcode" : "hippopotamus",
       "unicode" : "1F99B"
    },
@@ -6974,6 +7742,10 @@
    {
       "shortcode" : "honeybee",
       "unicode" : "1F41D"
+   },
+   {
+      "shortcode" : "hook",
+      "unicode" : "1FA9D"
    },
    {
       "shortcode" : "horse",
@@ -7100,6 +7872,10 @@
       "unicode" : "1F62F"
    },
    {
+      "shortcode" : "hut",
+      "unicode" : "1F6D6"
+   },
+   {
       "shortcode" : "i_love_you_hand_sign",
       "unicode" : "1F91F"
    },
@@ -7150,6 +7926,10 @@
    {
       "shortcode" : "ice_cream",
       "unicode" : "1F368"
+   },
+   {
+      "shortcode" : "ice_cube",
+      "unicode" : "1F9CA"
    },
    {
       "shortcode" : "ice_hockey_stick_and_puck",
@@ -7352,6 +8132,50 @@
       "unicode" : "1F1EF-1F1F5"
    },
    {
+      "shortcode" : "judge",
+      "unicode" : "1F9D1-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "judge_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "judge_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "judge_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "judge_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "judge_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "judge_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "judge_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "judge_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "judge_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "judge_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-2696-FE0F"
+   },
+   {
       "shortcode" : "juggler",
       "unicode" : "1F939"
    },
@@ -7516,6 +8340,10 @@
       "unicode" : "1F619"
    },
    {
+      "shortcode" : "kite",
+      "unicode" : "1FA81"
+   },
+   {
       "shortcode" : "kiwi",
       "unicode" : "1F95D"
    },
@@ -7532,12 +8360,60 @@
       "unicode" : "1F1F0-1F1F3"
    },
    {
+      "shortcode" : "kneeling_person",
+      "unicode" : "1F9CE"
+   },
+   {
+      "shortcode" : "kneeling_person_dark_skin_tone",
+      "unicode" : "1F9CE-1F3FF"
+   },
+   {
+      "shortcode" : "kneeling_person_light_skin_tone",
+      "unicode" : "1F9CE-1F3FB"
+   },
+   {
+      "shortcode" : "kneeling_person_medium_dark_skin_tone",
+      "unicode" : "1F9CE-1F3FE"
+   },
+   {
+      "shortcode" : "kneeling_person_medium_light_skin_tone",
+      "unicode" : "1F9CE-1F3FC"
+   },
+   {
+      "shortcode" : "kneeling_person_medium_skin_tone",
+      "unicode" : "1F9CE-1F3FD"
+   },
+   {
+      "shortcode" : "kneeling_person_tone1",
+      "unicode" : "1F9CE-1F3FB"
+   },
+   {
+      "shortcode" : "kneeling_person_tone2",
+      "unicode" : "1F9CE-1F3FC"
+   },
+   {
+      "shortcode" : "kneeling_person_tone3",
+      "unicode" : "1F9CE-1F3FD"
+   },
+   {
+      "shortcode" : "kneeling_person_tone4",
+      "unicode" : "1F9CE-1F3FE"
+   },
+   {
+      "shortcode" : "kneeling_person_tone5",
+      "unicode" : "1F9CE-1F3FF"
+   },
+   {
       "shortcode" : "knife",
       "unicode" : "1F52A"
    },
    {
       "shortcode" : "knife_fork_plate",
       "unicode" : "1F37D-FE0F"
+   },
+   {
+      "shortcode" : "knot",
+      "unicode" : "1FAA2"
    },
    {
       "shortcode" : "koala",
@@ -7584,6 +8460,10 @@
       "unicode" : "1F94D"
    },
    {
+      "shortcode" : "ladder",
+      "unicode" : "1FA9C"
+   },
+   {
       "shortcode" : "lantern",
       "unicode" : "1F3EE"
    },
@@ -7596,8 +8476,56 @@
       "unicode" : "1F537"
    },
    {
+      "shortcode" : "large_blue_square",
+      "unicode" : "1F7E6"
+   },
+   {
+      "shortcode" : "large_brown_circle",
+      "unicode" : "1F7E4"
+   },
+   {
+      "shortcode" : "large_brown_square",
+      "unicode" : "1F7EB"
+   },
+   {
+      "shortcode" : "large_green_circle",
+      "unicode" : "1F7E2"
+   },
+   {
+      "shortcode" : "large_green_square",
+      "unicode" : "1F7E9"
+   },
+   {
+      "shortcode" : "large_orange_circle",
+      "unicode" : "1F7E0"
+   },
+   {
       "shortcode" : "large_orange_diamond",
       "unicode" : "1F536"
+   },
+   {
+      "shortcode" : "large_orange_square",
+      "unicode" : "1F7E7"
+   },
+   {
+      "shortcode" : "large_purple_circle",
+      "unicode" : "1F7E3"
+   },
+   {
+      "shortcode" : "large_purple_square",
+      "unicode" : "1F7EA"
+   },
+   {
+      "shortcode" : "large_red_square",
+      "unicode" : "1F7E5"
+   },
+   {
+      "shortcode" : "large_yellow_circle",
+      "unicode" : "1F7E1"
+   },
+   {
+      "shortcode" : "large_yellow_square",
+      "unicode" : "1F7E8"
    },
    {
       "shortcode" : "last_quarter_moon",
@@ -7884,6 +8812,10 @@
       "unicode" : "1F36D"
    },
    {
+      "shortcode" : "long_drum",
+      "unicode" : "1FA98"
+   },
+   {
       "shortcode" : "loop",
       "unicode" : "27BF"
    },
@@ -7946,6 +8878,10 @@
    {
       "shortcode" : "luggage",
       "unicode" : "1F9F3"
+   },
+   {
+      "shortcode" : "lungs",
+      "unicode" : "1FAC1"
    },
    {
       "shortcode" : "lv",
@@ -8018,6 +8954,10 @@
    {
       "shortcode" : "mage_tone5",
       "unicode" : "1F9D9-1F3FF"
+   },
+   {
+      "shortcode" : "magic_wand",
+      "unicode" : "1FA84"
    },
    {
       "shortcode" : "magnet",
@@ -8132,50 +9072,6 @@
       "unicode" : "1F468-1F3FF-200D-1F680"
    },
    {
-      "shortcode" : "male_bald",
-      "unicode" : "1F468-200D-1F9B2"
-   },
-   {
-      "shortcode" : "male_bald_dark_skin_tone",
-      "unicode" : "1F468-1F3FF-200D-1F9B2"
-   },
-   {
-      "shortcode" : "male_bald_light_skin_tone",
-      "unicode" : "1F468-1F3FB-200D-1F9B2"
-   },
-   {
-      "shortcode" : "male_bald_medium_dark_skin_tone",
-      "unicode" : "1F468-1F3FE-200D-1F9B2"
-   },
-   {
-      "shortcode" : "male_bald_medium_light_skin_tone",
-      "unicode" : "1F468-1F3FC-200D-1F9B2"
-   },
-   {
-      "shortcode" : "male_bald_medium_skin_tone",
-      "unicode" : "1F468-1F3FD-200D-1F9B2"
-   },
-   {
-      "shortcode" : "male_bald_tone1",
-      "unicode" : "1F468-1F3FB-200D-1F9B2"
-   },
-   {
-      "shortcode" : "male_bald_tone2",
-      "unicode" : "1F468-1F3FC-200D-1F9B2"
-   },
-   {
-      "shortcode" : "male_bald_tone3",
-      "unicode" : "1F468-1F3FD-200D-1F9B2"
-   },
-   {
-      "shortcode" : "male_bald_tone4",
-      "unicode" : "1F468-1F3FE-200D-1F9B2"
-   },
-   {
-      "shortcode" : "male_bald_tone5",
-      "unicode" : "1F468-1F3FF-200D-1F9B2"
-   },
-   {
       "shortcode" : "male_construction_worker",
       "unicode" : "1F477-200D-2642-FE0F"
    },
@@ -8262,50 +9158,6 @@
    {
       "shortcode" : "male_cook_tone5",
       "unicode" : "1F468-1F3FF-200D-1F373"
-   },
-   {
-      "shortcode" : "male_curly_haired",
-      "unicode" : "1F468-200D-1F9B1"
-   },
-   {
-      "shortcode" : "male_curly_haired_dark_skin_tone",
-      "unicode" : "1F468-1F3FF-200D-1F9B1"
-   },
-   {
-      "shortcode" : "male_curly_haired_light_skin_tone",
-      "unicode" : "1F468-1F3FB-200D-1F9B1"
-   },
-   {
-      "shortcode" : "male_curly_haired_medium_dark_skin_tone",
-      "unicode" : "1F468-1F3FE-200D-1F9B1"
-   },
-   {
-      "shortcode" : "male_curly_haired_medium_light_skin_tone",
-      "unicode" : "1F468-1F3FC-200D-1F9B1"
-   },
-   {
-      "shortcode" : "male_curly_haired_medium_skin_tone",
-      "unicode" : "1F468-1F3FD-200D-1F9B1"
-   },
-   {
-      "shortcode" : "male_curly_haired_tone1",
-      "unicode" : "1F468-1F3FB-200D-1F9B1"
-   },
-   {
-      "shortcode" : "male_curly_haired_tone2",
-      "unicode" : "1F468-1F3FC-200D-1F9B1"
-   },
-   {
-      "shortcode" : "male_curly_haired_tone3",
-      "unicode" : "1F468-1F3FD-200D-1F9B1"
-   },
-   {
-      "shortcode" : "male_curly_haired_tone4",
-      "unicode" : "1F468-1F3FE-200D-1F9B1"
-   },
-   {
-      "shortcode" : "male_curly_haired_tone5",
-      "unicode" : "1F468-1F3FF-200D-1F9B1"
    },
    {
       "shortcode" : "male_dancer",
@@ -8952,50 +9804,6 @@
       "unicode" : "1F46E-1F3FF-200D-2642-FE0F"
    },
    {
-      "shortcode" : "male_red_haired",
-      "unicode" : "1F468-200D-1F9B0"
-   },
-   {
-      "shortcode" : "male_red_haired_dark_skin_tone",
-      "unicode" : "1F468-1F3FF-200D-1F9B0"
-   },
-   {
-      "shortcode" : "male_red_haired_light_skin_tone",
-      "unicode" : "1F468-1F3FB-200D-1F9B0"
-   },
-   {
-      "shortcode" : "male_red_haired_medium_dark_skin_tone",
-      "unicode" : "1F468-1F3FE-200D-1F9B0"
-   },
-   {
-      "shortcode" : "male_red_haired_medium_light_skin_tone",
-      "unicode" : "1F468-1F3FC-200D-1F9B0"
-   },
-   {
-      "shortcode" : "male_red_haired_medium_skin_tone",
-      "unicode" : "1F468-1F3FD-200D-1F9B0"
-   },
-   {
-      "shortcode" : "male_red_haired_tone1",
-      "unicode" : "1F468-1F3FB-200D-1F9B0"
-   },
-   {
-      "shortcode" : "male_red_haired_tone2",
-      "unicode" : "1F468-1F3FC-200D-1F9B0"
-   },
-   {
-      "shortcode" : "male_red_haired_tone3",
-      "unicode" : "1F468-1F3FD-200D-1F9B0"
-   },
-   {
-      "shortcode" : "male_red_haired_tone4",
-      "unicode" : "1F468-1F3FE-200D-1F9B0"
-   },
-   {
-      "shortcode" : "male_red_haired_tone5",
-      "unicode" : "1F468-1F3FF-200D-1F9B0"
-   },
-   {
       "shortcode" : "male_scientist",
       "unicode" : "1F468-200D-1F52C"
    },
@@ -9352,52 +10160,12 @@
       "unicode" : "1F9DB-1F3FF-200D-2642-FE0F"
    },
    {
-      "shortcode" : "male_white_haired",
-      "unicode" : "1F468-200D-1F9B3"
-   },
-   {
-      "shortcode" : "male_white_haired_dark_skin_tone",
-      "unicode" : "1F468-1F3FF-200D-1F9B3"
-   },
-   {
-      "shortcode" : "male_white_haired_light_skin_tone",
-      "unicode" : "1F468-1F3FB-200D-1F9B3"
-   },
-   {
-      "shortcode" : "male_white_haired_medium_dark_skin_tone",
-      "unicode" : "1F468-1F3FE-200D-1F9B3"
-   },
-   {
-      "shortcode" : "male_white_haired_medium_light_skin_tone",
-      "unicode" : "1F468-1F3FC-200D-1F9B3"
-   },
-   {
-      "shortcode" : "male_white_haired_medium_skin_tone",
-      "unicode" : "1F468-1F3FD-200D-1F9B3"
-   },
-   {
-      "shortcode" : "male_white_haired_tone1",
-      "unicode" : "1F468-1F3FB-200D-1F9B3"
-   },
-   {
-      "shortcode" : "male_white_haired_tone2",
-      "unicode" : "1F468-1F3FC-200D-1F9B3"
-   },
-   {
-      "shortcode" : "male_white_haired_tone3",
-      "unicode" : "1F468-1F3FD-200D-1F9B3"
-   },
-   {
-      "shortcode" : "male_white_haired_tone4",
-      "unicode" : "1F468-1F3FE-200D-1F9B3"
-   },
-   {
-      "shortcode" : "male_white_haired_tone5",
-      "unicode" : "1F468-1F3FF-200D-1F9B3"
-   },
-   {
       "shortcode" : "male_zombie",
       "unicode" : "1F9DF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "mammoth",
+      "unicode" : "1F9A3"
    },
    {
       "shortcode" : "man",
@@ -9406,6 +10174,46 @@
    {
       "shortcode" : "man_and_woman_holding_hands",
       "unicode" : "1F46B"
+   },
+   {
+      "shortcode" : "man_and_woman_holding_hands_dark_skin_tone",
+      "unicode" : "1F46B-1F3FF"
+   },
+   {
+      "shortcode" : "man_and_woman_holding_hands_light_skin_tone",
+      "unicode" : "1F46B-1F3FB"
+   },
+   {
+      "shortcode" : "man_and_woman_holding_hands_medium_dark_skin_tone",
+      "unicode" : "1F46B-1F3FE"
+   },
+   {
+      "shortcode" : "man_and_woman_holding_hands_medium_light_skin_tone",
+      "unicode" : "1F46B-1F3FC"
+   },
+   {
+      "shortcode" : "man_and_woman_holding_hands_medium_skin_tone",
+      "unicode" : "1F46B-1F3FD"
+   },
+   {
+      "shortcode" : "man_and_woman_holding_hands_tone1",
+      "unicode" : "1F46B-1F3FB"
+   },
+   {
+      "shortcode" : "man_and_woman_holding_hands_tone2",
+      "unicode" : "1F46B-1F3FC"
+   },
+   {
+      "shortcode" : "man_and_woman_holding_hands_tone3",
+      "unicode" : "1F46B-1F3FD"
+   },
+   {
+      "shortcode" : "man_and_woman_holding_hands_tone4",
+      "unicode" : "1F46B-1F3FE"
+   },
+   {
+      "shortcode" : "man_and_woman_holding_hands_tone5",
+      "unicode" : "1F46B-1F3FF"
    },
    {
       "shortcode" : "man_artist",
@@ -10036,6 +10844,50 @@
       "unicode" : "1F468-1F3FF-200D-1F33E"
    },
    {
+      "shortcode" : "man_feeding_baby",
+      "unicode" : "1F468-200D-1F37C"
+   },
+   {
+      "shortcode" : "man_feeding_baby_dark_skin_tone",
+      "unicode" : "1F468-1F3FF-200D-1F37C"
+   },
+   {
+      "shortcode" : "man_feeding_baby_light_skin_tone",
+      "unicode" : "1F468-1F3FB-200D-1F37C"
+   },
+   {
+      "shortcode" : "man_feeding_baby_medium_dark_skin_tone",
+      "unicode" : "1F468-1F3FE-200D-1F37C"
+   },
+   {
+      "shortcode" : "man_feeding_baby_medium_light_skin_tone",
+      "unicode" : "1F468-1F3FC-200D-1F37C"
+   },
+   {
+      "shortcode" : "man_feeding_baby_medium_skin_tone",
+      "unicode" : "1F468-1F3FD-200D-1F37C"
+   },
+   {
+      "shortcode" : "man_feeding_baby_tone1",
+      "unicode" : "1F468-1F3FB-200D-1F37C"
+   },
+   {
+      "shortcode" : "man_feeding_baby_tone2",
+      "unicode" : "1F468-1F3FC-200D-1F37C"
+   },
+   {
+      "shortcode" : "man_feeding_baby_tone3",
+      "unicode" : "1F468-1F3FD-200D-1F37C"
+   },
+   {
+      "shortcode" : "man_feeding_baby_tone4",
+      "unicode" : "1F468-1F3FE-200D-1F37C"
+   },
+   {
+      "shortcode" : "man_feeding_baby_tone5",
+      "unicode" : "1F468-1F3FF-200D-1F37C"
+   },
+   {
       "shortcode" : "man_firefighter",
       "unicode" : "1F468-200D-1F692"
    },
@@ -10580,6 +11432,94 @@
       "unicode" : "1F9D8-1F3FF-200D-2642-FE0F"
    },
    {
+      "shortcode" : "man_in_manual_wheelchair",
+      "unicode" : "1F468-200D-1F9BD"
+   },
+   {
+      "shortcode" : "man_in_manual_wheelchair_dark_skin_tone",
+      "unicode" : "1F468-1F3FF-200D-1F9BD"
+   },
+   {
+      "shortcode" : "man_in_manual_wheelchair_light_skin_tone",
+      "unicode" : "1F468-1F3FB-200D-1F9BD"
+   },
+   {
+      "shortcode" : "man_in_manual_wheelchair_medium_dark_skin_tone",
+      "unicode" : "1F468-1F3FE-200D-1F9BD"
+   },
+   {
+      "shortcode" : "man_in_manual_wheelchair_medium_light_skin_tone",
+      "unicode" : "1F468-1F3FC-200D-1F9BD"
+   },
+   {
+      "shortcode" : "man_in_manual_wheelchair_medium_skin_tone",
+      "unicode" : "1F468-1F3FD-200D-1F9BD"
+   },
+   {
+      "shortcode" : "man_in_manual_wheelchair_tone1",
+      "unicode" : "1F468-1F3FB-200D-1F9BD"
+   },
+   {
+      "shortcode" : "man_in_manual_wheelchair_tone2",
+      "unicode" : "1F468-1F3FC-200D-1F9BD"
+   },
+   {
+      "shortcode" : "man_in_manual_wheelchair_tone3",
+      "unicode" : "1F468-1F3FD-200D-1F9BD"
+   },
+   {
+      "shortcode" : "man_in_manual_wheelchair_tone4",
+      "unicode" : "1F468-1F3FE-200D-1F9BD"
+   },
+   {
+      "shortcode" : "man_in_manual_wheelchair_tone5",
+      "unicode" : "1F468-1F3FF-200D-1F9BD"
+   },
+   {
+      "shortcode" : "man_in_motorized_wheelchair",
+      "unicode" : "1F468-200D-1F9BC"
+   },
+   {
+      "shortcode" : "man_in_motorized_wheelchair_dark_skin_tone",
+      "unicode" : "1F468-1F3FF-200D-1F9BC"
+   },
+   {
+      "shortcode" : "man_in_motorized_wheelchair_light_skin_tone",
+      "unicode" : "1F468-1F3FB-200D-1F9BC"
+   },
+   {
+      "shortcode" : "man_in_motorized_wheelchair_medium_dark_skin_tone",
+      "unicode" : "1F468-1F3FE-200D-1F9BC"
+   },
+   {
+      "shortcode" : "man_in_motorized_wheelchair_medium_light_skin_tone",
+      "unicode" : "1F468-1F3FC-200D-1F9BC"
+   },
+   {
+      "shortcode" : "man_in_motorized_wheelchair_medium_skin_tone",
+      "unicode" : "1F468-1F3FD-200D-1F9BC"
+   },
+   {
+      "shortcode" : "man_in_motorized_wheelchair_tone1",
+      "unicode" : "1F468-1F3FB-200D-1F9BC"
+   },
+   {
+      "shortcode" : "man_in_motorized_wheelchair_tone2",
+      "unicode" : "1F468-1F3FC-200D-1F9BC"
+   },
+   {
+      "shortcode" : "man_in_motorized_wheelchair_tone3",
+      "unicode" : "1F468-1F3FD-200D-1F9BC"
+   },
+   {
+      "shortcode" : "man_in_motorized_wheelchair_tone4",
+      "unicode" : "1F468-1F3FE-200D-1F9BC"
+   },
+   {
+      "shortcode" : "man_in_motorized_wheelchair_tone5",
+      "unicode" : "1F468-1F3FF-200D-1F9BC"
+   },
+   {
       "shortcode" : "man_in_steamy_room",
       "unicode" : "1F9D6-200D-2642-FE0F"
    },
@@ -10625,11 +11565,11 @@
    },
    {
       "shortcode" : "man_in_tuxedo",
-      "unicode" : "1F935"
+      "unicode" : "1F935-200D-2642-FE0F"
    },
    {
       "shortcode" : "man_in_tuxedo_dark_skin_tone",
-      "unicode" : "1F935-1F3FF"
+      "unicode" : "1F935-1F3FF-200D-2642-FE0F"
    },
    {
       "shortcode" : "man_in_tuxedo_light_skin_tone",
@@ -10641,7 +11581,7 @@
    },
    {
       "shortcode" : "man_in_tuxedo_medium_light_skin_tone",
-      "unicode" : "1F935-1F3FC"
+      "unicode" : "1F935-1F3FC-200D-2642-FE0F"
    },
    {
       "shortcode" : "man_in_tuxedo_medium_skin_tone",
@@ -10653,11 +11593,11 @@
    },
    {
       "shortcode" : "man_in_tuxedo_tone2",
-      "unicode" : "1F935-1F3FC"
+      "unicode" : "1F935-1F3FC-200D-2642-FE0F"
    },
    {
       "shortcode" : "man_in_tuxedo_tone3",
-      "unicode" : "1F935-1F3FD"
+      "unicode" : "1F935-1F3FD-200D-2642-FE0F"
    },
    {
       "shortcode" : "man_in_tuxedo_tone4",
@@ -10665,7 +11605,7 @@
    },
    {
       "shortcode" : "man_in_tuxedo_tone5",
-      "unicode" : "1F935-1F3FF"
+      "unicode" : "1F935-1F3FF-200D-2642-FE0F"
    },
    {
       "shortcode" : "man_judge",
@@ -10758,6 +11698,50 @@
    {
       "shortcode" : "man_kiss_man",
       "unicode" : "1F468-200D-2764-FE0F-200D-1F48B-200D-1F468"
+   },
+   {
+      "shortcode" : "man_kneeling",
+      "unicode" : "1F9CE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_kneeling_dark_skin_tone",
+      "unicode" : "1F9CE-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_kneeling_light_skin_tone",
+      "unicode" : "1F9CE-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_kneeling_medium_dark_skin_tone",
+      "unicode" : "1F9CE-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_kneeling_medium_light_skin_tone",
+      "unicode" : "1F9CE-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_kneeling_medium_skin_tone",
+      "unicode" : "1F9CE-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_kneeling_tone1",
+      "unicode" : "1F9CE-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_kneeling_tone2",
+      "unicode" : "1F9CE-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_kneeling_tone3",
+      "unicode" : "1F9CE-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_kneeling_tone4",
+      "unicode" : "1F9CE-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_kneeling_tone5",
+      "unicode" : "1F9CE-1F3FF-200D-2642-FE0F"
    },
    {
       "shortcode" : "man_lifting_weights",
@@ -11456,6 +12440,50 @@
       "unicode" : "1F468-1F3FF-200D-1F3A4"
    },
    {
+      "shortcode" : "man_standing",
+      "unicode" : "1F9CD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_standing_dark_skin_tone",
+      "unicode" : "1F9CD-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_standing_light_skin_tone",
+      "unicode" : "1F9CD-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_standing_medium_dark_skin_tone",
+      "unicode" : "1F9CD-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_standing_medium_light_skin_tone",
+      "unicode" : "1F9CD-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_standing_medium_skin_tone",
+      "unicode" : "1F9CD-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_standing_tone1",
+      "unicode" : "1F9CD-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_standing_tone2",
+      "unicode" : "1F9CD-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_standing_tone3",
+      "unicode" : "1F9CD-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_standing_tone4",
+      "unicode" : "1F9CD-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_standing_tone5",
+      "unicode" : "1F9CD-1F3FF-200D-2642-FE0F"
+   },
+   {
       "shortcode" : "man_student",
       "unicode" : "1F468-200D-1F393"
    },
@@ -11876,6 +12904,50 @@
       "unicode" : "1F472-1F3FF"
    },
    {
+      "shortcode" : "man_with_probing_cane",
+      "unicode" : "1F468-200D-1F9AF"
+   },
+   {
+      "shortcode" : "man_with_probing_cane_dark_skin_tone",
+      "unicode" : "1F468-1F3FF-200D-1F9AF"
+   },
+   {
+      "shortcode" : "man_with_probing_cane_light_skin_tone",
+      "unicode" : "1F468-1F3FB-200D-1F9AF"
+   },
+   {
+      "shortcode" : "man_with_probing_cane_medium_dark_skin_tone",
+      "unicode" : "1F468-1F3FE-200D-1F9AF"
+   },
+   {
+      "shortcode" : "man_with_probing_cane_medium_light_skin_tone",
+      "unicode" : "1F468-1F3FC-200D-1F9AF"
+   },
+   {
+      "shortcode" : "man_with_probing_cane_medium_skin_tone",
+      "unicode" : "1F468-1F3FD-200D-1F9AF"
+   },
+   {
+      "shortcode" : "man_with_probing_cane_tone1",
+      "unicode" : "1F468-1F3FB-200D-1F9AF"
+   },
+   {
+      "shortcode" : "man_with_probing_cane_tone2",
+      "unicode" : "1F468-1F3FC-200D-1F9AF"
+   },
+   {
+      "shortcode" : "man_with_probing_cane_tone3",
+      "unicode" : "1F468-1F3FD-200D-1F9AF"
+   },
+   {
+      "shortcode" : "man_with_probing_cane_tone4",
+      "unicode" : "1F468-1F3FE-200D-1F9AF"
+   },
+   {
+      "shortcode" : "man_with_probing_cane_tone5",
+      "unicode" : "1F468-1F3FF-200D-1F9AF"
+   },
+   {
       "shortcode" : "man_with_turban",
       "unicode" : "1F473"
    },
@@ -11920,6 +12992,50 @@
       "unicode" : "1F473-1F3FF"
    },
    {
+      "shortcode" : "man_with_veil",
+      "unicode" : "1F470-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_with_veil_dark_skin_tone",
+      "unicode" : "1F470-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_with_veil_light_skin_tone",
+      "unicode" : "1F470-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_with_veil_medium_dark_skin_tone",
+      "unicode" : "1F470-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_with_veil_medium_light_skin_tone",
+      "unicode" : "1F470-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_with_veil_medium_skin_tone",
+      "unicode" : "1F470-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_with_veil_tone1",
+      "unicode" : "1F470-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_with_veil_tone2",
+      "unicode" : "1F470-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_with_veil_tone3",
+      "unicode" : "1F470-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_with_veil_tone4",
+      "unicode" : "1F470-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_with_veil_tone5",
+      "unicode" : "1F470-1F3FF-200D-2642-FE0F"
+   },
+   {
       "shortcode" : "man_woman_boy",
       "unicode" : "1F468-200D-1F469-200D-1F466"
    },
@@ -11958,6 +13074,10 @@
    {
       "shortcode" : "mantlepiece_clock",
       "unicode" : "1F570-FE0F"
+   },
+   {
+      "shortcode" : "manual_wheelchair",
+      "unicode" : "1F9BD"
    },
    {
       "shortcode" : "map",
@@ -12020,6 +13140,10 @@
       "unicode" : "1F486-1F3FF"
    },
    {
+      "shortcode" : "mate_drink",
+      "unicode" : "1F9C9"
+   },
+   {
       "shortcode" : "mc",
       "unicode" : "1F1F2-1F1E8"
    },
@@ -12034,6 +13158,58 @@
    {
       "shortcode" : "meat_on_bone",
       "unicode" : "1F356"
+   },
+   {
+      "shortcode" : "mechanic",
+      "unicode" : "1F9D1-200D-1F527"
+   },
+   {
+      "shortcode" : "mechanic_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F527"
+   },
+   {
+      "shortcode" : "mechanic_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F527"
+   },
+   {
+      "shortcode" : "mechanic_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F527"
+   },
+   {
+      "shortcode" : "mechanic_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F527"
+   },
+   {
+      "shortcode" : "mechanic_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F527"
+   },
+   {
+      "shortcode" : "mechanic_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F527"
+   },
+   {
+      "shortcode" : "mechanic_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F527"
+   },
+   {
+      "shortcode" : "mechanic_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F527"
+   },
+   {
+      "shortcode" : "mechanic_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F527"
+   },
+   {
+      "shortcode" : "mechanic_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F527"
+   },
+   {
+      "shortcode" : "mechanical_arm",
+      "unicode" : "1F9BE"
+   },
+   {
+      "shortcode" : "mechanical_leg",
+      "unicode" : "1F9BF"
    },
    {
       "shortcode" : "medal",
@@ -12054,6 +13230,50 @@
    {
       "shortcode" : "memo",
       "unicode" : "1F4DD"
+   },
+   {
+      "shortcode" : "men_holding_hands",
+      "unicode" : "1F46C"
+   },
+   {
+      "shortcode" : "men_holding_hands_dark_skin_tone",
+      "unicode" : "1F46C-1F3FF"
+   },
+   {
+      "shortcode" : "men_holding_hands_light_skin_tone",
+      "unicode" : "1F46C-1F3FB"
+   },
+   {
+      "shortcode" : "men_holding_hands_medium_dark_skin_tone",
+      "unicode" : "1F46C-1F3FE"
+   },
+   {
+      "shortcode" : "men_holding_hands_medium_light_skin_tone",
+      "unicode" : "1F46C-1F3FC"
+   },
+   {
+      "shortcode" : "men_holding_hands_medium_skin_tone",
+      "unicode" : "1F46C-1F3FD"
+   },
+   {
+      "shortcode" : "men_holding_hands_tone1",
+      "unicode" : "1F46C-1F3FB"
+   },
+   {
+      "shortcode" : "men_holding_hands_tone2",
+      "unicode" : "1F46C-1F3FC"
+   },
+   {
+      "shortcode" : "men_holding_hands_tone3",
+      "unicode" : "1F46C-1F3FD"
+   },
+   {
+      "shortcode" : "men_holding_hands_tone4",
+      "unicode" : "1F46C-1F3FE"
+   },
+   {
+      "shortcode" : "men_holding_hands_tone5",
+      "unicode" : "1F46C-1F3FF"
    },
    {
       "shortcode" : "men_with_bunny_ears_partying",
@@ -12308,6 +13528,10 @@
       "unicode" : "1F595-1F3FF"
    },
    {
+      "shortcode" : "military_helmet",
+      "unicode" : "1FA96"
+   },
+   {
       "shortcode" : "military_medal",
       "unicode" : "1F396-FE0F"
    },
@@ -12326,6 +13550,10 @@
    {
       "shortcode" : "minidisc",
       "unicode" : "1F4BD"
+   },
+   {
+      "shortcode" : "mirror",
+      "unicode" : "1FA9E"
    },
    {
       "shortcode" : "mk",
@@ -12468,6 +13696,10 @@
       "unicode" : "1F3CD-FE0F"
    },
    {
+      "shortcode" : "motorized_wheelchair",
+      "unicode" : "1F9BC"
+   },
+   {
       "shortcode" : "motorway",
       "unicode" : "1F6E3-FE0F"
    },
@@ -12546,6 +13778,10 @@
    {
       "shortcode" : "mouse_three_button",
       "unicode" : "1F5B1-FE0F"
+   },
+   {
+      "shortcode" : "mouse_trap",
+      "unicode" : "1FAA4"
    },
    {
       "shortcode" : "movie_camera",
@@ -12700,6 +13936,50 @@
       "unicode" : "1F1F2-1F1FD"
    },
    {
+      "shortcode" : "mx_claus",
+      "unicode" : "1F9D1-200D-1F384"
+   },
+   {
+      "shortcode" : "mx_claus_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F384"
+   },
+   {
+      "shortcode" : "mx_claus_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F384"
+   },
+   {
+      "shortcode" : "mx_claus_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F384"
+   },
+   {
+      "shortcode" : "mx_claus_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F384"
+   },
+   {
+      "shortcode" : "mx_claus_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F384"
+   },
+   {
+      "shortcode" : "mx_claus_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F384"
+   },
+   {
+      "shortcode" : "mx_claus_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F384"
+   },
+   {
+      "shortcode" : "mx_claus_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F384"
+   },
+   {
+      "shortcode" : "mx_claus_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F384"
+   },
+   {
+      "shortcode" : "mx_claus_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F384"
+   },
+   {
       "shortcode" : "my",
       "unicode" : "1F1F2-1F1FE"
    },
@@ -12796,6 +14076,10 @@
       "unicode" : "1F913"
    },
    {
+      "shortcode" : "nesting_dolls",
+      "unicode" : "1FA86"
+   },
+   {
       "shortcode" : "neutral_face",
       "unicode" : "1F610"
    },
@@ -12846,6 +14130,50 @@
    {
       "shortcode" : "nine",
       "unicode" : "0039-FE0F-20E3"
+   },
+   {
+      "shortcode" : "ninja",
+      "unicode" : "1F977"
+   },
+   {
+      "shortcode" : "ninja_dark_skin_tone",
+      "unicode" : "1F977-1F3FF"
+   },
+   {
+      "shortcode" : "ninja_light_skin_tone",
+      "unicode" : "1F977-1F3FB"
+   },
+   {
+      "shortcode" : "ninja_medium_dark_skin_tone",
+      "unicode" : "1F977-1F3FE"
+   },
+   {
+      "shortcode" : "ninja_medium_light_skin_tone",
+      "unicode" : "1F977-1F3FC"
+   },
+   {
+      "shortcode" : "ninja_medium_skin_tone",
+      "unicode" : "1F977-1F3FD"
+   },
+   {
+      "shortcode" : "ninja_tone1",
+      "unicode" : "1F977-1F3FB"
+   },
+   {
+      "shortcode" : "ninja_tone2",
+      "unicode" : "1F977-1F3FC"
+   },
+   {
+      "shortcode" : "ninja_tone3",
+      "unicode" : "1F977-1F3FD"
+   },
+   {
+      "shortcode" : "ninja_tone4",
+      "unicode" : "1F977-1F3FE"
+   },
+   {
+      "shortcode" : "ninja_tone5",
+      "unicode" : "1F977-1F3FF"
    },
    {
       "shortcode" : "nl",
@@ -13042,6 +14370,50 @@
    {
       "shortcode" : "office",
       "unicode" : "1F3E2"
+   },
+   {
+      "shortcode" : "office_worker",
+      "unicode" : "1F9D1-200D-1F4BC"
+   },
+   {
+      "shortcode" : "office_worker_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F4BC"
+   },
+   {
+      "shortcode" : "office_worker_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F4BC"
+   },
+   {
+      "shortcode" : "office_worker_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F4BC"
+   },
+   {
+      "shortcode" : "office_worker_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F4BC"
+   },
+   {
+      "shortcode" : "office_worker_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F4BC"
+   },
+   {
+      "shortcode" : "office_worker_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F4BC"
+   },
+   {
+      "shortcode" : "office_worker_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F4BC"
+   },
+   {
+      "shortcode" : "office_worker_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F4BC"
+   },
+   {
+      "shortcode" : "office_worker_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F4BC"
+   },
+   {
+      "shortcode" : "office_worker_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F4BC"
    },
    {
       "shortcode" : "oil",
@@ -13280,6 +14652,10 @@
       "unicode" : "1F475-1F3FF"
    },
    {
+      "shortcode" : "olive",
+      "unicode" : "1FAD2"
+   },
+   {
       "shortcode" : "om",
       "unicode" : "1F1F4-1F1F2"
    },
@@ -13310,6 +14686,14 @@
    {
       "shortcode" : "one",
       "unicode" : "0031-FE0F-20E3"
+   },
+   {
+      "shortcode" : "one_piece_swimsuit",
+      "unicode" : "1FA71"
+   },
+   {
+      "shortcode" : "onion",
+      "unicode" : "1F9C5"
    },
    {
       "shortcode" : "open_book",
@@ -13380,8 +14764,16 @@
       "unicode" : "1F9E1"
    },
    {
+      "shortcode" : "orangutan",
+      "unicode" : "1F9A7"
+   },
+   {
       "shortcode" : "orthodox_cross",
       "unicode" : "2626-FE0F"
+   },
+   {
+      "shortcode" : "otter",
+      "unicode" : "1F9A6"
    },
    {
       "shortcode" : "outbox_tray",
@@ -13394,6 +14786,10 @@
    {
       "shortcode" : "ox",
       "unicode" : "1F402"
+   },
+   {
+      "shortcode" : "oyster",
+      "unicode" : "1F9AA"
    },
    {
       "shortcode" : "pa",
@@ -13486,6 +14882,10 @@
    {
       "shortcode" : "paperclips",
       "unicode" : "1F587-FE0F"
+   },
+   {
+      "shortcode" : "parachute",
+      "unicode" : "1FA82"
    },
    {
       "shortcode" : "park",
@@ -13584,6 +14984,14 @@
       "unicode" : "1F614"
    },
    {
+      "shortcode" : "people_holding_hands",
+      "unicode" : "1F9D1-200D-1F91D-200D-1F9D1"
+   },
+   {
+      "shortcode" : "people_hugging",
+      "unicode" : "1FAC2"
+   },
+   {
       "shortcode" : "performing_arts",
       "unicode" : "1F3AD"
    },
@@ -13678,6 +15086,50 @@
    {
       "shortcode" : "person_doing_cartwheel_tone5",
       "unicode" : "1F938-1F3FF"
+   },
+   {
+      "shortcode" : "person_feeding_baby",
+      "unicode" : "1F9D1-200D-1F37C"
+   },
+   {
+      "shortcode" : "person_feeding_baby_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F37C"
+   },
+   {
+      "shortcode" : "person_feeding_baby_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F37C"
+   },
+   {
+      "shortcode" : "person_feeding_baby_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F37C"
+   },
+   {
+      "shortcode" : "person_feeding_baby_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F37C"
+   },
+   {
+      "shortcode" : "person_feeding_baby_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F37C"
+   },
+   {
+      "shortcode" : "person_feeding_baby_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F37C"
+   },
+   {
+      "shortcode" : "person_feeding_baby_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F37C"
+   },
+   {
+      "shortcode" : "person_feeding_baby_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F37C"
+   },
+   {
+      "shortcode" : "person_feeding_baby_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F37C"
+   },
+   {
+      "shortcode" : "person_feeding_baby_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F37C"
    },
    {
       "shortcode" : "person_frowning",
@@ -13846,6 +15298,94 @@
    {
       "shortcode" : "person_in_lotus_position_tone5",
       "unicode" : "1F9D8-1F3FF"
+   },
+   {
+      "shortcode" : "person_in_manual_wheelchair",
+      "unicode" : "1F9D1-200D-1F9BD"
+   },
+   {
+      "shortcode" : "person_in_manual_wheelchair_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F9BD"
+   },
+   {
+      "shortcode" : "person_in_manual_wheelchair_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F9BD"
+   },
+   {
+      "shortcode" : "person_in_manual_wheelchair_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F9BD"
+   },
+   {
+      "shortcode" : "person_in_manual_wheelchair_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F9BD"
+   },
+   {
+      "shortcode" : "person_in_manual_wheelchair_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F9BD"
+   },
+   {
+      "shortcode" : "person_in_manual_wheelchair_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F9BD"
+   },
+   {
+      "shortcode" : "person_in_manual_wheelchair_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F9BD"
+   },
+   {
+      "shortcode" : "person_in_manual_wheelchair_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F9BD"
+   },
+   {
+      "shortcode" : "person_in_manual_wheelchair_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F9BD"
+   },
+   {
+      "shortcode" : "person_in_manual_wheelchair_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F9BD"
+   },
+   {
+      "shortcode" : "person_in_motorized_wheelchair",
+      "unicode" : "1F9D1-200D-1F9BC"
+   },
+   {
+      "shortcode" : "person_in_motorized_wheelchair_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F9BC"
+   },
+   {
+      "shortcode" : "person_in_motorized_wheelchair_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F9BC"
+   },
+   {
+      "shortcode" : "person_in_motorized_wheelchair_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F9BC"
+   },
+   {
+      "shortcode" : "person_in_motorized_wheelchair_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F9BC"
+   },
+   {
+      "shortcode" : "person_in_motorized_wheelchair_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F9BC"
+   },
+   {
+      "shortcode" : "person_in_motorized_wheelchair_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F9BC"
+   },
+   {
+      "shortcode" : "person_in_motorized_wheelchair_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F9BC"
+   },
+   {
+      "shortcode" : "person_in_motorized_wheelchair_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F9BC"
+   },
+   {
+      "shortcode" : "person_in_motorized_wheelchair_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F9BC"
+   },
+   {
+      "shortcode" : "person_in_motorized_wheelchair_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F9BC"
    },
    {
       "shortcode" : "person_in_steamy_room",
@@ -14068,6 +15608,50 @@
       "unicode" : "1F64E-1F3FF"
    },
    {
+      "shortcode" : "person_with_probing_cane",
+      "unicode" : "1F9D1-200D-1F9AF"
+   },
+   {
+      "shortcode" : "person_with_probing_cane_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F9AF"
+   },
+   {
+      "shortcode" : "person_with_probing_cane_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F9AF"
+   },
+   {
+      "shortcode" : "person_with_probing_cane_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F9AF"
+   },
+   {
+      "shortcode" : "person_with_probing_cane_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F9AF"
+   },
+   {
+      "shortcode" : "person_with_probing_cane_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F9AF"
+   },
+   {
+      "shortcode" : "person_with_probing_cane_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F9AF"
+   },
+   {
+      "shortcode" : "person_with_probing_cane_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F9AF"
+   },
+   {
+      "shortcode" : "person_with_probing_cane_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F9AF"
+   },
+   {
+      "shortcode" : "person_with_probing_cane_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F9AF"
+   },
+   {
+      "shortcode" : "person_with_probing_cane_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F9AF"
+   },
+   {
       "shortcode" : "petri_dish",
       "unicode" : "1F9EB"
    },
@@ -14092,6 +15676,10 @@
       "unicode" : "26CF-FE0F"
    },
    {
+      "shortcode" : "pickup_truck",
+      "unicode" : "1F6FB"
+   },
+   {
       "shortcode" : "pie",
       "unicode" : "1F967"
    },
@@ -14110,6 +15698,142 @@
    {
       "shortcode" : "pill",
       "unicode" : "1F48A"
+   },
+   {
+      "shortcode" : "pilot",
+      "unicode" : "1F9D1-200D-2708-FE0F"
+   },
+   {
+      "shortcode" : "pilot_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-2708-FE0F"
+   },
+   {
+      "shortcode" : "pilot_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-2708-FE0F"
+   },
+   {
+      "shortcode" : "pilot_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-2708-FE0F"
+   },
+   {
+      "shortcode" : "pilot_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-2708-FE0F"
+   },
+   {
+      "shortcode" : "pilot_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-2708-FE0F"
+   },
+   {
+      "shortcode" : "pilot_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-2708-FE0F"
+   },
+   {
+      "shortcode" : "pilot_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-2708-FE0F"
+   },
+   {
+      "shortcode" : "pilot_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-2708-FE0F"
+   },
+   {
+      "shortcode" : "pilot_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-2708-FE0F"
+   },
+   {
+      "shortcode" : "pilot_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-2708-FE0F"
+   },
+   {
+      "shortcode" : "pinata",
+      "unicode" : "1FA85"
+   },
+   {
+      "shortcode" : "pinched_fingers",
+      "unicode" : "1F90C"
+   },
+   {
+      "shortcode" : "pinched_fingers_dark_skin_tone",
+      "unicode" : "1F90C-1F3FF"
+   },
+   {
+      "shortcode" : "pinched_fingers_light_skin_tone",
+      "unicode" : "1F90C-1F3FB"
+   },
+   {
+      "shortcode" : "pinched_fingers_medium_dark_skin_tone",
+      "unicode" : "1F90C-1F3FE"
+   },
+   {
+      "shortcode" : "pinched_fingers_medium_light_skin_tone",
+      "unicode" : "1F90C-1F3FC"
+   },
+   {
+      "shortcode" : "pinched_fingers_medium_skin_tone",
+      "unicode" : "1F90C-1F3FD"
+   },
+   {
+      "shortcode" : "pinched_fingers_tone1",
+      "unicode" : "1F90C-1F3FB"
+   },
+   {
+      "shortcode" : "pinched_fingers_tone2",
+      "unicode" : "1F90C-1F3FC"
+   },
+   {
+      "shortcode" : "pinched_fingers_tone3",
+      "unicode" : "1F90C-1F3FD"
+   },
+   {
+      "shortcode" : "pinched_fingers_tone4",
+      "unicode" : "1F90C-1F3FE"
+   },
+   {
+      "shortcode" : "pinched_fingers_tone5",
+      "unicode" : "1F90C-1F3FF"
+   },
+   {
+      "shortcode" : "pinching_hand",
+      "unicode" : "1F90F"
+   },
+   {
+      "shortcode" : "pinching_hand_dark_skin_tone",
+      "unicode" : "1F90F-1F3FF"
+   },
+   {
+      "shortcode" : "pinching_hand_light_skin_tone",
+      "unicode" : "1F90F-1F3FB"
+   },
+   {
+      "shortcode" : "pinching_hand_medium_dark_skin_tone",
+      "unicode" : "1F90F-1F3FE"
+   },
+   {
+      "shortcode" : "pinching_hand_medium_light_skin_tone",
+      "unicode" : "1F90F-1F3FC"
+   },
+   {
+      "shortcode" : "pinching_hand_medium_skin_tone",
+      "unicode" : "1F90F-1F3FD"
+   },
+   {
+      "shortcode" : "pinching_hand_tone1",
+      "unicode" : "1F90F-1F3FB"
+   },
+   {
+      "shortcode" : "pinching_hand_tone2",
+      "unicode" : "1F90F-1F3FC"
+   },
+   {
+      "shortcode" : "pinching_hand_tone3",
+      "unicode" : "1F90F-1F3FD"
+   },
+   {
+      "shortcode" : "pinching_hand_tone4",
+      "unicode" : "1F90F-1F3FE"
+   },
+   {
+      "shortcode" : "pinching_hand_tone5",
+      "unicode" : "1F90F-1F3FF"
    },
    {
       "shortcode" : "pineapple",
@@ -14140,6 +15864,10 @@
       "unicode" : "1F1F5-1F1F1"
    },
    {
+      "shortcode" : "placard",
+      "unicode" : "1FAA7"
+   },
+   {
       "shortcode" : "place_of_worship",
       "unicode" : "1F6D0"
    },
@@ -14150,6 +15878,10 @@
    {
       "shortcode" : "pleading_face",
       "unicode" : "1F97A"
+   },
+   {
+      "shortcode" : "plunger",
+      "unicode" : "1FAA0"
    },
    {
       "shortcode" : "pm",
@@ -14380,6 +16112,10 @@
       "unicode" : "261D-1F3FF"
    },
    {
+      "shortcode" : "polar_bear",
+      "unicode" : "1F43B-200D-2744-FE0F"
+   },
+   {
       "shortcode" : "police_car",
       "unicode" : "1F693"
    },
@@ -14418,6 +16154,10 @@
    {
       "shortcode" : "potato",
       "unicode" : "1F954"
+   },
+   {
+      "shortcode" : "potted_plant",
+      "unicode" : "1FAB4"
    },
    {
       "shortcode" : "pouch",
@@ -14634,6 +16374,10 @@
    {
       "shortcode" : "printer",
       "unicode" : "1F5A8-FE0F"
+   },
+   {
+      "shortcode" : "probing_cane",
+      "unicode" : "1F9AF"
    },
    {
       "shortcode" : "projector",
@@ -15056,6 +16800,10 @@
       "unicode" : "1F400"
    },
    {
+      "shortcode" : "razor",
+      "unicode" : "1FA92"
+   },
+   {
       "shortcode" : "re",
       "unicode" : "1F1F7-1F1EA"
    },
@@ -15082,6 +16830,138 @@
    {
       "shortcode" : "red_envelope",
       "unicode" : "1F9E7"
+   },
+   {
+      "shortcode" : "red_haired_man",
+      "unicode" : "1F468-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_man_dark_skin_tone",
+      "unicode" : "1F468-1F3FF-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_man_light_skin_tone",
+      "unicode" : "1F468-1F3FB-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_man_medium_dark_skin_tone",
+      "unicode" : "1F468-1F3FE-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_man_medium_light_skin_tone",
+      "unicode" : "1F468-1F3FC-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_man_medium_skin_tone",
+      "unicode" : "1F468-1F3FD-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_man_tone1",
+      "unicode" : "1F468-1F3FB-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_man_tone2",
+      "unicode" : "1F468-1F3FC-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_man_tone3",
+      "unicode" : "1F468-1F3FD-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_man_tone4",
+      "unicode" : "1F468-1F3FE-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_man_tone5",
+      "unicode" : "1F468-1F3FF-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_person",
+      "unicode" : "1F9D1-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_person_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_person_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_person_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_person_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_person_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_person_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_person_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_person_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_person_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_person_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_woman",
+      "unicode" : "1F469-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_woman_dark_skin_tone",
+      "unicode" : "1F469-1F3FF-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_woman_light_skin_tone",
+      "unicode" : "1F469-1F3FB-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_woman_medium_dark_skin_tone",
+      "unicode" : "1F469-1F3FE-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_woman_medium_light_skin_tone",
+      "unicode" : "1F469-1F3FC-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_woman_medium_skin_tone",
+      "unicode" : "1F469-1F3FD-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_woman_tone1",
+      "unicode" : "1F469-1F3FB-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_woman_tone2",
+      "unicode" : "1F469-1F3FC-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_woman_tone3",
+      "unicode" : "1F469-1F3FD-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_woman_tone4",
+      "unicode" : "1F469-1F3FE-200D-1F9B0"
+   },
+   {
+      "shortcode" : "red_haired_woman_tone5",
+      "unicode" : "1F469-1F3FF-200D-1F9B0"
    },
    {
       "shortcode" : "regional_indicator_a",
@@ -15372,6 +17252,10 @@
       "unicode" : "1F48D"
    },
    {
+      "shortcode" : "ringed_planet",
+      "unicode" : "1FA90"
+   },
+   {
       "shortcode" : "ro",
       "unicode" : "1F1F7-1F1F4"
    },
@@ -15382,6 +17266,10 @@
    {
       "shortcode" : "robot_face",
       "unicode" : "1F916"
+   },
+   {
+      "shortcode" : "rock",
+      "unicode" : "1FAA8"
    },
    {
       "shortcode" : "rocket",
@@ -15402,6 +17290,10 @@
    {
       "shortcode" : "roller_coaster",
       "unicode" : "1F3A2"
+   },
+   {
+      "shortcode" : "roller_skate",
+      "unicode" : "1F6FC"
    },
    {
       "shortcode" : "rolling_eyes",
@@ -15592,6 +17484,10 @@
       "unicode" : "1F9F7"
    },
    {
+      "shortcode" : "safety_vest",
+      "unicode" : "1F9BA"
+   },
+   {
       "shortcode" : "sagittarius",
       "unicode" : "2650"
    },
@@ -15664,6 +17560,10 @@
       "unicode" : "1F385-1F3FF"
    },
    {
+      "shortcode" : "sari",
+      "unicode" : "1F97B"
+   },
+   {
       "shortcode" : "satellite",
       "unicode" : "1F6F0-FE0F"
    },
@@ -15720,6 +17620,50 @@
       "unicode" : "1F392"
    },
    {
+      "shortcode" : "scientist",
+      "unicode" : "1F9D1-200D-1F52C"
+   },
+   {
+      "shortcode" : "scientist_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F52C"
+   },
+   {
+      "shortcode" : "scientist_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F52C"
+   },
+   {
+      "shortcode" : "scientist_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F52C"
+   },
+   {
+      "shortcode" : "scientist_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F52C"
+   },
+   {
+      "shortcode" : "scientist_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F52C"
+   },
+   {
+      "shortcode" : "scientist_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F52C"
+   },
+   {
+      "shortcode" : "scientist_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F52C"
+   },
+   {
+      "shortcode" : "scientist_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F52C"
+   },
+   {
+      "shortcode" : "scientist_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F52C"
+   },
+   {
+      "shortcode" : "scientist_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F52C"
+   },
+   {
       "shortcode" : "scissors",
       "unicode" : "2702-FE0F"
    },
@@ -15744,6 +17688,10 @@
       "unicode" : "1F640"
    },
    {
+      "shortcode" : "screwdriver",
+      "unicode" : "1FA9B"
+   },
+   {
       "shortcode" : "scroll",
       "unicode" : "1F4DC"
    },
@@ -15754,6 +17702,10 @@
    {
       "shortcode" : "se",
       "unicode" : "1F1F8-1F1EA"
+   },
+   {
+      "shortcode" : "seal",
+      "unicode" : "1F9AD"
    },
    {
       "shortcode" : "seat",
@@ -15828,8 +17780,16 @@
       "unicode" : "1F92C"
    },
    {
+      "shortcode" : "service_dog",
+      "unicode" : "1F415-200D-1F9BA"
+   },
+   {
       "shortcode" : "seven",
       "unicode" : "0037-FE0F-20E3"
+   },
+   {
+      "shortcode" : "sewing_needle",
+      "unicode" : "1FAA1"
    },
    {
       "shortcode" : "sg",
@@ -15910,6 +17870,10 @@
    {
       "shortcode" : "shopping_trolley",
       "unicode" : "1F6D2"
+   },
+   {
+      "shortcode" : "shorts",
+      "unicode" : "1FA73"
    },
    {
       "shortcode" : "shower",
@@ -16024,6 +17988,50 @@
       "unicode" : "1F4F6"
    },
    {
+      "shortcode" : "singer",
+      "unicode" : "1F9D1-200D-1F3A4"
+   },
+   {
+      "shortcode" : "singer_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F3A4"
+   },
+   {
+      "shortcode" : "singer_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F3A4"
+   },
+   {
+      "shortcode" : "singer_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F3A4"
+   },
+   {
+      "shortcode" : "singer_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F3A4"
+   },
+   {
+      "shortcode" : "singer_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F3A4"
+   },
+   {
+      "shortcode" : "singer_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F3A4"
+   },
+   {
+      "shortcode" : "singer_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F3A4"
+   },
+   {
+      "shortcode" : "singer_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F3A4"
+   },
+   {
+      "shortcode" : "singer_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F3A4"
+   },
+   {
+      "shortcode" : "singer_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F3A4"
+   },
+   {
       "shortcode" : "six",
       "unicode" : "0036-FE0F-20E3"
    },
@@ -16086,6 +18094,10 @@
    {
       "shortcode" : "skull_crossbones",
       "unicode" : "2620-FE0F"
+   },
+   {
+      "shortcode" : "skunk",
+      "unicode" : "1F9A8"
    },
    {
       "shortcode" : "sl",
@@ -16212,6 +18224,10 @@
       "unicode" : "1F3B0"
    },
    {
+      "shortcode" : "sloth",
+      "unicode" : "1F9A5"
+   },
+   {
       "shortcode" : "sm",
       "unicode" : "1F1F8-1F1F2"
    },
@@ -16258,6 +18274,10 @@
    {
       "shortcode" : "smiling_face_with_smiling_eyes_and_hand_covering_mouth",
       "unicode" : "1F92D"
+   },
+   {
+      "shortcode" : "smiling_face_with_tear",
+      "unicode" : "1F972"
    },
    {
       "shortcode" : "smiling_imp",
@@ -16576,6 +18596,50 @@
       "unicode" : "2695-FE0F"
    },
    {
+      "shortcode" : "standing_person",
+      "unicode" : "1F9CD"
+   },
+   {
+      "shortcode" : "standing_person_dark_skin_tone",
+      "unicode" : "1F9CD-1F3FF"
+   },
+   {
+      "shortcode" : "standing_person_light_skin_tone",
+      "unicode" : "1F9CD-1F3FB"
+   },
+   {
+      "shortcode" : "standing_person_medium_dark_skin_tone",
+      "unicode" : "1F9CD-1F3FE"
+   },
+   {
+      "shortcode" : "standing_person_medium_light_skin_tone",
+      "unicode" : "1F9CD-1F3FC"
+   },
+   {
+      "shortcode" : "standing_person_medium_skin_tone",
+      "unicode" : "1F9CD-1F3FD"
+   },
+   {
+      "shortcode" : "standing_person_tone1",
+      "unicode" : "1F9CD-1F3FB"
+   },
+   {
+      "shortcode" : "standing_person_tone2",
+      "unicode" : "1F9CD-1F3FC"
+   },
+   {
+      "shortcode" : "standing_person_tone3",
+      "unicode" : "1F9CD-1F3FD"
+   },
+   {
+      "shortcode" : "standing_person_tone4",
+      "unicode" : "1F9CD-1F3FE"
+   },
+   {
+      "shortcode" : "standing_person_tone5",
+      "unicode" : "1F9CD-1F3FF"
+   },
+   {
       "shortcode" : "star",
       "unicode" : "2B50"
    },
@@ -16612,6 +18676,10 @@
       "unicode" : "1F682"
    },
    {
+      "shortcode" : "stethoscope",
+      "unicode" : "1FA7A"
+   },
+   {
       "shortcode" : "stew",
       "unicode" : "1F372"
    },
@@ -16646,6 +18714,50 @@
    {
       "shortcode" : "stuck_out_tongue_winking_eye",
       "unicode" : "1F61C"
+   },
+   {
+      "shortcode" : "student",
+      "unicode" : "1F9D1-200D-1F393"
+   },
+   {
+      "shortcode" : "student_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F393"
+   },
+   {
+      "shortcode" : "student_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F393"
+   },
+   {
+      "shortcode" : "student_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F393"
+   },
+   {
+      "shortcode" : "student_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F393"
+   },
+   {
+      "shortcode" : "student_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F393"
+   },
+   {
+      "shortcode" : "student_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F393"
+   },
+   {
+      "shortcode" : "student_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F393"
+   },
+   {
+      "shortcode" : "student_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F393"
+   },
+   {
+      "shortcode" : "student_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F393"
+   },
+   {
+      "shortcode" : "student_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F393"
    },
    {
       "shortcode" : "studio_microphone",
@@ -16694,6 +18806,94 @@
    {
       "shortcode" : "sunrise_over_mountains",
       "unicode" : "1F304"
+   },
+   {
+      "shortcode" : "superhero",
+      "unicode" : "1F9B8"
+   },
+   {
+      "shortcode" : "superhero_dark_skin_tone",
+      "unicode" : "1F9B8-1F3FF"
+   },
+   {
+      "shortcode" : "superhero_light_skin_tone",
+      "unicode" : "1F9B8-1F3FB"
+   },
+   {
+      "shortcode" : "superhero_medium_dark_skin_tone",
+      "unicode" : "1F9B8-1F3FE"
+   },
+   {
+      "shortcode" : "superhero_medium_light_skin_tone",
+      "unicode" : "1F9B8-1F3FC"
+   },
+   {
+      "shortcode" : "superhero_medium_skin_tone",
+      "unicode" : "1F9B8-1F3FD"
+   },
+   {
+      "shortcode" : "superhero_tone1",
+      "unicode" : "1F9B8-1F3FB"
+   },
+   {
+      "shortcode" : "superhero_tone2",
+      "unicode" : "1F9B8-1F3FC"
+   },
+   {
+      "shortcode" : "superhero_tone3",
+      "unicode" : "1F9B8-1F3FD"
+   },
+   {
+      "shortcode" : "superhero_tone4",
+      "unicode" : "1F9B8-1F3FE"
+   },
+   {
+      "shortcode" : "superhero_tone5",
+      "unicode" : "1F9B8-1F3FF"
+   },
+   {
+      "shortcode" : "supervillain",
+      "unicode" : "1F9B9"
+   },
+   {
+      "shortcode" : "supervillain_dark_skin_tone",
+      "unicode" : "1F9B9-1F3FF"
+   },
+   {
+      "shortcode" : "supervillain_light_skin_tone",
+      "unicode" : "1F9B9-1F3FB"
+   },
+   {
+      "shortcode" : "supervillain_medium_dark_skin_tone",
+      "unicode" : "1F9B9-1F3FE"
+   },
+   {
+      "shortcode" : "supervillain_medium_light_skin_tone",
+      "unicode" : "1F9B9-1F3FC"
+   },
+   {
+      "shortcode" : "supervillain_medium_skin_tone",
+      "unicode" : "1F9B9-1F3FD"
+   },
+   {
+      "shortcode" : "supervillain_tone1",
+      "unicode" : "1F9B9-1F3FB"
+   },
+   {
+      "shortcode" : "supervillain_tone2",
+      "unicode" : "1F9B9-1F3FC"
+   },
+   {
+      "shortcode" : "supervillain_tone3",
+      "unicode" : "1F9B9-1F3FD"
+   },
+   {
+      "shortcode" : "supervillain_tone4",
+      "unicode" : "1F9B9-1F3FE"
+   },
+   {
+      "shortcode" : "supervillain_tone5",
+      "unicode" : "1F9B9-1F3FF"
    },
    {
       "shortcode" : "surfer",
@@ -16868,6 +19068,10 @@
       "unicode" : "1F961"
    },
    {
+      "shortcode" : "tamale",
+      "unicode" : "1FAD4"
+   },
+   {
       "shortcode" : "tanabata_tree",
       "unicode" : "1F38B"
    },
@@ -16894,6 +19098,98 @@
    {
       "shortcode" : "tea",
       "unicode" : "1F375"
+   },
+   {
+      "shortcode" : "teacher",
+      "unicode" : "1F9D1-200D-1F3EB"
+   },
+   {
+      "shortcode" : "teacher_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F3EB"
+   },
+   {
+      "shortcode" : "teacher_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F3EB"
+   },
+   {
+      "shortcode" : "teacher_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F3EB"
+   },
+   {
+      "shortcode" : "teacher_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F3EB"
+   },
+   {
+      "shortcode" : "teacher_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F3EB"
+   },
+   {
+      "shortcode" : "teacher_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F3EB"
+   },
+   {
+      "shortcode" : "teacher_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F3EB"
+   },
+   {
+      "shortcode" : "teacher_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F3EB"
+   },
+   {
+      "shortcode" : "teacher_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F3EB"
+   },
+   {
+      "shortcode" : "teacher_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F3EB"
+   },
+   {
+      "shortcode" : "teapot",
+      "unicode" : "1FAD6"
+   },
+   {
+      "shortcode" : "technologist",
+      "unicode" : "1F9D1-200D-1F4BB"
+   },
+   {
+      "shortcode" : "technologist_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F4BB"
+   },
+   {
+      "shortcode" : "technologist_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F4BB"
+   },
+   {
+      "shortcode" : "technologist_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F4BB"
+   },
+   {
+      "shortcode" : "technologist_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F4BB"
+   },
+   {
+      "shortcode" : "technologist_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F4BB"
+   },
+   {
+      "shortcode" : "technologist_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F4BB"
+   },
+   {
+      "shortcode" : "technologist_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F4BB"
+   },
+   {
+      "shortcode" : "technologist_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F4BB"
+   },
+   {
+      "shortcode" : "technologist_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F4BB"
+   },
+   {
+      "shortcode" : "technologist_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F4BB"
    },
    {
       "shortcode" : "teddy_bear",
@@ -17002,6 +19298,10 @@
    {
       "shortcode" : "third_place_medal",
       "unicode" : "1F949"
+   },
+   {
+      "shortcode" : "thong_sandal",
+      "unicode" : "1FA74"
    },
    {
       "shortcode" : "thought_balloon",
@@ -17264,6 +19564,10 @@
       "unicode" : "1F9B7"
    },
    {
+      "shortcode" : "toothbrush",
+      "unicode" : "1FAA5"
+   },
+   {
       "shortcode" : "top",
       "unicode" : "1F51D"
    },
@@ -17314,6 +19618,14 @@
    {
       "shortcode" : "tram",
       "unicode" : "1F68A"
+   },
+   {
+      "shortcode" : "transgender_flag",
+      "unicode" : "1F3F3-FE0F-200D-26A7-FE0F"
+   },
+   {
+      "shortcode" : "transgender_symbol",
+      "unicode" : "26A7-FE0F"
    },
    {
       "shortcode" : "triangular_flag_on_post",
@@ -17432,8 +19744,88 @@
       "unicode" : "1F46C"
    },
    {
+      "shortcode" : "two_men_holding_hands_dark_skin_tone",
+      "unicode" : "1F46C-1F3FF"
+   },
+   {
+      "shortcode" : "two_men_holding_hands_light_skin_tone",
+      "unicode" : "1F46C-1F3FB"
+   },
+   {
+      "shortcode" : "two_men_holding_hands_medium_dark_skin_tone",
+      "unicode" : "1F46C-1F3FE"
+   },
+   {
+      "shortcode" : "two_men_holding_hands_medium_light_skin_tone",
+      "unicode" : "1F46C-1F3FC"
+   },
+   {
+      "shortcode" : "two_men_holding_hands_medium_skin_tone",
+      "unicode" : "1F46C-1F3FD"
+   },
+   {
+      "shortcode" : "two_men_holding_hands_tone1",
+      "unicode" : "1F46C-1F3FB"
+   },
+   {
+      "shortcode" : "two_men_holding_hands_tone2",
+      "unicode" : "1F46C-1F3FC"
+   },
+   {
+      "shortcode" : "two_men_holding_hands_tone3",
+      "unicode" : "1F46C-1F3FD"
+   },
+   {
+      "shortcode" : "two_men_holding_hands_tone4",
+      "unicode" : "1F46C-1F3FE"
+   },
+   {
+      "shortcode" : "two_men_holding_hands_tone5",
+      "unicode" : "1F46C-1F3FF"
+   },
+   {
       "shortcode" : "two_women_holding_hands",
       "unicode" : "1F46D"
+   },
+   {
+      "shortcode" : "two_women_holding_hands_dark_skin_tone",
+      "unicode" : "1F46D-1F3FF"
+   },
+   {
+      "shortcode" : "two_women_holding_hands_light_skin_tone",
+      "unicode" : "1F46D-1F3FB"
+   },
+   {
+      "shortcode" : "two_women_holding_hands_medium_dark_skin_tone",
+      "unicode" : "1F46D-1F3FE"
+   },
+   {
+      "shortcode" : "two_women_holding_hands_medium_light_skin_tone",
+      "unicode" : "1F46D-1F3FC"
+   },
+   {
+      "shortcode" : "two_women_holding_hands_medium_skin_tone",
+      "unicode" : "1F46D-1F3FD"
+   },
+   {
+      "shortcode" : "two_women_holding_hands_tone1",
+      "unicode" : "1F46D-1F3FB"
+   },
+   {
+      "shortcode" : "two_women_holding_hands_tone2",
+      "unicode" : "1F46D-1F3FC"
+   },
+   {
+      "shortcode" : "two_women_holding_hands_tone3",
+      "unicode" : "1F46D-1F3FD"
+   },
+   {
+      "shortcode" : "two_women_holding_hands_tone4",
+      "unicode" : "1F46D-1F3FE"
+   },
+   {
+      "shortcode" : "two_women_holding_hands_tone5",
+      "unicode" : "1F46D-1F3FF"
    },
    {
       "shortcode" : "tz",
@@ -17748,6 +20140,10 @@
       "unicode" : "1F596-1F3FF"
    },
    {
+      "shortcode" : "waffle",
+      "unicode" : "1F9C7"
+   },
+   {
       "shortcode" : "walking",
       "unicode" : "1F6B6"
    },
@@ -18024,6 +20420,142 @@
       "unicode" : "2639-FE0F"
    },
    {
+      "shortcode" : "white_haired_man",
+      "unicode" : "1F468-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_man_dark_skin_tone",
+      "unicode" : "1F468-1F3FF-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_man_light_skin_tone",
+      "unicode" : "1F468-1F3FB-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_man_medium_dark_skin_tone",
+      "unicode" : "1F468-1F3FE-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_man_medium_light_skin_tone",
+      "unicode" : "1F468-1F3FC-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_man_medium_skin_tone",
+      "unicode" : "1F468-1F3FD-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_man_tone1",
+      "unicode" : "1F468-1F3FB-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_man_tone2",
+      "unicode" : "1F468-1F3FC-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_man_tone3",
+      "unicode" : "1F468-1F3FD-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_man_tone4",
+      "unicode" : "1F468-1F3FE-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_man_tone5",
+      "unicode" : "1F468-1F3FF-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_person",
+      "unicode" : "1F9D1-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_person_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_person_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_person_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_person_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_person_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_person_tone1",
+      "unicode" : "1F9D1-1F3FB-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_person_tone2",
+      "unicode" : "1F9D1-1F3FC-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_person_tone3",
+      "unicode" : "1F9D1-1F3FD-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_person_tone4",
+      "unicode" : "1F9D1-1F3FE-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_person_tone5",
+      "unicode" : "1F9D1-1F3FF-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_woman",
+      "unicode" : "1F469-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_woman_dark_skin_tone",
+      "unicode" : "1F469-1F3FF-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_woman_light_skin_tone",
+      "unicode" : "1F469-1F3FB-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_woman_medium_dark_skin_tone",
+      "unicode" : "1F469-1F3FE-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_woman_medium_light_skin_tone",
+      "unicode" : "1F469-1F3FC-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_woman_medium_skin_tone",
+      "unicode" : "1F469-1F3FD-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_woman_tone1",
+      "unicode" : "1F469-1F3FB-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_woman_tone2",
+      "unicode" : "1F469-1F3FC-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_woman_tone3",
+      "unicode" : "1F469-1F3FD-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_woman_tone4",
+      "unicode" : "1F469-1F3FE-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_haired_woman_tone5",
+      "unicode" : "1F469-1F3FF-200D-1F9B3"
+   },
+   {
+      "shortcode" : "white_heart",
+      "unicode" : "1F90D"
+   },
+   {
       "shortcode" : "white_large_square",
       "unicode" : "2B1C"
    },
@@ -18084,6 +20616,10 @@
       "unicode" : "1F390"
    },
    {
+      "shortcode" : "window",
+      "unicode" : "1FA9F"
+   },
+   {
       "shortcode" : "wine_glass",
       "unicode" : "1F377"
    },
@@ -18098,6 +20634,50 @@
    {
       "shortcode" : "woman",
       "unicode" : "1F469"
+   },
+   {
+      "shortcode" : "woman_and_man_holding_hands",
+      "unicode" : "1F46B"
+   },
+   {
+      "shortcode" : "woman_and_man_holding_hands_dark_skin_tone",
+      "unicode" : "1F46B-1F3FF"
+   },
+   {
+      "shortcode" : "woman_and_man_holding_hands_light_skin_tone",
+      "unicode" : "1F46B-1F3FB"
+   },
+   {
+      "shortcode" : "woman_and_man_holding_hands_medium_dark_skin_tone",
+      "unicode" : "1F46B-1F3FE"
+   },
+   {
+      "shortcode" : "woman_and_man_holding_hands_medium_light_skin_tone",
+      "unicode" : "1F46B-1F3FC"
+   },
+   {
+      "shortcode" : "woman_and_man_holding_hands_medium_skin_tone",
+      "unicode" : "1F46B-1F3FD"
+   },
+   {
+      "shortcode" : "woman_and_man_holding_hands_tone1",
+      "unicode" : "1F46B-1F3FB"
+   },
+   {
+      "shortcode" : "woman_and_man_holding_hands_tone2",
+      "unicode" : "1F46B-1F3FC"
+   },
+   {
+      "shortcode" : "woman_and_man_holding_hands_tone3",
+      "unicode" : "1F46B-1F3FD"
+   },
+   {
+      "shortcode" : "woman_and_man_holding_hands_tone4",
+      "unicode" : "1F46B-1F3FE"
+   },
+   {
+      "shortcode" : "woman_and_man_holding_hands_tone5",
+      "unicode" : "1F46B-1F3FF"
    },
    {
       "shortcode" : "woman_artist",
@@ -18684,6 +21264,50 @@
       "unicode" : "1F469-1F3FF-200D-1F33E"
    },
    {
+      "shortcode" : "woman_feeding_baby",
+      "unicode" : "1F469-200D-1F37C"
+   },
+   {
+      "shortcode" : "woman_feeding_baby_dark_skin_tone",
+      "unicode" : "1F469-1F3FF-200D-1F37C"
+   },
+   {
+      "shortcode" : "woman_feeding_baby_light_skin_tone",
+      "unicode" : "1F469-1F3FB-200D-1F37C"
+   },
+   {
+      "shortcode" : "woman_feeding_baby_medium_dark_skin_tone",
+      "unicode" : "1F469-1F3FE-200D-1F37C"
+   },
+   {
+      "shortcode" : "woman_feeding_baby_medium_light_skin_tone",
+      "unicode" : "1F469-1F3FC-200D-1F37C"
+   },
+   {
+      "shortcode" : "woman_feeding_baby_medium_skin_tone",
+      "unicode" : "1F469-1F3FD-200D-1F37C"
+   },
+   {
+      "shortcode" : "woman_feeding_baby_tone1",
+      "unicode" : "1F469-1F3FB-200D-1F37C"
+   },
+   {
+      "shortcode" : "woman_feeding_baby_tone2",
+      "unicode" : "1F469-1F3FC-200D-1F37C"
+   },
+   {
+      "shortcode" : "woman_feeding_baby_tone3",
+      "unicode" : "1F469-1F3FD-200D-1F37C"
+   },
+   {
+      "shortcode" : "woman_feeding_baby_tone4",
+      "unicode" : "1F469-1F3FE-200D-1F37C"
+   },
+   {
+      "shortcode" : "woman_feeding_baby_tone5",
+      "unicode" : "1F469-1F3FF-200D-1F37C"
+   },
+   {
       "shortcode" : "woman_firefighter",
       "unicode" : "1F469-200D-1F692"
    },
@@ -19188,6 +21812,94 @@
       "unicode" : "1F9D8-1F3FF-200D-2640-FE0F"
    },
    {
+      "shortcode" : "woman_in_manual_wheelchair",
+      "unicode" : "1F469-200D-1F9BD"
+   },
+   {
+      "shortcode" : "woman_in_manual_wheelchair_dark_skin_tone",
+      "unicode" : "1F469-1F3FF-200D-1F9BD"
+   },
+   {
+      "shortcode" : "woman_in_manual_wheelchair_light_skin_tone",
+      "unicode" : "1F469-1F3FB-200D-1F9BD"
+   },
+   {
+      "shortcode" : "woman_in_manual_wheelchair_medium_dark_skin_tone",
+      "unicode" : "1F469-1F3FE-200D-1F9BD"
+   },
+   {
+      "shortcode" : "woman_in_manual_wheelchair_medium_light_skin_tone",
+      "unicode" : "1F469-1F3FC-200D-1F9BD"
+   },
+   {
+      "shortcode" : "woman_in_manual_wheelchair_medium_skin_tone",
+      "unicode" : "1F469-1F3FD-200D-1F9BD"
+   },
+   {
+      "shortcode" : "woman_in_manual_wheelchair_tone1",
+      "unicode" : "1F469-1F3FB-200D-1F9BD"
+   },
+   {
+      "shortcode" : "woman_in_manual_wheelchair_tone2",
+      "unicode" : "1F469-1F3FC-200D-1F9BD"
+   },
+   {
+      "shortcode" : "woman_in_manual_wheelchair_tone3",
+      "unicode" : "1F469-1F3FD-200D-1F9BD"
+   },
+   {
+      "shortcode" : "woman_in_manual_wheelchair_tone4",
+      "unicode" : "1F469-1F3FE-200D-1F9BD"
+   },
+   {
+      "shortcode" : "woman_in_manual_wheelchair_tone5",
+      "unicode" : "1F469-1F3FF-200D-1F9BD"
+   },
+   {
+      "shortcode" : "woman_in_motorized_wheelchair",
+      "unicode" : "1F469-200D-1F9BC"
+   },
+   {
+      "shortcode" : "woman_in_motorized_wheelchair_dark_skin_tone",
+      "unicode" : "1F469-1F3FF-200D-1F9BC"
+   },
+   {
+      "shortcode" : "woman_in_motorized_wheelchair_light_skin_tone",
+      "unicode" : "1F469-1F3FB-200D-1F9BC"
+   },
+   {
+      "shortcode" : "woman_in_motorized_wheelchair_medium_dark_skin_tone",
+      "unicode" : "1F469-1F3FE-200D-1F9BC"
+   },
+   {
+      "shortcode" : "woman_in_motorized_wheelchair_medium_light_skin_tone",
+      "unicode" : "1F469-1F3FC-200D-1F9BC"
+   },
+   {
+      "shortcode" : "woman_in_motorized_wheelchair_medium_skin_tone",
+      "unicode" : "1F469-1F3FD-200D-1F9BC"
+   },
+   {
+      "shortcode" : "woman_in_motorized_wheelchair_tone1",
+      "unicode" : "1F469-1F3FB-200D-1F9BC"
+   },
+   {
+      "shortcode" : "woman_in_motorized_wheelchair_tone2",
+      "unicode" : "1F469-1F3FC-200D-1F9BC"
+   },
+   {
+      "shortcode" : "woman_in_motorized_wheelchair_tone3",
+      "unicode" : "1F469-1F3FD-200D-1F9BC"
+   },
+   {
+      "shortcode" : "woman_in_motorized_wheelchair_tone4",
+      "unicode" : "1F469-1F3FE-200D-1F9BC"
+   },
+   {
+      "shortcode" : "woman_in_motorized_wheelchair_tone5",
+      "unicode" : "1F469-1F3FF-200D-1F9BC"
+   },
+   {
       "shortcode" : "woman_in_steamy_room",
       "unicode" : "1F9D6-200D-2640-FE0F"
    },
@@ -19230,6 +21942,50 @@
    {
       "shortcode" : "woman_in_steamy_room_tone5",
       "unicode" : "1F9D6-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_tuxedo",
+      "unicode" : "1F935-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_tuxedo_dark_skin_tone",
+      "unicode" : "1F935-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_tuxedo_light_skin_tone",
+      "unicode" : "1F935-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_tuxedo_medium_dark_skin_tone",
+      "unicode" : "1F935-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_tuxedo_medium_light_skin_tone",
+      "unicode" : "1F935-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_tuxedo_medium_skin_tone",
+      "unicode" : "1F935-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_tuxedo_tone1",
+      "unicode" : "1F935-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_tuxedo_tone2",
+      "unicode" : "1F935-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_tuxedo_tone3",
+      "unicode" : "1F935-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_tuxedo_tone4",
+      "unicode" : "1F935-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_tuxedo_tone5",
+      "unicode" : "1F935-1F3FF-200D-2640-FE0F"
    },
    {
       "shortcode" : "woman_judge",
@@ -19326,6 +22082,50 @@
    {
       "shortcode" : "woman_kiss_woman",
       "unicode" : "1F469-200D-2764-FE0F-200D-1F48B-200D-1F469"
+   },
+   {
+      "shortcode" : "woman_kneeling",
+      "unicode" : "1F9CE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_kneeling_dark_skin_tone",
+      "unicode" : "1F9CE-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_kneeling_light_skin_tone",
+      "unicode" : "1F9CE-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_kneeling_medium_dark_skin_tone",
+      "unicode" : "1F9CE-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_kneeling_medium_light_skin_tone",
+      "unicode" : "1F9CE-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_kneeling_medium_skin_tone",
+      "unicode" : "1F9CE-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_kneeling_tone1",
+      "unicode" : "1F9CE-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_kneeling_tone2",
+      "unicode" : "1F9CE-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_kneeling_tone3",
+      "unicode" : "1F9CE-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_kneeling_tone4",
+      "unicode" : "1F9CE-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_kneeling_tone5",
+      "unicode" : "1F9CE-1F3FF-200D-2640-FE0F"
    },
    {
       "shortcode" : "woman_lifting_weights",
@@ -20004,6 +22804,50 @@
       "unicode" : "1F469-1F3FF-200D-1F3A4"
    },
    {
+      "shortcode" : "woman_standing",
+      "unicode" : "1F9CD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_standing_dark_skin_tone",
+      "unicode" : "1F9CD-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_standing_light_skin_tone",
+      "unicode" : "1F9CD-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_standing_medium_dark_skin_tone",
+      "unicode" : "1F9CD-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_standing_medium_light_skin_tone",
+      "unicode" : "1F9CD-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_standing_medium_skin_tone",
+      "unicode" : "1F9CD-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_standing_tone1",
+      "unicode" : "1F9CD-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_standing_tone2",
+      "unicode" : "1F9CD-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_standing_tone3",
+      "unicode" : "1F9CD-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_standing_tone4",
+      "unicode" : "1F9CD-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_standing_tone5",
+      "unicode" : "1F9CD-1F3FF-200D-2640-FE0F"
+   },
+   {
       "shortcode" : "woman_student",
       "unicode" : "1F469-200D-1F393"
    },
@@ -20380,6 +23224,94 @@
       "unicode" : "1F46F-200D-2640-FE0F"
    },
    {
+      "shortcode" : "woman_with_probing_cane",
+      "unicode" : "1F469-200D-1F9AF"
+   },
+   {
+      "shortcode" : "woman_with_probing_cane_dark_skin_tone",
+      "unicode" : "1F469-1F3FF-200D-1F9AF"
+   },
+   {
+      "shortcode" : "woman_with_probing_cane_light_skin_tone",
+      "unicode" : "1F469-1F3FB-200D-1F9AF"
+   },
+   {
+      "shortcode" : "woman_with_probing_cane_medium_dark_skin_tone",
+      "unicode" : "1F469-1F3FE-200D-1F9AF"
+   },
+   {
+      "shortcode" : "woman_with_probing_cane_medium_light_skin_tone",
+      "unicode" : "1F469-1F3FC-200D-1F9AF"
+   },
+   {
+      "shortcode" : "woman_with_probing_cane_medium_skin_tone",
+      "unicode" : "1F469-1F3FD-200D-1F9AF"
+   },
+   {
+      "shortcode" : "woman_with_probing_cane_tone1",
+      "unicode" : "1F469-1F3FB-200D-1F9AF"
+   },
+   {
+      "shortcode" : "woman_with_probing_cane_tone2",
+      "unicode" : "1F469-1F3FC-200D-1F9AF"
+   },
+   {
+      "shortcode" : "woman_with_probing_cane_tone3",
+      "unicode" : "1F469-1F3FD-200D-1F9AF"
+   },
+   {
+      "shortcode" : "woman_with_probing_cane_tone4",
+      "unicode" : "1F469-1F3FE-200D-1F9AF"
+   },
+   {
+      "shortcode" : "woman_with_probing_cane_tone5",
+      "unicode" : "1F469-1F3FF-200D-1F9AF"
+   },
+   {
+      "shortcode" : "woman_with_veil",
+      "unicode" : "1F470-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_with_veil_dark_skin_tone",
+      "unicode" : "1F470-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_with_veil_light_skin_tone",
+      "unicode" : "1F470-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_with_veil_medium_dark_skin_tone",
+      "unicode" : "1F470-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_with_veil_medium_light_skin_tone",
+      "unicode" : "1F470-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_with_veil_medium_skin_tone",
+      "unicode" : "1F470-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_with_veil_tone1",
+      "unicode" : "1F470-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_with_veil_tone2",
+      "unicode" : "1F470-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_with_veil_tone3",
+      "unicode" : "1F470-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_with_veil_tone4",
+      "unicode" : "1F470-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_with_veil_tone5",
+      "unicode" : "1F470-1F3FF-200D-2640-FE0F"
+   },
+   {
       "shortcode" : "woman_woman_boy",
       "unicode" : "1F469-200D-1F469-200D-1F466"
    },
@@ -20416,6 +23348,50 @@
       "unicode" : "1F452"
    },
    {
+      "shortcode" : "women_holding_hands",
+      "unicode" : "1F46D"
+   },
+   {
+      "shortcode" : "women_holding_hands_dark_skin_tone",
+      "unicode" : "1F46D-1F3FF"
+   },
+   {
+      "shortcode" : "women_holding_hands_light_skin_tone",
+      "unicode" : "1F46D-1F3FB"
+   },
+   {
+      "shortcode" : "women_holding_hands_medium_dark_skin_tone",
+      "unicode" : "1F46D-1F3FE"
+   },
+   {
+      "shortcode" : "women_holding_hands_medium_light_skin_tone",
+      "unicode" : "1F46D-1F3FC"
+   },
+   {
+      "shortcode" : "women_holding_hands_medium_skin_tone",
+      "unicode" : "1F46D-1F3FD"
+   },
+   {
+      "shortcode" : "women_holding_hands_tone1",
+      "unicode" : "1F46D-1F3FB"
+   },
+   {
+      "shortcode" : "women_holding_hands_tone2",
+      "unicode" : "1F46D-1F3FC"
+   },
+   {
+      "shortcode" : "women_holding_hands_tone3",
+      "unicode" : "1F46D-1F3FD"
+   },
+   {
+      "shortcode" : "women_holding_hands_tone4",
+      "unicode" : "1F46D-1F3FE"
+   },
+   {
+      "shortcode" : "women_holding_hands_tone5",
+      "unicode" : "1F46D-1F3FF"
+   },
+   {
       "shortcode" : "women_with_bunny_ears_partying",
       "unicode" : "1F46F-200D-2640-FE0F"
    },
@@ -20428,12 +23404,20 @@
       "unicode" : "1F6BA"
    },
    {
+      "shortcode" : "wood",
+      "unicode" : "1FAB5"
+   },
+   {
       "shortcode" : "woozy_face",
       "unicode" : "1F974"
    },
    {
       "shortcode" : "world_map",
       "unicode" : "1F5FA-FE0F"
+   },
+   {
+      "shortcode" : "worm",
+      "unicode" : "1FAB1"
    },
    {
       "shortcode" : "worried",
@@ -20516,6 +23500,10 @@
       "unicode" : "1F9F6"
    },
    {
+      "shortcode" : "yawning_face",
+      "unicode" : "1F971"
+   },
+   {
       "shortcode" : "ye",
       "unicode" : "1F1FE-1F1EA"
    },
@@ -20530,6 +23518,10 @@
    {
       "shortcode" : "yin_yang",
       "unicode" : "262F-FE0F"
+   },
+   {
+      "shortcode" : "yo_yo",
+      "unicode" : "1FA80"
    },
    {
       "shortcode" : "yt",

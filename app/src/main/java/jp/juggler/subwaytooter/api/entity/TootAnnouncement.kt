@@ -6,11 +6,7 @@ import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 import jp.juggler.util.notEmpty
-import jp.juggler.util.notZero
-import java.util.HashMap
-import kotlin.Comparator
-import kotlin.Int
-import kotlin.String
+import java.util.*
 
 class TootAnnouncement(parser : TootParser, src : JsonObject) {
 	
@@ -89,12 +85,6 @@ class TootAnnouncement(parser : TootParser, src : JsonObject) {
 	companion object {
 		private val log = LogCategory("TootAnnouncement")
 		
-		val comparator = Comparator<TootAnnouncement> { a, b ->
-			val at = a.starts_at.notZero() ?: a.published_at.notZero() ?: 0L
-			val bt = b.starts_at.notZero() ?: b.published_at.notZero() ?: 0L
-			if(at < bt) - 1 else if(at > bt) 1 else 0
-		}
-		
 		// return null if list is empty
 		fun filterShown(src : List<TootAnnouncement>?) : List<TootAnnouncement>? {
 			val now = System.currentTimeMillis()
@@ -116,7 +106,6 @@ class TootAnnouncement(parser : TootParser, src : JsonObject) {
 					}
 				}
 				?.notEmpty()
-				?.sortedWith(comparator)
 		}
 		
 		// return previous/next item in announcement list.

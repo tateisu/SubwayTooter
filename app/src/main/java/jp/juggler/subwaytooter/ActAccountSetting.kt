@@ -35,6 +35,7 @@ import jp.juggler.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -1580,7 +1581,9 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			)
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return wps.updateSubscription(client, true)
+				return runBlocking{
+					wps.updateSubscription(client, true)
+				}
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Subway Tooter</string>
     <string name="action_settings">Einstellungen</string>
     <string name="account_add">Konto hinzufügen</string>
@@ -321,7 +321,7 @@
     <string name="read_gap_head">Lese Kopfspalt</string>
     <string name="remote_only">Nur entfernt</string>
     <string name="featured">Promotet</string>
-    <string name="announcements_period2">Ereignis-Zeitraum: %1$s...%2$s</string>
+    <string name="announcements_period2">Ereignis-Zeitraum: %1$s…%2$s</string>
     <string name="announcements_period1">Ereignis-Zeitraum: %1$s</string>
     <string name="boost_with_visibility">Sichtbar boosten</string>
     <string name="hide_totals">Verberge die Summe bis zum Ablauf</string>
@@ -424,7 +424,7 @@
     <string name="notification_type_mention">Nennung</string>
     <string name="share_view_pool">Teile Anzeigenpool zwischen den Spalten</string>
     <string name="allow_column_duplication">Erlaube Verdoppelung von Spalten</string>
-    <string name="avatar_icon_round_ratio">Abrundungsfaktor des Avatarbildes (Einheit: %. Standard: 33. App-Neustart erforderlich)</string>
+    <string name="avatar_icon_round_ratio">Abrundungsfaktor des Avatarbildes (Einheit: %%. Standard: 33. App-Neustart erforderlich)</string>
     <string name="always_show_application">Zeige per App-Name, falls möglich</string>
     <string name="domain_block_from_local">Kann Domänen auf deinem Server nicht blockieren.</string>
     <string name="domain_block_from_pseudo">Kann Domäne nicht vom Pseudokonto aus blockieren.</string>
@@ -569,11 +569,11 @@
     <string name="endorse_set">In deinem Profil promoten</string>
     <string name="already_voted">Bereits abgestimmt.</string>
     <string name="toot_background_color">Hintergrundfarbe des Toots</string>
-    <string name="boost_button_alpha">Deckkraft des Boost-Buttons (Einheit: %. App-Neustart erforderlich; wird auch von der Transparenz des Inhaltstextes beeinflusst)</string>
+    <string name="boost_button_alpha">Deckkraft des Boost-Buttons (Einheit: %%. App-Neustart erforderlich; wird auch von der Transparenz des Inhaltstextes beeinflusst)</string>
     <string name="mute_application_confirm">App \"%1$s\" stummschalten\?</string>
     <string name="use_quote_toot">Benutze “Toot zitieren”. (Misskey oder individiualisierter Mastodonserver)</string>
     <string name="conversation_to">An:</string>
-    <string name="participants_and_more">...und weitere</string>
+    <string name="participants_and_more">…und weitere</string>
     <string name="participants">Teilnehmer:</string>
     <string name="show_conversation">Unterhaltung anzeigen</string>
     <string name="around_toot_limitation_warning">Das Feature \"Timeline um die angegebene Zeit herum\" ist auf Mastodonserver ab Version 2.6.0 beschränkt. Eine etwas neuere Timeline kann nicht abgerufen werden.</string>
@@ -982,7 +982,7 @@
     <string name="show_quick_toot_bar">Zeige „Schnell-Toot“-Leiste (App-Neustart erforderlich)</string>
     <string name="timeline_font_size">Schriftgröße der Timeline
 \n(Einheit: Skalierbare Pixel / SP. Leer lassen, um Standard zu benutzen. App-Neustart erforderlich)
-\n...
+\n…
 \n…</string>
     <string name="notification_sound">Benachrichtungston</string>
     <string name="open_local_timeline_for">Timeline von \"%1$s\" öffnen</string>
@@ -1007,7 +1007,7 @@
     <string name="blocked_domains">Blockierte Domains</string>
     <string name="url_omitted">(URL ausgelassen)</string>
     <string name="enable_speech">Aktiviert Sprachausgabe</string>
-    <string name="account_change_failed_old_draft_has_no_in_reply_to_url">Konnte Konto nicht wechseln. Alte Entwurfsdaten besitzen kein in_reply_to_url, kann für gewählten Server nicht in in_reply_to_url umgewandelt werden.</string>
+    <string name="account_change_failed_old_draft_has_no_in_reply_to_url" tools:ignore="Typos">Konnte Konto nicht wechseln. Alte Entwurfsdaten besitzen kein in_reply_to_url, kann für gewählten Server nicht in in_reply_to_url umgewandelt werden.</string>
     <string name="toot_button_default_account">Standardkonto, wenn der „Toot“-Button gedrückt wird</string>
     <string name="notification_on_off_desc">Es gibt auch eine Konteneinstellung, um Benachrichtigungen ein- und auszuschalten.</string>
     <string name="behavior">Verhalten</string>

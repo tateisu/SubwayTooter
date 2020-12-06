@@ -538,7 +538,11 @@ class Column(
 	// プロフカラムでのアカウント情報
 	@Volatile
 	internal var who_account : TootAccountRef? = null
-	
+
+	// プロフカラムでのfeatured tag 情報(Mastodon3.3.0)
+	@Volatile
+	internal var who_featured_tags : List<TootTag>? = null
+
 	// リストカラムでのリスト情報
 	@Volatile
 	internal var list_info : TootList? = null
@@ -1733,8 +1737,14 @@ class Column(
 			client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))?.also { result1 ->
 				TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
 					this.who_account = a
+
+					this.who_featured_tags = null
+					client.request("/api/v1/accounts/${profile_id}/featured_tags")?.also{ result2->
+
+						this.who_featured_tags =TootTag.parseListOrNull(parser,result2.jsonArray)
+					}
+
 					client.publishApiProgress("") // カラムヘッダの再表示
-					
 				}
 			}
 		}

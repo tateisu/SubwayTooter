@@ -72,7 +72,7 @@
     <string name="auto_cw_prefix">(自動CW)</string>
     <string name="available_mastodon_2_4_later">(マストドン2.4以降で利用可能)</string>
     <string name="avatar_icon_dont_round">ユーザ画像を角丸にしない(アプリ再起動が必要)</string>
-    <string name="avatar_icon_round_ratio">ユーザ画像の角丸率(単位:%。デフォルト:33。アプリ再起動が必要)</string>
+    <string name="avatar_icon_round_ratio">ユーザ画像の角丸率(単位:%%。デフォルト:33。アプリ再起動が必要)</string>
     <string name="avatar_icon_size">ユーザ画像の大きさ(単位:dp。デフォルト:48。アプリ再起動が必要)</string>
     <string name="back_button_action">戻るボタンの動作</string>
     <string name="back_to_column_list">戻るボタンでカラム一覧を開く</string>
@@ -809,7 +809,7 @@
     <string name="conversation_to">送り先:</string>
     <string name="use_quote_toot">引用トゥートにする(MisskeyまたはカスタマイズされたMastodonサーバ)</string>
     <string name="mute_application_confirm">アプリ \"%1$s\" はミュートされます。よろしいですか?</string>
-    <string name="boost_button_alpha">ブーストボタンのアルファ不透明度(単位:%。アプリの再起動が必要。本文テキスト色のアルファ値の影響も受けます)</string>
+    <string name="boost_button_alpha">ブーストボタンのアルファ不透明度(単位:%%。アプリの再起動が必要。本文テキスト色のアルファ値の影響も受けます)</string>
     <string name="toot_background_color">トゥート背景色</string>
     <string name="unlisted_visibility">\'未収載\' 公開範囲</string>
     <string name="followers_visibility">\'フォロワーのみ\' 公開範囲</string>

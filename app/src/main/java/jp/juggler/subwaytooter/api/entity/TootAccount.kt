@@ -127,9 +127,10 @@ open class TootAccount(parser : TootParser, src : JsonObject) : HostAndDomain {
 	init {
 		this.json = src
 		src["_fromStream"] = parser.fromStream
-		
+
 		if(parser.serviceType == ServiceType.MISSKEY) {
-			
+
+
 			this.custom_emojis =
 				parseMapOrNull(CustomEmoji.decodeMisskey, src.jsonArray("emojis"))
 			this.profile_emojis = null

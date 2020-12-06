@@ -611,7 +611,7 @@
     <string name="always_show_application">가능하면 (경유) 앱 이름 보이기</string>
     <string name="force_gap_when_refresh">위로 새로고침할 때 강제로 띄움 넣기</string>
     <string name="avatar_icon_size">아바타 아이콘 크기 (단위:dp. 기본값:48. 앱 재시작 필요)</string>
-    <string name="avatar_icon_round_ratio">아바타 아이콘 곡률 (Unit:%. 기본값:33. 앱 재시작 필요)</string>
+    <string name="avatar_icon_round_ratio">아바타 아이콘 곡률 (Unit:%%. 기본값:33. 앱 재시작 필요)</string>
     <string name="avatar_icon_dont_round">아바타 아이콘의 모서리를 둥글게 하지 않기 (앱 재시작 필요)</string>
     <string name="share_view_pool">칼럼 사이에 뷰 풀을 공유</string>
     <string name="rename">이름 변경…</string>
@@ -796,7 +796,7 @@
     <string name="conversation_to">받을 이:</string>
     <string name="use_quote_toot">\"인용 리노트\" 사용</string>
     <string name="mute_application_confirm">앱 \"%1$s\"를 음소거할까요\?</string>
-    <string name="boost_button_alpha">부스트 버튼 알파 불투명도 (단위:%. 앱 재시작 필요. 본문의 알파에 영향을 미침.)</string>
+    <string name="boost_button_alpha">부스트 버튼 알파 불투명도 (단위:%%. 앱 재시작 필요. 본문의 알파에 영향을 미침.)</string>
     <string name="toot_background_color">툿 배경색</string>
     <string name="column_color_default">칼럼 색 기본값</string>
     <string name="header_background_color">헤더 배경색</string>

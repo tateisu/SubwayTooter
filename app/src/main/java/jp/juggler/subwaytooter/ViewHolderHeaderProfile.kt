@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.app.Dialog
 import android.graphics.Color
+import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -11,19 +12,16 @@ import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.action.Action_Follow
 import jp.juggler.subwaytooter.action.Action_User
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootAccountRef
-import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.span.EmojiImageSpan
+import jp.juggler.subwaytooter.span.LinkInfo
+import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.openCustomTab
-import jp.juggler.subwaytooter.util.startMargin
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.subwaytooter.view.MyTextView
@@ -38,6 +36,8 @@ internal class ViewHolderHeaderProfile(
 	private val ivBackground : MyNetworkImageView
 	private val tvCreated : TextView
 	private val tvLastStatusAt : TextView
+	private val tvFeaturedTags : TextView
+
 	private val ivAvatar : MyNetworkImageView
 	private val tvDisplayName : TextView
 	private val tvAcct : TextView
@@ -79,6 +79,7 @@ internal class ViewHolderHeaderProfile(
 		llProfile = viewRoot.findViewById(R.id.llProfile)
 		tvCreated = viewRoot.findViewById(R.id.tvCreated)
 		tvLastStatusAt = viewRoot.findViewById(R.id.tvLastStatusAt)
+		tvFeaturedTags = viewRoot.findViewById(R.id.tvFeaturedTags)
 		ivAvatar = viewRoot.findViewById(R.id.ivAvatar)
 		tvDisplayName = viewRoot.findViewById(R.id.tvDisplayName)
 		tvAcct = viewRoot.findViewById(R.id.tvAcct)
@@ -160,6 +161,7 @@ internal class ViewHolderHeaderProfile(
 			tvMovedName.textSize = f
 			tvMoved.textSize = f
 			tvPersonalNotes.textSize = f
+			tvFeaturedTags.textSize = f
 		}
 		
 		f = activity.acct_font_size_sp
@@ -187,7 +189,8 @@ internal class ViewHolderHeaderProfile(
 		btnStatusCount.textColor = contentColor
 		btnFollowing.textColor = contentColor
 		btnFollowers.textColor = contentColor
-		
+		tvFeaturedTags.textColor = contentColor
+
 		setIconDrawableId(
 			activity,
 			btnMore,
@@ -208,6 +211,7 @@ internal class ViewHolderHeaderProfile(
 		tvCreated.textColor = acctColor
 		tvMovedAcct.textColor = acctColor
 		tvLastStatusAt.textColor = acctColor
+
 		
 		val whoRef = column.who_account
 		this.whoRef = whoRef
@@ -231,6 +235,7 @@ internal class ViewHolderHeaderProfile(
 			relation = null
 			tvCreated.text = ""
 			tvLastStatusAt.vg(false)
+			tvFeaturedTags.vg(false)
 			ivBackground.setImageDrawable(null)
 			ivAvatar.setImageDrawable(null)
 			
@@ -259,6 +264,28 @@ internal class ViewHolderHeaderProfile(
 				invalidator = null,
 				fromProfileHeader = true
 			)
+
+			val featuredTagsText = column.who_featured_tags?.notEmpty()?.let{  tagList->
+				SpannableStringBuilder().apply {
+					append(activity.getString(R.string.featured_hashtags))
+					append(":")
+					tagList.forEach { tag ->
+						append(" ")
+						val tagWithSharp = "#" + tag.name
+						val start = length
+						append(tagWithSharp)
+						val end = length
+						tag.url?.notEmpty()?.let{ url->
+							val span = MyClickableSpan(LinkInfo(url = url, tag = tag.name, caption = tagWithSharp))
+							setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+						}
+					}
+				}
+			}
+			tvFeaturedTags.vg( featuredTagsText !=null)?.let{
+				it.text = featuredTagsText!!
+				it.movementMethod = MyLinkMovementMethod
+			}
 			
 			ivBackground.setImageUrl(
 				activity.pref,

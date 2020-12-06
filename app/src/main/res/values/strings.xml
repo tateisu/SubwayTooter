@@ -621,7 +621,7 @@
     <string name="always_show_application">Show (via) application name if possible</string>
     <string name="force_gap_when_refresh">Force adding gap when refreshing top</string>
     <string name="avatar_icon_size">Avatar icon size (Unit:dp. default:48. app restart required)</string>
-    <string name="avatar_icon_round_ratio">Avatar icon round ratio (Unit:%. default:33. app restart required)</string>
+    <string name="avatar_icon_round_ratio">Avatar icon round ratio (Unit:%%. default:33. app restart required)</string>
     <string name="avatar_icon_dont_round">Don\'t round corner of avatar icon (app restart required)</string>
     <string name="share_view_pool">Share view pool between columns</string>
     <string name="rename">Rename…</string>
@@ -815,7 +815,7 @@
     <string name="conversation_to">To:</string>
     <string name="use_quote_toot">Use \"Quote Toot\". (Misskey or some customized Mastodon server)</string>
     <string name="mute_application_confirm">Mute the app \"%1$s\"?</string>
-    <string name="boost_button_alpha">Boost button alpha opacity (Unit:%. app restart required. also affected of content text alpha.)</string>
+    <string name="boost_button_alpha">Boost button alpha opacity (Unit:%%. app restart required. also affected of content text alpha.)</string>
     <string name="toot_background_color">Toot background color</string>
     <string name="column_color_default">Column color default</string>
     <string name="header_background_color">Header background color</string>

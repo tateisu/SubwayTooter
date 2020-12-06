@@ -150,11 +150,11 @@ class PushSubscriptionHelper(
         }
     }
 
-    private fun updateSubscriptionMisskey(client: TootApiClient): TootApiResult? {
+    private suspend fun updateSubscriptionMisskey(client: TootApiClient): TootApiResult? {
 
         // 現在の購読状態を取得できないので、毎回購読の更新を行う
         // FCMのデバイスIDを取得
-        val device_id = PollingWorker.getDeviceId(context)
+        val device_id = PollingWorker.getFirebaseMessagingToken(context)
             ?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
 
         // アクセストークン
@@ -221,7 +221,7 @@ class PushSubscriptionHelper(
         }
     }
 
-    private fun updateSubscriptionMastodon(client: TootApiClient, force: Boolean): TootApiResult? {
+    private suspend fun updateSubscriptionMastodon(client: TootApiClient, force: Boolean): TootApiResult? {
 
         // 現在の購読状態を取得
         // https://github.com/tootsuite/mastodon/pull/7471
@@ -293,7 +293,7 @@ class PushSubscriptionHelper(
         }
 
         // FCMのデバイスIDを取得
-        val device_id = PollingWorker.getDeviceId(context)
+        val device_id = PollingWorker.getFirebaseMessagingToken(context)
             ?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
 
         // アクセストークン
@@ -508,7 +508,7 @@ class PushSubscriptionHelper(
         }
     }
 
-    fun updateSubscription(client: TootApiClient, force: Boolean = false): TootApiResult? =
+    suspend fun updateSubscription(client: TootApiClient, force: Boolean = false): TootApiResult? =
         try {
             when {
                 isRecentlyChecked() ->

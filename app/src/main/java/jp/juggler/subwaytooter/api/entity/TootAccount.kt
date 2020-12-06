@@ -141,10 +141,8 @@ open class TootAccount(parser : TootParser, src : JsonObject) : HostAndDomain {
 			
 			this.username = src.stringOrThrow("username")
 			
-			this.apiHost = src.string("host")?.let { Host.parse(it) }
-				?: parser.apiHost
-					?: error("missing host")
-			
+			this.apiHost = src.string("host")?.let { Host.parse(it) } ?: parser.apiHost
+
 			this.url = "https://${apiHost.ascii}/@$username"
 			
 			this.apDomain = apiHost // FIXME apiHostとapDomainが異なる場合はMisskeyだとどうなの…？

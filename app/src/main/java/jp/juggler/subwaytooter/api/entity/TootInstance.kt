@@ -91,8 +91,8 @@ class TootInstance(parser : TootParser, src : JsonObject) {
 	init {
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			
-			this.uri = parser.apiHost?.ascii
-			this.title = parser.apiHost?.pretty
+			this.uri = parser.apiHost.ascii
+			this.title = parser.apiHost.pretty
 			val sv = src.jsonObject("maintainer")?.string("url")
 			this.email = when {
 				sv?.startsWith("mailto:") == true -> sv.substring(7)

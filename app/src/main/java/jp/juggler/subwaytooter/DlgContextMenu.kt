@@ -683,12 +683,11 @@ internal class DlgContextMenu(
 					ActText.open(activity, ActMain.REQUEST_CODE_TEXT, access_info, who)
 				
 				R.id.btnMute -> when {
-					relation.muting -> Action_User.mute(
+					relation.muting -> Action_User.unmute(
 						activity,
 						access_info,
 						who,
-						access_info,
-						bMute = false
+						access_info
 					)
 					else -> Action_User.muteConfirm(
 						activity,

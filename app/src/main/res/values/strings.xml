@@ -1060,4 +1060,14 @@
     <string name="gap">Gap</string>
     <string name="powered_by_open_sticker">Using OpenSticker API.</string>
     <string name="speech">Speech</string>
+    <string name="duration">Duration</string>
+
+    <string name="duration_indefinite">Indefinite</string>
+    <string name="duration_minutes_5">5 minutes</string>
+    <string name="duration_minutes_30">30 minutes</string>
+    <string name="duration_hours_1">1 hour</string>
+    <string name="duration_hours_6">6 hours</string>
+    <string name="duration_days_1">1 day</string>
+    <string name="duration_days_3">3 days</string>
+    <string name="duration_days_7">7 days</string>
 </resources>

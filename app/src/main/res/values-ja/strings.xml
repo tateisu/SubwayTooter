@@ -1051,4 +1051,15 @@
     <string name="stop_notify_posts_from_this_user">このユーザの投稿の通知を解除</string>
     <string name="gap">ギャップ</string>
     <string name="powered_by_open_sticker">OpenStickerのAPIを利用します。</string>
+    <string name="duration">期間</string>
+
+    <string name="duration_indefinite">無期限</string>
+    <string name="duration_minutes_5">5分</string>
+    <string name="duration_minutes_30">30分</string>
+    <string name="duration_hours_1">1時間</string>
+    <string name="duration_hours_6">6時間</string>
+    <string name="duration_days_1">1日</string>
+    <string name="duration_days_3">3日</string>
+    <string name="duration_days_7">7日</string>
+
 </resources>

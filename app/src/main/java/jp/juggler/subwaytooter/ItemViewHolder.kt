@@ -1546,7 +1546,12 @@ internal class ItemViewHolder(
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				sb.appendColorShadeIcon(activity, R.drawable.ic_bot, "bot")
 			}
-			
+
+			if(status.account.suspended) {
+				if(sb.isNotEmpty()) sb.append('\u200B')
+				sb.appendColorShadeIcon(activity, R.drawable.ic_error, "suspended")
+			}
+
 			// mobileマーク
 			if(status.viaMobile) {
 				if(sb.isNotEmpty()) sb.append('\u200B')

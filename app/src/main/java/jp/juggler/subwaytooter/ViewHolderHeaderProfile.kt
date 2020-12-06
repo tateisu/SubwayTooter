@@ -343,6 +343,16 @@ internal class ViewHolderHeaderProfile(
 						append("bot")
 					}
 				}
+
+				if(who.suspended) {
+					append(" ")
+					val info = EmojiMap.sShortNameToEmojiInfo["x"]
+					if(info != null) {
+						appendSpan("suspended", info.er.createSpan(activity))
+					} else {
+						append("suspended")
+					}
+				}
 			}
 			
 			val note = whoRef.decoded_note

@@ -121,7 +121,11 @@ open class TootAccount(parser : TootParser, src : JsonObject) : HostAndDomain {
 	// mastodon 3.0.0-dev
 	// last_status_at : "2019-08-29T12:42:08.838Z" or null
 	private var last_status_at = 0L
-	
+
+	// mastodon 3.3.0
+	var suspended = false
+
+
 	val json : JsonObject
 	
 	init {
@@ -251,6 +255,7 @@ open class TootAccount(parser : TootParser, src : JsonObject) : HostAndDomain {
 			this.fields = parseFields(src.jsonArray("fields"))
 			
 			this.bot = src.optBoolean("bot", false)
+			this.suspended =  src.optBoolean("suspended", false)
 			this.isAdmin = false
 			this.isCat = false
 			this.isPro = false

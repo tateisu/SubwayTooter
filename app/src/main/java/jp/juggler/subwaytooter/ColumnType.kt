@@ -1113,7 +1113,47 @@ enum class ColumnType(
 		
 		refresh = { client -> getTootSearch(client) }
 	),
-	
+
+	SEARCH_NOTESTOCK(41,
+		iconId = { R.drawable.ic_search },
+		name1 = { it.getString(R.string.toot_search_notestock) },
+		name2 = { long ->
+			when {
+				long -> context.getString(R.string.toot_search_notestock_of, search_query)
+				else -> context.getString(R.string.toot_search_notestock)
+			}
+		},
+		headerType = HeaderType.Search,
+
+		loading = { client ->
+			column.idOld = null
+			val result : TootApiResult?
+			val q = column.search_query.trim { it <= ' ' }
+			if(q.isEmpty()) {
+				list_tmp = ArrayList()
+				result = TootApiResult()
+			} else {
+				result =
+					client.searchNotestock(column.search_query, null)
+				val jsonObject = result?.jsonObject
+				if(jsonObject != null) {
+					// max_id の更新
+					column.idOld = EntityId.mayNull( TootApiClient.getNotestockMaxDt(jsonObject) )
+
+					// リストデータの用意
+					val search_result = TootStatus.parseListNotestock(parser, jsonObject)
+					this.list_tmp = addWithFilterStatus(null, search_result)
+					if(search_result.isEmpty()) {
+						log.d("search result is empty. %s", result.bodyString)
+					}
+				}
+			}
+			result
+		},
+
+		refresh = { client -> getNotestock(client) }
+	),
+
 	INSTANCE_INFORMATION(18,
 		iconId = { R.drawable.ic_info },
 		name1 = { it.getString(R.string.instance_information) },

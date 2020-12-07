@@ -151,8 +151,7 @@ object TootTextEncoder {
 			
 			// MastodonとMisskeyは投票の選択肢が本文に含まれないので
 			// アプリ側で文字列化する
-			
-			TootPollsType.Mastodon -> when {
+			TootPollsType.Mastodon,TootPollsType.Notestock -> when {
 				enquete.expired -> false
 				now >= enquete.expired_at -> false
 				enquete.ownVoted -> false
@@ -199,7 +198,7 @@ object TootTextEncoder {
 				item.decoded_text
 			}
 			
-			TootPollsType.Mastodon -> if(canVote) {
+			TootPollsType.Mastodon ,TootPollsType.Notestock -> if(canVote) {
 				item.decoded_text
 			} else {
 				val sb2 = StringBuilder().append(item.decoded_text)

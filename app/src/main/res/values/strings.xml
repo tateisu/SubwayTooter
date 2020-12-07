@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Subway Tooter</string>
+    <string name="app_name" translatable="false">Subway Tooter</string>
     <string name="action_settings">Settings</string>
     <string name="account_add">Add an account</string>
     <string name="instance">Server</string>
@@ -401,6 +401,7 @@
     <string name="toot_search">Toot search</string>
     <string name="toot_search_msp">Toot search (MSP)</string>
     <string name="toot_search_ts">Toot search (ts)</string>
+    <string name="toot_search_notestock">notestock search</string>
     <string name="mastodon_search_portal">MSP (JP)</string>
     <string name="search_desc_mastodon_api">Account/hashtag search using Mastodon API.</string>
     <string name="toot_search_of">Toot search \"%1$s\"</string>
@@ -830,7 +831,7 @@
     <string name="blank_cw">(blank CW)</string>
     <string name="actions_for_instance">Actions for this server</string>
     <string name="animation">Animation</string>
-    <string name="tls_handshake">TLS Handshake</string>
+    <string name="tls_handshake" translatable="false">TLS Handshake</string>
     <string name="links">Links</string>
     <string name="profile_directory">Directory</string>
     <string name="profile_directory_of">Directory of \"%1$s\"</string>
@@ -1070,4 +1071,7 @@
     <string name="duration_days_1">1 day</string>
     <string name="duration_days_3">3 days</string>
     <string name="duration_days_7">7 days</string>
+
+    <string name="notestock" translatable="false">notestock</string>
+    <string name="toot_search_notestock_of">notestock search \"%1$s\"</string>
 </resources>

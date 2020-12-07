@@ -134,6 +134,37 @@ class TootAttachment : TootAttachmentLike {
 				
 				blurhash = null
 			}
+
+			ServiceType.NOTESTOCK->{
+				id = EntityId.DEFAULT
+				url = src.string("url")
+				remote_url = url
+				preview_url = src.string("img_hash")
+					?.let { "https://img.osa-p.net/proxy/500x,q100,s${it}/$url" }
+				preview_remote_url = null
+
+				text_url = url
+				description = src.string("name")
+				isSensitive = false // Misskey用のパラメータなので、マストドンでは適当な値を使ってOK
+
+				val mediaType = src.string("mediaType")
+				type = when{
+					mediaType?.startsWith("image") ==true ->TootAttachmentType.Image
+					mediaType?.startsWith("video") ==true ->TootAttachmentType.Video
+					mediaType?.startsWith("audio") ==true ->TootAttachmentType.Audio
+					else ->guessMediaTypeByUrl(remote_url ?: url)
+						?: TootAttachmentType.Unknown
+					// TODO GIFVかどうかの判定はどうするの？
+				}
+
+
+				val focus = null // TODO focus指定はどうなるの？
+				focusX = parseFocusValue(focus, "x")
+				focusY = parseFocusValue(focus, "y")
+
+				blurhash = src.string("blurhash")
+
+			}
 			
 			else -> {
 				id = EntityId.mayDefault(src.string("id"))

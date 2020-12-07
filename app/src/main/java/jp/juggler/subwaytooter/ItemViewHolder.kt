@@ -2806,6 +2806,8 @@ internal class ItemViewHolder(
 			}
 			
 			TootPollsType.Misskey -> ! enquete.ownVoted
+
+			TootPollsType.Notestock -> false
 		}
 		
 		items.forEachIndexed { index, choice ->
@@ -2813,11 +2815,14 @@ internal class ItemViewHolder(
 		}
 		
 		when(enquete.pollType) {
-			TootPollsType.Mastodon -> makeEnqueteFooterMastodon(status, enquete, canVote)
+			TootPollsType.Mastodon,TootPollsType.Notestock ->
+				makeEnqueteFooterMastodon(status, enquete, canVote)
 			
-			TootPollsType.FriendsNico -> makeEnqueteFooterFriendsNico(enquete)
+			TootPollsType.FriendsNico ->
+				makeEnqueteFooterFriendsNico(enquete)
 			
 			TootPollsType.Misskey -> {
+				// no footer?
 			}
 		}
 	}
@@ -2847,7 +2852,7 @@ internal class ItemViewHolder(
 				item.decoded_text
 			}
 			
-			TootPollsType.Mastodon -> if(canVote) {
+			TootPollsType.Mastodon,TootPollsType.Notestock -> if(canVote) {
 				item.decoded_text
 			} else {
 				val sb = SpannableStringBuilder()
@@ -3066,7 +3071,7 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			TootPollsType.Mastodon -> {
+			TootPollsType.Mastodon,TootPollsType.Notestock -> {
 				if(enquete.expired || now >= enquete.expired_at) {
 					context.showToast(false, R.string.enquete_was_end)
 					return
@@ -3096,6 +3101,7 @@ internal class ItemViewHolder(
 						put("item_index", idx.toString())
 					}.toPostRequestBuilder()
 				)
+				TootPollsType.Notestock-> TootApiResult("can't vote on pseudo account column.")
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -3114,10 +3120,10 @@ internal class ItemViewHolder(
 						TootPollsType.Mastodon -> {
 							val newPoll = TootPolls.parse(
 								TootParser(activity, accessInfo),
+								TootPollsType.Mastodon,
 								status,
 								status.media_attachments,
 								data,
-								TootPollsType.Mastodon
 							)
 							if(newPoll != null) {
 								status.enquete = newPoll
@@ -3140,6 +3146,7 @@ internal class ItemViewHolder(
 								context.showToast(true, R.string.enquete_vote_failed, message)
 							}
 						}
+						TootPollsType.Notestock -> error("will not happen")
 					}
 				} else {
 					context.showToast(true, result.error)
@@ -3185,10 +3192,10 @@ internal class ItemViewHolder(
 					if(data != null) {
 						newPoll = TootPolls.parse(
 							TootParser(activity, accessInfo),
+							TootPollsType.Mastodon,
 							status,
 							status.media_attachments,
 							data,
-							TootPollsType.Mastodon
 						)
 						if(newPoll == null) result.setError("response parse error")
 					}

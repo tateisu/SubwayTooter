@@ -56,6 +56,7 @@ open class TootTag constructor(
         private val reHeadSharp = """\A#""".toRegex()
 
         private val reUserTagUrl = """/@[^/]+/tagged/""".toRegex()
+        private val reNotestockTagUrl = """/explore/""".toRegex()
 
         fun parse(parser: TootParser, src: JsonObject) =
             if (parser.linkHelper.isMisskey) {
@@ -71,7 +72,11 @@ open class TootTag constructor(
                 // STはメニューから選べるので、URLは普通のタグURLの方が望ましい https://nightly.fedibird.com/tags/fedibird
                 TootTag(
 					name = src.stringOrThrow("name").replaceFirst(reHeadSharp, ""),
-					url = src.string("url")?.replaceFirst(reUserTagUrl, "/tags/"),
+                    // mastodonではurl,notestockではhref
+                    // notestockではタグのURLは https://mastodon.juggler.jp/explore/subwaytooter のようになる
+					url = (src.string("url")?: src.string("href"))
+                        ?.replaceFirst(reUserTagUrl, "/tags/")
+                        ?.replaceFirst(reNotestockTagUrl, "/tags/"),
 					history = parseHistories(src.jsonArray("history"))
 				)
             }

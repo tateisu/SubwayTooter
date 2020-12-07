@@ -5,4 +5,5 @@ enum class ServiceType {
 	TOOTSEARCH,
 	MSP,
 	MISSKEY,
+	NOTESTOCK,
 }

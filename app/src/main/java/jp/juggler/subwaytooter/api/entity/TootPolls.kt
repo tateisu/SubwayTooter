@@ -12,6 +12,7 @@ enum class TootPollsType {
 	Mastodon, // Mastodon 2.8
 	Misskey, // Misskey
 	FriendsNico, // friends.nico API
+	Notestock, // notestock
 }
 
 class TootPollsChoice(
@@ -22,12 +23,13 @@ class TootPollsChoice(
 	var checked : Boolean = false // Mastodon
 )
 
-class TootPolls private constructor(
+class TootPolls (
 	parser : TootParser,
+	val pollType : TootPollsType,
 	status : TootStatus,
 	list_attachment : ArrayList<TootAttachmentLike>?,
 	src : JsonObject,
-	val pollType : TootPollsType
+	srcArray: JsonArray? = null
 ) {
 	
 	// one of enquete,enquete_result
@@ -208,8 +210,63 @@ class TootPolls private constructor(
 				
 				this.ownVoted = false
 			}
+
+			TootPollsType.Notestock->{
+				this.type = "enquete"
+
+				this.question = status.content
+				this.decoded_question = DecodeOptions(
+					parser.context,
+					parser.linkHelper,
+					short = true,
+					decodeEmoji = true,
+					attachmentList = list_attachment,
+					linkTag = status,
+					emojiMapCustom = status.custom_emojis,
+					emojiMapProfile = status.profile_emojis,
+					mentions = status.mentions,
+					mentionDefaultHostDomain = status.account
+				).decodeHTML(this.question ?: "?")
+
+				this.items = parseChoiceListNotestock(
+					parser.context,
+					status,
+					srcArray?.objectList()
+				)
+
+				this.pollId = EntityId.DEFAULT
+				this.expired_at =
+					TootStatus.parseTime(src.string("endTime")).notZero() ?: Long.MAX_VALUE
+				this.expired = expired_at >= System.currentTimeMillis()
+				this.multiple = false // TODO
+				this.votes_count = items?.sumBy{ it.votes?: 0 }?.notZero()
+
+				this.ownVoted = false
+
+				when {
+					this.items == null -> maxVotesCount = null
+
+					this.multiple -> {
+						var max : Int? = null
+						for(item in items) {
+							val v = item.votes
+							if(v != null && (max == null || v > max)) max = v
+
+						}
+						maxVotesCount = max
+					}
+
+					else -> {
+						var sum : Int? = null
+						for(item in items) {
+							val v = item.votes
+							if(v != null) sum = (sum ?: 0) + v
+						}
+						maxVotesCount = sum
+					}
+				}
+			}
 		}
-		
 	}
 	
 	companion object {
@@ -228,26 +285,28 @@ class TootPolls private constructor(
 		
 		fun parse(
 			parser : TootParser,
+			pollType : TootPollsType,
 			status : TootStatus,
 			list_attachment : ArrayList<TootAttachmentLike>?,
 			src : JsonObject?,
-			pollType : TootPollsType
 		) : TootPolls? {
 			src ?: return null
 			return try {
 				TootPolls(
 					parser,
+					pollType,
 					status,
 					list_attachment,
-					src,
-					pollType
+					src
 				)
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				null
 			}
 		}
-		
+
+
+
 		private fun parseChoiceListMastodon(
 			context : Context,
 			status : TootStatus,
@@ -281,7 +340,42 @@ class TootPolls private constructor(
 			}
 			return null
 		}
-		
+
+
+		private fun parseChoiceListNotestock(
+			context : Context,
+			status : TootStatus,
+			objectArray : List<JsonObject>?
+		) : ArrayList<TootPollsChoice>? {
+			if(objectArray != null) {
+				val size = objectArray.size
+				val items = ArrayList<TootPollsChoice>(size)
+				val options = DecodeOptions(
+					context,
+					emojiMapCustom = status.custom_emojis,
+					emojiMapProfile = status.profile_emojis,
+					decodeEmoji = true,
+					mentionDefaultHostDomain = status.account
+				)
+				for(o in objectArray) {
+					val text = reWhitespace
+						.matcher((o.string("name") ?: "?").sanitizeBDI())
+						.replaceAll(" ")
+					val decoded_text = options.decodeEmoji(text)
+
+					items.add(
+						TootPollsChoice(
+							text,
+							decoded_text,
+							votes = o.jsonObject("replies")?.int("totalItems") // may null
+						)
+					)
+				}
+				if(items.isNotEmpty()) return items
+			}
+			return null
+		}
+
 		private fun parseChoiceListFriendsNico(
 			context : Context,
 			status : TootStatus,

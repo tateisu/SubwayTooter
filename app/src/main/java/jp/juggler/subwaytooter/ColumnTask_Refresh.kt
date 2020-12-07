@@ -1268,4 +1268,30 @@ class ColumnTask_Refresh(
 			}
 		}
 	}
+
+	fun getNotestock(client : TootApiClient) : TootApiResult? {
+		if(! bBottom) return TootApiResult("head of list.")
+
+		val q = column.search_query.trim { it <= ' ' }
+		val old = column.idOld?.toString()
+		if(q.isEmpty() || old == null) {
+			list_tmp = ArrayList()
+			return TootApiResult(context.getString(R.string.end_of_list))
+		}
+
+		return client.searchNotestock(q, old)?.also { result ->
+			val jsonObject = result.jsonObject
+			if(jsonObject != null) {
+				// max_id の更新
+				column.idOld = EntityId.mayNull(
+					TootApiClient.getNotestockMaxDt(
+						jsonObject
+					)?.toString()
+				)
+				// リストデータの用意
+				val search_result = TootStatus.parseListNotestock(parser, jsonObject)
+				list_tmp = addWithFilterStatus(list_tmp, search_result)
+			}
+		}
+	}
 }

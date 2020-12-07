@@ -54,7 +54,6 @@
     <string name="app_data_import_confirm">アプリに今あるデータは消えてしまいます。よろしいですか？</string>
     <string name="app_data_import_desc">エクスポート先はいくつか選べますが、インポートするには端末のストレージかGoogleドライブにデータを置く必要があります。カラム背景画像、タイムラインのフォント、カスタム通知音はエクスポート/インポートの対象外です。</string>
     <string name="app_exit">アプリを終了</string>
-    <string name="app_name">Subway Tooter</string>
     <string name="app_setting">アプリ設定</string>
     <string name="app_was_muted">アプリはミュートされます</string>
     <string name="appearance">見た目</string>
@@ -1061,5 +1060,9 @@
     <string name="duration_days_1">1日</string>
     <string name="duration_days_3">3日</string>
     <string name="duration_days_7">7日</string>
+    <string name="toot_search_notestock">notestock検索</string>
+    <string name="toot_search_notestock_of">notestock検索 \"%1$s\"</string>
+    <string name="username_not_need_atmark">ユーザ名に@や/ を含めることはできません</string>
+    <string name="speech">読み上げ</string>
 
 </resources>

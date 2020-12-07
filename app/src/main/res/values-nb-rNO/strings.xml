@@ -678,7 +678,7 @@
     <string name="media_attachment_still_uploading">Media har ikke blitt lastet opp enda.</string>
     <string name="highlight_word">Framhev nøkkelord</string>
     <string name="avatar_icon_size">Avatarikonstørrelse (enhet:dp. Forvalg:48. Programomstart kreves)</string>
-    <string name="avatar_icon_round_ratio">Avatarikonstørrelseforhold (enhet:%%. Forvalg:33. Programomstart kreves)</string>
+    <string name="avatar_icon_round_ratio" formatted="false">Avatarikonstørrelseforhold (enhet:%. Forvalg:33. Programomstart kreves)</string>
     <string name="avatar_icon_dont_round">Ikke avrund avatarikonets hjørner (programomstart kreves)</string>
     <string name="allow_column_duplication">Tillat duplisering av kolonner</string>
     <string name="system_notification_not_related">Ikke valgt når systemmerknad trykkes</string>

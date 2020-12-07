@@ -424,7 +424,7 @@
     <string name="notification_type_mention">Nennung</string>
     <string name="share_view_pool">Teile Anzeigenpool zwischen den Spalten</string>
     <string name="allow_column_duplication">Erlaube Verdoppelung von Spalten</string>
-    <string name="avatar_icon_round_ratio">Abrundungsfaktor des Avatarbildes (Einheit: %%. Standard: 33. App-Neustart erforderlich)</string>
+    <string name="avatar_icon_round_ratio" formatted="false">Abrundungsfaktor des Avatarbildes (Einheit: %. Standard: 33. App-Neustart erforderlich)</string>
     <string name="always_show_application">Zeige per App-Name, falls möglich</string>
     <string name="domain_block_from_local">Kann Domänen auf deinem Server nicht blockieren.</string>
     <string name="domain_block_from_pseudo">Kann Domäne nicht vom Pseudokonto aus blockieren.</string>
@@ -569,7 +569,7 @@
     <string name="endorse_set">In deinem Profil promoten</string>
     <string name="already_voted">Bereits abgestimmt.</string>
     <string name="toot_background_color">Hintergrundfarbe des Toots</string>
-    <string name="boost_button_alpha">Deckkraft des Boost-Buttons (Einheit: %%. App-Neustart erforderlich; wird auch von der Transparenz des Inhaltstextes beeinflusst)</string>
+    <string name="boost_button_alpha" formatted="false">Deckkraft des Boost-Buttons (Einheit: %. App-Neustart erforderlich; wird auch von der Transparenz des Inhaltstextes beeinflusst)</string>
     <string name="mute_application_confirm">App \"%1$s\" stummschalten\?</string>
     <string name="use_quote_toot">Benutze “Toot zitieren”. (Misskey oder individiualisierter Mastodonserver)</string>
     <string name="conversation_to">An:</string>
@@ -662,7 +662,6 @@
     <string name="poll_expire_minutes">Minuten</string>
     <string name="poll_expire_hours">Stunden</string>
     <string name="poll_expire_days">Tage</string>
-    <string name="plus">+</string>
     <string name="poll_make_friends_nico">Umfrage erstellen (friends.nico-API)</string>
     <string name="poll_make">Umfrage erstellen</string>
     <string name="poll_dont_make">Umfrage nicht erstellen</string>

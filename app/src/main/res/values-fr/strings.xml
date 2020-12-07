@@ -602,7 +602,7 @@
     <string name="always_show_application">Afficher (via) le nom de l\'application si possible</string>
     <string name="force_gap_when_refresh">Forcer l’ajout d\'un espace lors du rafraîchissement du dessus</string>
     <string name="avatar_icon_size">Taille de l’icône de l’avatar (Unité:dp. par défaut:48. Redémarrage de l’app requis)</string>
-    <string name="avatar_icon_round_ratio">Ratio de l’arrondi de l’icône de l’avatar (Unité:%%. défaut:33. redémarrage de l\'application requis)</string>
+    <string name="avatar_icon_round_ratio" formatted="false">Ratio de l’arrondi de l’icône de l’avatar (Unité:%. défaut:33. redémarrage de l\'application requis)</string>
     <string name="avatar_icon_dont_round">Ne pas arrondir les coins de l’avatar (redémarrage requis)</string>
     <string name="share_view_pool">Partager le pool de vues entre les colonnes</string>
     <string name="rename">Renommer …</string>
@@ -849,7 +849,7 @@
     <string name="strip_icon_size">Taille de l’icône de la barre de colonne (Unité : dp. Défaut : 30. Redémarrage de l’application requis)</string>
     <string name="show_acct_in_system_notification">Afficher le compte (au lieu du nom d’utilisateur) dans les notifications système</string>
     <string name="account_tl_around">Fil public autour …</string>
-    <string name="boost_button_alpha">Transparence du bouton Boost (Unité:%%. redémarrage de l’app nécessaire. Affecte également la transparence du contenu texte.)</string>
+    <string name="boost_button_alpha" formatted="false">Transparence du bouton Boost (Unité:%. redémarrage de l’app nécessaire. Affecte également la transparence du contenu texte.)</string>
     <string name="move_notifications_quick_filter_to_column_setting">Afficher le filtre rapide des notifications dans la configuration de la colonne (redémarrage de l’app requis)</string>
     <string name="official_account">Compte officiel</string>
     <string name="releases">Sorties</string>
@@ -873,7 +873,6 @@
     <string name="poll_dont_make">Sans sondage</string>
     <string name="poll_make">Effectuer un sondage</string>
     <string name="poll_make_friends_nico">Effectuer un sondage (friends.nico API)</string>
-    <string name="plus">+</string>
     <string name="poll_expire_days">jours</string>
     <string name="poll_expire_hours">heures</string>
     <string name="poll_expire_minutes">minutes</string>

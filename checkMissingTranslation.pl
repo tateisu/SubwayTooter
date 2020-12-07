@@ -5,7 +5,9 @@ use warnings;
 use File::Find;
 use XML::Simple;
 use Data::Dump qw(dump);
+use utf8;
 
+binmode $_ for \*STDOUT,\*STDERR;
 
 
 sub cmd($){
@@ -122,7 +124,9 @@ for my $lang ( sort keys %langs ){
 
 		# 残りの部分に%が登場したらエラー
 		my $sv = $value;
-		$sv =~ s/(%\d+\$[\d\.]*[sdxf])|%%//g;
+		$sv =~ s/(%\d+\$[\d\.]*[sdxf])//g;
+		# Unit:%. を除外したい
+		$sv =~ s/%[\s.。]//g;
 		if( $sv =~ /%/  ){
 			$hasError =1;
 			print "!! ($lang)$name : broken param: $sv // $value\n";

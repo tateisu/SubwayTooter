@@ -426,7 +426,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
                         android:layout_marginEnd="4dp"
-                        android:text="@string/" />
+                        android:text="@string/plus" />
 
                     <EditText
                         android:id="@+id/etExpireHours"
@@ -447,7 +447,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
                         android:layout_marginEnd="4dp"
-                        android:text="@string/" />
+                        android:text="@string/plus" />
 
                     <EditText
                         android:id="@+id/etExpireMinutes"

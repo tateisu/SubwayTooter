@@ -1,10 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.api.TootApiCallback
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.*
@@ -1230,7 +1227,7 @@ class ColumnTask_Refresh(
 			if(jsonArray != null) {
 				// max_id の更新
 				column.idOld = EntityId.mayNull(
-					TootApiClient.getMspMaxId(
+					getMspMaxId(
 						jsonArray,
 						column.idOld?.toString()
 					)
@@ -1257,7 +1254,7 @@ class ColumnTask_Refresh(
 			if(jsonObject != null) {
 				// max_id の更新
 				column.idOld = EntityId.mayNull(
-					TootApiClient.getTootsearchMaxId(
+					getTootsearchMaxId(
 						jsonObject,
 						old
 					)?.toString()
@@ -1284,7 +1281,7 @@ class ColumnTask_Refresh(
 			if(jsonObject != null) {
 				// max_id の更新
 				column.idOld = EntityId.mayNull(
-					TootApiClient.getNotestockMaxDt(
+					getNotestockMaxDt(
 						jsonObject
 					)?.toString()
 				)

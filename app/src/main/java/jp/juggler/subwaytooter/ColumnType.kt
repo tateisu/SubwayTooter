@@ -2,8 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.view.Gravity
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -26,75 +25,75 @@ loading,refresh,gap はそれぞれ this の種類が異なるので注意
  
  */
 
-private val unsupportedRefresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? =
-	{ TootApiResult("edge reading not supported.") }
+private val unsupportedRefresh: ColumnTask_Refresh.(client: TootApiClient) -> TootApiResult? =
+    { TootApiResult("edge reading not supported.") }
 
-private val unsupportedGap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? =
-	{ TootApiResult("gap reading not supported.") }
+private val unsupportedGap: ColumnTask_Gap.(client: TootApiClient) -> TootApiResult? =
+    { TootApiResult("gap reading not supported.") }
 
-private val unusedIconId : (Acct) -> Int =
-	{ R.drawable.ic_question }
+private val unusedIconId: (Acct) -> Int =
+    { R.drawable.ic_question }
 
-private val unusedName : (context : Context) -> String =
-	{ "?" }
+private val unusedName: (context: Context) -> String =
+    { "?" }
 
-private val unusedName2 : Column.(long : Boolean) -> String? =
-	{ null }
+private val unusedName2: Column.(long: Boolean) -> String? =
+    { null }
 
-private val gapDirectionNone : Column.(head : Boolean) -> Boolean = { false }
+private val gapDirectionNone: Column.(head: Boolean) -> Boolean = { false }
 
-private val gapDirectionBoth : Column.(head : Boolean) -> Boolean = { true }
+private val gapDirectionBoth: Column.(head: Boolean) -> Boolean = { true }
 
-private val gapDirectionHead : Column.(head : Boolean) -> Boolean = { it }
+private val gapDirectionHead: Column.(head: Boolean) -> Boolean = { it }
 
 // Pagination in some Mastodon APIs has no relation between the content ID and the pagination ID,
 // so the app cannot filter the data using the content ID.
 // (max_id..since_id) API request is worked,
 // but (max_id..min_id) API is not worked on v3.2.0
 // related: https://github.com/tootsuite/mastodon/pull/14776
-private val gapDirectionMastodonWorkaround : Column.(head : Boolean) -> Boolean =
-	{ head ->
-		when {
-			isMisskey -> true
-			isMastodon -> head
-			else -> false
-		}
-	}
+private val gapDirectionMastodonWorkaround: Column.(head: Boolean) -> Boolean =
+    { head ->
+        when {
+            isMisskey -> true
+            isMastodon -> head
+            else -> false
+        }
+    }
 
 enum class ColumnType(
-	val id : Int = 0,
-	val iconId : (Acct) -> Int = unusedIconId,
-	val name1 : (context : Context) -> String = unusedName,
-	val name2 : Column.(long : Boolean) -> String? = unusedName2,
-	val loading : ColumnTask_Loading.(client : TootApiClient) -> TootApiResult?,
-	val refresh : ColumnTask_Refresh.(client : TootApiClient) -> TootApiResult? = unsupportedRefresh,
-	val gap : ColumnTask_Gap.(client : TootApiClient) -> TootApiResult? = unsupportedGap,
-	val bAllowPseudo : Boolean = true,
-	val bAllowMisskey : Boolean = true,
-	val bAllowMastodon : Boolean = true,
-	val headerType : HeaderType? = null,
-	val gapDirection : Column.(head : Boolean) -> Boolean = gapDirectionNone,
+	val id: Int = 0,
+	val iconId: (Acct) -> Int = unusedIconId,
+	val name1: (context: Context) -> String = unusedName,
+	val name2: Column.(long: Boolean) -> String? = unusedName2,
+	val loading: ColumnTask_Loading.(client: TootApiClient) -> TootApiResult?,
+	val refresh: ColumnTask_Refresh.(client: TootApiClient) -> TootApiResult? = unsupportedRefresh,
+	val gap: ColumnTask_Gap.(client: TootApiClient) -> TootApiResult? = unsupportedGap,
+	val bAllowPseudo: Boolean = true,
+	val bAllowMisskey: Boolean = true,
+	val bAllowMastodon: Boolean = true,
+	val headerType: HeaderType? = null,
+	val gapDirection: Column.(head: Boolean) -> Boolean = gapDirectionNone,
 ) {
-	
-	ProfileStatusMastodon(
+
+    ProfileStatusMastodon(
 		loading = { client ->
 			val (instance, instanceResult) = TootInstance.get(client)
-			if(instance == null) {
+			if (instance == null) {
 				instanceResult
 			} else {
 				val path = column.makeProfileStatusesUrl(column.profile_id)
-				
-				if(instance.versionGE(TootInstance.VERSION_1_6)
+
+				if (instance.versionGE(TootInstance.VERSION_1_6)
 				// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
 				// && instance.instanceType != TootInstance.InstanceType.Pleroma
 				) {
 					getStatusesPinned(client, "$path&pinned=true")
 				}
-				
+
 				getStatusList(client, path)
 			}
 		},
-		
+
 		refresh = { client ->
 			getStatusList(
 				client,
@@ -110,16 +109,16 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 	),
-	
-	ProfileStatusMisskey(
-		
+
+    ProfileStatusMisskey(
+
 		loading = { client ->
 			// 固定トゥートの取得
 			val pinnedNotes = column.who_account?.get()?.pinnedNotes
-			if(pinnedNotes != null) {
+			if (pinnedNotes != null) {
 				this.list_pinned = addWithFilterStatus(null, pinnedNotes)
 			}
-			
+
 			// 通常トゥートの取得
 			getStatusList(
 				client,
@@ -144,9 +143,9 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	FollowingMastodon(
-		
+
+    FollowingMastodon(
+
 		loading = { client ->
 			getAccountList(
 				client,
@@ -169,9 +168,9 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	FollowingMastodonPseudo(
-		
+
+    FollowingMastodonPseudo(
+
 		loading = {
 			column.idRecent = null
 			column.idOld = null
@@ -182,9 +181,9 @@ enum class ColumnType(
 			TootApiResult()
 		}
 	),
-	
-	FollowingMisskey10(
-		
+
+    FollowingMisskey10(
+
 		loading = { client ->
 			column.pagingType = ColumnPagingType.Cursor
 			getAccountList(
@@ -214,9 +213,9 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	FollowingMisskey11(
-		
+
+    FollowingMisskey11(
+
 		loading = { client ->
 			column.pagingType = ColumnPagingType.Default
 			getAccountList(
@@ -246,9 +245,9 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	FollowersMisskey11(
-		
+
+    FollowersMisskey11(
+
 		loading = { client ->
 			column.pagingType = ColumnPagingType.Default
 			getAccountList(
@@ -259,7 +258,7 @@ enum class ColumnType(
 				listParser = misskey11FollowersParser
 			)
 		},
-		
+
 		refresh = { client ->
 			getAccountList(
 				client,
@@ -279,9 +278,9 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	FollowersMisskey10(
-		
+
+    FollowersMisskey10(
+
 		loading = { client ->
 			column.pagingType = ColumnPagingType.Cursor
 			getAccountList(
@@ -292,7 +291,7 @@ enum class ColumnType(
 				arrayFinder = misskeyArrayFinderUsers
 			)
 		},
-		
+
 		refresh = { client ->
 			getAccountList(
 				client,
@@ -311,9 +310,9 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	FollowersMastodonPseudo(
-		
+
+    FollowersMastodonPseudo(
+
 		loading = {
 			column.idRecent = null
 			column.idOld = null
@@ -324,9 +323,9 @@ enum class ColumnType(
 			TootApiResult()
 		}
 	),
-	
-	FollowersMastodon(
-		
+
+    FollowersMastodon(
+
 		loading = { client ->
 			getAccountList(
 				client,
@@ -334,7 +333,7 @@ enum class ColumnType(
 				emptyMessage = context.getString(R.string.none_or_hidden_followers)
 			)
 		},
-		
+
 		refresh = { client ->
 			getAccountList(
 				client,
@@ -350,50 +349,50 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	TabStatus(
+
+    TabStatus(
 		loading = { dispatchProfileTabStatus().loading(this, it) },
 		refresh = { dispatchProfileTabStatus().refresh(this, it) },
 		gap = { dispatchProfileTabStatus().gap(this, it) },
 		gapDirection = { dispatchProfileTabStatus().gapDirection(this, it) },
 	),
-	
-	TabFollowing(
+
+    TabFollowing(
 		loading = { dispatchProfileTabFollowing().loading(this, it) },
 		refresh = { dispatchProfileTabFollowing().refresh(this, it) },
 		gap = { dispatchProfileTabFollowing().gap(this, it) },
 		gapDirection = { dispatchProfileTabFollowing().gapDirection(this, it) },
 	),
-	
-	TabFollowers(
+
+    TabFollowers(
 		loading = { dispatchProfileTabFollowers().loading(this, it) },
 		refresh = { dispatchProfileTabFollowers().refresh(this, it) },
 		gap = { dispatchProfileTabFollowers().gap(this, it) },
 		gapDirection = { dispatchProfileTabFollowers().gapDirection(this, it) },
 	),
-	
-	HOME(
+
+    HOME(
 		id = 1,
 		iconId = { R.drawable.ic_home },
 		name1 = { it.getString(R.string.home) },
-		
+
 		loading = { client ->
 			val ra = getAnnouncements(client, force = true)
-			if(ra == null || ra.error != null)
+			if (ra == null || ra.error != null)
 				ra
 			else
 				getStatusList(client, column.makeHomeTlUrl())
 		},
 		refresh = { client ->
 			val ra = getAnnouncements(client)
-			if(ra == null || ra.error != null)
+			if (ra == null || ra.error != null)
 				ra
 			else
 				getStatusList(client, column.makeHomeTlUrl())
 		},
 		gap = { client ->
 			val ra = getAnnouncements(client)
-			if(ra == null || ra.error != null)
+			if (ra == null || ra.error != null)
 				ra
 			else
 				getStatusList(
@@ -405,13 +404,13 @@ enum class ColumnType(
 		gapDirection = gapDirectionBoth,
 		bAllowPseudo = false
 	),
-	
-	LOCAL(
+
+    LOCAL(
 		id = 2,
 		iconId = { R.drawable.ic_run },
 		name1 = { it.getString(R.string.local_timeline) },
 		bAllowPseudo = true,
-		
+
 		loading = { client -> getStatusList(client, column.makePublicLocalUrl()) },
 		refresh = { client -> getStatusList(client, column.makePublicLocalUrl()) },
 		gap = { client ->
@@ -423,16 +422,16 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 	),
-	
-	FEDERATE(
+
+    FEDERATE(
 		3,
 		iconId = { R.drawable.ic_bike },
 		name1 = { it.getString(R.string.federate_timeline) },
 		bAllowPseudo = true,
-		
+
 		loading = { client -> getStatusList(client, column.makePublicFederateUrl()) },
 		refresh = { client -> getStatusList(client, column.makePublicFederateUrl()) },
-		
+
 		gap = { client ->
 			getStatusList(
 				client,
@@ -442,14 +441,14 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 	),
-	
-	MISSKEY_HYBRID(
+
+    MISSKEY_HYBRID(
 		27,
 		iconId = { R.drawable.ic_share },
 		name1 = { it.getString(R.string.misskey_hybrid_timeline) },
 		bAllowPseudo = false,
 		bAllowMastodon = false,
-		
+
 		loading = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
 		refresh = { client -> getStatusList(client, column.makeMisskeyHybridTlUrl()) },
 		gap = { client ->
@@ -461,8 +460,8 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 	),
-	
-	DOMAIN_TIMELINE(
+
+    DOMAIN_TIMELINE(
 		id = 38,
 		iconId = { R.drawable.ic_domain },
 		name1 = { it.getString(R.string.domain_timeline) },
@@ -484,8 +483,8 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 	),
-	
-	LOCAL_AROUND(29,
+
+    LOCAL_AROUND(29,
 		iconId = { R.drawable.ic_run },
 		name1 = { it.getString(R.string.ltl_around) },
 		name2 = {
@@ -494,12 +493,12 @@ enum class ColumnType(
 				status_id?.toString() ?: "null"
 			)
 		},
-		
+
 		loading = { client -> getPublicTlAroundTime(client, column.makePublicLocalUrl()) },
 		refresh = { client -> getStatusList(client, column.makePublicLocalUrl(), useMinId = true) }
 	),
-	
-	FEDERATED_AROUND(30,
+
+    FEDERATED_AROUND(30,
 		iconId = { R.drawable.ic_bike },
 		name1 = { it.getString(R.string.ftl_around) },
 		name2 = {
@@ -508,15 +507,15 @@ enum class ColumnType(
 				status_id?.toString() ?: "null"
 			)
 		},
-		
+
 		loading = { client -> getPublicTlAroundTime(client, column.makePublicFederateUrl()) },
 		refresh = { client ->
 			getStatusList(client, column.makePublicFederateUrl(), useMinId = true)
 		}
-	
+
 	),
-	
-	PROFILE(
+
+    PROFILE(
 		4,
 		iconId = { R.drawable.ic_account_box },
 		name1 = { it.getString(R.string.profile) },
@@ -524,7 +523,7 @@ enum class ColumnType(
 			val who = who_account?.get()
 			context.getString(
 				R.string.profile_of,
-				if(who != null)
+				if (who != null)
 					AcctColor.getNickname(access_info, who)
 				else
 					profile_id.toString()
@@ -532,33 +531,33 @@ enum class ColumnType(
 		},
 		bAllowPseudo = false,
 		headerType = HeaderType.Profile,
-		
+
 		loading = { client ->
 			val who_result = column.loadProfileAccount(client, parser, true)
-			if(client.isApiCancelled || column.who_account == null)
+			if (client.isApiCancelled || column.who_account == null)
 				who_result
 			else
 				column.profile_tab.ct.loading(this, client)
-			
+
 		},
-		
+
 		refresh = { client ->
 			column.loadProfileAccount(client, parser, false)
 			column.profile_tab.ct.refresh(this, client)
 		},
-		
+
 		gap = { column.profile_tab.ct.gap(this, it) },
 		gapDirection = { profile_tab.ct.gapDirection(this, it) },
 	),
-	
-	FAVOURITES(
+
+    FAVOURITES(
 		5,
-		iconId = { if(SavedAccount.isNicoru(it)) R.drawable.ic_nicoru else R.drawable.ic_star },
+		iconId = { if (SavedAccount.isNicoru(it)) R.drawable.ic_nicoru else R.drawable.ic_star },
 		name1 = { it.getString(R.string.favourites) },
 		bAllowPseudo = false,
-		
+
 		loading = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getStatusList(
 					client,
 					Column.PATH_MISSKEY_FAVORITES,
@@ -569,9 +568,9 @@ enum class ColumnType(
 				getStatusList(client, Column.PATH_FAVOURITES)
 			}
 		},
-		
+
 		refresh = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getStatusList(
 					client,
 					Column.PATH_MISSKEY_FAVORITES,
@@ -582,9 +581,9 @@ enum class ColumnType(
 				getStatusList(client, Column.PATH_FAVOURITES)
 			}
 		},
-		
+
 		gap = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getStatusList(
 					client,
 					Column.PATH_MISSKEY_FAVORITES,
@@ -602,31 +601,31 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	BOOKMARKS(
+
+    BOOKMARKS(
 		37,
 		iconId = { R.drawable.ic_bookmark },
 		name1 = { it.getString(R.string.bookmarks) },
 		bAllowPseudo = false,
-		
+
 		loading = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				TootApiResult("Misskey has no bookmarks feature.")
 			} else {
 				getStatusList(client, Column.PATH_BOOKMARKS)
 			}
 		},
-		
+
 		refresh = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				TootApiResult("Misskey has no bookmarks feature.")
 			} else {
 				getStatusList(client, Column.PATH_BOOKMARKS)
 			}
 		},
-		
+
 		gap = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				TootApiResult("Misskey has no bookmarks feature.")
 			} else {
 				getStatusList(client, Column.PATH_BOOKMARKS, mastodonFilterByIdRange = false)
@@ -634,24 +633,24 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	NOTIFICATIONS(
+
+    NOTIFICATIONS(
 		7,
 		iconId = { R.drawable.ic_announcement },
 		name1 = { it.getString(R.string.notifications) },
 		name2 = {
 			context.getString(R.string.notifications) + getNotificationTypeString()
 		},
-		
+
 		loading = { client -> getNotificationList(client) },
 		refresh = { client -> getNotificationList(client) },
 		gap = { client -> getNotificationList(client, mastodonFilterByIdRange = true) },
 		gapDirection = gapDirectionBoth,
-		
+
 		bAllowPseudo = false
 	),
-	
-	NOTIFICATION_FROM_ACCT(
+
+    NOTIFICATION_FROM_ACCT(
 		35,
 		iconId = { R.drawable.ic_announcement },
 		name1 = { it.getString(R.string.notifications_from_acct) },
@@ -661,7 +660,7 @@ enum class ColumnType(
 				hashtag_acct
 			) + getNotificationTypeString()
 		},
-		
+
 		loading = { client -> getNotificationList(client, column.hashtag_acct) },
 		refresh = { client -> getNotificationList(client, column.hashtag_acct) },
 		gap = { client ->
@@ -669,8 +668,8 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 	),
-	
-	CONVERSATION(8,
+
+    CONVERSATION(8,
 		iconId = { R.drawable.ic_forum },
 		name1 = { it.getString(R.string.conversation) },
 		name2 = {
@@ -681,8 +680,8 @@ enum class ColumnType(
 		},
 		loading = { client -> getConversation(client) }
 	),
-	
-	HASHTAG(
+
+    HASHTAG(
 		9,
 		iconId = { R.drawable.ic_hashtag },
 		name1 = { it.getString(R.string.hashtag) },
@@ -696,22 +695,22 @@ enum class ColumnType(
 				.appendHashtagExtra()
 				.toString()
 		},
-		
+
 		loading = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getStatusList(
 					client,
 					column.makeHashtagUrl(),
 					misskeyParams = column.makeHashtagParams(parser)
-				
+
 				)
 			} else {
 				getStatusList(client, column.makeHashtagUrl())
 			}
 		},
-		
+
 		refresh = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getStatusList(
 					client,
 					column.makeHashtagUrl(),
@@ -721,9 +720,9 @@ enum class ColumnType(
 				getStatusList(client, column.makeHashtagUrl())
 			}
 		},
-		
+
 		gap = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getStatusList(
 					client,
 					column.makeHashtagUrl(),
@@ -736,10 +735,10 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 	),
-	
-	HASHTAG_FROM_ACCT(
+
+    HASHTAG_FROM_ACCT(
 		34,
-		
+
 		iconId = { R.drawable.ic_hashtag },
 		name1 = { it.getString(R.string.hashtag_from_acct) },
 		name2 = {
@@ -753,7 +752,7 @@ enum class ColumnType(
 				.appendHashtagExtra()
 				.toString()
 		},
-		
+
 		loading = { client ->
 			getStatusList(
 				client,
@@ -779,8 +778,8 @@ enum class ColumnType(
 		gapDirection = gapDirectionBoth,
 		bAllowMisskey = false,
 	),
-	
-	SEARCH(
+
+    SEARCH(
 		10,
 		iconId = { R.drawable.ic_search },
 		name1 = { it.getString(R.string.search) },
@@ -792,22 +791,22 @@ enum class ColumnType(
 		},
 		bAllowPseudo = false,
 		headerType = HeaderType.Search,
-		
+
 		loading = { client -> getSearch(client) },
 		gap = { client -> getSearchGap(client) },
 		gapDirection = gapDirectionHead,
 	),
-	
-	// ミスキーのミュートとブロックののページングは misskey v10 の途中で変わった
-	// https://github.com/syuilo/misskey/commit/f7069dcd18d72b52408a6bd80ad8f14492163e19
-	// ST的には新しい方にだけ対応する
-	
-	MUTES(
+
+    // ミスキーのミュートとブロックののページングは misskey v10 の途中で変わった
+    // https://github.com/syuilo/misskey/commit/f7069dcd18d72b52408a6bd80ad8f14492163e19
+    // ST的には新しい方にだけ対応する
+
+    MUTES(
 		11,
 		iconId = { R.drawable.ic_volume_off },
 		name1 = { it.getString(R.string.muted_users) },
 		bAllowPseudo = false,
-		
+
 		loading = { client ->
 			when {
 				isMisskey -> {
@@ -818,13 +817,13 @@ enum class ColumnType(
 						misskeyParams = access_info.putMisskeyApiToken(),
 						listParser = misskeyCustomParserMutes
 					)
-					
+
 				}
-				
+
 				else -> getAccountList(client, Column.PATH_MUTES)
 			}
 		},
-		
+
 		refresh = { client ->
 			when {
 				isMisskey -> getAccountList(
@@ -837,7 +836,7 @@ enum class ColumnType(
 				else -> getAccountList(client, Column.PATH_MUTES)
 			}
 		},
-		
+
 		gap = { client ->
 			when {
 				isMisskey -> getAccountList(
@@ -857,13 +856,13 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	BLOCKS(
+
+    BLOCKS(
 		12,
 		iconId = { R.drawable.ic_block },
 		name1 = { it.getString(R.string.blocked_users) },
 		bAllowPseudo = false,
-		
+
 		loading = { client ->
 			when {
 				isMisskey -> {
@@ -875,11 +874,11 @@ enum class ColumnType(
 						listParser = misskeyCustomParserBlocks
 					)
 				}
-				
+
 				else -> getAccountList(client, Column.PATH_BLOCKS)
 			}
 		},
-		
+
 		refresh = { client ->
 			when {
 				isMisskey -> {
@@ -890,11 +889,11 @@ enum class ColumnType(
 						listParser = misskeyCustomParserBlocks
 					)
 				}
-				
+
 				else -> getAccountList(client, Column.PATH_BLOCKS)
 			}
 		},
-		
+
 		gap = { client ->
 			when {
 				isMisskey -> {
@@ -906,21 +905,21 @@ enum class ColumnType(
 						listParser = misskeyCustomParserBlocks
 					)
 				}
-				
+
 				else -> getAccountList(client, Column.PATH_BLOCKS, mastodonFilterByIdRange = false)
 			}
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	FOLLOW_REQUESTS(
+
+    FOLLOW_REQUESTS(
 		13,
 		iconId = { R.drawable.ic_follow_wait },
 		name1 = { it.getString(R.string.follow_requests) },
 		bAllowPseudo = false,
-		
+
 		loading = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				column.pagingType = ColumnPagingType.None
 				getAccountList(
 					client,
@@ -933,7 +932,7 @@ enum class ColumnType(
 			}
 		},
 		refresh = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getAccountList(
 					client,
 					Column.PATH_MISSKEY_FOLLOW_REQUESTS,
@@ -945,7 +944,7 @@ enum class ColumnType(
 			}
 		},
 		gap = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getAccountList(
 					client,
 					Column.PATH_MISSKEY_FOLLOW_REQUESTS,
@@ -963,12 +962,12 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	BOOSTED_BY(
+
+    BOOSTED_BY(
 		14,
 		iconId = { R.drawable.ic_repeat },
 		name1 = { it.getString(R.string.boosted_by) },
-		
+
 		loading = { client ->
 			getAccountList(
 				client,
@@ -990,12 +989,12 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	FAVOURITED_BY(
+
+    FAVOURITED_BY(
 		15,
-		iconId = { if(SavedAccount.isNicoru(it)) R.drawable.ic_nicoru else R.drawable.ic_star },
+		iconId = { if (SavedAccount.isNicoru(it)) R.drawable.ic_nicoru else R.drawable.ic_star },
 		name1 = { it.getString(R.string.favourited_by) },
-		
+
 		loading = { client ->
 			getAccountList(
 				client,
@@ -1017,18 +1016,18 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	DOMAIN_BLOCKS(16,
+
+    DOMAIN_BLOCKS(16,
 		iconId = { R.drawable.ic_cloud_off },
 		name1 = { it.getString(R.string.blocked_domains) },
 		bAllowPseudo = false,
 		bAllowMisskey = false,
-		
+
 		loading = { client -> getDomainBlockList(client, Column.PATH_DOMAIN_BLOCK) },
 		refresh = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) }
 	),
-	
-	SEARCH_MSP(
+
+    SEARCH_MSP(
 		17,
 		iconId = { R.drawable.ic_search },
 		name1 = { it.getString(R.string.toot_search_msp) },
@@ -1039,21 +1038,21 @@ enum class ColumnType(
 			}
 		},
 		headerType = HeaderType.Search,
-		
+
 		loading = { client ->
 			column.idOld = null
-			val result : TootApiResult?
+			val result: TootApiResult?
 			val q = column.search_query.trim { it <= ' ' }
-			if(q.isEmpty()) {
+			if (q.isEmpty()) {
 				list_tmp = ArrayList()
 				result = TootApiResult()
 			} else {
 				result = client.searchMsp(column.search_query, column.idOld?.toString())
 				val jsonArray = result?.jsonArray
-				if(jsonArray != null) {
+				if (jsonArray != null) {
 					// max_id の更新
 					column.idOld = EntityId.mayNull(
-						TootApiClient.getMspMaxId(
+						getMspMaxId(
 							jsonArray,
 							column.idOld?.toString()
 						)
@@ -1066,11 +1065,11 @@ enum class ColumnType(
 			}
 			result
 		},
-		
+
 		refresh = { client -> getMSP(client) },
 	),
-	
-	SEARCH_TS(22,
+
+    SEARCH_TS(22,
 		iconId = { R.drawable.ic_search },
 		name1 = { it.getString(R.string.toot_search_ts) },
 		name2 = { long ->
@@ -1080,41 +1079,41 @@ enum class ColumnType(
 			}
 		},
 		headerType = HeaderType.Search,
-		
+
 		loading = { client ->
 			column.idOld = null
-			val result : TootApiResult?
+			val result: TootApiResult?
 			val q = column.search_query.trim { it <= ' ' }
-			if(q.isEmpty()) {
+			if (q.isEmpty()) {
 				list_tmp = ArrayList()
 				result = TootApiResult()
 			} else {
 				result =
 					client.searchTootsearch(column.search_query, null)
 				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
+				if (jsonObject != null) {
 					// max_id の更新
 					column.idOld = EntityId.mayNull(
-						TootApiClient.getTootsearchMaxId(jsonObject, null)
+						getTootsearchMaxId(jsonObject, null)
 							?.toString()
 					)
-					
+
 					// リストデータの用意
 					val search_result =
 						TootStatus.parseListTootsearch(parser, jsonObject)
 					this.list_tmp = addWithFilterStatus(null, search_result)
-					if(search_result.isEmpty()) {
+					if (search_result.isEmpty()) {
 						log.d("search result is empty. %s", result.bodyString)
 					}
 				}
 			}
 			result
 		},
-		
+
 		refresh = { client -> getTootSearch(client) }
 	),
 
-	SEARCH_NOTESTOCK(41,
+    SEARCH_NOTESTOCK(41,
 		iconId = { R.drawable.ic_search },
 		name1 = { it.getString(R.string.toot_search_notestock) },
 		name2 = { long ->
@@ -1127,23 +1126,23 @@ enum class ColumnType(
 
 		loading = { client ->
 			column.idOld = null
-			val result : TootApiResult?
+			val result: TootApiResult?
 			val q = column.search_query.trim { it <= ' ' }
-			if(q.isEmpty()) {
+			if (q.isEmpty()) {
 				list_tmp = ArrayList()
 				result = TootApiResult()
 			} else {
 				result =
 					client.searchNotestock(column.search_query, null)
 				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
+				if (jsonObject != null) {
 					// max_id の更新
-					column.idOld = EntityId.mayNull( TootApiClient.getNotestockMaxDt(jsonObject) )
+					column.idOld = EntityId.mayNull(getNotestockMaxDt(jsonObject))
 
 					// リストデータの用意
 					val search_result = TootStatus.parseListNotestock(parser, jsonObject)
 					this.list_tmp = addWithFilterStatus(null, search_result)
-					if(search_result.isEmpty()) {
+					if (search_result.isEmpty()) {
 						log.d("search result is empty. %s", result.bodyString)
 					}
 				}
@@ -1154,7 +1153,7 @@ enum class ColumnType(
 		refresh = { client -> getNotestock(client) }
 	),
 
-	INSTANCE_INFORMATION(18,
+    INSTANCE_INFORMATION(18,
 		iconId = { R.drawable.ic_info },
 		name1 = { it.getString(R.string.instance_information) },
 		name2 = { long ->
@@ -1164,7 +1163,7 @@ enum class ColumnType(
 			}
 		},
 		headerType = HeaderType.Instance,
-		
+
 		loading = { client ->
 			val (instance, instanceResult) = TootInstance.get(
 				client,
@@ -1172,7 +1171,7 @@ enum class ColumnType(
 				allowPixelfed = true,
 				forceUpdate = true
 			)
-			if(instance != null) {
+			if (instance != null) {
 				column.instance_information = instance
 				column.handshake = instanceResult?.response?.handshake
 			}
@@ -1193,14 +1192,14 @@ enum class ColumnType(
 			//			result
 		}
 	),
-	
-	LIST_LIST(19,
+
+    LIST_LIST(19,
 		iconId = { R.drawable.ic_list_list },
 		name1 = { it.getString(R.string.lists) },
 		bAllowPseudo = false,
-		
+
 		loading = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getListList(
 					client,
 					"/api/users/lists/list",
@@ -1211,8 +1210,8 @@ enum class ColumnType(
 			}
 		}
 	),
-	
-	LIST_TL(
+
+    LIST_TL(
 		20,
 		iconId = { R.drawable.ic_list_tl },
 		name1 = { it.getString(R.string.list_timeline) },
@@ -1222,10 +1221,10 @@ enum class ColumnType(
 				list_info?.title ?: profile_id.toString()
 			)
 		},
-		
+
 		loading = { client ->
 			column.loadListInfo(client, true)
-			if(isMisskey) {
+			if (isMisskey) {
 				getStatusList(
 					client,
 					column.makeListTlUrl(),
@@ -1237,10 +1236,10 @@ enum class ColumnType(
 				getStatusList(client, column.makeListTlUrl())
 			}
 		},
-		
+
 		refresh = { client ->
 			column.loadListInfo(client, false)
-			if(isMisskey) {
+			if (isMisskey) {
 				getStatusList(
 					client,
 					column.makeListTlUrl(),
@@ -1252,9 +1251,9 @@ enum class ColumnType(
 				getStatusList(client, column.makeListTlUrl())
 			}
 		},
-		
+
 		gap = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getStatusList(
 					client,
 					column.makeListTlUrl(),
@@ -1269,8 +1268,8 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 	),
-	
-	LIST_MEMBER(21,
+
+    LIST_MEMBER(21,
 		iconId = { R.drawable.ic_list_member },
 		name1 = { it.getString(R.string.list_member) },
 		name2 = {
@@ -1279,20 +1278,20 @@ enum class ColumnType(
 				list_info?.title ?: profile_id.toString()
 			)
 		},
-		
+
 		loading = { client ->
 			column.loadListInfo(client, true)
-			if(isMisskey) {
+			if (isMisskey) {
 				column.pagingType = ColumnPagingType.None
 				getAccountList(
 					client,
 					"/api/users/show",
 					misskeyParams = access_info.putMisskeyApiToken().apply {
 						val list = column.list_info?.userIds?.map { it.toString() }?.toJsonArray()
-						if(list != null) put("userIds", list)
+						if (list != null) put("userIds", list)
 					}
 				)
-				
+
 			} else {
 				getAccountList(
 					client,
@@ -1300,7 +1299,7 @@ enum class ColumnType(
 				)
 			}
 		},
-		
+
 		refresh = { client ->
 			column.loadListInfo(client, false)
 			getAccountList(
@@ -1309,37 +1308,37 @@ enum class ColumnType(
 			)
 		}
 	),
-	
-	DIRECT_MESSAGES(
+
+    DIRECT_MESSAGES(
 		23,
 		iconId = { R.drawable.ic_mail },
 		name1 = { it.getString(R.string.direct_messages) },
-		
+
 		loading = { client ->
 			column.useConversationSummarys = false
-			if( column.use_old_api) {
+			if (column.use_old_api) {
 				getStatusList(client, Column.PATH_DIRECT_MESSAGES)
-			}else{
+			} else {
 				// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
 				val result = getConversationSummary(client, Column.PATH_DIRECT_MESSAGES2)
 				when {
 					// cancelled
 					result == null -> null
-					
+
 					//  not error
 					result.error.isNullOrBlank() -> {
 						column.useConversationSummarys = true
 						result
 					}
-					
+
 					// fallback to old api
-					else-> getStatusList(client, Column.PATH_DIRECT_MESSAGES)
+					else -> getStatusList(client, Column.PATH_DIRECT_MESSAGES)
 				}
 			}
 		},
-		
+
 		refresh = { client ->
-			if(column.useConversationSummarys) {
+			if (column.useConversationSummarys) {
 				// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
 				getConversationSummaryList(client, Column.PATH_DIRECT_MESSAGES2)
 			} else {
@@ -1347,9 +1346,9 @@ enum class ColumnType(
 				getStatusList(client, Column.PATH_DIRECT_MESSAGES)
 			}
 		},
-		
+
 		gap = { client ->
-			if(column.useConversationSummarys) {
+			if (column.useConversationSummarys) {
 				// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
 				getConversationSummaryList(
 					client,
@@ -1362,41 +1361,41 @@ enum class ColumnType(
 			}
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
-		
+
 		bAllowPseudo = false,
 		bAllowMisskey = false
 	),
-	
-	TREND_TAG(24,
+
+    TREND_TAG(24,
 		iconId = { R.drawable.ic_hashtag },
 		name1 = { it.getString(R.string.trend_tag) },
 		bAllowPseudo = true,
 		bAllowMastodon = true,
 		bAllowMisskey = false,
-		
+
 		loading = { client ->
 			val result = client.request("/api/v1/trends")
 			val src = parser.tagList(result?.jsonArray)
-			
+
 			this.list_tmp = addAll(this.list_tmp, src)
 			this.list_tmp = addOne(
 				this.list_tmp, TootMessageHolder(
-					context.getString(R.string.trend_tag_desc),
-					gravity = Gravity.END
-				)
+				context.getString(R.string.trend_tag_desc),
+				gravity = Gravity.END
+			)
 			)
 			result
 		}
 	),
-	
-	FOLLOW_SUGGESTION(
+
+    FOLLOW_SUGGESTION(
 		25,
 		iconId = { R.drawable.ic_follow_plus },
 		name1 = { it.getString(R.string.follow_suggestion) },
 		bAllowPseudo = false,
-		
+
 		loading = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				column.pagingType = ColumnPagingType.Offset
 				getAccountList(
 					client,
@@ -1407,9 +1406,9 @@ enum class ColumnType(
 				getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
 			}
 		},
-		
+
 		refresh = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getAccountList(
 					client,
 					Column.PATH_MISSKEY_FOLLOW_SUGGESTION,
@@ -1419,9 +1418,9 @@ enum class ColumnType(
 				getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
 			}
 		},
-		
+
 		gap = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getAccountList(
 					client,
 					Column.PATH_MISSKEY_FOLLOW_SUGGESTION,
@@ -1438,14 +1437,14 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	ENDORSEMENT(
+
+    ENDORSEMENT(
 		28,
 		iconId = { R.drawable.ic_follow_plus },
 		name1 = { it.getString(R.string.endorse_set) },
 		bAllowPseudo = false,
 		bAllowMisskey = false,
-		
+
 		loading = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
 		refresh = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
 		gap = { client ->
@@ -1457,8 +1456,8 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	PROFILE_DIRECTORY(36,
+
+    PROFILE_DIRECTORY(36,
 		iconId = { R.drawable.ic_follow_plus },
 		name1 = { it.getString(R.string.profile_directory) },
 		name2 = { context.getString(R.string.profile_directory_of, instance_uri) },
@@ -1472,28 +1471,28 @@ enum class ColumnType(
 			getAccountList(client, profileDirectoryPath)
 		}
 	),
-	
-	ACCOUNT_AROUND(31,
+
+    ACCOUNT_AROUND(31,
 		iconId = { R.drawable.ic_account_box },
 		name1 = { it.getString(R.string.account_tl_around) },
 		name2 = {
 			val id = status_id?.toString() ?: "null"
 			context.getString(R.string.account_tl_around_of, id)
 		},
-		
+
 		loading = { client -> getAccountTlAroundTime(client) },
-		
+
 		refresh = { client ->
 			getStatusList(client, column.makeProfileStatusesUrl(column.profile_id), useMinId = true)
 		}
 	),
-	
-	@Suppress("unused")
-	REPORTS(
+
+    @Suppress("unused")
+    REPORTS(
 		6,
 		iconId = { R.drawable.ic_info },
 		name1 = { it.getString(R.string.reports) },
-		
+
 		loading = { client -> getReportList(client, Column.PATH_REPORTS) },
 		refresh = { client -> getReportList(client, Column.PATH_REPORTS) },
 		gap = { client ->
@@ -1505,30 +1504,30 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionMastodonWorkaround,
 	),
-	
-	KEYWORD_FILTER(26,
+
+    KEYWORD_FILTER(26,
 		iconId = { R.drawable.ic_volume_off },
 		name1 = { it.getString(R.string.keyword_filters) },
 		bAllowPseudo = false,
 		bAllowMisskey = false,
 		headerType = HeaderType.Filter,
-		
+
 		loading = { client -> getFilterList(client, Column.PATH_FILTERS) }
 	),
-	
-	SCHEDULED_STATUS(33,
+
+    SCHEDULED_STATUS(33,
 		iconId = { R.drawable.ic_timer },
 		name1 = { it.getString(R.string.scheduled_status) },
 		bAllowPseudo = false,
 		bAllowMisskey = false,
-		
+
 		loading = { client ->
 			val result = client.request("/api/v1/accounts/verify_credentials")
-			if(result == null || result.error != null) {
+			if (result == null || result.error != null) {
 				result
 			} else {
 				val a = parser.account(result.jsonObject) ?: access_info.loginAccount
-				if(a == null) {
+				if (a == null) {
 					TootApiResult("can't parse account information")
 				} else {
 					column.who_account = TootAccountRef(parser, a)
@@ -1536,18 +1535,18 @@ enum class ColumnType(
 				}
 			}
 		},
-		
+
 		refresh = { client -> getScheduledStatuses(client) }
 	),
-	
-	MISSKEY_ANTENNA_LIST(39,
+
+    MISSKEY_ANTENNA_LIST(39,
 		iconId = { R.drawable.ic_satellite },
 		name1 = { it.getString(R.string.antenna_list) },
 		bAllowPseudo = false,
 		bAllowMastodon = false,
-		
+
 		loading = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getAntennaList(
 					client,
 					"/api/antennas/list",
@@ -1558,8 +1557,8 @@ enum class ColumnType(
 			}
 		}
 	),
-	
-	MISSKEY_ANTENNA_TL(
+
+    MISSKEY_ANTENNA_TL(
 		40,
 		iconId = { R.drawable.ic_satellite },
 		name1 = { it.getString(R.string.antenna_timeline) },
@@ -1569,11 +1568,11 @@ enum class ColumnType(
 				antenna_info?.name ?: profile_id.toString()
 			)
 		},
-		
+
 		loading = { client ->
 			column.loadAntennaInfo(client, true)
-			
-			if(isMisskey) {
+
+			if (isMisskey) {
 				getStatusList(
 					client,
 					column.makeAntennaTlUrl(),
@@ -1585,10 +1584,10 @@ enum class ColumnType(
 				getStatusList(client, column.makeAntennaTlUrl())
 			}
 		},
-		
+
 		refresh = { client ->
 			column.loadAntennaInfo(client, false)
-			if(isMisskey) {
+			if (isMisskey) {
 				getStatusList(
 					client,
 					column.makeAntennaTlUrl(),
@@ -1600,9 +1599,9 @@ enum class ColumnType(
 				getStatusList(client, column.makeAntennaTlUrl())
 			}
 		},
-		
+
 		gap = { client ->
-			if(isMisskey) {
+			if (isMisskey) {
 				getStatusList(
 					client,
 					column.makeAntennaTlUrl(),
@@ -1617,31 +1616,31 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 	),
-	
-	;
-	
-	init {
-		val old = Column.typeMap[id]
-		if(id > 0 && old != null) error("ColumnType: duplicate id $id. name=$name, ${old.name}")
-		Column.typeMap.put(id, this)
-	}
-	
-	companion object {
-		
-		private val log = LogCategory("ColumnType")
-		
-		fun dump() {
-			var min = Int.MAX_VALUE
-			var max = Int.MIN_VALUE
-			values().forEach {
-				val id = it.id
-				min = min(min, id)
-				max = max(max, id)
-			}
-			log.d("dump: ColumnType range=$min..$max")
-		}
-		
-		fun parse(id : Int) = Column.typeMap[id] ?: HOME
-	}
+
+    ;
+
+    init {
+        val old = Column.typeMap[id]
+        if (id > 0 && old != null) error("ColumnType: duplicate id $id. name=$name, ${old.name}")
+        Column.typeMap.put(id, this)
+    }
+
+    companion object {
+
+        private val log = LogCategory("ColumnType")
+
+        fun dump() {
+            var min = Int.MAX_VALUE
+            var max = Int.MIN_VALUE
+            values().forEach {
+                val id = it.id
+                min = min(min, id)
+                max = max(max, id)
+            }
+            log.d("dump: ColumnType range=$min..$max")
+        }
+
+        fun parse(id: Int) = Column.typeMap[id] ?: HOME
+    }
 }
 

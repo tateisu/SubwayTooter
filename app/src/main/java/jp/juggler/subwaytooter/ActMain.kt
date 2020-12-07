@@ -1139,6 +1139,17 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 						text
 					)
 				}
+
+				ActText.RESULT_SEARCH_NOTESTOCK -> {
+					val text = data?.getStringExtra(Intent.EXTRA_TEXT) ?: ""
+					addColumn(
+						false,
+						defaultInsertPosition,
+						SavedAccount.na,
+						ColumnType.SEARCH_NOTESTOCK,
+						text
+					)
+				}
 			}
 		}
 		

@@ -28,7 +28,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		
 		internal const val RESULT_SEARCH_MSP = RESULT_FIRST_USER + 1
 		internal const val RESULT_SEARCH_TS = RESULT_FIRST_USER + 2
-		internal const val RESULT_SEARCH_NOTESTOCK = RESULT_FIRST_USER + 2
+		internal const val RESULT_SEARCH_NOTESTOCK = RESULT_FIRST_USER + 3
 
 		internal const val EXTRA_TEXT = "text"
 		internal const val EXTRA_CONTENT_START = "content_start"

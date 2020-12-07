@@ -8,9 +8,7 @@ import android.text.SpannableString
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.TootAccountMap
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
@@ -543,7 +541,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 				if (this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
 				if (this.highlightAny == null) this.highlightAny = options.highlightAny
 
-				this.enquete = src.jsonArray("oneOf")?.let {
+				this.enquete = (src.jsonArray("oneOf")?: src.jsonArray("anyOf")) ?.let {
 					try {
 						TootPolls(
 							parser,
@@ -1119,7 +1117,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             parser.serviceType = ServiceType.TOOTSEARCH
 
             val result = ArrayList<TootStatus>()
-            val array = TootApiClient.getTootsearchHits(root)
+            val array = getTootsearchHits(root)
             if (array != null) {
                 val array_size = array.size
                 result.ensureCapacity(array_size)
@@ -1143,7 +1141,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             parser.serviceType = ServiceType.NOTESTOCK // TODO
 
             val result = ArrayList<TootStatus>()
-            val array = TootApiClient.getNotestockStatuses(root)
+            val array = getNotestockStatuses(root)
             if (array != null) {
                 val array_size = array.size
                 result.ensureCapacity(array_size)
@@ -1161,7 +1159,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
         private val tz_utc = TimeZone.getTimeZone("UTC")
 
-        private val reTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""
+        private val reTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+))?"""
             .asciiPattern()
 
         private val reMSPTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""
@@ -1190,7 +1188,6 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     log.trace(ex)
                     log.e(ex, "TootStatus.parseTime failed. src=%s", strTime)
                 }
-
             }
             return 0L
         }

@@ -238,7 +238,7 @@ class TootPolls (
 				this.expired_at =
 					TootStatus.parseTime(src.string("endTime")).notZero() ?: Long.MAX_VALUE
 				this.expired = expired_at >= System.currentTimeMillis()
-				this.multiple = false // TODO
+				this.multiple =   src.containsKey("anyOf")
 				this.votes_count = items?.sumBy{ it.votes?: 0 }?.notZero()
 
 				this.ownVoted = false

@@ -1929,7 +1929,8 @@ internal class ItemViewHolder(
 					s != null -> Action_Toot.conversation(activity, pos, access_info, s)
 					
 					// tootsearchは返信元のIDを取得するのにひと手間必要
-					column.type == ColumnType.SEARCH_TS ->
+					column.type == ColumnType.SEARCH_TS ||
+						column.type == ColumnType.SEARCH_NOTESTOCK ->
 						Action_Toot.showReplyTootsearch(activity, pos, status_showing)
 					
 					else -> {
@@ -2165,7 +2166,8 @@ internal class ItemViewHolder(
 					// それ以外はコンテキストメニューではなく会話を開く
 					
 					// tootsearchは返信元のIDを取得するのにひと手間必要
-					column.type == ColumnType.SEARCH_TS ->
+					column.type == ColumnType.SEARCH_TS ||
+						column.type == ColumnType.SEARCH_NOTESTOCK ->
 						Action_Toot.showReplyTootsearch(
 							activity,
 							activity.nextPosition(column),

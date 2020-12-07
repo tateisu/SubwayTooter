@@ -643,7 +643,7 @@ class Column(
     val isSearchColumn: Boolean
         get() {
             return when (type) {
-				ColumnType.SEARCH, ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> true
+				ColumnType.SEARCH, ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS ,ColumnType.SEARCH_NOTESTOCK-> true
                 else -> false
             }
         }
@@ -694,7 +694,7 @@ class Column(
 				search_resolve = getParamAt(params, 1)
 			}
 
-			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS ->
+			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS,ColumnType.SEARCH_NOTESTOCK ->
 				search_query = getParamString(params, 0)
 
 			ColumnType.INSTANCE_INFORMATION ->
@@ -808,7 +808,7 @@ class Column(
 				search_resolve = src.optBoolean(KEY_SEARCH_RESOLVE, false)
 			}
 
-			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> search_query =
+			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS ,ColumnType.SEARCH_NOTESTOCK-> search_query =
 				src.optString(KEY_SEARCH_QUERY)
 
 			ColumnType.INSTANCE_INFORMATION -> instance_uri = src.optString(KEY_INSTANCE_URI)
@@ -927,7 +927,7 @@ class Column(
 				dst[KEY_SEARCH_RESOLVE] = search_resolve
 			}
 
-			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> {
+			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS,ColumnType.SEARCH_NOTESTOCK -> {
 				dst[KEY_SEARCH_QUERY] = search_query
 			}
 
@@ -998,7 +998,7 @@ class Column(
 					getParamString(params, 0) == search_query &&
 						getParamAtNullable<Boolean>(params, 1) == search_resolve
 
-				ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS ->
+				ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS,ColumnType.SEARCH_NOTESTOCK ->
 					getParamString(params, 0) == search_query
 
 				ColumnType.INSTANCE_INFORMATION -> getParamString(params, 0) == instance_uri
@@ -2235,6 +2235,10 @@ class Column(
 				R.raw.search_desc_ts_en,
 				R.raw.search_desc_ts_ja
 			)
+            ColumnType.SEARCH_NOTESTOCK -> loadSearchDesc(
+                R.raw.search_desc_notestock_en,
+                R.raw.search_desc_notestock_ja
+            )
             else -> ""
         }
         cacheHeaderDesc = cache
@@ -2302,7 +2306,7 @@ class Column(
         if (getFilterContext() != TootFilter.CONTEXT_NONE) return true
 
         return when (type) {
-			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS -> true
+			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS,ColumnType.SEARCH_NOTESTOCK -> true
             else -> false
         }
     }
@@ -2424,6 +2428,7 @@ class Column(
 			ColumnType.SEARCH,
 			ColumnType.SEARCH_MSP,
 			ColumnType.SEARCH_TS,
+            ColumnType.SEARCH_NOTESTOCK,
 			ColumnType.CONVERSATION,
 			ColumnType.LIST_LIST,
 			ColumnType.TREND_TAG,

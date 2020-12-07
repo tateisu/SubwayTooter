@@ -510,7 +510,8 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 					attachmentList = media_attachments,
 					highlightTrie = parser.highlightTrie,
 					mentions = mentions,
-					mentionDefaultHostDomain = account
+					mentionDefaultHostDomain = account,
+					unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
 				)
 
 				this.decoded_content = options.decodeHTML(content)
@@ -532,7 +533,8 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 					emojiMapProfile = profile_emojis,
 					highlightTrie = parser.highlightTrie,
 					mentions = mentions,
-					mentionDefaultHostDomain = account
+					mentionDefaultHostDomain = account,
+						unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
 				)
 
 				this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
@@ -1109,53 +1111,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             return null
         }
 
-        fun parseListTootsearch(
-			parser: TootParser,
-			root: JsonObject
-		): ArrayList<TootStatus> {
 
-            parser.serviceType = ServiceType.TOOTSEARCH
-
-            val result = ArrayList<TootStatus>()
-            val array = getTootsearchHits(root)
-            if (array != null) {
-                val array_size = array.size
-                result.ensureCapacity(array_size)
-                for (i in 0 until array.size) {
-                    try {
-                        val src = array.jsonObject(i)?.jsonObject("_source") ?: continue
-                        result.add(TootStatus(parser, src))
-                    } catch (ex: Throwable) {
-                        log.trace(ex)
-                    }
-                }
-            }
-            return result
-        }
-
-        fun parseListNotestock(
-			parser: TootParser,
-			root: JsonObject
-		): ArrayList<TootStatus> {
-
-            parser.serviceType = ServiceType.NOTESTOCK // TODO
-
-            val result = ArrayList<TootStatus>()
-            val array = getNotestockStatuses(root)
-            if (array != null) {
-                val array_size = array.size
-                result.ensureCapacity(array_size)
-                for (i in 0 until array.size) {
-                    try {
-                        val src = array.jsonObject(i) ?: continue
-                        result.add(TootStatus(parser, src))
-                    } catch (ex: Throwable) {
-                        log.trace(ex)
-                    }
-                }
-            }
-            return result
-        }
 
         private val tz_utc = TimeZone.getTimeZone("UTC")
 

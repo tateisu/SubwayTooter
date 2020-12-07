@@ -2,10 +2,17 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.view.Gravity
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.search.MspHelper.loadingMSP
+import jp.juggler.subwaytooter.search.MspHelper.refreshMSP
+import jp.juggler.subwaytooter.search.NotestockHelper.loadingNotestock
+import jp.juggler.subwaytooter.search.NotestockHelper.refreshNotestock
+import jp.juggler.subwaytooter.search.TootsearchHelper.loadingTootsearch
+import jp.juggler.subwaytooter.search.TootsearchHelper.refreshTootsearch
 import jp.juggler.util.LogCategory
 import jp.juggler.util.ellipsizeDot3
 import jp.juggler.util.notEmpty
@@ -1039,37 +1046,12 @@ enum class ColumnType(
 		},
 		headerType = HeaderType.Search,
 
-		loading = { client ->
-			column.idOld = null
-			val result: TootApiResult?
-			val q = column.search_query.trim { it <= ' ' }
-			if (q.isEmpty()) {
-				list_tmp = ArrayList()
-				result = TootApiResult()
-			} else {
-				result = client.searchMsp(column.search_query, column.idOld?.toString())
-				val jsonArray = result?.jsonArray
-				if (jsonArray != null) {
-					// max_id の更新
-					column.idOld = EntityId.mayNull(
-						getMspMaxId(
-							jsonArray,
-							column.idOld?.toString()
-						)
-					)
-					// リストデータの用意
-					parser.serviceType = ServiceType.MSP
-					list_tmp =
-						addWithFilterStatus(null, parser.statusList(jsonArray))
-				}
-			}
-			result
-		},
-
-		refresh = { client -> getMSP(client) },
+		loading = { loadingMSP(it) },
+		refresh = { refreshMSP(it) },
 	),
 
-    SEARCH_TS(22,
+    SEARCH_TS(
+		22,
 		iconId = { R.drawable.ic_search },
 		name1 = { it.getString(R.string.toot_search_ts) },
 		name2 = { long ->
@@ -1080,40 +1062,12 @@ enum class ColumnType(
 		},
 		headerType = HeaderType.Search,
 
-		loading = { client ->
-			column.idOld = null
-			val result: TootApiResult?
-			val q = column.search_query.trim { it <= ' ' }
-			if (q.isEmpty()) {
-				list_tmp = ArrayList()
-				result = TootApiResult()
-			} else {
-				result =
-					client.searchTootsearch(column.search_query, null)
-				val jsonObject = result?.jsonObject
-				if (jsonObject != null) {
-					// max_id の更新
-					column.idOld = EntityId.mayNull(
-						getTootsearchMaxId(jsonObject, null)
-							?.toString()
-					)
-
-					// リストデータの用意
-					val search_result =
-						TootStatus.parseListTootsearch(parser, jsonObject)
-					this.list_tmp = addWithFilterStatus(null, search_result)
-					if (search_result.isEmpty()) {
-						log.d("search result is empty. %s", result.bodyString)
-					}
-				}
-			}
-			result
-		},
-
-		refresh = { client -> getTootSearch(client) }
+		loading = { loadingTootsearch(it) },
+		refresh = { refreshTootsearch(it) },
 	),
 
-    SEARCH_NOTESTOCK(41,
+    SEARCH_NOTESTOCK(
+		41,
 		iconId = { R.drawable.ic_search },
 		name1 = { it.getString(R.string.toot_search_notestock) },
 		name2 = { long ->
@@ -1124,33 +1078,8 @@ enum class ColumnType(
 		},
 		headerType = HeaderType.Search,
 
-		loading = { client ->
-			column.idOld = null
-			val result: TootApiResult?
-			val q = column.search_query.trim { it <= ' ' }
-			if (q.isEmpty()) {
-				list_tmp = ArrayList()
-				result = TootApiResult()
-			} else {
-				result =
-					client.searchNotestock(column.search_query, null)
-				val jsonObject = result?.jsonObject
-				if (jsonObject != null) {
-					// max_id の更新
-					column.idOld = EntityId.mayNull(getNotestockMaxDt(jsonObject))
-
-					// リストデータの用意
-					val search_result = TootStatus.parseListNotestock(parser, jsonObject)
-					this.list_tmp = addWithFilterStatus(null, search_result)
-					if (search_result.isEmpty()) {
-						log.d("search result is empty. %s", result.bodyString)
-					}
-				}
-			}
-			result
-		},
-
-		refresh = { client -> getNotestock(client) }
+		loading = { loadingNotestock(it) },
+		refresh = { refreshNotestock(it) },
 	),
 
     INSTANCE_INFORMATION(18,

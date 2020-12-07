@@ -8,10 +8,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.span.EmojiImageSpan
-import jp.juggler.subwaytooter.span.HighlightSpan
-import jp.juggler.subwaytooter.span.LinkInfo
-import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.*
@@ -358,10 +355,13 @@ object HTMLDecoder {
 			
 			if("img" == tag) {
 				var replaced = false
+				val reNotestockEmojiAlt= """\A:[^:]+:\z""".toRegex()
 				if(options.unwrapEmojiImageTag) {
 					val attrs = parseAttributes(text)
 					val cssClass = attrs["class"]
 					val title = attrs["title"]
+					val url = attrs["src"]
+					val alt = attrs["alt"]
 					if(cssClass != null
 						&& title != null
 						&& cssClass.contains("emojione")
@@ -369,6 +369,20 @@ object HTMLDecoder {
 					) {
 						replaced = true
 						sb_tmp.append(options.decodeEmoji(title))
+					}else if( cssClass == "emoji" && url!=null && alt !=null && reNotestockEmojiAlt.matches(alt) ){
+						// notestock custom emoji
+						replaced = true
+						sb_tmp.run{
+							val start = length
+							append(alt)
+							val end = length
+							setSpan(
+								NetworkEmojiSpan(url, scale = options.enlargeCustomEmoji),
+								start,
+								end,
+								Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+							)
+						}
 					}
 				}
 				

@@ -225,7 +225,8 @@ class TootPolls (
 					emojiMapCustom = status.custom_emojis,
 					emojiMapProfile = status.profile_emojis,
 					mentions = status.mentions,
-					mentionDefaultHostDomain = status.account
+					mentionDefaultHostDomain = status.account,
+					unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
 				).decodeHTML(this.question ?: "?")
 
 				this.items = parseChoiceListNotestock(

@@ -715,7 +715,7 @@ internal class DlgContextMenu(
 					Action_User.mention(activity, access_info, who)
 				
 				R.id.btnAccountWebPage -> who.url?.let { url ->
-					activity.openCustomTabOrBrowser(url)
+					activity.openCustomTab(url)
 				}
 				
 				R.id.btnFollowRequestOK ->
@@ -964,7 +964,7 @@ internal class DlgContextMenu(
 		when(v.id) {
 			
 			R.id.btnStatusWebPage ->
-				activity.openCustomTabOrBrowser(status?.url)
+				activity.openCustomTab(status?.url)
 			
 			R.id.btnText -> if(status != null) {
 				ActText.open(activity, ActMain.REQUEST_CODE_TEXT, access_info, status)

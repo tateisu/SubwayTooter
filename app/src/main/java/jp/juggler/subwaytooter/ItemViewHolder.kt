@@ -2100,12 +2100,12 @@ internal class ItemViewHolder(
 				} else {
 					val url = card.url
 					if(url?.isNotEmpty() == true) {
-						ChromeTabOpener(
+						openCustomTab(
 							activity,
 							pos,
 							url,
 							accessInfo = access_info
-						).open()
+						)
 					}
 				}
 			}

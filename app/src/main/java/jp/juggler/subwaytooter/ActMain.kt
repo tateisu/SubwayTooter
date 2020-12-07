@@ -285,8 +285,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
-		
-		ChromeTabOpener(
+
+		openCustomTab(
 			this@ActMain,
 			pos,
 			linkInfo.url,
@@ -294,7 +294,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 			tagList = tag_list,
 			whoRef = whoRef,
 			linkInfo = linkInfo
-		).open()
+		)
 	}
 	
 	private fun showQuickTootVisibility() {
@@ -2384,164 +2384,6 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 		}
 		return col
 	}
-	
-	fun openChromeTab(opener : ChromeTabOpener) {
-		
-		try {
-			log.d("openChromeTab url=%s", opener.url)
-			
-			val accessInfo = opener.accessInfo
-			val whoRef = opener.whoRef
-			val whoAcct = if(whoRef != null) {
-				accessInfo?.getFullAcct(whoRef.get())
-			} else {
-				null
-			}
-			
-			if(opener.allowIntercept && accessInfo != null) {
-				
-				// ハッシュタグはいきなり開くのではなくメニューがある
-				val tagInfo = opener.url.findHashtagFromUrl()
-				if(tagInfo != null) {
-					Action_HashTag.dialog(
-						this@ActMain,
-						opener.pos,
-						opener.url,
-						Host.parse(tagInfo.second),
-						tagInfo.first,
-						opener.tagList,
-						whoAcct
-					)
-					return
-				}
-				
-				val statusInfo = opener.url.findStatusIdFromUrl()
-				if(statusInfo != null) {
-					if(accessInfo.isNA ||
-						statusInfo.statusId == null ||
-						! accessInfo.matchHost(statusInfo.host)
-					) {
-						Action_Toot.conversationOtherInstance(
-							this@ActMain,
-							opener.pos,
-							statusInfo.url,
-							statusInfo.statusId,
-							statusInfo.host,
-							statusInfo.statusId
-						)
-					} else {
-						Action_Toot.conversationLocal(
-							this@ActMain,
-							opener.pos,
-							accessInfo,
-							statusInfo.statusId
-						)
-					}
-					return
-				}
-				
-				// opener.linkInfo をチェックしてメンションを判別する
-				val mention = opener.linkInfo?.mention
-				if(mention != null) {
-					val fullAcct = getFullAcctOrNull(mention.acct, mention.url, accessInfo)
-					if(fullAcct != null) {
-						if(fullAcct.host != null) {
-							when(fullAcct.host.ascii) {
-								"github.com",
-								"twitter.com" ->
-									openCustomTab(mention.url)
-								"gmail.com" ->
-									openBrowser("mailto:${fullAcct.pretty}")
-								
-								else ->
-									Action_User.profile(
-										this@ActMain,
-										opener.pos,
-										accessInfo, // FIXME nullが必要なケースがあったっけなかったっけ…
-										mention.url,
-										fullAcct.host,
-										fullAcct.username,
-										original_url = opener.url
-									)
-							}
-							return
-						}
-					}
-				}
-				
-				// ユーザページをアプリ内で開く
-				var m = TootAccount.reAccountUrl.matcher(opener.url)
-				if(m.find()) {
-					val host = m.groupEx(1) !!
-					val user = m.groupEx(2) !!.decodePercent()
-					val instance = m.groupEx(3)?.decodePercent()?.notEmpty()
-					// https://misskey.xyz/@tateisu@github.com
-					// https://misskey.xyz/@tateisu@twitter.com
-					
-					if(instance != null) {
-						val instanceHost = Host.parse(instance)
-						when(instanceHost.ascii) {
-							"github.com", "twitter.com" -> {
-								openCustomTab("https://$instance/$user")
-							}
-							
-							"gmail.com" -> {
-								openBrowser("mailto:$user@$instance")
-							}
-							
-							else -> {
-								Action_User.profile(
-									this@ActMain,
-									opener.pos,
-									null, // Misskeyだと疑似アカが必要なんだっけ…？
-									"https://$instance/@$user",
-									instanceHost,
-									user,
-									original_url = opener.url
-								)
-							}
-						}
-					} else {
-						Action_User.profile(
-							this@ActMain,
-							opener.pos,
-							accessInfo,
-							opener.url,
-							Host.parse(host),
-							user
-						)
-					}
-					return
-				}
-				
-				m = TootAccount.reAccountUrl2.matcher(opener.url)
-				if(m.find()) {
-					val host = m.groupEx(1) !!
-					val user = m.groupEx(2) !!.decodePercent()
-					
-					Action_User.profile(
-						this@ActMain,
-						opener.pos,
-						accessInfo,
-						opener.url,
-						Host.parse(host),
-						user
-					)
-					return
-				}
-				
-			}
-			
-			openCustomTab(opener.url)
-			
-		} catch(ex : Throwable) {
-			// warning.trace( ex );
-			log.e(ex, "openChromeTab failed. url=%s", opener.url)
-		}
-		
-	}
-	
-	/////////////////////////////////////////////////////////////////////////
 	
 	fun showColumnMatchAccount(account : SavedAccount) {
 		for(column in app_state.column_list) {

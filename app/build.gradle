@@ -108,8 +108,7 @@ dependencies {
     implementation "androidx.exifinterface:exifinterface:1.3.2"
 
     // CustomTabs
-    // TODO 1.3.0 に上げたいが、その前に２回開く問題を調査したい
-    implementation "androidx.browser:browser:1.2.0"
+    implementation "androidx.browser:browser:1.3.0"
 
     // Recyclerview
     implementation "androidx.recyclerview:recyclerview:1.1.0"

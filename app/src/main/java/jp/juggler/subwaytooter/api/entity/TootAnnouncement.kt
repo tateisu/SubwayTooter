@@ -147,5 +147,4 @@ class TootAnnouncement(parser : TootParser, src : JsonObject) {
 			return dst
 		}
 	}
-
 }

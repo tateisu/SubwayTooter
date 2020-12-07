@@ -7,6 +7,12 @@ import jp.juggler.util.cast
 import jp.juggler.util.encodePercent
 import okhttp3.Request
 
+/*
+notestockの検索API。
+https://notestock.docs.apiary.io/#reference/0/search/search-of-notestock
+「APIは公開なので、そのまま呼び出してもらえばOKです。」とのこと。
+*/
+
 fun getNotestockStatuses(root: JsonObject): JsonArray? =
     root["statuses"].cast()
 
@@ -43,4 +49,3 @@ fun TootApiClient.searchNotestock(
 
     return parseJson(result)
 }
-

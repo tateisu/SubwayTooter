@@ -40,8 +40,8 @@ private val log = LogCategory("AppOpener")
 // returns true if activity is opened.
 // returns false if fallback required
 private fun Activity.startActivityExcludeMyApp(
-	intent: Intent,
-	startAnimationBundle: Bundle? = null
+    intent: Intent,
+    startAnimationBundle: Bundle? = null
 ): Boolean {
     try {
         // このアプリのパッケージ名
@@ -56,13 +56,13 @@ private fun Activity.startActivityExcludeMyApp(
         // resolveActivity がこのアプリ以外のActivityを返すなら、それがベストなんだろう
         // ただしAndroid M以降はMATCH_DEFAULT_ONLYだと「常時」が設定されてないとnullを返す
         val ri = packageManager!!.resolveActivity(
-			intent,
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PackageManager.MATCH_ALL
-			} else {
-				PackageManager.MATCH_DEFAULT_ONLY
-			}
-		)?.takeIf(filter)
+            intent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                PackageManager.MATCH_ALL
+            } else {
+                PackageManager.MATCH_DEFAULT_ONLY
+            }
+        )?.takeIf(filter)
 
         return when {
 
@@ -74,11 +74,11 @@ private fun Activity.startActivityExcludeMyApp(
             }
 
             else -> DlgAppPicker(
-				this,
-				intent,
-				autoSelect = true,
-				filter = filter
-			) {
+                this,
+                intent,
+                autoSelect = true,
+                filter = filter
+            ) {
                 try {
                     intent.component = it.cn()
                     log.d("startActivityExcludeMyApp(2) $intent")
@@ -130,22 +130,23 @@ fun Activity.openCustomTab(url: String?) {
                 .setShowTitle(true)
                 .build()
                 .let {
+                    log.w("startCustomTabIntent ComponentName=$cn")
                     startActivityExcludeMyApp(
-						it.intent.also { intent ->
-							if (cn != null) intent.component = cn
-							intent.data = url.toUri()
-						},
-						it.startAnimationBundle
-					)
+                        it.intent.also { intent ->
+                            if (cn != null) intent.component = cn
+                            intent.data = url.toUri()
+                        },
+                        it.startAnimationBundle
+                    )
                 }
 
         if (url.startsWith("http") && Pref.bpPriorChrome(pref)) {
             try {
                 // 初回はChrome指定で試す
                 val cn = ComponentName(
-					"com.android.chrome",
-					"com.google.android.apps.chrome.Main"
-				)
+                    "com.android.chrome",
+                    "com.google.android.apps.chrome.Main"
+                )
                 if (startCustomTabIntent(cn)) return
             } catch (ex2: Throwable) {
                 log.e(ex2, "openCustomTab: missing chrome. retry to other application.")
@@ -154,7 +155,6 @@ fun Activity.openCustomTab(url: String?) {
 
         // Chromeがないようなのでcomponent指定なしでリトライ
         if (startCustomTabIntent(null)) return
-
         showToast(true, "the browser app is not installed.")
 
     } catch (ex: Throwable) {
@@ -168,14 +168,14 @@ fun Activity.openCustomTab(ta: TootAttachment) =
     openCustomTab(ta.getLargeUrl(pref()))
 
 fun openCustomTab(
-	activity: ActMain,
-	pos: Int,
-	url: String,
-	accessInfo: SavedAccount? = null,
-	tagList: ArrayList<String>? = null,
-	allowIntercept: Boolean = true,
-	whoRef: TootAccountRef? = null,
-	linkInfo: LinkInfo? = null
+    activity: ActMain,
+    pos: Int,
+    url: String,
+    accessInfo: SavedAccount? = null,
+    tagList: ArrayList<String>? = null,
+    allowIntercept: Boolean = true,
+    whoRef: TootAccountRef? = null,
+    linkInfo: LinkInfo? = null
 ) {
     try {
         log.d("openCustomTab: $url")
@@ -192,14 +192,14 @@ fun openCustomTab(
             val tagInfo = url.findHashtagFromUrl()
             if (tagInfo != null) {
                 Action_HashTag.dialog(
-					activity,
-					pos,
-					url,
-					Host.parse(tagInfo.second),
-					tagInfo.first,
-					tagList,
-					whoAcct
-				)
+                    activity,
+                    pos,
+                    url,
+                    Host.parse(tagInfo.second),
+                    tagInfo.first,
+                    tagList,
+                    whoAcct
+                )
                 return
             }
 
@@ -210,20 +210,20 @@ fun openCustomTab(
                     !accessInfo.matchHost(statusInfo.host)
                 ) {
                     Action_Toot.conversationOtherInstance(
-						activity,
-						pos,
-						statusInfo.url,
-						statusInfo.statusId,
-						statusInfo.host,
-						statusInfo.statusId
-					)
+                        activity,
+                        pos,
+                        statusInfo.url,
+                        statusInfo.statusId,
+                        statusInfo.host,
+                        statusInfo.statusId
+                    )
                 } else {
                     Action_Toot.conversationLocal(
-						activity,
-						pos,
-						accessInfo,
-						statusInfo.statusId
-					)
+                        activity,
+                        pos,
+                        accessInfo,
+                        statusInfo.statusId
+                    )
                 }
                 return
             }
@@ -235,22 +235,22 @@ fun openCustomTab(
                 if (fullAcct != null) {
                     if (fullAcct.host != null) {
                         when (fullAcct.host.ascii) {
-							"github.com",
-							"twitter.com" ->
-								activity.openCustomTab(mention.url)
-							"gmail.com" ->
-								activity.openBrowser("mailto:${fullAcct.pretty}")
+                            "github.com",
+                            "twitter.com" ->
+                                activity.openCustomTab(mention.url)
+                            "gmail.com" ->
+                                activity.openBrowser("mailto:${fullAcct.pretty}")
 
                             else ->
                                 Action_User.profile(
-									activity,
-									pos,
-									accessInfo, // FIXME nullが必要なケースがあったっけなかったっけ…
-									mention.url,
-									fullAcct.host,
-									fullAcct.username,
-									original_url = url
-								)
+                                    activity,
+                                    pos,
+                                    accessInfo, // FIXME nullが必要なケースがあったっけなかったっけ…
+                                    mention.url,
+                                    fullAcct.host,
+                                    fullAcct.username,
+                                    original_url = url
+                                )
                         }
                         return
                     }
@@ -269,35 +269,35 @@ fun openCustomTab(
                 if (instance != null) {
                     val instanceHost = Host.parse(instance)
                     when (instanceHost.ascii) {
-						"github.com", "twitter.com" -> {
-							activity.openCustomTab("https://$instance/$user")
-						}
+                        "github.com", "twitter.com" -> {
+                            activity.openCustomTab("https://$instance/$user")
+                        }
 
-						"gmail.com" -> {
-							activity.openBrowser("mailto:$user@$instance")
-						}
+                        "gmail.com" -> {
+                            activity.openBrowser("mailto:$user@$instance")
+                        }
 
                         else -> {
                             Action_User.profile(
-								activity,
-								pos,
-								null, // Misskeyだと疑似アカが必要なんだっけ…？
-								"https://$instance/@$user",
-								instanceHost,
-								user,
-								original_url = url
-							)
+                                activity,
+                                pos,
+                                null, // Misskeyだと疑似アカが必要なんだっけ…？
+                                "https://$instance/@$user",
+                                instanceHost,
+                                user,
+                                original_url = url
+                            )
                         }
                     }
                 } else {
                     Action_User.profile(
-						activity,
-						pos,
-						accessInfo,
-						url,
-						Host.parse(host),
-						user
-					)
+                        activity,
+                        pos,
+                        accessInfo,
+                        url,
+                        Host.parse(host),
+                        user
+                    )
                 }
                 return
             }
@@ -308,13 +308,13 @@ fun openCustomTab(
                 val user = m.groupEx(2)!!.decodePercent()
 
                 Action_User.profile(
-					activity,
-					pos,
-					accessInfo,
-					url,
-					Host.parse(host),
-					user
-				)
+                    activity,
+                    pos,
+                    accessInfo,
+                    url,
+                    Host.parse(host),
+                    user
+                )
                 return
             }
 
@@ -323,7 +323,7 @@ fun openCustomTab(
         activity.openCustomTab(url)
 
     } catch (ex: Throwable) {
-        // warning.trace( ex );
+        log.trace(ex)
         log.e(ex, "openCustomTab failed. $url")
     }
 }

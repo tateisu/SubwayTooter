@@ -11,7 +11,7 @@ fun getNotestockStatuses(root: JsonObject): JsonArray? =
     root["statuses"].cast()
 
 // notestock の検索結果からmax_dtを抽出します。
-// 次ページがない場合はnullを返します。
+// データがない場合はnullを返します。
 fun getNotestockMaxDt(root: JsonObject)=
     root.jsonArray("statuses")
         ?.mapNotNull{ it.cast<JsonObject>()?.string("published")}

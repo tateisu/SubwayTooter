@@ -60,7 +60,6 @@ class CustomEmojiLister(
 	
 	init {
 		this.worker = Worker()
-		worker.start()
 	}
 	
 	// ネットワーク接続が変化したらエラーキャッシュをクリア
@@ -147,7 +146,7 @@ class CustomEmojiLister(
 			// このスレッドはキャンセルされない。プロセスが生きている限り動き続ける。
 		}
 		
-		override fun run() {
+		override suspend fun run() {
 			while(true) {
 				try {
 					// リクエストを取得する

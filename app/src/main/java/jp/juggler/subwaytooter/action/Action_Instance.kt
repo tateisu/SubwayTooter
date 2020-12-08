@@ -27,13 +27,13 @@ object Action_Instance {
 			// インスタンスのバージョン情報がなければ取得してやり直し
 			instance == null -> TootTaskRunner(activity).run(host, object : TootTask {
 				var targetInstance : TootInstance? = null
-				override fun background(client : TootApiClient) : TootApiResult? {
+				override suspend fun background(client : TootApiClient) : TootApiResult? {
 					val (ti, ri) = TootInstance.get(client, host, allowPixelfed = true)
 					targetInstance = ti
 					return ri
 				}
 				
-				override fun handleResult(result : TootApiResult?) {
+				override suspend fun handleResult(result : TootApiResult?) {
 					result ?: return // cancelled.
 					when(val ti = targetInstance) {
 						null -> activity.showToast(true, result.error)
@@ -173,7 +173,7 @@ object Action_Instance {
 		}
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/domain_blocks",
 					"domain=${domain.ascii.encodePercent()}"
@@ -182,7 +182,7 @@ object Action_Instance {
 				)
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				if(result == null) return  // cancelled.
 				
 				if(result.jsonObject != null) {
@@ -223,13 +223,13 @@ object Action_Instance {
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			var localStatus : TootStatus? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				val (result, localStatus) = client.syncStatus(access_info, status)
 				this.localStatus = localStatus
 				return result
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return
 				val localStatus = this.localStatus
 				if(localStatus != null) {

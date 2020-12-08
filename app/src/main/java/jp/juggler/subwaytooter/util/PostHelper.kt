@@ -304,8 +304,8 @@ class PostHelper(
 				var credential_tmp : TootAccount? = null
 				
 				var scheduledStatusSucceeded = false
-				
-				fun getCredential(
+
+				suspend fun getCredential(
 					client : TootApiClient,
 					parser : TootParser
 				) : TootApiResult? {
@@ -314,7 +314,7 @@ class PostHelper(
 					return result
 				}
 				
-				override fun background(client : TootApiClient) : TootApiResult? {
+				override suspend fun background(client : TootApiClient) : TootApiResult? {
 					val parser = TootParser(activity, account)
 					
 					var result : TootApiResult?
@@ -633,7 +633,7 @@ class PostHelper(
 					return result
 				}
 				
-				override fun handleResult(result : TootApiResult?) {
+				override suspend fun handleResult(result : TootApiResult?) {
 					result ?: return
 					val status = this.status
 					when {

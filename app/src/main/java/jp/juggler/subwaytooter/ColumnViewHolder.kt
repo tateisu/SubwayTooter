@@ -2758,7 +2758,7 @@ class ColumnViewHolder(
 			return
 		}
 		TootTaskRunner(activity).run(column.access_info, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/announcements/${item.id}/reactions/${sample.name.encodePercent()}",
 					JsonObject().toPutRequestBuilder()
@@ -2766,7 +2766,7 @@ class ColumnViewHolder(
 				// 200 {}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return
 				if(result.jsonObject == null) {
 					activity.showToast(true, result.error)
@@ -2794,7 +2794,7 @@ class ColumnViewHolder(
 	private fun removeReaction(item : TootAnnouncement, name : String) {
 		val column = column ?: return
 		TootTaskRunner(activity).run(column.access_info, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/announcements/${item.id}/reactions/${name.encodePercent()}",
 					JsonObject().toDeleteRequestBuilder()
@@ -2802,7 +2802,7 @@ class ColumnViewHolder(
 				// 200 {}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return
 				if(result.jsonObject == null) {
 					activity.showToast(true, result.error)

@@ -32,10 +32,10 @@ loading,refresh,gap はそれぞれ this の種類が異なるので注意
  
  */
 
-private val unsupportedRefresh: ColumnTask_Refresh.(client: TootApiClient) -> TootApiResult? =
+private val unsupportedRefresh: suspend ColumnTask_Refresh.(client: TootApiClient) -> TootApiResult? =
     { TootApiResult("edge reading not supported.") }
 
-private val unsupportedGap: ColumnTask_Gap.(client: TootApiClient) -> TootApiResult? =
+private val unsupportedGap: suspend ColumnTask_Gap.(client: TootApiClient) -> TootApiResult? =
     { TootApiResult("gap reading not supported.") }
 
 private val unusedIconId: (Acct) -> Int =
@@ -72,9 +72,9 @@ enum class ColumnType(
 	val iconId: (Acct) -> Int = unusedIconId,
 	val name1: (context: Context) -> String = unusedName,
 	val name2: Column.(long: Boolean) -> String? = unusedName2,
-	val loading: ColumnTask_Loading.(client: TootApiClient) -> TootApiResult?,
-	val refresh: ColumnTask_Refresh.(client: TootApiClient) -> TootApiResult? = unsupportedRefresh,
-	val gap: ColumnTask_Gap.(client: TootApiClient) -> TootApiResult? = unsupportedGap,
+	val loading: suspend  ColumnTask_Loading.(client: TootApiClient) -> TootApiResult?,
+	val refresh: suspend ColumnTask_Refresh.(client: TootApiClient) -> TootApiResult? = unsupportedRefresh,
+	val gap: suspend ColumnTask_Gap.(client: TootApiClient) -> TootApiResult? = unsupportedGap,
 	val bAllowPseudo: Boolean = true,
 	val bAllowMisskey: Boolean = true,
 	val bAllowMastodon: Boolean = true,

@@ -30,7 +30,7 @@ object Action_Notification {
 			return
 		}
 		TootTaskRunner(activity).run(target_account, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				// 空データを送る
 				return client.request(
 					"/api/v1/notifications/clear",
@@ -38,7 +38,7 @@ object Action_Notification {
 				)
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				if(result == null) return  // cancelled.
 				
 				if(result.jsonObject != null) {
@@ -61,7 +61,7 @@ object Action_Notification {
 		activity : ActMain, access_info : SavedAccount, notification : TootNotification
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				// https://github.com/tootsuite/mastodon/commit/30f5bcf3e749be9651ed39a07b893f70605f8a39
 				// 2種類のAPIがあり、片方は除去された
@@ -84,7 +84,7 @@ object Action_Notification {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				if(result == null) return // cancelled.
 				
 				if(result.jsonObject != null) {

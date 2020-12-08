@@ -550,7 +550,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				return Pair(bitmap2, null)
 			}
 
-			fun getHttpCached(
+			suspend fun getHttpCached(
 					client: TootApiClient,
 					url: String
 			): Pair<TootApiResult?, ByteArray?> {
@@ -599,7 +599,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				}
 			}
 
-			override fun background(client: TootApiClient): TootApiResult? {
+			override suspend fun background(client: TootApiClient): TootApiResult? {
 				if (urlList.isEmpty()) return TootApiResult("missing url")
 				var lastResult: TootApiResult? = null
 				for (url in urlList) {
@@ -619,7 +619,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				return lastResult
 			}
 
-			override fun handleResult(result: TootApiResult?) {
+			override suspend fun handleResult(result: TootApiResult?) {
 				val bitmap = this.bitmap
 				if (bitmap != null) {
 					pbvImage.setBitmap(bitmap)

@@ -43,6 +43,7 @@ import okhttp3.RequestBody
 import okio.BufferedSink
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.textColor
+import ru.gildor.coroutines.okhttp.await
 import java.io.*
 import kotlin.math.max
 
@@ -683,11 +684,11 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 	private fun performLoadPreference() {
 		
 		TootTaskRunner(this).run(account, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				return client.request("/api/v1/preferences")
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return
 				
 				val json = result.jsonObject
@@ -772,7 +773,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 								.build()
 						)
 						
-						val response = call.execute()
+						val response = call.await()
 						
 						log.e("performAccountRemove: %s", response)
 					} catch(ex : Throwable) {
@@ -787,14 +788,14 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 	private fun performAccessToken() {
 		
 		TootTaskRunner(this@ActAccountSetting).run(account, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				return client.authentication1(
 					Pref.spClientName(this@ActAccountSetting),
 					forceUpdateClient = true
 				)
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return // cancelled.
 				
 				val uri = result.string.mayUri()
@@ -883,7 +884,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		TootTaskRunner(this).run(account, object : TootTask {
 			
 			var data : TootAccount? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				if(account.isMisskey) {
 					val result = client.request(
 						"/api/i",
@@ -912,7 +913,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				if(result == null) return  // cancelled.
 				
 				val data = this.data
@@ -1075,7 +1076,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		
 		TootTaskRunner(this).run(account, object : TootTask {
 			
-			private fun uploadImageMisskey(
+			private suspend fun uploadImageMisskey(
 				client : TootApiClient,
 				opener : InputStreamOpener
 			) : Pair<TootApiResult?, TootAttachment?> {
@@ -1095,7 +1096,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 					"file",
 					getDocumentName(contentResolver, opener.uri),
 					object : RequestBody() {
-						override fun contentType() : MediaType? {
+						override fun contentType() : MediaType {
 							return opener.mimeType.toMediaType()
 						}
 						
@@ -1132,7 +1133,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			}
 			
 			var data : TootAccount? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				try {
 					if(account.isMisskey) {
@@ -1239,7 +1240,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				if(result == null) return  // cancelled.
 				
 				val data = this.data
@@ -1580,13 +1581,11 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 				verbose = true
 			)
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
-				return runBlocking{
-					wps.updateSubscription(client, true)
-				}
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
+				return wps.updateSubscription(client, true)
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return
 				val log = wps.log
 				if(log.isNotEmpty()) {

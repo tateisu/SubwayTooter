@@ -70,7 +70,7 @@ class PushSubscriptionHelper(
         }
     }
 
-    private fun updateServerKey(
+    private suspend fun updateServerKey(
 		client: TootApiClient,
 		clientIdentifier: String,
 		serverKey: String?
@@ -118,7 +118,7 @@ class PushSubscriptionHelper(
     }
 
     // アプリサーバにendpoint URLの変更を伝える
-    private fun registerEndpoint(
+    private suspend fun registerEndpoint(
 		client: TootApiClient,
 		deviceId: String,
 		endpoint: String
@@ -324,7 +324,7 @@ class PushSubscriptionHelper(
             put("status", account.notification_post)
         }
 
-        fun canSkipSubscription(): TootApiResult? {
+        suspend fun canSkipSubscription(): TootApiResult? {
 
             // 購読の更新が強制されている
             if (force) return null
@@ -335,7 +335,7 @@ class PushSubscriptionHelper(
             // endpoint URLが合わないなら購読の更新が必要
             if (force || oldSubscription?.endpoint != endpoint) return null
 
-            fun makeSkipResult(): TootApiResult {
+            suspend fun makeSkipResult(): TootApiResult {
                 // 既に登録済みで、endpointも一致している
                 subscribed = true
                 if (verbose) addLog(context.getString(R.string.push_subscription_already_exists))
@@ -453,15 +453,16 @@ class PushSubscriptionHelper(
         } else {
             // 通知設定が空ではないので購読を行いたい
 
+            @Suppress("SpellCheckingInspection")
             val params = JsonObject().apply {
                 put("subscription", JsonObject().apply {
 					put("endpoint", endpoint)
 					put("keys", JsonObject().apply {
-						put(
-							"p256dh",
-							"BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
-						)
-						put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
+                        put(
+                            "p256dh",
+                            "BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
+                        )
+                        put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
 					})
 				})
                 put("data", JsonObject().apply {

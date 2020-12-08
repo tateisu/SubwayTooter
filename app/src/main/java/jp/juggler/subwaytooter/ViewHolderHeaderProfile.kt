@@ -640,7 +640,7 @@ internal class ViewHolderHeaderProfile(
 						
 						override fun onOK(dialog : Dialog, text : String) {
 							TootTaskRunner(activity).run(column.access_info, object : TootTask {
-								override fun background(client : TootApiClient) : TootApiResult? {
+								override suspend fun background(client : TootApiClient) : TootApiResult? {
 									
 									if(access_info.isPseudo)
 										return TootApiResult("Personal notes is not supported on pseudo account.")
@@ -656,7 +656,7 @@ internal class ViewHolderHeaderProfile(
 									)
 								}
 								
-								override fun handleResult(result : TootApiResult?) {
+								override suspend fun handleResult(result : TootApiResult?) {
 									if(result == null) return
 									if(result.error != null)
 										activity.showToast(true, result.error)

@@ -407,7 +407,7 @@ internal class StreamReader(
 			fireListeningChanged(false)
 			
 			TootTaskRunner(context).run(access_info, object : TootTask {
-				override fun background(client : TootApiClient) : TootApiResult? {
+				override suspend fun background(client : TootApiClient) : TootApiResult? {
 					val (result, ws) = client.webSocket(end_point, this@Reader)
 					
 					when {
@@ -435,7 +435,7 @@ internal class StreamReader(
 					return result
 				}
 				
-				override fun handleResult(result : TootApiResult?) {
+				override suspend fun handleResult(result : TootApiResult?) {
 				}
 			})
 		}

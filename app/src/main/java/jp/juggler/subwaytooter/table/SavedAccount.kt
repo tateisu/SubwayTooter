@@ -1037,7 +1037,7 @@ class SavedAccount(
 			return myId != EntityId.CONFIRMING
 		}
 	
-	fun checkConfirmed(context : Context, client : TootApiClient) : TootApiResult? {
+	suspend fun checkConfirmed(context : Context, client : TootApiClient) : TootApiResult? {
 		try {
 			val myId = this.loginAccount?.id
 			if(db_id != INVALID_DB_ID && myId == EntityId.CONFIRMING) {

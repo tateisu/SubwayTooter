@@ -30,7 +30,7 @@ object NotestockHelper {
             ?.minByOrNull { it.second }
             ?.first
 
-    private fun TootApiClient.search(query: String,max_dt: String?): TootApiResult? {
+    private suspend fun TootApiClient.search(query: String, max_dt: String?): TootApiResult? {
         val result = TootApiResult.makeWithCaption("Notestock")
         if (result.error != null) return result
         if (!sendRequest(result) {
@@ -62,7 +62,7 @@ object NotestockHelper {
             }
         }
 
-    fun ColumnTask_Loading.loadingNotestock(client: TootApiClient): TootApiResult? {
+    suspend fun ColumnTask_Loading.loadingNotestock(client: TootApiClient): TootApiResult? {
         column.idOld = null
         val q = column.search_query.trim { it <= ' ' }
         return if (q.isEmpty()) {
@@ -86,7 +86,7 @@ object NotestockHelper {
         }
     }
 
-    fun ColumnTask_Refresh.refreshNotestock(client: TootApiClient): TootApiResult? {
+    suspend fun ColumnTask_Refresh.refreshNotestock(client: TootApiClient): TootApiResult? {
         if (!bBottom) return TootApiResult("head of list.")
         val q = column.search_query.trim { it <= ' ' }
         val old = column.idOld?.toString()

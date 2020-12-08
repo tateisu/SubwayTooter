@@ -30,7 +30,7 @@ object Action_Account {
 		) { dialog, instance, action ->
 			TootTaskRunner(activity).run(instance, object : TootTask {
 				
-				override fun background(client : TootApiClient) : TootApiResult? {
+				override suspend fun background(client : TootApiClient) : TootApiResult? {
 					return when(action) {
 						
 						LoginForm.Action.Existing ->
@@ -48,7 +48,7 @@ object Action_Account {
 					}
 				}
 				
-				override fun handleResult(result : TootApiResult?) {
+				override suspend fun handleResult(result : TootApiResult?) {
 					
 					result ?: return  // cancelled.
 					
@@ -154,7 +154,7 @@ object Action_Account {
 				var ta : TootAccount? = null
 				var ti : TootInstance? = null
 				
-				override fun background(client : TootApiClient) : TootApiResult? {
+				override suspend fun background(client : TootApiClient) : TootApiResult? {
 					val r1 = client.createUser2Mastodon(
 						client_info,
 						username,
@@ -195,7 +195,7 @@ object Action_Account {
 					return r1
 				}
 				
-				override fun handleResult(result : TootApiResult?) {
+				override suspend fun handleResult(result : TootApiResult?) {
 					val sa : SavedAccount? = null
 					if(activity.afterAccountVerify(result, ta, sa, ti, instance)) {
 						dialog_host.dismissSafe()
@@ -293,7 +293,7 @@ object Action_Account {
 			
 			var relation : UserRelation? = null
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				val result = client.request(
 					"/api/v1/accounts/${who.id}/" + when(bSet) {
 						true -> "pin"
@@ -315,7 +315,7 @@ object Action_Account {
 				return result
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return
 				
 				if(result.error != null) {

@@ -123,7 +123,7 @@ class TootTaskRunner(
 	override val isApiCancelled : Boolean
 		get() = task?.isActive == false
 	
-	override fun publishApiProgress(s : String) {
+	override suspend fun publishApiProgress(s : String) {
 		synchronized(this) {
 			info.message = s
 			info.isIndeterminate = true
@@ -131,7 +131,7 @@ class TootTaskRunner(
 		delayProgressMessage()
 	}
 	
-	override fun publishApiProgressRatio(value : Int, max : Int) {
+	override suspend fun publishApiProgressRatio(value : Int, max : Int) {
 		synchronized(this) {
 			info.isIndeterminate = false
 			info.value = value
@@ -211,5 +211,4 @@ class TootTaskRunner(
 			handler.postDelayed(proc_progress_message, wait)
 		}
 	}
-	
 }

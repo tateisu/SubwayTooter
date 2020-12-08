@@ -13,12 +13,12 @@ interface SimpleHttpClient {
 
     var onCallCreated: (Call) -> Unit
 
-    fun getResponse(
-		request: Request,
-		tmpOkhttpClient: OkHttpClient? = null
-	): Response
+//    fun getResponse(
+//		request: Request,
+//		tmpOkhttpClient: OkHttpClient? = null
+//	): Response
 
-	suspend fun getResponseAsync(
+	suspend fun getResponse(
 		request: Request,
 		tmpOkhttpClient: OkHttpClient? = null
 	): Response
@@ -40,17 +40,17 @@ class SimpleHttpClientImpl(
 
     override var onCallCreated: (Call) -> Unit = {}
 
-    override fun getResponse(
-		request: Request,
-		tmpOkhttpClient: OkHttpClient?
-	): Response {
-        App1.getAppState(context).networkTracker.checkNetworkState()
-        val call = (tmpOkhttpClient ?: this.okHttpClient).newCall(request)
-		onCallCreated(call)
-        return call.execute()
-    }
+//    override fun getResponse(
+//		request: Request,
+//		tmpOkhttpClient: OkHttpClient?
+//	): Response {
+//        App1.getAppState(context).networkTracker.checkNetworkState()
+//        val call = (tmpOkhttpClient ?: this.okHttpClient).newCall(request)
+//		onCallCreated(call)
+//        return call.execute()
+//    }
 
-	override suspend fun getResponseAsync(
+	override suspend fun getResponse(
 		request: Request,
 		tmpOkhttpClient: OkHttpClient?
 	): Response {

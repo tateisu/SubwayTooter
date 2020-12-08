@@ -26,7 +26,7 @@ object MspHelper {
         return old
     }
 
-    private fun TootApiClient.search(query: String, max_id: String?): TootApiResult? {
+    private suspend fun TootApiClient.search(query: String, max_id: String?): TootApiResult? {
 
         // ユーザトークンを読む
         var user_token: String? = Pref.spMspUserToken(pref)
@@ -106,7 +106,7 @@ object MspHelper {
     private fun parseList(parser: TootParser, root: JsonArray) =
         parser.apply { serviceType = ServiceType.MSP }.statusList(root)
 
-    fun ColumnTask_Loading.loadingMSP(client: TootApiClient): TootApiResult? {
+    suspend fun ColumnTask_Loading.loadingMSP(client: TootApiClient): TootApiResult? {
         column.idOld = null
         val q = column.search_query.trim { it <= ' ' }
         return if (q.isEmpty()) {
@@ -122,7 +122,7 @@ object MspHelper {
         }
     }
 
-    fun ColumnTask_Refresh.refreshMSP(client: TootApiClient): TootApiResult? {
+    suspend fun ColumnTask_Refresh.refreshMSP(client: TootApiClient): TootApiResult? {
         if (!bBottom) return TootApiResult("head of list.")
 
         val q = column.search_query.trim()

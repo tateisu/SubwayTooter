@@ -291,9 +291,9 @@ class NotificationCache(private val account_db_id : Long) {
 				}
 				
 				val result = if(account.isMisskey) {
-					client.requestAsync(path, account.putMisskeyApiToken().toPostRequestBuilder())
+					client.request(path, account.putMisskeyApiToken().toPostRequestBuilder())
 				} else {
-					client.requestAsync(path)
+					client.request(path)
 				}
 				
 				if(result == null) {

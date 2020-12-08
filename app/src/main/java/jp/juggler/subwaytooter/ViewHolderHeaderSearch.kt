@@ -31,7 +31,7 @@ internal class ViewHolderHeaderSearch(
 			activity, access_info, decodeEmoji = true,
 			mentionDefaultHostDomain = access_info
 		)
-			.decodeHTML(column.getHeaderDesc() ?: "")
+			.decodeHTML(column.getHeaderDesc() )
 	}
 	
 	override fun onViewRecycled() {

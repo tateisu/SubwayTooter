@@ -241,7 +241,7 @@ class TestTootApiClient {
 		override val isApiCancelled : Boolean
 			get() = cancelled
 		
-		override fun publishApiProgress(s : String) {
+		override suspend fun publishApiProgress(s : String) {
 			progressString = s
 		}
 	}
@@ -498,12 +498,12 @@ class TestTootApiClient {
 						return true
 					}
 				
-				override fun publishApiProgress(s : String) {
+				override suspend fun publishApiProgress(s : String) {
 					++ flag
 					progressString = s
 				}
 				
-				override fun publishApiProgressRatio(value : Int, max : Int) {
+				override suspend fun publishApiProgressRatio(value : Int, max : Int) {
 					++ flag
 					progressValue = value
 					progressMax = max

@@ -167,7 +167,7 @@ class DlgListMember(
 			
 			var new_list : ArrayList<TootList>? = null
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				// 現在の登録状況を知るため、対象ユーザの自タンスでのアカウントIDを取得する
 				// ドメインブロックなどの影響で同期できない場合があるが、
@@ -234,7 +234,7 @@ class DlgListMember(
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				showList(new_list)
 				
 				result ?: return // cancelled.

@@ -116,7 +116,7 @@ object Action_Toot {
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
 			var new_status : TootStatus? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				val target_status = if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					
@@ -165,7 +165,7 @@ object Action_Toot {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				
 				App1.getAppState(activity).resetBusyFav(access_info, arg_status)
 				
@@ -298,7 +298,7 @@ object Action_Toot {
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
 			var new_status : TootStatus? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				val target_status = if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					val (result, status) = client.syncStatus(access_info, arg_status)
@@ -319,7 +319,7 @@ object Action_Toot {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				
 				App1.getAppState(activity).resetBusyBookmark(access_info, arg_status)
 				
@@ -492,7 +492,7 @@ object Action_Toot {
 			
 			var new_status : TootStatus? = null
 			var unrenoteId : EntityId? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				val parser = TootParser(activity, access_info)
 				
@@ -569,7 +569,7 @@ object Action_Toot {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				App1.getAppState(activity).resetBusyBoost(access_info, arg_status)
 				
 				val unrenoteId = this.unrenoteId
@@ -671,7 +671,7 @@ object Action_Toot {
 	fun delete(activity : ActMain, access_info : SavedAccount, status_id : EntityId) {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				return if(access_info.isMisskey) {
 					client.request(
 						"/api/notes/delete",
@@ -689,7 +689,7 @@ object Action_Toot {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				if(result == null) return  // cancelled.
 				
 				if(result.jsonObject != null) {
@@ -716,14 +716,14 @@ object Action_Toot {
 		conversationSummary ?: return
 		TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE)
 			.run(access_info, object : TootTask {
-				override fun background(client : TootApiClient) : TootApiResult? {
+				override suspend fun background(client : TootApiClient) : TootApiResult? {
 					return client.request(
 						"/api/v1/conversations/${conversationSummary.id}/read",
 						"".toFormRequestBody().toPost()
 					)
 				}
 				
-				override fun handleResult(result : TootApiResult?) {
+				override suspend fun handleResult(result : TootApiResult?) {
 					// 何もしない
 				}
 			})
@@ -921,7 +921,7 @@ object Action_Toot {
 			.run(access_info, object : TootTask {
 				
 				var local_status_id : EntityId? = null
-				override fun background(client : TootApiClient) : TootApiResult? =
+				override suspend fun background(client : TootApiClient) : TootApiResult? =
 					if(access_info.isPseudo) {
 						// 疑似アカウントではURLからIDを取得するのにHTMLと正規表現を使う
 						val result = client.getHttp(remote_status_url)
@@ -950,7 +950,7 @@ object Action_Toot {
 						result
 					}
 				
-				override fun handleResult(result : TootApiResult?) {
+				override suspend fun handleResult(result : TootApiResult?) {
 					if(result == null) return // cancelled.
 					
 					val local_status_id = this.local_status_id
@@ -977,13 +977,13 @@ object Action_Toot {
 		// step2: 選択したアカウントで投稿を検索して返信元の投稿のIDを調べる
 		fun step2(a : SavedAccount) = TootTaskRunner(activity).run(a, object : TootTask {
 			var tmp : TootStatus? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				val (result, status) = client.syncStatus(a, statusArg)
 				this.tmp = status
 				return result
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return
 				val status = tmp
 				val replyId = status?.in_reply_to_id
@@ -1056,7 +1056,7 @@ object Action_Toot {
 			.run(access_info, object : TootTask {
 				
 				var new_status : TootStatus? = null
-				override fun background(client : TootApiClient) : TootApiResult? {
+				override suspend fun background(client : TootApiClient) : TootApiResult? {
 					
 					val result = client.request(
 						"/api/v1/statuses/${status.id}/${if(bSet) "pin" else "unpin"}",
@@ -1068,7 +1068,7 @@ object Action_Toot {
 					return result
 				}
 				
-				override fun handleResult(result : TootApiResult?) {
+				override suspend fun handleResult(result : TootApiResult?) {
 					
 					val new_status = this.new_status
 					
@@ -1134,13 +1134,13 @@ object Action_Toot {
 			.run(access_info, object : TootTask {
 				
 				var local_status : TootStatus? = null
-				override fun background(client : TootApiClient) : TootApiResult? {
+				override suspend fun background(client : TootApiClient) : TootApiResult? {
 					val (result, status) = client.syncStatus(access_info, remote_status_url)
 					local_status = status
 					return result
 				}
 				
-				override fun handleResult(result : TootApiResult?) {
+				override suspend fun handleResult(result : TootApiResult?) {
 					
 					result ?: return // cancelled.
 					
@@ -1226,13 +1226,13 @@ object Action_Toot {
 		TootTaskRunner(activity).run(accessInfo, object : TootTask {
 			
 			var reply_status : TootStatus? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/statuses/${status.in_reply_to_id}")
 				reply_status = TootParser(activity, accessInfo).status(result?.jsonObject)
 				return result
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				if(result == null) return  // cancelled.
 				
 				val reply_status = this.reply_status
@@ -1263,7 +1263,7 @@ object Action_Toot {
 			
 			var local_status : TootStatus? = null
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				val result = client.request(
 					"/api/v1/statuses/${status.id}/${if(bMute) "mute" else "unmute"}",
@@ -1275,7 +1275,7 @@ object Action_Toot {
 				return result
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return // cancelled.
 				
 				val ls = local_status
@@ -1349,7 +1349,7 @@ object Action_Toot {
 		
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				val target_status = if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					
@@ -1392,7 +1392,7 @@ object Action_Toot {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				
 				result ?: return
 				
@@ -1461,7 +1461,7 @@ object Action_Toot {
 		}
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				return client.request(
 					"/api/v1/scheduled_statuses/${item.id}",
@@ -1469,7 +1469,7 @@ object Action_Toot {
 				)
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				
 				result ?: return
 				
@@ -1492,7 +1492,7 @@ object Action_Toot {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
 			var reply_status : TootStatus? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				val reply_status_id = item.in_reply_to_id
 					?: return TootApiResult()
 				
@@ -1501,7 +1501,7 @@ object Action_Toot {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return
 				
 				val error = result.error

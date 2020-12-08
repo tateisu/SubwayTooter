@@ -94,7 +94,7 @@ class DlgFocusPoint(val activity : Activity, val attachment : TootAttachment) :
 			
 			var bitmap : Bitmap? = null
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				try {
 					val (result, data) = client.getHttpBytes(url)
 					data ?: return result
@@ -106,7 +106,7 @@ class DlgFocusPoint(val activity : Activity, val attachment : TootAttachment) :
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				val bitmap = this.bitmap
 				if(bitmap == null) {
 					activity.showToast(true, result?.error ?: "?")

@@ -29,7 +29,7 @@ object Action_List {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
 			var list : TootList? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				val result = if(access_info.isMisskey) {
 					client.request(
@@ -56,7 +56,7 @@ object Action_List {
 				return result
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				if(result == null) return  // cancelled.
 				
 				val list = this.list
@@ -94,7 +94,7 @@ object Action_List {
 		}
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				return if(access_info.isMisskey) {
 					client.request(
 						"/api/users/lists/delete",
@@ -112,7 +112,7 @@ object Action_List {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				if(result == null) return  // cancelled.
 				
 				if(result.jsonObject != null) {
@@ -150,7 +150,7 @@ object Action_List {
 					TootTaskRunner(activity).run(access_info, object : TootTask {
 						var list : TootList? = null
 						
-						override fun background(client : TootApiClient) : TootApiResult? {
+						override suspend fun background(client : TootApiClient) : TootApiResult? {
 							val result = if(access_info.isMisskey) {
 								client.request(
 									"/api/users/lists/update",
@@ -181,7 +181,7 @@ object Action_List {
 							return result
 						}
 						
-						override fun handleResult(result : TootApiResult?) {
+						override suspend fun handleResult(result : TootApiResult?) {
 							if(result == null) return  // cancelled.
 							
 							val list = this.list

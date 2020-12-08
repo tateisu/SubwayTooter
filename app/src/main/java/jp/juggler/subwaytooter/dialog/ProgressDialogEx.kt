@@ -4,6 +4,9 @@ package jp.juggler.subwaytooter.dialog
 
 import android.app.ProgressDialog
 import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class ProgressDialogEx(context : Context) : ProgressDialog(context) {
 	companion object {
@@ -17,7 +20,9 @@ class ProgressDialogEx(context : Context) : ProgressDialog(context) {
 			isIndeterminate = value
 		}
 	
-	fun setMessageEx(msg : CharSequence?) =
-		setMessage(msg)
-	
+	fun setMessageEx(msg : CharSequence?){
+		GlobalScope.launch(Dispatchers.Main){
+			super.setMessage(msg)
+		}
+	}
 }

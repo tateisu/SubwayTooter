@@ -26,6 +26,7 @@ import jp.juggler.subwaytooter.util.ProgressResponseBody
 import jp.juggler.util.*
 import okhttp3.*
 import org.conscrypt.Conscrypt
+import ru.gildor.coroutines.okhttp.await
 import java.io.File
 import java.io.InputStream
 import java.net.CookieHandler
@@ -524,7 +525,7 @@ class App1 : Application() {
 			.maxAge(1, TimeUnit.DAYS) // キャッシュが新鮮であると考えられる時間
 			.build()
 		
-		fun getHttpCached(url : String) : ByteArray? {
+		suspend fun getHttpCached(url : String) : ByteArray? {
 			val response : Response
 			
 			try {
@@ -533,7 +534,7 @@ class App1 : Application() {
 					.url(url)
 				
 				val call = ok_http_client2.newCall(request_builder.build())
-				response = call.execute()
+				response = call.await()
 			} catch(ex : Throwable) {
 				log.e(ex, "getHttp network error.")
 				return null
@@ -553,7 +554,7 @@ class App1 : Application() {
 			
 		}
 		
-		fun getHttpCachedString(
+		suspend fun getHttpCachedString(
 			url : String,
 			accessInfo : SavedAccount? = null,
 			builderBlock : (Request.Builder) -> Unit = {}
@@ -573,7 +574,7 @@ class App1 : Application() {
 				builderBlock(request_builder)
 				
 				val call = ok_http_client2.newCall(request_builder.build())
-				response = call.execute()
+				response = call.await()
 			} catch(ex : Throwable) {
 				log.e(ex, "getHttp network error.")
 				return null

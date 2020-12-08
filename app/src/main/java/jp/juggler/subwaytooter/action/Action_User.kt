@@ -43,7 +43,7 @@ object Action_User {
 			var relationResult: UserRelation? = null
 			var whoIdResult: EntityId? = null
 
-			override fun background(client: TootApiClient): TootApiResult? {
+			override suspend fun background(client: TootApiClient): TootApiResult? {
 				return if (access_info.isPseudo) {
 					if (!whoAcct.isValidFull) {
 						TootApiResult("can't mute pseudo acct ${whoAcct.pretty}")
@@ -117,7 +117,7 @@ object Action_User {
 				}
 			}
 
-			override fun handleResult(result: TootApiResult?) {
+			override suspend fun handleResult(result: TootApiResult?) {
 				if (result == null) return  // cancelled.
 
 				val relation = relationResult
@@ -318,7 +318,7 @@ object Action_User {
 			var relationResult: UserRelation? = null
 			var whoIdResult: EntityId? = null
 
-			override fun background(client: TootApiClient): TootApiResult? {
+			override suspend fun background(client: TootApiClient): TootApiResult? {
 				if (access_info.isPseudo)
 					return if (whoAcct.ascii.contains('?')) {
 						TootApiResult("can't block pseudo account ${whoAcct.pretty}")
@@ -390,7 +390,7 @@ object Action_User {
 				}
 			}
 
-			override fun handleResult(result: TootApiResult?) {
+			override suspend fun handleResult(result: TootApiResult?) {
 
 				if (result == null) return  // cancelled.
 
@@ -513,7 +513,7 @@ object Action_User {
 
 			var who: TootAccount? = null
 
-			override fun background(client: TootApiClient): TootApiResult? {
+			override suspend fun background(client: TootApiClient): TootApiResult? {
 				val (result, ar) = client.syncAccountByUrl(access_info, who_url)
 				if (result == null) return null
 				who = ar?.get()
@@ -524,7 +524,7 @@ object Action_User {
 				return r2
 			}
 
-			override fun handleResult(result: TootApiResult?) {
+			override suspend fun handleResult(result: TootApiResult?) {
 				result ?: return // cancelled.
 
 				when (val who = this.who) {
@@ -604,13 +604,13 @@ object Action_User {
 
 					var who: TootAccount? = null
 
-					override fun background(client: TootApiClient): TootApiResult? {
+					override suspend fun background(client: TootApiClient): TootApiResult? {
 						val (result, ar) = client.syncAccountByAcct(access_info, acct)
 						who = ar?.get()
 						return result
 					}
 
-					override fun handleResult(result: TootApiResult?) {
+					override suspend fun handleResult(result: TootApiResult?) {
 						result ?: return // cancelled
 						when (val who = this.who) {
 							null -> {
@@ -706,7 +706,7 @@ object Action_User {
         }
 
         TootTaskRunner(activity).run(access_info, object : TootTask {
-			override fun background(client: TootApiClient): TootApiResult? {
+			override suspend fun background(client: TootApiClient): TootApiResult? {
 				return client.request(
 					"/api/v1/reports",
 					JsonObject().apply {
@@ -722,7 +722,7 @@ object Action_User {
 				)
 			}
 
-			override fun handleResult(result: TootApiResult?) {
+			override suspend fun handleResult(result: TootApiResult?) {
 				result ?: return // cancelled.
 
 				if (result.jsonObject != null) {
@@ -748,7 +748,7 @@ object Action_User {
         TootTaskRunner(activity).run(access_info, object : TootTask {
 
 			var relation: UserRelation? = null
-			override fun background(client: TootApiClient): TootApiResult? {
+			override suspend fun background(client: TootApiClient): TootApiResult? {
 
 				val result = client.request(
 					"/api/v1/accounts/${who.id}/follow",
@@ -776,7 +776,7 @@ object Action_User {
 				return result
 			}
 
-			override fun handleResult(result: TootApiResult?) {
+			override suspend fun handleResult(result: TootApiResult?) {
 
 				if (result == null) return  // cancelled.
 
@@ -847,11 +847,11 @@ object Action_User {
             return
         }
         TootTaskRunner(activity).run(access_info, object : TootTask {
-			override fun background(client: TootApiClient): TootApiResult? {
+			override suspend fun background(client: TootApiClient): TootApiResult? {
 				return client.request("/api/v1/suggestions/${who.id}", Request.Builder().delete())
 			}
 
-			override fun handleResult(result: TootApiResult?) {
+			override suspend fun handleResult(result: TootApiResult?) {
 				// cancelled
 				result ?: return
 
@@ -879,7 +879,7 @@ object Action_User {
 		enabled: Boolean
 	) {
         TootTaskRunner(activity).run(accessInfo, object : TootTask {
-			override fun background(client: TootApiClient): TootApiResult? {
+			override suspend fun background(client: TootApiClient): TootApiResult? {
 				return client.request(
 					"/api/v1/accounts/$whoId/follow",
 					jsonObject {
@@ -901,7 +901,7 @@ object Action_User {
 				}
 			}
 
-			override fun handleResult(result: TootApiResult?) {
+			override suspend fun handleResult(result: TootApiResult?) {
 				// cancelled
 				result ?: return
 

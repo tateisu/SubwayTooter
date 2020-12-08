@@ -175,7 +175,7 @@ object Action_Follow {
 			
 			var relation : UserRelation? = null
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				val parser = TootParser(activity, access_info)
 				
 				var userId = who.id
@@ -257,7 +257,7 @@ object Action_Follow {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				
 				if(result == null) return  // cancelled.
 				
@@ -340,7 +340,7 @@ object Action_Follow {
 			
 			var relation : UserRelation? = null
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				return if(access_info.isMisskey) {
 					
@@ -371,7 +371,7 @@ object Action_Follow {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				
 				if(result == null) return  // cancelled.
 				
@@ -470,7 +470,7 @@ object Action_Follow {
 			
 			var relation : UserRelation? = null
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				val parser = TootParser(activity, access_info)
 				
@@ -511,7 +511,7 @@ object Action_Follow {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				
 				if(result == null) return  // cancelled.
 				
@@ -594,7 +594,7 @@ object Action_Follow {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				val parser = TootParser(activity, access_info)
 				
@@ -629,7 +629,7 @@ object Action_Follow {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				if(result == null) return  // cancelled.
 				
 				val jsonObject = result.jsonObject

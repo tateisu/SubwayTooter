@@ -37,7 +37,7 @@ object Action_Filter {
 			
 			var filterList : ArrayList<TootFilter>? = null
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				var result =
 					client.request("/api/v1/filters/${filter.id}", Request.Builder().delete())
 				if(result != null && result.error == null) {
@@ -48,7 +48,7 @@ object Action_Filter {
 				return result
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				if(result == null) return  // cancelled.
 				
 				val filterList = this.filterList

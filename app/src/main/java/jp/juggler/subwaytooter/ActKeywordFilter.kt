@@ -162,7 +162,7 @@ class ActKeywordFilter
 		loading = true
 		TootTaskRunner(this).run(account, object : TootTask {
 			var filter : TootFilter? = null
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				val result = client.request("${Column.PATH_FILTERS}/${filter_id}")
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
@@ -171,7 +171,7 @@ class ActKeywordFilter
 				return result
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				loading = false
 				val filter = this.filter
 				if(filter != null) {
@@ -271,7 +271,7 @@ class ActKeywordFilter
 		
 		TootTaskRunner(this).run(account, object : TootTask {
 			
-			override fun background(client : TootApiClient) = if(filter_id == null) {
+			override suspend fun background(client : TootApiClient) = if(filter_id == null) {
 				client.request(
 					Column.PATH_FILTERS,
 					params.toPostRequestBuilder()
@@ -283,7 +283,7 @@ class ActKeywordFilter
 				)
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return
 				val error = result.error
 				if(error != null) {

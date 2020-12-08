@@ -76,7 +76,7 @@ abstract class ColumnTask(
 			return "${Column.PATH_PROFILE_DIRECTORY}&order=$order&local=$local"
 		}
 	
-	internal fun getAnnouncements(
+	internal suspend fun getAnnouncements(
 		client : TootApiClient,
 		force : Boolean = false
 	) : TootApiResult? {
@@ -119,12 +119,11 @@ abstract class ColumnTask(
 		job?.cancel()
 	}
 	
-	abstract fun doInBackground() : TootApiResult?
-	abstract fun onPostExecute(result : TootApiResult?)
+	abstract suspend fun doInBackground() : TootApiResult?
+	abstract suspend fun onPostExecute(result : TootApiResult?)
 	
 	fun start() {
 		job = GlobalScope.launch(Dispatchers.Main) {
-			
 			val result = try {
 				withContext(Dispatchers.IO) {
 					doInBackground()

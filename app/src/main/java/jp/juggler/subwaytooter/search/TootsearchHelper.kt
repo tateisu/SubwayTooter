@@ -24,7 +24,7 @@ object TootsearchHelper {
     private fun getNextId(root: JsonObject, oldSize: Int): String? =
         getHits(root)?.size?.takeIf { it > 0 }?.let { (oldSize + it) }?.toString()
 
-    private fun TootApiClient.search(query: String, from: Int?): TootApiResult? {
+    private suspend fun TootApiClient.search(query: String, from: Int?): TootApiResult? {
         val result = TootApiResult.makeWithCaption("Tootsearch")
         if (result.error != null) return result
         if (!sendRequest(result) {
@@ -57,7 +57,7 @@ object TootsearchHelper {
             }
         }
 
-    fun ColumnTask_Loading.loadingTootsearch(client: TootApiClient): TootApiResult? {
+    suspend fun ColumnTask_Loading.loadingTootsearch(client: TootApiClient): TootApiResult? {
         column.idOld = null
         val q = column.search_query.trim { it <= ' ' }
         return if (q.isEmpty()) {
@@ -80,7 +80,7 @@ object TootsearchHelper {
         }
     }
 
-    fun ColumnTask_Refresh.refreshTootsearch(client: TootApiClient): TootApiResult? {
+    suspend fun ColumnTask_Refresh.refreshTootsearch(client: TootApiClient): TootApiResult? {
         if (!bBottom) return TootApiResult("head of list.")
 
         val q = column.search_query.trim { it <= ' ' }

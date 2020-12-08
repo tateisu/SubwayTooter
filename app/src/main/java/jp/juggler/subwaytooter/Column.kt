@@ -265,7 +265,7 @@ class Column(
 
 					var filter_list: ArrayList<TootFilter>? = null
 
-					override fun background(client: TootApiClient): TootApiResult? {
+					override suspend fun background(client: TootApiClient): TootApiResult? {
 						val result = client.request(PATH_FILTERS)
 						val jsonArray = result?.jsonArray
 						if (jsonArray != null) {
@@ -274,7 +274,7 @@ class Column(
 						return result
 					}
 
-					override fun handleResult(result: TootApiResult?) {
+					override suspend fun handleResult(result: TootApiResult?) {
 						val filter_list = this.filter_list
 						if (filter_list != null) {
 							log.d("update filters for ${access_info.acct.pretty}")
@@ -1706,7 +1706,7 @@ class Column(
     //		return null;
     //	}
 
-    internal fun loadProfileAccount(
+    internal suspend fun loadProfileAccount(
 		client: TootApiClient,
 		parser: TootParser,
 		bForceReload: Boolean
@@ -1784,7 +1784,7 @@ class Column(
             add(n.status)
         }
 
-        fun update(client: TootApiClient, parser: TootParser) {
+        suspend fun update(client: TootApiClient, parser: TootParser) {
 
             var n: Int
             var size: Int
@@ -1925,7 +1925,7 @@ class Column(
     }
 
     //
-    internal fun updateRelation(
+    internal suspend fun updateRelation(
 		client: TootApiClient,
 		list: ArrayList<TimelineItem>?,
 		whoRef: TootAccountRef?,
@@ -2222,7 +2222,7 @@ class Column(
 
     private var cacheHeaderDesc: String? = null
 
-    fun getHeaderDesc(): String? {
+    fun getHeaderDesc(): String {
         var cache = cacheHeaderDesc
         if (cache != null) return cache
         cache = when (type) {
@@ -3069,7 +3069,7 @@ class Column(
     }
 
     // フィルタを読み直してリストを返す。またはnull
-    internal fun loadFilter2(client: TootApiClient): ArrayList<TootFilter>? {
+    internal suspend fun loadFilter2(client: TootApiClient): ArrayList<TootFilter>? {
         if (access_info.isPseudo || access_info.isMisskey) return null
         val column_context = getFilterContext()
         if (column_context == 0) return null

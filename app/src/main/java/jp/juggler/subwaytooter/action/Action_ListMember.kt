@@ -31,7 +31,7 @@ object Action_ListMember {
 	) {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				
 				val parser = TootParser(activity, access_info)
 				
@@ -105,7 +105,7 @@ object Action_ListMember {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				var bSuccess = false
 				
 				try {
@@ -179,7 +179,7 @@ object Action_ListMember {
 		callback : Callback?
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				return if(access_info.isMisskey) {
 					client.request(
 						"/api/users/lists/pull",
@@ -197,7 +197,7 @@ object Action_ListMember {
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				var bSuccess = false
 				
 				try {

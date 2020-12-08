@@ -10,6 +10,5 @@ typealias SavedAccountCallback = (ai : SavedAccount) -> Unit
 
 typealias DialogInterfaceCallback = (dialog : DialogInterface) -> Unit
 
-typealias ProgressResponseBodyCallback = (bytesRead : Long, bytesTotal : Long) -> Unit
 
 val emptyCallback : () -> Unit = {}

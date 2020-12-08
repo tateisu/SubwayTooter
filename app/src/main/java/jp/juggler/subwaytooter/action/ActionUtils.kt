@@ -35,13 +35,13 @@ internal fun addPseudoAccount(
 				
 				var targetInstance : TootInstance? = null
 				
-				override fun background(client : TootApiClient) : TootApiResult? {
+				override suspend fun background(client : TootApiClient) : TootApiResult? {
 					val (instance, instanceResult) = TootInstance.get(client)
 					targetInstance = instance
 					return instanceResult
 				}
 				
-				override fun handleResult(result : TootApiResult?) = when {
+				override suspend fun handleResult(result : TootApiResult?) = when {
 					result == null -> {
 					}
 					

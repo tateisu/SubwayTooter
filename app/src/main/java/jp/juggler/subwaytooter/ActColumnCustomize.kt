@@ -242,7 +242,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         TootTaskRunner(this).run(object : TootTask {
 			var bgUri: String? = null
 
-			override fun background(client: TootApiClient): TootApiResult? {
+			@Suppress("BlockingMethodInNonBlockingContext")
+			override suspend fun background(client: TootApiClient): TootApiResult? {
 				try {
 					val backgroundDir = Column.getBackgroundImageDir(this@ActColumnCustomize)
 					val file =
@@ -289,7 +290,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 				}
 			}
 
-			override fun handleResult(result: TootApiResult?) {
+			override suspend fun handleResult(result: TootApiResult?) {
 				val bgUri = this.bgUri
 				when {
 					result == null -> return

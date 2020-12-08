@@ -1854,7 +1854,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 			var host: Host? = null
 			var ti: TootInstance? = null
 
-			override fun background(client: TootApiClient): TootApiResult? {
+			override suspend fun background(client: TootApiClient): TootApiResult? {
 
 				val uriStr = uri.toString()
 				if (uriStr.startsWith("subwaytooter://misskey/auth_callback")
@@ -1980,7 +1980,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				}
 			}
 
-			override fun handleResult(result: TootApiResult?) {
+			override suspend fun handleResult(result: TootApiResult?) {
 				val host = this.host
 				val ta = this.ta
 				var sa = this.sa
@@ -2141,7 +2141,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 			var ta: TootAccount? = null
 			var ti: TootInstance? = null
 
-			override fun background(client: TootApiClient): TootApiResult? {
+			override suspend fun background(client: TootApiClient): TootApiResult? {
 
 				val (instance, instanceResult) = TootInstance.get(client, apiHost)
 				instance ?: return instanceResult
@@ -2163,7 +2163,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 				return result
 			}
 
-			override fun handleResult(result: TootApiResult?) {
+			override suspend fun handleResult(result: TootApiResult?) {
 				if (afterAccountVerify(result, ta, sa, ti, apiHost)) {
 					dialog_host?.dismissSafe()
 					dialog_token?.dismissSafe()

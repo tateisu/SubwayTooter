@@ -182,7 +182,7 @@ class PollingWorker private constructor(contextArg: Context) {
                     .build()
 
                 val call = App1.ok_http_client.newCall(request)
-                if (job != null) job.current_call = call
+                job?.currentCall = WeakReference(call)
                 val response = call.await()
 
                 val body = response.body?.string()
@@ -450,7 +450,6 @@ class PollingWorker private constructor(contextArg: Context) {
 
     internal val job_list = LinkedList<JobItem>()
 
-    private val workerJob: Job
     private val workerNotifier = Channel<Unit>(capacity = Channel.CONFLATED)
 
     init {
@@ -500,7 +499,7 @@ class PollingWorker private constructor(contextArg: Context) {
 
         wifi_lock.setReferenceCounted(false)
 
-        workerJob = GlobalScope.launch(Dispatchers.Default) { worker() }
+        GlobalScope.launch(Dispatchers.Default) { worker() }
     }
 
     @SuppressLint("WakelockTimeout")
@@ -697,11 +696,10 @@ class PollingWorker private constructor(contextArg: Context) {
         var bPollingComplete = false
         var install_id: String? = null
 
-        var current_call: Call? = null
-
+        var currentCall: WeakReference<Call>? = null
 
         val isJobCancelled: Boolean
-            get() = mJobCancelled_.get() || workerJob.isCancelled
+            get() = mJobCancelled_.get()
 
         constructor(jobService: JobService, params: JobParameters) {
             this.jobParams = params
@@ -718,7 +716,7 @@ class PollingWorker private constructor(contextArg: Context) {
         fun cancel(bReschedule: Boolean) {
             mJobCancelled_.set(true)
             mReschedule.set(bReschedule)
-            current_call?.cancel()
+            currentCall?.get()?.cancel()
             runBlocking { workerNotifier.send(Unit) }
         }
 

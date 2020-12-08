@@ -2697,7 +2697,7 @@ internal class ItemViewHolder(
 		
 		TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
 			object : TootTask {
-				override fun background(client : TootApiClient) : TootApiResult? {
+				override suspend fun background(client : TootApiClient) : TootApiResult? {
 					val params = access_info.putMisskeyApiToken().apply {
 						put("noteId", status.id.toString())
 						put("reaction", code)
@@ -2712,7 +2712,7 @@ internal class ItemViewHolder(
 					return result
 				}
 				
-				override fun handleResult(result : TootApiResult?) {
+				override suspend fun handleResult(result : TootApiResult?) {
 					result ?: return
 					
 					val error = result.error
@@ -2757,7 +2757,7 @@ internal class ItemViewHolder(
 		
 		TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
 			object : TootTask {
-				override fun background(client : TootApiClient) : TootApiResult? =
+				override suspend fun background(client : TootApiClient) : TootApiResult? =
 					// 成功すると204 no content
 					client.request(
 						"/api/notes/reactions/delete",
@@ -2767,7 +2767,7 @@ internal class ItemViewHolder(
 							.toPostRequestBuilder()
 					)
 				
-				override fun handleResult(result : TootApiResult?) {
+				override suspend fun handleResult(result : TootApiResult?) {
 					result ?: return
 					
 					val error = result.error
@@ -3082,7 +3082,7 @@ internal class ItemViewHolder(
 		}
 		
 		TootTaskRunner(context).run(accessInfo, object : TootTask {
-			override fun background(client : TootApiClient) = when(enquete.pollType) {
+			override suspend fun background(client : TootApiClient) = when(enquete.pollType) {
 				TootPollsType.Misskey -> client.request(
 					"/api/notes/polls/vote",
 					accessInfo.putMisskeyApiToken().apply {
@@ -3106,7 +3106,7 @@ internal class ItemViewHolder(
 				TootPollsType.Notestock-> TootApiResult("can't vote on pseudo account column.")
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return  // cancelled.
 				
 				val data = result.jsonObject
@@ -3179,7 +3179,7 @@ internal class ItemViewHolder(
 			
 			var newPoll : TootPolls? = null
 			
-			override fun background(client : TootApiClient) : TootApiResult? {
+			override suspend fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/polls/${enquete.pollId}/votes",
 					jsonObject {
@@ -3204,7 +3204,7 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
+			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return  // cancelled.
 				
 				val newPoll = this.newPoll

@@ -262,7 +262,7 @@ class NotificationCache(private val account_db_id : Long) {
 		
 	}
 	
-	fun request(
+	suspend fun requestAsync(
 		client : TootApiClient,
 		account : SavedAccount,
 		flags : Int,
@@ -291,9 +291,9 @@ class NotificationCache(private val account_db_id : Long) {
 				}
 				
 				val result = if(account.isMisskey) {
-					client.request(path, account.putMisskeyApiToken().toPostRequestBuilder())
+					client.requestAsync(path, account.putMisskeyApiToken().toPostRequestBuilder())
 				} else {
-					client.request(path)
+					client.requestAsync(path)
 				}
 				
 				if(result == null) {

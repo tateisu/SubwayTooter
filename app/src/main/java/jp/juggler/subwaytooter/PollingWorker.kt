@@ -15,7 +15,6 @@ import android.net.ConnectivityManager
 import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
-import android.os.Handler
 import android.os.PowerManager
 import android.os.SystemClock
 import android.service.notification.StatusBarNotification
@@ -24,6 +23,7 @@ import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessaging
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.*
@@ -31,7 +31,9 @@ import jp.juggler.subwaytooter.table.NotificationCache.Companion.getEntityOrderI
 import jp.juggler.subwaytooter.table.NotificationCache.Companion.parseNotificationType
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.tasks.await
 import okhttp3.Call
 import okhttp3.Request
@@ -41,15 +43,11 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 import kotlin.math.min
 
 class PollingWorker private constructor(contextArg: Context) {
-
-    interface JobStatusCallback {
-
-        fun onStatus(sv: String)
-    }
 
     enum class TrackingType(val str: String) {
         All("all"),
@@ -66,6 +64,14 @@ class PollingWorker private constructor(contextArg: Context) {
             }
         }
 
+    }
+
+    internal class Data(val access_info: SavedAccount, val notification: TootNotification)
+
+    internal class InjectData {
+
+        var account_db_id: Long = 0
+        val list = ArrayList<TootNotification>()
     }
 
     companion object {
@@ -122,45 +128,44 @@ class PollingWorker private constructor(contextArg: Context) {
             return s
         }
 
-        suspend fun getFirebaseMessagingToken(context:Context):String?{
-			val prefDevice = PrefDevice.prefDevice(context)
-			// 設定ファイルに保持されていたらそれを使う
-			prefDevice
-					.getString(PrefDevice.KEY_DEVICE_TOKEN, null)
-					?.notEmpty()?.let{ return it}
+        suspend fun getFirebaseMessagingToken(context: Context): String? {
+            val prefDevice = PrefDevice.prefDevice(context)
+            // 設定ファイルに保持されていたらそれを使う
+            prefDevice
+                .getString(PrefDevice.KEY_DEVICE_TOKEN, null)
+                ?.notEmpty()?.let { return it }
 
-			// 古い形式
-        	// return FirebaseInstanceId.getInstance().getToken(FCM_SENDER_ID, FCM_SCOPE)
+            // 古い形式
+            // return FirebaseInstanceId.getInstance().getToken(FCM_SENDER_ID, FCM_SCOPE)
 
-        	// com.google.firebase:firebase-messaging.20.3.0 以降
-			// implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$kotlinx_coroutines_version"
-			try{
-				val sv = FirebaseMessaging.getInstance().token.await()
-				return if (sv.isNullOrBlank()) {
-					log.e("getFirebaseMessagingToken: missing device token.")
-					null
-				} else {
-					prefDevice
-						.edit()
-						.putString(PrefDevice.KEY_DEVICE_TOKEN, sv)
-						.apply()
-					sv
-				}
-			}catch(ex:Throwable){
-				log.trace(ex, "getFirebaseMessagingToken: could not get device token.")
-				return null
-			}
-		}
-
+            // com.google.firebase:firebase-messaging.20.3.0 以降
+            // implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$kotlinx_coroutines_version"
+            try {
+                val sv = FirebaseMessaging.getInstance().token.await()
+                return if (sv.isNullOrBlank()) {
+                    log.e("getFirebaseMessagingToken: missing device token.")
+                    null
+                } else {
+                    prefDevice
+                        .edit()
+                        .putString(PrefDevice.KEY_DEVICE_TOKEN, sv)
+                        .apply()
+                    sv
+                }
+            } catch (ex: Throwable) {
+                log.trace(ex, "getFirebaseMessagingToken: could not get device token.")
+                return null
+            }
+        }
 
 
         // インストールIDを生成する前に、各データの通知登録キャッシュをクリアする
         // トークンがまだ生成されていない場合、このメソッドは null を返します。
         @Suppress("BlockingMethodInNonBlockingContext")
         suspend fun prepareInstallId(
-			context: Context,
-			job: JobItem? = null
-		): String? {
+            context: Context,
+            job: JobItem? = null
+        ): String? {
             val prefDevice = PrefDevice.prefDevice(context)
 
             var sv = prefDevice.getString(PrefDevice.KEY_INSTALL_ID, null)
@@ -169,8 +174,8 @@ class PollingWorker private constructor(contextArg: Context) {
             SavedAccount.clearRegistrationCache()
 
             try {
-				val device_token = getFirebaseMessagingToken(context)
-					?: return null
+                val device_token = getFirebaseMessagingToken(context)
+                    ?: return null
 
                 val request = Request.Builder()
                     .url("$APP_SERVER/counter")
@@ -184,11 +189,11 @@ class PollingWorker private constructor(contextArg: Context) {
 
                 if (!response.isSuccessful || body?.isEmpty() != false) {
                     log.e(
-						TootApiClient.formatResponse(
-							response,
-							"getInstallId: get /counter failed."
-						)
-					)
+                        TootApiClient.formatResponse(
+                            response,
+                            "getInstallId: get/counter failed."
+                        )
+                    )
                     return null
                 }
 
@@ -224,14 +229,14 @@ class PollingWorker private constructor(contextArg: Context) {
                 val minute = 60000L
 
                 val intervalMillis = max(
-					minute * 5L,
-					minute * Pref.spPullNotificationCheckInterval.toInt(context.pref())
-				)
+                    minute * 5L,
+                    minute * Pref.spPullNotificationCheckInterval.toInt(context.pref())
+                )
 
                 val flexMillis = max(
-					minute,
-					intervalMillis shr 1
-				)
+                    minute,
+                    intervalMillis shr 1
+                )
 
                 fun JobInfo.Builder.setPeriodicCompat(intervalMillis: Long, flexMillis: Long) =
                     this.apply {
@@ -261,19 +266,19 @@ class PollingWorker private constructor(contextArg: Context) {
 
         // タスクの追加
         private fun addTask(
-			context: Context,
-			removeOld: Boolean,
-			task_id: Int,
-			taskDataArg: JsonObject?
-		) {
+            context: Context,
+            removeOld: Boolean,
+            task_id: Int,
+            taskDataArg: JsonObject?
+        ) {
             try {
                 task_list.addLast(
-					context,
-					removeOld,
-					(taskDataArg ?: JsonObject()).apply {
-						put(EXTRA_TASK_ID, task_id)
-					}
-				)
+                    context,
+                    removeOld,
+                    (taskDataArg ?: JsonObject()).apply {
+                        put(EXTRA_TASK_ID, task_id)
+                    }
+                )
                 scheduleJob(context, JOB_TASK)
             } catch (ex: Throwable) {
                 log.trace(ex)
@@ -286,10 +291,10 @@ class PollingWorker private constructor(contextArg: Context) {
         }
 
         fun injectData(
-			context: Context,
-			account: SavedAccount,
-			src: List<TootNotification>
-		) {
+            context: Context,
+            account: SavedAccount,
+            src: List<TootNotification>
+        ) {
 
             if (src.isEmpty()) return
 
@@ -317,17 +322,17 @@ class PollingWorker private constructor(contextArg: Context) {
             uri ?: return null
             return jsonObject {
                 putNotNull(
-					EXTRA_DB_ID,
-					uri.getQueryParameter("db_id")?.toLongOrNull()
-				)
+                    EXTRA_DB_ID,
+                    uri.getQueryParameter("db_id")?.toLongOrNull()
+                )
                 putNotNull(
-					EXTRA_NOTIFICATION_TYPE,
-					uri.getQueryParameter("type")?.notEmpty()
-				)
+                    EXTRA_NOTIFICATION_TYPE,
+                    uri.getQueryParameter("type")?.notEmpty()
+                )
                 putNotNull(
-					EXTRA_NOTIFICATION_ID,
-					uri.getQueryParameter("notificationId")?.notEmpty()
-				)
+                    EXTRA_NOTIFICATION_ID,
+                    uri.getQueryParameter("notificationId")?.notEmpty()
+                )
             }
         }
 
@@ -371,29 +376,43 @@ class PollingWorker private constructor(contextArg: Context) {
             addTask(context, true, TASK_PACKAGE_REPLACED, null)
         }
 
-        internal val job_status = AtomicReference<String>(null)
+        private val job_status = AtomicReference<String>(null)
 
-        fun handleFCMMessage(context: Context, tag: String?, callback: JobStatusCallback) {
-            log.d("handleFCMMessage: start. tag=$tag")
-            val time_start = SystemClock.elapsedRealtime()
-
-            callback.onStatus("=>")
-
-            // タスクを追加
-            val data = JsonObject().apply {
-                try {
-                    putNotNull(EXTRA_TAG, tag)
-                    this[EXTRA_TASK_ID] = TASK_FCM_MESSAGE
-                } catch (_: JsonException) {
-                }
+        private var workerStatus: String
+            get() = job_status.get()
+            set(x) {
+                log.d("workerStatus:$x")
+                job_status.set(x)
             }
 
-            task_list.addLast(context, true, data)
+        // IntentServiceが作ったスレッドから呼ばれる
+        suspend fun handleFCMMessage(
+            context: Context,
+            tag: String?,
+            progress: (String) -> Unit
+        ) {
+            log.d("handleFCMMessage: start. tag=$tag")
 
-            callback.onStatus("==>")
+            val time_start = SystemClock.elapsedRealtime()
+
+            // この呼出でIntentServiceがstartForegroundする
+            progress("=>")
+
+            // タスクを追加
+            task_list.addLast(
+                context,
+                true,
+                JsonObject().apply {
+                    this[EXTRA_TASK_ID] = TASK_FCM_MESSAGE
+                    if (tag != null) this[EXTRA_TAG] = tag
+                }
+            )
+
+            progress("==>")
 
             // 疑似ジョブを開始
             val pw = getInstance(context)
+
             pw.addJobFCM()
 
             // 疑似ジョブが終了するまで待機する
@@ -402,54 +421,40 @@ class PollingWorker private constructor(contextArg: Context) {
                 val now = SystemClock.elapsedRealtime()
                 if (!pw.hasJob(JOB_FCM)) {
                     log.d(
-						"handleFCMMessage: JOB_FCM completed. time=%.2f",
-						(now - time_start) / 1000f
-					)
+                        "handleFCMMessage: JOB_FCM completed. time=%.2f",
+                        (now - time_start) / 1000f
+                    )
                     break
                 }
+
                 // ジョブの状況を通知する
-                var sv: String? = job_status.get()
-                if (sv == null) sv = "(null)"
-                callback.onStatus(sv)
+                progress(job_status.get() ?: "(null)")
 
                 // 少し待機
-                try {
-                    Thread.sleep(50L)
-                } catch (ex: InterruptedException) {
-                    log.e(ex, "handleFCMMessage: blocking is interrupted.")
-                    break
-                }
-
+                delay(50L)
             }
         }
     }
 
+
     internal val context: Context
     private val appState: AppState
-    internal val handler: Handler
     internal val pref: SharedPreferences
     private val connectivityManager: ConnectivityManager
     internal val notification_manager: NotificationManager
     internal val scheduler: JobScheduler
     private val power_manager: PowerManager?
-    internal val power_lock: PowerManager.WakeLock
+    private val power_lock: PowerManager.WakeLock
     private val wifi_manager: WifiManager?
-    internal val wifi_lock: WifiManager.WifiLock
-
-    private var worker: Worker
+    private val wifi_lock: WifiManager.WifiLock
 
     internal val job_list = LinkedList<JobItem>()
 
-    internal class Data(val access_info: SavedAccount, val notification: TootNotification)
-
-    internal class InjectData {
-
-        var account_db_id: Long = 0
-        val list = ArrayList<TootNotification>()
-    }
+    private val workerJob: Job
+    private val workerNotifier = Channel<Unit>(capacity = Channel.CONFLATED)
 
     init {
-        log.d("ctor")
+        log.d("init")
 
         val context = contextArg.applicationContext
 
@@ -457,9 +462,8 @@ class PollingWorker private constructor(contextArg: Context) {
 
         // クラッシュレポートによると App1.onCreate より前にここを通る場合がある
         // データベースへアクセスできるようにする
-        this.appState = App1.prepare(context, "PollingWorker.ctor()")
+        this.appState = App1.prepare(context, "PollingWorker.init")
         this.pref = App1.pref
-        this.handler = appState.handler
 
         this.connectivityManager = systemService(context)
             ?: error("missing ConnectivityManager system service")
@@ -479,16 +483,16 @@ class PollingWorker private constructor(contextArg: Context) {
             ?: error("missing WifiManager system service")
 
         power_lock = power_manager.newWakeLock(
-			PowerManager.PARTIAL_WAKE_LOCK,
-			PollingWorker::class.java.name
-		)
+            PowerManager.PARTIAL_WAKE_LOCK,
+            PollingWorker::class.java.name
+        )
         power_lock.setReferenceCounted(false)
 
         wifi_lock = if (Build.VERSION.SDK_INT >= 29) {
             wifi_manager.createWifiLock(
-				WifiManager.WIFI_MODE_FULL_HIGH_PERF,
-				PollingWorker::class.java.name
-			)
+                WifiManager.WIFI_MODE_FULL_HIGH_PERF,
+                PollingWorker::class.java.name
+            )
         } else {
             @Suppress("DEPRECATION")
             wifi_manager.createWifiLock(PollingWorker::class.java.name)
@@ -496,99 +500,87 @@ class PollingWorker private constructor(contextArg: Context) {
 
         wifi_lock.setReferenceCounted(false)
 
-        //
-        worker = Worker()
-        worker.start()
+        workerJob = GlobalScope.launch(Dispatchers.Default) { worker() }
     }
 
-    inner class Worker : WorkerBase() {
-
-        val bThreadCancelled = AtomicBoolean(false)
-
-        override fun cancel() {
-            bThreadCancelled.set(true)
-            notifyEx()
+    @SuppressLint("WakelockTimeout")
+    private fun acquirePowerLock() {
+        log.d("acquire power lock...")
+        try {
+            if (!power_lock.isHeld) {
+                power_lock.acquire()
+            }
+        } catch (ex: Throwable) {
+            log.trace(ex)
         }
 
-        @SuppressLint("WakelockTimeout")
-        private fun acquirePowerLock() {
-            log.d("acquire power lock...")
-            try {
-                if (!power_lock.isHeld) {
-                    power_lock.acquire()
-                }
-            } catch (ex: Throwable) {
-                log.trace(ex)
+        try {
+            if (!wifi_lock.isHeld) {
+                wifi_lock.acquire()
             }
+        } catch (ex: Throwable) {
+            log.trace(ex)
+        }
+    }
 
-            try {
-                if (!wifi_lock.isHeld) {
-                    wifi_lock.acquire()
-                }
-            } catch (ex: Throwable) {
-                log.trace(ex)
+    private fun releasePowerLock() {
+        log.d("release power lock...")
+        try {
+            if (power_lock.isHeld) {
+                power_lock.release()
             }
+        } catch (ex: Throwable) {
+            log.trace(ex)
         }
 
-        private fun releasePowerLock() {
-            log.d("release power lock...")
-            try {
-                if (power_lock.isHeld) {
-                    power_lock.release()
-                }
-            } catch (ex: Throwable) {
-                log.trace(ex)
+        try {
+            if (wifi_lock.isHeld) {
+                wifi_lock.release()
             }
-
-            try {
-                if (wifi_lock.isHeld) {
-                    wifi_lock.release()
-                }
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-
+        } catch (ex: Throwable) {
+            log.trace(ex)
         }
+    }
 
-        override fun run() {
-            log.d("worker thread start.")
-            job_status.set("worker thread start.")
-            while (!bThreadCancelled.get()) {
-                try {
-                    val item: JobItem? = synchronized(job_list) {
+    private suspend fun worker() {
+        workerStatus = "worker start."
+        try {
+            suspend fun isActive() = coroutineContext[Job]?.isActive == true
+            while (isActive()) {
+                while (true) {
+                    handleJobItem(synchronized(job_list) {
                         for (ji in job_list) {
-                            if (bThreadCancelled.get()) break
                             if (ji.mJobCancelled_.get()) continue
                             if (ji.mWorkerAttached.compareAndSet(false, true)) {
                                 return@synchronized ji
                             }
                         }
                         null
-                    }
-
-                    if (item == null) {
-                        job_status.set("no job to run.")
-                        waitEx(86400000L)
-                        continue
-                    }
-
-                    job_status.set("start job " + item.jobId)
-                    acquirePowerLock()
-                    try {
-                        item.refWorker.set(this@Worker)
-                        item.run()
-                    } finally {
-                        job_status.set("end job " + item.jobId)
-                        item.refWorker.set(null)
-                        releasePowerLock()
-                    }
-                } catch (ex: Throwable) {
-                    log.trace(ex)
+                    } ?: break)
                 }
-
+                try {
+                    workerNotifier.receive()
+                } catch (ex: ClosedReceiveChannelException) {
+                }
             }
-            job_status.set("worker thread end.")
-            log.d("worker thread end.")
+        } finally {
+            workerStatus = "worker end."
+        }
+    }
+
+    private suspend fun handleJobItem(item: JobItem) {
+        try {
+            workerStatus = "start job ${item.jobId}"
+            acquirePowerLock()
+            try {
+                item.run()
+            } finally {
+                releasePowerLock()
+            }
+        } catch (ex: Throwable) {
+            log.trace(ex)
+        } finally {
+            workerStatus = "end job ${item.jobId}"
         }
     }
 
@@ -612,7 +604,7 @@ class PollingWorker private constructor(contextArg: Context) {
     }
 
     // JobService#onStartJob から呼ばれる
-    fun onStartJob(jobService: JobService, params: JobParameters): Boolean {
+    suspend fun onStartJob(jobService: JobService, params: JobParameters): Boolean {
         val item = JobItem(jobService, params)
         addJob(item, true)
         return true
@@ -631,11 +623,11 @@ class PollingWorker private constructor(contextArg: Context) {
     }
 
     // FCMメッセージイベントから呼ばれる
-    private fun addJobFCM() {
+    private suspend fun addJobFCM() {
         addJob(JobItem(JOB_FCM), false)
     }
 
-    private fun addJob(item: JobItem, bRemoveOld: Boolean) {
+    private suspend fun addJob(item: JobItem, bRemoveOld: Boolean) {
         val jobId = item.jobId
 
         // 同じジョブ番号がジョブリストにあるか？
@@ -656,7 +648,8 @@ class PollingWorker private constructor(contextArg: Context) {
             job_list.add(item)
         }
 
-        worker.notifyEx()
+        workerNotifier.send(Unit)
+
     }
 
     // JobService#onStopJob から呼ばれる
@@ -705,14 +698,9 @@ class PollingWorker private constructor(contextArg: Context) {
 
         var current_call: Call? = null
 
-        val refWorker = AtomicReference<Worker>(null)
 
         val isJobCancelled: Boolean
-            get() {
-                if (mJobCancelled_.get()) return true
-                val worker = refWorker.get()
-                return worker != null && worker.bThreadCancelled.get()
-            }
+            get() = mJobCancelled_.get() || workerJob.isCancelled
 
         constructor(jobService: JobService, params: JobParameters) {
             this.jobParams = params
@@ -726,45 +714,34 @@ class PollingWorker private constructor(contextArg: Context) {
             this.refJobService = null
         }
 
-        fun notifyWorkerThread() {
-            val worker = refWorker.get()
-            worker?.notifyEx()
-        }
-
-        fun waitWorkerThread(ms: Long) {
-            val worker = refWorker.get()
-            worker?.waitEx(ms)
-        }
-
         fun cancel(bReschedule: Boolean) {
             mJobCancelled_.set(true)
             mReschedule.set(bReschedule)
             current_call?.cancel()
-            notifyWorkerThread()
+            runBlocking { workerNotifier.send(Unit) }
         }
 
-        fun run() {
-
-            job_status.set("job start.")
+        suspend fun run() = coroutineScope {
+            workerStatus = "job start."
             try {
                 log.d("(JobItem.run jobId=${jobId}")
                 if (isJobCancelled) throw JobCancelledException()
 
-                job_status.set("check network status..")
+                workerStatus = "check network status.."
 
-                val net_wait_start = SystemClock.elapsedRealtime()
-                while (true) {
-                    val connectionState = App1.getAppState(context, "PollingWorker.JobItem.run()")
-                        .networkTracker.connectionState
-                        ?: break
-                    if (isJobCancelled) throw JobCancelledException()
-                    val now = SystemClock.elapsedRealtime()
-                    val delta = now - net_wait_start
-                    if (delta >= 10000L) {
-                        log.d("network state timeout. $connectionState")
-                        break
+                var connectionState: String? = null
+                try {
+                    withTimeout(10000L) {
+                        while (true) {
+                            if (isJobCancelled) throw JobCancelledException()
+                            connectionState = App1.getAppState(context, "PollingWorker.JobItem.run()")
+                                .networkTracker.connectionState
+                                ?: break // null if connected
+                            delay(333L)
+                        }
                     }
-                    waitWorkerThread(333L)
+                } catch (ex: TimeoutCancellationException) {
+                    log.d("network state timeout. $connectionState")
                 }
 
                 muted_app = MutedApp.nameSet
@@ -783,7 +760,8 @@ class PollingWorker private constructor(contextArg: Context) {
                     // タスクがなかった場合でも定期実行ジョブからの実行ならポーリングを行う
                     TaskRunner().runTask(this@JobItem, TASK_POLLING, JsonObject())
                 }
-                job_status.set("make next schedule.")
+
+                workerStatus = "make next schedule."
 
                 log.d("pollingComplete=${bPollingComplete},isJobCancelled=${isJobCancelled},bPollingRequired=${bPollingRequired.get()}")
 
@@ -809,38 +787,37 @@ class PollingWorker private constructor(contextArg: Context) {
                 log.trace(ex)
                 log.e(ex, "job execution failed.")
             } finally {
-                job_status.set("job finished.")
+                workerStatus = "job finished."
             }
-            // ジョブ終了報告
-            if (!isJobCancelled) {
-                handler.post(Runnable {
-					if (isJobCancelled) return@Runnable
 
-					synchronized(job_list) {
-						job_list.remove(this@JobItem)
-					}
-
-					try {
-						val jobService = refJobService?.get()
-						if (jobService != null) {
-							val willReschedule = mReschedule.get()
-							log.d("sending jobFinished. willReschedule=$willReschedule")
-							jobService.jobFinished(jobParams, willReschedule)
-						}
-					} catch (ex: Throwable) {
-						log.trace(ex, "jobFinished failed(1).")
-					}
-				})
-            }
             log.d(")JobItem.run jobId=${jobId}, cancel=${isJobCancelled}")
-        }
 
+            launch(Dispatchers.Main) {
+                if (isJobCancelled) return@launch
+
+                synchronized(job_list) {
+                    job_list.remove(this@JobItem)
+                }
+
+                refJobService?.get()?.let { jobService ->
+                    try {
+                        // ジョブ終了報告
+                        val willReschedule = mReschedule.get()
+                        log.d("sending jobFinished. willReschedule=$willReschedule")
+                        jobService.jobFinished(jobParams, willReschedule)
+                    } catch (ex: Throwable) {
+                        log.trace(ex, "jobFinished failed(1).")
+                    }
+                }
+            }
+        }
     }
 
+
     private fun TrackingType.trackingTypeName() = when (this) {
-		TrackingType.NotReply -> NotificationHelper.TRACKING_NAME_DEFAULT
-		TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
-		TrackingType.All -> NotificationHelper.TRACKING_NAME_DEFAULT
+        TrackingType.NotReply -> NotificationHelper.TRACKING_NAME_DEFAULT
+        TrackingType.Reply -> NotificationHelper.TRACKING_NAME_REPLY
+        TrackingType.All -> NotificationHelper.TRACKING_NAME_DEFAULT
     }
 
     internal inner class TaskRunner {
@@ -850,323 +827,329 @@ class PollingWorker private constructor(contextArg: Context) {
 
         val error_instance = ArrayList<String>()
 
-        fun runTask(job: JobItem, taskId: Int, taskData: JsonObject) {
-            try {
-                log.d("(runTask: taskId=${taskId}")
-                job_status.set("start task $taskId")
+        suspend fun runTask(job: JobItem, taskId: Int, taskData: JsonObject) {
+            workerStatus = "start task $taskId"
 
-                this.job = job
-                this.taskId = taskId
+            this.job = job
+            this.taskId = taskId
+            var process_db_id = -1L //
 
-                var process_db_id = -1L //
+            coroutineScope {
+                try {
+                    when (taskId) {
+                        TASK_APP_DATA_IMPORT_BEFORE -> {
+                            scheduler.cancelAll()
+                            for (a in SavedAccount.loadAccountList(context)) {
+                                try {
+                                    val notification_tag = a.db_id.toString()
+                                    notification_manager.cancel(notification_tag, NOTIFICATION_ID)
+                                } catch (ex: Throwable) {
+                                    log.trace(ex)
+                                }
 
-                when (taskId) {
-					TASK_APP_DATA_IMPORT_BEFORE -> {
-						scheduler.cancelAll()
-						for (a in SavedAccount.loadAccountList(context)) {
-							try {
-								val notification_tag = a.db_id.toString()
-								notification_manager.cancel(notification_tag, NOTIFICATION_ID)
-							} catch (ex: Throwable) {
-								log.trace(ex)
-							}
+                            }
+                            mBusyAppDataImportBefore.set(false)
+                            return@coroutineScope
+                        }
 
-						}
-						mBusyAppDataImportBefore.set(false)
-						return
-					}
+                        TASK_APP_DATA_IMPORT_AFTER -> {
+                            mBusyAppDataImportAfter.set(false)
+                            mBusyAppDataImportBefore.set(false)
+                            NotificationTracking.resetPostAll()
+                            // fall
+                        }
 
-					TASK_APP_DATA_IMPORT_AFTER -> {
-						mBusyAppDataImportAfter.set(false)
-						mBusyAppDataImportBefore.set(false)
-						NotificationTracking.resetPostAll()
-						// fall
-					}
-
-                }
-
-                // アプリデータのインポート処理がビジーな間、他のジョブは実行されない
-                if (mBusyAppDataImportBefore.get() || mBusyAppDataImportAfter.get()) return
-
-                // タスクによってはポーリング前にすることがある
-                when (taskId) {
-					TASK_DATA_INJECTED -> processInjectedData()
-
-					TASK_BOOT_COMPLETED -> NotificationTracking.resetPostAll()
-
-					TASK_PACKAGE_REPLACED -> NotificationTracking.resetPostAll()
-
-                    // デバイストークンが更新された
-					TASK_FCM_DEVICE_TOKEN -> {
-					}
-
-                    // プッシュ通知が届いた
-					TASK_FCM_MESSAGE -> {
-						var bDone = false
-						val tag = taskData.string(EXTRA_TAG)
-						if (tag != null) {
-							if (tag.startsWith("acct<>")) {
-								val acct = tag.substring(6)
-								val sa = SavedAccount.loadAccountByAcct(context, acct)
-								if (sa != null) {
-									NotificationCache.resetLastLoad(sa.db_id)
-									process_db_id = sa.db_id
-									bDone = true
-								}
-							}
-							if (!bDone) {
-								for (sa in SavedAccount.loadByTag(context, tag)) {
-									NotificationCache.resetLastLoad(sa.db_id)
-									process_db_id = sa.db_id
-									bDone = true
-								}
-							}
-						}
-						if (!bDone) {
-							// タグにマッチする情報がなかった場合、全部読み直す
-							NotificationCache.resetLastLoad()
-						}
-					}
-
-					TASK_NOTIFICATION_CLEAR -> {
-						val db_id = taskData.long(EXTRA_DB_ID)
-						log.d("Notification clear! db_id=$db_id")
-						if (db_id != null) {
-							deleteCacheData(db_id)
-						}
-					}
-
-					TASK_NOTIFICATION_DELETE -> {
-						val db_id = taskData.long(EXTRA_DB_ID)
-						val type = TrackingType.parseStr(taskData.string(EXTRA_NOTIFICATION_TYPE))
-						val typeName = type.trackingTypeName()
-						val id = taskData.string(EXTRA_NOTIFICATION_ID)
-						log.d("Notification deleted! db_id=$db_id,type=$type,id=$id")
-						if (db_id != null) {
-							NotificationTracking.updateRead(db_id, typeName)
-						}
-						return
-					}
-
-					TASK_NOTIFICATION_CLICK -> {
-						val db_id = taskData.long(EXTRA_DB_ID)
-						val type = TrackingType.parseStr(taskData.string(EXTRA_NOTIFICATION_TYPE))
-						val typeName = type.trackingTypeName()
-						val id = taskData.string(EXTRA_NOTIFICATION_ID).notEmpty()
-						log.d("Notification clicked! db_id=$db_id,type=$type,id=$id")
-						if (db_id != null) {
-							// 通知をキャンセル
-							val notification_tag = when (typeName) {
-								"" -> "${db_id}/_"
-								else -> "${db_id}/$typeName"
-							}
-							if (id != null) {
-								val itemTag = "$notification_tag/$id"
-								notification_manager.cancel(itemTag, NOTIFICATION_ID)
-							} else {
-								notification_manager.cancel(notification_tag, NOTIFICATION_ID)
-							}
-							// DB更新処理
-							NotificationTracking.updateRead(db_id, typeName)
-						}
-						return
-					}
-
-                }
-
-                job_status.set("make install id")
-
-                // インストールIDを生成する
-                // インストールID生成時にSavedAccountテーブルを操作することがあるので
-                // アカウントリストの取得より先に行う
-                if (job.install_id == null) {
-                    job.install_id = runBlocking { prepareInstallId(context, job) }
-                }
-
-                // アカウント別に処理スレッドを作る
-                job_status.set("create account thread")
-                val thread_list = LinkedList<AccountThread>()
-                for (_a in SavedAccount.loadAccountList(context)) {
-                    if (_a.isPseudo) continue
-                    if (process_db_id != -1L && _a.db_id != process_db_id) continue
-                    val t = AccountThread(_a)
-                    thread_list.add(t)
-                    t.start()
-                }
-                while (true) {
-                    // 同じホスト名が重複しないようにSetに集める
-                    val liveSet = TreeSet<Host>()
-                    for (t in thread_list) {
-                        if (!t.isAlive) continue
-                        if (job.isJobCancelled) t.cancel()
-                        liveSet.add(t.account.apiHost)
                     }
-                    if (liveSet.isEmpty()) break
 
-                    job_status.set("waiting " + liveSet.joinToString(", ") { it.pretty })
-                    job.waitWorkerThread(if (job.isJobCancelled) 100L else 1000L)
+                    // アプリデータのインポート処理がビジーな間、他のジョブは実行されない
+                    if (mBusyAppDataImportBefore.get() || mBusyAppDataImportAfter.get())
+                        return@coroutineScope
+
+                    // タスクによってはポーリング前にすることがある
+                    when (taskId) {
+                        TASK_DATA_INJECTED -> processInjectedData()
+
+                        TASK_BOOT_COMPLETED -> NotificationTracking.resetPostAll()
+
+                        TASK_PACKAGE_REPLACED -> NotificationTracking.resetPostAll()
+
+                        // デバイストークンが更新された
+                        TASK_FCM_DEVICE_TOKEN -> {
+                        }
+
+                        // プッシュ通知が届いた
+                        TASK_FCM_MESSAGE -> {
+                            var bDone = false
+                            val tag = taskData.string(EXTRA_TAG)
+                            if (tag != null) {
+                                if (tag.startsWith("acct<>")) {
+                                    val acct = tag.substring(6)
+                                    val sa = SavedAccount.loadAccountByAcct(context, acct)
+                                    if (sa != null) {
+                                        NotificationCache.resetLastLoad(sa.db_id)
+                                        process_db_id = sa.db_id
+                                        bDone = true
+                                    }
+                                }
+                                if (!bDone) {
+                                    for (sa in SavedAccount.loadByTag(context, tag)) {
+                                        NotificationCache.resetLastLoad(sa.db_id)
+                                        process_db_id = sa.db_id
+                                        bDone = true
+                                    }
+                                }
+                            }
+                            if (!bDone) {
+                                // タグにマッチする情報がなかった場合、全部読み直す
+                                NotificationCache.resetLastLoad()
+                            }
+                        }
+
+                        TASK_NOTIFICATION_CLEAR -> {
+                            val db_id = taskData.long(EXTRA_DB_ID)
+                            log.d("Notification clear! db_id=$db_id")
+                            if (db_id != null) {
+                                deleteCacheData(db_id)
+                            }
+                        }
+
+                        TASK_NOTIFICATION_DELETE -> {
+                            val db_id = taskData.long(EXTRA_DB_ID)
+                            val type = TrackingType.parseStr(taskData.string(EXTRA_NOTIFICATION_TYPE))
+                            val typeName = type.trackingTypeName()
+                            val id = taskData.string(EXTRA_NOTIFICATION_ID)
+                            log.d("Notification deleted! db_id=$db_id,type=$type,id=$id")
+                            if (db_id != null) {
+                                NotificationTracking.updateRead(db_id, typeName)
+                            }
+                            return@coroutineScope
+                        }
+
+                        TASK_NOTIFICATION_CLICK -> {
+                            val db_id = taskData.long(EXTRA_DB_ID)
+                            val type = TrackingType.parseStr(taskData.string(EXTRA_NOTIFICATION_TYPE))
+                            val typeName = type.trackingTypeName()
+                            val id = taskData.string(EXTRA_NOTIFICATION_ID).notEmpty()
+                            log.d("Notification clicked! db_id=$db_id,type=$type,id=$id")
+                            if (db_id != null) {
+                                // 通知をキャンセル
+                                val notification_tag = when (typeName) {
+                                    "" -> "${db_id}/_"
+                                    else -> "${db_id}/$typeName"
+                                }
+                                if (id != null) {
+                                    val itemTag = "$notification_tag/$id"
+                                    notification_manager.cancel(itemTag, NOTIFICATION_ID)
+                                } else {
+                                    notification_manager.cancel(notification_tag, NOTIFICATION_ID)
+                                }
+                                // DB更新処理
+                                NotificationTracking.updateRead(db_id, typeName)
+                            }
+                            return@coroutineScope
+                        }
+                    }
+
+                    workerStatus = "make install id"
+
+                    // インストールIDを生成する
+                    // インストールID生成時にSavedAccountテーブルを操作することがあるので
+                    // アカウントリストの取得より先に行う
+                    if (job.install_id == null) {
+                        job.install_id = prepareInstallId(context, job)
+                    }
+
+                    // アカウント別に処理スレッドを作る
+                    workerStatus = "create account thread"
+                    val thread_list = LinkedList<AccountRunner>()
+                    suspend fun startForAccount(_a: SavedAccount) {
+                        if (_a.isPseudo) return
+                        thread_list.add(AccountRunner(_a).apply { start() })
+                    }
+                    if (process_db_id != -1L) {
+                        // process_db_id が指定されているなら、そのdb_idだけ処理する
+                        SavedAccount.loadAccount(context, process_db_id)?.let { startForAccount(it) }
+                    } else {
+                        // 全てのアカウントを処理する
+                        SavedAccount.loadAccountList(context).forEach { startForAccount(it) }
+                    }
+
+                    while (true) {
+                        // 同じホスト名が重複しないようにSetに集める
+                        val liveSet = TreeSet<Host>()
+                        for (t in thread_list) {
+                            if (!t.isActive) continue
+                            if (job.isJobCancelled) t.cancel()
+                            liveSet.add(t.account.apiHost)
+                        }
+                        if (liveSet.isEmpty()) break
+                        workerStatus = "waiting ${liveSet.joinToString(", ") { it.pretty }}"
+                        delay(if (job.isJobCancelled) 100L else 1000L)
+                    }
+
+                    synchronized(error_instance) {
+                        createErrorNotification(error_instance)
+                    }
+
+                    if (!job.isJobCancelled) job.bPollingComplete = true
+
+                } catch (ex: Throwable) {
+                    log.trace(ex, "task execution failed.")
+                } finally {
+                    log.d(")runTask: taskId=$taskId")
+                    workerStatus = "end task $taskId"
                 }
-
-                synchronized(error_instance) {
-                    createErrorNotification(error_instance)
-                }
-
-                if (!job.isJobCancelled) job.bPollingComplete = true
-
-            } catch (ex: Throwable) {
-                log.trace(ex, "task execution failed.")
-            } finally {
-                log.d(")runTask: taskId=$taskId")
-                job_status.set("end task $taskId")
             }
         }
 
-        internal inner class AccountThread(
-			val account: SavedAccount
-		) : Thread(), CurrentCallCallback {
+        internal inner class AccountRunner(val account: SavedAccount) {
 
-            private var current_call: Call? = null
+            private var suspendJob: Job? = null
 
-            private val client = TootApiClient(context, callback = object : TootApiCallback {
-				override val isApiCancelled: Boolean
-					get() = job.isJobCancelled
-			})
-
-            private val favMuteSet: HashSet<Acct> get() = job.favMuteSet
             private lateinit var parser: TootParser
+
             private lateinit var cache: NotificationCache
 
-            init {
-                client.currentCallCallback = this
+            private var currentCall: WeakReference<Call>? = null
+
+            ///////////////////
+
+            val isActive: Boolean
+                get() = suspendJob?.isActive ?: true
+
+            private val onCallCreated: (Call) -> Unit =
+                { currentCall = WeakReference(it) }
+
+            private val client = TootApiClient(context, callback = object : TootApiCallback {
+                override val isApiCancelled: Boolean
+                    get() = job.isJobCancelled || (suspendJob?.isCancelled == true)
+            }).apply {
+                currentCallCallback = onCallCreated
             }
 
-            override fun onCallCreated(call: Call) {
-                current_call = call
-            }
+            private val favMuteSet: HashSet<Acct> get() = job.favMuteSet
 
             fun cancel() {
                 try {
-                    current_call?.cancel()
+                    currentCall?.get()?.cancel()
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 }
-
             }
 
-            override fun run() = runBlocking { runSuspend() }
 
-			private suspend fun runSuspend(){
-				try {
-					// 疑似アカウントはチェック対象外
-					if (account.isPseudo) return
+            suspend fun start() {
+                coroutineScope {
+                    this@AccountRunner.suspendJob = launch(Dispatchers.IO) {
+                        runSuspend()
+                    }
+                }
+            }
 
-					// 未確認アカウントはチェック対象外
-					if (!account.isConfirmed) return
+            private val onError: (TootApiResult) -> Unit = { result ->
+                val sv = result.error
+                if (sv?.contains("Timeout") == true && !account.dont_show_timeout) {
+                    synchronized(error_instance) {
+                        if (!error_instance.any { it == sv }) error_instance.add(sv)
+                    }
+                }
+            }
 
-					client.account = account
+            private suspend fun runSuspend() {
+                try {
+                    // 疑似アカウントはチェック対象外
+                    if (account.isPseudo) return
 
-					val wps = PushSubscriptionHelper(context, account)
+                    // 未確認アカウントはチェック対象外
+                    if (!account.isConfirmed) return
 
-					if (wps.flags != 0) {
-						job.bPollingRequired.set(true)
+                    client.account = account
 
-						val (instance, instanceResult) = TootInstance.get(client)
-						if (instance == null) {
-							if (instanceResult != null) {
-								log.e("${instanceResult.error} ${instanceResult.requestInfo}".trim())
-								account.updateNotificationError("${instanceResult.error} ${instanceResult.requestInfo}".trim())
-							}
-							return
-						}
+                    val wps = PushSubscriptionHelper(context, account)
 
-						if (job.isJobCancelled) return
-					}
+                    if (wps.flags != 0) {
+                        job.bPollingRequired.set(true)
 
-					wps.updateSubscription(client) ?: return // cancelled.
+                        val (instance, instanceResult) = TootInstance.get(client)
+                        if (instance == null) {
+                            if (instanceResult != null) {
+                                log.e("${instanceResult.error} ${instanceResult.requestInfo}".trim())
+                                account.updateNotificationError("${instanceResult.error} ${instanceResult.requestInfo}".trim())
+                            }
+                            return
+                        }
 
-					val wps_log = wps.log
-					if (wps_log.isNotEmpty())
-						log.d("PushSubscriptionHelper: ${account.acct.pretty} $wps_log")
+                        if (job.isJobCancelled) return
+                    }
 
-					if (job.isJobCancelled) return
+                    wps.updateSubscription(client) ?: return // cancelled.
 
-					if (wps.flags == 0) {
-						if (account.last_notification_error != null) {
-							account.updateNotificationError(null)
-						}
-						return
-					}
+                    val wps_log = wps.log
+                    if (wps_log.isNotEmpty())
+                        log.d("PushSubscriptionHelper: ${account.acct.pretty} $wps_log")
 
-					this.cache = NotificationCache(account.db_id).apply {
-						load()
-						request(
-							client,
-							account,
-							wps.flags,
-							onError = { result ->
-								val sv = result.error
-								if (sv?.contains("Timeout") == true && !account.dont_show_timeout) {
-									synchronized(error_instance) {
-										var bFound = false
-										for (x in error_instance) {
-											if (x == sv) {
-												bFound = true
-												break
-											}
-										}
-										if (!bFound) {
-											error_instance.add(sv)
-										}
-									}
-								}
-							},
-							isCancelled = {
-								job.isJobCancelled
-							}
-						)
-					}
-					if (job.isJobCancelled) return
+                    if (job.isJobCancelled) return
 
-					this.parser = TootParser(context, account)
+                    if (wps.flags == 0) {
+                        if (account.last_notification_error != null) {
+                            account.updateNotificationError(null)
+                        }
+                        return
+                    }
 
-					if (Pref.bpSeparateReplyNotificationGroup(pref)) {
-						var tr = TrackingRunner(
-							trackingType = TrackingType.NotReply,
-							trackingName = NotificationHelper.TRACKING_NAME_DEFAULT
-						)
-						tr.checkAccount()
-						if (job.isJobCancelled) return
-						tr.updateNotification()
-						//
-						tr = TrackingRunner(
-							trackingType = TrackingType.Reply,
-							trackingName = NotificationHelper.TRACKING_NAME_REPLY
-						)
-						tr.checkAccount()
-						if (job.isJobCancelled) return
-						tr.updateNotification()
+                    this.cache = NotificationCache(account.db_id).apply {
+                        load()
+                        requestAsync(
+                            client,
+                            account,
+                            wps.flags,
+                            onError = onError,
+                            isCancelled = { job.isJobCancelled }
+                        )
+                    }
 
-					} else {
-						val tr = TrackingRunner(
-							trackingType = TrackingType.All,
-							trackingName = NotificationHelper.TRACKING_NAME_DEFAULT
-						)
-						tr.checkAccount()
-						if (job.isJobCancelled) return
-						tr.updateNotification()
-					}
+                    if (job.isJobCancelled) return
 
-				} catch (ex: Throwable) {
-					log.trace(ex)
-				} finally {
-					job.notifyWorkerThread()
-				}
-			}
+                    this.parser = TootParser(context, account)
+
+                    if (Pref.bpSeparateReplyNotificationGroup(pref)) {
+                        var tr = TrackingRunner(
+                            trackingType = TrackingType.NotReply,
+                            trackingName = NotificationHelper.TRACKING_NAME_DEFAULT
+                        )
+                        tr.checkAccount()
+                        if (job.isJobCancelled) return
+                        tr.updateNotification()
+                        //
+                        tr = TrackingRunner(
+                            trackingType = TrackingType.Reply,
+                            trackingName = NotificationHelper.TRACKING_NAME_REPLY
+                        )
+                        tr.checkAccount()
+                        if (job.isJobCancelled) return
+                        tr.updateNotification()
+
+                    } else {
+                        val tr = TrackingRunner(
+                            trackingType = TrackingType.All,
+                            trackingName = NotificationHelper.TRACKING_NAME_DEFAULT
+                        )
+                        tr.checkAccount()
+                        if (job.isJobCancelled) return
+                        tr.updateNotification()
+                    }
+
+                } catch (ex: Throwable) {
+                    log.trace(ex)
+                } finally {
+                    workerNotifier.send(Unit)
+                }
+            }
 
             inner class TrackingRunner(
-				var trackingType: TrackingType = TrackingType.All,
-				var trackingName: String = ""
-			) {
+                var trackingType: TrackingType = TrackingType.All,
+                var trackingName: String = ""
+            ) {
 
                 private lateinit var nr: NotificationTracking
                 private val duplicate_check = HashSet<EntityId>()
@@ -1177,19 +1160,19 @@ class PollingWorker private constructor(contextArg: Context) {
                     this.nr = NotificationTracking.load(account.db_id, trackingName)
 
                     val jsonList = when (trackingType) {
-						TrackingType.All -> cache.data
-						TrackingType.Reply -> cache.data.filter {
-							when (parseNotificationType(account, it)) {
-								TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
-								else -> false
-							}
-						}
-						TrackingType.NotReply -> cache.data.filter {
-							!when (parseNotificationType(account, it)) {
-								TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
-								else -> false
-							}
-						}
+                        TrackingType.All -> cache.data
+                        TrackingType.Reply -> cache.data.filter {
+                            when (parseNotificationType(account, it)) {
+                                TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
+                                else -> false
+                            }
+                        }
+                        TrackingType.NotReply -> cache.data.filter {
+                            !when (parseNotificationType(account, it)) {
+                                TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
+                                else -> false
+                            }
+                        }
                     }
 
                     // 新しい順に並んでいる。先頭から10件までを処理する。ただし処理順序は古い方から
@@ -1225,17 +1208,17 @@ class PollingWorker private constructor(contextArg: Context) {
 
                     // ふぁぼ魔ミュート
                     when (notification.type) {
-						TootNotification.TYPE_REBLOG,
-						TootNotification.TYPE_FAVOURITE,
-						TootNotification.TYPE_FOLLOW,
-						TootNotification.TYPE_FOLLOW_REQUEST,
-						TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> {
-							val who = notification.account
-							if (who != null && favMuteSet.contains(account.getFullAcct(who))) {
-								log.d("${account.getFullAcct(who)} is in favMuteSet.")
-								return
-							}
-						}
+                        TootNotification.TYPE_REBLOG,
+                        TootNotification.TYPE_FAVOURITE,
+                        TootNotification.TYPE_FOLLOW,
+                        TootNotification.TYPE_FOLLOW_REQUEST,
+                        TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY -> {
+                            val who = notification.account
+                            if (who != null && favMuteSet.contains(account.getFullAcct(who))) {
+                                log.d("${account.getFullAcct(who)} is in favMuteSet.")
+                                return
+                            }
+                        }
                     }
 
                     // 後から処理したものが先頭に来る
@@ -1244,8 +1227,9 @@ class PollingWorker private constructor(contextArg: Context) {
 
                 internal fun updateNotification() {
 
+
                     val notification_tag = when (trackingName) {
-						"" -> "${account.db_id}/_"
+                        "" -> "${account.db_id}/_"
                         else -> "${account.db_id}/$trackingName"
                     }
 
@@ -1311,9 +1295,9 @@ class PollingWorker private constructor(contextArg: Context) {
                             }
 
                             createNotification(
-								itemTag,
-								notificationId = item.notification.id.toString()
-							) { builder ->
+                                itemTag,
+                                notificationId = item.notification.id.toString()
+                            ) { builder ->
 
                                 builder.setWhen(item.notification.time_created_at)
 
@@ -1322,11 +1306,11 @@ class PollingWorker private constructor(contextArg: Context) {
                                 val content = item.notification.status?.decoded_content?.notEmpty()
                                 if (content != null) {
                                     builder.setStyle(
-										NotificationCompat.BigTextStyle()
-											.setBigContentTitle(summary)
-											.setSummaryText(item.access_info.acct.pretty)
-											.bigText(content)
-									)
+                                        NotificationCompat.BigTextStyle()
+                                            .setBigContentTitle(summary)
+                                            .setSummaryText(item.access_info.acct.pretty)
+                                            .bigText(content)
+                                    )
                                 } else {
                                     builder.setContentText(item.access_info.acct.pretty)
                                 }
@@ -1459,20 +1443,20 @@ class PollingWorker private constructor(contextArg: Context) {
                 }
 
                 private fun createNotification(
-					notification_tag: String,
-					notificationId: String? = null,
-					setContent: (builder: NotificationCompat.Builder) -> Unit
-				) {
+                    notification_tag: String,
+                    notificationId: String? = null,
+                    setContent: (builder: NotificationCompat.Builder) -> Unit
+                ) {
                     log.d("showNotification[${account.acct.pretty}] creating notification(1)")
 
                     val builder = if (Build.VERSION.SDK_INT >= 26) {
                         // Android 8 から、通知のスタイルはユーザが管理することになった
                         // NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
                         val channel = NotificationHelper.createNotificationChannel(
-							context,
-							account,
-							trackingName
-						)
+                            context,
+                            account,
+                            trackingName
+                        )
                         NotificationCompat.Builder(context, channel.id)
                     } else {
                         NotificationCompat.Builder(context, "not_used")
@@ -1481,10 +1465,10 @@ class PollingWorker private constructor(contextArg: Context) {
                     builder.apply {
 
                         val params = listOf(
-							"db_id" to account.db_id.toString(),
-							"type" to trackingType.str,
-							"notificationId" to notificationId
-						).mapNotNull {
+                            "db_id" to account.db_id.toString(),
+                            "type" to trackingType.str,
+                            "notificationId" to notificationId
+                        ).mapNotNull {
                             val second = it.second
                             if (second == null) {
                                 null
@@ -1494,32 +1478,32 @@ class PollingWorker private constructor(contextArg: Context) {
                         }.joinToString("&")
 
                         setContentIntent(
-							PendingIntent.getActivity(
-								context,
-								257,
-								Intent(context, ActCallback::class.java).apply {
-									data =
-										"subwaytooter://notification_click/?$params".toUri()
+                            PendingIntent.getActivity(
+                                context,
+                                257,
+                                Intent(context, ActCallback::class.java).apply {
+                                    data =
+                                        "subwaytooter://notification_click/?$params".toUri()
 
-									// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
-									addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-								},
-								PendingIntent.FLAG_UPDATE_CURRENT
-							)
-						)
+                                    // FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                },
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                            )
+                        )
 
                         setDeleteIntent(
-							PendingIntent.getBroadcast(
-								context,
-								257,
-								Intent(context, EventReceiver::class.java).apply {
-									action = EventReceiver.ACTION_NOTIFICATION_DELETE
-									data =
-										"subwaytooter://notification_delete/?$params".toUri()
-								},
-								PendingIntent.FLAG_UPDATE_CURRENT
-							)
-						)
+                            PendingIntent.getBroadcast(
+                                context,
+                                257,
+                                Intent(context, EventReceiver::class.java).apply {
+                                    action = EventReceiver.ACTION_NOTIFICATION_DELETE
+                                    data =
+                                        "subwaytooter://notification_delete/?$params".toUri()
+                                },
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                            )
+                        )
 
                         setAutoCancel(true)
 
@@ -1548,61 +1532,64 @@ class PollingWorker private constructor(contextArg: Context) {
         }
     }
 
+
     private fun getNotificationLine(item: Data): String {
+
         val name = when (Pref.bpShowAcctInSystemNotification(pref)) {
-			false -> item.notification.accountRef?.decoded_display_name
+            false -> item.notification.accountRef?.decoded_display_name
 
-			true -> {
-				val acctPretty = item.notification.accountRef?.get()?.acct?.pretty
-				if (acctPretty?.isNotEmpty() == true) {
-					"@$acctPretty"
-				} else {
-					null
-				}
-			}
+            true -> {
+                val acctPretty = item.notification.accountRef?.get()?.acct?.pretty
+                if (acctPretty?.isNotEmpty() == true) {
+                    "@$acctPretty"
+                } else {
+                    null
+                }
+            }
         } ?: "?"
-        return when (item.notification.type) {
-			TootNotification.TYPE_MENTION,
-			TootNotification.TYPE_REPLY ->
-				"- " + context.getString(R.string.display_name_replied_by, name)
 
-			TootNotification.TYPE_RENOTE,
-			TootNotification.TYPE_REBLOG ->
-				"- " + context.getString(R.string.display_name_boosted_by, name)
+        return "- " + when (item.notification.type) {
+            TootNotification.TYPE_MENTION,
+            TootNotification.TYPE_REPLY ->
+                context.getString(R.string.display_name_replied_by, name)
 
-			TootNotification.TYPE_QUOTE ->
-				"- " + context.getString(R.string.display_name_quoted_by, name)
+            TootNotification.TYPE_RENOTE,
+            TootNotification.TYPE_REBLOG ->
+                context.getString(R.string.display_name_boosted_by, name)
 
-			TootNotification.TYPE_STATUS ->
-				"- " + context.getString(R.string.display_name_posted_by, name)
+            TootNotification.TYPE_QUOTE ->
+                context.getString(R.string.display_name_quoted_by, name)
 
-			TootNotification.TYPE_FOLLOW ->
-				"- " + context.getString(R.string.display_name_followed_by, name)
+            TootNotification.TYPE_STATUS ->
+                context.getString(R.string.display_name_posted_by, name)
 
-			TootNotification.TYPE_UNFOLLOW ->
-				"- " + context.getString(R.string.display_name_unfollowed_by, name)
+            TootNotification.TYPE_FOLLOW ->
+                context.getString(R.string.display_name_followed_by, name)
 
-			TootNotification.TYPE_FAVOURITE ->
-				"- " + context.getString(R.string.display_name_favourited_by, name)
+            TootNotification.TYPE_UNFOLLOW ->
+                context.getString(R.string.display_name_unfollowed_by, name)
 
-			TootNotification.TYPE_REACTION ->
-				"- " + context.getString(R.string.display_name_reaction_by, name)
+            TootNotification.TYPE_FAVOURITE ->
+                context.getString(R.string.display_name_favourited_by, name)
 
-			TootNotification.TYPE_VOTE,
-			TootNotification.TYPE_POLL_VOTE_MISSKEY ->
-				"- " + context.getString(R.string.display_name_voted_by, name)
+            TootNotification.TYPE_REACTION ->
+                context.getString(R.string.display_name_reaction_by, name)
 
-			TootNotification.TYPE_FOLLOW_REQUEST,
-			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY ->
-				"- " + context.getString(R.string.display_name_follow_request_by, name)
+            TootNotification.TYPE_VOTE,
+            TootNotification.TYPE_POLL_VOTE_MISSKEY ->
+                context.getString(R.string.display_name_voted_by, name)
 
-			TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY ->
-				"- " + context.getString(R.string.display_name_follow_request_accepted_by, name)
+            TootNotification.TYPE_FOLLOW_REQUEST,
+            TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY ->
+                context.getString(R.string.display_name_follow_request_by, name)
 
-			TootNotification.TYPE_POLL ->
-				"- " + context.getString(R.string.end_of_polling_from, name)
+            TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY ->
+                context.getString(R.string.display_name_follow_request_accepted_by, name)
 
-            else -> "- " + "?"
+            TootNotification.TYPE_POLL ->
+                context.getString(R.string.end_of_polling_from, name)
+
+            else -> "?"
         }
     }
 
@@ -1633,22 +1620,22 @@ class PollingWorker private constructor(contextArg: Context) {
         // FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
         intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         val pi_click = PendingIntent.getActivity(
-			context,
-			3,
-			intent_click,
-			PendingIntent.FLAG_UPDATE_CURRENT
-		)
+            context,
+            3,
+            intent_click,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val builder = if (Build.VERSION.SDK_INT >= 26) {
             // Android 8 から、通知のスタイルはユーザが管理することになった
             // NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
             val channel = NotificationHelper.createNotificationChannel(
-				context,
-				"ErrorNotification",
-				"Error",
-				null,
-				2 /* NotificationManager.IMPORTANCE_LOW */
-			)
+                context,
+                "ErrorNotification",
+                "Error",
+                null,
+                2 /* NotificationManager.IMPORTANCE_LOW */
+            )
             NotificationCompat.Builder(context, channel.id)
         } else {
             NotificationCompat.Builder(context, "not_used")
@@ -1659,11 +1646,11 @@ class PollingWorker private constructor(contextArg: Context) {
             .setAutoCancel(true)
             .setSmallIcon(R.drawable.ic_notification) // ここは常に白テーマのアイコンを使う
             .setColor(
-				ContextCompat.getColor(
-					context,
-					R.color.Light_colorAccent
-				)
-			) // ここは常に白テーマの色を使う
+                ContextCompat.getColor(
+                    context,
+                    R.color.Light_colorAccent
+                )
+            ) // ここは常に白テーマの色を使う
             .setWhen(System.currentTimeMillis())
             .setGroup(context.packageName + ":" + "Error")
 

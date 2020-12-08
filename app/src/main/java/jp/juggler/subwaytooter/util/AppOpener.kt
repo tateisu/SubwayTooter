@@ -48,9 +48,21 @@ private fun Activity.startActivityExcludeMyApp(
         val myName = packageName
 
         val filter: (ResolveInfo) -> Boolean = {
-            it.activityInfo.packageName != myName &&
-                it.activityInfo.exported &&
-                -1 == it.activityInfo.packageName.indexOf("com.huawei.android.internal")
+            when{
+                it.activityInfo.packageName == myName -> false
+                !it.activityInfo.exported -> false
+
+                // Huaweiの謎Activityのせいでうまく働かないことがある
+                -1 != it.activityInfo.packageName.indexOf("com.huawei.android.internal") -> false
+
+                // 標準アプリが設定されていない場合、アプリを選択するためのActivityが出てくる場合がある
+                it.activityInfo.packageName == "android" -> false
+                it.activityInfo.javaClass.name.startsWith( "com.android.internal") -> false
+                it.activityInfo.javaClass.name.startsWith("com.android.systemui") -> false
+
+                // たぶんChromeとかfirefoxとか
+                else -> true
+            }
         }
 
         // resolveActivity がこのアプリ以外のActivityを返すなら、それがベストなんだろう

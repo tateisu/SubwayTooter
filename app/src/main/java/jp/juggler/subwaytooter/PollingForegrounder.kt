@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 
 import jp.juggler.util.LogCategory
 import jp.juggler.subwaytooter.util.NotificationHelper
+import kotlinx.coroutines.runBlocking
 
 class PollingForegrounder : IntentService("PollingForegrounder") {
 	
@@ -89,17 +90,17 @@ class PollingForegrounder : IntentService("PollingForegrounder") {
 	
 	override fun onHandleIntent(intent : Intent?) {
 		if(intent == null) return
-		val tag = intent.getStringExtra(PollingWorker.EXTRA_TAG)
-		val context = applicationContext
-		PollingWorker.handleFCMMessage(this, tag, object : PollingWorker.JobStatusCallback {
-			override fun onStatus(sv : String) {
-				if(sv.isNotEmpty() && sv != last_status) {
-					log.d("onStatus %s", sv)
-					last_status = sv
-					startForeground(NOTIFICATION_ID_FOREGROUNDER, createNotification(context, sv))
-				}
+		runBlocking {
+			val tag = intent.getStringExtra(PollingWorker.EXTRA_TAG)
+			val context = applicationContext
+			PollingWorker.handleFCMMessage(context, tag) { sv ->
+				if (sv.isEmpty() || sv==last_status) return@handleFCMMessage
+				// 状況が変化したらログと通知領域に出力する
+				last_status = sv
+				log.d("onStatus %s", sv)
+				startForeground(NOTIFICATION_ID_FOREGROUNDER, createNotification(context, sv))
 			}
-		})
+		}
 	}
 	
 }

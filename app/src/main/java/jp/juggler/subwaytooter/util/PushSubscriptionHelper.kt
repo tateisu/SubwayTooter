@@ -87,7 +87,7 @@ class PushSubscriptionHelper(
         if (oldKey != serverKey) {
 
             // サーバキーをアプリサーバに登録
-            val r = client.http(
+            client.http(
 				JsonObject().apply {
 					put("client_id", clientIdentifier)
 					put("server_key", serverKey)
@@ -96,22 +96,21 @@ class PushSubscriptionHelper(
 					.url("${PollingWorker.APP_SERVER}/webpushserverkey")
 					.build()
 
-			)
-            val res = r?.response
-            when (res?.code) {
+			).also{ result ->
+                result.response?.let{ res ->
+                    when (res.code.also{ res.close()}) {
 
-				null -> {
-				}
+                        200 -> {
+                            // 登録できたサーバーキーをアプリ内DBに保存
+                            SubscriptionServerKey.save(clientIdentifier, serverKey)
+                            addLog("(server public key is registered.)")
+                        }
 
-				200 -> {
-					// 登録できたサーバーキーをアプリ内DBに保存
-					SubscriptionServerKey.save(clientIdentifier, serverKey)
-					addLog("(server public key is registered.)")
-				}
-
-                else -> {
-                    addLog("(server public key registration failed.)")
-                    addLog("${res.code} ${res.message}")
+                        else -> {
+                            addLog("(server public key registration failed.)")
+                            addLog("${res.code} ${res.message}")
+                        }
+                    }
                 }
             }
         }
@@ -123,7 +122,7 @@ class PushSubscriptionHelper(
 		client: TootApiClient,
 		deviceId: String,
 		endpoint: String
-	): TootApiResult? {
+	): TootApiResult {
 
         if (account.last_push_endpoint == endpoint) return TootApiResult()
 
@@ -136,15 +135,16 @@ class PushSubscriptionHelper(
 				.toPostRequestBuilder()
 				.url("${PollingWorker.APP_SERVER}/webpushendpoint")
 				.build()
-		)?.also { result ->
-            val res = result.response
-            if (res != null) {
-                val code = res.code
-                if (code in 200 until 300) {
-                    account.updateLastPushEndpoint(endpoint)
-                } else {
-                    result.caption = "(SubwayTooter App server)"
-                    client.readBodyString(result)
+		).also { result ->
+            result.response?.let{ res->
+                when (res.code.also{ res.close() }) {
+                    in 200 until 300 -> {
+                        account.updateLastPushEndpoint(endpoint)
+                    }
+                    else -> {
+                        result.caption = "(SubwayTooter App server)"
+                        client.readBodyString(result)
+                    }
                 }
             }
         }
@@ -170,7 +170,7 @@ class PushSubscriptionHelper(
 
         // 購読が不要な場合
         // アプリサーバが410を返せるように状態を通知する
-        if (flags == 0) return registerEndpoint(client, device_id, "none")?.also {
+        if (flags == 0) return registerEndpoint(client, device_id, "none").also {
             if (it.error == null && verbose) addLog(context.getString(R.string.push_subscription_updated))
         }
 
@@ -191,19 +191,20 @@ class PushSubscriptionHelper(
 
         // アプリサーバが過去のendpoint urlに410を返せるよう、状態を通知する
         val r = registerEndpoint(client, device_id, endpoint.toUri().encodedPath!!)
-        if (r == null || r.error != null) return r
+        if (r.error != null) return r
 
         // 購読
+        @Suppress("SpellCheckingInspection")
         return client.request(
 			"/api/sw/register",
 			account.putMisskeyApiToken().apply {
 				put("endpoint", endpoint)
 				put("auth", "iRdmDrOS6eK6xvG1H6KshQ")
-				put(
-					"publickey",
-					"BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
-				)
-			}
+                put(
+                    "publickey",
+                    "BBEUVi7Ehdzzpe_ZvlzzkQnhujNJuBKH1R0xYg7XdAKNFKQG9Gpm0TSGRGSuaU7LUFKX-uz8YW0hAshifDCkPuE"
+                )
+            }
 				.toPostRequestBuilder()
 		)?.also { result ->
             val jsonObject = result.jsonObject
@@ -401,7 +402,7 @@ class PushSubscriptionHelper(
 				.toPostRequestBuilder()
 				.url("${PollingWorker.APP_SERVER}/webpushtokencheck")
 				.build()
-		) ?: return null
+		)
         res = r.response ?: return r
 
         if (res.code == 200) {

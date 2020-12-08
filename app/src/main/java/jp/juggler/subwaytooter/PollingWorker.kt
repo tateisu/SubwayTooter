@@ -604,7 +604,7 @@ class PollingWorker private constructor(contextArg: Context) {
     }
 
     // JobService#onStartJob から呼ばれる
-    suspend fun onStartJob(jobService: JobService, params: JobParameters): Boolean {
+    fun onStartJob(jobService: JobService, params: JobParameters): Boolean {
         val item = JobItem(jobService, params)
         addJob(item, true)
         return true
@@ -623,11 +623,11 @@ class PollingWorker private constructor(contextArg: Context) {
     }
 
     // FCMメッセージイベントから呼ばれる
-    private suspend fun addJobFCM() {
+    private fun addJobFCM() {
         addJob(JobItem(JOB_FCM), false)
     }
 
-    private suspend fun addJob(item: JobItem, bRemoveOld: Boolean) {
+    private fun addJob(item: JobItem, bRemoveOld: Boolean) {
         val jobId = item.jobId
 
         // 同じジョブ番号がジョブリストにあるか？
@@ -648,8 +648,9 @@ class PollingWorker private constructor(contextArg: Context) {
             job_list.add(item)
         }
 
-        workerNotifier.send(Unit)
-
+        GlobalScope.launch(Dispatchers.Default){
+            workerNotifier.send(Unit)
+        }
     }
 
     // JobService#onStopJob から呼ばれる

@@ -59,7 +59,7 @@ class DuplicateMap {
 		if(src != null) {
 			for(o in src) {
 				if(isDuplicate(o) ){
-					log.w("filterDuplicate: filter orderId ${o.getOrderId()}")
+					log.d("filterDuplicate: filter orderId ${o.getOrderId()}")
 					continue
 				}
 				list_new.add(o)

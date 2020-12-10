@@ -44,6 +44,7 @@ class EntityId(val x : String) : Comparable<EntityId> {
 		
 		fun from(cursor : Cursor, key : String) =
 			cursor.getStringOrNull(key)?.decode()
+
 	}
 	
 	private fun encode() : String {

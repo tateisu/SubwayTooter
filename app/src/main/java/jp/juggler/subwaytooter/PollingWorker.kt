@@ -701,6 +701,9 @@ class PollingWorker private constructor(contextArg: Context) {
         val isJobCancelled: Boolean
             get() = mJobCancelled_.get()
 
+        // 通知データインジェクションを行ったアカウント
+        val injectedAccounts = HashSet<Long>()
+
         constructor(jobService: JobService, params: JobParameters) {
             this.jobParams = params
             this.jobId = params.jobId
@@ -748,6 +751,7 @@ class PollingWorker private constructor(contextArg: Context) {
                 favMuteSet = FavMute.acctSet
 
                 // タスクがあれば処理する
+
                 while (true) {
                     if (isJobCancelled) throw JobCancelledException()
                     val data = task_list.next(context) ?: break
@@ -831,7 +835,6 @@ class PollingWorker private constructor(contextArg: Context) {
 
             this.job = job
             this.taskId = taskId
-            var process_db_id = -1L //
 
             coroutineScope {
                 try {
@@ -866,7 +869,7 @@ class PollingWorker private constructor(contextArg: Context) {
 
                     // タスクによってはポーリング前にすることがある
                     when (taskId) {
-                        TASK_DATA_INJECTED -> processInjectedData()
+                        TASK_DATA_INJECTED -> processInjectedData(job.injectedAccounts)
 
                         TASK_BOOT_COMPLETED -> NotificationTracking.resetPostAll()
 
@@ -886,14 +889,14 @@ class PollingWorker private constructor(contextArg: Context) {
                                     val sa = SavedAccount.loadAccountByAcct(context, acct)
                                     if (sa != null) {
                                         NotificationCache.resetLastLoad(sa.db_id)
-                                        process_db_id = sa.db_id
+                                        job.injectedAccounts.add(sa.db_id)
                                         bDone = true
                                     }
                                 }
                                 if (!bDone) {
                                     for (sa in SavedAccount.loadByTag(context, tag)) {
                                         NotificationCache.resetLastLoad(sa.db_id)
-                                        process_db_id = sa.db_id
+                                        job.injectedAccounts.add(sa.db_id)
                                         bDone = true
                                     }
                                 }
@@ -949,25 +952,30 @@ class PollingWorker private constructor(contextArg: Context) {
                         }
                     }
 
-                    workerStatus = "make install id"
 
                     // インストールIDを生成する
                     // インストールID生成時にSavedAccountテーブルを操作することがあるので
                     // アカウントリストの取得より先に行う
                     if (job.install_id == null) {
+                        workerStatus = "make install id"
                         job.install_id = prepareInstallId(context, job)
                     }
 
                     // アカウント別に処理スレッドを作る
-                    workerStatus = "create account thread"
+                    workerStatus = "create account threads"
+
                     val thread_list = LinkedList<AccountRunner>()
+
                     suspend fun startForAccount(_a: SavedAccount) {
                         if (_a.isPseudo) return
                         thread_list.add(AccountRunner(_a).apply { start() })
                     }
-                    if (process_db_id != -1L) {
-                        // process_db_id が指定されているなら、そのdb_idだけ処理する
-                        SavedAccount.loadAccount(context, process_db_id)?.let { startForAccount(it) }
+
+                    if( job.injectedAccounts.isNotEmpty()){
+                        // 更新対象アカウントが限られているなら、そのdb_idだけ処理する
+                        job.injectedAccounts.forEach { db_id->
+                            SavedAccount.loadAccount(context, db_id)?.let { startForAccount(it) }
+                        }
                     } else {
                         // 全てのアカウントを処理する
                         SavedAccount.loadAccountList(context).forEach { startForAccount(it) }
@@ -1062,6 +1070,8 @@ class PollingWorker private constructor(contextArg: Context) {
                     // 未確認アカウントはチェック対象外
                     if (!account.isConfirmed) return
 
+                    log.d("${account.acct}: runSuspend start.")
+
                     client.account = account
 
                     val wps = PushSubscriptionHelper(context, account)
@@ -1083,7 +1093,7 @@ class PollingWorker private constructor(contextArg: Context) {
 
                     wps.updateSubscription(client) ?: return // cancelled.
 
-                    val wps_log = wps.log
+                    val wps_log = wps.logString
                     if (wps_log.isNotEmpty())
                         log.d("PushSubscriptionHelper: ${account.acct.pretty} $wps_log")
 
@@ -1137,7 +1147,7 @@ class PollingWorker private constructor(contextArg: Context) {
                         if (job.isJobCancelled) return
                         tr.updateNotification()
                     }
-
+                    log.i("runSuspend complete normally.")
                 } catch (ex: Throwable) {
                     log.trace(ex)
                 } finally {
@@ -1156,22 +1166,19 @@ class PollingWorker private constructor(contextArg: Context) {
 
                 internal fun checkAccount() {
 
-                    this.nr = NotificationTracking.load(account.db_id, trackingName)
+                    this.nr = NotificationTracking.load(account.acct.pretty, account.db_id, trackingName)
+
+                    fun JsonObject.isMention()= when (parseNotificationType(account, this)) {
+                        TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
+                        else -> false
+                    }
+
+
 
                     val jsonList = when (trackingType) {
                         TrackingType.All -> cache.data
-                        TrackingType.Reply -> cache.data.filter {
-                            when (parseNotificationType(account, it)) {
-                                TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
-                                else -> false
-                            }
-                        }
-                        TrackingType.NotReply -> cache.data.filter {
-                            !when (parseNotificationType(account, it)) {
-                                TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
-                                else -> false
-                            }
-                        }
+                        TrackingType.Reply -> cache.data.filter { it.isMention()}
+                        TrackingType.NotReply -> cache.data.filter { !it.isMention()}
                     }
 
                     // 新しい順に並んでいる。先頭から10件までを処理する。ただし処理順序は古い方から
@@ -1185,8 +1192,15 @@ class PollingWorker private constructor(contextArg: Context) {
                     // 種別チェックより先に、cache中の最新のIDを「最後に表示した通知」に指定する
                     // nid_show は通知タップ時に参照されるので、通知を表示する際は必ず更新・保存する必要がある
                     // 種別チェックより優先する
-                    if (cache.sinceId != null) nr.nid_show = cache.sinceId
-                    nr.save()
+                    val latestId = cache.filterLatestId(account){
+                        when (trackingType) {
+                            TrackingType.Reply -> it.isMention()
+                            TrackingType.NotReply -> !it.isMention()
+                            else -> true
+                        }
+                    }
+                    if (latestId != null) nr.nid_show = latestId
+                    nr.save(account.acct.pretty)
                 }
 
                 private fun update_sub(src: JsonObject) {
@@ -1196,7 +1210,10 @@ class PollingWorker private constructor(contextArg: Context) {
                     duplicate_check.add(id)
 
                     // タップ・削除した通知のIDと同じか古いなら対象外
-                    if (!id.isNewerThan(nr.nid_read)) return
+                    if (!id.isNewerThan(nr.nid_read)){
+                        log.d("update_sub: ${account.acct} skip old notification $id")
+                        return
+                    }
 
                     log.d("update_sub: found data that id=${id}, > read id ${nr.nid_read}")
 
@@ -1232,7 +1249,7 @@ class PollingWorker private constructor(contextArg: Context) {
                         else -> "${account.db_id}/$trackingName"
                     }
 
-                    val nt = NotificationTracking.load(account.db_id, trackingName)
+                    val nt = NotificationTracking.load(account.acct.pretty, account.db_id, trackingName)
                     val dataList = dstListData
                     val first = dataList.firstOrNull()
                     if (first == null) {
@@ -1592,11 +1609,13 @@ class PollingWorker private constructor(contextArg: Context) {
         }
     }
 
-    private fun processInjectedData() {
+    private fun processInjectedData( injectedAccounts:HashSet<Long>) {
         while (true) {
             val data = inject_queue.poll() ?: break
             val account = SavedAccount.loadAccount(context, data.account_db_id) ?: continue
             val list = data.list
+            log.d("${account.acct} processInjectedData +${list.size}")
+            if( list.isNotEmpty() ) injectedAccounts.add(account.db_id)
             NotificationCache(data.account_db_id).apply {
                 load()
                 inject(account, list)

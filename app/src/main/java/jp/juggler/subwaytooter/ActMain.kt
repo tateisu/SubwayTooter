@@ -484,11 +484,11 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        log.w("onNewIntent: isResumed = isResumed")
+        log.w("onNewIntent: isResumed=$isResumed")
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
-        log.d("onConfigurationChanged")
+        log.w("onConfigurationChanged")
         super.onConfigurationChanged(newConfig)
         if (newConfig.screenHeightDp > 0 || newConfig.screenHeightDp > 0) {
             tabOnly { env -> resizeColumnWidth(env) }

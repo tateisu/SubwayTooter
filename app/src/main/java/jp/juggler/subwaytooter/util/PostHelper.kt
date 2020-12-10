@@ -293,10 +293,11 @@ class PostHelper(
 		}
 		
 		// 全ての確認を終えたらバックグラウンドでの処理を開始する
-		last_post_task =
-			WeakReference(TootTaskRunner(activity, progressSetupCallback = { progressDialog ->
-				progressDialog.setCanceledOnTouchOutside(false)
-			}
+		last_post_task = WeakReference(
+			TootTaskRunner(activity,
+				progressSetupCallback = { progressDialog ->
+					progressDialog.setCanceledOnTouchOutside(false)
+				}
 			).run(account, object : TootTask {
 				
 				var status : TootStatus? = null
@@ -322,22 +323,21 @@ class PostHelper(
 					// 元の投稿を削除する
 					if(redraft_status_id != null) {
 						result = if(account.isMisskey) {
-							val params = account.putMisskeyApiToken(JsonObject()).apply {
-								put("noteId", redraft_status_id)
-							}
 							client.request(
 								"/api/notes/delete",
-								params.toPostRequestBuilder()
+								account.putMisskeyApiToken(JsonObject()).apply {
+									put("noteId", redraft_status_id)
+								}.toPostRequestBuilder()
 							)
 						} else {
 							client.request(
 								"/api/v1/statuses/$redraft_status_id",
 								Request.Builder().delete()
 							)
-							
 						}
 						log.d("delete redraft. result=$result")
 						Thread.sleep(2000L)
+
 					} else if(scheduledId != null) {
 						val r1 = client.request(
 							"/api/v1/scheduled_statuses/$scheduledId",

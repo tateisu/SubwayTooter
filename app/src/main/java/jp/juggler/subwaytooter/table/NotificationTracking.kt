@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.putMayNull
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getLong
+import jp.juggler.util.minComparable
 
 class NotificationTracking {
 	
@@ -20,7 +21,7 @@ class NotificationTracking {
 	var post_id : EntityId? = null
 	var post_time : Long = 0
 	
-	fun save() {
+	fun save(acct:String) {
 		try {
 			val cv = ContentValues()
 			cv.put(COL_ACCOUNT_DB_ID, account_db_id)
@@ -32,12 +33,9 @@ class NotificationTracking {
 
 			val rv = App1.database.replaceOrThrow(table,null,cv)
 			if( rv != -1L && id == -1L) id = rv
+
 			log.d(
-				"save account_db_id=%s,nt=%s,post=%s,%s"
-				, account_db_id
-				, notificationType
-				, post_id
-				, post_time
+				"${acct}/${notificationType} save. post=(${post_id},${post_time})"
 			)
 		} catch(ex : Throwable) {
 			log.e(ex, "save failed.")
@@ -152,7 +150,7 @@ class NotificationTracking {
 		
 		private const val WHERE_AID = "$COL_ACCOUNT_DB_ID=? and $COL_NOTIFICATION_TYPE=?"
 		
-		fun load(account_db_id : Long,notificationType:String) : NotificationTracking {
+		fun load(acct:String, account_db_id : Long,notificationType:String) : NotificationTracking {
 			val dst = NotificationTracking()
 			dst.account_db_id = account_db_id
 			dst.notificationType = notificationType
@@ -168,20 +166,34 @@ class NotificationTracking {
 				)?.use { cursor ->
 					if(cursor.moveToFirst()) {
 						dst.id = cursor.getLong(COL_ID)
-						
-						dst.nid_show = EntityId.from(cursor, COL_NID_SHOW)
-						dst.nid_read = EntityId.from(cursor, COL_NID_READ)
-						
+
 						dst.post_id = EntityId.from(cursor, COL_POST_ID)
 						dst.post_time = cursor.getLong(COL_POST_TIME)
-						
+
+						val show = EntityId.from(cursor, COL_NID_SHOW)
+						if( show == null){
+							dst.nid_show = null
+							dst.nid_read = null
+						}else{
+							dst.nid_show = show
+							val read = EntityId.from(cursor, COL_NID_READ)
+							if( read==null){
+								dst.nid_read = null
+							}else{
+								val r2 = minComparable(show,read)
+								dst.nid_read = r2
+								if(r2 != read){
+									log.e("${acct}/${notificationType} read>show! clip to $show")
+									val cv = ContentValues()
+									show.putTo(cv, COL_NID_READ) //変数名とキー名が異なるのに注意
+									val where_args = arrayOf(account_db_id.toString(),notificationType)
+									App1.database.update(table, cv, WHERE_AID, where_args)
+								}
+							}
+						}
+
 						log.d(
-							"load account_db_id=%s,post=%s,%s,read=%s,show=%s"
-							, account_db_id
-							, dst.post_id
-							, dst.post_time
-							, dst.nid_read
-							, dst.nid_show
+							"${acct}/${notificationType} load. post=(${dst.post_id},${dst.post_time}), read=${dst.nid_read}, show=${dst.nid_show}"
 						)
 					}
 					
@@ -213,13 +225,13 @@ class NotificationTracking {
 							val nid_read = EntityId.from(cursor, COL_NID_READ)
 							when {
 								nid_show == null ->
-									log.w("updateRead[$account_db_id,$notificationType]: nid_show is null.")
+									log.e("updateRead[$account_db_id,$notificationType]: nid_show is null.")
 
 								nid_read != null && nid_read >= nid_show ->
-									log.d("updateRead[$account_db_id,$notificationType]: nid_read already updated.")
+									log.e("updateRead[$account_db_id,$notificationType]: nid_read already updated.")
 								
 								else -> {
-									log.w("updateRead[$account_db_id,$notificationType]: update nid_read as $nid_show...")
+									log.e("updateRead[$account_db_id,$notificationType]: update nid_read as $nid_show...")
 									val cv = ContentValues()
 									nid_show.putTo(cv, COL_NID_READ) //変数名とキー名が異なるのに注意
 									App1.database.update(table, cv, WHERE_AID, where_args)

@@ -599,16 +599,21 @@
                 android:text="@string/notification_type_post" />
         </LinearLayout>
 
-        <LinearLayout style="@style/setting_row_form">
 
             <Button
                 android:id="@+id/btnPushSubscription"
-                style="@style/setting_horizontal_stretch"
+                style="@style/setting_row_button"
                 android:ellipsize="start"
                 android:text="@string/update_push_subscription"
                 android:textAllCaps="false" />
 
-        </LinearLayout>
+        <Button
+            android:id="@+id/btnPushSubscriptionNotForce"
+            style="@style/setting_row_button"
+            android:ellipsize="start"
+            android:text="@string/update_push_subscription_not_force"
+            android:visibility="gone"
+            android:textAllCaps="false" />
 
         <View style="@style/setting_divider" />
 

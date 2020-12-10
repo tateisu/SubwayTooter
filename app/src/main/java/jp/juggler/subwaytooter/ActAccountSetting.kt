@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
@@ -35,7 +34,6 @@ import jp.juggler.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -103,6 +101,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 	
 	private lateinit var btnOpenBrowser : Button
 	private lateinit var btnPushSubscription : Button
+	private lateinit var btnPushSubscriptionNotForce : Button
+
 	private lateinit var cbNotificationMention : CheckBox
 	private lateinit var cbNotificationBoost : CheckBox
 	private lateinit var cbNotificationFavourite : CheckBox
@@ -279,6 +279,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		swMarkSensitive = findViewById(R.id.swMarkSensitive)
 		btnOpenBrowser = findViewById(R.id.btnOpenBrowser)
 		btnPushSubscription = findViewById(R.id.btnPushSubscription)
+		btnPushSubscriptionNotForce= findViewById(R.id.btnPushSubscriptionNotForce)
+		btnPushSubscriptionNotForce.vg(BuildConfig.DEBUG)
 		cbNotificationMention = findViewById(R.id.cbNotificationMention)
 		cbNotificationBoost = findViewById(R.id.cbNotificationBoost)
 		cbNotificationFavourite = findViewById(R.id.cbNotificationFavourite)
@@ -331,6 +333,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		
 		btnOpenBrowser.setOnClickListener(this)
 		btnPushSubscription.setOnClickListener(this)
+		btnPushSubscriptionNotForce.setOnClickListener(this)
 		btnAccessToken.setOnClickListener(this)
 		btnInputAccessToken.setOnClickListener(this)
 		btnAccountRemove.setOnClickListener(this)
@@ -495,7 +498,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		btnInputAccessToken.isEnabled = enabled
 		btnVisibility.isEnabled = enabled
 		btnPushSubscription.isEnabled = enabled
-		
+		btnPushSubscriptionNotForce.isEnabled = enabled
 		btnNotificationSoundEdit.isEnabled = Build.VERSION.SDK_INT < 26 && enabled
 		btnNotificationSoundReset.isEnabled = Build.VERSION.SDK_INT < 26 && enabled
 		btnNotificationStyleEdit.isEnabled = Build.VERSION.SDK_INT >= 26 && enabled
@@ -593,8 +596,9 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			R.id.btnLoadPreference -> performLoadPreference()
 			R.id.btnVisibility -> performVisibility()
 			R.id.btnOpenBrowser -> openBrowser("https://${account.apiHost.ascii}/")
-			R.id.btnPushSubscription -> startTest()
-			
+			R.id.btnPushSubscription -> startTest(force=true)
+			R.id.btnPushSubscriptionNotForce-> startTest(force=false)
+
 			R.id.btnUserCustom -> ActNickname.open(
 				this,
 				account.acct,
@@ -1572,22 +1576,18 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		)
 	}
 	
-	@SuppressLint("StaticFieldLeak")
-	private fun startTest() {
+	private fun startTest(force:Boolean) {
+		val wps = PushSubscriptionHelper( applicationContext,account,verbose = true)
+
 		TootTaskRunner(this).run(account, object : TootTask {
-			val wps = PushSubscriptionHelper(
-				this@ActAccountSetting,
-				account,
-				verbose = true
-			)
-			
+
 			override suspend fun background(client : TootApiClient) : TootApiResult? {
-				return wps.updateSubscription(client, true)
+				return wps.updateSubscription(client, force=force)
 			}
 			
 			override suspend fun handleResult(result : TootApiResult?) {
 				result ?: return
-				val log = wps.log
+				val log = wps.logString
 				if(log.isNotEmpty()) {
 					AlertDialog.Builder(this@ActAccountSetting)
 						.setMessage(log)

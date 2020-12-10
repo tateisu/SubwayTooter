@@ -14,6 +14,9 @@ inline fun <reified T : Any> Any.castNotNull(): T = this as T
 inline fun <reified T> systemService(context: Context): T? =
 	/* ContextCompat. */ ContextCompat.getSystemService(context, T::class.java)
 
+fun<T:Comparable<T>> minComparable(a:T,b:T):T = if (a <= b) a else b
+fun<T:Comparable<T>> maxComparable(a:T,b:T):T = if (a >= b) a else b
+
 //
 //object Utils {
 //

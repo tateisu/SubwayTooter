@@ -555,9 +555,9 @@ class TootApiClient(
         try {
             if (!sendRequest(result) {
 
-                    log.d("request: $path")
+                   val url = "https://${apiHost?.ascii}$path"
 
-                    request_builder.url("https://${apiHost?.ascii}$path")
+                    request_builder.url(url)
 
                     val access_token = account?.getAccessToken()
                     if (access_token?.isNotEmpty() == true) {
@@ -565,6 +565,7 @@ class TootApiClient(
                     }
 
                     request_builder.build()
+                        .also{ log.d("request: ${it.method} $url") }
 
                 }) return result
 

@@ -1549,7 +1549,7 @@ internal class ItemViewHolder(
 
 			if(status.account.suspended) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
-				sb.appendColorShadeIcon(activity, R.drawable.ic_error, "suspended")
+				sb.appendColorShadeIcon(activity, R.drawable.ic_delete, "suspended")
 			}
 
 			// mobileマーク

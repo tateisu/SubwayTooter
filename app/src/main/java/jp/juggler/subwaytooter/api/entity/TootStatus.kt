@@ -1115,7 +1115,10 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
         private val tz_utc = TimeZone.getTimeZone("UTC")
 
-        private val reTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+))?"""
+		private val reDate = """\A(\d+)\D+(\d+)\D+(\d+)"""
+			.asciiPattern()
+
+		private val reTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+))?"""
             .asciiPattern()
 
         private val reMSPTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""
@@ -1124,12 +1127,10 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         fun parseTime(strTime: String?): Long {
             if (strTime != null && strTime.isNotEmpty()) {
                 try {
-                    val m = reTime.matcher(strTime)
-                    if (!m.find()) {
-                        log.d("invalid time format: %s", strTime)
-                    } else {
-                        val g = GregorianCalendar(tz_utc)
-                        g.set(
+                    var m = reTime.matcher(strTime)
+					if (m.find()) {
+						val g = GregorianCalendar(tz_utc)
+						g.set(
 							m.groupEx(1).optInt() ?: 1,
 							(m.groupEx(2).optInt() ?: 1) - 1,
 							m.groupEx(3).optInt() ?: 1,
@@ -1137,9 +1138,25 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 							m.groupEx(5).optInt() ?: 0,
 							m.groupEx(6).optInt() ?: 0
 						)
-                        g.set(Calendar.MILLISECOND, m.groupEx(7).optInt() ?: 0)
-                        return g.timeInMillis
-                    }
+						g.set(Calendar.MILLISECOND, m.groupEx(7).optInt() ?: 0)
+						return g.timeInMillis
+					}
+					// last_status_at などでは YYYY-MM-DD になることがある
+					m = reDate.matcher(strTime)
+					if (m.find()) {
+						val g = GregorianCalendar(tz_utc)
+						g.set(
+							m.groupEx(1).optInt() ?: 1,
+							(m.groupEx(2).optInt() ?: 1) - 1,
+							m.groupEx(3).optInt() ?: 1,
+							12,
+							34,
+							56
+						)
+						g.set(Calendar.MILLISECOND, 789)
+						return g.timeInMillis
+					}
+					log.w("invalid time format: %s", strTime)
                 } catch (ex: Throwable) { // ParseException,  ArrayIndexOutOfBoundsException
                     log.trace(ex)
                     log.e(ex, "TootStatus.parseTime failed. src=%s", strTime)

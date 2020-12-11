@@ -19,7 +19,7 @@ class ColumnTask_Loading(
 
     internal var list_pinned: ArrayList<TimelineItem>? = null
 
-    override suspend fun doInBackground(): TootApiResult? {
+    override suspend fun background(): TootApiResult? {
         ctStarted.set(true)
 
         if (Pref.bpOpenSticker(pref)) {
@@ -72,7 +72,7 @@ class ColumnTask_Loading(
         }
     }
 
-    override suspend fun onPostExecute(result: TootApiResult?) {
+    override suspend fun handleResult(result: TootApiResult?) {
         if (column.is_dispose.get()) return
 
         if (isCancelled || result == null) {

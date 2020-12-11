@@ -14,7 +14,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 /*
-    JobScheduerに登録する & アプリ内部でも保持するジョブのリスト。
+    JobSchedulerに登録する & アプリ内部でも保持するジョブのリスト。
     アプリ内部で保持するのは主にサービス完了通知のせい
 * */
 class JobItem(
@@ -112,13 +112,13 @@ class JobItem(
                 TaskRunner(pollingWorker, this@JobItem, TaskId.Polling, JsonObject()).runTask()
             }
 
-            log.d("pollingComplete=${bPollingComplete},isJobCancelled=${isJobCancelled},bPollingRequired=${bPollingRequired.get()}")
+            log.w("pollingComplete=${bPollingComplete},isJobCancelled=${isJobCancelled},bPollingRequired=${bPollingRequired.get()}")
             if (!isJobCancelled && bPollingComplete) {
                 // ポーリングが完了した
                 pollingWorker.onPollingComplete(bPollingRequired.get())
             }
         } catch (ex: JobCancelledException) {
-            log.e("job execution cancelled.")
+            log.w("job execution cancelled.")
         } catch (ex: Throwable) {
             log.trace(ex)
             log.e(ex, "job execution failed.")

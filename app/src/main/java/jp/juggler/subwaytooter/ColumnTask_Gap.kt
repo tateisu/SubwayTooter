@@ -26,7 +26,7 @@ class ColumnTask_Gap(
     private var max_id: EntityId? = (gap as? TootGap)?.max_id
     private var since_id: EntityId? = (gap as? TootGap)?.since_id
 
-    override suspend fun doInBackground(): TootApiResult? {
+    override suspend fun background(): TootApiResult? {
         ctStarted.set(true)
 
         val client = TootApiClient(context, callback = object : TootApiCallback {
@@ -62,7 +62,7 @@ class ColumnTask_Gap(
         }
     }
 
-    override suspend fun onPostExecute(result: TootApiResult?) {
+    override suspend fun handleResult(result: TootApiResult?) {
         if (column.is_dispose.get()) return
 
         if (isCancelled || result == null) {

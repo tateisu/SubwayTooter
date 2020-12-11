@@ -115,26 +115,26 @@ abstract class ColumnTask(
 		return TootApiResult()
 	}
 	
+
+	abstract suspend fun background() : TootApiResult?
+	abstract suspend fun handleResult(result : TootApiResult?)
+
 	fun cancel() {
 		job?.cancel()
 	}
-	
-	abstract suspend fun doInBackground() : TootApiResult?
-	abstract suspend fun onPostExecute(result : TootApiResult?)
-	
+
 	fun start() {
 		job = GlobalScope.launch(Dispatchers.Main) {
-			val result = try {
-				withContext(Dispatchers.IO) {
-					doInBackground()
+			handleResult(
+				try {
+					withContext(Dispatchers.IO) { background() }
+				} catch(ex : CancellationException) {
+					null // キャンセルされたらresult==nullとする
+				} catch(ex : Throwable) {
+					// その他のエラー
+					TootApiResult(ex.withCaption("error"))
 				}
-			} catch(ex : CancellationException) {
-				null // キャンセルされたらresult==nullとする
-			} catch(ex : Throwable) {
-				// その他のエラー
-				TootApiResult(ex.withCaption("error"))
-			}
-			onPostExecute(result)
+			)
 		}
 	}
 }

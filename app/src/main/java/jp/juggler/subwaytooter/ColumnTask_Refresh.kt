@@ -23,7 +23,7 @@ class ColumnTask_Refresh(
 
     private var filterUpdated = false
 
-    override suspend fun doInBackground(): TootApiResult? {
+    override suspend fun background(): TootApiResult? {
         ctStarted.set(true)
 
         val client = TootApiClient(context, callback = object : TootApiCallback {
@@ -65,7 +65,7 @@ class ColumnTask_Refresh(
         }
     }
 
-    override suspend fun onPostExecute(result: TootApiResult?) {
+    override suspend fun handleResult(result: TootApiResult?) {
         if (column.is_dispose.get()) return
 
         if (isCancelled || result == null) {

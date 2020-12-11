@@ -16,6 +16,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import okhttp3.Request
+import java.lang.NullPointerException
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
@@ -265,6 +266,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
         // 疑似アカウントの追加時に、インスタンスの検証を行う
         private suspend fun TootApiClient.getInstanceInformation(): TootApiResult? {
+
             // misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
             val r2 = getInstanceInformationMisskey() ?: return null
             if (r2.jsonObject != null) return r2
@@ -278,7 +280,6 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
         class RequestInfo(
 			val client: TootApiClient,
-			val apiHost: Host,
 			val account: SavedAccount?,
 			val allowPixelfed: Boolean,
 			val forceUpdate: Boolean,
@@ -290,9 +291,6 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         class CacheEntry {
             // インスタンス情報のキャッシュ
             var cacheData: TootInstance? = null
-
-            // ホストごとに同時に1つしか実行しない、インスタンス情報更新キュー
-            val requestQueue = Channel<RequestInfo>(capacity = Channel.UNLIMITED)
 
             private suspend fun getImpl(ri: RequestInfo): Pair<TootInstance?, TootApiResult?> {
 
@@ -318,17 +316,22 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
                 // get new information
                 val result = when {
-                    ri.account == null ->
+                    ri.account == null ->{
                         ri.client.getInstanceInformation()
+                    }
 
                     ri.account.isMisskey ->
                         ri.client.request(
 							"/api/meta",
-							JsonObject().apply { put("dummy", 1) }.toPostRequestBuilder()
+							JsonObject().apply { put("dummy", 1) }.toPostRequestBuilder(),
+                            withoutToken = true
 						)
 
                     else ->
-                        ri.client.request("/api/v1/instance")
+                        ri.client.request(
+                            "/api/v1/instance",
+                            withoutToken = true
+                        )
                 }
 
                 val json = result?.jsonObject ?: return Pair(null, result)
@@ -362,6 +365,9 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                     else -> Pair(item.also { cacheData = it }, result)
                 }
             }
+
+            // ホストごとに同時に1つしか実行しない、インスタンス情報更新キュー
+            val requestQueue = Channel<RequestInfo>(capacity = Channel.UNLIMITED)
 
             private suspend fun loop() {
                 while (true) {
@@ -408,7 +414,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
         suspend fun get(
 			client: TootApiClient,
-			hostArg: Host? = client.apiHost,
+			hostArg: Host? = null,
 			account: SavedAccount? = if (hostArg == client.apiHost) client.account else null,
 			allowPixelfed: Boolean = false,
 			forceUpdate: Boolean = false
@@ -417,14 +423,16 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             val tmpInstance = client.apiHost
             val tmpAccount = client.account
             try {
-                val host: Host = hostArg ?: client.apiHost!!
+                // this may write client.apiHost
+                if( account != null ) client.account = account
+                // update client.apiHost
+                if( hostArg != null ) client.apiHost = hostArg
 
-                client.apiHost = host
-                client.account = account
+                if( client.apiHost ==null ) throw NullPointerException("missing host to get server information.")
 
                 // ホスト名ごとに用意したオブジェクトで同期する
-                return RequestInfo(client, host, account, allowPixelfed, forceUpdate)
-                    .also { host.getCacheEntry().requestQueue.send(it) }
+                return RequestInfo(client, account, allowPixelfed, forceUpdate)
+                    .also { client.apiHost!!.getCacheEntry().requestQueue.send(it) }
                     .result.receive()
 
             } finally {

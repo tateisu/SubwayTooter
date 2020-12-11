@@ -545,7 +545,8 @@ class TootApiClient(
 
     suspend fun request(
         path: String,
-        request_builder: Request.Builder = Request.Builder()
+        request_builder: Request.Builder = Request.Builder(),
+        withoutToken: Boolean = false,
     ): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
@@ -559,9 +560,11 @@ class TootApiClient(
 
                     request_builder.url(url)
 
-                    val access_token = account?.getAccessToken()
-                    if (access_token?.isNotEmpty() == true) {
-                        request_builder.header("Authorization", "Bearer $access_token")
+                    if(!withoutToken){
+                        val access_token = account?.getAccessToken()
+                        if (access_token?.isNotEmpty() == true) {
+                            request_builder.header("Authorization", "Bearer $access_token")
+                        }
                     }
 
                     request_builder.build()

@@ -17,12 +17,11 @@ open class TootApiResult(
 		
 		private val reLinkURL = """<([^>]+)>;\s*rel="([^"]+)"""".asciiPattern()
 		
-		private const val NO_INSTANCE = "missing instance name"
-		
 		fun makeWithCaption(caption : String?) : TootApiResult {
 			val result = TootApiResult()
 			if(caption?.isEmpty() != false) {
-				result.error = NO_INSTANCE
+				log.e("makeWithCaption: missing caption!")
+				result.error = "missing instance name"
 			} else {
 				result.caption = caption
 			}

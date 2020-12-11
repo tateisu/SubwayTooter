@@ -17,6 +17,17 @@ inline fun <reified T> systemService(context: Context): T? =
 fun<T:Comparable<T>> minComparable(a:T,b:T):T = if (a <= b) a else b
 fun<T:Comparable<T>> maxComparable(a:T,b:T):T = if (a >= b) a else b
 
+fun <T:Any> MutableCollection<T>.removeFirst( check:(T)->Boolean ): T?{
+    val it = iterator()
+    while(it.hasNext()){
+        val item = it.next()
+        if( check(item)){
+            it.remove()
+            return item
+        }
+    }
+    return null
+}
 //
 //object Utils {
 //

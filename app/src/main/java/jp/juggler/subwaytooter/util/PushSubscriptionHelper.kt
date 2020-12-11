@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
-import jp.juggler.subwaytooter.PollingWorker
+import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult

@@ -26,6 +26,8 @@ import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.notification.NotificationHelper
+import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
@@ -102,6 +104,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 	private lateinit var btnOpenBrowser : Button
 	private lateinit var btnPushSubscription : Button
 	private lateinit var btnPushSubscriptionNotForce : Button
+	private lateinit var btnResetNotificationTracking : Button
+
 
 	private lateinit var cbNotificationMention : CheckBox
 	private lateinit var cbNotificationBoost : CheckBox
@@ -281,6 +285,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		btnPushSubscription = findViewById(R.id.btnPushSubscription)
 		btnPushSubscriptionNotForce= findViewById(R.id.btnPushSubscriptionNotForce)
 		btnPushSubscriptionNotForce.vg(BuildConfig.DEBUG)
+		btnResetNotificationTracking= findViewById(R.id.btnResetNotificationTracking)
+
 		cbNotificationMention = findViewById(R.id.cbNotificationMention)
 		cbNotificationBoost = findViewById(R.id.cbNotificationBoost)
 		cbNotificationFavourite = findViewById(R.id.cbNotificationFavourite)
@@ -334,6 +340,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		btnOpenBrowser.setOnClickListener(this)
 		btnPushSubscription.setOnClickListener(this)
 		btnPushSubscriptionNotForce.setOnClickListener(this)
+		btnResetNotificationTracking.setOnClickListener(this)
 		btnAccessToken.setOnClickListener(this)
 		btnInputAccessToken.setOnClickListener(this)
 		btnAccountRemove.setOnClickListener(this)
@@ -499,6 +506,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		btnVisibility.isEnabled = enabled
 		btnPushSubscription.isEnabled = enabled
 		btnPushSubscriptionNotForce.isEnabled = enabled
+		btnResetNotificationTracking.isEnabled = enabled
 		btnNotificationSoundEdit.isEnabled = Build.VERSION.SDK_INT < 26 && enabled
 		btnNotificationSoundReset.isEnabled = Build.VERSION.SDK_INT < 26 && enabled
 		btnNotificationStyleEdit.isEnabled = Build.VERSION.SDK_INT >= 26 && enabled
@@ -598,6 +606,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			R.id.btnOpenBrowser -> openBrowser("https://${account.apiHost.ascii}/")
 			R.id.btnPushSubscription -> startTest(force=true)
 			R.id.btnPushSubscriptionNotForce-> startTest(force=false)
+			R.id.btnResetNotificationTracking ->
+				PollingWorker.resetNotificationTracking(this,account)
 
 			R.id.btnUserCustom -> ActNickname.open(
 				this,
@@ -1575,7 +1585,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			}
 		)
 	}
-	
+
 	private fun startTest(force:Boolean) {
 		val wps = PushSubscriptionHelper( applicationContext,account,verbose = true)
 
@@ -1597,6 +1607,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 			}
 		})
 	}
-	
+
+
+
 }
 

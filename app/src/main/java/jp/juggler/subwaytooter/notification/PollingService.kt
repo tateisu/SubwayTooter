@@ -1,8 +1,9 @@
-package jp.juggler.subwaytooter
+package jp.juggler.subwaytooter.notification
 
 import android.app.job.JobParameters
 import android.app.job.JobService
 
+// JobSchedulerから起動されるサービス。
 class PollingService : JobService() {
 	
 	private lateinit var polling_worker : PollingWorker

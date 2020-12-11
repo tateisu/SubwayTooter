@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.table
 
 import android.content.ContentValues
+import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
@@ -9,58 +10,79 @@ import jp.juggler.subwaytooter.api.entity.putMayNull
 import jp.juggler.util.LogCategory
 import jp.juggler.util.getLong
 import jp.juggler.util.minComparable
+import java.util.concurrent.ConcurrentHashMap
 
 class NotificationTracking {
-	
+
+	private var dirty = false
+
 	private var id = - 1L
+		set(value){ dirty=true; field=value}
+
 	private var account_db_id : Long = 0
+		set(value){ dirty=true; field=value}
+
 	private var notificationType: String =""
+		set(value){ dirty=true; field=value}
 
 	var nid_read : EntityId? = null
+		set(value){ dirty=true; field=value}
+
 	var nid_show : EntityId? = null
+		set(value){ dirty=true; field=value}
+
 	var post_id : EntityId? = null
+		set(value){ dirty=true; field=value}
+
 	var post_time : Long = 0
-	
+		set(value){ dirty=true; field=value}
+
 	fun save(acct:String) {
-		try {
-			val cv = ContentValues()
-			cv.put(COL_ACCOUNT_DB_ID, account_db_id)
-			cv.put(COL_NOTIFICATION_TYPE,notificationType)
-			nid_read.putMayNull(cv, COL_NID_READ)
-			nid_show.putMayNull(cv, COL_NID_SHOW)
-			post_id.putMayNull(cv, COL_POST_ID)
-			cv.put(COL_POST_TIME, post_time)
 
-			val rv = App1.database.replaceOrThrow(table,null,cv)
-			if( rv != -1L && id == -1L) id = rv
+		if(dirty){
+			try {
+				val cv = ContentValues()
+				cv.put(COL_ACCOUNT_DB_ID, account_db_id)
+				cv.put(COL_NOTIFICATION_TYPE,notificationType)
+				nid_read.putMayNull(cv, COL_NID_READ)
+				nid_show.putMayNull(cv, COL_NID_SHOW)
+				post_id.putMayNull(cv, COL_POST_ID)
+				cv.put(COL_POST_TIME, post_time)
 
-			log.d(
-				"${acct}/${notificationType} save. post=(${post_id},${post_time})"
-			)
-		} catch(ex : Throwable) {
-			log.e(ex, "save failed.")
+				val rv = App1.database.replaceOrThrow(table,null,cv)
+				if( rv != -1L && id == -1L) id = rv
+
+				log.d( "${acct}/${notificationType} save. post=(${post_id},${post_time})" )
+				dirty=false
+				clearCache(account_db_id,notificationType)
+			} catch(ex : Throwable) {
+				log.e(ex, "save failed.")
+			}
 		}
 	}
 	
 	fun updatePost(post_id : EntityId, post_time : Long) {
 		this.post_id = post_id
 		this.post_time = post_time
-		try {
-			val cv = ContentValues()
-			post_id.putTo(cv, COL_POST_ID)
-			cv.put(COL_POST_TIME, post_time)
-			val rows = App1.database.update(table, cv, WHERE_AID, arrayOf(account_db_id.toString(),notificationType))
-			log.d(
-				"updatePost account_db_id=%s, nt=%s, post=%s,%s update_rows=%s"
-				, account_db_id
-				, notificationType
-				, post_id
-				, post_time
-				, rows
-			)
-			
-		} catch(ex : Throwable) {
-			log.e(ex, "updatePost failed.")
+		if(dirty) {
+			try {
+				val cv = ContentValues()
+				post_id.putTo(cv, COL_POST_ID)
+				cv.put(COL_POST_TIME, post_time)
+				val rows = App1.database.update(table, cv, WHERE_AID, arrayOf(account_db_id.toString(),notificationType))
+				log.d(
+					"updatePost account_db_id=%s, nt=%s, post=%s,%s update_rows=%s"
+					, account_db_id
+					, notificationType
+					, post_id
+					, post_time
+					, rows
+				)
+				dirty=false
+				clearCache(account_db_id,notificationType)
+			} catch(ex : Throwable) {
+				log.e(ex, "updatePost failed.")
+			}
 		}
 	}
 	
@@ -147,10 +169,43 @@ class NotificationTracking {
 				}
 			}
 		}
-		
+
+		/////////////////////////////////////////////////////////////////////////////////
+
+		private val cache = ConcurrentHashMap<Long,ConcurrentHashMap<String,NotificationTracking>>()
+
+		private fun<K:Any,V:Any> ConcurrentHashMap<K,V>.getOrCreate(key:K, creator:()->V):V{
+			var v = this[key]
+			if(v==null) v= creator().also{ this[key]=it}
+			return v
+		}
+
+		private fun loadCache(account_db_id : Long,notificationType:String):NotificationTracking? =
+			cache[account_db_id]?.get(notificationType)
+
+		private fun clearCache(account_db_id : Long,notificationType:String):NotificationTracking? =
+			cache[account_db_id]?.remove(notificationType)
+
+		private fun saveCache(account_db_id : Long,notificationType:String,nt: NotificationTracking){
+			cache.getOrCreate(account_db_id){
+					ConcurrentHashMap<String,NotificationTracking>()
+				}[notificationType] = nt
+		}
+
+		/////////////////////////////////////////////////////////////////////////////////
+
 		private const val WHERE_AID = "$COL_ACCOUNT_DB_ID=? and $COL_NOTIFICATION_TYPE=?"
 		
 		fun load(acct:String, account_db_id : Long,notificationType:String) : NotificationTracking {
+			loadCache(account_db_id,notificationType)?.let{ dst->
+				if(!dst.dirty){
+					log.d(
+						"${acct}/${notificationType} load-cached. post=(${dst.post_id},${dst.post_time}), read=${dst.nid_read}, show=${dst.nid_show}"
+					)
+					return dst
+				}
+			}
+
 			val dst = NotificationTracking()
 			dst.account_db_id = account_db_id
 			dst.notificationType = notificationType
@@ -195,11 +250,14 @@ class NotificationTracking {
 						log.d(
 							"${acct}/${notificationType} load. post=(${dst.post_id},${dst.post_time}), read=${dst.nid_read}, show=${dst.nid_show}"
 						)
+						saveCache(account_db_id ,notificationType,dst)
 					}
 					
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex, "load failed.")
+			}finally{
+				dst.dirty = false
 			}
 			
 			return dst
@@ -235,6 +293,7 @@ class NotificationTracking {
 									val cv = ContentValues()
 									nid_show.putTo(cv, COL_NID_READ) //変数名とキー名が異なるのに注意
 									App1.database.update(table, cv, WHERE_AID, where_args)
+									clearCache(account_db_id,notificationType)
 								}
 							}
 						}
@@ -251,11 +310,22 @@ class NotificationTracking {
 				cv.putNull(COL_POST_ID)
 				cv.put(COL_POST_TIME, 0)
 				App1.database.update(table, cv, null, null)
-				
+				cache.clear()
 			} catch(ex : Throwable) {
 				log.e(ex, "resetPostAll failed.")
 			}
 			
+		}
+
+		// アカウント設定から手動で呼ばれる
+		fun resetTrackingState( account_db_id: Long?) {
+			account_db_id ?: return
+			try {
+				App1.database.delete(table, "$COL_ACCOUNT_DB_ID=?",arrayOf(account_db_id.toString()))
+				cache.remove( account_db_id)
+			} catch(ex : Throwable) {
+				log.e(ex, "resetTrackingState failed.")
+			}
 		}
 	}
 }

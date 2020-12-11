@@ -79,10 +79,10 @@
         </receiver>
 
         <service
-            android:name=".PollingService"
+            android:name=".notification.PollingService"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
-        <service android:name=".PollingForegrounder" />
+        <service android:name=".notification.PollingForegrounder" />
 
         <activity
             android:name=".ActMain"

@@ -24,6 +24,7 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
+import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.AsyncActivity
@@ -164,11 +165,8 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 		super.onStop()
 		
 		// Pull通知チェック間隔を変更したかもしれないのでジョブを再設定する
-		try {
-			PollingWorker.scheduleJob(this, PollingWorker.JOB_POLLING)
-		} catch(ex : Throwable) {
-			log.trace(ex, "PollingWorker.scheduleJob failed.")
-		}
+		PollingWorker.onAppSettingStop(this)
+
 	}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {

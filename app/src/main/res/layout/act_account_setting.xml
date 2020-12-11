@@ -615,6 +615,13 @@
             android:visibility="gone"
             android:textAllCaps="false" />
 
+        <Button
+            android:id="@+id/btnResetNotificationTracking"
+            style="@style/setting_row_button"
+            android:ellipsize="start"
+            android:text="@string/reset_notification_tracking_status"
+            android:textAllCaps="false" />
+
         <View style="@style/setting_divider" />
 
         <TextView

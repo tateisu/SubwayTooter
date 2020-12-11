@@ -32,6 +32,7 @@ import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgQuickTootMenu
 import jp.juggler.subwaytooter.dialog.DlgTextInput
+import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount

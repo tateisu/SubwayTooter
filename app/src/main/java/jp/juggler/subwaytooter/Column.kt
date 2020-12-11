@@ -11,6 +11,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.ScrollPosition

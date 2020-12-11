@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.os.SystemClock
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.util.*
 import java.lang.StringBuilder
 

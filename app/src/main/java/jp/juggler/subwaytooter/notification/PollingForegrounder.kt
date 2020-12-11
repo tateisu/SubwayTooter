@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package jp.juggler.subwaytooter
+package jp.juggler.subwaytooter.notification
 
 import android.app.IntentService
 import android.app.Notification
@@ -11,11 +11,16 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.R
 
 import jp.juggler.util.LogCategory
-import jp.juggler.subwaytooter.util.NotificationHelper
 import kotlinx.coroutines.runBlocking
 
+/*
+	FCMからメッセージを受信した際に起動されるIntentService
+	受信したメッセージの通知処理が完了するまでForegroundであり続ける
+*/
 class PollingForegrounder : IntentService("PollingForegrounder") {
 	
 	companion object {
@@ -94,7 +99,7 @@ class PollingForegrounder : IntentService("PollingForegrounder") {
 			val tag = intent.getStringExtra(PollingWorker.EXTRA_TAG)
 			val context = applicationContext
 			PollingWorker.handleFCMMessage(context, tag) { sv ->
-				if (sv.isEmpty() || sv==last_status) return@handleFCMMessage
+				if (sv.isEmpty() || sv == last_status) return@handleFCMMessage
 				// 状況が変化したらログと通知領域に出力する
 				last_status = sv
 				log.d("onStatus %s", sv)

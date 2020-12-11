@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import jp.juggler.subwaytooter.notification.PollingWorker
 
 import jp.juggler.util.LogCategory
 

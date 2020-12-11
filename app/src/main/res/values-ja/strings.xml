@@ -1064,5 +1064,6 @@
     <string name="toot_search_notestock_of">notestock検索 \"%1$s\"</string>
     <string name="username_not_need_atmark">ユーザ名に@や/ を含めることはできません</string>
     <string name="speech">読み上げ</string>
+    <string name="reset_notification_tracking_status">既読状態をリセット</string>
 
 </resources>

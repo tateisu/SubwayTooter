@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter.util
+package jp.juggler.subwaytooter.notification
 
 import android.annotation.TargetApi
 import android.app.NotificationChannel
@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
-
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.LogCategory

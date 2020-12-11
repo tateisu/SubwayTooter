@@ -7,67 +7,69 @@ import androidx.test.runner.AndroidJUnit4
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.CurrentCallCallback
 import jp.juggler.subwaytooter.util.SimpleHttpClient
-import jp.juggler.util.*
+import jp.juggler.util.JsonObject
+import jp.juggler.util.MEDIA_TYPE_JSON
+import jp.juggler.util.jsonArray
+import jp.juggler.util.jsonObject
+import kotlinx.coroutines.runBlocking
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.Buffer
 import okio.BufferedSource
 import okio.ByteString
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.ResponseBody.Companion.toResponseBody
 
 @Suppress("MemberVisibilityCanPrivate")
 @RunWith(AndroidJUnit4::class)
 class TestTootApiClient {
-	
-	private val appContext = InstrumentationRegistry.getTargetContext() !!
-	
-	class SimpleHttpClientMock(
-		private val responseGenerator : (request : Request) -> Response,
-		val webSocketGenerator : (request : Request, ws_listener : WebSocketListener) -> WebSocket
+
+    private val appContext = InstrumentationRegistry.getTargetContext()!!
+
+    class SimpleHttpClientMock(
+		private val responseGenerator: (request: Request) -> Response,
+		val webSocketGenerator: (request: Request, ws_listener: WebSocketListener) -> WebSocket
 	) : SimpleHttpClient {
-		
-		override fun getResponse(
-			request : Request,
-			tmpOkhttpClient : OkHttpClient?
-		) : Response {
-			return responseGenerator(request)
-		}
-		
-		override var currentCallCallback : CurrentCallCallback? = null
-		
-		override fun getWebSocket(
-			request : Request,
-			webSocketListener : WebSocketListener
-		) : WebSocket {
-			return webSocketGenerator(request, webSocketListener)
-		}
-	}
-	
-	private fun requestBodyString(request : Request?) : String? {
-		try {
-			val copyBody = request?.newBuilder()?.build()?.body ?: return null
-			val buffer = Buffer()
-			copyBody.writeTo(buffer)
-			return buffer.readUtf8()
-		} catch(ex : Throwable) {
-			ex.printStackTrace()
-			return null
-		}
-	}
-	
-	private fun createHttpClientNormal() : SimpleHttpClient {
-		return SimpleHttpClientMock(
-			responseGenerator = { request : Request ->
-				
+
+        override var onCallCreated: (Call) -> Unit = {}
+
+        // override var currentCallCallback : CurrentCallCallback? = null
+
+        override suspend fun getResponse(request: Request, tmpOkhttpClient: OkHttpClient?): Response {
+            return responseGenerator(request)
+        }
+
+        override fun getWebSocket(
+			request: Request,
+			webSocketListener: WebSocketListener
+		): WebSocket {
+            return webSocketGenerator(request, webSocketListener)
+        }
+    }
+
+    private fun requestBodyString(request: Request?): String? {
+        try {
+            val copyBody = request?.newBuilder()?.build()?.body ?: return null
+            val buffer = Buffer()
+            copyBody.writeTo(buffer)
+            return buffer.readUtf8()
+        } catch (ex: Throwable) {
+            ex.printStackTrace()
+            return null
+        }
+    }
+
+    private fun createHttpClientNormal(): SimpleHttpClient {
+        return SimpleHttpClientMock(
+			responseGenerator = { request: Request ->
+
 				val bodyString = requestBodyString(request)
-				
-				when(request.url.encodedPath) {
-					
+
+				when (request.url.encodedPath) {
+
 					// クライアント登録
 					"/api/v1/apps" -> Response.Builder()
 						.request(request)
@@ -79,7 +81,7 @@ class TestTootApiClient {
 								.toResponseBody(MEDIA_TYPE_JSON)
 						)
 						.build()
-					
+
 					// client credentialの検証
 					"/api/v1/apps/verify_credentials" -> Response.Builder()
 						.request(request)
@@ -91,7 +93,7 @@ class TestTootApiClient {
 								.toResponseBody(MEDIA_TYPE_JSON)
 						)
 						.build()
-					
+
 					"/oauth/token" -> when {
 						// client credential の作成
 						bodyString?.contains("grant_type=client_credentials") == true -> {
@@ -106,7 +108,7 @@ class TestTootApiClient {
 									)
 								)
 								.build()
-							
+
 						}
 						// アクセストークンの作成
 						bodyString?.contains("grant_type=authorization_code") == true -> {
@@ -122,7 +124,7 @@ class TestTootApiClient {
 								)
 								.build()
 						}
-						
+
 						else -> {
 							createResponseErrorCode()
 						}
@@ -137,7 +139,7 @@ class TestTootApiClient {
 							put("id", 1L)
 							put("url", "http://$instance/@user1")
 						}
-						
+
 						Response.Builder()
 							.request(request)
 							.protocol(Protocol.HTTP_1_1)
@@ -159,13 +161,13 @@ class TestTootApiClient {
 							put("version", "0.0.1")
 						}.toString().toResponseBody(MEDIA_TYPE_JSON))
 						.build()
-					
+
 					// 公開タイムライン
 					"/api/v1/timelines/public" -> {
 						val instance = request.url.host
-						
+
 						val username = "user1"
-						
+
 						val account1Json = JsonObject()
 						account1Json.apply {
 							put("username", username)
@@ -173,9 +175,9 @@ class TestTootApiClient {
 							put("id", 1L)
 							put("url", "http://$instance/@$username")
 						}
-						
+
 						val array = jsonArray {
-							for(i in 0 until 10) {
+							for (i in 0 until 10) {
 								add(jsonObject {
 									put("account", account1Json)
 									put("id", i.toLong())
@@ -183,9 +185,9 @@ class TestTootApiClient {
 									put("url", "https://$instance/@$username/$i")
 								})
 							}
-							
+
 						}
-						
+
 						Response.Builder()
 							.request(request)
 							.protocol(Protocol.HTTP_1_1)
@@ -194,7 +196,7 @@ class TestTootApiClient {
 							.body(array.toString().toResponseBody(MEDIA_TYPE_JSON))
 							.build()
 					}
-					
+
 					else ->
 						Response.Builder()
 							.request(request)
@@ -204,947 +206,963 @@ class TestTootApiClient {
 							.body(request.url.toString().toResponseBody(mediaTypeTextPlain))
 							.build()
 				}
-				
+
 			},
-			
-			webSocketGenerator = { request : Request, _ : WebSocketListener ->
+
+			webSocketGenerator = { request: Request, _: WebSocketListener ->
 				object : WebSocket {
-					override fun queueSize() : Long = 4096L
-					
-					override fun send(text : String) : Boolean = true
-					
-					override fun send(bytes : ByteString) : Boolean = true
-					
-					override fun close(code : Int, reason : String?) : Boolean = true
-					
+					override fun queueSize(): Long = 4096L
+
+					override fun send(text: String): Boolean = true
+
+					override fun send(bytes: ByteString): Boolean = true
+
+					override fun close(code: Int, reason: String?): Boolean = true
+
 					override fun cancel() = Unit
-					
-					override fun request() : Request = request
+
+					override fun request(): Request = request
 				}
 			}
 		)
-	}
-	
-	private fun createHttpClientNotImplemented() : SimpleHttpClient {
-		return SimpleHttpClientMock(
+    }
+
+    private fun createHttpClientNotImplemented(): SimpleHttpClient {
+        return SimpleHttpClientMock(
 			responseGenerator = { throw NotImplementedError() },
 			webSocketGenerator = { _, _ -> throw NotImplementedError() }
 		)
-	}
-	
-	class ProgressRecordTootApiCallback : TootApiCallback {
-		
-		var cancelled : Boolean = false
-		
-		var progressString : String? = null
-		
-		override val isApiCancelled : Boolean
-			get() = cancelled
-		
-		override suspend fun publishApiProgress(s : String) {
-			progressString = s
-		}
-	}
-	
-	private val requestSimple : Request = Request.Builder().url("https://dummy-url.net/").build()
-	
-	private val strJsonOk = """{"a":"A!"}"""
-	private val strJsonError = """{"error":"Error!"}"""
-	private fun createResponseOk() = Response.Builder()
-		.request(requestSimple)
-		.protocol(Protocol.HTTP_1_1)
-		.code(200)
-		.message("status-message")
-		.body(strJsonOk.toResponseBody(MEDIA_TYPE_JSON))
-		.build()
-	
-	private fun createResponseOkButJsonError() = Response.Builder()
-		.request(requestSimple)
-		.protocol(Protocol.HTTP_1_1)
-		.code(200)
-		.message("status-message")
-		.body(strJsonError.toResponseBody(MEDIA_TYPE_JSON))
-		.build()
-	
-	private fun createResponseErrorCode() = Response.Builder()
-		.request(requestSimple)
-		.protocol(Protocol.HTTP_1_1)
-		.code(500)
-		.message("status-message")
-		.body(strJsonError.toResponseBody(MEDIA_TYPE_JSON))
-		.build()
-	
-	private fun createResponseEmptyBody(code:Int=200) = Response.Builder()
-		.request(requestSimple)
-		.protocol(Protocol.HTTP_1_1)
-		.code(code)
-		.message("status-message")
-		.body("".toResponseBody(MEDIA_TYPE_JSON))
-		.build()
-	
-	private fun createResponseWithoutBody() = Response.Builder()
-		.request(requestSimple)
-		.protocol(Protocol.HTTP_1_1)
-		.code(200)
-		.message("status-message")
-		// without body
-		.build()
-	
-	private fun createResponseExceptionBody() = Response.Builder()
-		.request(requestSimple)
-		.protocol(Protocol.HTTP_1_1)
-		.code(200)
-		.message("status-message")
-		.body(
+    }
+
+    class ProgressRecordTootApiCallback : TootApiCallback {
+
+        var cancelled: Boolean = false
+
+        var progressString: String? = null
+
+        override val isApiCancelled: Boolean
+            get() = cancelled
+
+        override suspend fun publishApiProgress(s: String) {
+            progressString = s
+        }
+    }
+
+    private val requestSimple: Request = Request.Builder().url("https://dummy-url.net/").build()
+
+    private val strJsonOk = """{"a":"A!"}"""
+    private val strJsonError = """{"error":"Error!"}"""
+    private fun createResponseOk() = Response.Builder()
+        .request(requestSimple)
+        .protocol(Protocol.HTTP_1_1)
+        .code(200)
+        .message("status-message")
+        .body(strJsonOk.toResponseBody(MEDIA_TYPE_JSON))
+        .build()
+
+    private fun createResponseOkButJsonError() = Response.Builder()
+        .request(requestSimple)
+        .protocol(Protocol.HTTP_1_1)
+        .code(200)
+        .message("status-message")
+        .body(strJsonError.toResponseBody(MEDIA_TYPE_JSON))
+        .build()
+
+    private fun createResponseErrorCode() = Response.Builder()
+        .request(requestSimple)
+        .protocol(Protocol.HTTP_1_1)
+        .code(500)
+        .message("status-message")
+        .body(strJsonError.toResponseBody(MEDIA_TYPE_JSON))
+        .build()
+
+    private fun createResponseEmptyBody(code: Int = 200) = Response.Builder()
+        .request(requestSimple)
+        .protocol(Protocol.HTTP_1_1)
+        .code(code)
+        .message("status-message")
+        .body("".toResponseBody(MEDIA_TYPE_JSON))
+        .build()
+
+    private fun createResponseWithoutBody() = Response.Builder()
+        .request(requestSimple)
+        .protocol(Protocol.HTTP_1_1)
+        .code(200)
+        .message("status-message")
+        // without body
+        .build()
+
+    private fun createResponseExceptionBody() = Response.Builder()
+        .request(requestSimple)
+        .protocol(Protocol.HTTP_1_1)
+        .code(200)
+        .message("status-message")
+        .body(
 			object : ResponseBody() {
 				override fun contentLength() = 10L
-				override fun contentType() : MediaType? = MEDIA_TYPE_JSON
-				override fun source() : BufferedSource = error("ExceptionBody")
+				override fun contentType(): MediaType = MEDIA_TYPE_JSON
+				override fun source(): BufferedSource = error("ExceptionBody")
 			}
 		)
-		.build()
-	
-	private val strJsonArray1 = """["A!"]"""
-	private val strJsonArray2 = """   [  "A!"  ]  """
-	private val strJsonObject2 = """  {  "a"  :  "A!"  }  """
-	private val strPlainText = "Hello!"
-	
-	private fun createResponseJsonArray1() = Response.Builder()
-		.request(requestSimple)
-		.protocol(Protocol.HTTP_1_1)
-		.code(200)
-		.message("status-message")
-		.body(strJsonArray1.toResponseBody(MEDIA_TYPE_JSON))
-		.build()
-	
-	private fun createResponseJsonArray2() = Response.Builder()
-		.request(requestSimple)
-		.protocol(Protocol.HTTP_1_1)
-		.code(200)
-		.message("status-message")
-		.body(strJsonArray2.toResponseBody(MEDIA_TYPE_JSON))
-		.build()
-	
-	private fun createResponseJsonObject2() = Response.Builder()
-		.request(requestSimple)
-		.protocol(Protocol.HTTP_1_1)
-		.code(200)
-		.message("status-message")
-		.body(strJsonObject2.toResponseBody(MEDIA_TYPE_JSON))
-		.build()
-	
-	private val mediaTypeTextPlain = "text/plain".toMediaType()
-	private val mediaTypeHtml = "text/html".toMediaType()
-	
-	private fun createResponsePlainText() = Response.Builder()
-		.request(requestSimple)
-		.protocol(Protocol.HTTP_1_1)
-		.code(200)
-		.message("status-message")
-		.body(strPlainText.toResponseBody(mediaTypeTextPlain))
-		.build()
-	
-	@Test
-	fun testSimplifyErrorHtml() {
-		var request : Request
-		var response : Response
-		var message : String
-		
-		// json error
-		response = createResponseErrorCode()
-		message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
-		assertEquals("Error!", message)
-		
-		// HTML error
-		
-		response = Response.Builder()
-			.request(requestSimple)
-			.protocol(Protocol.HTTP_1_1)
-			.code(500)
-			.message("This is test")
-			.body("""<html><body>Error!</body></html>""".toResponseBody(mediaTypeHtml))
-			.build()
-		
-		message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
-		assertEquals("Error!", message)
-		
-		// other error
-		request = Request.Builder()
-			.url("https://dummy-url.net/")
-			.build()
-		
-		response = Response.Builder()
-			.request(request)
-			.protocol(Protocol.HTTP_1_1)
-			.code(500)
-			.message("This is test")
-			.body("Error!".toResponseBody("text/plain".toMediaType()))
-			.build()
-		
-		message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
-		assertEquals("Error!", message)
-		
-		// empty body
-		request = Request.Builder()
-			.url("https://dummy-url.net/")
-			.build()
-		
-		response = Response.Builder()
-			.request(request)
-			.protocol(Protocol.HTTP_1_1)
-			.code(500)
-			.message("This is test")
-			.body("".toResponseBody("text/plain".toMediaType()))
-			.build()
-		
-		message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
-		assertEquals("", message)
-	}
-	
-	@Test
-	fun testFormatResponse() {
-		
-		var request : Request
-		var response : Response
-		var bodyString : String?
-		var message : String
-		
-		// without response body
-		request = Request.Builder()
-			.url("https://dummy-url.net/")
-			.build()
-		
-		response = Response.Builder()
-			.request(request)
-			.protocol(Protocol.HTTP_1_1)
-			.code(500)
-			.message("This is test")
-			.build()
-		
-		message = TootApiClient.formatResponse(response, "caption", null)
-		
-		assertEquals("(HTTP 500 This is test) caption", message)
-		
-		// json error
-		request = Request.Builder()
-			.url("https://dummy-url.net/")
-			.build()
-		
-		response = Response.Builder()
-			.request(request)
-			.protocol(Protocol.HTTP_1_1)
-			.code(500)
-			.message("status-message")
-			.body("""{"error":"Error!"}""".toResponseBody(MEDIA_TYPE_JSON))
-			.build()
-		
-		message = TootApiClient.formatResponse(response, "caption", null)
-		assertEquals("Error! (HTTP 500 status-message) caption", message)
-		
-		// json error (after reading body)
-		
-		request = Request.Builder()
-			.url("https://dummy-url.net/")
-			.build()
-		
-		response = Response.Builder()
-			.request(request)
-			.protocol(Protocol.HTTP_1_1)
-			.code(500)
-			.message("status-message")
-			.body("""{"error":"Error!"}""".toResponseBody(MEDIA_TYPE_JSON))
-			.build()
-		
-		bodyString = response.body?.string()
-		
-		message = TootApiClient.formatResponse(response, "caption", bodyString)
-		assertEquals("Error! (HTTP 500 status-message) caption", message)
-		
-		// without status message
-		request = Request.Builder()
-			.url("https://dummy-url.net/")
-			.build()
-		
-		response = Response.Builder()
-			.request(request)
-			.protocol(Protocol.HTTP_1_1)
-			.code(500)
-			.message("")
-			.body("""{"error":"Error!"}""".toResponseBody(MEDIA_TYPE_JSON))
-			.build()
-		
-		bodyString = response.body?.string()
-		
-		message = TootApiClient.formatResponse(response, "caption", bodyString)
-		assertEquals("Error! (HTTP 500) caption", message)
-		
-	}
-	
-	@Test
-	fun testIsApiCancelled() {
-		
-		var flag = 0
-		var progressString : String? = null
-		var progressValue : Int? = null
-		var progressMax : Int? = null
-		
-		val client = TootApiClient(
-			appContext,
-			httpClient = createHttpClientNotImplemented(),
-			callback = object : TootApiCallback {
-				override val isApiCancelled : Boolean
-					get() {
-						++ flag
-						return true
-					}
-				
-				override suspend fun publishApiProgress(s : String) {
-					++ flag
-					progressString = s
-				}
-				
-				override suspend fun publishApiProgressRatio(value : Int, max : Int) {
-					++ flag
-					progressValue = value
-					progressMax = max
-				}
-			}
-		)
-		val isApiCancelled = client.isApiCancelled
-		client.publishApiProgress("testing")
-		client.publishApiProgressRatio(50, 100)
-		assertEquals(3, flag)
-		assertEquals(true, isApiCancelled)
-		assertEquals("testing", progressString)
-		assertEquals(50, progressValue)
-		assertEquals(100, progressMax)
-		
-	}
-	
-	@Test
-	fun testSendRequest() {
-		
-		val callback = ProgressRecordTootApiCallback()
-		
-		// 正常ケースではResponseが返ってくること
-		run {
-			val client = TootApiClient(
-				appContext,
-				httpClient = createHttpClientNormal(),
-				callback = callback
-			)
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			
-			callback.progressString = null
-			val bOk = client.sendRequest(result) { requestSimple }
-			assertEquals(true, bOk)
-			assertEquals("Acquiring: GET /", callback.progressString)
-			assertEquals(null, result.error)
-			assertNotNull(result.response)
-		}
-		
-		// httpClient.getResponseが例外を出す場合に対応できること
-		run {
-			val client = TootApiClient(
+        .build()
+
+    private val strJsonArray1 = """["A!"]"""
+    private val strJsonArray2 = """   [  "A!"  ]  """
+    private val strJsonObject2 = """  {  "a"  :  "A!"  }  """
+    private val strPlainText = "Hello!"
+
+    private fun createResponseJsonArray1() = Response.Builder()
+        .request(requestSimple)
+        .protocol(Protocol.HTTP_1_1)
+        .code(200)
+        .message("status-message")
+        .body(strJsonArray1.toResponseBody(MEDIA_TYPE_JSON))
+        .build()
+
+    private fun createResponseJsonArray2() = Response.Builder()
+        .request(requestSimple)
+        .protocol(Protocol.HTTP_1_1)
+        .code(200)
+        .message("status-message")
+        .body(strJsonArray2.toResponseBody(MEDIA_TYPE_JSON))
+        .build()
+
+    private fun createResponseJsonObject2() = Response.Builder()
+        .request(requestSimple)
+        .protocol(Protocol.HTTP_1_1)
+        .code(200)
+        .message("status-message")
+        .body(strJsonObject2.toResponseBody(MEDIA_TYPE_JSON))
+        .build()
+
+    private val mediaTypeTextPlain = "text/plain".toMediaType()
+    private val mediaTypeHtml = "text/html".toMediaType()
+
+    private fun createResponsePlainText() = Response.Builder()
+        .request(requestSimple)
+        .protocol(Protocol.HTTP_1_1)
+        .code(200)
+        .message("status-message")
+        .body(strPlainText.toResponseBody(mediaTypeTextPlain))
+        .build()
+
+    @Test
+    fun testSimplifyErrorHtml() {
+        var request: Request
+        var response: Response
+        var message: String
+
+        // json error
+        response = createResponseErrorCode()
+        message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
+        assertEquals("Error!", message)
+
+        // HTML error
+
+        response = Response.Builder()
+            .request(requestSimple)
+            .protocol(Protocol.HTTP_1_1)
+            .code(500)
+            .message("This is test")
+            .body("""<html><body>Error!</body></html>""".toResponseBody(mediaTypeHtml))
+            .build()
+
+        message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
+        assertEquals("Error!", message)
+
+        // other error
+        request = Request.Builder()
+            .url("https://dummy-url.net/")
+            .build()
+
+        response = Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(500)
+            .message("This is test")
+            .body("Error!".toResponseBody("text/plain".toMediaType()))
+            .build()
+
+        message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
+        assertEquals("Error!", message)
+
+        // empty body
+        request = Request.Builder()
+            .url("https://dummy-url.net/")
+            .build()
+
+        response = Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(500)
+            .message("This is test")
+            .body("".toResponseBody("text/plain".toMediaType()))
+            .build()
+
+        message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
+        assertEquals("", message)
+    }
+
+    @Test
+    fun testFormatResponse() {
+
+        var request: Request
+        var response: Response
+        var bodyString: String?
+        var message: String
+
+        // without response body
+        request = Request.Builder()
+            .url("https://dummy-url.net/")
+            .build()
+
+        response = Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(500)
+            .message("This is test")
+            .build()
+
+        message = TootApiClient.formatResponse(response, "caption", null)
+
+        assertEquals("(HTTP 500 This is test) caption", message)
+
+        // json error
+        request = Request.Builder()
+            .url("https://dummy-url.net/")
+            .build()
+
+        response = Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(500)
+            .message("status-message")
+            .body("""{"error":"Error!"}""".toResponseBody(MEDIA_TYPE_JSON))
+            .build()
+
+        message = TootApiClient.formatResponse(response, "caption", null)
+        assertEquals("Error! (HTTP 500 status-message) caption", message)
+
+        // json error (after reading body)
+
+        request = Request.Builder()
+            .url("https://dummy-url.net/")
+            .build()
+
+        response = Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(500)
+            .message("status-message")
+            .body("""{"error":"Error!"}""".toResponseBody(MEDIA_TYPE_JSON))
+            .build()
+
+        bodyString = response.body?.string()
+
+        message = TootApiClient.formatResponse(response, "caption", bodyString)
+        assertEquals("Error! (HTTP 500 status-message) caption", message)
+
+        // without status message
+        request = Request.Builder()
+            .url("https://dummy-url.net/")
+            .build()
+
+        response = Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(500)
+            .message("")
+            .body("""{"error":"Error!"}""".toResponseBody(MEDIA_TYPE_JSON))
+            .build()
+
+        bodyString = response.body?.string()
+
+        message = TootApiClient.formatResponse(response, "caption", bodyString)
+        assertEquals("Error! (HTTP 500) caption", message)
+
+    }
+
+    @Test
+    fun testIsApiCancelled() {
+        runBlocking {
+            var flag = 0
+            var progressString: String? = null
+            var progressValue: Int? = null
+            var progressMax: Int? = null
+
+            val client = TootApiClient(
 				appContext,
 				httpClient = createHttpClientNotImplemented(),
-				callback = callback
+				callback = object : TootApiCallback {
+					override val isApiCancelled: Boolean
+						get() {
+							++flag
+							return true
+						}
+
+					override suspend fun publishApiProgress(s: String) {
+						++flag
+						progressString = s
+					}
+
+					override suspend fun publishApiProgressRatio(value: Int, max: Int) {
+						++flag
+						progressValue = value
+						progressMax = max
+					}
+				}
 			)
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			
-			callback.progressString = null
-			val bOk = client.sendRequest(result) { requestSimple }
-			assertEquals(false, bOk)
-			assertEquals("Acquiring: GET /", callback.progressString)
-			assertEquals(
-				"instance: Network error.: NotImplementedError An operation is not implemented.",
-				result.error
-			)
-			assertNull(result.response)
-			
-		}
-		
-		// progressPath を指定したらpublishApiProgressに渡されること
-		run {
-			val client = TootApiClient(
+            val isApiCancelled = client.isApiCancelled
+            client.publishApiProgress("testing")
+            client.publishApiProgressRatio(50, 100)
+            assertEquals(3, flag)
+            assertEquals(true, isApiCancelled)
+            assertEquals("testing", progressString)
+            assertEquals(50, progressValue)
+            assertEquals(100, progressMax)
+
+        }
+    }
+
+    @Test
+    fun testSendRequest() {
+        runBlocking {
+
+            val callback = ProgressRecordTootApiCallback()
+
+            // 正常ケースではResponseが返ってくること
+            run {
+                val client = TootApiClient(
+					appContext,
+					httpClient = createHttpClientNormal(),
+					callback = callback
+				)
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+
+                callback.progressString = null
+                val bOk = client.sendRequest(result) { requestSimple }
+                assertEquals(true, bOk)
+                assertEquals("Acquiring: GET /", callback.progressString)
+                assertEquals(null, result.error)
+                assertNotNull(result.response)
+            }
+
+            // httpClient.getResponseが例外を出す場合に対応できること
+            run {
+                val client = TootApiClient(
+					appContext,
+					httpClient = createHttpClientNotImplemented(),
+					callback = callback
+				)
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+
+                callback.progressString = null
+                val bOk = client.sendRequest(result) { requestSimple }
+                assertEquals(false, bOk)
+                assertEquals("Acquiring: GET /", callback.progressString)
+                assertEquals(
+					"instance: Network error.: NotImplementedError An operation is not implemented.",
+					result.error
+				)
+                assertNull(result.response)
+
+            }
+
+            // progressPath を指定したらpublishApiProgressに渡されること
+            run {
+                val client = TootApiClient(
+					appContext,
+					httpClient = createHttpClientNormal(),
+					callback = callback
+				)
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+
+                callback.progressString = null
+                val bOk = client.sendRequest(result, progressPath = "XXX") { requestSimple }
+                assertEquals(true, bOk)
+                assertEquals("Acquiring: GET XXX", callback.progressString)
+                assertEquals(null, result.error)
+                assertNotNull(result.response)
+            }
+        }
+    }
+
+    @Test
+    fun testReadBodyString() {
+        runBlocking {
+            val callback = ProgressRecordTootApiCallback()
+            val client = TootApiClient(
 				appContext,
 				httpClient = createHttpClientNormal(),
 				callback = callback
 			)
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			
-			callback.progressString = null
-			val bOk = client.sendRequest(result, progressPath = "XXX") { requestSimple }
-			assertEquals(true, bOk)
-			assertEquals("Acquiring: GET XXX", callback.progressString)
-			assertEquals(null, result.error)
-			assertNotNull(result.response)
-		}
-		
-	}
-	
-	@Test
-	fun testReadBodyString() {
-		
-		val callback = ProgressRecordTootApiCallback()
-		val client = TootApiClient(
-			appContext,
-			httpClient = createHttpClientNormal(),
-			callback = callback
-		)
-		
-		// キャンセルされてたらnullを返すこと
-		run {
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseOk()
-			callback.progressString = null
-			callback.cancelled = true
-			val bodyString = client.readBodyString(result)
-			callback.cancelled = false
-			assertNull(bodyString)
-			assertNull(result.bodyString)
-			assertNull(result.data)
-			assertNull(result.error)
-			assertNull(callback.progressString)
-		}
-		
-		// 正常ケースなら progressを更新してbodyStringを返す
-		run {
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseOk()
-			
-			callback.progressString = null
-			val bodyString = client.readBodyString(result)
-			assertEquals(strJsonOk, bodyString)
-			assertEquals(strJsonOk, result.bodyString)
-			assertEquals("Parsing response…", callback.progressString)
-			assertNull(result.error)
-			assertNull(result.data)
-		}
-		
-		// レスポンスコードがエラーなら
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseErrorCode()
-			
-			callback.progressString = null
-			val bodyString = client.readBodyString(result)
-			assertEquals(null, bodyString)
-			assertEquals(null, result.bodyString)
-			assertEquals("Reading: GET instance", callback.progressString)
-			assertEquals("Error! (HTTP 500 status-message) instance", result.error)
-			assertNull(result.data)
-		}
-		
-		// ボディが空なら
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseEmptyBody()
-			callback.progressString = null
-			val bodyString = client.readBodyString(result)
-			assertEquals("", bodyString)
-			assertEquals("", result.bodyString)
-			assertEquals("Reading: GET instance", callback.progressString)
-			assertEquals(null, result.error)
-			assertNull(result.data)
-		}
-		// ボディがnullなら
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseWithoutBody()
-			
-			callback.progressString = null
-			val bodyString = client.readBodyString(result)
-			assertEquals("", bodyString)
-			assertEquals("", result.bodyString)
-			assertEquals("Reading: GET instance", callback.progressString)
-			assertEquals(null, result.error)
-			assertNull(result.data)
-		}
-		
-		// string() が例外
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseExceptionBody()
-			
-			var catched : Throwable? = null
-			val bodyString = try {
-				client.readBodyString(result)
-			} catch(ex : Throwable) {
-				ex.printStackTrace()
-				catched = ex
-				null
-			}
-			assertEquals(null, bodyString)
-			assertNotNull(catched)
-		}
-	}
-	
-	@Test
-	fun testParseString() {
-		val callback = ProgressRecordTootApiCallback()
-		val client = TootApiClient(
-			appContext,
-			httpClient = createHttpClientNormal(),
-			callback = callback
-		)
-		
-		// キャンセルされてたらnullを返すこと
-		run {
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseOk()
-			callback.progressString = null
-			callback.cancelled = true
-			val r2 = client.parseString(result)
-			callback.cancelled = false
-			assertNull(r2)
-			assertNull(result.bodyString)
-			assertNull(result.data)
-			assertNull(result.error)
-			assertNull(callback.progressString)
-		}
-		
-		// 正常ケースなら progressを更新してbodyStringを返す
-		run {
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseOk()
-			
-			callback.progressString = null
-			val r2 = client.parseString(result)
-			assertNotNull(r2)
-			assertEquals(strJsonOk, result.string)
-			assertEquals(strJsonOk, result.bodyString)
-			assertEquals("Parsing response…", callback.progressString)
-			assertNull(result.error)
-		}
-		// 正常レスポンスならJSONにエラーがあってもreadStringは関知しない
-		run {
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseOkButJsonError()
-			
-			callback.progressString = null
-			val r2 = client.parseString(result)
-			assertNotNull(r2)
-			assertEquals(strJsonError, result.string)
-			assertEquals(strJsonError, result.bodyString)
-			assertEquals("Parsing response…", callback.progressString)
-			assertNull(result.error)
-		}
-		
-		// レスポンスコードがエラーなら
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseErrorCode()
-			callback.progressString = null
-			val r2 = client.parseString(result)
-			assertNotNull(r2)
-			assertEquals(null, result.string)
-			assertEquals(null, result.bodyString)
-			assertEquals("Reading: GET instance", callback.progressString)
-			assertEquals("Error! (HTTP 500 status-message) instance", result.error)
-		}
-		
-		// ボディが空で応答コードがエラーなら
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseEmptyBody(code=404)
-			callback.progressString = null
-			val r2 = client.parseString(result)
-			assertNotNull(r2)
-			assertEquals(null, result.string)
-			assertEquals(null, result.bodyString)
-			assertEquals("Reading: GET instance", callback.progressString)
-			assertEquals("(no information) (HTTP 404 status-message) instance", result.error)
-			assertNull(result.data)
-		}
-		// ボディがnullでも応答コードが成功ならエラーではない
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseWithoutBody()
-			
-			callback.progressString = null
-			val r2 = client.parseString(result)
-			assertNotNull(r2)
-			assertEquals("", result.string)
-			assertEquals("", result.bodyString)
-			assertEquals("Reading: GET instance", callback.progressString)
-			assertEquals(null, result.error)
-			assertEquals("",result.data)
-		}
-		
-		// string() が例外
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseExceptionBody()
-			val r2 = client.parseString(result)
-			assertNotNull(r2)
-			assertEquals(null, result.string)
-			assertEquals(null, result.bodyString)
-			assertEquals("Reading: GET instance", callback.progressString)
-			assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
-			assertNull(result.data)
-		}
-		
-	}
-	
-	@Test
-	fun testParseJson() {
-		val callback = ProgressRecordTootApiCallback()
-		val client = TootApiClient(
-			appContext,
-			httpClient = createHttpClientNormal(),
-			callback = callback
-		)
-		
-		// キャンセルされてたらnullを返すこと
-		run {
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseOk()
-			callback.progressString = null
-			callback.cancelled = true
-			val r2 = client.parseJson(result)
-			callback.cancelled = false
-			assertNull(r2)
-			assertNull(result.bodyString)
-			assertNull(result.data)
-			assertNull(result.error)
-			assertNull(callback.progressString)
-		}
-		
-		// 正常ケースなら progressを更新してbodyStringを返す
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseOk()
-			
-			callback.progressString = null
-			val r2 = client.parseJson(result)
-			assertNotNull(r2)
-			assertEquals("A!", result.jsonObject?.optString("a"))
-			assertEquals(strJsonOk, result.bodyString)
-			assertEquals("Parsing response…", callback.progressString)
-			assertNull(result.error)
-		}
-		// 正常ケースでもjsonデータにerror項目があれば
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseOkButJsonError()
-			
-			callback.progressString = null
-			val r2 = client.parseJson(result)
-			assertNotNull(r2)
-			assertEquals(null, result.data)
-			assertEquals(strJsonError, result.bodyString)
-			assertEquals("Parsing response…", callback.progressString)
-			assertEquals("Error!", result.error)
-		}
-		
-		// レスポンスコードがエラーなら
-		run {
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseErrorCode()
-			callback.progressString = null
-			val r2 = client.parseJson(result)
-			assertNotNull(r2)
-			assertEquals(null, result.data)
-			assertEquals(null, result.bodyString)
-			assertEquals("Reading: GET instance", callback.progressString)
-			assertEquals("Error! (HTTP 500 status-message) instance", result.error)
-		}
-		
-		// ボディが空なら
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseEmptyBody()
-			callback.progressString = null
-			val r2 = client.parseJson(result)
-			assertNotNull(r2)
-			assertEquals(0, result.jsonObject?.size)
-			assertEquals("", result.bodyString)
-			assertEquals("Reading: GET instance", callback.progressString)
-			assertEquals(null, result.error)
-		}
-		
-		// ボディがnullなら
-		run {
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseWithoutBody()
-			callback.progressString = null
-			val r2 = client.parseJson(result)
-			assertNotNull(r2)
-			assertEquals(0, result.jsonObject?.size)
-			assertEquals("", result.bodyString)
-			assertEquals("Reading: GET instance", callback.progressString)
-			assertEquals(null, result.error)
-		}
-		
-		// string() が例外
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseExceptionBody()
-			val r2 = client.parseJson(result)
-			assertNotNull(r2)
-			assertEquals(null, result.data)
-			assertEquals(null, result.bodyString)
-			assertEquals("Reading: GET instance", callback.progressString)
-			assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
-			assertNull(result.data)
-		}
-		
-		// JSON Arrayを処理する
-		run {
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseJsonArray1()
-			
-			callback.progressString = null
-			val r2 = client.parseJson(result)
-			assertNotNull(r2)
-			assertEquals("A!", result.jsonArray?.optString(0))
-			assertEquals(strJsonArray1, result.bodyString)
-			assertEquals("Parsing response…", callback.progressString)
-			assertNull(result.error)
-		}
-		
-		// 空白が余計に入ってるJSON Arrayを処理する
-		run {
-			
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseJsonArray2()
-			
-			callback.progressString = null
-			val r2 = client.parseJson(result)
-			assertNotNull(r2)
-			assertEquals("A!", result.jsonArray?.optString(0))
-			assertEquals(strJsonArray2, result.bodyString)
-			assertEquals("Parsing response…", callback.progressString)
-			assertNull(result.error)
-		}
-		
-		// 空白が余計に入ってるJSON Objectを処理する
-		run {
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponseJsonObject2()
-			
-			callback.progressString = null
-			val r2 = client.parseJson(result)
-			assertNotNull(r2)
-			assertEquals("A!", result.jsonObject?.optString("a"))
-			assertEquals(strJsonObject2, result.bodyString)
-			assertEquals("Parsing response…", callback.progressString)
-			assertNull(result.error)
-		}
-		// JSONじゃない
-		run {
-			val result = TootApiResult.makeWithCaption("instance")
-			assertEquals(null, result.error)
-			result.response = createResponsePlainText()
-			
-			callback.progressString = null
-			val r2 = client.parseJson(result)
-			assertNotNull(r2)
-			assertEquals(null, result.data)
-			assertEquals(strPlainText, result.bodyString)
-			assertEquals("Parsing response…", callback.progressString)
-			assertEquals("API response is not JSON. Hello! (HTTP 200 status-message) https://dummy-url.net/", result.error)
-		}
-	}
-	
-	@Test
-	fun testRegisterClient() {
-		val callback = ProgressRecordTootApiCallback()
-		val client = TootApiClient(
-			appContext,
-			httpClient = createHttpClientNormal(),
-			callback = callback
-		)
-		val instance = Host.parse("unit-test")
-		client.apiHost = instance
-		val clientName = "SubwayTooterUnitTest"
-		val scope_string = "read+write+follow+push"
-		
-		// まずクライアント情報を作らないとcredentialのテストができない
-		var result = client.registerClient(scope_string, clientName)
-		assertNotNull(result)
-		assertEquals(null, result?.error)
-		var jsonObject = result?.jsonObject
-		assertNotNull(jsonObject)
-		if(jsonObject == null) return
-		val clientInfo = jsonObject
-		
-		// clientCredential の作成
-		result = client.getClientCredential(clientInfo)
-		assertNotNull(result)
-		assertEquals(null, result?.error)
-		val clientCredential = result?.string
-		assertNotNull(clientCredential)
-		if(clientCredential == null) return
-		clientInfo[TootApiClient.KEY_CLIENT_CREDENTIAL] = clientCredential
-		
-		// clientCredential の検証
-		result = client.verifyClientCredential(clientCredential)
-		assertNotNull(result)
-		assertEquals(null, result?.error)
-		jsonObject = result?.jsonObject
-		assertNotNull(jsonObject) // 中味は別に見てない。jsonObjectなら良いらしい
-		if(jsonObject == null) return
-		
-		var url : String?
-		
-		// ブラウザURLの作成
-		url = client.prepareBrowserUrl(scope_string, clientInfo)
-		assertNotNull(url)
-		println(url)
-		
-		// ここまでと同じことをauthorize1でまとめて行う
-		result = client.authentication1(clientName)
-		url = result?.string
-		assertNotNull(url)
-		if(url == null) return
-		println(url)
-		
-		// ブラウザからコールバックで受け取ったcodeを処理する
-		result = client.authentication2(clientName, "DUMMY_CODE")
-		jsonObject = result?.jsonObject
-		assertNotNull(jsonObject)
-		if(jsonObject == null) return
-		println(jsonObject.toString())
-		
-		// 認証できたならアクセストークンがある
-		val tokenInfo = result?.tokenInfo
-		assertNotNull(tokenInfo)
-		if(tokenInfo == null) return
-		val accessToken = tokenInfo.string("access_token")
-		assertNotNull(accessToken)
-		if(accessToken == null) return
-		
-		// アカウント手動入力でログインする場合はこの関数を直接呼び出す
-		result = client.getUserCredential(accessToken, tokenInfo)
-		jsonObject = result?.jsonObject
-		assertNotNull(jsonObject)
-		if(jsonObject == null) return
-		println(jsonObject.toString())
-		
-	}
-	
-	@Test
-	fun testGetInstanceInformation() {
-		val callback = ProgressRecordTootApiCallback()
-		val client = TootApiClient(
-			appContext,
-			httpClient = createHttpClientNormal(),
-			callback = callback
-		)
-		val instance = Host.parse("unit-test")
-		client.apiHost = instance
-		val (instanceInfo, instanceResult) = TootInstance.get(client)
-		assertNotNull(instanceInfo)
-		assertNotNull(instanceResult)
-		val json = instanceResult?.jsonObject
-		if(json != null) println(json.toString())
-		
-	}
-	
-	@Test
-	fun testGetHttp() {
-		val callback = ProgressRecordTootApiCallback()
-		val client = TootApiClient(
-			appContext,
-			httpClient = createHttpClientNormal(),
-			callback = callback
-		)
-		val result = client.getHttp("http://juggler.jp/")
-		val content = result?.string
-		assertNotNull(content)
-		println(content.toString())
-	}
-	
-	@Test
-	fun testRequest() {
-		val tokenInfo = JsonObject()
-		tokenInfo["access_token"] = "DUMMY_ACCESS_TOKEN"
-		
-		val accessInfo = SavedAccount(
-			db_id = 1,
-			acctArg = "user1@host1",
-			apiHostArg = null,
-			token_info = tokenInfo
-		)
-		val callback = ProgressRecordTootApiCallback()
-		val client = TootApiClient(
-			appContext,
-			httpClient = createHttpClientNormal(),
-			callback = callback
-		)
-		client.account = accessInfo
-		val result = client.request("/api/v1/timelines/public")
-		println(result?.bodyString)
-		
-		val content = result?.jsonArray
-		assertNotNull(content)
-		println(content?.jsonObject(0).toString())
-	}
-	
-	@Test
-	fun testWebSocket() {
-		val tokenInfo = jsonObject {
-			put("access_token", "DUMMY_ACCESS_TOKEN")
-		}
-		
-		val accessInfo = SavedAccount(
-			db_id = 1,
-			acctArg = "user1@host1",
-			apiHostArg = null,
-			token_info = tokenInfo
-		)
-		val callback = ProgressRecordTootApiCallback()
-		val client = TootApiClient(
-			appContext,
-			httpClient = createHttpClientNormal(),
-			callback = callback
-		)
-		client.account = accessInfo
-		val (_, ws) = client.webSocket("/api/v1/streaming/?stream=public:local",
-			object : WebSocketListener() {
-			})
-		assertNotNull(ws)
-		ws?.cancel()
-	}
+
+            // キャンセルされてたらnullを返すこと
+            run {
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseOk()
+                callback.progressString = null
+                callback.cancelled = true
+                val bodyString = client.readBodyString(result)
+                callback.cancelled = false
+                assertNull(bodyString)
+                assertNull(result.bodyString)
+                assertNull(result.data)
+                assertNull(result.error)
+                assertNull(callback.progressString)
+            }
+
+            // 正常ケースなら progressを更新してbodyStringを返す
+            run {
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseOk()
+
+                callback.progressString = null
+                val bodyString = client.readBodyString(result)
+                assertEquals(strJsonOk, bodyString)
+                assertEquals(strJsonOk, result.bodyString)
+                assertEquals("Parsing response…", callback.progressString)
+                assertNull(result.error)
+                assertNull(result.data)
+            }
+
+            // レスポンスコードがエラーなら
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseErrorCode()
+
+                callback.progressString = null
+                val bodyString = client.readBodyString(result)
+                assertEquals(null, bodyString)
+                assertEquals(null, result.bodyString)
+                assertEquals("Reading: GET instance", callback.progressString)
+                assertEquals("Error! (HTTP 500 status-message) instance", result.error)
+                assertNull(result.data)
+            }
+
+            // ボディが空なら
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseEmptyBody()
+                callback.progressString = null
+                val bodyString = client.readBodyString(result)
+                assertEquals("", bodyString)
+                assertEquals("", result.bodyString)
+                assertEquals("Reading: GET instance", callback.progressString)
+                assertEquals(null, result.error)
+                assertNull(result.data)
+            }
+            // ボディがnullなら
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseWithoutBody()
+
+                callback.progressString = null
+                val bodyString = client.readBodyString(result)
+                assertEquals("", bodyString)
+                assertEquals("", result.bodyString)
+                assertEquals("Reading: GET instance", callback.progressString)
+                assertEquals(null, result.error)
+                assertNull(result.data)
+            }
+
+            // string() が例外
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseExceptionBody()
+
+                var catched: Throwable? = null
+                val bodyString = try {
+                    client.readBodyString(result)
+                } catch (ex: Throwable) {
+                    ex.printStackTrace()
+                    catched = ex
+                    null
+                }
+                assertEquals(null, bodyString)
+                assertNotNull(catched)
+            }
+        }
+    }
+
+    @Test
+    fun testParseString() {
+        runBlocking {
+
+            val callback = ProgressRecordTootApiCallback()
+            val client = TootApiClient(
+				appContext,
+				httpClient = createHttpClientNormal(),
+				callback = callback
+			)
+
+            // キャンセルされてたらnullを返すこと
+            run {
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseOk()
+                callback.progressString = null
+                callback.cancelled = true
+                val r2 = client.parseString(result)
+                callback.cancelled = false
+                assertNull(r2)
+                assertNull(result.bodyString)
+                assertNull(result.data)
+                assertNull(result.error)
+                assertNull(callback.progressString)
+            }
+
+            // 正常ケースなら progressを更新してbodyStringを返す
+            run {
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseOk()
+
+                callback.progressString = null
+                val r2 = client.parseString(result)
+                assertNotNull(r2)
+                assertEquals(strJsonOk, result.string)
+                assertEquals(strJsonOk, result.bodyString)
+                assertEquals("Parsing response…", callback.progressString)
+                assertNull(result.error)
+            }
+            // 正常レスポンスならJSONにエラーがあってもreadStringは関知しない
+            run {
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseOkButJsonError()
+
+                callback.progressString = null
+                val r2 = client.parseString(result)
+                assertNotNull(r2)
+                assertEquals(strJsonError, result.string)
+                assertEquals(strJsonError, result.bodyString)
+                assertEquals("Parsing response…", callback.progressString)
+                assertNull(result.error)
+            }
+
+            // レスポンスコードがエラーなら
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseErrorCode()
+                callback.progressString = null
+                val r2 = client.parseString(result)
+                assertNotNull(r2)
+                assertEquals(null, result.string)
+                assertEquals(null, result.bodyString)
+                assertEquals("Reading: GET instance", callback.progressString)
+                assertEquals("Error! (HTTP 500 status-message) instance", result.error)
+            }
+
+            // ボディが空で応答コードがエラーなら
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseEmptyBody(code = 404)
+                callback.progressString = null
+                val r2 = client.parseString(result)
+                assertNotNull(r2)
+                assertEquals(null, result.string)
+                assertEquals(null, result.bodyString)
+                assertEquals("Reading: GET instance", callback.progressString)
+                assertEquals("(no information) (HTTP 404 status-message) instance", result.error)
+                assertNull(result.data)
+            }
+            // ボディがnullでも応答コードが成功ならエラーではない
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseWithoutBody()
+
+                callback.progressString = null
+                val r2 = client.parseString(result)
+                assertNotNull(r2)
+                assertEquals("", result.string)
+                assertEquals("", result.bodyString)
+                assertEquals("Reading: GET instance", callback.progressString)
+                assertEquals(null, result.error)
+                assertEquals("", result.data)
+            }
+
+            // string() が例外
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseExceptionBody()
+                val r2 = client.parseString(result)
+                assertNotNull(r2)
+                assertEquals(null, result.string)
+                assertEquals(null, result.bodyString)
+                assertEquals("Reading: GET instance", callback.progressString)
+                assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
+                assertNull(result.data)
+            }
+
+        }
+    }
+
+    @Test
+    fun testParseJson() {
+        runBlocking {
+            val callback = ProgressRecordTootApiCallback()
+            val client = TootApiClient(
+				appContext,
+				httpClient = createHttpClientNormal(),
+				callback = callback
+			)
+
+            // キャンセルされてたらnullを返すこと
+            run {
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseOk()
+                callback.progressString = null
+                callback.cancelled = true
+                val r2 = client.parseJson(result)
+                callback.cancelled = false
+                assertNull(r2)
+                assertNull(result.bodyString)
+                assertNull(result.data)
+                assertNull(result.error)
+                assertNull(callback.progressString)
+            }
+
+            // 正常ケースなら progressを更新してbodyStringを返す
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseOk()
+
+                callback.progressString = null
+                val r2 = client.parseJson(result)
+                assertNotNull(r2)
+                assertEquals("A!", result.jsonObject?.optString("a"))
+                assertEquals(strJsonOk, result.bodyString)
+                assertEquals("Parsing response…", callback.progressString)
+                assertNull(result.error)
+            }
+            // 正常ケースでもjsonデータにerror項目があれば
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseOkButJsonError()
+
+                callback.progressString = null
+                val r2 = client.parseJson(result)
+                assertNotNull(r2)
+                assertEquals(null, result.data)
+                assertEquals(strJsonError, result.bodyString)
+                assertEquals("Parsing response…", callback.progressString)
+                assertEquals("Error!", result.error)
+            }
+
+            // レスポンスコードがエラーなら
+            run {
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseErrorCode()
+                callback.progressString = null
+                val r2 = client.parseJson(result)
+                assertNotNull(r2)
+                assertEquals(null, result.data)
+                assertEquals(null, result.bodyString)
+                assertEquals("Reading: GET instance", callback.progressString)
+                assertEquals("Error! (HTTP 500 status-message) instance", result.error)
+            }
+
+            // ボディが空なら
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseEmptyBody()
+                callback.progressString = null
+                val r2 = client.parseJson(result)
+                assertNotNull(r2)
+                assertEquals(0, result.jsonObject?.size)
+                assertEquals("", result.bodyString)
+                assertEquals("Reading: GET instance", callback.progressString)
+                assertEquals(null, result.error)
+            }
+
+            // ボディがnullなら
+            run {
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseWithoutBody()
+                callback.progressString = null
+                val r2 = client.parseJson(result)
+                assertNotNull(r2)
+                assertEquals(0, result.jsonObject?.size)
+                assertEquals("", result.bodyString)
+                assertEquals("Reading: GET instance", callback.progressString)
+                assertEquals(null, result.error)
+            }
+
+            // string() が例外
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseExceptionBody()
+                val r2 = client.parseJson(result)
+                assertNotNull(r2)
+                assertEquals(null, result.data)
+                assertEquals(null, result.bodyString)
+                assertEquals("Reading: GET instance", callback.progressString)
+                assertEquals("(no information) (HTTP 200 status-message) instance", result.error)
+                assertNull(result.data)
+            }
+
+            // JSON Arrayを処理する
+            run {
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseJsonArray1()
+
+                callback.progressString = null
+                val r2 = client.parseJson(result)
+                assertNotNull(r2)
+                assertEquals("A!", result.jsonArray?.optString(0))
+                assertEquals(strJsonArray1, result.bodyString)
+                assertEquals("Parsing response…", callback.progressString)
+                assertNull(result.error)
+            }
+
+            // 空白が余計に入ってるJSON Arrayを処理する
+            run {
+
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseJsonArray2()
+
+                callback.progressString = null
+                val r2 = client.parseJson(result)
+                assertNotNull(r2)
+                assertEquals("A!", result.jsonArray?.optString(0))
+                assertEquals(strJsonArray2, result.bodyString)
+                assertEquals("Parsing response…", callback.progressString)
+                assertNull(result.error)
+            }
+
+            // 空白が余計に入ってるJSON Objectを処理する
+            run {
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponseJsonObject2()
+
+                callback.progressString = null
+                val r2 = client.parseJson(result)
+                assertNotNull(r2)
+                assertEquals("A!", result.jsonObject?.optString("a"))
+                assertEquals(strJsonObject2, result.bodyString)
+                assertEquals("Parsing response…", callback.progressString)
+                assertNull(result.error)
+            }
+            // JSONじゃない
+            run {
+                val result = TootApiResult.makeWithCaption("instance")
+                assertEquals(null, result.error)
+                result.response = createResponsePlainText()
+
+                callback.progressString = null
+                val r2 = client.parseJson(result)
+                assertNotNull(r2)
+                assertEquals(null, result.data)
+                assertEquals(strPlainText, result.bodyString)
+                assertEquals("Parsing response…", callback.progressString)
+                assertEquals("API response is not JSON. Hello! (HTTP 200 status-message) https://dummy-url.net/", result.error)
+            }
+        }
+    }
+
+    @Test
+    fun testRegisterClient() {
+        runBlocking {
+            val callback = ProgressRecordTootApiCallback()
+            val client = TootApiClient(
+				appContext,
+				httpClient = createHttpClientNormal(),
+				callback = callback
+			)
+            val instance = Host.parse("unit-test")
+            client.apiHost = instance
+            val clientName = "SubwayTooterUnitTest"
+            val scope_string = "read+write+follow+push"
+
+            // まずクライアント情報を作らないとcredentialのテストができない
+            var result = client.registerClient(scope_string, clientName)
+            assertNotNull(result)
+            assertEquals(null, result?.error)
+            var jsonObject = result?.jsonObject
+            assertNotNull(jsonObject)
+            if (jsonObject == null) return@runBlocking
+            val clientInfo = jsonObject
+
+            // clientCredential の作成
+            result = client.getClientCredential(clientInfo)
+            assertNotNull(result)
+            assertEquals(null, result?.error)
+            val clientCredential = result?.string
+            assertNotNull(clientCredential)
+            if (clientCredential == null) return@runBlocking
+            clientInfo[TootApiClient.KEY_CLIENT_CREDENTIAL] = clientCredential
+
+            // clientCredential の検証
+            result = client.verifyClientCredential(clientCredential)
+            assertNotNull(result)
+            assertEquals(null, result?.error)
+            jsonObject = result?.jsonObject
+            assertNotNull(jsonObject) // 中味は別に見てない。jsonObjectなら良いらしい
+            if (jsonObject == null) return@runBlocking
+
+            var url: String?
+
+            // ブラウザURLの作成
+            url = client.prepareBrowserUrl(scope_string, clientInfo)
+            assertNotNull(url)
+            println(url)
+
+            // ここまでと同じことをauthorize1でまとめて行う
+            result = client.authentication1(clientName)
+            url = result?.string
+            assertNotNull(url)
+            if (url == null) return@runBlocking
+            println(url)
+
+            // ブラウザからコールバックで受け取ったcodeを処理する
+            result = client.authentication2(clientName, "DUMMY_CODE")
+            jsonObject = result?.jsonObject
+            assertNotNull(jsonObject)
+            if (jsonObject == null) return@runBlocking
+            println(jsonObject.toString())
+
+            // 認証できたならアクセストークンがある
+            val tokenInfo = result?.tokenInfo
+            assertNotNull(tokenInfo)
+            if (tokenInfo == null) return@runBlocking
+            val accessToken = tokenInfo.string("access_token")
+            assertNotNull(accessToken)
+            if (accessToken == null) return@runBlocking
+
+            // アカウント手動入力でログインする場合はこの関数を直接呼び出す
+            result = client.getUserCredential(accessToken, tokenInfo)
+            jsonObject = result?.jsonObject
+            assertNotNull(jsonObject)
+            if (jsonObject == null) return@runBlocking
+            println(jsonObject.toString())
+        }
+    }
+
+    @Test
+    fun testGetInstanceInformation() {
+        runBlocking {
+            val callback = ProgressRecordTootApiCallback()
+            val client = TootApiClient(
+				appContext,
+				httpClient = createHttpClientNormal(),
+				callback = callback
+			)
+            val instance = Host.parse("unit-test")
+            client.apiHost = instance
+			val (instanceInfo, instanceResult) = TootInstance.get(client)
+            assertNotNull(instanceInfo)
+            assertNotNull(instanceResult)
+            val json = instanceResult?.jsonObject
+            if (json != null) println(json.toString())
+        }
+    }
+
+    @Test
+    fun testGetHttp() {
+        runBlocking {
+            val callback = ProgressRecordTootApiCallback()
+            val client = TootApiClient(
+				appContext,
+				httpClient = createHttpClientNormal(),
+				callback = callback
+			)
+            val result = client.getHttp("http://juggler.jp/")
+            val content = result?.string
+            assertNotNull(content)
+            println(content.toString())
+        }
+    }
+
+    @Test
+    fun testRequest() {
+        runBlocking {
+            val tokenInfo = JsonObject()
+            tokenInfo["access_token"] = "DUMMY_ACCESS_TOKEN"
+
+            val accessInfo = SavedAccount(
+				db_id = 1,
+				acctArg = "user1@host1",
+				apiHostArg = null,
+				token_info = tokenInfo
+			)
+            val callback = ProgressRecordTootApiCallback()
+            val client = TootApiClient(
+				appContext,
+				httpClient = createHttpClientNormal(),
+				callback = callback
+			)
+            client.account = accessInfo
+            val result = client.request("/api/v1/timelines/public")
+            println(result?.bodyString)
+
+            val content = result?.jsonArray
+            assertNotNull(content)
+            println(content?.jsonObject(0).toString())
+        }
+    }
+
+    @Test
+    fun testWebSocket() {
+        runBlocking {
+            val tokenInfo = jsonObject {
+                put("access_token", "DUMMY_ACCESS_TOKEN")
+            }
+
+            val accessInfo = SavedAccount(
+				db_id = 1,
+				acctArg = "user1@host1",
+				apiHostArg = null,
+				token_info = tokenInfo
+			)
+            val callback = ProgressRecordTootApiCallback()
+            val client = TootApiClient(
+				appContext,
+				httpClient = createHttpClientNormal(),
+				callback = callback
+			)
+            client.account = accessInfo
+			val (_, ws) = client.webSocket("/api/v1/streaming/?stream=public:local",
+				object : WebSocketListener() {
+				})
+            assertNotNull(ws)
+            ws?.cancel()
+        }
+    }
 }
 

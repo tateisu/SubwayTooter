@@ -20,7 +20,7 @@ Mastodon client app for Android phone/tablet.
 - "Many filters" media TL, app mute, word mute, regex filter, etc.
 - "Auto CW" that folds very long texts automatically
 - "Push notification" (Google Play service required. if not found, this app uses pull notification 15 min period.)
-- Fastest support for Mastodon's new feature
+- Relatively fast support for Mastodon's new feature
 
 ## Install
 

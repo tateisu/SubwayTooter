@@ -276,13 +276,13 @@ class TootApiClient(
         tmpOkhttpClient: OkHttpClient? = null,
         block: () -> Request
     ): Boolean {
+
+        result.response = null
+        result.bodyString = null
+        result.data = null
+        val request = block()
+
         return try {
-            result.response = null
-            result.bodyString = null
-            result.data = null
-
-            val request = block()
-
             result.requestInfo = "${request.method} ${progressPath ?: request.url.encodedPath}"
 
             callback.publishApiProgress(

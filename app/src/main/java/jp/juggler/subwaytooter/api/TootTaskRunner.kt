@@ -65,15 +65,9 @@ class TootTaskRunner(
 
     private var last_message_shown: Long = 0
 
-    private val proc_progress_message = object : Runnable {
-        override fun run() {
-            synchronized(this) {
-                if (progress?.isShowing == true) {
-                    showProgressMessage()
-                }
-            }
-        }
-    }
+    private val proc_progress_message = Runnable {
+		if (progress?.isShowing == true) showProgressMessage()
+	}
 
     init {
         this.refContext = WeakReference(context)
@@ -178,28 +172,30 @@ class TootTaskRunner(
     private fun showProgressMessage() {
         val progress = this.progress ?: return
 
-        val message = info.message.trim { it <= ' ' }
-        val progress_prefix = this.progress_prefix
-        progress.setMessageEx(
-			when {
-				progress_prefix?.isNotEmpty() != true -> message
-				message.isEmpty() -> progress_prefix
-				else -> "$progress_prefix\n$message"
+		synchronized(this){
+			val message = info.message.trim { it <= ' ' }
+			val progress_prefix = this.progress_prefix
+			progress.setMessageEx(
+				when {
+					progress_prefix?.isNotEmpty() != true -> message
+					message.isEmpty() -> progress_prefix
+					else -> "$progress_prefix\n$message"
+				}
+			)
+
+			progress.isIndeterminateEx = info.isIndeterminate
+			if (info.isIndeterminate) {
+				progress.setProgressNumberFormat(null)
+				progress.setProgressPercentFormat(null)
+			} else {
+				progress.progress = info.value
+				progress.max = info.max
+				progress.setProgressNumberFormat("%1$,d / %2$,d")
+				progress.setProgressPercentFormat(percent_format)
 			}
-		)
 
-        progress.isIndeterminateEx = info.isIndeterminate
-        if (info.isIndeterminate) {
-            progress.setProgressNumberFormat(null)
-            progress.setProgressPercentFormat(null)
-        } else {
-            progress.progress = info.value
-            progress.max = info.max
-            progress.setProgressNumberFormat("%1$,d / %2$,d")
-            progress.setProgressPercentFormat(percent_format)
-        }
-
-        last_message_shown = SystemClock.elapsedRealtime()
+			last_message_shown = SystemClock.elapsedRealtime()
+		}
     }
 
     // 少し後にダイアログのメッセージを更新する

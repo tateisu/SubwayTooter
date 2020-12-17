@@ -8,6 +8,7 @@ import android.os.Looper
 
 val isMainThread : Boolean get() = Looper.getMainLooper().thread === Thread.currentThread()
 
+// メインスレッドから呼び出された場合、それがsynchronizedの中だと GlobalScope.launch を使うのは良くない
 fun runOnMainLooper(proc : () -> Unit) {
 	val looper = Looper.getMainLooper()
 	if(looper.thread === Thread.currentThread()) {
@@ -18,6 +19,5 @@ fun runOnMainLooper(proc : () -> Unit) {
 }
 
 fun runOnMainLooperDelayed(delayMs : Long, proc : () -> Unit) {
-	val looper = Looper.getMainLooper()
-	Handler(looper).postDelayed({ proc() }, delayMs)
+	Handler(Looper.getMainLooper()).postDelayed({ proc() }, delayMs)
 }

@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.table.*
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 import jp.juggler.util.WordTrieTree
+import jp.juggler.util.runOnMainLooper
 import kotlinx.coroutines.*
 import okhttp3.Call
 import java.lang.ref.WeakReference
@@ -127,8 +128,8 @@ class JobItem(
         log.d(")JobItem.run jobId=${jobId}, cancel=${isJobCancelled}")
 
         // メインスレッドで後処理を行う
-        launch(Dispatchers.Main) {
-            if (isJobCancelled) return@launch
+        runOnMainLooper {
+            if (isJobCancelled) return@runOnMainLooper
             pollingWorker.onJobComplete(this@JobItem)
         }
     }

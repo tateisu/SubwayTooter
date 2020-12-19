@@ -118,9 +118,9 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
     var location: String? = null
     var birthday: String? = null
 
-    // mastodon 3.0.0-dev
-    // last_status_at : "2019-08-29T12:42:08.838Z" or null
-    private var last_status_at = 0L
+    // mastodon 3.0.0-dev // last_status_at : "2019-08-29T12:42:08.838Z" or null
+    // mastodon 3.1       // last_status_at : "2019-08-29" or null
+    private var last_status_at =0L
 
     // mastodon 3.3.0
     var suspended = false

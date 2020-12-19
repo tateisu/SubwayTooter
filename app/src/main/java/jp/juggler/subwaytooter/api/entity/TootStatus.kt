@@ -1115,8 +1115,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
         private val tz_utc = TimeZone.getTimeZone("UTC")
 
-		private val reDate = """\A(\d+)\D+(\d+)\D+(\d+)"""
-			.asciiPattern()
+		private val reDate = """\A\d+\D+\d+\D+\d+\z""".asciiPattern()
 
 		private val reTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+))?"""
             .asciiPattern()
@@ -1143,19 +1142,8 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 					}
 					// last_status_at などでは YYYY-MM-DD になることがある
 					m = reDate.matcher(strTime)
-					if (m.find()) {
-						val g = GregorianCalendar(tz_utc)
-						g.set(
-							m.groupEx(1).optInt() ?: 1,
-							(m.groupEx(2).optInt() ?: 1) - 1,
-							m.groupEx(3).optInt() ?: 1,
-							12,
-							34,
-							56
-						)
-						g.set(Calendar.MILLISECOND, 789)
-						return g.timeInMillis
-					}
+					if (m.find()) return parseTime("${strTime}T00:00:00.000Z")
+
 					log.w("invalid time format: %s", strTime)
                 } catch (ex: Throwable) { // ParseException,  ArrayIndexOutOfBoundsException
                     log.trace(ex)

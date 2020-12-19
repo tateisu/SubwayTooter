@@ -40,7 +40,7 @@ private val log = LogCategory("AppOpener")
 
 // returns true if activity is opened.
 // returns false if fallback required
-private fun Activity.startActivityExcludeMyApp(
+private fun Activity.openBrowserExcludeMe(
     pref:SharedPreferences,
     intent: Intent,
     startAnimationBundle: Bundle? = null
@@ -120,7 +120,7 @@ private fun Activity.startActivityExcludeMyApp(
 
 fun Activity.openBrowser(uri: Uri? , pref:SharedPreferences = pref()) {
     uri ?: return
-    val rv = startActivityExcludeMyApp(
+    val rv = openBrowserExcludeMe(
         pref,
         Intent(Intent.ACTION_VIEW, uri)
             .apply { addCategory(Intent.CATEGORY_BROWSABLE) }
@@ -156,7 +156,7 @@ fun Activity.openCustomTab(url: String?, pref:SharedPreferences = pref()) {
                 .build()
                 .let {
                     log.w("startCustomTabIntent ComponentName=$cn")
-                    startActivityExcludeMyApp(
+                    openBrowserExcludeMe(
                         pref,
                         it.intent.also { intent ->
                             if (cn != null) intent.component = cn

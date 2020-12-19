@@ -1076,4 +1076,5 @@
     <string name="toot_search_notestock_of">notestock search \"%1$s\"</string>
     <string name="update_push_subscription_not_force" translatable="false">Update push subscription(not force)</string>
     <string name="reset_notification_tracking_status">Reset notification tracking status</string>
+    <string name="web_browser">Web browser</string>
 </resources>

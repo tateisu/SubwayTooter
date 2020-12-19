@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.app.Activity
+import android.content.SharedPreferences
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import jp.juggler.subwaytooter.ActMain
@@ -40,15 +41,23 @@ private val log = LogCategory("AppOpener")
 // returns true if activity is opened.
 // returns false if fallback required
 private fun Activity.startActivityExcludeMyApp(
+    pref:SharedPreferences,
     intent: Intent,
     startAnimationBundle: Bundle? = null
 ): Boolean {
     try {
+        if( intent.component == null){
+            val cn = Pref.spWebBrowser(pref).cn()
+            if( cn?.exists(this) == true){
+                intent.component = cn
+            }
+        }
+
         // このアプリのパッケージ名
         val myName = packageName
 
         val filter: (ResolveInfo) -> Boolean = {
-            when{
+            when {
                 it.activityInfo.packageName == myName -> false
                 !it.activityInfo.exported -> false
 
@@ -57,7 +66,7 @@ private fun Activity.startActivityExcludeMyApp(
 
                 // 標準アプリが設定されていない場合、アプリを選択するためのActivityが出てくる場合がある
                 it.activityInfo.packageName == "android" -> false
-                it.activityInfo.javaClass.name.startsWith( "com.android.internal") -> false
+                it.activityInfo.javaClass.name.startsWith("com.android.internal") -> false
                 it.activityInfo.javaClass.name.startsWith("com.android.systemui") -> false
 
                 // たぶんChromeとかfirefoxとか
@@ -89,7 +98,8 @@ private fun Activity.startActivityExcludeMyApp(
                 this,
                 intent,
                 autoSelect = true,
-                filter = filter
+                filter = filter,
+                addCopyAction = false
             ) {
                 try {
                     intent.component = it.cn()
@@ -108,16 +118,20 @@ private fun Activity.startActivityExcludeMyApp(
     }
 }
 
-fun Activity.openBrowser(uri: Uri?) {
+fun Activity.openBrowser(uri: Uri? , pref:SharedPreferences = pref()) {
     uri ?: return
-    val rv = startActivityExcludeMyApp(Intent(Intent.ACTION_VIEW, uri))
+    val rv = startActivityExcludeMyApp(
+        pref,
+        Intent(Intent.ACTION_VIEW, uri)
+            .apply { addCategory(Intent.CATEGORY_BROWSABLE) }
+    )
     if (!rv) showToast(true, "there is no app that can open $uri")
 }
 
-fun Activity.openBrowser(url: String?) = openBrowser(url.mayUri())
+fun Activity.openBrowser(url: String?, pref:SharedPreferences = pref()) = openBrowser(url.mayUri(),pref)
 
 // Chrome Custom Tab を開く
-fun Activity.openCustomTab(url: String?) {
+fun Activity.openCustomTab(url: String?, pref:SharedPreferences = pref()) {
     url ?: return
 
     if (url.isEmpty()) {
@@ -125,9 +139,8 @@ fun Activity.openCustomTab(url: String?) {
         return
     }
 
-    val pref = pref()
     if (Pref.bpDontUseCustomTabs(pref)) {
-        openBrowser(url)
+        openBrowser(url,pref)
         return
     }
 
@@ -144,6 +157,7 @@ fun Activity.openCustomTab(url: String?) {
                 .let {
                     log.w("startCustomTabIntent ComponentName=$cn")
                     startActivityExcludeMyApp(
+                        pref,
                         it.intent.also { intent ->
                             if (cn != null) intent.component = cn
                             intent.data = url.toUri()

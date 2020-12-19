@@ -21,8 +21,9 @@ class DlgAppPicker(
 	val activity: Activity,
 	val intent: Intent,
 	val autoSelect: Boolean = false,
+    val addCopyAction:Boolean= false,
 	val filter: (ResolveInfo) -> Boolean = { true },
-	val callback: (String) -> Unit
+	val callback: (String) -> Unit,
 ) {
 
     companion object {
@@ -55,7 +56,7 @@ class DlgAppPicker(
         }
 
         // 自動選択オフの場合、末尾にクリップボード項目を追加する
-        if (!autoSelect) {
+        if (addCopyAction && !autoSelect) {
 			val (label, icon) = CustomShare.getInfo(activity, CustomShare.CN_CLIPBOARD.cn())
             add(ListItem(icon, label.toString(), CustomShare.CN_CLIPBOARD))
         }

@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.ResolveInfo
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
@@ -21,13 +22,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
-import jp.juggler.subwaytooter.util.CustomShare
-import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.AsyncActivity
+import jp.juggler.subwaytooter.util.CustomShare
+import jp.juggler.subwaytooter.util.CustomShareTarget
+import jp.juggler.subwaytooter.util.cn
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import java.io.File
@@ -1127,7 +1129,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 			return list.size
 		}
 		
-		override fun getItem(position : Int) : Any? {
+		override fun getItem(position : Int) : Any {
 			return list[position]
 		}
 		
@@ -1164,16 +1166,17 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 		}
 	}
 	
-	fun openCustomShareChooser(target : CustomShareTarget) {
+	fun openCustomShareChooser(appSettingItem: AppSettingItem,target : CustomShareTarget) {
 		try {
 			val rv = DlgAppPicker(
 				this,
-				Intent().apply {
+				intent = Intent().apply {
 					action = Intent.ACTION_SEND
 					type = "text/plain"
 					putExtra(Intent.EXTRA_TEXT, getString(R.string.content_sample))
-				}
-			) { setCustomShare(target, it) }
+				},
+				addCopyAction = true
+			) { setCustomShare(appSettingItem,target, it) }
 				.show()
 			if(! rv) showToast(true, "share target app is not installed.")
 		} catch(ex : Throwable) {
@@ -1182,22 +1185,11 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 		}
 	}
 	
-	fun setCustomShare(target : CustomShareTarget?, value : String) {
-		
-		target ?: return
-		
-		val item = when(target) {
-			CustomShareTarget.Translate -> AppSettingItem.CUSTOM_TRANSLATE
-			CustomShareTarget.CustomShare1 -> AppSettingItem.CUSTOM_SHARE_1
-			CustomShareTarget.CustomShare2 -> AppSettingItem.CUSTOM_SHARE_2
-			CustomShareTarget.CustomShare3 -> AppSettingItem.CUSTOM_SHARE_3
-		}
-			?: error("setCustomShare $target has no setting item.")
-		
-		val sp : StringPref = item.pref.cast() ?: error("$target: not StringPref")
+	fun setCustomShare(appSettingItem: AppSettingItem,target : CustomShareTarget, value : String) {
+		val sp : StringPref = appSettingItem.pref.cast() ?: error("$target: not StringPref")
 		pref.edit().put(sp, value).apply()
 		
-		showCustomShareIcon(findItemViewHolder(item)?.textView1, target)
+		showCustomShareIcon(findItemViewHolder(appSettingItem)?.textView1, target)
 	}
 	
 	fun showCustomShareIcon(tv : TextView?, target : CustomShareTarget) {
@@ -1208,5 +1200,36 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 		tv.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
 		tv.compoundDrawablePadding = (resources.displayMetrics.density * 4f + 0.5f).toInt()
 	}
-	
+
+	fun openWebBrowserChooser(appSettingItem: AppSettingItem, intent:Intent, filter: (ResolveInfo) -> Boolean ) {
+		try {
+			val rv = DlgAppPicker(
+				this,
+				intent=intent,
+				filter = filter,
+				addCopyAction = false
+			) { setWebBrowser( appSettingItem,it) }
+				.show()
+			if(! rv) showToast(true, "share target app is not installed.")
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			showToast(ex, "openCustomShareChooser failed.")
+		}
+	}
+
+	fun setWebBrowser(appSettingItem: AppSettingItem, value : String) {
+		val sp : StringPref = appSettingItem.pref.cast() ?: error("${getString(appSettingItem.caption)}: not StringPref")
+		pref.edit().put(sp, value).apply()
+
+		showWebBrowser(findItemViewHolder(appSettingItem)?.textView1, value )
+	}
+
+	fun showWebBrowser(tv : TextView?,prefValue:String) {
+		tv ?: return
+		val cn =prefValue.cn()
+		val (label, icon) = CustomShare.getInfo(this, cn)
+		tv.text = label ?: getString(R.string.not_selected)
+		tv.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
+		tv.compoundDrawablePadding = (resources.displayMetrics.density * 4f + 0.5f).toInt()
+	}
 }

@@ -591,7 +591,8 @@ object Pref {
 	val spCustomShare1 = StringPref("CustomShare1", "")
 	val spCustomShare2 = StringPref("CustomShare2", "")
 	val spCustomShare3 = StringPref("CustomShare3", "")
-	
+	val spWebBrowser = StringPref("WebBrowser", "")
+
 	val spTimelineSpacing = StringPref("TimelineSpacing", "")
 	
 	// long

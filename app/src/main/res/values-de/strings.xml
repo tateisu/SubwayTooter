@@ -1072,4 +1072,13 @@
     <string name="pick_image">Bild aussuchen</string>
     <string name="toot">Toot</string>
     <string name="display_name_posted_by">%1$s gepostet</string>
+    <string name="duration_days_7">7 Tage</string>
+    <string name="duration_days_3">3 Tage</string>
+    <string name="duration_days_1">1 Tag</string>
+    <string name="duration_hours_6">6 Stunden</string>
+    <string name="duration_hours_1">1 Stunde</string>
+    <string name="duration_minutes_30">30 Minuten</string>
+    <string name="duration_minutes_5">5 Minuten</string>
+    <string name="duration_indefinite">Ohne Begrenzung</string>
+    <string name="duration">Dauer</string>
 </resources>

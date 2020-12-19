@@ -487,13 +487,13 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
 				this.reblog = null
 
-				this.card = if ( quote != null) {
+				this.card = if (quote != null) {
 					// 引用Renoteにプレビューカードをでっちあげる
 					TootCard(parser, quote)
 					// content中のQTの表現が四角括弧の有無とか色々あるみたいだし
 					// 選択してコピーのことを考えたらむしろ削らない方が良い気がしてきた
 					// removeQt = ! Pref.bpDontShowPreviewCard(Pref.pref(parser.context))
-				}else{
+				} else {
 					null
 				}
 
@@ -534,7 +534,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 					highlightTrie = parser.highlightTrie,
 					mentions = mentions,
 					mentionDefaultHostDomain = account,
-						unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
+					unwrapEmojiImageTag = true, // notestockはカスタム絵文字がimageタグになってる
 				)
 
 				this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
@@ -543,7 +543,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 				if (this.highlightSpeech == null) this.highlightSpeech = options.highlightSpeech
 				if (this.highlightAny == null) this.highlightAny = options.highlightAny
 
-				this.enquete = (src.jsonArray("oneOf")?: src.jsonArray("anyOf")) ?.let {
+				this.enquete = (src.jsonArray("oneOf") ?: src.jsonArray("anyOf"))?.let {
 					try {
 						TootPolls(
 							parser,
@@ -706,8 +706,8 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                         sv.replace(reQuoteTootRemover) {
                             it.groupValues.elementAtOrNull(1) ?: ""
                         }.also { after ->
-							log.d("removeQt? after = $after")
-						}
+                            log.d("removeQt? after = $after")
+                        }
                     } else
                         sv
                 }
@@ -985,7 +985,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         }
     }
 
-    fun markDeleted(context: Context, deletedAt: Long?): Boolean? {
+    fun markDeleted(context: Context, deletedAt: Long?): Boolean {
 
         if (Pref.bpDontRemoveDeletedToot(App1.getAppState(context).pref)) return false
 
@@ -1112,12 +1112,11 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         }
 
 
-
         private val tz_utc = TimeZone.getTimeZone("UTC")
 
-		private val reDate = """\A\d+\D+\d+\D+\d+\z""".asciiPattern()
+        private val reDate = """\A\d+\D+\d+\D+\d+\z""".asciiPattern()
 
-		private val reTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+))?"""
+        private val reTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+))?"""
             .asciiPattern()
 
         private val reMSPTime = """\A(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)"""
@@ -1127,9 +1126,9 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             if (strTime != null && strTime.isNotEmpty()) {
                 try {
                     var m = reTime.matcher(strTime)
-					if (m.find()) {
-						val g = GregorianCalendar(tz_utc)
-						g.set(
+                    if (m.find()) {
+                        val g = GregorianCalendar(tz_utc)
+                        g.set(
 							m.groupEx(1).optInt() ?: 1,
 							(m.groupEx(2).optInt() ?: 1) - 1,
 							m.groupEx(3).optInt() ?: 1,
@@ -1137,14 +1136,14 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 							m.groupEx(5).optInt() ?: 0,
 							m.groupEx(6).optInt() ?: 0
 						)
-						g.set(Calendar.MILLISECOND, m.groupEx(7).optInt() ?: 0)
-						return g.timeInMillis
-					}
-					// last_status_at などでは YYYY-MM-DD になることがある
-					m = reDate.matcher(strTime)
-					if (m.find()) return parseTime("${strTime}T00:00:00.000Z")
+                        g.set(Calendar.MILLISECOND, m.groupEx(7).optInt() ?: 0)
+                        return g.timeInMillis
+                    }
+                    // last_status_at などでは YYYY-MM-DD になることがある
+                    m = reDate.matcher(strTime)
+                    if (m.find()) return parseTime("${strTime}T00:00:00.000Z")
 
-					log.w("invalid time format: %s", strTime)
+                    log.w("invalid time format: %s", strTime)
                 } catch (ex: Throwable) { // ParseException,  ArrayIndexOutOfBoundsException
                     log.trace(ex)
                     log.e(ex, "TootStatus.parseTime failed. src=%s", strTime)
@@ -1187,26 +1186,40 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         @SuppressLint("SimpleDateFormat")
         internal val date_format2 = SimpleDateFormat("yyyy-MM-dd")
 
-        fun formatTime(context: Context, t: Long, bAllowRelative: Boolean): String {
-            if (bAllowRelative && Pref.bpRelativeTimestamp(App1.pref)) {
-                val now = System.currentTimeMillis()
-                var delta = now - t
+        fun formatTime(context: Context, t: Long, bAllowRelative: Boolean, onlyDate: Boolean = false): String {
 
-                @StringRes val phraseId = if (delta >= 0)
-                    R.string.relative_time_phrase_past
-                else
-                    R.string.relative_time_phrase_future
+			val now = System.currentTimeMillis()
+			var delta = now - t
+
+			@StringRes val phraseId = if (delta >= 0)
+				R.string.relative_time_phrase_past
+			else
+				R.string.relative_time_phrase_future
+
+			fun f(v: Long, unit1: Int, units: Int): String {
+				val vi = v.toInt()
+				return context.getString(
+					phraseId,
+					vi,
+					context.getString(if (vi <= 1) unit1 else units)
+				)
+			}
+
+			if( onlyDate) return when{
+				delta < 40 * 86400000L -> f(
+					delta / 86400000L,
+					R.string.relative_time_unit_day1,
+					R.string.relative_time_unit_days
+				)
+				else ->
+					formatDate(t, date_format2, omitZeroSecond = false, omitYear = true)
+			}
+
+			if (bAllowRelative && Pref.bpRelativeTimestamp(App1.pref)) {
 
                 delta = abs(delta)
 
-                fun f(v: Long, unit1: Int, units: Int): String {
-                    val vi = v.toInt()
-                    return context.getString(
-						phraseId,
-						vi,
-						context.getString(if (vi <= 1) unit1 else units)
-					)
-                }
+
 
                 when {
                     delta < 1000L -> return context.getString(R.string.time_within_second)
@@ -1229,16 +1242,13 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 						R.string.relative_time_unit_hours
 					)
 
-                    delta < 40 * 86400000L -> return f(
+					 delta < 40 * 86400000L -> return f(
 						delta / 86400000L,
 						R.string.relative_time_unit_day1,
 						R.string.relative_time_unit_days
 					)
-
-                    else -> {
-                        // fall back to absolute time
-                    }
                 }
+				// fall back to absolute time
             }
 
             return formatDate(t, date_format, omitZeroSecond = false, omitYear = false)
@@ -1262,10 +1272,9 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             if (omitYear) {
                 val dateNow = format.format(Date())
                 val delm = dateNow.indexOf('-')
-                if (delm != -1 && dateNow.substring(0, delm + 1) == dateTarget.substring(
-						0,
-						delm + 1
-					)) {
+                if (delm != -1 &&
+					dateNow.substring(0, delm + 1) == dateTarget.substring(0,delm + 1)
+				) {
                     dateTarget = dateTarget.substring(delm + 1)
                 }
             }

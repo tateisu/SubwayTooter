@@ -14,10 +14,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.regex.Pattern
 import kotlin.collections.HashMap
 import kotlin.collections.set
 
@@ -37,7 +35,7 @@ class StreamManager(val appState: AppState) {
     private val handler = appState.handler
 
     private val isScreenOn = AtomicBoolean(false)
-    private val serverMap = ConcurrentHashMap<Acct, StreamGroupAcct>()
+    private val acctGroups = ConcurrentHashMap<Acct, StreamGroupAcct>()
 
     val client = TootApiClient(
         appState.context,
@@ -63,29 +61,29 @@ class StreamManager(val appState: AppState) {
                     var (ti, ri) = TootInstance.get(client, account = accessInfo)
                     if (ti == null) {
                         log.d("can't get server info. ${ri?.error}")
-                        val tiOld = serverMap[accessInfo.acct]?.ti ?: continue
+                        val tiOld = acctGroups[accessInfo.acct]?.ti ?: continue
                         ti = tiOld
                     }
                     server = StreamGroupAcct(this, accessInfo, ti)
                     newMap[accessInfo.acct] = server
                 }
-                val streamSpec = column.getStreamSpec()
+                val streamSpec = column.getStreamDestination()
                 if (streamSpec != null) server.addSpec(streamSpec)
             }
         }
 
         // 新構成にないサーバは破棄する
-        serverMap.entries.toList().forEach {
+        acctGroups.entries.toList().forEach {
             if (!newMap.containsKey(it.key)) {
                 it.value.dispose()
-                serverMap.remove(it.key)
+                acctGroups.remove(it.key)
             }
         }
 
         // 追加.変更されたサーバをマージする
         newMap.entries.forEach {
-            when (val current = serverMap[it.key]) {
-                null -> serverMap[it.key] = it.value
+            when (val current = acctGroups[it.key]) {
+                null -> acctGroups[it.key] = it.value
                 else -> current.merge(it.value)
             }
         }
@@ -93,7 +91,7 @@ class StreamManager(val appState: AppState) {
         // ハイライトツリーを読み直す
         val highlight_trie = HighlightWord.nameSet
 
-        serverMap.values.forEach {
+        acctGroups.values.forEach {
             // パーサーを更新する
             it.parser.highlightTrie = highlight_trie
 
@@ -135,10 +133,10 @@ class StreamManager(val appState: AppState) {
     // カラムヘッダの表示更新から、インジケータを取得するために呼ばれる
     // UIスレッドから呼ばれる
     fun getStreamingStatus(accessInfo: SavedAccount, columnInternalId: Int) =
-        serverMap[accessInfo.acct]?.getStreamingStatus(columnInternalId)
+        acctGroups[accessInfo.acct]?.getStreamingStatus(columnInternalId)
 
     fun getConnection(column: Column)=
-        serverMap[column.access_info.acct]?.getConnection(column.internalId)
+        acctGroups[column.access_info.acct]?.getConnection(column.internalId)
 
     ////////////////////////////////////////////////////////////////
 
@@ -150,7 +148,7 @@ class StreamManager(val appState: AppState) {
                 } catch (_: ClosedReceiveChannelException) {
                     // 発生しない
                 } catch (ex: Throwable) {
-                    log.e(ex, "lambda failed.")
+                    log.trace(ex, "error.")
                 }
             }
         }

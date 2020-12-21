@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter
 
+import android.graphics.Bitmap
+import android.util.LruCache
 import jp.juggler.subwaytooter.Column.Companion.READ_LIMIT
 import jp.juggler.subwaytooter.Column.Companion.log
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -10,10 +12,11 @@ import jp.juggler.subwaytooter.api.syncAccountByAcct
 import jp.juggler.util.*
 import java.util.*
 
+
 internal inline fun <reified T : TimelineItem> addAll(
-	dstArg: ArrayList<TimelineItem>?,
-	src: List<T>,
-	head: Boolean = false
+    dstArg: ArrayList<TimelineItem>?,
+    src: List<T>,
+    head: Boolean = false
 ): ArrayList<TimelineItem> =
     (dstArg ?: ArrayList(src.size)).apply {
         if (head) {
@@ -24,9 +27,9 @@ internal inline fun <reified T : TimelineItem> addAll(
     }
 
 internal fun addOne(
-	dstArg: ArrayList<TimelineItem>?,
-	item: TimelineItem?,
-	head: Boolean = false
+    dstArg: ArrayList<TimelineItem>?,
+    item: TimelineItem?,
+    head: Boolean = false
 ): ArrayList<TimelineItem> =
     (dstArg ?: ArrayList()).apply {
         if (item != null) {
@@ -39,9 +42,9 @@ internal fun addOne(
     }
 
 internal fun ColumnTask.addWithFilterStatus(
-	dstArg: ArrayList<TimelineItem>?,
-	srcArg: List<TootStatus>,
-	head: Boolean = false
+    dstArg: ArrayList<TimelineItem>?,
+    srcArg: List<TootStatus>,
+    head: Boolean = false
 ): ArrayList<TimelineItem> =
     (dstArg ?: ArrayList(srcArg.size)).apply {
         val src = srcArg.filter { !column.isFiltered(it) }
@@ -53,9 +56,9 @@ internal fun ColumnTask.addWithFilterStatus(
     }
 
 internal fun ColumnTask.addWithFilterConversationSummary(
-	dstArg: ArrayList<TimelineItem>?,
-	srcArg: List<TootConversationSummary>,
-	head: Boolean = false
+    dstArg: ArrayList<TimelineItem>?,
+    srcArg: List<TootConversationSummary>,
+    head: Boolean = false
 ): ArrayList<TimelineItem> =
     (dstArg ?: ArrayList(srcArg.size)).apply {
         val src = srcArg.filter { !column.isFiltered(it.last_status) }
@@ -68,9 +71,9 @@ internal fun ColumnTask.addWithFilterConversationSummary(
     }
 
 internal fun ColumnTask.addWithFilterNotification(
-	dstArg: ArrayList<TimelineItem>?,
-	srcArg: List<TootNotification>,
-	head: Boolean = false
+    dstArg: ArrayList<TimelineItem>?,
+    srcArg: List<TootNotification>,
+    head: Boolean = false
 ): ArrayList<TimelineItem> =
     (dstArg ?: ArrayList(srcArg.size)).apply {
         val src = srcArg.filter { !column.isFiltered(it) }
@@ -117,11 +120,11 @@ internal suspend fun Column.loadListInfo(client: TootApiClient, bForceReload: Bo
     if (bForceReload || this.list_info == null) {
         val result = if (isMisskey) {
             client.request(
-				"/api/users/lists/show",
-				makeMisskeyBaseParameter(parser).apply {
-					put("listId", profile_id)
-				}.toPostRequestBuilder()
-			)
+                "/api/users/lists/show",
+                makeMisskeyBaseParameter(parser).apply {
+                    put("listId", profile_id)
+                }.toPostRequestBuilder()
+            )
         } else {
             client.request("/api/v1/lists/${profile_id.toString()}")
         }
@@ -143,11 +146,11 @@ internal suspend fun Column.loadAntennaInfo(client: TootApiClient, bForceReload:
 
         val result = if (isMisskey) {
             client.request(
-				"/api/antennas/show",
-				makeMisskeyBaseParameter(parser).apply {
-					put("antennaId", profile_id)
-				}.toPostRequestBuilder()
-			)
+                "/api/antennas/show",
+                makeMisskeyBaseParameter(parser).apply {
+                    put("antennaId", profile_id)
+                }.toPostRequestBuilder()
+            )
         } else {
             TootApiResult("antenna feature is not supported on Mastodon")
         }
@@ -185,56 +188,56 @@ internal fun JsonObject.addRangeMisskey(column: Column, bBottom: Boolean): JsonO
 
 internal fun JsonObject.addMisskeyNotificationFilter(column: Column): JsonObject {
     when (column.quick_filter) {
-		Column.QUICK_FILTER_ALL -> {
-			val excludeList = jsonArray {
-				// Misskeyのお気に入りは通知されない
-				// if(dont_show_favourite) ...
+        Column.QUICK_FILTER_ALL -> {
+            val excludeList = jsonArray {
+                // Misskeyのお気に入りは通知されない
+                // if(dont_show_favourite) ...
 
-				if (column.dont_show_boost) {
-					add("renote")
-					add("quote")
-				}
-				if (column.dont_show_follow) {
-					add("follow")
-					add("receiveFollowRequest")
-				}
-				if (column.dont_show_reply) {
-					add("mention")
-					add("reply")
-				}
-				if (column.dont_show_reaction) {
-					add("reaction")
-				}
-				if (column.dont_show_vote) {
-					add("poll_vote")
-				}
+                if (column.dont_show_boost) {
+                    add("renote")
+                    add("quote")
+                }
+                if (column.dont_show_follow) {
+                    add("follow")
+                    add("receiveFollowRequest")
+                }
+                if (column.dont_show_reply) {
+                    add("mention")
+                    add("reply")
+                }
+                if (column.dont_show_reaction) {
+                    add("reaction")
+                }
+                if (column.dont_show_vote) {
+                    add("poll_vote")
+                }
 //				// FIXME Misskeyには特定フォロー者からの投稿を通知する機能があるのか？
 //				if(column.dont_show_normal_toot) {
 //				}
-			}
+            }
 
-			if (excludeList.isNotEmpty()) put("excludeTypes", excludeList)
-		}
+            if (excludeList.isNotEmpty()) put("excludeTypes", excludeList)
+        }
 
         // QUICK_FILTER_FAVOURITE // misskeyはお気に入りの通知はない
-		Column.QUICK_FILTER_BOOST -> put(
-			"includeTypes",
-			jsonArray("renote", "quote")
-		)
-		Column.QUICK_FILTER_FOLLOW -> put(
-			"includeTypes",
-			jsonArray("follow", "receiveFollowRequest")
-		)
-		Column.QUICK_FILTER_MENTION -> put(
-			"includeTypes",
-			jsonArray("mention", "reply")
-		)
-		Column.QUICK_FILTER_REACTION -> put("includeTypes", jp.juggler.util.jsonArray("reaction"))
-		Column.QUICK_FILTER_VOTE -> put("includeTypes", jp.juggler.util.jsonArray("poll_vote"))
+        Column.QUICK_FILTER_BOOST -> put(
+            "includeTypes",
+            jsonArray("renote", "quote")
+        )
+        Column.QUICK_FILTER_FOLLOW -> put(
+            "includeTypes",
+            jsonArray("follow", "receiveFollowRequest")
+        )
+        Column.QUICK_FILTER_MENTION -> put(
+            "includeTypes",
+            jsonArray("mention", "reply")
+        )
+        Column.QUICK_FILTER_REACTION -> put("includeTypes", jp.juggler.util.jsonArray("reaction"))
+        Column.QUICK_FILTER_VOTE -> put("includeTypes", jp.juggler.util.jsonArray("poll_vote"))
 
-		Column.QUICK_FILTER_POST -> {
-			// FIXME Misskeyには特定フォロー者からの投稿を通知する機能があるのか？
-		}
+        Column.QUICK_FILTER_POST -> {
+            // FIXME Misskeyには特定フォロー者からの投稿を通知する機能があるのか？
+        }
     }
 
     return this
@@ -256,7 +259,7 @@ internal suspend fun Column.makeHashtagAcctUrl(client: TootApiClient): String? {
         null
     } else {
         if (profile_id == null) {
-			val (result, whoRef) = client.syncAccountByAcct(access_info, hashtag_acct)
+            val (result, whoRef) = client.syncAccountByAcct(access_info, hashtag_acct)
             result ?: return null // cancelled.
             if (whoRef == null) {
                 log.w("makeHashtagAcctUrl: ${result.error ?: "?"}")
@@ -272,7 +275,7 @@ internal suspend fun Column.makeHashtagAcctUrl(client: TootApiClient): String? {
         if (with_attachment) sb.append("&only_media=true")
         if (instance_local) sb.append("&local=true")
 
-        makeHashtagQueryParams(tagKey=null).encodeQuery().notEmpty()?.let{
+        makeHashtagQueryParams(tagKey = null).encodeQuery().notEmpty()?.let {
             sb.append('&').append(it)
         }
 
@@ -354,8 +357,8 @@ internal fun Column.makeHomeTlUrl(): String {
 }
 
 internal suspend fun Column.makeNotificationUrl(
-	client: TootApiClient,
-	fromAcct: String? = null
+    client: TootApiClient,
+    fromAcct: String? = null
 ): String {
     return when {
         access_info.isMisskey -> "/api/i/notifications"
@@ -363,14 +366,14 @@ internal suspend fun Column.makeNotificationUrl(
         else -> {
             val sb = StringBuilder(Column.PATH_NOTIFICATIONS) // always contain "?limit=XX"
             when (val quick_filter = quick_filter) {
-				Column.QUICK_FILTER_ALL -> {
-					if (dont_show_favourite) sb.append("&exclude_types[]=favourite")
-					if (dont_show_boost) sb.append("&exclude_types[]=reblog")
-					if (dont_show_follow) sb.append("&exclude_types[]=follow")
-					if (dont_show_reply) sb.append("&exclude_types[]=mention")
-					if (dont_show_vote) sb.append("&exclude_types[]=poll")
-					if (dont_show_normal_toot) sb.append("&exclude_types[]=status")
-				}
+                Column.QUICK_FILTER_ALL -> {
+                    if (dont_show_favourite) sb.append("&exclude_types[]=favourite")
+                    if (dont_show_boost) sb.append("&exclude_types[]=reblog")
+                    if (dont_show_follow) sb.append("&exclude_types[]=follow")
+                    if (dont_show_reply) sb.append("&exclude_types[]=mention")
+                    if (dont_show_vote) sb.append("&exclude_types[]=poll")
+                    if (dont_show_normal_toot) sb.append("&exclude_types[]=status")
+                }
 
                 else -> {
                     if (quick_filter != Column.QUICK_FILTER_FAVOURITE) sb.append("&exclude_types[]=favourite")
@@ -383,7 +386,7 @@ internal suspend fun Column.makeNotificationUrl(
 
             if (fromAcct?.isNotEmpty() == true) {
                 if (profile_id == null) {
-					val (result, whoRef) = client.syncAccountByAcct(access_info, hashtag_acct)
+                    val (result, whoRef) = client.syncAccountByAcct(access_info, hashtag_acct)
                     if (result != null) {
                         whoRef ?: error(result.error ?: "unknown error")
                         profile_id = whoRef.get().id
@@ -416,27 +419,70 @@ internal fun Column.makeAntennaTlUrl(): String {
     }
 }
 
-fun JsonObject.encodeQuery():String {
+fun JsonObject.encodeQuery(): String {
     val sb = StringBuilder()
-    entries.forEach { pair->
-        val(k,v)=pair
-        when(v){
-            null,is String,is Number,is Boolean ->{
-                if(sb.isNotEmpty())sb.append('&')
-                sb.append(k).append('=').append( v.toString().encodePercent())
+    entries.forEach { pair ->
+        val (k, v) = pair
+        when (v) {
+            null, is String, is Number, is Boolean -> {
+                if (sb.isNotEmpty()) sb.append('&')
+                sb.append(k).append('=').append(v.toString().encodePercent())
             }
-            is JsonArray->{
+            is JsonArray -> {
                 v.forEach {
-                    if(sb.isNotEmpty())sb.append('&')
-                    sb.append(k).append("[]=").append( it.toString().encodePercent())
+                    if (sb.isNotEmpty()) sb.append('&')
+                    sb.append(k).append("[]=").append(it.toString().encodePercent())
                 }
             }
-            else-> error("encodeQuery: unsupported type ${v.javaClass.name}")
+            else -> error("encodeQuery: unsupported type ${v.javaClass.name}")
         }
     }
     return sb.toString()
 }
 
+private val extraTagCache by lazy {
+    object : LruCache<String, List<String>>(1024 * 80) {
+        override fun sizeOf(key: String, value: List<String>): Int =
+            key.length
+    }
+}
+
+// parse extra tags with LRU cache.
+private fun String.parseExtraTag() = synchronized(extraTagCache) {
+    var result = extraTagCache.get(this)
+    if (result == null) {
+        result = this.split(" ").filter { it.isNotEmpty() }
+        extraTagCache.put(this, result)
+    }
+    result
+}
+
+internal fun Column.makeHashtagQueryParams(tagKey: String? = "tag") = JsonObject().apply {
+
+    if (tagKey != null) put(tagKey, hashtag)
+
+    hashtag_any.parseExtraTag().notEmpty()?.let { put("any", it) }
+    hashtag_all.parseExtraTag().notEmpty()?.let { put("all", it) }
+    hashtag_none.parseExtraTag().notEmpty()?.let { put("none", it) }
+}
+
+fun Column.checkHashtagExtra(item: TootStatus): Boolean {
+    hashtag_any.parseExtraTag().notEmpty()
+        ?.any { item.tags?.any { tag -> tag.name.equals(it,ignoreCase  = true) } ?: false }
+        ?.let { if (!it) return false }
+
+    hashtag_all.parseExtraTag().notEmpty()
+        .notEmpty()
+        ?.all { item.tags?.any { tag -> tag.name.equals(it,ignoreCase  = true) } ?: false }
+        ?.let { if (!it) return false }
+
+    hashtag_none.parseExtraTag().notEmpty()
+        ?.any { item.tags?.any { tag -> tag.name.equals(it,ignoreCase  = true) } ?: false }
+        ?.not()
+        ?.let { if (!it) return false }
+
+    return true
+}
 
 internal fun Column.makeHashtagUrl(): String {
     return if (isMisskey) {
@@ -450,7 +496,7 @@ internal fun Column.makeHashtagUrl(): String {
         if (with_attachment) sb.append("&only_media=true")
         if (instance_local) sb.append("&local=true")
 
-        makeHashtagQueryParams(tagKey=null).encodeQuery().notEmpty()?.let{
+        makeHashtagQueryParams(tagKey = null).encodeQuery().notEmpty()?.let {
             sb.append('&').append(it)
         }
 
@@ -489,7 +535,7 @@ internal val defaultAccountListParser: (parser: TootParser, jsonArray: JsonArray
 private fun misskeyUnwrapRelationAccount(parser: TootParser, srcList: JsonArray, key: String) =
     srcList.objectList().mapNotNull {
         when (val relationId = EntityId.mayNull(it.string("id"))) {
-			null -> null
+            null -> null
             else -> TootAccountRef.mayNull(parser, parser.account(it.jsonObject(key)))
                 ?.apply { _orderId = relationId }
         }
@@ -520,7 +566,7 @@ internal val misskeyCustomParserFavorites: (TootParser, JsonArray) -> List<TootS
     { parser, jsonArray ->
         jsonArray.objectList().mapNotNull {
             when (val relationId = EntityId.mayNull(it.string("id"))) {
-				null -> null
+                null -> null
                 else -> parser.status(it.jsonObject("note"))?.apply {
                     favourited = true
                     _orderId = relationId

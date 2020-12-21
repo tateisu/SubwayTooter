@@ -13,13 +13,11 @@ import jp.juggler.subwaytooter.search.NotestockHelper.loadingNotestock
 import jp.juggler.subwaytooter.search.NotestockHelper.refreshNotestock
 import jp.juggler.subwaytooter.search.TootsearchHelper.loadingTootsearch
 import jp.juggler.subwaytooter.search.TootsearchHelper.refreshTootsearch
-import jp.juggler.util.LogCategory
-import jp.juggler.util.ellipsizeDot3
-import jp.juggler.util.notEmpty
-import jp.juggler.util.toJsonArray
+import jp.juggler.util.*
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
+import jp.juggler.subwaytooter.streaming.*
 
 /*
 カラム種別ごとの処理
@@ -80,6 +78,8 @@ enum class ColumnType(
 	val bAllowMastodon: Boolean = true,
 	val headerType: HeaderType? = null,
 	val gapDirection: Column.(head: Boolean) -> Boolean = gapDirectionNone,
+	val streamKeyMastodon: Column.()->JsonObject? = {null},
+	val streamFilterMastodon: Column.(String?,TimelineItem)->Boolean = {_,_->true},
 ) {
 
     ProfileStatusMastodon(
@@ -409,7 +409,14 @@ enum class ColumnType(
 				)
 		},
 		gapDirection = gapDirectionBoth,
-		bAllowPseudo = false
+		bAllowPseudo = false,
+
+		streamKeyMastodon = {
+			jsonObject(StreamSpec.STREAM to "user")
+		},
+		streamFilterMastodon = { stream,item->
+			item is TootStatus && (stream == null || stream == "user")
+		}
 	),
 
     LOCAL(
@@ -428,6 +435,21 @@ enum class ColumnType(
 			)
 		},
 		gapDirection = gapDirectionBoth,
+
+		streamKeyMastodon = {
+			jsonObject(StreamSpec.STREAM to
+				"public:local"
+					.appendIf(":media", with_attachment)
+			)
+		},
+		streamFilterMastodon = { stream,item->
+			when{
+				item !is TootStatus -> false
+				(stream != null && !stream.startsWith("public:local")) -> false
+				with_attachment && item.media_attachments.isNullOrEmpty() -> false
+				else->true
+			}
+		}
 	),
 
     FEDERATE(
@@ -447,6 +469,25 @@ enum class ColumnType(
 			)
 		},
 		gapDirection = gapDirectionBoth,
+
+		streamKeyMastodon = {
+			jsonObject(StreamSpec.STREAM to
+				"public"
+					.appendIf(":remote", remote_only)
+					.appendIf(":media", with_attachment)
+			)
+		},
+
+		streamFilterMastodon = { stream,item->
+			when{
+				item !is TootStatus -> false
+				(stream != null && !stream.startsWith("public")) -> false
+				(stream !=null && stream.contains(":local")) ->false
+				remote_only && item.account.acct == access_info.acct -> false
+				with_attachment && item.media_attachments.isNullOrEmpty() -> false
+				else->true
+			}
+		}
 	),
 
     MISSKEY_HYBRID(
@@ -489,6 +530,24 @@ enum class ColumnType(
 			)
 		},
 		gapDirection = gapDirectionBoth,
+
+		streamKeyMastodon = {
+			jsonObject(StreamSpec.STREAM to
+				"public:domain"
+					.appendIf(":media", with_attachment),
+				"domain" to instance_uri
+			)
+		},
+
+		streamFilterMastodon = { stream,item->
+			when{
+				item !is TootStatus -> false
+				(stream != null && !stream.startsWith("public:domain")) -> false
+				(stream != null && !stream.endsWith(instance_uri)) -> false
+				with_attachment && item.media_attachments.isNullOrEmpty() -> false
+				else->true
+			}
+		}
 	),
 
     LOCAL_AROUND(29,
@@ -654,7 +713,18 @@ enum class ColumnType(
 		gap = { client -> getNotificationList(client, mastodonFilterByIdRange = true) },
 		gapDirection = gapDirectionBoth,
 
-		bAllowPseudo = false
+		bAllowPseudo = false,
+
+		streamKeyMastodon = {
+			jsonObject(StreamSpec.STREAM to "user")
+		},
+		streamFilterMastodon = { stream, item ->
+			when {
+				item !is TootNotification -> false
+				(stream != null && stream != "user") -> false
+				else->true
+			}
+		}
 	),
 
     NOTIFICATION_FROM_ACCT(
@@ -741,6 +811,23 @@ enum class ColumnType(
 			}
 		},
 		gapDirection = gapDirectionBoth,
+
+		streamKeyMastodon = {
+			jsonObject(
+				StreamSpec.STREAM to "hashtag".appendIf(":local", instance_local),
+				"tag" to hashtag
+			)
+		},
+
+		streamFilterMastodon = { stream,item->
+			when{
+				item !is TootStatus -> false
+				(stream != null && !stream.startsWith("hashtag")) -> false
+				instance_local && (stream !=null && !stream.contains(":local")) ->false
+
+				else-> this.checkHashtagExtra(item)
+			}
+		}
 	),
 
     HASHTAG_FROM_ACCT(
@@ -1196,6 +1283,18 @@ enum class ColumnType(
 			}
 		},
 		gapDirection = gapDirectionBoth,
+
+		streamKeyMastodon = {
+			jsonObject(jp.juggler.subwaytooter.streaming.StreamSpec.STREAM to "list", "list" to profile_id.toString())
+		},
+
+		streamFilterMastodon = { stream,item->
+			when{
+				item !is TootStatus -> false
+				(stream != null && stream != "list:${profile_id}") -> false
+				else-> true
+			}
+		}
 	),
 
     LIST_MEMBER(21,
@@ -1292,7 +1391,19 @@ enum class ColumnType(
 		gapDirection = gapDirectionMastodonWorkaround,
 
 		bAllowPseudo = false,
-		bAllowMisskey = false
+		bAllowMisskey = false,
+
+		streamKeyMastodon = {
+			jsonObject(StreamSpec.STREAM to "direct")
+		},
+
+		streamFilterMastodon = { stream,item->
+			when{
+				(stream != null && stream != "direct") -> false
+
+				else-> true
+			}
+		}
 	),
 
     TREND_TAG(24,

@@ -9,29 +9,31 @@ import java.util.concurrent.ConcurrentHashMap
 // ストリーミング接続をacct単位でグルーピングする
 class StreamGroupAcct(
     private val manager: StreamManager,
-    val accessInfo: SavedAccount,
+    val account: SavedAccount,
     var ti: TootInstance
 ) {
-    val parser: TootParser = TootParser(manager.appState.context, linkHelper = accessInfo)
+    val parser: TootParser = TootParser(manager.appState.context, linkHelper = account)
 
-    // map key is Column.internalId
-    val groups = ConcurrentHashMap<String, StreamGroupKey>()
+    val keyGroups = ConcurrentHashMap<StreamSpec, StreamGroupKey>()
 
-    private var specs = ConcurrentHashMap<Int, StreamSpec>()
+    // 接続を束ねない場合に使われる
+    private val connections = ConcurrentHashMap<StreamSpec, StreamConnection>()
 
-    //val specs = ConcurrentHashMap<Int, StreamSpec>()
-    private val connections = ConcurrentHashMap<String, StreamConnection>()
-
+    // 接続を束ねる場合に使われる
     private var mergedConnection: StreamConnection? = null
 
-    fun addSpec(spec: StreamSpec) {
-        val key = spec.streamKey
-        var group = groups[key]
+    // カラムIDから出力先へのマップ
+    @Volatile
+    private var destinations = ConcurrentHashMap<Int, StreamDestination>()
+
+    fun addSpec(dst: StreamDestination) {
+        val spec = dst.spec
+        var group = keyGroups[spec]
         if (group == null) {
-            group = StreamGroupKey(streamKey = key)
-            groups[key] = group
+            group = StreamGroupKey(spec)
+            keyGroups[spec] = group
         }
-        group[spec.columnInternalId] = spec
+        group.destinations[ dst.columnInternalId] = dst
     }
 
     fun merge(newServer: StreamGroupAcct) {
@@ -39,26 +41,26 @@ class StreamGroupAcct(
         // 新スペックの値をコピー
         this.ti = newServer.ti
 
-        newServer.groups.entries.forEach {
-            groups[it.key] = it.value
+        newServer.keyGroups.entries.forEach {
+            keyGroups[it.key] = it.value
         }
 
         // 新グループにないグループを削除
-        groups.entries.toList().forEach {
-            if (!newServer.groups.containsKey(it.key)) groups.remove(it.key)
+        keyGroups.entries.toList().forEach {
+            if (!newServer.keyGroups.containsKey(it.key)) keyGroups.remove(it.key)
         }
 
         // グループにない接続を破棄
         connections.entries.toList().forEach {
-            if (!groups.containsKey(it.key)) {
+            if (!keyGroups.containsKey(it.key)) {
                 it.value.dispose()
                 connections.remove(it.key)
             }
         }
 
-        this.specs = ConcurrentHashMap<Int, StreamSpec>().apply {
-            groups.values.forEach { group ->
-                group.values.forEach { spec -> put(spec.columnInternalId, spec) }
+        this.destinations = ConcurrentHashMap<Int, StreamDestination>().apply {
+            keyGroups.values.forEach { group ->
+                group.destinations.values.forEach { spec -> put(spec.columnInternalId, spec) }
             }
         }
     }
@@ -71,31 +73,31 @@ class StreamGroupAcct(
         mergedConnection?.dispose()
         mergedConnection = null
 
-        groups.clear()
+        keyGroups.clear()
     }
 
-    private fun findConnection(streamKey: String?) =
-        mergedConnection ?: connections.values.firstOrNull { it.streamKey == streamKey }
+    private fun findConnection(streamSpec: StreamSpec?) =
+        mergedConnection ?: connections.values.firstOrNull { it.spec == streamSpec }
 
     // ストリーミング接続インジケータ
     fun getStreamingStatus(columnInternalId: Int): StreamIndicatorState? {
-        val streamKey = specs[columnInternalId]?.streamKey
-        return findConnection(streamKey)?.getStreamingStatus(streamKey)
+        val spec = destinations[columnInternalId]?.spec
+        return findConnection(spec)?.getStreamingStatus(spec)
     }
 
     suspend fun updateConnection() {
 
-        val multiplex = if (accessInfo.isMastodon) {
+        val multiplex = if (account.isMastodon) {
             ti.versionGE(TootInstance.VERSION_3_3_0_rc1)
         } else {
-            accessInfo.misskeyVersion >= 11
+            account.misskeyVersion >= 11
         }
 
         if (multiplex) {
             connections.values.forEach { it.dispose() }
             connections.clear()
 
-            if(specs.isEmpty()){
+            if(destinations.isEmpty()){
                 mergedConnection?.dispose()
                 mergedConnection = null
             }else{
@@ -103,8 +105,8 @@ class StreamGroupAcct(
                     mergedConnection = StreamConnection(
                         manager,
                         this,
-                        "[${accessInfo.acct.pretty}:multiplex",
-                        streamKey = null
+                        spec = null,
+                        name="[${account.acct.pretty}:multiplex]",
                     )
                 }
                 mergedConnection?.updateConnection()
@@ -114,15 +116,15 @@ class StreamGroupAcct(
             mergedConnection?.dispose()
             mergedConnection = null
 
-            groups.entries.forEach { pair ->
+            keyGroups.entries.forEach { pair ->
                 val(streamKey,group)=pair
                 var conn = connections[streamKey]
                 if (conn == null) {
                     conn = StreamConnection(
                         manager,
                         this,
-                        "[${accessInfo.acct.pretty}:${group.streamKey}]",
-                        streamKey = group.streamKey
+                        spec = group.spec,
+                        "[${account.acct.pretty}:${group.spec.name}]",
                     )
                     connections[streamKey] = conn
                 }
@@ -132,6 +134,6 @@ class StreamGroupAcct(
     }
 
     fun getConnection(internalId: Int)=
-        mergedConnection ?: connections[ specs[internalId]?.streamKey]
+        mergedConnection ?: destinations[internalId]?.spec?.let{ connections[it]}
 }
 

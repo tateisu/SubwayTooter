@@ -159,6 +159,8 @@ fun CharSequence?.mayUri() : Uri? = try {
 
 val charsetUTF8 = Charsets.UTF_8
 
+fun String.appendIf(text: String, flag: Boolean) = if (flag) "$this$text" else this
+
 // 文字列とバイト列の変換
 fun String.encodeUTF8() = this.toByteArray(charsetUTF8)
 

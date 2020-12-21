@@ -201,7 +201,6 @@ class Column(
 
         internal const val HASHTAG_ELLIPSIZE = 26
 
-        const val STREAM = "stream"
 
         @Suppress("UNCHECKED_CAST")
         private inline fun <reified T> getParamAt(params: Array<out Any>, idx: Int): T {
@@ -373,33 +372,9 @@ class Column(
     // カラムオブジェクトの識別に使うID。
     val internalId = internalIdSeed.incrementAndGet()
 
-    override fun hashCode(): Int = internalId
-
-    override fun equals(other: Any?): Boolean = this===other
 
     val type = ColumnType.parse(typeId)
 
-    fun getIconId(): Int = type.iconId(access_info.acct)
-
-    fun getColumnName(long: Boolean) =
-        type.name2(this, long) ?: type.name1(context)
-
-    private var lastStreamPath: String? = null
-
-
-    internal fun makeHashtagQueryParams(tagKey:String? = "tag") =JsonObject().apply{
-
-            if(tagKey!=null) put(tagKey,hashtag)
-
-            hashtag_any.split(" ").filter { it.isNotEmpty() }.toJsonArray()
-                .notEmpty()?.let{ put("any",it)}
-
-            hashtag_all.split(" ").filter { it.isNotEmpty() }.toJsonArray()
-                .notEmpty()?.let{ put("all",it)}
-
-            hashtag_none.split(" ").filter { it.isNotEmpty() }.toJsonArray()
-                .notEmpty()?.let{ put("none",it)}
-        }
 
 
     internal var dont_close: Boolean = false
@@ -761,6 +736,18 @@ class Column(
             }
         }
     }
+
+    override fun hashCode(): Int = internalId
+
+    override fun equals(other: Any?): Boolean = this === other
+
+    fun getIconId(): Int = type.iconId(access_info.acct)
+
+    fun getColumnName(long: Boolean) =
+        type.name2(this, long) ?: type.name1(context)
+
+
+
 
     private fun JsonObject.putIfTrue(key: String, value: Boolean) {
         if (value) put(key, true)
@@ -2314,7 +2301,6 @@ class Column(
     }
 
 
-
     internal fun hasHashtagExtra() = when {
         isMisskey -> false
         type == ColumnType.HASHTAG -> true
@@ -2431,7 +2417,7 @@ class Column(
         }
 
 
-        override fun onTimelineItem(item: TimelineItem, channelId: String?) {
+        override fun onTimelineItem(item: TimelineItem, channelId: String?,stream:JsonArray?) {
             if (is_dispose.get()) return
 
             if (item is TootConversationSummary) {
@@ -2467,19 +2453,18 @@ class Column(
 
 
         override fun onNoteUpdated(ev: MisskeyNoteUpdate, channelId: String?) {
-            // userId が自分かどうか調べる
-            // アクセストークンの更新をして自分のuserIdが分かる状態でないとキャプチャ結果を反映させない
-            // （でないとリアクションの2重カウントなどが発生してしまう)
-            val myId = EntityId.from(access_info.token_info, TootApiClient.KEY_USER_ID)
-            if (myId == null) {
-                log.w("onNoteUpdated: missing my userId. updating access token is recommenced!!")
-                return
-            }
-
-            val byMe = myId == ev.userId
-
             runOnMainLooper {
                 if (is_dispose.get()) return@runOnMainLooper
+
+                // userId が自分かどうか調べる
+                // アクセストークンの更新をして自分のuserIdが分かる状態でないとキャプチャ結果を反映させない
+                // （でないとリアクションの2重カウントなどが発生してしまう)
+                val myId = EntityId.from(access_info.token_info, TootApiClient.KEY_USER_ID)
+                if (myId == null) {
+                    log.w("onNoteUpdated: missing my userId. updating access token is recommenced!!")
+                }
+
+                val byMe = myId == ev.userId
 
                 val changeList = ArrayList<AdapterChange>()
 
@@ -2538,64 +2523,70 @@ class Column(
         }
 
         override fun onAnnouncementUpdate(item: TootAnnouncement) {
-            val list = announcements
-            if (list == null) {
-                announcements = mutableListOf(item)
-            } else {
-                val index = list.indexOfFirst { it.id == item.id }
-                list.add(
-                    0,
-                    if (index == -1) {
-                        item
-                    } else {
-                        TootAnnouncement.merge(list.removeAt(index), item)
-                    }
-                )
+            runOnMainLooper {
+                val list = announcements
+                if (list == null) {
+                    announcements = mutableListOf(item)
+                } else {
+                    val index = list.indexOfFirst { it.id == item.id }
+                    list.add(
+                        0,
+                        if (index == -1) {
+                            item
+                        } else {
+                            TootAnnouncement.merge(list.removeAt(index), item)
+                        }
+                    )
+                }
+                announcementUpdated = SystemClock.elapsedRealtime()
+                fireShowColumnHeader()
             }
-            announcementUpdated = SystemClock.elapsedRealtime()
-            fireShowColumnHeader()
         }
 
         override fun onAnnouncementDelete(id: EntityId) {
-            val it = announcements?.iterator() ?: return
-            while (it.hasNext()) {
-                val item = it.next()
-                if (item.id == id) {
-                    it.remove()
-                    announcementUpdated = SystemClock.elapsedRealtime()
-                    fireShowColumnHeader()
-                    return
+            runOnMainLooper {
+                val it = announcements?.iterator() ?: return@runOnMainLooper
+                while (it.hasNext()) {
+                    val item = it.next()
+                    if (item.id == id) {
+                        it.remove()
+                        announcementUpdated = SystemClock.elapsedRealtime()
+                        fireShowColumnHeader()
+                        return@runOnMainLooper
+                    }
                 }
             }
         }
 
         override fun onAnnouncementReaction(reaction: TootAnnouncement.Reaction) {
-            // find announcement
-            val announcement_id = reaction.announcement_id ?: return
-            val announcement = announcements?.find { it.id == announcement_id } ?: return
+            runOnMainLooper {
+                // find announcement
+                val announcement_id = reaction.announcement_id ?: return@runOnMainLooper
+                val announcement = announcements?.find { it.id == announcement_id } ?: return@runOnMainLooper
 
-            // find reaction
-            val index = announcement.reactions?.indexOfFirst { it.name == reaction.name }
-            when {
-                reaction.count <= 0L -> {
-                    if (index != null && index != -1) announcement.reactions?.removeAt(index)
-                }
+                // find reaction
+                val index = announcement.reactions?.indexOfFirst { it.name == reaction.name }
+                when {
+                    reaction.count <= 0L -> {
+                        if (index != null && index != -1) announcement.reactions?.removeAt(index)
+                    }
 
-                index == null -> {
-                    announcement.reactions = ArrayList<TootAnnouncement.Reaction>().apply {
-                        add(reaction)
+                    index == null -> {
+                        announcement.reactions = ArrayList<TootAnnouncement.Reaction>().apply {
+                            add(reaction)
+                        }
+                    }
+
+                    index == -1 -> announcement.reactions?.add(reaction)
+
+                    else -> announcement.reactions?.get(index)?.let { old ->
+                        old.count = reaction.count
+                        // ストリーミングイベントにはmeが含まれないので、oldにあるmeは変更されない
                     }
                 }
-
-                index == -1 -> announcement.reactions?.add(reaction)
-
-                else -> announcement.reactions?.get(index)?.let { old ->
-                    old.count = reaction.count
-                    // ストリーミングイベントにはmeが含まれないので、oldにあるmeは変更されない
-                }
+                announcementUpdated = SystemClock.elapsedRealtime()
+                fireShowColumnHeader()
             }
-            announcementUpdated = SystemClock.elapsedRealtime()
-            fireShowColumnHeader()
         }
     }
 
@@ -2603,13 +2594,13 @@ class Column(
     fun canStartStreaming() = when {
         // 未初期化なら何もしない
         !bFirstInitialized -> {
-            log.d("resumeStreaming: column is not initialized.")
+            log.v("canStartStreaming: column is not initialized.")
             false
         }
 
         // 初期ロード中なら何もしない
         bInitialLoading -> {
-            log.d("resumeStreaming: is in initial loading.")
+            log.v("canStartStreaming: is in initial loading.")
             false
         }
 
@@ -2619,12 +2610,11 @@ class Column(
     private fun resumeColumn(bPutGap: Boolean) {
 
         // カラム種別によってはストリーミングAPIを利用できない
-        val stream_path = streamPath ?: return
+        streamSpec ?: return
 
         if (!canStartStreaming()) return
 
         this.bPutGap = bPutGap
-        this.lastStreamPath = stream_path
 
         // TODO キューのクリアって必要？ stream_data_queue.clear()
 
@@ -2820,7 +2810,7 @@ class Column(
         if (!isMisskey) return
 
         val streamConnection = app_state.streamManager.getConnection(this)
-            ?:return
+            ?: return
 
         val max = 40
         val list = ArrayList<EntityId>(max * 2) // リブログなどで膨れる場合がある
@@ -3052,9 +3042,6 @@ class Column(
             getHeaderNameColor()
         )
     }
-
-
-
 
 
     //	fun findListIndexByTimelineId(orderId : EntityId) : Int? {

@@ -4,9 +4,10 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.MisskeyNoteUpdate
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
+import jp.juggler.util.JsonArray
 
 interface StreamCallback {
-    fun onTimelineItem(item: TimelineItem, channelId: String?)
+    fun onTimelineItem(item: TimelineItem, channelId: String?,stream: JsonArray?)
     fun onListeningStateChanged(status: StreamStatus)
     fun onNoteUpdated(ev: MisskeyNoteUpdate, channelId: String?)
     fun onAnnouncementUpdate(item: TootAnnouncement)

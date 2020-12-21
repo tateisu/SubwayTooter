@@ -70,7 +70,7 @@ enum class ColumnType(
 	val iconId: (Acct) -> Int = unusedIconId,
 	val name1: (context: Context) -> String = unusedName,
 	val name2: Column.(long: Boolean) -> String? = unusedName2,
-	val loading: suspend  ColumnTask_Loading.(client: TootApiClient) -> TootApiResult?,
+	val loading: suspend ColumnTask_Loading.(client: TootApiClient) -> TootApiResult?,
 	val refresh: suspend ColumnTask_Refresh.(client: TootApiClient) -> TootApiResult? = unsupportedRefresh,
 	val gap: suspend ColumnTask_Gap.(client: TootApiClient) -> TootApiResult? = unsupportedGap,
 	val bAllowPseudo: Boolean = true,
@@ -78,8 +78,12 @@ enum class ColumnType(
 	val bAllowMastodon: Boolean = true,
 	val headerType: HeaderType? = null,
 	val gapDirection: Column.(head: Boolean) -> Boolean = gapDirectionNone,
-	val streamKeyMastodon: Column.()->JsonObject? = {null},
-	val streamFilterMastodon: Column.(String?,TimelineItem)->Boolean = {_,_->true},
+	val canAutoRefresh: Boolean = false,
+	val streamKeyMastodon: Column.() -> JsonObject? = { null },
+	val streamFilterMastodon: Column.(String?, TimelineItem) -> Boolean = { _, _ -> true },
+	val streamNameMisskey: String? = null,
+	val streamParamMisskey: Column.() -> JsonObject? = { null },
+	val streamPathMisskey10: Column.() -> String? = { null },
 ) {
 
     ProfileStatusMastodon(
@@ -411,12 +415,18 @@ enum class ColumnType(
 		gapDirection = gapDirectionBoth,
 		bAllowPseudo = false,
 
+		canAutoRefresh = true,
+
 		streamKeyMastodon = {
 			jsonObject(StreamSpec.STREAM to "user")
 		},
-		streamFilterMastodon = { stream,item->
+		streamFilterMastodon = { stream, item ->
 			item is TootStatus && (stream == null || stream == "user")
-		}
+		},
+
+		streamNameMisskey = "homeTimeline",
+		streamParamMisskey = { null },
+		streamPathMisskey10 = { "/" },
 	),
 
     LOCAL(
@@ -436,20 +446,25 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 
+		canAutoRefresh = true,
+
 		streamKeyMastodon = {
 			jsonObject(StreamSpec.STREAM to
 				"public:local"
 					.appendIf(":media", with_attachment)
 			)
 		},
-		streamFilterMastodon = { stream,item->
-			when{
+		streamFilterMastodon = { stream, item ->
+			when {
 				item !is TootStatus -> false
 				(stream != null && !stream.startsWith("public:local")) -> false
 				with_attachment && item.media_attachments.isNullOrEmpty() -> false
-				else->true
+				else -> true
 			}
-		}
+		},
+		streamNameMisskey = "localTimeline",
+		streamParamMisskey = { null },
+		streamPathMisskey10 = { "/local-timeline" },
 	),
 
     FEDERATE(
@@ -470,6 +485,8 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 
+		canAutoRefresh = true,
+
 		streamKeyMastodon = {
 			jsonObject(StreamSpec.STREAM to
 				"public"
@@ -478,16 +495,20 @@ enum class ColumnType(
 			)
 		},
 
-		streamFilterMastodon = { stream,item->
-			when{
+		streamFilterMastodon = { stream, item ->
+			when {
 				item !is TootStatus -> false
 				(stream != null && !stream.startsWith("public")) -> false
-				(stream !=null && stream.contains(":local")) ->false
+				(stream != null && stream.contains(":local")) -> false
 				remote_only && item.account.acct == access_info.acct -> false
 				with_attachment && item.media_attachments.isNullOrEmpty() -> false
-				else->true
+				else -> true
 			}
-		}
+		},
+
+		streamNameMisskey = "globalTimeline",
+		streamParamMisskey = { null },
+		streamPathMisskey10 = { "/global-timeline" },
 	),
 
     MISSKEY_HYBRID(
@@ -507,6 +528,12 @@ enum class ColumnType(
 			)
 		},
 		gapDirection = gapDirectionBoth,
+
+		canAutoRefresh = true,
+
+		streamNameMisskey = "hybridTimeline",
+		streamParamMisskey = { null },
+		streamPathMisskey10 = { "/hybrid-timeline" },
 	),
 
     DOMAIN_TIMELINE(
@@ -531,6 +558,8 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 
+		canAutoRefresh = true,
+
 		streamKeyMastodon = {
 			jsonObject(StreamSpec.STREAM to
 				"public:domain"
@@ -539,13 +568,13 @@ enum class ColumnType(
 			)
 		},
 
-		streamFilterMastodon = { stream,item->
-			when{
+		streamFilterMastodon = { stream, item ->
+			when {
 				item !is TootStatus -> false
 				(stream != null && !stream.startsWith("public:domain")) -> false
 				(stream != null && !stream.endsWith(instance_uri)) -> false
 				with_attachment && item.media_attachments.isNullOrEmpty() -> false
-				else->true
+				else -> true
 			}
 		}
 	),
@@ -715,6 +744,8 @@ enum class ColumnType(
 
 		bAllowPseudo = false,
 
+		canAutoRefresh = true,
+
 		streamKeyMastodon = {
 			jsonObject(StreamSpec.STREAM to "user")
 		},
@@ -722,9 +753,13 @@ enum class ColumnType(
 			when {
 				item !is TootNotification -> false
 				(stream != null && stream != "user") -> false
-				else->true
+				else -> true
 			}
-		}
+		},
+
+		streamNameMisskey = "main",
+		streamParamMisskey = { null },
+		streamPathMisskey10 = { "/" },
 	),
 
     NOTIFICATION_FROM_ACCT(
@@ -812,6 +847,8 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 
+		canAutoRefresh = true,
+
 		streamKeyMastodon = {
 			jsonObject(
 				StreamSpec.STREAM to "hashtag".appendIf(":local", instance_local),
@@ -819,15 +856,20 @@ enum class ColumnType(
 			)
 		},
 
-		streamFilterMastodon = { stream,item->
-			when{
+		streamFilterMastodon = { stream, item ->
+			when {
 				item !is TootStatus -> false
 				(stream != null && !stream.startsWith("hashtag")) -> false
-				instance_local && (stream !=null && !stream.contains(":local")) ->false
+				instance_local && (stream != null && !stream.contains(":local")) -> false
 
-				else-> this.checkHashtagExtra(item)
+				else -> this.checkHashtagExtra(item)
 			}
-		}
+		},
+		streamNameMisskey = "hashtag",
+		streamParamMisskey = {  jsonObject ("q" to hashtag)  },
+		// Misskey10 というかめいすきーでタグTLのストリーミングができるのか不明
+		// streamPathMisskey10 = { "/???? ?q=${hashtag.encodePercent()}" },
+
 	),
 
     HASHTAG_FROM_ACCT(
@@ -1284,17 +1326,23 @@ enum class ColumnType(
 		},
 		gapDirection = gapDirectionBoth,
 
+		canAutoRefresh = true,
+
 		streamKeyMastodon = {
 			jsonObject(StreamSpec.STREAM to "list", "list" to profile_id.toString())
 		},
 
-		streamFilterMastodon = { stream,item->
-			when{
+		streamFilterMastodon = { stream, item ->
+			when {
 				item !is TootStatus -> false
 				(stream != null && stream != "list:${profile_id}") -> false
-				else-> true
+				else -> true
 			}
-		}
+		},
+		streamNameMisskey = "userList",
+		streamParamMisskey = { jsonObject("listId" to profile_id.toString()) },
+		streamPathMisskey10 = { "/user-list?listId=${profile_id.toString()}" },
+
 	),
 
     LIST_MEMBER(21,
@@ -1393,15 +1441,17 @@ enum class ColumnType(
 		bAllowPseudo = false,
 		bAllowMisskey = false,
 
+		canAutoRefresh = true,
+
 		streamKeyMastodon = {
 			jsonObject(StreamSpec.STREAM to "direct")
 		},
 
 		streamFilterMastodon = { stream, _ ->
-			when{
+			when {
 				(stream != null && stream != "direct") -> false
 
-				else-> true
+				else -> true
 			}
 		}
 	),
@@ -1655,6 +1705,11 @@ enum class ColumnType(
 			}
 		},
 		gapDirection = gapDirectionBoth,
+
+		canAutoRefresh = true,
+		streamNameMisskey = "antenna",
+		streamParamMisskey = { jsonObject("antennaId" to profile_id.toString()) },
+		// Misskey10 にアンテナはない
 	),
 
     ;

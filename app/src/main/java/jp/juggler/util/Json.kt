@@ -276,6 +276,10 @@ class JsonObject : LinkedHashMap<String, Any?>() {
     fun putNotNull(name: String, value: Any?) {
         if (value != null) put(name, value)
     }
+
+    fun putIfTrue(key: String, value: Boolean) {
+        if (value) put(key, true)
+    }
 }
 
 class JsonTokenizer(reader: Reader) {

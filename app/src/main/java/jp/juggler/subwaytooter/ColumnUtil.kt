@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter
 
-import android.graphics.Bitmap
 import android.util.LruCache
 import jp.juggler.subwaytooter.Column.Companion.READ_LIMIT
 import jp.juggler.subwaytooter.Column.Companion.log
@@ -12,6 +11,49 @@ import jp.juggler.subwaytooter.api.syncAccountByAcct
 import jp.juggler.util.*
 import java.util.*
 
+val Column.isMastodon: Boolean
+    get()= access_info.isMastodon
+
+val Column.isMisskey: Boolean
+    get()= access_info.isMisskey
+
+val Column.misskeyVersion :Int
+    get()= access_info.misskeyVersion
+
+val Column.isSearchColumn: Boolean
+    get() {
+        return when (type) {
+            ColumnType.SEARCH,
+            ColumnType.SEARCH_MSP,
+            ColumnType.SEARCH_TS,
+            ColumnType.SEARCH_NOTESTOCK -> true
+            else -> false
+        }
+    }
+
+val Column.isNotificationColumn: Boolean
+    get() = when (type) {
+        ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> true
+        else -> false
+    }
+
+// 公開ストリームなら真
+val Column.isPublicStream: Boolean
+    get() {
+        return when (type) {
+            ColumnType.LOCAL,
+            ColumnType.FEDERATE,
+            ColumnType.HASHTAG,
+            ColumnType.LOCAL_AROUND,
+            ColumnType.FEDERATED_AROUND,
+            ColumnType.DOMAIN_TIMELINE -> true
+
+            else -> false
+        }
+    }
+
+fun Column.canAutoRefresh() =
+    ! access_info.isNA && type.canAutoRefresh
 
 internal inline fun <reified T : TimelineItem> addAll(
     dstArg: ArrayList<TimelineItem>?,

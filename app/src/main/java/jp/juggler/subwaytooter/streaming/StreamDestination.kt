@@ -18,9 +18,8 @@ class StreamDestination(
     val refCallback = WeakReference(column.streamCallback)
 
     fun canStartStreaming(): Boolean {
-        val column = refColumn.get()
-        return when {
-            column == null -> {
+        return when (val column = refColumn.get()) {
+            null -> {
                 log.w("${spec.name} canStartStreaming: missing column.")
                 false
             }

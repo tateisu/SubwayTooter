@@ -1285,7 +1285,7 @@ enum class ColumnType(
 		gapDirection = gapDirectionBoth,
 
 		streamKeyMastodon = {
-			jsonObject(jp.juggler.subwaytooter.streaming.StreamSpec.STREAM to "list", "list" to profile_id.toString())
+			jsonObject(StreamSpec.STREAM to "list", "list" to profile_id.toString())
 		},
 
 		streamFilterMastodon = { stream,item->
@@ -1397,7 +1397,7 @@ enum class ColumnType(
 			jsonObject(StreamSpec.STREAM to "direct")
 		},
 
-		streamFilterMastodon = { stream,item->
+		streamFilterMastodon = { stream, _ ->
 			when{
 				(stream != null && stream != "direct") -> false
 

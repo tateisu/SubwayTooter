@@ -12,18 +12,15 @@ internal class ColumnPagerAdapter(private val activity : ActMain) : androidx.vie
 	companion object {
 		val log = LogCategory("ColumnPagerAdapter")
 	}
-	
-	private val column_list : ArrayList<Column> = activity.app_state.column_list
+
+	private val appState = activity.app_state
+
 	private val holder_list = SparseArray<ColumnViewHolder>()
 	
-	override fun getCount() : Int {
-		return column_list.size
-	}
-	
-	fun getColumn(idx : Int) : Column? {
-		return if(idx >= 0 && idx < column_list.size) column_list[idx] else null
-	}
-	
+	override fun getCount() : Int =appState.columnCount
+
+	fun getColumn(idx : Int) : Column? = appState.column(idx)
+
 	fun getColumnViewHolder(idx : Int) : ColumnViewHolder? {
 		return holder_list.get(idx)
 	}
@@ -51,7 +48,7 @@ internal class ColumnPagerAdapter(private val activity : ActMain) : androidx.vie
 		}
 		container.addView(holder.viewRoot, 0)
 		holder_list.put(page_idx, holder)
-		holder.onPageCreate(column_list[page_idx], page_idx, column_list.size)
+		holder.onPageCreate( appState.column(page_idx)!!, page_idx, appState.columnCount)
 		return holder.viewRoot
 	}
 	

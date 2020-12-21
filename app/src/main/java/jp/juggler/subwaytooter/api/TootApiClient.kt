@@ -1282,10 +1282,18 @@ class TootApiClient(
 
             val request_builder = Request.Builder()
 
-            val access_token = account.getAccessToken()
-            if (access_token?.isNotEmpty() == true) {
-                val delm = if (-1 != url.indexOf('?')) '&' else '?'
-                url = url + delm + "access_token=" + access_token.encodePercent()
+            if( account.isMisskey){
+                val accessToken = account.misskeyApiToken
+                if (accessToken?.isNotEmpty() == true) {
+                    val delm = if (-1 != url.indexOf('?')) '&' else '?'
+                    url = "$url${delm}i=${accessToken.encodePercent()}"
+                }
+            }else {
+                val access_token = account.getAccessToken()
+                if (access_token?.isNotEmpty() == true) {
+                    val delm = if (-1 != url.indexOf('?')) '&' else '?'
+                    url = "$url${delm}access_token=${access_token.encodePercent()}"
+                }
             }
 
             val request = request_builder.url(url).build()

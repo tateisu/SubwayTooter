@@ -62,7 +62,7 @@ object Action_List {
 				val list = this.list
 				if(list != null) {
 					
-					for(column in activity.app_state.column_list) {
+					for(column in activity.app_state.columnList) {
 						column.onListListUpdated(access_info)
 					}
 					
@@ -117,7 +117,7 @@ object Action_List {
 				
 				if(result.jsonObject != null) {
 					
-					for(column in activity.app_state.column_list) {
+					for(column in activity.app_state.columnList) {
 						column.onListListUpdated(access_info)
 					}
 					
@@ -186,7 +186,7 @@ object Action_List {
 							
 							val list = this.list
 							if(list != null) {
-								for(column in activity.app_state.column_list) {
+								for(column in activity.app_state.columnList) {
 									column.onListNameUpdated(access_info, list)
 								}
 								dialog.dismissSafe()

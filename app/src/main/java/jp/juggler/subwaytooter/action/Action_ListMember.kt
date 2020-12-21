@@ -113,7 +113,7 @@ object Action_ListMember {
 					if(result == null) return  // cancelled.
 					
 					if(result.jsonObject != null) {
-						for(column in App1.getAppState(activity).column_list) {
+						for(column in activity.app_state.columnList) {
 							// リストメンバー追加イベントをカラムに伝達
 							column.onListMemberUpdated(access_info, list_id, local_who, true)
 						}
@@ -206,7 +206,7 @@ object Action_ListMember {
 					
 					if(result.jsonObject != null) {
 						
-						for(column in App1.getAppState(activity).column_list) {
+						for(column in activity.app_state.columnList) {
 							column.onListMemberUpdated(access_info, list_id, local_who, false)
 						}
 						

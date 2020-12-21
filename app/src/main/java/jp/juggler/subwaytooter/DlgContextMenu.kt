@@ -824,7 +824,7 @@ internal class DlgContextMenu(
 					val acct = access_info.getFullAcct(who)
 					FavMute.save(acct)
 					activity.showToast(false, R.string.changed)
-					for(column in activity.app_state.column_list) {
+					for(column in activity.app_state.columnList) {
 						column.onHideFavouriteNotification(acct)
 					}
 				}

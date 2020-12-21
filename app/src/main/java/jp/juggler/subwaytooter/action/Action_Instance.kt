@@ -187,7 +187,7 @@ object Action_Instance {
 				
 				if(result.jsonObject != null) {
 					
-					for(column in App1.getAppState(activity).column_list) {
+					for(column in activity.app_state.columnList) {
 						column.onDomainBlockChanged(access_info, domain, bBlock)
 					}
 					

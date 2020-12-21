@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Environment
 import android.os.SystemClock
 import android.util.SparseArray
@@ -12,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.notification.PollingWorker
+import jp.juggler.subwaytooter.streaming.*
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.ScrollPosition
@@ -29,13 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
-import kotlin.jvm.Throws
 
-enum class StreamingIndicatorState {
-    NONE,
-    REGISTERED, // registered, but not listening
-    LISTENING,
-}
 
 enum class ColumnPagingType {
     Default,
@@ -59,13 +53,12 @@ enum class HeaderType(val viewType: Int) {
 }
 
 class Column(
-	val app_state: AppState,
-	val context: Context,
-	val access_info: SavedAccount,
-	typeId: Int,
-	val column_id: String
+    val app_state: AppState,
+    val context: Context,
+    val access_info: SavedAccount,
+    typeId: Int,
+    val column_id: String
 ) {
-
     companion object {
 
         internal val log = LogCategory("Column")
@@ -208,27 +201,29 @@ class Column(
 
         internal const val HASHTAG_ELLIPSIZE = 26
 
+        const val STREAM = "stream"
+
         @Suppress("UNCHECKED_CAST")
         private inline fun <reified T> getParamAt(params: Array<out Any>, idx: Int): T {
             return params[idx] as T
         }
 
         private fun getParamEntityId(
-			params: Array<out Any>,
-			@Suppress("SameParameterValue") idx: Int
-		): EntityId =
+            params: Array<out Any>,
+            @Suppress("SameParameterValue") idx: Int
+        ): EntityId =
             when (val o = params[idx]) {
-				is EntityId -> o
-				is String -> EntityId(o)
+                is EntityId -> o
+                is String -> EntityId(o)
                 else -> error("getParamEntityId [$idx] bad type. $o")
             }
 
         private fun getParamString(params: Array<out Any>, idx: Int): String =
             when (val o = params[idx]) {
-				is String -> o
-				is EntityId -> o.toString()
-				is Host -> o.ascii
-				is Acct -> o.ascii
+                is String -> o
+                is EntityId -> o.toString()
+                is Host -> o.ascii
+                is Acct -> o.ascii
                 else -> error("getParamString [$idx] bad type. $o")
             }
 
@@ -249,7 +244,7 @@ class Column(
 
         }
 
-        private val channelIdSeed = AtomicInteger(0)
+        // private val channelIdSeed = AtomicInteger(0)
 
         // より古いデータの取得に使う
         internal val reMaxId = """[&?]max_id=([^&?;\s]+)""".asciiPattern()
@@ -262,31 +257,31 @@ class Column(
         fun onFiltersChanged(context: Context, access_info: SavedAccount) {
 
             TootTaskRunner(context, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
-				object : TootTask {
+                object : TootTask {
 
-					var filter_list: ArrayList<TootFilter>? = null
+                    var filter_list: ArrayList<TootFilter>? = null
 
-					override suspend fun background(client: TootApiClient): TootApiResult? {
-						val result = client.request(PATH_FILTERS)
-						val jsonArray = result?.jsonArray
-						if (jsonArray != null) {
-							filter_list = TootFilter.parseList(jsonArray)
-						}
-						return result
-					}
+                    override suspend fun background(client: TootApiClient): TootApiResult? {
+                        val result = client.request(PATH_FILTERS)
+                        val jsonArray = result?.jsonArray
+                        if (jsonArray != null) {
+                            filter_list = TootFilter.parseList(jsonArray)
+                        }
+                        return result
+                    }
 
-					override suspend fun handleResult(result: TootApiResult?) {
-						val filter_list = this.filter_list
-						if (filter_list != null) {
-							log.d("update filters for ${access_info.acct.pretty}")
-							for (column in App1.getAppState(context).column_list) {
-								if (column.access_info == access_info) {
-									column.onFiltersChanged2(filter_list)
-								}
-							}
-						}
-					}
-				})
+                    override suspend fun handleResult(result: TootApiResult?) {
+                        val filter_list = this.filter_list
+                        if (filter_list != null) {
+                            log.d("update filters for ${access_info.acct.pretty}")
+                            for (column in App1.getAppState(context).columnList) {
+                                if (column.access_info == access_info) {
+                                    column.onFiltersChanged2(filter_list)
+                                }
+                            }
+                        }
+                    }
+                })
         }
 
         private val columnIdMap = HashMap<String, WeakReference<Column>?>()
@@ -371,7 +366,16 @@ class Column(
                 ?: activity.getAttributeColor(R.attr.colorContentText)
 
         }
+
+        private val internalIdSeed = AtomicInteger(0)
     }
+
+    // カラムオブジェクトの識別に使うID。
+    val internalId = internalIdSeed.incrementAndGet()
+
+    override fun hashCode(): Int = internalId
+
+    override fun equals(other: Any?): Boolean = this===other
 
     val type = ColumnType.parse(typeId)
 
@@ -380,94 +384,23 @@ class Column(
     fun getColumnName(long: Boolean) =
         type.name2(this, long) ?: type.name1(context)
 
-    private var callback_ref: WeakReference<Callback>? = null
-
-    private val isActivityStart: Boolean
-        get() {
-            return callback_ref?.get()?.isActivityStart ?: false
-        }
-
     private var lastStreamPath: String? = null
 
-    private val streamPath: String?
-        get() = if (isMisskey) {
-            val misskeyApiToken = access_info.misskeyApiToken
-            when {
 
-                // Misskey 11以降
-                access_info.misskeyVersion >= 11 -> when {
-                    makeMisskeyChannelArg() == null -> null
-                    misskeyApiToken == null -> "/?_=$column_id" // 認証無し
-                    else -> "/?_=$column_id&i=$misskeyApiToken"
-                }
+    internal fun makeHashtagQueryParams(tagKey:String? = "tag") =JsonObject().apply{
 
-                // Misskey 10
-                // 認証あり
-                misskeyApiToken != null -> when (type) {
-					ColumnType.HOME, ColumnType.NOTIFICATIONS -> "/?i=$misskeyApiToken"
-					ColumnType.LOCAL -> "/local-timeline?i=$misskeyApiToken"
-					ColumnType.MISSKEY_HYBRID -> "/hybrid-timeline?i=$misskeyApiToken"
-					ColumnType.FEDERATE -> "/global-timeline?i=$misskeyApiToken"
-					ColumnType.LIST_TL -> "/user-list?i=$misskeyApiToken&listId=$profile_id"
-					ColumnType.MISSKEY_ANTENNA_TL -> "/antenna?i=$misskeyApiToken&listId=$profile_id"
-                    else -> null
-                }
-                // Misskey 10
-                // 認証なし
-                // Misskey 8.25 からLTLだけ認証なしでも見れるようになった
-                else -> when (type) {
-					ColumnType.LOCAL -> "/local-timeline"
-                    else -> null
-                }
-            }
-        } else {
-            when (type) {
-				ColumnType.HOME, ColumnType.NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
-				ColumnType.LOCAL -> "/api/v1/streaming/?stream=public:local"
+            if(tagKey!=null) put(tagKey,hashtag)
 
-				ColumnType.FEDERATE -> {
-					when (remote_only) {
-						true -> "/api/v1/streaming/?stream=public:remote"
-						else -> "/api/v1/streaming/?stream=public"
-					}
-				}
+            hashtag_any.split(" ").filter { it.isNotEmpty() }.toJsonArray()
+                .notEmpty()?.let{ put("any",it)}
 
-				ColumnType.LIST_TL -> "/api/v1/streaming/?stream=list&list=$profile_id"
+            hashtag_all.split(" ").filter { it.isNotEmpty() }.toJsonArray()
+                .notEmpty()?.let{ put("all",it)}
 
-				ColumnType.DOMAIN_TIMELINE ->
-					"/api/v1/streaming/?stream=${if (with_attachment) "public:domain:media" else "public:domain"}&domain=$instance_uri"
-
-				ColumnType.DIRECT_MESSAGES -> "/api/v1/streaming/?stream=direct"
-
-				ColumnType.HASHTAG -> when (instance_local) {
-					true -> {
-						"/api/v1/streaming/?stream=" + Uri.encode("hashtag:local") +
-							"&tag=" + hashtag.encodePercent() + makeHashtagExtraQuery()
-					}
-
-					else -> "/api/v1/streaming/?stream=hashtag&tag=" + hashtag.encodePercent() +
-						makeHashtagExtraQuery()
-					// タグ先頭の#を含まない
-				}
-                else -> null
-            }
-
+            hashtag_none.split(" ").filter { it.isNotEmpty() }.toJsonArray()
+                .notEmpty()?.let{ put("none",it)}
         }
 
-    private val isPublicStream: Boolean
-        get() {
-            return when (type) {
-
-				ColumnType.LOCAL,
-				ColumnType.FEDERATE,
-				ColumnType.HASHTAG,
-				ColumnType.LOCAL_AROUND,
-				ColumnType.FEDERATED_AROUND,
-				ColumnType.DOMAIN_TIMELINE -> true
-
-                else -> false
-            }
-        }
 
     internal var dont_close: Boolean = false
 
@@ -486,7 +419,9 @@ class Column(
 
     internal var quick_filter = QUICK_FILTER_ALL
 
+    @Volatile
     internal var dont_streaming: Boolean = false
+
     internal var dont_auto_refresh: Boolean = false
     internal var hide_media_default: Boolean = false
     internal var system_notification_not_related: Boolean = false
@@ -562,6 +497,7 @@ class Column(
 
     internal val is_dispose = AtomicBoolean()
 
+    @Volatile
     internal var bFirstInitialized = false
 
     var filter_reload_required: Boolean = false
@@ -584,7 +520,10 @@ class Column(
 
     internal var lastTask: ColumnTask? = null
 
+    @Volatile
     internal var bInitialLoading: Boolean = false
+
+    @Volatile
     internal var bRefreshLoading: Boolean = false
 
     internal var mInitialLoadingError: String = ""
@@ -644,71 +583,64 @@ class Column(
     val isSearchColumn: Boolean
         get() {
             return when (type) {
-				ColumnType.SEARCH, ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS ,ColumnType.SEARCH_NOTESTOCK-> true
+                ColumnType.SEARCH, ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS, ColumnType.SEARCH_NOTESTOCK -> true
                 else -> false
             }
         }
 
-    internal interface Callback {
-
-        val isActivityStart: Boolean
-    }
-
     internal constructor(
-		app_state: AppState,
-		access_info: SavedAccount,
-		callback: Callback,
-		type: Int,
-		vararg params: Any
-	) : this(
-		app_state, app_state.context, access_info, type, generateColumnId()
-	) {
-        this.callback_ref = WeakReference(callback)
+        app_state: AppState,
+        access_info: SavedAccount,
+        type: Int,
+        vararg params: Any
+    ) : this(
+        app_state, app_state.context, access_info, type, generateColumnId()
+    ) {
         when (typeMap[type]) {
 
-			ColumnType.CONVERSATION,
-			ColumnType.BOOSTED_BY,
-			ColumnType.FAVOURITED_BY,
-			ColumnType.LOCAL_AROUND,
-			ColumnType.FEDERATED_AROUND,
-			ColumnType.ACCOUNT_AROUND ->
-				status_id = getParamEntityId(params, 0)
+            ColumnType.CONVERSATION,
+            ColumnType.BOOSTED_BY,
+            ColumnType.FAVOURITED_BY,
+            ColumnType.LOCAL_AROUND,
+            ColumnType.FEDERATED_AROUND,
+            ColumnType.ACCOUNT_AROUND ->
+                status_id = getParamEntityId(params, 0)
 
-			ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER,
-			ColumnType.MISSKEY_ANTENNA_TL ->
-				profile_id = getParamEntityId(params, 0)
+            ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER,
+            ColumnType.MISSKEY_ANTENNA_TL ->
+                profile_id = getParamEntityId(params, 0)
 
-			ColumnType.HASHTAG ->
-				hashtag = getParamString(params, 0)
+            ColumnType.HASHTAG ->
+                hashtag = getParamString(params, 0)
 
-			ColumnType.HASHTAG_FROM_ACCT -> {
-				hashtag = getParamString(params, 0)
-				hashtag_acct = getParamString(params, 1)
-			}
+            ColumnType.HASHTAG_FROM_ACCT -> {
+                hashtag = getParamString(params, 0)
+                hashtag_acct = getParamString(params, 1)
+            }
 
-			ColumnType.NOTIFICATION_FROM_ACCT -> {
-				hashtag_acct = getParamString(params, 0)
-			}
+            ColumnType.NOTIFICATION_FROM_ACCT -> {
+                hashtag_acct = getParamString(params, 0)
+            }
 
-			ColumnType.SEARCH -> {
-				search_query = getParamString(params, 0)
-				search_resolve = getParamAt(params, 1)
-			}
+            ColumnType.SEARCH -> {
+                search_query = getParamString(params, 0)
+                search_resolve = getParamAt(params, 1)
+            }
 
-			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS,ColumnType.SEARCH_NOTESTOCK ->
-				search_query = getParamString(params, 0)
+            ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS, ColumnType.SEARCH_NOTESTOCK ->
+                search_query = getParamString(params, 0)
 
-			ColumnType.INSTANCE_INFORMATION ->
-				instance_uri = getParamString(params, 0)
+            ColumnType.INSTANCE_INFORMATION ->
+                instance_uri = getParamString(params, 0)
 
-			ColumnType.PROFILE_DIRECTORY -> {
-				instance_uri = getParamString(params, 0)
-				search_resolve = true
-			}
+            ColumnType.PROFILE_DIRECTORY -> {
+                instance_uri = getParamString(params, 0)
+                search_resolve = true
+            }
 
-			ColumnType.DOMAIN_TIMELINE -> {
-				instance_uri = getParamString(params, 0)
-			}
+            ColumnType.DOMAIN_TIMELINE -> {
+                instance_uri = getParamString(params, 0)
+            }
 
             else -> {
 
@@ -718,12 +650,12 @@ class Column(
 
     internal constructor(app_state: AppState, src: JsonObject)
         : this(
-		app_state,
-		app_state.context,
-		loadAccount(app_state.context, src),
-		src.optInt(KEY_TYPE),
-		decodeColumnId(src)
-	) {
+        app_state,
+        app_state.context,
+        loadAccount(app_state.context, src),
+        src.optInt(KEY_TYPE),
+        decodeColumnId(src)
+    ) {
         dont_close = src.optBoolean(KEY_DONT_CLOSE)
         with_attachment = src.optBoolean(KEY_WITH_ATTACHMENT)
         with_highlight = src.optBoolean(KEY_WITH_HIGHLIGHT)
@@ -761,68 +693,68 @@ class Column(
 
         when (type) {
 
-			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY,
-			ColumnType.LOCAL_AROUND, ColumnType.ACCOUNT_AROUND ->
-				status_id = EntityId.mayNull(src.string(KEY_STATUS_ID))
+            ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY,
+            ColumnType.LOCAL_AROUND, ColumnType.ACCOUNT_AROUND ->
+                status_id = EntityId.mayNull(src.string(KEY_STATUS_ID))
 
-			ColumnType.FEDERATED_AROUND -> {
-				status_id = EntityId.mayNull(src.string(KEY_STATUS_ID))
-				remote_only = src.optBoolean(KEY_REMOTE_ONLY, false)
-			}
+            ColumnType.FEDERATED_AROUND -> {
+                status_id = EntityId.mayNull(src.string(KEY_STATUS_ID))
+                remote_only = src.optBoolean(KEY_REMOTE_ONLY, false)
+            }
 
-			ColumnType.FEDERATE -> {
-				remote_only = src.optBoolean(KEY_REMOTE_ONLY, false)
-			}
+            ColumnType.FEDERATE -> {
+                remote_only = src.optBoolean(KEY_REMOTE_ONLY, false)
+            }
 
-			ColumnType.PROFILE -> {
-				profile_id = EntityId.mayNull(src.string(KEY_PROFILE_ID))
-				val tabId = src.optInt(KEY_PROFILE_TAB)
-				profile_tab = ProfileTab.values().find { it.id == tabId } ?: ProfileTab.Status
-			}
+            ColumnType.PROFILE -> {
+                profile_id = EntityId.mayNull(src.string(KEY_PROFILE_ID))
+                val tabId = src.optInt(KEY_PROFILE_TAB)
+                profile_tab = ProfileTab.values().find { it.id == tabId } ?: ProfileTab.Status
+            }
 
-			ColumnType.LIST_MEMBER, ColumnType.LIST_TL,
-			ColumnType.MISSKEY_ANTENNA_TL -> {
-				profile_id = EntityId.mayNull(src.string(KEY_PROFILE_ID))
-			}
+            ColumnType.LIST_MEMBER, ColumnType.LIST_TL,
+            ColumnType.MISSKEY_ANTENNA_TL -> {
+                profile_id = EntityId.mayNull(src.string(KEY_PROFILE_ID))
+            }
 
-			ColumnType.HASHTAG -> {
-				hashtag = src.optString(KEY_HASHTAG)
-				hashtag_any = src.optString(KEY_HASHTAG_ANY)
-				hashtag_all = src.optString(KEY_HASHTAG_ALL)
-				hashtag_none = src.optString(KEY_HASHTAG_NONE)
-			}
+            ColumnType.HASHTAG -> {
+                hashtag = src.optString(KEY_HASHTAG)
+                hashtag_any = src.optString(KEY_HASHTAG_ANY)
+                hashtag_all = src.optString(KEY_HASHTAG_ALL)
+                hashtag_none = src.optString(KEY_HASHTAG_NONE)
+            }
 
-			ColumnType.HASHTAG_FROM_ACCT -> {
-				hashtag_acct = src.optString(KEY_HASHTAG_ACCT)
-				hashtag = src.optString(KEY_HASHTAG)
-				hashtag_any = src.optString(KEY_HASHTAG_ANY)
-				hashtag_all = src.optString(KEY_HASHTAG_ALL)
-				hashtag_none = src.optString(KEY_HASHTAG_NONE)
-			}
+            ColumnType.HASHTAG_FROM_ACCT -> {
+                hashtag_acct = src.optString(KEY_HASHTAG_ACCT)
+                hashtag = src.optString(KEY_HASHTAG)
+                hashtag_any = src.optString(KEY_HASHTAG_ANY)
+                hashtag_all = src.optString(KEY_HASHTAG_ALL)
+                hashtag_none = src.optString(KEY_HASHTAG_NONE)
+            }
 
-			ColumnType.NOTIFICATION_FROM_ACCT -> {
-				hashtag_acct = src.optString(KEY_HASHTAG_ACCT)
-			}
+            ColumnType.NOTIFICATION_FROM_ACCT -> {
+                hashtag_acct = src.optString(KEY_HASHTAG_ACCT)
+            }
 
-			ColumnType.SEARCH -> {
-				search_query = src.optString(KEY_SEARCH_QUERY)
-				search_resolve = src.optBoolean(KEY_SEARCH_RESOLVE, false)
-			}
+            ColumnType.SEARCH -> {
+                search_query = src.optString(KEY_SEARCH_QUERY)
+                search_resolve = src.optBoolean(KEY_SEARCH_RESOLVE, false)
+            }
 
-			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS ,ColumnType.SEARCH_NOTESTOCK-> search_query =
-				src.optString(KEY_SEARCH_QUERY)
+            ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS, ColumnType.SEARCH_NOTESTOCK -> search_query =
+                src.optString(KEY_SEARCH_QUERY)
 
-			ColumnType.INSTANCE_INFORMATION -> instance_uri = src.optString(KEY_INSTANCE_URI)
+            ColumnType.INSTANCE_INFORMATION -> instance_uri = src.optString(KEY_INSTANCE_URI)
 
-			ColumnType.PROFILE_DIRECTORY -> {
-				instance_uri = src.optString(KEY_INSTANCE_URI)
-				search_query = src.optString(KEY_SEARCH_QUERY)
-				search_resolve = src.optBoolean(KEY_SEARCH_RESOLVE, false)
-			}
+            ColumnType.PROFILE_DIRECTORY -> {
+                instance_uri = src.optString(KEY_INSTANCE_URI)
+                search_query = src.optString(KEY_SEARCH_QUERY)
+                search_resolve = src.optBoolean(KEY_SEARCH_RESOLVE, false)
+            }
 
-			ColumnType.DOMAIN_TIMELINE -> {
-				instance_uri = src.optString(KEY_INSTANCE_URI)
-			}
+            ColumnType.DOMAIN_TIMELINE -> {
+                instance_uri = src.optString(KEY_INSTANCE_URI)
+            }
 
             else -> {
 
@@ -879,72 +811,72 @@ class Column(
 
         when (type) {
 
-			ColumnType.CONVERSATION, ColumnType.BOOSTED_BY,
-			ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND,
+            ColumnType.CONVERSATION, ColumnType.BOOSTED_BY,
+            ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND,
 
-			ColumnType.ACCOUNT_AROUND ->
-				dst[KEY_STATUS_ID] = status_id.toString()
+            ColumnType.ACCOUNT_AROUND ->
+                dst[KEY_STATUS_ID] = status_id.toString()
 
-			ColumnType.FEDERATED_AROUND -> {
-				dst[KEY_STATUS_ID] = status_id.toString()
-				dst[KEY_REMOTE_ONLY] = remote_only
-			}
+            ColumnType.FEDERATED_AROUND -> {
+                dst[KEY_STATUS_ID] = status_id.toString()
+                dst[KEY_REMOTE_ONLY] = remote_only
+            }
 
-			ColumnType.FEDERATE -> {
-				dst[KEY_REMOTE_ONLY] = remote_only
-			}
+            ColumnType.FEDERATE -> {
+                dst[KEY_REMOTE_ONLY] = remote_only
+            }
 
-			ColumnType.PROFILE -> {
-				dst[KEY_PROFILE_ID] = profile_id.toString()
-				dst[KEY_PROFILE_TAB] = profile_tab.id
-			}
+            ColumnType.PROFILE -> {
+                dst[KEY_PROFILE_ID] = profile_id.toString()
+                dst[KEY_PROFILE_TAB] = profile_tab.id
+            }
 
-			ColumnType.LIST_MEMBER, ColumnType.LIST_TL,
-			ColumnType.MISSKEY_ANTENNA_TL -> {
-				dst[KEY_PROFILE_ID] = profile_id.toString()
-			}
+            ColumnType.LIST_MEMBER, ColumnType.LIST_TL,
+            ColumnType.MISSKEY_ANTENNA_TL -> {
+                dst[KEY_PROFILE_ID] = profile_id.toString()
+            }
 
-			ColumnType.HASHTAG -> {
-				dst[KEY_HASHTAG] = hashtag
-				dst[KEY_HASHTAG_ANY] = hashtag_any
-				dst[KEY_HASHTAG_ALL] = hashtag_all
-				dst[KEY_HASHTAG_NONE] = hashtag_none
-			}
+            ColumnType.HASHTAG -> {
+                dst[KEY_HASHTAG] = hashtag
+                dst[KEY_HASHTAG_ANY] = hashtag_any
+                dst[KEY_HASHTAG_ALL] = hashtag_all
+                dst[KEY_HASHTAG_NONE] = hashtag_none
+            }
 
-			ColumnType.HASHTAG_FROM_ACCT -> {
-				dst[KEY_HASHTAG_ACCT] = hashtag_acct
-				dst[KEY_HASHTAG] = hashtag
-				dst[KEY_HASHTAG_ANY] = hashtag_any
-				dst[KEY_HASHTAG_ALL] = hashtag_all
-				dst[KEY_HASHTAG_NONE] = hashtag_none
-			}
+            ColumnType.HASHTAG_FROM_ACCT -> {
+                dst[KEY_HASHTAG_ACCT] = hashtag_acct
+                dst[KEY_HASHTAG] = hashtag
+                dst[KEY_HASHTAG_ANY] = hashtag_any
+                dst[KEY_HASHTAG_ALL] = hashtag_all
+                dst[KEY_HASHTAG_NONE] = hashtag_none
+            }
 
-			ColumnType.NOTIFICATION_FROM_ACCT -> {
-				dst[KEY_HASHTAG_ACCT] = hashtag_acct
-			}
+            ColumnType.NOTIFICATION_FROM_ACCT -> {
+                dst[KEY_HASHTAG_ACCT] = hashtag_acct
+            }
 
-			ColumnType.SEARCH -> {
-				dst[KEY_SEARCH_QUERY] = search_query
-				dst[KEY_SEARCH_RESOLVE] = search_resolve
-			}
+            ColumnType.SEARCH -> {
+                dst[KEY_SEARCH_QUERY] = search_query
+                dst[KEY_SEARCH_RESOLVE] = search_resolve
+            }
 
-			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS,ColumnType.SEARCH_NOTESTOCK -> {
-				dst[KEY_SEARCH_QUERY] = search_query
-			}
+            ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS, ColumnType.SEARCH_NOTESTOCK -> {
+                dst[KEY_SEARCH_QUERY] = search_query
+            }
 
-			ColumnType.INSTANCE_INFORMATION -> {
-				dst[KEY_INSTANCE_URI] = instance_uri
-			}
+            ColumnType.INSTANCE_INFORMATION -> {
+                dst[KEY_INSTANCE_URI] = instance_uri
+            }
 
-			ColumnType.PROFILE_DIRECTORY -> {
-				dst[KEY_SEARCH_QUERY] = search_query
-				dst[KEY_SEARCH_RESOLVE] = search_resolve
-				dst[KEY_INSTANCE_URI] = instance_uri
-			}
+            ColumnType.PROFILE_DIRECTORY -> {
+                dst[KEY_SEARCH_QUERY] = search_query
+                dst[KEY_SEARCH_RESOLVE] = search_resolve
+                dst[KEY_INSTANCE_URI] = instance_uri
+            }
 
-			ColumnType.DOMAIN_TIMELINE -> {
-				dst[KEY_INSTANCE_URI] = instance_uri
-			}
+            ColumnType.DOMAIN_TIMELINE -> {
+                dst[KEY_INSTANCE_URI] = instance_uri
+            }
 
             else -> {
                 // no extra parameter
@@ -962,55 +894,55 @@ class Column(
     }
 
     internal fun isSameSpec(
-		ai: SavedAccount,
-		type: ColumnType,
-		params: Array<out Any>
-	): Boolean {
+        ai: SavedAccount,
+        type: ColumnType,
+        params: Array<out Any>
+    ): Boolean {
         if (type != this.type || ai != access_info) return false
 
         return try {
             when (type) {
 
-				ColumnType.PROFILE,
-				ColumnType.LIST_TL, ColumnType.LIST_MEMBER,
-				ColumnType.MISSKEY_ANTENNA_TL ->
-					profile_id == getParamEntityId(params, 0)
+                ColumnType.PROFILE,
+                ColumnType.LIST_TL, ColumnType.LIST_MEMBER,
+                ColumnType.MISSKEY_ANTENNA_TL ->
+                    profile_id == getParamEntityId(params, 0)
 
-				ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
-					status_id == getParamEntityId(params, 0)
+                ColumnType.CONVERSATION, ColumnType.BOOSTED_BY, ColumnType.FAVOURITED_BY, ColumnType.LOCAL_AROUND, ColumnType.FEDERATED_AROUND, ColumnType.ACCOUNT_AROUND ->
+                    status_id == getParamEntityId(params, 0)
 
-				ColumnType.HASHTAG -> {
-					(getParamString(params, 0) == hashtag)
-						&& ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_any)
-						&& ((getParamAtNullable<String>(params, 2) ?: "") == hashtag_all)
-						&& ((getParamAtNullable<String>(params, 3) ?: "") == hashtag_none)
-				}
+                ColumnType.HASHTAG -> {
+                    (getParamString(params, 0) == hashtag)
+                        && ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_any)
+                        && ((getParamAtNullable<String>(params, 2) ?: "") == hashtag_all)
+                        && ((getParamAtNullable<String>(params, 3) ?: "") == hashtag_none)
+                }
 
-				ColumnType.HASHTAG_FROM_ACCT -> {
-					(getParamString(params, 0) == hashtag)
-						&& ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_acct)
-				}
+                ColumnType.HASHTAG_FROM_ACCT -> {
+                    (getParamString(params, 0) == hashtag)
+                        && ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_acct)
+                }
 
-				ColumnType.NOTIFICATION_FROM_ACCT -> {
-					((getParamAtNullable<String>(params, 0) ?: "") == hashtag_acct)
-				}
+                ColumnType.NOTIFICATION_FROM_ACCT -> {
+                    ((getParamAtNullable<String>(params, 0) ?: "") == hashtag_acct)
+                }
 
-				ColumnType.SEARCH ->
-					getParamString(params, 0) == search_query &&
-						getParamAtNullable<Boolean>(params, 1) == search_resolve
+                ColumnType.SEARCH ->
+                    getParamString(params, 0) == search_query &&
+                        getParamAtNullable<Boolean>(params, 1) == search_resolve
 
-				ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS,ColumnType.SEARCH_NOTESTOCK ->
-					getParamString(params, 0) == search_query
+                ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS, ColumnType.SEARCH_NOTESTOCK ->
+                    getParamString(params, 0) == search_query
 
-				ColumnType.INSTANCE_INFORMATION -> getParamString(params, 0) == instance_uri
+                ColumnType.INSTANCE_INFORMATION -> getParamString(params, 0) == instance_uri
 
-				ColumnType.PROFILE_DIRECTORY ->
-					getParamString(params, 0) == instance_uri &&
-						getParamAtNullable<String>(params, 1) == search_query &&
-						getParamAtNullable<Boolean>(params, 2) == search_resolve
+                ColumnType.PROFILE_DIRECTORY ->
+                    getParamString(params, 0) == instance_uri &&
+                        getParamAtNullable<String>(params, 1) == search_query &&
+                        getParamAtNullable<Boolean>(params, 2) == search_resolve
 
-				ColumnType.DOMAIN_TIMELINE ->
-					getParamString(params, 0) == instance_uri
+                ColumnType.DOMAIN_TIMELINE ->
+                    getParamString(params, 0) == instance_uri
 
                 else -> true
             }
@@ -1025,47 +957,47 @@ class Column(
         sb.append("(")
 
         when (quick_filter) {
-			QUICK_FILTER_ALL -> {
-				var n = 0
-				if (!dont_show_reply) {
-					if (n++ > 0) sb.append(", ")
-					sb.append(context.getString(R.string.notification_type_mention))
-				}
-				if (!dont_show_follow) {
-					if (n++ > 0) sb.append(", ")
-					sb.append(context.getString(R.string.notification_type_follow))
-				}
-				if (!dont_show_boost) {
-					if (n++ > 0) sb.append(", ")
-					sb.append(context.getString(R.string.notification_type_boost))
-				}
-				if (!dont_show_favourite) {
-					if (n++ > 0) sb.append(", ")
-					sb.append(context.getString(R.string.notification_type_favourite))
-				}
-				if (isMisskey && !dont_show_reaction) {
-					if (n++ > 0) sb.append(", ")
-					sb.append(context.getString(R.string.notification_type_reaction))
-				}
-				if (!dont_show_vote) {
-					if (n++ > 0) sb.append(", ")
-					sb.append(context.getString(R.string.notification_type_vote))
-				}
-				val n_max = if (isMisskey) {
-					6
-				} else {
-					5
-				}
-				if (n == 0 || n == n_max) return "" // 全部か皆無なら部分表記は要らない
-			}
+            QUICK_FILTER_ALL -> {
+                var n = 0
+                if (!dont_show_reply) {
+                    if (n++ > 0) sb.append(", ")
+                    sb.append(context.getString(R.string.notification_type_mention))
+                }
+                if (!dont_show_follow) {
+                    if (n++ > 0) sb.append(", ")
+                    sb.append(context.getString(R.string.notification_type_follow))
+                }
+                if (!dont_show_boost) {
+                    if (n++ > 0) sb.append(", ")
+                    sb.append(context.getString(R.string.notification_type_boost))
+                }
+                if (!dont_show_favourite) {
+                    if (n++ > 0) sb.append(", ")
+                    sb.append(context.getString(R.string.notification_type_favourite))
+                }
+                if (isMisskey && !dont_show_reaction) {
+                    if (n++ > 0) sb.append(", ")
+                    sb.append(context.getString(R.string.notification_type_reaction))
+                }
+                if (!dont_show_vote) {
+                    if (n++ > 0) sb.append(", ")
+                    sb.append(context.getString(R.string.notification_type_vote))
+                }
+                val n_max = if (isMisskey) {
+                    6
+                } else {
+                    5
+                }
+                if (n == 0 || n == n_max) return "" // 全部か皆無なら部分表記は要らない
+            }
 
-			QUICK_FILTER_MENTION -> sb.append(context.getString(R.string.notification_type_mention))
-			QUICK_FILTER_FAVOURITE -> sb.append(context.getString(R.string.notification_type_favourite))
-			QUICK_FILTER_BOOST -> sb.append(context.getString(R.string.notification_type_boost))
-			QUICK_FILTER_FOLLOW -> sb.append(context.getString(R.string.notification_type_follow))
-			QUICK_FILTER_REACTION -> sb.append(context.getString(R.string.notification_type_reaction))
-			QUICK_FILTER_VOTE -> sb.append(context.getString(R.string.notification_type_vote))
-			QUICK_FILTER_POST -> sb.append(context.getString(R.string.notification_type_post))
+            QUICK_FILTER_MENTION -> sb.append(context.getString(R.string.notification_type_mention))
+            QUICK_FILTER_FAVOURITE -> sb.append(context.getString(R.string.notification_type_favourite))
+            QUICK_FILTER_BOOST -> sb.append(context.getString(R.string.notification_type_boost))
+            QUICK_FILTER_FOLLOW -> sb.append(context.getString(R.string.notification_type_follow))
+            QUICK_FILTER_REACTION -> sb.append(context.getString(R.string.notification_type_reaction))
+            QUICK_FILTER_VOTE -> sb.append(context.getString(R.string.notification_type_vote))
+            QUICK_FILTER_POST -> sb.append(context.getString(R.string.notification_type_post))
         }
 
         sb.append(")")
@@ -1074,7 +1006,7 @@ class Column(
 
     internal fun dispose() {
         is_dispose.set(true)
-        stopStreaming()
+        app_state.streamManager.updateStreamingColumns()
 
         for (vh in _holder_list) {
             try {
@@ -1086,11 +1018,11 @@ class Column(
 
     // ブーストやお気に入りの更新に使う。ステータスを列挙する。
     fun findStatus(
-		target_apDomain: Host,
-		target_status_id: EntityId,
-		callback: (account: SavedAccount, status: TootStatus) -> Boolean
-		// callback return true if rebind view required
-	) {
+        target_apDomain: Host,
+        target_status_id: EntityId,
+        callback: (account: SavedAccount, status: TootStatus) -> Boolean
+        // callback return true if rebind view required
+    ) {
         if (!access_info.matchHost(target_apDomain)) return
 
         var bChanged = false
@@ -1106,8 +1038,8 @@ class Column(
 
         for (data in list_data) {
             when (data) {
-				is TootNotification -> procStatus(data.status)
-				is TootStatus -> procStatus(data)
+                is TootNotification -> procStatus(data.status)
+                is TootStatus -> procStatus(data)
             }
         }
 
@@ -1117,10 +1049,10 @@ class Column(
     // ミュート、ブロックが成功した時に呼ばれる
     // リストメンバーカラムでメンバーをリストから除去した時に呼ばれる
     fun removeAccountInTimeline(
-		target_account: SavedAccount,
-		who_id: EntityId,
-		removeFromUserList: Boolean = false
-	) {
+        target_account: SavedAccount,
+        who_id: EntityId,
+        removeFromUserList: Boolean = false
+    ) {
         if (target_account != access_info) return
 
         val INVALID_ACCOUNT = -1L
@@ -1247,7 +1179,7 @@ class Column(
 
     val isNotificationColumn: Boolean
         get() = when (type) {
-			ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> true
+            ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> true
             else -> false
         }
 
@@ -1316,10 +1248,10 @@ class Column(
     }
 
     fun onDomainBlockChanged(
-		target_account: SavedAccount,
-		domain: Host,
-		bBlocked: Boolean
-	) {
+        target_account: SavedAccount,
+        domain: Host,
+        bBlocked: Boolean
+    ) {
 
         if (target_account.apiHost != access_info.apiHost) return
         if (access_info.isPseudo) return
@@ -1392,11 +1324,11 @@ class Column(
     //	}
 
     fun onListMemberUpdated(
-		account: SavedAccount,
-		list_id: EntityId,
-		who: TootAccount,
-		bAdd: Boolean
-	) {
+        account: SavedAccount,
+        list_id: EntityId,
+        who: TootAccount,
+        bAdd: Boolean
+    ) {
         if (type == ColumnType.LIST_TL && access_info == account && list_id == profile_id) {
             if (!bAdd) {
                 removeAccountInTimeline(account, who.id)
@@ -1444,10 +1376,10 @@ class Column(
     }
 
     internal fun fireShowContent(
-		reason: String,
-		changeList: List<AdapterChange>? = null,
-		reset: Boolean = false
-	) {
+        reason: String,
+        changeList: List<AdapterChange>? = null,
+        reset: Boolean = false
+    ) {
         if (!isMainThread) {
             throw RuntimeException("fireShowContent: not on main thread.")
         }
@@ -1466,7 +1398,6 @@ class Column(
             throw RuntimeException("fireShowColumnStatus: not on main thread.")
         }
         viewHolder?.showColumnStatus()
-
     }
 
     internal fun fireColumnColor() {
@@ -1593,8 +1524,8 @@ class Column(
         val languageFilter = language_filter ?: return false
 
         val allow = languageFilter.boolean(
-			status.language ?: status.reblog?.language ?: TootStatus.LANGUAGE_CODE_UNKNOWN
-		)
+            status.language ?: status.reblog?.language ?: TootStatus.LANGUAGE_CODE_UNKNOWN
+        )
             ?: languageFilter.boolean(TootStatus.LANGUAGE_CODE_DEFAULT)
             ?: true
 
@@ -1605,53 +1536,53 @@ class Column(
     internal fun isFiltered(item: TootNotification): Boolean {
 
         if (when (quick_filter) {
-				QUICK_FILTER_ALL -> when (item.type) {
-					TootNotification.TYPE_FAVOURITE -> dont_show_favourite
+                QUICK_FILTER_ALL -> when (item.type) {
+                    TootNotification.TYPE_FAVOURITE -> dont_show_favourite
 
-					TootNotification.TYPE_REBLOG,
-					TootNotification.TYPE_RENOTE,
-					TootNotification.TYPE_QUOTE -> dont_show_boost
+                    TootNotification.TYPE_REBLOG,
+                    TootNotification.TYPE_RENOTE,
+                    TootNotification.TYPE_QUOTE -> dont_show_boost
 
-					TootNotification.TYPE_FOLLOW,
-					TootNotification.TYPE_UNFOLLOW,
-					TootNotification.TYPE_FOLLOW_REQUEST,
-					TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-					TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> dont_show_follow
+                    TootNotification.TYPE_FOLLOW,
+                    TootNotification.TYPE_UNFOLLOW,
+                    TootNotification.TYPE_FOLLOW_REQUEST,
+                    TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
+                    TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> dont_show_follow
 
-					TootNotification.TYPE_MENTION,
-					TootNotification.TYPE_REPLY -> dont_show_reply
+                    TootNotification.TYPE_MENTION,
+                    TootNotification.TYPE_REPLY -> dont_show_reply
 
-					TootNotification.TYPE_REACTION -> dont_show_reaction
+                    TootNotification.TYPE_REACTION -> dont_show_reaction
 
-					TootNotification.TYPE_VOTE,
-					TootNotification.TYPE_POLL,
-					TootNotification.TYPE_POLL_VOTE_MISSKEY -> dont_show_vote
+                    TootNotification.TYPE_VOTE,
+                    TootNotification.TYPE_POLL,
+                    TootNotification.TYPE_POLL_VOTE_MISSKEY -> dont_show_vote
 
-					TootNotification.TYPE_STATUS -> dont_show_normal_toot
-					else -> false
-				}
+                    TootNotification.TYPE_STATUS -> dont_show_normal_toot
+                    else -> false
+                }
 
                 else -> when (item.type) {
-					TootNotification.TYPE_FAVOURITE -> quick_filter != QUICK_FILTER_FAVOURITE
-					TootNotification.TYPE_REBLOG,
-					TootNotification.TYPE_RENOTE,
-					TootNotification.TYPE_QUOTE -> quick_filter != QUICK_FILTER_BOOST
+                    TootNotification.TYPE_FAVOURITE -> quick_filter != QUICK_FILTER_FAVOURITE
+                    TootNotification.TYPE_REBLOG,
+                    TootNotification.TYPE_RENOTE,
+                    TootNotification.TYPE_QUOTE -> quick_filter != QUICK_FILTER_BOOST
 
-					TootNotification.TYPE_FOLLOW,
-					TootNotification.TYPE_UNFOLLOW,
-					TootNotification.TYPE_FOLLOW_REQUEST,
-					TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-					TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> quick_filter != QUICK_FILTER_FOLLOW
+                    TootNotification.TYPE_FOLLOW,
+                    TootNotification.TYPE_UNFOLLOW,
+                    TootNotification.TYPE_FOLLOW_REQUEST,
+                    TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
+                    TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> quick_filter != QUICK_FILTER_FOLLOW
 
-					TootNotification.TYPE_MENTION,
-					TootNotification.TYPE_REPLY -> quick_filter != QUICK_FILTER_MENTION
-					TootNotification.TYPE_REACTION -> quick_filter != QUICK_FILTER_REACTION
+                    TootNotification.TYPE_MENTION,
+                    TootNotification.TYPE_REPLY -> quick_filter != QUICK_FILTER_MENTION
+                    TootNotification.TYPE_REACTION -> quick_filter != QUICK_FILTER_REACTION
 
-					TootNotification.TYPE_VOTE,
-					TootNotification.TYPE_POLL,
-					TootNotification.TYPE_POLL_VOTE_MISSKEY -> quick_filter != QUICK_FILTER_VOTE
+                    TootNotification.TYPE_VOTE,
+                    TootNotification.TYPE_POLL,
+                    TootNotification.TYPE_POLL_VOTE_MISSKEY -> quick_filter != QUICK_FILTER_VOTE
 
-					TootNotification.TYPE_STATUS -> quick_filter != QUICK_FILTER_POST
+                    TootNotification.TYPE_STATUS -> quick_filter != QUICK_FILTER_POST
                     else -> true
                 }
             }) {
@@ -1679,21 +1610,21 @@ class Column(
 
         // ふぁぼ魔ミュート
         when (item.type) {
-			TootNotification.TYPE_REBLOG,
-			TootNotification.TYPE_RENOTE,
-			TootNotification.TYPE_QUOTE,
-			TootNotification.TYPE_FAVOURITE,
-			TootNotification.TYPE_REACTION,
-			TootNotification.TYPE_FOLLOW,
-			TootNotification.TYPE_FOLLOW_REQUEST,
-			TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
-			TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> {
-				val who = item.account
-				if (who != null && favMuteSet?.contains(access_info.getFullAcct(who)) == true) {
-					log.d("%s is in favMuteSet.", access_info.getFullAcct(who))
-					return true
-				}
-			}
+            TootNotification.TYPE_REBLOG,
+            TootNotification.TYPE_RENOTE,
+            TootNotification.TYPE_QUOTE,
+            TootNotification.TYPE_FAVOURITE,
+            TootNotification.TYPE_REACTION,
+            TootNotification.TYPE_FOLLOW,
+            TootNotification.TYPE_FOLLOW_REQUEST,
+            TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
+            TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> {
+                val who = item.account
+                if (who != null && favMuteSet?.contains(access_info.getFullAcct(who)) == true) {
+                    log.d("%s is in favMuteSet.", access_info.getFullAcct(who))
+                    return true
+                }
+            }
         }
 
         return false
@@ -1708,21 +1639,21 @@ class Column(
     //	}
 
     internal suspend fun loadProfileAccount(
-		client: TootApiClient,
-		parser: TootParser,
-		bForceReload: Boolean
-	): TootApiResult? {
+        client: TootApiClient,
+        parser: TootParser,
+        bForceReload: Boolean
+    ): TootApiResult? {
 
         return if (this.who_account != null && !bForceReload) {
             // リロード不要なら何もしない
             null
         } else if (isMisskey) {
             client.request(
-				PATH_MISSKEY_PROFILE,
-				access_info.putMisskeyApiToken().apply {
-					put("userId", profile_id)
-				}.toPostRequestBuilder()
-			)?.also { result1 ->
+                PATH_MISSKEY_PROFILE,
+                access_info.putMisskeyApiToken().apply {
+                    put("userId", profile_id)
+                }.toPostRequestBuilder()
+            )?.also { result1 ->
                 // ユーザリレーションの取り扱いのため、別のparserを作ってはいけない
                 parser.misskeyDecodeProfilePin = true
                 try {
@@ -1831,14 +1762,14 @@ class Column(
                         if (userIdList.isEmpty()) continue
 
                         val result = client.request(
-							"/api/users/relation",
-							access_info.putMisskeyApiToken().apply {
-								put(
-									"userId",
-									userIdList.map { it.toString() }.toJsonArray()
-								)
-							}.toPostRequestBuilder()
-						)
+                            "/api/users/relation",
+                            access_info.putMisskeyApiToken().apply {
+                                put(
+                                    "userId",
+                                    userIdList.map { it.toString() }.toJsonArray()
+                                )
+                            }.toPostRequestBuilder()
+                        )
 
                         if (result == null || result.response?.code in 400 until 500) break
 
@@ -1876,10 +1807,10 @@ class Column(
                         val result = client.request(sb.toString()) ?: break // cancelled.
                         val list = parseList(::TootRelationShip, parser, result.jsonArray)
                         if (list.size > 0) UserRelation.saveListMastodon(
-							now,
-							access_info.db_id,
-							list
-						)
+                            now,
+                            access_info.db_id,
+                            list
+                        )
                     }
                     log.d("updateRelation: update %d relations.", n)
                 }
@@ -1927,11 +1858,11 @@ class Column(
 
     //
     internal suspend fun updateRelation(
-		client: TootApiClient,
-		list: ArrayList<TimelineItem>?,
-		whoRef: TootAccountRef?,
-		parser: TootParser
-	) {
+        client: TootApiClient,
+        list: ArrayList<TimelineItem>?,
+        whoRef: TootAccountRef?,
+        parser: TootParser
+    ) {
         if (access_info.isPseudo) return
 
         val env = UpdateRelationEnv()
@@ -1940,10 +1871,10 @@ class Column(
 
         list?.forEach {
             when (it) {
-				is TootAccountRef -> env.add(it)
-				is TootStatus -> env.add(it)
-				is TootNotification -> env.add(it)
-				is TootConversationSummary -> env.add(it.last_status)
+                is TootAccountRef -> env.add(it)
+                is TootStatus -> env.add(it)
+                is TootNotification -> env.add(it)
+                is TootConversationSummary -> env.add(it.last_status)
             }
         }
         env.update(client, parser)
@@ -1957,8 +1888,6 @@ class Column(
 
     internal fun startLoading() {
         cancelLastTask()
-
-        stopStreaming()
 
         initFilter()
 
@@ -1986,9 +1915,9 @@ class Column(
     }
 
     internal fun parseRange(
-		result: TootApiResult?,
-		list: List<TimelineItem>?
-	): Pair<EntityId?, EntityId?> {
+        result: TootApiResult?,
+        list: List<TimelineItem>?
+    ): Pair<EntityId?, EntityId?> {
         var idMin: EntityId? = null
         var idMax: EntityId? = null
 
@@ -2025,17 +1954,17 @@ class Column(
 
     // return true if list bottom may have unread remain
     internal fun saveRange(
-		bBottom: Boolean,
-		bTop: Boolean,
-		result: TootApiResult?,
-		list: List<TimelineItem>?
-	): Boolean {
-		val (idMin, idMax) = parseRange(result, list)
+        bBottom: Boolean,
+        bTop: Boolean,
+        result: TootApiResult?,
+        list: List<TimelineItem>?
+    ): Boolean {
+        val (idMin, idMax) = parseRange(result, list)
 
         var hasBottomRemain = false
 
         if (bBottom) when (idMin) {
-			null -> idOld = null // リストの終端
+            null -> idOld = null // リストの終端
             else -> {
                 val i = idOld?.compareTo(idMin)
                 if (i == null || i > 0) {
@@ -2046,9 +1975,9 @@ class Column(
         }
 
         if (bTop) when (idMax) {
-			null -> {
-				// リロードを許容するため、取得内容がカラでもidRecentを変更しない
-			}
+            null -> {
+                // リロードを許容するため、取得内容がカラでもidRecentを変更しない
+            }
 
             else -> {
                 val i = idRecent?.compareTo(idMax)
@@ -2070,62 +1999,62 @@ class Column(
         saveRange(false, bTop = true, result = result, list = list)
 
     internal fun addRange(
-		bBottom: Boolean,
-		path: String,
-		delimiter: Char = if (-1 == path.indexOf('?')) '?' else '&'
-	) = if (bBottom) {
+        bBottom: Boolean,
+        path: String,
+        delimiter: Char = if (-1 == path.indexOf('?')) '?' else '&'
+    ) = if (bBottom) {
         if (idOld != null) "$path${delimiter}max_id=${idOld}" else path
     } else {
         if (idRecent != null) "$path${delimiter}since_id=${idRecent}" else path
     }
 
     internal fun addRangeMin(
-		path: String,
-		delimiter: Char = if (-1 != path.indexOf('?')) '&' else '?'
-	) = if (idRecent == null) path else "$path${delimiter}min_id=${idRecent}"
+        path: String,
+        delimiter: Char = if (-1 != path.indexOf('?')) '&' else '?'
+    ) = if (idRecent == null) path else "$path${delimiter}min_id=${idRecent}"
 
     internal fun startRefreshForPost(
-		refresh_after_post: Int,
-		posted_status_id: EntityId,
-		posted_reply_id: EntityId?
-	) {
+        refresh_after_post: Int,
+        posted_status_id: EntityId,
+        posted_reply_id: EntityId?
+    ) {
         when (type) {
-			ColumnType.HOME, ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.DIRECT_MESSAGES, ColumnType.MISSKEY_HYBRID -> {
-				startRefresh(
-					bSilent = true,
-					bBottom = false,
-					posted_status_id = posted_status_id,
-					refresh_after_toot = refresh_after_post
-				)
-			}
+            ColumnType.HOME, ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.DIRECT_MESSAGES, ColumnType.MISSKEY_HYBRID -> {
+                startRefresh(
+                    bSilent = true,
+                    bBottom = false,
+                    posted_status_id = posted_status_id,
+                    refresh_after_toot = refresh_after_post
+                )
+            }
 
-			ColumnType.PROFILE -> {
-				if (profile_tab == ProfileTab.Status
-					&& profile_id == access_info.loginAccount?.id
-				) {
-					startRefresh(
-						bSilent = true,
-						bBottom = false,
-						posted_status_id = posted_status_id,
-						refresh_after_toot = refresh_after_post
-					)
-				}
-			}
+            ColumnType.PROFILE -> {
+                if (profile_tab == ProfileTab.Status
+                    && profile_id == access_info.loginAccount?.id
+                ) {
+                    startRefresh(
+                        bSilent = true,
+                        bBottom = false,
+                        posted_status_id = posted_status_id,
+                        refresh_after_toot = refresh_after_post
+                    )
+                }
+            }
 
-			ColumnType.CONVERSATION -> {
-				// 会話への返信が行われたなら会話を更新する
-				try {
-					if (posted_reply_id != null) {
-						for (item in list_data) {
-							if (item is TootStatus && item.id == posted_reply_id) {
-								startLoading()
-								break
-							}
-						}
-					}
-				} catch (_: Throwable) {
-				}
-			}
+            ColumnType.CONVERSATION -> {
+                // 会話への返信が行われたなら会話を更新する
+                try {
+                    if (posted_reply_id != null) {
+                        for (item in list_data) {
+                            if (item is TootStatus && item.id == posted_reply_id) {
+                                startLoading()
+                                break
+                            }
+                        }
+                    }
+                } catch (_: Throwable) {
+                }
+            }
 
             else -> {
 
@@ -2134,11 +2063,11 @@ class Column(
     }
 
     internal fun startRefresh(
-		bSilent: Boolean,
-		bBottom: Boolean,
-		posted_status_id: EntityId? = null,
-		refresh_after_toot: Int = -1
-	) {
+        bSilent: Boolean,
+        bBottom: Boolean,
+        posted_status_id: EntityId? = null,
+        refresh_after_toot: Int = -1
+    ) {
 
         if (lastTask != null) {
             if (!bSilent) {
@@ -2170,7 +2099,6 @@ class Column(
 
         if (!bBottom) {
             bRefreshingTop = true
-            stopStreaming()
         }
 
         bRefreshLoading = true
@@ -2227,15 +2155,15 @@ class Column(
         var cache = cacheHeaderDesc
         if (cache != null) return cache
         cache = when (type) {
-			ColumnType.SEARCH -> context.getString(R.string.search_desc_mastodon_api)
-			ColumnType.SEARCH_MSP -> loadSearchDesc(
-				R.raw.search_desc_msp_en,
-				R.raw.search_desc_msp_ja
-			)
-			ColumnType.SEARCH_TS -> loadSearchDesc(
-				R.raw.search_desc_ts_en,
-				R.raw.search_desc_ts_ja
-			)
+            ColumnType.SEARCH -> context.getString(R.string.search_desc_mastodon_api)
+            ColumnType.SEARCH_MSP -> loadSearchDesc(
+                R.raw.search_desc_msp_en,
+                R.raw.search_desc_msp_ja
+            )
+            ColumnType.SEARCH_TS -> loadSearchDesc(
+                R.raw.search_desc_ts_en,
+                R.raw.search_desc_ts_ja
+            )
             ColumnType.SEARCH_NOTESTOCK -> loadSearchDesc(
                 R.raw.search_desc_notestock_en,
                 R.raw.search_desc_notestock_ja
@@ -2249,8 +2177,7 @@ class Column(
     ////////////////////////////////////////////////////////////////////////
     // Streaming
 
-    internal fun onStart(callback: Callback) {
-        this.callback_ref = WeakReference(callback)
+    internal fun onStart() {
 
         // 破棄されたカラムなら何もしない
         if (is_dispose.get()) {
@@ -2286,7 +2213,7 @@ class Column(
 
         if (!bRefreshLoading
             && canAutoRefresh()
-            && !Pref.bpDontRefreshOnResume(App1.getAppState(context).pref)
+            && !Pref.bpDontRefreshOnResume(app_state.pref)
             && !dont_auto_refresh
         ) {
             // リフレッシュしてからストリーミング開始
@@ -2298,7 +2225,7 @@ class Column(
         } else {
             // ギャップつきでストリーミング開始
             log.d("onStart: start streaming with gap.")
-            resumeStreaming(true)
+            resumeColumn(true)
         }
     }
 
@@ -2307,7 +2234,7 @@ class Column(
         if (getFilterContext() != TootFilter.CONTEXT_NONE) return true
 
         return when (type) {
-			ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS,ColumnType.SEARCH_NOTESTOCK -> true
+            ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS, ColumnType.SEARCH_NOTESTOCK -> true
             else -> false
         }
     }
@@ -2315,15 +2242,15 @@ class Column(
     // マストドン2.4.3rcのキーワードフィルタのコンテキスト
     private fun getFilterContext() = when (type) {
 
-		ColumnType.HOME, ColumnType.LIST_TL, ColumnType.MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
+        ColumnType.HOME, ColumnType.LIST_TL, ColumnType.MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
 
-		ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> TootFilter.CONTEXT_NOTIFICATIONS
+        ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT -> TootFilter.CONTEXT_NOTIFICATIONS
 
-		ColumnType.CONVERSATION -> TootFilter.CONTEXT_THREAD
+        ColumnType.CONVERSATION -> TootFilter.CONTEXT_THREAD
 
-		ColumnType.DIRECT_MESSAGES -> TootFilter.CONTEXT_THREAD
+        ColumnType.DIRECT_MESSAGES -> TootFilter.CONTEXT_THREAD
 
-		ColumnType.PROFILE -> TootFilter.CONTEXT_PROFILE
+        ColumnType.PROFILE -> TootFilter.CONTEXT_PROFILE
 
         else -> TootFilter.CONTEXT_PUBLIC
         // ColumnType.MISSKEY_HYBRID や ColumnType.MISSKEY_ANTENNA_TL はHOMEでもPUBLICでもある…
@@ -2336,19 +2263,19 @@ class Column(
     }
 
     fun canRemoteOnly() = when (type) {
-		ColumnType.FEDERATE, ColumnType.FEDERATED_AROUND -> true
+        ColumnType.FEDERATE, ColumnType.FEDERATED_AROUND -> true
         else -> false
     }
 
     // カラム設定に「ブーストを表示しない」ボタンを含めるなら真
     fun canFilterBoost(): Boolean {
         return when (type) {
-			ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE,
-			ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT,
-			ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL -> true
-			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
-			ColumnType.HASHTAG_FROM_ACCT -> false
-			ColumnType.CONVERSATION, ColumnType.DIRECT_MESSAGES -> isMisskey
+            ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE,
+            ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT,
+            ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL -> true
+            ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
+            ColumnType.HASHTAG_FROM_ACCT -> false
+            ColumnType.CONVERSATION, ColumnType.DIRECT_MESSAGES -> isMisskey
             else -> false
         }
     }
@@ -2356,39 +2283,37 @@ class Column(
     // カラム設定に「返信を表示しない」ボタンを含めるなら真
     fun canFilterReply(): Boolean {
         return when (type) {
-			ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE,
-			ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT,
-			ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL, ColumnType.DIRECT_MESSAGES -> true
-			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
-			ColumnType.HASHTAG_FROM_ACCT -> true
+            ColumnType.HOME, ColumnType.MISSKEY_HYBRID, ColumnType.PROFILE,
+            ColumnType.NOTIFICATIONS, ColumnType.NOTIFICATION_FROM_ACCT,
+            ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL, ColumnType.DIRECT_MESSAGES -> true
+            ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
+            ColumnType.HASHTAG_FROM_ACCT -> true
             else -> false
         }
     }
 
     fun canFilterNormalToot(): Boolean {
         return when (type) {
-			ColumnType.NOTIFICATIONS -> true
-			ColumnType.HOME, ColumnType.MISSKEY_HYBRID,
-			ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL -> true
-			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
-			ColumnType.HASHTAG_FROM_ACCT -> true
+            ColumnType.NOTIFICATIONS -> true
+            ColumnType.HOME, ColumnType.MISSKEY_HYBRID,
+            ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL -> true
+            ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
+            ColumnType.HASHTAG_FROM_ACCT -> true
             else -> false
         }
     }
 
     fun canFilterNonPublicToot(): Boolean {
         return when (type) {
-			ColumnType.HOME, ColumnType.MISSKEY_HYBRID,
-			ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL -> true
-			ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
-			ColumnType.HASHTAG_FROM_ACCT -> true
+            ColumnType.HOME, ColumnType.MISSKEY_HYBRID,
+            ColumnType.LIST_TL, ColumnType.MISSKEY_ANTENNA_TL -> true
+            ColumnType.LOCAL, ColumnType.FEDERATE, ColumnType.HASHTAG, ColumnType.SEARCH -> isMisskey
+            ColumnType.HASHTAG_FROM_ACCT -> true
             else -> false
         }
     }
 
-    internal fun canAutoRefresh(): Boolean {
-        return streamPath != null
-    }
+
 
     internal fun hasHashtagExtra() = when {
         isMisskey -> false
@@ -2402,43 +2327,43 @@ class Column(
     fun StringBuilder.appendHashtagExtra(): StringBuilder {
         val limit = (HASHTAG_ELLIPSIZE * 2 - min(length, HASHTAG_ELLIPSIZE)) / 3
         if (hashtag_any.isNotBlank()) append(' ').append(
-			context.getString(
-				R.string.hashtag_title_any,
-				hashtag_any.ellipsizeDot3(limit)
-			)
-		)
+            context.getString(
+                R.string.hashtag_title_any,
+                hashtag_any.ellipsizeDot3(limit)
+            )
+        )
         if (hashtag_all.isNotBlank()) append(' ').append(
-			context.getString(
-				R.string.hashtag_title_all,
-				hashtag_all.ellipsizeDot3(limit)
-			)
-		)
+            context.getString(
+                R.string.hashtag_title_all,
+                hashtag_all.ellipsizeDot3(limit)
+            )
+        )
         if (hashtag_none.isNotBlank()) append(' ').append(
-			context.getString(
-				R.string.hashtag_title_none,
-				hashtag_none.ellipsizeDot3(limit)
-			)
-		)
+            context.getString(
+                R.string.hashtag_title_none,
+                hashtag_none.ellipsizeDot3(limit)
+            )
+        )
         return this
     }
 
     fun canReloadWhenRefreshTop(): Boolean {
         return when (type) {
 
-			ColumnType.KEYWORD_FILTER,
-			ColumnType.SEARCH,
-			ColumnType.SEARCH_MSP,
-			ColumnType.SEARCH_TS,
+            ColumnType.KEYWORD_FILTER,
+            ColumnType.SEARCH,
+            ColumnType.SEARCH_MSP,
+            ColumnType.SEARCH_TS,
             ColumnType.SEARCH_NOTESTOCK,
-			ColumnType.CONVERSATION,
-			ColumnType.LIST_LIST,
-			ColumnType.TREND_TAG,
-			ColumnType.FOLLOW_SUGGESTION,
-			ColumnType.PROFILE_DIRECTORY -> true
+            ColumnType.CONVERSATION,
+            ColumnType.LIST_LIST,
+            ColumnType.TREND_TAG,
+            ColumnType.FOLLOW_SUGGESTION,
+            ColumnType.PROFILE_DIRECTORY -> true
 
-			ColumnType.LIST_MEMBER,
-			ColumnType.MUTES,
-			ColumnType.FOLLOW_REQUESTS -> isMisskey
+            ColumnType.LIST_MEMBER,
+            ColumnType.MUTES,
+            ColumnType.FOLLOW_REQUESTS -> isMisskey
 
             else -> false
         }
@@ -2447,8 +2372,8 @@ class Column(
     // カラム操作的にリフレッシュを許容するかどうか
     fun canRefreshTopBySwipe(): Boolean {
         return canReloadWhenRefreshTop() || when (type) {
-			ColumnType.CONVERSATION,
-			ColumnType.INSTANCE_INFORMATION -> false
+            ColumnType.CONVERSATION,
+            ColumnType.INSTANCE_INFORMATION -> false
             else -> true
         }
     }
@@ -2456,17 +2381,17 @@ class Column(
     // カラム操作的にリフレッシュを許容するかどうか
     fun canRefreshBottomBySwipe(): Boolean {
         return when (type) {
-			ColumnType.LIST_LIST,
-			ColumnType.CONVERSATION,
-			ColumnType.INSTANCE_INFORMATION,
-			ColumnType.KEYWORD_FILTER,
-			ColumnType.SEARCH,
-			ColumnType.TREND_TAG,
-			ColumnType.FOLLOW_SUGGESTION -> false
+            ColumnType.LIST_LIST,
+            ColumnType.CONVERSATION,
+            ColumnType.INSTANCE_INFORMATION,
+            ColumnType.KEYWORD_FILTER,
+            ColumnType.SEARCH,
+            ColumnType.TREND_TAG,
+            ColumnType.FOLLOW_SUGGESTION -> false
 
-			ColumnType.FOLLOW_REQUESTS -> isMisskey
+            ColumnType.FOLLOW_REQUESTS -> isMisskey
 
-			ColumnType.LIST_MEMBER -> !isMisskey
+            ColumnType.LIST_MEMBER -> !isMisskey
 
             else -> true
         }
@@ -2475,7 +2400,7 @@ class Column(
     // データ的にリフレッシュを許容するかどうか
     private fun canRefreshTop(): Boolean {
         return when (pagingType) {
-			ColumnPagingType.Default -> idRecent != null
+            ColumnPagingType.Default -> idRecent != null
             else -> false
         }
     }
@@ -2483,99 +2408,30 @@ class Column(
     // データ的にリフレッシュを許容するかどうか
     private fun canRefreshBottom(): Boolean {
         return when (pagingType) {
-			ColumnPagingType.Default, ColumnPagingType.Cursor -> idOld != null
-			ColumnPagingType.None -> false
-			ColumnPagingType.Offset -> true
+            ColumnPagingType.Default, ColumnPagingType.Cursor -> idOld != null
+            ColumnPagingType.None -> false
+            ColumnPagingType.Offset -> true
         }
     }
 
-    internal fun canSpeech(): Boolean {
-        return canStreaming() && !isNotificationColumn
-    }
 
-    internal fun canStreaming() = when {
-        access_info.isNA -> false
-        access_info.isMisskey -> streamPath != null
-        access_info.isPseudo -> isPublicStream
-        else -> streamPath != null
-    }
+    val streamCallback = object : StreamCallback {
 
-    private fun createMisskeyConnectChannelMessage(
-		channel: String,
-		params: JsonObject = JsonObject()
-	) =
-        JsonObject().apply {
-            put("type", "connect")
-            put("body", JsonObject().apply {
-				put("channel", channel)
-				put("id", streamCallback._channelId)
-				put("params", params)
-			})
-        }
-
-    private fun makeMisskeyChannelArg(): JsonObject? {
-        return if (access_info.misskeyVersion < 11) {
-            null
-        } else {
-            val misskeyApiToken = access_info.misskeyApiToken
-            if (misskeyApiToken == null) {
-                when (type) {
-					ColumnType.LOCAL -> createMisskeyConnectChannelMessage("localTimeline")
-                    else -> null
-                }
-            } else {
-                when (type) {
-					ColumnType.HOME -> createMisskeyConnectChannelMessage("homeTimeline")
-					ColumnType.LOCAL -> createMisskeyConnectChannelMessage("localTimeline")
-					ColumnType.MISSKEY_HYBRID -> createMisskeyConnectChannelMessage("hybridTimeline")
-					ColumnType.FEDERATE -> createMisskeyConnectChannelMessage("globalTimeline")
-					ColumnType.NOTIFICATIONS -> createMisskeyConnectChannelMessage("main")
-
-					ColumnType.MISSKEY_ANTENNA_TL ->
-						createMisskeyConnectChannelMessage(
-							"antenna",
-							jsonObject { put("antennaId", profile_id.toString()) }
-						)
-
-					ColumnType.LIST_TL ->
-						createMisskeyConnectChannelMessage(
-							"userList",
-							jsonObject { put("listId", profile_id.toString()) }
-						)
-
-					ColumnType.HASHTAG ->
-						createMisskeyConnectChannelMessage(
-							"hashtag",
-							jsonObject { put("q", hashtag) }
-						)
-
-                    else -> null
-                }
-            }
-        }
-    }
-
-    private val streamCallback = object : StreamReader.StreamCallback {
-
-        val _channelId = channelIdSeed.incrementAndGet().toString()
-
-        override fun channelId() = _channelId
-
-        override fun onListeningStateChanged(bListen: Boolean) {
+        override fun onListeningStateChanged(status: StreamStatus) {
             if (is_dispose.get()) return
+
+            if (status == StreamStatus.Open) {
+                updateMisskeyCapture()
+            }
+
             runOnMainLooper {
                 if (is_dispose.get()) return@runOnMainLooper
                 fireShowColumnStatus()
-
-                if (bListen) {
-                    streamReader?.registerMisskeyChannel(makeMisskeyChannelArg())
-                    updateMisskeyCapture()
-                }
-
             }
         }
 
-        override fun onTimelineItem(item: TimelineItem) {
+
+        override fun onTimelineItem(item: TimelineItem, channelId: String?) {
             if (is_dispose.get()) return
 
             if (item is TootConversationSummary) {
@@ -2606,11 +2462,11 @@ class Column(
 
             stream_data_queue.add(item)
 
-            val handler = App1.getAppState(context).handler
-            handler.post(mergeStreamingMessage)
+            app_state.handler.post(mergeStreamingMessage)
         }
 
-        override fun onNoteUpdated(ev: MisskeyNoteUpdate) {
+
+        override fun onNoteUpdated(ev: MisskeyNoteUpdate, channelId: String?) {
             // userId が自分かどうか調べる
             // アクセストークンの更新をして自分のuserIdが分かる状態でないとキャプチャ結果を反映させない
             // （でないとリアクションの2重カウントなどが発生してしまう)
@@ -2650,29 +2506,29 @@ class Column(
                 }
 
                 when (ev.type) {
-					MisskeyNoteUpdate.Type.REACTION -> {
-						scanStatusAll { s ->
-							s.increaseReaction(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
-						}
-					}
+                    MisskeyNoteUpdate.Type.REACTION -> {
+                        scanStatusAll { s ->
+                            s.increaseReaction(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
+                        }
+                    }
 
-					MisskeyNoteUpdate.Type.UNREACTION -> {
-						scanStatusAll { s ->
-							s.decreaseReaction(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
-						}
-					}
+                    MisskeyNoteUpdate.Type.UNREACTION -> {
+                        scanStatusAll { s ->
+                            s.decreaseReaction(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
+                        }
+                    }
 
-					MisskeyNoteUpdate.Type.VOTED -> {
-						scanStatusAll { s ->
-							s.enquete?.increaseVote(context, ev.choice, byMe) ?: false
-						}
-					}
+                    MisskeyNoteUpdate.Type.VOTED -> {
+                        scanStatusAll { s ->
+                            s.enquete?.increaseVote(context, ev.choice, byMe) ?: false
+                        }
+                    }
 
-					MisskeyNoteUpdate.Type.DELETED -> {
-						scanStatusAll { s ->
-							s.markDeleted(context, ev.deletedAt) ?: false
-						}
-					}
+                    MisskeyNoteUpdate.Type.DELETED -> {
+                        scanStatusAll { s ->
+                            s.markDeleted(context, ev.deletedAt)
+                        }
+                    }
                 }
 
                 if (changeList.isNotEmpty()) {
@@ -2688,13 +2544,13 @@ class Column(
             } else {
                 val index = list.indexOfFirst { it.id == item.id }
                 list.add(
-					0,
-					if (index == -1) {
-						item
-					} else {
-						TootAnnouncement.merge(list.removeAt(index), item)
-					}
-				)
+                    0,
+                    if (index == -1) {
+                        item
+                    } else {
+                        TootAnnouncement.merge(list.removeAt(index), item)
+                    }
+                )
             }
             announcementUpdated = SystemClock.elapsedRealtime()
             fireShowColumnHeader()
@@ -2743,88 +2599,49 @@ class Column(
         }
     }
 
-    internal fun resumeStreaming(bPutGap: Boolean) {
+    // 別スレッドから呼ばれるが大丈夫か
+    fun canStartStreaming() = when {
+        // 未初期化なら何もしない
+        !bFirstInitialized -> {
+            log.d("resumeStreaming: column is not initialized.")
+            false
+        }
+
+        // 初期ロード中なら何もしない
+        bInitialLoading -> {
+            log.d("resumeStreaming: is in initial loading.")
+            false
+        }
+
+        else -> true
+    }
+
+    private fun resumeColumn(bPutGap: Boolean) {
 
         // カラム種別によってはストリーミングAPIを利用できない
         val stream_path = streamPath ?: return
 
-        // 疑似アカウントではストリーミングAPIを利用できない
-        // 2.1 では公開ストリームのみ利用できるらしい
-        if (access_info.isNA || access_info.isPseudo && !isPublicStream) {
-            return
-        }
-
-        if (!isActivityStart) {
-            log.d("resumeStreaming: isActivityStart is false.")
-            return
-        }
-
-        // 破棄されたカラムなら何もしない
-        if (is_dispose.get()) {
-            log.d("resumeStreaming: column was disposed.")
-            return
-        }
-
-        // 未初期化なら何もしない
-        if (!bFirstInitialized) {
-            log.d("resumeStreaming: column is not initialized.")
-            return
-        }
-
-        // 初期ロード中なら何もしない
-        if (bInitialLoading) {
-            log.d("resumeStreaming: is in initial loading.")
-            return
-        }
-
-        if (Pref.bpDontUseStreaming(context)) {
-            log.d("resumeStreaming: disabled in app setting.")
-            return
-        }
-
-        if (dont_streaming) {
-            log.d("resumeStreaming: disabled in column setting.")
-            return
-        }
+        if (!canStartStreaming()) return
 
         this.bPutGap = bPutGap
         this.lastStreamPath = stream_path
 
-        stream_data_queue.clear()
-        streamReader = app_state.stream_reader.register(
-			access_info,
-			stream_path,
-			highlight_trie,
-			streamCallback
-		)
+        // TODO キューのクリアって必要？ stream_data_queue.clear()
+
+//        streamReader = app_state.stream_reader.register(
+//			access_info,
+//			stream_path,
+//			highlight_trie,
+//			streamCallback
+//		)
         fireShowColumnStatus()
-    }
-
-    private var streamReader: StreamReader.Reader? = null
-
-    // onPauseの時はまとめて止められるが
-    // カラム破棄やリロード開始時は個別にストリーミングを止める必要がある
-    internal fun stopStreaming() {
-        streamReader = null
-        val stream_path = lastStreamPath
-        if (stream_path != null) {
-            app_state.stream_reader.unregister(access_info, stream_path, streamCallback)
-            fireShowColumnStatus()
-        }
-    }
-
-    fun getStreamingStatus(): StreamingIndicatorState {
-        if (is_dispose.get() || !bFirstInitialized) return StreamingIndicatorState.NONE
-        val stream_path = streamPath ?: return StreamingIndicatorState.NONE
-
-        return app_state.stream_reader.getStreamingStatus(access_info, stream_path, streamCallback)
     }
 
     private val mergeStreamingMessage: Runnable = object : Runnable {
         override fun run() {
 
             // 前回マージしてから暫くは待機する
-            val handler = App1.getAppState(context).handler
+            val handler = app_state.handler
             val now = SystemClock.elapsedRealtime()
             val remain = last_show_stream_data.get() + 333L - now
             if (remain > 0) {
@@ -2849,7 +2666,7 @@ class Column(
 
             for (item in list_new) {
                 if (enable_speech && item is TootStatus) {
-                    App1.getAppState(context).addSpeech(item.reblog ?: item)
+                    app_state.addSpeech(item.reblog ?: item)
                 }
             }
 
@@ -2944,8 +2761,7 @@ class Column(
                         }
                     }
                     o.highlightSpeech?.let {
-                        App1.getAppState(context)
-                            .addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
+                        app_state.addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
                     }
                 }
             }
@@ -3002,7 +2818,9 @@ class Column(
 
     internal fun updateMisskeyCapture() {
         if (!isMisskey) return
-        streamReader ?: return
+
+        val streamConnection = app_state.streamManager.getConnection(this)
+            ?:return
 
         val max = 40
         val list = ArrayList<EntityId>(max * 2) // リブログなどで膨れる場合がある
@@ -3023,17 +2841,17 @@ class Column(
             }
         }
 
-        if (list.isNotEmpty()) streamReader?.capture(list)
+        if (list.isNotEmpty()) streamConnection.misskeySetCapture(list)
     }
 
     // 既存データ中の会話サマリ項目と追加データの中にIDが同じものがあれば
     // 既存データを入れ替えて追加データから削除するか
     // 既存データを削除するかする
     internal fun replaceConversationSummary(
-		changeList: ArrayList<AdapterChange>,
-		list_new: ArrayList<TimelineItem>,
-		list_data: BucketList<TimelineItem>
-	) {
+        changeList: ArrayList<AdapterChange>,
+        list_new: ArrayList<TimelineItem>,
+        list_data: BucketList<TimelineItem>
+    ) {
 
         val newMap = HashMap<EntityId, TootConversationSummary>().apply {
             for (o in list_new) {
@@ -3090,7 +2908,7 @@ class Column(
             if ((filter.context and column_context) != 0) {
 
                 val validator = when (filter.whole_word) {
-					true -> WordTrieTree.WORD_VALIDATOR
+                    true -> WordTrieTree.WORD_VALIDATOR
                     else -> WordTrieTree.EMPTY_VALIDATOR
                 }
 
@@ -3112,24 +2930,24 @@ class Column(
         val changeList = ArrayList<AdapterChange>()
         list_data.forEachIndexed { idx, item ->
             when (item) {
-				is TootStatus -> {
-					val old_filtered = item.filtered
-					item.updateKeywordFilteredFlag(access_info, trees, checkIrreversible = true)
-					if (old_filtered != item.filtered) {
-						changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
-					}
-				}
+                is TootStatus -> {
+                    val old_filtered = item.filtered
+                    item.updateKeywordFilteredFlag(access_info, trees, checkIrreversible = true)
+                    if (old_filtered != item.filtered) {
+                        changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
+                    }
+                }
 
-				is TootNotification -> {
-					val s = item.status
-					if (s != null) {
-						val old_filtered = s.filtered
-						s.updateKeywordFilteredFlag(access_info, trees, checkIrreversible = true)
-						if (old_filtered != s.filtered) {
-							changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
-						}
-					}
-				}
+                is TootNotification -> {
+                    val s = item.status
+                    if (s != null) {
+                        val old_filtered = s.filtered
+                        s.updateKeywordFilteredFlag(access_info, trees, checkIrreversible = true)
+                        if (old_filtered != s.filtered) {
+                            changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
+                        }
+                    }
+                }
             }
         }
 
@@ -3230,10 +3048,14 @@ class Column(
 
     fun setHeaderBackground(view: View) {
         view.backgroundDrawable = getAdaptiveRippleDrawable(
-			getHeaderBackgroundColor(),
-			getHeaderNameColor()
-		)
+            getHeaderBackgroundColor(),
+            getHeaderNameColor()
+        )
     }
+
+
+
+
 
     //	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
     //		list_data.forEachIndexed { i, v ->

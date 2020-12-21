@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
@@ -43,7 +42,7 @@ object Action_Notification {
 				
 				if(result.jsonObject != null) {
 					// ok. api have return empty object.
-					for(column in App1.getAppState(activity).column_list) {
+					for(column in activity.app_state.columnList) {
 						if(column.isNotificationColumn && column.access_info == target_account) {
 							column.removeNotifications()
 						}
@@ -89,7 +88,7 @@ object Action_Notification {
 				
 				if(result.jsonObject != null) {
 					// 成功したら空オブジェクトが返される
-					for(column in App1.getAppState(activity).column_list) {
+					for(column in activity.app_state.columnList) {
 						column.removeNotificationOne(access_info, notification)
 					}
 					activity.showToast(true, R.string.delete_succeeded)

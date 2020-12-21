@@ -290,7 +290,7 @@ class ActKeywordFilter
 					showToast(true, result.error)
 				} else {
 					val app_state = App1.prepare(applicationContext, "ActKeywordFilter.save()")
-					for(column in app_state.column_list) {
+					for(column in app_state.columnList ) {
 						if(column.type == ColumnType.KEYWORD_FILTER && column.access_info == account) {
 							column.filter_reload_required = true
 						}

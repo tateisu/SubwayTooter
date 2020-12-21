@@ -1,0 +1,159 @@
+package jp.juggler.subwaytooter.streaming
+
+import jp.juggler.subwaytooter.AppState
+import jp.juggler.subwaytooter.Column
+import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.regex.Pattern
+import kotlin.collections.HashMap
+import kotlin.collections.set
+
+
+
+
+class StreamManager(val appState: AppState) {
+    companion object{
+        private val log = LogCategory("StreamManager")
+
+        // 画面ONの間は定期的に状況を更新する
+        const val updateInterval = 5000L
+    }
+
+    val context = appState.context
+    private val queue = Channel<suspend () -> Unit>(capacity = Channel.UNLIMITED)
+    private val handler = appState.handler
+
+    private val isScreenOn = AtomicBoolean(false)
+    private val serverMap = ConcurrentHashMap<Acct, StreamGroupAcct>()
+
+    val client = TootApiClient(
+        appState.context,
+        callback = object : TootApiCallback {
+            override val isApiCancelled = false
+        }
+    )
+
+    private val updateConnection: suspend () -> Unit = {
+
+        val isScreenOn = isScreenOn.get()
+
+        val newMap = HashMap<Acct, StreamGroupAcct>()
+        if (isScreenOn && !Pref.bpDontUseStreaming(appState.pref)) {
+            for (column in appState.columnList) {
+                if (column.is_dispose.get()) continue
+                if (column.dont_streaming) continue
+
+                val accessInfo = column.access_info
+                if (accessInfo.isNA) continue
+                var server = newMap[accessInfo.acct]
+                if (server == null) {
+                    var (ti, ri) = TootInstance.get(client, account = accessInfo)
+                    if (ti == null) {
+                        log.d("can't get server info. ${ri?.error}")
+                        val tiOld = serverMap[accessInfo.acct]?.ti ?: continue
+                        ti = tiOld
+                    }
+                    server = StreamGroupAcct(this, accessInfo, ti)
+                    newMap[accessInfo.acct] = server
+                }
+                val streamSpec = column.getStreamSpec()
+                if (streamSpec != null) server.addSpec(streamSpec)
+            }
+        }
+
+        // 新構成にないサーバは破棄する
+        serverMap.entries.toList().forEach {
+            if (!newMap.containsKey(it.key)) {
+                it.value.dispose()
+                serverMap.remove(it.key)
+            }
+        }
+
+        // 追加.変更されたサーバをマージする
+        newMap.entries.forEach {
+            when (val current = serverMap[it.key]) {
+                null -> serverMap[it.key] = it.value
+                else -> current.merge(it.value)
+            }
+        }
+
+        // ハイライトツリーを読み直す
+        val highlight_trie = HighlightWord.nameSet
+
+        serverMap.values.forEach {
+            // パーサーを更新する
+            it.parser.highlightTrie = highlight_trie
+
+            // 接続を更新する
+            it.updateConnection()
+        }
+    }
+
+    private val procInterval = object : Runnable {
+        override fun run() {
+            enqueue(updateConnection)
+            handler.removeCallbacks(this)
+            if (isScreenOn.get()) handler.postDelayed(this, updateInterval)
+        }
+    }
+
+    //////////////////////////////////////////////////
+    // methods
+
+    fun enqueue(block: suspend () -> Unit) = runBlocking { queue.send(block) }
+
+    // UIスレッドから呼ばれる
+    fun updateStreamingColumns() {
+        handler.post(procInterval)
+    }
+
+    // 画面表示開始時に呼ばれる
+    fun onScreenStart() {
+        isScreenOn.set(true)
+        handler.post(procInterval)
+    }
+
+    // 画面表示終了時に呼ばれる
+    fun onScreenStop() {
+        isScreenOn.set(false)
+        handler.post(procInterval)
+    }
+
+    // カラムヘッダの表示更新から、インジケータを取得するために呼ばれる
+    // UIスレッドから呼ばれる
+    fun getStreamingStatus(accessInfo: SavedAccount, columnInternalId: Int) =
+        serverMap[accessInfo.acct]?.getStreamingStatus(columnInternalId)
+
+    fun getConnection(column: Column)=
+        serverMap[column.access_info.acct]?.getConnection(column.internalId)
+
+    ////////////////////////////////////////////////////////////////
+
+    init {
+        GlobalScope.launch(Dispatchers.Default) {
+            while (true) {
+                try {
+                    queue.receive().invoke()
+                } catch (_: ClosedReceiveChannelException) {
+                    // 発生しない
+                } catch (ex: Throwable) {
+                    log.e(ex, "lambda failed.")
+                }
+            }
+        }
+    }
+}
+

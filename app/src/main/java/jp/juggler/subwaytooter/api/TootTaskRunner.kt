@@ -16,7 +16,6 @@ import kotlinx.coroutines.*
 import java.lang.Runnable
 import java.lang.ref.WeakReference
 import java.text.NumberFormat
-import java.util.concurrent.atomic.AtomicBoolean
 
 /*
 	APIクライアントを必要とする非同期タスク(TootTask)を実行します。

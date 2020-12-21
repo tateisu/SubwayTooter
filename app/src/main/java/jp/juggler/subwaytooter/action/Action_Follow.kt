@@ -634,7 +634,7 @@ object Action_Follow {
 				
 				val jsonObject = result.jsonObject
 				if(jsonObject != null) {
-					for(column in App1.getAppState(activity).column_list) {
+					for(column in activity.app_state.columnList) {
 						column.removeUser(access_info, ColumnType.FOLLOW_REQUESTS, who.id)
 						
 						// 他のカラムでもフォロー状態の表示更新が必要

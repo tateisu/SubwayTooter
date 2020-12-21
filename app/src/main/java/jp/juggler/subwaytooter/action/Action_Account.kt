@@ -80,7 +80,7 @@ object Action_Account {
 									instanceInfo = data
 								) { a ->
 									activity.showToast(false, R.string.server_confirmed)
-									val pos = App1.getAppState(activity).column_list.size
+									val pos = activity.app_state.columnCount
 									activity.addColumn(pos, a, ColumnType.LOCAL)
 									dialog.dismissSafe()
 								}

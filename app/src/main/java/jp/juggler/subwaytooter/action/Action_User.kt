@@ -130,7 +130,7 @@ object Action_User {
 						return
 					}
 
-					for (column in App1.getAppState(activity).column_list) {
+					for (column in activity.app_state.columnList) {
 						if (column.access_info.isPseudo) {
 							if (relation.muting && column.type != ColumnType.PROFILE) {
 								// ミュートしたユーザの情報はTLから消える
@@ -404,7 +404,7 @@ object Action_User {
 						return
 					}
 
-					for (column in App1.getAppState(activity).column_list) {
+					for (column in activity.app_state.columnList) {
 						if (column.access_info.isPseudo) {
 							if (relation.blocking) {
 								// ミュートしたユーザの情報はTLから消える
@@ -865,7 +865,7 @@ object Action_User {
 				activity.showToast(false, R.string.delete_succeeded)
 
 				// update suggestion column
-				for (column in activity.app_state.column_list) {
+				for (column in activity.app_state.columnList) {
 					column.removeUser(access_info, ColumnType.FOLLOW_SUGGESTION, who.id)
 				}
 			}

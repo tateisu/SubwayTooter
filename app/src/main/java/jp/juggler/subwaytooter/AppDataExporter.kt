@@ -302,7 +302,7 @@ object AppDataExporter {
 	private fun writeColumn(app_state : AppState, writer : JsonWriter) {
 		writer.name(KEY_COLUMN)
 		writer.beginArray()
-		for(column in app_state.column_list) {
+		for(column in app_state.columnList) {
 			writer.writeJsonValue(jsonObject { column.encodeJSON(this, 0) })
 		}
 		writer.endArray()

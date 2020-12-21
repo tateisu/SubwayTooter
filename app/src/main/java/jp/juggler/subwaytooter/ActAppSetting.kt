@@ -806,7 +806,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 					
 					// カラム背景画像
 					val appState = App1.getAppState(this@ActAppSetting)
-					for(column in appState.column_list) {
+					for(column in appState.columnList) {
 						AppDataExporter.saveBackgroundImage(
 							this@ActAppSetting,
 							zipStream,

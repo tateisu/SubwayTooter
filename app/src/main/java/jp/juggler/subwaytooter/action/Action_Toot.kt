@@ -60,7 +60,7 @@ object Action_Toot {
 		bSet : Boolean = true,
 		bConfirmed : Boolean = false
 	) {
-		if(App1.getAppState(activity).isBusyFav(access_info, arg_status)) {
+		if(activity.app_state.isBusyFav(access_info, arg_status)) {
 			activity.showToast(false, R.string.wait_previous_operation)
 			return
 		}
@@ -110,7 +110,7 @@ object Action_Toot {
 		}
 		
 		//
-		App1.getAppState(activity).setBusyFav(access_info, arg_status)
+		activity.app_state.setBusyFav(access_info, arg_status)
 		
 		//
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
@@ -166,8 +166,8 @@ object Action_Toot {
 			}
 			
 			override suspend fun handleResult(result : TootApiResult?) {
-				
-				App1.getAppState(activity).resetBusyFav(access_info, arg_status)
+
+				activity.app_state.resetBusyFav(access_info, arg_status)
 				
 				val new_status = this.new_status
 				when {
@@ -192,7 +192,7 @@ object Action_Toot {
 							}
 						}
 						
-						for(column in App1.getAppState(activity).column_list) {
+						for(column in activity.app_state.columnList) {
 							column.findStatus(
 								access_info.apDomain,
 								new_status.id
@@ -259,7 +259,7 @@ object Action_Toot {
 		bSet : Boolean = true,
 		bConfirmed : Boolean = false
 	) {
-		if(App1.getAppState(activity).isBusyFav(access_info, arg_status)) {
+		if(activity.app_state.isBusyFav(access_info, arg_status)) {
 			activity.showToast(false, R.string.wait_previous_operation)
 			return
 		}
@@ -292,7 +292,7 @@ object Action_Toot {
 		}
 		
 		//
-		App1.getAppState(activity).setBusyBookmark(access_info, arg_status)
+		activity.app_state.setBusyBookmark(access_info, arg_status)
 		
 		//
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
@@ -321,7 +321,7 @@ object Action_Toot {
 			
 			override suspend fun handleResult(result : TootApiResult?) {
 				
-				App1.getAppState(activity).resetBusyBookmark(access_info, arg_status)
+				activity.app_state.resetBusyBookmark(access_info, arg_status)
 				
 				val new_status = this.new_status
 				when {
@@ -329,7 +329,7 @@ object Action_Toot {
 					} // cancelled.
 					
 					new_status != null -> {
-						for(column in App1.getAppState(activity).column_list) {
+						for(column in activity.app_state.columnList) {
 							column.findStatus(
 								access_info.apDomain,
 								new_status.id
@@ -428,7 +428,7 @@ object Action_Toot {
 	) {
 		
 		// アカウントからステータスにブースト操作を行っているなら、何もしない
-		if(App1.getAppState(activity).isBusyBoost(access_info, arg_status)) {
+		if(activity.app_state.isBusyBoost(access_info, arg_status)) {
 			activity.showToast(false, R.string.wait_previous_operation)
 			return
 		}
@@ -485,8 +485,8 @@ object Action_Toot {
 				})
 			return
 		}
-		
-		App1.getAppState(activity).setBusyBoost(access_info, arg_status)
+
+		activity.app_state.setBusyBoost(access_info, arg_status)
 		
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
@@ -570,8 +570,8 @@ object Action_Toot {
 			}
 			
 			override suspend fun handleResult(result : TootApiResult?) {
-				App1.getAppState(activity).resetBusyBoost(access_info, arg_status)
-				
+				activity.app_state.resetBusyBoost(access_info, arg_status)
+
 				val unrenoteId = this.unrenoteId
 				val new_status = this.new_status
 				
@@ -588,7 +588,7 @@ object Action_Toot {
 						// 0未満にはならない
 						val count = max(0, (arg_status.reblogs_count ?: 1) - 1)
 						
-						for(column in App1.getAppState(activity).column_list) {
+						for(column in activity.app_state.columnList) {
 							column.findStatus(
 								access_info.apDomain,
 								arg_status.id
@@ -625,7 +625,7 @@ object Action_Toot {
 							
 						}
 						
-						for(column in App1.getAppState(activity).column_list) {
+						for(column in activity.app_state.columnList) {
 							column.findStatus(
 								access_info.apDomain,
 								new_status.id
@@ -694,7 +694,7 @@ object Action_Toot {
 				
 				if(result.jsonObject != null) {
 					activity.showToast(false, R.string.delete_succeeded)
-					for(column in App1.getAppState(activity).column_list) {
+					for(column in activity.app_state.columnList) {
 						column.onStatusRemoved(access_info.apDomain, status_id)
 					}
 				} else {
@@ -1078,7 +1078,7 @@ object Action_Toot {
 						}
 						
 						new_status != null -> {
-							for(column in App1.getAppState(activity).column_list) {
+							for(column in activity.app_state.columnList) {
 								if(access_info == column.access_info) {
 									column.findStatus(
 										access_info.apDomain,
@@ -1280,7 +1280,7 @@ object Action_Toot {
 				
 				val ls = local_status
 				if(ls != null) {
-					for(column in App1.getAppState(activity).column_list) {
+					for(column in activity.app_state.columnList) {
 						if(access_info == column.access_info) {
 							column.findStatus(access_info.apDomain, ls.id) { _, status ->
 								status.muted = bMute

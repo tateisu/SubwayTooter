@@ -54,7 +54,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
+class ActMain : AsyncActivity(), View.OnClickListener,
     ViewPager.OnPageChangeListener, DrawerLayout.DrawerListener {
 
     class PhoneEnv {
@@ -174,8 +174,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
     lateinit var handler: Handler
     lateinit var app_state: AppState
 
-	//////////////////////////////////////////////////////////////////
-	// 読み取り専用のプロパティ
+    //////////////////////////////////////////////////////////////////
+    // 読み取り専用のプロパティ
 
     val follow_complete_callback: () -> Unit = {
         showToast(false, R.string.follow_succeeded)
@@ -220,9 +220,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
             handler.removeCallbacks(this)
             if (!isStart_) return
             if (Pref.bpRelativeTimestamp(pref)) {
-                for (c in app_state.column_list) {
-                    c.fireRelativeTime()
-                }
+                app_state.columnList.forEach { it.fireRelativeTime() }
                 handler.postDelayed(this, 10000L)
             }
         }
@@ -233,35 +231,35 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         // ビュー階層を下から辿って文脈を取得する
         var column: Column? = null
         var whoRef: TootAccountRef? = null
-		var view = viewClicked
+        var view = viewClicked
         loop@ while (true) {
             when (val tag = view.tag) {
-				is ItemViewHolder -> {
-					column = tag.column
-					whoRef = tag.getAccount()
-					break@loop
-				}
-				is ViewHolderItem -> {
-					column = tag.ivh.column
-					whoRef = tag.ivh.getAccount()
-					break@loop
-				}
-				is ColumnViewHolder -> {
-					column = tag.column
-					whoRef = null
-					break@loop
-				}
-				is ViewHolderHeaderBase -> {
-					column = tag.column
-					whoRef = tag.getAccount()
-					break@loop
-				}
-				is TabletColumnViewHolder -> {
-					column = tag.columnViewHolder.column
-					break@loop
-				}
+                is ItemViewHolder -> {
+                    column = tag.column
+                    whoRef = tag.getAccount()
+                    break@loop
+                }
+                is ViewHolderItem -> {
+                    column = tag.ivh.column
+                    whoRef = tag.ivh.getAccount()
+                    break@loop
+                }
+                is ColumnViewHolder -> {
+                    column = tag.column
+                    whoRef = null
+                    break@loop
+                }
+                is ViewHolderHeaderBase -> {
+                    column = tag.column
+                    whoRef = tag.getAccount()
+                    break@loop
+                }
+                is TabletColumnViewHolder -> {
+                    column = tag.columnViewHolder.column
+                    break@loop
+                }
                 else -> when (val parent = view.parent) {
-					is View -> view = parent
+                    is View -> view = parent
                     else -> break@loop
                 }
             }
@@ -282,68 +280,65 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
             }
         }
 
-		val linkInfo = span.linkInfo
+        val linkInfo = span.linkInfo
 
         openCustomTab(
-			this,
-			nextPosition(column),
-			linkInfo.url,
-			accessInfo = column?.access_info,
-			tagList = hashtagList.notEmpty(),
-			whoRef = whoRef,
-			linkInfo = linkInfo
-		)
+            this,
+            nextPosition(column),
+            linkInfo.url,
+            accessInfo = column?.access_info,
+            tagList = hashtagList.notEmpty(),
+            whoRef = whoRef,
+            linkInfo = linkInfo
+        )
     }
 
 
     private val dlgQuickTootMenu = DlgQuickTootMenu(this, object : DlgQuickTootMenu.Callback {
 
-		override var visibility: TootVisibility
-			get() = quickTootVisibility
-			set(value) {
-				if (value != quickTootVisibility) {
-					quickTootVisibility = value
-					pref.edit().put(Pref.spQuickTootVisibility, value.id.toString()).apply()
-					showQuickTootVisibility()
-				}
-			}
+        override var visibility: TootVisibility
+            get() = quickTootVisibility
+            set(value) {
+                if (value != quickTootVisibility) {
+                    quickTootVisibility = value
+                    pref.edit().put(Pref.spQuickTootVisibility, value.id.toString()).apply()
+                    showQuickTootVisibility()
+                }
+            }
 
-		override fun onMacro(text: String) {
-			val editable = etQuickToot.text
-			if (editable?.isNotEmpty() == true) {
-				val start = etQuickToot.selectionStart
-				val end = etQuickToot.selectionEnd
-				editable.replace(start, end, text)
-				etQuickToot.requestFocus()
-				etQuickToot.setSelection(start + text.length)
-			} else {
-				etQuickToot.setText(text)
-				etQuickToot.requestFocus()
-				etQuickToot.setSelection(text.length)
-			}
-		}
-	})
+        override fun onMacro(text: String) {
+            val editable = etQuickToot.text
+            if (editable?.isNotEmpty() == true) {
+                val start = etQuickToot.selectionStart
+                val end = etQuickToot.selectionEnd
+                editable.replace(start, end, text)
+                etQuickToot.requestFocus()
+                etQuickToot.setSelection(start + text.length)
+            } else {
+                etQuickToot.setText(text)
+                etQuickToot.requestFocus()
+                etQuickToot.setSelection(text.length)
+            }
+        }
+    })
 
     val viewPool = RecyclerView.RecycledViewPool()
-
-    override val isActivityStart: Boolean
-        get() = isStart_
 
     // スマホモードなら現在のカラムを、タブレットモードなら-1Lを返す
     // (カラム一覧画面のデフォルト選択位置に使われる)
     val currentColumn: Int
         get() = phoneTab(
-			{ it.pager.currentItem },
-			{ -1 }
-		)
+            { it.pager.currentItem },
+            { -1 }
+        )
 
     // 新しいカラムをどこに挿入するか
     // 現在のページの次の位置か、終端
     val defaultInsertPosition: Int
         get() = phoneTab(
-			{ it.pager.currentItem + 1 },
-			{ Integer.MAX_VALUE }
-		)
+            { it.pager.currentItem + 1 },
+            { Integer.MAX_VALUE }
+        )
 
     private val TabletEnv.visibleColumnsIndices: IntRange
         get() {
@@ -364,56 +359,52 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         }
 
     private val TabletEnv.visibleColumns: List<Column>
-        get() = visibleColumnsIndices
-            .mapNotNull {
-                try {
-                    app_state.column_list[it]
-                } catch (ex: Throwable) {
-                    null
-                }
-            }
+        get() {
+            val list = app_state.columnList
+            return visibleColumnsIndices.mapNotNull { list.elementAtOrNull(it) }
+        }
 
     // デフォルトの投稿先アカウントを探す。アカウント選択が必要な状況ならnull
     val currentPostTarget: SavedAccount?
         get() = phoneTab(
-			{ env ->
-				val c = env.pager_adapter.getColumn(env.pager.currentItem)
-				return when {
-					c == null || c.access_info.isPseudo -> null
-					else -> c.access_info
-				}
-			},
-			{ env ->
+            { env ->
+                val c = env.pager_adapter.getColumn(env.pager.currentItem)
+                return when {
+                    c == null || c.access_info.isPseudo -> null
+                    else -> c.access_info
+                }
+            },
+            { env ->
 
-				val db_id = Pref.lpTabletTootDefaultAccount(App1.pref)
-				if (db_id != -1L) {
-					val a = SavedAccount.loadAccount(this@ActMain, db_id)
-					if (a != null && !a.isPseudo) return a
-				}
+                val db_id = Pref.lpTabletTootDefaultAccount(App1.pref)
+                if (db_id != -1L) {
+                    val a = SavedAccount.loadAccount(this@ActMain, db_id)
+                    if (a != null && !a.isPseudo) return a
+                }
 
-				val accounts = ArrayList<SavedAccount>()
-				for (c in env.visibleColumns) {
-					try {
-						val a = c.access_info
-						// 画面内に疑似アカウントがあれば常にアカウント選択が必要
-						if (a.isPseudo) {
-							accounts.clear()
-							break
-						}
-						// 既出でなければ追加する
-						if (null == accounts.find { it == a }) accounts.add(a)
-					} catch (ex: Throwable) {
+                val accounts = ArrayList<SavedAccount>()
+                for (c in env.visibleColumns) {
+                    try {
+                        val a = c.access_info
+                        // 画面内に疑似アカウントがあれば常にアカウント選択が必要
+                        if (a.isPseudo) {
+                            accounts.clear()
+                            break
+                        }
+                        // 既出でなければ追加する
+                        if (null == accounts.find { it == a }) accounts.add(a)
+                    } catch (ex: Throwable) {
 
-					}
-				}
+                    }
+                }
 
-				return when (accounts.size) {
-					// 候補が1つだけならアカウント選択は不要
-					1 -> accounts.first()
-					// 候補が2つ以上ならアカウント選択は必要
-					else -> null
-				}
-			})
+                return when (accounts.size) {
+                    // 候補が1つだけならアカウント選択は不要
+                    1 -> accounts.first()
+                    // 候補が2つ以上ならアカウント選択は必要
+                    else -> null
+                }
+            })
 
     // 簡易投稿入力のテキスト
     val quickTootText: String
@@ -447,20 +438,21 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
         updateColumnStrip()
 
-        if (app_state.column_list.isNotEmpty()) {
+        if (app_state.columnCount > 0) {
 
-            // 前回最後に表示していたカラムの位置にスクロールする
             val column_pos = Pref.ipLastColumnPos(pref)
             log.d("ipLastColumnPos load $column_pos")
-            if (column_pos in 0 until app_state.column_list.size) {
+
+            // 前回最後に表示していたカラムの位置にスクロールする
+            if (column_pos in 0 until app_state.columnCount) {
                 scrollToColumn(column_pos, false)
             }
 
             // 表示位置に合わせたイベントを発行
             phoneTab(
-				{ env -> onPageSelected(env.pager.currentItem) },
-				{ env -> resizeColumnWidth(env) }
-			)
+                { env -> onPageSelected(env.pager.currentItem) },
+                { env -> resizeColumnWidth(env) }
+            )
         }
 
         PollingWorker.queueUpdateNotification(this)
@@ -478,8 +470,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         post_helper.onDestroy()
 
         // このアクティビティに関連する ColumnViewHolder への参照を全カラムから除去する
-        for (c in app_state.column_list) {
-            c.removeColumnViewHolderByActivity(this)
+        app_state.columnList.forEach {
+            it.removeColumnViewHolderByActivity(this)
         }
     }
 
@@ -502,32 +494,30 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         log.d("onSaveInstanceState")
 
         phoneTab(
-			{ env -> outState.putInt(STATE_CURRENT_PAGE, env.pager.currentItem) },
-			{ env ->
-				env.tablet_layout_manager.findLastVisibleItemPosition()
-					.takeIf { it != RecyclerView.NO_POSITION }
-					?.let { outState.putInt(STATE_CURRENT_PAGE, it) }
-			}
-		)
+            { env -> outState.putInt(STATE_CURRENT_PAGE, env.pager.currentItem) },
+            { env ->
+                env.tablet_layout_manager.findLastVisibleItemPosition()
+                    .takeIf { it != RecyclerView.NO_POSITION }
+                    ?.let { outState.putInt(STATE_CURRENT_PAGE, it) }
+            }
+        )
 
-        for (column in app_state.column_list) {
-            column.saveScrollPosition()
-        }
-
+        app_state.columnList.forEach { it.saveScrollPosition() }
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         log.d("onRestoreInstanceState")
         super.onRestoreInstanceState(savedInstanceState)
         val pos = savedInstanceState.getInt(STATE_CURRENT_PAGE)
-        if (pos > 0 && pos < app_state.column_list.size) {
+        // 注意：開始は0じゃなく1
+        if (pos in 1 until app_state.columnCount) {
             phoneTab(
-				{ env -> env.pager.currentItem = pos },
-				{ env ->
-					env.tablet_layout_manager
-						.smoothScrollToPosition(env.tablet_pager, null, pos)
-				}
-			)
+                { env -> env.pager.currentItem = pos },
+                { env ->
+                    env.tablet_layout_manager
+                        .smoothScrollToPosition(env.tablet_pager, null, pos)
+                }
+            )
         }
     }
 
@@ -585,20 +575,16 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         ts = SystemClock.elapsedRealtime()
 
         // アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
-        val new_order = ArrayList<Int>()
-
-        for (i in 0 until app_state.column_list.size) {
-            val column = app_state.column_list[i]
-
-            if (!column.access_info.isNA) {
-                // 存在確認
-                SavedAccount.loadAccount(this@ActMain, column.access_info.db_id)
-                    ?: continue
+        val new_order = app_state.columnList
+            .mapIndexedNotNull { index, column ->
+                if (!column.access_info.isNA && null == SavedAccount.loadAccount(this@ActMain, column.access_info.db_id)) {
+                    null
+                } else {
+                    index
+                }
             }
-            new_order.add(i)
-        }
 
-        if (new_order.size != app_state.column_list.size) {
+        if (new_order.size != app_state.columnCount) {
             setOrder(new_order)
         }
 
@@ -607,7 +593,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         ts = SystemClock.elapsedRealtime()
 
         // 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
-        for (column in app_state.column_list) {
+        app_state.columnList.forEach { column ->
             column.viewHolder?.lastAnnouncementShown = 0L
             column.fireColumnColor()
         }
@@ -630,13 +616,18 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :refreshAfterPost")
         ts = SystemClock.elapsedRealtime()
 
-        // 画面復帰時に再取得やストリーミング開始を行う
-        for (column in app_state.column_list) {
-            column.onStart(this)
-        }
+        // 画面復帰時に再取得などを行う
+        app_state.columnList.forEach { it.onStart() }
 
         te = SystemClock.elapsedRealtime()
         if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :column.onStart")
+        ts = SystemClock.elapsedRealtime()
+
+        // 画面復帰時にストリーミング接続を開始する
+        app_state.streamManager.onScreenStart()
+
+        te = SystemClock.elapsedRealtime()
+        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :multi_stream_reader.onScreenStart")
         ts = SystemClock.elapsedRealtime()
 
         // カラムの表示範囲インジケータを更新
@@ -646,10 +637,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :updateColumnStripSelection")
         ts = SystemClock.elapsedRealtime()
 
-
-        for (c in app_state.column_list) {
-            c.fireShowContent(reason = "ActMain onStart", reset = true)
-        }
+        app_state.columnList.forEach { it.fireShowContent(reason = "ActMain onStart", reset = true) }
 
         te = SystemClock.elapsedRealtime()
         if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :fireShowContent")
@@ -676,11 +664,10 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
         closeListItemPopup()
 
-        app_state.stream_reader.stopAll()
+        app_state.streamManager.onScreenStop()
 
-        for (column in app_state.column_list) {
-            column.saveScrollPosition()
-        }
+        app_state.columnList.forEach { it.saveScrollPosition() }
+
         app_state.saveColumnList(bEnableSpeech = false)
 
         super.onStop()
@@ -698,17 +685,6 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         java.lang.RuntimeException:
         at android.app.ActivityThread.performResumeActivity (ActivityThread.java:4430)
         at android.app.ActivityThread.handleResumeActivity (ActivityThread.java:4470)
-        at android.app.servertransaction.TransactionExecutor.performLifecycleSequence (TransactionExecutor.java:183)
-        at android.app.servertransaction.TransactionExecutor.cycleToPath (TransactionExecutor.java:165)
-        at android.app.servertransaction.TransactionExecutor.executeLifecycleState (TransactionExecutor.java:142)
-        at android.app.servertransaction.TransactionExecutor.execute (TransactionExecutor.java:70)
-        at android.app.ActivityThread$H.handleMessage (ActivityThread.java:2199)
-        at android.os.Handler.dispatchMessage (Handler.java:112)
-        at android.os.Looper.loop (Looper.java:216)
-        at android.app.ActivityThread.main (ActivityThread.java:7625)
-        at java.lang.reflect.Method.invoke (Native Method)
-        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run (RuntimeInit.java:524)
-        at com.android.internal.os.ZygoteInit.main (ZygoteInit.java:987)
         Caused by: java.lang.IllegalArgumentException:
         at android.os.Parcel.createException (Parcel.java:1957)
         at android.os.Parcel.readException (Parcel.java:1921)
@@ -757,14 +733,12 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
         // 最後に表示していたカラムの位置
         val last_pos = phoneTab(
-			{ env -> env.pager.currentItem },
-			{ env -> env.visibleColumnsIndices.first })
+            { env -> env.pager.currentItem },
+            { env -> env.visibleColumnsIndices.first })
         log.d("ipLastColumnPos save $last_pos")
         pref.edit().put(Pref.ipLastColumnPos, last_pos).apply()
 
-        for (column in app_state.column_list) {
-            column.saveScrollPosition()
-        }
+        app_state.columnList.forEach { it.saveScrollPosition() }
 
         app_state.saveColumnList(bEnableSpeech = false)
 
@@ -778,50 +752,49 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
     }
 
     override fun onPageScrolled(
-		position: Int,
-		positionOffset: Float,
-		positionOffsetPixels: Int
-	) {
+        position: Int,
+        positionOffset: Float,
+        positionOffsetPixels: Int
+    ) {
         updateColumnStripSelection(position, positionOffset)
     }
 
     override fun onPageSelected(position: Int) {
         handler.post {
-            if (position >= 0 && position < app_state.column_list.size) {
-                val column = app_state.column_list[position]
+            app_state.column(position)?.let { column ->
                 if (!column.bFirstInitialized) {
                     column.startLoading()
                 }
                 scrollColumnStrip(position)
                 post_helper.setInstance(
-					when {
-						column.access_info.isNA -> null
-						else -> column.access_info
-					}
-				)
+                    when {
+                        column.access_info.isNA -> null
+                        else -> column.access_info
+                    }
+                )
             }
         }
     }
 
     override fun onClick(v: View) {
         when (v.id) {
-			R.id.btnMenu -> if (!drawer.isDrawerOpen(GravityCompat.START)) {
-				drawer.openDrawer(GravityCompat.START)
-			}
+            R.id.btnMenu -> if (!drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.openDrawer(GravityCompat.START)
+            }
 
-			R.id.btnToot -> Action_Account.openPost(this)
-			R.id.btnQuickToot -> performQuickPost(null)
-			R.id.btnQuickTootMenu -> performQuickTootMenu()
+            R.id.btnToot -> Action_Account.openPost(this)
+            R.id.btnQuickToot -> performQuickPost(null)
+            R.id.btnQuickTootMenu -> performQuickTootMenu()
         }
     }
 
-	////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
 
     // スマホモードとタブレットモードでコードを切り替える
     private inline fun <R> phoneTab(
-		codePhone: (PhoneEnv) -> R,
-		codeTablet: (TabletEnv) -> R
-	): R {
+        codePhone: (PhoneEnv) -> R,
+        codeTablet: (TabletEnv) -> R
+    ): R {
 
         val pe = phoneEnv
         if (pe != null) return codePhone(pe)
@@ -847,38 +820,34 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
     // 新しいカラムをどこに挿入するか
     // カラムの次の位置か、現在のページの次の位置か、終端
-    fun nextPosition(column: Column?): Int {
-        if (column != null) {
-            val pos = app_state.column_list.indexOf(column)
-            if (pos != -1) return pos + 1
-        }
-        return defaultInsertPosition
+    fun nextPosition(column: Column?): Int =
+        app_state.columnIndex(column)?.let{ it+1 } ?: defaultInsertPosition
+
+    private fun showQuickTootVisibility() {
+        btnQuickTootMenu.imageResource =
+            when (val resId = Styler.getVisibilityIconId(false, quickTootVisibility)) {
+                R.drawable.ic_question -> R.drawable.ic_description
+                else -> resId
+            }
     }
 
-	private fun showQuickTootVisibility() {
-		btnQuickTootMenu.imageResource =
-			when (val resId = Styler.getVisibilityIconId(false, quickTootVisibility)) {
-				R.drawable.ic_question -> R.drawable.ic_description
-				else -> resId
-			}
-	}
+    private fun performQuickTootMenu() {
+        dlgQuickTootMenu.toggle()
+    }
 
-	private fun performQuickTootMenu() {
-		dlgQuickTootMenu.toggle()
-	}
-
-	private fun refreshAfterPost() {
+    private fun refreshAfterPost() {
         val posted_acct = this.posted_acct
         val posted_status_id = this.posted_status_id
 
         if (posted_acct != null && posted_status_id == null) {
             // 予約投稿なら予約投稿リストをリロードする
-            for (column in app_state.column_list) {
+            app_state.columnList.forEach { column ->
                 if (column.type == ColumnType.SCHEDULED_STATUS
                     && column.access_info.acct == posted_acct
                 ) {
                     column.startLoading()
                 }
+
             }
 
         } else if (posted_acct != null && posted_status_id != null) {
@@ -887,8 +856,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
             if (posted_redraft_id != null) {
                 val host = posted_acct.host
                 if (host != null) {
-                    for (column in app_state.column_list) {
-                        column.onStatusRemoved(host, posted_redraft_id)
+                    app_state.columnList.forEach {
+                        it.onStatusRemoved(host, posted_redraft_id)
                     }
                 }
                 this.posted_redraft_id = null
@@ -896,14 +865,16 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
             val refresh_after_toot = Pref.ipRefreshAfterToot(pref)
             if (refresh_after_toot != Pref.RAT_DONT_REFRESH) {
-                for (column in app_state.column_list) {
-                    if (column.access_info.acct != posted_acct) continue
-                    column.startRefreshForPost(
-						refresh_after_toot,
-						posted_status_id,
-						posted_reply_id
-					)
-                }
+                app_state.columnList
+                    .filter{ it.access_info.acct == posted_acct}
+                    .forEach {
+                        it.startRefreshForPost(
+                            refresh_after_toot,
+                            posted_status_id,
+                            posted_reply_id
+                        )
+                    }
+
             }
         }
         this.posted_acct = null
@@ -916,12 +887,12 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         // Galaxy S8+ で STのSSを取った後に出るポップアップからそのまま共有でSTを選ぶと何も起きない問題への対策
         handler.post {
             AccountPicker.pick(
-				this,
-				bAllowPseudo = false,
-				bAuto = true,
-				message = getString(R.string.account_picker_toot),
-				dismiss_callback = { sent_intent2 = null }
-			) { ai ->
+                this,
+                bAllowPseudo = false,
+                bAuto = true,
+                message = getString(R.string.account_picker_toot),
+                dismiss_callback = { sent_intent2 = null }
+            ) { ai ->
                 sent_intent2 = null
                 ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id, sent_intent = intent)
             }
@@ -951,11 +922,11 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
             } else {
                 // アカウントを選択してやり直し
                 AccountPicker.pick(
-					this,
-					bAllowPseudo = false,
-					bAuto = true,
-					message = getString(R.string.account_picker_toot)
-				) { ai -> performQuickPost(ai) }
+                    this,
+                    bAllowPseudo = false,
+                    bAuto = true,
+                    message = getString(R.string.account_picker_toot)
+                ) { ai -> performQuickPost(ai) }
             }
             return
         }
@@ -964,7 +935,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         post_helper.spoiler_text = null
 
         post_helper.visibility = when (quickTootVisibility) {
-			TootVisibility.AccountSetting -> account.visibility
+            TootVisibility.AccountSetting -> account.visibility
             else -> quickTootVisibility
         }
 
@@ -978,30 +949,27 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         etQuickToot.hideKeyboard()
 
         post_helper.post(account, callback = object : PostHelper.PostCompleteCallback {
-			override fun onPostComplete(
-				target_account: SavedAccount,
-				status: TootStatus
-			) {
-				etQuickToot.setText("")
-				posted_acct = target_account.acct
-				posted_status_id = status.id
-				posted_reply_id = status.in_reply_to_id
-				posted_redraft_id = null
-				refreshAfterPost()
-			}
+            override fun onPostComplete(
+                target_account: SavedAccount,
+                status: TootStatus
+            ) {
+                etQuickToot.setText("")
+                posted_acct = target_account.acct
+                posted_status_id = status.id
+                posted_reply_id = status.in_reply_to_id
+                posted_redraft_id = null
+                refreshAfterPost()
+            }
 
-			override fun onScheduledPostComplete(target_account: SavedAccount) {
-			}
-		})
+            override fun onScheduledPostComplete(target_account: SavedAccount) {
+            }
+        })
     }
 
-    private fun isOrderChanged(new_order: ArrayList<Int>): Boolean {
-        if (new_order.size != app_state.column_list.size) return true
-        var i = 0
-        val ie = new_order.size
-        while (i < ie) {
+    private fun isOrderChanged(new_order: List<Int>): Boolean {
+        if (new_order.size != app_state.columnCount) return true
+        for(i in new_order.indices){
             if (new_order[i] != i) return true
-            ++i
         }
         return false
     }
@@ -1011,110 +979,101 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-				REQUEST_CODE_COLUMN_LIST -> if (data != null) {
-					val order = data.getIntegerArrayListExtra(ActColumnList.EXTRA_ORDER)
-					if (order != null && isOrderChanged(order)) {
-						setOrder(order)
-					}
+                REQUEST_CODE_COLUMN_LIST -> if (data != null) {
+                    val order = data.getIntegerArrayListExtra(ActColumnList.EXTRA_ORDER)
+                    if (order != null && isOrderChanged(order)) {
+                        setOrder(order)
+                    }
 
-					if (app_state.column_list.isNotEmpty()) {
-						val select = data.getIntExtra(ActColumnList.EXTRA_SELECTION, -1)
-						if (0 <= select && select < app_state.column_list.size) {
-							scrollToColumn(select)
-						}
-					}
-				}
+                    val select = data.getIntExtra(ActColumnList.EXTRA_SELECTION, -1)
+                    if (select in 0 until app_state.columnCount) {
+                        scrollToColumn(select)
+                    }
+                }
 
-				REQUEST_APP_ABOUT -> if (data != null) {
-					val search = data.getStringExtra(ActAbout.EXTRA_SEARCH)
-					if (search?.isNotEmpty() == true) {
-						Action_Account.timeline(
-							this@ActMain,
-							defaultInsertPosition,
-							ColumnType.SEARCH,
-							args = arrayOf(search, true)
-						)
-					}
-					return
-				}
+                REQUEST_APP_ABOUT -> if (data != null) {
+                    val search = data.getStringExtra(ActAbout.EXTRA_SEARCH)
+                    if (search?.isNotEmpty() == true) {
+                        Action_Account.timeline(
+                            this@ActMain,
+                            defaultInsertPosition,
+                            ColumnType.SEARCH,
+                            args = arrayOf(search, true)
+                        )
+                    }
+                    return
+                }
 
-				REQUEST_CODE_NICKNAME -> {
+                REQUEST_CODE_NICKNAME -> {
+                    updateColumnStrip()
+                    app_state.columnList.forEach { it.fireShowColumnHeader() }
+                }
 
-					updateColumnStrip()
+                REQUEST_CODE_POST -> if (data != null) {
+                    etQuickToot.setText("")
+                    posted_acct =
+                        data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
+                    if (data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
+                        posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
+                        posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
+                        posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
+                    } else {
+                        posted_status_id = null
+                    }
+                }
 
-					for (column in app_state.column_list) {
-						column.fireShowColumnHeader()
-					}
+                REQUEST_CODE_COLUMN_COLOR -> if (data != null) {
+                    app_state.saveColumnList()
+                    val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
+                    app_state.column(idx)?.let{
+                        it.fireColumnColor()
+                        it.fireShowContent(
+                            reason = "ActMain column color changed",
+                            reset = true
+                        )
+                    }
+                    updateColumnStrip()
+                }
 
-				}
-
-				REQUEST_CODE_POST -> if (data != null) {
-					etQuickToot.setText("")
-					posted_acct =
-						data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
-					if (data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
-						posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
-						posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
-						posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
-					} else {
-						posted_status_id = null
-					}
-				}
-
-				REQUEST_CODE_COLUMN_COLOR -> if (data != null) {
-					app_state.saveColumnList()
-					val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
-					if (idx in app_state.column_list.indices) {
-						app_state.column_list[idx].fireColumnColor()
-						app_state.column_list[idx].fireShowContent(
-							reason = "ActMain column color changed",
-							reset = true
-						)
-					}
-					updateColumnStrip()
-				}
-
-				REQUEST_CODE_LANGUAGE_FILTER -> if (data != null) {
-					app_state.saveColumnList()
-					val idx = data.getIntExtra(ActLanguageFilter.EXTRA_COLUMN_INDEX, 0)
-					if (idx in app_state.column_list.indices) {
-						app_state.column_list[idx].onLanguageFilterChanged()
-					}
-				}
+                REQUEST_CODE_LANGUAGE_FILTER -> if (data != null) {
+                    app_state.saveColumnList()
+                    val idx = data.getIntExtra(ActLanguageFilter.EXTRA_COLUMN_INDEX, 0)
+                    app_state.column(idx)?.onLanguageFilterChanged()
+                }
             }
         }
 
         when (requestCode) {
 
-			REQUEST_CODE_ACCOUNT_SETTING -> {
-				updateColumnStrip()
+            REQUEST_CODE_ACCOUNT_SETTING -> {
+                updateColumnStrip()
 
-				app_state.column_list.forEach { it.fireShowColumnHeader() }
+                app_state.columnList.forEach { it.fireShowColumnHeader() }
 
-				when (resultCode) {
-					RESULT_OK -> data?.data?.let { openBrowser(it) }
+                when (resultCode) {
+                    RESULT_OK -> data?.data?.let { openBrowser(it) }
 
-					ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN ->
-						data?.getLongExtra(ActAccountSetting.EXTRA_DB_ID, -1L)
-							?.takeIf { it != -1L }?.let { checkAccessToken2(it) }
-				}
-			}
+                    ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN ->
+                        data?.getLongExtra(ActAccountSetting.EXTRA_DB_ID, -1L)
+                            ?.takeIf { it != -1L }?.let { checkAccessToken2(it) }
+                }
+            }
 
-			REQUEST_CODE_APP_SETTING -> {
-				Column.reloadDefaultColor(this, pref)
-				showFooterColor()
-				updateColumnStrip()
+            REQUEST_CODE_APP_SETTING -> {
+                Column.reloadDefaultColor(this, pref)
+                showFooterColor()
+                updateColumnStrip()
 
-				if (resultCode == RESULT_APP_DATA_IMPORT) {
-					data?.data?.let { importAppData(it) }
-				}
-			}
+                if (resultCode == RESULT_APP_DATA_IMPORT) {
+                    data?.data?.let { importAppData(it) }
+                }
+            }
 
-			REQUEST_CODE_TEXT -> when (resultCode) {
-				ActText.RESULT_SEARCH_MSP -> searchFromActivityResult(data, ColumnType.SEARCH_MSP)
-				ActText.RESULT_SEARCH_TS -> searchFromActivityResult(data, ColumnType.SEARCH_TS)
-				ActText.RESULT_SEARCH_NOTESTOCK -> searchFromActivityResult(data, ColumnType.SEARCH_NOTESTOCK)
-			}
+            REQUEST_CODE_TEXT -> when (resultCode) {
+                ActText.RESULT_SEARCH_MSP -> searchFromActivityResult(data, ColumnType.SEARCH_MSP)
+                ActText.RESULT_SEARCH_TS -> searchFromActivityResult(data, ColumnType.SEARCH_TS)
+                ActText.RESULT_SEARCH_NOTESTOCK -> searchFromActivityResult(data, ColumnType.SEARCH_NOTESTOCK)
+            }
         }
 
         super.onActivityResult(requestCode, resultCode, data)
@@ -1129,8 +1088,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         }
 
         // カラムが0個ならアプリを終了する
-        if (app_state.column_list.isEmpty()) {
-            this@ActMain.finish()
+        if (app_state.columnCount == 0 ) {
+            finish()
             return
         }
 
@@ -1142,13 +1101,13 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         fun getClosableColumnList(): List<Column> {
             val visibleColumnList = ArrayList<Column>()
             phoneTab({ env ->
-				try {
-					visibleColumnList.add(app_state.column_list[env.pager.currentItem])
-				} catch (ex: Throwable) {
-				}
-			}, { env ->
-				visibleColumnList.addAll(env.visibleColumns)
-			})
+                try {
+                    app_state.column(env.pager.currentItem)?.addTo(visibleColumnList)
+                } catch (ex: Throwable) {
+                }
+            }, { env ->
+                visibleColumnList.addAll(env.visibleColumns)
+            })
 
             return visibleColumnList.filter { !it.dont_close }
 
@@ -1157,36 +1116,36 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         // カラムが1個以上ある場合は設定に合わせて挙動を変える
         when (Pref.ipBackButtonAction(pref)) {
 
-			Pref.BACK_EXIT_APP -> this@ActMain.finish()
+            Pref.BACK_EXIT_APP -> this@ActMain.finish()
 
-			Pref.BACK_OPEN_COLUMN_LIST -> Action_App.columnList(this@ActMain)
+            Pref.BACK_OPEN_COLUMN_LIST -> Action_App.columnList(this@ActMain)
 
-			Pref.BACK_CLOSE_COLUMN -> {
+            Pref.BACK_CLOSE_COLUMN -> {
 
-				val closeableColumnList = getClosableColumnList()
-				when (closeableColumnList.size) {
-					0 -> {
-						if (Pref.bpExitAppWhenCloseProtectedColumn(pref)
-							&& Pref.bpDontConfirmBeforeCloseColumn(pref)
-						) {
-							this@ActMain.finish()
-						} else {
-							showToast(false, R.string.missing_closeable_column)
-						}
-					}
+                val closeableColumnList = getClosableColumnList()
+                when (closeableColumnList.size) {
+                    0 -> {
+                        if (Pref.bpExitAppWhenCloseProtectedColumn(pref)
+                            && Pref.bpDontConfirmBeforeCloseColumn(pref)
+                        ) {
+                            this@ActMain.finish()
+                        } else {
+                            showToast(false, R.string.missing_closeable_column)
+                        }
+                    }
 
-					1 -> {
-						closeColumn(closeableColumnList.first())
-					}
+                    1 -> {
+                        closeColumn(closeableColumnList.first())
+                    }
 
-					else -> {
-						showToast(
-							false,
-							R.string.cant_close_column_by_back_button_when_multiple_column_shown
-						)
-					}
-				}
-			}
+                    else -> {
+                        showToast(
+                            false,
+                            R.string.cant_close_column_by_back_button_when_multiple_column_shown
+                        )
+                    }
+                }
+            }
 
             // ActAppSetting.BACK_ASK_ALWAYS
             else -> {
@@ -1334,40 +1293,40 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         etQuickToot.typeface = timeline_font
 
         when (Pref.ipJustifyWindowContentPortrait(pref)) {
-			Pref.JWCP_START -> {
-				val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
-				val padding = resources.displayMetrics.widthPixels / 2 - iconW
+            Pref.JWCP_START -> {
+                val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
+                val padding = resources.displayMetrics.widthPixels / 2 - iconW
 
-				fun ViewGroup.addViewBeforeLast(v: View) = addView(v, childCount - 1)
-				(svColumnStrip.parent as LinearLayout).addViewBeforeLast(
-					View(this).apply {
-						layoutParams = LinearLayout.LayoutParams(padding, 0)
-					}
-				)
-				llQuickTootBar.addViewBeforeLast(
-					View(this).apply {
-						layoutParams = LinearLayout.LayoutParams(padding, 0)
-					}
-				)
-			}
+                fun ViewGroup.addViewBeforeLast(v: View) = addView(v, childCount - 1)
+                (svColumnStrip.parent as LinearLayout).addViewBeforeLast(
+                    View(this).apply {
+                        layoutParams = LinearLayout.LayoutParams(padding, 0)
+                    }
+                )
+                llQuickTootBar.addViewBeforeLast(
+                    View(this).apply {
+                        layoutParams = LinearLayout.LayoutParams(padding, 0)
+                    }
+                )
+            }
 
-			Pref.JWCP_END -> {
-				val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
-				val borderWidth = (1f * density + 0.5f).toInt()
-				val padding = resources.displayMetrics.widthPixels / 2 - iconW - borderWidth
+            Pref.JWCP_END -> {
+                val iconW = (stripIconSize * 1.5f + 0.5f).toInt()
+                val borderWidth = (1f * density + 0.5f).toInt()
+                val padding = resources.displayMetrics.widthPixels / 2 - iconW - borderWidth
 
-				fun ViewGroup.addViewAfterFirst(v: View) = addView(v, 1)
-				(svColumnStrip.parent as LinearLayout).addViewAfterFirst(
-					View(this).apply {
-						layoutParams = LinearLayout.LayoutParams(padding, 0)
-					}
-				)
-				llQuickTootBar.addViewAfterFirst(
-					View(this).apply {
-						layoutParams = LinearLayout.LayoutParams(padding, 0)
-					}
-				)
-			}
+                fun ViewGroup.addViewAfterFirst(v: View) = addView(v, 1)
+                (svColumnStrip.parent as LinearLayout).addViewAfterFirst(
+                    View(this).apply {
+                        layoutParams = LinearLayout.LayoutParams(padding, 0)
+                    }
+                )
+                llQuickTootBar.addViewAfterFirst(
+                    View(this).apply {
+                        layoutParams = LinearLayout.LayoutParams(padding, 0)
+                    }
+                )
+            }
         }
 
         if (!Pref.bpQuickTootBar(pref)) {
@@ -1390,12 +1349,12 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
             etQuickToot.inputType = InputType.TYPE_CLASS_TEXT
             etQuickToot.imeOptions = EditorInfo.IME_ACTION_SEND
             etQuickToot.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
-				if (actionId == EditorInfo.IME_ACTION_SEND) {
-					btnQuickToot.performClick()
-					return@OnEditorActionListener true
-				}
-				false
-			})
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    btnQuickToot.performClick()
+                    return@OnEditorActionListener true
+                }
+                false
+            })
             // 最後に指定する必要がある？
             etQuickToot.maxLines = 1
         }
@@ -1453,102 +1412,102 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         val tmpTabletPager: RecyclerView = findViewById(R.id.rvPager)
 
         phoneTab({ env ->
-			tmpTabletPager.visibility = View.GONE
-			env.pager = tmpPhonePager
-			env.pager_adapter = ColumnPagerAdapter(this)
-			env.pager.adapter = env.pager_adapter
-			env.pager.addOnPageChangeListener(this)
+            tmpTabletPager.visibility = View.GONE
+            env.pager = tmpPhonePager
+            env.pager_adapter = ColumnPagerAdapter(this)
+            env.pager.adapter = env.pager_adapter
+            env.pager.addOnPageChangeListener(this)
 
-			resizeAutoCW(sw)
+            resizeAutoCW(sw)
 
-		}, { env ->
-			tmpPhonePager.visibility = View.GONE
-			env.tablet_pager = tmpTabletPager
-			env.tablet_pager_adapter = TabletColumnPagerAdapter(this)
-			env.tablet_layout_manager =
-				LinearLayoutManager(
-					this,
-					LinearLayoutManager.HORIZONTAL,
-					false
-				)
+        }, { env ->
+            tmpPhonePager.visibility = View.GONE
+            env.tablet_pager = tmpTabletPager
+            env.tablet_pager_adapter = TabletColumnPagerAdapter(this)
+            env.tablet_layout_manager =
+                LinearLayoutManager(
+                    this,
+                    LinearLayoutManager.HORIZONTAL,
+                    false
+                )
 
-			if (env.tablet_pager.itemDecorationCount == 0) {
-				env.tablet_pager.addItemDecoration(TabletColumnDivider(this@ActMain))
-			}
+            if (env.tablet_pager.itemDecorationCount == 0) {
+                env.tablet_pager.addItemDecoration(TabletColumnDivider(this@ActMain))
+            }
 
 
-			env.tablet_pager.adapter = env.tablet_pager_adapter
-			env.tablet_pager.layoutManager = env.tablet_layout_manager
-			env.tablet_pager.addOnScrollListener(object :
-				RecyclerView.OnScrollListener() {
+            env.tablet_pager.adapter = env.tablet_pager_adapter
+            env.tablet_pager.layoutManager = env.tablet_layout_manager
+            env.tablet_pager.addOnScrollListener(object :
+                RecyclerView.OnScrollListener() {
 
-				override fun onScrollStateChanged(
-					recyclerView: RecyclerView,
-					newState: Int
-				) {
-					super.onScrollStateChanged(recyclerView, newState)
+                override fun onScrollStateChanged(
+                    recyclerView: RecyclerView,
+                    newState: Int
+                ) {
+                    super.onScrollStateChanged(recyclerView, newState)
 
-					val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
-					val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
-					// 端に近い方に合わせる
-					val distance_left = abs(vs)
-					val distance_right = abs(app_state.column_list.size - 1 - ve)
-					if (distance_left < distance_right) {
-						scrollColumnStrip(vs)
-					} else {
-						scrollColumnStrip(ve)
-					}
-				}
+                    val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
+                    val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
+                    // 端に近い方に合わせる
+                    val distance_left = abs(vs)
+                    val distance_right = abs(app_state.columnCount - 1 - ve)
+                    if (distance_left < distance_right) {
+                        scrollColumnStrip(vs)
+                    } else {
+                        scrollColumnStrip(ve)
+                    }
+                }
 
-				override fun onScrolled(
-					recyclerView: RecyclerView,
-					dx: Int,
-					dy: Int
-				) {
-					super.onScrolled(recyclerView, dx, dy)
-					updateColumnStripSelection(-1, -1f)
-				}
-			})
+                override fun onScrolled(
+                    recyclerView: RecyclerView,
+                    dx: Int,
+                    dy: Int
+                ) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    updateColumnStripSelection(-1, -1f)
+                }
+            })
 
-			env.tablet_pager.itemAnimator = null
-			//			val animator = env.tablet_pager.itemAnimator
-			//			if( animator is DefaultItemAnimator){
-			//				animator.supportsChangeAnimations = false
-			//			}
+            env.tablet_pager.itemAnimator = null
+            //			val animator = env.tablet_pager.itemAnimator
+            //			if( animator is DefaultItemAnimator){
+            //				animator.supportsChangeAnimations = false
+            //			}
 
-			env.tablet_snap_helper = GravitySnapHelper(Gravity.START)
-			env.tablet_snap_helper.attachToRecyclerView(env.tablet_pager)
+            env.tablet_snap_helper = GravitySnapHelper(Gravity.START)
+            env.tablet_snap_helper.attachToRecyclerView(env.tablet_pager)
 
-		})
+        })
 
         showFooterColor()
 
         post_helper.attachEditText(
-			llFormRoot,
-			etQuickToot,
-			true,
-			object : PostHelper.Callback2 {
-				override fun onTextUpdate() {}
+            llFormRoot,
+            etQuickToot,
+            true,
+            object : PostHelper.Callback2 {
+                override fun onTextUpdate() {}
 
-				override fun canOpenPopup(): Boolean {
-					return !drawer.isDrawerOpen(GravityCompat.START)
-				}
-			})
+                override fun canOpenPopup(): Boolean {
+                    return !drawer.isDrawerOpen(GravityCompat.START)
+                }
+            })
 
         showQuickTootVisibility()
     }
 
     private fun isVisibleColumn(idx: Int) = phoneTab(
-		{ env ->
-			val c = env.pager.currentItem
-			c == idx
-		}, { env ->
-		idx >= 0 && idx in env.visibleColumnsIndices
-	}
-	)
+        { env ->
+            val c = env.pager.currentItem
+            c == idx
+        }, { env ->
+        idx >= 0 && idx in env.visibleColumnsIndices
+    }
+    )
 
     private fun updateColumnStrip() {
-        llEmpty.vg(app_state.column_list.isEmpty())
+        llEmpty.vg(app_state.columnCount==0)
 
         val iconSize = stripIconSize
         val rootW = (iconSize * 1.25f + 0.5f).toInt()
@@ -1566,9 +1525,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         }
 
         llColumnStrip.removeAllViews()
-        for (i in 0 until app_state.column_list.size) {
+        app_state.columnList.forEachIndexed { index, column ->
 
-            val column = app_state.column_list[i]
 
             val viewRoot = layoutInflater.inflate(R.layout.lv_column_strip, llColumnStrip, false)
             val ivIcon = viewRoot.findViewById<ImageView>(R.id.ivIcon)
@@ -1588,11 +1546,11 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
             vAcctColor.layoutParams.height = barHeight
             (vAcctColor.layoutParams as? LinearLayout.LayoutParams)?.topMargin = barTopMargin
 
-            viewRoot.tag = i
+            viewRoot.tag = index
             viewRoot.setOnClickListener { v ->
                 val idx = v.tag as Int
                 if (Pref.bpScrollTopFromColumnStrip(pref) && isVisibleColumn(idx)) {
-                    app_state.column_list[i].viewHolder?.scrollToTop2()
+                    column.viewHolder?.scrollToTop2()
                     return@setOnClickListener
                 }
                 scrollToColumn(idx)
@@ -1600,10 +1558,10 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
             viewRoot.contentDescription = column.getColumnName(true)
 
             viewRoot.backgroundDrawable = getAdaptiveRippleDrawableRound(
-				this,
-				column.getHeaderBackgroundColor(),
-				column.getHeaderNameColor()
-			)
+                this,
+                column.getHeaderBackgroundColor(),
+                column.getHeaderNameColor()
+            )
 
             ivIcon.setImageResource(column.getIconId())
             ivIcon.imageTintList = ColorStateList.valueOf(column.getHeaderNameColor())
@@ -1626,38 +1584,38 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
     private fun updateColumnStripSelection(position: Int, positionOffset: Float) {
         handler.post(Runnable {
-			if (isFinishing) return@Runnable
+            if (isFinishing) return@Runnable
 
-			if (app_state.column_list.isEmpty()) {
-				llColumnStrip.setVisibleRange(-1, -1, 0f)
-			} else {
-				phoneTab({ env ->
-					if (position >= 0) {
-						llColumnStrip.setVisibleRange(position, position, positionOffset)
-					} else {
-						val c = env.pager.currentItem
-						llColumnStrip.setVisibleRange(c, c, 0f)
-					}
+            if (app_state.columnCount == 0 ) {
+                llColumnStrip.setVisibleRange(-1, -1, 0f)
+            } else {
+                phoneTab({ env ->
+                    if (position >= 0) {
+                        llColumnStrip.setVisibleRange(position, position, positionOffset)
+                    } else {
+                        val c = env.pager.currentItem
+                        llColumnStrip.setVisibleRange(c, c, 0f)
+                    }
 
-				}, { env ->
-					val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
-					val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
-					val vr = if (vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
-						IntRange(-1, -2) // empty and less than zero
-					} else {
-						IntRange(vs, min(ve, vs + nScreenColumn - 1))
-					}
-					var slide_ratio = 0f
-					if (vr.first <= vr.last) {
-						val child = env.tablet_layout_manager.findViewByPosition(vr.first)
-						slide_ratio =
-							clipRange(0f, 1f, abs((child?.left ?: 0) / nColumnWidth.toFloat()))
-					}
+                }, { env ->
+                    val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
+                    val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
+                    val vr = if (vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
+                        IntRange(-1, -2) // empty and less than zero
+                    } else {
+                        IntRange(vs, min(ve, vs + nScreenColumn - 1))
+                    }
+                    var slide_ratio = 0f
+                    if (vr.first <= vr.last) {
+                        val child = env.tablet_layout_manager.findViewByPosition(vr.first)
+                        slide_ratio =
+                            clipRange(0f, 1f, abs((child?.left ?: 0) / nColumnWidth.toFloat()))
+                    }
 
-					llColumnStrip.setVisibleRange(vr.first, vr.last, slide_ratio)
-				})
-			}
-		})
+                    llColumnStrip.setVisibleRange(vr.first, vr.last, slide_ratio)
+                })
+            }
+        })
     }
 
     private fun scrollColumnStrip(select: Int) {
@@ -1688,12 +1646,12 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         log.d("handleIntentUri ${uri}")
 
         when (uri.scheme) {
-			"subwaytooter", "misskeyclientproto" -> return try {
-				handleCustomSchemaUri(uri)
-			} catch (ex: Throwable) {
-				log.trace(ex)
-				showToast(ex, "handleCustomSchemaUri failed.")
-			}
+            "subwaytooter", "misskeyclientproto" -> return try {
+                handleCustomSchemaUri(uri)
+            } catch (ex: Throwable) {
+                log.trace(ex)
+                showToast(ex, "handleCustomSchemaUri failed.")
+            }
         }
 
         val url = uri.toString()
@@ -1702,13 +1660,13 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         if (statusInfo != null) {
             // ステータスをアプリ内で開く
             Action_Toot.conversationOtherInstance(
-				this@ActMain,
-				defaultInsertPosition,
-				statusInfo.url,
-				statusInfo.statusId,
-				statusInfo.host,
-				statusInfo.statusId
-			)
+                this@ActMain,
+                defaultInsertPosition,
+                statusInfo.url,
+                statusInfo.statusId,
+                statusInfo.host,
+                statusInfo.statusId
+            )
             return
         }
 
@@ -1721,23 +1679,23 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
             if (instance?.isNotEmpty() == true) {
                 Action_User.profile(
-					this@ActMain,
-					defaultInsertPosition,
-					null,
-					"https://$instance/@$user",
-					Host.parse(instance),
-					user,
-					original_url = url
-				)
+                    this@ActMain,
+                    defaultInsertPosition,
+                    null,
+                    "https://$instance/@$user",
+                    Host.parse(instance),
+                    user,
+                    original_url = url
+                )
             } else {
                 Action_User.profile(
-					this@ActMain,
-					defaultInsertPosition,
-					null,
-					url,
-					Host.parse(host),
-					user
-				)
+                    this@ActMain,
+                    defaultInsertPosition,
+                    null,
+                    url,
+                    Host.parse(host),
+                    user
+                )
             }
             return
         }
@@ -1749,13 +1707,13 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
             val user = m.groupEx(2)!!.decodePercent()
 
             Action_User.profile(
-				this@ActMain,
-				defaultInsertPosition,
-				null,
-				url,
-				Host.parse(host),
-				user
-			)
+                this@ActMain,
+                defaultInsertPosition,
+                null,
+                url,
+                Host.parse(host),
+                user
+            )
             return
         }
 
@@ -1827,18 +1785,19 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
             PollingWorker.queueNotificationClicked(this, uri)
 
-            val column = app_state.column_list.firstOrNull {
+            val columnList = app_state.columnList
+            val column =columnList.firstOrNull {
                 it.type == ColumnType.NOTIFICATIONS &&
                     it.access_info == account &&
                     !it.system_notification_not_related
             }?.also {
-                scrollToColumn(app_state.column_list.indexOf(it))
+                scrollToColumn(columnList.indexOf(it))
             } ?: addColumn(
-				true,
-				defaultInsertPosition,
-				account,
-				ColumnType.NOTIFICATIONS
-			)
+                true,
+                defaultInsertPosition,
+                account,
+                ColumnType.NOTIFICATIONS
+            )
 
             // 通知を読み直す
             if (!column.bInitialLoading) column.startLoading()
@@ -1850,152 +1809,152 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
     private fun handleOAuth2Callback(uri: Uri) {
         TootTaskRunner(this@ActMain).run(object : TootTask {
 
-			var ta: TootAccount? = null
-			var sa: SavedAccount? = null
-			var host: Host? = null
-			var ti: TootInstance? = null
+            var ta: TootAccount? = null
+            var sa: SavedAccount? = null
+            var host: Host? = null
+            var ti: TootInstance? = null
 
-			override suspend fun background(client: TootApiClient): TootApiResult? {
+            override suspend fun background(client: TootApiClient): TootApiResult? {
 
-				val uriStr = uri.toString()
-				if (uriStr.startsWith("subwaytooter://misskey/auth_callback")
-					|| uriStr.startsWith("misskeyclientproto://misskeyclientproto/auth_callback")
-				) {
+                val uriStr = uri.toString()
+                if (uriStr.startsWith("subwaytooter://misskey/auth_callback")
+                    || uriStr.startsWith("misskeyclientproto://misskeyclientproto/auth_callback")
+                ) {
 
-					// Misskey 認証コールバック
-					val token = uri.getQueryParameter("token")
-					if (token.isNullOrBlank())
-						return TootApiResult("missing token in callback URL")
+                    // Misskey 認証コールバック
+                    val token = uri.getQueryParameter("token")
+                    if (token.isNullOrBlank())
+                        return TootApiResult("missing token in callback URL")
 
-					val prefDevice = PrefDevice.prefDevice(this@ActMain)
+                    val prefDevice = PrefDevice.prefDevice(this@ActMain)
 
-					val instance = Host.parse(
-						prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE, null)
-							?: return TootApiResult("missing instance name.")
-					)
+                    val instance = Host.parse(
+                        prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE, null)
+                            ?: return TootApiResult("missing instance name.")
+                    )
 
-					when (val db_id = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID, -1L)) {
+                    when (val db_id = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID, -1L)) {
 
-						// new registration
-						-1L -> client.apiHost = instance
+                        // new registration
+                        -1L -> client.apiHost = instance
 
-						// update access token
-						else -> try {
-							val sa = SavedAccount.loadAccount(this@ActMain, db_id)
-								?: return TootApiResult("missing account db_id=$db_id")
-							this.sa = sa
-							client.account = sa
-						} catch (ex: Throwable) {
-							log.trace(ex)
-							return TootApiResult(ex.withCaption("invalid state"))
-						}
-					}
+                        // update access token
+                        else -> try {
+                            val sa = SavedAccount.loadAccount(this@ActMain, db_id)
+                                ?: return TootApiResult("missing account db_id=$db_id")
+                            this.sa = sa
+                            client.account = sa
+                        } catch (ex: Throwable) {
+                            log.trace(ex)
+                            return TootApiResult(ex.withCaption("invalid state"))
+                        }
+                    }
 
-					val (ti, r2) = TootInstance.get(client)
-					ti ?: return r2
+                    val (ti, r2) = TootInstance.get(client)
+                    ti ?: return r2
 
-					this.ti = ti
-					this.host = instance
+                    this.ti = ti
+                    this.host = instance
 
-					val parser = TootParser(
-						this@ActMain,
-						linkHelper = LinkHelper.create(
-							instance,
-							misskeyVersion = ti.misskeyVersion
-						)
-					)
+                    val parser = TootParser(
+                        this@ActMain,
+                        linkHelper = LinkHelper.create(
+                            instance,
+                            misskeyVersion = ti.misskeyVersion
+                        )
+                    )
 
-					return client.authentication2Misskey(
-						Pref.spClientName(this@ActMain),
-						token,
-						ti.misskeyVersion
-					)?.also { this.ta = parser.account(it.jsonObject) }
+                    return client.authentication2Misskey(
+                        Pref.spClientName(this@ActMain),
+                        token,
+                        ti.misskeyVersion
+                    )?.also { this.ta = parser.account(it.jsonObject) }
 
-				} else {
-					// Mastodon 認証コールバック
+                } else {
+                    // Mastodon 認証コールバック
 
-					// エラー時
-					// subwaytooter://oauth(\d*)/
-					// ?error=access_denied
-					// &error_description=%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9%E3%81%AE%E6%89%80%E6%9C%89%E8%80%85%E3%81%BE%E3%81%9F%E3%81%AF%E8%AA%8D%E8%A8%BC%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%81%8C%E8%A6%81%E6%B1%82%E3%82%92%E6%8B%92%E5%90%A6%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82
-					// &state=db%3A3
-					val error = uri.getQueryParameter("error")
-					val error_description = uri.getQueryParameter("error_description")
-					if (error != null || error_description != null)
-						return TootApiResult(error_description.notBlank() ?: error.notBlank()
-						?: "?")
+                    // エラー時
+                    // subwaytooter://oauth(\d*)/
+                    // ?error=access_denied
+                    // &error_description=%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9%E3%81%AE%E6%89%80%E6%9C%89%E8%80%85%E3%81%BE%E3%81%9F%E3%81%AF%E8%AA%8D%E8%A8%BC%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%81%8C%E8%A6%81%E6%B1%82%E3%82%92%E6%8B%92%E5%90%A6%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82
+                    // &state=db%3A3
+                    val error = uri.getQueryParameter("error")
+                    val error_description = uri.getQueryParameter("error_description")
+                    if (error != null || error_description != null)
+                        return TootApiResult(error_description.notBlank() ?: error.notBlank()
+                        ?: "?")
 
-					// subwaytooter://oauth(\d*)/
-					//    ?code=113cc036e078ac500d3d0d3ad345cd8181456ab087abc67270d40f40a4e9e3c2
-					//    &state=host%3Amastodon.juggler.jp
+                    // subwaytooter://oauth(\d*)/
+                    //    ?code=113cc036e078ac500d3d0d3ad345cd8181456ab087abc67270d40f40a4e9e3c2
+                    //    &state=host%3Amastodon.juggler.jp
 
-					val code = uri.getQueryParameter("code")
-					val sv = uri.getQueryParameter("state")
+                    val code = uri.getQueryParameter("code")
+                    val sv = uri.getQueryParameter("state")
 
-					if (code.isNullOrBlank())
-						return TootApiResult("missing code in callback url.")
+                    if (code.isNullOrBlank())
+                        return TootApiResult("missing code in callback url.")
 
-					if (sv.isNullOrBlank())
-						return TootApiResult("missing state in callback url.")
+                    if (sv.isNullOrBlank())
+                        return TootApiResult("missing state in callback url.")
 
-					for (param in sv.split(",")) {
-						when {
-							param.startsWith("db:") -> try {
-								val dataId = param.substring(3).toLong(10)
-								val sa = SavedAccount.loadAccount(this@ActMain, dataId)
-									?: return TootApiResult("missing account db_id=$dataId")
-								this.sa = sa
-								client.account = sa
-							} catch (ex: Throwable) {
-								log.trace(ex)
-								return TootApiResult(ex.withCaption("invalid state"))
-							}
+                    for (param in sv.split(",")) {
+                        when {
+                            param.startsWith("db:") -> try {
+                                val dataId = param.substring(3).toLong(10)
+                                val sa = SavedAccount.loadAccount(this@ActMain, dataId)
+                                    ?: return TootApiResult("missing account db_id=$dataId")
+                                this.sa = sa
+                                client.account = sa
+                            } catch (ex: Throwable) {
+                                log.trace(ex)
+                                return TootApiResult(ex.withCaption("invalid state"))
+                            }
 
-							param.startsWith("host:") -> {
-								val host = Host.parse(param.substring(5))
-								client.apiHost = host
-							}
+                            param.startsWith("host:") -> {
+                                val host = Host.parse(param.substring(5))
+                                client.apiHost = host
+                            }
 
-							// ignore other parameter
-						}
-					}
+                            // ignore other parameter
+                        }
+                    }
 
-					val instance = client.apiHost
-						?: return TootApiResult("missing instance in callback url.")
+                    val instance = client.apiHost
+                        ?: return TootApiResult("missing instance in callback url.")
 
-					val (ti, r2) = TootInstance.get(client)
-					ti ?: return r2
+                    val (ti, r2) = TootInstance.get(client)
+                    ti ?: return r2
 
-					this.ti = ti
-					this.host = instance
+                    this.ti = ti
+                    this.host = instance
 
-					val parser = TootParser(
-						this@ActMain,
-						linkHelper = LinkHelper.create(instance)
-					)
+                    val parser = TootParser(
+                        this@ActMain,
+                        linkHelper = LinkHelper.create(instance)
+                    )
 
-					return client.authentication2(
-						Pref.spClientName(this@ActMain),
-						code
-					)?.also { this.ta = parser.account(it.jsonObject) }
-				}
-			}
+                    return client.authentication2(
+                        Pref.spClientName(this@ActMain),
+                        code
+                    )?.also { this.ta = parser.account(it.jsonObject) }
+                }
+            }
 
-			override suspend fun handleResult(result: TootApiResult?) {
-				val host = this.host
-				val ta = this.ta
-				var sa = this.sa
+            override suspend fun handleResult(result: TootApiResult?) {
+                val host = this.host
+                val ta = this.ta
+                var sa = this.sa
 
-				if (ta != null && host?.isValid == true && sa == null) {
-					val acct = Acct.parse(ta.username, host)
-					// アカウント追加時に、アプリ内に既にあるアカウントと同じものを登録していたかもしれない
-					sa = SavedAccount.loadAccountByAcct(this@ActMain, acct.ascii)
-				}
+                if (ta != null && host?.isValid == true && sa == null) {
+                    val acct = Acct.parse(ta.username, host)
+                    // アカウント追加時に、アプリ内に既にあるアカウントと同じものを登録していたかもしれない
+                    sa = SavedAccount.loadAccountByAcct(this@ActMain, acct.ascii)
+                }
 
-				afterAccountVerify(result, ta, sa, ti, host)
-			}
+                afterAccountVerify(result, ta, sa, ti, host)
+            }
 
-		})
+        })
     }
 
     private fun handleCustomSchemaUri(uri: Uri) {
@@ -2011,12 +1970,12 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
     }
 
     internal fun afterAccountVerify(
-		result: TootApiResult?,
-		ta: TootAccount?,
-		sa: SavedAccount?,
-		ti: TootInstance?,
-		host: Host?
-	): Boolean {
+        result: TootApiResult?,
+        ta: TootAccount?,
+        sa: SavedAccount?,
+        ti: TootInstance?,
+        host: Host?
+    ): Boolean {
         result ?: return false
 
         val jsonObject = result.jsonObject
@@ -2051,7 +2010,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
                 reloadAccountSetting()
 
                 // 自動でリロードする
-                app_state.column_list
+                app_state.columnList
                     .filter { it.access_info == sa }
                     .forEach { it.startLoading() }
 
@@ -2072,13 +2031,13 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
                 }
 
                 val row_id = SavedAccount.insert(
-					acct = user.ascii,
-					host = host.ascii,
-					domain = apDomain,
-					account = jsonObject,
-					token = token_info,
-					misskeyVersion = TootInstance.parseMisskeyVersion(token_info)
-				)
+                    acct = user.ascii,
+                    host = host.ascii,
+                    domain = apDomain,
+                    account = jsonObject,
+                    token = token_info,
+                    misskeyVersion = TootInstance.parseMisskeyVersion(token_info)
+                )
                 val account = SavedAccount.loadAccount(this@ActMain, row_id)
                 if (account != null) {
                     var bModified = false
@@ -2130,47 +2089,47 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
     // アクセストークンを手動で入力した場合
     fun checkAccessToken(
-		dialog_host: Dialog?,
-		dialog_token: Dialog?,
-		apiHost: Host,
-		access_token: String,
-		sa: SavedAccount?
-	) {
+        dialog_host: Dialog?,
+        dialog_token: Dialog?,
+        apiHost: Host,
+        access_token: String,
+        sa: SavedAccount?
+    ) {
 
         TootTaskRunner(this@ActMain).run(apiHost, object : TootTask {
 
-			var ta: TootAccount? = null
-			var ti: TootInstance? = null
+            var ta: TootAccount? = null
+            var ti: TootInstance? = null
 
-			override suspend fun background(client: TootApiClient): TootApiResult? {
+            override suspend fun background(client: TootApiClient): TootApiResult? {
 
-				val (instance, instanceResult) = TootInstance.get(client, apiHost)
-				instance ?: return instanceResult
-				this.ti = instance
+                val (instance, instanceResult) = TootInstance.get(client, apiHost)
+                instance ?: return instanceResult
+                this.ti = instance
 
-				val misskeyVersion = instance.misskeyVersion
+                val misskeyVersion = instance.misskeyVersion
 
-				val result = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
+                val result = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
 
-				this.ta = TootParser(
-					this@ActMain,
-					LinkHelper.create(
-						apiHost,
-						apDomainArg = instance.uri?.let { Host.parse(it) },
-						misskeyVersion = misskeyVersion
-					)
-				).account(result?.jsonObject)
+                this.ta = TootParser(
+                    this@ActMain,
+                    LinkHelper.create(
+                        apiHost,
+                        apDomainArg = instance.uri?.let { Host.parse(it) },
+                        misskeyVersion = misskeyVersion
+                    )
+                ).account(result?.jsonObject)
 
-				return result
-			}
+                return result
+            }
 
-			override suspend fun handleResult(result: TootApiResult?) {
-				if (afterAccountVerify(result, ta, sa, ti, apiHost)) {
-					dialog_host?.dismissSafe()
-					dialog_token?.dismissSafe()
-				}
-			}
-		})
+            override suspend fun handleResult(result: TootApiResult?) {
+                if (afterAccountVerify(result, ta, sa, ti, apiHost)) {
+                    dialog_host?.dismissSafe()
+                    dialog_token?.dismissSafe()
+                }
+            }
+        })
     }
 
     // アクセストークンの手動入力(更新)
@@ -2179,34 +2138,34 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         val sa = SavedAccount.loadAccount(this, db_id) ?: return
 
         DlgTextInput.show(
-			this,
-			getString(R.string.access_token_or_api_token),
-			null,
-			callback = object : DlgTextInput.Callback {
-				override fun onOK(dialog: Dialog, text: String) {
-					checkAccessToken(null, dialog, sa.apiHost, text, sa)
-				}
+            this,
+            getString(R.string.access_token_or_api_token),
+            null,
+            callback = object : DlgTextInput.Callback {
+                override fun onOK(dialog: Dialog, text: String) {
+                    checkAccessToken(null, dialog, sa.apiHost, text, sa)
+                }
 
-				override fun onEmptyError() {
-					showToast(true, R.string.token_not_specified)
-				}
-			})
+                override fun onEmptyError() {
+                    showToast(true, R.string.token_not_specified)
+                }
+            })
     }
 
     private fun reloadAccountSetting() {
         val done_list = ArrayList<SavedAccount>()
-        for (column in app_state.column_list) {
+        for (column in app_state.columnList) {
             val a = column.access_info
             if (done_list.contains(a)) continue
             done_list.add(a)
-            if (!a.isNA) a.reloadSetting(this@ActMain)
+            if (!a.isNA) a.reloadSetting(this)
             column.fireShowColumnHeader()
         }
     }
 
     fun reloadAccountSetting(account: SavedAccount) {
         val done_list = ArrayList<SavedAccount>()
-        for (column in app_state.column_list) {
+        for (column in app_state.columnList) {
             val a = column.access_info
             if (a != account) continue
             if (done_list.contains(a)) continue
@@ -2232,40 +2191,27 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
             return
         }
 
-        val page_delete = app_state.column_list.indexOf(column)
+        app_state.columnIndex(column)?.let{ page_delete ->
+            phoneTab({ env ->
+                val page_showing = env.pager.currentItem
 
-        phoneTab({ env ->
-			val page_showing = env.pager.currentItem
+                removeColumn(column)
 
-			removeColumn(column)
+                if ( page_showing == page_delete) {
+                    scrollAndLoad(page_showing-1)
+                }
 
-			if (app_state.column_list.isNotEmpty() && page_delete > 0 && page_showing == page_delete) {
-				val idx = page_delete - 1
-				scrollToColumn(idx)
-				val c = app_state.column_list[idx]
-				if (!c.bFirstInitialized) {
-					c.startLoading()
-				}
-			}
-
-		}, {
-			removeColumn(column)
-
-			if (app_state.column_list.isNotEmpty() && page_delete > 0) {
-				val idx = page_delete - 1
-				scrollToColumn(idx)
-				val c = app_state.column_list[idx]
-				if (!c.bFirstInitialized) {
-					c.startLoading()
-				}
-			}
-		})
+            }, {
+                removeColumn(column)
+                scrollAndLoad( page_delete - 1)
+            })
+        }
     }
 
     fun closeColumnAll(
-		_lastColumnIndex: Int = -1,
-		bConfirmed: Boolean = false
-	) {
+        _lastColumnIndex: Int = -1,
+        bConfirmed: Boolean = false
+    ) {
 
         if (!bConfirmed) {
             AlertDialog.Builder(this)
@@ -2277,86 +2223,84 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         }
 
         var lastColumnIndex = when (_lastColumnIndex) {
-			-1 -> phoneTab(
-				{ it.pager.currentItem },
-				{ 0 }
-			)
+            -1 -> phoneTab(
+                { it.pager.currentItem },
+                { 0 }
+            )
             else -> _lastColumnIndex
         }
 
         phoneOnly { env -> env.pager.adapter = null }
 
-        for (i in (0 until app_state.column_list.size).reversed()) {
-            val column = app_state.column_list[i]
-            if (column.dont_close) continue
-            app_state.column_list.removeAt(i).dispose()
-            if (lastColumnIndex >= i) --lastColumnIndex
+        app_state.editColumnList { list ->
+            for (i in list.indices.reversed()) {
+                val column = list[i]
+                if (column.dont_close) continue
+                list.removeAt(i).dispose()
+                if (lastColumnIndex >= i) --lastColumnIndex
+            }
         }
 
         phoneTab(
-			{ env -> env.pager.adapter = env.pager_adapter },
-			{ env -> resizeColumnWidth(env) }
-		)
+            { env -> env.pager.adapter = env.pager_adapter },
+            { env -> resizeColumnWidth(env) }
+        )
 
-        app_state.saveColumnList()
         updateColumnStrip()
 
-        if (app_state.column_list.isNotEmpty() && lastColumnIndex >= 0 && lastColumnIndex < app_state.column_list.size) {
-            scrollToColumn(lastColumnIndex)
-            val c = app_state.column_list[lastColumnIndex]
-            if (!c.bFirstInitialized) {
-                c.startLoading()
-            }
-        }
+        scrollAndLoad(lastColumnIndex)
+    }
+
+    private fun scrollAndLoad(idx:Int){
+        val c = app_state.column(idx) ?:return
+        scrollToColumn(idx)
+        if (!c.bFirstInitialized) c.startLoading()
     }
 
 //////////////////////////////////////////////////////////////
 // カラム追加系
 
     fun addColumn(
-		indexArg: Int,
-		ai: SavedAccount,
-		type: ColumnType,
-		vararg params: Any
-	): Column {
+        indexArg: Int,
+        ai: SavedAccount,
+        type: ColumnType,
+        vararg params: Any
+    ): Column {
         return addColumn(
-			Pref.bpAllowColumnDuplication(pref),
-			indexArg,
-			ai,
-			type,
-			*params
-		)
+            Pref.bpAllowColumnDuplication(pref),
+            indexArg,
+            ai,
+            type,
+            *params
+        )
     }
 
     fun addColumn(
-		allowColumnDuplication: Boolean,
-		indexArg: Int,
-		ai: SavedAccount,
-		type: ColumnType,
-		vararg params: Any
-	): Column {
+        allowColumnDuplication: Boolean,
+        indexArg: Int,
+        ai: SavedAccount,
+        type: ColumnType,
+        vararg params: Any
+    ): Column {
         if (!allowColumnDuplication) {
             // 既に同じカラムがあればそこに移動する
-            for (column in app_state.column_list) {
+            app_state.columnList.forEachIndexed { i, column ->
                 if (column.isSameSpec(ai, type, params)) {
-                    val indexColumn = app_state.column_list.indexOf(column)
-                    scrollToColumn(indexColumn)
+                    scrollToColumn(i)
                     return column
                 }
             }
         }
+
         //
-        val col = Column(app_state, ai, this, type.id, *params)
+        val col = Column(app_state, ai, type.id, *params)
         val index = addColumn(col, indexArg)
-        scrollToColumn(index)
-        if (!col.bFirstInitialized) {
-            col.startLoading()
-        }
+        scrollAndLoad(index)
         return col
     }
 
     fun showColumnMatchAccount(account: SavedAccount) {
-        for (column in app_state.column_list) {
+        app_state.columnList.forEach { column ->
             if (account == column.access_info) {
                 column.fireRebindAdapterItems()
             }
@@ -2393,9 +2337,9 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
             getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
 
         val csl = ColorStateList.valueOf(
-			footer_button_fg_color.notZero()
-				?: getAttributeColor(R.attr.colorVectorDrawable)
-		)
+            footer_button_fg_color.notZero()
+                ?: getAttributeColor(R.attr.colorVectorDrawable)
+        )
         btnToot.imageTintList = csl
         btnMenu.imageTintList = csl
         btnQuickToot.imageTintList = csl
@@ -2415,94 +2359,84 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
     private fun closeColumnSetting(): Boolean {
         phoneTab({ env ->
-			val vh = env.pager_adapter.getColumnViewHolder(env.pager.currentItem)
-			if (vh?.isColumnSettingShown == true) {
-				vh.showColumnSetting(false)
-				return@closeColumnSetting true
-			}
-		}, { env ->
-			for (i in 0 until env.tablet_layout_manager.childCount) {
+            val vh = env.pager_adapter.getColumnViewHolder(env.pager.currentItem)
+            if (vh?.isColumnSettingShown == true) {
+                vh.showColumnSetting(false)
+                return@closeColumnSetting true
+            }
+        }, { env ->
+            for (i in 0 until env.tablet_layout_manager.childCount) {
 
-				val columnViewHolder = when (val v = env.tablet_layout_manager.getChildAt(i)) {
-					null -> null
-					else -> (env.tablet_pager.getChildViewHolder(v) as? TabletColumnViewHolder)?.columnViewHolder
-				}
+                val columnViewHolder = when (val v = env.tablet_layout_manager.getChildAt(i)) {
+                    null -> null
+                    else -> (env.tablet_pager.getChildViewHolder(v) as? TabletColumnViewHolder)?.columnViewHolder
+                }
 
-				if (columnViewHolder?.isColumnSettingShown == true) {
-					columnViewHolder.showColumnSetting(false)
-					return@closeColumnSetting true
-				}
-			}
-		})
+                if (columnViewHolder?.isColumnSettingShown == true) {
+                    columnViewHolder.showColumnSetting(false)
+                    return@closeColumnSetting true
+                }
+            }
+        })
         return false
     }
 
     private fun addColumn(column: Column, indexArg: Int): Int {
-        var index = indexArg
-        val size = app_state.column_list.size
-        if (index > size) index = size
+        val index = indexArg.clip(0, app_state.columnCount)
 
         phoneOnly { env -> env.pager.adapter = null }
 
-        app_state.column_list.add(index, column)
+        app_state.editColumnList {
+            it.add(index, column)
+        }
 
         phoneTab(
-			{ env -> env.pager.adapter = env.pager_adapter },
-			{ env -> resizeColumnWidth(env) }
-		)
+            { env -> env.pager.adapter = env.pager_adapter },
+            { env -> resizeColumnWidth(env) }
+        )
 
-        app_state.saveColumnList()
+
         updateColumnStrip()
 
         return index
     }
 
     private fun removeColumn(column: Column) {
-        val idx_column = app_state.column_list.indexOf(column)
-        if (idx_column == -1) return
+        val idx_column = app_state.columnIndex(column) ?: return
 
         phoneOnly { env -> env.pager.adapter = null }
 
-        app_state.column_list.removeAt(idx_column).dispose()
+        app_state.editColumnList {
+            it.removeAt(idx_column).dispose()
+        }
 
         phoneTab(
-			{ env -> env.pager.adapter = env.pager_adapter },
-			{ env -> resizeColumnWidth(env) }
-		)
+            { env -> env.pager.adapter = env.pager_adapter },
+            { env -> resizeColumnWidth(env) }
+        )
 
-        app_state.saveColumnList()
         updateColumnStrip()
     }
 
-    private fun setOrder(new_order: ArrayList<Int>) {
+    private fun setOrder(new_order: List<Int>) {
 
         phoneOnly { env -> env.pager.adapter = null }
 
-        val ie = app_state.column_list.size
-
-        val tmp_list = ArrayList<Column>()
-        val used_set = HashSet<Int>()
-
-        // copy by new_order
-        for (i in new_order) {
-            if (0 <= i && i < ie) {
-                used_set.add(i)
-                tmp_list.add(app_state.column_list[i])
+        app_state.editColumnList { list ->
+            // columns with new order
+            val tmp_list = new_order.mapNotNull { i -> list.elementAtOrNull(i) }
+            val used_set = new_order.toSet()
+            list.forEachIndexed { i, v ->
+                if (!used_set.contains(i)) v.dispose()
             }
+            list.clear()
+            list.addAll(tmp_list)
         }
-
-        // dispose unused elements.
-        for (i in 0 until ie) {
-            if (used_set.contains(i)) continue
-            app_state.column_list[i].dispose()
-        }
-        app_state.column_list.clear()
-        app_state.column_list.addAll(tmp_list)
 
         phoneTab(
-			{ env -> env.pager.adapter = env.pager_adapter },
-			{ env -> resizeColumnWidth(env) }
-		)
+            { env -> env.pager.adapter = env.pager_adapter },
+            { env -> resizeColumnWidth(env) }
+        )
 
         app_state.saveColumnList()
         updateColumnStrip()
@@ -2546,7 +2480,7 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
 
             // データのカラム数より大きくならないようにする
             // (でも最小は1)
-            val column_count = app_state.column_list.size
+            val column_count = app_state.columnCount
             if (column_count > 0 && column_count < nScreenColumn) {
                 nScreenColumn = column_count
             }
@@ -2578,18 +2512,18 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         scrollColumnStrip(index)
         phoneTab(
 
-			// スマホはスムーススクロール基本ありだがたまにしない
-			{ env ->
-				log.d("ipLastColumnPos beforeScroll=${env.pager.currentItem}")
-				env.pager.setCurrentItem(index, smoothScroll)
-			},
+            // スマホはスムーススクロール基本ありだがたまにしない
+            { env ->
+                log.d("ipLastColumnPos beforeScroll=${env.pager.currentItem}")
+                env.pager.setCurrentItem(index, smoothScroll)
+            },
 
-			// タブレットでスムーススクロールさせると頻繁にオーバーランするので絶対しない
-			{ env ->
-				log.d("ipLastColumnPos beforeScroll=${env.visibleColumnsIndices.first}")
-				env.tablet_pager.scrollToPosition(index)
-			}
-		)
+            // タブレットでスムーススクロールさせると頻繁にオーバーランするので絶対しない
+            { env ->
+                log.d("ipLastColumnPos beforeScroll=${env.visibleColumnsIndices.first}")
+                env.tablet_pager.scrollToPosition(index)
+            }
+        )
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -2600,138 +2534,139 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         // remove all columns
         phoneOnly { env -> env.pager.adapter = null }
 
-        for (c in app_state.column_list) {
-            c.dispose()
+        app_state.editColumnList(save = false) { list ->
+            list.forEach { it.dispose() }
+            list.clear()
         }
-        app_state.column_list.clear()
 
         phoneTab(
-			{ env -> env.pager.adapter = env.pager_adapter },
-			{ env -> resizeColumnWidth(env) }
-		)
+            { env -> env.pager.adapter = env.pager_adapter },
+            { env -> resizeColumnWidth(env) }
+        )
 
         updateColumnStrip()
 
 
         runWithProgress(
-			"importing app data",
+            "importing app data",
 
-			doInBackground = { progress ->
-				fun setProgressMessage(sv: String) =
-					runOnMainLooper { progress.setMessageEx(sv) }
+            doInBackground = { progress ->
+                fun setProgressMessage(sv: String) =
+                    runOnMainLooper { progress.setMessageEx(sv) }
 
-				var newColumnList: ArrayList<Column>? = null
+                var newColumnList: ArrayList<Column>? = null
 
-				setProgressMessage("import data to local storage...")
+                setProgressMessage("import data to local storage...")
 
-				// アプリ内領域に一時ファイルを作ってコピーする
-				val cacheDir = cacheDir
-				cacheDir.mkdir()
-				val file = File(
-					cacheDir,
-					"SubwayTooter.${Process.myPid()}.${Process.myTid()}.tmp"
-				)
-				val source = contentResolver.openInputStream(uri)
-				if (source == null) {
-					showToast(true, "openInputStream failed.")
-					return@runWithProgress null
-				}
-				source.use { inStream ->
-					FileOutputStream(file).use { outStream ->
-						IOUtils.copy(inStream, outStream)
-					}
-				}
+                // アプリ内領域に一時ファイルを作ってコピーする
+                val cacheDir = cacheDir
+                cacheDir.mkdir()
+                val file = File(
+                    cacheDir,
+                    "SubwayTooter.${Process.myPid()}.${Process.myTid()}.tmp"
+                )
+                val source = contentResolver.openInputStream(uri)
+                if (source == null) {
+                    showToast(true, "openInputStream failed.")
+                    return@runWithProgress null
+                }
+                source.use { inStream ->
+                    FileOutputStream(file).use { outStream ->
+                        IOUtils.copy(inStream, outStream)
+                    }
+                }
 
-				// 通知サービスを止める
-				setProgressMessage("syncing notification poller…")
-				PollingWorker.queueAppDataImportBefore(this@ActMain)
-				while (PollingWorker.mBusyAppDataImportBefore.get()) {
-					delay(1000L)
-					log.d("syncing polling task...")
-				}
+                // 通知サービスを止める
+                setProgressMessage("syncing notification poller…")
+                PollingWorker.queueAppDataImportBefore(this@ActMain)
+                while (PollingWorker.mBusyAppDataImportBefore.get()) {
+                    delay(1000L)
+                    log.d("syncing polling task...")
+                }
 
-				// データを読み込む
-				setProgressMessage("reading app data...")
-				var zipEntryCount = 0
-				try {
-					ZipInputStream(FileInputStream(file)).use { zipStream ->
-						while (true) {
-							val entry = zipStream.nextEntry ?: break
-							++zipEntryCount
-							try {
-								//
-								val entryName = entry.name
-								if (entryName.endsWith(".json")) {
-									newColumnList = AppDataExporter.decodeAppData(
-										this@ActMain,
-										JsonReader(InputStreamReader(zipStream, "UTF-8"))
-									)
-									continue
-								}
+                // データを読み込む
+                setProgressMessage("reading app data...")
+                var zipEntryCount = 0
+                try {
+                    ZipInputStream(FileInputStream(file)).use { zipStream ->
+                        while (true) {
+                            val entry = zipStream.nextEntry ?: break
+                            ++zipEntryCount
+                            try {
+                                //
+                                val entryName = entry.name
+                                if (entryName.endsWith(".json")) {
+                                    newColumnList = AppDataExporter.decodeAppData(
+                                        this@ActMain,
+                                        JsonReader(InputStreamReader(zipStream, "UTF-8"))
+                                    )
+                                    continue
+                                }
 
-								if (AppDataExporter.restoreBackgroundImage(
-										this@ActMain,
-										newColumnList,
-										zipStream,
-										entryName
-									)
-								) {
-									continue
-								}
-							} finally {
-								zipStream.closeEntry()
-							}
-						}
-					}
-				} catch (ex: Throwable) {
-					log.trace(ex)
-					if (zipEntryCount != 0) {
-						showToast(ex, "importAppData failed.")
-					}
-				}
-				// zipではなかった場合、zipEntryがない状態になる。例外はPH-1では出なかったが、出ても問題ないようにする。
-				if (zipEntryCount == 0) {
-					InputStreamReader(FileInputStream(file), "UTF-8").use { inStream ->
-						newColumnList = AppDataExporter.decodeAppData(
-							this@ActMain,
-							JsonReader(inStream)
-						)
-					}
-				}
+                                if (AppDataExporter.restoreBackgroundImage(
+                                        this@ActMain,
+                                        newColumnList,
+                                        zipStream,
+                                        entryName
+                                    )
+                                ) {
+                                    continue
+                                }
+                            } finally {
+                                zipStream.closeEntry()
+                            }
+                        }
+                    }
+                } catch (ex: Throwable) {
+                    log.trace(ex)
+                    if (zipEntryCount != 0) {
+                        showToast(ex, "importAppData failed.")
+                    }
+                }
+                // zipではなかった場合、zipEntryがない状態になる。例外はPH-1では出なかったが、出ても問題ないようにする。
+                if (zipEntryCount == 0) {
+                    InputStreamReader(FileInputStream(file), "UTF-8").use { inStream ->
+                        newColumnList = AppDataExporter.decodeAppData(
+                            this@ActMain,
+                            JsonReader(inStream)
+                        )
+                    }
+                }
 
-				newColumnList
-			},
-			afterProc = {
-				// cancelled.
-				if (it == null) return@runWithProgress
+                newColumnList
+            },
+            afterProc = {
+                // cancelled.
+                if (it == null) return@runWithProgress
 
-				try {
-					phoneOnly { env -> env.pager.adapter = null }
+                try {
+                    phoneOnly { env -> env.pager.adapter = null }
 
-					app_state.column_list.clear()
-					app_state.column_list.addAll(it)
-					app_state.saveColumnList()
+                    app_state.editColumnList { list ->
+                        list.clear()
+                        list.addAll(it)
+                    }
 
-					phoneTab(
-						{ env -> env.pager.adapter = env.pager_adapter },
-						{ env -> resizeColumnWidth(env) }
-					)
-					updateColumnStrip()
-				} finally {
-					// 通知サービスをリスタート
-					PollingWorker.queueAppDataImportAfter(this@ActMain)
-				}
+                    phoneTab(
+                        { env -> env.pager.adapter = env.pager_adapter },
+                        { env -> resizeColumnWidth(env) }
+                    )
+                    updateColumnStrip()
+                } finally {
+                    // 通知サービスをリスタート
+                    PollingWorker.queueAppDataImportAfter(this@ActMain)
+                }
 
-				showToast(true, R.string.import_completed_please_restart_app)
-				finish()
-			},
-			preProc = {
-				window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-			},
-			postProc = {
-				window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-			}
-		)
+                showToast(true, R.string.import_completed_please_restart_app)
+                finish()
+            },
+            preProc = {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            },
+            postProc = {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        )
     }
 
     override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
@@ -2803,9 +2738,9 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         }
 
         tv.measure(
-			View.MeasureSpec.makeMeasureSpec(nAutoCwCellWidth, View.MeasureSpec.EXACTLY),
-			View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-		)
+            View.MeasureSpec.makeMeasureSpec(nAutoCwCellWidth, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
         val l = tv.layout
         if (l != null) {
             auto_cw.originalLineCount = l.lineCount
@@ -2842,8 +2777,8 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
         if (dlgPrivacyPolicy?.get()?.isShowing == true) return
 
         val res_id = when (getString(R.string.language_code)) {
-			"ja" -> R.raw.privacy_policy_ja
-			"fr" -> R.raw.privacy_policy_fr
+            "ja" -> R.raw.privacy_policy_ja
+            "fr" -> R.raw.privacy_policy_fr
             else -> R.raw.privacy_policy_en
         }
 
@@ -2875,11 +2810,12 @@ class ActMain : AsyncActivity(), Column.Callback, View.OnClickListener,
     private fun searchFromActivityResult(data: Intent?, columnType: ColumnType) =
         data?.getStringExtra(Intent.EXTRA_TEXT)?.let {
             addColumn(
-				false,
-				defaultInsertPosition,
-				SavedAccount.na,
-				columnType,
-				it
-			)
+                false,
+                defaultInsertPosition,
+                SavedAccount.na,
+                columnType,
+                it
+            )
         }
+
 }

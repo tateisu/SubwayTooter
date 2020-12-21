@@ -107,8 +107,10 @@ class ColumnTask_Loading(
                 column.list_data.addAll(list_new)
             }
 
-            column.resumeStreaming(false)
+            // 初回ロード完了時はストリーミングを開始させる場合がある
+            column.app_state.streamManager.updateStreamingColumns()
         }
+
         column.fireShowContent(reason = "loading updated", reset = true)
 
         // 初期ロードの直後は先頭に移動する

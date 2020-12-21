@@ -96,8 +96,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
         app_state = App1.getAppState(this)
         density = app_state.density
         column_index = intent.getIntExtra(EXTRA_COLUMN_INDEX, 0)
-        column = app_state.column_list[column_index]
-
+        column = app_state.column(column_index)!!
         show()
     }
 
@@ -243,7 +242,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			var bgUri: String? = null
 
 			@Suppress("BlockingMethodInNonBlockingContext")
-			override suspend fun background(client: TootApiClient): TootApiResult? {
+			override suspend fun background(client: TootApiClient): TootApiResult {
 				try {
 					val backgroundDir = Column.getBackgroundImageDir(this@ActColumnCustomize)
 					val file =

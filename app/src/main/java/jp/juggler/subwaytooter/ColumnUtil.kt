@@ -272,7 +272,9 @@ internal suspend fun Column.makeHashtagAcctUrl(client: TootApiClient): String? {
         if (with_attachment) sb.append("&only_media=true")
         if (instance_local) sb.append("&local=true")
 
-        sb.append(makeHashtagExtraQuery())
+        makeHashtagQueryParams(tagKey=null).encodeQuery().notEmpty()?.let{
+            sb.append('&').append(it)
+        }
 
         sb.toString()
     }
@@ -414,21 +416,27 @@ internal fun Column.makeAntennaTlUrl(): String {
     }
 }
 
-internal fun Column.makeHashtagExtraQuery(): String {
+fun JsonObject.encodeQuery():String {
     val sb = StringBuilder()
-    hashtag_any.split(" ").filter { it.isNotEmpty() }.forEach {
-        sb.append("&any[]=").append(it.encodePercent())
-    }
-
-    hashtag_all.split(" ").filter { it.isNotEmpty() }.forEach {
-        sb.append("&all[]=").append(it.encodePercent())
-    }
-
-    hashtag_none.split(" ").filter { it.isNotEmpty() }.forEach {
-        sb.append("&none[]=").append(it.encodePercent())
+    entries.forEach { pair->
+        val(k,v)=pair
+        when(v){
+            null,is String,is Number,is Boolean ->{
+                if(sb.isNotEmpty())sb.append('&')
+                sb.append(k).append('=').append( v.toString().encodePercent())
+            }
+            is JsonArray->{
+                v.forEach {
+                    if(sb.isNotEmpty())sb.append('&')
+                    sb.append(k).append("[]=").append( it.toString().encodePercent())
+                }
+            }
+            else-> error("encodeQuery: unsupported type ${v.javaClass.name}")
+        }
     }
     return sb.toString()
 }
+
 
 internal fun Column.makeHashtagUrl(): String {
     return if (isMisskey) {
@@ -442,9 +450,11 @@ internal fun Column.makeHashtagUrl(): String {
         if (with_attachment) sb.append("&only_media=true")
         if (instance_local) sb.append("&local=true")
 
-        sb
-            .append(makeHashtagExtraQuery())
-            .toString()
+        makeHashtagQueryParams(tagKey=null).encodeQuery().notEmpty()?.let{
+            sb.append('&').append(it)
+        }
+
+        sb.toString()
     }
 }
 

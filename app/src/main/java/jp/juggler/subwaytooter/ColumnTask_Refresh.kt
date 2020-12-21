@@ -139,8 +139,7 @@ class ColumnTask_Refresh(
                             }
                         }
                         o.highlightSpeech?.let {
-                            App1.getAppState(context)
-                                .addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
+                            column.app_state.addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
                         }
                     }
                 }
@@ -199,7 +198,10 @@ class ColumnTask_Refresh(
 
             if (!bBottom) {
                 column.bRefreshingTop = false
-                column.resumeStreaming(false)
+
+                // TODO ロード状態の度にストリーミングを止めるのはやめる
+                // TODO ストリーミングから受信したデータの反映をロード中は行わないようにしたい
+                // column.resumeStreaming(false)
             }
         }
     }

@@ -133,7 +133,7 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 		app_state = App1.getAppState(this)
 		density = app_state.density
 		column_index = intent.getIntExtra(EXTRA_COLUMN_INDEX, 0)
-		column = app_state.column_list[column_index]
+		column = app_state.column(column_index)!!
 		
 		if(savedInstanceState != null) {
 			try {

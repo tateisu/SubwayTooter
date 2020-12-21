@@ -54,7 +54,7 @@ object Action_Filter {
 				val filterList = this.filterList
 				if(filterList != null) {
 					activity.showToast(false, R.string.delete_succeeded)
-					for(column in App1.getAppState(activity).column_list) {
+					for(column in activity.app_state.columnList) {
 						if(column.access_info == access_info) {
 							column.onFilterDeleted(filter, filterList)
 						}

@@ -34,7 +34,7 @@ object Action_App {
 		}
 		
 		MutedApp.save(application.name)
-		App1.getAppState(activity).onMuteUpdated()
+		activity.app_state.onMuteUpdated()
 		activity.showToast(false, R.string.app_was_muted)
 	}
 	

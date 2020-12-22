@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.math.max
 
 
 enum class ColumnPagingType {
@@ -563,11 +564,11 @@ class Column(
 
     ////////////////////////////////////////////////////////////////
 
-    private fun canHandleStreamingMessage () =  !is_dispose.get() && canStartStreaming()
+    private fun canHandleStreamingMessage() = !is_dispose.get() && canStartStreaming()
 
-    private fun runOnMainLooperForStreamingEvent(proc : () -> Unit){
+    private fun runOnMainLooperForStreamingEvent(proc: () -> Unit) {
         runOnMainLooper {
-            if(!canHandleStreamingMessage() )
+            if (!canHandleStreamingMessage())
                 return@runOnMainLooper
             proc()
         }
@@ -576,7 +577,7 @@ class Column(
     val streamCallback = object : StreamCallback {
 
         override fun onListeningStateChanged(status: StreamStatus) {
-            if(!canHandleStreamingMessage() ) return
+            if (!canHandleStreamingMessage()) return
 
             if (status == StreamStatus.Open) {
                 updateMisskeyCapture()
@@ -587,8 +588,8 @@ class Column(
             }
         }
 
-        override fun onTimelineItem(item: TimelineItem, channelId: String?,stream:JsonArray?) {
-            if(!canHandleStreamingMessage() ) return
+        override fun onTimelineItem(item: TimelineItem, channelId: String?, stream: JsonArray?) {
+            if (!canHandleStreamingMessage()) return
 
             when (item) {
                 is TootConversationSummary -> {
@@ -695,7 +696,7 @@ class Column(
 
         override fun onAnnouncementUpdate(item: TootAnnouncement) {
             runOnMainLooperForStreamingEvent {
-                if( type != ColumnType.HOME)
+                if (type != ColumnType.HOME)
                     return@runOnMainLooperForStreamingEvent
 
                 val list = announcements
@@ -719,7 +720,7 @@ class Column(
 
         override fun onAnnouncementDelete(id: EntityId) {
             runOnMainLooperForStreamingEvent {
-                announcements?.iterator()?.let{
+                announcements?.iterator()?.let {
                     while (it.hasNext()) {
                         val item = it.next()
                         if (item.id != id) continue
@@ -766,23 +767,25 @@ class Column(
         }
     }
 
-    private val mergeStreamingMessage: Runnable = object : Runnable {
+    private val mergeStreamingMessage = object : Runnable {
         override fun run() {
-
-            // 前回マージしてから暫くは待機してリトライ
             val handler = app_state.handler
-            val now = SystemClock.elapsedRealtime()
-            val remain = last_show_stream_data.get() + 333L - now
-            if (remain > 0) {
+
+            // 未初期化や初期ロード中ならキューをクリアして何もしない
+            if (!canHandleStreamingMessage() ) {
+                stream_data_queue.clear()
                 handler.removeCallbacks(this)
-                handler.postDelayed(this, remain)
                 return
             }
 
+            // 前回マージしてから暫くは待機してリトライ
             // カラムがビジー状態なら待機してリトライ
-            if( !canStartStreaming() || bRefreshLoading){
+            val now = SystemClock.elapsedRealtime()
+            var remain = last_show_stream_data.get() + 333L - now
+            if (bRefreshLoading) remain = max(333L, remain)
+            if (remain > 0) {
                 handler.removeCallbacks(this)
-                handler.postDelayed(this, 333L)
+                handler.postDelayed(this, remain)
                 return
             }
 
@@ -1546,7 +1549,6 @@ class Column(
 
         PollingWorker.queueNotificationCleared(context, access_info.db_id)
     }
-
 
 
     fun removeNotificationOne(target_account: SavedAccount, notification: TootNotification) {
@@ -2582,7 +2584,7 @@ class Column(
         } else if (isSearchColumn) {
             // 検索カラムはリフレッシュもストリーミングもないが、表示開始のタイミングでリストの再描画を行いたい
             fireShowContent(reason = "Column onStart isSearchColumn", reset = true)
-        } else if( canStartStreaming() && streamSpec !=null ){
+        } else if (canStartStreaming() && streamSpec != null) {
             // ギャップつきでストリーミング開始
             this.bPutGap = true
             fireShowColumnStatus()

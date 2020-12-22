@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.isNotificationColumn
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.showToast
 import jp.juggler.util.toFormRequestBody

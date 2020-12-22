@@ -431,7 +431,8 @@ class SideMenuAdapter(
 			selector = StateListDrawable()
 			divider = null
 			dividerHeight = 0
-			
+			isScrollbarFadingEnabled = false
+
 			val pad_tb = (actMain.density * 12f + 0.5f).toInt()
 			setPadding(0, pad_tb, 0, pad_tb)
 			clipToPadding = false

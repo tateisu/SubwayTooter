@@ -187,7 +187,6 @@ class StreamConnection(
     private fun handleMastodonMessage(obj: JsonObject, text: String) {
 
         val stream = obj.jsonArray("stream")
-        if(stream!=null) log.w("stream=${stream}")
 
         when (val event = obj.string("event")) {
             null, "" ->
@@ -274,15 +273,15 @@ class StreamConnection(
 
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         manager.enqueue {
-            log.v("$name WebSocket onClosed code=$code, reason=$reason")
+            log.w("$name WebSocket onClosed code=$code, reason=$reason")
             status = StreamStatus.Closed
         }
     }
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         manager.enqueue {
-            if (t is SocketException && t.message == "Socket is closed") {
-                log.w("$name ${t.message}")
+            if (t is SocketException && t.message?.contains("closed") ==true) {
+                log.w("$name socket closed.")
             } else {
                 log.e(t, "$name WebSocket onFailure.")
             }

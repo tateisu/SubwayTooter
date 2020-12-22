@@ -1094,9 +1094,9 @@ inline fun jsonObject(initializer: JsonObject.() -> Unit) =
 inline fun jsonArray(initializer: JsonArray.() -> Unit) =
     JsonArray().apply { initializer() }
 
-fun jsonArray(vararg args: String) = JsonArray(args)
+fun jsonArrayOf(vararg args: Any) = JsonArray(args)
 
-fun jsonObject(vararg args: Pair<String, *>) = JsonObject().apply {
+fun jsonObjectOf(vararg args: Pair<String, *>) = JsonObject().apply {
     for (pair in args) {
         put(pair.first, pair.second)
     }

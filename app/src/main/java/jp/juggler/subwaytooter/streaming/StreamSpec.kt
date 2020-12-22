@@ -80,15 +80,15 @@ private fun Column.streamSpecMastodon(): StreamSpec? {
     val root = type.streamKeyMastodon(this) ?: return null
 
     return StreamSpec(
-       params= root,
-        path=  "/api/v1/streaming/?${root.encodeQuery()}",
-        name=encodeStreamNameMastodon(root),
-        streamFilter =  type.streamFilterMastodon
+        params = root,
+        path = "/api/v1/streaming/?${root.encodeQuery()}",
+        name = encodeStreamNameMastodon(root),
+        streamFilter = type.streamFilterMastodon
     )
 }
 
-private fun encodeStreamNameMisskey(root:JsonObject) =
-    StringWriter().also{sw->
+private fun encodeStreamNameMisskey(root: JsonObject) =
+    StringWriter().also { sw ->
         sw.append(root.string(CHANNEL)!!)
         val params = root.jsonObject(PARAMS)!!
         params.entries.sortedBy { it.key }.forEach { pair ->
@@ -106,22 +106,28 @@ private fun encodeStreamNameMisskey(root:JsonObject) =
     }.toString()
 
 fun Column.streamSpecMisskey(): StreamSpec? {
-    val channelName  =
-        if( access_info.misskeyApiToken==null && type != ColumnType.LOCAL) {
-            null
-        }else {
-            type.streamNameMisskey
-        } ?: return null
+
+    // 認証トークンがないなら認証トークン必須のカラムにはアクセスできない
+    if (access_info.misskeyApiToken == null &&
+        when (type) {
+            ColumnType.HOME,
+            ColumnType.MISSKEY_HYBRID,
+            ColumnType.NOTIFICATIONS,
+            ColumnType.LIST_TL,
+            ColumnType.MISSKEY_ANTENNA_TL -> true
+            else -> false
+        }
+    ) return null
+
+    val channelName = type.streamNameMisskey ?: return null
 
     val path = when {
-        // Misskey 11以降は統合されてる
-        misskeyVersion >= 11 -> "/streaming"
-
-        else -> type.streamPathMisskey10(this)
+        misskeyVersion >= 10 -> "/streaming"
+        else -> type.streamPathMisskey9(this)
     } ?: return null
 
     val channelParam = type.streamParamMisskey(this) ?: JsonObject()
-    val root = jsonObject(CHANNEL to channelName, PARAMS to channelParam)
+    val root = jsonObjectOf(CHANNEL to channelName, PARAMS to channelParam)
 
     return StreamSpec(
         params = root,

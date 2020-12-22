@@ -83,7 +83,7 @@ enum class ColumnType(
 	val streamFilterMastodon: Column.(String?, TimelineItem) -> Boolean = { _, _ -> true },
 	val streamNameMisskey: String? = null,
 	val streamParamMisskey: Column.() -> JsonObject? = { null },
-	val streamPathMisskey10: Column.() -> String? = { null },
+	val streamPathMisskey9: Column.() -> String? = { null },
 ) {
 
     ProfileStatusMastodon(
@@ -418,7 +418,7 @@ enum class ColumnType(
 		canAutoRefresh = true,
 
 		streamKeyMastodon = {
-			jsonObject(StreamSpec.STREAM to "user")
+			jsonObjectOf(StreamSpec.STREAM to "user")
 		},
 		streamFilterMastodon = { stream, item ->
 			item is TootStatus && (stream == null || stream == "user")
@@ -426,7 +426,7 @@ enum class ColumnType(
 
 		streamNameMisskey = "homeTimeline",
 		streamParamMisskey = { null },
-		streamPathMisskey10 = { "/" },
+		streamPathMisskey9 = { "/" },
 	),
 
     LOCAL(
@@ -449,7 +449,7 @@ enum class ColumnType(
 		canAutoRefresh = true,
 
 		streamKeyMastodon = {
-			jsonObject(StreamSpec.STREAM to
+			jsonObjectOf(StreamSpec.STREAM to
 				"public:local"
 					.appendIf(":media", with_attachment)
 			)
@@ -464,7 +464,7 @@ enum class ColumnType(
 		},
 		streamNameMisskey = "localTimeline",
 		streamParamMisskey = { null },
-		streamPathMisskey10 = { "/local-timeline" },
+		streamPathMisskey9 = { "/local-timeline" },
 	),
 
     FEDERATE(
@@ -488,7 +488,7 @@ enum class ColumnType(
 		canAutoRefresh = true,
 
 		streamKeyMastodon = {
-			jsonObject(StreamSpec.STREAM to
+			jsonObjectOf(StreamSpec.STREAM to
 				"public"
 					.appendIf(":remote", remote_only)
 					.appendIf(":media", with_attachment)
@@ -508,7 +508,7 @@ enum class ColumnType(
 
 		streamNameMisskey = "globalTimeline",
 		streamParamMisskey = { null },
-		streamPathMisskey10 = { "/global-timeline" },
+		streamPathMisskey9 = { "/global-timeline" },
 	),
 
     MISSKEY_HYBRID(
@@ -533,7 +533,7 @@ enum class ColumnType(
 
 		streamNameMisskey = "hybridTimeline",
 		streamParamMisskey = { null },
-		streamPathMisskey10 = { "/hybrid-timeline" },
+		streamPathMisskey9 = { "/hybrid-timeline" },
 	),
 
     DOMAIN_TIMELINE(
@@ -561,7 +561,7 @@ enum class ColumnType(
 		canAutoRefresh = true,
 
 		streamKeyMastodon = {
-			jsonObject(StreamSpec.STREAM to
+			jsonObjectOf(StreamSpec.STREAM to
 				"public:domain"
 					.appendIf(":media", with_attachment),
 				"domain" to instance_uri
@@ -747,7 +747,7 @@ enum class ColumnType(
 		canAutoRefresh = true,
 
 		streamKeyMastodon = {
-			jsonObject(StreamSpec.STREAM to "user")
+			jsonObjectOf(StreamSpec.STREAM to "user")
 		},
 		streamFilterMastodon = { stream, item ->
 			when {
@@ -759,7 +759,7 @@ enum class ColumnType(
 
 		streamNameMisskey = "main",
 		streamParamMisskey = { null },
-		streamPathMisskey10 = { "/" },
+		streamPathMisskey9 = { "/" },
 	),
 
     NOTIFICATION_FROM_ACCT(
@@ -850,7 +850,7 @@ enum class ColumnType(
 		canAutoRefresh = true,
 
 		streamKeyMastodon = {
-			jsonObject(
+			jsonObjectOf(
 				StreamSpec.STREAM to "hashtag".appendIf(":local", instance_local),
 				"tag" to hashtag
 			)
@@ -865,8 +865,9 @@ enum class ColumnType(
 				else -> this.checkHashtagExtra(item)
 			}
 		},
+		// {"type":"connect","body":{"channel":"hashtag","id":"84970575","params":{"q":[["misskey"]]}}}
 		streamNameMisskey = "hashtag",
-		streamParamMisskey = {  jsonObject ("q" to hashtag)  },
+		streamParamMisskey = {  jsonObjectOf ("q" to jsonArrayOf(jsonArrayOf(hashtag)))  },
 		// Misskey10 というかめいすきーでタグTLのストリーミングができるのか不明
 		// streamPathMisskey10 = { "/???? ?q=${hashtag.encodePercent()}" },
 
@@ -1329,7 +1330,7 @@ enum class ColumnType(
 		canAutoRefresh = true,
 
 		streamKeyMastodon = {
-			jsonObject(StreamSpec.STREAM to "list", "list" to profile_id.toString())
+			jsonObjectOf(StreamSpec.STREAM to "list", "list" to profile_id.toString())
 		},
 
 		streamFilterMastodon = { stream, item ->
@@ -1340,8 +1341,8 @@ enum class ColumnType(
 			}
 		},
 		streamNameMisskey = "userList",
-		streamParamMisskey = { jsonObject("listId" to profile_id.toString()) },
-		streamPathMisskey10 = { "/user-list?listId=${profile_id.toString()}" },
+		streamParamMisskey = { jsonObjectOf("listId" to profile_id.toString()) },
+		streamPathMisskey9 = { "/user-list?listId=${profile_id.toString()}" },
 
 	),
 
@@ -1444,7 +1445,7 @@ enum class ColumnType(
 		canAutoRefresh = true,
 
 		streamKeyMastodon = {
-			jsonObject(StreamSpec.STREAM to "direct")
+			jsonObjectOf(StreamSpec.STREAM to "direct")
 		},
 
 		streamFilterMastodon = { stream, _ ->
@@ -1708,7 +1709,7 @@ enum class ColumnType(
 
 		canAutoRefresh = true,
 		streamNameMisskey = "antenna",
-		streamParamMisskey = { jsonObject("antennaId" to profile_id.toString()) },
+		streamParamMisskey = { jsonObjectOf("antennaId" to profile_id.toString()) },
 		// Misskey10 にアンテナはない
 	),
 

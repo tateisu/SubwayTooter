@@ -264,18 +264,18 @@ internal fun JsonObject.addMisskeyNotificationFilter(column: Column): JsonObject
         // QUICK_FILTER_FAVOURITE // misskeyはお気に入りの通知はない
         Column.QUICK_FILTER_BOOST -> put(
             "includeTypes",
-            jsonArray("renote", "quote")
+            jsonArrayOf("renote", "quote")
         )
         Column.QUICK_FILTER_FOLLOW -> put(
             "includeTypes",
-            jsonArray("follow", "receiveFollowRequest")
+            jsonArrayOf("follow", "receiveFollowRequest")
         )
         Column.QUICK_FILTER_MENTION -> put(
             "includeTypes",
-            jsonArray("mention", "reply")
+            jsonArrayOf("mention", "reply")
         )
-        Column.QUICK_FILTER_REACTION -> put("includeTypes", jp.juggler.util.jsonArray("reaction"))
-        Column.QUICK_FILTER_VOTE -> put("includeTypes", jp.juggler.util.jsonArray("poll_vote"))
+        Column.QUICK_FILTER_REACTION -> put("includeTypes", jsonArrayOf("reaction"))
+        Column.QUICK_FILTER_VOTE -> put("includeTypes", jsonArrayOf("poll_vote"))
 
         Column.QUICK_FILTER_POST -> {
             // FIXME Misskeyには特定フォロー者からの投稿を通知する機能があるのか？

@@ -332,7 +332,7 @@ class StreamConnection(
 
                 jsonObject {
                     put("type", "disconnect")
-                    put("body", jsonObject("id" to group.channelId))
+                    put("body", jsonObjectOf("id" to group.channelId))
                 }
             }
             socket.get()?.send(jsonObject.toString())
@@ -359,7 +359,7 @@ class StreamConnection(
                    後から body.put("id", "xxx")して
                    さらに外側を {"type": "connect", "body": body} でラップする
                    */
-                jsonObject(
+                jsonObjectOf(
                     "type" to "connect",
                     "body" to group.paramsClone().also{ it["id"]= group.channelId }
                 )

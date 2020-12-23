@@ -1081,4 +1081,5 @@
     <string name="duration_minutes_5">5 Minuten</string>
     <string name="duration_indefinite">Ohne Begrenzung</string>
     <string name="duration">Dauer</string>
+    <string name="web_browser">Web Browser</string>
 </resources>

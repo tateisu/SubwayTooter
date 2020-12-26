@@ -571,9 +571,13 @@ enum class ColumnType(
 		streamFilterMastodon = { stream, item ->
 			when {
 				item !is TootStatus -> false
-				(stream != null && !stream.startsWith("public:domain")) -> false
-				(stream != null && !stream.endsWith(instance_uri)) -> false
+
+				// streamがnullではないならドメインタイムラインのチェック
+				stream?.startsWith("public:domain")==false ||
+					stream?.endsWith(instance_uri)==false -> false
+
 				with_attachment && item.media_attachments.isNullOrEmpty() -> false
+
 				else -> true
 			}
 		}

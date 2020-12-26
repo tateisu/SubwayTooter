@@ -14,7 +14,7 @@ class StreamGroupAcct(
 ) {
     val parser: TootParser = TootParser(manager.appState.context, linkHelper = account)
 
-    val keyGroups = ConcurrentHashMap<StreamSpec, StreamGroupKey>()
+    val keyGroups = ConcurrentHashMap<StreamSpec, StreamGroup>()
 
     // 接続を束ねない場合に使われる
     private val connections = ConcurrentHashMap<StreamSpec, StreamConnection>()
@@ -24,13 +24,13 @@ class StreamGroupAcct(
 
     // カラムIDから出力先へのマップ
     @Volatile
-    private var destinations = ConcurrentHashMap<Int, StreamDestination>()
+    private var destinations = ConcurrentHashMap<Int, StreamRelation>()
 
-    fun addSpec(dst: StreamDestination) {
+    fun addSpec(dst: StreamRelation) {
         val spec = dst.spec
         var group = keyGroups[spec]
         if (group == null) {
-            group = StreamGroupKey(spec)
+            group = StreamGroup(spec)
             keyGroups[spec] = group
         }
         group.destinations[ dst.columnInternalId] = dst
@@ -58,7 +58,7 @@ class StreamGroupAcct(
             }
         }
 
-        this.destinations = ConcurrentHashMap<Int, StreamDestination>().apply {
+        this.destinations = ConcurrentHashMap<Int, StreamRelation>().apply {
             keyGroups.values.forEach { group ->
                 group.destinations.values.forEach { spec -> put(spec.columnInternalId, spec) }
             }

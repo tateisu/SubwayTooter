@@ -56,7 +56,7 @@ class StreamConnection(
 
     private var lastAliveSend = 0L
 
-    private val subscription = ConcurrentHashMap<StreamSpec, StreamGroupKey>()
+    private val subscription = ConcurrentHashMap<StreamSpec, StreamGroup>()
 
     // Misskeyの投稿キャプチャ
     private val capturedId = HashSet<EntityId>()
@@ -312,8 +312,8 @@ class StreamConnection(
         }
     }
 
-    private fun unsubscribe(group: StreamGroupKey) {
-        subscription.remove(group.spec)
+    private fun unsubscribe(spec:StreamSpec) {
+        subscription.remove(spec)
         try {
             val jsonObject = if (acctGroup.account.isMastodon) {
                 /*
@@ -321,9 +321,7 @@ class StreamConnection(
                      {  "stream": "hashtag:local", "tag": "foo" }
                 等に後から "type": "unsubscribe" を足す
                  */
-                group.paramsClone().apply {
-                    this["type"] = "unsubscribe"
-                }
+                spec.paramsClone().apply { put("type","unsubscribe") }
             } else {
                 /*
                 Misskeyの場合
@@ -332,7 +330,7 @@ class StreamConnection(
 
                 jsonObject {
                     put("type", "disconnect")
-                    put("body", jsonObjectOf("id" to group.channelId))
+                    put("body", jsonObjectOf("id" to spec.channelId))
                 }
             }
             socket.get()?.send(jsonObject.toString())
@@ -341,7 +339,8 @@ class StreamConnection(
         }
     }
 
-    private fun subscribe(group: StreamGroupKey) {
+    private fun subscribe(group: StreamGroup) {
+        val spec = group.spec
         try {
             val jsonObject = if (acctGroup.account.isMastodon) {
                 /*
@@ -349,9 +348,7 @@ class StreamConnection(
                      {  "stream": "hashtag:local", "tag": "foo" }
                      等に後から "type": "subscribe" を足す
                  */
-                group.paramsClone().apply {
-                    put("type","subscribe")
-                }
+                spec.paramsClone().apply { put("type","subscribe") }
             } else {
                 /*
                    Misskeyの場合
@@ -361,18 +358,18 @@ class StreamConnection(
                    */
                 jsonObjectOf(
                     "type" to "connect",
-                    "body" to group.paramsClone().also{ it["id"]= group.channelId }
+                    "body" to spec.paramsClone().apply{ put("id",spec.channelId) }
                 )
             }
             socket.get()?.send(jsonObject.toString())
         } catch (ex: Throwable) {
             log.e(ex, "send failed.")
         } finally {
-            subscription[group.spec] = group
+            subscription[spec] = group
         }
     }
 
-    private fun subscribeIfChanged(newGroup: StreamGroupKey, oldGroup: StreamGroupKey?) {
+    private fun subscribeIfChanged(newGroup: StreamGroup, oldGroup: StreamGroup?) {
         if (oldGroup == null) subscribe(newGroup)
     }
 
@@ -392,7 +389,7 @@ class StreamConnection(
 
             // 購読するべきでないものを購読解除する
             subscription.entries.toList().forEach {
-                if (!existsIds.contains(it.key)) unsubscribe(it.value)
+                if (!existsIds.contains(it.key)) unsubscribe(it.key)
             }
         }
     }

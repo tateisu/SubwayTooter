@@ -470,7 +470,7 @@ fun JsonObject.encodeQuery(): String {
                 if (sb.isNotEmpty()) sb.append('&')
                 sb.append(k).append('=').append(v.toString().encodePercent())
             }
-            is JsonArray -> {
+            is List<*> -> {
                 v.forEach {
                     if (sb.isNotEmpty()) sb.append('&')
                     sb.append(k).append("[]=").append(it.toString().encodePercent())
@@ -503,9 +503,9 @@ internal fun Column.makeHashtagQueryParams(tagKey: String? = "tag") = JsonObject
 
     if (tagKey != null) put(tagKey, hashtag)
 
-    hashtag_any.parseExtraTag().notEmpty()?.let { put("any", it) }
-    hashtag_all.parseExtraTag().notEmpty()?.let { put("all", it) }
-    hashtag_none.parseExtraTag().notEmpty()?.let { put("none", it) }
+    hashtag_any.parseExtraTag().notEmpty()?.let { put("any", it.toJsonArray()) }
+    hashtag_all.parseExtraTag().notEmpty()?.let { put("all", it.toJsonArray()) }
+    hashtag_none.parseExtraTag().notEmpty()?.let { put("none", it.toJsonArray()) }
 }
 
 fun Column.checkHashtagExtra(item: TootStatus): Boolean {

@@ -4,7 +4,7 @@ import jp.juggler.subwaytooter.Column
 import jp.juggler.util.LogCategory
 import java.lang.ref.WeakReference
 
-class StreamDestination(
+class StreamRelation(
     column: Column,
     val spec: StreamSpec
 ) {
@@ -29,4 +29,4 @@ class StreamDestination(
 }
 
 fun Column.getStreamDestination() =
-    streamSpec?.let { StreamDestination( spec = it, column = this ) }
+    streamSpec?.let { StreamRelation( spec = it, column = this ) }

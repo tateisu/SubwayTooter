@@ -55,6 +55,9 @@ class StreamSpec(
         if (other is StreamSpec) return keyString == other.keyString
         return false
     }
+
+    fun paramsClone() =
+        params.toString().decodeJsonObject()
 }
 
 private fun encodeStreamNameMastodon(root: JsonObject) = StringWriter()

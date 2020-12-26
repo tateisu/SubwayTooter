@@ -20,14 +20,13 @@ import kotlin.collections.HashMap
 import kotlin.collections.set
 
 
-
-
 class StreamManager(val appState: AppState) {
-    companion object{
+    companion object {
         private val log = LogCategory("StreamManager")
 
         // 画面ONの間は定期的に状況を更新する
         const val updateInterval = 5000L
+
     }
 
     val context = appState.context
@@ -49,26 +48,39 @@ class StreamManager(val appState: AppState) {
         val isScreenOn = isScreenOn.get()
 
         val newMap = HashMap<Acct, StreamGroupAcct>()
+        val errorAcct = HashSet<Acct>()
+
+        suspend fun prepareAcctGroup(accessInfo: SavedAccount): StreamGroupAcct? {
+            val acct = accessInfo.acct
+            if (errorAcct.contains(acct)) return null
+            var acctGroup = newMap[acct]
+            if (acctGroup == null) {
+                var (ti, ri) = TootInstance.get(client, account = accessInfo)
+                if (ti == null) {
+                    log.d("can't get server info. ${ri?.error}")
+                    val tiOld = acctGroups[acct]?.ti
+                    if (tiOld == null) {
+                        errorAcct.add(acct)
+                        return null
+                    }
+                    ti = tiOld
+                }
+                acctGroup = StreamGroupAcct(this, accessInfo, ti)
+                newMap[acct] = acctGroup
+            }
+            return acctGroup
+        }
+
         if (isScreenOn && !Pref.bpDontUseStreaming(appState.pref)) {
             for (column in appState.columnList) {
-                if (column.is_dispose.get()) continue
-                if (column.dont_streaming) continue
-
                 val accessInfo = column.access_info
-                if (accessInfo.isNA) continue
-                var server = newMap[accessInfo.acct]
-                if (server == null) {
-                    var (ti, ri) = TootInstance.get(client, account = accessInfo)
-                    if (ti == null) {
-                        log.d("can't get server info. ${ri?.error}")
-                        val tiOld = acctGroups[accessInfo.acct]?.ti ?: continue
-                        ti = tiOld
-                    }
-                    server = StreamGroupAcct(this, accessInfo, ti)
-                    newMap[accessInfo.acct] = server
-                }
+                if (column.is_dispose.get() || column.dont_streaming || accessInfo.isNA) continue
+
+                val server = prepareAcctGroup(accessInfo) ?: continue
+
                 val streamSpec = column.getStreamDestination()
-                if (streamSpec != null) server.addSpec(streamSpec)
+                if (streamSpec != null)
+                    server.addSpec(streamSpec)
             }
         }
 
@@ -135,7 +147,7 @@ class StreamManager(val appState: AppState) {
     fun getStreamingStatus(accessInfo: SavedAccount, columnInternalId: Int) =
         acctGroups[accessInfo.acct]?.getStreamingStatus(columnInternalId)
 
-    fun getConnection(column: Column)=
+    fun getConnection(column: Column) =
         acctGroups[column.access_info.acct]?.getConnection(column.internalId)
 
     ////////////////////////////////////////////////////////////////

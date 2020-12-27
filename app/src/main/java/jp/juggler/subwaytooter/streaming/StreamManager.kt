@@ -23,6 +23,8 @@ class StreamManager(val appState: AppState) {
     companion object {
         private val log = LogCategory("StreamManager")
 
+        val traceDelivery = "false".toBoolean()
+
         // 画面ONの間は定期的に状況を更新する
         const val updateInterval = 5000L
 

@@ -590,6 +590,7 @@ class Column(
         }
 
         override fun onTimelineItem(item: TimelineItem, channelId: String?, stream: JsonArray?) {
+            if(StreamManager.traceDelivery) log.v("${access_info.acct} onTimelineItem")
             if (!canHandleStreamingMessage()) return
 
             when (item) {
@@ -2780,13 +2781,13 @@ class Column(
     fun canStartStreaming() = when {
         // 未初期化なら何もしない
         !bFirstInitialized -> {
-            log.v("canStartStreaming: column is not initialized.")
+            if(StreamManager.traceDelivery) log.v("canStartStreaming: column is not initialized.")
             false
         }
 
         // 初期ロード中なら何もしない
         bInitialLoading -> {
-            log.v("canStartStreaming: is in initial loading.")
+            if(StreamManager.traceDelivery) log.v("canStartStreaming: is in initial loading.")
             false
         }
 

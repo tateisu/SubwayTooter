@@ -23,15 +23,21 @@ class StreamGroup(val spec: StreamSpec) {
 
     fun eachCallback(channelId: String?, stream: JsonArray?, item: TimelineItem?, block: (callback: StreamCallback) -> Unit) {
         // skip if channel id is provided and not match
-        if (channelId?.isNotEmpty() == true && channelId != spec.channelId) return
+        if (channelId?.isNotEmpty() == true && channelId != spec.channelId){
+            if(StreamManager.traceDelivery) log.v("${spec.name} channelId not match.")
+            return
+        }
 
-        val strStream = stream?.joinToString { "," }
+        val strStream = stream?.joinToString( "," )
 
         destinations.values.forEach { dst ->
             try {
                 if (strStream != null && item != null) {
                     val column = dst.refColumn.get() ?: return@forEach
-                    if (!dst.spec.streamFilter(column, strStream, item)) return@forEach
+                    if (!dst.spec.streamFilter(column, strStream, item)){
+                        if(StreamManager.traceDelivery) log.v("${spec.name} streamFilter not match. strStream=$strStream")
+                        return@forEach
+                    }
                 }
                 dst.refCallback.get()?.let { block(it) }
             } catch (ex: Throwable) {

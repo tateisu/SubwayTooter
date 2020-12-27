@@ -81,6 +81,7 @@ class StreamConnection(
         item:TimelineItem?=null,
         block: (callback: StreamCallback) -> Unit
     ) {
+        if(StreamManager.traceDelivery) log.v("$name eachCallback spec=${spec?.name}")
         if (spec != null) {
             eachCallbackForSpec(spec,channelId,stream,item,block)
         }else {
@@ -103,6 +104,7 @@ class StreamConnection(
 
     private fun fireTimelineItem(item: TimelineItem?, channelId: String? = null,stream:JsonArray?=null) {
         item?:return
+        if(StreamManager.traceDelivery) log.v("$name fireTimelineItem")
         eachCallback(channelId,stream,item=item) { it.onTimelineItem(item, channelId,stream) }
     }
 
@@ -184,7 +186,7 @@ class StreamConnection(
                 fireTimelineItem(acctGroup.parser.notification(body), channelId)
             }
 
-            else -> log.v("$name ignore streaming event $type")
+            else -> log.w("$name ignore streaming event $type")
         }
 
     }
@@ -195,7 +197,7 @@ class StreamConnection(
 
         when (val event = obj.string("event")) {
             null, "" ->
-                log.d("$name onMessage: missing event parameter")
+                log.d("$name handleMastodonMessage: missing event parameter")
 
             "filters_changed" ->
                 Column.onFiltersChanged(manager.context, acctGroup.account)
@@ -254,7 +256,7 @@ class StreamConnection(
 
     override fun onMessage(webSocket: WebSocket, text: String) {
         manager.enqueue {
-            log.v("$name WebSocket onMessage.")
+            if(StreamManager.traceDelivery) log.v("$name WebSocket onMessage.")
             try {
                 val obj = text.decodeJsonObject()
                 when {
@@ -263,7 +265,7 @@ class StreamConnection(
                 }
             } catch (ex: Throwable) {
                 log.trace(ex)
-                log.e("data=$text")
+                log.e("$name onMessage error. data=$text")
             }
         }
     }

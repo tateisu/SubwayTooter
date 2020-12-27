@@ -13,7 +13,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.collections.HashMap
@@ -76,13 +75,18 @@ class StreamManager(val appState: AppState) {
                 val accessInfo = column.access_info
                 if (column.is_dispose.get() || column.dont_streaming || accessInfo.isNA) continue
 
-                val server = prepareAcctGroup(accessInfo) ?: continue
+                val acctGroup = prepareAcctGroup(accessInfo) ?: continue
 
                 val streamSpec = column.getStreamDestination()
                 if (streamSpec != null)
-                    server.addSpec(streamSpec)
+                    acctGroup.addSpec(streamSpec)
             }
         }
+
+        if( newMap.size != acctGroups.size){
+            log.d("updateConnection: acctGroups.size changed. ${acctGroups.size} => ${newMap.size}")
+        }
+
 
         // 新構成にないサーバは破棄する
         acctGroups.entries.toList().forEach {
@@ -95,7 +99,7 @@ class StreamManager(val appState: AppState) {
         // 追加.変更されたサーバをマージする
         newMap.entries.forEach {
             when (val current = acctGroups[it.key]) {
-                null -> acctGroups[it.key] = it.value
+                null -> acctGroups[it.key] = it.value.apply{ initialize() }
                 else -> current.merge(it.value)
             }
         }
@@ -123,7 +127,7 @@ class StreamManager(val appState: AppState) {
     //////////////////////////////////////////////////
     // methods
 
-    fun enqueue(block: suspend () -> Unit) = runBlocking { queue.send(block) }
+    fun enqueue(block: suspend () -> Unit) = GlobalScope.launch(Dispatchers.Default) { queue.send(block) }
 
     // UIスレッドから呼ばれる
     fun updateStreamingColumns() {
@@ -144,11 +148,23 @@ class StreamManager(val appState: AppState) {
 
     // カラムヘッダの表示更新から、インジケータを取得するために呼ばれる
     // UIスレッドから呼ばれる
-    fun getStreamingStatus(accessInfo: SavedAccount, columnInternalId: Int) =
-        acctGroups[accessInfo.acct]?.getStreamingStatus(columnInternalId)
+    fun getStreamStatus(column: Column) :StreamStatus=
+        when (val acctGroup =acctGroups[column.access_info.acct]) {
+            null -> {
+                log.w("getStreamStatus: missing acctGroup for ${column.access_info.acct}")
+                StreamStatus.Missing
+            }
+            else -> acctGroup.getStreamStatus(column.internalId)
+        }
 
-    fun getConnection(column: Column) =
-        acctGroups[column.access_info.acct]?.getConnection(column.internalId)
+    fun getConnection(column: Column) :StreamConnection? =
+        when (val acctGroup =acctGroups[column.access_info.acct]) {
+            null -> {
+                log.w("getConnection: missing acctGroup for ${column.access_info.acct}")
+                null
+            }
+            else -> acctGroup.getConnection(column.internalId)
+        }
 
     ////////////////////////////////////////////////////////////////
 

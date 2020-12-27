@@ -576,14 +576,15 @@ class Column(
 
     val streamCallback = object : StreamCallback {
 
-        override fun onListeningStateChanged(status: StreamStatus) {
-            if (!canHandleStreamingMessage()) return
+        override fun onStreamStatusChanged(status: StreamStatus) {
+            log.d("onStreamStatusChanged status=${status}, bFirstInitialized=$bFirstInitialized, bInitialLoading=$bInitialLoading, column=${access_info.acct}/${getColumnName(true)}")
 
-            if (status == StreamStatus.Open) {
+            if (status == StreamStatus.Subscribed) {
                 updateMisskeyCapture()
             }
 
             runOnMainLooperForStreamingEvent {
+                if(is_dispose.get()) return@runOnMainLooperForStreamingEvent
                 fireShowColumnStatus()
             }
         }

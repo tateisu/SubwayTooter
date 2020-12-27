@@ -49,14 +49,14 @@ class StreamConnection(
         get() = _status.get()
         set(value) {
             _status.set(value)
-            eachCallback { it.onListeningStateChanged(value) }
+            eachCallback { it.onStreamStatusChanged(value) }
         }
 
     private val socket = AtomicReference<WebSocket>(null)
 
     private var lastAliveSend = 0L
 
-    private val subscription = ConcurrentHashMap<StreamSpec, StreamGroup>()
+    private val subscriptions = ConcurrentHashMap<StreamSpec, StreamGroup>()
 
     // Misskeyの投稿キャプチャ
     private val capturedId = HashSet<EntityId>()
@@ -64,22 +64,15 @@ class StreamConnection(
     ///////////////////////////////////////////////////////////////////
     // methods
 
-    fun dispose() {
-        isDisposed.set(true)
-        socket.get()?.cancel()
-        socket.set(null)
-    }
-
-    fun getStreamingStatus(streamSpec: StreamSpec?) = when {
-        streamSpec == null -> null
-
-        status != StreamStatus.Open || null == socket.get() ->
-            StreamIndicatorState.REGISTERED
-
-        subscription[streamSpec] == null ->
-            StreamIndicatorState.REGISTERED
-
-        else -> StreamIndicatorState.LISTENING
+    private fun eachCallbackForSpec(
+        spec:StreamSpec,
+        channelId: String? = null,
+        stream:JsonArray? = null,
+        item:TimelineItem?=null,
+        block: (callback: StreamCallback) -> Unit
+    ) {
+        if (isDisposed.get()) return
+        acctGroup.keyGroups[spec]?.eachCallback(channelId,stream,item,block)
     }
 
     private fun eachCallback(
@@ -88,12 +81,24 @@ class StreamConnection(
         item:TimelineItem?=null,
         block: (callback: StreamCallback) -> Unit
     ) {
-        if (isDisposed.get()) return
-        if (spec == null) {
-            acctGroup.keyGroups.values.forEach { it.eachCallback(channelId,stream,item,block) }
-        } else {
-            acctGroup.keyGroups[spec]?.eachCallback(channelId,stream,item,block)
+        if (spec != null) {
+            eachCallbackForSpec(spec,channelId,stream,item,block)
+        }else {
+            if (isDisposed.get()) return
+            acctGroup.keyGroups.values.forEach { it.eachCallback(channelId, stream, item, block) }
         }
+    }
+
+    fun dispose() {
+        status = StreamStatus.Closed
+        isDisposed.set(true)
+        socket.get()?.cancel()
+        socket.set(null)
+    }
+
+    fun getStreamStatus(streamSpec: StreamSpec) :StreamStatus = when {
+        subscriptions[streamSpec] != null -> StreamStatus.Subscribed
+        else -> status
     }
 
     private fun fireTimelineItem(item: TimelineItem?, channelId: String? = null,stream:JsonArray?=null) {
@@ -106,7 +111,7 @@ class StreamConnection(
     }
 
     private fun fireDeleteId(id: EntityId) {
-        if (Pref.bpDontRemoveDeletedToot(manager.appState.pref)) return
+        if (Pref.bpDontRemoveDeletedToot.invoke(manager.appState.pref)) return
         val tl_host = acctGroup.account.apiHost
         manager.appState.columnList.forEach {
             runOnMainLooper {
@@ -313,8 +318,10 @@ class StreamConnection(
     }
 
     private fun unsubscribe(spec:StreamSpec) {
-        subscription.remove(spec)
         try {
+            subscriptions.remove(spec)
+            eachCallbackForSpec(spec) { it.onStreamStatusChanged(getStreamStatus(spec) ) }
+
             val jsonObject = if (acctGroup.account.isMastodon) {
                 /*
                 Mastodonの場合
@@ -365,7 +372,8 @@ class StreamConnection(
         } catch (ex: Throwable) {
             log.e(ex, "send failed.")
         } finally {
-            subscription[spec] = group
+            subscriptions[spec] = group
+            eachCallbackForSpec(spec) { it.onStreamStatusChanged(getStreamStatus(spec)) }
         }
     }
 
@@ -377,18 +385,18 @@ class StreamConnection(
         postMisskeyAlive()
         if (spec != null) {
             val group = acctGroup.keyGroups[spec]
-            if (group != null) subscribeIfChanged(group, subscription[spec])
+            if (group != null) subscribeIfChanged(group, subscriptions[spec])
         } else {
             val existsIds = HashSet<StreamSpec>()
 
             // 購読するべきものを購読する
             acctGroup.keyGroups.entries.forEach {
                 existsIds.add(it.key)
-                subscribeIfChanged(it.value, subscription[it.key])
+                subscribeIfChanged(it.value, subscriptions[it.key])
             }
 
             // 購読するべきでないものを購読解除する
-            subscription.entries.toList().forEach {
+            subscriptions.entries.toList().forEach {
                 if (!existsIds.contains(it.key)) unsubscribe(it.key)
             }
         }
@@ -425,7 +433,7 @@ class StreamConnection(
             else -> Unit //fall thru
         }
 
-        subscription.clear()
+        subscriptions.clear()
 
         socket.set(null)
         synchronized(capturedId) {

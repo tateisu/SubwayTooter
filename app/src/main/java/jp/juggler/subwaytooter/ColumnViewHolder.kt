@@ -779,16 +779,17 @@ class ColumnViewHolder(
                     }
                 )
             }
-            when (column.getStreamingStatus()) {
-                StreamIndicatorState.NONE -> {
-                }
+            val streamStatus =column.getStreamingStatus()
+            log.d("procShowColumnStatus: streamStatus=${streamStatus}, column=${column.access_info.acct}/${column.getColumnName(true)}")
 
-                StreamIndicatorState.REGISTERED -> {
+            when (streamStatus) {
+                StreamStatus.Missing,StreamStatus.Closed-> {
+                }
+                StreamStatus.Connecting,StreamStatus.Open->{
                     sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
                     sb.append("?")
                 }
-
-                StreamIndicatorState.LISTENING -> {
+                StreamStatus.Subscribed->{
                     sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
                 }
             }

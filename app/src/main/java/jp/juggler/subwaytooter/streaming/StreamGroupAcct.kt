@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.streaming
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.LogCategory
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -12,6 +13,9 @@ class StreamGroupAcct(
     val account: SavedAccount,
     var ti: TootInstance
 ) {
+    companion object{
+        private val log = LogCategory("StreamGroupAcct")
+    }
     val parser: TootParser = TootParser(manager.appState.context, linkHelper = account)
 
     val keyGroups = ConcurrentHashMap<StreamSpec, StreamGroup>()
@@ -36,6 +40,21 @@ class StreamGroupAcct(
         group.destinations[ dst.columnInternalId] = dst
     }
 
+    private fun updateDestinations(){
+        destinations = ConcurrentHashMap<Int, StreamRelation>().apply {
+            keyGroups.values.forEach { group ->
+                group.destinations.values.forEach { relation ->
+                    put(relation.columnInternalId, relation)
+                }
+            }
+        }
+    }
+
+    // マージではなく、作られてデータを追加された直後に呼ばれる
+    fun initialize() {
+        updateDestinations()
+    }
+
     fun merge(newServer: StreamGroupAcct) {
 
         // 新スペックの値をコピー
@@ -58,11 +77,7 @@ class StreamGroupAcct(
             }
         }
 
-        this.destinations = ConcurrentHashMap<Int, StreamRelation>().apply {
-            keyGroups.values.forEach { group ->
-                group.destinations.values.forEach { spec -> put(spec.columnInternalId, spec) }
-            }
-        }
+        updateDestinations()
     }
 
     // このオブジェクトはもう使われなくなる
@@ -76,14 +91,27 @@ class StreamGroupAcct(
         keyGroups.clear()
     }
 
-    private fun findConnection(streamSpec: StreamSpec?) =
-        mergedConnection ?: connections.values.firstOrNull { it.spec == streamSpec }
+    private fun findConnection(spec: StreamSpec) :StreamConnection? =
+        when(val mergedConnection = this.mergedConnection){
+            null ->when( val conn = connections[spec]){
+                null->{
+                    log.w("findConnection: missing connection for ${spec.name}")
+                    null
+                }
+                else -> conn
+            }
+            else-> mergedConnection
+        }
 
     // ストリーミング接続インジケータ
-    fun getStreamingStatus(columnInternalId: Int): StreamIndicatorState? {
-        val spec = destinations[columnInternalId]?.spec
-        return findConnection(spec)?.getStreamingStatus(spec)
-    }
+    fun getStreamStatus(columnInternalId: Int): StreamStatus =
+        when( val spec = destinations[columnInternalId]?.spec ){
+            null ->{
+                log.w("getStreamStatus: missing destination for ${account.acct.pretty}")
+                StreamStatus.Missing
+            }
+            else-> findConnection(spec)?.getStreamStatus(spec) ?: StreamStatus.Missing
+        }
 
     suspend fun updateConnection() {
 
@@ -135,5 +163,7 @@ class StreamGroupAcct(
 
     fun getConnection(internalId: Int)=
         mergedConnection ?: destinations[internalId]?.spec?.let{ connections[it]}
+
+
 }
 

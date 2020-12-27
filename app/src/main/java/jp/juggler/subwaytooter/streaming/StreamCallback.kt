@@ -7,8 +7,9 @@ import jp.juggler.subwaytooter.api.entity.TootAnnouncement
 import jp.juggler.util.JsonArray
 
 interface StreamCallback {
+    fun onStreamStatusChanged(status: StreamStatus)
+
     fun onTimelineItem(item: TimelineItem, channelId: String?,stream: JsonArray?)
-    fun onListeningStateChanged(status: StreamStatus)
     fun onNoteUpdated(ev: MisskeyNoteUpdate, channelId: String?)
     fun onAnnouncementUpdate(item: TootAnnouncement)
     fun onAnnouncementDelete(id: EntityId)

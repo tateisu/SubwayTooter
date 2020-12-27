@@ -28,14 +28,12 @@ class StreamGroup(val spec: StreamSpec) {
             return
         }
 
-        val strStream = stream?.joinToString( "," )
-
         destinations.values.forEach { dst ->
             try {
-                if (strStream != null && item != null) {
+                if (stream != null && item != null) {
                     val column = dst.refColumn.get() ?: return@forEach
-                    if (!dst.spec.streamFilter(column, strStream, item)){
-                        if(StreamManager.traceDelivery) log.v("${spec.name} streamFilter not match. strStream=$strStream")
+                    if (!dst.spec.streamFilter(column, stream, item)){
+                        if(StreamManager.traceDelivery) log.v("${spec.name} streamFilter not match. stream=$stream")
                         return@forEach
                     }
                 }

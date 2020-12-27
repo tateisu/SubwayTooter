@@ -30,6 +30,7 @@ loading,refresh,gap はそれぞれ this の種類が異なるので注意
  
  */
 
+
 private val unsupportedRefresh: suspend ColumnTask_Refresh.(client: TootApiClient) -> TootApiResult? =
     { TootApiResult("edge reading not supported.") }
 
@@ -80,7 +81,7 @@ enum class ColumnType(
 	val gapDirection: Column.(head: Boolean) -> Boolean = gapDirectionNone,
 	val canAutoRefresh: Boolean = false,
 	val streamKeyMastodon: Column.() -> JsonObject? = { null },
-	val streamFilterMastodon: Column.(String?, TimelineItem) -> Boolean = { _, _ -> true },
+	val streamFilterMastodon: Column.(JsonArray, TimelineItem) -> Boolean = { _, _ -> true },
 	val streamNameMisskey: String? = null,
 	val streamParamMisskey: Column.() -> JsonObject? = { null },
 	val streamPathMisskey9: Column.() -> String? = { null },
@@ -421,7 +422,11 @@ enum class ColumnType(
 			jsonObjectOf(StreamSpec.STREAM to "user")
 		},
 		streamFilterMastodon = { stream, item ->
-			item is TootStatus && (stream == null || stream == "user")
+			when{
+				item !is TootStatus ->false
+				unmatchMastodonStream(stream,"user") -> false
+				else -> true
+			}
 		},
 
 		streamNameMisskey = "homeTimeline",
@@ -448,17 +453,11 @@ enum class ColumnType(
 
 		canAutoRefresh = true,
 
-		streamKeyMastodon = {
-			jsonObjectOf(StreamSpec.STREAM to
-				"public:local"
-					.appendIf(":media", with_attachment)
-			)
-		},
+		streamKeyMastodon = { jsonObjectOf(StreamSpec.STREAM to streamKeyLtl() ) },
 		streamFilterMastodon = { stream, item ->
 			when {
 				item !is TootStatus -> false
-				(stream != null && !stream.startsWith("public:local")) -> false
-				with_attachment && item.media_attachments.isNullOrEmpty() -> false
+				unmatchMastodonStream(stream,streamKeyLtl()) ->false
 				else -> true
 			}
 		},
@@ -488,18 +487,13 @@ enum class ColumnType(
 		canAutoRefresh = true,
 
 		streamKeyMastodon = {
-			jsonObjectOf(StreamSpec.STREAM to
-				"public"
-					.appendIf(":remote", remote_only)
-					.appendIf(":media", with_attachment)
-			)
+			jsonObjectOf(StreamSpec.STREAM to streamKeyFtl() )
 		},
 
 		streamFilterMastodon = { stream, item ->
 			when {
 				item !is TootStatus -> false
-				(stream != null && !stream.startsWith("public")) -> false
-				(stream != null && stream.contains(":local")) -> false
+				unmatchMastodonStream(stream,streamKeyFtl()) -> false
 				remote_only && item.account.acct == access_info.acct -> false
 				with_attachment && item.media_attachments.isNullOrEmpty() -> false
 				else -> true
@@ -560,24 +554,16 @@ enum class ColumnType(
 
 		canAutoRefresh = true,
 
+
 		streamKeyMastodon = {
-			jsonObjectOf(StreamSpec.STREAM to
-				"public:domain"
-					.appendIf(":media", with_attachment),
-				"domain" to instance_uri
-			)
+			jsonObjectOf(StreamSpec.STREAM to streamKeyDomainTl(), "domain" to instance_uri )
 		},
 
 		streamFilterMastodon = { stream, item ->
 			when {
 				item !is TootStatus -> false
-
-				// streamがnullではないならドメインタイムラインのチェック
-				stream?.startsWith("public:domain")==false ||
-					stream?.endsWith(instance_uri)==false -> false
-
+				unmatchMastodonStream(stream,streamKeyDomainTl(),instance_uri) ->false
 				with_attachment && item.media_attachments.isNullOrEmpty() -> false
-
 				else -> true
 			}
 		}
@@ -756,7 +742,7 @@ enum class ColumnType(
 		streamFilterMastodon = { stream, item ->
 			when {
 				item !is TootNotification -> false
-				(stream != null && stream != "user") -> false
+				unmatchMastodonStream(stream,"user") -> false
 				else -> true
 			}
 		},
@@ -853,9 +839,10 @@ enum class ColumnType(
 
 		canAutoRefresh = true,
 
+
 		streamKeyMastodon = {
 			jsonObjectOf(
-				StreamSpec.STREAM to "hashtag".appendIf(":local", instance_local),
+				StreamSpec.STREAM to streamKeyHashtagTl(),
 				"tag" to hashtag
 			)
 		},
@@ -863,9 +850,9 @@ enum class ColumnType(
 		streamFilterMastodon = { stream, item ->
 			when {
 				item !is TootStatus -> false
-				(stream != null && !stream.startsWith("hashtag")) -> false
-				instance_local && (stream != null && !stream.contains(":local")) -> false
-
+				//
+				unmatchMastodonStream(stream,streamKeyHashtagTl(),hashtag) -> false
+				instance_local && item.account.acct != access_info.acct -> false
 				else -> this.checkHashtagExtra(item)
 			}
 		},
@@ -1340,7 +1327,7 @@ enum class ColumnType(
 		streamFilterMastodon = { stream, item ->
 			when {
 				item !is TootStatus -> false
-				(stream != null && stream != "list:${profile_id}") -> false
+				unmatchMastodonStream(stream,"list",profile_id?.toString()) ->false
 				else -> true
 			}
 		},
@@ -1454,8 +1441,7 @@ enum class ColumnType(
 
 		streamFilterMastodon = { stream, _ ->
 			when {
-				(stream != null && stream != "direct") -> false
-
+				unmatchMastodonStream(stream,"direct") -> false
 				else -> true
 			}
 		}
@@ -1727,7 +1713,7 @@ enum class ColumnType(
 
     companion object {
 
-        private val log = LogCategory("ColumnType")
+        val log = LogCategory("ColumnType")
 
         fun dump() {
             var min = Int.MAX_VALUE
@@ -1744,3 +1730,47 @@ enum class ColumnType(
     }
 }
 
+// public:local, public:local:media の2種類
+fun Column.streamKeyLtl() =
+	"public:local"
+		.appendIf(":media", with_attachment)
+
+// public, public:remote, public:remote:media, public:media の4種類
+fun Column.streamKeyFtl()=
+	"public"
+		.appendIf(":remote", remote_only)
+		.appendIf(":media", with_attachment)
+
+// public:domain, public:domain:media の2種類
+fun Column.streamKeyDomainTl() =
+	"public:domain"
+		.appendIf(":media", with_attachment)
+
+// hashtag, hashtag:local
+// fedibirdだとhashtag:localは無効でイベントが発生しないが、
+// REST APIはフラグを無視するのでユーザからはストリーミングが動作していないように見える
+fun Column.streamKeyHashtagTl()=
+	"hashtag"
+		.appendIf(":local", instance_local)
+
+private fun unmatchMastodonStream(stream:JsonArray,name:String,expectArg:String?=null):Boolean{
+
+	val key = stream.string(0)
+
+//	when( key?.elementAtOrNull(0)){
+//		'h' -> ColumnType.log.v("unmatchMastodonStream key=$key expect=$name")
+//	}
+
+	return when {
+		// ストリーム名が合わない
+		key != name -> true
+		// 引数が合わない
+		else -> unmatchMastodonStreamArg(stream.elementAtOrNull(1), expectArg)
+	}
+}
+
+private fun unmatchMastodonStreamArg(actual:Any?,expect:String?) = when {
+	expect == null -> actual != null
+	actual == null -> true // unmatch
+	else -> ! expect.equals(actual.toString(), ignoreCase = true)
+}

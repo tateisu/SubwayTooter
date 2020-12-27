@@ -37,7 +37,7 @@ class StreamSpec(
     val params: JsonObject,
     val path: String,
     val name: String,
-    val streamFilter: Column.(String?, TimelineItem) -> Boolean = { _, _ -> true }
+    val streamFilter: Column.(JsonArray, TimelineItem) -> Boolean = { _, _ -> true }
 ) {
     companion object {
         const val STREAM = "stream"

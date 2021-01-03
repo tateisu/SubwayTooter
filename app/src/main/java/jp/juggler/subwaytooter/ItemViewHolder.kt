@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.os.SystemClock
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AlertDialog
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -17,19 +15,22 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
+import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
+import jp.juggler.subwaytooter.dialog.EmojiPicker
 import jp.juggler.subwaytooter.drawable.PollPlotDrawable
 import jp.juggler.subwaytooter.drawable.PreviewCardBorder
 import jp.juggler.subwaytooter.span.MyClickableSpan
-import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
@@ -909,13 +910,12 @@ internal class ItemViewHolder(
 			
 			TootNotification.TYPE_REACTION -> {
 				val colorBg = Pref.ipEventBgColorReaction(activity.pref)
-				val reaction = MisskeyReaction.shortcodeMap[n.reaction ?: ""]
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
-					R.drawable.ic_question, // not used
+					R.drawable.ic_face,
 					R.string.display_name_reaction_by,
-					misskeyReaction = reaction
+					misskeyReaction = n.reaction ?: "?"
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status, colorBg)
@@ -1167,30 +1167,39 @@ internal class ItemViewHolder(
 		time : Long,
 		iconId : Int,
 		string_id : Int,
-		misskeyReaction : MisskeyReaction? = null,
+		misskeyReaction : String? = null,
 		boost_status : TootStatus? = null
 	) {
 		boost_account = whoRef
+
+		setIconDrawableId(
+			activity,
+			ivBoosted,
+			iconId,
+			color = content_color,
+			alphaMultiplier = Styler.boost_alpha
+		)
+
 		val who = whoRef.get()
-		
+
 		// フォローの場合 decoded_display_name が2箇所で表示に使われるのを避ける必要がある
-		val text : Spannable = who.decodeDisplayName(activity)
-			.intoStringResource(activity, string_id)
-		
-		val emojiResource = misskeyReaction?.emojiResource
-		if(emojiResource != null) {
-			emojiResource.loadToImageView(activity, ivBoosted)
-			// TODO パディング少し変える？
-		} else {
-			setIconDrawableId(
+		val text : Spannable = if( misskeyReaction != null){
+			val options = DecodeOptions(
 				activity,
-				ivBoosted,
-				iconId,
-				color = content_color,
-				alphaMultiplier = Styler.boost_alpha
+				access_info,
+				decodeEmoji = true,
+				enlargeEmoji = 1.5f,
+				enlargeCustomEmoji = 1.5f
 			)
+			val ssb = MisskeyReaction.toSpannableStringBuilder(misskeyReaction,options)
+			ssb.append(" ")
+			ssb.append(who.decodeDisplayName(activity)
+				.intoStringResource(activity, string_id))
+		} else {
+			who.decodeDisplayName(activity)
+				.intoStringResource(activity, string_id)
 		}
-		
+
 		boost_time = time
 		llBoosted.visibility = View.VISIBLE
 		showStatusTime(activity, tvBoostedTime, who, time = time, status = boost_status)
@@ -2530,135 +2539,55 @@ internal class ItemViewHolder(
 				access_info,
 				decodeEmoji = true,
 				enlargeEmoji = 1.5f,
-				mentionDefaultHostDomain = status.account
+				enlargeCustomEmoji = 1.5f
 			)
-			
-			// 通常の絵文字はUnicodeを使う
-			fun addEmojiReaction(name : String, unicode : String, count : Int) {
-				val b = Button(activity).apply {
-					
-					layoutParams = FlexboxLayout.LayoutParams(
-						FlexboxLayout.LayoutParams.WRAP_CONTENT,
-						buttonHeight
-					).apply {
-						endMargin = marginBetween
-					}
-					
-					text = EmojiDecoder.decodeEmoji(options, "$unicode $count")
-					allCaps = false
-					tag = name
-					minWidthCompat = buttonHeight
-					background = ContextCompat.getDrawable(
-						this@ItemViewHolder.activity,
-						R.drawable.btn_bg_transparent_round6dp
-					)
-					// TODO 自分がリアクションしたやつは背景を変える
-					
-					setTextColor(content_color)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					setOnClickListener {
-						addReaction(status, it.tag as? String)
-					}
-					setOnLongClickListener {
-						Action_Toot.reactionFromAnotherAccount(
-							this@ItemViewHolder.activity,
-							access_info,
-							status_showing,
-							it.tag as? String
-						)
-						true
-					}
-				}
-				box.addView(b)
-				lastButton = b
-			}
-			
-			fun addCustomEmojiReaction(name : String, customCode : String, count : Int) {
-				val b = Button(activity).apply {
-					layoutParams = FlexboxLayout.LayoutParams(
-						FlexboxLayout.LayoutParams.WRAP_CONTENT,
-						buttonHeight
-					).apply {
-						endMargin = marginBetween
-					}
-					minWidthCompat = buttonHeight
-					background = ContextCompat.getDrawable(
-						this@ItemViewHolder.activity,
-						R.drawable.btn_bg_transparent_round6dp
-					)
-					// TODO 自分がリアクションしたやつは背景を変える
-					
-					setTextColor(content_color)
-					setPadding(paddingH, paddingV, paddingH, paddingV)
-					
-					val emoji = status.custom_emojis?.get(customCode)
-						?: App1.custom_emoji_lister.getMap(access_info)
-							?.get(customCode)
-					
-					val emojiUrl = emoji?.let {
-						if(Pref.bpDisableEmojiAnimation(this@ItemViewHolder.activity.pref)) {
-							it.static_url
-						} else {
-							it.url
-						}
-					}
-					
-					val sb = SpannableStringBuilder("$name $count")
-					if(emojiUrl != null) {
-						sb.setSpan(
-							NetworkEmojiSpan(emojiUrl, scale = 1.5f),
-							0,
-							name.length,
-							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-						)
-						val invalidator =
-							NetworkEmojiInvalidator(this@ItemViewHolder.activity.handler, this)
-						invalidator.register(sb)
-						extra_invalidator_list.add(invalidator)
-					}
-					text = sb
-					allCaps = false
-					
-					tag = name
-					
-					setOnClickListener {
-						addReaction(status, it.tag as? String)
-					}
-					setOnLongClickListener {
-						Action_Toot.reactionFromAnotherAccount(
-							this@ItemViewHolder.activity,
-							access_info,
-							status_showing,
-							it.tag as? String
-						)
-						true
-					}
-				}
-				box.addView(b)
-				lastButton = b
-			}
-			
+
 			for(entry in reactionsCount.entries) {
 				val key = entry.key
 				val count = entry.value
 				if(count <= 0) continue
-				
-				// 組み込みのリアクション
-				val mr = MisskeyReaction.shortcodeMap[key]
-				if(mr != null) {
-					addEmojiReaction(mr.shortcode, mr.emojiUtf16, count)
-					continue
+				val ssb = MisskeyReaction.toSpannableStringBuilder(key,options)
+					.also{ it.append(" $count")}
+
+				val b = Button(activity).apply {
+					layoutParams = FlexboxLayout.LayoutParams(
+						FlexboxLayout.LayoutParams.WRAP_CONTENT,
+						buttonHeight
+					).apply {
+						endMargin = marginBetween
+					}
+					minWidthCompat = buttonHeight
+					background = ContextCompat.getDrawable(
+						this@ItemViewHolder.activity,
+						R.drawable.btn_bg_transparent_round6dp
+					)
+					// TODO 自分がリアクションしたやつは背景を変える
+					setTextColor(content_color)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+
+					text =ssb
+
+					allCaps = false
+					tag = key
+					setOnClickListener {
+						addReaction(status, it.tag as? String)
+					}
+					setOnLongClickListener {
+						Action_Toot.reactionFromAnotherAccount(
+							this@ItemViewHolder.activity,
+							access_info,
+							status_showing,
+							it.tag as? String
+						)
+						true
+					}
+					// カスタム絵文字の場合、アニメーション等のコールバックを処理する必要がある
+					val invalidator = NetworkEmojiInvalidator(this@ItemViewHolder.activity.handler, this)
+					invalidator.register(ssb)
+					extra_invalidator_list.add(invalidator)
 				}
-				
-				// カスタム絵文字のリアクション
-				val customCode = key.replace(":", "")
-				if(key != customCode) {
-					addCustomEmojiReaction(key, customCode, count)
-					continue
-				}
-				
-				// Unicode絵文字のリアクション
-				addEmojiReaction(key, key, count)
+				box.addView(b)
+				lastButton = b
 			}
 			
 			lastButton
@@ -2670,7 +2599,7 @@ internal class ItemViewHolder(
 		llExtra.addView(box)
 	}
 	
-	private fun addReaction(status : TootStatus, code : String?) {
+	private fun addReaction(status : TootStatus, codeArg : String?) {
 		
 		if(status.myReaction?.isNotEmpty() == true) {
 			activity.showToast(false, R.string.already_reactioned)
@@ -2679,37 +2608,47 @@ internal class ItemViewHolder(
 		
 		if(access_info.isPseudo || ! access_info.isMisskey) return
 		
-		if(code == null) {
-			val ad = ActionsDialog()
-			for(mr in MisskeyReaction.values()) {
-				val newCode = mr.shortcode
-				val sb = SpannableStringBuilder()
-					.appendMisskeyReaction(activity, mr.emojiUtf16, " ")
-					.append(' ')
-					.append(mr.shortcode)
-				ad.addAction(sb) {
-					addReaction(status, newCode)
+		if(codeArg == null) {
+			EmojiPicker(activity, access_info,closeOnSelected = true) { name, instance, _, _, _ ->
+				val item = EmojiMap.sShortNameToEmojiInfo[name]
+				val code = if(item == null || instance != null) {
+					":$name:"
+				} else {
+					item.unified
 				}
-			}
-			ad.show(activity)
+				addReaction(status, code)
+			}.show()
+//			val ad = ActionsDialog()
+//			for(mr in MisskeyReaction.values()) {
+//				val newCode = mr.shortcode
+//				val sb = SpannableStringBuilder()
+//					.appendMisskeyReaction(activity, mr.emojiUtf16, " ")
+//					.append(' ')
+//					.append(mr.shortcode)
+//				ad.addAction(sb) {
+//					addReaction(status, newCode)
+//				}
+//			}
+//			ad.show(activity)
 			return
 		}
-		
+
 		TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
 			object : TootTask {
+
+				var code :String = codeArg
+
 				override suspend fun background(client : TootApiClient) : TootApiResult? {
+
+					code = MisskeyReaction.toLegacyReaction(client,code)
+
 					val params = access_info.putMisskeyApiToken().apply {
 						put("noteId", status.id.toString())
 						put("reaction", code)
 					}
 					
-					@Suppress("UnnecessaryVariable")
-					val result =
-						client.request("/api/notes/reactions/create", params.toPostRequestBuilder())
-					
 					// 成功すると204 no content
-					
-					return result
+					return client.request("/api/notes/reactions/create", params.toPostRequestBuilder())
 				}
 				
 				override suspend fun handleResult(result : TootApiResult?) {
@@ -2720,14 +2659,15 @@ internal class ItemViewHolder(
 						activity.showToast(false, error)
 						return
 					}
-					
-					if((result.response?.code ?: - 1) in 200 until 300) {
-						if(status.increaseReaction(code, true, "addReaction")) {
-							// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
-							list_adapter.notifyChange(reason = "addReaction complete", reset = true)
+					when( val resCode = result.response?.code){
+						in 200 until 300 ->{
+							if(status.increaseReaction(code, true, "addReaction")) {
+								// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
+								list_adapter.notifyChange(reason = "addReaction complete", reset = true)
+							}
 						}
+						else-> activity.showToast(false, "HTTP error $resCode")
 					}
-					
 				}
 				
 			})

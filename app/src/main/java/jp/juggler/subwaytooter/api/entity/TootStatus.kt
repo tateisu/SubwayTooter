@@ -931,8 +931,6 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     fun increaseReaction(reaction: String?, byMe: Boolean, caller: String): Boolean {
         reaction ?: return false
 
-        MisskeyReaction.shortcodeMap[reaction] ?: return false
-
         synchronized(this) {
 
             if (byMe) {
@@ -958,8 +956,6 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
     fun decreaseReaction(reaction: String?, byMe: Boolean, caller: String): Boolean {
         reaction ?: return false
-
-        MisskeyReaction.shortcodeMap[reaction] ?: return false
 
         synchronized(this) {
 

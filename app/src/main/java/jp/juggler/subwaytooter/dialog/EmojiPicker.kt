@@ -30,6 +30,7 @@ import java.util.*
 class EmojiPicker(
 	private val activity : Activity,
 	private val accessInfo : SavedAccount?,
+	val closeOnSelected: Boolean ,
 	private val onEmojiPicked : (
 		name : String,
 		instance : String?,
@@ -539,9 +540,9 @@ class EmojiPicker(
 	) {
 		
 		val pref = App1.pref
-		
-		if(Pref.bpEmojiPickerCloseOnSelected(pref))
-			dialog.dismissSafe()
+
+		if(closeOnSelected) dialog.dismissSafe()
+
 		
 		// Recentをロード(他インスタンスの絵文字を含む)
 		val list : MutableList<JsonObject> = try {

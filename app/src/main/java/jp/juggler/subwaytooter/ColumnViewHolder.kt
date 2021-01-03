@@ -2740,7 +2740,7 @@ class ColumnViewHolder(
     private fun addReaction(item: TootAnnouncement, sample: TootAnnouncement.Reaction?) {
         val column = column ?: return
         if (sample == null) {
-            EmojiPicker(activity, column.access_info) { name, _, _, unicode, customEmoji ->
+            EmojiPicker(activity, column.access_info,closeOnSelected = true) { name, _, _, unicode, customEmoji ->
                 log.d("addReaction: $name")
                 addReaction(item, TootAnnouncement.Reaction(jsonObject {
                     put("name", unicode ?: name)

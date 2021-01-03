@@ -20,6 +20,7 @@ import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 class FilterTrees(
@@ -927,6 +928,18 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         return list
     }
 
+	private fun getAnotherReactionExpression(reaction:String):String{
+		// :reaction: => reaction
+		// :reaction@xxx: => reaction@xxx
+		val customCode = reaction.replace(":","")
+
+		// reaction => :reaction@.:
+		return if( customCode != reaction && !customCode.contains("@"))
+			":${customCode}@.:"
+		else
+			reaction
+	}
+
     // return true if updated
     fun increaseReaction(reaction: String?, byMe: Boolean, caller: String): Boolean {
         reaction ?: return false
@@ -948,8 +961,17 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 map = LinkedHashMap()
                 this.reactionCounts = map
             }
-            map[reaction] = (map[reaction] ?: 0) + 1
 
+
+			val anotherExpression = getAnotherReactionExpression(reaction)
+
+			for( entry in map){
+				if( entry.key == reaction || entry.key == anotherExpression){
+					map[entry.key] = entry.value +1
+					return true
+				}
+			}
+            map[reaction] = 1
             return true
         }
     }
@@ -975,8 +997,16 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 map = LinkedHashMap()
                 this.reactionCounts = map
             }
-            map[reaction] = (map[reaction] ?: 1) - 1
 
+			val anotherExpression = getAnotherReactionExpression(reaction)
+
+			for( entry in map){
+				if( entry.key == reaction || entry.key == anotherExpression){
+					map[entry.key] = max(0,entry.value -1)
+					return true
+				}
+			}
+			map[reaction] = 0
             return true
         }
     }

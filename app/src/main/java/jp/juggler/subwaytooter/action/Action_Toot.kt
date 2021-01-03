@@ -1309,7 +1309,7 @@ object Action_Toot {
 		nCrossAccountMode: Int,
 		callback: () -> Unit,
 		bSet: Boolean = true,
-		codeArg: String? = null
+		code: String? = null
 	) {
         if (access_info.isPseudo || !access_info.isMisskey) return
 
@@ -1319,33 +1319,30 @@ object Action_Toot {
             return
         }
 
-        if (codeArg == null) {
-            if (bSet)
-                EmojiPicker(activity, access_info, closeOnSelected = true) { name, instance, _, _, _ ->
-                    val item = EmojiMap.sShortNameToEmojiInfo[name]
-                    val newCode = if (item == null || instance != null) {
-                        ":$name:"
-                    } else {
-                        item.unified
-                    }
-                    reaction(
-						activity,
-						access_info,
-						arg_status,
-						status_owner_acct,
-						nCrossAccountMode,
-						callback,
-						bSet,
-						newCode
-					)
-                }.show()
+        if (code == null) {
+			if (!bSet) error("will not happen")
+			EmojiPicker(activity, access_info, closeOnSelected = true) { name, instance, _, _, _ ->
+				val item = EmojiMap.sShortNameToEmojiInfo[name]
+				val newCode = if (item == null || instance != null) {
+					":$name:"
+				} else {
+					item.unified
+				}
+				reaction(
+					activity,
+					access_info,
+					arg_status,
+					status_owner_acct,
+					nCrossAccountMode,
+					callback,
+					bSet,
+					newCode
+				)
+			}.show()
             return
         }
 
-
         TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
-
-			var code: String = codeArg
 
 			override suspend fun background(client: TootApiClient): TootApiResult? {
 
@@ -1377,8 +1374,6 @@ object Action_Toot {
 					)
 					// 成功すると204 no content
 				} else {
-
-					code = MisskeyReaction.toLegacyReaction(client, code)
 
 					client.request(
 						"/api/notes/reactions/create",
@@ -1433,7 +1428,7 @@ object Action_Toot {
 				status_owner,
 				calcCrossAccountMode(timeline_account, action_account),
 				activity.reaction_complete_callback,
-				codeArg = code
+				code = code
 			)
         }
     }

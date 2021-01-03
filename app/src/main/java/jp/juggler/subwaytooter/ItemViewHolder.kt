@@ -1191,7 +1191,7 @@ internal class ItemViewHolder(
 				enlargeEmoji = 1.5f,
 				enlargeCustomEmoji = 1.5f
 			)
-			val ssb = MisskeyReaction.toSpannableStringBuilder(misskeyReaction,options)
+			val ssb = MisskeyReaction.toSpannableStringBuilder(misskeyReaction,options,boost_status)
 			ssb.append(" ")
 			ssb.append(who.decodeDisplayName(activity)
 				.intoStringResource(activity, string_id))
@@ -2546,7 +2546,7 @@ internal class ItemViewHolder(
 				val key = entry.key
 				val count = entry.value
 				if(count <= 0) continue
-				val ssb = MisskeyReaction.toSpannableStringBuilder(key,options)
+				val ssb = MisskeyReaction.toSpannableStringBuilder(key,options,status)
 					.also{ it.append(" $count")}
 
 				val b = Button(activity).apply {
@@ -2599,7 +2599,7 @@ internal class ItemViewHolder(
 		llExtra.addView(box)
 	}
 	
-	private fun addReaction(status : TootStatus, codeArg : String?) {
+	private fun addReaction(status : TootStatus, code : String?) {
 		
 		if(status.myReaction?.isNotEmpty() == true) {
 			activity.showToast(false, R.string.already_reactioned)
@@ -2608,7 +2608,7 @@ internal class ItemViewHolder(
 		
 		if(access_info.isPseudo || ! access_info.isMisskey) return
 		
-		if(codeArg == null) {
+		if(code == null) {
 			EmojiPicker(activity, access_info,closeOnSelected = true) { name, instance, _, _, _ ->
 				val item = EmojiMap.sShortNameToEmojiInfo[name]
 				val code = if(item == null || instance != null) {
@@ -2636,11 +2636,7 @@ internal class ItemViewHolder(
 		TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
 			object : TootTask {
 
-				var code :String = codeArg
-
 				override suspend fun background(client : TootApiClient) : TootApiResult? {
-
-					code = MisskeyReaction.toLegacyReaction(client,code)
 
 					val params = access_info.putMisskeyApiToken().apply {
 						put("noteId", status.id.toString())

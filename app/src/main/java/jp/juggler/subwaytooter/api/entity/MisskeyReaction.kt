@@ -1,15 +1,9 @@
 package jp.juggler.subwaytooter.api.entity
 
-import android.graphics.drawable.PictureDrawable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
-import android.widget.ImageView
-import com.bumptech.glide.Glide
-import jp.juggler.emoji.EmojiMap
-import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
@@ -46,51 +40,58 @@ object MisskeyReaction {
 		"star" to "\u2B50", // リモートからのFavを示す代替リアクション。ピッカーには表示しない
 	)
 
-    fun toSpannableStringBuilder(code: String, options: DecodeOptions): SpannableStringBuilder {
+	private val reCustomEmoji = """\A:([^:]+):\z""".toRegex()
+
+    fun toSpannableStringBuilder(
+		code: String,
+		options: DecodeOptions,
+		status:TootStatus?
+	): SpannableStringBuilder {
+
         // 古い形式の絵文字はUnicode絵文字にする
         oldReactions[code]?.let {
             return EmojiDecoder.decodeEmoji(options, it)
         }
 
-        // カスタム絵文字
-        val customCode = code.replace(":", "")
-        if (customCode != code) {
-			val accessInfo = options.linkHelper as? SavedAccount
-			if (accessInfo != null) {
-				val emojiUrl =
-					App1.custom_emoji_lister
-						.getMap(accessInfo)
-						?.get(customCode)
-						?.let {
-							if (Pref.bpDisableEmojiAnimation(App1.pref)) {
-								it.static_url
-							} else {
-								it.url
-							}
-						}
-				if (emojiUrl != null)
-					return SpannableStringBuilder(code).apply {
-						setSpan(
-							NetworkEmojiSpan(emojiUrl, scale = options.enlargeCustomEmoji),
-							0,
-							length,
-							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-						)
-					}
-
+		fun CustomEmoji.toSpannableStringBuilder():SpannableStringBuilder?{
+			return if (Pref.bpDisableEmojiAnimation(App1.pref)) {
+				static_url
+			} else {
+				url
+			}?.let{
+				SpannableStringBuilder(code).apply {
+					setSpan(
+						NetworkEmojiSpan(it, scale = options.enlargeCustomEmoji),
+						0,
+						length,
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+					)
+				}
 			}
 		}
+
+		// カスタム絵文字
+		val customCode = reCustomEmoji.find(code)?.groupValues?.elementAtOrNull(1)
+		if(customCode != null){
+			var ce = status?.custom_emojis?.get( customCode)
+			if(ce != null) return ce.toSpannableStringBuilder()?: EmojiDecoder.decodeEmoji(options, code)
+
+			val accessInfo = options.linkHelper as? SavedAccount
+
+			val cols = customCode.split("@",limit = 2)
+			val key = cols.elementAtOrNull(0)
+			val domain = cols.elementAtOrNull(1)
+			if( domain == null || domain=="" || domain=="." || domain == accessInfo?.apiHost?.ascii ){
+				if( accessInfo != null){
+					ce = App1.custom_emoji_lister
+						.getMap(accessInfo)
+						?.get(key)
+					if(ce != null) return ce.toSpannableStringBuilder()?: EmojiDecoder.decodeEmoji(options, code)
+				}
+			}
+		}
+
 		// unicode絵文字、もしくは :xxx: などのshortcode表現
 		return EmojiDecoder.decodeEmoji(options, code)
     }
-
-	// Misskey v12 未満はレガシーなリアクションを送ることになる
-	suspend fun toLegacyReaction(client: TootApiClient, code: String): String {
-		val(ti,ri) = TootInstance.get(client)
-		if(ti!=null && ! ti.versionGE(TootInstance.MISSKEY_VERSION_12)){
-			val entry = oldReactions.entries.firstOrNull { it.value == code }
-			if( entry != null && entry.key != "star") return entry.key
-		}
-		return code
-	}
 }

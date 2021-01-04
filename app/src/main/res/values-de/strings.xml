@@ -1082,4 +1082,7 @@
     <string name="duration_indefinite">Ohne Begrenzung</string>
     <string name="duration">Dauer</string>
     <string name="web_browser">Web Browser</string>
+    <string name="reset_notification_tracking_status">Benachrichtigungs-Trackingstatus zurücksetzen</string>
+    <string name="toot_search_notestock_of">Notestock-Suche nach \"%1$s\"</string>
+    <string name="toot_search_notestock">Notestock-Suche</string>
 </resources>

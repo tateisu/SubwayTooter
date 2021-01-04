@@ -26,7 +26,7 @@ import jp.juggler.subwaytooter.util.EmojiDecoder
 //}
 
 object MisskeyReaction {
-    private val oldReactions = mapOf(
+	private val oldReactions = mapOf(
 		"like" to "\ud83d\udc4d",
 		"love" to "\u2665",
 		"laugh" to "\ud83d\ude06",
@@ -41,6 +41,20 @@ object MisskeyReaction {
 	)
 
 	private val reCustomEmoji = """\A:([^:]+):\z""".toRegex()
+
+	fun getAnotherExpression(reaction: String): String? {
+		val customCode = reCustomEmoji.find(reaction)?.groupValues?.elementAtOrNull(1) ?: return null
+		val cols = customCode.split("@")
+		val name = cols.elementAtOrNull(0)
+		val domain = cols.elementAtOrNull(1)
+		return if (domain == null) ":$name@.:" else if (domain == ".") ":$name:" else null
+	}
+
+	fun equals(a:String?,b:String?) = when {
+		a==null -> b==null
+		b==null -> false
+		else -> a ==b || getAnotherExpression(a) == b || a == getAnotherExpression(b)
+	}
 
     fun toSpannableStringBuilder(
 		code: String,

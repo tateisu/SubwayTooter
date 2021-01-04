@@ -7,7 +7,7 @@ import android.graphics.Rect
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import jp.juggler.subwaytooter.R
-import jp.juggler.util.getAttributeDrawable
+import jp.juggler.util.attrDrawable
 
 class ListDivider(context : Context) : RecyclerView.ItemDecoration() {
 	
@@ -18,7 +18,7 @@ class ListDivider(context : Context) : RecyclerView.ItemDecoration() {
 		var marginH : Int = 0
 	}
 	
-	private val drawable = getAttributeDrawable(context, R.attr.colorSettingDivider)
+	private val drawable = context.attrDrawable( R.attr.colorSettingDivider)
 	private val paint = Paint()
 	private val rect = Rect()
 	

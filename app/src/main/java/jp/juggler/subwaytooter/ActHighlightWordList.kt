@@ -160,7 +160,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 			tvName.setBackgroundColor(item.color_bg)
 			tvName.setTextColor(
 				item.color_fg.notZero()
-					?: getAttributeColor(android.R.attr.textColorPrimary)
+					?: attrColor(android.R.attr.textColorPrimary)
 			)
 			
 			btnSound.vg(item.sound_type != HighlightWord.SOUND_TYPE_NONE)?.apply {
@@ -219,7 +219,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 				clickedView.findViewById<View>(R.id.ivSpeech).visibility
 			
 			dragView.findViewById<View>(R.id.item_layout)
-				.setBackgroundColor(getAttributeColor(R.attr.list_item_bg_pressed_dragged))
+				.setBackgroundColor(attrColor(R.attr.list_item_bg_pressed_dragged))
 		}
 	}
 	

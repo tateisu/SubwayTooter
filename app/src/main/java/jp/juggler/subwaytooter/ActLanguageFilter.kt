@@ -240,7 +240,7 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 				getDesc(item),
 				getString(if(item.allow) R.string.language_show else R.string.language_hide)
 			)
-			tv.textColor = getAttributeColor(
+			tv.textColor = attrColor(
 				when(item.allow) {
 					true -> R.attr.colorContentText
 					false -> R.attr.colorRegexFilterError
@@ -373,7 +373,7 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 				btnPresets.setEnabledColor(
 					activity,
 					R.drawable.ic_edit,
-					activity.getAttributeColor(R.attr.colorVectorDrawable),
+					activity.attrColor(R.attr.colorVectorDrawable),
 					false
 				)
 			}

@@ -134,7 +134,7 @@ class DlgListMember(
 		this.list_owner = a
 		if(a == null) {
 			btnListOwner.setText(R.string.not_selected)
-			btnListOwner.setTextColor(activity.getAttributeColor( android.R.attr.textColorPrimary))
+			btnListOwner.setTextColor(activity.attrColor( android.R.attr.textColorPrimary))
 			btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 			//
 			
@@ -148,7 +148,7 @@ class DlgListMember(
 				btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
 			}
 			btnListOwner.textColor = ac.color_fg.notZero()
-				?: activity.getAttributeColor( android.R.attr.textColorPrimary)
+				?: activity.attrColor( android.R.attr.textColorPrimary)
 		}
 		
 		loadLists()

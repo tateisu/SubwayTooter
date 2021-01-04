@@ -10,7 +10,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.LogCategory
-import jp.juggler.util.getAttributeColor
+import jp.juggler.util.attrColor
 import jp.juggler.util.showToast
 import jp.juggler.util.systemService
 
@@ -71,7 +71,7 @@ object CustomShare {
                     label =
                         "${context.getString(R.string.copy_to_clipboard)}(${context.getString(R.string.app_name)})"
                     icon = ContextCompat.getDrawable(context, R.drawable.ic_copy)?.mutate()?.apply {
-                        setTint(context.getAttributeColor(R.attr.colorVectorDrawable))
+                        setTint(context.attrColor(R.attr.colorVectorDrawable))
                         setTintMode(PorterDuff.Mode.SRC_IN)
                     }
                 } else {

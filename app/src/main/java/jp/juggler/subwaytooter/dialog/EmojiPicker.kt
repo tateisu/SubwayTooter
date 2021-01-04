@@ -269,7 +269,7 @@ class EmojiPicker(
 					
 					setTypeface(typeface, Typeface.BOLD)
 					
-					textColor = this@EmojiPicker.activity.getAttributeColor(R.attr.colorContentText)
+					textColor = this@EmojiPicker.activity.attrColor(R.attr.colorContentText)
 					textSize = 16f // SP単位
 					
 					text = when(val name = it.key) {

@@ -141,7 +141,7 @@ internal class ViewHolderHeaderProfile(
 	override fun showColor() {
 		llProfile.setBackgroundColor(
 			when(val c = column.column_bg_color) {
-				0 -> activity.getAttributeColor(R.attr.colorProfileBackgroundMask)
+				0 -> activity.attrColor(R.attr.colorProfileBackgroundMask)
 				else -> - 0x40000000 or (0x00ffffff and c)
 			}
 		)

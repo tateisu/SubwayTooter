@@ -66,7 +66,7 @@ internal class StatusButtons(
 	private val color_normal = column.getContentColor()
 	
 	private val color_accent : Int
-		get() = activity.getAttributeColor(R.attr.colorImageButtonAccent)
+		get() = activity.attrColor(R.attr.colorImageButtonAccent)
 	
 	init {
 		this.access_info = column.access_info

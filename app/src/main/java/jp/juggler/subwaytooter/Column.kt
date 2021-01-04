@@ -348,22 +348,22 @@ class Column(
         fun reloadDefaultColor(activity: AppCompatActivity, pref: SharedPreferences) {
 
             defaultColorHeaderBg = Pref.ipCcdHeaderBg(pref).notZero()
-                ?: activity.getAttributeColor(R.attr.color_column_header)
+                ?: activity.attrColor(R.attr.color_column_header)
 
             defaultColorHeaderName = Pref.ipCcdHeaderFg(pref).notZero()
-                ?: activity.getAttributeColor(R.attr.colorColumnHeaderName)
+                ?: activity.attrColor(R.attr.colorColumnHeaderName)
 
             defaultColorHeaderPageNumber = Pref.ipCcdHeaderFg(pref).notZero()
-                ?: activity.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
+                ?: activity.attrColor(R.attr.colorColumnHeaderPageNumber)
 
             defaultColorContentBg = Pref.ipCcdContentBg(pref)
             // may zero
 
             defaultColorContentAcct = Pref.ipCcdContentAcct(pref).notZero()
-                ?: activity.getAttributeColor(R.attr.colorTimeSmall)
+                ?: activity.attrColor(R.attr.colorTimeSmall)
 
             defaultColorContentText = Pref.ipCcdContentText(pref).notZero()
-                ?: activity.getAttributeColor(R.attr.colorContentText)
+                ?: activity.attrColor(R.attr.colorContentText)
 
         }
 

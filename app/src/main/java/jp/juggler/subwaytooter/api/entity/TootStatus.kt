@@ -928,17 +928,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         return list
     }
 
-	private fun getAnotherReactionExpression(reaction:String):String{
-		// :reaction: => reaction
-		// :reaction@xxx: => reaction@xxx
-		val customCode = reaction.replace(":","")
 
-		// reaction => :reaction@.:
-		return if( customCode != reaction && !customCode.contains("@"))
-			":${customCode}@.:"
-		else
-			reaction
-	}
 
     // return true if updated
     fun increaseReaction(reaction: String?, byMe: Boolean, caller: String): Boolean {
@@ -962,16 +952,14 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 this.reactionCounts = map
             }
 
-
-			val anotherExpression = getAnotherReactionExpression(reaction)
-
-			for( entry in map){
-				if( entry.key == reaction || entry.key == anotherExpression){
-					map[entry.key] = entry.value +1
-					return true
-				}
+			when (
+				val key = reaction.takeIf { map.containsKey(it) }
+					?: MisskeyReaction.getAnotherExpression(reaction)?.takeIf { map.containsKey(it) }
+			) {
+				null -> map[reaction] = 1
+				else -> map[key] = max(0, map[key]!! + 1)
 			}
-            map[reaction] = 1
+
             return true
         }
     }
@@ -998,15 +986,14 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 this.reactionCounts = map
             }
 
-			val anotherExpression = getAnotherReactionExpression(reaction)
+            when (
+                val key = reaction.takeIf { map.containsKey(it) }
+                    ?: MisskeyReaction.getAnotherExpression(reaction)?.takeIf { map.containsKey(it) }
+            ) {
+				null -> map[reaction] = 0
+                else -> map[key] = max(0, map[key]!! - 1)
+            }
 
-			for( entry in map){
-				if( entry.key == reaction || entry.key == anotherExpression){
-					map[entry.key] = max(0,entry.value -1)
-					return true
-				}
-			}
-			map[reaction] = 0
             return true
         }
     }
@@ -1214,34 +1201,34 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
         fun formatTime(context: Context, t: Long, bAllowRelative: Boolean, onlyDate: Boolean = false): String {
 
-			val now = System.currentTimeMillis()
-			var delta = now - t
+            val now = System.currentTimeMillis()
+            var delta = now - t
 
-			@StringRes val phraseId = if (delta >= 0)
-				R.string.relative_time_phrase_past
-			else
-				R.string.relative_time_phrase_future
+            @StringRes val phraseId = if (delta >= 0)
+                R.string.relative_time_phrase_past
+            else
+                R.string.relative_time_phrase_future
 
-			fun f(v: Long, unit1: Int, units: Int): String {
-				val vi = v.toInt()
-				return context.getString(
+            fun f(v: Long, unit1: Int, units: Int): String {
+                val vi = v.toInt()
+                return context.getString(
 					phraseId,
 					vi,
 					context.getString(if (vi <= 1) unit1 else units)
 				)
-			}
+            }
 
-			if( onlyDate) return when{
-				delta < 40 * 86400000L -> f(
+            if (onlyDate) return when {
+                delta < 40 * 86400000L -> f(
 					delta / 86400000L,
 					R.string.relative_time_unit_day1,
 					R.string.relative_time_unit_days
 				)
-				else ->
-					formatDate(t, date_format2, omitZeroSecond = false, omitYear = true)
-			}
+                else ->
+                    formatDate(t, date_format2, omitZeroSecond = false, omitYear = true)
+            }
 
-			if (bAllowRelative && Pref.bpRelativeTimestamp(App1.pref)) {
+            if (bAllowRelative && Pref.bpRelativeTimestamp(App1.pref)) {
 
                 delta = abs(delta)
 
@@ -1268,13 +1255,13 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 						R.string.relative_time_unit_hours
 					)
 
-					 delta < 40 * 86400000L -> return f(
+                    delta < 40 * 86400000L -> return f(
 						delta / 86400000L,
 						R.string.relative_time_unit_day1,
 						R.string.relative_time_unit_days
 					)
                 }
-				// fall back to absolute time
+                // fall back to absolute time
             }
 
             return formatDate(t, date_format, omitZeroSecond = false, omitYear = false)
@@ -1299,8 +1286,8 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 val dateNow = format.format(Date())
                 val delm = dateNow.indexOf('-')
                 if (delm != -1 &&
-					dateNow.substring(0, delm + 1) == dateTarget.substring(0,delm + 1)
-				) {
+                    dateNow.substring(0, delm + 1) == dateTarget.substring(0, delm + 1)
+                ) {
                     dateTarget = dateTarget.substring(delm + 1)
                 }
             }

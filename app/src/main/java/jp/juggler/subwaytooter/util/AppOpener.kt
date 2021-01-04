@@ -149,7 +149,7 @@ fun Activity.openCustomTab(url: String?, pref:SharedPreferences = pref()) {
             CustomTabsIntent.Builder()
                 .setDefaultColorSchemeParams(
                     CustomTabColorSchemeParams.Builder()
-                        .setToolbarColor(getAttributeColor(R.attr.colorPrimary))
+                        .setToolbarColor(attrColor(R.attr.colorPrimary))
                         .build()
                 )
                 .setShowTitle(true)

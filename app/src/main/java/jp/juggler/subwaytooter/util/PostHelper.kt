@@ -893,7 +893,7 @@ class PostHelper(
                     sb.append(item.alias)
                     sb.append(": → ")
                     sb.setSpan(
-						ForegroundColorSpan(activity.getAttributeColor(R.attr.colorTimeSmall)),
+						ForegroundColorSpan(activity.attrColor(R.attr.colorTimeSmall)),
 						start,
 						sb.length,
 						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE

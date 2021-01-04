@@ -18,7 +18,7 @@ import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.LogCategory
-import jp.juggler.util.getAttributeColor
+import jp.juggler.util.attrColor
 import jp.juggler.util.notZero
 import jp.juggler.util.setIconDrawableId
 import kotlin.math.max
@@ -30,7 +30,7 @@ object Styler {
 	
 	fun defaultColorIcon(context : Context, iconId : Int) : Drawable? =
 		ContextCompat.getDrawable(context, iconId)?.also {
-			it.setTint(context.getAttributeColor(R.attr.colorVectorDrawable))
+			it.setTint(context.attrColor(R.attr.colorVectorDrawable))
 			it.setTintMode(PorterDuff.Mode.SRC_IN)
 		}
 	
@@ -123,7 +123,7 @@ object Styler {
 		
 		val icon_id = getVisibilityIconId(isMisskeyData, visibility)
 		val sv = getVisibilityString(context, isMisskeyData, visibility)
-		val color = context.getAttributeColor(R.attr.colorVectorDrawable)
+		val color = context.attrColor(R.attr.colorVectorDrawable)
 		val sb = SpannableStringBuilder()
 		
 		// アイコン部分
@@ -160,11 +160,11 @@ object Styler {
 	) {
 		fun colorAccent() =
 			Pref.ipButtonFollowingColor(context.pref()).notZero()
-				?: context.getAttributeColor(R.attr.colorImageButtonAccent)
+				?: context.attrColor(R.attr.colorImageButtonAccent)
 		
 		fun colorError() =
 			Pref.ipButtonFollowRequestColor(context.pref()).notZero()
-				?: context.getAttributeColor(R.attr.colorRegexFilterError)
+				?: context.attrColor(R.attr.colorRegexFilterError)
 		
 		// 被フォロー状態
 		when {

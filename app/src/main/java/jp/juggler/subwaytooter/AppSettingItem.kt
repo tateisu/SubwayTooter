@@ -830,12 +830,12 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
                     val header_bg = when {
                         color_column_header_bg != 0 -> color_column_header_bg
-                        else -> activity.getAttributeColor(R.attr.color_column_header)
+                        else -> activity.attrColor(R.attr.color_column_header)
                     }
 
                     val header_fg = when {
                         color_column_header_fg != 0 -> color_column_header_fg
-                        else -> activity.getAttributeColor(R.attr.colorColumnHeaderName)
+                        else -> activity.attrColor(R.attr.colorColumnHeaderName)
                     }
 
                     llColumnHeader.background = getAdaptiveRippleDrawable(header_bg, header_fg)
@@ -866,12 +866,12 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
                     tvSampleAcct.setTextColor(
 						color_column_acct.notZero()
-							?: activity.getAttributeColor(R.attr.colorTimeSmall)
+							?: activity.attrColor(R.attr.colorTimeSmall)
 					)
 
                     tvSampleContent.setTextColor(
 						color_column_text.notZero()
-							?: activity.getAttributeColor(R.attr.colorContentText)
+							?: activity.attrColor(R.attr.colorContentText)
 					)
                 }
 
@@ -906,7 +906,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
 
                     val colorColumnStripBackground = footer_tab_bg_color.notZero()
-                        ?: activity.getAttributeColor(R.attr.colorColumnStripBackground)
+                        ?: activity.attrColor(R.attr.colorColumnStripBackground)
 
                     llFooterBG.setBackgroundColor(colorColumnStripBackground)
 
@@ -914,7 +914,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                         ?: colorColumnStripBackground
 
                     val colorButtonFg = footer_button_fg_color.notZero()
-                        ?: activity.getAttributeColor(R.attr.colorRippleEffect)
+                        ?: activity.attrColor(R.attr.colorRippleEffect)
 
                     ivFooterMenu.backgroundDrawable =
                         getAdaptiveRippleDrawableRound(activity, colorButtonBg, colorButtonFg)
@@ -923,7 +923,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
                     val csl = ColorStateList.valueOf(
 						footer_button_fg_color.notZero()
-							?: activity.getAttributeColor(R.attr.colorVectorDrawable)
+							?: activity.attrColor(R.attr.colorVectorDrawable)
 					)
                     ivFooterToot.imageTintList = csl
                     ivFooterMenu.imageTintList = csl
@@ -935,7 +935,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
                     vIndicator.setBackgroundColor(
 						footer_tab_indicator_color.notZero()
-							?: activity.getAttributeColor(R.attr.colorAccent)
+							?: activity.attrColor(R.attr.colorAccent)
 					)
                 }
 

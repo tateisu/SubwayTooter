@@ -542,7 +542,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 		tvUserCustom.backgroundColor = ac.color_bg
 		tvUserCustom.text = ac.nickname
 		tvUserCustom.textColor = ac.color_fg.notZero()
-			?: getAttributeColor(R.attr.colorTimeSmall)
+			?: attrColor(R.attr.colorTimeSmall)
 	}
 	
 	private fun saveUIToData() {

@@ -540,7 +540,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         ItemViewHolder.toot_color_direct_me = Pref.ipTootColorDirectMe(pref)
         MyClickableSpan.showLinkUnderline = Pref.bpShowLinkUnderline(pref)
         MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
-            ?: getAttributeColor(R.attr.colorLink)
+            ?: attrColor(R.attr.colorLink)
 
         CustomShare.reloadCache(this, pref)
 
@@ -2316,7 +2316,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
 
         val colorColumnStripBackground = footer_tab_bg_color.notZero()
-            ?: getAttributeColor(R.attr.colorColumnStripBackground)
+            ?: attrColor(R.attr.colorColumnStripBackground)
 
         svColumnStrip.setBackgroundColor(colorColumnStripBackground)
         llQuickTootBar.setBackgroundColor(colorColumnStripBackground)
@@ -2325,7 +2325,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
             ?: colorColumnStripBackground
 
         val colorButtonFg = footer_button_fg_color.notZero()
-            ?: getAttributeColor(R.attr.colorRippleEffect)
+            ?: attrColor(R.attr.colorRippleEffect)
 
         btnMenu.backgroundDrawable =
             getAdaptiveRippleDrawableRound(this, colorButtonBg, colorButtonFg)
@@ -2338,7 +2338,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
 
         val csl = ColorStateList.valueOf(
             footer_button_fg_color.notZero()
-                ?: getAttributeColor(R.attr.colorVectorDrawable)
+                ?: attrColor(R.attr.colorVectorDrawable)
         )
         btnToot.imageTintList = csl
         btnMenu.imageTintList = csl
@@ -2351,7 +2351,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         vFooterDivider2.setBackgroundColor(c)
 
         llColumnStrip.indicatorColor = footer_tab_indicator_color.notZero()
-            ?: getAttributeColor(R.attr.colorAccent)
+            ?: attrColor(R.attr.colorAccent)
     }
 
 /////////////////////////////////////////////////////////////////////////

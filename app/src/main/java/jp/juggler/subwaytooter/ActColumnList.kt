@@ -200,7 +200,7 @@ class ActColumnList : AppCompatActivity() {
 		val type = ColumnType.parse(json.optInt(Column.KEY_TYPE))
 		val acct_color_bg = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR_BG, 0)
 		val acct_color_fg = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR, 0)
-			.notZero() ?: context.getAttributeColor(R.attr.colorColumnListItemText)
+			.notZero() ?: context.attrColor(R.attr.colorColumnListItemText)
 		var bOldSelection : Boolean = false
 		
 		fun setOldSelection(b : Boolean) {
@@ -274,7 +274,7 @@ class ActColumnList : AppCompatActivity() {
 				clickedView.findViewById<View>(R.id.ivBookmark).visibility
 			
 			dragView.findViewById<View>(R.id.item_layout)
-				.setBackgroundColor(getAttributeColor(R.attr.list_item_bg_pressed_dragged))
+				.setBackgroundColor(attrColor(R.attr.list_item_bg_pressed_dragged))
 		}
 	}
 	

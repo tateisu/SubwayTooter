@@ -19,7 +19,7 @@ import jp.juggler.subwaytooter.api.entity.Acct
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.LogCategory
 import jp.juggler.util.asciiPattern
-import jp.juggler.util.getAttributeColor
+import jp.juggler.util.attrColor
 import jp.juggler.util.groupEx
 import java.util.*
 import kotlin.math.min
@@ -97,7 +97,7 @@ internal class PopupAutoCompleteAcct(
 		run {
 			val v = activity.layoutInflater
 				.inflate(R.layout.lv_spinner_dropdown, llItems, false) as CheckedTextView
-			v.setTextColor(activity.getAttributeColor(android.R.attr.textColorPrimary))
+			v.setTextColor(activity.attrColor(android.R.attr.textColorPrimary))
 			v.setText(R.string.close)
 			v.setOnClickListener { acct_popup.dismiss() }
 			llItems.addView(v)
@@ -107,7 +107,7 @@ internal class PopupAutoCompleteAcct(
 		if(picker_caption != null && picker_callback != null) {
 			val v = activity.layoutInflater
 				.inflate(R.layout.lv_spinner_dropdown, llItems, false) as CheckedTextView
-			v.setTextColor(activity.getAttributeColor(android.R.attr.textColorPrimary))
+			v.setTextColor(activity.attrColor(android.R.attr.textColorPrimary))
 			v.text = picker_caption
 			v.setOnClickListener {
 				acct_popup.dismiss()
@@ -125,7 +125,7 @@ internal class PopupAutoCompleteAcct(
 				val acct = acct_list[i]
 				val v = activity.layoutInflater
 					.inflate(R.layout.lv_spinner_dropdown, llItems, false) as CheckedTextView
-				v.setTextColor(activity.getAttributeColor(android.R.attr.textColorPrimary))
+				v.setTextColor(activity.attrColor(android.R.attr.textColorPrimary))
 				v.text = acct
 				if(acct is Spannable) {
 					NetworkEmojiInvalidator(handler, v).register(acct)

@@ -347,14 +347,14 @@ internal class DlgContextMenu(
 		
 		val colorButtonAccent =
 			Pref.ipButtonFollowingColor(activity.pref).notZero()
-				?: activity.getAttributeColor(R.attr.colorImageButtonAccent)
+				?: activity.attrColor(R.attr.colorImageButtonAccent)
 		
 		val colorButtonError =
 			Pref.ipButtonFollowRequestColor(activity.pref).notZero()
-				?: activity.getAttributeColor(R.attr.colorRegexFilterError)
+				?: activity.attrColor(R.attr.colorRegexFilterError)
 		
 		val colorButtonNormal =
-			activity.getAttributeColor(R.attr.colorImageButton)
+			activity.attrColor(R.attr.colorImageButton)
 		
 		fun showRelation(relation : UserRelation) {
 			
@@ -405,7 +405,7 @@ internal class DlgContextMenu(
 			ivFollowedBy.vg(false)
 			btnFollow.setImageResource(R.drawable.ic_follow_plus)
 			btnFollow.imageTintList =
-				ColorStateList.valueOf(activity.getAttributeColor(R.attr.colorImageButton))
+				ColorStateList.valueOf(activity.attrColor(R.attr.colorImageButton))
 			
 			btnNotificationFrom.visibility = View.GONE
 		} else {
@@ -583,7 +583,7 @@ internal class DlgContextMenu(
 			R.drawable.ic_arrow_drop_down
 		}
 		
-		val iconColor = activity.getAttributeColor(R.attr.colorTimeSmall)
+		val iconColor = activity.attrColor(R.attr.colorTimeSmall)
 		val drawable = createColoredDrawable(activity, iconId, iconColor, 1f)
 		btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
 	}

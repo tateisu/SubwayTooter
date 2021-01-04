@@ -122,7 +122,7 @@ class SideMenuAdapter(
 						)
 						setSpan(
 							ForegroundColorSpan(
-								appContext.getAttributeColor(R.attr.colorRegexFilterError)
+								appContext.attrColor(R.attr.colorRegexFilterError)
 							),
 							start, length,
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -362,7 +362,7 @@ class SideMenuAdapter(
 		}
 	)
 	
-	private val iconColor = actMain.getAttributeColor(R.attr.colorTimeSmall)
+	private val iconColor = actMain.attrColor(R.attr.colorTimeSmall)
 	
 	override fun getCount() : Int = list.size
 	override fun getItem(position : Int) : Any = list[position]
@@ -427,7 +427,7 @@ class SideMenuAdapter(
 				FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT
 			)
-			backgroundColor = actMain.getAttributeColor(R.attr.colorWindowBackground)
+			backgroundColor = actMain.attrColor(R.attr.colorWindowBackground)
 			selector = StateListDrawable()
 			divider = null
 			dividerHeight = 0

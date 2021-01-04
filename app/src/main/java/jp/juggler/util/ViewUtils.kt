@@ -108,10 +108,10 @@ fun Context.setSwitchColor(
 	pref : SharedPreferences,
 	root : View?
 ) {
-	val colorBg = getAttributeColor(R.attr.colorWindowBackground)
+	val colorBg = attrColor(R.attr.colorWindowBackground)
 	val colorOn = Pref.ipSwitchOnColor(pref)
 	val colorOff = /* Pref.ipSwitchOffColor(pref).notZero() ?: */
-		getAttributeColor(android.R.attr.colorPrimary)
+		attrColor(android.R.attr.colorPrimary)
 	
 	val colorDisabled = mixColor(colorBg, colorOff)
 	
@@ -207,7 +207,7 @@ fun AppCompatActivity.setStatusBarColor(forceDark : Boolean = false) {
 		var c = when {
 			forceDark -> Color.BLACK
 			else -> Pref.ipStatusBarColor(App1.pref).notZero()
-				?: getAttributeColor(R.attr.colorPrimaryDark)
+				?: attrColor(R.attr.colorPrimaryDark)
 		}
 		statusBarColor = c or Color.BLACK
 		

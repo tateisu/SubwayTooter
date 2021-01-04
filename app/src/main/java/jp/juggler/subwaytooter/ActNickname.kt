@@ -180,7 +180,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	private fun show() {
 		val s = etNickname.text.toString().trim { it <= ' ' }
 		tvPreview.text = s.notEmpty() ?: acctPretty
-		tvPreview.textColor = color_fg.notZero() ?: getAttributeColor(R.attr.colorTimeSmall)
+		tvPreview.textColor = color_fg.notZero() ?: attrColor(R.attr.colorTimeSmall)
 		tvPreview.backgroundColor = color_bg
 	}
 	

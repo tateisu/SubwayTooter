@@ -142,7 +142,7 @@ class ActHighlightWordEdit
 			tvName.text = item.name
 			tvName.setBackgroundColor(item.color_bg) // may 0
 			tvName.textColor = item.color_fg.notZero()
-				?: getAttributeColor(android.R.attr.textColorPrimary)
+				?: attrColor(android.R.attr.textColorPrimary)
 			
 		} finally {
 			bBusy = false

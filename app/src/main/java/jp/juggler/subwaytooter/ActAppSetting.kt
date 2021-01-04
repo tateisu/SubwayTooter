@@ -373,7 +373,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 					val margin_tb = dip(6)
 					setMargins(margin_lr, margin_tb, margin_lr, margin_tb)
 				}
-				setBackgroundColor(context.getAttributeColor(R.attr.colorSettingDivider))
+				setBackgroundColor(context.attrColor(R.attr.colorSettingDivider))
 			})
 		}
 	

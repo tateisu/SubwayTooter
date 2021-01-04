@@ -1414,7 +1414,7 @@ class ActPost : AsyncActivity(),
 
         tvCharCount.text = remain.toString()
         tvCharCount.setTextColor(
-			getAttributeColor(
+			attrColor(
 				if (remain < 0)
 					R.attr.colorRegexFilterError
 				else
@@ -1496,7 +1496,7 @@ class ActPost : AsyncActivity(),
 
         if (a == null) {
             btnAccount.text = getString(R.string.not_selected)
-            btnAccount.setTextColor(getAttributeColor(android.R.attr.textColorPrimary))
+            btnAccount.setTextColor(attrColor(android.R.attr.textColorPrimary))
             btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent_round6dp)
         } else {
 
@@ -1516,7 +1516,7 @@ class ActPost : AsyncActivity(),
             }
 
             btnAccount.textColor = ac.color_fg.notZero()
-                ?: getAttributeColor(android.R.attr.textColorPrimary)
+                ?: attrColor(android.R.attr.textColorPrimary)
         }
         updateTextCount()
         updateFeaturedTags()

@@ -150,7 +150,7 @@ class DlgAppPicker(
 					activity,
 					ivImage,
 					R.drawable.ic_question,
-					color = activity.getAttributeColor(R.attr.colorVectorDrawable),
+					color = activity.attrColor(R.attr.colorVectorDrawable),
 					alphaMultiplier = 1f
 				)
             }

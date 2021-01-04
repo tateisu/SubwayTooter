@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.DialogInterface
 import android.content.res.ColorStateList
+import android.content.res.TypedArray
 import android.graphics.Color
 import android.graphics.ColorFilter
 import android.graphics.PorterDuff
@@ -37,40 +38,25 @@ fun Int.applyAlphaMultiplier(alphaMultiplier : Float? = null) : Int {
 	}
 }
 
-fun Context.getAttributeColor(attrId : Int) : Int {
+fun Context.attrColor(attrId : Int) : Int {
 	val a = theme.obtainStyledAttributes(intArrayOf(attrId))
 	val color = a.getColor(0, Color.BLACK)
 	a.recycle()
 	return color
 }
 
-fun getAttributeDrawable(context : Context, attrId : Int) : Drawable {
-	
-	fun getAttributeResourceId(context : Context, attrId : Int) : Int {
-		val theme = context.theme
-		val a = theme.obtainStyledAttributes(intArrayOf(attrId))
-		val resourceId = a.getResourceId(0, 0)
-		a.recycle()
-		if(resourceId == 0)
-			throw RuntimeException(
-				String.format(
-					Locale.JAPAN,
-					"attr not defined.attr_id=0x%x",
-					attrId
-				)
-			)
-		return resourceId
-	}
-	
-	val drawableId = getAttributeResourceId(context, attrId)
-	val d = ContextCompat.getDrawable(context, drawableId)
-	return d ?: throw RuntimeException(
-		String.format(
-			Locale.JAPAN,
-			"getDrawable failed. drawableId=0x%x",
-			drawableId
-		)
-	)
+fun<T> TypedArray.use(block:(TypedArray)->T):T =
+	try{ block(this) }finally{ 	recycle() }
+
+fun Context.getAttributeResourceId( attrId : Int) =
+	 theme.obtainStyledAttributes(intArrayOf(attrId))
+		 .use{ it.getResourceId(0, 0) }
+		 .notZero() ?: error("missing resource id. attr_id=0x${attrId.toString(16)}")
+
+fun Context.attrDrawable( attrId : Int) : Drawable {
+	val drawableId = getAttributeResourceId( attrId)
+	return ContextCompat.getDrawable(this, drawableId)
+		?: error("getDrawable failed. drawableId=0x${drawableId.toString(16)}")
 }
 
 /////////////////////////////////////////////////////////

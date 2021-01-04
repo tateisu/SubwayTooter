@@ -720,7 +720,7 @@ class ColumnViewHolder(
             val context = activity
 
             val announcementsBgColor = Pref.ipAnnouncementsBgColor(App1.pref).notZero()
-                ?: context.getAttributeColor(R.attr.colorSearchFormBackground)
+                ?: context.attrColor(R.attr.colorSearchFormBackground)
 
             btnAnnouncementsCutout.apply {
                 color = announcementsBgColor
@@ -733,7 +733,7 @@ class ColumnViewHolder(
             }
 
             val searchBgColor = Pref.ipSearchBgColor(App1.pref).notZero()
-                ?: context.getAttributeColor(R.attr.colorSearchFormBackground)
+                ?: context.attrColor(R.attr.colorSearchFormBackground)
 
             llSearch.apply {
                 backgroundColor = searchBgColor
@@ -1231,7 +1231,7 @@ class ColumnViewHolder(
         tvColumnContext.text = ac.nickname
         tvColumnContext.setTextColor(
             ac.color_fg.notZero()
-                ?: activity.getAttributeColor(R.attr.colorTimeSmall)
+                ?: activity.attrColor(R.attr.colorTimeSmall)
         )
 
         tvColumnContext.setBackgroundColor(ac.color_bg)
@@ -1585,10 +1585,10 @@ class ColumnViewHolder(
         if (insideColumnSetting) {
             svQuickFilter.setBackgroundColor(0)
 
-            val colorFg = activity.getAttributeColor(R.attr.colorContentText)
+            val colorFg = activity.attrColor(R.attr.colorContentText)
             val colorBgSelected = colorFg.applyAlphaMultiplier(0.25f)
             val colorFgList = ColorStateList.valueOf(colorFg)
-            val colorBg = activity.getAttributeColor(R.attr.colorColumnSettingBackground)
+            val colorBg = activity.attrColor(R.attr.colorColumnSettingBackground)
             showQuickFilterButton = { btn, iconId, selected ->
                 btn.backgroundDrawable =
                     getAdaptiveRippleDrawableRound(
@@ -1720,7 +1720,7 @@ class ColumnViewHolder(
                         gravity = Gravity.END
                         startPadding = dip(4)
                         endPadding = dip(4)
-                        textColor = context.getAttributeColor(R.attr.colorColumnHeaderAcct)
+                        textColor = context.attrColor(R.attr.colorColumnHeaderAcct)
                         textSize = 12f
 
                     }.lparams(0, wrapContent) {
@@ -1729,7 +1729,7 @@ class ColumnViewHolder(
 
                     tvColumnStatus = textView {
                         gravity = Gravity.END
-                        textColor = context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
+                        textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
                         textSize = 12f
 
                     }.lparams(wrapContent, wrapContent) {
@@ -1738,7 +1738,7 @@ class ColumnViewHolder(
 
                     tvColumnIndex = textView {
                         gravity = Gravity.END
-                        textColor = context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
+                        textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
                         textSize = 12f
 
                     }.lparams(wrapContent, wrapContent) {
@@ -1842,7 +1842,7 @@ class ColumnViewHolder(
                             val paint = Paint().apply {
                                 isAntiAlias = true
                                 color =
-                                    context.getAttributeColor(R.attr.colorColumnSettingBackground)
+                                    context.attrColor(R.attr.colorColumnSettingBackground)
                             }
                             val path = Path()
                             addOutsideDrawer(this) { canvas, parent, view, left, top ->
@@ -1908,7 +1908,7 @@ class ColumnViewHolder(
                 maxHeight = dip(240)
 
                 backgroundColor =
-                    context.getAttributeColor(R.attr.colorColumnSettingBackground)
+                    context.attrColor(R.attr.colorColumnSettingBackground)
 
                 llColumnSettingInside = verticalLayout {
                     lparams(matchParent, wrapContent)
@@ -1923,7 +1923,7 @@ class ColumnViewHolder(
 
                         label = textView {
                             textColor =
-                                context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
+                                context.attrColor(R.attr.colorColumnHeaderPageNumber)
                             text = context.getString(R.string.hashtag_extra_any)
                         }.lparams(matchParent, wrapContent)
 
@@ -1938,7 +1938,7 @@ class ColumnViewHolder(
 
                         label = textView {
                             textColor =
-                                context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
+                                context.attrColor(R.attr.colorColumnHeaderPageNumber)
                             text = context.getString(R.string.hashtag_extra_all)
                         }.lparams(matchParent, wrapContent)
 
@@ -1953,7 +1953,7 @@ class ColumnViewHolder(
 
                         label = textView {
                             textColor =
-                                context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
+                                context.attrColor(R.attr.colorColumnHeaderPageNumber)
                             text = context.getString(R.string.hashtag_extra_none)
                         }.lparams(matchParent, wrapContent)
 
@@ -2048,12 +2048,12 @@ class ColumnViewHolder(
 
                         label = textView {
                             textColor =
-                                context.getAttributeColor(R.attr.colorColumnHeaderPageNumber)
+                                context.attrColor(R.attr.colorColumnHeaderPageNumber)
                             text = context.getString(R.string.regex_filter)
                         }.lparams(wrapContent, wrapContent)
 
                         tvRegexFilterError = textView {
-                            textColor = context.getAttributeColor(R.attr.colorRegexFilterError)
+                            textColor = context.attrColor(R.attr.colorRegexFilterError)
                         }.lparams(0, wrapContent) {
                             weight = 1f
                             startMargin = dip(4)
@@ -2219,7 +2219,7 @@ class ColumnViewHolder(
                         contentDescription = context.getString(R.string.clear)
                         imageResource = R.drawable.ic_close
                         imageTintList = ColorStateList.valueOf(
-                            context.getAttributeColor(R.attr.colorVectorDrawable)
+                            context.attrColor(R.attr.colorVectorDrawable)
                         )
                     }.lparams(dip(40), dip(40)) {
                         startMargin = dip(4)
@@ -2230,7 +2230,7 @@ class ColumnViewHolder(
                         contentDescription = context.getString(R.string.search)
                         imageResource = R.drawable.ic_search
                         imageTintList = ColorStateList.valueOf(
-                            context.getAttributeColor(R.attr.colorVectorDrawable)
+                            context.attrColor(R.attr.colorVectorDrawable)
                         )
                     }.lparams(dip(40), dip(40)) {
                         startMargin = dip(4)
@@ -2262,7 +2262,7 @@ class ColumnViewHolder(
                     contentDescription = context.getString(R.string.add)
                     imageResource = R.drawable.ic_add
                     imageTintList = ColorStateList.valueOf(
-                        context.getAttributeColor(
+                        context.attrColor(
                             R.attr.colorVectorDrawable
                         )
                     )
@@ -2680,8 +2680,8 @@ class ColumnViewHolder(
                     btn.background = if (reaction.me == true) {
                         getAdaptiveRippleDrawableRound(
                             actMain,
-                            actMain.getAttributeColor(R.attr.colorButtonBgCw),
-                            actMain.getAttributeColor(R.attr.colorRippleEffect)
+                            actMain.attrColor(R.attr.colorButtonBgCw),
+                            actMain.attrColor(R.attr.colorRippleEffect)
                         )
                     } else {
                         ContextCompat.getDrawable(actMain, R.drawable.btn_bg_transparent_round6dp)

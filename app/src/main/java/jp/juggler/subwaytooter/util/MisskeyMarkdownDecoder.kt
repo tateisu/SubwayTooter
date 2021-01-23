@@ -1033,7 +1033,16 @@ object MisskeyMarkdownDecoder {
 			fireRenderChildNodes(it)
 			spanList.addLast(start, sb.length, RelativeSizeSpan(0.7f))
 		}),
-		
+
+		FUNCTION({
+			val name = it.args.elementAtOrNull(0)
+			appendText("[")
+			appendText(name?:"")
+			appendText(" ")
+			fireRenderChildNodes(it)
+			appendText("]")
+		}),
+
 		ITALIC({
 			val start = this.start
 			fireRenderChildNodes(it)
@@ -1182,37 +1191,37 @@ object MisskeyMarkdownDecoder {
 				
 				BIG wraps
 					hashSetOf(
-						EMOJI, HASHTAG, MENTION,
+						EMOJI, HASHTAG, MENTION, FUNCTION,
 						STRIKE, SMALL, ITALIC
 					)
 				
 				BOLD wraps
 					hashSetOf(
-						EMOJI, HASHTAG, MENTION, URL, LINK,
+						EMOJI, HASHTAG, MENTION, FUNCTION, URL, LINK,
 						STRIKE, SMALL, ITALIC
 					)
 				
 				STRIKE wraps
 					hashSetOf(
-						EMOJI, HASHTAG, MENTION, URL, LINK,
+						EMOJI, HASHTAG, MENTION, FUNCTION, URL, LINK,
 						BIG, BOLD, SMALL, ITALIC
 					)
 				
 				SMALL wraps
 					hashSetOf(
-						EMOJI, HASHTAG, MENTION, URL, LINK,
+						EMOJI, HASHTAG, MENTION, FUNCTION, URL, LINK,
 						BOLD, STRIKE, ITALIC
 					)
 				
 				ITALIC wraps
 					hashSetOf(
-						EMOJI, HASHTAG, MENTION, URL, LINK,
+						EMOJI, HASHTAG, MENTION, FUNCTION, URL, LINK,
 						BIG, BOLD, STRIKE, SMALL
 					)
 				
 				MOTION wraps
 					hashSetOf(
-						EMOJI, HASHTAG, MENTION, URL, LINK,
+						EMOJI, HASHTAG, MENTION, FUNCTION, URL, LINK,
 						BOLD, STRIKE, SMALL, ITALIC
 					)
 				
@@ -1224,35 +1233,45 @@ object MisskeyMarkdownDecoder {
 				
 				TITLE wraps
 					hashSetOf(
-						EMOJI, HASHTAG, MENTION, URL, LINK,
+						EMOJI, HASHTAG, MENTION, FUNCTION, URL, LINK,
 						BIG, BOLD, STRIKE, SMALL, ITALIC,
 						MOTION, CODE_INLINE
 					)
 				
 				CENTER wraps
 					hashSetOf(
-						EMOJI, HASHTAG, MENTION, URL, LINK,
+						EMOJI, HASHTAG, MENTION, FUNCTION, URL, LINK,
 						BIG, BOLD, STRIKE, SMALL, ITALIC,
 						MOTION, CODE_INLINE
 					)
-				
-				// all except ROOT,TEXT
-				val allSet = hashSetOf(
+
+				FUNCTION wraps hashSetOf(
 					CODE_BLOCK, QUOTE_INLINE, SEARCH,
 					EMOJI, HASHTAG, MENTION, URL, LINK,
 					BIG, BOLD, STRIKE, SMALL, ITALIC,
 					MOTION, CODE_INLINE,
 					TITLE, CENTER, QUOTE_BLOCK
 				)
-				
+
+				// all except ROOT,TEXT
+				val allSet = hashSetOf(
+					CODE_BLOCK, QUOTE_INLINE, SEARCH,
+					EMOJI, HASHTAG, MENTION, FUNCTION, URL, LINK,
+					BIG, BOLD, STRIKE, SMALL, ITALIC,
+					MOTION, CODE_INLINE,
+					TITLE, CENTER, QUOTE_BLOCK
+				)
+
 				QUOTE_BLOCK wraps allSet
 				
 				ROOT wraps allSet
 				
 			}
+
 		}
 	}
-	
+
+
 	// マークダウン要素
 	internal class Node(
 		val type : NodeType, // ノード種別
@@ -1284,6 +1303,7 @@ object MisskeyMarkdownDecoder {
 	}
 	
 	internal class NodeParseEnv(
+		val useFunction : Boolean,
 		private val parentNode : Node,
 		val text : String,
 		start : Int,
@@ -1358,6 +1378,7 @@ object MisskeyMarkdownDecoder {
 				lastEnd = i
 				
 				NodeParseEnv(
+					useFunction,
 					detected.node,
 					detected.textInside,
 					detected.startInside,
@@ -1416,6 +1437,47 @@ object MisskeyMarkdownDecoder {
 				
 			}
 		}
+	}
+
+
+	// [title] 【title】
+	// 直後に改行が必要だったが文末でも良いことになった https://github.com/syuilo/misskey/commit/79ffbf95db9d0cc019d06ab93b1bfa6ba0d4f9ae
+//		val titleParser = simpleParser(
+//			"""\A[【\[](.+?)[】\]](\n|\z)""".asciiPattern()
+//			, NodeType.TITLE
+//		)
+	private val reTitle = """\A[【\[](.+?)[】\]](\n|\z)""".asciiPattern()
+	private val reFunction = """\A\[([^\s\n\[\]]+) \s*([^\n\[\]]+)\]""".asciiPattern()
+	private fun NodeParseEnv.titleParserImpl():NodeDetected?{
+		log.d("useFunction=$useFunction")
+		if( useFunction ) {
+			val type = NodeType.FUNCTION
+			val matcher = remainMatcher(reFunction)
+			if (matcher.find()) {
+				val name = matcher.groupEx(1)?.ellipsizeDot3(3) ?: "???"
+				val textInside = matcher.groupEx(2)!!
+				log.d("function name=$name text=$textInside")
+				return makeDetected(
+					type,
+					arrayOf(name),
+					matcher.start(), matcher.end(),
+					this.text, matcher.start(2), textInside.length
+				)
+			}
+		}
+		val type = NodeType.TITLE
+		val matcher = remainMatcher(reTitle)
+		if (matcher.find()) {
+			val textInside = matcher.groupEx(1) !!
+			return makeDetected(
+				type,
+				arrayOf(textInside),
+				matcher.start(), matcher.end(),
+				this.text, matcher.start(1), textInside.length
+			)
+		}
+
+		return null
 	}
 	
 	// (マークダウン要素の特徴的な文字)と(パーサ関数の配列)のマップ
@@ -1616,13 +1678,10 @@ object MisskeyMarkdownDecoder {
 			}
 		}
 		
-		// [title] 【title】
-		// 直後に改行が必要だったが文末でも良いことになった https://github.com/syuilo/misskey/commit/79ffbf95db9d0cc019d06ab93b1bfa6ba0d4f9ae
-		val titleParser = simpleParser(
-			"""\A[【\[](.+?)[】\]](\n|\z)""".asciiPattern()
-			, NodeType.TITLE
-		)
-		
+
+
+		val titleParser : NodeParseEnv.() -> NodeDetected? = { titleParserImpl() }
+
 		// Link
 		val reLink = """\A\??\[([^\n\[\]]+?)]\((https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+?)\)"""
 			.asciiPattern()
@@ -1650,7 +1709,8 @@ object MisskeyMarkdownDecoder {
 		
 		// [ はいろんな要素で使われる
 		// searchの判定をtitleより前に行うこと。 「abc [検索] 」でtitleが優先されるとマズい
-		addParser("[", searchParser, titleParser, linkParser)
+		// v10でもv12でもlinkの優先度はtitleやfunctionより高い
+		addParser("[", searchParser, linkParser, titleParser)
 		// その他の文字でも判定する
 		addParser("【", titleParser)
 		addParser("検Ss", searchParser)
@@ -1768,7 +1828,7 @@ object MisskeyMarkdownDecoder {
 		try {
 			if(src != null) {
 				val root = Node(NodeType.ROOT, emptyArray(), null)
-				NodeParseEnv(root, src, 0, src.length).parseInside()
+				NodeParseEnv(useFunction=true, root, src, 0, src.length).parseInside()
 				val result = ArrayList<String>()
 				fun track(n : Node) {
 					if(n.type == NodeType.HASHTAG) result.add(n.args[0])
@@ -1793,9 +1853,8 @@ object MisskeyMarkdownDecoder {
 				
 				if(src != null) {
 					val root = Node(NodeType.ROOT, emptyArray(), null)
-					NodeParseEnv(root, src, 0, src.length).parseInside()
+					NodeParseEnv(useFunction = (options.linkHelper?.misskeyVersion?:12) >= 11 ,root, src, 0, src.length).parseInside()
 					env.fireRender(root).setSpan(env.sb)
-					
 				}
 				
 				// 末尾の空白を取り除く

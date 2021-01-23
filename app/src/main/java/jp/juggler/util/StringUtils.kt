@@ -208,8 +208,7 @@ fun String?.filterNotEmpty(): String? = when {
     else -> this
 }
 
-fun String?.ellipsizeDot3(max: Int) = when {
-    this == null -> null
+fun String.ellipsizeDot3(max: Int) = when {
     this.length > max -> this.substring(0, max - 1) + "…"
     else -> this
 }

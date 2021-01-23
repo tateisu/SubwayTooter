@@ -1830,13 +1830,13 @@ object MisskeyMarkdownDecoder {
 					pos > 0 && mailChars.get(text.codePointBefore(pos)) -> null
 
 					else -> {
-						log.d(
-							"mention detected: ${matcher.group(1)},${matcher.group(2)},${
-								matcher.group(
-									0
-								)
-							}"
-						)
+//						log.d(
+//							"mention detected: ${matcher.group(1)},${matcher.group(2)},${
+//								matcher.group(
+//									0
+//								)
+//							}"
+//						)
 						makeDetected(
 							NodeType.MENTION,
 							arrayOf(

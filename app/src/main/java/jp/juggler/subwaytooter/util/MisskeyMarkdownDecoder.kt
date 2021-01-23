@@ -1538,7 +1538,7 @@ object MisskeyMarkdownDecoder {
 	}
 
 	// \} \]はムダなエスケープに見えるが、androidでは必要なので削ってはいけない
-	private val reLatexRemove = """\\(?:sf|scriptsize|bf|small|tiny|underline|large|(?:color)\{[^}]*\})""".toRegex()
+	private val reLatexRemove = """\\(?:quad|Huge|atop|sf|scriptsize|bf|small|tiny|underline|large|(?:color)\{[^}]*\})""".toRegex()
 	private val reLatex1 = """\\(?:(?:url)|(?:textcolor|colorbox)\{[^}]*\}|(?:fcolorbox|raisebox)\{[^}]*\}\{[^}]*\}|includegraphics\[[^]]*\])\{([^}]*)\}""".toRegex()
 	private val reLatex2reversed = """\\(?:overset|href)\{([^}]+)\}\{([^}]+)\}""".toRegex()
 

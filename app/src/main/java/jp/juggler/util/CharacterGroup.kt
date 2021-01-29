@@ -80,7 +80,19 @@ object CharacterGroup {
 		)
 		"[${quotedKeys}]+".asciiPattern()
 	}
-	
+	internal val reNotWhitespace by lazy {
+		val quotedKeys = Pattern.quote(
+			StringBuilder().apply {
+				val size = mapWhitespace.size()
+				ensureCapacity(size)
+				for(i in 0 until size) {
+					append(mapWhitespace.keyAt(i).toChar())
+				}
+			}.toString()
+		)
+		"[^${quotedKeys}]+".asciiPattern()
+	}
+
 	private fun SparseBooleanArray.keys() = (0 until size()).map { keyAt(it) }
 	
 	internal val reWhitespaceBeforeLineFeed by lazy {

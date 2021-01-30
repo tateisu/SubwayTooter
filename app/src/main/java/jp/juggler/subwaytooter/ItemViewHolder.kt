@@ -2462,7 +2462,6 @@ internal class ItemViewHolder(
     private fun makeReactionsView(status: TootStatus) {
         if (!access_info.isMisskey) return
 
-        val reactionsCount = status.reactionCounts
 
         val density = activity.density
 
@@ -2485,52 +2484,53 @@ internal class ItemViewHolder(
             }
         }
 
-        // +ボタン
-        val b = ImageButton(act)
-        val blp = FlexboxLayout.LayoutParams(
-            buttonHeight,
-            buttonHeight
-        )
-        blp.endMargin = marginBetween
-        b.layoutParams = blp
-        b.background = ContextCompat.getDrawable(
-            activity,
-            R.drawable.btn_bg_transparent_round6dp
-        )
-
-        val hasMyReaction = status.myReaction?.isNotEmpty() == true
-        b.contentDescription =
-            activity.getString(if (hasMyReaction) R.string.reaction_remove else R.string.reaction_add)
-        b.scaleType = ImageView.ScaleType.FIT_CENTER
-        b.padding = paddingV
-        b.setOnClickListener {
-            if (hasMyReaction) {
-                removeReaction(status, false)
-            } else {
-                addReaction(status, null)
+        // +/- ボタン
+        box.addView(ImageButton(act).also{b->
+            b.layoutParams = FlexboxLayout.LayoutParams(
+                buttonHeight,
+                buttonHeight
+            ).apply{
+                endMargin = marginBetween
             }
-        }
 
-        b.setOnLongClickListener {
-            Action_Toot.reactionFromAnotherAccount(
+            b.background = ContextCompat.getDrawable(
                 activity,
-                access_info,
-                status_showing
+                R.drawable.btn_bg_transparent_round6dp
             )
-            true
-        }
 
-        setIconDrawableId(
-            act,
-            b,
-            if (hasMyReaction) R.drawable.ic_remove else R.drawable.ic_add,
-            color = content_color,
-            alphaMultiplier = Styler.boost_alpha
-        )
+            val hasMyReaction = status.myReaction?.isNotEmpty() == true
+            b.contentDescription =
+                activity.getString(if (hasMyReaction) R.string.reaction_remove else R.string.reaction_add)
+            b.scaleType = ImageView.ScaleType.FIT_CENTER
+            b.padding = paddingV
+            b.setOnClickListener {
+                if (hasMyReaction) {
+                    removeReaction(status, false)
+                } else {
+                    addReaction(status, null)
+                }
+            }
 
-        box.addView(b)
+            b.setOnLongClickListener {
+                Action_Toot.reactionFromAnotherAccount(
+                    activity,
+                    access_info,
+                    status_showing
+                )
+                true
+            }
 
-        if (reactionsCount != null) {
+            setIconDrawableId(
+                act,
+                b,
+                if (hasMyReaction) R.drawable.ic_remove else R.drawable.ic_add,
+                color = content_color,
+                alphaMultiplier = Styler.boost_alpha
+            )
+        })
+
+        val reactionCounts = status.reactionCounts
+        if (reactionCounts != null) {
 
             var lastButton: View? = null
 
@@ -2542,7 +2542,7 @@ internal class ItemViewHolder(
 				enlargeCustomEmoji = 1.5f
 			)
 
-            for (entry in reactionsCount.entries) {
+            for (entry in reactionCounts.entries) {
                 val key = entry.key
                 val count = entry.value
                 if (count <= 0) continue
@@ -2562,7 +2562,7 @@ internal class ItemViewHolder(
                         // 自分がリアクションしたやつは背景を変える
                         getAdaptiveRippleDrawableRound(
 							act,
-							act.attrColor(R.attr.colorImageButtonAccent),
+                            Pref.ipButtonReactionedColor(act.pref).notZero() ?: act.attrColor(R.attr.colorImageButtonAccent),
 							act.attrColor(R.attr.colorRippleEffect),
                             roundNormal = true
 						)

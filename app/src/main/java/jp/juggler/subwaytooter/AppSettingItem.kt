@@ -815,6 +815,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             colorAlpha(Pref.ipButtonBookmarkedColor, R.string.bookmarks)
             colorAlpha(Pref.ipButtonFollowingColor, R.string.follow)
             colorAlpha(Pref.ipButtonFollowRequestColor, R.string.follow_request)
+            colorAlpha(Pref.ipButtonReactionedColor, R.string.reaction)
         }
 
         group(R.string.column_color_default) {

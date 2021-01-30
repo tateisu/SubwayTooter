@@ -512,7 +512,8 @@ object Pref {
 	val ipButtonBookmarkedColor = IntPref("ButtonBookmarkedColor", 0)
 	val ipButtonFollowingColor = IntPref("ButtonFollowingColor", 0)
 	val ipButtonFollowRequestColor = IntPref("ButtonFollowRequestColor", 0)
-	
+	val ipButtonReactionedColor = IntPref("ButtonReactionedColor", 0)
+
 	val ipStatusBarColor = IntPref("StatusBarColor", 0)
 	val ipNavigationBarColor = IntPref("NavigationBarColor", 0)
 	

@@ -153,7 +153,9 @@ class StreamManager(val appState: AppState) {
     fun getStreamStatus(column: Column) :StreamStatus=
         when (val acctGroup =acctGroups[column.access_info.acct]) {
             null -> {
-                log.w("getStreamStatus: missing acctGroup for ${column.access_info.acct}")
+                if( !column.access_info.isNA){
+                    log.w("getStreamStatus: missing acctGroup for ${column.access_info.acct}")
+                }
                 StreamStatus.Missing
             }
             else -> acctGroup.getStreamStatus(column.internalId)
@@ -162,7 +164,9 @@ class StreamManager(val appState: AppState) {
     fun getConnection(column: Column) :StreamConnection? =
         when (val acctGroup =acctGroups[column.access_info.acct]) {
             null -> {
-                log.w("getConnection: missing acctGroup for ${column.access_info.acct}")
+                if( !column.access_info.isNA) {
+                    log.w("getConnection: missing acctGroup for ${column.access_info.acct}")
+                }
                 null
             }
             else -> acctGroup.getConnection(column.internalId)

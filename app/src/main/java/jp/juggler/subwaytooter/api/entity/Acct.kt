@@ -5,6 +5,10 @@ import java.net.IDN
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
+private val reUrlSchema = """\A\w+://""".toRegex()
+
+fun String.removeUrlSchema() = replace(reUrlSchema,"")
+
 class Host private constructor(
 	val ascii : String,
 	val pretty : String = ascii
@@ -33,14 +37,16 @@ class Host private constructor(
 	companion object {
 		// declare this first!
 		private val hostSet = ConcurrentHashMap<String, Host>()
-		
+
+
 		val EMPTY = Host("")
 		val UNKNOWN = Host("?")
 		val FRIENDS_NICO = Host("friends.nico")
-		
-		fun parse(src : String) : Host {
-			val cached = hostSet[src]
+
+		fun parse(srcArg : String) : Host {
+			val cached = hostSet[srcArg]
 			if(cached != null) return cached
+			val src = srcArg.removeUrlSchema()
 			val ascii = IDN.toASCII(src, IDN.ALLOW_UNASSIGNED).toLowerCase(Locale.JAPAN)
 			val pretty = IDN.toUnicode(src, IDN.ALLOW_UNASSIGNED)
 			val host = if(ascii == pretty) Host(ascii) else Host(ascii, pretty)

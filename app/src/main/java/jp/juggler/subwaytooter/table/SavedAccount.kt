@@ -84,7 +84,7 @@ class SavedAccount(
 		
 		this.apiHost = tmpApiHost ?: tmpApDomain ?: tmpAcct.host ?: error("missing apiHost")
 		this.apDomain = tmpApDomain ?: tmpApiHost ?: tmpAcct.host ?: error("missing apDomain")
-		
+
 		this.acct = tmpAcct.followHost(apDomain)
 	}
 	

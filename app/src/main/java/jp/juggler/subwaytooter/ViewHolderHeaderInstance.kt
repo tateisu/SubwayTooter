@@ -16,6 +16,7 @@ import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.LogCategory
 import jp.juggler.util.neatSpaces
+import jp.juggler.util.notEmpty
 import jp.juggler.util.showToast
 import org.conscrypt.OpenSSLX509Certificate
 
@@ -163,13 +164,15 @@ internal class ViewHolderHeaderInstance(
 				
 			}
 			
-			val thumbnail = instance.thumbnail
-			if(thumbnail == null || thumbnail.isEmpty()) {
-				ivThumbnail.setImageUrl(App1.pref, 0f, null)
-			} else {
-				ivThumbnail.setImageUrl(App1.pref, 0f, thumbnail, thumbnail)
-			}
-			
+			val thumbnail = instance.thumbnail?.let{
+				if( it.startsWith("/")){
+					// "/instance/thumbnail.jpeg" in case of pleroma.noellabo.jp
+					"https://${host.ascii}$it"
+				}else{
+					it
+				}
+			}.notEmpty()
+			ivThumbnail.setImageUrl(App1.pref, 0f, thumbnail, thumbnail)
 		}
 		
 		tvHandshake.text = if(handshake == null) {

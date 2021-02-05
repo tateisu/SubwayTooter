@@ -1648,9 +1648,10 @@ object MisskeyMarkdownDecoder {
 
         // 絵文字 :emoji:
         addParser(
-			":", simpleParser(
-			"""\A:([a-zA-Z0-9+-_]+):""".asciiPattern(), NodeType.EMOJI
-		)
+			":",
+			simpleParser(
+				"""\A:([a-zA-Z0-9+-_@]+):""".asciiPattern(), NodeType.EMOJI
+			)
 		)
 
         // モーション

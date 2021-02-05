@@ -244,7 +244,7 @@ object EmojiDecoder {
 	}
 	
 	private const val codepointColon = ':'.toInt()
-	private const val codepointAtmark = '@'.toInt()
+	// private const val codepointAtmark = '@'.toInt()
 	
 	private val shortCodeCharacterSet =
 		SparseBooleanArray().apply {
@@ -252,13 +252,9 @@ object EmojiDecoder {
 			for(c in 'a' .. 'z') put(c.toInt(), true)
 			for(c in '0' .. '9') put(c.toInt(), true)
 			for(c in "+-_@:") put(c.toInt(), true)
-		}
-	
-	private val profileEmojiCharacterSet =
-		shortCodeCharacterSet.clone().apply {
 			for(c in ".") put(c.toInt(), true)
 		}
-	
+
 	private interface ShortCodeSplitterCallback {
 		fun onString(part : String) // shortcode以外の文字列
 		fun onShortCode(
@@ -303,22 +299,14 @@ object EmojiDecoder {
 			
 			// 閉じるコロンを探す
 			var posEndColon = - 1
-			var countAtmark = 0
 			while(i < end) {
 				val cp = s.codePointAt(i)
 				if(cp == codepointColon) {
 					posEndColon = i
 					break
-				}
-				
-				// ベスフレの @user@host 絵文字は . を考慮する必要がある
-				if(cp == codepointAtmark) ++ countAtmark
-				val allowedCodepointMap = when {
-					countAtmark >= 2 -> profileEmojiCharacterSet
-					else -> shortCodeCharacterSet
-				}
-				if(! allowedCodepointMap.get(cp, false)) break
-				
+				}else if(! shortCodeCharacterSet.get(cp, false))
+					break
+
 				i += Character.charCount(cp)
 			}
 			

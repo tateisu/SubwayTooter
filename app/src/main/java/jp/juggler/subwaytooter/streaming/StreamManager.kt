@@ -150,27 +150,14 @@ class StreamManager(val appState: AppState) {
 
     // カラムヘッダの表示更新から、インジケータを取得するために呼ばれる
     // UIスレッドから呼ばれる
+    // returns StreamStatus.Missing if account is NA or all columns are non-streaming.
     fun getStreamStatus(column: Column) :StreamStatus=
-        when (val acctGroup =acctGroups[column.access_info.acct]) {
-            null -> {
-                if( !column.access_info.isNA){
-                    log.w("getStreamStatus: missing acctGroup for ${column.access_info.acct}")
-                }
-                StreamStatus.Missing
-            }
-            else -> acctGroup.getStreamStatus(column.internalId)
-        }
+        acctGroups[column.access_info.acct]?.getStreamStatus(column.internalId)
+            ?: StreamStatus.Missing
 
+    // returns null if account is NA or all columns are non-streaming.
     fun getConnection(column: Column) :StreamConnection? =
-        when (val acctGroup =acctGroups[column.access_info.acct]) {
-            null -> {
-                if( !column.access_info.isNA) {
-                    log.w("getConnection: missing acctGroup for ${column.access_info.acct}")
-                }
-                null
-            }
-            else -> acctGroup.getConnection(column.internalId)
-        }
+        acctGroups[column.access_info.acct]?.getConnection(column.internalId)
 
     ////////////////////////////////////////////////////////////////
 

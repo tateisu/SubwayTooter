@@ -193,11 +193,8 @@ internal class StatusButtons(
 		}
 		
 		val ti = TootInstance.getCached(access_info.apiHost.ascii)
-		
-		when {
-			ti?.feature_quote != true -> btnQuote.vg(false)
-			
-			else -> setButton(
+		btnQuote.vg(ti?.feature_quote == true)?.let{
+			setButton(
 				btnQuote,
 				true,
 				color_normal,
@@ -205,7 +202,7 @@ internal class StatusButtons(
 				activity.getString(R.string.quote)
 			)
 		}
-		
+
 		// お気に入りボタン
 		val fav_icon_drawable = when {
 			access_info.isNicoru(status.account) -> R.drawable.ic_nicoru

@@ -354,7 +354,6 @@ object EmojiDecoder {
 			}
 			
 			override fun onShortCode(prevCodePoint : Int, part : String, name : String) {
-				
 				// フレニコのプロフ絵文字
 				if(emojiMapProfile != null && name.length >= 2 && name[0] == '@') {
 					val emojiProfile = emojiMapProfile[name] ?: emojiMapProfile[name.substring(1)]

@@ -915,7 +915,8 @@ internal class ItemViewHolder(
 					n.time_created_at,
 					R.drawable.ic_face,
 					R.string.display_name_reaction_by,
-					misskeyReaction = n.reaction ?: "?"
+					misskeyReaction = n.reaction ?: "?",
+                    boost_status = n_status
 				)
 				if (n_status != null) {
 					showNotificationStatus(n_status, colorBg)

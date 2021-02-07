@@ -2663,7 +2663,7 @@ internal class ItemViewHolder(
 					}
 					when (val resCode = result.response?.code) {
 						in 200 until 300 -> {
-							if (status.increaseReaction(code, true, "addReaction")) {
+							if (status.increaseReaction(code, true, caller="addReaction")) {
 								// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
 								list_adapter.notifyChange(reason = "addReaction complete", reset = true)
 							}

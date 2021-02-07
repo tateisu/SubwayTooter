@@ -667,7 +667,7 @@ class Column(
                 when (ev.type) {
                     MisskeyNoteUpdate.Type.REACTION -> {
                         scanStatusAll { s ->
-                            s.increaseReaction(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
+                            s.increaseReaction(ev.reaction, byMe, ev.emoji, "onNoteUpdated ${ev.userId}")
                         }
                     }
 

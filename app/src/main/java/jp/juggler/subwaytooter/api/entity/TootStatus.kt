@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.collections.LinkedHashMap
 import kotlin.math.abs
 import kotlin.math.max
@@ -109,7 +110,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     //Application from which the status was posted
     val application: TootApplication?
 
-    val custom_emojis: HashMap<String, CustomEmoji>?
+    var custom_emojis: HashMap<String, CustomEmoji>? = null
 
     val profile_emojis: HashMap<String, NicoProfileEmoji>?
 
@@ -931,10 +932,14 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
 
     // return true if updated
-    fun increaseReaction(reaction: String?, byMe: Boolean, caller: String): Boolean {
+    fun increaseReaction(reaction: String?, byMe: Boolean, emoji: CustomEmoji? = null,caller: String): Boolean {
         reaction ?: return false
 
         synchronized(this) {
+			if( emoji != null ){
+				if( custom_emojis==null) custom_emojis = HashMap()
+				custom_emojis?.put(emoji.mapKey,emoji)
+			}
 
             if (byMe) {
                 if (myReaction != null) {

@@ -678,7 +678,7 @@ object HTMLDecoder {
 					{ sb_tmp ->
 						val prefix = listContext.increment()
 						val startBold = sb.length
-						sb_tmp.splitLines().forEachIndexed { i, line ->
+						sb_tmp.splitLines().forEach { line ->
 							sb.append(prefix)
 							sb.append(line)
 						}
@@ -688,8 +688,8 @@ object HTMLDecoder {
 
 				"dd" -> {
 					{ sb_tmp ->
-						val prefix = listContext.increment() + "   "
-						sb_tmp.splitLines().forEachIndexed { i, line ->
+						val prefix = listContext.increment() + "　　"
+						sb_tmp.splitLines().forEach { line ->
 							sb.append(prefix)
 							sb.append(line)
 						}

@@ -6,6 +6,8 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
@@ -14,6 +16,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
 import java.util.*
+import kotlin.math.max
 
 class SavedAccount(
 	val db_id : Long,
@@ -73,6 +76,10 @@ class SavedAccount(
 	var last_notification_error : String? = null
 	var last_subscription_error : String? = null
 	var last_push_endpoint : String? = null
+
+	var image_resize: String? = null
+	var image_max_megabytes : String? = null
+	var movie_max_megabytes : String? = null
 	
 	init {
 		val tmpAcct = Acct.parse(acctArg)
@@ -155,6 +162,10 @@ class SavedAccount(
 		last_notification_error = cursor.getStringOrNull(COL_LAST_NOTIFICATION_ERROR)
 		last_subscription_error = cursor.getStringOrNull(COL_LAST_SUBSCRIPTION_ERROR)
 		last_push_endpoint = cursor.getStringOrNull(COL_LAST_PUSH_ENDPOINT)
+
+		image_resize = cursor.getStringOrNull(COL_IMAGE_RESIZE)
+		image_max_megabytes = cursor.getStringOrNull(COL_IMAGE_MAX_MEGABYTES)
+		movie_max_megabytes = cursor.getStringOrNull(COL_MOVIE_MAX_MEGABYTES)
 	}
 	
 	val isNA : Boolean
@@ -218,7 +229,11 @@ class SavedAccount(
 		cv.put(COL_DEFAULT_SENSITIVE, default_sensitive.b2i())
 		cv.put(COL_EXPAND_CW, expand_cw.b2i())
 		cv.put(COL_MAX_TOOT_CHARS, max_toot_chars)
-		
+
+		cv.putOrNull(COL_IMAGE_RESIZE,image_resize)
+		cv.putOrNull(COL_IMAGE_MAX_MEGABYTES, image_max_megabytes)
+		cv.putOrNull(COL_MOVIE_MAX_MEGABYTES, movie_max_megabytes)
+
 		// UIからは更新しない
 		// notification_tag
 		// register_key
@@ -280,6 +295,10 @@ class SavedAccount(
 		this.expand_cw = b.expand_cw
 		
 		this.sound_uri = b.sound_uri
+
+		this.image_resize = b.image_resize
+		this.image_max_megabytes = b.image_max_megabytes
+		this.movie_max_megabytes = b.movie_max_megabytes
 	}
 	
 	fun getFullAcct(who : TootAccount?) = getFullAcct(who?.acct)
@@ -377,7 +396,11 @@ class SavedAccount(
 		private const val COL_LAST_NOTIFICATION_ERROR = "last_notification_error" // スキーマ42
 		private const val COL_LAST_SUBSCRIPTION_ERROR = "last_subscription_error" // スキーマ45
 		private const val COL_LAST_PUSH_ENDPOINT = "last_push_endpoint" // スキーマ46
-		
+
+		private const val COL_IMAGE_RESIZE = "image_resize" // スキーマ59
+		private const val COL_IMAGE_MAX_MEGABYTES = "image_max_megabytes" // スキーマ59
+		private const val COL_MOVIE_MAX_MEGABYTES = "movie_max_megabytes" // スキーマ59
+
 		/////////////////////////////////
 		// login information
 		const val INVALID_DB_ID = - 1L
@@ -469,7 +492,12 @@ class SavedAccount(
 					
 					// スキーマ57から
 					+ ",$COL_NOTIFICATION_POST integer default 1"
-					
+
+					// スキーマ59から
+					+ ",$COL_IMAGE_RESIZE text default null"
+					+ ",$COL_IMAGE_MAX_MEGABYTES text default null"
+					+ ",$COL_MOVIE_MAX_MEGABYTES text default null"
+
 					+ ")"
 			)
 			db.execSQL("create index if not exists ${table}_user on ${table}(u)")
@@ -684,8 +712,46 @@ class SavedAccount(
 				}
 				
 			}
+			if(oldVersion < 59 && newVersion >= 59) {
+				try {
+					db.execSQL("alter table $table add column $COL_IMAGE_RESIZE text default null")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				try {
+					db.execSQL("alter table $table add column $COL_IMAGE_MAX_MEGABYTES text default null")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				try {
+					db.execSQL("alter table $table add column $COL_MOVIE_MAX_MEGABYTES text default null")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+			}
 		}
-		
+
+		val defaultResizeConfig = ResizeConfig(ResizeType.LongSide, 1280)
+
+		internal val resizeConfigList = arrayOf(
+			ResizeConfig(ResizeType.None, 0),
+
+			ResizeConfig(ResizeType.LongSide, 640),
+			ResizeConfig(ResizeType.LongSide, 800),
+			ResizeConfig(ResizeType.LongSide, 1024),
+			ResizeConfig(ResizeType.LongSide, 1280),
+			ResizeConfig(ResizeType.LongSide, 1600),
+			ResizeConfig(ResizeType.LongSide, 2048),
+
+			ResizeConfig(ResizeType.SquarePixel, 640),
+			ResizeConfig(ResizeType.SquarePixel, 800),
+			ResizeConfig(ResizeType.SquarePixel, 1024),
+			ResizeConfig(ResizeType.SquarePixel, 1280),
+			ResizeConfig(ResizeType.SquarePixel, 1440, R.string.size_1920_1080),
+			ResizeConfig(ResizeType.SquarePixel, 1600),
+			ResizeConfig(ResizeType.SquarePixel, 2048)
+		)
+
 		// 横断検索用の、何とも紐ついていないアカウント
 		// 保存しない。
 		val na : SavedAccount by lazy {
@@ -1105,5 +1171,20 @@ class SavedAccount(
 		}
 	
 	override fun hashCode() : Int = acct.hashCode()
-	
+
+
+	fun getResizeConfig() =
+		resizeConfigList.find { it.spec == this.image_resize } ?: defaultResizeConfig
+
+	fun getMovieMaxBytes(ti:TootInstance) = 1000000 * max(
+		1,
+		this.movie_max_megabytes?.toIntOrNull()
+			?: if(  ti.instanceType == TootInstance.InstanceType.Pixelfed) 15 else 40
+	)
+
+	fun getImageMaxBytes(ti:TootInstance) = 1000000 * max(
+		1,
+		this.image_max_megabytes?.toIntOrNull()
+			?: if(  ti.instanceType == TootInstance.InstanceType.Pixelfed) 15 else 8
+	)
 }

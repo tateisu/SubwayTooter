@@ -451,7 +451,8 @@ object Pref {
 	const val BACK_EXIT_APP = 3
 	
 	val ipUiTheme = IntPref("ui_theme", 0)
-	val ipResizeImage = IntPref("resize_image", 4)
+
+//	val ipResizeImage = IntPref("resize_image", 4)
 	
 	const val RC_SIMPLE = 0
 	const val RC_ACTUAL = 1
@@ -565,9 +566,11 @@ object Pref {
 	val spReplyIconSize = StringPref("ReplyIconSize", "24")
 	val spHeaderIconSize = StringPref("HeaderIconSize", "24")
 	val spStripIconSize = StringPref("StripIconSize", "30")
-	val spMediaSizeMax = StringPref("max_media_size", "8")
-	val spMovieSizeMax = StringPref("max_movie_size", "40")
-	val spMediaSizeMaxPixelfed = StringPref("MediaSizeMaxPixelfed", "15")
+
+	// val spMediaSizeMax = StringPref("max_media_size", "8")
+	// val spMovieSizeMax = StringPref("max_movie_size", "40")
+	// val spMediaSizeMaxPixelfed = StringPref("MediaSizeMaxPixelfed", "15")
+
 	val spTimelineFont = StringPref("timeline_font", "", skipImport = true)
 	val spTimelineFontBold = StringPref("timeline_font_bold", "", skipImport = true)
 	val spMspUserToken = StringPref("mastodon_search_portal_user_token", "")

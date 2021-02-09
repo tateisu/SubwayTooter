@@ -241,6 +241,7 @@
     <string name="dont_resize">Don\'t resize</string>
     <string name="long_side_pixel">Resize to %1$d pixels</string>
     <string name="resize_square_pixels">Resize to %1$d square pixels (equiv. %2$dx%2$d)</string>
+    <string name="resize_square_pixels_2">Resize to %1$d square pixels (equiv. %2$s)</string>
     <string name="image_capture">Take a picture</string>
     <string name="video_capture">Capture a video</string>
     <string name="voice_capture">Capture a voice</string>
@@ -1077,4 +1078,5 @@
     <string name="update_push_subscription_not_force" translatable="false">Update push subscription(not force)</string>
     <string name="reset_notification_tracking_status">Reset notification tracking status</string>
     <string name="web_browser">Web browser</string>
+    <string name="size_1920_1080">1920x1080</string>
 </resources>

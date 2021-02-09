@@ -122,8 +122,9 @@ class App1 : Application() {
 		// 2020/9/7 55=>56 SavedAccountテーブルにCOL_DOMAINを追加。
 		// 2020/9/20 56=>57 SavedAccountテーブルに項目追加
 		// 2020/9/20 57=>58 UserRelationテーブルに項目追加
+		// 2021/2/10 58=>59 SavedAccountテーブルに項目追加
 		
-		internal const val DB_VERSION = 58
+		internal const val DB_VERSION = 59
 		
 		private val tableList = arrayOf(
 			LogData,

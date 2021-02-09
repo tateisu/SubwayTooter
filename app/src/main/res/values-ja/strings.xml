@@ -419,6 +419,7 @@
     <string name="login_required">アカウント設定からアクセストークンの更新を行ってください</string>
     <string name="long_side_pixel">長辺 %1$d ピクセル</string>
     <string name="resize_square_pixels">%1$d平方ピクセル(%2$dx%2$d相当)</string>
+    <string name="resize_square_pixels_2">%1$d平方ピクセル(%2$s相当)</string>
     <string name="mail_address_not_contains_at_mark">メールアドレスが不十分です。\'@\'や\'.\'がありません</string>
     <string name="mail_hint">例: your@e-mail.address</string>
     <string name="mail_not_specified">メールアドレスを指定してください</string>

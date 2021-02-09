@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import    androidx.exifinterface.media.ExifInterface
 import android.net.Uri
+import androidx.annotation.StringRes
 //import it.sephiroth.android.library.exif2.ExifInterface
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -72,8 +73,14 @@ enum class ResizeType {
 
 class ResizeConfig(
 	val type : ResizeType,
-	val size : Int
-)
+	val size : Int,
+	@StringRes val extraStringId: Int = 0,
+){
+	val spec :String get() = when(type){
+		ResizeType.None -> type.toString()
+		else ->"$type,$size"
+	}
+}
 
 fun createResizedBitmap(
 	context : Context,

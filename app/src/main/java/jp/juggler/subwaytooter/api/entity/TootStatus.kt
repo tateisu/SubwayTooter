@@ -254,7 +254,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 				this.visibility = TootVisibility.parseMisskey(
 					src.string("visibility"),
 					localOnly
-				) ?: TootVisibility.Public
+				) ?: TootVisibility.Unknown
 
 				this.misskeyVisibleIds = parseStringArray(src.jsonArray("visibleUserIds"))
 
@@ -609,8 +609,12 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 								src.jsonArray("media_attachments"),
 								log
 							)
-						this.visibility = TootVisibility.parseMastodon(src.string("visibility"))
-							?: TootVisibility.Public
+						val visibilityString = if(src.boolean("limited")==true)
+							"limited"
+						else
+							src.string("visibility")
+						this.visibility = TootVisibility.parseMastodon(visibilityString)
+							?: TootVisibility.Unknown
 						this.sensitive = src.optBoolean("sensitive")
 
 					}

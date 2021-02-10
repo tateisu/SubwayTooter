@@ -27,7 +27,7 @@ enum class TootVisibility(
 	// (Mastodon)タグTLには出ない。
 	// (Misskey)タグTLには出る。
 	UnlistedHome(2, 80, strMastodon = "unlisted", strMisskey = "home"),
-	LocalHome(6, 75, strMastodon = "unlisted", strMisskey = "local-home", isLocal = true),
+	LocalHome(7, 75, strMastodon = "unlisted", strMisskey = "local-home", isLocal = true),
 	
 	// 未フォローには見せない。
 	// (Mastodon)フォロワーのHTLに出る。
@@ -38,7 +38,13 @@ enum class TootVisibility(
 	// (Misskey)非ログインの閲覧者から見たのプロフには出るが内容は隠される。「あの人は寝てるはずの時間に何か投稿してた」とか分かっちゃう。
 	PrivateFollowers(3, 70, strMastodon = "private", strMisskey = "followers"),
 	LocalFollowers(3, 65, strMastodon = "private", strMisskey = "local-followers", isLocal = true),
-	
+
+	// (fedibird)サークル。
+	Limited(8, 63, strMastodon = "limited", strMisskey = "limited"),
+
+	// (fedibird)相互フォロー。投稿時にのみ使われる
+	Mutual(9, 62, strMastodon = "mutual", strMisskey = "mutual"),
+
 	// 指定したユーザにのみ送信する。
 	// (Misskey)送信先ユーザのIDをリストで指定する。投稿前にユーザの存在確認を行う機会がある。
 	// (Misskey)送信先ユーザが1以上ならspecified、0ならprivateを指定する。
@@ -49,7 +55,9 @@ enum class TootVisibility(
 	// (Misskey)非ログインの閲覧者から見たのプロフには出るが内容は隠される。「あの人は寝てるはずの時間に何か投稿してた」とか分かっちゃう。
 	DirectSpecified(4, 60, strMastodon = "direct", strMisskey = "specified"),
 	DirectPrivate(5, 50, strMastodon = "direct", strMisskey = "private"),
-	
+
+	// 未知の公開範囲。
+	Unknown(10, 1, strMastodon = "unknown", strMisskey = "unknown"),
 	;
 	
 	fun canPin(isMisskey : Boolean) : Boolean {

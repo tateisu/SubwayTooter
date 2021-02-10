@@ -59,7 +59,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.max
 
 class ActPost : AsyncActivity(),
     View.OnClickListener,
@@ -832,18 +831,24 @@ class ActPost : AsyncActivity(),
                             //	?: TootVisibility.Public
                             // VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになる
 
+                            if (visibility == TootVisibility.Unknown) {
+                                visibility = TootVisibility.PrivateFollowers
+                            }
+
+                            val sample = when (val base = reply_status.visibility) {
+                                TootVisibility.Unknown -> TootVisibility.PrivateFollowers
+                                else -> base
+                            }
+
                             if (TootVisibility.WebSetting == visibility) {
                                 // 「Web設定に合わせる」だった場合は無条件にリプライ元の公開範囲に変更する
-                                this.visibility = reply_status.visibility
-                            } else {
+                                this.visibility = sample
+                            } else if (TootVisibility.isVisibilitySpoilRequired(
+                                    this.visibility,sample )) {
                                 // デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
-                                if (TootVisibility.isVisibilitySpoilRequired(
-                                        this.visibility,
-                                        reply_status.visibility
-                                    )) {
-                                    this.visibility = reply_status.visibility
-                                }
+                                this.visibility = sample
                             }
+
 
                         } catch (ex: Throwable) {
                             log.trace(ex)
@@ -1411,7 +1416,7 @@ class ActPost : AsyncActivity(),
         val time: Long
     )
 
-    // key is SavedfAccount.acctAscii
+    // key is SavedAccount.acctAscii
     private val featuredTagCache = ConcurrentHashMap<String, FeaturedTagCache>()
     private var lastFeaturedTagTask: TootTaskRunner? = null
 
@@ -2670,7 +2675,16 @@ class ActPost : AsyncActivity(),
                 TootVisibility.DirectSpecified,
                 TootVisibility.DirectPrivate
             )
-        } else {
+        } else if( account?.apiHost?.ascii =="fedibird.com") {
+            arrayOf(
+                TootVisibility.WebSetting,
+                TootVisibility.Public,
+                TootVisibility.UnlistedHome,
+                TootVisibility.PrivateFollowers,
+                TootVisibility.Mutual,
+                TootVisibility.DirectSpecified
+            )
+        }else{
             arrayOf(
                 TootVisibility.WebSetting,
                 TootVisibility.Public,

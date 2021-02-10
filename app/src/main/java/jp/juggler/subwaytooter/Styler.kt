@@ -53,7 +53,10 @@ object Styler {
 				TootVisibility.LocalPublic -> R.drawable.ic_local_ltl
 				TootVisibility.LocalHome -> R.drawable.ic_local_home
 				TootVisibility.LocalFollowers -> R.drawable.ic_local_lock_open
-				
+
+				TootVisibility.Unknown-> R.drawable.ic_question
+				TootVisibility.Limited ->R.drawable.ic_account_circle
+				TootVisibility.Mutual -> R.drawable.ic_bidirectional
 			}
 			else -> when(visibility) {
 				TootVisibility.Public -> R.drawable.ic_public
@@ -67,7 +70,10 @@ object Styler {
 				TootVisibility.LocalPublic -> R.drawable.ic_local_ltl
 				TootVisibility.LocalHome -> R.drawable.ic_local_lock_open
 				TootVisibility.LocalFollowers -> R.drawable.ic_local_lock
-				
+
+				TootVisibility.Unknown-> R.drawable.ic_question
+				TootVisibility.Limited ->R.drawable.ic_account_circle
+				TootVisibility.Mutual -> R.drawable.ic_bidirectional
 			}
 		}
 	}
@@ -96,6 +102,10 @@ object Styler {
 					TootVisibility.LocalPublic -> R.string.visibility_local_public
 					TootVisibility.LocalHome -> R.string.visibility_local_home
 					TootVisibility.LocalFollowers -> R.string.visibility_local_followers
+
+					TootVisibility.Unknown-> R.string.visibility_unknown
+					TootVisibility.Limited ->R.string.visibility_limited
+					TootVisibility.Mutual -> R.string.visibility_mutual
 				}
 				else -> when(visibility) {
 					TootVisibility.Public -> R.string.visibility_public
@@ -109,6 +119,10 @@ object Styler {
 					TootVisibility.LocalPublic -> R.string.visibility_local_public
 					TootVisibility.LocalHome -> R.string.visibility_local_unlisted
 					TootVisibility.LocalFollowers -> R.string.visibility_local_followers
+
+					TootVisibility.Unknown-> R.string.visibility_unknown
+					TootVisibility.Limited ->R.string.visibility_limited
+					TootVisibility.Mutual -> R.string.visibility_mutual
 				}
 			}
 		)

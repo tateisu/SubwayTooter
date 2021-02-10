@@ -1286,6 +1286,8 @@ internal class ItemViewHolder(
 					TootVisibility.PrivateFollowers -> toot_color_follower
 					TootVisibility.DirectSpecified -> toot_color_direct_user
 					TootVisibility.DirectPrivate -> toot_color_direct_me
+                    // TODO add color setting for limited?
+                    TootVisibility.Limited -> toot_color_follower
                     else -> 0
                 }
 

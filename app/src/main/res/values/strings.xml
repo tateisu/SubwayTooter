@@ -1079,4 +1079,7 @@
     <string name="reset_notification_tracking_status">Reset notification tracking status</string>
     <string name="web_browser">Web browser</string>
     <string name="size_1920_1080">1920x1080</string>
+    <string name="visibility_unknown">Unknown</string>
+    <string name="visibility_limited">Limited</string>
+    <string name="visibility_mutual">Mutual</string>
 </resources>

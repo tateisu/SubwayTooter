@@ -436,12 +436,14 @@ object Action_Toot {
         }
 
         // Mastodonは非公開トゥートをブーストできるのは本人だけ
-        val isPrivateToot = access_info.isMastodon &&
-            arg_status.visibility == TootVisibility.PrivateFollowers
-        if (isPrivateToot && access_info.acct != status_owner) {
-            activity.showToast(false, R.string.boost_private_toot_not_allowed)
-            return
-        }
+		val isPrivateToot = access_info.isMastodon &&
+			arg_status.visibility == TootVisibility.PrivateFollowers
+
+		if( isPrivateToot && access_info.acct != status_owner) {
+			activity.showToast(false, R.string.boost_private_toot_not_allowed)
+			return
+		}
+		// DMとかのブーストはAPI側がエラーを出すだろう？
 
         // 必要なら確認を出す
         if (!bConfirmed) {

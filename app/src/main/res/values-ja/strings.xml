@@ -1067,5 +1067,8 @@
     <string name="speech">読み上げ</string>
     <string name="reset_notification_tracking_status">既読状態をリセット</string>
     <string name="web_browser">Webブラウザー</string>
+    <string name="visibility_unknown">不明</string>
+    <string name="visibility_limited">限定(サークル)</string>
+    <string name="visibility_mutual">相互</string>
 
 </resources>

@@ -88,6 +88,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
     var feature_quote = false
 
+    var fedibird_capabilities :JsonArray? = null
+
     // XXX: urls をパースしてない。使ってないから…
 
     init {
@@ -157,6 +159,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
             this.invites_enabled = src.boolean("invites_enabled")
 
+            this.fedibird_capabilities = src.jsonArray("fedibird_capabilities")
         }
     }
 

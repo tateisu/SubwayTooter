@@ -844,7 +844,7 @@ class ActPost : AsyncActivity(),
                                 // 「Web設定に合わせる」だった場合は無条件にリプライ元の公開範囲に変更する
                                 this.visibility = sample
                             } else if (TootVisibility.isVisibilitySpoilRequired(
-                                    this.visibility,sample )) {
+                                    this.visibility, sample)) {
                                 // デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
                                 this.visibility = sample
                             }
@@ -2663,35 +2663,52 @@ class ActPost : AsyncActivity(),
     }
 
     private fun performVisibility() {
-        val list = if (account?.isMisskey == true) {
-            arrayOf(
-                //	TootVisibility.WebSetting,
-                TootVisibility.Public,
-                TootVisibility.UnlistedHome,
-                TootVisibility.PrivateFollowers,
-                TootVisibility.LocalPublic,
-                TootVisibility.LocalHome,
-                TootVisibility.LocalFollowers,
-                TootVisibility.DirectSpecified,
-                TootVisibility.DirectPrivate
-            )
-        } else if( account?.apiHost?.ascii =="fedibird.com") {
-            arrayOf(
-                TootVisibility.WebSetting,
-                TootVisibility.Public,
-                TootVisibility.UnlistedHome,
-                TootVisibility.PrivateFollowers,
-                TootVisibility.Mutual,
-                TootVisibility.DirectSpecified
-            )
-        }else{
-            arrayOf(
-                TootVisibility.WebSetting,
-                TootVisibility.Public,
-                TootVisibility.UnlistedHome,
-                TootVisibility.PrivateFollowers,
-                TootVisibility.DirectSpecified
-            )
+        val ti = account?.let { TootInstance.getCached(it.apiHost.ascii) }
+
+        val list = when {
+            account?.isMisskey == true ->
+                arrayOf(
+                    //	TootVisibility.WebSetting,
+                    TootVisibility.Public,
+                    TootVisibility.UnlistedHome,
+                    TootVisibility.PrivateFollowers,
+                    TootVisibility.LocalPublic,
+                    TootVisibility.LocalHome,
+                    TootVisibility.LocalFollowers,
+                    TootVisibility.DirectSpecified,
+                    TootVisibility.DirectPrivate
+                )
+
+            ti?.fedibird_capabilities?.any { it == "visibility_mutual" } == true ->
+                arrayOf(
+                    TootVisibility.WebSetting,
+                    TootVisibility.Public,
+                    TootVisibility.UnlistedHome,
+                    TootVisibility.PrivateFollowers,
+                    TootVisibility.Limited,
+                    TootVisibility.Mutual,
+                    TootVisibility.DirectSpecified
+                )
+
+            ti?.fedibird_capabilities?.any { it == "visibility_limited" } == true ->
+                arrayOf(
+                    TootVisibility.WebSetting,
+                    TootVisibility.Public,
+                    TootVisibility.UnlistedHome,
+                    TootVisibility.PrivateFollowers,
+                    TootVisibility.Limited,
+                    TootVisibility.DirectSpecified
+                )
+
+            else ->
+                arrayOf(
+                    TootVisibility.WebSetting,
+                    TootVisibility.Public,
+                    TootVisibility.UnlistedHome,
+                    TootVisibility.PrivateFollowers,
+                    TootVisibility.DirectSpecified
+                )
+
         }
         val caption_list = list
             .map { Styler.getVisibilityCaption(this, account?.isMisskey == true, it) }

@@ -2226,7 +2226,7 @@ class ActPost : AsyncActivity(),
         }
 
         val instance = TootInstance.getCached(account.apiHost.ascii)
-        if (instance?.instanceType == TootInstance.InstanceType.Pixelfed) {
+        if (instance?.instanceType == InstanceType.Pixelfed) {
             if (in_reply_to_id != null) {
                 showToast(true, R.string.pixelfed_does_not_allow_reply_with_media)
                 return
@@ -2314,7 +2314,7 @@ class ActPost : AsyncActivity(),
                 val (ti, tiResult) = TootInstance.get(client)
                 ti ?: return tiResult
 
-                if (ti.instanceType == TootInstance.InstanceType.Pixelfed) {
+                if (ti.instanceType == InstanceType.Pixelfed) {
                     if (in_reply_to_id != null) {
                         return TootApiResult(getString(R.string.pixelfed_does_not_allow_reply_with_media))
                     }
@@ -2679,7 +2679,7 @@ class ActPost : AsyncActivity(),
                     TootVisibility.DirectPrivate
                 )
 
-            ti?.fedibird_capabilities?.any { it == "visibility_mutual" } == true ->
+            true == ti?.hasCapability(InstanceCapability.VisibilityMutual) ->
                 arrayOf(
                     TootVisibility.WebSetting,
                     TootVisibility.Public,
@@ -2690,7 +2690,7 @@ class ActPost : AsyncActivity(),
                     TootVisibility.DirectSpecified
                 )
 
-            ti?.fedibird_capabilities?.any { it == "visibility_limited" } == true ->
+            true == ti?.hasCapability(InstanceCapability.VisibilityLimited) ->
                 arrayOf(
                     TootVisibility.WebSetting,
                     TootVisibility.Public,

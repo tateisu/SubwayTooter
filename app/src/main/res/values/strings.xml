@@ -1082,4 +1082,5 @@
     <string name="visibility_unknown">Unknown</string>
     <string name="visibility_limited">Limited</string>
     <string name="visibility_mutual">Mutual</string>
+    <string name="server_has_no_support_of_visibility">Server has no support of visibility \'%1$s\'.</string>
 </resources>

@@ -22,6 +22,45 @@ import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.math.max
 
+// インスタンスの種別
+enum class InstanceType {
+    Mastodon,
+    Misskey,
+    Pixelfed,
+    Pleroma
+}
+
+enum class CapabilitySource{
+    Fedibird,
+}
+enum class InstanceCapability(private val capabilitySource:CapabilitySource,private val id: String) {
+    FavouriteHashtag(CapabilitySource.Fedibird,"favourite_hashtag"),
+    FavouriteDomain(CapabilitySource.Fedibird,"favourite_domain"),
+    StatusExpire(CapabilitySource.Fedibird,"status_expire"),
+    FollowNoDelivery(CapabilitySource.Fedibird,"follow_no_delivery"),
+    FollowHashtag(CapabilitySource.Fedibird,"follow_hashtag"),
+    SubscribeAccount(CapabilitySource.Fedibird,"subscribe_account"),
+    SubscribeDomain(CapabilitySource.Fedibird,"subscribe_domain"),
+    SubscribeKeyword(CapabilitySource.Fedibird,"subscribe_keyword"),
+    TimelineNoLocal(CapabilitySource.Fedibird,"timeline_no_local"),
+    TimelineDomain(CapabilitySource.Fedibird,"timeline_domain"),
+    TimelineGroup(CapabilitySource.Fedibird,"timeline_group"),
+    TimelineGroupDirectory(CapabilitySource.Fedibird,"timeline_group_directory"),
+    VisibilityMutual(CapabilitySource.Fedibird,"visibility_mutual"),
+    VisibilityLimited(CapabilitySource.Fedibird,"visibility_limited"),
+    ;
+
+    fun hasCapability(instance:TootInstance):Boolean{
+        when(capabilitySource){
+            CapabilitySource.Fedibird->{
+                if( instance.fedibird_capabilities?.any{ it == id} ==true ) return true
+            }
+        }
+        // XXX: もし機能がMastodon公式に取り込まれたならバージョン番号で判断できるはず
+        return false
+    }
+}
+
 class TootInstance(parser: TootParser, src: JsonObject) {
 
     // いつ取得したか(内部利用)
@@ -75,20 +114,12 @@ class TootInstance(parser: TootParser, src: JsonObject) {
     // (Mastodon 3.1.4)
     val invites_enabled: Boolean?
 
-    // インスタンスの種別
-    enum class InstanceType {
-
-        Mastodon,
-        Misskey,
-        Pixelfed,
-        Pleroma
-    }
 
     val instanceType: InstanceType
 
     var feature_quote = false
 
-    var fedibird_capabilities :JsonArray? = null
+    var fedibird_capabilities: JsonArray? = null
 
     // XXX: urls をパースしてない。使ってないから…
 
@@ -145,9 +176,9 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             languages = src.jsonArray("languages")?.stringArrayList()
 
             val parser2 = TootParser(
-				parser.context,
-				LinkHelper.create(Host.parse(uri ?: "?"))
-			)
+                parser.context,
+                LinkHelper.create(Host.parse(uri ?: "?"))
+            )
             contact_account =
                 parseItem(::TootAccount, parser2, src.jsonObject("contact_account"))
 
@@ -176,18 +207,20 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         }
     }
 
-    fun versionGE(check: VersionString): Boolean {
-        if (decoded_version.isEmpty || check.isEmpty) return false
-        val i = VersionString.compare(decoded_version, check)
-        return i >= 0
-    }
-
     val misskeyVersion: Int
         get() = when {
             instanceType != InstanceType.Misskey -> 0
             versionGE(MISSKEY_VERSION_11) -> 11
             else -> 10
         }
+
+    fun versionGE(check: VersionString): Boolean {
+        if (decoded_version.isEmpty || check.isEmpty) return false
+        val i = VersionString.compare(decoded_version, check)
+        return i >= 0
+    }
+
+    fun hasCapability(cap:InstanceCapability) = cap.hasCapability(this)
 
     companion object {
 
@@ -221,8 +254,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         // 引数はtoken_infoかTootInstanceのパース前のいずれか
         fun parseMisskeyVersion(token_info: JsonObject): Int {
             return when (val o = token_info[TootApiClient.KEY_MISSKEY_VERSION]) {
-				is Int -> o
-				is Boolean -> if (o) 10 else 0
+                is Int -> o
+                is Boolean -> if (o) 10 else 0
                 else -> 0
             }
         }
@@ -282,11 +315,11 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         }
 
         class RequestInfo(
-			val client: TootApiClient,
-			val account: SavedAccount?,
-			val allowPixelfed: Boolean,
-			val forceUpdate: Boolean,
-		) {
+            val client: TootApiClient,
+            val account: SavedAccount?,
+            val allowPixelfed: Boolean,
+            val forceUpdate: Boolean,
+        ) {
             val result = Channel<Pair<TootInstance?, TootApiResult?>>()
         }
 
@@ -309,9 +342,9 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                             !ri.allowPixelfed
                         ) {
                             return Pair(
-								null,
-								TootApiResult("currently Pixelfed instance is not supported.")
-							)
+                                null,
+                                TootApiResult("currently Pixelfed instance is not supported.")
+                            )
                         }
                         return Pair(item, TootApiResult())
                     }
@@ -319,16 +352,16 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
                 // get new information
                 val result = when {
-                    ri.account == null ->{
+                    ri.account == null -> {
                         ri.client.getInstanceInformation()
                     }
 
                     ri.account.isMisskey ->
                         ri.client.request(
-							"/api/meta",
-							JsonObject().apply { put("dummy", 1) }.toPostRequestBuilder(),
+                            "/api/meta",
+                            JsonObject().apply { put("dummy", 1) }.toPostRequestBuilder(),
                             withoutToken = true
-						)
+                        )
 
                     else ->
                         ri.client.request(
@@ -340,30 +373,30 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                 val json = result?.jsonObject ?: return Pair(null, result)
 
                 item = parseItem(
-					::TootInstance,
-					TootParser(
-						ri.client.context,
-						linkHelper = ri.account ?: LinkHelper.create(
-							ri.client.apiHost!!,
-							misskeyVersion = parseMisskeyVersion(json)
-						)
-					),
-					json
-				)
+                    ::TootInstance,
+                    TootParser(
+                        ri.client.context,
+                        linkHelper = ri.account ?: LinkHelper.create(
+                            ri.client.apiHost!!,
+                            misskeyVersion = parseMisskeyVersion(json)
+                        )
+                    ),
+                    json
+                )
 
                 return when {
                     item == null -> Pair(
-						null,
-						result.setError("instance information parse error.")
-					)
+                        null,
+                        result.setError("instance information parse error.")
+                    )
 
                     item.instanceType == InstanceType.Pixelfed &&
                         !Pref.bpEnablePixelfed(App1.pref) &&
                         !ri.allowPixelfed ->
                         Pair(
-							null,
-							result.setError("currently Pixelfed instance is not supported.")
-						)
+                            null,
+                            result.setError("currently Pixelfed instance is not supported.")
+                        )
 
                     else -> Pair(item.also { cacheData = it }, result)
                 }
@@ -376,10 +409,10 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                 while (true) {
                     requestQueue.receive().let { req ->
                         req.result.send(try {
-							getImpl(req)
-						} catch (ex: Throwable) {
-							Pair(null, TootApiResult(ex.withCaption("can't get server information.")))
-						})
+                            getImpl(req)
+                        } catch (ex: Throwable) {
+                            Pair(null, TootApiResult(ex.withCaption("can't get server information.")))
+                        })
                     }
                 }
             }
@@ -407,31 +440,31 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         fun getCached(host: String) = Host.parse(host).getCacheEntry().cacheData
 
         suspend fun get(
-			client: TootApiClient,
-			host: String,
-			account: SavedAccount? = client.account?.takeIf { it.matchHost(host) },
-			allowPixelfed: Boolean = false,
-			forceUpdate: Boolean = false
-		): Pair<TootInstance?, TootApiResult?> =
+            client: TootApiClient,
+            host: String,
+            account: SavedAccount? = client.account?.takeIf { it.matchHost(host) },
+            allowPixelfed: Boolean = false,
+            forceUpdate: Boolean = false
+        ): Pair<TootInstance?, TootApiResult?> =
             get(client, Host.parse(host), account, allowPixelfed, forceUpdate)
 
         suspend fun get(
-			client: TootApiClient,
-			hostArg: Host? = null,
-			account: SavedAccount? = if (hostArg == client.apiHost) client.account else null,
-			allowPixelfed: Boolean = false,
-			forceUpdate: Boolean = false
-		): Pair<TootInstance?, TootApiResult?> {
+            client: TootApiClient,
+            hostArg: Host? = null,
+            account: SavedAccount? = if (hostArg == client.apiHost) client.account else null,
+            allowPixelfed: Boolean = false,
+            forceUpdate: Boolean = false
+        ): Pair<TootInstance?, TootApiResult?> {
 
             val tmpInstance = client.apiHost
             val tmpAccount = client.account
             try {
                 // this may write client.apiHost
-                if( account != null ) client.account = account
+                if (account != null) client.account = account
                 // update client.apiHost
-                if( hostArg != null ) client.apiHost = hostArg
+                if (hostArg != null) client.apiHost = hostArg
 
-                if( client.apiHost ==null ) throw NullPointerException("missing host to get server information.")
+                if (client.apiHost == null) throw NullPointerException("missing host to get server information.")
 
                 // ホスト名ごとに用意したオブジェクトで同期する
                 return RequestInfo(client, account, allowPixelfed, forceUpdate)

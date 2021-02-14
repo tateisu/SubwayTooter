@@ -12,6 +12,7 @@ import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
@@ -320,6 +321,39 @@ class PostHelper(
 
 					var result: TootApiResult?
 
+
+					val (instance, ri) = TootInstance.get(client)
+					instance ?: return ri
+
+					var visibility_checked: TootVisibility? = visibility
+
+					if (visibility == TootVisibility.WebSetting) {
+						visibility_checked =
+							if (account.isMisskey || instance.versionGE(TootInstance.VERSION_1_6)) {
+								null
+							} else {
+								val r2 = getCredential(client, parser)
+								val credential_tmp = this.credential_tmp ?: return r2
+								val privacy = credential_tmp.source?.privacy
+									?: return TootApiResult(activity.getString(R.string.cant_get_web_setting_visibility))
+								TootVisibility.parseMastodon(privacy)
+							}
+					}
+
+					for (pair in arrayOf(
+						Pair(TootVisibility.Mutual, InstanceCapability.VisibilityMutual),
+						Pair(TootVisibility.Limited, InstanceCapability.VisibilityLimited),
+					)) {
+						val (checkVisibility, checkCapability) = pair
+						if (visibility == checkVisibility &&
+							!instance.hasCapability(checkCapability)
+						) {
+							val strVisibility = Styler.getVisibilityString(activity, account.isMisskey, checkVisibility)
+							return TootApiResult(activity.getString(R.string.server_has_no_support_of_visibility, strVisibility))
+						}
+					}
+
+
 					// 元の投稿を削除する
 					if (redraft_status_id != null) {
 						result = if (account.isMisskey) {
@@ -347,12 +381,7 @@ class PostHelper(
 						Thread.sleep(2000L)
 					}
 
-					var visibility_checked: TootVisibility? = visibility
-
-					val (instance, ri) = TootInstance.get(client)
-					instance ?: return ri
-
-					if (instance.instanceType == TootInstance.InstanceType.Pixelfed) {
+					if (instance.instanceType == InstanceType.Pixelfed) {
 						if (in_reply_to_id != null && attachment_list?.isNotEmpty() == true) {
 							return TootApiResult(activity.getString(R.string.pixelfed_does_not_allow_reply_with_media))
 						}
@@ -361,18 +390,6 @@ class PostHelper(
 						}
 					}
 
-					if (visibility == TootVisibility.WebSetting) {
-						visibility_checked =
-							if (account.isMisskey || instance.versionGE(TootInstance.VERSION_1_6)) {
-								null
-							} else {
-								val r2 = getCredential(client, parser)
-								val credential_tmp = this.credential_tmp ?: return r2
-								val privacy = credential_tmp.source?.privacy
-									?: return TootApiResult(activity.getString(R.string.cant_get_web_setting_visibility))
-								TootVisibility.parseMastodon(privacy)
-							}
-					}
 
 					val json = JsonObject()
 					try {
@@ -384,7 +401,9 @@ class PostHelper(
 							)
 							if (visibility_checked != null) {
 
-								if (visibility_checked == TootVisibility.DirectSpecified || visibility_checked == TootVisibility.DirectPrivate) {
+								if (visibility_checked == TootVisibility.DirectSpecified ||
+									visibility_checked == TootVisibility.DirectPrivate
+								) {
 									val userIds = JsonArray()
 
 									val m = TootAccount.reMisskeyMentionPost.matcher(content)

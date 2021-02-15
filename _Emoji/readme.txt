@@ -7,9 +7,10 @@
 rm -fr emojione
 git clone -b v2.2.7 git@github.com:emojione/emojione.git emojione
 
-# Gargron's fork of emoji-mart (master branch)
-rm -fr emoji-mart
-git clone git@github.com:Gargron/emoji-mart.git emoji-mart
+# 2021/02 不要になった
+## Gargron's fork of emoji-mart (master branch)
+#rm -fr emoji-mart
+#git clone git@github.com:Gargron/emoji-mart.git emoji-mart
 
 rm -fr emoji-data
 git clone git@github.com:iamcal/emoji-data.git emoji-data
@@ -36,7 +37,8 @@ mkdir assets drawable-nodpi
 rm -f assets/* drawable-nodpi/* category-pretty.json
 
 * ビルド
-perl makeJavaCode.pl 2>error.log
+####perl makeJavaCode.pl 2>error.log
+2021/02 からkotlinのコードに変えた
 
 * 出力
 

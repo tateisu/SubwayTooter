@@ -185,7 +185,13 @@ class EmojiPicker(
 				R.string.emoji_category_flags
 			)
 		)
-		
+		page_list.add(
+			EmojiPickerPage(
+				true,
+				EmojiMap.CATEGORY_OTHER,
+				R.string.emoji_category_others
+			)
+		)
 		this.viewRoot = activity.layoutInflater.inflate(R.layout.dlg_picker_emoji, null, false)
 		this.pager = viewRoot.findViewById(R.id.pager)
 		this.pager_strip = viewRoot.findViewById(R.id.pager_strip)

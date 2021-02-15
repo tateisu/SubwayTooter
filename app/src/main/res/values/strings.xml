@@ -530,6 +530,7 @@
     <string name="emoji_category_objects">Objects</string>
     <string name="emoji_category_symbols">Symbols</string>
     <string name="emoji_category_flags">Flags</string>
+    <string name="emoji_category_others">Others</string>
     <string name="emoji_category_custom">Custom</string>
     <string name="emoji_category_recent">Recent</string>
     <string name="open_picker_emoji">Emoji picker…</string>

@@ -990,9 +990,11 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
     section(R.string.developer_options) {
         sw(Pref.bpCheckBetaVersion, R.string.check_beta_release)
 
+        sw(Pref.bpEmojiPickerCategoryOther, R.string.show_emoji_picker_other_category)
         action(R.string.drawable_list) {
             action = { startActivity(Intent(this, ActDrawableList::class.java)) }
         }
+
         action(R.string.exit_reasons) {
             action = {
                 if (Build.VERSION.SDK_INT >= 30) {

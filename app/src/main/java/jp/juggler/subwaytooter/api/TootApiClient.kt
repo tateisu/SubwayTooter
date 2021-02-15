@@ -1050,7 +1050,7 @@ class TootApiClient(
         forceUpdateClient: Boolean = false
     ): TootApiResult? {
 
-        if (ti.instanceType == TootInstance.InstanceType.Pixelfed) {
+        if (ti.instanceType == InstanceType.Pixelfed) {
             return TootApiResult("currently Pixelfed instance is not supported.")
         }
 
@@ -1179,11 +1179,11 @@ class TootApiClient(
         ti ?: return ri
 
         return when (ti.instanceType) {
-            TootInstance.InstanceType.Misskey ->
+            InstanceType.Misskey ->
                 TootApiResult("Misskey has no API to create new account")
-            TootInstance.InstanceType.Pleroma ->
+            InstanceType.Pleroma ->
                 TootApiResult("Pleroma has no API to create new account")
-            TootInstance.InstanceType.Pixelfed ->
+            InstanceType.Pixelfed ->
                 TootApiResult("Pixelfed has no API to create new account")
             else ->
                 prepareClientMastodon(clientNameArg, ti)

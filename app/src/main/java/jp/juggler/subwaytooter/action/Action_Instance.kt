@@ -2,10 +2,7 @@ package jp.juggler.subwaytooter.action
 
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.Host
-import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
@@ -43,7 +40,7 @@ object Action_Instance {
 			})
 			
 			// Misskey非対応
-			instance.instanceType == TootInstance.InstanceType.Misskey ->
+			instance.instanceType == InstanceType.Misskey ->
 				activity.showToast(false, R.string.profile_directory_not_supported_on_misskey)
 			
 			// バージョンが足りないならWebページを開く

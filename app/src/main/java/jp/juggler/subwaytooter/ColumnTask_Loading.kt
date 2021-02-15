@@ -50,7 +50,7 @@ class ColumnTask_Loading(
             if (!access_info.isNA) {
 				val (instance, instanceResult) = TootInstance.get(client)
                 instance ?: return instanceResult
-                if (instance.instanceType == TootInstance.InstanceType.Pixelfed) {
+                if (instance.instanceType == InstanceType.Pixelfed) {
                     return TootApiResult("currently Pixelfed instance is not supported.")
                 }
             }

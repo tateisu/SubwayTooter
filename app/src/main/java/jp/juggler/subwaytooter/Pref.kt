@@ -439,7 +439,12 @@ object Pref {
 		"IgnoreTextInSharedMedia",
 		false
 	)
-	
+
+	val bpEmojiPickerCategoryOther = BooleanPref(
+		"EmojiPickerCategoryOther",
+		false
+	)
+
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

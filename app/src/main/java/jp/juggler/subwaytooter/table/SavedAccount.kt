@@ -6,13 +6,12 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.util.*
 import java.util.*
@@ -1179,12 +1178,12 @@ class SavedAccount(
 	fun getMovieMaxBytes(ti:TootInstance) = 1000000 * max(
 		1,
 		this.movie_max_megabytes?.toIntOrNull()
-			?: if(  ti.instanceType == TootInstance.InstanceType.Pixelfed) 15 else 40
+			?: if(  ti.instanceType == InstanceType.Pixelfed) 15 else 40
 	)
 
 	fun getImageMaxBytes(ti:TootInstance) = 1000000 * max(
 		1,
 		this.image_max_megabytes?.toIntOrNull()
-			?: if(  ti.instanceType == TootInstance.InstanceType.Pixelfed) 15 else 8
+			?: if(  ti.instanceType == InstanceType.Pixelfed) 15 else 8
 	)
 }

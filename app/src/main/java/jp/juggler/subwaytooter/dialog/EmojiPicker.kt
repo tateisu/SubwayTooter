@@ -12,11 +12,8 @@ import androidx.viewpager.widget.ViewPager
 import com.astuetz.PagerSlidingTabStrip
 import com.bumptech.glide.Glide
 import jp.juggler.emoji.EmojiMap
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
-import jp.juggler.subwaytooter.put
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.view.HeaderGridView
 import jp.juggler.subwaytooter.view.MyViewPager
@@ -185,13 +182,16 @@ class EmojiPicker(
 				R.string.emoji_category_flags
 			)
 		)
-		page_list.add(
-			EmojiPickerPage(
-				true,
-				EmojiMap.CATEGORY_OTHER,
-				R.string.emoji_category_others
+		if(Pref.bpEmojiPickerCategoryOther(activity)){
+			page_list.add(
+				EmojiPickerPage(
+					true,
+					EmojiMap.CATEGORY_OTHER,
+					R.string.emoji_category_others
+				)
 			)
-		)
+		}
+
 		this.viewRoot = activity.layoutInflater.inflate(R.layout.dlg_picker_emoji, null, false)
 		this.pager = viewRoot.findViewById(R.id.pager)
 		this.pager_strip = viewRoot.findViewById(R.id.pager_strip)

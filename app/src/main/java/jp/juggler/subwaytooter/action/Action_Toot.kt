@@ -1324,7 +1324,7 @@ object Action_Toot {
         if (code == null) {
 			if (!bSet) error("will not happen")
 			EmojiPicker(activity, access_info, closeOnSelected = true) { name, instance, _, _, _ ->
-				val item = EmojiMap.sShortNameToEmojiInfo[name]
+				val item = EmojiMap.sMap.shortNameToEmojiInfo[name]
 				val newCode = if (item == null || instance != null) {
 					":$name:"
 				} else {

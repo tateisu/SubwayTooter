@@ -387,7 +387,7 @@ fun SpannableStringBuilder.appendMisskeyReaction(
 	val end = this.length
 	
 	this.setSpan(
-		EmojiMap.sUTF16ToEmojiResource[emojiUtf16] !!.createSpan(context),
+		EmojiMap.sMap.utf16ToEmojiResource[emojiUtf16] !!.createSpan(context),
 		start, end,
 		Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 	)

@@ -1026,7 +1026,7 @@ class PostHelper(
 		bInstanceHasCustomEmoji: Boolean
 	): SpannableStringBuilder {
 
-        val item = EmojiMap.sShortNameToEmojiInfo[name]
+        val item = EmojiMap.sMap.shortNameToEmojiInfo[name]
         val separator = EmojiDecoder.customEmojiSeparator(pref)
         if (item == null || instance != null) {
             // カスタム絵文字は常にshortcode表現

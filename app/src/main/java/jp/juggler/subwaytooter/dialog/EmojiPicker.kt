@@ -334,7 +334,7 @@ class EmojiPicker(
 		val tone = viewRoot.findViewById<View>(selected_tone).tag as SkinTone
 		for(suffix in tone.suffix_list) {
 			val new_name = name + suffix
-			val info = EmojiMap.sShortNameToEmojiInfo[new_name]
+			val info = EmojiMap.sMap.shortNameToEmojiInfo[new_name]
 			if(info != null) return new_name
 		}
 		return name
@@ -383,7 +383,7 @@ class EmojiPicker(
 			}
 			
 			else -> ArrayList<EmojiItem>().apply {
-				EmojiMap.sCategoryMap.get(category_id)?.emoji_list?.forEach { name ->
+				EmojiMap.sMap.categoryMap.get(category_id)?.emoji_list?.forEach { name ->
 					add(EmojiItem(name, null))
 				}
 			}
@@ -481,7 +481,7 @@ class EmojiPicker(
 						item.name
 					}
 					
-					val info = EmojiMap.sShortNameToEmojiInfo[name]
+					val info = EmojiMap.sMap.shortNameToEmojiInfo[name]
 					if(info != null) {
 						val er = info.er
 						if(er.isSvg) {
@@ -520,11 +520,11 @@ class EmojiPicker(
 					selected(name, item.instance, customEmoji = emoji_url_map[item.name])
 				} else {
 					// 普通の絵文字
-					var ei = EmojiMap.sShortNameToEmojiInfo[name] ?: return
+					var ei = EmojiMap.sMap.shortNameToEmojiInfo[name] ?: return
 					
 					if(page.hasSkinTone) {
 						val sv = applySkinTone(name)
-						val tmp = EmojiMap.sShortNameToEmojiInfo[sv]
+						val tmp = EmojiMap.sMap.shortNameToEmojiInfo[sv]
 						if(tmp != null) {
 							ei = tmp
 							name = sv

@@ -11,7 +11,7 @@ class JavaCodeWriter(file: File) : AutoCloseable {
 	private val writer = OutputStreamWriter(BufferedOutputStream(FileOutputStream(file)), Charsets.UTF_8)
 
 	private var linesInFunction = 0
-	private var functionsCount = 0
+	var functionsCount = 0
 
 	override fun close() {
 		writer.flush()
@@ -33,7 +33,7 @@ class JavaCodeWriter(file: File) : AutoCloseable {
 		// open new function
 		if (linesInFunction == 0) {
 			++functionsCount
-			println("\n\tprivate static void init$functionsCount(){")
+			println("\n\tprivate static void init$functionsCount(EmojiMap e){")
 		}
 		// write code
 		print("\t\t")
@@ -58,11 +58,7 @@ class JavaCodeWriter(file: File) : AutoCloseable {
 		println("")
 	}
 
-	fun writeInitializer() {
-		println("\tstatic void initAll(){")
-		for (i in 1..functionsCount) {
-			println("\t\tinit$i();")
-		}
-		println("\t}")
-	}
+
+
+
 }

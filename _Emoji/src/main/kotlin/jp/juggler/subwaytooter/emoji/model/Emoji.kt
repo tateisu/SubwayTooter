@@ -2,9 +2,12 @@ package jp.juggler.subwaytooter.emoji.model
 
 import java.io.File
 
-class Emoji(val key:CodepointList) {
+class Emoji(
+	val key:CodepointList,
+	val unified:CodepointList
+) {
 	companion object{
-		val nameCameFroms = HashSet<String>()
+		val codeCameFroms = HashSet<String>()
 	}
 
 	////////////////
@@ -24,14 +27,35 @@ class Emoji(val key:CodepointList) {
 	}
 
 	////////////////
-	val _codes = ArrayList<Pair<CodepointList,String>> ()
-	val codes: List<Pair<CodepointList,String>> get() = _codes
-	fun addCode(code:CodepointList,cameFrom:String) {
-		if (!_codes.any{ it.first == code}) _codes.add(Pair(code,cameFrom))
+	private val _codes = ArrayList<CodepointList> ()
+	val codes: List<CodepointList> get() = _codes
+	fun addCode(item:CodepointList) {
+		if( item==unified ) return
+		_codes.add(item)
 	}
-	fun removeCode(code:CodepointList) {
-		_codes.removeIf { it.first == code }
-	}
+
+	fun removeCodeByCode(code:CodepointList) =
+		_codes.removeIf { it == code }
+
+	// 重複排除したコード一覧を返す
+	val codeSet: List<CodepointList>
+		get() = ArrayList<CodepointList>().also{ dst->
+			_codes.forEach { code->
+
+				// twemoji svg のコードは末尾にfe0fを含む場合がある。そのまま使う
+				// emojiData(google)のコードは末尾にfe0fを含む場合がある。そのまま使う
+				// emojiData(twitter)のコードは末尾にfe0fを含む場合がある。そのまま使う
+				// mastodonSVG (emoji-dataの派生だ) のコードは末尾にfe0fを含む場合がある。そのまま使う
+				// 他のは工夫できるけど、とりあえずそのまま
+
+				if(!code.list.isAsciiEmoji() && !dst.any{ it == code }){
+					dst.add(code)
+					codeCameFroms.add( code.from )
+				}
+			}
+		}
+
+	/////////////////////////////
 
 	val imageFiles = ArrayList<Pair<File,String>> ()
 
@@ -41,41 +65,10 @@ class Emoji(val key:CodepointList) {
 	var isToneVariation = false
 
 	var usedInCategory : Category? = null
+	var skip = false
 
-	fun updateCodes() {
-		val oldCodes = ArrayList<Pair<CodepointList,String>>().also{ it.addAll(_codes)}
-		_codes.clear()
-		fun add(code: CodepointList, cameFrom: String):Boolean{
-			return if( !_codes.any{ it.first == code}){
-				_codes.add(Pair(code,cameFrom))
-				true
-			}else {
-				false
-			}
-		}
-		// 長い順に
-		oldCodes.sortedByDescending { it.first.list.size }.forEach { pair->
-			when(pair.second){
-				// twemoji svg のコードは末尾にfe0fを含む場合がある。そのまま使う
-				// emojiData(google)のコードは末尾にfe0fを含む場合がある。そのまま使う
-				// emojiData(twitter)のコードは末尾にfe0fを含む場合がある。そのまま使う
-				// mastodonSVG (emoji-dataの派生だ) のコードは末尾にfe0fを含む場合がある。そのまま使う
-				//
-				"twemojiSvg","emojiDataGo","emojiDataTw","mastodonSVG",
-				"EmojiDataJson(docomo)",
-				"EmojiDataJson(au)",
-				"EmojiDataJson(google)",
-				"EmojiDataJson(softbank)" ->{
-					add(pair.first, pair.second)
-				}
 
-				// 他のは工夫できるけど、とりあえずそのまま
-				else->{
-					add(pair.first, pair.second)
-				}
-			}
-		}
-
-		nameCameFroms.addAll( codes.map{it.second} )
+	init{
+		_codes.add(unified)
 	}
 }

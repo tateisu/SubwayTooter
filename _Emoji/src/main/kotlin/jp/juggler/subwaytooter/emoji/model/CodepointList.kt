@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.emoji.model
 
+import jp.juggler.subwaytooter.emoji.cast
 import jp.juggler.subwaytooter.emoji.notEmpty
 import java.lang.StringBuilder
 
@@ -30,22 +31,17 @@ private val reHex = """([0-9A-Fa-f]+)""".toRegex()
 //	my $utf16 = Encode::find_encoding("UTF-16BE");
 var utf16_max_length = 0
 
+fun IntArray.isAsciiEmoji()=
+	size == 1 && first() < 0xae
+
 // list of codepoints
-class CodepointList(val list: IntArray) : Comparable<CodepointList> {
+class CodepointList(
+	val from: String,
+	val list: IntArray
+) : Comparable<CodepointList> {
 
-	val isAsciiEmoji: Boolean
-		get(){
-			return list.size == 1 && list.first() < 0xae
-		}
-
-	override fun equals(other: Any?): Boolean {
-		if (other !is CodepointList) return false
-		if (other.list.size != list.size) return false
-		for (i in list.indices) {
-			if (list[i] != other.list[i]) return false
-		}
-		return true
-	}
+	override fun equals(other: Any?): Boolean =
+		list.contentEquals( other.cast<CodepointList>()?.list)
 
 	override fun hashCode(): Int {
 		var code = 0
@@ -60,6 +56,7 @@ class CodepointList(val list: IntArray) : Comparable<CodepointList> {
 		do {
 			val a = la.elementAtOrNull(i)
 			val b = lb.elementAtOrNull(i)
+
 			val r = if (a == null) {
 				if (b == null) break
 				-1
@@ -84,23 +81,6 @@ class CodepointList(val list: IntArray) : Comparable<CodepointList> {
 		}
 	}.toString()
 
-	// make string like as "uuuu-uuuu-uuuu-uuuu"
-	// cp値は4桁未満ならパディングされる
-	// 常に小文字である
-	fun toHexForEmojiData() = StringBuilder(list.size * 5).also {
-		list.forEachIndexed { i, v ->
-			if (i > 0) it.append('-')
-			it.append(String.format("%04x", v).toLowerCase())
-		}
-	}.toString()
-
-	fun toHexForNotoEmoji() = StringBuilder(list.size * 5).also {
-		list.forEachIndexed { i, v ->
-			if (i > 0) it.append('_')
-			it.append(String.format("%04x", v).toLowerCase())
-		}
-	}.toString()
-
 	// make raw string
 	fun toRawString() = StringBuilder(list.size + 10).also { sb ->
 		for (cp in list) {
@@ -110,7 +90,7 @@ class CodepointList(val list: IntArray) : Comparable<CodepointList> {
 
 	fun toResourceId() = "emj_${toHex().replace("-", "_")}"
 
-	override fun toString() = toHex()
+	override fun toString() = "${toHex()},$from"
 
 	fun makeUtf16(): String {
 		// java の文字列にする
@@ -137,16 +117,17 @@ class CodepointList(val list: IntArray) : Comparable<CodepointList> {
 		return sb.toString()
 	}
 
-	fun toKey() = CodepointList(list.filter { it != 0xfe0f && it != 0xfe0e && it != 0x200d }.toIntArray())
+	fun toKey(from:String) =
+		CodepointList( from, list.filter { it != 0xfe0f && it != 0xfe0e && it != 0x200d }.toIntArray() )
 }
 
 
-fun IntArray.toCodepointList() = CodepointList(this)
+fun IntArray.toCodepointList(from:String) = CodepointList(from,this)
 
 // cp-cp-cp-cp => CodepointList
-fun String.toCodepointList() =
+fun String.toCodepointList(from:String) =
 	reHex.findAll(this)
 		.map { mr -> mr.groupValues[1].toInt(16) }
 		.toList().notEmpty()
 		?.toIntArray()
-		?.toCodepointList()
+		?.toCodepointList(from)

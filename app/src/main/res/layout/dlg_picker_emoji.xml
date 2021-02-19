@@ -21,7 +21,7 @@
             android:layout_height="48dp"
             android:background="#f7dece"
             android:contentDescription="@string/skin_tone_light"
-            android:src="@drawable/emj_2714_fe0f"
+            android:src="@drawable/check_mark"
             />
 
         <ImageButton

@@ -1,13 +1,13 @@
 package jp.juggler.subwaytooter.emoji
 
-import com.android.ide.common.vectordrawable.Svg2Vector
 import io.ktor.client.*
 import io.ktor.client.features.*
+import io.ktor.http.*
+import jp.juggler.subwaytooter.emoji.model.*
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.text.StringEscapeUtils
+import org.intellij.lang.annotations.Language
 import java.io.*
-import kotlin.math.max
-import java.io.FileInputStream
-import java.lang.StringBuilder
 
 
 //pngフォルダにある画像ファイルを参照する
@@ -21,124 +21,7 @@ import java.lang.StringBuilder
 
 const val pathCwebp = "C:/cygwin64/bin/cwebp.exe"
 
-private const val hexChars = "0123456789abcdef"
-
-private val reHex = """([0-9A-Fa-f]+)""".toRegex()
-
-class Category(
-	val nameLower: String,
-	val enumId: String,
-	val url: String?
-) {
-	//
-	override fun equals(other: Any?) = enumId == (other as? Category)?.enumId
-	override fun hashCode(): Int = enumId.hashCode()
-
-	// ショートコード登場順序がある
-	val shortcodes = ArrayList<String>()
-}
-
-
-//	my $utf8 = Encode::find_encoding("utf8");
-//	my $utf16 = Encode::find_encoding("UTF-16BE");
-var utf16_max_length = 0
-
-
-// list of codepoints
-class CodepointList(val list: ArrayList<Int>) {
-
-	override fun equals(other: Any?): Boolean = list == (other as?CodepointList)?.list
-	override fun hashCode(): Int = list.hashCode()
-
-	// make string "uuuu-uuuu-uuuu-uuuu"
-	override fun toString() = StringBuilder(list.size * 5).also {
-		list.forEachIndexed { i, v ->
-			if (i > 0) it.append('-')
-			it.append(String.format("%04x", v))
-		}
-	}.toString()
-
-	// make raw string
-	fun toRawString() = StringBuilder(list.size + 10).also { sb ->
-		for (cp in list) {
-			sb.appendCodePoint(cp)
-		}
-	}.toString()
-
-	fun makeUtf16(): String {
-		// java の文字列にする
-
-		// UTF-16にエンコード
-		val bytesUtf16 = toRawString().toByteArray(Charsets.UTF_16BE)
-
-		// UTF-16の符号単位数
-		val length = bytesUtf16.size / 2
-		if (length > utf16_max_length) {
-			utf16_max_length = length
-		}
-
-		val sb = StringBuilder()
-		for (i in bytesUtf16.indices step 2) {
-			val v0 = bytesUtf16[i].toInt()
-			val v1 = bytesUtf16[i + 1].toInt()
-			sb.append("\\u")
-			sb.append(hexChars[v0.and(255).shr(4)])
-			sb.append(hexChars[v0.and(15)])
-			sb.append(hexChars[v1.and(255).shr(4)])
-			sb.append(hexChars[v1.and(15)])
-		}
-		return sb.toString()
-	}
-}
-
-// hh-hh-hh-hh => arrayOf("hh","hh","hh","hh")
-fun String.parseCodePoints() = ArrayList<Int>()
-	.also { dst ->
-		reHex.findAll(this).forEach { mr ->
-			dst.add(mr.groupValues[1].toInt(16))
-		}
-	}.notEmpty()?.let { CodepointList(it) }
-
-// ショートコードの名前を正規化する
-fun String.parseShortName() = toLowerCase().replace("-", "_")
-
-private val reColonHead = """\A:""".toRegex()
-private val reColonTail = """:\z""".toRegex()
-private val reZWJ = """-(?:200d|fe0f)""".toRegex(RegexOption.IGNORE_CASE)
-
-// 前後の::を取り除いてショートネーム正規化
-fun String.parseAlphaCode() =
-	this.replace(reColonHead, "").replace(reColonTail, "").parseShortName()
-
-// xxxx-xxxx-xxxx から ZWJのコードを除去する
-fun String.removeZWJ() = replace(reZWJ, "")
-
-class EmojiVariant(val dir: String) {
-	val used = ArrayList<String>()
-}
-
-val emojiVariants = arrayOf(
-	EmojiVariant("img-twitter-64"),
-	EmojiVariant("img-google-64"),
-	EmojiVariant("img-apple-64"),
-	EmojiVariant("img-apple-160"),
-	EmojiVariant("img-facebook-64"),
-	EmojiVariant("img-messenger-64"),
-)
-
 val emojiDataCodepointsVendors = arrayOf("docomo", "au", "softbank", "google")
-
-// returns path of emoji
-fun findEmojiImage(image: String): String? {
-	for (variant in emojiVariants) {
-		val path = "emoji-data/${variant.dir}/$image"
-		if (File(path).isFile) {
-			if (variant.used.size < 5) variant.used.add(image)
-			return path
-		}
-	}
-	return null
-}
 
 fun copyFile(dst: File, src: File) {
 	try {
@@ -153,266 +36,159 @@ fun copyFile(dst: File, src: File) {
 	}
 }
 
-fun svgToVectorDrawable(dst: File, src: File) {
-
-	val tmp = ByteArrayOutputStream()
-
-	// Write all the error message during parsing into SvgTree. and return here as getErrorLog().
-	// We will also log the exceptions here.
-	try {
-		val svgTree = Svg2Vector.parse(src)
-		svgTree.mScaleFactor = 24 / max(svgTree.w, svgTree.h)
-		if (svgTree.canConvertToVectorDrawable()) {
-			Svg2Vector.writeFile(tmp, svgTree)
-		}
-		val errorLog = svgTree.errorLog
-		if (errorLog.isNotEmpty()) println("$src $errorLog")
-		FileOutputStream(dst).use { outStream ->
-			outStream.write(tmp.toByteArray())
-		}
-	} catch (e: Exception) {
-		println("svgToVectorDrawable: ${e.message} ${src.canonicalPath}")
-	}
-}
-
-
-class Resource(
-	val res_name: String,
-	val unified: CodepointList,
-	var isToneVariation: Boolean = false
-) {
-	val codepointMap = HashMap<String, CodepointList>()
-	val shortnames = HashSet<String>()
-	val categories = HashSet<Category>()
-
-	fun addCodePoints(listCode: Iterable<CodepointList>) {
-		listCode.forEach { codepointMap[it.toString()] = it }
-	}
-
-	fun addShortnames(listName: Iterable<String>) {
-		shortnames.addAll(listName)
-	}
-}
-
-class SkinToneModifier(val code: String, val suffixList: Array<String>)
+//fun svgToVectorDrawable(dst: File, src: File) {
+//
+//	val tmp = ByteArrayOutputStream()
+//
+//	// Write all the error message during parsing into SvgTree. and return here as getErrorLog().
+//	// We will also log the exceptions here.
+//	try {
+//		val svgTree = Svg2Vector.parse(src)
+//		svgTree.mScaleFactor = 24 / max(svgTree.w, svgTree.h)
+//		if (svgTree.canConvertToVectorDrawable()) {
+//			Svg2Vector.writeFile(tmp, svgTree)
+//		}
+//		val errorLog = svgTree.errorLog
+//		if (errorLog.isNotEmpty()) println("$src $errorLog")
+//		FileOutputStream(dst).use { outStream ->
+//			outStream.write(tmp.toByteArray())
+//		}
+//	} catch (e: Exception) {
+//		println("svgToVectorDrawable: ${e.message} ${src.canonicalPath}")
+//	}
+//}
 
 
 class App {
 	companion object {
-		private val reSvgFile = """(.+?)\.svg\z""".toRegex(RegexOption.IGNORE_CASE)
-		private val reExtPng = """\.png\z""".toRegex()
+		const val cameFromCategory = "CategoryHtml"
 
-		private val skin_tone_modifier = arrayOf(
-			SkinToneModifier("1F3FB", arrayOf("_tone1", "_light_skin_tone")),
-			SkinToneModifier("1F3FC", arrayOf("_tone2", "_medium_light_skin_tone")),
-			SkinToneModifier("1F3FD", arrayOf("_tone3", "_medium_skin_tone")),
-			SkinToneModifier("1F3FE", arrayOf("_tone4", "_medium_dark_skin_tone")),
-			SkinToneModifier("1F3FF", arrayOf("_tone5", "_dark_skin_tone")),
+		val reComment = """#.*""".toRegex()
+
+		val ignoreShortName = arrayOf(
+			"flag_for_texas_ustx"
 		)
 
-		private val categoryNameMapping = HashMap<String, Category>().apply {
-			fun a(nameLower: String, enumId: String, url: String?) {
-				put(nameLower, Category(nameLower, enumId, url))
+		private val ignoreImagePath = arrayOf(
+			"LICENSE",
+			// fe82b (フリーダイアル) はnoto-emoji では ?旗 になっていて使えない
+			"noto-emoji/png/128/emoji_ufe82b.png",
+			"noto-emoji/svg/emoji_ufe82b.svg",
+			// mastodonのフォルダにある余計なファイル
+			"mastodon/public/emoji/sheet_10.png"
+		)
+
+	}
+
+	// 画像ファイルをスキャンして絵文字コードとファイルの対応表を作る
+	// マップのキーはvariation selectorとZWJが除去される
+	private val emojiMap = HashMap<CodepointList, Emoji>()
+
+
+	private fun scanEmojiImages() {
+		fun HashMap<CodepointList, Emoji>.scanImageDir(
+			cameFrom: String,
+			dirPath: String,
+			@Language("RegExp") codeSpec: String
+		) {
+			val dir = File(dirPath)
+			val reCodeSpec = codeSpec.toRegex()
+			var countFound = 0
+			var countCreate = 0
+			dir.listFiles()!!.forEach { imageFile ->
+				if (!imageFile.isFile) return@forEach
+				val unixPath = imageFile.path.replace("\\", "/")
+				if (ignoreImagePath.any { unixPath.indexOf(it) != -1 }) return@forEach
+
+				var name = imageFile.name
+				if (name == "LICENSE") return@forEach
+				name = name.replace("_border", "")
+				val code = reCodeSpec.find(name)
+					?.groupValues
+					?.elementAtOrNull(1)
+					?.toCodepointList()
+					?: error("can't parse $name")
+
+				// variation selector やZWJを除去したコードをキーにする
+				val key = code.toKey()
+				++countFound
+				var emoji = get(key)
+				if (emoji == null) {
+					emoji = Emoji(key)
+					put(key, emoji)
+					++countCreate
+				}
+				emoji.imageFiles.add(Pair(imageFile, cameFrom))
+				emoji.addCode(code, cameFrom)
 			}
-			a("smileys & people", "CATEGORY_PEOPLE", "https://emojipedia.org/people/")
-			a("animals & nature", "CATEGORY_NATURE", "https://emojipedia.org/nature/")
-			a("food & drink", "CATEGORY_FOODS", "https://emojipedia.org/food-drink/")
-			a("activities", "CATEGORY_ACTIVITY", "https://emojipedia.org/activity/")
-			a("travel & places", "CATEGORY_PLACES", "https://emojipedia.org/travel-places/")
-			a("objects", "CATEGORY_OBJECTS", "https://emojipedia.org/objects/")
-			a("symbols", "CATEGORY_SYMBOLS", "https://emojipedia.org/symbols/")
-			a("flags", "CATEGORY_FLAGS", "https://emojipedia.org/flags/")
-			a("other", "CATEGORY_OTHER", null)
+			log.d("scanImageDir: found=$countFound,create=$countCreate, dir=$dir")
 		}
+
+		emojiMap.scanImageDir("override", "override", """([0-9A-Fa-f_-]+)\.""")
+		emojiMap.scanImageDir("mastodonSVG", "mastodon/public/emoji", """([0-9A-Fa-f_-]+)\.""")
+		emojiMap.scanImageDir("twemojiSvg", "twemoji/assets/svg/", """([0-9A-Fa-f_-]+)\.""")
+		emojiMap.scanImageDir("notoSvg", "noto-emoji/svg", """emoji_u([0-9A-Fa-f_-]+)\.""")
+		emojiMap.scanImageDir("notoPng", "noto-emoji/png/72", """emoji_u([0-9A-Fa-f_-]+)\.""")
+		emojiMap.scanImageDir("emojiDataTw", "emoji-data/img-twitter-72", """([0-9A-Fa-f_-]+)\.""")
+		emojiMap.scanImageDir("emojiDataGo", "emoji-data/img-google-136", """([0-9A-Fa-f_-]+)\.""")
+		emojiMap.scanImageDir("emojiOne", "emojione/assets/svg", """([0-9A-Fa-f_-]+)\.""")
 
 	}
 
-	// resName => Resource
-	private val resNameMap = HashMap<String, Resource>()
-
-	// map: code => resName => Resource
-	private val codeMap = HashMap<String, HashMap<String, Resource>>()
-
-	// map shortname => resName => Resource
-	private val nameMap = HashMap<String, HashMap<String, Resource>>()
-
-	private val pngConverts = ArrayList<Pair<File, File>>()
-	private val svgConverts = ArrayList<Pair<File, File>>() // dst,src
-	private val mastodonSvg = ArrayList<String>()
-	private val twemojiSvg = ArrayList<String>()
-	private val overrideSvg = ArrayList<String>()
-	private val overridePng = ArrayList<String>()
-	private val emojiDataPng = ArrayList<String>()
-
-//	val shortname2unified = HashMap<String, String>()
-
-	private fun mayCopySvg(dst: File, src: File): Boolean {
-		if (!src.isFile) return false
-		if (!dst.exists()) copyFile(dst, src)
-		return true
-	}
-
-	private fun mayCopyWebp(dst: File, src: File): Boolean {
-		if (!src.isFile) return false
-		if (!dst.exists()) pngConverts.add(Pair(dst, src))
-		return true
-	}
-
-
-	// returns resName
-	private fun getEmojiResId(image: String): String {
-		// 小文字で拡張子なし
-		val imageLc = image.toLowerCase().replace(reExtPng, "")
-
-		// 画像リソースの名前
-		val resName = "emj_$imageLc".replace("-", "_")
-
-		// 出力先ファイル名
-		val dstWebp = File("drawable-nodpi/$resName.webp")
-		val dstSvg = File("assets/$resName.svg")
-
-		// using override SVG?
-		var src = "override/$imageLc.svg"
-		if (mayCopySvg(dstSvg, File(src))) {
-			overrideSvg.add(src)
-			return resName
-		}
-
-		// using override PNG?
-		src = "override/$imageLc.png"
-		if (mayCopyWebp(dstWebp, File(src))) {
-			overridePng.add(src)
-			return resName
-		}
-
-		// using svg from mastodon folder?
-		src = "mastodon/public/emoji/$imageLc.svg"
-		if (mayCopySvg(dstSvg, File(src))) {
-			mastodonSvg.add(src)
-			return resName
-		}
-
-		// using svg from twemoji?
-		src = "twemoji/assets/svg/$imageLc.svg"
-		if (mayCopySvg(dstSvg, File(src))) {
-			twemojiSvg.add(src)
-			return resName
-		}
-
-		// using emoji-data PNG?
-		src = findEmojiImage(image)
-			?: error("emoji-data has no emoji for $image")
-		if (mayCopyWebp(dstWebp, File(src))) {
-			emojiDataPng.add(src)
-			return resName
-		}
-
-		error("missing emoji: $imageLc")
-	}
-
-	// returns resName
-	private fun getEmojiResIdOld(image: String): String {
-		// コードポイントに合う画像ファイルがあるか調べる
-		val imageFile = File("emojione/assets/png/$image.png")
-		if (!imageFile.isFile) {
-			error("getEmojiResIdOld: missing. imageFile=${imageFile.path}")
-		}
-
-		// 画像リソースの名前
-		val resName = "emj_${image.toLowerCase()}".replace("-", "_")
-
-		val dstPathWebp = "drawable-nodpi/$resName.webp"
-		mayCopyWebp(File(dstPathWebp), imageFile)
-
-		return resName
-	}
-
-
-	private fun registerResource(
-		unified: CodepointList,
-		image: String,
-		list_code: Iterable<CodepointList>,
-		list_name: Iterable<String>,
-		has_tone: Boolean = false,
-		isToneVariation: Boolean = false
-	) {
-		val resName = getEmojiResId(image)
-		val self = resNameMap.prepare(resName) {
-			Resource(
-				res_name = resName,
-				unified = unified,
-				isToneVariation = isToneVariation
-			)
-		}
-		if (self.unified != unified) {
-			error("unified not match. res_name=$resName, unified = ")
-		}
-		self.addCodePoints(list_code)
-		self.addShortnames(list_name)
-	}
-
-	private fun registerResourceEmojione(
-		unified: CodepointList,
-		image: String,
-		list_code: Iterable<CodepointList>,
-		list_name: Iterable<String>,
-	) {
-		val resName = getEmojiResIdOld(image)
-		val self = resNameMap.prepare(resName) {
-			Resource(
-				res_name = resName,
-				unified = unified,
-			)
-		}
-		if (self.unified != unified) {
-			error("unified not match. res_name=$resName")
-		}
-		self.addCodePoints(list_code)
-		self.addShortnames(list_name)
-
-	}
+//	// resName => Resource
+//	private val resNameMap = HashMap<ResName, Resource>()
+//
+//	// map: code => resName => Resource
+//	private val codeMap = HashMap<CodepointList, HashMap<ResName, Resource>>()
+//
+//	// map shortname => resName => Resource
+//	private val nameMap = HashMap<ShortName, HashMap<ResName, Resource>>()
 
 	private fun copyImages() {
-		log.d("count mastodonSvg=${mastodonSvg.size}")
-		log.d("count twemojiSvg =${twemojiSvg.size}")
-		log.d("count overrideSvg =${overrideSvg.size}")
-		log.d("count overridePng =${overridePng.size}")
-		log.d("count emojiDataPng =${emojiDataPng.size}")
-
-		log.d("converting svg... ${svgConverts.size}")
-		svgConverts.forEach { pair ->
-			val (dst, src) = pair
-			svgToVectorDrawable(dst, src)
-		}
-
-		log.d("converting png... ${pngConverts.size}")
-		pngConverts.forEach { pair ->
-			val (dst, src) = pair
-			val pb = ProcessBuilder(pathCwebp, src.path, "-quiet", "-o", dst.path)
-			val rv = pb.start().waitFor()
-			if (rv != 0) error("cwebp failed. dst=$dst src=$src")
-		}
-	}
-
-	private fun updateCodeMap() {
-		codeMap.clear()
-		resNameMap.values.forEach { res_info ->
-			res_info.codepointMap.keys.forEach { codeKey ->
-				codeMap.prepare(codeKey) { HashMap() }[res_info.res_name] = res_info
-				codeMap.prepare(codeKey.removeZWJ()) { HashMap() }[res_info.res_name] = res_info
+		var countSvg = 0
+		var countPng = 0
+		for (emoji in emojiMap.values) {
+			val strResName = emoji.key.toResourceId()
+			emoji.resName = strResName
+			val (src, _) = emoji.imageFiles.first()
+			if (src.name.endsWith("svg")) {
+				++countSvg
+				val dst = File("assets/$strResName.svg")
+				if (!dst.exists()) {
+					//svgToVectorDrawable(dst, src)
+					copyFile(dst, src)
+				}
+			} else {
+				++countPng
+				val dst = File("drawable-nodpi/$strResName.webp")
+				if (!dst.exists()) {
+					val pb = ProcessBuilder(pathCwebp, src.path, "-quiet", "-o", dst.path)
+					val rv = pb.start().waitFor()
+					if (rv != 0) error("cwebp failed. dst=$dst src=$src")
+				}
 			}
 		}
+		log.d("copyImage: countSvg=$countSvg, countPng=$countPng")
 	}
 
-	private fun updateNameMap() {
-		nameMap.clear()
-		resNameMap.values.forEach { res_info ->
-			res_info.shortnames.forEach { name ->
-				nameMap.prepare(name) { HashMap() }[res_info.res_name] = res_info
-			}
-		}
-	}
-
+//	private fun updateCodeMap() {
+//		codeMap.clear()
+//		resNameMap.values.forEach { res_info ->
+//			res_info.codePoints.forEach { cp ->
+//				codeMap.prepare(cp) { HashMap() }[res_info.res_name] = res_info
+//				codeMap.prepare(cp.removeZWJ()) { HashMap() }[res_info.res_name] = res_info
+//			}
+//		}
+//	}
+//
+//	private fun updateNameMap() {
+//		nameMap.clear()
+//		resNameMap.values.forEach { res_info ->
+//			res_info.shortNames.forEach { name ->
+//				nameMap.prepare(name) { HashMap() }[res_info.res_name] = res_info
+//			}
+//		}
+//	}
 
 	private fun readEmojiData() {
 		File("./emoji-data/emoji.json")
@@ -420,137 +196,438 @@ class App {
 			.decodeUtf8()
 			.decodeJsonArray()
 			.objectList()
-			.forEach { emoji ->
-				// short_name のリスト
-				val shortnames = ArrayList<String>().also{ dst->
-					emoji.string("short_name")?.parseShortName()?.addTo(dst)
-					emoji.stringArrayList("short_names")?.forEach {
-						it.parseShortName().addTo(dst)
-					}
-				}.notEmpty() ?: error("emojiData ${emoji.string("unified")} has no shortName")
-
+			.forEach { src ->
 				// 絵文字のコードポイント一覧
-				val codepoints = ArrayList<CodepointList>().also{ dst->
-					emoji.string("unified")?.parseCodePoints()?.addTo(dst)
-					emoji.stringArrayList("variations")?.forEach {
-						it.parseCodePoints()?.addTo(dst)
-					}
-					for (k in emojiDataCodepointsVendors) {
-						emoji.string(k)?.parseCodePoints()?.addTo(dst)
-					}
-				}.notEmpty() ?: error("emojiData ${emoji.string("unified")} has no codeponts")
+				val unified = src.string("unified")?.toCodepointList()!!
+				val key = unified.toKey()
+				val emoji = emojiMap[key] ?: error("can't find emoji for $key")
 
-				val shortName = shortnames.first()
-				registerResource(
-					unified = emoji.string("unified")!!.parseCodePoints()!!,
-					image = emoji.string("image").notEmpty()!!,
-					list_code = codepoints,
-					list_name = shortnames,
-					has_tone = emoji["skin_variations"] != null
-				)
+				emoji.addCode(unified, "EmojiDataJsonUnified")
+
+				src.stringArrayList("variations")?.forEach {
+					it.toCodepointList()?.let { cp -> emoji.addCode(cp, "EmojiDataJsonVariation") }
+				}
+				for (k in emojiDataCodepointsVendors) {
+					src.string(k)?.toCodepointList()?.let { emoji.addCode(it, "EmojiDataJson($k)") }
+				}
+
+				// short_name のリスト
+				val shortNames = HashSet<String>().also { dst ->
+					src.string("short_name")?.addTo(dst)
+					src.stringArrayList("short_names")?.forEach {
+						it.addTo(dst)
+					}
+				}.mapNotNull { it.toShortName("EmojiDataJson") }
+
+				if (shortNames.isEmpty())
+					error("emojiData ${src.string("unified")} has no shortName")
+				shortNames.forEach { emoji.addShortName(it) }
+
+				val parentEmoji = emoji
 
 				// スキントーン
-				emoji.jsonObject("skin_variations")?.let { skinVariations ->
-					skin_tone_modifier.forEach { mod ->
-						val data = skinVariations.jsonObject(mod.code)
-						if (data == null) {
-							log.w("$shortName : missing skin tone ${mod.code}")
-						} else {
-							mod.suffixList.forEach { suffix ->
-								registerResource(
-									unified = data.string("unified")!!.parseCodePoints()!!,
-									image = data.string("image").notEmpty()!!,
-									list_code = listOf(data.string("unified").notEmpty()!!.parseCodePoints()!!),
-									list_name = shortnames.map { it + suffix },
-									isToneVariation = true,
-								)
+				src.jsonObject("skin_variations")?.let { skinVariations ->
+					val parentName = shortNames.first()
+					val skinToneUsed = HashSet<Int>()
+					for ((k, data) in skinVariations.entries) {
+						if (data !is JsonObject) continue
+
+						fun handleCode(list: IntArray, idx: Int, parentSuffix: String, suffixIndex: Int) {
+							val code = list.elementAtOrNull(idx) ?: return
+							val modifier = skinToneModifiers[code]
+								?: error("missing skinToneModifier u${list[idx].toString(16)} for $parentName")
+							skinToneUsed.add(code)
+							val lastSuffix = modifier.suffixList[suffixIndex]
+							val suffix =
+								if (!parentSuffix.contains(lastSuffix))
+									parentSuffix + lastSuffix
+								else
+									parentSuffix
+							if (idx <= list.size - 1) {
+								handleCode(list, idx + 1, suffix, suffixIndex)
+							} else {
+								val toneUnified = data.string("unified")!!.toCodepointList()!!
+								val toneKey = toneUnified.toKey()
+								val emoji = emojiMap[toneKey] ?: error("can't find emoji for $toneKey")
+								emoji.addCode(toneUnified, "EmojiData(skinTone)")
+								shortNames.mapNotNull { (it.name + suffix).toShortName("EmojiData(skinTone)") }
+									.forEach {
+										emoji.addShortName(it)
+									}
+								emoji.toneParent = parentEmoji
+								emoji.isToneVariation = true
 							}
 						}
+
+						val codeList = k.toCodepointList()!!.list
+						for (suffixIndex in skinToneModifiers.values.first().suffixList.indices) {
+							handleCode(codeList, 0, "", suffixIndex)
+						}
+					}
+					if (skinToneUsed.size != skinToneModifiers.size) {
+						log.w("skin tone code not fully used: $parentName")
 					}
 				}
 			}
 	}
 
-	// twemojiのsvgファイルを直接読む
-	private fun readTwemoji() {
-		File("twemoji/assets/svg").listFiles()?.forEach { file ->
-			val name = file.name
-			val code = reSvgFile.find(name)?.groupValues?.elementAtOrNull(1)?.toLowerCase()
-			if (code == null || codeMap.containsKey(code)) return@forEach
-			val unified = code.parseCodePoints()!!
-			log.d("twemoji $unified")
-			registerResource(
-				// FIXME: add shortName
-				unified = unified,
-				image = code,
-				list_code = listOf(unified),
-				list_name = emptyList(),
-			)
-		}
-	}
-
-	private fun readOldEmojione() {
+	private fun readEmojione() {
+		val cameFrom = "EmojiOneJson"
 		val root = File("./old-emojione.json")
 			.readAllBytes()
 			.decodeUtf8()
 			.decodeJsonObject()
-
-		val oldNames = HashMap<String, JsonObject>()
-		val lostCodes = HashMap<String, String>()
-		for ( (code,item) in root.entries) {
-			if( item !is JsonObject) continue
-			item["_code"] = code
-
-			// 名前を集めておく
-			val names = ArrayList<String>().also {  item["names"] = it }
-
-			item.string("alpha code")?.parseAlphaCode()?.notEmpty()?.addTo(names)
-			item.string("aliases")?.split("|")?.forEach {
-				it.parseAlphaCode().notEmpty()?.addTo(names)
-			}
-			names.forEach { oldNames[it] = item }
-			if( names.isEmpty()) error("readOldEmojione: missing name for code $code")
+		for ((strCode, item) in root.entries) {
+			if (item !is JsonObject) continue
 
 			// コードを確認する
-			val code2 = code.removeZWJ()
-			val rh = codeMap[code2]
-			if (rh != null) {
-				for (res_info in rh.values) {
-					for (c in arrayOf(code, code2)) {
-						res_info.codepointMap[c] = c.parseCodePoints()!!
-					}
-					names.forEach { it.addTo(res_info.shortnames) }
+			val code = strCode.toCodepointList()
+				?: error("can't parse $strCode")
+
+			val key = code.toKey()
+			val emoji = emojiMap[key] ?: error("missing emoji for $key")
+
+			val names = ArrayList<String>()
+			item.string("alpha code")?.let { names.add(it) }
+			item.string("aliases")?.split("|")?.let { names.addAll(it) }
+			val shortNames = names.mapNotNull { it.toShortName(cameFrom) }
+			if (shortNames.isEmpty()) error("readEmojione: missing name for code $strCode")
+			shortNames.forEach { emoji.addShortName(it) }
+		}
+	}
+
+	// 修正用データを読む
+	private val fixCode = HashMap<CodepointList, String>()
+	private val fixName = HashMap<ShortName, String>()
+	private val fixCategory = ArrayList<Pair<String, String>>()
+
+	private fun readFixData() {
+		val fixFile = "./fix_code.txt"
+		File(fixFile).forEachLine { lno, rawLine ->
+			val line = rawLine
+				.replace(reComment, "")
+				.trim()
+
+			val mr = """\A(\w+)\s*(\w+)\s*(.*)""".toRegex().find(line)
+			if (mr != null) {
+				val type = mr.groupValues[1]
+				val key = mr.groupValues[2]
+				val data = """([\w+-]+)""".toRegex().findAll(mr.groupValues[3]).map { it.groupValues[1] }.toList()
+				if (data.size != 1) return@forEachLine
+				when (type) {
+					"code" -> fixCode[key.toCodepointList()!!] = data.first()
+					"name" -> fixName[key.toShortName("fixName")!!] = data.first()
+					"category" -> Pair(key, data.first()).addTo(fixCategory)
+					else -> error("$fixFile $lno : bad fix_data type=$type")
 				}
-				continue
-			} else {
-				// 該当するコードがないので、emojioneの画像を持ってくる
-				lostCodes[code] = names.joinToString(",")
-				registerResourceEmojione(
-					unified = code.parseCodePoints()!!,
-					image = code,
-					list_code = listOf(code.parseCodePoints()!!),
-					list_name = names
-				)
 			}
 		}
+	}
 
-		updateCodeMap()
-		updateNameMap()
-		val lost_names = HashMap<String, String>()
-		for ((name, item) in oldNames) {
-			if (!nameMap.containsKey(name))
-				lost_names[name] = item.string("_code")!!
-		}
-		for (code in lostCodes.keys.sorted()) {
-			log.w("old-emojione: load old emojione code $code ${lostCodes[code]}")
-		}
-		for (name in lost_names.keys.sorted()) {
-			log.w("old-emojione: lost name $name ${lost_names[name]}")
+	private suspend fun readEmojiSpec(client: HttpClient) {
+		// 絵文字のショートネームを外部から拾ってくる
+		for (url in arrayOf(
+			"https://unicode.org/Public/emoji/13.1/emoji-sequences.txt",
+			"https://unicode.org/Public/emoji/13.1/emoji-zwj-sequences.txt"
+		)) {
+			client.cachedGetString(url, mapOf())
+				.split("""[\x0d\x0a]""".toRegex())
+				.forEach { rawLine ->
+					val line = rawLine.replace(reComment, "").trim()
+					if (line.isEmpty()) return@forEach
+					val cols = line.split(";", limit = 3).map { it.trim() }
+					if (cols.size == 3) {
+						val (strCode, _, descriptionSpec) = cols
+						if (strCode.indexOf("..") != -1) return@forEach
+						val code = strCode.toCodepointList()!!
+
+						val strShortName = descriptionSpec.toLowerCase()
+							.replace("medium-light skin tone", "medium_light_skin_tone")
+							.replace("medium skin tone", "medium_skin_tone")
+							.replace("medium-dark skin tone", "medium_dark_skin_tone")
+							.replace("light skin tone", "light_skin_tone")
+							.replace("dark skin tone", "dark_skin_tone")
+							.replace("""[^\w\d]+""".toRegex(), "_")
+
+						val shortName = strShortName.toShortName("EmojiSpec")
+							?: error("can't parse $strShortName")
+
+						val key = code.toKey()
+						val emoji = emojiMap[key] ?: error("can't find emoji for $key")
+						emoji.addShortName(shortName)
+					}
+				}
 		}
 	}
 
 
-	suspend fun run(){
+	// カテゴリ別
+	// 絵文字のショートネームを外部から拾ってくる
+	private suspend fun readCategoryShortName(client: HttpClient) {
+		categoryNames.values.forEach { category ->
+			if (category.url == null) return@forEach
+			val root = client.cachedGetString(category.url, mapOf()).parseHtml(category.url)
+			val list = root.getElementsByClass("emoji-list").first()
+			list.getElementsByTag("li").forEach liLoop@{ node ->
+				val shortName = node.getElementsByTag("a")!!.attr("href")
+					.replace("/", "")
+					.toShortName(cameFromCategory)
+					?: error("can't parse ${node.getElementsByTag("a")!!.attr("href")}")
+
+				if (ignoreShortName.any { shortName.name == it }) return@liLoop
+
+				val text = node.getElementsByClass("emoji").text()
+				val code = text.listCodePoints()
+					.takeIf { it.isNotEmpty() }?.toCodepointList()
+					?: error("can't parse code from $text")
+
+				val key = code.toKey()
+				val emoji = emojiMap[key]
+					?: error("can't find emoji for ${category.url} $shortName $key $text")
+				category.addEmoji(emoji,allowDuplicate=true,addingName = shortName.toString())
+			}
+		}
+	}
+
+	private fun fixCategory() {
+		val nameMap = HashMap<ShortName, Emoji>().apply {
+			for (emoji in emojiMap.values)
+				for (shortName in emoji.shortNames)
+					this[shortName] = emoji
+		}
+		for ((enumId, strShortName) in fixCategory) {
+			val category = categoryNames.values.find { it.enumId == enumId }
+				?: error("fixCategory: missing category for $enumId")
+			val shortName = strShortName.toShortName("fixCategory")
+				?: error("fixCategory: can't parse $strShortName")
+			val emoji = nameMap[shortName]
+				?: error("fixCategory: missing emoji for $strShortName")
+			category.addEmoji(emoji,addingName = shortName.toString())
+		}
+	}
+
+	private fun String.unescapeXml() = StringEscapeUtils.unescapeXml(this)
+
+	private val vendorText = HashMap<CodepointList, ArrayList<String>>()
+	private val vendorUnicodeMap = HashMap<CodepointList, Pair<CodepointList, String>>()
+
+	private fun readVendorCode() {
+		var error = false
+		// まとまったxmlを読む
+		// 優先順位の都合でベンダ別に読み直す
+		val xml1 = File("emoji4unicode/data/emoji4unicode.xml")
+			.readAllBytes()
+			.decodeUtf8()
+		for (vendor in arrayOf("docomo", "kddi", "softbank")) {
+			"""<e([^>]+)""".toRegex().findAll(xml1).forEach { mr1 ->
+				val attrs = HashMap<String, String>()
+				"""(\w+)="([^"]+)"""".toRegex().findAll(mr1.groupValues[1]).forEach { mr2 ->
+					attrs[mr2.groupValues[1].unescapeXml()] = mr2.groupValues[2].unescapeXml()
+				}
+				val unicode = attrs["unicode"]?.toCodepointList() ?: return@forEach
+				val strFrom = attrs[vendor] ?: return@forEach
+				if (strFrom.indexOf(">") != -1) return@forEach
+				val from = strFrom?.toCodepointList() ?: return@forEach
+				val text = "${attrs["name"]}/${attrs["text_fallback"]}"
+				vendorText.prepare(from) { ArrayList() }.add(text)
+				val old = vendorUnicodeMap[from]
+				if (old != null) {
+					if (old.second == "kddi" && vendor == "softbank") return@forEach
+					error = true
+					log.e("vendorUnicodeMap conflict. code=$from old=$old new=$unicode($vendor)")
+				} else {
+					vendorUnicodeMap[from] = Pair(unicode, vendor)
+				}
+			}
+		}
+
+		for (vendor in arrayOf("docomo", "kddi", "softbank")) {
+			// ベンダ個別ファイルから説明文を読む
+			val xml = File("emoji4unicode/data/${vendor}/carrier_data.xml")
+				.readAllBytes()
+				.decodeUtf8()
+			"""<e([^>]+)""".toRegex().findAll(xml).forEach { mr1 ->
+				val attrs = HashMap<String, String>()
+				"""(\w+)="([^"]+)"""".toRegex().findAll(mr1.groupValues[1]).forEach { mr2 ->
+					attrs[mr2.groupValues[1].unescapeXml()] = mr2.groupValues[2].unescapeXml()
+				}
+				val code = attrs["unicode"]?.toCodepointList() ?: return@forEach
+				attrs["name_ja"]?.let { vendorText.prepare(code) { ArrayList() }.add("$it($vendor)") }
+			}
+		}
+
+		if (error) error("readVendorCode failed.")
+	}
+
+	var hasConflict = false
+
+	// コード=>画像の重複を調べる
+	private fun checkCodeConflict() {
+
+		val codeMap = HashMap<CodepointList, HashSet<Emoji>>()
+		for (emoji in emojiMap.values) {
+			for ((code, _) in emoji.codes) {
+				codeMap.prepare(code) { HashSet() }.add(emoji)
+			}
+		}
+
+
+
+		for ((code, emojis) in codeMap.entries.sortedBy { it.key }) {
+			if (emojis.size == 1) continue
+
+			val fixResName = fixCode[code]
+			if (fixResName != null) {
+				var found = false
+				for (emoji in emojis) {
+					if (emoji.resName == fixResName) {
+						found = true
+					} else {
+						emoji.codes.forEach {
+							if( it.first==code) log.w("fixCode: delete(1) ${it.first} ${it.second} for ${emoji.resName}")
+						}
+						emoji.removeCode(code)
+					}
+				}
+				if (!found) error("checkCodeConflict: missing emoji resName=$fixResName")
+				continue
+			}
+
+			val onlyVendorCode = emojis.all{ emoji ->
+				val codePair = emoji.codes.find { it.first == code }
+				when(codePair?.second) {
+					"EmojiDataJson(au)", "EmojiDataJson(softbank)", "EmojiDataJson(docomo)" -> true
+					else -> false
+				}
+			}
+
+			if(onlyVendorCode) {
+				val preferCode = vendorUnicodeMap[code]?.first
+				if (preferCode != null) {
+					val targetEmoji = emojis.find { it.codes.any { p -> p.first == preferCode } }
+					if (targetEmoji != null) {
+						emojis.forEach { emoji->
+							if (emoji != targetEmoji){
+								emoji.codes.forEach { pair ->
+									if( pair.first==code) log.w("fixCode: delete(2) ${pair.first} ${pair.second} for ${emoji.resName}")
+								}
+								emoji.removeCode(code)
+							}
+						}
+						continue
+					}
+					log.e("checkCodeConflict: can't use vendorUnicodeMap. code=$code, preferCode=$preferCode")
+				}
+			}
+
+			log.e("checkCodeConflict: code $code ${vendorText[code]} ${
+				emojis.joinToString(" ") {
+					"${it.resName}/${it.codes.first().first.toRawString()}"
+				}
+			}")
+			hasConflict = true
+		}
+
+		// コードのない絵文字のチェック
+		for (emoji in emojiMap.values) {
+			if (emoji.codes.isNotEmpty()) continue
+			val fix = fixCode.entries.filter { it.value == emoji.resName }
+			if (fix.size > 1) error("checkCodeConflict: multiple fix match for ${emoji.resName}")
+			if (fix.size == 1) {
+				val code = fix.first().key
+				log.i("fixCode code=$code resName=${emoji.resName}")
+				emoji.addCode(code, "fixCode")
+				continue
+			}
+			log.e("checkCodeConflict: emoji has no code. resName=${emoji.resName},cameFrom=${emoji.imageFiles.first().second}")
+			hasConflict = true
+		}
+
+		for (emoji in emojiMap.values) {
+			emoji.updateCodes()
+		}
+	}
+
+	private fun checkShortNameConflict() {
+		val nameMap = HashMap<ShortName, HashSet<Emoji>>().apply {
+			for (emoji in emojiMap.values) {
+				for (name in emoji.shortNames) {
+					prepare(name) { HashSet() }.add(emoji)
+				}
+			}
+		}
+
+		// cameFromCategory 以外のshortNameがあるなら、cameFromCategoryのshortNameは使わない
+		for (emoji in emojiMap.values) {
+			if (emoji.shortNames.any { it.cameFrom != cameFromCategory }) {
+				emoji.removeShortNameByCameFrom(cameFromCategory)
+			}
+		}
+
+		for ((name, emojis) in nameMap.entries.sortedBy { it.key }) {
+			// shortNameからemojiを1意に解決できるなら正常
+			if (emojis.size == 1) continue
+
+			// fixNameで解決する
+			val fixResName = fixName[name]
+			if (fixResName != null) {
+				var found = false
+				for (emoji in emojis) {
+					if (emoji.resName == fixResName) {
+						found = true
+					} else {
+						emoji.removeShortName(name.name)
+					}
+				}
+				if (!found) error("checkShortNameConflict: missing emoji resName=$fixResName")
+				continue
+			}
+
+			// emoji,cameFrom のペアのリスト
+			val froms = emojiMap.values
+				.flatMap { emoji -> emoji.shortNames.map { Pair(emoji, it) } }
+				.filter { it.second == name }
+				.map { Pair(it.first, it.second.cameFrom) }
+
+			// どこ由来のShortNameかで優先順位をつける
+			val preferFrom = froms.find { it.second == "EmojiDataJson" }
+				?: froms.find { it.second == "EmojiSpec" }
+				?: froms.find { it.second == "EmojiOneJson" }
+				?: froms.find { it.second == cameFromCategory }
+			if (preferFrom != null) {
+				// 優先順位の低いemojiからshortNameを除去する
+				var found = false
+				for (emoji in emojis) {
+					if (emoji == preferFrom.first) {
+						found = true
+					} else {
+						emoji.removeShortName(name.name)
+					}
+				}
+				if (!found) error("checkShortNameConflict: missing emoji ${preferFrom.first.key}")
+				continue
+			}
+
+			// 解決できなかった
+			log.e("checkShortNameConflict: name $name froms=${froms.joinToString(",")}")
+			hasConflict = true
+		}
+
+		// 名前のない絵文字のチェック
+		for (emoji in emojiMap.values) {
+			if (emoji.shortNames.isNotEmpty()) continue
+			val fix = fixName.entries.filter { it.value == emoji.resName }
+			if (fix.size > 1) error("checkShortNameConflict: multiple fix match for ${emoji.resName}")
+			if (fix.size == 1) {
+				emoji.addShortName(fix.first().key)
+				continue
+			}
+			log.e("checkShortNameConflict: emoji has no shortName. resName=${emoji.resName},cameFrom=${emoji.imageFiles.first().second}")
+			hasConflict = true
+		}
+	}
+
+	suspend fun run() {
 		HttpClient {
 			install(HttpTimeout) {
 				val t = 30000L
@@ -560,309 +637,119 @@ class App {
 			}
 		}.use { client ->
 
-			// emoji_data のデータを読む
-			readEmojiData()
-			emojiVariants.forEach { variant ->
-				if (variant.used.size > 0)
-					log.d("variant: ${variant.dir} ${variant.used.joinToString(",")}…")
-			}
-
-			// twemojiにはemoji_dataより多くの絵文字が登録されている
-			updateCodeMap()
-			updateNameMap()
-			readTwemoji()
-
-			// 古いemojioneのデータを読む
-			updateCodeMap()
-			updateNameMap()
-			readOldEmojione()
-
-			// 画像データのコピー
+			scanEmojiImages()
 			copyImages()
 
-			// 重複チェック
-			val fix_code = ArrayList<Pair<String, String>>()
-			val fix_name = ArrayList<Pair<String, String>>()
-			val fix_category = ArrayList<Pair<String, String>>()
+			readVendorCode()
+			readFixData()
+			readEmojiData()
+			readEmojione()
+			readEmojiSpec(client)
+			readCategoryShortName(client)
 
-			val reComment = """#.*""".toRegex()
-			val fixFile = "./fix_code.txt"
-			File(fixFile).forEachLine { lno, rawLine ->
-				val line = rawLine
-					.replace(reComment, "")
-					.trim()
+			checkCodeConflict()
 
-				val mr = """\A(\w+)\s*(\w+)\s*(.*)""".toRegex().find(line)
-				if (mr != null) {
-					val type = mr.groupValues[1]
-					val key = mr.groupValues[2]
-					val data = """([\w+-]+)""".toRegex().findAll(mr.groupValues[3]).map { it.groupValues[1] }.toList()
-					if (data.size != 1) return@forEachLine
-					when (type) {
-						"code" -> Pair(key, data.first()).addTo(fix_code)
-						"name" -> Pair(key, data.first()).addTo(fix_name)
-						"category" -> Pair(key, data.first()).addTo(fix_category)
-						else -> error("$fixFile $lno : bad fix_data type=$type")
-					}
-				}
-			}
 
-			updateCodeMap()
-			updateNameMap()
+			checkShortNameConflict()
+			fixCategory()
 
-			// あるUnicodeが指す絵文字画像を1種類だけにする
-			for ((code, selected_res_name) in fix_code) {
-				val rh = codeMap[code]
-				if (rh == null) {
-					log.w("fix_code: code_map[$code] is null")
-					continue
-				}
+			if (hasConflict) error("please fix conflicts.")
 
-				var found = false
-				for ((res_name, res_info) in rh.entries.sortedBy { it.key }) {
-					if (res_name == selected_res_name) {
-						found = true
-					} else {
-						log.w("fix_code: remove $code from $res_name")
-						res_info.codepointMap.remove(code)
-					}
-				}
-				if (!found) log.w("fix_code: missing relation for $code and $selected_res_name")
-			}
-
-			updateCodeMap()
-			updateNameMap()
-
-			// あるshortcodeが指す絵文字画像を1種類だけにする
-			for ((shortcode, selected_res_name) in fix_name) {
-				val rh = nameMap[shortcode]
-				if (rh == null) {
-					val resInfo = resNameMap[ selected_res_name]
-					if(resInfo==null){
-						log.w("fix_name: missing both of shortcode=$shortcode,resName=$selected_res_name")
-					}else{
-						// ないなら追加する
-						resInfo.shortnames.add(shortcode)
-						if( shortcode.indexOf("_skin_tone") != -1){
-							resInfo.isToneVariation = true
-						}
-					}
-				}else{
-					var found = false
-					for ((res_name, res_info) in rh.entries.sortedBy { it.key }) {
-						if (res_name == selected_res_name) {
-							found = true
-						} else {
-							log.w("fix_name: remove $shortcode from $res_name")
-							res_info.shortnames.remove(shortcode)
-						}
-					}
-					if (!found) log.w("fix_name: missing relation for $shortcode and $selected_res_name")
-				}
-			}
-
-			updateCodeMap()
-			updateNameMap()
-
-			// 絵文字のショートネームを外部から拾ってくる
-			for( url in arrayOf("https://unicode.org/Public/emoji/13.1/emoji-sequences.txt",
-				"https://unicode.org/Public/emoji/13.1/emoji-zwj-sequences.txt")
-			){
-				client.cachedGetString(url,mapOf())
-					.split("""[\x0d\x0a]""".toRegex())
-					.forEach { rawLine->
-					val line = rawLine.replace(reComment,"").trim()
-					if(line.isEmpty()) return@forEach
-					val cols = line.split(";",limit = 3).map{it.trim()}
-					if( cols.size == 3 ){
-						val(codeSpec,_,descriptionSpec) = cols
-						if(codeSpec.indexOf("..")!=-1) return@forEach
-
-						val shortname = descriptionSpec.toLowerCase()
-							.replace("medium-light skin tone","medium_light_skin_tone")
-							.replace("medium skin tone","medium_skin_tone")
-							.replace("medium-dark skin tone","medium_dark_skin_tone")
-							.replace("light skin tone","light_skin_tone")
-							.replace("dark skin tone","dark_skin_tone")
-							.replace("""[^\w\d]+""".toRegex(),"_")
-
-						val codePoints = codeSpec.parseCodePoints()
-
-						val resInfo = codeMap[codePoints.toString()]?.values?.firstOrNull()
-						if( resInfo==null){
-							log.w("missing resource for codepoint=${codePoints.toString()} shortname=$shortname")
-						}else if( resInfo.shortnames.isEmpty()){
-							resInfo.shortnames.add(shortname)
-							if( shortname.indexOf("_skin_tone") != -1){
-								resInfo.isToneVariation = true
-							}
-						}
-					}
-				}
-			}
-
-			updateCodeMap()
-			updateNameMap()
-
+			// shortcodeに含まれる文字の種類を列挙する
 			val nameChars = HashSet<Char>()
-			var nameConflict = false
-			for ((name, rh) in nameMap.entries) {
-				name.forEach { nameChars.add(it) }
-				val resList = rh.values
-				if (resList.size != 1) {
-					log.w("name $name has multiple resource. ${resList.map { it.res_name }.joinToString(",")}")
-					nameConflict = true
+			val nameMap = HashMap<ShortName, Emoji>()
+			for (emoji in emojiMap.values) {
+				for (shortName in emoji.shortNames) {
+					nameMap[shortName] = emoji
+					for (c in shortName.name)
+						nameChars.add(c)
 				}
 			}
 			log.w("nameChars: [${nameChars.sorted().joinToString("")}]")
-			if (nameConflict) log.e("please fix name=>resource conflicts.")
-
-			for ((code, rh) in codeMap.entries.sortedBy { it.key }) {
-				val resList = rh.values
-				if (resList.size != 1) {
-					log.w("code $code ${
-						resList.joinToString(",") {
-							it.res_name
-						}
-					} #  / ${
-						resList.joinToString(" / ") {
-							"${it.unified} ${it.unified.toRawString()}"
-						}
-					}")
-				}
-			}
-
-
-
-
-			categoryNameMapping.values.forEach { category ->
-				if( category.url !=null){
-					val root = client.cachedGetString(category.url, mapOf()).parseHtml(category.url)
-					val list = root.getElementsByClass("emoji-list").first()
-					list.getElementsByTag("li").forEach { node ->
-						val shortName = node.getElementsByTag("a")!!.attr("href")
-							.replace("/", "").parseShortName()
-						val span = node.getElementsByClass("emoji").text()
-							.toCodePointList().joinToString("-") { String.format("%04x", it) }
-
-						val resInfo = codeMap[span]?.values?.first()
-							?: nameMap[shortName]?.values?.firstOrNull()
-						if (resInfo == null) {
-							log.e("missing ${category.enumId} $shortName $span ")
-						} else {
-							resInfo.categories.add(category)
-							category.shortcodes.add(resInfo.shortnames.first())
-						}
-					}
-				}
-			}
-			for( (enumId,shortcode) in fix_category) {
-				val category = categoryNameMapping.values.find { it.enumId == enumId }
-				if (category == null) {
-					log.w("fix_category: missing category $enumId")
-					continue
-				}
-				var found = false
-				nameMap[shortcode.parseShortName()]?.values?.forEach { resInfo->
-					resInfo.categories.add(category)
-					category.shortcodes.add(resInfo.shortnames.first())
-					found=true
-				}
-				if(!found){
-					// 見つからない場合のみ、画像リソース名でもカテゴリを指定できるようにする
-					resNameMap[shortcode]?.let{ resInfo->
-						if(resInfo.categories.isEmpty()){
-							resInfo.categories.add(category)
-							if(resInfo.shortnames.isEmpty()){
-								resInfo.shortnames.add( resInfo.res_name)
-							}
-							category.shortcodes.add( resInfo.shortnames.first())
-						}
-					}
-				}
-			}
-
-
-			for ((res_name, res_info) in resNameMap.entries) {
-				if (res_info.isToneVariation) continue
-				val shortnames = res_info.shortnames.sorted().joinToString(",")
-				if (shortnames.isEmpty()) {
-					log.w("missing shortnames for res_name=$res_name")
-				}
-			}
-
-			val missing = ArrayList<String>()
-			for ((_, res_info) in resNameMap.entries) {
-				if (res_info.isToneVariation) continue
-				val shortnames = res_info.shortnames.sorted().joinToString(",")
-				if (shortnames.isNotEmpty() && res_info.categories.isEmpty()) {
-					missing.add(shortnames)
-				}
-			}
-			missing.sorted().forEach {
-				log.w("missing category: $it")
-			}
-
 
 			// JSONコードを出力する
-			val out_file = "EmojiData202102.java"
-			PrintWriter(
-				OutputStreamWriter(
-					BufferedOutputStream(FileOutputStream(File(out_file))),
-					Charsets.UTF_8
-				)
-			).use { stream ->
-				val jcw = JavaCodeWriter(stream)
+			val outFile = "EmojiData202102.java"
+			JavaCodeWriter(File(outFile)).use { jcw ->
 
-				// 画像リソースIDとUnidoceシーケンスの関連付けを出力する
-				for ((res_name, res_info) in resNameMap.entries.sortedBy { it.key }) {
-					for ((_, codepoints) in res_info.codepointMap.entries.sortedBy { it.key }) {
-						val javaChars = codepoints.makeUtf16()
-						if (File("assets/$res_name.svg").isFile) {
-							jcw.addCode("code(\"$javaChars\", \"$res_name.svg\");")
+				for (emoji in emojiMap.values.sortedBy { it.key }) {
+
+					// 画像リソースIDとUnicodeシーケンスの関連付けを出力する
+					val strResName = emoji.resName
+					for (codepoints in emoji.codes.sortedBy { it.first }) {
+						val javaChars = codepoints.first.makeUtf16()
+						if (File("assets/$strResName.svg").isFile) {
+							jcw.addCode("code(\"$javaChars\", \"$strResName.svg\"); // ${codepoints.second} ${emoji.imageFiles.first().second}")
 						} else {
-							jcw.addCode("code(\"$javaChars\", R.drawable.$res_name);")
+							jcw.addCode("code(\"$javaChars\", R.drawable.$strResName); // ${codepoints.second} ${emoji.imageFiles.first().second}")
 						}
 					}
 				}
 
-				// 画像リソースIDとshortcodeの関連付けを出力する
-				// 投稿時にshortcodeをユニコードに変換するため、shortcodeとUTF-16シーケンスの関連付けを出力する
-				for ((name, rh) in nameMap.entries.sortedBy { it.key }) {
-					val resInfo = rh.values.first()
-					val utf16Unified = resInfo.unified.makeUtf16()
-					jcw.addCode("name(\"$name\", \"$utf16Unified\");")
-				}
+				for (emoji in emojiMap.values.sortedBy { it.key }) {
+					// shortcodeから変換するunicode表現
+					val unified = emoji.codes.firstOrNull()
+					if (unified == null) {
+						log.w(
+							"skip emoji without code. resName=${emoji.resName},shortNames=${
+								emoji.shortNames.joinToString(
+									","
+								)
+							}"
+						)
+						continue
+					}
 
-				categoryNameMapping.values.forEach { category ->
-					for( code in category.shortcodes) {
-						jcw.addCode("category( ${category.enumId}, \"$code\");")
+					// 画像リソースIDとshortcodeの関連付けを出力する
+					// 投稿時にshortcodeをユニコードに変換するため、shortcodeとUTF-16シーケンスの関連付けを出力する
+					for( name in emoji.shortNames.map{it.name}.toSet().sorted()){
+						val froms = emoji.shortNames.filter { it.name==name }.map{it.cameFrom}.sorted()
+						val javaChars = unified.first.makeUtf16()
+						jcw.addCode("name(\"${name}\", \"$javaChars\"); // ${froms.joinToString(",")}")
 					}
 				}
+
+				categoryNames.values.forEach { category ->
+					category.eachEmoji { emoji ->
+						val shortName = emoji.shortNames.first()
+						jcw.addCode("category( ${category.enumId}, \"${shortName.name}\"); // ${shortName.cameFrom}")
+					}
+				}
+
+				emojiMap.values
+					.filter { it.usedInCategory ==null && !it.isToneVariation }
+					.sortedBy { it.shortNames.first() }
+					.forEach { emoji ->
+						val enumId = "CATEGORY_OTHER"
+						val shortName = emoji.shortNames.first()
+						jcw.addCode("category( $enumId, \"${shortName.name}\"); // ${shortName.cameFrom}")
+					}
 
 				jcw.closeFunction()
 				jcw.writeDefinition("public static final int utf16_max_length=$utf16_max_length;")
 				jcw.writeInitializer()
 			}
 
-			log.d("wrote $out_file")
+			log.d("wrote $outFile")
 
+			log.d("codeCameFroms= ${Emoji.nameCameFroms.joinToString(",")}")
 
 			// shortname => unicode
-			JsonArray()
-				.also { dst ->
-					for ((name, rh) in nameMap.entries.sortedBy { it.key }) {
-						val resInfo = rh.values.first()
-						dst.add(jsonObject("shortcode" to name, "unicode" to resInfo.unified))
-					}
-				}
-				.toString(2)
-				.encodeUtf8()
-				.saveTo(File("shortcode-emoji-data-and-old-emojione2.json"))
+//			JsonArray()
+//				.also { dst ->
+//					for ((shortName, rh) in nameMap.entries.sortedBy { it.key }) {
+//						val resInfo = rh.values.first()
+//						dst.add(jsonObject("shortcode" to shortName.name, "unicode" to resInfo.unified))
+//					}
+//				}
+//				.toString(2)
+//				.encodeUtf8()
+//				.saveTo(File("shortcode-emoji-data-and-old-emojione2.json"))
 		}
 	}
 }
 
-fun main(args: Array<String>) =runBlocking{
+
+fun main(args: Array<String>) = runBlocking {
+	log.d("args=${args.joinToString(",")}")
 	App().run()
 }

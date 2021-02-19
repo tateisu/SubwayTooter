@@ -22,6 +22,7 @@ import jp.juggler.util.asciiPattern
 import jp.juggler.util.codePointBefore
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.math.min
 
 object EmojiDecoder {
 	
@@ -187,11 +188,30 @@ object EmojiDecoder {
 		fun addUnicodeString(s : String) {
 			var i = 0
 			val end = s.length
+
+			// 絵文字ではない部分をコピーする
+			fun normalCopy(initialJ:Int):Boolean{
+				var j = initialJ
+				while( j<end && ! EmojiMap.sUtf16EmojiStartChar.get(s[j].toInt()) ) {
+					j += min(end-j,Character.charCount(s.codePointAt(j)))
+				}
+				if(j <= i ) return false
+				// https://github.com/tateisu/SubwayTooter/issues/69
+				val text = s.substring(i, j).replace('\u00AD', '-')
+				openNormalText()
+				sb.append(text)
+				i = j
+				return true
+			}
+
 			while(i < end) {
+				// 絵文字ではない部分をコピーする
+				if(normalCopy(i) && i>=end ) break
+
+				// 絵文字
 				val remain = end - i
 				var emoji : String? = null
 				var emojiResource : EmojiMap.EmojiResource? = null
-				
 				for(j in EmojiMap.utf16_max_length downTo 1) {
 					
 					if(j > remain) continue
@@ -199,11 +219,17 @@ object EmojiDecoder {
 					val check = s.substring(i, i + j)
 					
 					emojiResource = EmojiMap.sUTF16ToEmojiResource[check] ?: continue
+
+					val nextChar = if(j == remain) null else s[i + j].toInt()
 					
-					emoji = if(j < remain && s[i + j].toInt() == 0xFE0E) {
+					emoji = if(nextChar == 0xFE0E) {
 						// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
 						// その文字を絵文字化しない
 						emojiResource = evs
+						s.substring(i, i + j + 1)
+					}else if( nextChar==0xFE0F && check.last().toInt() != 0xFE0F ){
+						// 絵文字バリエーション・シーケンス（EVS）のU+0xFE0F（VS-16）が直後にある場合
+						// 絵文字の最後が 0xFE0F でないなら食べてしまう
 						s.substring(i, i + j + 1)
 					} else {
 						check
@@ -216,28 +242,14 @@ object EmojiDecoder {
 					if(emojiResource == evs) {
 						// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
 						// その文字を絵文字化しない
-						openNormalText()
-						sb.append(emoji)
-					} else {
+						normalCopy(i + emoji.length)
+					}else {
 						addImageSpan(emoji, emojiResource)
+						i += emoji.length
 					}
-					i += emoji.length
 				} else {
-					openNormalText()
-					val length = Character.charCount(s.codePointAt(i))
-					if(length == 1) {
-						val c = s[i ++]
-						sb.append(
-							when(c) {
-								// https://github.com/tateisu/SubwayTooter/issues/69
-								'\u00AD' -> '-'
-								else -> c
-							}
-						)
-					} else {
-						sb.append(s.substring(i, i + length))
-						i += length
-					}
+					// 通常テキストを1文字以上コピーする
+					normalCopy(  i + min(end-i,Character.charCount(s.codePointAt(i))))
 				}
 			}
 		}

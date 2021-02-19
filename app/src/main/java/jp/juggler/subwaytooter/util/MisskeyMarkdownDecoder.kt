@@ -778,7 +778,7 @@ object MisskeyMarkdownDecoder {
                     spanList.addFirst(
 						start,
 						sb.length,
-						EmojiImageSpan(context, R.drawable.emj_1f5bc_fe0f)
+						SvgEmojiSpan(context, "emj_1f5bc.svg",scale=1f),
 					)
                 }
 

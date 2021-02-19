@@ -974,7 +974,7 @@ object HTMLDecoder {
                         // 添付メディアのURLなら絵文字に変換する
                         linkInfo.caption = SpannableString(href).apply {
                             setSpan(
-								EmojiImageSpan(context, R.drawable.emj_1f5bc_fe0f),
+								SvgEmojiSpan(context, "emj_1f5bc.svg",scale=1f),
 								0,
 								length,
 								Spanned.SPAN_EXCLUSIVE_EXCLUSIVE

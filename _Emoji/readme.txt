@@ -23,6 +23,15 @@ git clone git@github.com:tootsuite/mastodon.git mastodon
 rm -fr twemoji
 git clone git@github.com:twitter/twemoji.git twemoji
 
+
+# noto-emoji
+rm -fr noto-emoji
+git clone git@github.com:googlefonts/noto-emoji.git noto-emoji
+
+# emoji4unicode
+rm -fr emoji4unicode
+git clone git@github.com:google/emoji4unicode.git emoji4unicode
+
 # override/ フォルダに優先的に使いたいsvgやpngを入れておく
 
 1f923.svg      傾いた笑う顔。演出的な理由でMastodonで使われている

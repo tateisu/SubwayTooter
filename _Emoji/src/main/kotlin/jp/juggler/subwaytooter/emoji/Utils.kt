@@ -38,7 +38,7 @@ fun CharSequence.eachCodePoint(block: (Int) -> Unit) {
 	}
 }
 // split CharSequence to Unicode codepoints
-fun CharSequence.toCodePointList() = ArrayList<Int>().also{ dst->
+fun CharSequence.listCodePoints() = ArrayList<Int>().also{ dst->
 	val end = length
 	var i = 0
 	while (i < end) {
@@ -53,7 +53,7 @@ fun CharSequence.toCodePointList() = ArrayList<Int>().also{ dst->
 		}
 		dst.add(c1.toInt())
 	}
-}
+}.toIntArray()
 
 // split codepoint to UTF-8 bytes
 fun codePointToUtf8(cp: Int, block: (Int) -> Unit) {

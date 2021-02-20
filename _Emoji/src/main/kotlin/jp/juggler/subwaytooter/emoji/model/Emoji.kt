@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.emoji.model
 
+import jp.juggler.subwaytooter.emoji.log
 import java.io.File
 
 class Emoji(

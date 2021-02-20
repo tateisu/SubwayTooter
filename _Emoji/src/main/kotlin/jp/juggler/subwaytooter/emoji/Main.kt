@@ -331,18 +331,18 @@ class App {
 					for ((k, data) in skinVariations.entries) {
 						if (data !is JsonObject) continue
 
-						fun handleCode(list: IntArray, idx: Int, parentSuffix: String, suffixIndex: Int) {
+						fun handleCode(list: IntArray, idx: Int, parentSuffix: Array<String>, suffixIndex: Int) {
 							val code = list.elementAtOrNull(idx) ?: return
 							val modifier = skinToneModifiers[code]
 								?: error("missing skinToneModifier u${list[idx].toString(16)} for $parentName")
 							skinToneUsed.add(code)
 							val lastSuffix = modifier.suffixList[suffixIndex]
 							val suffix =
-								if (!parentSuffix.contains(lastSuffix))
-									parentSuffix + lastSuffix
-								else
+								if (parentSuffix.contains(lastSuffix))
 									parentSuffix
-							if (idx <= list.size - 1) {
+								else
+									arrayOf( *parentSuffix ,lastSuffix)
+							if (idx < list.size - 1) {
 								handleCode(list, idx + 1, suffix, suffixIndex)
 							} else {
 								unified = data.string("unified")!!.toCodepointList("EmojiData(skinTone)")!!
@@ -351,7 +351,7 @@ class App {
 
 								emoji.addCode(unified)
 								shortNames
-									.mapNotNull { (it.name + suffix).toShortName("EmojiData(skinTone)") }
+									.mapNotNull { (it.name + suffix.joinToString("")).toShortName("EmojiData(skinTone)") }
 									.forEach { emoji.addShortName(it) }
 
 								emoji.toneParent = parentEmoji
@@ -361,7 +361,7 @@ class App {
 
 						val codeList = k.toCodepointList("toneSpec")!!.list
 						for (suffixIndex in skinToneModifiers.values.first().suffixList.indices) {
-							handleCode(codeList, 0, "", suffixIndex)
+							handleCode(codeList, 0, emptyArray(), suffixIndex)
 						}
 					}
 					if (skinToneUsed.size != skinToneModifiers.size) {
@@ -673,6 +673,7 @@ class App {
 				?: froms.find { it.second == "EmojiSpec" }
 				?: froms.find { it.second == "EmojiOneJson" }
 				?: froms.find { it.second == cameFromCategory }
+
 			if (preferFrom != null) {
 				// 優先順位の低いemojiからshortNameを除去する
 				var found = false
@@ -688,7 +689,7 @@ class App {
 			}
 
 			// 解決できなかった
-			log.e("checkShortNameConflict: name $name froms=${froms.joinToString(",")}")
+			log.e("checkShortNameConflict: name $name froms=${froms.joinToString(",") { "${it.first.resName}${it.second}" }}")
 			hasConflict = true
 		}
 

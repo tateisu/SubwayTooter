@@ -445,6 +445,11 @@ object Pref {
 		false
 	)
 
+	val bpInAppUnicodeEmoji = BooleanPref(
+		"InAppUnicodeEmoji",
+		true
+	)
+
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

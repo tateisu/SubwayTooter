@@ -749,19 +749,13 @@ class App {
 			}
 			log.w("nameChars: [${nameChars.sorted().joinToString("")}]")
 
-			// JSONコードを出力する
-			val outFile = "EmojiMapInitializer.java"
-			JavaCodeWriter(File(outFile)).use { jcw ->
-				jcw.println(
-					"""
-package jp.juggler.emoji;
 
-public final class EmojiMapInitializer {
-""".trimIndent()
-				)
-
+			val outFile = "emoji_map.txt"
+			UnixPrinter(File(outFile)).use { writer ->
 				for (emoji in emojiMap.values.sortedBy { it.key }) {
-					val codeSet = emoji.codeSet
+
+					val codeSet = emoji.codeSet.sorted()
+
 					// asciiコードだけの絵文字は処理しない
 					if (codeSet.isEmpty()) {
 						log.w("skip emoji ${emoji.unified} ${emoji.resName} that has no valid codes")
@@ -775,16 +769,15 @@ public final class EmojiMapInitializer {
 
 					// 画像リソースIDとUnicodeシーケンスの関連付けを出力する
 					val strResName = emoji.resName
+					if (File("assets/$strResName.svg").isFile) {
+						writer.println("s1:$strResName.svg//${emoji.imageFiles.first().second}")
+					} else {
+						writer.println("s1d:$strResName//${emoji.imageFiles.first().second}")
+					}
 					codeSet.forEach { code ->
-						val javaChars = code.makeUtf16()
-
-						if(javaChars.isEmpty()) error("too short code! ${emoji.resName}")
-
-						if (File("assets/$strResName.svg").isFile) {
-							jcw.addCode("e.code(\"$javaChars\", \"$strResName.svg\"); // ${code.from} ${emoji.imageFiles.first().second}")
-						} else {
-							jcw.addCode("e.code(\"$javaChars\", R.drawable.$strResName); // ${code.from} ${emoji.imageFiles.first().second}")
-						}
+						val raw = code.toRawString()
+						if(raw.isEmpty()) error("too short code! ${emoji.resName}")
+						writer.println("s2:$raw//${code.from}")
 					}
 				}
 
@@ -798,39 +791,29 @@ public final class EmojiMapInitializer {
 					// 投稿時にshortcodeをユニコードに変換するため、shortcodeとUTF-16シーケンスの関連付けを出力する
 					for (name in emoji.shortNames.map { it.name }.toSet().sorted()) {
 						val froms = emoji.shortNames.filter { it.name == name }.map { it.cameFrom }.sorted()
-						val javaChars = unified.makeUtf16()
-						jcw.addCode("e.name(\"${name}\", \"$javaChars\"); // ${froms.joinToString(",")}")
+						writer.println("n:$name,${unified.toRawString()}//${froms.joinToString(",")}")
 					}
 				}
 
 				categoryNames.values.forEach { category ->
+					writer.println("c1:${category.enumId}")
 					category.eachEmoji { emoji ->
 						if (emoji.skip) return@eachEmoji
 						val shortName = emoji.shortNames.first()
-						jcw.addCode("e.category( EmojiMap.${category.enumId}, \"${shortName.name}\"); // ${shortName.cameFrom}")
+						writer.println("c2:${shortName.name}//${shortName.cameFrom}")
 					}
 				}
 
+				val enumId = "CATEGORY_OTHER"
+				writer.println("c1:${enumId}")
 				emojiMap.values
 					.filter { it.usedInCategory == null && !it.isToneVariation }
 					.sortedBy { it.shortNames.first() }
 					.forEach { emoji ->
 						if (emoji.skip) return@forEach
-						val enumId = "CATEGORY_OTHER"
 						val shortName = emoji.shortNames.first()
-						jcw.addCode("e.category( EmojiMap.$enumId, \"${shortName.name}\"); // ${shortName.cameFrom}")
+						writer.println("c2:${shortName.name}//${shortName.cameFrom}")
 					}
-
-				jcw.closeFunction()
-
-				jcw.println("\tstatic void initAll(EmojiMap e){")
-				jcw.println("\t\te.utf16MaxLength=$utf16_max_length;")
-				for (i in 1..jcw.functionsCount) {
-					jcw.println("\t\tinit$i(e);")
-				}
-				jcw.println("\t}")
-
-				jcw.println("}")
 			}
 
 			log.d("wrote $outFile")

@@ -2,9 +2,10 @@ package jp.juggler.emoji
 
 import androidx.collection.SparseArrayCompat
 
-data class EmojiTrieResult<T>(val data: T, val endPos: Int)
-
 class EmojiTrie<T> {
+
+    data class Result<T>(val data: T, val endPos: Int)
+
     var data: T? = null
     val map = SparseArrayCompat<EmojiTrie<T>>()
 
@@ -21,13 +22,11 @@ class EmojiTrie<T> {
 
     fun hasNext(c: Char) = map.containsKey(c.toInt())
 
-    fun get(src: String, offset: Int, end: Int): EmojiTrieResult<T>? {
+    fun get(src: String, offset: Int, end: Int): Result<T>? {
         // 長い方を優先するので、先に子を調べる
         if (offset < end)
             map[src[offset].toInt()]?.get(src, offset + 1, end)
                 ?.let { return it }
-        return this.data?.let { EmojiTrieResult(it, offset) }
+        return this.data?.let { Result(it, offset) }
     }
-
-
 }

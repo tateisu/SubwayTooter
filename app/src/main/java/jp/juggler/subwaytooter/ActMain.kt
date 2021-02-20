@@ -423,6 +423,8 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         app_state = App1.getAppState(this)
         pref = App1.pref
 
+        EmojiDecoder.handleUnicodeEmoji = Pref.bpInAppUnicodeEmoji(pref)
+
         density = app_state.density
         acct_pad_lr = (0.5f + 4f * density).toInt()
 

@@ -32,6 +32,8 @@ object EmojiDecoder {
 
     private const val cpZwsp = '\u200B'.toInt()
 
+    var handleUnicodeEmoji = true
+
     fun customEmojiSeparator(pref: SharedPreferences) = if (Pref.bpCustomEmojiSeparatorZwsp(pref)) {
         '\u200B'
     } else {
@@ -184,13 +186,20 @@ object EmojiDecoder {
         }
 
         fun addUnicodeString(s: String) {
+
+            if(!handleUnicodeEmoji){
+                openNormalText()
+                sb.append(s)
+                return
+            }
+
             var i = 0
             val end = s.length
 
             // 絵文字ではない部分をコピーする
             fun normalCopy(initialJ: Int): Boolean {
                 var j = initialJ
-                while (j < end && !EmojiMap.sMap.isStartChar(s[j])) {
+                while (j < end && !EmojiMap.isStartChar(s[j])) {
                     j += min(end - j, Character.charCount(s.codePointAt(j)))
                 }
                 if (j <= i) return false
@@ -207,7 +216,7 @@ object EmojiDecoder {
                 if (normalCopy(i) && i >= end) break
 
                 // 絵文字コードを探索
-                val result = EmojiMap.sMap.utf16Trie.get(s,i,end)
+                val result = EmojiMap.utf16Trie.get(s,i,end)
                 if (result == null) {
                     // 見つからなかったら、通常テキストを1文字以上コピーする
                     normalCopy(i + min(end-i, Character.charCount(s.codePointAt(i))))
@@ -268,7 +277,6 @@ object EmojiDecoder {
         val urlList = ArrayList<IntRange>().apply {
             val m = reUrl.matcher(s)
             while (m.find()) {
-                log.d("urlList ${m.start()}..${m.end()}")
                 add(m.start()..m.end())
             }
         }
@@ -374,7 +382,7 @@ object EmojiDecoder {
 				// 通常の絵文字
 				if (useEmojioneShortcode) {
 					val info =
-						EmojiMap.sMap.shortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
+						EmojiMap.shortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
 					if (info != null) {
 						builder.addImageSpan(part, info.er)
 						return
@@ -426,7 +434,7 @@ object EmojiDecoder {
 
 				// カスタム絵文字ではなく通常の絵文字のショートコードなら絵文字に変換する
 				val info =
-					EmojiMap.sMap.shortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
+					EmojiMap.shortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
 				sb.append(info?.unified ?: part)
 			}
 		})
@@ -441,11 +449,11 @@ object EmojiDecoder {
 		limit: Int
 	): ArrayList<CharSequence> {
         val dst = ArrayList<CharSequence>()
-        for (shortCode in EmojiMap.sMap.shortNameList) {
+        for (shortCode in EmojiMap.shortNameList) {
             if (dst.size >= limit) break
             if (!shortCode.contains(prefix)) continue
 
-            val info = EmojiMap.sMap.shortNameToEmojiInfo[shortCode] ?: continue
+            val info = EmojiMap.shortNameToEmojiInfo[shortCode] ?: continue
 
             val sb = SpannableStringBuilder()
             val start = 0

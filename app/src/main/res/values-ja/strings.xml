@@ -1071,5 +1071,6 @@
     <string name="visibility_limited">限定(サークル)</string>
     <string name="visibility_mutual">相互</string>
     <string name="server_has_no_support_of_visibility">公開範囲\'%1$s\'はこのサーバで使えません</string>
+    <string name="in_app_unicode_emoji">アプリ内蔵のUnicode絵文字を使う(アプリ再起動が必要)</string>
 
 </resources>

@@ -2630,7 +2630,7 @@ internal class ItemViewHolder(
 
         if (code == null) {
             EmojiPicker(activity, access_info, closeOnSelected = true) { name, instance, _, _, _ ->
-                val item = EmojiMap.sMap.shortNameToEmojiInfo[name]
+                val item = EmojiMap.shortNameToEmojiInfo[name]
                 val newCode = if (item == null || instance != null) {
                     ":$name:"
                 } else {

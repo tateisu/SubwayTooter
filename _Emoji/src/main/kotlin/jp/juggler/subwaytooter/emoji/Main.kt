@@ -117,6 +117,55 @@ class App {
 		}
 	}
 
+	val emojipediaShortNames = HashMap<CodepointList,ShortName>()
+
+	// noto-emoji のファイル名はfeofが欠けているので、
+	// あらかじめemoji 13.1 の qualified name を取得しておく
+	@Suppress("FunctionName")
+	private suspend fun readQualified13_1(client: HttpClient) {
+		val cameFrom = "emojiQualified"
+		for( url in arrayOf(
+			"https://emojipedia.org/emoji-13.1/",
+			"https://emojipedia.org/emoji-13.0/",
+		)) {
+			val root = client.cachedGetString(url, mapOf()).parseHtml(url)
+			for( node in root.getElementsByClass("sidebar") ){
+				node.remove()
+			}
+			for( node in root.getElementsByClass("categories") ){
+				node.remove()
+			}
+			for( list in root.getElementsByTag("ul")){
+				for( li in list.getElementsByTag("li")) {
+
+					val span = li.getElementsByTag("span").find { it.hasClass("emoji") }
+						?: continue
+					val code = span.text().listCodePoints().toCodepointList(cameFrom)!!
+					val key = code.toKey(cameFrom)
+
+					fixUnified[ key] = code
+
+					val href = li.getElementsByTag("a")!!.attr("href")
+						.notEmpty()?:continue
+					val shortName = href
+						.replace("/", "")
+						.toShortName(cameFrom)
+						?: error("can't parse $href")
+
+					if( !ignoreShortName.any{ it == shortName.name}){
+						emojipediaShortNames[key] = shortName
+					}
+				}
+			}
+		}
+	}
+
+	private fun addEmojipediaShortnames(){
+		for((key,shortName) in emojipediaShortNames){
+			emojiMap[key]?.addShortName(shortName)
+		}
+	}
+
 	// 画像ファイルをスキャンして絵文字コードとファイルの対応表を作る
 	// マップのキーはvariation selectorとZWJが除去される
 	private val emojiMap = HashMap<CodepointList, Emoji>()
@@ -669,6 +718,8 @@ class App {
 
 			readFixData()
 
+			readQualified13_1(client)
+
 			scanEmojiImages()
 			copyImages()
 
@@ -726,6 +777,9 @@ public final class EmojiMapInitializer {
 					val strResName = emoji.resName
 					codeSet.forEach { code ->
 						val javaChars = code.makeUtf16()
+
+						if(javaChars.isEmpty()) error("too short code! ${emoji.resName}")
+
 						if (File("assets/$strResName.svg").isFile) {
 							jcw.addCode("e.code(\"$javaChars\", \"$strResName.svg\"); // ${code.from} ${emoji.imageFiles.first().second}")
 						} else {

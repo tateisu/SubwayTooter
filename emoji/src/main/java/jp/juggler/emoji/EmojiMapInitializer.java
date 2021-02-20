@@ -466,7 +466,7 @@ public final class EmojiMapInitializer {
         e.code("\ue487", "emj_26a1.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\ue13d", "emj_26a1.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb8\udc04", "emj_26a1.svg"); // EmojiDataJson(google) mastodonSVG
-        e.code("\u26a7\ufe0f", "emj_26a7.svg"); // fixUnified mastodonSVG
+        e.code("\u26a7\ufe0f", "emj_26a7.svg"); // emojiQualified mastodonSVG
         e.code("\u26a7", "emj_26a7.svg"); // mastodonSVG mastodonSVG
         e.code("\u26aa", "emj_26aa.svg"); // mastodonSVG mastodonSVG
         e.code("\ue53a", "emj_26aa.svg"); // EmojiDataJson(au) mastodonSVG
@@ -726,12 +726,12 @@ public final class EmojiMapInitializer {
         e.code("\ue595", "emj_2764.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\ue022", "emj_2764.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbba\udf0c", "emj_2764.svg"); // EmojiDataJson(google) mastodonSVG
-        e.code("\u2764\u200d\ud83d\udd25\ufe0f", "emj_2764_1f525.svg"); // notoSvgFix notoSvg
+        e.code("\u2764\ufe0f\u200d\ud83d\udd25", "emj_2764_1f525.svg"); // emojiQualified notoSvg
         e.code("\u2764\u200d\ud83d\udd25", "emj_2764_1f525.svg"); // notoSvg notoSvg
     }
 
     private static void init8(EmojiMap e){
-        e.code("\u2764\u200d\ud83e\ude79\ufe0f", "emj_2764_1fa79.svg"); // notoSvgFix notoSvg
+        e.code("\u2764\ufe0f\u200d\ud83e\ude79", "emj_2764_1fa79.svg"); // emojiQualified notoSvg
         e.code("\u2764\u200d\ud83e\ude79", "emj_2764_1fa79.svg"); // notoSvg notoSvg
         e.code("\u2795", "emj_2795.svg"); // mastodonSVG mastodonSVG
         e.code("\ue53c", "emj_2795.svg"); // EmojiDataJson(au) mastodonSVG
@@ -2210,7 +2210,7 @@ public final class EmojiMapInitializer {
         e.code("\udbb9\udcbf", "emj_1f3f0.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83c\udff3\ufe0f", "emj_1f3f3.svg"); // fixUnified mastodonSVG
         e.code("\ud83c\udff3", "emj_1f3f3.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f", "emj_1f3f3_26a7.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f", "emj_1f3f3_26a7.svg"); // emojiQualified mastodonSVG
         e.code("\ud83c\udff3\u200d\u26a7", "emj_1f3f3_26a7.svg"); // notoSvg mastodonSVG
         e.code("\ud83c\udff3\ufe0f\u200d\ud83c\udf08", "emj_1f3f3_1f308.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83c\udff3\u200d\ud83c\udf08", "emj_1f3f3_1f308.svg"); // notoSvg mastodonSVG
@@ -2242,7 +2242,7 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc06", "emj_1f406.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc07", "emj_1f407.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc08", "emj_1f408.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc08\u200d\u2b1b", "emj_1f408_2b1b.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc08\u200d\u2b1b", "emj_1f408_2b1b.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc09", "emj_1f409.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc0a", "emj_1f40a.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc0b", "emj_1f40b.svg"); // mastodonSVG mastodonSVG
@@ -2401,7 +2401,7 @@ public final class EmojiMapInitializer {
         e.code("\ue5c1", "emj_1f43b.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\ue051", "emj_1f43b.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb8\uddc1", "emj_1f43b.svg"); // EmojiDataJson(google) mastodonSVG
-        e.code("\ud83d\udc3b\u200d\u2744\ufe0f", "emj_1f43b_2744.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc3b\u200d\u2744\ufe0f", "emj_1f43b_2744.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc3b\u200d\u2744", "emj_1f43b_2744.svg"); // notoSvg twemojiSvg
         e.code("\ud83d\udc3c", "emj_1f43c.svg"); // mastodonSVG mastodonSVG
         e.code("\ueb46", "emj_1f43c.svg"); // EmojiDataJson(au) mastodonSVG
@@ -2671,7 +2671,7 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc68\u2764\ud83d\udc8b\ud83d\udc68", "emj_1f468_2764_1f48b_1f468.svg"); // emojiOne mastodonSVG
         e.code("\ud83d\udc68\u200d\ud83c\udf3e", "emj_1f468_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\u200d\ud83c\udf73", "emj_1f468_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc68\u200d\ud83c\udf7c", "emj_1f468_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc68\u200d\ud83c\udf7c", "emj_1f468_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc68\u200d\ud83c\udf84", "emj_1f468_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc68\u200d\ud83c\udf93", "emj_1f468_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\u200d\ud83c\udfa4", "emj_1f468_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -2685,32 +2685,32 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2696", "emj_1f468_1f3fb_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2708\ufe0f", "emj_1f468_1f3fb_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2708", "emj_1f468_1f3fb_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f468_1f3fb_2764_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fb_2764_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fb_2764_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f468_1f3fb_2764_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fb_2764_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fb_2764_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f468_1f3fb_2764_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fb_2764_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fb_2764_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f468_1f3fb_2764_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fb_2764_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fb_2764_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f468_1f3fb_2764_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fb_2764_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fb_2764_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3ff.svg"); // emojiQualified notoSvg
     }
 
     private static void init27(EmojiMap e){
         e.code("\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fb_2764_1f48b_1f468_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf3e", "emj_1f468_1f3fb_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf73", "emj_1f468_1f3fb_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf7c", "emj_1f468_1f3fb_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf7c", "emj_1f468_1f3fb_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf84", "emj_1f468_1f3fb_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf93", "emj_1f468_1f3fb_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffb\u200d\ud83c\udfa4", "emj_1f468_1f3fb_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -2741,29 +2741,29 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2696", "emj_1f468_1f3fc_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2708\ufe0f", "emj_1f468_1f3fc_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2708", "emj_1f468_1f3fc_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f468_1f3fc_2764_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fc_2764_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fc_2764_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f468_1f3fc_2764_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fc_2764_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fc_2764_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f468_1f3fc_2764_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fc_2764_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fc_2764_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f468_1f3fc_2764_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fc_2764_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fc_2764_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f468_1f3fc_2764_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fc_2764_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fc_2764_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fc_2764_1f48b_1f468_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf3e", "emj_1f468_1f3fc_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf73", "emj_1f468_1f3fc_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf7c", "emj_1f468_1f3fc_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf7c", "emj_1f468_1f3fc_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf84", "emj_1f468_1f3fc_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf93", "emj_1f468_1f3fc_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfa4", "emj_1f468_1f3fc_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -2794,32 +2794,32 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2696", "emj_1f468_1f3fd_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2708\ufe0f", "emj_1f468_1f3fd_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2708", "emj_1f468_1f3fd_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f468_1f3fd_2764_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fd_2764_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fd_2764_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f468_1f3fd_2764_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fd_2764_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fd_2764_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f468_1f3fd_2764_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fd_2764_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fd_2764_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f468_1f3fd_2764_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fd_2764_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fd_2764_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f468_1f3fd_2764_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fd_2764_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fd_2764_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fc.svg"); // notoSvg notoSvg
     }
 
     private static void init28(EmojiMap e){
-        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fd_2764_1f48b_1f468_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf3e", "emj_1f468_1f3fd_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf73", "emj_1f468_1f3fd_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf7c", "emj_1f468_1f3fd_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf7c", "emj_1f468_1f3fd_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf84", "emj_1f468_1f3fd_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf93", "emj_1f468_1f3fd_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffd\u200d\ud83c\udfa4", "emj_1f468_1f3fd_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -2850,29 +2850,29 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2696", "emj_1f468_1f3fe_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2708\ufe0f", "emj_1f468_1f3fe_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2708", "emj_1f468_1f3fe_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f468_1f3fe_2764_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fe_2764_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fe_2764_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f468_1f3fe_2764_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fe_2764_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fe_2764_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f468_1f3fe_2764_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fe_2764_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fe_2764_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f468_1f3fe_2764_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fe_2764_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fe_2764_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f468_1f3fe_2764_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fe_2764_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fe_2764_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3fe_2764_1f48b_1f468_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf3e", "emj_1f468_1f3fe_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf73", "emj_1f468_1f3fe_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf7c", "emj_1f468_1f3fe_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf7c", "emj_1f468_1f3fe_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf84", "emj_1f468_1f3fe_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf93", "emj_1f468_1f3fe_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfa4", "emj_1f468_1f3fe_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -2903,32 +2903,32 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2696", "emj_1f468_1f3ff_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2708\ufe0f", "emj_1f468_1f3ff_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2708", "emj_1f468_1f3ff_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f468_1f3ff_2764_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3ff_2764_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3ff_2764_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f468_1f3ff_2764_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3ff_2764_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3ff_2764_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f468_1f3ff_2764_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3ff_2764_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3ff_2764_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f468_1f3ff_2764_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3ff_2764_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3ff_2764_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f468_1f3ff_2764_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3ff_2764_1f468_1f3ff.svg"); // emojiQualified notoSvg
     }
 
     private static void init29(EmojiMap e){
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3ff_2764_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f468_1f3ff_2764_1f48b_1f468_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf3e", "emj_1f468_1f3ff_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf73", "emj_1f468_1f3ff_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf7c", "emj_1f468_1f3ff_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf7c", "emj_1f468_1f3ff_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf84", "emj_1f468_1f3ff_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf93", "emj_1f468_1f3ff_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc68\ud83c\udfff\u200d\ud83c\udfa4", "emj_1f468_1f3ff_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -3011,7 +3011,7 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc69\u2764\ud83d\udc8b\ud83d\udc69", "emj_1f469_2764_1f48b_1f469.svg"); // emojiOne mastodonSVG
         e.code("\ud83d\udc69\u200d\ud83c\udf3e", "emj_1f469_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\u200d\ud83c\udf73", "emj_1f469_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc69\u200d\ud83c\udf7c", "emj_1f469_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc69\u200d\ud83c\udf7c", "emj_1f469_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc69\u200d\ud83c\udf84", "emj_1f469_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc69\u200d\ud83c\udf93", "emj_1f469_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\u200d\ud83c\udfa4", "emj_1f469_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -3028,49 +3028,49 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2696", "emj_1f469_1f3fb_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2708\ufe0f", "emj_1f469_1f3fb_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2708", "emj_1f469_1f3fb_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f469_1f3fb_2764_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fb_2764_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fb_2764_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f469_1f3fb_2764_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fb_2764_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fb_2764_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f469_1f3fb_2764_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fb_2764_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fb_2764_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f469_1f3fb_2764_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fb_2764_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fb_2764_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f469_1f3fb_2764_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fb_2764_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fb_2764_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb\ufe0f", "emj_1f469_1f3fb_2764_1f469_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fb_2764_1f469_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fb_2764_1f469_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc\ufe0f", "emj_1f469_1f3fb_2764_1f469_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fb_2764_1f469_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fb_2764_1f469_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd\ufe0f", "emj_1f469_1f3fb_2764_1f469_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fb_2764_1f469_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fb_2764_1f469_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe\ufe0f", "emj_1f469_1f3fb_2764_1f469_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fb_2764_1f469_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fb_2764_1f469_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff\ufe0f", "emj_1f469_1f3fb_2764_1f469_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fb_2764_1f469_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fb_2764_1f469_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fb_2764_1f48b_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb\ufe0f", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc\ufe0f", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd\ufe0f", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe\ufe0f", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff\ufe0f", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fb_2764_1f48b_1f469_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf3e", "emj_1f469_1f3fb_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf73", "emj_1f469_1f3fb_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf7c", "emj_1f469_1f3fb_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf7c", "emj_1f469_1f3fb_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf84", "emj_1f469_1f3fb_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf93", "emj_1f469_1f3fb_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffb\u200d\ud83c\udfa4", "emj_1f469_1f3fb_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -3105,52 +3105,52 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2696", "emj_1f469_1f3fc_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2708\ufe0f", "emj_1f469_1f3fc_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2708", "emj_1f469_1f3fc_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f469_1f3fc_2764_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fc_2764_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fc_2764_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f469_1f3fc_2764_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fc_2764_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fc_2764_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f469_1f3fc_2764_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fc_2764_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fc_2764_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f469_1f3fc_2764_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fc_2764_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fc_2764_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f469_1f3fc_2764_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fc_2764_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fc_2764_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb\ufe0f", "emj_1f469_1f3fc_2764_1f469_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fc_2764_1f469_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fc_2764_1f469_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc\ufe0f", "emj_1f469_1f3fc_2764_1f469_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fc_2764_1f469_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fc_2764_1f469_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd\ufe0f", "emj_1f469_1f3fc_2764_1f469_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fc_2764_1f469_1f3fd.svg"); // emojiQualified notoSvg
     }
 
     private static void init31(EmojiMap e){
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fc_2764_1f469_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe\ufe0f", "emj_1f469_1f3fc_2764_1f469_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fc_2764_1f469_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fc_2764_1f469_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff\ufe0f", "emj_1f469_1f3fc_2764_1f469_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fc_2764_1f469_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fc_2764_1f469_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fc_2764_1f48b_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb\ufe0f", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc\ufe0f", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd\ufe0f", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe\ufe0f", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff\ufe0f", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fc_2764_1f48b_1f469_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf3e", "emj_1f469_1f3fc_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf73", "emj_1f469_1f3fc_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf7c", "emj_1f469_1f3fc_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf7c", "emj_1f469_1f3fc_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf84", "emj_1f469_1f3fc_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf93", "emj_1f469_1f3fc_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffc\u200d\ud83c\udfa4", "emj_1f469_1f3fc_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -3185,52 +3185,52 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2696", "emj_1f469_1f3fd_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2708\ufe0f", "emj_1f469_1f3fd_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2708", "emj_1f469_1f3fd_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f469_1f3fd_2764_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fd_2764_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fd_2764_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f469_1f3fd_2764_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fd_2764_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fd_2764_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f469_1f3fd_2764_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fd_2764_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fd_2764_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f469_1f3fd_2764_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fd_2764_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fd_2764_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f469_1f3fd_2764_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fd_2764_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fd_2764_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb\ufe0f", "emj_1f469_1f3fd_2764_1f469_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fd_2764_1f469_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fd_2764_1f469_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc\ufe0f", "emj_1f469_1f3fd_2764_1f469_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fd_2764_1f469_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fd_2764_1f469_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd\ufe0f", "emj_1f469_1f3fd_2764_1f469_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fd_2764_1f469_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fd_2764_1f469_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe\ufe0f", "emj_1f469_1f3fd_2764_1f469_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fd_2764_1f469_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fd_2764_1f469_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff\ufe0f", "emj_1f469_1f3fd_2764_1f469_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fd_2764_1f469_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fd_2764_1f469_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fd_2764_1f48b_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb\ufe0f", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc\ufe0f", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd\ufe0f", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe\ufe0f", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff\ufe0f", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3ff.svg"); // emojiQualified notoSvg
     }
 
     private static void init32(EmojiMap e){
         e.code("\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fd_2764_1f48b_1f469_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf3e", "emj_1f469_1f3fd_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf73", "emj_1f469_1f3fd_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf7c", "emj_1f469_1f3fd_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf7c", "emj_1f469_1f3fd_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf84", "emj_1f469_1f3fd_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf93", "emj_1f469_1f3fd_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffd\u200d\ud83c\udfa4", "emj_1f469_1f3fd_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -3265,49 +3265,49 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2696", "emj_1f469_1f3fe_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2708\ufe0f", "emj_1f469_1f3fe_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2708", "emj_1f469_1f3fe_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f469_1f3fe_2764_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fe_2764_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fe_2764_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f469_1f3fe_2764_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fe_2764_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fe_2764_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f469_1f3fe_2764_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fe_2764_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fe_2764_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f469_1f3fe_2764_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fe_2764_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fe_2764_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f469_1f3fe_2764_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fe_2764_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fe_2764_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb\ufe0f", "emj_1f469_1f3fe_2764_1f469_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fe_2764_1f469_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fe_2764_1f469_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc\ufe0f", "emj_1f469_1f3fe_2764_1f469_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fe_2764_1f469_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fe_2764_1f469_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd\ufe0f", "emj_1f469_1f3fe_2764_1f469_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fe_2764_1f469_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fe_2764_1f469_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe\ufe0f", "emj_1f469_1f3fe_2764_1f469_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fe_2764_1f469_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fe_2764_1f469_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff\ufe0f", "emj_1f469_1f3fe_2764_1f469_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fe_2764_1f469_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fe_2764_1f469_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3fe_2764_1f48b_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb\ufe0f", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc\ufe0f", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd\ufe0f", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe\ufe0f", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff\ufe0f", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3fe_2764_1f48b_1f469_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf3e", "emj_1f469_1f3fe_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf73", "emj_1f469_1f3fe_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf7c", "emj_1f469_1f3fe_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf7c", "emj_1f469_1f3fe_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf84", "emj_1f469_1f3fe_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf93", "emj_1f469_1f3fe_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udffe\u200d\ud83c\udfa4", "emj_1f469_1f3fe_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -3345,49 +3345,49 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2696", "emj_1f469_1f3ff_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2708\ufe0f", "emj_1f469_1f3ff_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2708", "emj_1f469_1f3ff_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f469_1f3ff_2764_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3ff_2764_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3ff_2764_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f469_1f3ff_2764_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3ff_2764_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3ff_2764_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f469_1f3ff_2764_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3ff_2764_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3ff_2764_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f469_1f3ff_2764_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3ff_2764_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3ff_2764_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f469_1f3ff_2764_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3ff_2764_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3ff_2764_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb\ufe0f", "emj_1f469_1f3ff_2764_1f469_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3ff_2764_1f469_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3ff_2764_1f469_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc\ufe0f", "emj_1f469_1f3ff_2764_1f469_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3ff_2764_1f469_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3ff_2764_1f469_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd\ufe0f", "emj_1f469_1f3ff_2764_1f469_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3ff_2764_1f469_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3ff_2764_1f469_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe\ufe0f", "emj_1f469_1f3ff_2764_1f469_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3ff_2764_1f469_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3ff_2764_1f469_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff\ufe0f", "emj_1f469_1f3ff_2764_1f469_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3ff_2764_1f469_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3ff_2764_1f469_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff", "emj_1f469_1f3ff_2764_1f48b_1f468_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb\ufe0f", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc\ufe0f", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd\ufe0f", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe\ufe0f", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff\ufe0f", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff", "emj_1f469_1f3ff_2764_1f48b_1f469_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf3e", "emj_1f469_1f3ff_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf73", "emj_1f469_1f3ff_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf7c", "emj_1f469_1f3ff_1f37c.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf7c", "emj_1f469_1f3ff_1f37c.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf84", "emj_1f469_1f3ff_1f384.svg"); // twemojiSvg twemojiSvg
         e.code("\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf93", "emj_1f469_1f3ff_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udc69\ud83c\udfff\u200d\ud83c\udfa4", "emj_1f469_1f3ff_1f3a4.svg"); // mastodonSVG mastodonSVG
@@ -3513,37 +3513,37 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udc70", "emj_1f470.svg"); // mastodonSVG mastodonSVG
         e.code("\ueae9", "emj_1f470.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\udbb8\udda3", "emj_1f470.svg"); // EmojiDataJson(google) mastodonSVG
-        e.code("\ud83d\udc70\u200d\u2640\ufe0f", "emj_1f470_2640.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\u200d\u2640\ufe0f", "emj_1f470_2640.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc70\u200d\u2640", "emj_1f470_2640.svg"); // notoSvg twemojiSvg
-        e.code("\ud83d\udc70\u200d\u2642\ufe0f", "emj_1f470_2642.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\u200d\u2642\ufe0f", "emj_1f470_2642.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc70\u200d\u2642", "emj_1f470_2642.svg"); // notoSvg twemojiSvg
         e.code("\ud83d\udc70\ud83c\udffb", "emj_1f470_1f3fb.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc70\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f470_1f3fb_2640.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f470_1f3fb_2640.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc70\ud83c\udffb\u200d\u2640", "emj_1f470_1f3fb_2640.svg"); // notoSvg twemojiSvg
-        e.code("\ud83d\udc70\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f470_1f3fb_2642.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f470_1f3fb_2642.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc70\ud83c\udffb\u200d\u2642", "emj_1f470_1f3fb_2642.svg"); // notoSvg twemojiSvg
         e.code("\ud83d\udc70\ud83c\udffc", "emj_1f470_1f3fc.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc70\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f470_1f3fc_2640.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f470_1f3fc_2640.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc70\ud83c\udffc\u200d\u2640", "emj_1f470_1f3fc_2640.svg"); // notoSvg twemojiSvg
-        e.code("\ud83d\udc70\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f470_1f3fc_2642.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f470_1f3fc_2642.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc70\ud83c\udffc\u200d\u2642", "emj_1f470_1f3fc_2642.svg"); // notoSvg twemojiSvg
         e.code("\ud83d\udc70\ud83c\udffd", "emj_1f470_1f3fd.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc70\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f470_1f3fd_2640.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f470_1f3fd_2640.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc70\ud83c\udffd\u200d\u2640", "emj_1f470_1f3fd_2640.svg"); // notoSvg twemojiSvg
-        e.code("\ud83d\udc70\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f470_1f3fd_2642.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f470_1f3fd_2642.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc70\ud83c\udffd\u200d\u2642", "emj_1f470_1f3fd_2642.svg"); // notoSvg twemojiSvg
         e.code("\ud83d\udc70\ud83c\udffe", "emj_1f470_1f3fe.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc70\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f470_1f3fe_2640.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f470_1f3fe_2640.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc70\ud83c\udffe\u200d\u2640", "emj_1f470_1f3fe_2640.svg"); // notoSvg twemojiSvg
-        e.code("\ud83d\udc70\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f470_1f3fe_2642.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f470_1f3fe_2642.svg"); // emojiQualified twemojiSvg
     }
 
     private static void init35(EmojiMap e){
         e.code("\ud83d\udc70\ud83c\udffe\u200d\u2642", "emj_1f470_1f3fe_2642.svg"); // notoSvg twemojiSvg
         e.code("\ud83d\udc70\ud83c\udfff", "emj_1f470_1f3ff.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udc70\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f470_1f3ff_2640.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f470_1f3ff_2640.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc70\ud83c\udfff\u200d\u2640", "emj_1f470_1f3ff_2640.svg"); // notoSvg twemojiSvg
-        e.code("\ud83d\udc70\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f470_1f3ff_2642.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udc70\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f470_1f3ff_2642.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udc70\ud83c\udfff\u200d\u2642", "emj_1f470_1f3ff_2642.svg"); // notoSvg twemojiSvg
         e.code("\ud83d\udc71", "emj_1f471.svg"); // mastodonSVG mastodonSVG
         e.code("\ueb13", "emj_1f471.svg"); // EmojiDataJson(au) mastodonSVG
@@ -3909,16 +3909,11 @@ public final class EmojiMapInitializer {
         e.code("\ue5ca", "emj_1f48f.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\ue111", "emj_1f48f.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbba\udc27", "emj_1f48f.svg"); // EmojiDataJson(google) mastodonSVG
-        e.code("\ud83d\udc8f\ud83c\udffb\ufe0f", "emj_1f48f_1f3fb.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\udc8f\ud83c\udffb", "emj_1f48f_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc8f\ud83c\udffc\ufe0f", "emj_1f48f_1f3fc.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\udc8f\ud83c\udffc", "emj_1f48f_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc8f\ud83c\udffd\ufe0f", "emj_1f48f_1f3fd.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\udc8f\ud83c\udffd", "emj_1f48f_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc8f\ud83c\udffe\ufe0f", "emj_1f48f_1f3fe.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\udc8f\ud83c\udffe", "emj_1f48f_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc8f\ud83c\udfff\ufe0f", "emj_1f48f_1f3ff.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\udc8f\ud83c\udfff", "emj_1f48f_1f3ff.svg"); // notoSvg notoSvg
+        e.code("\ud83d\udc8f\ud83c\udffb", "emj_1f48f_1f3fb.svg"); // emojiQualified notoSvg
+        e.code("\ud83d\udc8f\ud83c\udffc", "emj_1f48f_1f3fc.svg"); // emojiQualified notoSvg
+        e.code("\ud83d\udc8f\ud83c\udffd", "emj_1f48f_1f3fd.svg"); // emojiQualified notoSvg
+        e.code("\ud83d\udc8f\ud83c\udffe", "emj_1f48f_1f3fe.svg"); // emojiQualified notoSvg
+        e.code("\ud83d\udc8f\ud83c\udfff", "emj_1f48f_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc90", "emj_1f490.svg"); // mastodonSVG mastodonSVG
         e.code("\uea95", "emj_1f490.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\ue306", "emj_1f490.svg"); // EmojiDataJson(softbank) mastodonSVG
@@ -3927,16 +3922,11 @@ public final class EmojiMapInitializer {
         e.code("\ueada", "emj_1f491.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\ue425", "emj_1f491.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbba\udc29", "emj_1f491.svg"); // EmojiDataJson(google) mastodonSVG
-        e.code("\ud83d\udc91\ud83c\udffb\ufe0f", "emj_1f491_1f3fb.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\udc91\ud83c\udffb", "emj_1f491_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc91\ud83c\udffc\ufe0f", "emj_1f491_1f3fc.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\udc91\ud83c\udffc", "emj_1f491_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc91\ud83c\udffd\ufe0f", "emj_1f491_1f3fd.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\udc91\ud83c\udffd", "emj_1f491_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc91\ud83c\udffe\ufe0f", "emj_1f491_1f3fe.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\udc91\ud83c\udffe", "emj_1f491_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83d\udc91\ud83c\udfff\ufe0f", "emj_1f491_1f3ff.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\udc91\ud83c\udfff", "emj_1f491_1f3ff.svg"); // notoSvg notoSvg
+        e.code("\ud83d\udc91\ud83c\udffb", "emj_1f491_1f3fb.svg"); // emojiQualified notoSvg
+        e.code("\ud83d\udc91\ud83c\udffc", "emj_1f491_1f3fc.svg"); // emojiQualified notoSvg
+        e.code("\ud83d\udc91\ud83c\udffd", "emj_1f491_1f3fd.svg"); // emojiQualified notoSvg
+        e.code("\ud83d\udc91\ud83c\udffe", "emj_1f491_1f3fe.svg"); // emojiQualified notoSvg
+        e.code("\ud83d\udc91\ud83c\udfff", "emj_1f491_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83d\udc92", "emj_1f492.svg"); // mastodonSVG mastodonSVG
         e.code("\ue43d", "emj_1f492.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbba\udc2a", "emj_1f492.svg"); // EmojiDataJson(google) mastodonSVG
@@ -3952,9 +3942,6 @@ public final class EmojiMapInitializer {
         e.code("\udbba\udf0e", "emj_1f494.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udc95", "emj_1f495.svg"); // mastodonSVG mastodonSVG
         e.code("\ue6ef", "emj_1f495.svg"); // EmojiDataJson(docomo) mastodonSVG
-    }
-
-    private static void init39(EmojiMap e){
         e.code("\ue478", "emj_1f495.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\udbba\udf0f", "emj_1f495.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udc96", "emj_1f496.svg"); // mastodonSVG mastodonSVG
@@ -3965,6 +3952,9 @@ public final class EmojiMapInitializer {
         e.code("\udbba\udf11", "emj_1f497.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udc98", "emj_1f498.svg"); // mastodonSVG mastodonSVG
         e.code("\ue4ea", "emj_1f498.svg"); // EmojiDataJson(au) mastodonSVG
+    }
+
+    private static void init39(EmojiMap e){
         e.code("\ue329", "emj_1f498.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbba\udf12", "emj_1f498.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udc99", "emj_1f499.svg"); // mastodonSVG mastodonSVG
@@ -4056,9 +4046,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udcad", "emj_1f4ad.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udcae", "emj_1f4ae.svg"); // mastodonSVG mastodonSVG
         e.code("\ue4f0", "emj_1f4ae.svg"); // EmojiDataJson(au) mastodonSVG
-    }
-
-    private static void init40(EmojiMap e){
         e.code("\udbba\udf7a", "emj_1f4ae.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udcaf", "emj_1f4af.svg"); // mastodonSVG mastodonSVG
         e.code("\ue4f2", "emj_1f4af.svg"); // EmojiDataJson(au) mastodonSVG
@@ -4069,6 +4056,9 @@ public final class EmojiMapInitializer {
         e.code("\ue12f", "emj_1f4b0.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb9\udcdd", "emj_1f4b0.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udcb1", "emj_1f4b1.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init40(EmojiMap e){
         e.code("\ue149", "emj_1f4b1.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb9\udcde", "emj_1f4b1.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udcb2", "emj_1f4b2.svg"); // mastodonSVG mastodonSVG
@@ -4160,9 +4150,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udccd", "emj_1f4cd.svg"); // mastodonSVG mastodonSVG
         e.code("\ue560", "emj_1f4cd.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\udbb9\udd3f", "emj_1f4cd.svg"); // EmojiDataJson(google) mastodonSVG
-    }
-
-    private static void init41(EmojiMap e){
         e.code("\ud83d\udcce", "emj_1f4ce.svg"); // mastodonSVG mastodonSVG
         e.code("\ue730", "emj_1f4ce.svg"); // EmojiDataJson(docomo) mastodonSVG
         e.code("\ue4a0", "emj_1f4ce.svg"); // EmojiDataJson(au) mastodonSVG
@@ -4173,6 +4160,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udcd0", "emj_1f4d0.svg"); // mastodonSVG mastodonSVG
         e.code("\ue4a2", "emj_1f4d0.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\udbb9\udd51", "emj_1f4d0.svg"); // EmojiDataJson(google) mastodonSVG
+    }
+
+    private static void init41(EmojiMap e){
         e.code("\ud83d\udcd1", "emj_1f4d1.svg"); // mastodonSVG mastodonSVG
         e.code("\ueb0b", "emj_1f4d1.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\udbb9\udd52", "emj_1f4d1.svg"); // EmojiDataJson(google) mastodonSVG
@@ -4264,9 +4254,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udceb", "emj_1f4eb.svg"); // mastodonSVG mastodonSVG
         e.code("\ueb0a", "emj_1f4eb.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\ue101", "emj_1f4eb.svg"); // EmojiDataJson(softbank) mastodonSVG
-    }
-
-    private static void init42(EmojiMap e){
         e.code("\udbb9\udd2d", "emj_1f4eb.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udcec", "emj_1f4ec.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udced", "emj_1f4ed.svg"); // mastodonSVG mastodonSVG
@@ -4277,6 +4264,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udcf0", "emj_1f4f0.svg"); // mastodonSVG mastodonSVG
         e.code("\ue58b", "emj_1f4f0.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\udbba\udc22", "emj_1f4f0.svg"); // EmojiDataJson(google) mastodonSVG
+    }
+
+    private static void init42(EmojiMap e){
         e.code("\ud83d\udcf1", "emj_1f4f1.svg"); // mastodonSVG mastodonSVG
         e.code("\ue688", "emj_1f4f1.svg"); // EmojiDataJson(docomo) mastodonSVG
         e.code("\ue588", "emj_1f4f1.svg"); // EmojiDataJson(au) mastodonSVG
@@ -4368,9 +4358,6 @@ public final class EmojiMapInitializer {
         e.code("\udbba\udf82", "emj_1f511.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udd12", "emj_1f512.svg"); // mastodonSVG mastodonSVG
         e.code("\ue51c", "emj_1f512.svg"); // EmojiDataJson(au) mastodonSVG
-    }
-
-    private static void init43(EmojiMap e){
         e.code("\ue144", "emj_1f512.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbba\udf86", "emj_1f512.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udd13", "emj_1f513.svg"); // mastodonSVG mastodonSVG
@@ -4381,6 +4368,9 @@ public final class EmojiMapInitializer {
         e.code("\ue512", "emj_1f514.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\ue325", "emj_1f514.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb9\udcf2", "emj_1f514.svg"); // EmojiDataJson(google) mastodonSVG
+    }
+
+    private static void init43(EmojiMap e){
         e.code("\ud83d\udd15", "emj_1f515.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udd16", "emj_1f516.svg"); // mastodonSVG mastodonSVG
         e.code("\ueb07", "emj_1f516.svg"); // EmojiDataJson(au) mastodonSVG
@@ -4472,9 +4462,6 @@ public final class EmojiMapInitializer {
         e.code("\udbba\udf64", "emj_1f532.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udd33", "emj_1f533.svg"); // mastodonSVG mastodonSVG
         e.code("\ue21b", "emj_1f533.svg"); // EmojiDataJson(softbank) mastodonSVG
-    }
-
-    private static void init44(EmojiMap e){
         e.code("\udbba\udf67", "emj_1f533.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udd34", "emj_1f534.svg"); // mastodonSVG mastodonSVG
         e.code("\ue54a", "emj_1f534.svg"); // EmojiDataJson(au) mastodonSVG
@@ -4485,6 +4472,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udd36", "emj_1f536.svg"); // mastodonSVG mastodonSVG
         e.code("\ue546", "emj_1f536.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\udbba\udf73", "emj_1f536.svg"); // EmojiDataJson(google) mastodonSVG
+    }
+
+    private static void init44(EmojiMap e){
         e.code("\ud83d\udd37", "emj_1f537.svg"); // mastodonSVG mastodonSVG
         e.code("\ue547", "emj_1f537.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\udbba\udf74", "emj_1f537.svg"); // EmojiDataJson(google) mastodonSVG
@@ -4576,9 +4566,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udd74\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f574_1f3fb_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udd74\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f574_1f3fb_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udd74\ud83c\udffc", "emj_1f574_1f3fc.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init45(EmojiMap e){
         e.code("\ud83d\udd74\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f574_1f3fc_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udd74\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f574_1f3fc_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udd74\ud83c\udffd", "emj_1f574_1f3fd.svg"); // mastodonSVG mastodonSVG
@@ -4589,6 +4576,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udd74\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f574_1f3fe_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udd74\ud83c\udfff", "emj_1f574_1f3ff.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udd74\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f574_1f3ff_2640.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init45(EmojiMap e){
         e.code("\ud83d\udd74\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f574_1f3ff_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udd75\ufe0f", "emj_1f575.svg"); // fixUnified mastodonSVG
         e.code("\ud83d\udd75", "emj_1f575.svg"); // mastodonSVG mastodonSVG
@@ -4680,9 +4670,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\uddc3\ufe0f", "emj_1f5c3.svg"); // fixUnified mastodonSVG
         e.code("\ud83d\uddc3", "emj_1f5c3.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\uddc4\ufe0f", "emj_1f5c4.svg"); // fixUnified mastodonSVG
-    }
-
-    private static void init46(EmojiMap e){
         e.code("\ud83d\uddc4", "emj_1f5c4.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\uddd1\ufe0f", "emj_1f5d1.svg"); // fixUnified mastodonSVG
         e.code("\ud83d\uddd1", "emj_1f5d1.svg"); // mastodonSVG mastodonSVG
@@ -4693,6 +4680,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udddc\ufe0f", "emj_1f5dc.svg"); // fixUnified mastodonSVG
         e.code("\ud83d\udddc", "emj_1f5dc.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udddd\ufe0f", "emj_1f5dd.svg"); // fixUnified mastodonSVG
+    }
+
+    private static void init46(EmojiMap e){
         e.code("\ud83d\udddd", "emj_1f5dd.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\uddde\ufe0f", "emj_1f5de.svg"); // fixUnified mastodonSVG
         e.code("\ud83d\uddde", "emj_1f5de.svg"); // mastodonSVG mastodonSVG
@@ -4784,9 +4774,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\ude12", "emj_1f612.svg"); // mastodonSVG mastodonSVG
         e.code("\ue725", "emj_1f612.svg"); // EmojiDataJson(docomo) mastodonSVG
         e.code("\ueac9", "emj_1f612.svg"); // EmojiDataJson(au) mastodonSVG
-    }
-
-    private static void init47(EmojiMap e){
         e.code("\ue40e", "emj_1f612.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb8\udf26", "emj_1f612.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\ude13", "emj_1f613.svg"); // mastodonSVG mastodonSVG
@@ -4797,6 +4784,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\ude14", "emj_1f614.svg"); // mastodonSVG mastodonSVG
         e.code("\ue720", "emj_1f614.svg"); // EmojiDataJson(docomo) mastodonSVG
         e.code("\ueac0", "emj_1f614.svg"); // EmojiDataJson(au) mastodonSVG
+    }
+
+    private static void init47(EmojiMap e){
         e.code("\ue403", "emj_1f614.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb8\udf40", "emj_1f614.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\ude15", "emj_1f615.svg"); // mastodonSVG mastodonSVG
@@ -4878,8 +4868,7 @@ public final class EmojiMapInitializer {
         e.code("\ue411", "emj_1f62d.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb8\udf3a", "emj_1f62d.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\ude2e", "emj_1f62e.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\ude2e\u200d\ud83d\udca8\ufe0f", "emj_1f62e_1f4a8.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\ude2e\u200d\ud83d\udca8", "emj_1f62e_1f4a8.svg"); // notoSvg notoSvg
+        e.code("\ud83d\ude2e\u200d\ud83d\udca8", "emj_1f62e_1f4a8.svg"); // emojiQualified notoSvg
         e.code("\ud83d\ude2f", "emj_1f62f.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude30", "emj_1f630.svg"); // mastodonSVG mastodonSVG
         e.code("\ueacb", "emj_1f630.svg"); // EmojiDataJson(au) mastodonSVG
@@ -4888,9 +4877,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\ude31", "emj_1f631.svg"); // mastodonSVG mastodonSVG
         e.code("\ue757", "emj_1f631.svg"); // EmojiDataJson(docomo) mastodonSVG
         e.code("\ue5c5", "emj_1f631.svg"); // EmojiDataJson(au) mastodonSVG
-    }
-
-    private static void init48(EmojiMap e){
         e.code("\ue107", "emj_1f631.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb8\udf41", "emj_1f631.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\ude32", "emj_1f632.svg"); // mastodonSVG mastodonSVG
@@ -4902,14 +4888,16 @@ public final class EmojiMapInitializer {
         e.code("\ue40d", "emj_1f633.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb8\udf2f", "emj_1f633.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\ude34", "emj_1f634.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init48(EmojiMap e){
         e.code("\ud83d\ude35", "emj_1f635.svg"); // mastodonSVG mastodonSVG
         e.code("\ue6f4", "emj_1f635.svg"); // EmojiDataJson(docomo) mastodonSVG
         e.code("\ue5ae", "emj_1f635.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\udbb8\udf24", "emj_1f635.svg"); // EmojiDataJson(google) mastodonSVG
-        e.code("\ud83d\ude35\u200d\ud83d\udcab\ufe0f", "emj_1f635_1f4ab.svg"); // notoSvgFix notoSvg
-        e.code("\ud83d\ude35\u200d\ud83d\udcab", "emj_1f635_1f4ab.svg"); // notoSvg notoSvg
+        e.code("\ud83d\ude35\u200d\ud83d\udcab", "emj_1f635_1f4ab.svg"); // emojiQualified notoSvg
         e.code("\ud83d\ude36", "emj_1f636.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\ude36\u200d\ud83c\udf2b\ufe0f", "emj_1f636_1f32b.svg"); // notoSvgFix notoSvg
+        e.code("\ud83d\ude36\u200d\ud83c\udf2b\ufe0f", "emj_1f636_1f32b.svg"); // emojiQualified notoSvg
         e.code("\ud83d\ude36\u200d\ud83c\udf2b", "emj_1f636_1f32b.svg"); // notoSvg notoSvg
         e.code("\ud83d\ude37", "emj_1f637.svg"); // mastodonSVG mastodonSVG
         e.code("\ueac7", "emj_1f637.svg"); // EmojiDataJson(au) mastodonSVG
@@ -4992,9 +4980,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\ude46\ud83c\udffb\u200d\u2640", "emj_1f646_1f3fb_2640.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\ude46\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f646_1f3fb_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude46\ud83c\udffb\u200d\u2642", "emj_1f646_1f3fb_2642.svg"); // notoSvg mastodonSVG
-    }
-
-    private static void init49(EmojiMap e){
         e.code("\ud83d\ude46\ud83c\udffc", "emj_1f646_1f3fc.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude46\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f646_1f3fc_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude46\ud83c\udffc\u200d\u2640", "emj_1f646_1f3fc_2640.svg"); // notoSvg mastodonSVG
@@ -5007,6 +4992,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\ude46\ud83c\udffd\u200d\u2642", "emj_1f646_1f3fd_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\ude46\ud83c\udffe", "emj_1f646_1f3fe.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude46\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f646_1f3fe_2640.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init49(EmojiMap e){
         e.code("\ud83d\ude46\ud83c\udffe\u200d\u2640", "emj_1f646_1f3fe_2640.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\ude46\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f646_1f3fe_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude46\ud83c\udffe\u200d\u2642", "emj_1f646_1f3fe_2642.svg"); // notoSvg mastodonSVG
@@ -5096,9 +5084,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\ude4c\ud83c\udffb", "emj_1f64c_1f3fb.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude4c\ud83c\udffc", "emj_1f64c_1f3fc.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude4c\ud83c\udffd", "emj_1f64c_1f3fd.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init50(EmojiMap e){
         e.code("\ud83d\ude4c\ud83c\udffe", "emj_1f64c_1f3fe.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude4c\ud83c\udfff", "emj_1f64c_1f3ff.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude4d", "emj_1f64d.svg"); // mastodonSVG mastodonSVG
@@ -5111,6 +5096,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\ude4d\ud83c\udffb", "emj_1f64d_1f3fb.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude4d\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f64d_1f3fb_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude4d\ud83c\udffb\u200d\u2640", "emj_1f64d_1f3fb_2640.svg"); // notoSvg mastodonSVG
+    }
+
+    private static void init50(EmojiMap e){
         e.code("\ud83d\ude4d\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f64d_1f3fb_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude4d\ud83c\udffb\u200d\u2642", "emj_1f64d_1f3fb_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\ude4d\ud83c\udffc", "emj_1f64d_1f3fc.svg"); // mastodonSVG mastodonSVG
@@ -5200,9 +5188,6 @@ public final class EmojiMapInitializer {
         e.code("\udbb9\udfe0", "emj_1f687.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\ude88", "emj_1f688.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude89", "emj_1f689.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init51(EmojiMap e){
         e.code("\ueb6d", "emj_1f689.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\ue039", "emj_1f689.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb9\udfec", "emj_1f689.svg"); // EmojiDataJson(google) mastodonSVG
@@ -5215,6 +5200,9 @@ public final class EmojiMapInitializer {
         e.code("\udbb9\udfe6", "emj_1f68c.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\ude8d", "emj_1f68d.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\ude8e", "emj_1f68e.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init51(EmojiMap e){
         e.code("\ud83d\ude8f", "emj_1f68f.svg"); // mastodonSVG mastodonSVG
         e.code("\ue4a7", "emj_1f68f.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\ue150", "emj_1f68f.svg"); // EmojiDataJson(softbank) mastodonSVG
@@ -5304,9 +5292,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udea6", "emj_1f6a6.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udea7", "emj_1f6a7.svg"); // mastodonSVG mastodonSVG
         e.code("\ue5d7", "emj_1f6a7.svg"); // EmojiDataJson(au) mastodonSVG
-    }
-
-    private static void init52(EmojiMap e){
         e.code("\ue137", "emj_1f6a7.svg"); // EmojiDataJson(softbank) mastodonSVG
         e.code("\udbb9\udff8", "emj_1f6a7.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udea8", "emj_1f6a8.svg"); // mastodonSVG mastodonSVG
@@ -5319,6 +5304,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udeaa", "emj_1f6aa.svg"); // mastodonSVG mastodonSVG
         e.code("\ue714", "emj_1f6aa.svg"); // EmojiDataJson(docomo) mastodonSVG
         e.code("\udbb9\udcf3", "emj_1f6aa.svg"); // EmojiDataJson(google) mastodonSVG
+    }
+
+    private static void init52(EmojiMap e){
         e.code("\ud83d\udeab", "emj_1f6ab.svg"); // mastodonSVG mastodonSVG
         e.code("\ue541", "emj_1f6ab.svg"); // EmojiDataJson(au) mastodonSVG
         e.code("\udbba\udf48", "emj_1f6ab.svg"); // EmojiDataJson(google) mastodonSVG
@@ -5408,9 +5396,6 @@ public final class EmojiMapInitializer {
         e.code("\udbb9\udff0", "emj_1f6b6.svg"); // EmojiDataJson(google) mastodonSVG
         e.code("\ud83d\udeb6\u200d\u2640\ufe0f", "emj_1f6b6_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udeb6\u200d\u2640", "emj_1f6b6_2640.svg"); // notoSvg mastodonSVG
-    }
-
-    private static void init53(EmojiMap e){
         e.code("\ud83d\udeb6\u200d\u2642\ufe0f", "emj_1f6b6_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udeb6\u200d\u2642", "emj_1f6b6_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udeb6\ud83c\udffb", "emj_1f6b6_1f3fb.svg"); // mastodonSVG mastodonSVG
@@ -5423,6 +5408,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udeb6\ud83c\udffc\u200d\u2640", "emj_1f6b6_1f3fc_2640.svg"); // notoSvg mastodonSVG
         e.code("\ud83d\udeb6\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f6b6_1f3fc_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udeb6\ud83c\udffc\u200d\u2642", "emj_1f6b6_1f3fc_2642.svg"); // notoSvg mastodonSVG
+    }
+
+    private static void init53(EmojiMap e){
         e.code("\ud83d\udeb6\ud83c\udffd", "emj_1f6b6_1f3fd.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udeb6\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f6b6_1f3fd_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udeb6\ud83c\udffd\u200d\u2640", "emj_1f6b6_1f3fd_2640.svg"); // notoSvg mastodonSVG
@@ -5493,8 +5481,8 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\uded1", "emj_1f6d1.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\uded2", "emj_1f6d2.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\uded5", "emj_1f6d5.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\uded6", "emj_1f6d6.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83d\uded7", "emj_1f6d7.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\uded6", "emj_1f6d6.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83d\uded7", "emj_1f6d7.svg"); // emojiQualified twemojiSvg
         e.code("\ud83d\udee0\ufe0f", "emj_1f6e0.svg"); // fixUnified mastodonSVG
         e.code("\ud83d\udee0", "emj_1f6e0.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udee1\ufe0f", "emj_1f6e1.svg"); // fixUnified mastodonSVG
@@ -5512,9 +5500,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udeeb", "emj_1f6eb.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udeec", "emj_1f6ec.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udef0\ufe0f", "emj_1f6f0.svg"); // fixUnified mastodonSVG
-    }
-
-    private static void init54(EmojiMap e){
         e.code("\ud83d\udef0", "emj_1f6f0.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udef3\ufe0f", "emj_1f6f3.svg"); // fixUnified mastodonSVG
         e.code("\ud83d\udef3", "emj_1f6f3.svg"); // mastodonSVG mastodonSVG
@@ -5525,8 +5510,11 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udef8", "emj_1f6f8.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udef9", "emj_1f6f9.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udefa", "emj_1f6fa.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83d\udefb", "emj_1f6fb.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83d\udefc", "emj_1f6fc.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83d\udefb", "emj_1f6fb.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83d\udefc", "emj_1f6fc.svg"); // emojiQualified twemojiSvg
+    }
+
+    private static void init54(EmojiMap e){
         e.code("\ud83d\udfe0", "emj_1f7e0.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udfe1", "emj_1f7e1.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udfe2", "emj_1f7e2.svg"); // mastodonSVG mastodonSVG
@@ -5539,12 +5527,12 @@ public final class EmojiMapInitializer {
         e.code("\ud83d\udfe9", "emj_1f7e9.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udfea", "emj_1f7ea.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83d\udfeb", "emj_1f7eb.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\udd0c", "emj_1f90c.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udd0c\ud83c\udffb", "emj_1f90c_1f3fb.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udd0c\ud83c\udffc", "emj_1f90c_1f3fc.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udd0c\ud83c\udffd", "emj_1f90c_1f3fd.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udd0c\ud83c\udffe", "emj_1f90c_1f3fe.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udd0c\ud83c\udfff", "emj_1f90c_1f3ff.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\udd0c", "emj_1f90c.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udd0c\ud83c\udffb", "emj_1f90c_1f3fb.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udd0c\ud83c\udffc", "emj_1f90c_1f3fc.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udd0c\ud83c\udffd", "emj_1f90c_1f3fd.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udd0c\ud83c\udffe", "emj_1f90c_1f3fe.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udd0c\ud83c\udfff", "emj_1f90c_1f3ff.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\udd0d", "emj_1f90d.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd0e", "emj_1f90e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd0f", "emj_1f90f.svg"); // mastodonSVG mastodonSVG
@@ -5616,9 +5604,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udd1f\ud83c\udfff", "emj_1f91f_1f3ff.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd20", "emj_1f920.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd21", "emj_1f921.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init55(EmojiMap e){
         e.code("\ud83e\udd22", "emj_1f922.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd23", "emj_1f923.svg"); // override override
         e.code("\ud83e\udd24", "emj_1f924.svg"); // mastodonSVG mastodonSVG
@@ -5631,6 +5616,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udd26\ud83c\udffb", "emj_1f926_1f3fb.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd26\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f926_1f3fb_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd26\ud83c\udffb\u200d\u2640", "emj_1f926_1f3fb_2640.svg"); // notoSvg mastodonSVG
+    }
+
+    private static void init55(EmojiMap e){
         e.code("\ud83e\udd26\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f926_1f3fb_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd26\ud83c\udffb\u200d\u2642", "emj_1f926_1f3fb_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udd26\ud83c\udffc", "emj_1f926_1f3fc.svg"); // mastodonSVG mastodonSVG
@@ -5693,37 +5681,34 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udd34\ud83c\udffe", "emj_1f934_1f3fe.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd34\ud83c\udfff", "emj_1f934_1f3ff.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd35", "emj_1f935.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\udd35\u200d\u2640\ufe0f", "emj_1f935_2640.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\u200d\u2640\ufe0f", "emj_1f935_2640.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\u200d\u2640", "emj_1f935_2640.svg"); // notoSvg mastodonSVG
-        e.code("\ud83e\udd35\u200d\u2642\ufe0f", "emj_1f935_2642.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\u200d\u2642\ufe0f", "emj_1f935_2642.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\u200d\u2642", "emj_1f935_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffb", "emj_1f935_1f3fb.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\udd35\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f935_1f3fb_2640.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f935_1f3fb_2640.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffb\u200d\u2640", "emj_1f935_1f3fb_2640.svg"); // notoSvg mastodonSVG
-        e.code("\ud83e\udd35\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f935_1f3fb_2642.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f935_1f3fb_2642.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffb\u200d\u2642", "emj_1f935_1f3fb_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffc", "emj_1f935_1f3fc.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\udd35\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f935_1f3fc_2640.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f935_1f3fc_2640.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffc\u200d\u2640", "emj_1f935_1f3fc_2640.svg"); // notoSvg mastodonSVG
-        e.code("\ud83e\udd35\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f935_1f3fc_2642.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f935_1f3fc_2642.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffc\u200d\u2642", "emj_1f935_1f3fc_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffd", "emj_1f935_1f3fd.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\udd35\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f935_1f3fd_2640.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f935_1f3fd_2640.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffd\u200d\u2640", "emj_1f935_1f3fd_2640.svg"); // notoSvg mastodonSVG
-        e.code("\ud83e\udd35\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f935_1f3fd_2642.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f935_1f3fd_2642.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffd\u200d\u2642", "emj_1f935_1f3fd_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffe", "emj_1f935_1f3fe.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\udd35\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f935_1f3fe_2640.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f935_1f3fe_2640.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffe\u200d\u2640", "emj_1f935_1f3fe_2640.svg"); // notoSvg mastodonSVG
-        e.code("\ud83e\udd35\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f935_1f3fe_2642.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f935_1f3fe_2642.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\ud83c\udffe\u200d\u2642", "emj_1f935_1f3fe_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udd35\ud83c\udfff", "emj_1f935_1f3ff.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\udd35\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f935_1f3ff_2640.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f935_1f3ff_2640.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\ud83c\udfff\u200d\u2640", "emj_1f935_1f3ff_2640.svg"); // notoSvg mastodonSVG
-    }
-
-    private static void init56(EmojiMap e){
-        e.code("\ud83e\udd35\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f935_1f3ff_2642.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\udd35\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f935_1f3ff_2642.svg"); // emojiQualified mastodonSVG
         e.code("\ud83e\udd35\ud83c\udfff\u200d\u2642", "emj_1f935_1f3ff_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udd36", "emj_1f936.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd36\ud83c\udffb", "emj_1f936_1f3fb.svg"); // mastodonSVG mastodonSVG
@@ -5735,6 +5720,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udd37\u200d\u2640\ufe0f", "emj_1f937_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd37\u200d\u2640", "emj_1f937_2640.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udd37\u200d\u2642\ufe0f", "emj_1f937_2642.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init56(EmojiMap e){
         e.code("\ud83e\udd37\u200d\u2642", "emj_1f937_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udd37\ud83c\udffb", "emj_1f937_1f3fb.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd37\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f937_1f3fb_2640.svg"); // mastodonSVG mastodonSVG
@@ -5824,9 +5812,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udd3a", "emj_1f93a.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd3c", "emj_1f93c.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd3c\u200d\u2640\ufe0f", "emj_1f93c_2640.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init57(EmojiMap e){
         e.code("\ud83e\udd3c\u200d\u2640", "emj_1f93c_2640.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udd3c\u200d\u2642\ufe0f", "emj_1f93c_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd3c\u200d\u2642", "emj_1f93c_2642.svg"); // notoSvg mastodonSVG
@@ -5839,6 +5824,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udd3c\ud83c\udffc\ufe0f", "emj_1f93c_1f3fc.svg"); // notoSvgFix notoSvg
         e.code("\ud83e\udd3c\ud83c\udffc", "emj_1f93c_1f3fc.svg"); // notoSvg notoSvg
         e.code("\ud83e\udd3c\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f93c_1f3fc_2640.svg"); // notoSvgFix notoSvg
+    }
+
+    private static void init57(EmojiMap e){
         e.code("\ud83e\udd3c\ud83c\udffc\u200d\u2640", "emj_1f93c_1f3fc_2640.svg"); // notoSvg notoSvg
         e.code("\ud83e\udd3c\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f93c_1f3fc_2642.svg"); // notoSvgFix notoSvg
         e.code("\ud83e\udd3c\ud83c\udffc\u200d\u2642", "emj_1f93c_1f3fc_2642.svg"); // notoSvg notoSvg
@@ -5928,9 +5916,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udd44", "emj_1f944.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd45", "emj_1f945.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd47", "emj_1f947.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init58(EmojiMap e){
         e.code("\ud83e\udd48", "emj_1f948.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd49", "emj_1f949.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd4a", "emj_1f94a.svg"); // mastodonSVG mastodonSVG
@@ -5943,6 +5928,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udd51", "emj_1f951.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd52", "emj_1f952.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd53", "emj_1f953.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init58(EmojiMap e){
         e.code("\ud83e\udd54", "emj_1f954.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd55", "emj_1f955.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd56", "emj_1f956.svg"); // mastodonSVG mastodonSVG
@@ -5973,18 +5961,18 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udd6f", "emj_1f96f.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd70", "emj_1f970.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd71", "emj_1f971.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\udd72", "emj_1f972.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\udd72", "emj_1f972.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\udd73", "emj_1f973.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd74", "emj_1f974.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd75", "emj_1f975.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd76", "emj_1f976.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\udd77", "emj_1f977.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udd77\ud83c\udffb", "emj_1f977_1f3fb.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udd77\ud83c\udffc", "emj_1f977_1f3fc.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udd77\ud83c\udffd", "emj_1f977_1f3fd.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udd77\ud83c\udffe", "emj_1f977_1f3fe.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udd77\ud83c\udfff", "emj_1f977_1f3ff.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udd78", "emj_1f978.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\udd77", "emj_1f977.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udd77\ud83c\udffb", "emj_1f977_1f3fb.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udd77\ud83c\udffc", "emj_1f977_1f3fc.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udd77\ud83c\udffd", "emj_1f977_1f3fd.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udd77\ud83c\udffe", "emj_1f977_1f3fe.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udd77\ud83c\udfff", "emj_1f977_1f3ff.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udd78", "emj_1f978.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\udd7a", "emj_1f97a.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd7b", "emj_1f97b.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udd7c", "emj_1f97c.svg"); // mastodonSVG mastodonSVG
@@ -6026,20 +6014,17 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udda0", "emj_1f9a0.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udda1", "emj_1f9a1.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udda2", "emj_1f9a2.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\udda3", "emj_1f9a3.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udda4", "emj_1f9a4.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\udda3", "emj_1f9a3.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udda4", "emj_1f9a4.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\udda5", "emj_1f9a5.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udda6", "emj_1f9a6.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udda7", "emj_1f9a7.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udda8", "emj_1f9a8.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init59(EmojiMap e){
         e.code("\ud83e\udda9", "emj_1f9a9.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddaa", "emj_1f9aa.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddab", "emj_1f9ab.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uddac", "emj_1f9ac.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uddad", "emj_1f9ad.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\uddab", "emj_1f9ab.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uddac", "emj_1f9ac.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uddad", "emj_1f9ad.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\uddae", "emj_1f9ae.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddaf", "emj_1f9af.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddb0", "emj_1f9b0.svg"); // mastodonSVG mastodonSVG
@@ -6047,6 +6032,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddb2", "emj_1f9b2.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddb3", "emj_1f9b3.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddb4", "emj_1f9b4.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init59(EmojiMap e){
         e.code("\ud83e\uddb5", "emj_1f9b5.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddb5\ud83c\udffb", "emj_1f9b5_1f3fb.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddb5\ud83c\udffc", "emj_1f9b5_1f3fc.svg"); // mastodonSVG mastodonSVG
@@ -6136,21 +6124,21 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddc2", "emj_1f9c2.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddc3", "emj_1f9c3.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddc4", "emj_1f9c4.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init60(EmojiMap e){
         e.code("\ud83e\uddc5", "emj_1f9c5.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddc6", "emj_1f9c6.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddc7", "emj_1f9c7.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddc8", "emj_1f9c8.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddc9", "emj_1f9c9.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddca", "emj_1f9ca.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddcb", "emj_1f9cb.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\uddcb", "emj_1f9cb.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\uddcd", "emj_1f9cd.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddcd\u200d\u2640\ufe0f", "emj_1f9cd_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddcd\u200d\u2640", "emj_1f9cd_2640.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddcd\u200d\u2642\ufe0f", "emj_1f9cd_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddcd\u200d\u2642", "emj_1f9cd_2642.svg"); // notoSvg mastodonSVG
+    }
+
+    private static void init60(EmojiMap e){
         e.code("\ud83e\uddcd\ud83c\udffb", "emj_1f9cd_1f3fb.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddcd\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9cd_1f3fb_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddcd\ud83c\udffb\u200d\u2640", "emj_1f9cd_1f3fb_2640.svg"); // notoSvg mastodonSVG
@@ -6240,21 +6228,21 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd1", "emj_1f9d1.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\u200d\u2695\ufe0f", "emj_1f9d1_2695.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\u200d\u2695", "emj_1f9d1_2695.svg"); // notoSvg mastodonSVG
-    }
-
-    private static void init61(EmojiMap e){
         e.code("\ud83e\uddd1\u200d\u2696\ufe0f", "emj_1f9d1_2696.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\u200d\u2696", "emj_1f9d1_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd1\u200d\u2708\ufe0f", "emj_1f9d1_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\u200d\u2708", "emj_1f9d1_2708.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd1\u200d\ud83c\udf3e", "emj_1f9d1_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\u200d\ud83c\udf73", "emj_1f9d1_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd1\u200d\ud83c\udf7c", "emj_1f9d1_1f37c.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uddd1\u200d\ud83c\udf84", "emj_1f9d1_1f384.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\uddd1\u200d\ud83c\udf7c", "emj_1f9d1_1f37c.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uddd1\u200d\ud83c\udf84", "emj_1f9d1_1f384.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\uddd1\u200d\ud83c\udf93", "emj_1f9d1_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\u200d\ud83c\udfa4", "emj_1f9d1_1f3a4.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\u200d\ud83c\udfa8", "emj_1f9d1_1f3a8.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\u200d\ud83c\udfeb", "emj_1f9d1_1f3eb.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init61(EmojiMap e){
         e.code("\ud83e\uddd1\u200d\ud83c\udfed", "emj_1f9d1_1f3ed.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fb.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2695\ufe0f", "emj_1f9d1_1f3fb_2695.svg"); // mastodonSVG mastodonSVG
@@ -6263,26 +6251,26 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2696", "emj_1f9d1_1f3fb_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2708\ufe0f", "emj_1f9d1_1f3fb_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2708", "emj_1f9d1_1f3fb_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc\ufe0f", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd\ufe0f", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe\ufe0f", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff\ufe0f", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fb_2764_1f48b_1f9d1_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc\ufe0f", "emj_1f9d1_1f3fb_2764_1f9d1_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fb_2764_1f9d1_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fb_2764_1f9d1_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd\ufe0f", "emj_1f9d1_1f3fb_2764_1f9d1_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fb_2764_1f9d1_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fb_2764_1f9d1_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe\ufe0f", "emj_1f9d1_1f3fb_2764_1f9d1_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fb_2764_1f9d1_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fb_2764_1f9d1_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff\ufe0f", "emj_1f9d1_1f3fb_2764_1f9d1_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fb_2764_1f9d1_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fb_2764_1f9d1_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf3e", "emj_1f9d1_1f3fb_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf73", "emj_1f9d1_1f3fb_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf7c", "emj_1f9d1_1f3fb_1f37c.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf84", "emj_1f9d1_1f3fb_1f384.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf7c", "emj_1f9d1_1f3fb_1f37c.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf84", "emj_1f9d1_1f3fb_1f384.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf93", "emj_1f9d1_1f3fb_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfa4", "emj_1f9d1_1f3fb_1f3a4.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfa8", "emj_1f9d1_1f3fb_1f3a8.svg"); // mastodonSVG mastodonSVG
@@ -6313,26 +6301,26 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2696", "emj_1f9d1_1f3fc_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2708\ufe0f", "emj_1f9d1_1f3fc_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2708", "emj_1f9d1_1f3fc_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb\ufe0f", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd\ufe0f", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe\ufe0f", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff\ufe0f", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fc_2764_1f48b_1f9d1_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb\ufe0f", "emj_1f9d1_1f3fc_2764_1f9d1_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fc_2764_1f9d1_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fc_2764_1f9d1_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd\ufe0f", "emj_1f9d1_1f3fc_2764_1f9d1_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fc_2764_1f9d1_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fc_2764_1f9d1_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe\ufe0f", "emj_1f9d1_1f3fc_2764_1f9d1_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fc_2764_1f9d1_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fc_2764_1f9d1_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff\ufe0f", "emj_1f9d1_1f3fc_2764_1f9d1_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fc_2764_1f9d1_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fc_2764_1f9d1_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf3e", "emj_1f9d1_1f3fc_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf73", "emj_1f9d1_1f3fc_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf7c", "emj_1f9d1_1f3fc_1f37c.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf84", "emj_1f9d1_1f3fc_1f384.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf7c", "emj_1f9d1_1f3fc_1f37c.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf84", "emj_1f9d1_1f3fc_1f384.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf93", "emj_1f9d1_1f3fc_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfa4", "emj_1f9d1_1f3fc_1f3a4.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udfa8", "emj_1f9d1_1f3fc_1f3a8.svg"); // mastodonSVG mastodonSVG
@@ -6344,9 +6332,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83d\udd2c", "emj_1f9d1_1f3fc_1f52c.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83d\ude80", "emj_1f9d1_1f3fc_1f680.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83d\ude92", "emj_1f9d1_1f3fc_1f692.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init62(EmojiMap e){
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fc_1f91d_1f9d1_1f3fb.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fc_1f91d_1f9d1_1f3fc.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fc_1f91d_1f9d1_1f3fd.svg"); // mastodonSVG mastodonSVG
@@ -6359,6 +6344,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddb3", "emj_1f9d1_1f3fc_1f9b3.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddbc", "emj_1f9d1_1f3fc_1f9bc.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddbd", "emj_1f9d1_1f3fc_1f9bd.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init62(EmojiMap e){
         e.code("\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fd.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2695\ufe0f", "emj_1f9d1_1f3fd_2695.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2695", "emj_1f9d1_1f3fd_2695.svg"); // notoSvg mastodonSVG
@@ -6366,26 +6354,26 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2696", "emj_1f9d1_1f3fd_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2708\ufe0f", "emj_1f9d1_1f3fd_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2708", "emj_1f9d1_1f3fd_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb\ufe0f", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc\ufe0f", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe\ufe0f", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff\ufe0f", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fd_2764_1f48b_1f9d1_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb\ufe0f", "emj_1f9d1_1f3fd_2764_1f9d1_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fd_2764_1f9d1_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fd_2764_1f9d1_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc\ufe0f", "emj_1f9d1_1f3fd_2764_1f9d1_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fd_2764_1f9d1_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fd_2764_1f9d1_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe\ufe0f", "emj_1f9d1_1f3fd_2764_1f9d1_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fd_2764_1f9d1_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fd_2764_1f9d1_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff\ufe0f", "emj_1f9d1_1f3fd_2764_1f9d1_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fd_2764_1f9d1_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fd_2764_1f9d1_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf3e", "emj_1f9d1_1f3fd_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf73", "emj_1f9d1_1f3fd_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf7c", "emj_1f9d1_1f3fd_1f37c.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf84", "emj_1f9d1_1f3fd_1f384.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf7c", "emj_1f9d1_1f3fd_1f37c.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf84", "emj_1f9d1_1f3fd_1f384.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf93", "emj_1f9d1_1f3fd_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfa4", "emj_1f9d1_1f3fd_1f3a4.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udfa8", "emj_1f9d1_1f3fd_1f3a8.svg"); // mastodonSVG mastodonSVG
@@ -6416,26 +6404,26 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2696", "emj_1f9d1_1f3fe_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2708\ufe0f", "emj_1f9d1_1f3fe_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2708", "emj_1f9d1_1f3fe_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb\ufe0f", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc\ufe0f", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd\ufe0f", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff\ufe0f", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fe_2764_1f48b_1f9d1_1f3ff.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb\ufe0f", "emj_1f9d1_1f3fe_2764_1f9d1_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fe_2764_1f9d1_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fe_2764_1f9d1_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc\ufe0f", "emj_1f9d1_1f3fe_2764_1f9d1_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fe_2764_1f9d1_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fe_2764_1f9d1_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd\ufe0f", "emj_1f9d1_1f3fe_2764_1f9d1_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fe_2764_1f9d1_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fe_2764_1f9d1_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff\ufe0f", "emj_1f9d1_1f3fe_2764_1f9d1_1f3ff.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fe_2764_1f9d1_1f3ff.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3fe_2764_1f9d1_1f3ff.svg"); // notoSvg notoSvg
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf3e", "emj_1f9d1_1f3fe_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf73", "emj_1f9d1_1f3fe_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf7c", "emj_1f9d1_1f3fe_1f37c.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf84", "emj_1f9d1_1f3fe_1f384.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf7c", "emj_1f9d1_1f3fe_1f37c.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf84", "emj_1f9d1_1f3fe_1f384.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf93", "emj_1f9d1_1f3fe_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfa4", "emj_1f9d1_1f3fe_1f3a4.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfa8", "emj_1f9d1_1f3fe_1f3a8.svg"); // mastodonSVG mastodonSVG
@@ -6448,9 +6436,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83d\ude80", "emj_1f9d1_1f3fe_1f680.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83d\ude92", "emj_1f9d1_1f3fe_1f692.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3fe_1f91d_1f9d1_1f3fb.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init63(EmojiMap e){
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3fe_1f91d_1f9d1_1f3fc.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3fe_1f91d_1f9d1_1f3fd.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3fe_1f91d_1f9d1_1f3fe.svg"); // mastodonSVG mastodonSVG
@@ -6463,32 +6448,35 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddbc", "emj_1f9d1_1f3fe_1f9bc.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddbd", "emj_1f9d1_1f3fe_1f9bd.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udfff", "emj_1f9d1_1f3ff.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init63(EmojiMap e){
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2695\ufe0f", "emj_1f9d1_1f3ff_2695.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2695", "emj_1f9d1_1f3ff_2695.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2696\ufe0f", "emj_1f9d1_1f3ff_2696.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2696", "emj_1f9d1_1f3ff_2696.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2708\ufe0f", "emj_1f9d1_1f3ff_2708.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2708", "emj_1f9d1_1f3ff_2708.svg"); // notoSvg mastodonSVG
-        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb\ufe0f", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc\ufe0f", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd\ufe0f", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe\ufe0f", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3ff_2764_1f48b_1f9d1_1f3fe.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb\ufe0f", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fb.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fb.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fb.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc\ufe0f", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fc.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fc.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fc.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd\ufe0f", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fd.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fd.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fd.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe\ufe0f", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fe.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fe.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe", "emj_1f9d1_1f3ff_2764_1f9d1_1f3fe.svg"); // notoSvg notoSvg
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf3e", "emj_1f9d1_1f3ff_1f33e.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf73", "emj_1f9d1_1f3ff_1f373.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf7c", "emj_1f9d1_1f3ff_1f37c.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf84", "emj_1f9d1_1f3ff_1f384.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf7c", "emj_1f9d1_1f3ff_1f37c.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf84", "emj_1f9d1_1f3ff_1f384.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf93", "emj_1f9d1_1f3ff_1f393.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfa4", "emj_1f9d1_1f3ff_1f3a4.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udfa8", "emj_1f9d1_1f3ff_1f3a8.svg"); // mastodonSVG mastodonSVG
@@ -6539,37 +6527,37 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd3\ud83c\udffe", "emj_1f9d3_1f3fe.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd3\ud83c\udfff", "emj_1f9d3_1f3ff.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd4", "emj_1f9d4.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd4\u200d\u2640\ufe0f", "emj_1f9d4_2640.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd4\u200d\u2640\ufe0f", "emj_1f9d4_2640.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd4\u200d\u2640", "emj_1f9d4_2640.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd4\u200d\u2642\ufe0f", "emj_1f9d4_2642.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd4\u200d\u2642\ufe0f", "emj_1f9d4_2642.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd4\u200d\u2642", "emj_1f9d4_2642.svg"); // notoSvg notoSvg
         e.code("\ud83e\uddd4\ud83c\udffb", "emj_1f9d4_1f3fb.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd4\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9d4_1f3fb_2640.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffb\u200d\u2640\ufe0f", "emj_1f9d4_1f3fb_2640.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd4\ud83c\udffb\u200d\u2640", "emj_1f9d4_1f3fb_2640.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd4\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9d4_1f3fb_2642.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffb\u200d\u2642\ufe0f", "emj_1f9d4_1f3fb_2642.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd4\ud83c\udffb\u200d\u2642", "emj_1f9d4_1f3fb_2642.svg"); // notoSvg notoSvg
         e.code("\ud83e\uddd4\ud83c\udffc", "emj_1f9d4_1f3fc.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd4\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9d4_1f3fc_2640.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9d4_1f3fc_2640.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd4\ud83c\udffc\u200d\u2640", "emj_1f9d4_1f3fc_2640.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd4\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9d4_1f3fc_2642.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9d4_1f3fc_2642.svg"); // emojiQualified notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffc\u200d\u2642", "emj_1f9d4_1f3fc_2642.svg"); // notoSvg notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffd", "emj_1f9d4_1f3fd.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\uddd4\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f9d4_1f3fd_2640.svg"); // emojiQualified notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffd\u200d\u2640", "emj_1f9d4_1f3fd_2640.svg"); // notoSvg notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f9d4_1f3fd_2642.svg"); // emojiQualified notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffd\u200d\u2642", "emj_1f9d4_1f3fd_2642.svg"); // notoSvg notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffe", "emj_1f9d4_1f3fe.svg"); // mastodonSVG mastodonSVG
+        e.code("\ud83e\uddd4\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f9d4_1f3fe_2640.svg"); // emojiQualified notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffe\u200d\u2640", "emj_1f9d4_1f3fe_2640.svg"); // notoSvg notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f9d4_1f3fe_2642.svg"); // emojiQualified notoSvg
+        e.code("\ud83e\uddd4\ud83c\udffe\u200d\u2642", "emj_1f9d4_1f3fe_2642.svg"); // notoSvg notoSvg
+        e.code("\ud83e\uddd4\ud83c\udfff", "emj_1f9d4_1f3ff.svg"); // mastodonSVG mastodonSVG
     }
 
     private static void init64(EmojiMap e){
-        e.code("\ud83e\uddd4\ud83c\udffc\u200d\u2642", "emj_1f9d4_1f3fc_2642.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd4\ud83c\udffd", "emj_1f9d4_1f3fd.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd4\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f9d4_1f3fd_2640.svg"); // notoSvgFix notoSvg
-        e.code("\ud83e\uddd4\ud83c\udffd\u200d\u2640", "emj_1f9d4_1f3fd_2640.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd4\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f9d4_1f3fd_2642.svg"); // notoSvgFix notoSvg
-        e.code("\ud83e\uddd4\ud83c\udffd\u200d\u2642", "emj_1f9d4_1f3fd_2642.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd4\ud83c\udffe", "emj_1f9d4_1f3fe.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd4\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f9d4_1f3fe_2640.svg"); // notoSvgFix notoSvg
-        e.code("\ud83e\uddd4\ud83c\udffe\u200d\u2640", "emj_1f9d4_1f3fe_2640.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd4\ud83c\udffe\u200d\u2642\ufe0f", "emj_1f9d4_1f3fe_2642.svg"); // notoSvgFix notoSvg
-        e.code("\ud83e\uddd4\ud83c\udffe\u200d\u2642", "emj_1f9d4_1f3fe_2642.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd4\ud83c\udfff", "emj_1f9d4_1f3ff.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\uddd4\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f9d4_1f3ff_2640.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd4\ud83c\udfff\u200d\u2640\ufe0f", "emj_1f9d4_1f3ff_2640.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd4\ud83c\udfff\u200d\u2640", "emj_1f9d4_1f3ff_2640.svg"); // notoSvg notoSvg
-        e.code("\ud83e\uddd4\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f9d4_1f3ff_2642.svg"); // notoSvgFix notoSvg
+        e.code("\ud83e\uddd4\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f9d4_1f3ff_2642.svg"); // emojiQualified notoSvg
         e.code("\ud83e\uddd4\ud83c\udfff\u200d\u2642", "emj_1f9d4_1f3ff_2642.svg"); // notoSvg notoSvg
         e.code("\ud83e\uddd5", "emj_1f9d5.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd5\ud83c\udffb", "emj_1f9d5_1f3fb.svg"); // mastodonSVG mastodonSVG
@@ -6656,9 +6644,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd8\ud83c\udffd\u200d\u2640\ufe0f", "emj_1f9d8_1f3fd_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd8\ud83c\udffd\u200d\u2640", "emj_1f9d8_1f3fd_2640.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd8\ud83c\udffd\u200d\u2642\ufe0f", "emj_1f9d8_1f3fd_2642.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init65(EmojiMap e){
         e.code("\ud83e\uddd8\ud83c\udffd\u200d\u2642", "emj_1f9d8_1f3fd_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd8\ud83c\udffe", "emj_1f9d8_1f3fe.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd8\ud83c\udffe\u200d\u2640\ufe0f", "emj_1f9d8_1f3fe_2640.svg"); // mastodonSVG mastodonSVG
@@ -6671,6 +6656,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddd8\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f9d8_1f3ff_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd8\ud83c\udfff\u200d\u2642", "emj_1f9d8_1f3ff_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd9", "emj_1f9d9.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init65(EmojiMap e){
         e.code("\ud83e\uddd9\u200d\u2640\ufe0f", "emj_1f9d9_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddd9\u200d\u2640", "emj_1f9d9_2640.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\uddd9\u200d\u2642\ufe0f", "emj_1f9d9_2642.svg"); // mastodonSVG mastodonSVG
@@ -6760,9 +6748,6 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udddb\ud83c\udfff\u200d\u2640", "emj_1f9db_1f3ff_2640.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udddb\ud83c\udfff\u200d\u2642\ufe0f", "emj_1f9db_1f3ff_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udddb\ud83c\udfff\u200d\u2642", "emj_1f9db_1f3ff_2642.svg"); // notoSvg mastodonSVG
-    }
-
-    private static void init66(EmojiMap e){
         e.code("\ud83e\udddc", "emj_1f9dc.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udddc\u200d\u2640\ufe0f", "emj_1f9dc_2640.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udddc\u200d\u2640", "emj_1f9dc_2640.svg"); // notoSvg mastodonSVG
@@ -6775,6 +6760,9 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\udddc\ud83c\udffb\u200d\u2642", "emj_1f9dc_1f3fb_2642.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udddc\ud83c\udffc", "emj_1f9dc_1f3fc.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udddc\ud83c\udffc\u200d\u2640\ufe0f", "emj_1f9dc_1f3fc_2640.svg"); // mastodonSVG mastodonSVG
+    }
+
+    private static void init66(EmojiMap e){
         e.code("\ud83e\udddc\ud83c\udffc\u200d\u2640", "emj_1f9dc_1f3fc_2640.svg"); // notoSvg mastodonSVG
         e.code("\ud83e\udddc\ud83c\udffc\u200d\u2642\ufe0f", "emj_1f9dc_1f3fc_2642.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\udddc\ud83c\udffc\u200d\u2642", "emj_1f9dc_1f3fc_2642.svg"); // notoSvg mastodonSVG
@@ -6864,67 +6852,67 @@ public final class EmojiMapInitializer {
         e.code("\ud83e\uddfc", "emj_1f9fc.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddfd", "emj_1f9fd.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\uddfe", "emj_1f9fe.svg"); // mastodonSVG mastodonSVG
-    }
-
-    private static void init67(EmojiMap e){
         e.code("\ud83e\uddff", "emj_1f9ff.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude70", "emj_1fa70.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude71", "emj_1fa71.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude72", "emj_1fa72.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude73", "emj_1fa73.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\ude74", "emj_1fa74.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\ude74", "emj_1fa74.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\ude78", "emj_1fa78.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude79", "emj_1fa79.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude7a", "emj_1fa7a.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude80", "emj_1fa80.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude81", "emj_1fa81.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude82", "emj_1fa82.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\ude83", "emj_1fa83.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude84", "emj_1fa84.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude85", "emj_1fa85.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude86", "emj_1fa86.svg"); // twemojiSvg twemojiSvg
+    }
+
+    private static void init67(EmojiMap e){
+        e.code("\ud83e\ude83", "emj_1fa83.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude84", "emj_1fa84.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude85", "emj_1fa85.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude86", "emj_1fa86.svg"); // emojiQualified twemojiSvg
         e.code("\ud83e\ude90", "emj_1fa90.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude91", "emj_1fa91.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude92", "emj_1fa92.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude93", "emj_1fa93.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude94", "emj_1fa94.svg"); // mastodonSVG mastodonSVG
         e.code("\ud83e\ude95", "emj_1fa95.svg"); // mastodonSVG mastodonSVG
-        e.code("\ud83e\ude96", "emj_1fa96.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude97", "emj_1fa97.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude98", "emj_1fa98.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude99", "emj_1fa99.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude9a", "emj_1fa9a.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude9b", "emj_1fa9b.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude9c", "emj_1fa9c.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude9d", "emj_1fa9d.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude9e", "emj_1fa9e.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\ude9f", "emj_1fa9f.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udea0", "emj_1faa0.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udea1", "emj_1faa1.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udea2", "emj_1faa2.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udea3", "emj_1faa3.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udea4", "emj_1faa4.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udea5", "emj_1faa5.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udea6", "emj_1faa6.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udea7", "emj_1faa7.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udea8", "emj_1faa8.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udeb0", "emj_1fab0.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udeb1", "emj_1fab1.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udeb2", "emj_1fab2.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udeb3", "emj_1fab3.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udeb4", "emj_1fab4.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udeb5", "emj_1fab5.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udeb6", "emj_1fab6.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udec0", "emj_1fac0.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udec1", "emj_1fac1.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\udec2", "emj_1fac2.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uded0", "emj_1fad0.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uded1", "emj_1fad1.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uded2", "emj_1fad2.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uded3", "emj_1fad3.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uded4", "emj_1fad4.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uded5", "emj_1fad5.svg"); // twemojiSvg twemojiSvg
-        e.code("\ud83e\uded6", "emj_1fad6.svg"); // twemojiSvg twemojiSvg
+        e.code("\ud83e\ude96", "emj_1fa96.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude97", "emj_1fa97.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude98", "emj_1fa98.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude99", "emj_1fa99.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude9a", "emj_1fa9a.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude9b", "emj_1fa9b.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude9c", "emj_1fa9c.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude9d", "emj_1fa9d.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude9e", "emj_1fa9e.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\ude9f", "emj_1fa9f.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udea0", "emj_1faa0.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udea1", "emj_1faa1.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udea2", "emj_1faa2.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udea3", "emj_1faa3.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udea4", "emj_1faa4.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udea5", "emj_1faa5.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udea6", "emj_1faa6.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udea7", "emj_1faa7.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udea8", "emj_1faa8.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udeb0", "emj_1fab0.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udeb1", "emj_1fab1.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udeb2", "emj_1fab2.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udeb3", "emj_1fab3.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udeb4", "emj_1fab4.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udeb5", "emj_1fab5.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udeb6", "emj_1fab6.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udec0", "emj_1fac0.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udec1", "emj_1fac1.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\udec2", "emj_1fac2.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uded0", "emj_1fad0.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uded1", "emj_1fad1.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uded2", "emj_1fad2.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uded3", "emj_1fad3.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uded4", "emj_1fad4.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uded5", "emj_1fad5.svg"); // emojiQualified twemojiSvg
+        e.code("\ud83e\uded6", "emj_1fad6.svg"); // emojiQualified twemojiSvg
         e.name("pound_symbol", "\u0023\ufe0f"); // EmojiOneJson
         e.name("hash", "\u0023\ufe0f\u20e3"); // EmojiDataJson,EmojiOneJson
         e.name("keycap_x_23", "\u0023\ufe0f\u20e3"); // EmojiSpec
@@ -6968,9 +6956,6 @@ public final class EmojiMapInitializer {
         e.name("bangbang", "\u203c\ufe0f"); // EmojiDataJson,EmojiOneJson
         e.name("double_exclamation_mark", "\u203c\ufe0f"); // EmojiSpec
         e.name("exclamation_question_mark", "\u2049\ufe0f"); // EmojiSpec
-    }
-
-    private static void init68(EmojiMap e){
         e.name("interrobang", "\u2049\ufe0f"); // EmojiDataJson,EmojiOneJson
         e.name("enclosing_keycap", "\u20e3\ufe0f"); // fixName
         e.name("tm", "\u2122\ufe0f"); // EmojiDataJson,EmojiOneJson
@@ -6983,6 +6968,9 @@ public final class EmojiMapInitializer {
         e.name("arrow_upper_left", "\u2196\ufe0f"); // EmojiDataJson,EmojiOneJson
         e.name("up_left_arrow", "\u2196\ufe0f"); // EmojiSpec
         e.name("arrow_upper_right", "\u2197\ufe0f"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init68(EmojiMap e){
         e.name("up_right_arrow", "\u2197\ufe0f"); // EmojiSpec
         e.name("arrow_lower_right", "\u2198\ufe0f"); // EmojiDataJson,EmojiOneJson
         e.name("down_right_arrow", "\u2198\ufe0f"); // EmojiSpec
@@ -7072,9 +7060,6 @@ public final class EmojiMapInitializer {
         e.name("biohazard_sign", "\u2623\ufe0f"); // EmojiDataJson,EmojiOneJson
         e.name("orthodox_cross", "\u2626\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("star_and_crescent", "\u262a\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
-    }
-
-    private static void init69(EmojiMap e){
         e.name("peace", "\u262e\ufe0f"); // EmojiOneJson
         e.name("peace_symbol", "\u262e\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("yin_yang", "\u262f\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
@@ -7087,6 +7072,9 @@ public final class EmojiMapInitializer {
         e.name("female_sign", "\u2640\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("male_sign", "\u2642\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("aries", "\u2648"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init69(EmojiMap e){
         e.name("taurus", "\u2649"); // EmojiDataJson,EmojiOneJson
         e.name("gemini", "\u264a"); // EmojiDataJson,EmojiOneJson
         e.name("cancer", "\u264b"); // EmojiDataJson,EmojiOneJson
@@ -7176,9 +7164,6 @@ public final class EmojiMapInitializer {
         e.name("person_bouncing_ball_light_skin_tone", "\u26f9\ud83c\udffb"); // EmojiSpec
         e.name("person_with_ball_tone1", "\u26f9\ud83c\udffb"); // EmojiOneJson
         e.name("woman_bouncing_ball_light_skin_tone", "\u26f9\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
-    }
-
-    private static void init70(EmojiMap e){
         e.name("woman_bouncing_ball_tone1", "\u26f9\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson
         e.name("man_bouncing_ball_light_skin_tone", "\u26f9\ud83c\udffb\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_bouncing_ball_tone1", "\u26f9\ud83c\udffb\u200d\u2642\ufe0f"); // EmojiOneJson
@@ -7191,6 +7176,9 @@ public final class EmojiMapInitializer {
         e.name("man_bouncing_ball_tone2", "\u26f9\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiOneJson
         e.name("basketball_player_tone3", "\u26f9\ud83c\udffd"); // EmojiOneJson
         e.name("person_bouncing_ball_medium_skin_tone", "\u26f9\ud83c\udffd"); // EmojiSpec
+    }
+
+    private static void init70(EmojiMap e){
         e.name("person_with_ball_tone3", "\u26f9\ud83c\udffd"); // EmojiOneJson
         e.name("woman_bouncing_ball_medium_skin_tone", "\u26f9\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_bouncing_ball_tone3", "\u26f9\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiOneJson
@@ -7280,9 +7268,6 @@ public final class EmojiMapInitializer {
         e.name("eight_pointed_star", "\u2734\ufe0f"); // EmojiSpec
         e.name("snowflake", "\u2744\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("sparkle", "\u2747\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
-    }
-
-    private static void init71(EmojiMap e){
         e.name("cross_mark", "\u274c"); // EmojiSpec
         e.name("x", "\u274c"); // EmojiDataJson,EmojiOneJson
         e.name("cross_mark_button", "\u274e"); // EmojiSpec
@@ -7295,10 +7280,13 @@ public final class EmojiMapInitializer {
         e.name("red_exclamation_mark", "\u2757"); // EmojiSpec
         e.name("heart_exclamation", "\u2763\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("heavy_heart_exclamation_mark_ornament", "\u2763\ufe0f"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init71(EmojiMap e){
         e.name("heart", "\u2764\ufe0f"); // EmojiDataJson,EmojiOneJson
         e.name("red_heart", "\u2764\ufe0f"); // EmojiSpec
-        e.name("heart_on_fire", "\u2764\u200d\ud83d\udd25\ufe0f"); // EmojiSpec
-        e.name("mending_heart", "\u2764\u200d\ud83e\ude79\ufe0f"); // EmojiSpec
+        e.name("heart_on_fire", "\u2764\ufe0f\u200d\ud83d\udd25"); // EmojiSpec
+        e.name("mending_heart", "\u2764\ufe0f\u200d\ud83e\ude79"); // EmojiSpec
         e.name("heavy_plus_sign", "\u2795"); // EmojiDataJson,EmojiOneJson
         e.name("heavy_minus_sign", "\u2796"); // EmojiDataJson,EmojiOneJson
         e.name("heavy_division_sign", "\u2797"); // EmojiDataJson,EmojiOneJson
@@ -7384,9 +7372,6 @@ public final class EmojiMapInitializer {
         e.name("aq", "\ud83c\udde6\ud83c\uddf6"); // EmojiOneJson
         e.name("flag_antarctica", "\ud83c\udde6\ud83c\uddf6"); // EmojiSpec
         e.name("flag_aq", "\ud83c\udde6\ud83c\uddf6"); // EmojiDataJson,EmojiOneJson
-    }
-
-    private static void init72(EmojiMap e){
         e.name("ar", "\ud83c\udde6\ud83c\uddf7"); // EmojiOneJson
         e.name("flag_ar", "\ud83c\udde6\ud83c\uddf7"); // EmojiDataJson,EmojiOneJson
         e.name("flag_argentina", "\ud83c\udde6\ud83c\uddf7"); // EmojiSpec
@@ -7399,6 +7384,9 @@ public final class EmojiMapInitializer {
         e.name("au", "\ud83c\udde6\ud83c\uddfa"); // EmojiOneJson
         e.name("flag_au", "\ud83c\udde6\ud83c\uddfa"); // EmojiDataJson,EmojiOneJson
         e.name("flag_australia", "\ud83c\udde6\ud83c\uddfa"); // EmojiSpec
+    }
+
+    private static void init72(EmojiMap e){
         e.name("aw", "\ud83c\udde6\ud83c\uddfc"); // EmojiOneJson
         e.name("flag_aruba", "\ud83c\udde6\ud83c\uddfc"); // EmojiSpec
         e.name("flag_aw", "\ud83c\udde6\ud83c\uddfc"); // EmojiDataJson,EmojiOneJson
@@ -7488,9 +7476,6 @@ public final class EmojiMapInitializer {
         e.name("cg", "\ud83c\udde8\ud83c\uddec"); // EmojiOneJson
         e.name("flag_cg", "\ud83c\udde8\ud83c\uddec"); // EmojiDataJson,EmojiOneJson
         e.name("flag_congo_brazzaville", "\ud83c\udde8\ud83c\uddec"); // EmojiSpec
-    }
-
-    private static void init73(EmojiMap e){
         e.name("ch", "\ud83c\udde8\ud83c\udded"); // EmojiOneJson
         e.name("flag_ch", "\ud83c\udde8\ud83c\udded"); // EmojiDataJson,EmojiOneJson
         e.name("flag_switzerland", "\ud83c\udde8\ud83c\udded"); // EmojiSpec
@@ -7503,6 +7488,9 @@ public final class EmojiMapInitializer {
         e.name("chile", "\ud83c\udde8\ud83c\uddf1"); // EmojiOneJson
         e.name("flag_chile", "\ud83c\udde8\ud83c\uddf1"); // EmojiSpec
         e.name("flag_cl", "\ud83c\udde8\ud83c\uddf1"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init73(EmojiMap e){
         e.name("cm", "\ud83c\udde8\ud83c\uddf2"); // EmojiOneJson
         e.name("flag_cameroon", "\ud83c\udde8\ud83c\uddf2"); // EmojiSpec
         e.name("flag_cm", "\ud83c\udde8\ud83c\uddf2"); // EmojiDataJson,EmojiOneJson
@@ -7592,9 +7580,6 @@ public final class EmojiMapInitializer {
         e.name("flag_finland", "\ud83c\uddeb\ud83c\uddee"); // EmojiSpec
         e.name("fj", "\ud83c\uddeb\ud83c\uddef"); // EmojiOneJson
         e.name("flag_fiji", "\ud83c\uddeb\ud83c\uddef"); // EmojiSpec
-    }
-
-    private static void init74(EmojiMap e){
         e.name("flag_fj", "\ud83c\uddeb\ud83c\uddef"); // EmojiDataJson,EmojiOneJson
         e.name("fk", "\ud83c\uddeb\ud83c\uddf0"); // EmojiOneJson
         e.name("flag_falkland_islands", "\ud83c\uddeb\ud83c\uddf0"); // EmojiSpec
@@ -7607,6 +7592,9 @@ public final class EmojiMapInitializer {
         e.name("fo", "\ud83c\uddeb\ud83c\uddf4"); // EmojiOneJson
         e.name("flag_fr", "\ud83c\uddeb\ud83c\uddf7"); // EmojiDataJson,EmojiOneJson
         e.name("flag_france", "\ud83c\uddeb\ud83c\uddf7"); // EmojiSpec
+    }
+
+    private static void init74(EmojiMap e){
         e.name("fr", "\ud83c\uddeb\ud83c\uddf7"); // EmojiDataJson,EmojiOneJson
         e.name("regional_indicator_g", "\ud83c\uddec"); // EmojiOneJson
         e.name("flag_ga", "\ud83c\uddec\ud83c\udde6"); // EmojiDataJson,EmojiOneJson
@@ -7696,9 +7684,6 @@ public final class EmojiMapInitializer {
         e.name("flag_ie", "\ud83c\uddee\ud83c\uddea"); // EmojiDataJson,EmojiOneJson
         e.name("flag_ireland", "\ud83c\uddee\ud83c\uddea"); // EmojiSpec
         e.name("ie", "\ud83c\uddee\ud83c\uddea"); // EmojiOneJson
-    }
-
-    private static void init75(EmojiMap e){
         e.name("flag_il", "\ud83c\uddee\ud83c\uddf1"); // EmojiDataJson,EmojiOneJson
         e.name("flag_israel", "\ud83c\uddee\ud83c\uddf1"); // EmojiSpec
         e.name("il", "\ud83c\uddee\ud83c\uddf1"); // EmojiOneJson
@@ -7711,6 +7696,9 @@ public final class EmojiMapInitializer {
         e.name("flag_british_indian_ocean_territory", "\ud83c\uddee\ud83c\uddf4"); // EmojiSpec
         e.name("flag_io", "\ud83c\uddee\ud83c\uddf4"); // EmojiDataJson,EmojiOneJson
         e.name("io", "\ud83c\uddee\ud83c\uddf4"); // EmojiOneJson
+    }
+
+    private static void init75(EmojiMap e){
         e.name("flag_iq", "\ud83c\uddee\ud83c\uddf6"); // EmojiDataJson,EmojiOneJson
         e.name("flag_iraq", "\ud83c\uddee\ud83c\uddf6"); // EmojiSpec
         e.name("iq", "\ud83c\uddee\ud83c\uddf6"); // EmojiOneJson
@@ -7800,9 +7788,6 @@ public final class EmojiMapInitializer {
         e.name("lu", "\ud83c\uddf1\ud83c\uddfa"); // EmojiOneJson
         e.name("flag_latvia", "\ud83c\uddf1\ud83c\uddfb"); // EmojiSpec
         e.name("flag_lv", "\ud83c\uddf1\ud83c\uddfb"); // EmojiDataJson,EmojiOneJson
-    }
-
-    private static void init76(EmojiMap e){
         e.name("lv", "\ud83c\uddf1\ud83c\uddfb"); // EmojiOneJson
         e.name("flag_libya", "\ud83c\uddf1\ud83c\uddfe"); // EmojiSpec
         e.name("flag_ly", "\ud83c\uddf1\ud83c\uddfe"); // EmojiDataJson,EmojiOneJson
@@ -7815,6 +7800,9 @@ public final class EmojiMapInitializer {
         e.name("flag_monaco", "\ud83c\uddf2\ud83c\udde8"); // EmojiSpec
         e.name("mc", "\ud83c\uddf2\ud83c\udde8"); // EmojiOneJson
         e.name("flag_md", "\ud83c\uddf2\ud83c\udde9"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init76(EmojiMap e){
         e.name("flag_moldova", "\ud83c\uddf2\ud83c\udde9"); // EmojiSpec
         e.name("md", "\ud83c\uddf2\ud83c\udde9"); // EmojiOneJson
         e.name("flag_me", "\ud83c\uddf2\ud83c\uddea"); // EmojiDataJson,EmojiOneJson
@@ -7904,9 +7892,6 @@ public final class EmojiMapInitializer {
         e.name("no", "\ud83c\uddf3\ud83c\uddf4"); // EmojiOneJson
         e.name("flag_nepal", "\ud83c\uddf3\ud83c\uddf5"); // EmojiSpec
         e.name("flag_np", "\ud83c\uddf3\ud83c\uddf5"); // EmojiDataJson,EmojiOneJson
-    }
-
-    private static void init77(EmojiMap e){
         e.name("np", "\ud83c\uddf3\ud83c\uddf5"); // EmojiOneJson
         e.name("flag_nauru", "\ud83c\uddf3\ud83c\uddf7"); // EmojiSpec
         e.name("flag_nr", "\ud83c\uddf3\ud83c\uddf7"); // EmojiDataJson,EmojiOneJson
@@ -7919,6 +7904,9 @@ public final class EmojiMapInitializer {
         e.name("nz", "\ud83c\uddf3\ud83c\uddff"); // EmojiOneJson
         e.name("regional_indicator_o", "\ud83c\uddf4"); // EmojiOneJson
         e.name("flag_om", "\ud83c\uddf4\ud83c\uddf2"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init77(EmojiMap e){
         e.name("flag_oman", "\ud83c\uddf4\ud83c\uddf2"); // EmojiSpec
         e.name("regional_indicator_p", "\ud83c\uddf5"); // EmojiOneJson
         e.name("flag_pa", "\ud83c\uddf5\ud83c\udde6"); // EmojiDataJson,EmojiOneJson
@@ -8008,9 +7996,6 @@ public final class EmojiMapInitializer {
         e.name("sh", "\ud83c\uddf8\ud83c\udded"); // EmojiOneJson
         e.name("flag_si", "\ud83c\uddf8\ud83c\uddee"); // EmojiDataJson,EmojiOneJson
         e.name("flag_slovenia", "\ud83c\uddf8\ud83c\uddee"); // EmojiSpec
-    }
-
-    private static void init78(EmojiMap e){
         e.name("si", "\ud83c\uddf8\ud83c\uddee"); // EmojiOneJson
         e.name("flag_sj", "\ud83c\uddf8\ud83c\uddef"); // EmojiDataJson,EmojiOneJson
         e.name("flag_svalbard_jan_mayen", "\ud83c\uddf8\ud83c\uddef"); // EmojiSpec
@@ -8023,6 +8008,9 @@ public final class EmojiMapInitializer {
         e.name("sl", "\ud83c\uddf8\ud83c\uddf1"); // EmojiOneJson
         e.name("flag_san_marino", "\ud83c\uddf8\ud83c\uddf2"); // EmojiSpec
         e.name("flag_sm", "\ud83c\uddf8\ud83c\uddf2"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init78(EmojiMap e){
         e.name("sm", "\ud83c\uddf8\ud83c\uddf2"); // EmojiOneJson
         e.name("flag_senegal", "\ud83c\uddf8\ud83c\uddf3"); // EmojiSpec
         e.name("flag_sn", "\ud83c\uddf8\ud83c\uddf3"); // EmojiDataJson,EmojiOneJson
@@ -8112,9 +8100,6 @@ public final class EmojiMapInitializer {
         e.name("ug", "\ud83c\uddfa\ud83c\uddec"); // EmojiOneJson
         e.name("flag_u_s_outlying_islands", "\ud83c\uddfa\ud83c\uddf2"); // EmojiSpec
         e.name("flag_um", "\ud83c\uddfa\ud83c\uddf2"); // EmojiDataJson,EmojiOneJson
-    }
-
-    private static void init79(EmojiMap e){
         e.name("um", "\ud83c\uddfa\ud83c\uddf2"); // EmojiOneJson
         e.name("flag_un", "\ud83c\uddfa\ud83c\uddf3"); // EmojiDataJson
         e.name("flag_united_nations", "\ud83c\uddfa\ud83c\uddf3"); // EmojiSpec
@@ -8127,6 +8112,9 @@ public final class EmojiMapInitializer {
         e.name("uy", "\ud83c\uddfa\ud83c\uddfe"); // EmojiOneJson
         e.name("flag_uz", "\ud83c\uddfa\ud83c\uddff"); // EmojiDataJson,EmojiOneJson
         e.name("flag_uzbekistan", "\ud83c\uddfa\ud83c\uddff"); // EmojiSpec
+    }
+
+    private static void init79(EmojiMap e){
         e.name("uz", "\ud83c\uddfa\ud83c\uddff"); // EmojiOneJson
         e.name("regional_indicator_v", "\ud83c\uddfb"); // EmojiOneJson
         e.name("flag_va", "\ud83c\uddfb\ud83c\udde6"); // EmojiDataJson,EmojiOneJson
@@ -8216,9 +8204,6 @@ public final class EmojiMapInitializer {
         e.name("earth_americas", "\ud83c\udf0e"); // EmojiDataJson,EmojiOneJson
         e.name("earth_asia", "\ud83c\udf0f"); // EmojiDataJson,EmojiOneJson
         e.name("globe_showing_asia_australia", "\ud83c\udf0f"); // EmojiSpec
-    }
-
-    private static void init80(EmojiMap e){
         e.name("globe_with_meridians", "\ud83c\udf10"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("new_moon", "\ud83c\udf11"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("waxing_crescent_moon", "\ud83c\udf12"); // EmojiDataJson,EmojiOneJson,EmojiSpec
@@ -8231,6 +8216,9 @@ public final class EmojiMapInitializer {
         e.name("waning_crescent_moon", "\ud83c\udf18"); // EmojiDataJson,EmojiOneJson
         e.name("crescent_moon", "\ud83c\udf19"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("new_moon_face", "\ud83c\udf1a"); // EmojiSpec
+    }
+
+    private static void init80(EmojiMap e){
         e.name("new_moon_with_face", "\ud83c\udf1a"); // EmojiDataJson,EmojiOneJson
         e.name("first_quarter_moon_face", "\ud83c\udf1b"); // EmojiSpec
         e.name("first_quarter_moon_with_face", "\ud83c\udf1b"); // EmojiDataJson,EmojiOneJson
@@ -8320,9 +8308,6 @@ public final class EmojiMapInitializer {
         e.name("rice_ball", "\ud83c\udf59"); // EmojiDataJson,EmojiOneJson
         e.name("rice", "\ud83c\udf5a"); // EmojiDataJson,EmojiOneJson
         e.name("curry", "\ud83c\udf5b"); // EmojiDataJson,EmojiOneJson
-    }
-
-    private static void init81(EmojiMap e){
         e.name("ramen", "\ud83c\udf5c"); // EmojiDataJson,EmojiOneJson
         e.name("spaghetti", "\ud83c\udf5d"); // EmojiDataJson,EmojiOneJson
         e.name("bread", "\ud83c\udf5e"); // EmojiDataJson,EmojiOneJson
@@ -8335,6 +8320,9 @@ public final class EmojiMapInitializer {
         e.name("fish_cake", "\ud83c\udf65"); // EmojiDataJson,EmojiOneJson
         e.name("icecream", "\ud83c\udf66"); // EmojiDataJson,EmojiOneJson
         e.name("shaved_ice", "\ud83c\udf67"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init81(EmojiMap e){
         e.name("ice_cream", "\ud83c\udf68"); // EmojiDataJson,EmojiOneJson
         e.name("doughnut", "\ud83c\udf69"); // EmojiDataJson,EmojiOneJson
         e.name("cookie", "\ud83c\udf6a"); // EmojiDataJson,EmojiOneJson
@@ -8424,9 +8412,6 @@ public final class EmojiMapInitializer {
         e.name("slot_machine", "\ud83c\udfb0"); // EmojiDataJson,EmojiOneJson
         e.name("8ball", "\ud83c\udfb1"); // EmojiDataJson,EmojiOneJson
         e.name("game_die", "\ud83c\udfb2"); // EmojiDataJson,EmojiOneJson
-    }
-
-    private static void init82(EmojiMap e){
         e.name("bowling", "\ud83c\udfb3"); // EmojiDataJson,EmojiOneJson
         e.name("flower_playing_cards", "\ud83c\udfb4"); // EmojiDataJson,EmojiOneJson
         e.name("musical_note", "\ud83c\udfb5"); // EmojiDataJson,EmojiOneJson
@@ -8439,6 +8424,9 @@ public final class EmojiMapInitializer {
         e.name("musical_score", "\ud83c\udfbc"); // EmojiDataJson,EmojiOneJson
         e.name("running_shirt_with_sash", "\ud83c\udfbd"); // EmojiDataJson,EmojiOneJson
         e.name("tennis", "\ud83c\udfbe"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init82(EmojiMap e){
         e.name("ski", "\ud83c\udfbf"); // EmojiDataJson,EmojiOneJson
         e.name("basketball", "\ud83c\udfc0"); // EmojiDataJson,EmojiOneJson
         e.name("checkered_flag", "\ud83c\udfc1"); // EmojiDataJson,EmojiOneJson
@@ -8528,9 +8516,6 @@ public final class EmojiMapInitializer {
         e.name("horse_racing_medium_light_skin_tone", "\ud83c\udfc7\ud83c\udffc"); // EmojiSpec
         e.name("horse_racing_tone2", "\ud83c\udfc7\ud83c\udffc"); // EmojiOneJson
         e.name("horse_racing_medium_skin_tone", "\ud83c\udfc7\ud83c\udffd"); // EmojiSpec
-    }
-
-    private static void init83(EmojiMap e){
         e.name("horse_racing_tone3", "\ud83c\udfc7\ud83c\udffd"); // EmojiOneJson
         e.name("horse_racing_medium_dark_skin_tone", "\ud83c\udfc7\ud83c\udffe"); // EmojiSpec
         e.name("horse_racing_tone4", "\ud83c\udfc7\ud83c\udffe"); // EmojiOneJson
@@ -8543,6 +8528,9 @@ public final class EmojiMapInitializer {
         e.name("swimmer", "\ud83c\udfca"); // EmojiDataJson,EmojiOneJson
         e.name("woman_swimming", "\ud83c\udfca\u200d\u2640\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("man_swimming", "\ud83c\udfca\u200d\u2642\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
+    }
+
+    private static void init83(EmojiMap e){
         e.name("person_swimming_light_skin_tone", "\ud83c\udfca\ud83c\udffb"); // EmojiSpec
         e.name("swimmer_tone1", "\ud83c\udfca\ud83c\udffb"); // EmojiOneJson
         e.name("woman_swimming_light_skin_tone", "\ud83c\udfca\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
@@ -8632,9 +8620,6 @@ public final class EmojiMapInitializer {
         e.name("person_golfing_medium_skin_tone", "\ud83c\udfcc\ud83c\udffd"); // EmojiOneJson,EmojiSpec
         e.name("person_golfing_tone3", "\ud83c\udfcc\ud83c\udffd"); // EmojiOneJson
         e.name("woman_golfing_medium_skin_tone", "\ud83c\udfcc\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
-    }
-
-    private static void init84(EmojiMap e){
         e.name("woman_golfing_tone3", "\ud83c\udfcc\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiOneJson
         e.name("man_golfing_medium_skin_tone", "\ud83c\udfcc\ud83c\udffd\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_golfing_tone3", "\ud83c\udfcc\ud83c\udffd\u200d\u2642\ufe0f"); // EmojiOneJson
@@ -8647,6 +8632,9 @@ public final class EmojiMapInitializer {
         e.name("person_golfing_dark_skin_tone", "\ud83c\udfcc\ud83c\udfff"); // EmojiOneJson,EmojiSpec
         e.name("person_golfing_tone5", "\ud83c\udfcc\ud83c\udfff"); // EmojiOneJson
         e.name("woman_golfing_dark_skin_tone", "\ud83c\udfcc\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
+    }
+
+    private static void init84(EmojiMap e){
         e.name("woman_golfing_tone5", "\ud83c\udfcc\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiOneJson
         e.name("man_golfing_dark_skin_tone", "\ud83c\udfcc\ud83c\udfff\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_golfing_tone5", "\ud83c\udfcc\ud83c\udfff\u200d\u2642\ufe0f"); // EmojiOneJson
@@ -8736,9 +8724,6 @@ public final class EmojiMapInitializer {
         e.name("rat", "\ud83d\udc00"); // EmojiDataJson,EmojiOneJson
         e.name("mouse2", "\ud83d\udc01"); // EmojiDataJson,EmojiOneJson
         e.name("ox", "\ud83d\udc02"); // EmojiDataJson,EmojiOneJson
-    }
-
-    private static void init85(EmojiMap e){
         e.name("water_buffalo", "\ud83d\udc03"); // EmojiDataJson,EmojiOneJson
         e.name("cow2", "\ud83d\udc04"); // EmojiDataJson,EmojiOneJson
         e.name("tiger2", "\ud83d\udc05"); // EmojiDataJson,EmojiOneJson
@@ -8751,6 +8736,9 @@ public final class EmojiMapInitializer {
         e.name("whale2", "\ud83d\udc0b"); // EmojiDataJson,EmojiOneJson
         e.name("snail", "\ud83d\udc0c"); // EmojiDataJson,EmojiOneJson
         e.name("snake", "\ud83d\udc0d"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init85(EmojiMap e){
         e.name("racehorse", "\ud83d\udc0e"); // EmojiDataJson,EmojiOneJson
         e.name("ram", "\ud83d\udc0f"); // EmojiDataJson,EmojiOneJson
         e.name("goat", "\ud83d\udc10"); // EmojiDataJson,EmojiOneJson
@@ -8840,9 +8828,6 @@ public final class EmojiMapInitializer {
         e.name("backhand_index_pointing_up_medium_light_skin_tone", "\ud83d\udc46\ud83c\udffc"); // EmojiSpec
         e.name("point_up_2_tone2", "\ud83d\udc46\ud83c\udffc"); // EmojiOneJson
         e.name("backhand_index_pointing_up_medium_skin_tone", "\ud83d\udc46\ud83c\udffd"); // EmojiSpec
-    }
-
-    private static void init86(EmojiMap e){
         e.name("point_up_2_tone3", "\ud83d\udc46\ud83c\udffd"); // EmojiOneJson
         e.name("backhand_index_pointing_up_medium_dark_skin_tone", "\ud83d\udc46\ud83c\udffe"); // EmojiSpec
         e.name("point_up_2_tone4", "\ud83d\udc46\ud83c\udffe"); // EmojiOneJson
@@ -8855,6 +8840,9 @@ public final class EmojiMapInitializer {
         e.name("point_down_tone2", "\ud83d\udc47\ud83c\udffc"); // EmojiOneJson
         e.name("backhand_index_pointing_down_medium_skin_tone", "\ud83d\udc47\ud83c\udffd"); // EmojiSpec
         e.name("point_down_tone3", "\ud83d\udc47\ud83c\udffd"); // EmojiOneJson
+    }
+
+    private static void init86(EmojiMap e){
         e.name("backhand_index_pointing_down_medium_dark_skin_tone", "\ud83d\udc47\ud83c\udffe"); // EmojiSpec
         e.name("point_down_tone4", "\ud83d\udc47\ud83c\udffe"); // EmojiOneJson
         e.name("backhand_index_pointing_down_dark_skin_tone", "\ud83d\udc47\ud83c\udfff"); // EmojiSpec
@@ -8944,9 +8932,6 @@ public final class EmojiMapInitializer {
         e.name("_1_tone1", "\ud83d\udc4e\ud83c\udffb"); // EmojiOneJson
         e.name("thumbdown_tone1", "\ud83d\udc4e\ud83c\udffb"); // EmojiOneJson
         e.name("thumbs_down_light_skin_tone", "\ud83d\udc4e\ud83c\udffb"); // EmojiSpec
-    }
-
-    private static void init87(EmojiMap e){
         e.name("thumbsdown_tone1", "\ud83d\udc4e\ud83c\udffb"); // EmojiOneJson
         e.name("_1_tone2", "\ud83d\udc4e\ud83c\udffc"); // EmojiOneJson
         e.name("thumbdown_tone2", "\ud83d\udc4e\ud83c\udffc"); // EmojiOneJson
@@ -8959,6 +8944,9 @@ public final class EmojiMapInitializer {
         e.name("_1_tone4", "\ud83d\udc4e\ud83c\udffe"); // EmojiOneJson
         e.name("thumbdown_tone4", "\ud83d\udc4e\ud83c\udffe"); // EmojiOneJson
         e.name("thumbs_down_medium_dark_skin_tone", "\ud83d\udc4e\ud83c\udffe"); // EmojiSpec
+    }
+
+    private static void init87(EmojiMap e){
         e.name("thumbsdown_tone4", "\ud83d\udc4e\ud83c\udffe"); // EmojiOneJson
         e.name("_1_tone5", "\ud83d\udc4e\ud83c\udfff"); // EmojiOneJson
         e.name("thumbdown_tone5", "\ud83d\udc4e\ud83c\udfff"); // EmojiOneJson
@@ -9048,9 +9036,6 @@ public final class EmojiMapInitializer {
         e.name("man_kiss_man", "\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68"); // EmojiDataJson
         e.name("male_farmer", "\ud83d\udc68\u200d\ud83c\udf3e"); // EmojiDataJson
         e.name("man_farmer", "\ud83d\udc68\u200d\ud83c\udf3e"); // EmojiOneJson,EmojiSpec
-    }
-
-    private static void init88(EmojiMap e){
         e.name("male_cook", "\ud83d\udc68\u200d\ud83c\udf73"); // EmojiDataJson
         e.name("man_cook", "\ud83d\udc68\u200d\ud83c\udf73"); // EmojiOneJson,EmojiSpec
         e.name("man_feeding_baby", "\ud83d\udc68\u200d\ud83c\udf7c"); // EmojiDataJson,EmojiSpec
@@ -9063,6 +9048,9 @@ public final class EmojiMapInitializer {
         e.name("man_artist", "\ud83d\udc68\u200d\ud83c\udfa8"); // EmojiOneJson,EmojiSpec
         e.name("male_teacher", "\ud83d\udc68\u200d\ud83c\udfeb"); // EmojiDataJson
         e.name("man_teacher", "\ud83d\udc68\u200d\ud83c\udfeb"); // EmojiOneJson,EmojiSpec
+    }
+
+    private static void init88(EmojiMap e){
         e.name("male_factory_worker", "\ud83d\udc68\u200d\ud83c\udfed"); // EmojiDataJson
         e.name("man_factory_worker", "\ud83d\udc68\u200d\ud83c\udfed"); // EmojiOneJson,EmojiSpec
         e.name("man_light_skin_tone", "\ud83d\udc68\ud83c\udffb"); // EmojiSpec
@@ -9073,16 +9061,16 @@ public final class EmojiMapInitializer {
         e.name("man_judge_tone1", "\ud83d\udc68\ud83c\udffb\u200d\u2696\ufe0f"); // EmojiOneJson
         e.name("man_pilot_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2708\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_pilot_tone1", "\ud83d\udc68\ud83c\udffb\u200d\u2708\ufe0f"); // EmojiOneJson
-        e.name("couple_with_heart_man_man_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_light_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_light_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_light_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_light_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_light_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_light_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("couple_with_heart_man_man_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_man_man_light_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_man_man_light_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_man_man_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_man_man_light_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_man_man_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_man_man_light_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_man_man_light_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_man_man_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_man_man_light_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
         e.name("man_farmer_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf3e"); // EmojiOneJson,EmojiSpec
         e.name("man_farmer_tone1", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf3e"); // EmojiOneJson
         e.name("man_cook_light_skin_tone", "\ud83d\udc68\ud83c\udffb\u200d\ud83c\udf73"); // EmojiOneJson,EmojiSpec
@@ -9130,16 +9118,16 @@ public final class EmojiMapInitializer {
         e.name("man_judge_tone2", "\ud83d\udc68\ud83c\udffc\u200d\u2696\ufe0f"); // EmojiOneJson
         e.name("man_pilot_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2708\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_pilot_tone2", "\ud83d\udc68\ud83c\udffc\u200d\u2708\ufe0f"); // EmojiOneJson
-        e.name("couple_with_heart_man_man_medium_light_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_light_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_light_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_man_man_medium_light_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_man_man_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_man_man_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_man_man_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_man_man_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
         e.name("man_farmer_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf3e"); // EmojiOneJson,EmojiSpec
         e.name("man_farmer_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf3e"); // EmojiOneJson
         e.name("man_cook_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udf73"); // EmojiOneJson,EmojiSpec
@@ -9152,9 +9140,6 @@ public final class EmojiMapInitializer {
         e.name("man_singer_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfa4"); // EmojiOneJson
         e.name("man_artist_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfa8"); // EmojiOneJson,EmojiSpec
         e.name("man_artist_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfa8"); // EmojiOneJson
-    }
-
-    private static void init89(EmojiMap e){
         e.name("man_teacher_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfeb"); // EmojiOneJson,EmojiSpec
         e.name("man_teacher_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfeb"); // EmojiOneJson
         e.name("man_factory_worker_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83c\udfed"); // EmojiOneJson,EmojiSpec
@@ -9167,6 +9152,9 @@ public final class EmojiMapInitializer {
         e.name("man_mechanic_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udd27"); // EmojiOneJson
         e.name("man_scientist_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udd2c"); // EmojiOneJson,EmojiSpec
         e.name("man_scientist_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\udd2c"); // EmojiOneJson
+    }
+
+    private static void init89(EmojiMap e){
         e.name("man_astronaut_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\ude80"); // EmojiOneJson,EmojiSpec
         e.name("man_astronaut_tone2", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\ude80"); // EmojiOneJson
         e.name("man_firefighter_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffc\u200d\ud83d\ude92"); // EmojiOneJson,EmojiSpec
@@ -9190,16 +9178,16 @@ public final class EmojiMapInitializer {
         e.name("man_judge_tone3", "\ud83d\udc68\ud83c\udffd\u200d\u2696\ufe0f"); // EmojiOneJson
         e.name("man_pilot_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2708\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_pilot_tone3", "\ud83d\udc68\ud83c\udffd\u200d\u2708\ufe0f"); // EmojiOneJson
-        e.name("couple_with_heart_man_man_medium_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_man_man_medium_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_man_man_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_man_man_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_man_man_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_man_man_medium_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
         e.name("man_farmer_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf3e"); // EmojiOneJson,EmojiSpec
         e.name("man_farmer_tone3", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf3e"); // EmojiOneJson
         e.name("man_cook_medium_skin_tone", "\ud83d\udc68\ud83c\udffd\u200d\ud83c\udf73"); // EmojiOneJson,EmojiSpec
@@ -9247,19 +9235,16 @@ public final class EmojiMapInitializer {
         e.name("man_judge_tone4", "\ud83d\udc68\ud83c\udffe\u200d\u2696\ufe0f"); // EmojiOneJson
         e.name("man_pilot_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2708\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_pilot_tone4", "\ud83d\udc68\ud83c\udffe\u200d\u2708\ufe0f"); // EmojiOneJson
-        e.name("couple_with_heart_man_man_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-    }
-
-    private static void init90(EmojiMap e){
-        e.name("kiss_man_man_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_man_man_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_man_man_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_man_man_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_man_man_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_man_man_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_man_man_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
         e.name("man_farmer_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf3e"); // EmojiOneJson,EmojiSpec
         e.name("man_farmer_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf3e"); // EmojiOneJson
         e.name("man_cook_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udf73"); // EmojiOneJson,EmojiSpec
@@ -9271,6 +9256,9 @@ public final class EmojiMapInitializer {
         e.name("man_singer_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfa4"); // EmojiOneJson,EmojiSpec
         e.name("man_singer_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfa4"); // EmojiOneJson
         e.name("man_artist_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfa8"); // EmojiOneJson,EmojiSpec
+    }
+
+    private static void init90(EmojiMap e){
         e.name("man_artist_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfa8"); // EmojiOneJson
         e.name("man_teacher_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfeb"); // EmojiOneJson,EmojiSpec
         e.name("man_teacher_tone4", "\ud83d\udc68\ud83c\udffe\u200d\ud83c\udfeb"); // EmojiOneJson
@@ -9307,16 +9295,16 @@ public final class EmojiMapInitializer {
         e.name("man_judge_tone5", "\ud83d\udc68\ud83c\udfff\u200d\u2696\ufe0f"); // EmojiOneJson
         e.name("man_pilot_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2708\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_pilot_tone5", "\ud83d\udc68\ud83c\udfff\u200d\u2708\ufe0f"); // EmojiOneJson
-        e.name("couple_with_heart_man_man_dark_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_dark_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_man_man_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_dark_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_dark_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_man_man_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("couple_with_heart_man_man_dark_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_man_man_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_man_man_dark_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_man_man_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_man_man_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_man_man_dark_skin_tone_light_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_man_man_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_man_man_dark_skin_tone_medium_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_man_man_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_man_man_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
         e.name("man_farmer_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf3e"); // EmojiOneJson,EmojiSpec
         e.name("man_farmer_tone5", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf3e"); // EmojiOneJson
         e.name("man_cook_dark_skin_tone", "\ud83d\udc68\ud83c\udfff\u200d\ud83c\udf73"); // EmojiOneJson,EmojiSpec
@@ -9360,9 +9348,6 @@ public final class EmojiMapInitializer {
         e.name("man_boy", "\ud83d\udc68\u200d\ud83d\udc66"); // EmojiDataJson
         e.name("family_man_boy_boy", "\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66"); // EmojiOneJson,EmojiSpec
         e.name("man_boy_boy", "\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66"); // EmojiDataJson
-    }
-
-    private static void init91(EmojiMap e){
         e.name("family_man_girl", "\ud83d\udc68\u200d\ud83d\udc67"); // EmojiOneJson,EmojiSpec
         e.name("man_girl", "\ud83d\udc68\u200d\ud83d\udc67"); // EmojiDataJson
         e.name("family_man_girl_boy", "\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d\udc66"); // EmojiOneJson,EmojiSpec
@@ -9375,6 +9360,9 @@ public final class EmojiMapInitializer {
         e.name("family_man_man_boy_boy", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66"); // EmojiSpec
         e.name("family_mmbb", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66"); // EmojiOneJson
         e.name("man_man_boy_boy", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66"); // EmojiDataJson
+    }
+
+    private static void init91(EmojiMap e){
         e.name("family_man_man_girl", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67"); // EmojiSpec
         e.name("family_mmg", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67"); // EmojiOneJson
         e.name("man_man_girl", "\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67"); // EmojiDataJson
@@ -9464,30 +9452,30 @@ public final class EmojiMapInitializer {
         e.name("woman_judge_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2696\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_judge_tone1", "\ud83d\udc69\ud83c\udffb\u200d\u2696\ufe0f"); // EmojiOneJson
         e.name("woman_pilot_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2708\ufe0f"); // EmojiOneJson,EmojiSpec
+        e.name("woman_pilot_tone1", "\ud83d\udc69\ud83c\udffb\u200d\u2708\ufe0f"); // EmojiOneJson
+        e.name("couple_with_heart_woman_man_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_light_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_light_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_woman_man_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
     }
 
     private static void init92(EmojiMap e){
-        e.name("woman_pilot_tone1", "\ud83d\udc69\ud83c\udffb\u200d\u2708\ufe0f"); // EmojiOneJson
-        e.name("couple_with_heart_woman_man_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_light_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_light_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_light_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_light_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("kiss_woman_man_light_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_woman_man_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_woman_man_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_woman_man_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_woman_woman_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_woman_woman_light_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_woman_woman_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_woman_woman_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_woman_woman_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff"); // EmojiSpec
         e.name("woman_farmer_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf3e"); // EmojiOneJson,EmojiSpec
         e.name("woman_farmer_tone1", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf3e"); // EmojiOneJson
         e.name("woman_cook_light_skin_tone", "\ud83d\udc69\ud83c\udffb\u200d\ud83c\udf73"); // EmojiOneJson,EmojiSpec
@@ -9539,26 +9527,26 @@ public final class EmojiMapInitializer {
         e.name("woman_judge_tone2", "\ud83d\udc69\ud83c\udffc\u200d\u2696\ufe0f"); // EmojiOneJson
         e.name("woman_pilot_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2708\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_pilot_tone2", "\ud83d\udc69\ud83c\udffc\u200d\u2708\ufe0f"); // EmojiOneJson
-        e.name("couple_with_heart_woman_man_medium_light_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_light_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_light_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_light_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_light_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_light_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_woman_man_medium_light_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_woman_man_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_woman_man_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_woman_man_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_woman_man_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_light_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_light_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_light_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_light_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff"); // EmojiSpec
         e.name("woman_farmer_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf3e"); // EmojiOneJson,EmojiSpec
         e.name("woman_farmer_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf3e"); // EmojiOneJson
         e.name("woman_cook_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf73"); // EmojiOneJson,EmojiSpec
@@ -9568,9 +9556,6 @@ public final class EmojiMapInitializer {
         e.name("woman_student_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf93"); // EmojiOneJson,EmojiSpec
         e.name("woman_student_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udf93"); // EmojiOneJson
         e.name("woman_singer_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udfa4"); // EmojiOneJson,EmojiSpec
-    }
-
-    private static void init93(EmojiMap e){
         e.name("woman_singer_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udfa4"); // EmojiOneJson
         e.name("woman_artist_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udfa8"); // EmojiOneJson,EmojiSpec
         e.name("woman_artist_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83c\udfa8"); // EmojiOneJson
@@ -9583,6 +9568,9 @@ public final class EmojiMapInitializer {
         e.name("woman_office_worker_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83d\udcbc"); // EmojiOneJson,EmojiSpec
         e.name("woman_office_worker_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83d\udcbc"); // EmojiOneJson
         e.name("woman_mechanic_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83d\udd27"); // EmojiOneJson,EmojiSpec
+    }
+
+    private static void init93(EmojiMap e){
         e.name("woman_mechanic_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83d\udd27"); // EmojiOneJson
         e.name("woman_scientist_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffc\u200d\ud83d\udd2c"); // EmojiOneJson,EmojiSpec
         e.name("woman_scientist_tone2", "\ud83d\udc69\ud83c\udffc\u200d\ud83d\udd2c"); // EmojiOneJson
@@ -9613,26 +9601,26 @@ public final class EmojiMapInitializer {
         e.name("woman_judge_tone3", "\ud83d\udc69\ud83c\udffd\u200d\u2696\ufe0f"); // EmojiOneJson
         e.name("woman_pilot_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2708\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_pilot_tone3", "\ud83d\udc69\ud83c\udffd\u200d\u2708\ufe0f"); // EmojiOneJson
-        e.name("couple_with_heart_woman_man_medium_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_woman_man_medium_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_woman_man_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_woman_man_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_woman_man_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_woman_man_medium_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff"); // EmojiSpec
         e.name("woman_farmer_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf3e"); // EmojiOneJson,EmojiSpec
         e.name("woman_farmer_tone3", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf3e"); // EmojiOneJson
         e.name("woman_cook_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83c\udf73"); // EmojiOneJson,EmojiSpec
@@ -9672,9 +9660,6 @@ public final class EmojiMapInitializer {
         e.name("woman_with_white_cane_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddaf"); // EmojiSpec
         e.name("woman_medium_skin_tone_red_hair", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb0"); // EmojiSpec
         e.name("woman_medium_skin_tone_curly_hair", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb1"); // EmojiSpec
-    }
-
-    private static void init94(EmojiMap e){
         e.name("woman_medium_skin_tone_bald", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb2"); // EmojiSpec
         e.name("woman_medium_skin_tone_white_hair", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddb3"); // EmojiSpec
         e.name("woman_in_motorized_wheelchair_medium_skin_tone", "\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddbc"); // EmojiSpec
@@ -9687,26 +9672,29 @@ public final class EmojiMapInitializer {
         e.name("woman_judge_tone4", "\ud83d\udc69\ud83c\udffe\u200d\u2696\ufe0f"); // EmojiOneJson
         e.name("woman_pilot_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2708\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_pilot_tone4", "\ud83d\udc69\ud83c\udffe\u200d\u2708\ufe0f"); // EmojiOneJson
-        e.name("couple_with_heart_woman_man_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff\ufe0f"); // EmojiSpec
+    }
+
+    private static void init94(EmojiMap e){
+        e.name("couple_with_heart_woman_man_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_woman_man_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_woman_man_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_woman_man_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_woman_man_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_woman_man_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_woman_woman_medium_dark_skin_tone_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff"); // EmojiSpec
         e.name("woman_farmer_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf3e"); // EmojiOneJson,EmojiSpec
         e.name("woman_farmer_tone4", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf3e"); // EmojiOneJson
         e.name("woman_cook_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udffe\u200d\ud83c\udf73"); // EmojiOneJson,EmojiSpec
@@ -9758,29 +9746,26 @@ public final class EmojiMapInitializer {
         e.name("woman_judge_tone5", "\ud83d\udc69\ud83c\udfff\u200d\u2696\ufe0f"); // EmojiOneJson
         e.name("woman_pilot_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2708\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_pilot_tone5", "\ud83d\udc69\ud83c\udfff\u200d\u2708\ufe0f"); // EmojiOneJson
-        e.name("couple_with_heart_woman_man_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_man_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_woman_woman_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc69\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_man_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd\ufe0f"); // EmojiSpec
-    }
-
-    private static void init95(EmojiMap e){
-        e.name("kiss_woman_woman_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_woman_woman_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_woman_man_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_woman_woman_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_woman_man_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_woman_man_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_woman_man_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_woman_man_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_woman_man_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff"); // EmojiSpec
+        e.name("kiss_woman_woman_dark_skin_tone_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_woman_woman_dark_skin_tone_medium_light_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_woman_woman_dark_skin_tone_medium_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_woman_woman_dark_skin_tone_medium_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_woman_woman_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff"); // EmojiSpec
         e.name("woman_farmer_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf3e"); // EmojiOneJson,EmojiSpec
         e.name("woman_farmer_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf3e"); // EmojiOneJson
         e.name("woman_cook_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf73"); // EmojiOneJson,EmojiSpec
@@ -9791,6 +9776,9 @@ public final class EmojiMapInitializer {
         e.name("woman_student_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udf93"); // EmojiOneJson
         e.name("woman_singer_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udfa4"); // EmojiOneJson,EmojiSpec
         e.name("woman_singer_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udfa4"); // EmojiOneJson
+    }
+
+    private static void init95(EmojiMap e){
         e.name("woman_artist_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udfa8"); // EmojiOneJson,EmojiSpec
         e.name("woman_artist_tone5", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udfa8"); // EmojiOneJson
         e.name("woman_teacher_dark_skin_tone", "\ud83d\udc69\ud83c\udfff\u200d\ud83c\udfeb"); // EmojiOneJson,EmojiSpec
@@ -9880,9 +9868,6 @@ public final class EmojiMapInitializer {
         e.name("woman_and_man_holding_hands_light_skin_tone", "\ud83d\udc6b\ud83c\udffb"); // EmojiSpec
         e.name("woman_and_man_holding_hands_medium_light_skin_tone", "\ud83d\udc6b\ud83c\udffc"); // EmojiSpec
         e.name("woman_and_man_holding_hands_medium_skin_tone", "\ud83d\udc6b\ud83c\udffd"); // EmojiSpec
-    }
-
-    private static void init96(EmojiMap e){
         e.name("woman_and_man_holding_hands_medium_dark_skin_tone", "\ud83d\udc6b\ud83c\udffe"); // EmojiSpec
         e.name("woman_and_man_holding_hands_dark_skin_tone", "\ud83d\udc6b\ud83c\udfff"); // EmojiSpec
         e.name("men_holding_hands", "\ud83d\udc6c"); // EmojiDataJson
@@ -9895,6 +9880,9 @@ public final class EmojiMapInitializer {
         e.name("two_women_holding_hands", "\ud83d\udc6d"); // EmojiDataJson,EmojiOneJson
         e.name("women_holding_hands", "\ud83d\udc6d"); // EmojiDataJson
         e.name("women_holding_hands_light_skin_tone", "\ud83d\udc6d\ud83c\udffb"); // EmojiSpec
+    }
+
+    private static void init96(EmojiMap e){
         e.name("women_holding_hands_medium_light_skin_tone", "\ud83d\udc6d\ud83c\udffc"); // EmojiSpec
         e.name("women_holding_hands_medium_skin_tone", "\ud83d\udc6d\ud83c\udffd"); // EmojiSpec
         e.name("women_holding_hands_medium_dark_skin_tone", "\ud83d\udc6d\ud83c\udffe"); // EmojiSpec
@@ -9984,9 +9972,6 @@ public final class EmojiMapInitializer {
         e.name("woman_medium_light_skin_tone_blond_hair", "\ud83d\udc71\ud83c\udffc\u200d\u2640\ufe0f"); // EmojiSpec
         e.name("blond_haired_man_medium_light_skin_tone", "\ud83d\udc71\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiOneJson
         e.name("blond_haired_man_tone2", "\ud83d\udc71\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiOneJson
-    }
-
-    private static void init97(EmojiMap e){
         e.name("man_medium_light_skin_tone_blond_hair", "\ud83d\udc71\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiSpec
         e.name("person_medium_skin_tone_blond_hair", "\ud83d\udc71\ud83c\udffd"); // EmojiSpec
         e.name("person_with_blond_hair_tone3", "\ud83d\udc71\ud83c\udffd"); // EmojiOneJson
@@ -9999,6 +9984,9 @@ public final class EmojiMapInitializer {
         e.name("person_medium_dark_skin_tone_blond_hair", "\ud83d\udc71\ud83c\udffe"); // EmojiSpec
         e.name("person_with_blond_hair_tone4", "\ud83d\udc71\ud83c\udffe"); // EmojiOneJson
         e.name("blond_haired_woman_medium_dark_skin_tone", "\ud83d\udc71\ud83c\udffe\u200d\u2640\ufe0f"); // EmojiOneJson
+    }
+
+    private static void init97(EmojiMap e){
         e.name("blond_haired_woman_tone4", "\ud83d\udc71\ud83c\udffe\u200d\u2640\ufe0f"); // EmojiOneJson
         e.name("woman_medium_dark_skin_tone_blond_hair", "\ud83d\udc71\ud83c\udffe\u200d\u2640\ufe0f"); // EmojiSpec
         e.name("blond_haired_man_medium_dark_skin_tone", "\ud83d\udc71\ud83c\udffe\u200d\u2642\ufe0f"); // EmojiOneJson
@@ -10088,9 +10076,6 @@ public final class EmojiMapInitializer {
         e.name("baby_light_skin_tone", "\ud83d\udc76\ud83c\udffb"); // EmojiSpec
         e.name("baby_tone1", "\ud83d\udc76\ud83c\udffb"); // EmojiOneJson
         e.name("baby_medium_light_skin_tone", "\ud83d\udc76\ud83c\udffc"); // EmojiSpec
-    }
-
-    private static void init98(EmojiMap e){
         e.name("baby_tone2", "\ud83d\udc76\ud83c\udffc"); // EmojiOneJson
         e.name("baby_medium_skin_tone", "\ud83d\udc76\ud83c\udffd"); // EmojiSpec
         e.name("baby_tone3", "\ud83d\udc76\ud83c\udffd"); // EmojiOneJson
@@ -10103,6 +10088,9 @@ public final class EmojiMapInitializer {
         e.name("woman_construction_worker", "\ud83d\udc77\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("male_construction_worker", "\ud83d\udc77\u200d\u2642\ufe0f"); // EmojiDataJson
         e.name("man_construction_worker", "\ud83d\udc77\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
+    }
+
+    private static void init98(EmojiMap e){
         e.name("construction_worker_light_skin_tone", "\ud83d\udc77\ud83c\udffb"); // EmojiSpec
         e.name("construction_worker_tone1", "\ud83d\udc77\ud83c\udffb"); // EmojiOneJson
         e.name("woman_construction_worker_light_skin_tone", "\ud83d\udc77\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
@@ -10192,9 +10180,6 @@ public final class EmojiMapInitializer {
         e.name("man_tipping_hand_tone4", "\ud83d\udc81\ud83c\udffe\u200d\u2642\ufe0f"); // EmojiOneJson
         e.name("information_desk_person_tone5", "\ud83d\udc81\ud83c\udfff"); // EmojiOneJson
         e.name("person_tipping_hand_dark_skin_tone", "\ud83d\udc81\ud83c\udfff"); // EmojiSpec
-    }
-
-    private static void init99(EmojiMap e){
         e.name("woman_tipping_hand_dark_skin_tone", "\ud83d\udc81\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_tipping_hand_tone5", "\ud83d\udc81\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiOneJson
         e.name("man_tipping_hand_dark_skin_tone", "\ud83d\udc81\ud83c\udfff\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
@@ -10207,6 +10192,9 @@ public final class EmojiMapInitializer {
         e.name("guard_light_skin_tone", "\ud83d\udc82\ud83c\udffb"); // EmojiSpec
         e.name("guardsman_tone1", "\ud83d\udc82\ud83c\udffb"); // EmojiOneJson
         e.name("woman_guard_light_skin_tone", "\ud83d\udc82\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
+    }
+
+    private static void init99(EmojiMap e){
         e.name("woman_guard_tone1", "\ud83d\udc82\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson
         e.name("man_guard_light_skin_tone", "\ud83d\udc82\ud83c\udffb\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_guard_tone1", "\ud83d\udc82\ud83c\udffb\u200d\u2642\ufe0f"); // EmojiOneJson
@@ -10296,9 +10284,6 @@ public final class EmojiMapInitializer {
         e.name("man_getting_massage_medium_dark_skin_tone", "\ud83d\udc86\ud83c\udffe\u200d\u2642\ufe0f"); // EmojiSpec
         e.name("massage_tone5", "\ud83d\udc86\ud83c\udfff"); // EmojiOneJson
         e.name("person_getting_massage_dark_skin_tone", "\ud83d\udc86\ud83c\udfff"); // EmojiSpec
-    }
-
-    private static void init100(EmojiMap e){
         e.name("woman_getting_face_massage_dark_skin_tone", "\ud83d\udc86\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiOneJson
         e.name("woman_getting_face_massage_tone5", "\ud83d\udc86\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiOneJson
         e.name("woman_getting_massage_dark_skin_tone", "\ud83d\udc86\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiSpec
@@ -10311,6 +10296,9 @@ public final class EmojiMapInitializer {
         e.name("haircut_tone1", "\ud83d\udc87\ud83c\udffb"); // EmojiOneJson
         e.name("person_getting_haircut_light_skin_tone", "\ud83d\udc87\ud83c\udffb"); // EmojiSpec
         e.name("woman_getting_haircut_light_skin_tone", "\ud83d\udc87\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
+    }
+
+    private static void init100(EmojiMap e){
         e.name("woman_getting_haircut_tone1", "\ud83d\udc87\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson
         e.name("man_getting_haircut_light_skin_tone", "\ud83d\udc87\ud83c\udffb\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_getting_haircut_tone1", "\ud83d\udc87\ud83c\udffb\u200d\u2642\ufe0f"); // EmojiOneJson
@@ -10346,18 +10334,18 @@ public final class EmojiMapInitializer {
         e.name("ring", "\ud83d\udc8d"); // EmojiDataJson,EmojiOneJson
         e.name("gem", "\ud83d\udc8e"); // EmojiDataJson,EmojiOneJson
         e.name("couplekiss", "\ud83d\udc8f"); // EmojiDataJson,EmojiOneJson
-        e.name("kiss_light_skin_tone", "\ud83d\udc8f\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_medium_light_skin_tone", "\ud83d\udc8f\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_medium_skin_tone", "\ud83d\udc8f\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_medium_dark_skin_tone", "\ud83d\udc8f\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_dark_skin_tone", "\ud83d\udc8f\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("kiss_light_skin_tone", "\ud83d\udc8f\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_medium_light_skin_tone", "\ud83d\udc8f\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_medium_skin_tone", "\ud83d\udc8f\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_medium_dark_skin_tone", "\ud83d\udc8f\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_dark_skin_tone", "\ud83d\udc8f\ud83c\udfff"); // EmojiSpec
         e.name("bouquet", "\ud83d\udc90"); // EmojiDataJson,EmojiOneJson
         e.name("couple_with_heart", "\ud83d\udc91"); // EmojiDataJson,EmojiOneJson
-        e.name("couple_with_heart_light_skin_tone", "\ud83d\udc91\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_medium_light_skin_tone", "\ud83d\udc91\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_medium_skin_tone", "\ud83d\udc91\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_medium_dark_skin_tone", "\ud83d\udc91\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_dark_skin_tone", "\ud83d\udc91\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("couple_with_heart_light_skin_tone", "\ud83d\udc91\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_medium_light_skin_tone", "\ud83d\udc91\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_medium_skin_tone", "\ud83d\udc91\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_medium_dark_skin_tone", "\ud83d\udc91\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_dark_skin_tone", "\ud83d\udc91\ud83c\udfff"); // EmojiSpec
         e.name("wedding", "\ud83d\udc92"); // EmojiDataJson,EmojiOneJson
         e.name("heartbeat", "\ud83d\udc93"); // EmojiDataJson,EmojiOneJson
         e.name("broken_heart", "\ud83d\udc94"); // EmojiDataJson,EmojiOneJson
@@ -10400,9 +10388,6 @@ public final class EmojiMapInitializer {
         e.name("dizzy", "\ud83d\udcab"); // EmojiDataJson,EmojiOneJson
         e.name("speech_balloon", "\ud83d\udcac"); // EmojiDataJson,EmojiOneJson
         e.name("thought_balloon", "\ud83d\udcad"); // EmojiDataJson,EmojiOneJson,EmojiSpec
-    }
-
-    private static void init101(EmojiMap e){
         e.name("white_flower", "\ud83d\udcae"); // EmojiDataJson,EmojiOneJson
         e.name("100", "\ud83d\udcaf"); // EmojiDataJson,EmojiOneJson
         e.name("moneybag", "\ud83d\udcb0"); // EmojiDataJson,EmojiOneJson
@@ -10415,6 +10400,9 @@ public final class EmojiMapInitializer {
         e.name("pound", "\ud83d\udcb7"); // EmojiDataJson,EmojiOneJson
         e.name("money_with_wings", "\ud83d\udcb8"); // EmojiDataJson,EmojiOneJson
         e.name("chart", "\ud83d\udcb9"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init101(EmojiMap e){
         e.name("seat", "\ud83d\udcba"); // EmojiDataJson,EmojiOneJson
         e.name("computer", "\ud83d\udcbb"); // EmojiDataJson,EmojiOneJson
         e.name("briefcase", "\ud83d\udcbc"); // EmojiDataJson,EmojiOneJson
@@ -10504,9 +10492,6 @@ public final class EmojiMapInitializer {
         e.name("battery", "\ud83d\udd0b"); // EmojiDataJson,EmojiOneJson
         e.name("electric_plug", "\ud83d\udd0c"); // EmojiDataJson,EmojiOneJson
         e.name("mag", "\ud83d\udd0d"); // EmojiDataJson,EmojiOneJson
-    }
-
-    private static void init102(EmojiMap e){
         e.name("mag_right", "\ud83d\udd0e"); // EmojiDataJson,EmojiOneJson
         e.name("lock_with_ink_pen", "\ud83d\udd0f"); // EmojiDataJson,EmojiOneJson
         e.name("closed_lock_with_key", "\ud83d\udd10"); // EmojiDataJson,EmojiOneJson
@@ -10519,6 +10504,9 @@ public final class EmojiMapInitializer {
         e.name("bookmark", "\ud83d\udd16"); // EmojiDataJson,EmojiOneJson
         e.name("link", "\ud83d\udd17"); // EmojiDataJson,EmojiOneJson
         e.name("radio_button", "\ud83d\udd18"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init102(EmojiMap e){
         e.name("back", "\ud83d\udd19"); // EmojiDataJson,EmojiOneJson
         e.name("end", "\ud83d\udd1a"); // EmojiDataJson,EmojiOneJson
         e.name("on", "\ud83d\udd1b"); // EmojiDataJson,EmojiOneJson
@@ -10608,9 +10596,6 @@ public final class EmojiMapInitializer {
         e.name("woman_in_suit_levitating_light_skin_tone", "\ud83d\udd74\ud83c\udffb\u200d\u2640\ufe0f"); // fixName
         e.name("man_in_suit_levitating_light_skin_tone", "\ud83d\udd74\ud83c\udffb\u200d\u2642\ufe0f"); // fixName
         e.name("man_in_business_suit_levitating_medium_light_skin_tone", "\ud83d\udd74\ud83c\udffc"); // EmojiOneJson
-    }
-
-    private static void init103(EmojiMap e){
         e.name("man_in_business_suit_levitating_tone2", "\ud83d\udd74\ud83c\udffc"); // EmojiOneJson
         e.name("person_in_suit_levitating_medium_light_skin_tone", "\ud83d\udd74\ud83c\udffc"); // EmojiSpec
         e.name("woman_in_suit_levitating_medium_light_skin_tone", "\ud83d\udd74\ud83c\udffc\u200d\u2640\ufe0f"); // fixName
@@ -10623,6 +10608,9 @@ public final class EmojiMapInitializer {
         e.name("man_in_business_suit_levitating_medium_dark_skin_tone", "\ud83d\udd74\ud83c\udffe"); // EmojiOneJson
         e.name("man_in_business_suit_levitating_tone4", "\ud83d\udd74\ud83c\udffe"); // EmojiOneJson
         e.name("person_in_suit_levitating_medium_dark_skin_tone", "\ud83d\udd74\ud83c\udffe"); // EmojiSpec
+    }
+
+    private static void init103(EmojiMap e){
         e.name("woman_in_suit_levitating_medium_dark_skin_tone", "\ud83d\udd74\ud83c\udffe\u200d\u2640\ufe0f"); // fixName
         e.name("man_in_suit_levitating_medium_dark_skin_tone", "\ud83d\udd74\ud83c\udffe\u200d\u2642\ufe0f"); // fixName
         e.name("man_in_business_suit_levitating_dark_skin_tone", "\ud83d\udd74\ud83c\udfff"); // EmojiOneJson
@@ -10712,9 +10700,6 @@ public final class EmojiMapInitializer {
         e.name("hand_with_fingers_splayed_light_skin_tone", "\ud83d\udd90\ud83c\udffb"); // EmojiSpec
         e.name("raised_hand_with_fingers_splayed_tone1", "\ud83d\udd90\ud83c\udffb"); // EmojiOneJson
         e.name("hand_splayed_tone2", "\ud83d\udd90\ud83c\udffc"); // EmojiOneJson
-    }
-
-    private static void init104(EmojiMap e){
         e.name("hand_with_fingers_splayed_medium_light_skin_tone", "\ud83d\udd90\ud83c\udffc"); // EmojiSpec
         e.name("raised_hand_with_fingers_splayed_tone2", "\ud83d\udd90\ud83c\udffc"); // EmojiOneJson
         e.name("hand_splayed_tone3", "\ud83d\udd90\ud83c\udffd"); // EmojiOneJson
@@ -10727,6 +10712,9 @@ public final class EmojiMapInitializer {
         e.name("hand_with_fingers_splayed_dark_skin_tone", "\ud83d\udd90\ud83c\udfff"); // EmojiSpec
         e.name("raised_hand_with_fingers_splayed_tone5", "\ud83d\udd90\ud83c\udfff"); // EmojiOneJson
         e.name("middle_finger", "\ud83d\udd95"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init104(EmojiMap e){
         e.name("reversed_hand_with_middle_finger_extended", "\ud83d\udd95"); // EmojiDataJson,EmojiOneJson
         e.name("middle_finger_light_skin_tone", "\ud83d\udd95\ud83c\udffb"); // EmojiSpec
         e.name("middle_finger_tone1", "\ud83d\udd95\ud83c\udffb"); // EmojiOneJson
@@ -10816,9 +10804,6 @@ public final class EmojiMapInitializer {
         e.name("sweat_smile", "\ud83d\ude05"); // EmojiDataJson,EmojiOneJson
         e.name("laughing", "\ud83d\ude06"); // EmojiDataJson,EmojiOneJson
         e.name("satisfied", "\ud83d\ude06"); // EmojiDataJson,EmojiOneJson
-    }
-
-    private static void init105(EmojiMap e){
         e.name("innocent", "\ud83d\ude07"); // EmojiDataJson,EmojiOneJson
         e.name("smiling_imp", "\ud83d\ude08"); // EmojiDataJson,EmojiOneJson
         e.name("wink", "\ud83d\ude09"); // EmojiDataJson,EmojiOneJson
@@ -10831,6 +10816,9 @@ public final class EmojiMapInitializer {
         e.name("smirk", "\ud83d\ude0f"); // EmojiDataJson,EmojiOneJson
         e.name("smirking_face", "\ud83d\ude0f"); // EmojiSpec
         e.name("neutral_face", "\ud83d\ude10"); // EmojiDataJson,EmojiOneJson,EmojiSpec
+    }
+
+    private static void init105(EmojiMap e){
         e.name("expressionless", "\ud83d\ude11"); // EmojiDataJson,EmojiOneJson
         e.name("expressionless_face", "\ud83d\ude11"); // EmojiSpec
         e.name("unamused", "\ud83d\ude12"); // EmojiDataJson,EmojiOneJson
@@ -10872,7 +10860,7 @@ public final class EmojiMapInitializer {
         e.name("loudly_crying_face", "\ud83d\ude2d"); // EmojiSpec
         e.name("sob", "\ud83d\ude2d"); // EmojiDataJson,EmojiOneJson
         e.name("open_mouth", "\ud83d\ude2e"); // EmojiDataJson,EmojiOneJson
-        e.name("face_exhaling", "\ud83d\ude2e\u200d\ud83d\udca8\ufe0f"); // EmojiSpec
+        e.name("face_exhaling", "\ud83d\ude2e\u200d\ud83d\udca8"); // EmojiSpec
         e.name("hushed", "\ud83d\ude2f"); // EmojiDataJson,EmojiOneJson
         e.name("cold_sweat", "\ud83d\ude30"); // EmojiDataJson,EmojiOneJson
         e.name("scream", "\ud83d\ude31"); // EmojiDataJson,EmojiOneJson
@@ -10882,7 +10870,7 @@ public final class EmojiMapInitializer {
         e.name("sleeping_face", "\ud83d\ude34"); // EmojiSpec
         e.name("dizzy_face", "\ud83d\ude35"); // EmojiDataJson,EmojiOneJson
         e.name("knocked_out_face", "\ud83d\ude35"); // EmojiSpec
-        e.name("face_with_spiral_eyes", "\ud83d\ude35\u200d\ud83d\udcab\ufe0f"); // EmojiSpec
+        e.name("face_with_spiral_eyes", "\ud83d\ude35\u200d\ud83d\udcab"); // EmojiSpec
         e.name("face_without_mouth", "\ud83d\ude36"); // EmojiSpec
         e.name("no_mouth", "\ud83d\ude36"); // EmojiDataJson,EmojiOneJson
         e.name("face_in_clouds", "\ud83d\ude36\u200d\ud83c\udf2b\ufe0f"); // EmojiSpec
@@ -10920,9 +10908,6 @@ public final class EmojiMapInitializer {
         e.name("man_gesturing_no_medium_light_skin_tone", "\ud83d\ude45\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_gesturing_no_tone2", "\ud83d\ude45\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiOneJson
         e.name("no_good_tone3", "\ud83d\ude45\ud83c\udffd"); // EmojiOneJson
-    }
-
-    private static void init106(EmojiMap e){
         e.name("person_gesturing_no_medium_skin_tone", "\ud83d\ude45\ud83c\udffd"); // EmojiSpec
         e.name("woman_gesturing_no_medium_skin_tone", "\ud83d\ude45\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_gesturing_no_tone3", "\ud83d\ude45\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiOneJson
@@ -10935,6 +10920,9 @@ public final class EmojiMapInitializer {
         e.name("man_gesturing_no_medium_dark_skin_tone", "\ud83d\ude45\ud83c\udffe\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_gesturing_no_tone4", "\ud83d\ude45\ud83c\udffe\u200d\u2642\ufe0f"); // EmojiOneJson
         e.name("no_good_tone5", "\ud83d\ude45\ud83c\udfff"); // EmojiOneJson
+    }
+
+    private static void init106(EmojiMap e){
         e.name("person_gesturing_no_dark_skin_tone", "\ud83d\ude45\ud83c\udfff"); // EmojiSpec
         e.name("woman_gesturing_no_dark_skin_tone", "\ud83d\ude45\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_gesturing_no_tone5", "\ud83d\ude45\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiOneJson
@@ -11024,9 +11012,6 @@ public final class EmojiMapInitializer {
         e.name("woman_raising_hand_tone2", "\ud83d\ude4b\ud83c\udffc\u200d\u2640\ufe0f"); // EmojiOneJson
         e.name("man_raising_hand_medium_light_skin_tone", "\ud83d\ude4b\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_raising_hand_tone2", "\ud83d\ude4b\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiOneJson
-    }
-
-    private static void init107(EmojiMap e){
         e.name("person_raising_hand_medium_skin_tone", "\ud83d\ude4b\ud83c\udffd"); // EmojiSpec
         e.name("raising_hand_tone3", "\ud83d\ude4b\ud83c\udffd"); // EmojiOneJson
         e.name("woman_raising_hand_medium_skin_tone", "\ud83d\ude4b\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
@@ -11039,6 +11024,9 @@ public final class EmojiMapInitializer {
         e.name("woman_raising_hand_tone4", "\ud83d\ude4b\ud83c\udffe\u200d\u2640\ufe0f"); // EmojiOneJson
         e.name("man_raising_hand_medium_dark_skin_tone", "\ud83d\ude4b\ud83c\udffe\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_raising_hand_tone4", "\ud83d\ude4b\ud83c\udffe\u200d\u2642\ufe0f"); // EmojiOneJson
+    }
+
+    private static void init107(EmojiMap e){
         e.name("person_raising_hand_dark_skin_tone", "\ud83d\ude4b\ud83c\udfff"); // EmojiSpec
         e.name("raising_hand_tone5", "\ud83d\ude4b\ud83c\udfff"); // EmojiOneJson
         e.name("woman_raising_hand_dark_skin_tone", "\ud83d\ude4b\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
@@ -11128,9 +11116,6 @@ public final class EmojiMapInitializer {
         e.name("folded_hands_medium_light_skin_tone", "\ud83d\ude4f\ud83c\udffc"); // EmojiSpec
         e.name("pray_tone2", "\ud83d\ude4f\ud83c\udffc"); // EmojiOneJson
         e.name("folded_hands_medium_skin_tone", "\ud83d\ude4f\ud83c\udffd"); // EmojiSpec
-    }
-
-    private static void init108(EmojiMap e){
         e.name("pray_tone3", "\ud83d\ude4f\ud83c\udffd"); // EmojiOneJson
         e.name("folded_hands_medium_dark_skin_tone", "\ud83d\ude4f\ud83c\udffe"); // EmojiSpec
         e.name("pray_tone4", "\ud83d\ude4f\ud83c\udffe"); // EmojiOneJson
@@ -11143,6 +11128,9 @@ public final class EmojiMapInitializer {
         e.name("bullettrain_side", "\ud83d\ude84"); // EmojiDataJson,EmojiOneJson
         e.name("bullettrain_front", "\ud83d\ude85"); // EmojiDataJson,EmojiOneJson
         e.name("train2", "\ud83d\ude86"); // EmojiDataJson,EmojiOneJson
+    }
+
+    private static void init108(EmojiMap e){
         e.name("metro", "\ud83d\ude87"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("light_rail", "\ud83d\ude88"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("station", "\ud83d\ude89"); // EmojiDataJson,EmojiOneJson,EmojiSpec
@@ -11232,9 +11220,6 @@ public final class EmojiMapInitializer {
         e.name("person_biking_light_skin_tone", "\ud83d\udeb4\ud83c\udffb"); // EmojiSpec
         e.name("woman_biking_light_skin_tone", "\ud83d\udeb4\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_biking_tone1", "\ud83d\udeb4\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson
-    }
-
-    private static void init109(EmojiMap e){
         e.name("man_biking_light_skin_tone", "\ud83d\udeb4\ud83c\udffb\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_biking_tone1", "\ud83d\udeb4\ud83c\udffb\u200d\u2642\ufe0f"); // EmojiOneJson
         e.name("bicyclist_tone2", "\ud83d\udeb4\ud83c\udffc"); // EmojiOneJson
@@ -11247,6 +11232,9 @@ public final class EmojiMapInitializer {
         e.name("person_biking_medium_skin_tone", "\ud83d\udeb4\ud83c\udffd"); // EmojiSpec
         e.name("woman_biking_medium_skin_tone", "\ud83d\udeb4\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_biking_tone3", "\ud83d\udeb4\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiOneJson
+    }
+
+    private static void init109(EmojiMap e){
         e.name("man_biking_medium_skin_tone", "\ud83d\udeb4\ud83c\udffd\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_biking_tone3", "\ud83d\udeb4\ud83c\udffd\u200d\u2642\ufe0f"); // EmojiOneJson
         e.name("bicyclist_tone4", "\ud83d\udeb4\ud83c\udffe"); // EmojiOneJson
@@ -11336,9 +11324,6 @@ public final class EmojiMapInitializer {
         e.name("baby_symbol", "\ud83d\udebc"); // EmojiDataJson,EmojiOneJson
         e.name("toilet", "\ud83d\udebd"); // EmojiDataJson,EmojiOneJson
         e.name("wc", "\ud83d\udebe"); // EmojiDataJson,EmojiOneJson
-    }
-
-    private static void init110(EmojiMap e){
         e.name("shower", "\ud83d\udebf"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("bath", "\ud83d\udec0"); // EmojiDataJson,EmojiOneJson
         e.name("person_taking_bath", "\ud83d\udec0"); // EmojiSpec
@@ -11351,6 +11336,9 @@ public final class EmojiMapInitializer {
         e.name("bath_tone4", "\ud83d\udec0\ud83c\udffe"); // EmojiOneJson
         e.name("person_taking_bath_medium_dark_skin_tone", "\ud83d\udec0\ud83c\udffe"); // EmojiSpec
         e.name("bath_tone5", "\ud83d\udec0\ud83c\udfff"); // EmojiOneJson
+    }
+
+    private static void init110(EmojiMap e){
         e.name("person_taking_bath_dark_skin_tone", "\ud83d\udec0\ud83c\udfff"); // EmojiSpec
         e.name("bathtub", "\ud83d\udec1"); // EmojiDataJson,EmojiOneJson
         e.name("passport_control", "\ud83d\udec2"); // EmojiDataJson,EmojiOneJson
@@ -11440,9 +11428,6 @@ public final class EmojiMapInitializer {
         e.name("pinching_hand_medium_dark_skin_tone", "\ud83e\udd0f\ud83c\udffe"); // EmojiSpec
         e.name("pinching_hand_dark_skin_tone", "\ud83e\udd0f\ud83c\udfff"); // EmojiSpec
         e.name("zipper_mouth", "\ud83e\udd10"); // EmojiOneJson
-    }
-
-    private static void init111(EmojiMap e){
         e.name("zipper_mouth_face", "\ud83e\udd10"); // EmojiDataJson,EmojiOneJson
         e.name("money_mouth", "\ud83e\udd11"); // EmojiOneJson
         e.name("money_mouth_face", "\ud83e\udd11"); // EmojiDataJson,EmojiOneJson
@@ -11455,6 +11440,9 @@ public final class EmojiMapInitializer {
         e.name("face_with_head_bandage", "\ud83e\udd15"); // EmojiDataJson,EmojiOneJson
         e.name("head_bandage", "\ud83e\udd15"); // EmojiOneJson
         e.name("robot", "\ud83e\udd16"); // EmojiOneJson
+    }
+
+    private static void init111(EmojiMap e){
         e.name("robot_face", "\ud83e\udd16"); // EmojiDataJson,EmojiOneJson
         e.name("hugging", "\ud83e\udd17"); // EmojiOneJson
         e.name("hugging_face", "\ud83e\udd17"); // EmojiDataJson,EmojiOneJson
@@ -11544,9 +11532,6 @@ public final class EmojiMapInitializer {
         e.name("right_facing_fist_dark_skin_tone", "\ud83e\udd1c\ud83c\udfff"); // EmojiSpec
         e.name("right_facing_fist_tone5", "\ud83e\udd1c\ud83c\udfff"); // EmojiOneJson
         e.name("right_fist_tone5", "\ud83e\udd1c\ud83c\udfff"); // EmojiOneJson
-    }
-
-    private static void init112(EmojiMap e){
         e.name("handshake", "\ud83e\udd1d"); // EmojiDataJson,EmojiOneJson
         e.name("shaking_hands", "\ud83e\udd1d"); // EmojiOneJson
         e.name("handshake_light_skin_tone", "\ud83e\udd1d\ud83c\udffb\ufe0f"); // fixName
@@ -11559,6 +11544,9 @@ public final class EmojiMapInitializer {
         e.name("hand_with_index_and_middle_finger_crossed", "\ud83e\udd1e"); // EmojiOneJson
         e.name("hand_with_index_and_middle_fingers_crossed", "\ud83e\udd1e"); // EmojiDataJson
         e.name("crossed_fingers_light_skin_tone", "\ud83e\udd1e\ud83c\udffb"); // EmojiSpec
+    }
+
+    private static void init112(EmojiMap e){
         e.name("fingers_crossed_tone1", "\ud83e\udd1e\ud83c\udffb"); // EmojiOneJson
         e.name("hand_with_index_and_middle_fingers_crossed_tone1", "\ud83e\udd1e\ud83c\udffb"); // EmojiOneJson
         e.name("crossed_fingers_medium_light_skin_tone", "\ud83e\udd1e\ud83c\udffc"); // EmojiSpec
@@ -11648,9 +11636,6 @@ public final class EmojiMapInitializer {
         e.name("face_vomiting", "\ud83e\udd2e"); // EmojiDataJson
         e.name("face_with_open_mouth_vomiting", "\ud83e\udd2e"); // EmojiDataJson
         e.name("exploding_head", "\ud83e\udd2f"); // EmojiDataJson
-    }
-
-    private static void init113(EmojiMap e){
         e.name("shocked_face_with_exploding_head", "\ud83e\udd2f"); // EmojiDataJson
         e.name("expecting_woman", "\ud83e\udd30"); // EmojiOneJson
         e.name("pregnant_woman", "\ud83e\udd30"); // EmojiDataJson,EmojiOneJson,EmojiSpec
@@ -11663,6 +11648,9 @@ public final class EmojiMapInitializer {
         e.name("expecting_woman_tone3", "\ud83e\udd30\ud83c\udffd"); // EmojiOneJson
         e.name("pregnant_woman_medium_skin_tone", "\ud83e\udd30\ud83c\udffd"); // EmojiSpec
         e.name("pregnant_woman_tone3", "\ud83e\udd30\ud83c\udffd"); // EmojiOneJson
+    }
+
+    private static void init113(EmojiMap e){
         e.name("expecting_woman_tone4", "\ud83e\udd30\ud83c\udffe"); // EmojiOneJson
         e.name("pregnant_woman_medium_dark_skin_tone", "\ud83e\udd30\ud83c\udffe"); // EmojiSpec
         e.name("pregnant_woman_tone4", "\ud83e\udd30\ud83c\udffe"); // EmojiOneJson
@@ -11752,9 +11740,6 @@ public final class EmojiMapInitializer {
         e.name("woman_shrugging", "\ud83e\udd37\u200d\u2640\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("man_shrugging", "\ud83e\udd37\u200d\u2642\ufe0f"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("person_shrugging_light_skin_tone", "\ud83e\udd37\ud83c\udffb"); // EmojiSpec
-    }
-
-    private static void init114(EmojiMap e){
         e.name("shrug_tone1", "\ud83e\udd37\ud83c\udffb"); // EmojiOneJson
         e.name("woman_shrugging_light_skin_tone", "\ud83e\udd37\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_shrugging_tone1", "\ud83e\udd37\ud83c\udffb\u200d\u2640\ufe0f"); // EmojiOneJson
@@ -11767,6 +11752,9 @@ public final class EmojiMapInitializer {
         e.name("man_shrugging_medium_light_skin_tone", "\ud83e\udd37\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_shrugging_tone2", "\ud83e\udd37\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiOneJson
         e.name("person_shrugging_medium_skin_tone", "\ud83e\udd37\ud83c\udffd"); // EmojiSpec
+    }
+
+    private static void init114(EmojiMap e){
         e.name("shrug_tone3", "\ud83e\udd37\ud83c\udffd"); // EmojiOneJson
         e.name("woman_shrugging_medium_skin_tone", "\ud83e\udd37\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("woman_shrugging_tone3", "\ud83e\udd37\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiOneJson
@@ -11856,9 +11844,6 @@ public final class EmojiMapInitializer {
         e.name("man_juggling_medium_dark_skin_tone", "\ud83e\udd39\ud83c\udffe\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("man_juggling_tone4", "\ud83e\udd39\ud83c\udffe\u200d\u2642\ufe0f"); // EmojiOneJson
         e.name("juggler_tone5", "\ud83e\udd39\ud83c\udfff"); // EmojiOneJson
-    }
-
-    private static void init115(EmojiMap e){
         e.name("juggling_tone5", "\ud83e\udd39\ud83c\udfff"); // EmojiOneJson
         e.name("person_juggling_dark_skin_tone", "\ud83e\udd39\ud83c\udfff"); // EmojiSpec
         e.name("woman_juggling_dark_skin_tone", "\ud83e\udd39\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
@@ -11871,6 +11856,9 @@ public final class EmojiMapInitializer {
         e.name("wrestling", "\ud83e\udd3c"); // EmojiOneJson
         e.name("woman_wrestling", "\ud83e\udd3c\u200d\u2640\ufe0f"); // EmojiDataJson
         e.name("women_wrestling", "\ud83e\udd3c\u200d\u2640\ufe0f"); // EmojiOneJson,EmojiSpec
+    }
+
+    private static void init115(EmojiMap e){
         e.name("man_wrestling", "\ud83e\udd3c\u200d\u2642\ufe0f"); // EmojiDataJson
         e.name("men_wrestling", "\ud83e\udd3c\u200d\u2642\ufe0f"); // EmojiOneJson,EmojiSpec
         e.name("wrestlers_light_skin_tone", "\ud83e\udd3c\ud83c\udffb\ufe0f"); // fixName
@@ -11960,9 +11948,6 @@ public final class EmojiMapInitializer {
         e.name("drum", "\ud83e\udd41"); // EmojiOneJson
         e.name("drum_with_drumsticks", "\ud83e\udd41"); // EmojiDataJson,EmojiOneJson
         e.name("champagne_glass", "\ud83e\udd42"); // EmojiOneJson
-    }
-
-    private static void init116(EmojiMap e){
         e.name("clinking_glass", "\ud83e\udd42"); // EmojiOneJson
         e.name("clinking_glasses", "\ud83e\udd42"); // EmojiDataJson
         e.name("tumbler_glass", "\ud83e\udd43"); // EmojiDataJson,EmojiOneJson
@@ -11975,6 +11960,9 @@ public final class EmojiMapInitializer {
         e.name("second_place", "\ud83e\udd48"); // EmojiOneJson
         e.name("second_place_medal", "\ud83e\udd48"); // EmojiDataJson,EmojiOneJson
         e.name("third_place", "\ud83e\udd49"); // EmojiOneJson
+    }
+
+    private static void init116(EmojiMap e){
         e.name("third_place_medal", "\ud83e\udd49"); // EmojiDataJson,EmojiOneJson
         e.name("boxing_glove", "\ud83e\udd4a"); // EmojiDataJson,EmojiOneJson
         e.name("boxing_gloves", "\ud83e\udd4a"); // EmojiOneJson
@@ -12064,9 +12052,6 @@ public final class EmojiMapInitializer {
         e.name("rhino", "\ud83e\udd8f"); // EmojiOneJson
         e.name("rhinoceros", "\ud83e\udd8f"); // EmojiDataJson,EmojiOneJson
         e.name("shrimp", "\ud83e\udd90"); // EmojiDataJson,EmojiOneJson
-    }
-
-    private static void init117(EmojiMap e){
         e.name("squid", "\ud83e\udd91"); // EmojiDataJson,EmojiOneJson
         e.name("giraffe_face", "\ud83e\udd92"); // EmojiDataJson
         e.name("zebra_face", "\ud83e\udd93"); // EmojiDataJson
@@ -12079,6 +12064,9 @@ public final class EmojiMapInitializer {
         e.name("peacock", "\ud83e\udd9a"); // EmojiDataJson
         e.name("hippopotamus", "\ud83e\udd9b"); // EmojiDataJson
         e.name("parrot", "\ud83e\udd9c"); // EmojiDataJson
+    }
+
+    private static void init117(EmojiMap e){
         e.name("raccoon", "\ud83e\udd9d"); // EmojiDataJson
         e.name("lobster", "\ud83e\udd9e"); // EmojiDataJson
         e.name("mosquito", "\ud83e\udd9f"); // EmojiDataJson
@@ -12168,9 +12156,6 @@ public final class EmojiMapInitializer {
         e.name("mechanical_arm", "\ud83e\uddbe"); // EmojiDataJson
         e.name("mechanical_leg", "\ud83e\uddbf"); // EmojiDataJson
         e.name("cheese", "\ud83e\uddc0"); // EmojiOneJson
-    }
-
-    private static void init118(EmojiMap e){
         e.name("cheese_wedge", "\ud83e\uddc0"); // EmojiDataJson,EmojiOneJson,EmojiSpec
         e.name("cupcake", "\ud83e\uddc1"); // EmojiDataJson
         e.name("salt", "\ud83e\uddc2"); // EmojiDataJson
@@ -12183,6 +12168,9 @@ public final class EmojiMapInitializer {
         e.name("mate_drink", "\ud83e\uddc9"); // EmojiDataJson
         e.name("ice_cube", "\ud83e\uddca"); // EmojiDataJson
         e.name("bubble_tea", "\ud83e\uddcb"); // EmojiDataJson,EmojiSpec
+    }
+
+    private static void init118(EmojiMap e){
         e.name("standing_person", "\ud83e\uddcd"); // EmojiDataJson
         e.name("woman_standing", "\ud83e\uddcd\u200d\u2640\ufe0f"); // EmojiDataJson,EmojiSpec
         e.name("man_standing", "\ud83e\uddcd\u200d\u2642\ufe0f"); // EmojiDataJson,EmojiSpec
@@ -12255,14 +12243,14 @@ public final class EmojiMapInitializer {
         e.name("health_worker_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2695\ufe0f"); // EmojiSpec
         e.name("judge_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2696\ufe0f"); // EmojiSpec
         e.name("pilot_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2708\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_light_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_light_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_light_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_light_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_light_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_light_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_light_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_light_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("kiss_person_person_light_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_person_person_light_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_person_person_light_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_person_person_light_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff"); // EmojiSpec
+        e.name("couple_with_heart_person_person_light_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_person_person_light_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_person_person_light_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_person_person_light_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff"); // EmojiSpec
         e.name("farmer_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf3e"); // EmojiSpec
         e.name("cook_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf73"); // EmojiSpec
         e.name("person_feeding_baby_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udf7c"); // EmojiSpec
@@ -12272,9 +12260,6 @@ public final class EmojiMapInitializer {
         e.name("artist_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfa8"); // EmojiSpec
         e.name("teacher_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfeb"); // EmojiSpec
         e.name("factory_worker_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83c\udfed"); // EmojiSpec
-    }
-
-    private static void init119(EmojiMap e){
         e.name("technologist_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udcbb"); // EmojiSpec
         e.name("office_worker_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udcbc"); // EmojiSpec
         e.name("mechanic_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83d\udd27"); // EmojiSpec
@@ -12287,6 +12272,9 @@ public final class EmojiMapInitializer {
         e.name("people_holding_hands_light_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udffe"); // EmojiSpec
         e.name("people_holding_hands_light_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c\udfff"); // EmojiSpec
         e.name("person_with_white_cane_light_skin_tone", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddaf"); // EmojiSpec
+    }
+
+    private static void init119(EmojiMap e){
         e.name("person_light_skin_tone_red_hair", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb0"); // EmojiSpec
         e.name("person_light_skin_tone_curly_hair", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb1"); // EmojiSpec
         e.name("person_light_skin_tone_bald", "\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddb2"); // EmojiSpec
@@ -12297,14 +12285,14 @@ public final class EmojiMapInitializer {
         e.name("health_worker_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2695\ufe0f"); // EmojiSpec
         e.name("judge_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2696\ufe0f"); // EmojiSpec
         e.name("pilot_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2708\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_medium_light_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_medium_light_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_medium_light_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_medium_light_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_light_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_light_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_light_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_light_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("kiss_person_person_medium_light_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_person_person_medium_light_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_person_person_medium_light_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_person_person_medium_light_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_light_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_light_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_light_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_light_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff"); // EmojiSpec
         e.name("farmer_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf3e"); // EmojiSpec
         e.name("cook_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf73"); // EmojiSpec
         e.name("person_feeding_baby_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffc\u200d\ud83c\udf7c"); // EmojiSpec
@@ -12336,14 +12324,14 @@ public final class EmojiMapInitializer {
         e.name("health_worker_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2695\ufe0f"); // EmojiSpec
         e.name("judge_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2696\ufe0f"); // EmojiSpec
         e.name("pilot_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2708\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_medium_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_medium_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_medium_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_medium_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("kiss_person_person_medium_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_person_person_medium_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_person_person_medium_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe"); // EmojiSpec
+        e.name("kiss_person_person_medium_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff"); // EmojiSpec
         e.name("farmer_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf3e"); // EmojiSpec
         e.name("cook_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf73"); // EmojiSpec
         e.name("person_feeding_baby_medium_skin_tone", "\ud83e\uddd1\ud83c\udffd\u200d\ud83c\udf7c"); // EmojiSpec
@@ -12375,22 +12363,22 @@ public final class EmojiMapInitializer {
         e.name("health_worker_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2695\ufe0f"); // EmojiSpec
         e.name("judge_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2696\ufe0f"); // EmojiSpec
         e.name("pilot_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2708\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_medium_dark_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb\ufe0f"); // EmojiSpec
-    }
-
-    private static void init120(EmojiMap e){
-        e.name("kiss_person_person_medium_dark_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_medium_dark_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_medium_dark_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_dark_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_dark_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_dark_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_medium_dark_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\u200d\ud83e\uddd1\ud83c\udfff\ufe0f"); // EmojiSpec
+        e.name("kiss_person_person_medium_dark_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_person_person_medium_dark_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_person_person_medium_dark_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_person_person_medium_dark_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_dark_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_dark_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_dark_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_person_person_medium_dark_skin_tone_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff"); // EmojiSpec
         e.name("farmer_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf3e"); // EmojiSpec
         e.name("cook_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf73"); // EmojiSpec
         e.name("person_feeding_baby_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf7c"); // EmojiSpec
         e.name("mx_claus_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf84"); // EmojiSpec
         e.name("student_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udf93"); // EmojiSpec
+    }
+
+    private static void init120(EmojiMap e){
         e.name("singer_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfa4"); // EmojiSpec
         e.name("artist_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfa8"); // EmojiSpec
         e.name("teacher_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udffe\u200d\ud83c\udfeb"); // EmojiSpec
@@ -12417,14 +12405,14 @@ public final class EmojiMapInitializer {
         e.name("health_worker_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2695\ufe0f"); // EmojiSpec
         e.name("judge_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2696\ufe0f"); // EmojiSpec
         e.name("pilot_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2708\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_dark_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_dark_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_dark_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("kiss_person_person_dark_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_dark_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffb\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_dark_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffc\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_dark_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffd\ufe0f"); // EmojiSpec
-        e.name("couple_with_heart_person_person_dark_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\u200d\ud83e\uddd1\ud83c\udffe\ufe0f"); // EmojiSpec
+        e.name("kiss_person_person_dark_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb"); // EmojiSpec
+        e.name("kiss_person_person_dark_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc"); // EmojiSpec
+        e.name("kiss_person_person_dark_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd"); // EmojiSpec
+        e.name("kiss_person_person_dark_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe"); // EmojiSpec
+        e.name("couple_with_heart_person_person_dark_skin_tone_light_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb"); // EmojiSpec
+        e.name("couple_with_heart_person_person_dark_skin_tone_medium_light_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc"); // EmojiSpec
+        e.name("couple_with_heart_person_person_dark_skin_tone_medium_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd"); // EmojiSpec
+        e.name("couple_with_heart_person_person_dark_skin_tone_medium_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe"); // EmojiSpec
         e.name("farmer_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf3e"); // EmojiSpec
         e.name("cook_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf73"); // EmojiSpec
         e.name("person_feeding_baby_dark_skin_tone", "\ud83e\uddd1\ud83c\udfff\u200d\ud83c\udf7c"); // EmojiSpec
@@ -12480,9 +12468,6 @@ public final class EmojiMapInitializer {
         e.name("older_adult", "\ud83e\uddd3"); // EmojiDataJson
         e.name("older_person_light_skin_tone", "\ud83e\uddd3\ud83c\udffb"); // EmojiSpec
         e.name("older_person_medium_light_skin_tone", "\ud83e\uddd3\ud83c\udffc"); // EmojiSpec
-    }
-
-    private static void init121(EmojiMap e){
         e.name("older_person_medium_skin_tone", "\ud83e\uddd3\ud83c\udffd"); // EmojiSpec
         e.name("older_person_medium_dark_skin_tone", "\ud83e\uddd3\ud83c\udffe"); // EmojiSpec
         e.name("older_person_dark_skin_tone", "\ud83e\uddd3\ud83c\udfff"); // EmojiSpec
@@ -12495,6 +12480,9 @@ public final class EmojiMapInitializer {
         e.name("person_medium_light_skin_tone_beard", "\ud83e\uddd4\ud83c\udffc"); // EmojiSpec
         e.name("woman_medium_light_skin_tone_beard", "\ud83e\uddd4\ud83c\udffc\u200d\u2640\ufe0f"); // EmojiSpec
         e.name("man_medium_light_skin_tone_beard", "\ud83e\uddd4\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiSpec
+    }
+
+    private static void init121(EmojiMap e){
         e.name("person_medium_skin_tone_beard", "\ud83e\uddd4\ud83c\udffd"); // EmojiSpec
         e.name("woman_medium_skin_tone_beard", "\ud83e\uddd4\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiSpec
         e.name("man_medium_skin_tone_beard", "\ud83e\uddd4\ud83c\udffd\u200d\u2642\ufe0f"); // EmojiSpec
@@ -12584,9 +12572,6 @@ public final class EmojiMapInitializer {
         e.name("mage_dark_skin_tone", "\ud83e\uddd9\ud83c\udfff"); // EmojiSpec
         e.name("woman_mage_dark_skin_tone", "\ud83e\uddd9\ud83c\udfff\u200d\u2640\ufe0f"); // EmojiSpec
         e.name("man_mage_dark_skin_tone", "\ud83e\uddd9\ud83c\udfff\u200d\u2642\ufe0f"); // EmojiSpec
-    }
-
-    private static void init122(EmojiMap e){
         e.name("fairy", "\ud83e\uddda"); // EmojiDataJson
         e.name("female_fairy", "\ud83e\uddda\u200d\u2640\ufe0f"); // EmojiDataJson
         e.name("woman_fairy", "\ud83e\uddda\u200d\u2640\ufe0f"); // EmojiSpec
@@ -12599,6 +12584,9 @@ public final class EmojiMapInitializer {
         e.name("woman_fairy_medium_light_skin_tone", "\ud83e\uddda\ud83c\udffc\u200d\u2640\ufe0f"); // EmojiSpec
         e.name("man_fairy_medium_light_skin_tone", "\ud83e\uddda\ud83c\udffc\u200d\u2642\ufe0f"); // EmojiSpec
         e.name("fairy_medium_skin_tone", "\ud83e\uddda\ud83c\udffd"); // EmojiSpec
+    }
+
+    private static void init122(EmojiMap e){
         e.name("woman_fairy_medium_skin_tone", "\ud83e\uddda\ud83c\udffd\u200d\u2640\ufe0f"); // EmojiSpec
         e.name("man_fairy_medium_skin_tone", "\ud83e\uddda\ud83c\udffd\u200d\u2642\ufe0f"); // EmojiSpec
         e.name("fairy_medium_dark_skin_tone", "\ud83e\uddda\ud83c\udffe"); // EmojiSpec
@@ -12688,9 +12676,6 @@ public final class EmojiMapInitializer {
         e.name("test_tube", "\ud83e\uddea"); // EmojiDataJson
         e.name("petri_dish", "\ud83e\uddeb"); // EmojiDataJson
         e.name("dna", "\ud83e\uddec"); // EmojiDataJson
-    }
-
-    private static void init123(EmojiMap e){
         e.name("compass", "\ud83e\udded"); // EmojiDataJson
         e.name("abacus", "\ud83e\uddee"); // EmojiDataJson
         e.name("fire_extinguisher", "\ud83e\uddef"); // EmojiDataJson
@@ -12703,6 +12688,9 @@ public final class EmojiMapInitializer {
         e.name("yarn", "\ud83e\uddf6"); // EmojiDataJson
         e.name("safety_pin", "\ud83e\uddf7"); // EmojiDataJson
         e.name("teddy_bear", "\ud83e\uddf8"); // EmojiDataJson
+    }
+
+    private static void init123(EmojiMap e){
         e.name("broom", "\ud83e\uddf9"); // EmojiDataJson
         e.name("basket", "\ud83e\uddfa"); // EmojiDataJson
         e.name("roll_of_paper", "\ud83e\uddfb"); // EmojiDataJson
@@ -12792,9 +12780,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_NATURE, "lion_face"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "tiger"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "tiger2"); // EmojiDataJson
-    }
-
-    private static void init124(EmojiMap e){
         e.category( EmojiMap.CATEGORY_NATURE, "leopard"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "horse"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "racehorse"); // EmojiDataJson
@@ -12807,6 +12792,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_NATURE, "water_buffalo"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "cow2"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "pig"); // EmojiDataJson
+    }
+
+    private static void init124(EmojiMap e){
         e.category( EmojiMap.CATEGORY_NATURE, "pig2"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "boar"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "pig_nose"); // EmojiDataJson
@@ -12896,9 +12884,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_NATURE, "microbe"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "bouquet"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "cherry_blossom"); // EmojiDataJson
-    }
-
-    private static void init125(EmojiMap e){
         e.category( EmojiMap.CATEGORY_NATURE, "white_flower"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "rosette"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "rose"); // EmojiDataJson
@@ -12911,6 +12896,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_NATURE, "potted_plant"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "evergreen_tree"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "deciduous_tree"); // EmojiDataJson
+    }
+
+    private static void init125(EmojiMap e){
         e.category( EmojiMap.CATEGORY_NATURE, "palm_tree"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "cactus"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_NATURE, "ear_of_rice"); // EmojiDataJson
@@ -13000,9 +12988,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PLACES, "post_office"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "european_post_office"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "hospital"); // EmojiDataJson
-    }
-
-    private static void init126(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PLACES, "bank"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "hotel"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "love_hotel"); // EmojiDataJson
@@ -13015,6 +13000,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PLACES, "wedding"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "tokyo_tower"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "statue_of_liberty"); // EmojiDataJson
+    }
+
+    private static void init126(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PLACES, "church"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "mosque"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "hindu_temple"); // EmojiDataJson
@@ -13104,9 +13092,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PLACES, "fireworks"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "sparkler"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "rice_scene"); // EmojiDataJson
-    }
-
-    private static void init127(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PLACES, "yen"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "dollar"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PLACES, "euro"); // EmojiDataJson
@@ -13119,6 +13104,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PLACES, "shibuya109"); // fixName
         e.category( EmojiMap.CATEGORY_OTHER, "skin_tone_2"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OTHER, "skin_tone_3"); // EmojiDataJson
+    }
+
+    private static void init127(EmojiMap e){
         e.category( EmojiMap.CATEGORY_OTHER, "skin_tone_4"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OTHER, "skin_tone_5"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OTHER, "skin_tone_6"); // EmojiDataJson
@@ -13208,9 +13196,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_FOODS, "ramen"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FOODS, "spaghetti"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FOODS, "sweet_potato"); // EmojiDataJson
-    }
-
-    private static void init128(EmojiMap e){
         e.category( EmojiMap.CATEGORY_FOODS, "oden"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FOODS, "sushi"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FOODS, "fried_shrimp"); // EmojiDataJson
@@ -13223,6 +13208,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_FOODS, "oyster"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FOODS, "icecream"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FOODS, "shaved_ice"); // EmojiDataJson
+    }
+
+    private static void init128(EmojiMap e){
         e.category( EmojiMap.CATEGORY_FOODS, "ice_cream"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FOODS, "doughnut"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FOODS, "cookie"); // EmojiDataJson
@@ -13312,9 +13300,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PEOPLE, "face_vomiting"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "sneezing_face"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "hot_face"); // EmojiDataJson
-    }
-
-    private static void init129(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PEOPLE, "cold_face"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "woozy_face"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "dizzy_face"); // EmojiDataJson
@@ -13327,6 +13312,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PEOPLE, "face_with_monocle"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "confused"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "worried"); // EmojiDataJson
+    }
+
+    private static void init129(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PEOPLE, "slightly_frowning_face"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "white_frowning_face"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "open_mouth"); // EmojiDataJson
@@ -13416,9 +13404,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PEOPLE, "foot"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "ear"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "ear_with_hearing_aid"); // EmojiDataJson
-    }
-
-    private static void init130(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PEOPLE, "nose"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "brain"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "anatomical_heart"); // EmojiDataJson
@@ -13431,6 +13416,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PEOPLE, "lips"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "baby"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "child"); // EmojiDataJson
+    }
+
+    private static void init130(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PEOPLE, "boy"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "girl"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "adult"); // EmojiDataJson
@@ -13520,9 +13508,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PEOPLE, "female_technologist"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "singer"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "male_singer"); // EmojiDataJson
-    }
-
-    private static void init131(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PEOPLE, "female_singer"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "artist"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "male_artist"); // EmojiDataJson
@@ -13535,6 +13520,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PEOPLE, "female_astronaut"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "firefighter"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "male_firefighter"); // EmojiDataJson
+    }
+
+    private static void init131(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PEOPLE, "female_firefighter"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "cop"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "male_police_officer"); // EmojiDataJson
@@ -13624,9 +13612,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PEOPLE, "woman_in_manual_wheelchair"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "running"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "man_running"); // EmojiDataJson
-    }
-
-    private static void init132(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PEOPLE, "woman_running"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "dancer"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "man_dancing"); // EmojiDataJson
@@ -13639,6 +13624,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PEOPLE, "woman_in_steamy_room"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "person_in_lotus_position"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "people_holding_hands"); // EmojiDataJson
+    }
+
+    private static void init132(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PEOPLE, "two_women_holding_hands"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "couple"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "two_men_holding_hands"); // EmojiDataJson
@@ -13728,9 +13716,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PEOPLE, "military_helmet"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "helmet_with_white_cross"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "lipstick"); // EmojiDataJson
-    }
-
-    private static void init133(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PEOPLE, "ring"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "briefcase"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_PEOPLE, "drop_of_blood"); // EmojiDataJson
@@ -13743,6 +13728,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_PEOPLE, "bald"); // fixName
         e.category( EmojiMap.CATEGORY_PEOPLE, "man_beard"); // EmojiSpec
         e.category( EmojiMap.CATEGORY_PEOPLE, "woman_beard"); // EmojiSpec
+    }
+
+    private static void init133(EmojiMap e){
         e.category( EmojiMap.CATEGORY_PEOPLE, "man_in_suit_levitating"); // fixName
         e.category( EmojiMap.CATEGORY_PEOPLE, "woman_in_suit_levitating"); // fixName
         e.category( EmojiMap.CATEGORY_ACTIVITY, "man_in_business_suit_levitating"); // EmojiDataJson
@@ -13832,9 +13820,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_ACTIVITY, "fishing_pole_and_fish"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_ACTIVITY, "running_shirt_with_sash"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_ACTIVITY, "ski"); // EmojiDataJson
-    }
-
-    private static void init134(EmojiMap e){
         e.category( EmojiMap.CATEGORY_ACTIVITY, "sled"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_ACTIVITY, "curling_stone"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_ACTIVITY, "dart"); // EmojiDataJson
@@ -13847,6 +13832,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_ACTIVITY, "performing_arts"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_ACTIVITY, "art"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_ACTIVITY, "thread"); // EmojiDataJson
+    }
+
+    private static void init134(EmojiMap e){
         e.category( EmojiMap.CATEGORY_ACTIVITY, "yarn"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_ACTIVITY, "musical_score"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_ACTIVITY, "microphone"); // EmojiDataJson
@@ -13936,9 +13924,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_OBJECTS, "trackball"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "minidisc"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "floppy_disk"); // EmojiDataJson
-    }
-
-    private static void init135(EmojiMap e){
         e.category( EmojiMap.CATEGORY_OBJECTS, "cd"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "dvd"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "abacus"); // EmojiDataJson
@@ -13951,6 +13936,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_OBJECTS, "video_camera"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "vhs"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "mag"); // EmojiDataJson
+    }
+
+    private static void init135(EmojiMap e){
         e.category( EmojiMap.CATEGORY_OBJECTS, "mag_right"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "candle"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "bulb"); // EmojiDataJson
@@ -14040,9 +14028,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_OBJECTS, "crossed_swords"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "gun"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "boomerang"); // EmojiDataJson
-    }
-
-    private static void init136(EmojiMap e){
         e.category( EmojiMap.CATEGORY_OBJECTS, "shield"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "carpentry_saw"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "wrench"); // EmojiDataJson
@@ -14055,6 +14040,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_OBJECTS, "link"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "chains"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "hook"); // EmojiDataJson
+    }
+
+    private static void init136(EmojiMap e){
         e.category( EmojiMap.CATEGORY_OBJECTS, "toolbox"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "magnet"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_OBJECTS, "ladder"); // EmojiDataJson
@@ -14144,9 +14132,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_bt"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_bv"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_bw"); // EmojiDataJson
-    }
-
-    private static void init137(EmojiMap e){
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_by"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_bz"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_ca"); // EmojiDataJson
@@ -14159,6 +14144,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_ck"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_cl"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_cm"); // EmojiDataJson
+    }
+
+    private static void init137(EmojiMap e){
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_cn"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_co"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_cp"); // EmojiDataJson
@@ -14248,9 +14236,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_li"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_lk"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_lr"); // EmojiDataJson
-    }
-
-    private static void init138(EmojiMap e){
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_ls"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_lt"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_lu"); // EmojiDataJson
@@ -14263,6 +14248,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_mf"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_mg"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_mh"); // EmojiDataJson
+    }
+
+    private static void init138(EmojiMap e){
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_mk"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_ml"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_mm"); // EmojiDataJson
@@ -14352,9 +14340,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_tz"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_ua"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_ug"); // EmojiDataJson
-    }
-
-    private static void init139(EmojiMap e){
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_um"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_un"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_us"); // EmojiDataJson
@@ -14367,6 +14352,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_vi"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_vn"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_vu"); // EmojiDataJson
+    }
+
+    private static void init139(EmojiMap e){
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_wf"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_ws"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_FLAGS, "flag_xk"); // EmojiDataJson
@@ -14456,9 +14444,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_SYMBOLS, "elevator"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "atm"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "put_litter_in_its_place"); // EmojiDataJson
-    }
-
-    private static void init140(EmojiMap e){
         e.category( EmojiMap.CATEGORY_SYMBOLS, "potable_water"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "wheelchair"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "mens"); // EmojiDataJson
@@ -14471,6 +14456,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_SYMBOLS, "no_entry"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "no_entry_sign"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "no_bicycles"); // EmojiDataJson
+    }
+
+    private static void init140(EmojiMap e){
         e.category( EmojiMap.CATEGORY_SYMBOLS, "no_smoking"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "do_not_litter"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "non_potable_water"); // EmojiDataJson
@@ -14560,9 +14548,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_SYMBOLS, "interrobang"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "question"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "grey_question"); // EmojiDataJson
-    }
-
-    private static void init141(EmojiMap e){
         e.category( EmojiMap.CATEGORY_SYMBOLS, "grey_exclamation"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "heavy_exclamation_mark"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "wavy_dash"); // EmojiDataJson
@@ -14575,6 +14560,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_SYMBOLS, "name_badge"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "beginner"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "o"); // EmojiDataJson
+    }
+
+    private static void init141(EmojiMap e){
         e.category( EmojiMap.CATEGORY_SYMBOLS, "white_check_mark"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "ballot_box_with_check"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "heavy_check_mark"); // EmojiDataJson
@@ -14664,9 +14652,6 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_SYMBOLS, "black_medium_small_square"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "white_medium_small_square"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "black_small_square"); // EmojiDataJson
-    }
-
-    private static void init142(EmojiMap e){
         e.category( EmojiMap.CATEGORY_SYMBOLS, "white_small_square"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "large_orange_diamond"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "large_blue_diamond"); // EmojiDataJson
@@ -14679,6 +14664,9 @@ public final class EmojiMapInitializer {
         e.category( EmojiMap.CATEGORY_SYMBOLS, "white_square_button"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "black_square_button"); // EmojiDataJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "heart_on_fire"); // EmojiSpec
+    }
+
+    private static void init142(EmojiMap e){
         e.category( EmojiMap.CATEGORY_SYMBOLS, "mending_heart"); // EmojiSpec
         e.category( EmojiMap.CATEGORY_SYMBOLS, "regional_indicator_a"); // EmojiOneJson
         e.category( EmojiMap.CATEGORY_SYMBOLS, "regional_indicator_b"); // EmojiOneJson

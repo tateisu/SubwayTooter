@@ -122,7 +122,7 @@ class CodepointList(
 }
 
 
-fun IntArray.toCodepointList(from:String) = CodepointList(from,this)
+fun IntArray.toCodepointList(from:String) = if(isEmpty()) null else CodepointList(from,this)
 
 // cp-cp-cp-cp => CodepointList
 fun String.toCodepointList(from:String) =

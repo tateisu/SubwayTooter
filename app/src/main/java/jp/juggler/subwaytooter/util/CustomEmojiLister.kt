@@ -276,10 +276,15 @@ class CustomEmojiLister(
 				val list = if(accessInfo.isMisskey) {
 					parseList(
 						CustomEmoji.decodeMisskey,
+						accessInfo.apDomain,
 						data.decodeJsonObject().jsonArray("emojis")
 					)
 				} else {
-					parseList(CustomEmoji.decode, data.decodeJsonArray())
+					parseList(
+						CustomEmoji.decode,
+						accessInfo.apDomain,
+						data.decodeJsonArray()
+					)
 				}
 				list.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.shortcode })
 				list

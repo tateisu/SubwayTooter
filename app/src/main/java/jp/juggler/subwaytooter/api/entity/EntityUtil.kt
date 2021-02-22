@@ -48,9 +48,9 @@ inline fun <reified T > parseList(
 	return dst
 }
 
-inline fun <reified T> parseList(
-	factory : (serviceType : ServiceType, src : JsonObject) -> T,
-	serviceType : ServiceType,
+inline fun <S,reified T> parseList(
+	factory : (serviceType : S, src : JsonObject) -> T,
+	serviceType : S,
 	src : JsonArray?,
 	log : LogCategory = EntityUtil.log
 ) : ArrayList<T> {
@@ -121,6 +121,25 @@ inline fun <reified K, reified V> parseMapOrNull(
 	}
 	return null
 }
+inline fun <reified K, reified V> parseMapOrNull(
+	factory : (host:Host, src : JsonObject) -> V,
+	host: Host,
+	src : JsonArray?,
+	log : LogCategory = EntityUtil.log
+) : HashMap<K, V>? where V : Mappable<K> {
+	if(src != null) {
+		val size = src.size
+		if(size > 0) {
+			val dst = HashMap<K, V>()
+			for(i in 0 until size) {
+				val item = parseItem(factory, host, src.jsonObject(i), log)
+				if(item != null) dst[item.mapKey] = item
+			}
+			if(dst.isNotEmpty()) return dst
+		}
+	}
+	return null
+}
 
 inline fun <reified V> parseProfileEmoji2(
 	factory : (src : JsonObject,shortcode:String) -> V,
@@ -150,9 +169,9 @@ inline fun <reified V> parseProfileEmoji2(
 
 ////////////////////////////////////////
 
-inline fun <reified T> parseItem(
-	factory : (parser : TootParser, src : JsonObject) -> T,
-	parser : TootParser,
+inline fun <P,reified T> parseItem(
+	factory : (parser : P, src : JsonObject) -> T,
+	parser : P,
 	src : JsonObject?,
 	log : LogCategory = EntityUtil.log
 ) : T? {

@@ -2,45 +2,37 @@ package jp.juggler.subwaytooter.emoji.model
 
 import jp.juggler.subwaytooter.emoji.log
 
-class Category(val enumId: String, val url: String?) {
-	override fun equals(other: Any?) = enumId == (other as? Category)?.enumId
-	override fun hashCode(): Int = enumId.hashCode()
+class Category(val name: String, val url: String?) {
+	override fun equals(other: Any?) = name == (other as? Category)?.name
+	override fun hashCode(): Int = name.hashCode()
 
 	// ショートコード登場順序がある
-	private val emojis = ArrayList<Emoji>()
+	private val _emojis = ArrayList<Emoji>()
+	val emojis:List<Emoji> get()=_emojis
 
-	fun addEmoji(item:Emoji,allowDuplicate:Boolean =false,addingName:String?="?") {
-		if(!allowDuplicate){
+	fun addEmoji(item: Emoji, allowDuplicate: Boolean = false, addingName: String? = "?") {
+		if (!allowDuplicate) {
 			val oldCategory = item.usedInCategory
-			if(oldCategory!=null) {
-				log.w("emoji ${item.shortNames.first()}, $addingName is already in ${oldCategory.enumId}")
+			if (oldCategory != null) {
+				log.w("emoji ${item.shortNames.first()}, $addingName is already in category ${oldCategory.name}")
 				return
 			}
 		}
 		item.usedInCategory = this
-		if (!emojis.contains(item)) emojis.add(item)
+		if (!_emojis.contains(item)) _emojis.add(item)
 	}
-
-	fun eachEmoji(block: (Emoji) -> Unit) {
-		emojis.forEach(block)
-	}
-
-	fun containsEmoji(item:Emoji) =
-		emojis.contains(item)
 }
 
-val categoryNames = HashMap<String, Category>().apply {
-	fun a(nameLower: String, enumId: String, url: String?) {
-		put(nameLower, Category(enumId, url))
-	}
-	a("smileys & people", "CATEGORY_PEOPLE", "https://emojipedia.org/people/")
-	a("animals & nature", "CATEGORY_NATURE", "https://emojipedia.org/nature/")
-	a("food & drink", "CATEGORY_FOODS", "https://emojipedia.org/food-drink/")
-	a("activities", "CATEGORY_ACTIVITY", "https://emojipedia.org/activity/")
-	a("travel & places", "CATEGORY_PLACES", "https://emojipedia.org/travel-places/")
-	a("objects", "CATEGORY_OBJECTS", "https://emojipedia.org/objects/")
-	a("symbols", "CATEGORY_SYMBOLS", "https://emojipedia.org/symbols/")
-	a("flags", "CATEGORY_FLAGS", "https://emojipedia.org/flags/")
-	a("other", "CATEGORY_OTHER", null)
-}
+val categoryNames = arrayOf(
+	Category("People", "https://emojipedia.org/people/"),
+	Category("ComplexTones", null),
+	Category("Nature", "https://emojipedia.org/nature/"),
+	Category("Foods", "https://emojipedia.org/food-drink/"),
+	Category("Activities", "https://emojipedia.org/activity/"),
+	Category("Places", "https://emojipedia.org/travel-places/"),
+	Category("Objects", "https://emojipedia.org/objects/"),
+	Category("Symbols", "https://emojipedia.org/symbols/"),
+	Category("Flags", "https://emojipedia.org/flags/"),
+	Category("Others", null),
+)
 

@@ -3,12 +3,13 @@ package jp.juggler.subwaytooter.util
 import android.content.SharedPreferences
 import android.os.Handler
 import android.os.SystemClock
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.text.*
 import android.text.style.ForegroundColorSpan
 import android.view.View
-import jp.juggler.emoji.EmojiMap
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import jp.juggler.emoji.EmojiBase
+import jp.juggler.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
@@ -18,6 +19,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.EmojiPicker
+import jp.juggler.subwaytooter.dialog.EmojiPickerResult
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.AcctColor
@@ -1020,38 +1022,44 @@ class PostHelper(
 
     }
 
+    private fun SpannableStringBuilder.appendEmoji(result: EmojiPickerResult) =
+        appendEmoji(result.bInstanceHasCustomEmoji, result.emoji)
+
     private fun SpannableStringBuilder.appendEmoji(
-		name: String,
-		instance: String?,
-		bInstanceHasCustomEmoji: Boolean
+		bInstanceHasCustomEmoji: Boolean,
+		emoji: EmojiBase
 	): SpannableStringBuilder {
 
-        val item = EmojiMap.shortNameToEmojiInfo[name]
         val separator = EmojiDecoder.customEmojiSeparator(pref)
-        if (item == null || instance != null) {
-            // カスタム絵文字は常にshortcode表現
-            if (!EmojiDecoder.canStartShortCode(this, this.length)) append(separator)
-            this.append(SpannableString(":$name:"))
-            // セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
-            if (separator != ' ') append(separator)
-        } else if (!bInstanceHasCustomEmoji) {
-            // 古いタンスだとshortcodeを使う。見た目は絵文字に変える。
-            if (!EmojiDecoder.canStartShortCode(this, this.length)) append(separator)
-            this.append(DecodeOptions(activity).decodeEmoji(":$name:"))
-            // セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
-            if (separator != ' ') append(separator)
-        } else {
-            // 十分に新しいタンスなら絵文字のunicodeを使う。見た目は絵文字に変える。
-            this.append(DecodeOptions(activity).decodeEmoji(item.unified))
+        when (emoji) {
+			is CustomEmoji -> {
+				// カスタム絵文字は常にshortcode表現
+				if (!EmojiDecoder.canStartShortCode(this, this.length)) append(separator)
+				this.append(SpannableString(":${emoji.shortcode}:"))
+				// セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
+				if (separator != ' ') append(separator)
+			}
+			is UnicodeEmoji -> {
+				if (!bInstanceHasCustomEmoji) {
+					// 古いタンスだとshortcodeを使う。見た目は絵文字に変える。
+					if (!EmojiDecoder.canStartShortCode(this, this.length)) append(separator)
+					this.append(DecodeOptions(activity).decodeEmoji(":${emoji.unifiedName}:"))
+					// セパレータにZWSPを使う設定なら、補完した次の位置にもZWSPを追加する。連続して入力補完できるようになる。
+					if (separator != ' ') append(separator)
+				} else {
+					// 十分に新しいタンスなら絵文字のunicodeを使う。見た目は絵文字に変える。
+					this.append(DecodeOptions(activity).decodeEmoji(emoji.unifiedCode))
+				}
+			}
+            else -> error("unknown emoji type")
         }
         return this
-
     }
 
     private val open_picker_emoji: Runnable = Runnable {
         EmojiPicker(activity, accessInfo,
 			closeOnSelected = Pref.bpEmojiPickerCloseOnSelected(pref)
-		) { name, instance, bInstanceHasCustomEmoji, _, _ ->
+		) { result ->
             val et = this.et ?: return@EmojiPicker
 
             val src = et.text ?: ""
@@ -1062,7 +1070,7 @@ class PostHelper(
 
             val sb = SpannableStringBuilder()
                 .append(src.subSequence(0, start))
-                .appendEmoji(name, instance, bInstanceHasCustomEmoji)
+                .appendEmoji(result)
 
             val newSelection = sb.length
             if (end < src_length) sb.append(src.subSequence(end, src_length))
@@ -1084,7 +1092,7 @@ class PostHelper(
     fun openEmojiPickerFromMore() {
         EmojiPicker(activity, accessInfo,
 			closeOnSelected = Pref.bpEmojiPickerCloseOnSelected(pref)
-		) { name, instance, bInstanceHasCustomEmoji, _, _ ->
+		) { result ->
             val et = this.et ?: return@EmojiPicker
 
             val src = et.text ?: ""
@@ -1094,7 +1102,7 @@ class PostHelper(
 
             val sb = SpannableStringBuilder()
                 .append(src.subSequence(0, start))
-                .appendEmoji(name, instance, bInstanceHasCustomEmoji)
+                .appendEmoji(result)
 
             val newSelection = sb.length
             if (end < src_length) sb.append(src.subSequence(end, src_length))

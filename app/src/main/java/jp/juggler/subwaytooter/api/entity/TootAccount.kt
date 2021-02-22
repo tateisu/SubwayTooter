@@ -137,7 +137,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
 
 
                 this.custom_emojis =
-                    parseMapOrNull(CustomEmoji.decodeMisskey, src.jsonArray("emojis"))
+                    parseMapOrNull(CustomEmoji.decodeMisskey,  parser.apDomain, src.jsonArray("emojis"))
                 this.profile_emojis = null
 
                 this.username = src.stringOrThrow("username")
@@ -281,7 +281,7 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
             else -> {
 
                 // 絵文字データは先に読んでおく
-                this.custom_emojis = parseMapOrNull(CustomEmoji.decode, src.jsonArray("emojis"))
+                this.custom_emojis = parseMapOrNull(CustomEmoji.decode,  parser.apDomain, src.jsonArray("emojis"))
 
                 this.profile_emojis = when (val o = src["profile_emojis"]) {
                     is JsonArray -> parseMapOrNull(::NicoProfileEmoji, o, TootStatus.log)

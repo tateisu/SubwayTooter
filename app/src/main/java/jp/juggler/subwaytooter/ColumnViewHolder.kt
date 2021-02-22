@@ -25,12 +25,14 @@ import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
+import jp.juggler.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_Notification
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.EmojiPicker
@@ -779,17 +781,17 @@ class ColumnViewHolder(
                     }
                 )
             }
-            val streamStatus =column.getStreamingStatus()
+            val streamStatus = column.getStreamingStatus()
             log.d("procShowColumnStatus: streamStatus=${streamStatus}, column=${column.access_info.acct}/${column.getColumnName(true)}")
 
             when (streamStatus) {
-                StreamStatus.Missing,StreamStatus.Closed-> {
+                StreamStatus.Missing, StreamStatus.Closed -> {
                 }
-                StreamStatus.Connecting,StreamStatus.Open->{
+                StreamStatus.Connecting, StreamStatus.Open -> {
                     sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
                     sb.append("?")
                 }
-                StreamStatus.Subscribed->{
+                StreamStatus.Subscribed -> {
                     sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
                 }
             }
@@ -2740,21 +2742,28 @@ class ColumnViewHolder(
     private fun addReaction(item: TootAnnouncement, sample: TootAnnouncement.Reaction?) {
         val column = column ?: return
         if (sample == null) {
-            EmojiPicker(activity, column.access_info,closeOnSelected = true) { name, _, _, unicode, customEmoji ->
-                log.d("addReaction: $name")
+            EmojiPicker(activity, column.access_info, closeOnSelected = true) { result ->
+                val emoji = result.emoji
+                val code = when(emoji){
+                    is UnicodeEmoji -> emoji.unifiedCode
+                    is CustomEmoji -> emoji.shortcode
+                    else -> error("unknown emoji type")
+                }
+                log.d("addReaction: $code ${result.emoji.javaClass.simpleName}")
                 addReaction(item, TootAnnouncement.Reaction(jsonObject {
-                    put("name", unicode ?: name)
+                    put("name", code)
                     put("count", 1)
                     put("me", true)
                     // 以下はカスタム絵文字のみ
-                    if (customEmoji != null) {
-                        putNotNull("url", customEmoji.url)
-                        putNotNull("static_url", customEmoji.static_url)
+                    if (emoji is CustomEmoji) {
+                        putNotNull("url", emoji.url)
+                        putNotNull("static_url", emoji.static_url)
                     }
                 }))
             }.show()
             return
         }
+
         TootTaskRunner(activity).run(column.access_info, object : TootTask {
             override suspend fun background(client: TootApiClient): TootApiResult? {
                 return client.request(

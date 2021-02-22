@@ -341,13 +341,13 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             var caption = when (it.type) {
                 ResizeType.None -> getString(R.string.dont_resize)
                 ResizeType.LongSide -> getString(R.string.long_side_pixel, it.size)
-                ResizeType.SquarePixel -> if(it.extraStringId!= 0) {
+                ResizeType.SquarePixel -> if (it.extraStringId != 0) {
                     getString(
                         R.string.resize_square_pixels_2,
                         it.size * it.size,
                         getString(it.extraStringId)
                     )
-                }else{
+                } else {
                     getString(
                         R.string.resize_square_pixels,
                         it.size * it.size,
@@ -597,7 +597,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         var index = imageResizeItems.indexOfFirst { it.config.spec == currentResizeConfig.spec }
         log.d("ResizeItem current ${currentResizeConfig.spec} index=$index ")
         if (index == -1) index = imageResizeItems.indexOfFirst { it.config.spec == SavedAccount.defaultResizeConfig.spec }
-        spResizeImage.setSelection(index,false)
+        spResizeImage.setSelection(index, false)
 
         showVisibility()
         showAcctColor()
@@ -654,8 +654,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         account.image_max_megabytes = etMediaSizeMax.text.toString().trim()
         account.image_resize = (
             imageResizeItems.elementAtOrNull(spResizeImage.selectedItemPosition)?.config
-            ?: SavedAccount.defaultResizeConfig
-        ).spec
+                ?: SavedAccount.defaultResizeConfig
+            ).spec
 
         account.saveSetting()
 
@@ -1689,8 +1689,6 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             }
         })
     }
-
-
 
 
 }

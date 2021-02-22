@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
-import jp.juggler.emoji.EmojiMap
+import jp.juggler.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
@@ -2629,14 +2629,12 @@ internal class ItemViewHolder(
         if (access_info.isPseudo || !access_info.isMisskey) return
 
         if (code == null) {
-            EmojiPicker(activity, access_info, closeOnSelected = true) { name, instance, _, _, _ ->
-                val item = EmojiMap.shortNameToEmojiInfo[name]
-                val newCode = if (item == null || instance != null) {
-                    ":$name:"
-                } else {
-                    item.unified
-                }
-                addReaction(status, newCode)
+            EmojiPicker(activity, access_info, closeOnSelected = true) { result ->
+                addReaction(status, when(val emoji = result.emoji){
+                    is UnicodeEmoji -> emoji.unifiedCode
+                    is CustomEmoji -> ":${emoji.shortcode}:"
+                    else->error("unknown emoji type")
+                })
             }.show()
             return
         }

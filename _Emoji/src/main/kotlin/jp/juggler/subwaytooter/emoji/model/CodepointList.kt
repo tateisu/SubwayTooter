@@ -23,16 +23,10 @@ import java.lang.StringBuilder
 
  */
 
-private const val hexChars = "0123456789abcdef"
+//private const val hexChars = "0123456789abcdef"
+//
+//var utf16_max_length = 0
 
-private val reHex = """([0-9A-Fa-f]+)""".toRegex()
-
-//	my $utf8 = Encode::find_encoding("utf8");
-//	my $utf16 = Encode::find_encoding("UTF-16BE");
-var utf16_max_length = 0
-
-fun IntArray.isAsciiEmoji()=
-	size == 1 && first() < 0xae
 
 // list of codepoints
 class CodepointList(
@@ -41,7 +35,7 @@ class CodepointList(
 ) : Comparable<CodepointList> {
 
 	override fun equals(other: Any?): Boolean =
-		list.contentEquals( other.cast<CodepointList>()?.list)
+		list.contentEquals(other.cast<CodepointList>()?.list)
 
 	override fun hashCode(): Int {
 		var code = 0
@@ -92,40 +86,60 @@ class CodepointList(
 
 	override fun toString() = "${toHex()},$from"
 
-	fun makeUtf16(): String {
-		// java の文字列にする
+//	fun makeUtf16(): String {
+//		// java の文字列にする
+//
+//		// UTF-16にエンコード
+//		val bytesUtf16 = toRawString().toByteArray(Charsets.UTF_16BE)
+//
+//		// UTF-16の符号単位数
+//		val length = bytesUtf16.size / 2
+//		if (length > utf16_max_length) {
+//			utf16_max_length = length
+//		}
+//
+//		val sb = StringBuilder()
+//		for (i in bytesUtf16.indices step 2) {
+//			val v0 = bytesUtf16[i].toInt()
+//			val v1 = bytesUtf16[i + 1].toInt()
+//			sb.append("\\u")
+//			sb.append(hexChars[v0.and(255).shr(4)])
+//			sb.append(hexChars[v0.and(15)])
+//			sb.append(hexChars[v1.and(255).shr(4)])
+//			sb.append(hexChars[v1.and(15)])
+//		}
+//		return sb.toString()
+//	}
 
-		// UTF-16にエンコード
-		val bytesUtf16 = toRawString().toByteArray(Charsets.UTF_16BE)
+	fun toKey(from: String) =
+		list.filter { it != 0xfe0f && it != 0xfe0e && it != 0x200d }
+			.toIntArray().toCodepointList(from)
 
-		// UTF-16の符号単位数
-		val length = bytesUtf16.size / 2
-		if (length > utf16_max_length) {
-			utf16_max_length = length
-		}
 
-		val sb = StringBuilder()
-		for (i in bytesUtf16.indices step 2) {
-			val v0 = bytesUtf16[i].toInt()
-			val v1 = bytesUtf16[i + 1].toInt()
-			sb.append("\\u")
-			sb.append(hexChars[v0.and(255).shr(4)])
-			sb.append(hexChars[v0.and(15)])
-			sb.append(hexChars[v1.and(255).shr(4)])
-			sb.append(hexChars[v1.and(15)])
-		}
-		return sb.toString()
+	fun getToneCode(from: String) :CodepointList? {
+		val used = HashSet<Int>()
+		return list
+			.filter { skinToneModifiers.containsKey(it) }
+			.mapNotNull {
+			if (used.contains(it)) {
+				null
+			} else {
+				used.add(it)
+				it
+			}
+		}.toIntArray().toCodepointList(from)
 	}
-
-	fun toKey(from:String) =
-		CodepointList( from, list.filter { it != 0xfe0f && it != 0xfe0e && it != 0x200d }.toIntArray() )
 }
 
+fun IntArray.isAsciiEmoji() =
+	size == 1 && first() < 0xae
 
-fun IntArray.toCodepointList(from:String) = if(isEmpty()) null else CodepointList(from,this)
+fun IntArray.toCodepointList(from: String) = if (isEmpty()) null else CodepointList(from, this)
+
+private val reHex = """([0-9A-Fa-f]+)""".toRegex()
 
 // cp-cp-cp-cp => CodepointList
-fun String.toCodepointList(from:String) =
+fun String.toCodepointList(from: String) =
 	reHex.findAll(this)
 		.map { mr -> mr.groupValues[1].toInt(16) }
 		.toList().notEmpty()

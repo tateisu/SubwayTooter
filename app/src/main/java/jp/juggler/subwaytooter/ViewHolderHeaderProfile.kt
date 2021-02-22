@@ -326,9 +326,9 @@ internal class ViewHolderHeaderProfile(
 				
 				if(whoDetail?.locked ?: who.locked) {
 					append(" ")
-					val info = EmojiMap.shortNameToEmojiInfo["lock"]
-					if(info != null) {
-						appendSpan("locked", info.er.createSpan(activity))
+					val emoji = EmojiMap.shortNameMap["lock"]
+					if(emoji != null) {
+						appendSpan("locked",emoji.createSpan(activity))
 					} else {
 						append("locked")
 					}
@@ -336,9 +336,9 @@ internal class ViewHolderHeaderProfile(
 				
 				if(who.bot) {
 					append(" ")
-					val info = EmojiMap.shortNameToEmojiInfo["robot_face"]
-					if(info != null) {
-						appendSpan("bot", info.er.createSpan(activity))
+					val emoji = EmojiMap.shortNameMap["robot_face"]
+					if(emoji != null) {
+						appendSpan("bot", emoji.createSpan(activity))
 					} else {
 						append("bot")
 					}
@@ -346,9 +346,9 @@ internal class ViewHolderHeaderProfile(
 
 				if(who.suspended) {
 					append(" ")
-					val info = EmojiMap.shortNameToEmojiInfo["x"]
-					if(info != null) {
-						appendSpan("suspended", info.er.createSpan(activity))
+					val emoji = EmojiMap.shortNameMap["cross_mark"]
+					if(emoji != null) {
+						appendSpan("suspended", emoji.createSpan(activity))
 					} else {
 						append("suspended")
 					}

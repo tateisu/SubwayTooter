@@ -56,7 +56,7 @@ class TootAnnouncement(parser : TootParser, src : JsonObject) {
 	init {
 		// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
 		this.custom_emojis =
-			parseMapOrNull(CustomEmoji.decode, src.jsonArray("emojis"), log)
+			parseMapOrNull(CustomEmoji.decode,  parser.apDomain, src.jsonArray("emojis"), log)
 		
 		this.tags = TootTag.parseListOrNull(parser,src.jsonArray("tags"))
 		

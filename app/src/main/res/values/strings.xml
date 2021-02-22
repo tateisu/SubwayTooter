@@ -1086,4 +1086,5 @@
     <string name="server_has_no_support_of_visibility">Server has no support of visibility \'%1$s\'.</string>
     <string name="show_emoji_picker_other_category">Show emoji picker other category</string>
     <string name="in_app_unicode_emoji">use in-app Unicode Emoji (app restart required)</string>
+    <string name="emoji_category_composite_tones">Composite Tones</string>
 </resources>

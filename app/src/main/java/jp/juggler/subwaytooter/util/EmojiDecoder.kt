@@ -6,6 +6,7 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.util.SparseBooleanArray
 import androidx.annotation.DrawableRes
+import jp.juggler.emoji.UnicodeEmoji
 import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
@@ -17,7 +18,6 @@ import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.span.createSpan
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.util.LogCategory
 import jp.juggler.util.asciiPattern
 import jp.juggler.util.codePointBefore
 import java.util.*
@@ -26,7 +26,7 @@ import kotlin.math.min
 
 object EmojiDecoder {
 
-    private val log = LogCategory("EmojiDecoder")
+    // private val log = LogCategory("EmojiDecoder")
 
     private const val cpColon = ':'.toInt()
 
@@ -48,25 +48,25 @@ object EmojiDecoder {
 
     fun canStartShortCode(s: CharSequence, index: Int): Boolean {
         return when (val cp = s.codePointBefore(index)) {
-			-1 -> true
-			cpColon -> false
-			cpZwsp -> true
+            -1 -> true
+            cpColon -> false
+            cpZwsp -> true
             // rubyの (Letter | Mark | Decimal_Number) はNG
             // ftp://unicode.org/Public/5.1.0/ucd/UCD.html#General_Category_Values
             else -> when (Character.getType(cp).toByte()) {
                 // Letter
                 // LCはエイリアスなので文字から得られることはないはず
-				Character.UPPERCASE_LETTER,
-				Character.LOWERCASE_LETTER,
-				Character.TITLECASE_LETTER,
-				Character.MODIFIER_LETTER,
-				Character.OTHER_LETTER -> false
+                Character.UPPERCASE_LETTER,
+                Character.LOWERCASE_LETTER,
+                Character.TITLECASE_LETTER,
+                Character.MODIFIER_LETTER,
+                Character.OTHER_LETTER -> false
                 // Mark
-				Character.NON_SPACING_MARK,
-				Character.COMBINING_SPACING_MARK,
-				Character.ENCLOSING_MARK -> false
+                Character.NON_SPACING_MARK,
+                Character.COMBINING_SPACING_MARK,
+                Character.ENCLOSING_MARK -> false
                 // Decimal_Number
-				Character.DECIMAL_DIGIT_NUMBER -> false
+                Character.DECIMAL_DIGIT_NUMBER -> false
 
                 else -> true
             }
@@ -82,12 +82,12 @@ object EmojiDecoder {
         return if (cp >= 0x80) {
             true
         } else when (cp.toChar()) {
-			'/' -> false
-			')' -> false
-			'_' -> false
-			in 'a'..'z' -> false
-			in 'A'..'Z' -> false
-			in '0'..'9' -> false
+            '/' -> false
+            ')' -> false
+            '_' -> false
+            in 'a'..'z' -> false
+            in 'A'..'Z' -> false
+            in '0'..'9' -> false
             else -> true
         }
     }
@@ -116,11 +116,11 @@ object EmojiDecoder {
             for (range in list) {
                 val word = HighlightWord.load(range.word) ?: continue
                 sb.setSpan(
-					HighlightSpan(word.color_fg, word.color_bg),
-					range.start,
-					range.end,
-					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				)
+                    HighlightSpan(word.color_fg, word.color_bg),
+                    range.start,
+                    range.end,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
 
                 if (word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
                     if (options.highlightSound == null) options.highlightSound = word
@@ -140,11 +140,11 @@ object EmojiDecoder {
             sb.append(text)
             val end = sb.length
             sb.setSpan(
-				NetworkEmojiSpan(url, scale = options.enlargeCustomEmoji),
-				start,
-				end,
-				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-			)
+                NetworkEmojiSpan(url, scale = options.enlargeCustomEmoji),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
 
         fun addImageSpan(text: String, @DrawableRes res_id: Int) {
@@ -158,15 +158,15 @@ object EmojiDecoder {
                 sb.append(text)
                 val end = sb.length
                 sb.setSpan(
-					EmojiImageSpan(context, res_id, scale = options.enlargeEmoji),
-					start,
-					end,
-					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				)
+                    EmojiImageSpan(context, res_id, scale = options.enlargeEmoji),
+                    start,
+                    end,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
             }
         }
 
-        fun addImageSpan(text: String, er: EmojiMap.EmojiResource) {
+        fun addImageSpan(text: String, emoji: UnicodeEmoji) {
             val context = options.context
             if (context == null) {
                 openNormalText()
@@ -177,17 +177,17 @@ object EmojiDecoder {
                 sb.append(text)
                 val end = sb.length
                 sb.setSpan(
-					er.createSpan(context, scale = options.enlargeEmoji),
-					start,
-					end,
-					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				)
+                    emoji.createSpan(context, scale = options.enlargeEmoji),
+                    start,
+                    end,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
             }
         }
 
         fun addUnicodeString(s: String) {
 
-            if(!handleUnicodeEmoji){
+            if (!handleUnicodeEmoji) {
                 openNormalText()
                 sb.append(s)
                 return
@@ -216,23 +216,23 @@ object EmojiDecoder {
                 if (normalCopy(i) && i >= end) break
 
                 // 絵文字コードを探索
-                val result = EmojiMap.utf16Trie.get(s,i,end)
+                val result = EmojiMap.unicodeTrie.get(s, i, end)
                 if (result == null) {
                     // 見つからなかったら、通常テキストを1文字以上コピーする
-                    normalCopy(i + min(end-i, Character.charCount(s.codePointAt(i))))
+                    normalCopy(i + min(end - i, Character.charCount(s.codePointAt(i))))
                     continue
                 }
 
-                val nextChar = if (result.endPos >= end ) null else s[result.endPos].toInt()
+                val nextChar = if (result.endPos >= end) null else s[result.endPos].toInt()
 
                 // 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
                 // その文字を絵文字化しない
                 if (nextChar == 0xFE0E) {
-                    normalCopy(result.endPos+1)
+                    normalCopy(result.endPos + 1)
                     continue
                 }
 
-                val emoji = if (nextChar == 0xFE0F && s[result.endPos-1].toInt() != 0xFE0F) {
+                val emoji = if (nextChar == 0xFE0F && s[result.endPos - 1].toInt() != 0xFE0F) {
                     // 絵文字の最後が 0xFE0F でない
                     // 直後にU+0xFE0F (絵文字バリエーション・シーケンスEVSのVS-16）がある
                     // 直後のそれまで含めて絵文字として表示する
@@ -261,19 +261,19 @@ object EmojiDecoder {
     private interface ShortCodeSplitterCallback {
         fun onString(part: String) // shortcode以外の文字列
         fun onShortCode(
-			prevCodePoint: Int,
-			part: String,
-			name: String
-		) // part : ":shortcode:", name : "shortcode"
+            prevCodePoint: Int,
+            part: String,
+            name: String
+        ) // part : ":shortcode:", name : "shortcode"
     }
 
     private val reUrl = """https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+"""
         .asciiPattern()
 
     private fun splitShortCode(
-		s: String,
-		callback: ShortCodeSplitterCallback
-	) {
+        s: String,
+        callback: ShortCodeSplitterCallback
+    ) {
         val urlList = ArrayList<IntRange>().apply {
             val m = reUrl.matcher(s)
             while (m.find()) {
@@ -326,10 +326,10 @@ object EmojiDecoder {
             }
 
             callback.onShortCode(
-				prevCodePoint,
-				s.substring(start, posEndColon + 1), // ":shortcode:"
-				s.substring(start + 1, posEndColon) // "shortcode"
-			)
+                prevCodePoint,
+                s.substring(start, posEndColon + 1), // ":shortcode:"
+                s.substring(start + 1, posEndColon) // "shortcode"
+            )
 
             i = posEndColon + 1 // コロンの次の位置
         }
@@ -346,63 +346,65 @@ object EmojiDecoder {
         val emojiMapProfile = options.emojiMapProfile
 
         val useEmojioneShortcode = when (val context = options.context) {
-			null -> false
+            null -> false
             else -> Pref.bpEmojioneShortcode(context.pref())
         }
 
         splitShortCode(s, callback = object : ShortCodeSplitterCallback {
-			override fun onString(part: String) {
-				builder.addUnicodeString(part)
-			}
+            override fun onString(part: String) {
+                builder.addUnicodeString(part)
+            }
 
-			override fun onShortCode(prevCodePoint: Int, part: String, name: String) {
-				// フレニコのプロフ絵文字
-				if (emojiMapProfile != null && name.length >= 2 && name[0] == '@') {
-					val emojiProfile = emojiMapProfile[name] ?: emojiMapProfile[name.substring(1)]
-					if (emojiProfile != null) {
-						val url = emojiProfile.url
-						if (url.isNotEmpty()) {
-							builder.addNetworkEmojiSpan(part, url)
-							return
-						}
-					}
-				}
+            override fun onShortCode(prevCodePoint: Int, part: String, name: String) {
+                // フレニコのプロフ絵文字
+                if (emojiMapProfile != null && name.length >= 2 && name[0] == '@') {
+                    val emojiProfile = emojiMapProfile[name] ?: emojiMapProfile[name.substring(1)]
+                    if (emojiProfile != null) {
+                        val url = emojiProfile.url
+                        if (url.isNotEmpty()) {
+                            builder.addNetworkEmojiSpan(part, url)
+                            return
+                        }
+                    }
+                }
 
-				// カスタム絵文字
-				val emojiCustom = emojiMapCustom?.get(name)
-				if (emojiCustom != null) {
-					val url = when {
-						Pref.bpDisableEmojiAnimation(App1.pref) && emojiCustom.static_url?.isNotEmpty() == true -> emojiCustom.static_url
-						else -> emojiCustom.url
-					}
-					builder.addNetworkEmojiSpan(part, url)
-					return
-				}
+                // カスタム絵文字
+                val emojiCustom = emojiMapCustom?.get(name)
+                if (emojiCustom != null) {
+                    val url = when {
+                        Pref.bpDisableEmojiAnimation(App1.pref) && emojiCustom.static_url?.isNotEmpty() == true -> emojiCustom.static_url
+                        else -> emojiCustom.url
+                    }
+                    builder.addNetworkEmojiSpan(part, url)
+                    return
+                }
 
-				// 通常の絵文字
-				if (useEmojioneShortcode) {
-					val info =
-						EmojiMap.shortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
-					if (info != null) {
-						builder.addImageSpan(part, info.er)
-						return
-					}
-				}
-
-				when {
-					reHohoemi.matcher(name).find() -> builder.addImageSpan(
-						part,
-						R.drawable.emoji_hohoemi
-					)
-					reNicoru.matcher(name).find() -> builder.addImageSpan(
-						part,
-						R.drawable.emoji_nicoru
-					)
-					else -> builder.addUnicodeString(part)
-				}
-
-			}
-		})
+                // 通常の絵文字
+                when {
+                    reHohoemi.matcher(name).find() -> builder.addImageSpan(
+                        part,
+                        R.drawable.emoji_hohoemi
+                    )
+                    reNicoru.matcher(name).find() -> builder.addImageSpan(
+                        part,
+                        R.drawable.emoji_nicoru
+                    )
+                    else -> {
+                        // EmojiOneのショートコード
+                        val emoji = if (useEmojioneShortcode) {
+                            EmojiMap.shortNameMap[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
+                        } else {
+                            null
+                        }
+                        if (emoji != null) {
+                            builder.addImageSpan(part, emoji)
+                        } else {
+                            builder.addUnicodeString(part)
+                        }
+                    }
+                }
+            }
+        })
 
         builder.closeNormalText()
 
@@ -412,48 +414,52 @@ object EmojiDecoder {
     // 投稿などの際、表示は不要だがショートコード=>Unicodeの解決を行いたい場合がある
     // カスタム絵文字の変換も行わない
     fun decodeShortCode(
-		s: String,
-		emojiMapCustom: HashMap<String, CustomEmoji>? = null
-	): String {
+        s: String,
+        emojiMapCustom: HashMap<String, CustomEmoji>? = null
+    ): String {
+        val decodeEmojioneShortcode = Pref.bpEmojioneShortcode(App1.pref)
 
         val sb = StringBuilder()
 
         splitShortCode(s, callback = object : ShortCodeSplitterCallback {
-			override fun onString(part: String) {
-				sb.append(part)
-			}
+            override fun onString(part: String) {
+                sb.append(part)
+            }
 
-			override fun onShortCode(prevCodePoint: Int, part: String, name: String) {
+            override fun onShortCode(prevCodePoint: Int, part: String, name: String) {
 
-				// カスタム絵文字にマッチするなら変換しない
-				val emojiCustom = emojiMapCustom?.get(name)
-				if (emojiCustom != null) {
-					sb.append(part)
-					return
-				}
+                // カスタム絵文字にマッチするなら変換しない
+                val emojiCustom = emojiMapCustom?.get(name)
+                if (emojiCustom != null) {
+                    sb.append(part)
+                    return
+                }
 
-				// カスタム絵文字ではなく通常の絵文字のショートコードなら絵文字に変換する
-				val info =
-					EmojiMap.shortNameToEmojiInfo[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
-				sb.append(info?.unified ?: part)
-			}
-		})
+                // カスタム絵文字ではなく通常の絵文字のショートコードなら絵文字に変換する
+                val emoji = if (decodeEmojioneShortcode) {
+                    EmojiMap.shortNameMap[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
+                } else {
+                    null
+                }
+                sb.append(emoji?.unifiedCode ?: part)
+            }
+        })
 
         return sb.toString()
     }
 
     // 入力補完用。絵文字ショートコード一覧を部分一致で絞り込む
     internal fun searchShortCode(
-		context: Context,
-		prefix: String,
-		limit: Int
-	): ArrayList<CharSequence> {
+        context: Context,
+        prefix: String,
+        limit: Int
+    ): ArrayList<CharSequence> {
         val dst = ArrayList<CharSequence>()
         for (shortCode in EmojiMap.shortNameList) {
             if (dst.size >= limit) break
             if (!shortCode.contains(prefix)) continue
 
-            val info = EmojiMap.shortNameToEmojiInfo[shortCode] ?: continue
+            val emoji = EmojiMap.shortNameMap[shortCode] ?: continue
 
             val sb = SpannableStringBuilder()
             val start = 0
@@ -461,11 +467,11 @@ object EmojiDecoder {
             val end = sb.length
 
             sb.setSpan(
-				info.er.createSpan(context),
-				start,
-				end,
-				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-			)
+                emoji.createSpan(context),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
 
             sb.append(' ')
                 .append(':')

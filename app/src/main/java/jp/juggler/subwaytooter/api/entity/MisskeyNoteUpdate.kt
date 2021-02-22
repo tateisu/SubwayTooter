@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
 
-class MisskeyNoteUpdate(src : JsonObject) {
+class MisskeyNoteUpdate(apDomain:Host, src : JsonObject) {
 	companion object{
 		private val log = LogCategory("MisskeyNoteUpdate")
 	}
@@ -36,7 +36,7 @@ class MisskeyNoteUpdate(src : JsonObject) {
 				userId = EntityId.mayDefault(body2.string("userId"))
 				emoji = body2.jsonObject("emoji")?.let {
 					try {
-						CustomEmoji.decodeMisskey(it)
+						CustomEmoji.decodeMisskey(apDomain,it)
 					} catch (ex: Throwable) {
 						log.e("can't parse custom emoji.")
 						null

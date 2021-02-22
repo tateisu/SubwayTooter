@@ -235,7 +235,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
 				// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
 				this.custom_emojis =
-					parseMapOrNull(CustomEmoji.decodeMisskey, src.jsonArray("emojis"), log)
+					parseMapOrNull(CustomEmoji.decodeMisskey,  parser.apDomain, src.jsonArray("emojis"), log)
 				this.profile_emojis = null
 
 				val who = parser.account(src.jsonObject("user"))
@@ -573,7 +573,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
                 // 絵文字マップはすぐ後で使うので、最初の方で読んでおく
                 this.custom_emojis =
-                    parseMapOrNull(CustomEmoji.decode, src.jsonArray("emojis"), log)
+                    parseMapOrNull(CustomEmoji.decode,  parser.apDomain, src.jsonArray("emojis"), log)
 
                 this.profile_emojis = when (val o = src["profile_emojis"]) {
 					is JsonArray -> parseMapOrNull(::NicoProfileEmoji, o, log)

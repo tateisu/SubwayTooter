@@ -1,8 +1,10 @@
 package jp.juggler.subwaytooter.action
 
-import android.text.SpannableStringBuilder
-import jp.juggler.emoji.EmojiMap
-import jp.juggler.subwaytooter.*
+import jp.juggler.emoji.UnicodeEmoji
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.ActPost
+import jp.juggler.subwaytooter.ColumnType
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker
@@ -436,14 +438,14 @@ object Action_Toot {
         }
 
         // Mastodonは非公開トゥートをブーストできるのは本人だけ
-		val isPrivateToot = access_info.isMastodon &&
-			arg_status.visibility == TootVisibility.PrivateFollowers
+        val isPrivateToot = access_info.isMastodon &&
+            arg_status.visibility == TootVisibility.PrivateFollowers
 
-		if( isPrivateToot && access_info.acct != status_owner) {
-			activity.showToast(false, R.string.boost_private_toot_not_allowed)
-			return
-		}
-		// DMとかのブーストはAPI側がエラーを出すだろう？
+        if (isPrivateToot && access_info.acct != status_owner) {
+            activity.showToast(false, R.string.boost_private_toot_not_allowed)
+            return
+        }
+        // DMとかのブーストはAPI側がエラーを出すだろう？
 
         // 必要なら確認を出す
         if (!bConfirmed) {
@@ -1322,15 +1324,9 @@ object Action_Toot {
         }
 
         if (code == null) {
-			if (!bSet) error("will not happen")
-			EmojiPicker(activity, access_info, closeOnSelected = true) { name, instance, _, _, _ ->
-				val item = EmojiMap.shortNameToEmojiInfo[name]
-				val newCode = if (item == null || instance != null) {
-					":$name:"
-				} else {
-					item.unified
-				}
-				reaction(
+            if (!bSet) error("will not happen")
+            EmojiPicker(activity, access_info, closeOnSelected = true) { result ->
+                reaction(
 					activity,
 					access_info,
 					arg_status,
@@ -1338,9 +1334,13 @@ object Action_Toot {
 					nCrossAccountMode,
 					callback,
 					bSet,
-					newCode
+					when(val emoji = result.emoji){
+						is UnicodeEmoji -> emoji.unifiedCode
+						is CustomEmoji -> ":${emoji.shortcode}:"
+						else -> error("unknown emoji type")
+					}
 				)
-			}.show()
+            }.show()
             return
         }
 

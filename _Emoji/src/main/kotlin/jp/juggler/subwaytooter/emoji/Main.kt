@@ -60,14 +60,12 @@ fun copyFile(dst: File, src: File) {
 
 
 class App {
-	companion object {
-		const val cameFromCategory = "CategoryHtml"
+	companion object{
+
+		const val fromCategoryHtml = "CategoryHtml"
+
 
 		val reComment = """#.*""".toRegex()
-
-		val ignoreShortName = arrayOf(
-			"flag_for_texas_ustx"
-		)
 
 		private val ignoreImagePath = arrayOf(
 			"LICENSE",
@@ -78,18 +76,39 @@ class App {
 			"mastodon/public/emoji/sheet_10.png"
 		)
 
+		// emojipediaにあるデータのうち、次のショートネームを持つ絵文字は無視する
+		val ignoreShortName = arrayOf(
+			"flag_for_texas_ustx"
+		)
+
+		private val ignoreEmojiOneShortNames = setOf(
+			"man_in_tuxedo",
+			"man_in_tuxedo_tone1", "tuxedo_tone1",
+			"man_in_tuxedo_tone2", "tuxedo_tone2",
+			"man_in_tuxedo_tone3", "tuxedo_tone3",
+			"man_in_tuxedo_tone4", "tuxedo_tone4",
+			"man_in_tuxedo_tone5", "tuxedo_tone5",
+		)
 	}
 
-
-	// 修正用データを読む
+	// 修正用データ
 	private val fixCode = HashMap<CodepointList, String>()
 	private val fixName = HashMap<ShortName, String>()
 	private val fixCategory = ArrayList<Pair<String, String>>()
 	private val fixUnified = HashMap<CodepointList, CodepointList>()
 
+	// 画像ファイルをスキャンして絵文字コードとファイルの対応表を作る
+	// マップのキーはvariation selectorとZWJが除去される
+	private val emojiMap = HashMap<CodepointList, Emoji>()
+
+	private val emojipediaShortNames = HashMap<CodepointList, ShortName>()
+
+	/////////////////////////////////////////////////
+
 	private fun readFixData() {
-		val fixFile = "./fix_code.txt"
-		File(fixFile).forEachLine { lno, rawLine ->
+		val fileFixData = "./fix_code.txt"
+
+		File(fileFixData).forEachLine { lno, rawLine ->
 			val line = rawLine
 				.replace(reComment, "")
 				.trim()
@@ -112,27 +131,22 @@ class App {
 					"code" -> fixCode[arg1.toCodepointList("fixCode")!!] = data.first()
 					"name" -> fixName[arg1.toShortName("fixName")!!] = data.first()
 					"category" -> Pair(arg1, data.first()).addTo(fixCategory)
-					else -> error("$fixFile $lno : bad fix_data type=$type")
+					else -> error("$fileFixData $lno : bad fix_data type=$type")
 				}
 			}
 		}
 	}
 
-	private val emojipediaShortNames = HashMap<CodepointList, ShortName>()
-
-	// noto-emoji のファイル名はfe0fが欠けているので、
-	// あらかじめemoji 13.1 の qualified name を取得しておく
+	// Emojipediaのバージョン別一覧とカテゴリ別一覧を読んでJSONに保存しておく
+	// サイトにアクセスできなくなったら困るからな…
 	@Suppress("FunctionName")
-	private suspend fun readQualified13_1(client: HttpClient) {
+	private suspend fun readEmojipedia(client: HttpClient) :JsonObject {
 
-		val cameFrom = "emojiQualified"
+		val fileEmojipedia = File("Emojipedia.json")
+		if( fileEmojipedia.isFile) return fileEmojipedia.readAllBytes().decodeUtf8().decodeJsonObject()
 
-		val ignoreName2 = setOf(
-			"zero_width_joiner",
-			"variation_selector_16",
-		)
-
-		val hrefList = ArrayList<Pair<String, CodepointList>>()
+		val dstRoot = JsonObject()
+		val dstQualified = JsonArray().also{ dstRoot["qualifiedCode"] = it }
 
 		for (url in arrayOf(
 			"https://emojipedia.org/emoji-13.1/",
@@ -154,45 +168,90 @@ class App {
 			for (list in root.getElementsByTag("ul")) {
 				for (li in list.getElementsByTag("li")) {
 
-					var href = li.getElementsByTag("a")?.attr("href")
+					val href = li.getElementsByTag("a")?.attr("href")
 						.notEmpty() ?: continue
 
 					val spanText = li.getElementsByTag("span").find { it.hasClass("emoji") }?.text()
 						?.notEmpty() ?: continue
 
-					val code = spanText.listCodePoints().toCodepointList(cameFrom)
-						?: error("can't get code from $spanText $href")
-
-					if( hrefList.any{ it.first == href})
-						error("duplicate href: $href")
-
-					hrefList.add(Pair(href, code))
-
-					// https://emojipedia.org/80030/ Couple With Heart: Light Skin Tone
-					// ページ名が名前じゃないのを直す
-					if (href == "80030") href = "couple-with-heart-light-skin-tone"
-
-					val shortName = href.replace("/", "").toShortName(cameFrom)
-						?: error("can't parse $href")
-
-					if (ignoreName2.contains(shortName.name)) {
-						log.w("skip ${shortName.name}")
-						continue
-					}
-
-					val key = code.toKey(cameFrom)
-						?: error("can't get key from ${code.toHex()} ${shortName.name}")
-
-					fixUnified[key] = code
-
-					if (ignoreShortName.any { it == shortName.name }) {
-						log.w("skip shortname $shortName $code")
-						continue
-					}
-
-					emojipediaShortNames[key] = shortName
+					dstQualified.add(jsonArray(spanText, href))
 				}
 			}
+		}
+
+		val dstCategory = JsonObject().also{ dstRoot["categories"]=it}
+		categoryNames.forEach { category ->
+			if (category.url == null) return@forEach
+
+			val dstCategoryItems = JsonArray().also { dstCategory[category.name] = it }
+
+			val root = client.cachedGetString(category.url, mapOf()).parseHtml(category.url)
+			val list = root.getElementsByClass("emoji-list").first()
+			for (li in list.getElementsByTag("li")) {
+				val href = li.getElementsByTag("a").attr("href")
+					.notEmpty() ?: continue
+
+				val spanText = li.getElementsByTag("span").find { it.hasClass("emoji") }?.text()
+					?.notEmpty() ?: continue
+
+				dstCategoryItems.add(jsonArray(spanText, href))
+			}
+		}
+
+		dstRoot.toString(2).encodeUtf8().saveTo(fileEmojipedia)
+		return dstRoot
+	}
+
+	////////////////////////////////////////////////////////////////////////
+
+	// noto-emoji のファイル名はfe0fが欠けている
+	// あらかじめEmojipediaのデータを参照してqualified name の一覧を作っておく
+	private fun readEmojipediaQualified(root:JsonObject) {
+
+		val ignoreName2 = setOf(
+			"zero_width_joiner",
+			"variation_selector_16",
+		)
+
+		val cameFrom = "emojiQualified"
+
+		val hrefList = ArrayList<Pair<String, CodepointList>>()
+
+		for( cols in  root.jsonArray("qualifiedCode")!!.filterIsInstance<JsonArray>()){
+			val spanText = cols[0] as String
+			var href = cols[1] as String
+
+			val code = spanText.listCodePoints().toCodepointList(cameFrom)
+				?: error("can't get code from $spanText $href")
+
+			if( hrefList.any{ it.first == href})
+				error("duplicate href: $href")
+
+			hrefList.add(Pair(href, code))
+
+			// https://emojipedia.org/80030/ Couple With Heart: Light Skin Tone
+			// ページ名が名前じゃないのを直す
+			if (href == "80030") href = "couple-with-heart-light-skin-tone"
+
+			val shortName = href.replace("/", "").toShortName(cameFrom)
+				?: error("can't parse $href")
+
+			if (ignoreName2.contains(shortName.name)) {
+				log.w("skip ${shortName.name}")
+				continue
+			}
+
+			val key = code.toKey(cameFrom)
+				?: error("can't get key from ${code.toHex()} ${shortName.name}")
+
+			fixUnified[key] = code
+
+			if (ignoreShortName.any { it == shortName.name }) {
+				log.w("skip shortname $shortName $code")
+				continue
+			}
+
+			emojipediaShortNames[key] = shortName
 		}
 
 		// hrefList.sortedBy{ it.first }.forEach { log.d("href=${it.first} ${it.second}") }
@@ -204,78 +263,92 @@ class App {
 		}
 	}
 
-	// 画像ファイルをスキャンして絵文字コードとファイルの対応表を作る
-	// マップのキーはvariation selectorとZWJが除去される
-	private val emojiMap = HashMap<CodepointList, Emoji>()
+	// Emojipediaのデータを使ってカテゴリ別に絵文字一覧を用意する
+	private fun readCategoryShortName(root:JsonObject) {
+		for(category in categoryNames){
+			val list = root.jsonObject("categories")?.jsonArray(category.name) ?: continue
+			for( cols in list.filterIsInstance<JsonArray>()){
+				val spanText = cols[0] as String
+				val href = cols[1] as String
 
+				val shortName = href.replace("/", "").toShortName(fromCategoryHtml)
+					?: error("can't parse $href")
 
-	private fun scanEmojiImages() {
-		fun HashMap<CodepointList, Emoji>.scanImageDir(
-			cameFrom: String,
-			dirPath: String,
-			@Language("RegExp") codeSpec: String,
-			unifiedQualifier: (CodepointList) -> CodepointList = { it }
-		) {
-			val dir = File(dirPath)
-			val reCodeSpec = codeSpec.toRegex()
-			var countFound = 0
-			var countCreate = 0
-			dir.listFiles()!!.forEach { imageFile ->
-				if (!imageFile.isFile) return@forEach
-				val unixPath = imageFile.path.replace("\\", "/")
-				if (ignoreImagePath.any { unixPath.indexOf(it) != -1 }) return@forEach
+				if (ignoreShortName.any { shortName.name == it }) continue
 
-				var name = imageFile.name
-				if (name == "LICENSE") return@forEach
-				name = name.replace("_border", "")
+				val code = spanText.listCodePoints().toCodepointList(fromCategoryHtml)
+					?: error("can't parse code from $spanText")
 
-				val code = reCodeSpec.find(name)
-					?.groupValues
-					?.elementAtOrNull(1)
-					?.toCodepointList(cameFrom)
-					?: error("can't parse $name")
+				val key = code.toKey(fromCategoryHtml)
+				val emoji = emojiMap[key]
+					?: error("can't find emoji. category=${category.name}, href=$href, spanText=$spanText")
 
-				// variation selector やZWJを除去したコードをキーにする
-				val key = code.toKey(cameFrom)!!
-				var emoji = get(key)
-				if (emoji == null) {
-					val unified2 = fixUnified[key]
-					emoji = Emoji(key, unified2 ?: unifiedQualifier(code))
-					put(key, emoji)
-					++countCreate
-				}
-				emoji.imageFiles.add(Pair(imageFile, cameFrom))
-				emoji.addCode(code)
-				++countFound
+				category.addEmoji(emoji, allowDuplicate = true, addingName = shortName.toString())
 			}
-			log.d("scanImageDir: found=$countFound,create=$countCreate, dir=$dir")
 		}
+	}
 
-		emojiMap.scanImageDir("override", "override", """([0-9A-Fa-f_-]+)\.""")
-		emojiMap.scanImageDir("mastodonSVG", "mastodon/public/emoji", """([0-9A-Fa-f_-]+)\.""")
-		emojiMap.scanImageDir("twemojiSvg", "twemoji/assets/svg/", """([0-9A-Fa-f_-]+)\.""")
-		emojiMap.scanImageDir("notoSvg", "noto-emoji/svg", """emoji_u([0-9A-Fa-f_-]+)\.""") { code ->
+	// サブフォルダをスキャンして絵文字別に画像データを確定する
+	private fun scanImageDir(
+		cameFrom: String,
+		dirPath: String,
+		@Language("RegExp") codeSpec: String,
+		unifiedQualifier: (CodepointList) -> CodepointList = { it }
+	) {
+		val dir = File(dirPath)
+		val reCodeSpec = codeSpec.toRegex()
+		var countFound = 0
+		var countCreate = 0
+		for( imageFile in dir.listFiles()!!){
+			if (!imageFile.isFile) continue
+			val unixPath = imageFile.path.replace("\\", "/")
+			if (ignoreImagePath.any { unixPath.endsWith(it) }) continue
+
+			val name = imageFile.name.replace("_border.", ".")
+
+			val code = reCodeSpec.find(name)
+				?.groupValues
+				?.elementAtOrNull(1)
+				?.toCodepointList(cameFrom)
+				?: error("can't parse $name")
+
+			++countFound
+
+			val key = code.toKey(cameFrom)!!
+
+			var emoji = emojiMap[key]
+			if (emoji == null) {
+				val unified2 = fixUnified[key]
+				emoji = Emoji(key, unified2 ?: unifiedQualifier(code))
+				emojiMap[key] = emoji
+				++countCreate
+			}
+
+			emoji.imageFiles.add(Pair(imageFile, cameFrom))
+			emoji.addCode(code)
+		}
+		log.d("scanImageDir: found=$countFound,create=$countCreate, dir=$dir")
+	}
+
+	// サブフォルダをスキャンして絵文字別に画像データを確定する
+	private fun scanEmojiImages() {
+
+		scanImageDir("override", "override", """([0-9A-Fa-f_-]+)\.""")
+		scanImageDir("mastodonSVG", "mastodon/public/emoji", """([0-9A-Fa-f_-]+)\.""")
+		scanImageDir("twemojiSvg", "twemoji/assets/svg/", """([0-9A-Fa-f_-]+)\.""")
+		scanImageDir("notoSvg", "noto-emoji/svg", """emoji_u([0-9A-Fa-f_-]+)\.""") { code ->
 			if (code.list.last() != 0xfe0f)
 				"${code.toHex()}-fe0f".toCodepointList("notoSvgFix")!!
 			else
 				code
 		}
-		emojiMap.scanImageDir("notoPng", "noto-emoji/png/72", """emoji_u([0-9A-Fa-f_-]+)\.""")
-		emojiMap.scanImageDir("emojiDataTw", "emoji-data/img-twitter-72", """([0-9A-Fa-f_-]+)\.""")
-		emojiMap.scanImageDir("emojiDataGo", "emoji-data/img-google-136", """([0-9A-Fa-f_-]+)\.""")
-		emojiMap.scanImageDir("emojiOne", "emojione/assets/svg", """([0-9A-Fa-f_-]+)\.""")
-
+		scanImageDir("notoPng", "noto-emoji/png/72", """emoji_u([0-9A-Fa-f_-]+)\.""")
+		scanImageDir("emojiDataTw", "emoji-data/img-twitter-72", """([0-9A-Fa-f_-]+)\.""")
+		scanImageDir("emojiDataGo", "emoji-data/img-google-136", """([0-9A-Fa-f_-]+)\.""")
+		scanImageDir("emojiOne", "emojione/assets/svg", """([0-9A-Fa-f_-]+)\.""")
 	}
 
-//	// resName => Resource
-//	private val resNameMap = HashMap<ResName, Resource>()
-//
-//	// map: code => resName => Resource
-//	private val codeMap = HashMap<CodepointList, HashMap<ResName, Resource>>()
-//
-//	// map shortname => resName => Resource
-//	private val nameMap = HashMap<ShortName, HashMap<ResName, Resource>>()
-
+	// 絵文字ごとにファイルをコピーする
 	private fun copyImages() {
 		var countSvg = 0
 		var countPng = 0
@@ -303,120 +376,95 @@ class App {
 		log.d("copyImage: countSvg=$countSvg, countPng=$countPng")
 	}
 
-//	private fun updateCodeMap() {
-//		codeMap.clear()
-//		resNameMap.values.forEach { res_info ->
-//			res_info.codePoints.forEach { cp ->
-//				codeMap.prepare(cp) { HashMap() }[res_info.res_name] = res_info
-//				codeMap.prepare(cp.removeZWJ()) { HashMap() }[res_info.res_name] = res_info
-//			}
-//		}
-//	}
-//
-//	private fun updateNameMap() {
-//		nameMap.clear()
-//		resNameMap.values.forEach { res_info ->
-//			res_info.shortNames.forEach { name ->
-//				nameMap.prepare(name) { HashMap() }[res_info.res_name] = res_info
-//			}
-//		}
-//	}
-
+	// emojiDataのjsonを読んで変換コードポイントやショートネームを追加する
 	private fun readEmojiData() {
-		File("./emoji-data/emoji.json")
+		for( src in  File("./emoji-data/emoji.json")
 			.readAllBytes()
 			.decodeUtf8()
 			.decodeJsonArray()
 			.objectList()
-			.forEach { src ->
-				// 絵文字のコードポイント一覧
-				var unified = src.string("unified")?.toCodepointList("EmojiDataJsonUnified")!!
-				var key = unified.toKey("EmojiDataJsonUnifiedKey")
-				var emoji = emojiMap[key] ?: error("can't find emoji for $key")
+		){
+			// 絵文字のコードポイント一覧
+			var unified = src.string("unified")?.toCodepointList("EmojiDataJsonUnified")!!
+			var key = unified.toKey("EmojiDataJsonUnifiedKey")
+			var emoji = emojiMap[key] ?: error("can't find emoji for $key")
 
-				if (emoji.unified != unified) {
-					log.d("readEmojiData: unified not match. emoji=${emoji.unified}, emojiData=${unified}")
-					emoji.addCode(unified)
+			if (emoji.unified != unified) {
+				log.d("readEmojiData: unified not match. emoji=${emoji.unified}, emojiData=${unified}")
+				emoji.addCode(unified)
+			}
+
+			src.stringArrayList("variations")
+				?.mapNotNull { it.toCodepointList("EmojiDataJsonVariation") }
+				?.forEach { emoji.addCode(it) }
+
+			for (k in emojiDataCodepointsVendors) {
+				src.string(k)?.toCodepointList("EmojiDataJson($k)")
+					?.let { emoji.addCode(it) }
+			}
+
+			// short_name のリスト
+			val shortNames = HashSet<String>().also { dst ->
+				src.string("short_name")?.addTo(dst)
+				src.stringArrayList("short_names")?.forEach {
+					it.addTo(dst)
 				}
+			}.mapNotNull { it.toShortName("EmojiDataJson") }
 
-				src.stringArrayList("variations")
-					?.mapNotNull { it.toCodepointList("EmojiDataJsonVariation") }
-					?.forEach { emoji.addCode(it) }
+			if (shortNames.isEmpty())
+				error("emojiData ${src.string("unified")} has no shortName")
+			shortNames.forEach { emoji.addShortName(it) }
 
-				for (k in emojiDataCodepointsVendors) {
-					src.string(k)?.toCodepointList("EmojiDataJson($k)")
-						?.let { emoji.addCode(it) }
-				}
+			val parentEmoji = emoji
 
-				// short_name のリスト
-				val shortNames = HashSet<String>().also { dst ->
-					src.string("short_name")?.addTo(dst)
-					src.stringArrayList("short_names")?.forEach {
-						it.addTo(dst)
-					}
-				}.mapNotNull { it.toShortName("EmojiDataJson") }
+			// スキントーン
+			src.jsonObject("skin_variations")?.let { skinVariations ->
+				val parentName = shortNames.first()
+				val skinToneUsed = HashSet<Int>()
+				for ((k, data) in skinVariations.entries ) {
+					if (data !is JsonObject) continue
 
-				if (shortNames.isEmpty())
-					error("emojiData ${src.string("unified")} has no shortName")
-				shortNames.forEach { emoji.addShortName(it) }
+					// 再帰呼び出しあり
+					fun handleCode(list: IntArray, idx: Int, parentSuffix: Array<String>, suffixIndex: Int) {
+						val code = list.elementAtOrNull(idx) ?: return
+						val modifier = skinToneModifiers[code]
+							?: error("missing skinToneModifier u${list[idx].toString(16)} for $parentName")
+						skinToneUsed.add(code)
+						val lastSuffix = modifier.suffixList[suffixIndex]
+						val suffix =
+							if (parentSuffix.contains(lastSuffix))
+								parentSuffix
+							else
+								arrayOf(*parentSuffix, lastSuffix)
+						if (idx < list.size - 1) {
+							handleCode(list, idx + 1, suffix, suffixIndex)
+						} else {
+							unified = data.string("unified")!!.toCodepointList("EmojiData(skinTone)")!!
+							key = unified.toKey("EmojiData(skinTone)")
+							emoji = emojiMap[key] ?: error("can't find emoji for $key")
 
-				val parentEmoji = emoji
+							emoji.addCode(unified)
+							shortNames
+								.mapNotNull { (it.name + suffix.joinToString("")).toShortName("EmojiData(skinTone)") }
+								.forEach { emoji.addShortName(it) }
 
-				// スキントーン
-				src.jsonObject("skin_variations")?.let { skinVariations ->
-					val parentName = shortNames.first()
-					val skinToneUsed = HashSet<Int>()
-					for ((k, data) in skinVariations.entries) {
-						if (data !is JsonObject) continue
-
-						fun handleCode(list: IntArray, idx: Int, parentSuffix: Array<String>, suffixIndex: Int) {
-							val code = list.elementAtOrNull(idx) ?: return
-							val modifier = skinToneModifiers[code]
-								?: error("missing skinToneModifier u${list[idx].toString(16)} for $parentName")
-							skinToneUsed.add(code)
-							val lastSuffix = modifier.suffixList[suffixIndex]
-							val suffix =
-								if (parentSuffix.contains(lastSuffix))
-									parentSuffix
-								else
-									arrayOf(*parentSuffix, lastSuffix)
-							if (idx < list.size - 1) {
-								handleCode(list, idx + 1, suffix, suffixIndex)
-							} else {
-								unified = data.string("unified")!!.toCodepointList("EmojiData(skinTone)")!!
-								key = unified.toKey("EmojiData(skinTone)")
-								emoji = emojiMap[key] ?: error("can't find emoji for $key")
-
-								emoji.addCode(unified)
-								shortNames
-									.mapNotNull { (it.name + suffix.joinToString("")).toShortName("EmojiData(skinTone)") }
-									.forEach { emoji.addShortName(it) }
-
-								emoji.addToneParent(parentEmoji)
-							}
-						}
-
-						val codeList = k.toCodepointList("toneSpec")!!.list
-						for (suffixIndex in skinToneModifiers.values.first().suffixList.indices) {
-							handleCode(codeList, 0, emptyArray(), suffixIndex)
+							emoji.addToneParent(parentEmoji)
 						}
 					}
-					if (skinToneUsed.size != skinToneModifiers.size) {
-						log.w("skin tone code not fully used: $parentName")
+
+					val codeList = k.toCodepointList("toneSpec")!!.list
+					for (suffixIndex in skinToneModifiers.values.first().suffixList.indices) {
+						handleCode(codeList, 0, emptyArray(), suffixIndex)
 					}
+				}
+				if (skinToneUsed.size != skinToneModifiers.size) {
+					log.w("skin tone code not fully used: $parentName")
 				}
 			}
+		}
 	}
 
 
-	private val ignoreEmojiOneShortNames = setOf(
-		"man_in_tuxedo",
-		"man_in_tuxedo_tone1", "tuxedo_tone1",
-		"man_in_tuxedo_tone2", "tuxedo_tone2",
-		"man_in_tuxedo_tone3", "tuxedo_tone3",
-		"man_in_tuxedo_tone4", "tuxedo_tone4",
-		"man_in_tuxedo_tone5", "tuxedo_tone5",
-	)
 
 	private fun readEmojiOne() {
 		val cameFrom = "EmojiOneJson"
@@ -444,33 +492,7 @@ class App {
 		}
 	}
 
-	// カテゴリ別
-	// 絵文字のショートネームを外部から拾ってくる
-	private suspend fun readCategoryShortName(client: HttpClient) {
-		categoryNames.forEach { category ->
-			if (category.url == null) return@forEach
-			val root = client.cachedGetString(category.url, mapOf()).parseHtml(category.url)
-			val list = root.getElementsByClass("emoji-list").first()
-			list.getElementsByTag("li").forEach liLoop@{ node ->
-				val shortName = node.getElementsByTag("a")!!.attr("href")
-					.replace("/", "")
-					.toShortName(cameFromCategory)
-					?: error("can't parse ${node.getElementsByTag("a")!!.attr("href")}")
 
-				if (ignoreShortName.any { shortName.name == it }) return@liLoop
-
-				val text = node.getElementsByClass("emoji").text()
-				val code = text.listCodePoints()
-					.takeIf { it.isNotEmpty() }?.toCodepointList("CategoryHtml")
-					?: error("can't parse code from $text")
-
-				val key = code.toKey("CategoryHtml")
-				val emoji = emojiMap[key]
-					?: error("can't find emoji for ${category.url} $shortName $key $text")
-				category.addEmoji(emoji, allowDuplicate = true, addingName = shortName.toString())
-			}
-		}
-	}
 
 	private fun fixCategory() {
 		val nameMap = HashMap<ShortName, Emoji>().apply {
@@ -647,8 +669,8 @@ class App {
 
 		// cameFromCategory 以外のshortNameがあるなら、cameFromCategoryのshortNameは使わない
 		for (emoji in emojiMap.values) {
-			if (emoji.shortNames.any { it.cameFrom != cameFromCategory }) {
-				emoji.removeShortNameByCameFrom(cameFromCategory)
+			if (emoji.shortNames.any { it.cameFrom != fromCategoryHtml }) {
+				emoji.removeShortNameByCameFrom(fromCategoryHtml)
 			}
 		}
 
@@ -681,7 +703,7 @@ class App {
 			val preferFrom = froms.find { it.second == "EmojiDataJson" }
 				?: froms.find { it.second == "EmojiSpec" }
 				?: froms.find { it.second == "EmojiOneJson" }
-				?: froms.find { it.second == cameFromCategory }
+				?: froms.find { it.second == fromCategoryHtml }
 
 			if (preferFrom != null) {
 				// 優先順位の低いemojiからshortNameを除去する
@@ -716,8 +738,200 @@ class App {
 		}
 	}
 
+	private fun fixToneParent() {
+		var hasError = false
+		val nameMap = HashMap<String, Emoji>()
+		for (emoji in emojiMap.values) {
+			for (shortName in emoji.shortNames) {
+				nameMap[shortName.name] = emoji
+			}
+		}
+		val suffixList = skinToneModifiers.values
+			.flatMap { it.suffixList.toList() }
+			.sortedByDescending { it.length }
+
+
+		for (emoji in emojiMap.values) {
+			// トーンの絵文字の一部は内部に他のトーンの名前を含むので誤検出を回避する
+			if (emoji.resName in arrayOf("emj_1f3fc", "emj_1f3fe")) continue
+
+			fun String.removeToneSuffix(): String {
+				var name = this
+				when (name) {
+					"kiss_light_skin_tone" -> return "couplekiss"
+					"kiss_medium_light_skin_tone" -> return "couplekiss"
+					"kiss_medium_skin_tone" -> return "couplekiss"
+					"kiss_medium_dark_skin_tone" -> return "couplekiss"
+					"kiss_dark_skin_tone" -> return "couplekiss"
+				}
+
+				suffixList.forEach { name = name.replace(it, "") }
+				return when (name) {
+					"couple_with_heart_person_person" -> "couple_with_heart"
+					"kiss_person_person" -> "couplekiss"
+					"kiss_woman_woman" -> "woman_kiss_woman"
+					"kiss_woman_man" -> "woman_kiss_man"
+					"kiss_man_man" -> "man_kiss_man"
+					else -> name
+				}
+			}
+
+			for (shortName in emoji.shortNames) {
+				val parent = nameMap[shortName.name.removeToneSuffix()]
+				if (parent == emoji) continue
+				if (parent == null) {
+					log.e("${emoji.resName} $shortName looks like tone variation,but can't find parent.")
+					hasError = true
+					continue
+				}
+				emoji.addToneParent(parent)
+			}
+		}
+
+		for (emoji in emojiMap.values) {
+			val parents = emoji.toneParents
+			if (parents.isEmpty()) continue
+			if (parents.size > 1) {
+				log.e("${emoji.resName} has many parents. ${parents.joinToString(",")}")
+				hasError = true
+				continue
+			}
+			parents.forEach { parent ->
+				val toneCode = emoji.key.getToneCode("makeToneMap")
+					?: error("emoji $emoji has parent, but has no toneCode.")
+				when (val old = parent.toneChildren[toneCode]) {
+					null -> parent.toneChildren[toneCode] = emoji
+					emoji -> {
+					}
+					else -> error("conflict toneChildren. emoji ${parent.resName} has $old and $emoji.")
+				}
+			}
+		}
+
+		if (hasError) error("toneParent error.")
+	}
+
+	private fun writeData(){
+		val outFile = "emoji_map.txt"
+		UnixPrinter(File(outFile)).use { writer ->
+
+			// 絵文字をskipするか事前に調べる
+			for (emoji in emojiMap.values.sortedBy { it.key }) {
+
+				val codeSet = emoji.codeSet.sorted()
+				if (codeSet.isEmpty()) {
+					log.w("skip emoji ${emoji.unified} ${emoji.resName} that has no valid codes")
+					emoji.skip = true
+				} else if (emoji.unified.list.isAsciiEmoji()) {
+					log.w("skip emoji ${emoji.unified} ${emoji.resName} that has no valid codes")
+					emoji.skip = true
+				}
+			}
+
+			for (emoji in emojiMap.values.sortedBy { it.key }) {
+				if (emoji.skip) continue
+
+				// 画像リソースID
+				val strResName = emoji.resName
+				if (File("assets/$strResName.svg").isFile) {
+					writer.println("svg:$strResName.svg//${emoji.imageFiles.first().second}")
+				} else {
+					writer.println("drawable:$strResName//${emoji.imageFiles.first().second}")
+				}
+
+				// unified
+				writer.println("un:${emoji.unified.toRawString()}//${emoji.unified.from}")
+
+				// Unicodeシーケンス
+				val codeSet = emoji.codeSet.sorted()
+				for (code in codeSet) {
+					if (code == emoji.unified) continue
+					val raw = code.toRawString()
+					if (raw.isEmpty()) error("too short code! ${emoji.resName}")
+					writer.println("u:$raw//${code.from}")
+				}
+
+				// 画像リソースIDとshortcodeの関連付けを出力する
+				// 投稿時にshortcodeをユニコードに変換するため、shortcodeとUTF-16シーケンスの関連付けを出力する
+				val nameList = emoji.nameList.notEmpty()
+					?: error("missing shortName. ${emoji.resName}")
+				nameList.forEachIndexed { index, triple ->
+					val (_, name, froms) = triple
+					val header = if (index == 0) "sn" else "s"
+					writer.println("${header}:$name//${froms.joinToString(",")}")
+				}
+			}
+
+			fun Category.printCategory(list:List<Emoji>){
+				writer.println("cn:${this.name}")
+				for(emoji in list){
+					writer.println("c:${emoji.unified.toRawString()}")
+					emoji.usedInCategory = this
+				}
+			}
+
+			categoryNames.forEach { category ->
+				category.printCategory(category.emojis.filter { !it.skip })
+			}
+
+			run{
+				val category = categoryNames.find{ it.name == "Others"}!!
+				category.printCategory(
+					emojiMap.values
+						.filter { it.usedInCategory == null && it.toneParents.isEmpty() }
+						.sortedBy { it.shortNames.first() }
+				)
+			}
+
+			// スキントーン
+			emojiMap.values
+				.filter { it.toneChildren.isNotEmpty() }
+				.sortedBy { it.key }
+				.forEach { parent ->
+					if( parent.usedInCategory==null){
+						log.e("parent ${parent.resName} not used in any category!")
+					}
+					parent.toneChildren.entries
+						.toList()
+						.sortedBy { it.key }
+						.forEach eachChild@{
+							val child = it.value
+							if (child.skip) return@eachChild
+							writer.println("t:${parent.unified.toRawString()},${it.key.toRawString()},${child.unified.toRawString()}")
+						}
+				}
+
+			// 複合トーン
+			run{
+				val category = categoryNames.find { it.name == "ComplexTones" }!!
+				category.printCategory(
+					emojiMap.values
+						.filter { it.toneChildren.isNotEmpty() }
+						.sortedBy { it.key }
+						.flatMap { parent ->
+							if( parent.usedInCategory==null){
+								log.e("parent ${parent.resName} not used in any category!")
+							}
+							parent.toneChildren.entries
+								.toList()
+								.filter { it.key.list.size > 1 }
+								.sortedBy { it.key }
+								.map{ it.value}
+						}
+				)
+			}
+		}
+
+		log.d("wrote $outFile")
+	}
+
 	suspend fun run() {
-		HttpClient {
+
+		// 修正用データを読む
+		readFixData()
+
+		// emojipediaからバージョン別一覧とカテゴリ別一覧を読む
+		val emojipediaData = HttpClient {
 			install(HttpTimeout) {
 				val t = 30000L
 				requestTimeoutMillis = t
@@ -725,232 +939,52 @@ class App {
 				socketTimeoutMillis = t
 			}
 		}.use { client ->
-
-			readFixData()
-
-			readQualified13_1(client)
-
-			scanEmojiImages()
-			copyImages()
-
-			addEmojipediaShortnames()
-
-			readVendorCode()
-			readEmojiData()
-			readEmojiOne()
-			readCategoryShortName(client)
-
-			checkCodeConflict()
-			checkShortNameConflict()
-
-			run {
-				var hasError = false
-				val nameMap = HashMap<String, Emoji>()
-				for (emoji in emojiMap.values) {
-					for (shortName in emoji.shortNames) {
-						nameMap[shortName.name] = emoji
-					}
-				}
-				val suffixList = skinToneModifiers.values
-					.flatMap { it.suffixList.toList() }
-					.sortedByDescending { it.length }
-
-
-				for (emoji in emojiMap.values) {
-					// トーンの絵文字の一部は内部に他のトーンの名前を含むので誤検出を回避する
-					if (emoji.resName in arrayOf("emj_1f3fc", "emj_1f3fe")) continue
-
-					fun String.removeToneSuffix(): String {
-						var name = this
-						when (name) {
-							"kiss_light_skin_tone" -> return "couplekiss"
-							"kiss_medium_light_skin_tone" -> return "couplekiss"
-							"kiss_medium_skin_tone" -> return "couplekiss"
-							"kiss_medium_dark_skin_tone" -> return "couplekiss"
-							"kiss_dark_skin_tone" -> return "couplekiss"
-						}
-
-						suffixList.forEach { name = name.replace(it, "") }
-						return when (name) {
-							"couple_with_heart_person_person" -> "couple_with_heart"
-							"kiss_person_person" -> "couplekiss"
-							"kiss_woman_woman" -> "woman_kiss_woman"
-							"kiss_woman_man" -> "woman_kiss_man"
-							"kiss_man_man" -> "man_kiss_man"
-							else -> name
-						}
-					}
-
-					for (shortName in emoji.shortNames) {
-						val parent = nameMap[shortName.name.removeToneSuffix()]
-						if (parent == emoji) continue
-						if (parent == null) {
-							log.e("${emoji.resName} $shortName looks like tone variation,but can't find parent.")
-							hasError = true
-							continue
-						}
-						emoji.addToneParent(parent)
-					}
-				}
-
-				for (emoji in emojiMap.values) {
-					val parents = emoji.toneParents
-					if (parents.isEmpty()) continue
-					if (parents.size > 1) {
-						log.e("${emoji.resName} has many parents. ${parents.joinToString(",")}")
-						hasError = true
-						continue
-					}
-					parents.forEach { parent ->
-						val toneCode = emoji.key.getToneCode("makeToneMap")
-							?: error("emoji $emoji has parent, but has no toneCode.")
-						when (val old = parent.toneChildren[toneCode]) {
-							null -> parent.toneChildren[toneCode] = emoji
-							emoji -> {
-							}
-							else -> error("conflict toneChildren. emoji ${parent.resName} has $old and $emoji.")
-						}
-					}
-				}
-
-				if (hasError) error("toneParent error.")
-			}
-
-			fixCategory()
-
-			if (hasConflict) error("please fix conflicts.")
-
-			// shortcodeに含まれる文字の種類を列挙する
-			val nameChars = HashSet<Char>()
-			val nameMap = HashMap<ShortName, Emoji>()
-			for (emoji in emojiMap.values) {
-				for (shortName in emoji.shortNames) {
-					nameMap[shortName] = emoji
-					for (c in shortName.name)
-						nameChars.add(c)
-				}
-			}
-			log.w("nameChars: [${nameChars.sorted().joinToString("")}]")
-
-
-			val outFile = "emoji_map.txt"
-			UnixPrinter(File(outFile)).use { writer ->
-
-				// 絵文字をskipするか事前に調べる
-				for (emoji in emojiMap.values.sortedBy { it.key }) {
-
-					val codeSet = emoji.codeSet.sorted()
-					if (codeSet.isEmpty()) {
-						log.w("skip emoji ${emoji.unified} ${emoji.resName} that has no valid codes")
-						emoji.skip = true
-					} else if (emoji.unified.list.isAsciiEmoji()) {
-						log.w("skip emoji ${emoji.unified} ${emoji.resName} that has no valid codes")
-						emoji.skip = true
-					}
-				}
-
-				for (emoji in emojiMap.values.sortedBy { it.key }) {
-					if (emoji.skip) continue
-
-					// 画像リソースID
-					val strResName = emoji.resName
-					if (File("assets/$strResName.svg").isFile) {
-						writer.println("svg:$strResName.svg//${emoji.imageFiles.first().second}")
-					} else {
-						writer.println("drawable:$strResName//${emoji.imageFiles.first().second}")
-					}
-
-					// unified
-					writer.println("un:${emoji.unified.toRawString()}//${emoji.unified.from}")
-
-					// Unicodeシーケンス
-					val codeSet = emoji.codeSet.sorted()
-					for (code in codeSet) {
-						if (code == emoji.unified) continue
-						val raw = code.toRawString()
-						if (raw.isEmpty()) error("too short code! ${emoji.resName}")
-						writer.println("u:$raw//${code.from}")
-					}
-
-					// 画像リソースIDとshortcodeの関連付けを出力する
-					// 投稿時にshortcodeをユニコードに変換するため、shortcodeとUTF-16シーケンスの関連付けを出力する
-					val nameList = emoji.nameList.notEmpty()
-						?: error("missing shortName. ${emoji.resName}")
-					nameList.forEachIndexed { index, triple ->
-						val (_, name, froms) = triple
-						val header = if (index == 0) "sn" else "s"
-						writer.println("${header}:$name//${froms.joinToString(",")}")
-					}
-				}
-
-				fun Category.printCategory(list:List<Emoji>){
-					writer.println("cn:${this.name}")
-					for(emoji in list){
-						writer.println("c:${emoji.unified.toRawString()}")
-						emoji.usedInCategory = this
-					}
-				}
-
-				categoryNames.forEach { category ->
-					category.printCategory(category.emojis.filter { !it.skip })
-				}
-
-				run{
-					val category = categoryNames.find{ it.name == "Others"}!!
-					category.printCategory(
-						emojiMap.values
-							.filter { it.usedInCategory == null && it.toneParents.isEmpty() }
-							.sortedBy { it.shortNames.first() }
-					)
-				}
-
-				// スキントーン
-				emojiMap.values
-					.filter { it.toneChildren.isNotEmpty() }
-					.sortedBy { it.key }
-					.forEach { parent ->
-						if( parent.usedInCategory==null){
-							log.e("parent ${parent.resName} not used in any category!")
-						}
-						parent.toneChildren.entries
-							.toList()
-							.sortedBy { it.key }
-							.forEach eachChild@{
-								val child = it.value
-								if (child.skip) return@eachChild
-								writer.println("t:${parent.unified.toRawString()},${it.key.toRawString()},${child.unified.toRawString()}")
-							}
-					}
-
-				// 複合トーン
-				run{
-					val category = categoryNames.find { it.name == "ComplexTones" }!!
-					category.printCategory(
-						emojiMap.values
-							.filter { it.toneChildren.isNotEmpty() }
-							.sortedBy { it.key }
-							.flatMap { parent ->
-								if( parent.usedInCategory==null){
-									log.e("parent ${parent.resName} not used in any category!")
-								}
-								parent.toneChildren.entries
-									.toList()
-									.filter { it.key.list.size > 1 }
-									.sortedBy { it.key }
-									.map{ it.value}
-							}
-					)
-				}
-			}
-
-			log.d("wrote $outFile")
-
-			log.d("codeCameFroms: ${Emoji.codeCameFroms.joinToString(",")}")
-			log.d("nameCameFroms: ${Emoji.nameCameFroms.joinToString(",")}")
+			readEmojipedia(client)
 		}
+
+		// 画像をスキャンする前に絵文字のqualified codeを調べておく
+		readEmojipediaQualified(emojipediaData)
+
+		// サブフォルダから絵文字の画像を収集する
+		scanEmojiImages()
+		// 収集した画像をコピーする
+		copyImages()
+
+		addEmojipediaShortnames()
+
+		readVendorCode()
+		readEmojiData()
+		readEmojiOne()
+		readCategoryShortName(emojipediaData)
+
+		checkCodeConflict()
+		checkShortNameConflict()
+
+		fixToneParent()
+
+
+		fixCategory()
+
+		if (hasConflict) error("please fix conflicts.")
+
+		// shortcodeに含まれる文字の種類を列挙する
+		val nameChars = HashSet<Char>()
+		val nameMap = HashMap<ShortName, Emoji>()
+		for (emoji in emojiMap.values) {
+			for (shortName in emoji.shortNames) {
+				nameMap[shortName] = emoji
+				for (c in shortName.name)
+					nameChars.add(c)
+			}
+		}
+		log.w("nameChars: [${nameChars.sorted().joinToString("")}]")
+
+		writeData()
+
+		log.d("codeCameFroms: ${Emoji.codeCameFroms.joinToString(",")}")
+		log.d("nameCameFroms: ${Emoji.nameCameFroms.joinToString(",")}")
 	}
 }
-
 
 fun main(args: Array<String>) = runBlocking {
 	log.d("args=${args.joinToString(",")}")

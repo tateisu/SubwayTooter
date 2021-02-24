@@ -6,7 +6,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- CAMERAパーミッションをつけるとPlayストアにプライバシーポリシーを記載する必要がある -->
@@ -51,7 +53,7 @@
         <!-- Simejiマッシュルームプラグインの存在確認 -->
         <intent>
             <action android:name="com.adamrocker.android.simeji.ACTION_INTERCEPT" />
-            <category android:name="com.adamrocker.android.simeji.REPLACE"/>
+            <category android:name="com.adamrocker.android.simeji.REPLACE" />
         </intent>
 
         <!-- <intent>-->
@@ -77,7 +79,9 @@
         android:theme="@style/AppTheme.Light"
         tools:ignore="UnusedAttribute">
 
-        <receiver android:name=".EventReceiver">
+        <receiver
+            android:name=".EventReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -92,15 +96,16 @@
 
         <service
             android:name=".notification.PollingService"
+            android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <service android:name=".notification.PollingForegrounder" />
 
         <activity
             android:name=".ActMain"
+            android:exported="true"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -110,9 +115,8 @@
 
         <activity
             android:name=".ActCallback"
-            android:label="@string/app_name"
-
-            >
+            android:exported="true"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -197,94 +201,111 @@
 
         <activity
             android:name=".ActPost"
+            android:exported="false"
             android:label="@string/act_post"
-
             android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".ActAccountSetting"
+            android:exported="false"
             android:label="@string/account_setting"
-
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActAppSetting"
+            android:exported="false"
             android:label="@string/app_setting"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActColumnList"
+            android:exported="false"
             android:label="@string/column_list"
-
             android:windowSoftInputMode="adjustResize" />
+
         <activity
             android:name=".ActAbout"
-            android:label="@string/app_about"
+            android:exported="false"
+            android:label="@string/app_about" />
 
-            />
         <activity
             android:name=".ActOSSLicense"
-            android:label="@string/oss_license"
+            android:exported="false"
+            android:label="@string/oss_license" />
 
-            />
         <activity
             android:name=".ActMutedApp"
+            android:exported="false"
             android:label="@string/muted_app" />
+
         <activity
             android:name=".ActMutedPseudoAccount"
+            android:exported="false"
             android:label="@string/muted_users_from_pseudo_account" />
 
         <activity
             android:name=".ActMutedWord"
+            android:exported="false"
             android:label="@string/muted_word" />
 
         <activity
             android:name=".ActFavMute"
+            android:exported="false"
             android:label="@string/fav_muted_user_long" />
 
         <activity
             android:name=".ActKeywordFilter"
+            android:exported="false"
             android:label="@string/keyword_filter_new"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActHighlightWordList"
+            android:exported="false"
             android:label="@string/highlight_word" />
         <activity
             android:name=".ActHighlightWordEdit"
+            android:exported="false"
             android:label="@string/highlight_word" />
 
         <activity
             android:name=".ActColumnCustomize"
+            android:exported="false"
             android:label="@string/color_and_background"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActLanguageFilter"
+            android:exported="false"
             android:label="@string/language_filter"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActDrawableList"
+            android:exported="false"
             android:label="@string/drawable_list"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActNickname"
+            android:exported="false"
             android:label="@string/nickname_and_color_and_notification_sound"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActText"
+            android:exported="false"
             android:label="@string/select_and_copy"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
             android:name=".ActMediaViewer"
+            android:exported="false"
             android:theme="@style/AppTheme.Dark.NoActionBar" />
 
         <activity
             android:name=".ActExitReasons"
+            android:exported="false"
             android:label="@string/exit_reasons"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
@@ -302,7 +323,9 @@
                 android:resource="@xml/file_provider_path" />
         </provider>
 
-        <receiver android:name=".DownloadReceiver">
+        <receiver
+            android:name=".DownloadReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED" />
                 <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
@@ -311,6 +334,7 @@
 
         <service
             android:name=".MyFirebaseMessagingService"
+            android:exported="true"
             tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

@@ -41,7 +41,7 @@ object EmojiMap {
         fun addCode(emoji: UnicodeEmoji, code: String) {
             if (isIgnored(code)) return
             unicodeMap[code] = emoji
-            unicodeTrie.append(code,0,emoji)
+            unicodeTrie.append(code, 0, emoji)
         }
 
 
@@ -112,13 +112,17 @@ object EmojiMap {
                         val category = lastCategory
                             ?: error("missing lastCategory.")
                         val emoji = unicodeMap[line] ?: error("missing emoji.")
-                        if (!category.emoji_list.contains(emoji))
+//                        if (emoji == null) {
+//                            Log.w("SubwayTooter", "missing emoji. lno=$lno line=$rawLine")
+//                        } else
+                        if (!category.emoji_list.contains(emoji)) {
                             category.emoji_list.add(emoji)
+                        }
                     }
                     else -> error("unknown header $head")
                 }
             } catch (ex: Throwable) {
-                Log.e("SubwayTooter","EmojiMap load error.",ex)
+                Log.e("SubwayTooter", "EmojiMap load error.", ex)
                 error("EmojiMap load error: ${ex.javaClass.simpleName} ${ex.message} lno=$lno line=$rawLine")
             }
         }
@@ -156,9 +160,9 @@ object EmojiMap {
             readStream(appContext, it)
         }
         shortNameList.sort()
-        for( emoji in unicodeMap.values){
-            if( emoji.unifiedCode.isEmpty()) error("missing unifiedCode. ${emoji.assetsName ?: emoji.drawableId.toString()}")
-            if( emoji.unifiedName.isEmpty()) error("missing unifiedName. ${emoji.assetsName ?: emoji.drawableId.toString()}")
+        for (emoji in unicodeMap.values) {
+            if (emoji.unifiedCode.isEmpty()) error("missing unifiedCode. ${emoji.assetsName ?: emoji.drawableId.toString()}")
+            if (emoji.unifiedName.isEmpty()) error("missing unifiedName. ${emoji.assetsName ?: emoji.drawableId.toString()}")
         }
     }
 

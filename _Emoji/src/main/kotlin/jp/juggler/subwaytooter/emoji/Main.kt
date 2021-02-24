@@ -217,14 +217,18 @@ class App {
 
 		val hrefList = ArrayList<Pair<String, CodepointList>>()
 
-		for( cols in  root.jsonArray("qualifiedCode")!!.filterIsInstance<JsonArray>()){
+		var countError = 0
+
+		for( cols in  root.jsonArray("qualifiedCode")!!.filterIsInstance<JsonArray>()) {
 			val spanText = cols[0] as String
 			var href = cols[1] as String
 
-			val code = spanText.listCodePoints().toCodepointList(cameFrom)
+			var code = spanText.listCodePoints().toCodepointList(cameFrom)
 				?: error("can't get code from $spanText $href")
 
-			if( hrefList.any{ it.first == href})
+
+
+			if (hrefList.any { it.first == href })
 				error("duplicate href: $href")
 
 			hrefList.add(Pair(href, code))
@@ -244,7 +248,14 @@ class App {
 			val key = code.toKey(cameFrom)
 				?: error("can't get key from ${code.toHex()} ${shortName.name}")
 
-			fixUnified[key] = code
+			if (!fixUnified.containsKey(key)) {
+				if (code.list.size == 1 && code.list.first() < 256) {
+					++countError
+					log.e("bad unified code: $code")
+				} else {
+					fixUnified[key] = code
+				}
+			}
 
 			if (ignoreShortName.any { it == shortName.name }) {
 				log.w("skip shortname $shortName $code")
@@ -255,6 +266,8 @@ class App {
 		}
 
 		// hrefList.sortedBy{ it.first }.forEach { log.d("href=${it.first} ${it.second}") }
+
+		if(countError>0) error("please fix unified codes. countError=$countError")
 	}
 
 	private fun addEmojipediaShortnames() {
@@ -299,6 +312,7 @@ class App {
 		val reCodeSpec = codeSpec.toRegex()
 		var countFound = 0
 		var countCreate = 0
+		var countError = 0
 		for( imageFile in dir.listFiles()!!){
 			if (!imageFile.isFile) continue
 			val unixPath = imageFile.path.replace("\\", "/")
@@ -318,8 +332,13 @@ class App {
 
 			var emoji = emojiMap[key]
 			if (emoji == null) {
-				val unified2 = fixUnified[key]
-				emoji = Emoji(key, unified2 ?: unifiedQualifier(code))
+				val unified2 = fixUnified[key] ?: unifiedQualifier(code)
+				if( unified2.list.size==1 && unified2.list.first()<256){
+					++countError
+					log.e("bad unified code: $unified2")
+				}
+				emoji = Emoji(key, unified2)
+
 				emojiMap[key] = emoji
 				++countCreate
 			}
@@ -327,7 +346,9 @@ class App {
 			emoji.imageFiles.add(Pair(imageFile, cameFrom))
 			emoji.addCode(code)
 		}
+
 		log.d("scanImageDir: found=$countFound,create=$countCreate, dir=$dir")
+		if(countError>0) error("please fix unified codes. countError=$countError")
 	}
 
 	// サブフォルダをスキャンして絵文字別に画像データを確定する

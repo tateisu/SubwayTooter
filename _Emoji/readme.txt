@@ -23,7 +23,6 @@ git clone git@github.com:tootsuite/mastodon.git mastodon
 rm -fr twemoji
 git clone git@github.com:twitter/twemoji.git twemoji
 
-
 # noto-emoji
 rm -fr noto-emoji
 git clone git@github.com:googlefonts/noto-emoji.git noto-emoji
@@ -38,7 +37,6 @@ git clone git@github.com:google/emoji4unicode.git emoji4unicode
 265f-fe0f.svg  Black Chess Pawn. Emoji 11.0 で追加されたがtwemojiに入ってない。
 267e-fe0f.svg  Permanent Paper Sign. Emoji 11.0 で追加されたがtwemojiに入ってない。
 
-
 ########################################
 
 * 前準備
@@ -46,19 +44,21 @@ mkdir assets drawable-nodpi
 rm -f assets/* drawable-nodpi/* category-pretty.json
 
 * ビルド
-####perl makeJavaCode.pl 2>error.log
+IntelliJ IDEA で _Emoji のプロジェクトを開く
+Gradle sync
+Main.Ktを実行
+
 2021/02 からkotlinのコードに変えた
 
 * 出力
 
+drawable-nodpi の中身を C:\mastodon-related\SubwayTooter\emoji\src\main\res\drawable-nodpi にコピー。 (現時点ではカラ)
 assets の中身を C:\mastodon-related\TestEmojiSvg\app/src/main/assets にコピー。 TestEmojiSvg をビルドしてエラーが出ないか試す
 assets の中身を C:\mastodon-related\SubwayTooter\emoji\src\main\assets にコピー。
-drawable-nodpi の中身を C:\mastodon-related\SubwayTooter\emoji\src\main\res\drawable-nodpi にコピー。
-EmojiData201709.java の中味を emoji/src/main/java/.../EmojiMap.java の所定の場所にペースト。
-
+emoji_map.txt を C:\mastodon-related\SubwayTooter\emoji\src\main\assets にコピー。
 
 #################################
-* 2018/9/23 メンテナンス。
+# 2018/9/23 メンテナンス
 
 今のマストドンが利用している絵文字データの再確認。
 
@@ -85,4 +85,51 @@ https://github.com/iamcal/emoji-data/blob/v4.0.4/emoji.json
 投稿後のデータのUnicode絵文字に使われているのはMastodon公式リポジトリにあるsvgファイルだ。
 https://github.com/tootsuite/mastodon/tree/master/public/emoji
 
+---------------------------------------------------------------------
+# 202102 メンテナンス
 
+## Motivation
+- Gargron/emoji-mart が古すぎる。カテゴリ一覧は他の場所から持ってくるべき
+- Emoji 13.1対応の画像でライセンス的にアプリで使えそうなのはnoto-emojiくらいしかない。
+
+## Changes
+- 出力データをJavaコードではなく emoji_map.txt に変更した
+- 変換コードをPerlからKotlinに変えた。いままで適当だったCodepointListなどをInt配列で扱えるので精密さが増した。
+- noto-emoji や emoji4unicodeを読むようになった
+- Emojipediaからバージョン別絵文字一覧やカテゴリ別絵文字一覧を読むようになった。
+-- カテゴリ一覧をEmoji 13.1に対応できる
+-- 実際に使われているfull qualified codeを確認できる
+- スキントーンの親子関係を検証,列挙するようになった
+
+---------------------------------------------------------------------
+# emoji_map.txt のフォーマット
+
+### 基本的な構造
+- 行区切りは\x0a。
+- 行ごとに始端と終端をtrim{ it<= 0x20} する。
+- 行ごとに//以降を読み飛ばす。
+- 各行の^(\w+): 部分がヘッダ。
+
+### ヘッダとその処理
+
+svg または drawable
+: 絵文字の画像リソースを表す。
+
+un または u
+: 直前に画像リソースが指定された絵文字に対して、Unicode表現を表す。
+: 絵文字をUnicodeに変換する時はunで指定されたデータを使う(必ず提供される)。
+
+sn または s
+: 直前に画像リソースが指定された絵文字に対して、ショートコード表現を表す。
+: 絵文字をショートコードに変換する時はsnで指定されたデータを使う(必ず提供される)。
+
+cn: カテゴリ名
+c: 直前に指定されたカテゴリ名に対して絵文字を追加する。パーサは登場順序を維持すること。
+
+t: トーン指定。カンマ区切りでトーン適用前の絵文字、トーンコード、トーン適用後の絵文字を表す。
+
+### トーンコード
+絵文字中の skin tone modifiersだけを抽出したもの。
+u1F3FB, u1F3FC, u1F3FD, u1F3FE, u1F3FF のコードポイントが1文字以上並ぶ。
+絵文字ピッカーでは1文字のトーンコードを持つ絵文字に対してトーンを選択できる。
+トーンコードが2文字以上ある場合は、絵文字ピッカーでは「複合トーン」カテゴリから選択できる。

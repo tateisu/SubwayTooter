@@ -528,7 +528,9 @@ class App {
 				?: error("fixCategory: can't parse $strShortName")
 			val emoji = nameMap[shortName]
 				?: error("fixCategory: missing emoji for $strShortName")
+
 			category.addEmoji(emoji, addingName = shortName.toString())
+			log.d("fixCategory $category ${emoji.resName} ${shortName}")
 		}
 	}
 

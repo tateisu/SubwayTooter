@@ -5,6 +5,7 @@ import jp.juggler.subwaytooter.emoji.log
 class Category(val name: String, val url: String?) {
 	override fun equals(other: Any?) = name == (other as? Category)?.name
 	override fun hashCode(): Int = name.hashCode()
+	override fun toString(): String ="Category($name)"
 
 	// ショートコード登場順序がある
 	private val _emojis = ArrayList<Emoji>()

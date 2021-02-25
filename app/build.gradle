@@ -6,7 +6,7 @@ apply plugin: 'kotlin-kapt'
 
 android {
 
-    compileSdkVersion target_sdk_version
+    compileSdkVersion compile_sdk_version
 
     // exoPlayer 2.9.0 以降は Java 8 compiler support を要求する
     // https://github.com/google/ExoPlayer/blob/release-v2/RELEASENOTES.md

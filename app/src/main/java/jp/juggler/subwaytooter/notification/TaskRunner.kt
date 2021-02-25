@@ -692,7 +692,7 @@ class TaskRunner(
                                 // FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             },
-                            PendingIntent.FLAG_UPDATE_CURRENT
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                         )
                     )
 
@@ -705,7 +705,7 @@ class TaskRunner(
                                 data =
                                     "subwaytooter://notification_delete/?$params".toUri()
                             },
-                            PendingIntent.FLAG_UPDATE_CURRENT
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                         )
                     )
 
@@ -748,7 +748,7 @@ class TaskRunner(
             context,
             3,
             intent_click,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val builder = if (Build.VERSION.SDK_INT >= 26) {

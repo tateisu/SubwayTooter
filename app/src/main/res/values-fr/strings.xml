@@ -189,7 +189,7 @@
     <string name="mention2">Mentionner</string>
     <string name="menu">Menu</string>
     <string name="minimum_column_width">Largeur minimale des colonnes (défaut=300dp, redémarrage nécessaire)</string>
-    <string name="missing_permission_to_access_media">Autorisation de l’application manquante pour accéder aux médias.</string>
+    <string name="missing_permission_to_access_media">Autorisation de l’application manquante pour accéder aux médias. Veuillez accorder l\'autorisation à l\'application dans les paramètres de l\'appareil.</string>
     <string name="more">Plus</string>
     <string name="mute">Désactiver le son</string>
     <string name="mute_app_desc">&gt; Faîtes glisser à gauche pour supprimer. Vous devez rafraîchir les colonnes pour voir les statuts publiés par les applications non masquées.</string>
@@ -1036,4 +1036,6 @@
     <string name="warn_hashtag_ascii_and_non_ascii">Avertir si le hashtag contient à la fois des caractères ASCII et non-ASCII</string>
     <string name="hashtag_contains_ascii_and_not_ascii">Le Hashtag %1$s contient à la fois des caractères ASCII et non ASCII. Il peut s’agir d’une faute de frappe. En êtes-vous sûr \?</string>
     <string name="direct_with_user_visibility">Visibilité \"direct aux utilisateur·rice·s\"</string>
+    <string name="emoji_category_others">Autres</string>
+    <string name="resize_square_pixels_2">Redimensionner en %1$d pixels carrés (équivalent %2$s)</string>
 </resources>

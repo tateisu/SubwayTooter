@@ -602,7 +602,7 @@
     <string name="always_show_application">Afficher (via) le nom de l\'application si possible</string>
     <string name="force_gap_when_refresh">Forcer l’ajout d\'un espace lors du rafraîchissement du dessus</string>
     <string name="avatar_icon_size">Taille de l’icône de l’avatar (Unité:dp. par défaut:48. Redémarrage de l’app requis)</string>
-    <string name="avatar_icon_round_ratio" formatted="false">Ratio de l’arrondi de l’icône de l’avatar (Unité:%. défaut:33. redémarrage de l\'application requis)</string>
+    <string name="avatar_icon_round_ratio" formatted="false">Ratio de l’arrondi de l’icône de l’avatar (unité : %. Défaut : 33. Redémarrage de l\'application requis)</string>
     <string name="avatar_icon_dont_round">Ne pas arrondir les coins de l’avatar (redémarrage requis)</string>
     <string name="share_view_pool">Partager le pool de vues entre les colonnes</string>
     <string name="rename">Renommer …</string>
@@ -902,7 +902,7 @@
     <string name="notifications_from_acct">Notifications de l’utilisateur·rice</string>
     <string name="notifications_from">Notifications venant de %1$s</string>
     <string name="pick_videos">Choisissez une vidéo …</string>
-    <string name="pick_audios">Choisissez un fichier audio …</string>
+    <string name="pick_audios">Choisissez un fichier audio…</string>
     <string name="followers_visibility">Visibilité «Abonné·e·s»</string>
     <string name="show_translate_button">Afficher le bouton de traduction</string>
     <string name="translate">Traduire</string>
@@ -1038,4 +1038,9 @@
     <string name="direct_with_user_visibility">Visibilité \"direct aux utilisateur·rice·s\"</string>
     <string name="emoji_category_others">Autres</string>
     <string name="resize_square_pixels_2">Redimensionner en %1$d pixels carrés (équivalent %2$s)</string>
+    <string name="justify_window_content_portrait">Justifier le contenu de la fenêtre (portrait, nécessite le redémarrage de l\'application)</string>
+    <string name="pixelfed_does_not_allow_post_without_media">Pixelfed n\'autorise pas les publications (hors réponse) sans média attaché.</string>
+    <string name="quote_to">Citation de %1$s</string>
+    <string name="account_picker_quote_toot">Avec quel compte citer le pouet \?</string>
+    <string name="display_name_posted_by">%1$s posté</string>
 </resources>

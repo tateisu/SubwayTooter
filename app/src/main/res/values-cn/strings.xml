@@ -476,4 +476,19 @@
     <string name="blocked_domains">屏蔽的域名</string>
     <string name="url_omitted">(网址省略)</string>
     <string name="confirm">确认</string>
+    <string name="display_name">显示名称</string>
+    <string name="change_header">更改标题图片</string>
+    <string name="change_avatar">更改头像图标</string>
+    <string name="public_profile">公开个人资料</string>
+    <string name="acct_sample">(示例)username@server</string>
+    <string name="enable_gif_animation">启用GIF动画（消耗大量电量）</string>
+    <string name="content_sample">(示例)苗条淑女君子好逑！</string>
+    <string name="content_color">内容文字颜色</string>
+    <string name="acct_color">帐户文字颜色</string>
+    <string name="background_image_alpha">背景图像透明度</string>
+    <string name="background_image">背景图像</string>
+    <string name="dont_show_follow">不显示关注</string>
+    <string name="dont_show_favourite">不显示收藏夹</string>
+    <string name="format_of_quote_name">“引用名称”的格式（包含%1$s的文本）</string>
+    <string name="resize_square_pixels_2">调整为%1$d个正方形像素（等效于%2$s）</string>
 </resources>

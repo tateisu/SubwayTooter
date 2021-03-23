@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="access_token_updated_for">Le jeton d’accès à %1$s a été mis à jour.</string>
-    <string name="account">Comptes</string>
+    <string name="account">Compte</string>
     <string name="account_add">Ajouter un compte</string>
     <string name="account_confirmed">Compte confirmé.</string>
     <string name="account_empty">Le compte n\'est pas configuré. Veuillez ajouter un compte.</string>
@@ -180,16 +180,16 @@
     <string name="login_failed">Connexion impossible.</string>
     <string name="login_required">Veuillez mettre à jour votre connexion à partir des paramètres du compte.</string>
     <string name="long_side_pixel">Côté le plus long mis à %1$d pixels</string>
-    <string name="mail_address_not_contains_at_mark">Veuillez entrer une adresse e-mail contenant « @ » et « . »</string>
-    <string name="mail_hint">Ex) votre\@e-mail.address</string>
-    <string name="mail_not_specified">E-mail non spécifié</string>
+    <string name="mail_address_not_contains_at_mark">Veuillez entrer une adresse courriel contenant « @ » et « . »</string>
+    <string name="mail_hint">Ex. : exemple@courriel.org</string>
+    <string name="mail_not_specified">Courriel non spécifié</string>
     <string name="media_attachment">Ajouter une pièce jointe</string>
     <string name="media_thumbnail_height">Hauteur des miniatures dans l’interface (défaut=64dp, redémarrage nécessaire)</string>
     <string name="mention">mention</string>
     <string name="mention2">Mentionner</string>
     <string name="menu">Menu</string>
     <string name="minimum_column_width">Largeur minimale des colonnes (défaut=300dp, redémarrage nécessaire)</string>
-    <string name="missing_permission_to_access_media">Autorisation de l’application manquante pour accéder aux médias.</string>
+    <string name="missing_permission_to_access_media">Autorisation de l’application manquante pour accéder aux médias. Veuillez accorder l\'autorisation à l\'application dans les paramètres de l\'appareil.</string>
     <string name="more">Plus</string>
     <string name="mute">Désactiver le son</string>
     <string name="mute_app_desc">&gt; Faîtes glisser à gauche pour supprimer. Vous devez rafraîchir les colonnes pour voir les statuts publiés par les applications non masquées.</string>
@@ -266,7 +266,7 @@
     <string name="save">Sauvegarder</string>
     <string name="search">Rechercher</string>
     <string name="search_for">Chercher %1$s</string>
-    <string name="search_of">Rechercher \"%1$s\"</string>
+    <string name="search_of">Rechercher « %1$s »</string>
     <string name="search_web">Recherche Web</string>
     <string name="select_and_copy">Sélectionner et copier</string>
     <string name="send">Envoyer</string>
@@ -308,7 +308,7 @@
     <string name="unmute_succeeded">N’est plus en sourdine</string>
     <string name="update_access_token">Mettre à jour le jeton d’accès</string>
     <string name="user">Utilisateur</string>
-    <string name="user_mail_address">Adresse e-mail</string>
+    <string name="user_mail_address">Courriel</string>
     <string name="user_name_not_match">Le nom d\'utilisateur ne correspond pas</string>
     <string name="user_password">Mot de passe de l’utilisateur</string>
     <string name="version_is">Version %1$s</string>
@@ -378,7 +378,7 @@
     <string name="toot_search">Recherche de pouets</string>
     <string name="mastodon_search_portal">MSP (JP)</string>
     <string name="search_desc_mastodon_api">Recherche de compte/étiquette à l’aide de l\'API Mastodon.</string>
-    <string name="toot_search_of">Recherche du pouet \"%1$s\"</string>
+    <string name="toot_search_of">Recherche du pouet « %1$s »</string>
     <string name="progress_synchronize_toot">Synchronisation du pouet…</string>
     <string name="send_header_account_name">Account-Name</string>
     <string name="send_header_account_acct">Account-Acct</string>
@@ -433,12 +433,12 @@
     <string name="note">Description</string>
     <string name="uri">URI</string>
     <string name="title">Titre</string>
-    <string name="email">E-mail</string>
+    <string name="email">Courriel</string>
     <string name="description">Description</string>
     <string name="version">Version</string>
     <string name="instance_information_of">Informations sur le serveur «%1$s»</string>
     <string name="instance_information">Informations sur le serveur</string>
-    <string name="missing_mail_app">App de courriel manquante.</string>
+    <string name="missing_mail_app">Appli de messagerie manquante.</string>
     <string name="relative_timestamp">Afficher les horodatages relatifs</string>
     <string name="time_within_second">à l\'instant</string>
     <string name="relative_time_unit_second1">seconde</string>
@@ -602,7 +602,7 @@
     <string name="always_show_application">Afficher (via) le nom de l\'application si possible</string>
     <string name="force_gap_when_refresh">Forcer l’ajout d\'un espace lors du rafraîchissement du dessus</string>
     <string name="avatar_icon_size">Taille de l’icône de l’avatar (Unité:dp. par défaut:48. Redémarrage de l’app requis)</string>
-    <string name="avatar_icon_round_ratio" formatted="false">Ratio de l’arrondi de l’icône de l’avatar (Unité:%. défaut:33. redémarrage de l\'application requis)</string>
+    <string name="avatar_icon_round_ratio" formatted="false">Ratio de l’arrondi de l’icône de l’avatar (unité : %. Défaut : 33. Redémarrage de l\'application requis)</string>
     <string name="avatar_icon_dont_round">Ne pas arrondir les coins de l’avatar (redémarrage requis)</string>
     <string name="share_view_pool">Partager le pool de vues entre les colonnes</string>
     <string name="rename">Renommer …</string>
@@ -778,7 +778,7 @@
     <string name="reaction_from_another_account">Réagir à partir d’un autre compte</string>
     <string name="reaction_succeeded">a réagi</string>
     <string name="account_picker_reaction">Compte pour réagir \?</string>
-    <string name="mute_application_confirm">Silencer l’app « %1$s » \?</string>
+    <string name="mute_application_confirm">Silencer l’appli « %1$s » \?</string>
     <string name="about_this_instance">À propos de ce serveur</string>
     <string name="existing_account">Se connecter</string>
     <string name="existing_account_desc">Se connecter avec un compte existant.</string>
@@ -811,21 +811,21 @@
     <string name="create_account_desc">Créer un nouveau compte sur le serveur sélectionné.</string>
     <string name="user_name_hint">exemple : MonaLisa</string>
     <string name="user_name">Nom d’utilisateur</string>
-    <string name="email_hint">Exemple : monalisa@gmail.com</string>
+    <string name="email_hint">Exemple : monalisa@exemple.com</string>
     <string name="password">Mot de passe</string>
     <string name="password_hint">Entrez le mot de passe …</string>
     <string name="terms">Conditions</string>
     <string name="agree_terms">J’accepte les conditions du service</string>
     <string name="instance_rules">Règles du serveur</string>
     <string name="username_empty">Veuillez spécifier le nom d’utilisateur.</string>
-    <string name="email_empty">Veuillez spécifier l’adresse du courriel.</string>
+    <string name="email_empty">Veuillez spécifier l’adresse courriel.</string>
     <string name="password_empty">Veuillez spécifier le mot de passe.</string>
     <string name="scheduled_status">Publications planifiées</string>
     <string name="input_access_token_desc">Spécifiez un jeton d\'accès au lieu de l’authentification usuelle. (avancé)</string>
     <string name="not_reactioned">pas de réaction.</string>
     <string name="quick_toot_bar_background_color">Couleur d’arrière-plan de la barre de pouet rapide</string>
     <string name="pseudo_account_cant_get_follow_list">Impossible de lire la liste des abonné·e·s à partir d’un pseudo compte.</string>
-    <string name="reaction_remove_confirm">Supprimer votre réaction \"%1$s\" \?</string>
+    <string name="reaction_remove_confirm">Supprimer votre réaction « %1$s » \?</string>
     <string name="unspecified">Non spécifié</string>
     <string name="scheduled_status_sent">Le statut programmé a été envoyé.</string>
     <string name="scheduled_status_delete_confirm">Supprimer ce statut planifié \?</string>
@@ -849,7 +849,7 @@
     <string name="strip_icon_size">Taille de l’icône de la barre de colonne (Unité : dp. Défaut : 30. Redémarrage de l’application requis)</string>
     <string name="show_acct_in_system_notification">Afficher le compte (au lieu du nom d’utilisateur) dans les notifications système</string>
     <string name="account_tl_around">Fil public autour …</string>
-    <string name="boost_button_alpha" formatted="false">Transparence du bouton Boost (Unité:%. redémarrage de l’app nécessaire. Affecte également la transparence du contenu texte.)</string>
+    <string name="boost_button_alpha" formatted="false">Transparence du bouton Boost (Unité:%. redémarrage de l’appli nécessaire. Affecte également la transparence du contenu texte.)</string>
     <string name="move_notifications_quick_filter_to_column_setting">Afficher le filtre rapide des notifications dans la configuration de la colonne (redémarrage de l’app requis)</string>
     <string name="official_account">Compte officiel</string>
     <string name="releases">Sorties</string>
@@ -902,8 +902,8 @@
     <string name="notifications_from_acct">Notifications de l’utilisateur·rice</string>
     <string name="notifications_from">Notifications venant de %1$s</string>
     <string name="pick_videos">Choisissez une vidéo …</string>
-    <string name="pick_audios">Choisissez un fichier audio …</string>
-    <string name="followers_visibility">Visibilité «Abonné·e·s»</string>
+    <string name="pick_audios">Choisissez un fichier audio…</string>
+    <string name="followers_visibility">Visibilité « Abonné·e·s »</string>
     <string name="show_translate_button">Afficher le bouton de traduction</string>
     <string name="translate">Traduire</string>
     <string name="missing_app_can_receive_action_send">Application pouvant recevoir ACTION-SEND manquante.</string>
@@ -930,7 +930,7 @@
     <string name="custom_emoji_separator_zwsp">Utiliser ZWSP au lieu d’un espace en tant que séparateur d’émoji personnalisé</string>
     <string name="visibility_account_setting">Tracer la configuration du compte</string>
     <string name="muted_users_from_pseudo_account">Utilisateur·rice·s en sourdine à partir du pseudo compte</string>
-    <string name="profile_directory_of">Annuaire de \"%1$s\"</string>
+    <string name="profile_directory_of">Annuaire de « %1$s »</string>
     <string name="profile_directory_not_supported_on_misskey">L’annuaire des profils n’est pas supporté sur Misskey</string>
     <string name="show_in_directory">Afficher dans l’annuaire</string>
     <string name="featured_hashtags">Hashtags populaires</string>
@@ -1036,4 +1036,11 @@
     <string name="warn_hashtag_ascii_and_non_ascii">Avertir si le hashtag contient à la fois des caractères ASCII et non-ASCII</string>
     <string name="hashtag_contains_ascii_and_not_ascii">Le Hashtag %1$s contient à la fois des caractères ASCII et non ASCII. Il peut s’agir d’une faute de frappe. En êtes-vous sûr \?</string>
     <string name="direct_with_user_visibility">Visibilité \"direct aux utilisateur·rice·s\"</string>
+    <string name="emoji_category_others">Autres</string>
+    <string name="resize_square_pixels_2">Redimensionner en %1$d pixels carrés (équivalent %2$s)</string>
+    <string name="justify_window_content_portrait">Justifier le contenu de la fenêtre (portrait, nécessite le redémarrage de l\'application)</string>
+    <string name="pixelfed_does_not_allow_post_without_media">Pixelfed n\'autorise pas les publications (hors réponse) sans média attaché.</string>
+    <string name="quote_to">Citation de %1$s</string>
+    <string name="account_picker_quote_toot">Avec quel compte citer le pouet \?</string>
+    <string name="display_name_posted_by">%1$s posté</string>
 </resources>

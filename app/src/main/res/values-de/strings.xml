@@ -123,7 +123,7 @@
     <string name="conversation_view">Konversationsansicht</string>
     <string name="conversation_around">Konversation über Beitrag:%1$s</string>
     <string name="instance_not_need_slash">Hostname des Servers, ohne \'/\', \'@\'.</string>
-    <string name="mail_address_not_contains_at_mark">Benutze E-Mailadressen, die \'@\' und \'.\' beinhalten</string>
+    <string name="mail_address_not_contains_at_mark">Benutze E-Mail-Adressen, die „@“ und „.“ beinhalten</string>
     <string name="instance_hint">z.B. mastodon.social</string>
     <string name="mail_hint">z.B. max.mustermann@web.de</string>
     <string name="unfollow">Entfolgen</string>
@@ -148,7 +148,7 @@
     <string name="open_web_page">Öffne Internetseite</string>
     <string name="open_web_on_host">Öffne Internetseite auf %1$s</string>
     <string name="follow_from_another_account">Von einem anderem Konto aus folgen</string>
-    <string name="search_of">Suche \"%1$s\"</string>
+    <string name="search_of">„%1$s“ suchen</string>
     <string name="search">Suchen</string>
     <string name="resolve_non_local_account">Lade nicht-lokales Konto</string>
     <string name="question">\?</string>
@@ -357,10 +357,10 @@
     <string name="ltl_around">Lokale Timeline um…</string>
     <string name="ltl_around_toot">Lokale Timeline um diesen Toot herum</string>
     <string name="missing_closeable_column">Fehlende schließbare Spalte im sichtbaren Bereich</string>
-    <string name="direct_only_me_visibility">Sichtbarkeit von \'nur direkt an mich\'</string>
-    <string name="direct_with_user_visibility">Sichtbarkeit von \'direkt an die Nutzer\'</string>
+    <string name="direct_only_me_visibility">Sichtbarkeit von „nur direkt an mich“</string>
+    <string name="direct_with_user_visibility">Sichtbarkeit von „direkt an die Nutzer“</string>
     <string name="unlisted_visibility">Sichtbarkeit der nicht gelisteten</string>
-    <string name="followers_visibility">Sichtbarkeit der \'Follower\'</string>
+    <string name="followers_visibility">Sichtbarkeit der „Follower“</string>
     <string name="renote_to">Antwortnotiz auf %1$s</string>
     <string name="quote_to">Zitiere %1$s</string>
     <string name="deleted_at">gelöscht unter %1$s</string>
@@ -569,11 +569,11 @@
     <string name="endorse_set">In deinem Profil promoten</string>
     <string name="already_voted">Bereits abgestimmt.</string>
     <string name="toot_background_color">Hintergrundfarbe des Toots</string>
-    <string name="boost_button_alpha" formatted="false">Deckkraft des Boost-Buttons (Einheit: %. App-Neustart erforderlich; wird auch von der Transparenz des Inhaltstextes beeinflusst)</string>
-    <string name="mute_application_confirm">App \"%1$s\" stummschalten\?</string>
-    <string name="use_quote_toot">Benutze “Toot zitieren”. (Misskey oder individiualisierter Mastodonserver)</string>
+    <string name="boost_button_alpha" formatted="false">Deckkraft der Boost-Schaltfläche (Einheit: %. Anwendungsneustart erforderlich; wird auch von der Transparenz des Inhaltstextes beeinflusst)</string>
+    <string name="mute_application_confirm">Anwendung „%1$s“ stummschalten\?</string>
+    <string name="use_quote_toot">Benutze „Toot zitieren“. (Misskey oder individiualisierter Mastodonserver)</string>
     <string name="conversation_to">An:</string>
-    <string name="participants_and_more">…und weitere</string>
+    <string name="participants_and_more">… und weitere</string>
     <string name="participants">Teilnehmer:</string>
     <string name="show_conversation">Unterhaltung anzeigen</string>
     <string name="around_toot_limitation_warning">Das Feature \"Timeline um die angegebene Zeit herum\" ist auf Mastodonserver ab Version 2.6.0 beschränkt. Eine etwas neuere Timeline kann nicht abgerufen werden.</string>
@@ -585,7 +585,7 @@
     <string name="ftl_around">Föderierte Timeline um…</string>
     <string name="show_open_sticker">OpenSticker anzeigen (Neuladen der Spalte erforderlich)</string>
     <string name="about_this_instance">Über diesen Server</string>
-    <string name="profile_directory_of">Verzeichnis von \"%1$s\"</string>
+    <string name="profile_directory_of">Verzeichnis von „%1$s“</string>
     <string name="profile_directory">Verzeichnis</string>
     <string name="links">Links</string>
     <string name="tls_handshake">TLS-Handshake</string>
@@ -597,7 +597,7 @@
     <string name="header_foreground_color">Vordergrundfarbe der Kopfzeile</string>
     <string name="header_background_color">Hintergrundfarbe der Kopzeile</string>
     <string name="column_color_default">Standard-Spaltenfarbe</string>
-    <string name="reaction_remove_confirm">Entferne deine Reaktion \"%1$s\"\?</string>
+    <string name="reaction_remove_confirm">Entferne deine Reaktion „%1$s“\?</string>
     <string name="username_not_need_atmark">Der Nutzername darf „@“ und „/“ nicht beinhalten.</string>
     <string name="password_empty">Bitte Passwort angeben.</string>
     <string name="email_empty">Bitte E-Mail-Adresse angeben.</string>
@@ -605,15 +605,15 @@
     <string name="instance_rules">Serverregeln</string>
     <string name="agree_terms">Ich willige in die Nutzungsbedingungen ein</string>
     <string name="terms">Nutzungsbedingungen</string>
-    <string name="password_hint">Passwort eingeben…</string>
+    <string name="password_hint">Passwort eingeben …</string>
     <string name="password">Passwort</string>
     <string name="email_hint">z.B. monalisa@gmail.com</string>
     <string name="user_name">Nutzername</string>
     <string name="user_name_hint">z.B. MonaLisa</string>
     <string name="create_account_desc">Neues Konto auf angegebenem Server erstellen.</string>
-    <string name="existing_account_desc">Login mit vorhandenem Konto.</string>
+    <string name="existing_account_desc">Mit vorhandenem Konto anmelden.</string>
     <string name="create_account">Konto erstellen</string>
-    <string name="existing_account">Login</string>
+    <string name="existing_account">Anmelden</string>
     <string name="birthday">Geburtsdatum</string>
     <string name="location">Ort</string>
     <string name="show_link_underline">Link unterstreichen</string>

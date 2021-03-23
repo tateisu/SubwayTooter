@@ -244,6 +244,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
         val MISSKEY_VERSION_11 = VersionString("11.0")
         val MISSKEY_VERSION_12 = VersionString("12.0")
+        val MISSKEY_VERSION_12_75_0 = VersionString("12.75.0")
 
         private val reDigits = """(\d+)""".asciiPattern()
 

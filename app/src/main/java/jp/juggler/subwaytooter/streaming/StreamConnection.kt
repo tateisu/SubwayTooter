@@ -475,12 +475,17 @@ class StreamConnection(
         val socket = socket.get()
         if (isDisposed.get() || socket == null) return
 
+        val type  = when{
+            acctGroup.ti.versionGE(TootInstance.MISSKEY_VERSION_12_75_0) -> "sr"
+            else -> "subNote"
+        }
+
         for (id in list) {
             if (id.isDefault) continue
             synchronized(capturedId) {
                 if (capturedId.contains(id)) return
                 try {
-                    if (socket.send("""{"type":"subNote","body": {"id":"$id"}}""")) {
+                    if (socket.send("""{"type":"$type","body":{"id":"$id"}}""")) {
                         capturedId.add(id)
                     } else {
                         log.w("capture failed.")

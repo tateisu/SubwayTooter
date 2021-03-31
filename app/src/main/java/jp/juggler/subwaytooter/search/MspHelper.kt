@@ -15,16 +15,10 @@ object MspHelper {
     private const val mspSearchUrl = "http://mastodonsearch.jp/api/v1.0.1/cross"
     private const val mspApiKey = "e53de7f66130208f62d1808672bf6320523dcd0873dc69bc"
 
-    private fun getNextId(array: JsonArray, old: String?): String? {
-        // max_id の更新
-        val size = array.size
-        if (size > 0) {
-            val sv = array[size - 1].cast<JsonObject>()?.string("msp_id")?.notEmpty()
-            if (sv != null) return sv
-        }
-        // MSPでは終端は分からず、何度もリトライする
-        return old
-    }
+    // 検索結果からページネーション用IDを抽出する
+    // MSPでは終端は分からないので、配列が空でも次回また同じ位置から読み直す
+    private fun getNextId(array: JsonArray, old: String?) =
+        array.lastOrNull().cast<JsonObject>()?.string("msp_id")?.notEmpty() ?: old
 
     private suspend fun TootApiClient.search(query: String, max_id: String?): TootApiResult? {
 

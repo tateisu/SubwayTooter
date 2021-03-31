@@ -11,8 +11,8 @@ import jp.juggler.util.*
 import okhttp3.Request
 
 object MspHelper {
-    private const val mspTokenUrl = "http://mastodonsearch.jp/api/v1.0.1/utoken"
-    private const val mspSearchUrl = "http://mastodonsearch.jp/api/v1.0.1/cross"
+    private const val mspTokenUrl = "https://msearch.fediverse.media/api/v1.0.1/utoken"
+    private const val mspSearchUrl = "https://msearch.fediverse.media/api/v1.0.1/cross"
     private const val mspApiKey = "e53de7f66130208f62d1808672bf6320523dcd0873dc69bc"
 
     // 検索結果からページネーション用IDを抽出する

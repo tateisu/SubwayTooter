@@ -308,7 +308,10 @@ class SideMenuAdapter(
 		
 		Item(),
 		Item(title = R.string.toot_search),
-		
+
+		Item(icon = R.drawable.ic_search, title = R.string.mastodon_search_portal) {
+			addColumn(defaultInsertPosition, SavedAccount.na, ColumnType.SEARCH_MSP, "")
+		},
 		Item(icon = R.drawable.ic_search, title = R.string.tootsearch) {
 			addColumn(defaultInsertPosition, SavedAccount.na, ColumnType.SEARCH_TS, "")
 		},

@@ -1,1 +1,1 @@
-powered by <a href="http://mastodonsearch.jp/">Mastodon Search Portal</a>, it indexes toots of instances in Japan.<br/>If you want to remove your toot from search result, please contact to <a href="https://mstdn.jp/@mastodonsearch">@mastodonsearch@mstdn.jp</a>.
+powered by <a href="https://msearch.fediverse.media/">Mastodon Search Portal</a>, it indexes toots of instances in Japan.<br/>If you want to remove your toot from search result, please contact to <a href="https://geeks.cafe/@izwx">@izwx@geeks.cafe</a>.

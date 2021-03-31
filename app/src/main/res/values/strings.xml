@@ -403,7 +403,7 @@
     <string name="toot_search_msp">Toot search (MSP)</string>
     <string name="toot_search_ts">Toot search (ts)</string>
     <string name="toot_search_notestock">notestock search</string>
-    <string name="mastodon_search_portal">MSP (JP)</string>
+    <string name="mastodon_search_portal">Mastodon search portal(JP)</string>
     <string name="search_desc_mastodon_api">Account/hashtag search using Mastodon API.</string>
     <string name="toot_search_of">Toot search \"%1$s\"</string>
     <string name="toot_search_msp_of">Toot search (MSP) \"%1$s\"</string>

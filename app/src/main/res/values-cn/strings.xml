@@ -460,7 +460,7 @@
     <string name="toot_search_msp_of">嘟文搜索 (MSP) \"%1$s\"</string>
     <string name="toot_search_of">嘟文搜索 \"%1$s\"</string>
     <string name="search_desc_mastodon_api">使用Mastodon API搜索账户/标签。</string>
-    <string name="mastodon_search_portal">MSP (JP)</string>
+    <string name="mastodon_search_portal">Mastodon 搜索端口(JP)</string>
     <string name="toot_search_notestock">记事本搜索</string>
     <string name="toot_search_ts">嘟文搜索 (ts)</string>
     <string name="toot_search">嘟文搜索</string>

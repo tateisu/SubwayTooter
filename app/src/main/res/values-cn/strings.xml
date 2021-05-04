@@ -417,7 +417,7 @@
     <string name="confirm_unboost_from">取消从%1$s发出嘟文？</string>
     <string name="confirm_boost_from">确定从%1$s发出嘟文在您的个人资料页上向所有关注者显示？</string>
     <string name="wait_previous_operation">请等待最后操作结束。</string>
-    <string name="post_error_contents_warning_empty">你的嘟文需要设置警示</string>
+    <string name="post_error_contents_warning_empty">你的嘟文需要设置警示。</string>
     <string name="post_error_contents_empty">嘟文内容不能为空。</string>
     <string name="confirm_delete_attachment">删除此附件？</string>
     <string name="quote_name">引用名称…</string>

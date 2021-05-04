@@ -1092,4 +1092,6 @@
     <string name="title">标题</string>
     <string name="uri">网址</string>
     <string name="note">笔记</string>
+    <string name="remote_profile_warning">远程配置文件页面上的信息可能无法正确显示。按此处在Web浏览器中查看配置文件。</string>
+    <string name="mention_full_acct">显示具有完整帐户的列表（需要重新加载列）</string>
 </resources>

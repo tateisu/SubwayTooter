@@ -131,12 +131,10 @@ class TestKotlinFeature {
 		// 型が分からないようにするとビルドできるが、intの10とlongの10は異なると判断される
 		// Int.equals も同じ結果
 		assertEquals(false, int10 as Any == long10 as Any)
-		assertEquals(false, int10.equals(long10))
-		
+
 		// Long.equals でも同じ結果
 		assertEquals(false, long10 as Any == int10 as Any)
-		assertEquals(false, long10.equals(int10))
-		
+
 		// 同じ型に変換すると数値が同じだと判定できる
 		assertEquals(true, int10.toLong() == long10)
 		assertEquals(true, int10.toLong() == long10)

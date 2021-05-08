@@ -50,7 +50,7 @@ class AcctColor {
 	
 	fun save(now : Long) {
 		
-		val key = acctAscii.toLowerCase(Locale.ENGLISH)
+		val key = acctAscii.lowercase()
 		
 		try {
 			val cv = ContentValues()
@@ -137,7 +137,7 @@ class AcctColor {
 		fun load(acct:Acct) =load(acct.ascii,acct.pretty)
 		
 		fun load(acctAscii: String,acctPretty : String) : AcctColor {
-			val key = acctAscii.toLowerCase(Locale.ENGLISH)
+			val key = acctAscii.lowercase()
 			val cached : AcctColor? = mMemoryCache.get(key)
 			if(cached != null) return cached
 			

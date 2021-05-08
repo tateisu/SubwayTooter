@@ -1,6 +1,7 @@
 package jp.juggler.apng
 
 import java.io.InputStream
+import java.lang.StringBuilder
 import kotlin.math.min
 
 // https://raw.githubusercontent.com/rtyley/animated-gif-lib-for-java/master/src/main/java/com/madgag/gif/fmsware/GifDecoder.java
@@ -44,9 +45,11 @@ class GifDecoder(val callback : GifDecoderCallback) {
 		
 		// Reads specified bytes and compose it to ascii string
 		fun string(n : Int) : String {
-			val ba = ByteArray(n)
-			array(ba)
-			return ba.map { it.toChar() }.joinToString(separator = "")
+			return StringBuilder(n).apply{
+				ByteArray(n)
+					.also{ array(it)}
+					.forEach { append( Char( it.toInt() and 255)) }
+			}.toString()
 		}
 		
 		// Reads next variable length block
@@ -478,11 +481,11 @@ class GifDecoder(val callback : GifDecoderCallback) {
 					// application extension
 					0xff -> {
 						val block = reader.block()
-						var app = ""
+						val app = StringBuilder(12)
 						for(i in 0 until 11) {
-							app += block[i].toChar()
+							app.append( Char( block[i].toInt() and 255 ))
 						}
-						if(app == "NETSCAPE2.0") {
+						if(app.toString() == "NETSCAPE2.0") {
 							readNetscapeExt(reader)
 						} else {
 							reader.skipBlock() // don't care

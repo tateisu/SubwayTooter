@@ -267,7 +267,7 @@ class EmojiPicker(
         val entries = newList.entries
         custom_list.clear()
         custom_categories.clear()
-        custom_list.ensureCapacity(entries.sumBy { it.value.size })
+        custom_list.ensureCapacity(entries.sumOf { it.value.size })
         custom_categories.ensureCapacity(entries.size)
         entries.forEach {
             val rangeStart = custom_list.size

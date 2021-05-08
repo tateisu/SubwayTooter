@@ -367,10 +367,10 @@ object MisskeySyntaxHighlighter {
         addAll(_keywords)
 
         // UPPER
-        addAll(_keywords.map { k -> k.toUpperCase(Locale.JAPAN) })
+        addAll(_keywords.map { it.uppercase() })
 
         // Snake
-        addAll(_keywords.map { k -> k[0].toUpperCase() + k.substring(1) })
+        addAll(_keywords.map { k -> k[0].uppercase() + k.substring(1) })
 
         add("NaN")
 
@@ -378,12 +378,12 @@ object MisskeySyntaxHighlighter {
     }
 
     private val symbolMap = SparseBooleanArray().apply {
-        "=+-*/%~^&|><!?".forEach { put(it.toInt(), true) }
+        "=+-*/%~^&|><!?".forEach { put(it.code, true) }
     }
 
     // 文字列リテラルの開始文字のマップ
     private val stringStart = SparseBooleanArray().apply {
-        "\"'`".forEach { put(it.toInt(), true) }
+        "\"'`".forEach { put(it.code, true) }
     }
 
     private class Token(
@@ -536,7 +536,7 @@ object MisskeySyntaxHighlighter {
 		// string
 		{
 			val beginChar = source[pos]
-			if (!stringStart[beginChar.toInt()]) return@arrayOf null
+			if (!stringStart[beginChar.code]) return@arrayOf null
 			var i = pos + 1
 			while (i < end) {
 				val char = source[i++]
@@ -653,7 +653,7 @@ object MisskeySyntaxHighlighter {
 		{
 			val c = source[pos]
 			when {
-				symbolMap.get(c.toInt(), false) ->
+				symbolMap.get(c.code, false) ->
 					Token(length = 1, color = 0x42b983)
 				c == '-' ->
 					Token(length = 1, color = 0x42b983)
@@ -1348,7 +1348,7 @@ object MisskeyMarkdownDecoder {
             var i = lastEnd //スキャン中の位置
             while (i < end) {
                 // 注目位置の文字に関連するパーサー
-                val lastParsers = nodeParserMap[text[i].toInt()]
+				val lastParsers = nodeParserMap[text[i].code]
                 if (lastParsers == null) {
                     ++i
                     continue
@@ -1538,8 +1538,11 @@ object MisskeyMarkdownDecoder {
 	}
 
 	// \} \]はムダなエスケープに見えるが、androidでは必要なので削ってはいけない
+	@Suppress("RegExpRedundantEscape")
 	private val reLatexRemove = """\\(?:quad|Huge|atop|sf|scriptsize|bf|small|tiny|underline|large|(?:color)\{[^}]*\})""".toRegex()
+	@Suppress("RegExpRedundantEscape")
 	private val reLatex1 = """\\(?:(?:url)|(?:textcolor|colorbox)\{[^}]*\}|(?:fcolorbox|raisebox)\{[^}]*\}\{[^}]*\}|includegraphics\[[^]]*\])\{([^}]*)\}""".toRegex()
+	@Suppress("RegExpRedundantEscape")
 	private val reLatex2reversed = """\\(?:overset|href)\{([^}]+)\}\{([^}]+)\}""".toRegex()
 
 	private fun String.removeLatex(): String {
@@ -1586,7 +1589,7 @@ object MisskeyMarkdownDecoder {
 			vararg nodeParsers: NodeParseEnv.() -> NodeDetected?
 		) {
             for (s in firstChars) {
-                put(s.toInt(), nodeParsers)
+				put(s.code, nodeParsers)
             }
         }
 
@@ -1808,15 +1811,15 @@ object MisskeyMarkdownDecoder {
         // メールアドレスの@の手前に使える文字なら真
         val mailChars = SparseBooleanArray().apply {
             for (it in '0'..'9') {
-                put(it.toInt(), true)
+				put(it.code, true)
             }
             for (it in 'A'..'Z') {
-                put(it.toInt(), true)
+				put(it.code, true)
             }
             for (it in 'a'..'z') {
-                put(it.toInt(), true)
+				put(it.code, true)
             }
-            """${'$'}!#%&'`"*+-/=?^_{|}~""".forEach { put(it.toInt(), true) }
+            """${'$'}!#%&'`"*+-/=?^_{|}~""".forEach { put(it.code, true) }
         }
 
         addParser("@", {

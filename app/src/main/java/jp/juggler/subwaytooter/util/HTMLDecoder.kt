@@ -258,7 +258,7 @@ object HTMLDecoder {
             val m = reTag.matcher(text)
             if (m.find()) {
                 val is_close = m.groupEx(1)!!.isNotEmpty()
-                tag = m.groupEx(2)!!.toLowerCase(Locale.JAPAN)
+                tag = m.groupEx(2)!!.lowercase()
 
                 val m2 = reTagEnd.matcher(text)
                 val is_openclose = when {
@@ -369,15 +369,15 @@ object HTMLDecoder {
         ArrayList<SpannableStringBuilder>().also { dst ->
 			// 入力の末尾のtrim
 			var end = this.length
-			while (end > 0 && CharacterGroup.isWhitespace(this[end - 1].toInt())) --end
+			while (end > 0 && CharacterGroup.isWhitespace(this[end - 1].code)) --end
 
 			// 入力の最初の非空白文字の位置を調べておく
 			var firstNonSpace = 0
-			while (firstNonSpace <end && CharacterGroup.isWhitespace(this[firstNonSpace].toInt())) ++firstNonSpace
+			while (firstNonSpace <end && CharacterGroup.isWhitespace(this[firstNonSpace].code)) ++firstNonSpace
 
             var i = 0
             while (i < end) {
-                var lineStart = i
+                val lineStart = i
                 while (i < end && this[i] != '\n') ++i
                 val lineEnd = if (i >= end) end else i + 1
 				++i
@@ -758,7 +758,7 @@ object HTMLDecoder {
         val dst = HashMap<String, String>()
         val m = reAttribute.matcher(text)
         while (m.find()) {
-            val name = m.groupEx(1)!!.toLowerCase(Locale.JAPAN)
+            val name = m.groupEx(1)!!.lowercase()
             val value = decodeEntity(m.groupEx(3))
             dst[name] = value
         }

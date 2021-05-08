@@ -3,6 +3,7 @@
 package jp.juggler.apng
 
 import jp.juggler.apng.util.getUInt8
+import kotlin.math.min
 
 class ApngPalette(
 	src : ByteArray // repeat of R,G,B
@@ -35,7 +36,7 @@ class ApngPalette(
 	// update alpha value from tRNS chunk data
 	fun parseTRNS(ba : ByteArray) {
 		hasAlpha = true
-		for(i in 0 until Math.min(list.size, ba.size)) {
+		for(i in 0 until min(list.size, ba.size)) {
 			list[i] = (list[i] and 0xffffff) or (ba.getUInt8(i) shl 24)
 		}
 	}

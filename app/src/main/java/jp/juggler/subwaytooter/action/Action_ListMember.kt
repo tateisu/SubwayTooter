@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.action
 
 import android.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*

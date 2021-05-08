@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.table
 
 import android.content.ContentValues
-import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1

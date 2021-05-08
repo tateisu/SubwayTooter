@@ -853,7 +853,7 @@ private fun Writer.writeQuote(string: String): Writer {
 				in '\u0080' until '\u00a0',
 				in '\u2000' until '\u2100' -> {
 					write("\\u")
-					val hexCode: String = Integer.toHexString(c.toInt())
+					val hexCode: String = Integer.toHexString(c.code)
 					write("0000", 0, 4 - hexCode.length)
 					write(hexCode)
 				}
@@ -1046,7 +1046,7 @@ fun Writer.writeJsonValue(
             }
         }
 
-        value is Char -> writeJsonValue(indentFactor, indent, value.toInt(), sort = sort)
+        value is Char -> writeJsonValue(indentFactor, indent, value.code, sort = sort)
 
         value is String -> writeQuote(value)
         value is Enum<*> -> writeQuote(value.name)

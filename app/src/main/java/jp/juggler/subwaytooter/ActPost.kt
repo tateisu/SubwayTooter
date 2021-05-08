@@ -1125,7 +1125,7 @@ class ActPost : AsyncActivity(),
             }
         } else {
             if (editable.isNotEmpty()
-                && !CharacterGroup.isWhitespace(editable[editable.length - 1].toInt())
+                && !CharacterGroup.isWhitespace(editable[editable.length - 1].code)
             ) {
                 editable.append(' ')
             }
@@ -2571,7 +2571,7 @@ class ActPost : AsyncActivity(),
                         val e = etContent.editableText
                         val len = e.length
                         val last_char = if (len <= 0) ' ' else e[len - 1]
-                        if (!CharacterGroup.isWhitespace(last_char.toInt())) {
+                        if (!CharacterGroup.isWhitespace(last_char.code)) {
                             e.append(" ").append(a.text_url)
                         } else {
                             e.append(a.text_url)

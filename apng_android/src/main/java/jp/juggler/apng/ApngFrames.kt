@@ -11,6 +11,7 @@ import android.util.Log
 import java.io.InputStream
 import java.util.ArrayList
 import kotlin.math.max
+import kotlin.math.min
 
 class ApngFrames private constructor(
 	private val pixelSizeMax : Int = 0,
@@ -125,8 +126,17 @@ class ApngFrames private constructor(
 				throw ex
 			}
 		}
+
+		private val apngHeadKey = byteArrayOf(0x89.toByte(),0x50)
+		private val gifHeadKey = "GIF".toByteArray(Charsets.UTF_8)
+
+		private fun matchBytes(ba1:ByteArray,ba2:ByteArray,length:Int=min(ba1.size,ba2.size)):Boolean{
+			for( i in 0 until length){
+				if( ba1[i] != ba2[i] ) return false
+			}
+			return true
+		}
 		
-		@Suppress("unused")
 		fun parse(
 			pixelSizeMax : Int,
 			debug : Boolean = false,
@@ -136,18 +146,11 @@ class ApngFrames private constructor(
 			val buf = ByteArray(8) { 0.toByte() }
 			opener()?.use { it.read(buf, 0, buf.size) }
 			
-			if(buf.size >= 8
-				&& (buf[0].toInt() and 0xff) == 0x89
-				&& (buf[1].toInt() and 0xff) == 0x50
-			) {
+			if(buf.size >= 8 && matchBytes(buf, apngHeadKey) ) {
 				return opener()?.use { parseApng(it, pixelSizeMax, debug) }
 			}
 			
-			if(buf.size >= 6
-				&& buf[0].toChar() == 'G'
-				&& buf[1].toChar() == 'I'
-				&& buf[2].toChar() == 'F'
-			) {
+			if(buf.size >= 6 && matchBytes(buf, gifHeadKey) ) {
 				return opener()?.use { parseGif(it, pixelSizeMax, debug) }
 			}
 			

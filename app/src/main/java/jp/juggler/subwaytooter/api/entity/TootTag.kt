@@ -26,7 +26,7 @@ open class TootTag constructor(
 
     init {
         countDaily = history?.first()?.uses ?: 0
-        countWeekly = history?.sumBy { it.uses } ?: 0
+        countWeekly = history?.sumOf{ it.uses } ?: 0
 
         accountDaily = history?.first()?.accounts ?: 0
         accountWeekly = history?.map { it.accounts }?.maxOrNull() ?: accountDaily

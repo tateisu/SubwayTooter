@@ -40,6 +40,9 @@ dependencies {
     implementation project(':apng_android')
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
+    //noinspection KtxExtensionAvailable
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
+
     testImplementation "junit:junit:$junit_version"
     androidTestImplementation 'androidx.test:runner:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

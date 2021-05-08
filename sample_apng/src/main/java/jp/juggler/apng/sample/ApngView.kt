@@ -8,6 +8,7 @@ import android.os.SystemClock
 import android.util.AttributeSet
 import android.view.View
 import jp.juggler.apng.ApngFrames
+import kotlin.math.max
 
 class ApngView : View{
 	
@@ -64,8 +65,8 @@ class ApngView : View{
 	override fun onSizeChanged(w : Int, h : Int, oldw : Int, oldh : Int) {
 		super.onSizeChanged(w, h, oldw, oldh)
 		
-		wView = Math.max(1, w).toFloat()
-		hView = Math.max(1, h).toFloat()
+		wView = max(1, w).toFloat()
+		hView = max(1, h).toFloat()
 		aspectView = wView / hView
 		
 		initializeScale()
@@ -74,8 +75,8 @@ class ApngView : View{
 	private fun initializeScale(){
 		val apngFrames = this.apngFrames
 		if( apngFrames != null) {
-			wImage =Math.max(1, apngFrames.width).toFloat()
-			hImage =Math.max(1, apngFrames.height).toFloat()
+			wImage = max(1, apngFrames.width).toFloat()
+			hImage = max(1, apngFrames.height).toFloat()
 			aspectImage = wImage / hImage
 			
 			currentScale = if(aspectView > aspectImage) {
@@ -118,7 +119,7 @@ class ApngView : View{
 				canvas.drawBitmap(bitmap, drawMatrix, paint)
 				
 				if( delay != Long.MAX_VALUE){
-					postInvalidateDelayed(Math.max(1L,delay))
+					postInvalidateDelayed(max(1L,delay))
 				}
 			}
 		}

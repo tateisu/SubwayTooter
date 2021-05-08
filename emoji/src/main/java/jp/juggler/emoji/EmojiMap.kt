@@ -34,7 +34,7 @@ object EmojiMap {
 
         // 素の数字とcopyright,registered, trademark は絵文字にしない
         fun isIgnored(code: String): Boolean {
-            val c = code[0].toInt()
+            val c = code[0].code
             return code.length == 1 && c <= 0xae
         }
 

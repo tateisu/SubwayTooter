@@ -109,7 +109,7 @@ object CharacterGroup {
 		var id = Integer.MAX_VALUE
 		for(s in list) {
 			if(s.length == 1) {
-				val c = s[0].toInt()
+				val c = s[0].code
 				if(c < id) id = c
 			}
 		}
@@ -130,7 +130,7 @@ object CharacterGroup {
 	// ユニコード文字を正規化する。
 	// 簡易版なので全ての文字には対応していない
 	fun getUnifiedCharacter(c : Char) : Char {
-		val v1 = map1[c.toInt()]
+		val v1 = map1[c.code]
 		return if(v1 != 0) v1.toChar() else c
 	}
 	
@@ -145,13 +145,13 @@ object CharacterGroup {
 			val map : SparseIntArray
 			val key : Int
 			
-			val v1 = s[0].toInt()
+			val v1 = s[0].code
 			if(s.length == 1) {
 				map = map1
 				key = v1
 			} else {
 				map = map2
-				val v2 = s[1].toInt()
+				val v2 = s[1].code
 				key = v1 or (v2 shl 16)
 			}
 			
@@ -183,7 +183,7 @@ object CharacterGroup {
 			var pos = offset
 			
 			// 空白を読み飛ばす
-			while(pos < end && isWhitespace(text[pos].toInt())) ++ pos
+			while(pos < end && isWhitespace(text[pos].code)) ++ pos
 			
 			// 終端までの文字数
 			val remain = end - pos
@@ -193,7 +193,7 @@ object CharacterGroup {
 				return END
 			}
 			
-			val v1 = text[pos].toInt()
+			val v1 = text[pos].code
 			
 			// グループに登録された文字を長い順にチェック
 			var check_len = if(remain > 2) 2 else remain
@@ -201,7 +201,7 @@ object CharacterGroup {
 				val group_id = if(check_len == 1)
 					map1.get(v1)
 				else
-					map2.get(v1 or (text[pos + 1].toInt() shl 16))
+					map2.get(v1 or (text[pos + 1].code shl 16))
 				if(group_id != 0) {
 					this.offset = pos + check_len
 					return group_id

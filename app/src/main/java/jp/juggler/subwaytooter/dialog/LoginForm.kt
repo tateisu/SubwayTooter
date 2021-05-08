@@ -131,7 +131,7 @@ object LoginForm {
 					val br = BufferedReader(InputStreamReader(inStream, "UTF-8"))
 					while(true) {
 						val s : String =
-							br.readLine()?.trim { it <= ' ' }?.toLowerCase(Locale.JAPAN) ?: break
+							br.readLine()?.trim { it <= ' ' }?.lowercase() ?: break
 						if(s.isEmpty()) continue
 						add(s)
 						add(IDN.toASCII(s, IDN.ALLOW_UNASSIGNED))
@@ -155,7 +155,7 @@ object LoginForm {
 				override fun performFiltering(constraint : CharSequence?) : FilterResults =
 					FilterResults().also { result ->
 						if(constraint?.isNotEmpty() == true) {
-							val key = constraint.toString().toLowerCase(Locale.JAPAN)
+							val key = constraint.toString().lowercase()
 							// suggestions リストは毎回生成する必要がある。publishResultsと同時にアクセスされる場合がある
 							val suggestions = StringArray()
 							for(s in instance_list) {

@@ -338,7 +338,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         spResizeImage = findViewById(R.id.spResizeImage)
 
         imageResizeItems = SavedAccount.resizeConfigList.map {
-            var caption = when (it.type) {
+            val caption = when (it.type) {
                 ResizeType.None -> getString(R.string.dont_resize)
                 ResizeType.LongSide -> getString(R.string.long_side_pixel, it.size)
                 ResizeType.SquarePixel -> if (it.extraStringId != 0) {
@@ -436,7 +436,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         btnNotificationStyleEditReply.setOnClickListener(this)
 
 
-        spResizeImage.setOnItemSelectedListener(this)
+        spResizeImage.onItemSelectedListener = this
 
 
         btnNotificationStyleEditReply.vg(Pref.bpSeparateReplyNotificationGroup(pref))

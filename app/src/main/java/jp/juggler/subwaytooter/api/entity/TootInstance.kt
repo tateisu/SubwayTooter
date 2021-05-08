@@ -427,7 +427,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
         private fun Host.getCacheEntry(): CacheEntry =
             synchronized(_hostCache) {
-                val hostLower = ascii.toLowerCase(Locale.JAPAN)
+                val hostLower = ascii.lowercase()
                 var item = _hostCache[hostLower]
                 if (item == null) {
                     item = CacheEntry()

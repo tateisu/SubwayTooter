@@ -28,9 +28,9 @@ object EmojiDecoder {
 
     // private val log = LogCategory("EmojiDecoder")
 
-    private const val cpColon = ':'.toInt()
+    private const val cpColon = ':'.code
 
-    private const val cpZwsp = '\u200B'.toInt()
+    private const val cpZwsp = '\u200B'.code
 
     var handleUnicodeEmoji = true
 
@@ -223,7 +223,7 @@ object EmojiDecoder {
                     continue
                 }
 
-                val nextChar = if (result.endPos >= end) null else s[result.endPos].toInt()
+                val nextChar = if (result.endPos >= end) null else s[result.endPos].code
 
                 // 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
                 // その文字を絵文字化しない
@@ -232,7 +232,7 @@ object EmojiDecoder {
                     continue
                 }
 
-                val emoji = if (nextChar == 0xFE0F && s[result.endPos - 1].toInt() != 0xFE0F) {
+                val emoji = if (nextChar == 0xFE0F && s[result.endPos - 1].code != 0xFE0F) {
                     // 絵文字の最後が 0xFE0F でない
                     // 直後にU+0xFE0F (絵文字バリエーション・シーケンスEVSのVS-16）がある
                     // 直後のそれまで含めて絵文字として表示する
@@ -246,16 +246,16 @@ object EmojiDecoder {
         }
     }
 
-    private const val codepointColon = ':'.toInt()
+    private const val codepointColon = ':'.code
     // private const val codepointAtmark = '@'.toInt()
 
     private val shortCodeCharacterSet =
         SparseBooleanArray().apply {
-            for (c in 'A'..'Z') put(c.toInt(), true)
-            for (c in 'a'..'z') put(c.toInt(), true)
-            for (c in '0'..'9') put(c.toInt(), true)
-            for (c in "+-_@:") put(c.toInt(), true)
-            for (c in ".") put(c.toInt(), true)
+            for (c in 'A'..'Z') put(c.code, true)
+            for (c in 'a'..'z') put(c.code, true)
+            for (c in '0'..'9') put(c.code, true)
+            for (c in "+-_@:") put(c.code, true)
+            for (c in ".") put(c.code, true)
         }
 
     private interface ShortCodeSplitterCallback {
@@ -392,7 +392,7 @@ object EmojiDecoder {
                     else -> {
                         // EmojiOneのショートコード
                         val emoji = if (useEmojioneShortcode) {
-                            EmojiMap.shortNameMap[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
+                            EmojiMap.shortNameMap[name.lowercase().replace('-', '_')]
                         } else {
                             null
                         }
@@ -437,7 +437,7 @@ object EmojiDecoder {
 
                 // カスタム絵文字ではなく通常の絵文字のショートコードなら絵文字に変換する
                 val emoji = if (decodeEmojioneShortcode) {
-                    EmojiMap.shortNameMap[name.toLowerCase(Locale.JAPAN).replace('-', '_')]
+                    EmojiMap.shortNameMap[name.lowercase().replace('-', '_')]
                 } else {
                     null
                 }

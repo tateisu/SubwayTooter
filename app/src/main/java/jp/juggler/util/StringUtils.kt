@@ -81,7 +81,7 @@ fun IntArray.toByteArray(): ByteArray {
 fun CharArray.toLowerByteArray(): ByteArray {
     val dst = ByteArray(this.size)
     for (i in this.indices) {
-        dst[i] = this[i].toByte()
+        dst[i] = this[i].code.toByte()
     }
     return dst
 }
@@ -124,7 +124,7 @@ fun CharSequence.codePointBefore(index: Int): Int {
             val c1 = this[index - 2]
             if (Character.isHighSurrogate(c1)) return Character.toCodePoint(c1, c2)
         }
-        return c2.toInt()
+        return c2.code
     } else {
         return -1
     }

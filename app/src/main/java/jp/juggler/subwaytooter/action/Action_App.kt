@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.action
 import android.app.AlertDialog
 import jp.juggler.subwaytooter.ActColumnList
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootApplication
 import jp.juggler.subwaytooter.table.MutedApp

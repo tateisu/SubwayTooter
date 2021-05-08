@@ -182,7 +182,7 @@ private val mimeTypeExMap : HashMap<String, String> by lazy {
 fun getMimeType(log : LogCategory?, src : String) : String {
 	var ext = MimeTypeMap.getFileExtensionFromUrl(src)
 	if(ext != null && ext.isNotEmpty()) {
-		ext = ext.toLowerCase(Locale.US)
+		ext = ext.lowercase()
 		
 		//
 		var mime_type : String? = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)

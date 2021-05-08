@@ -15,17 +15,17 @@ class EmojiTrie<T> {
             this.data = data
             return
         }
-        val c = src[offset].toInt()
+        val c = src[offset].code
         val next = map[c] ?: EmojiTrie<T>().also { map.put(c, it) }
         next.append(src, offset + 1, data)
     }
 
-    fun hasNext(c: Char) = map.containsKey(c.toInt())
+    fun hasNext(c: Char) = map.containsKey(c.code)
 
     fun get(src: String, offset: Int, end: Int): Result<T>? {
         // 長い方を優先するので、先に子を調べる
         if (offset < end)
-            map[src[offset].toInt()]?.get(src, offset + 1, end)
+            map[src[offset].code]?.get(src, offset + 1, end)
                 ?.let { return it }
         return this.data?.let { Result(it, offset) }
     }

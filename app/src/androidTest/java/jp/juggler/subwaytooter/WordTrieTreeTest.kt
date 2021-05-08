@@ -48,15 +48,15 @@ class WordTrieTreeTest {
 			val tokenizer = CharacterGroup.Tokenizer().reset(strTest, 0, strTest.length)
 			//
 			id = tokenizer.next()
-			assertEquals('A'.toInt(), id)
+            assertEquals('A'.code, id)
 			assertEquals((whitespace_len + 1), tokenizer.offset) // offset は Aの次の位置になる
 			//
 			id = tokenizer.next()
-			assertEquals('B'.toInt(), id)
+            assertEquals('B'.code, id)
 			assertEquals((whitespace_len + 2).toLong(), tokenizer.offset.toLong())
 			//
 			id = tokenizer.next()
-			assertEquals('C'.toInt(), id)
+            assertEquals('C'.code, id)
 			assertEquals((whitespace_len + 3).toLong(), tokenizer.offset.toLong())
 			//
 			id = tokenizer.next()
@@ -71,15 +71,15 @@ class WordTrieTreeTest {
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 1).toLong(), tokenizer.offset.toLong())
-			assertEquals('A'.toInt(), id)
+            assertEquals('A'.code, id)
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 2).toLong(), tokenizer.offset.toLong())
-			assertEquals('B'.toInt(), id)
+            assertEquals('B'.code, id)
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 3).toLong(), tokenizer.offset.toLong())
-			assertEquals('C'.toInt(), id)
+            assertEquals('C'.code, id)
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 3).toLong(), tokenizer.offset.toLong())
@@ -93,15 +93,15 @@ class WordTrieTreeTest {
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 1).toLong(), tokenizer.offset.toLong())
-			assertEquals('A'.toInt(), id)
+            assertEquals('A'.code, id)
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 2).toLong(), tokenizer.offset.toLong())
-			assertEquals('B'.toInt(), id)
+            assertEquals('B'.code, id)
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 3).toLong(), tokenizer.offset.toLong())
-			assertEquals('C'.toInt(), id)
+            assertEquals('C'.code, id)
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 3).toLong(), tokenizer.offset.toLong())
@@ -115,15 +115,15 @@ class WordTrieTreeTest {
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 1).toLong(), tokenizer.offset.toLong())
-			assertEquals('A'.toInt(), id)
+            assertEquals('A'.code, id)
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 2).toLong(), tokenizer.offset.toLong())
-			assertEquals('B'.toInt(), id)
+            assertEquals('B'.code, id)
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 3).toLong(), tokenizer.offset.toLong())
-			assertEquals('C'.toInt(), id)
+            assertEquals('C'.code, id)
 			//
 			id = tokenizer.next()
 			assertEquals((whitespace_len + 3).toLong(), tokenizer.offset.toLong())

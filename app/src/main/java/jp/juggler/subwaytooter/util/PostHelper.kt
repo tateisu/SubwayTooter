@@ -760,7 +760,7 @@ class PostHelper(
                 val cp = src.codePointBefore(i)
                 i -= Character.charCount(cp)
 
-                if (cp == '@'.toInt()) {
+                if (cp == '@'.code) {
                     start = i
                     if (++count_atMark >= 2) break else continue
                 } else if (count_atMark == 1) {
@@ -865,7 +865,7 @@ class PostHelper(
             val remain = limit - code_list.size
             if (remain > 0) {
                 val s =
-                    src.substring(last_colon + 1, end).toLowerCase(Locale.JAPAN).replace('-', '_')
+                    src.substring(last_colon + 1, end).lowercase().replace('-', '_')
                 val matches = EmojiDecoder.searchShortCode(activity, s, remain)
                 log.d("checkEmoji: search for %s, result=%d", s, matches.size)
                 code_list.addAll(matches)

@@ -18,7 +18,7 @@ class Blurhash(blurhash : String, punch : Float = 1f) {
 		private val base83Map = SparseIntArray().apply {
 			"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~"
 				.forEachIndexed { index, c ->
-					put(c.toInt(), index)
+					put(c.code, index)
 				}
 		}
 		
@@ -26,11 +26,9 @@ class Blurhash(blurhash : String, punch : Float = 1f) {
 		private fun String.decodeBase83(start : Int, length : Int) : Int {
 			var v = 0
 			for(i in start until start + length) {
-				val ci = this[i].toInt()
+				val ci = this[i].code
 				val idx = base83Map.get(ci, - 1)
-				if(idx == - 1) {
-					error("decodeBase83: incorrect char code $ci")
-				}
+				if(idx == - 1) error("decodeBase83: incorrect char code $ci")
 				v = v * 83 + idx
 			}
 			return v

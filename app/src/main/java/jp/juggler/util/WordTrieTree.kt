@@ -152,7 +152,7 @@ class WordTrieTree {
 		val t = CharacterGroup.Tokenizer()
 		
 		for(i in start until end) {
-			if(! CharacterGroup.isWhitespace(src[i].toInt())) {
+			if(! CharacterGroup.isWhitespace(src[i].code)) {
 				val item = match(true, t.reset(src, i, end))
 				if(item != null) return item
 			}
@@ -174,7 +174,7 @@ class WordTrieTree {
 		
 		var i = start
 		while(i < end) {
-			if(! CharacterGroup.isWhitespace(src[i].toInt())) {
+			if(! CharacterGroup.isWhitespace(src[i].code)) {
 				val item = match(false, t.reset(src, i, end))
 				if(item != null) {
 					if(dst == null) dst = ArrayList()

@@ -1954,8 +1954,8 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                     )?.also {
                         this.ta = parser.account(it.jsonObject)
                         if( ta != null){
-                            val (ti, r2) = TootInstance.get(client, forceAccessToken = refToken.get())
-                            this.ti = ti ?: return r2
+                            val (ti, ri) = TootInstance.getEx(client, forceAccessToken = refToken.get())
+                            this.ti = ti ?: return ri
                         }
                     }
                 }
@@ -2124,15 +2124,10 @@ class ActMain : AsyncActivity(), View.OnClickListener,
 
             override suspend fun background(client: TootApiClient): TootApiResult? {
 
-                val (instance, instanceResult) = TootInstance.get(
-                    client,
-                    apiHost,
-                    forceAccessToken = access_token
-                )
-                instance ?: return instanceResult
-                this.ti = instance
+                val (ti,ri) = TootInstance.getEx(client,forceAccessToken = access_token)
+                this.ti = ti ?: return ri
 
-                val misskeyVersion = instance.misskeyVersion
+                val misskeyVersion = ti.misskeyVersion
 
                 val result = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
 
@@ -2140,7 +2135,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                     this@ActMain,
                     LinkHelper.create(
                         apiHost,
-                        apDomainArg = instance.uri?.let { Host.parse(it) },
+                        apDomainArg = ti.uri?.let { Host.parse(it) },
                         misskeyVersion = misskeyVersion
                     )
                 ).account(result?.jsonObject)

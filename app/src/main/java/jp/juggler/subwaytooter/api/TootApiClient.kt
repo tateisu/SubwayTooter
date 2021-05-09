@@ -120,7 +120,7 @@ class TootApiClient(
 
         fun getScopeString(ti: TootInstance?) = when {
             // 古いサーバ
-            ti?.versionGE(TootInstance.VERSION_2_4_0_rc1) == false ->"read+write+follow"
+            ti?.versionGE(TootInstance.VERSION_2_4_0_rc1) == false -> "read+write+follow"
             // 新しいサーバか、AUTHORIZED_FETCH(3.0.0以降)によりサーバ情報を取得できなかった
             else -> "read+write+follow+push"
 
@@ -551,8 +551,7 @@ class TootApiClient(
     suspend fun request(
         path: String,
         request_builder: Request.Builder = Request.Builder(),
-        withoutToken: Boolean = false,
-        forceAccessToken:String? =null,
+        forceAccessToken: String? = null,
     ): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
@@ -566,12 +565,8 @@ class TootApiClient(
 
                     request_builder.url(url)
 
-                    if (!withoutToken) {
-                        val access_token = forceAccessToken ?: account?.getAccessToken()
-                        if (access_token?.isNotEmpty() == true) {
-                            request_builder.header("Authorization", "Bearer $access_token")
-                        }
-                    }
+                    (forceAccessToken ?: account?.getAccessToken())
+                        ?.notEmpty()?.let { request_builder.header("Authorization", "Bearer $it") }
 
                     request_builder.build()
                         .also { log.d("request: ${it.method} $url") }

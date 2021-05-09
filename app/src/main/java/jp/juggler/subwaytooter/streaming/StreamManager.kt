@@ -56,7 +56,7 @@ class StreamManager(val appState: AppState) {
             if (errorAcct.contains(acct)) return null
             var acctGroup = newMap[acct]
             if (acctGroup == null) {
-                var (ti, ri) = TootInstance.get(client, account = accessInfo)
+                var (ti, ri) = TootInstance.getEx(client, account = accessInfo)
                 if (ti == null) {
                     log.d("can't get server info. ${ri?.error}")
                     val tiOld = acctGroups[acct]?.ti

@@ -1215,31 +1215,17 @@ enum class ColumnType(
 		headerType = HeaderType.Instance,
 
 		loading = { client ->
-			val (instance, instanceResult) = TootInstance.get(
+			val (ti,ri) = TootInstance.getEx(
 				client,
 				Host.parse(column.instance_uri),
 				allowPixelfed = true,
 				forceUpdate = true
 			)
-			if (instance != null) {
-				column.instance_information = instance
-				column.handshake = instanceResult?.response?.handshake
+			if (ti != null) {
+				column.instance_information = ti
+				column.handshake = ri?.response?.handshake
 			}
-			instanceResult
-			//
-			//			// 「インスタンス情報」カラムをNAアカウントで開く場合
-			//			instance_name != null -> client.instance = instance_name
-			//
-			//	val (result, ti) = client.parseInstanceInformation(client.getInstanceInformation())
-			//	instance_tmp = ti
-			//				return result
-			//			}
-			//
-			//			val result = getInstanceInformation(client, column.instance_uri)
-			//			if(instance_tmp != null) {
-			//
-			//			}
-			//			result
+			ri
 		}
 	),
 

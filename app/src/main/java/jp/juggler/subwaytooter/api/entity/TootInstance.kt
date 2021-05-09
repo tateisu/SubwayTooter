@@ -30,30 +30,34 @@ enum class InstanceType {
     Pleroma
 }
 
-enum class CapabilitySource{
+enum class CapabilitySource {
     Fedibird,
 }
-enum class InstanceCapability(private val capabilitySource:CapabilitySource,private val id: String) {
-    FavouriteHashtag(CapabilitySource.Fedibird,"favourite_hashtag"),
-    FavouriteDomain(CapabilitySource.Fedibird,"favourite_domain"),
-    StatusExpire(CapabilitySource.Fedibird,"status_expire"),
-    FollowNoDelivery(CapabilitySource.Fedibird,"follow_no_delivery"),
-    FollowHashtag(CapabilitySource.Fedibird,"follow_hashtag"),
-    SubscribeAccount(CapabilitySource.Fedibird,"subscribe_account"),
-    SubscribeDomain(CapabilitySource.Fedibird,"subscribe_domain"),
-    SubscribeKeyword(CapabilitySource.Fedibird,"subscribe_keyword"),
-    TimelineNoLocal(CapabilitySource.Fedibird,"timeline_no_local"),
-    TimelineDomain(CapabilitySource.Fedibird,"timeline_domain"),
-    TimelineGroup(CapabilitySource.Fedibird,"timeline_group"),
-    TimelineGroupDirectory(CapabilitySource.Fedibird,"timeline_group_directory"),
-    VisibilityMutual(CapabilitySource.Fedibird,"visibility_mutual"),
-    VisibilityLimited(CapabilitySource.Fedibird,"visibility_limited"),
+
+enum class InstanceCapability(
+    private val capabilitySource: CapabilitySource,
+    private val id: String
+) {
+    FavouriteHashtag(CapabilitySource.Fedibird, "favourite_hashtag"),
+    FavouriteDomain(CapabilitySource.Fedibird, "favourite_domain"),
+    StatusExpire(CapabilitySource.Fedibird, "status_expire"),
+    FollowNoDelivery(CapabilitySource.Fedibird, "follow_no_delivery"),
+    FollowHashtag(CapabilitySource.Fedibird, "follow_hashtag"),
+    SubscribeAccount(CapabilitySource.Fedibird, "subscribe_account"),
+    SubscribeDomain(CapabilitySource.Fedibird, "subscribe_domain"),
+    SubscribeKeyword(CapabilitySource.Fedibird, "subscribe_keyword"),
+    TimelineNoLocal(CapabilitySource.Fedibird, "timeline_no_local"),
+    TimelineDomain(CapabilitySource.Fedibird, "timeline_domain"),
+    TimelineGroup(CapabilitySource.Fedibird, "timeline_group"),
+    TimelineGroupDirectory(CapabilitySource.Fedibird, "timeline_group_directory"),
+    VisibilityMutual(CapabilitySource.Fedibird, "visibility_mutual"),
+    VisibilityLimited(CapabilitySource.Fedibird, "visibility_limited"),
     ;
 
-    fun hasCapability(instance:TootInstance):Boolean{
-        when(capabilitySource){
-            CapabilitySource.Fedibird->{
-                if( instance.fedibird_capabilities?.any{ it == id} ==true ) return true
+    fun hasCapability(instance: TootInstance): Boolean {
+        when (capabilitySource) {
+            CapabilitySource.Fedibird -> {
+                if (instance.fedibird_capabilities?.any { it == id } == true) return true
             }
         }
         // XXX: もし機能がMastodon公式に取り込まれたならバージョン番号で判断できるはず
@@ -220,7 +224,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         return i >= 0
     }
 
-    fun hasCapability(cap:InstanceCapability) = cap.hasCapability(this)
+    fun hasCapability(cap: InstanceCapability) = cap.hasCapability(this)
 
     companion object {
 
@@ -320,6 +324,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             val account: SavedAccount?,
             val allowPixelfed: Boolean,
             val forceUpdate: Boolean,
+            val forceAccessToken: String?,
         ) {
             val result = Channel<Pair<TootInstance?, TootApiResult?>>()
         }
@@ -333,7 +338,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
                 var item: TootInstance?
 
-                if (!ri.forceUpdate) {
+                if (!ri.forceUpdate && ri.forceAccessToken == null) {
                     // re-use cached item.
                     val now = SystemClock.elapsedRealtime()
                     item = cacheData
@@ -353,9 +358,15 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
                 // get new information
                 val result = when {
-                    ri.account == null -> {
+                    // マストドンのホワイトリストモード用
+                    ri.forceAccessToken != null ->
+                        ri.client.request(
+                            "/api/v1/instance",
+                            forceAccessToken = ri.forceAccessToken
+                        )
+
+                    ri.account == null ->
                         ri.client.getInstanceInformation()
-                    }
 
                     ri.account.isMisskey ->
                         ri.client.request(
@@ -409,11 +420,16 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             private suspend fun loop() {
                 while (true) {
                     requestQueue.receive().let { req ->
-                        req.result.send(try {
-                            getImpl(req)
-                        } catch (ex: Throwable) {
-                            Pair(null, TootApiResult(ex.withCaption("can't get server information.")))
-                        })
+                        req.result.send(
+                            try {
+                                getImpl(req)
+                            } catch (ex: Throwable) {
+                                Pair(
+                                    null,
+                                    TootApiResult(ex.withCaption("can't get server information."))
+                                )
+                            }
+                        )
                     }
                 }
             }
@@ -454,7 +470,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             hostArg: Host? = null,
             account: SavedAccount? = if (hostArg == client.apiHost) client.account else null,
             allowPixelfed: Boolean = false,
-            forceUpdate: Boolean = false
+            forceUpdate: Boolean = false,
+            forceAccessToken: String? = null, // マストドンのwhitelist modeでアカウント追加時に必要
         ): Pair<TootInstance?, TootApiResult?> {
 
             val tmpInstance = client.apiHost
@@ -465,11 +482,18 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                 // update client.apiHost
                 if (hostArg != null) client.apiHost = hostArg
 
-                if (client.apiHost == null) throw NullPointerException("missing host to get server information.")
+                val host = client.apiHost
+                    ?: throw NullPointerException("missing host to get server information.")
 
                 // ホスト名ごとに用意したオブジェクトで同期する
-                return RequestInfo(client, account, allowPixelfed, forceUpdate)
-                    .also { client.apiHost!!.getCacheEntry().requestQueue.send(it) }
+                return RequestInfo(
+                    client = client,
+                    account = account,
+                    allowPixelfed = allowPixelfed,
+                    forceUpdate = forceUpdate,
+                    forceAccessToken = forceAccessToken
+                )
+                    .also { host.getCacheEntry().requestQueue.send(it) }
                     .result.receive()
 
             } finally {

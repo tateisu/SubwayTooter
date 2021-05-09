@@ -1051,7 +1051,7 @@ class TestTootApiClient {
             println(url)
 
             // ブラウザからコールバックで受け取ったcodeを処理する
-            result = client.authentication2(clientName, "DUMMY_CODE")
+            result = client.authentication2Mastodon(clientName, "DUMMY_CODE")
             jsonObject = result?.jsonObject
             assertNotNull(jsonObject)
             if (jsonObject == null) return@runBlocking

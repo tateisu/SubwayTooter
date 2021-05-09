@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import okhttp3.*
 import java.util.*
+import java.util.concurrent.atomic.AtomicReference
 
 class TootApiClient(
     val context: Context,
@@ -117,10 +118,14 @@ class TootApiClient(
             return sb.toString().replace("\n+".toRegex(), "\n")
         }
 
-        fun getScopeString(ti: TootInstance) = when {
+        fun getScopeString(ti: TootInstance?) = when {
+            // 古いサーバ
+            ti?.versionGE(TootInstance.VERSION_2_4_0_rc1) == false ->"read+write+follow"
+            // 新しいサーバか、AUTHORIZED_FETCH(3.0.0以降)によりサーバ情報を取得できなかった
+            else -> "read+write+follow+push"
+
+            // 過去の試行錯誤かな
             // ti.versionGE(TootInstance.VERSION_2_7_0_rc1) -> "read+write+follow+push+create"
-            ti.versionGE(TootInstance.VERSION_2_4_0_rc1) -> "read+write+follow+push"
-            else -> "read+write+follow"
         }
 
         fun getScopeArrayMisskey(@Suppress("UNUSED_PARAMETER") ti: TootInstance) =
@@ -547,6 +552,7 @@ class TootApiClient(
         path: String,
         request_builder: Request.Builder = Request.Builder(),
         withoutToken: Boolean = false,
+        forceAccessToken:String? =null,
     ): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
@@ -556,19 +562,19 @@ class TootApiClient(
         try {
             if (!sendRequest(result) {
 
-                   val url = "https://${apiHost?.ascii}$path"
+                    val url = "https://${apiHost?.ascii}$path"
 
                     request_builder.url(url)
 
-                    if(!withoutToken){
-                        val access_token = account?.getAccessToken()
+                    if (!withoutToken) {
+                        val access_token = forceAccessToken ?: account?.getAccessToken()
                         if (access_token?.isNotEmpty() == true) {
                             request_builder.header("Authorization", "Bearer $access_token")
                         }
                     }
 
                     request_builder.build()
-                        .also{ log.d("request: ${it.method} $url") }
+                        .also { log.d("request: ${it.method} $url") }
 
                 }) return result
 
@@ -684,7 +690,10 @@ class TootApiClient(
         return result
     }
 
-    private suspend fun authentication1Misskey(clientNameArg: String, ti: TootInstance): TootApiResult? {
+    private suspend fun authentication1Misskey(
+        clientNameArg: String,
+        ti: TootInstance
+    ): TootApiResult? {
         val result = TootApiResult.makeWithCaption(this.apiHost?.pretty)
         if (result.error != null) return result
         val instance = result.caption // same to instance
@@ -954,7 +963,7 @@ class TootApiClient(
 
     private suspend fun prepareClientMastodon(
         clientNameArg: String,
-        ti: TootInstance,
+        ti: TootInstance?,
         forceUpdateClient: Boolean = false
     ): TootApiResult? {
         // 前準備
@@ -1046,11 +1055,11 @@ class TootApiClient(
 
     private suspend fun authentication1Mastodon(
         clientNameArg: String,
-        ti: TootInstance,
+        ti: TootInstance?,
         forceUpdateClient: Boolean = false
     ): TootApiResult? {
 
-        if (ti.instanceType == InstanceType.Pixelfed) {
+        if (ti?.instanceType == InstanceType.Pixelfed) {
             return TootApiResult("currently Pixelfed instance is not supported.")
         }
 
@@ -1069,15 +1078,24 @@ class TootApiClient(
     ): TootApiResult? {
 
         val (ti, ri) = TootInstance.get(this)
-        ti ?: return ri
-        return when {
+        log.i("authentication1: instance info version=${ti?.version} misskeyVersion=${ti?.misskeyVersion} responseCode=${ri?.response?.code}")
+        return if (ti == null) when (ri?.response?.code) {
+            // https://github.com/tateisu/SubwayTooter/issues/155
+            // Mastodon's WHITELIST_MODE
+            401 -> authentication1Mastodon(clientNameArg, null, forceUpdateClient)
+            else -> ri
+        } else when {
             ti.misskeyVersion > 0 -> authentication1Misskey(clientNameArg, ti)
             else -> authentication1Mastodon(clientNameArg, ti, forceUpdateClient)
         }
     }
 
     // oAuth2認証の続きを行う
-    suspend fun authentication2(clientNameArg: String, code: String): TootApiResult? {
+    suspend fun authentication2Mastodon(
+        clientNameArg: String,
+        code: String,
+        outAccessToken: AtomicReference<String>
+    ): TootApiResult? {
         val result = TootApiResult.makeWithCaption(apiHost?.pretty)
         if (result.error != null) return result
 
@@ -1116,8 +1134,8 @@ class TootApiClient(
         if (access_token?.isEmpty() != false) {
             return result.setError("missing access_token in the response.")
         }
+        outAccessToken.set(access_token)
         return getUserCredential(access_token, token_info)
-
     }
 
     // アクセストークン手動入力でアカウントを更新する場合、アカウントの情報を取得する
@@ -1282,13 +1300,13 @@ class TootApiClient(
 
             val request_builder = Request.Builder()
 
-            if( account.isMisskey){
+            if (account.isMisskey) {
                 val accessToken = account.misskeyApiToken
                 if (accessToken?.isNotEmpty() == true) {
                     val delm = if (-1 != url.indexOf('?')) '&' else '?'
                     url = "$url${delm}i=${accessToken.encodePercent()}"
                 }
-            }else {
+            } else {
                 val access_token = account.getAccessToken()
                 if (access_token?.isNotEmpty() == true) {
                     val delm = if (-1 != url.indexOf('?')) '&' else '?'

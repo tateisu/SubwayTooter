@@ -49,6 +49,7 @@ import java.io.FileOutputStream
 import java.io.InputStreamReader
 import java.lang.ref.WeakReference
 import java.util.*
+import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.ZipInputStream
 import kotlin.math.abs
 import kotlin.math.max
@@ -579,7 +580,11 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         // アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
         val new_order = app_state.columnList
             .mapIndexedNotNull { index, column ->
-                if (!column.access_info.isNA && null == SavedAccount.loadAccount(this@ActMain, column.access_info.db_id)) {
+                if (!column.access_info.isNA && null == SavedAccount.loadAccount(
+                        this@ActMain,
+                        column.access_info.db_id
+                    )
+                ) {
                     null
                 } else {
                     index
@@ -639,7 +644,12 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :updateColumnStripSelection")
         ts = SystemClock.elapsedRealtime()
 
-        app_state.columnList.forEach { it.fireShowContent(reason = "ActMain onStart", reset = true) }
+        app_state.columnList.forEach {
+            it.fireShowContent(
+                reason = "ActMain onStart",
+                reset = true
+            )
+        }
 
         te = SystemClock.elapsedRealtime()
         if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :fireShowContent")
@@ -823,7 +833,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
     // 新しいカラムをどこに挿入するか
     // カラムの次の位置か、現在のページの次の位置か、終端
     fun nextPosition(column: Column?): Int =
-        app_state.columnIndex(column)?.let{ it+1 } ?: defaultInsertPosition
+        app_state.columnIndex(column)?.let { it + 1 } ?: defaultInsertPosition
 
     private fun showQuickTootVisibility() {
         btnQuickTootMenu.imageResource =
@@ -868,7 +878,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
             val refresh_after_toot = Pref.ipRefreshAfterToot(pref)
             if (refresh_after_toot != Pref.RAT_DONT_REFRESH) {
                 app_state.columnList
-                    .filter{ it.access_info.acct == posted_acct}
+                    .filter { it.access_info.acct == posted_acct }
                     .forEach {
                         it.startRefreshForPost(
                             refresh_after_toot,
@@ -970,7 +980,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
 
     private fun isOrderChanged(new_order: List<Int>): Boolean {
         if (new_order.size != app_state.columnCount) return true
-        for(i in new_order.indices){
+        for (i in new_order.indices) {
             if (new_order[i] != i) return true
         }
         return false
@@ -1027,7 +1037,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                 REQUEST_CODE_COLUMN_COLOR -> if (data != null) {
                     app_state.saveColumnList()
                     val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
-                    app_state.column(idx)?.let{
+                    app_state.column(idx)?.let {
                         it.fireColumnColor()
                         it.fireShowContent(
                             reason = "ActMain column color changed",
@@ -1074,7 +1084,10 @@ class ActMain : AsyncActivity(), View.OnClickListener,
             REQUEST_CODE_TEXT -> when (resultCode) {
                 ActText.RESULT_SEARCH_MSP -> searchFromActivityResult(data, ColumnType.SEARCH_MSP)
                 ActText.RESULT_SEARCH_TS -> searchFromActivityResult(data, ColumnType.SEARCH_TS)
-                ActText.RESULT_SEARCH_NOTESTOCK -> searchFromActivityResult(data, ColumnType.SEARCH_NOTESTOCK)
+                ActText.RESULT_SEARCH_NOTESTOCK -> searchFromActivityResult(
+                    data,
+                    ColumnType.SEARCH_NOTESTOCK
+                )
             }
         }
 
@@ -1090,7 +1103,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         }
 
         // カラムが0個ならアプリを終了する
-        if (app_state.columnCount == 0 ) {
+        if (app_state.columnCount == 0) {
             finish()
             return
         }
@@ -1504,12 +1517,12 @@ class ActMain : AsyncActivity(), View.OnClickListener,
             val c = env.pager.currentItem
             c == idx
         }, { env ->
-        idx >= 0 && idx in env.visibleColumnsIndices
-    }
+            idx >= 0 && idx in env.visibleColumnsIndices
+        }
     )
 
     private fun updateColumnStrip() {
-        llEmpty.vg(app_state.columnCount==0)
+        llEmpty.vg(app_state.columnCount == 0)
 
         val iconSize = stripIconSize
         val rootW = (iconSize * 1.25f + 0.5f).toInt()
@@ -1588,7 +1601,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         handler.post(Runnable {
             if (isFinishing) return@Runnable
 
-            if (app_state.columnCount == 0 ) {
+            if (app_state.columnCount == 0) {
                 llColumnStrip.setVisibleRange(-1, -1, 0f)
             } else {
                 phoneTab({ env ->
@@ -1788,7 +1801,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
             PollingWorker.queueNotificationClicked(this, uri)
 
             val columnList = app_state.columnList
-            val column =columnList.firstOrNull {
+            val column = columnList.firstOrNull {
                 it.type == ColumnType.NOTIFICATIONS &&
                     it.access_info == account &&
                     !it.system_notification_not_related
@@ -1883,8 +1896,10 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                     val error = uri.getQueryParameter("error")
                     val error_description = uri.getQueryParameter("error_description")
                     if (error != null || error_description != null)
-                        return TootApiResult(error_description.notBlank() ?: error.notBlank()
-                        ?: "?")
+                        return TootApiResult(
+                            error_description.notBlank() ?: error.notBlank()
+                            ?: "?"
+                        )
 
                     // subwaytooter://oauth(\d*)/
                     //    ?code=113cc036e078ac500d3d0d3ad345cd8181456ab087abc67270d40f40a4e9e3c2
@@ -1923,22 +1938,26 @@ class ActMain : AsyncActivity(), View.OnClickListener,
 
                     val instance = client.apiHost
                         ?: return TootApiResult("missing instance in callback url.")
-
-                    val (ti, r2) = TootInstance.get(client)
-                    ti ?: return r2
-
-                    this.ti = ti
                     this.host = instance
+
 
                     val parser = TootParser(
                         this@ActMain,
                         linkHelper = LinkHelper.create(instance)
                     )
 
-                    return client.authentication2(
+                    val refToken = AtomicReference<String>(null)
+                    return client.authentication2Mastodon(
                         Pref.spClientName(this@ActMain),
-                        code
-                    )?.also { this.ta = parser.account(it.jsonObject) }
+                        code,
+                        outAccessToken = refToken
+                    )?.also {
+                        this.ta = parser.account(it.jsonObject)
+                        if( ta != null){
+                            val (ti, r2) = TootInstance.get(client, forceAccessToken = refToken.get())
+                            this.ti = ti ?: return r2
+                        }
+                    }
                 }
             }
 
@@ -2105,7 +2124,11 @@ class ActMain : AsyncActivity(), View.OnClickListener,
 
             override suspend fun background(client: TootApiClient): TootApiResult? {
 
-                val (instance, instanceResult) = TootInstance.get(client, apiHost)
+                val (instance, instanceResult) = TootInstance.get(
+                    client,
+                    apiHost,
+                    forceAccessToken = access_token
+                )
                 instance ?: return instanceResult
                 this.ti = instance
 
@@ -2193,19 +2216,19 @@ class ActMain : AsyncActivity(), View.OnClickListener,
             return
         }
 
-        app_state.columnIndex(column)?.let{ page_delete ->
+        app_state.columnIndex(column)?.let { page_delete ->
             phoneTab({ env ->
                 val page_showing = env.pager.currentItem
 
                 removeColumn(column)
 
-                if ( page_showing == page_delete) {
-                    scrollAndLoad(page_showing-1)
+                if (page_showing == page_delete) {
+                    scrollAndLoad(page_showing - 1)
                 }
 
             }, {
                 removeColumn(column)
-                scrollAndLoad( page_delete - 1)
+                scrollAndLoad(page_delete - 1)
             })
         }
     }
@@ -2253,8 +2276,8 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         scrollAndLoad(lastColumnIndex)
     }
 
-    private fun scrollAndLoad(idx:Int){
-        val c = app_state.column(idx) ?:return
+    private fun scrollAndLoad(idx: Int) {
+        val c = app_state.column(idx) ?: return
         scrollToColumn(idx)
         if (!c.bFirstInitialized) c.startLoading()
     }

@@ -90,6 +90,7 @@ class Column(
         internal const val PATH_BLOCKS = "/api/v1/blocks?limit=$READ_LIMIT"
         internal const val PATH_FOLLOW_REQUESTS = "/api/v1/follow_requests?limit=$READ_LIMIT"
         internal const val PATH_FOLLOW_SUGGESTION = "/api/v1/suggestions?limit=$READ_LIMIT"
+        internal const val PATH_FOLLOW_SUGGESTION2 = "/api/v2/suggestions?limit=$READ_LIMIT"
         internal const val PATH_ENDORSEMENT = "/api/v1/endorsements?limit=$READ_LIMIT"
 
         internal const val PATH_PROFILE_DIRECTORY = "/api/v1/directory?limit=$READ_LIMIT"

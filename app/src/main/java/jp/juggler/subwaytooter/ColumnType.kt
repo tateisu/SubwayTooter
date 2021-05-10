@@ -1470,7 +1470,14 @@ enum class ColumnType(
 					misskeyParams = access_info.putMisskeyApiToken()
 				)
 			} else {
-				getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
+				val (ti, ri) = TootInstance.get(client)
+				when {
+					ti ==null -> ri
+					ti.versionGE(TootInstance.VERSION_3_4_0_rc1) ->
+						getAccountList(client, Column.PATH_FOLLOW_SUGGESTION2)
+					else ->
+						getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
+				}
 			}
 		},
 
@@ -1482,7 +1489,14 @@ enum class ColumnType(
 					misskeyParams = access_info.putMisskeyApiToken()
 				)
 			} else {
-				getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
+				val (ti, ri) = TootInstance.get(client)
+				when {
+					ti ==null -> ri
+					ti.versionGE(TootInstance.VERSION_3_4_0_rc1) ->
+						getAccountList(client, Column.PATH_FOLLOW_SUGGESTION2)
+					else ->
+						getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
+				}
 			}
 		},
 
@@ -1495,11 +1509,22 @@ enum class ColumnType(
 					misskeyParams = access_info.putMisskeyApiToken()
 				)
 			} else {
-				getAccountList(
-					client,
-					Column.PATH_FOLLOW_SUGGESTION,
-					mastodonFilterByIdRange = false
-				)
+				val (ti, ri) = TootInstance.get(client)
+				when {
+					ti ==null -> ri
+					ti.versionGE(TootInstance.VERSION_3_4_0_rc1) ->
+						getAccountList(
+							client,
+							Column.PATH_FOLLOW_SUGGESTION2,
+							mastodonFilterByIdRange = false
+						)
+					else ->
+						getAccountList(
+							client,
+							Column.PATH_FOLLOW_SUGGESTION,
+							mastodonFilterByIdRange = false
+						)
+				}
 			}
 		},
 		gapDirection = gapDirectionMastodonWorkaround,

@@ -26,6 +26,7 @@ import com.google.android.flexbox.JustifyContent
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
 import jp.juggler.emoji.UnicodeEmoji
+import jp.juggler.subwaytooter.action.Action_Account
 import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_Notification
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -87,7 +88,10 @@ class ColumnViewHolder(
     private var status_adapter: ItemListAdapter? = null
     private var page_idx: Int = 0
 
+    private lateinit var llLoading: View
+    private lateinit var btnConfirmMail: Button
     private lateinit var tvLoading: TextView
+
     lateinit var listView: RecyclerView
     lateinit var refreshLayout: SwipyRefreshLayout
 
@@ -297,7 +301,7 @@ class ColumnViewHolder(
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initLoadingTextView() {
-        tvLoading.setOnTouchListener(ErrorFlickListener(activity))
+        llLoading.setOnTouchListener(ErrorFlickListener(activity))
     }
 
     val viewRoot: View = inflate(activity, parent)
@@ -354,6 +358,7 @@ class ColumnViewHolder(
         btnColumnClose.setOnClickListener(this)
         btnColumnClose.setOnLongClickListener(this)
         btnDeleteNotification.setOnClickListener(this)
+        btnConfirmMail.setOnClickListener(this)
 
         btnColor.setOnClickListener(this)
         btnLanguageFilter.setOnClickListener(this)
@@ -782,7 +787,13 @@ class ColumnViewHolder(
                 )
             }
             val streamStatus = column.getStreamingStatus()
-            log.d("procShowColumnStatus: streamStatus=${streamStatus}, column=${column.access_info.acct}/${column.getColumnName(true)}")
+            log.d(
+                "procShowColumnStatus: streamStatus=${streamStatus}, column=${column.access_info.acct}/${
+                    column.getColumnName(
+                        true
+                    )
+                }"
+            )
 
             when (streamStatus) {
                 StreamStatus.Missing, StreamStatus.Closed -> {
@@ -1181,6 +1192,11 @@ class ColumnViewHolder(
                 activity.app_state.saveColumnList()
                 showAnnouncements()
             }
+
+            btnConfirmMail -> {
+                Action_Account.resendConfirmMail(activity, column.access_info)
+
+            }
         }
     }
 
@@ -1198,12 +1214,13 @@ class ColumnViewHolder(
 
     private fun showError(message: String) {
         hideRefreshError()
-        tvLoading.visibility = View.VISIBLE
-        tvLoading.text = message
 
         refreshLayout.isRefreshing = false
         refreshLayout.visibility = View.GONE
 
+        llLoading.visibility = View.VISIBLE
+        tvLoading.text = message
+        btnConfirmMail.vg(column?.access_info?.isConfirmed == false)
     }
 
     private fun showColumnCloseButton() {
@@ -1300,7 +1317,7 @@ class ColumnViewHolder(
             return
         }
 
-        tvLoading.visibility = View.GONE
+        llLoading.visibility = View.GONE
 
         refreshLayout.visibility = View.VISIBLE
 
@@ -2353,9 +2370,27 @@ class ColumnViewHolder(
 
                 }.lparams(matchParent, matchParent)
 
-                tvLoading = textView {
+                llLoading = verticalLayout {
+                    lparams(matchParent, matchParent)
+
+                    isBaselineAligned = false
+
                     gravity = Gravity.CENTER
-                }.lparams(matchParent, matchParent)
+
+                    tvLoading = textView {
+                        gravity = Gravity.CENTER
+                    }.lparams(matchParent, wrapContent)
+
+                    btnConfirmMail = button {
+                        text = activity.getString(R.string.resend_confirm_mail)
+                        background = ContextCompat.getDrawable(
+                            activity,
+                            R.drawable.btn_bg_transparent_round6dp
+                        )
+                    }.lparams(matchParent, wrapContent) {
+                        topMargin = dip(8)
+                    }
+                }
 
                 refreshLayout = swipyRefreshLayout {
                     lparams(matchParent, matchParent)
@@ -2744,7 +2779,7 @@ class ColumnViewHolder(
         if (sample == null) {
             EmojiPicker(activity, column.access_info, closeOnSelected = true) { result ->
                 val emoji = result.emoji
-                val code = when(emoji){
+                val code = when (emoji) {
                     is UnicodeEmoji -> emoji.unifiedCode
                     is CustomEmoji -> emoji.shortcode
                     else -> error("unknown emoji type")

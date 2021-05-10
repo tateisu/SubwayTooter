@@ -27,22 +27,6 @@
             android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp" />
 
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
-            android:text="@string/description" />
-
-        <TextView
-            android:id="@+id/tvDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp" />
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -51,16 +35,24 @@
             android:layout_marginEnd="12dp"
             android:text="@string/user_name" />
 
-        <EditText
-            android:id="@+id/etUserName"
+        <TextView
+            android:id="@+id/tvUserName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
             android:hint="@string/user_name_hint"
             android:importantForAutofill="no"
-            android:inputType="text"
             tools:ignore="UnusedAttribute" />
+
+        <CheckBox
+            android:id="@+id/cbUpdateMailAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
+            android:text="@string/update_mail_address" />
 
         <TextView
             android:layout_width="match_parent"
@@ -76,75 +68,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
+            android:enabled="false"
             android:hint="@string/email_hint"
             android:importantForAutofill="no"
             android:inputType="text"
             tools:ignore="TextFields" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
-            android:text="@string/password" />
-
-        <EditText
-            android:id="@+id/etPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:hint="@string/password_hint"
-            android:importantForAutofill="no"
-            android:inputType="textPassword" />
-
-        <TextView
-            android:id="@+id/tvReasonCaption"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
-            android:labelFor="@+id/etReason"
-            android:text="@string/reason_create_account" />
-
-        <EditText
-            android:id="@+id/etReason"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:importantForAutofill="no"
-            android:inputType="text" />
-
-
-        <Button
-            android:id="@+id/btnRules"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
-            android:text="@string/instance_rules"
-            android:textAllCaps="false" />
-
-        <Button
-            android:id="@+id/btnTerms"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:text="@string/privacy_policy"
-            android:textAllCaps="false" />
-
-        <CheckBox
-            android:id="@+id/cbAgreement"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:text="@string/agree_terms" />
 
         <LinearLayout
             style="?android:attr/buttonBarStyle"
@@ -169,6 +98,12 @@
                 android:text="@string/ok" />
         </LinearLayout>
 
-
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
+            android:text="@string/confirm_mail_description" />
     </LinearLayout>
 </ScrollView>

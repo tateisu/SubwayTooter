@@ -1826,8 +1826,8 @@ class ActMain : AsyncActivity(), View.OnClickListener,
 
             var ta: TootAccount? = null
             var sa: SavedAccount? = null
-            var host: Host? = null
-            var ti: TootInstance? = null
+            var apiHost: Host? = null
+            var apDomain: Host? = null
 
             override suspend fun background(client: TootApiClient): TootApiResult? {
 
@@ -1868,8 +1868,8 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                     val (ti, r2) = TootInstance.get(client)
                     ti ?: return r2
 
-                    this.ti = ti
-                    this.host = instance
+                    this.apiHost = instance
+                    this.apDomain = ti.uri?.let{ Host.parse(it)}
 
                     val parser = TootParser(
                         this@ActMain,
@@ -1938,7 +1938,8 @@ class ActMain : AsyncActivity(), View.OnClickListener,
 
                     val instance = client.apiHost
                         ?: return TootApiResult("missing instance in callback url.")
-                    this.host = instance
+                    this.apiHost = instance
+
 
 
                     val parser = TootParser(
@@ -1955,24 +1956,26 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                         this.ta = parser.account(it.jsonObject)
                         if( ta != null){
                             val (ti, ri) = TootInstance.getEx(client, forceAccessToken = refToken.get())
-                            this.ti = ti ?: return ri
+                            ti ?: return ri
+                            this.apDomain = ti.uri?.let{ it2->  Host.parse(it2)}
                         }
                     }
                 }
             }
 
             override suspend fun handleResult(result: TootApiResult?) {
-                val host = this.host
+                val apiHost = this.apiHost
+                val apDomain = this.apDomain
                 val ta = this.ta
                 var sa = this.sa
 
-                if (ta != null && host?.isValid == true && sa == null) {
-                    val acct = Acct.parse(ta.username, host)
+                if (ta != null && apiHost?.isValid == true && sa == null) {
+                    val acct = Acct.parse(ta.username, apDomain ?: apiHost )
                     // アカウント追加時に、アプリ内に既にあるアカウントと同じものを登録していたかもしれない
                     sa = SavedAccount.loadAccountByAcct(this@ActMain, acct.ascii)
                 }
 
-                afterAccountVerify(result, ta, sa, ti, host)
+                afterAccountVerify(result, ta, sa, apiHost, apDomain)
             }
 
         })
@@ -1994,8 +1997,8 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         result: TootApiResult?,
         ta: TootAccount?,
         sa: SavedAccount?,
-        ti: TootInstance?,
-        host: Host?
+        apiHost: Host?,
+        apDomain: Host?
     ): Boolean {
         result ?: return false
 
@@ -2041,20 +2044,14 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                 return true
             }
 
-            host != null -> {
+            apiHost != null -> {
                 // アカウント追加時
-                val user = Acct.parse(ta.username, host)
-
-                val apDomain = ti?.uri
-                if (apDomain == null) {
-                    showToast(false, "Can't get ActivityPub domain name.")
-                    return false
-                }
+                val user = Acct.parse(ta.username, apDomain ?: apiHost)
 
                 val row_id = SavedAccount.insert(
                     acct = user.ascii,
-                    host = host.ascii,
-                    domain = apDomain,
+                    host = apiHost.ascii,
+                    domain = (apDomain ?: apiHost).ascii,
                     account = jsonObject,
                     token = token_info,
                     misskeyVersion = TootInstance.parseMisskeyVersion(token_info)
@@ -2120,12 +2117,17 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         TootTaskRunner(this@ActMain).run(apiHost, object : TootTask {
 
             var ta: TootAccount? = null
-            var ti: TootInstance? = null
+            var apDomain : Host? = null
 
             override suspend fun background(client: TootApiClient): TootApiResult? {
 
                 val (ti,ri) = TootInstance.getEx(client,forceAccessToken = access_token)
-                this.ti = ti ?: return ri
+                ti ?: return ri
+
+                val apDomain = ti.uri?.let { Host.parse(it) }
+                    ?: return TootApiResult("missing uri in Instance Information")
+
+                this.apDomain = apDomain
 
                 val misskeyVersion = ti.misskeyVersion
 
@@ -2134,8 +2136,8 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                 this.ta = TootParser(
                     this@ActMain,
                     LinkHelper.create(
-                        apiHost,
-                        apDomainArg = ti.uri?.let { Host.parse(it) },
+                        apiHostArg = apiHost,
+                        apDomainArg = apDomain,
                         misskeyVersion = misskeyVersion
                     )
                 ).account(result?.jsonObject)
@@ -2144,7 +2146,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
             }
 
             override suspend fun handleResult(result: TootApiResult?) {
-                if (afterAccountVerify(result, ta, sa, ti, apiHost)) {
+                if (afterAccountVerify(result, ta, sa, apiHost, apDomain)) {
                     dialog_host?.dismissSafe()
                     dialog_token?.dismissSafe()
                 }

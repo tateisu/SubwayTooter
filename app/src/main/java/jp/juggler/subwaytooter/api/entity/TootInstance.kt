@@ -475,7 +475,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                     TootParser(
                         client.context,
                         linkHelper = linkHelper ?: LinkHelper.create(
-                            hostArg!!,
+                            (hostArg ?: client.apiHost)!!,
                             misskeyVersion = parseMisskeyVersion(json)
                         )
                     ),

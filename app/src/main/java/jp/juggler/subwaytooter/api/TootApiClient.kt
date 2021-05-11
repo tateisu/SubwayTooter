@@ -42,81 +42,9 @@ class TootApiClient(
 
         private val reStartJsonArray = """\A\s*\[""".asciiPattern()
         private val reStartJsonObject = """\A\s*\{""".asciiPattern()
-        private val reWhiteSpace = """\s+""".asciiPattern()
-
 
         val DEFAULT_JSON_ERROR_PARSER =
             { json: JsonObject -> json["error"]?.toString() }
-
-        internal fun simplifyErrorHtml(
-            response: Response,
-            sv: String,
-            jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER
-        ): String {
-
-            // JsonObjectとして解釈できるならエラーメッセージを検出する
-            try {
-                val json = sv.decodeJsonObject()
-                val error_message =
-                    jsonErrorParser(json)?.notEmpty()
-                if (error_message != null) {
-                    return error_message
-                }
-            } catch (_: Throwable) {
-            }
-
-            // HTMLならタグの除去を試みる
-            val ct = response.body?.contentType()
-            if (ct?.subtype == "html") {
-                val decoded = DecodeOptions().decodeHTML(sv).toString()
-                return reWhiteSpace.matcher(decoded).replaceAll(" ").trim()
-            }
-
-            // XXX: Amazon S3 が403を返した場合にcontent-typeが?/xmlでserverがAmazonならXMLをパースしてエラーを整形することもできるが、多分必要ない
-
-            return reWhiteSpace.matcher(sv).replaceAll(" ").trim()
-        }
-
-        fun formatResponse(
-            response: Response,
-            caption: String,
-            bodyString: String? = null,
-            jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER
-        ): String {
-            val sb = StringBuilder()
-            try {
-                // body は既に読み終わっているか、そうでなければこれから読む
-                if (bodyString != null) {
-                    sb.append(simplifyErrorHtml(response, bodyString, jsonErrorParser))
-                } else {
-                    try {
-                        val string = response.body?.string()
-                        if (string != null) {
-                            sb.append(simplifyErrorHtml(response, string, jsonErrorParser))
-                        }
-                    } catch (ex: Throwable) {
-                        log.e(ex, "missing response body.")
-                        sb.append("(missing response body)")
-                    }
-                }
-
-                if (sb.isNotEmpty()) sb.append(' ')
-                sb.append("(HTTP ").append(response.code.toString())
-
-                val message = response.message
-                if (message.isNotEmpty()) sb.append(' ').append(message)
-                sb.append(")")
-
-                if (caption.isNotEmpty()) {
-                    sb.append(' ').append(caption)
-                }
-
-            } catch (ex: Throwable) {
-                log.trace(ex)
-            }
-
-            return sb.toString().replace("\n+".toRegex(), "\n")
-        }
 
         fun getScopeString(ti: TootInstance?) = when {
             // 古いサーバ
@@ -198,6 +126,25 @@ class TootApiClient(
             return encodeScopeArray(a) == encodeScopeArray(b)
         }
 
+        fun formatResponse(
+            response: Response,
+            caption: String = "?",
+            bodyString: String? = null
+        ) = TootApiResult(
+            response = response,
+            caption = caption,
+            bodyString = bodyString
+        ).apply { parseErrorResponse() }.error ?: "(null)"
+
+        fun simplifyErrorHtml(
+            response: Response,
+            caption:String = "?",
+            bodyString:String =response.body?.string() ?: "",
+            jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER
+        ) = TootApiResult(
+            response = response,
+            caption = caption,
+        ).simplifyErrorHtml( bodyString,jsonErrorParser)
     }
 
     // 認証に関する設定を保存する
@@ -345,11 +292,8 @@ class TootApiClient(
         }
 
         if (!response.isSuccessful || bodyString?.isEmpty() != false) {
-
-            result.error = formatResponse(
-                response,
-                result.caption,
-                if (bodyString?.isNotEmpty() == true) bodyString else NO_INFORMATION,
+            result.parseErrorResponse(
+                bodyString?.notEmpty() ?: NO_INFORMATION,
                 jsonErrorParser
             )
         }
@@ -388,11 +332,8 @@ class TootApiClient(
         if (isApiCancelled) return null
 
         if (!response.isSuccessful || bodyBytes?.isEmpty() != false) {
-
-            result.error = formatResponse(
-                response,
-                result.caption,
-                if (bodyBytes?.isNotEmpty() == true) bodyBytes.decodeUTF8() else NO_INFORMATION,
+            result.parseErrorResponse(
+                bodyBytes?.notEmpty()?.decodeUTF8() ?: NO_INFORMATION,
                 jsonErrorParser
             )
         }
@@ -411,16 +352,12 @@ class TootApiClient(
         progressPath: String? = null,
         jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER
     ): TootApiResult? {
-
-        val response = result.response!! // nullにならないはず
-
         try {
             readBodyBytes(result, progressPath, jsonErrorParser)
                 ?: return if (isApiCancelled) null else result
         } catch (ex: Throwable) {
             log.trace(ex)
-            result.error =
-                formatResponse(response, result.caption, result.bodyString ?: NO_INFORMATION)
+            result.parseErrorResponse(result.bodyString ?: NO_INFORMATION)
         }
         return result
     }
@@ -430,19 +367,14 @@ class TootApiClient(
         progressPath: String? = null,
         jsonErrorParser: (json: JsonObject) -> String? = DEFAULT_JSON_ERROR_PARSER
     ): TootApiResult? {
-
-        val response = result.response!! // nullにならないはず
-
         try {
             val bodyString = readBodyString(result, progressPath, jsonErrorParser)
                 ?: return if (isApiCancelled) null else result
 
             result.data = bodyString
-
         } catch (ex: Throwable) {
             log.trace(ex)
-            result.error =
-                formatResponse(response, result.caption, result.bodyString ?: NO_INFORMATION)
+            result.parseErrorResponse(result.bodyString ?: NO_INFORMATION)
         }
         return result
     }
@@ -506,8 +438,7 @@ class TootApiClient(
 
         } catch (ex: Throwable) {
             log.trace(ex)
-            result.error =
-                formatResponse(response, result.caption, result.bodyString ?: NO_INFORMATION)
+            result.parseErrorResponse(result.bodyString ?: NO_INFORMATION)
         }
         return result
 

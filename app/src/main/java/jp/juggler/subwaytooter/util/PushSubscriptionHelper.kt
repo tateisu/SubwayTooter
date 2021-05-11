@@ -480,6 +480,7 @@ class PushSubscriptionHelper(
                 })
                 put("data", JsonObject().apply {
                     put("alerts", newAlerts)
+                    account.push_policy?.let{ put("policy",it )}
                 })
             }
 

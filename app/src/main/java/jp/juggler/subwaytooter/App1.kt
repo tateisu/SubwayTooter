@@ -124,8 +124,9 @@ class App1 : Application() {
 		// 2020/9/20 56=>57 SavedAccountテーブルに項目追加
 		// 2020/9/20 57=>58 UserRelationテーブルに項目追加
 		// 2021/2/10 58=>59 SavedAccountテーブルに項目追加
+		// 2021/5/11 59=>60 SavedAccountテーブルに項目追加
 		
-		internal const val DB_VERSION = 59
+		internal const val DB_VERSION = 60
 		
 		private val tableList = arrayOf(
 			LogData,

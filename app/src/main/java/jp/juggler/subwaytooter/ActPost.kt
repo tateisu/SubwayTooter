@@ -369,17 +369,14 @@ class ActPost : AsyncActivity(),
                 val request = Request.Builder().url(url).build()
                 val call = App1.ok_http_client.newCall(request)
                 val response = call.await()
-                if (response.isSuccessful) {
-                    return true
-                }
-                log.e(TootApiClient.formatResponse(response, "check_exist failed."))
+                if (response.isSuccessful) return true
+
+                log.e(TootApiClient.formatResponse(response,"check_exist failed."))
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
-
             return false
         }
-
     }
 
     private lateinit var btnAccount: Button

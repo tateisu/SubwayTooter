@@ -1091,4 +1091,6 @@
     <string name="update_mail_address">Update e-mail address</string>
     <string name="resend_confirm_mail_requested">Resending confirm E-mail was requested.</string>
     <string name="confirm_mail_description">After requesting resending confirm E-mail,\n- please check the mail on your mailer.\n- open confirm link in the mail.\n- close this dialog and reload column.</string>
+    <string name="push_notification_filter">Push notification filter (Mastodon 3.4.0+, requires update push subscription)</string>
+    <string name="no_one">No one</string>
 </resources>

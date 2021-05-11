@@ -79,7 +79,9 @@ class SavedAccount(
 	var image_resize: String? = null
 	var image_max_megabytes : String? = null
 	var movie_max_megabytes : String? = null
-	
+
+	var push_policy : String? = null
+
 	init {
 		val tmpAcct = Acct.parse(acctArg)
 		this.username = tmpAcct.username
@@ -165,6 +167,7 @@ class SavedAccount(
 		image_resize = cursor.getStringOrNull(COL_IMAGE_RESIZE)
 		image_max_megabytes = cursor.getStringOrNull(COL_IMAGE_MAX_MEGABYTES)
 		movie_max_megabytes = cursor.getStringOrNull(COL_MOVIE_MAX_MEGABYTES)
+		push_policy = cursor.getStringOrNull(COL_PUSH_POLICY)
 	}
 	
 	val isNA : Boolean
@@ -232,6 +235,7 @@ class SavedAccount(
 		cv.putOrNull(COL_IMAGE_RESIZE,image_resize)
 		cv.putOrNull(COL_IMAGE_MAX_MEGABYTES, image_max_megabytes)
 		cv.putOrNull(COL_MOVIE_MAX_MEGABYTES, movie_max_megabytes)
+		cv.putOrNull(COL_PUSH_POLICY,push_policy)
 
 		// UIからは更新しない
 		// notification_tag
@@ -298,6 +302,7 @@ class SavedAccount(
 		this.image_resize = b.image_resize
 		this.image_max_megabytes = b.image_max_megabytes
 		this.movie_max_megabytes = b.movie_max_megabytes
+		this.push_policy = b.push_policy
 	}
 	
 	fun getFullAcct(who : TootAccount?) = getFullAcct(who?.acct)
@@ -400,6 +405,8 @@ class SavedAccount(
 		private const val COL_IMAGE_MAX_MEGABYTES = "image_max_megabytes" // スキーマ59
 		private const val COL_MOVIE_MAX_MEGABYTES = "movie_max_megabytes" // スキーマ59
 
+		private const val COL_PUSH_POLICY = "push_policy" // スキーマ60
+
 		/////////////////////////////////
 		// login information
 		const val INVALID_DB_ID = - 1L
@@ -497,6 +504,9 @@ class SavedAccount(
 					+ ",$COL_IMAGE_MAX_MEGABYTES text default null"
 					+ ",$COL_MOVIE_MAX_MEGABYTES text default null"
 
+					// スキーマ60から
+					+ ",$COL_PUSH_POLICY text default null"
+
 					+ ")"
 			)
 			db.execSQL("create index if not exists ${table}_user on ${table}(u)")
@@ -504,7 +514,11 @@ class SavedAccount(
 		}
 		
 		override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
-			if(oldVersion < 2 && newVersion >= 2) {
+			fun isUpgraded(n:Int,block:()->Unit){
+				if( oldVersion < n && newVersion >= n ) block()
+			}
+
+			isUpgraded(2){
 				try {
 					db.execSQL("alter table $table add column notification_mention integer default 1")
 				} catch(ex : Throwable) {
@@ -530,7 +544,7 @@ class SavedAccount(
 				}
 				
 			}
-			if(oldVersion < 10 && newVersion >= 10) {
+			isUpgraded( 10) {
 				try {
 					db.execSQL("alter table $table add column $COL_CONFIRM_FOLLOW integer default 1")
 				} catch(ex : Throwable) {
@@ -556,7 +570,7 @@ class SavedAccount(
 				}
 				
 			}
-			if(oldVersion < 13 && newVersion >= 13) {
+			isUpgraded( 13) {
 				try {
 					db.execSQL("alter table $table add column $COL_NOTIFICATION_TAG text default ''")
 				} catch(ex : Throwable) {
@@ -564,7 +578,7 @@ class SavedAccount(
 				}
 				
 			}
-			if(oldVersion < 14 && newVersion >= 14) {
+			isUpgraded( 14) {
 				try {
 					db.execSQL("alter table $table add column $COL_REGISTER_KEY text default ''")
 				} catch(ex : Throwable) {
@@ -578,7 +592,7 @@ class SavedAccount(
 				}
 				
 			}
-			if(oldVersion < 16 && newVersion >= 16) {
+			isUpgraded( 16) {
 				try {
 					db.execSQL("alter table $table add column $COL_SOUND_URI text default ''")
 				} catch(ex : Throwable) {
@@ -586,7 +600,7 @@ class SavedAccount(
 				}
 				
 			}
-			if(oldVersion < 18 && newVersion >= 18) {
+			isUpgraded( 18) {
 				try {
 					db.execSQL("alter table $table add column $COL_DONT_SHOW_TIMEOUT integer default 0")
 				} catch(ex : Throwable) {
@@ -594,7 +608,7 @@ class SavedAccount(
 				}
 				
 			}
-			if(oldVersion < 23 && newVersion >= 23) {
+			isUpgraded( 23) {
 				try {
 					db.execSQL("alter table $table add column $COL_CONFIRM_FAVOURITE integer default 1")
 				} catch(ex : Throwable) {
@@ -602,7 +616,7 @@ class SavedAccount(
 				}
 				
 			}
-			if(oldVersion < 24 && newVersion >= 24) {
+			isUpgraded( 24) {
 				try {
 					db.execSQL("alter table $table add column $COL_CONFIRM_UNFAVOURITE integer default 1")
 				} catch(ex : Throwable) {
@@ -615,7 +629,7 @@ class SavedAccount(
 				}
 				
 			}
-			if(oldVersion < 27 && newVersion >= 27) {
+			isUpgraded( 27) {
 				try {
 					db.execSQL("alter table $table add column $COL_DEFAULT_TEXT text default ''")
 				} catch(ex : Throwable) {
@@ -623,15 +637,15 @@ class SavedAccount(
 				}
 				
 			}
-			if(oldVersion < 28 && newVersion >= 28) {
+			isUpgraded( 28) {
 				try {
 					db.execSQL("alter table $table add column $COL_MISSKEY_VERSION integer default 0")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
 			}
-			
-			if(oldVersion < 33 && newVersion >= 33) {
+
+			isUpgraded( 33) {
 				try {
 					db.execSQL("alter table $table add column $COL_NOTIFICATION_REACTION integer default 1")
 				} catch(ex : Throwable) {
@@ -643,8 +657,8 @@ class SavedAccount(
 					log.trace(ex)
 				}
 			}
-			
-			if(oldVersion < 38 && newVersion >= 38) {
+
+			isUpgraded( 38) {
 				try {
 					db.execSQL("alter table $table add column $COL_DEFAULT_SENSITIVE integer default 0")
 				} catch(ex : Throwable) {
@@ -657,53 +671,53 @@ class SavedAccount(
 				}
 				
 			}
-			
-			if(oldVersion < 39 && newVersion >= 39) {
+
+			isUpgraded( 39) {
 				try {
 					db.execSQL("alter table $table add column $COL_MAX_TOOT_CHARS integer default 0")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
 			}
-			
-			if(oldVersion < 42 && newVersion >= 42) {
+
+			isUpgraded( 42) {
 				try {
 					db.execSQL("alter table $table add column $COL_LAST_NOTIFICATION_ERROR text")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
 			}
-			
-			if(oldVersion < 44 && newVersion >= 44) {
+
+			isUpgraded( 44) {
 				try {
 					db.execSQL("alter table $table add column $COL_NOTIFICATION_FOLLOW_REQUEST integer default 1")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
 			}
-			
-			if(oldVersion < 45 && newVersion >= 45) {
+
+			isUpgraded( 45) {
 				try {
 					db.execSQL("alter table $table add column $COL_LAST_SUBSCRIPTION_ERROR text")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
 			}
-			if(oldVersion < 46 && newVersion >= 46) {
+			isUpgraded(46) {
 				try {
 					db.execSQL("alter table $table add column $COL_LAST_PUSH_ENDPOINT text")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
 			}
-			if(oldVersion < 56 && newVersion >= 56) {
+			isUpgraded( 56) {
 				try {
 					db.execSQL("alter table $table add column $COL_DOMAIN text")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
 			}
-			if(oldVersion < 57 && newVersion >= 57) {
+			isUpgraded( 57) {
 				try {
 					db.execSQL("alter table $table add column $COL_NOTIFICATION_POST integer default 1")
 				} catch(ex : Throwable) {
@@ -711,7 +725,7 @@ class SavedAccount(
 				}
 				
 			}
-			if(oldVersion < 59 && newVersion >= 59) {
+			isUpgraded( 59) {
 				try {
 					db.execSQL("alter table $table add column $COL_IMAGE_RESIZE text default null")
 				} catch(ex : Throwable) {
@@ -724,6 +738,13 @@ class SavedAccount(
 				}
 				try {
 					db.execSQL("alter table $table add column $COL_MOVIE_MAX_MEGABYTES text default null")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+			}
+			isUpgraded( 60) {
+				try {
+					db.execSQL("alter table $table add column $COL_PUSH_POLICY text default null")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}

@@ -167,9 +167,15 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
     private lateinit var spResizeImage: Spinner
 
-    private class ResizeItems(val config: ResizeConfig, val caption: String)
+    private lateinit var spPushPolicy: Spinner
 
-    private lateinit var imageResizeItems: List<ResizeItems>
+    private class ResizeItem(val config: ResizeConfig, val caption: String)
+
+    private lateinit var imageResizeItems: List<ResizeItem>
+
+    private class PushPolicyItem(val id: String?, val caption: String)
+
+    private lateinit var pushPolicyItems: List<PushPolicyItem>
 
     ///////////////////////////////////////////////////
 
@@ -336,6 +342,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         etMediaSizeMax = findViewById(R.id.etMediaSizeMax)
         etMovieSizeMax = findViewById(R.id.etMovieSizeMax)
         spResizeImage = findViewById(R.id.spResizeImage)
+        spPushPolicy = findViewById(R.id.spPushPolicy)
 
         imageResizeItems = SavedAccount.resizeConfigList.map {
             val caption = when (it.type) {
@@ -355,12 +362,28 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                     )
                 }
             }
-            ResizeItems(it, caption)
+            ResizeItem(it, caption)
         }
         spResizeImage.adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
             imageResizeItems.map { it.caption }.toTypedArray()
+        ).apply {
+            setDropDownViewResource(R.layout.lv_spinner_dropdown)
+        }
+
+        pushPolicyItems = listOf(
+            PushPolicyItem(null, getString(R.string.unspecified)),
+            PushPolicyItem("all", getString(R.string.all)),
+            PushPolicyItem("followed", getString(R.string.following)),
+            PushPolicyItem("follower", getString(R.string.followers)),
+            PushPolicyItem("none", getString(R.string.no_one)),
+        )
+
+        spPushPolicy.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            pushPolicyItems.map { it.caption }.toTypedArray()
         ).apply {
             setDropDownViewResource(R.layout.lv_spinner_dropdown)
         }
@@ -438,6 +461,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
         spResizeImage.onItemSelectedListener = this
 
+        spPushPolicy.onItemSelectedListener = this
 
         btnNotificationStyleEditReply.vg(Pref.bpSeparateReplyNotificationGroup(pref))
 
@@ -587,17 +611,27 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             etMediaSizeMax.setText(a.image_max_megabytes ?: "")
             etMovieSizeMax.setText(a.movie_max_megabytes ?: "")
         } else {
-            etMediaSizeMax.setText(a.image_max_megabytes
-                ?: a.getImageMaxBytes(ti).div(1000000).toString())
-            etMovieSizeMax.setText(a.movie_max_megabytes
-                ?: a.getMovieMaxBytes(ti).div(1000000).toString())
+            etMediaSizeMax.setText(
+                a.image_max_megabytes
+                    ?: a.getImageMaxBytes(ti).div(1000000).toString()
+            )
+            etMovieSizeMax.setText(
+                a.movie_max_megabytes
+                    ?: a.getMovieMaxBytes(ti).div(1000000).toString()
+            )
         }
 
         val currentResizeConfig = a.getResizeConfig()
         var index = imageResizeItems.indexOfFirst { it.config.spec == currentResizeConfig.spec }
         log.d("ResizeItem current ${currentResizeConfig.spec} index=$index ")
-        if (index == -1) index = imageResizeItems.indexOfFirst { it.config.spec == SavedAccount.defaultResizeConfig.spec }
+        if (index == -1) index =
+            imageResizeItems.indexOfFirst { it.config.spec == SavedAccount.defaultResizeConfig.spec }
         spResizeImage.setSelection(index, false)
+
+        val currentPushPolicy = a.push_policy
+        index = pushPolicyItems.indexOfFirst { it.id == currentPushPolicy }
+        if (index == -1) index = 0
+        spPushPolicy.setSelection(index, false)
 
         showVisibility()
         showAcctColor()
@@ -656,6 +690,9 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             imageResizeItems.elementAtOrNull(spResizeImage.selectedItemPosition)?.config
                 ?: SavedAccount.defaultResizeConfig
             ).spec
+
+        account.push_policy =
+            pushPolicyItems.elementAtOrNull(spPushPolicy.selectedItemPosition)?.id
 
         account.saveSetting()
 

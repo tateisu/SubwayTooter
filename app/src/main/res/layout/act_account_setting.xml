@@ -458,77 +458,45 @@
             style="@style/setting_row_label"
             android:text="@string/confirmation" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <CheckBox
+            android:id="@+id/cbConfirmFollow"
+            style="@style/setting_row_form"
+            android:text="@string/follow" />
 
-            <CheckBox
-                android:id="@+id/cbConfirmFollow"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/follow" />
+        <CheckBox
+            android:id="@+id/cbConfirmFollowLockedUser"
+            style="@style/setting_row_form"
+            android:text="@string/follow_locked_user" />
 
-        </LinearLayout>
+        <CheckBox
+            android:id="@+id/cbConfirmUnfollow"
+            style="@style/setting_row_form"
+            android:text="@string/unfollow" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <CheckBox
+            android:id="@+id/cbConfirmBoost"
+            style="@style/setting_row_form"
+            android:text="@string/boost" />
 
-            <CheckBox
-                android:id="@+id/cbConfirmFollowLockedUser"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/follow_locked_user" />
+        <CheckBox
+            android:id="@+id/cbConfirmUnboost"
+            style="@style/setting_row_form"
+            android:text="@string/unboost" />
 
-        </LinearLayout>
+        <CheckBox
+            android:id="@+id/cbConfirmFavourite"
+            style="@style/setting_row_form"
+            android:text="@string/favourite" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <CheckBox
+            android:id="@+id/cbConfirmUnfavourite"
+            style="@style/setting_row_form"
+            android:text="@string/unfavourite" />
 
-            <CheckBox
-                android:id="@+id/cbConfirmUnfollow"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/unfollow" />
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <CheckBox
-                android:id="@+id/cbConfirmBoost"
-                style="@style/setting_wrap"
-                android:text="@string/boost" />
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <CheckBox
-                android:id="@+id/cbConfirmUnboost"
-                style="@style/setting_wrap"
-                android:text="@string/unboost" />
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <CheckBox
-                android:id="@+id/cbConfirmFavourite"
-                style="@style/setting_wrap"
-                android:text="@string/favourite" />
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <CheckBox
-                android:id="@+id/cbConfirmUnfavourite"
-                style="@style/setting_wrap"
-                android:text="@string/unfavourite" />
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <CheckBox
-                android:id="@+id/cbConfirmToot"
-                style="@style/setting_wrap"
-                android:text="@string/act_post" />
-
-        </LinearLayout>
+        <CheckBox
+            android:id="@+id/cbConfirmToot"
+            style="@style/setting_row_form"
+            android:text="@string/act_post" />
 
         <View style="@style/setting_divider" />
 
@@ -536,74 +504,63 @@
             style="@style/setting_row_label"
             android:text="@string/notifications" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <CheckBox
+            android:id="@+id/cbNotificationMention"
+            style="@style/setting_row_form"
+            android:text="@string/mention2" />
 
-            <CheckBox
-                android:id="@+id/cbNotificationMention"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/mention2" />
-        </LinearLayout>
+        <CheckBox
+            android:id="@+id/cbNotificationBoost"
+            style="@style/setting_row_form"
+            android:text="@string/boost" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <CheckBox
+            android:id="@+id/cbNotificationFavourite"
+            style="@style/setting_row_form"
+            android:text="@string/favourite" />
 
-            <CheckBox
-                android:id="@+id/cbNotificationBoost"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/boost" />
-        </LinearLayout>
+        <CheckBox
+            android:id="@+id/cbNotificationFollow"
+            style="@style/setting_row_form"
+            android:text="@string/follow" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <CheckBox
+            android:id="@+id/cbNotificationFollowRequest"
+            style="@style/setting_row_form"
+            android:text="@string/follow_request" />
 
-            <CheckBox
-                android:id="@+id/cbNotificationFavourite"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/favourite" />
-        </LinearLayout>
+        <CheckBox
+            android:id="@+id/cbNotificationReaction"
+            style="@style/setting_row_form"
+            android:text="@string/reaction" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <CheckBox
+            android:id="@+id/cbNotificationVote"
+            style="@style/setting_row_form"
+            android:text="@string/vote_polls" />
 
-            <CheckBox
-                android:id="@+id/cbNotificationFollow"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/follow" />
-        </LinearLayout>
+        <CheckBox
+            android:id="@+id/cbNotificationPost"
+            style="@style/setting_row_form"
+            android:text="@string/notification_type_post" />
 
-        <LinearLayout style="@style/setting_row_form">
+        <TextView
+            style="@style/setting_row_form"
+            android:layout_marginTop="12dp"
+            android:text="@string/push_notification_filter" />
 
-            <CheckBox
-                android:id="@+id/cbNotificationFollowRequest"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/follow_request" />
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <CheckBox
-                android:id="@+id/cbNotificationReaction"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/reaction" />
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <CheckBox
-                android:id="@+id/cbNotificationVote"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/vote_polls" />
-        </LinearLayout>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <CheckBox
-                android:id="@+id/cbNotificationPost"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/notification_type_post" />
-        </LinearLayout>
-
+        <Spinner
+            android:id="@+id/spPushPolicy"
+            style="@style/setting_row_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="40dp"
+            />
 
         <Button
             android:id="@+id/btnPushSubscription"
             style="@style/setting_row_button"
+            android:layout_marginTop="12dp"
             android:ellipsize="start"
             android:text="@string/update_push_subscription"
             android:textAllCaps="false" />

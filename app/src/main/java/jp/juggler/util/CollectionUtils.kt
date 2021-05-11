@@ -8,3 +8,6 @@ fun <E : List<*>> E?.notEmpty(): E? =
 
 fun <E : Map<*, *>> E?.notEmpty(): E? =
     if (this?.isNotEmpty() == true) this else null
+
+fun ByteArray?.notEmpty(): ByteArray? =
+    if (this?.isNotEmpty() == true) this else null

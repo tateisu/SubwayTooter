@@ -22,6 +22,7 @@ import okio.ByteString
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.concurrent.atomic.AtomicReference
 
 @Suppress("MemberVisibilityCanPrivate")
 @RunWith(AndroidJUnit4::class)
@@ -354,7 +355,7 @@ class TestTootApiClient {
 
         // json error
         response = createResponseErrorCode()
-        message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
+        message = TootApiClient.simplifyErrorHtml(response)
         assertEquals("Error!", message)
 
         // HTML error
@@ -367,7 +368,7 @@ class TestTootApiClient {
             .body("""<html><body>Error!</body></html>""".toResponseBody(mediaTypeHtml))
             .build()
 
-        message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
+        message = TootApiClient.simplifyErrorHtml(response)
         assertEquals("Error!", message)
 
         // other error
@@ -383,7 +384,7 @@ class TestTootApiClient {
             .body("Error!".toResponseBody("text/plain".toMediaType()))
             .build()
 
-        message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
+        message =TootApiClient.simplifyErrorHtml(response)
         assertEquals("Error!", message)
 
         // empty body
@@ -399,7 +400,7 @@ class TestTootApiClient {
             .body("".toResponseBody("text/plain".toMediaType()))
             .build()
 
-        message = TootApiClient.simplifyErrorHtml(response, response.body?.string() ?: "")
+        message = TootApiClient.simplifyErrorHtml(response=response,caption="caption" )
         assertEquals("", message)
     }
 
@@ -423,7 +424,7 @@ class TestTootApiClient {
             .message("This is test")
             .build()
 
-        message = TootApiClient.formatResponse(response, "caption", null)
+        message = TootApiClient.formatResponse(response,"caption")
 
         assertEquals("(HTTP 500 This is test) caption", message)
 
@@ -440,7 +441,7 @@ class TestTootApiClient {
             .body("""{"error":"Error!"}""".toResponseBody(MEDIA_TYPE_JSON))
             .build()
 
-        message = TootApiClient.formatResponse(response, "caption", null)
+        message = TootApiClient.formatResponse(response,"caption")
         assertEquals("Error! (HTTP 500 status-message) caption", message)
 
         // json error (after reading body)
@@ -459,7 +460,7 @@ class TestTootApiClient {
 
         bodyString = response.body?.string()
 
-        message = TootApiClient.formatResponse(response, "caption", bodyString)
+        message =  TootApiClient.formatResponse(response,"caption",bodyString)
         assertEquals("Error! (HTTP 500 status-message) caption", message)
 
         // without status message
@@ -477,9 +478,8 @@ class TestTootApiClient {
 
         bodyString = response.body?.string()
 
-        message = TootApiClient.formatResponse(response, "caption", bodyString)
+        message = TootApiClient.formatResponse(response = response,caption = "caption",bodyString = bodyString)
         assertEquals("Error! (HTTP 500) caption", message)
-
     }
 
     @Test
@@ -1051,7 +1051,8 @@ class TestTootApiClient {
             println(url)
 
             // ブラウザからコールバックで受け取ったcodeを処理する
-            result = client.authentication2Mastodon(clientName, "DUMMY_CODE")
+            val refToken = AtomicReference<String>(null)
+            result = client.authentication2Mastodon(clientName, "DUMMY_CODE",refToken)
             jsonObject = result?.jsonObject
             assertNotNull(jsonObject)
             if (jsonObject == null) return@runBlocking

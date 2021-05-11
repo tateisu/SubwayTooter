@@ -16,10 +16,7 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.NotificationCache
-import jp.juggler.subwaytooter.table.NotificationTracking
-import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.PushSubscriptionHelper
 import jp.juggler.util.*
 import kotlinx.coroutines.*
@@ -30,12 +27,12 @@ import kotlin.math.min
 
 
 class TaskRunner(
-   private val pollingWorker: PollingWorker,
+    private val pollingWorker: PollingWorker,
     val job: JobItem,
     private val taskId: TaskId,
     private val taskData: JsonObject
 ) {
-    companion object{
+    companion object {
         private val log = LogCategory("TaskRunner")
 
         private var workerStatus = ""
@@ -46,7 +43,7 @@ class TaskRunner(
     }
 
     val context = pollingWorker.context
-    val notification_manager =  pollingWorker.notification_manager
+    val notification_manager = pollingWorker.notification_manager
     val pref = pollingWorker.pref
 
     val error_instance = ArrayList<String>()
@@ -70,7 +67,7 @@ class TaskRunner(
                         pollingWorker.processInjectedData(job.injectedAccounts)
 
                     TaskId.ResetTrackingState ->
-                        NotificationTracking.resetTrackingState( taskData.long(PollingWorker.EXTRA_DB_ID))
+                        NotificationTracking.resetTrackingState(taskData.long(PollingWorker.EXTRA_DB_ID))
 
                     // プッシュ通知が届いた
                     TaskId.FcmMessage -> {
@@ -106,7 +103,8 @@ class TaskRunner(
 
                     TaskId.NotificationDelete -> {
                         val db_id = taskData.long(PollingWorker.EXTRA_DB_ID)
-                        val type = TrackingType.parseStr(taskData.string(PollingWorker.EXTRA_NOTIFICATION_TYPE))
+                        val type =
+                            TrackingType.parseStr(taskData.string(PollingWorker.EXTRA_NOTIFICATION_TYPE))
                         val typeName = type.typeName
                         val id = taskData.string(PollingWorker.EXTRA_NOTIFICATION_ID)
                         log.d("Notification deleted! db_id=$db_id,type=$type,id=$id")
@@ -118,7 +116,8 @@ class TaskRunner(
 
                     TaskId.NotificationClick -> {
                         val db_id = taskData.long(PollingWorker.EXTRA_DB_ID)
-                        val type = TrackingType.parseStr(taskData.string(PollingWorker.EXTRA_NOTIFICATION_TYPE))
+                        val type =
+                            TrackingType.parseStr(taskData.string(PollingWorker.EXTRA_NOTIFICATION_TYPE))
                         val typeName = type.typeName
                         val id = taskData.string(PollingWorker.EXTRA_NOTIFICATION_ID).notEmpty()
                         log.d("Notification clicked! db_id=$db_id,type=$type,id=$id")
@@ -132,7 +131,10 @@ class TaskRunner(
                                 val itemTag = "$notification_tag/$id"
                                 notification_manager.cancel(itemTag, PollingWorker.NOTIFICATION_ID)
                             } else {
-                                notification_manager.cancel(notification_tag, PollingWorker.NOTIFICATION_ID)
+                                notification_manager.cancel(
+                                    notification_tag,
+                                    PollingWorker.NOTIFICATION_ID
+                                )
                             }
                             // DB更新処理
                             NotificationTracking.updateRead(db_id, typeName)
@@ -179,7 +181,8 @@ class TaskRunner(
                         liveSet.add(t.account.apiHost)
                     }
                     if (liveSet.isEmpty()) break
-                    PollingWorker.workerStatus = "waiting ${liveSet.joinToString(", ") { it.pretty }}"
+                    PollingWorker.workerStatus =
+                        "waiting ${liveSet.joinToString(", ") { it.pretty }}"
                     delay(if (job.isJobCancelled) 100L else 1000L)
                 }
 
@@ -207,6 +210,36 @@ class TaskRunner(
         private lateinit var cache: NotificationCache
 
         private var currentCall: WeakReference<Call>? = null
+
+        private var policyFilter: (TootNotification) -> Boolean = when (account.push_policy) {
+
+            "followed" -> { it ->
+                val who = it.account
+                when {
+                    who == null -> true
+                    account.isMe(who) -> true
+
+                    else -> UserRelation.load(account.db_id, who.id).following
+                }
+            }
+
+            "follower" -> { it ->
+                val who = it.account
+                when {
+                    it.type == TootNotification.TYPE_FOLLOW ||
+                        it.type == TootNotification.TYPE_FOLLOW_REQUEST -> true
+
+                    who == null -> true
+                    account.isMe(who) -> true
+
+                    else -> UserRelation.load(account.db_id, who.id).followed_by
+                }
+            }
+
+            "none" -> { _ -> false }
+
+            else -> { _ -> true }
+        }
 
         ///////////////////
 
@@ -353,14 +386,17 @@ class TaskRunner(
             private val duplicate_check = HashSet<EntityId>()
             private val dstListData = LinkedList<NotificationData>()
 
+
             fun checkAccount() {
 
-                this.nr = NotificationTracking.load(account.acct.pretty, account.db_id, trackingName)
+                this.nr =
+                    NotificationTracking.load(account.acct.pretty, account.db_id, trackingName)
 
-                fun JsonObject.isMention() = when (NotificationCache.parseNotificationType(account, this)) {
-                    TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
-                    else -> false
-                }
+                fun JsonObject.isMention() =
+                    when (NotificationCache.parseNotificationType(account, this)) {
+                        TootNotification.TYPE_REPLY, TootNotification.TYPE_MENTION -> true
+                        else -> false
+                    }
 
 
                 val jsonList = when (trackingType) {
@@ -424,6 +460,9 @@ class TaskRunner(
                         }
                     }
                 }
+
+                // Mastodon 3.4.0rc1 push policy
+                if (!policyFilter(notification)) return
 
                 // 後から処理したものが先頭に来る
                 dstListData.add(0, NotificationData(account, notification))
@@ -692,7 +731,7 @@ class TaskRunner(
                                 // FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             },
-                            PendingIntent.FLAG_UPDATE_CURRENT or (if(Build.VERSION.SDK_INT>=23) PendingIntent.FLAG_IMMUTABLE else 0)
+                            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
                         )
                     )
 
@@ -705,7 +744,7 @@ class TaskRunner(
                                 data =
                                     "subwaytooter://notification_delete/?$params".toUri()
                             },
-                            PendingIntent.FLAG_UPDATE_CURRENT or (if(Build.VERSION.SDK_INT>=23) PendingIntent.FLAG_IMMUTABLE else 0)
+                            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
                         )
                     )
 
@@ -730,7 +769,11 @@ class TaskRunner(
 
                 log.d("showNotification[${account.acct.pretty}] set notification...")
 
-                notification_manager.notify(notification_tag, PollingWorker.NOTIFICATION_ID, builder.build())
+                notification_manager.notify(
+                    notification_tag,
+                    PollingWorker.NOTIFICATION_ID,
+                    builder.build()
+                )
             }
         }
     }
@@ -748,7 +791,7 @@ class TaskRunner(
             context,
             3,
             intent_click,
-            PendingIntent.FLAG_UPDATE_CURRENT or (if(Build.VERSION.SDK_INT>=23) PendingIntent.FLAG_IMMUTABLE else 0)
+            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
         )
 
         val builder = if (Build.VERSION.SDK_INT >= 26) {
@@ -797,7 +840,6 @@ class TaskRunner(
 
         notification_manager.notify(PollingWorker.NOTIFICATION_ID_ERROR, builder.build())
     }
-
 
 
     private fun NotificationData.getNotificationLine(): String {
@@ -861,7 +903,7 @@ class TaskRunner(
     }
 
     private fun deleteCacheData(db_id: Long?) {
-        if(db_id != null) {
+        if (db_id != null) {
             log.d("Notification clear! db_id=$db_id")
             SavedAccount.loadAccount(context, db_id) ?: return
             NotificationCache.deleteCache(db_id)

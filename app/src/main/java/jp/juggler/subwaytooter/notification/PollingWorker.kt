@@ -397,7 +397,7 @@ class PollingWorker private constructor(contextArg: Context) {
 
     private val workerNotifier = Channel<Unit>(capacity = Channel.CONFLATED)
 
-    fun notifyWorker(){
+    fun notifyWorker() {
         GlobalScope.launch { workerNotifier.send(Unit) }
     }
 
@@ -607,7 +607,6 @@ class PollingWorker private constructor(contextArg: Context) {
     }
 
 
-
     // JobService#onStopJob から呼ばれる
     // return True to indicate to the JobManager whether you'd like to reschedule this job based on the retry criteria provided at job creation-time.
     // return False to drop the job. Regardless of the value returned, your job must stop executing.
@@ -616,7 +615,7 @@ class PollingWorker private constructor(contextArg: Context) {
 
         // 同じジョブ番号がジョブリストにあるか？
         synchronized(startedJobList) {
-            startedJobList.removeFirst { it.jobId == jobId }?.let{ item->
+            startedJobList.removeFirst { it.jobId == jobId }?.let { item ->
                 log.w("onStopJob: jobId=${jobId}, set cancel flag.")
                 // リソースがなくてStopされるのだからrescheduleはtrue
                 item.cancel(true)
@@ -644,12 +643,11 @@ class PollingWorker private constructor(contextArg: Context) {
     }
 
 
-
     // ポーリングが完了した
-    fun onPollingComplete(requiredNextPolling:Boolean) {
-        when(requiredNextPolling) {
+    fun onPollingComplete(requiredNextPolling: Boolean) {
+        when (requiredNextPolling) {
             // まだスケジュールされてないなら登録する
-             true-> if (! scheduler.allPendingJobs.any { it.id == JobId.Polling.int } ) {
+            true -> if (!scheduler.allPendingJobs.any { it.id == JobId.Polling.int }) {
                 log.d("registering next polling…")
                 scheduleJob(context, JobId.Polling)
             }
@@ -664,7 +662,7 @@ class PollingWorker private constructor(contextArg: Context) {
     }
 
     // ジョブ完了後にメインスレッドで呼ばれる
-    fun onJobComplete(item:JobItem) {
+    fun onJobComplete(item: JobItem) {
 
         synchronized(startedJobList) {
             startedJobList.remove(item)
@@ -683,7 +681,7 @@ class PollingWorker private constructor(contextArg: Context) {
     }
 
     // return false if app data import started.
-    fun onStartTask(taskId: TaskId):Boolean {
+    fun onStartTask(taskId: TaskId): Boolean {
         @Suppress("NON_EXHAUSTIVE_WHEN")
         when (taskId) {
             TaskId.AppDataImportBefore -> {

@@ -577,9 +577,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
 				if (client.isApiCancelled) return Pair(null, null)
 
-				val response = requireNotNull(result.response)
+				val response = result.response!!
 				if (!response.isSuccessful) {
-					result.setError(TootApiClient.formatResponse(response, result.caption))
+					result.parseErrorResponse()
 					return Pair(result, null)
 				}
 
@@ -594,7 +594,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					if (client.isApiCancelled) return Pair(null, null)
 					return Pair(result, ba)
 				} catch (ex: Throwable) {
-					result.setError(TootApiClient.formatResponse(response, result.caption, "?"))
+					result.parseErrorResponse(  "?")
 					return Pair(result, null)
 				}
 			}

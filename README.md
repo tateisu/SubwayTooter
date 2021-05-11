@@ -34,7 +34,7 @@ Mastodon client app for Android phone/tablet.
 
 ## resources
 - Official blog (JP) http://subwaytooter.hatenadiary.jp/
-- Discord https://discord.gg/6YPA7UP
+- Matrix room https://matrix.juggler.jp/#/#subwayTooter:matrix.juggler.jp
 
 ## Donation?
 - Amazon(jp) wish list http://amzn.asia/axmNivM

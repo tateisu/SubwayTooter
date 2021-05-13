@@ -964,17 +964,22 @@ class TootApiClient(
         // client_credential をまだ取得していないなら取得する
         var client_credential = client_info.string(KEY_CLIENT_CREDENTIAL)
         if (client_credential?.isEmpty() != false) {
-            val resultSub = getClientCredential(client_info)
-            if (resultSub?.response?.code == 422) {
-                // https://github.com/tateisu/SubwayTooter/issues/156
-                // some servers not support to get client_credentials.
-                // just ignore error and skip.
-            } else if (resultSub == null || resultSub.error != null) {
-                return resultSub
-            } else {
-                resultSub.string?.notEmpty()?.let {
-                    client_credential = it
-                    client_info[KEY_CLIENT_CREDENTIAL] = it
+            getClientCredential(client_info).let { resultSub ->
+                when {
+                    // https://github.com/tateisu/SubwayTooter/issues/156
+                    // some servers not support to get client_credentials.
+                    // just ignore error and skip.
+                    resultSub?.response?.code == 422 -> {
+                    }
+                    resultSub == null || resultSub.error != null -> {
+                        return resultSub
+                    }
+                    else -> {
+                        resultSub.string?.notEmpty()?.let {
+                            client_credential = it
+                            client_info[KEY_CLIENT_CREDENTIAL] = it
+                        }
+                    }
                 }
             }
         }

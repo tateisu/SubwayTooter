@@ -18,6 +18,18 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
+enum class ColumnPagingType { Default, Cursor, Offset, None, }
+
+enum class ProfileTab(val id: Int, val ct: ColumnType) {
+    Status(0, ColumnType.TabStatus),
+    Following(1, ColumnType.TabFollowing),
+    Followers(2, ColumnType.TabFollowers)
+}
+
+enum class HeaderType(val viewType: Int) {
+    Profile(1), Search(2), Instance(3), Filter(4), ProfileDirectory(5),
+}
+
 class Column(
     val app_state: AppState,
     val context: Context,
@@ -243,7 +255,6 @@ class Column(
     internal val duplicate_map = DuplicateMap()
 
 
-
     @Volatile
     var column_regex_filter = COLUMN_REGEX_FILTER_DEFAULT
 
@@ -283,110 +294,31 @@ class Column(
 
     ////////////////////////////////////////////////////////////////
 
-    private fun runOnMainLooperForStreamingEvent(proc: () -> Unit) {
-        runOnMainLooper {
-            if (!canHandleStreamingMessage())
-                return@runOnMainLooper
-            proc()
-        }
-    }
+    val procMergeStreamingMessage =
+        Runnable { this@Column.mergeStreamingMessage() }
 
     val streamCallback = object : StreamCallback {
+        override fun onStreamStatusChanged(status: StreamStatus) =
+            this@Column.onStreamStatusChanged(status)
 
-        override fun onStreamStatusChanged(status: StreamStatus) {
-            log.d(
-                "onStreamStatusChanged status=${status}, bFirstInitialized=$bFirstInitialized, bInitialLoading=$bInitialLoading, column=${access_info.acct}/${
-                    getColumnName(
-                        true
-                    )
-                }"
-            )
+        override fun onTimelineItem(item: TimelineItem, channelId: String?, stream: JsonArray?) =
+            this@Column.onStreamingTimelineItem(item)
 
-            if (status == StreamStatus.Subscribed) {
-                updateMisskeyCapture()
-            }
+        override fun onEmojiReaction(item: TootNotification) =
+            runOnMainLooperForStreamingEvent { this@Column.updateEmojiReaction(item.status) }
 
-            runOnMainLooperForStreamingEvent {
-                if (is_dispose.get()) return@runOnMainLooperForStreamingEvent
-                fireShowColumnStatus()
-            }
-        }
+        override fun onNoteUpdated(ev: MisskeyNoteUpdate, channelId: String?) =
+            runOnMainLooperForStreamingEvent { this@Column.onMisskeyNoteUpdated(ev) }
 
-        override fun onTimelineItem(item: TimelineItem, channelId: String?, stream: JsonArray?) {
-            if (StreamManager.traceDelivery) log.v("${access_info.acct} onTimelineItem")
-            if (!canHandleStreamingMessage()) return
+        override fun onAnnouncementUpdate(item: TootAnnouncement) =
+            runOnMainLooperForStreamingEvent { this@Column.onAnnouncementUpdate(item) }
 
-            when (item) {
-                is TootConversationSummary -> {
-                    if (type != ColumnType.DIRECT_MESSAGES) return
-                    if (isFiltered(item.last_status)) return
-                    if (use_old_api) {
-                        useConversationSummaryStreaming = false
-                        return
-                    } else {
-                        useConversationSummaryStreaming = true
-                    }
-                }
+        override fun onAnnouncementDelete(id: EntityId) =
+            runOnMainLooperForStreamingEvent { this@Column.onAnnouncementDelete(id) }
 
-                is TootNotification -> {
-                    if (!isNotificationColumn) return
-                    if (isFiltered(item)) return
-                }
-
-                is TootStatus -> {
-                    if (isNotificationColumn) return
-
-                    // マストドン2.6.0形式のDMカラム用イベントを利用したならば、その直後に発生する普通の投稿イベントを無視する
-                    if (useConversationSummaryStreaming) return
-
-                    // マストドンはLTLに外部ユーザの投稿を表示しない
-                    if (type == ColumnType.LOCAL && isMastodon && item.account.isRemote) return
-
-                    if (isFiltered(item)) return
-                }
-            }
-
-            stream_data_queue.add(item)
-            app_state.handler.post(procMergeStreamingMessage)
-        }
-
-        override fun onEmojiReaction(item: TootNotification) {
-            runOnMainLooperForStreamingEvent {
-                this@Column.updateEmojiReaction(item.status)
-            }
-        }
-
-        override fun onNoteUpdated(ev: MisskeyNoteUpdate, channelId: String?) {
-            runOnMainLooperForStreamingEvent {
-                this@Column.onMisskeyNoteUpdated(ev)
-
-            }
-        }
-
-        override fun onAnnouncementUpdate(item: TootAnnouncement) {
-            runOnMainLooperForStreamingEvent {
-                this@Column.onAnnouncementUpdate(item)
-            }
-        }
-
-        override fun onAnnouncementDelete(id: EntityId) {
-            runOnMainLooperForStreamingEvent {
-                this@Column.onAnnouncementDelete(id)
-            }
-        }
-
-        override fun onAnnouncementReaction(reaction: TootReaction) {
-            runOnMainLooperForStreamingEvent {
-                this@Column.onAnnouncementReaction(reaction)
-            }
-        }
+        override fun onAnnouncementReaction(reaction: TootReaction) =
+            runOnMainLooperForStreamingEvent { this@Column.onAnnouncementReaction(reaction) }
     }
-
-    val procMergeStreamingMessage = Runnable {
-        this@Column.mergeStreamingMessage()
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////
 
     // create from column spec
     internal constructor(
@@ -401,7 +333,7 @@ class Column(
         typeId = type,
         column_id = ColumnEncoder.generateColumnId()
     ) {
-        ColumnSpec.decode( this, params)
+        ColumnSpec.decode(this, params)
     }
 
     internal constructor(app_state: AppState, src: JsonObject)

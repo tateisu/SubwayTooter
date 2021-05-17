@@ -9,6 +9,8 @@ import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.util.HashMap
 
+// カラムデータのJSONエンコーダ、デコーダ
+
 object ColumnEncoder {
 
     // いくつかのキーはカラム一覧画面でも使うのでprivateではない

@@ -1,59 +1,18 @@
 package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
-import android.os.SystemClock
 import android.view.View
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.notification.PollingWorker
-import jp.juggler.subwaytooter.streaming.StreamManager
 import jp.juggler.subwaytooter.streaming.streamSpec
-import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.*
 import org.jetbrains.anko.backgroundDrawable
-import kotlin.math.max
 import kotlin.math.min
 
-enum class ColumnPagingType {
-    Default,
-    Cursor,
-    Offset,
-    None,
-}
-
-enum class ProfileTab(val id: Int, val ct: ColumnType) {
-    Status(0, ColumnType.TabStatus),
-    Following(1, ColumnType.TabFollowing),
-    Followers(2, ColumnType.TabFollowers)
-}
-
-enum class HeaderType(val viewType: Int) {
-    Profile(1),
-    Search(2),
-    Instance(3),
-    Filter(4),
-    ProfileDirectory(5),
-}
-
-
-fun Column.getContentColor() = content_color.notZero() ?: Column.defaultColorContentText
-
-fun Column.getAcctColor() = acct_color.notZero() ?: Column.defaultColorContentAcct
-
-fun Column.getHeaderPageNumberColor() = header_fg_color.notZero() ?: Column.defaultColorHeaderPageNumber
-
-fun Column.getHeaderNameColor() = header_fg_color.notZero() ?: Column.defaultColorHeaderName
-
-fun Column.getHeaderBackgroundColor() = header_bg_color.notZero() ?: Column.defaultColorHeaderBg
-
-fun Column.setHeaderBackground(view: View) {
-    view.backgroundDrawable = getAdaptiveRippleDrawable(
-        getHeaderBackgroundColor(),
-        getHeaderNameColor()
-    )
-}
+///////////////////////////////////////////////////
+// ViewHolderとの連携
 
 fun Column.canRemoteOnly() = when (type) {
     ColumnType.FEDERATE, ColumnType.FEDERATED_AROUND -> true
@@ -119,82 +78,26 @@ fun Column.canRefreshBottom(): Boolean = when (pagingType) {
     ColumnPagingType.Offset -> true
 }
 
-// 別スレッドから呼ばれるが大丈夫か
-fun Column.canStartStreaming() = when {
-    // 未初期化なら何もしない
-    !bFirstInitialized -> {
-        if (StreamManager.traceDelivery) Column.log.v("canStartStreaming: column is not initialized.")
-        false
-    }
-
-    // 初期ロード中なら何もしない
-    bInitialLoading -> {
-        if (StreamManager.traceDelivery) Column.log.v("canStartStreaming: is in initial loading.")
-        false
-    }
-
-    else -> true
-}
-
-fun Column.canHandleStreamingMessage() = !is_dispose.get() && canStartStreaming()
-
-///////////////////////////////////////////////////////////////
-
 fun Column.getIconId(): Int = type.iconId(access_info.acct)
 
 fun Column.getColumnName(long: Boolean) =
     type.name2(this, long) ?: type.name1(context)
 
-fun Column.getNotificationTypeString(): String {
-    val sb = StringBuilder()
-    sb.append("(")
+fun Column.getContentColor() = content_color.notZero() ?: Column.defaultColorContentText
 
-    when (quick_filter) {
-        Column.QUICK_FILTER_ALL -> {
-            var n = 0
-            if (!dont_show_reply) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_mention))
-            }
-            if (!dont_show_follow) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_follow))
-            }
-            if (!dont_show_boost) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_boost))
-            }
-            if (!dont_show_favourite) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_favourite))
-            }
-            if (isMisskey && !dont_show_reaction) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_reaction))
-            }
-            if (!dont_show_vote) {
-                if (n++ > 0) sb.append(", ")
-                sb.append(context.getString(R.string.notification_type_vote))
-            }
-            val n_max = if (isMisskey) {
-                6
-            } else {
-                5
-            }
-            if (n == 0 || n == n_max) return "" // 全部か皆無なら部分表記は要らない
-        }
+fun Column.getAcctColor() = acct_color.notZero() ?: Column.defaultColorContentAcct
 
-        Column.QUICK_FILTER_MENTION -> sb.append(context.getString(R.string.notification_type_mention))
-        Column.QUICK_FILTER_FAVOURITE -> sb.append(context.getString(R.string.notification_type_favourite))
-        Column.QUICK_FILTER_BOOST -> sb.append(context.getString(R.string.notification_type_boost))
-        Column.QUICK_FILTER_FOLLOW -> sb.append(context.getString(R.string.notification_type_follow))
-        Column.QUICK_FILTER_REACTION -> sb.append(context.getString(R.string.notification_type_reaction))
-        Column.QUICK_FILTER_VOTE -> sb.append(context.getString(R.string.notification_type_vote))
-        Column.QUICK_FILTER_POST -> sb.append(context.getString(R.string.notification_type_post))
-    }
+fun Column.getHeaderPageNumberColor() = header_fg_color.notZero() ?: Column.defaultColorHeaderPageNumber
 
-    sb.append(")")
-    return sb.toString()
+fun Column.getHeaderNameColor() = header_fg_color.notZero() ?: Column.defaultColorHeaderName
+
+fun Column.getHeaderBackgroundColor() = header_bg_color.notZero() ?: Column.defaultColorHeaderBg
+
+fun Column.setHeaderBackground(view: View) {
+    view.backgroundDrawable = getAdaptiveRippleDrawable(
+        getHeaderBackgroundColor(),
+        getHeaderNameColor()
+    )
 }
 
 val Column.hasHashtagExtra: Boolean
@@ -204,53 +107,6 @@ val Column.hasHashtagExtra: Boolean
         // ColumnType.HASHTAG_FROM_ACCT は追加のタグを指定しても結果に反映されない
         else -> false
     }
-
-suspend fun Column.loadProfileAccount(client: TootApiClient, parser: TootParser, bForceReload: Boolean): TootApiResult? =
-    when {
-        // リロード不要なら何もしない
-        this.who_account != null && !bForceReload -> null
-
-        isMisskey -> client.request(
-            "/api/users/show",
-            access_info.putMisskeyApiToken().apply {
-                put("userId", profile_id)
-            }.toPostRequestBuilder()
-        )?.also { result1 ->
-            // ユーザリレーションの取り扱いのため、別のparserを作ってはいけない
-            parser.misskeyDecodeProfilePin = true
-            try {
-                TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
-                    this.who_account = a
-                    client.publishApiProgress("") // カラムヘッダの再表示
-                }
-            } finally {
-                parser.misskeyDecodeProfilePin = false
-            }
-        }
-
-        else -> client.request(
-            "/api/v1/accounts/%{profile_id}"
-        )?.also { result1 ->
-            TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
-                this.who_account = a
-
-                this.who_featured_tags = null
-                client.request("/api/v1/accounts/${profile_id}/featured_tags")
-                    ?.also { result2 ->
-
-                        this.who_featured_tags =
-                            TootTag.parseListOrNull(parser, result2.jsonArray)
-                    }
-
-                client.publishApiProgress("") // カラムヘッダの再表示
-            }
-        }
-    }
-
-fun Column.loadSearchDesc(raw_en: Int, raw_ja: Int): String {
-    val res_id = if ("ja" == context.getString(R.string.language_code)) raw_ja else raw_en
-    return context.loadRawResource(res_id).decodeUTF8()
-}
 
 fun Column.getHeaderDesc(): String {
     var cache = cacheHeaderDesc
@@ -274,10 +130,6 @@ fun Column.getHeaderDesc(): String {
     cacheHeaderDesc = cache
     return cache
 }
-
-
-///////////////////////////////////////////////////////
-// ViewHolder関連
 
 fun Column.hasMultipleViewHolder(): Boolean = _holder_list.size > 1
 
@@ -357,7 +209,105 @@ fun Column.fireRebindAdapterItems() {
 /////////////////////////////////////////////////////////////////////////////
 // 読み込み処理の内部で使うメソッド
 
-//
+fun Column.getNotificationTypeString(): String {
+    val sb = StringBuilder()
+    sb.append("(")
+
+    when (quick_filter) {
+        Column.QUICK_FILTER_ALL -> {
+            var n = 0
+            if (!dont_show_reply) {
+                if (n++ > 0) sb.append(", ")
+                sb.append(context.getString(R.string.notification_type_mention))
+            }
+            if (!dont_show_follow) {
+                if (n++ > 0) sb.append(", ")
+                sb.append(context.getString(R.string.notification_type_follow))
+            }
+            if (!dont_show_boost) {
+                if (n++ > 0) sb.append(", ")
+                sb.append(context.getString(R.string.notification_type_boost))
+            }
+            if (!dont_show_favourite) {
+                if (n++ > 0) sb.append(", ")
+                sb.append(context.getString(R.string.notification_type_favourite))
+            }
+            if (isMisskey && !dont_show_reaction) {
+                if (n++ > 0) sb.append(", ")
+                sb.append(context.getString(R.string.notification_type_reaction))
+            }
+            if (!dont_show_vote) {
+                if (n++ > 0) sb.append(", ")
+                sb.append(context.getString(R.string.notification_type_vote))
+            }
+            val n_max = if (isMisskey) {
+                6
+            } else {
+                5
+            }
+            if (n == 0 || n == n_max) return "" // 全部か皆無なら部分表記は要らない
+        }
+
+        Column.QUICK_FILTER_MENTION -> sb.append(context.getString(R.string.notification_type_mention))
+        Column.QUICK_FILTER_FAVOURITE -> sb.append(context.getString(R.string.notification_type_favourite))
+        Column.QUICK_FILTER_BOOST -> sb.append(context.getString(R.string.notification_type_boost))
+        Column.QUICK_FILTER_FOLLOW -> sb.append(context.getString(R.string.notification_type_follow))
+        Column.QUICK_FILTER_REACTION -> sb.append(context.getString(R.string.notification_type_reaction))
+        Column.QUICK_FILTER_VOTE -> sb.append(context.getString(R.string.notification_type_vote))
+        Column.QUICK_FILTER_POST -> sb.append(context.getString(R.string.notification_type_post))
+    }
+
+    sb.append(")")
+    return sb.toString()
+}
+
+suspend fun Column.loadProfileAccount(client: TootApiClient, parser: TootParser, bForceReload: Boolean): TootApiResult? =
+    when {
+        // リロード不要なら何もしない
+        this.who_account != null && !bForceReload -> null
+
+        isMisskey -> client.request(
+            "/api/users/show",
+            access_info.putMisskeyApiToken().apply {
+                put("userId", profile_id)
+            }.toPostRequestBuilder()
+        )?.also { result1 ->
+            // ユーザリレーションの取り扱いのため、別のparserを作ってはいけない
+            parser.misskeyDecodeProfilePin = true
+            try {
+                TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
+                    this.who_account = a
+                    client.publishApiProgress("") // カラムヘッダの再表示
+                }
+            } finally {
+                parser.misskeyDecodeProfilePin = false
+            }
+        }
+
+        else -> client.request(
+            "/api/v1/accounts/%{profile_id}"
+        )?.also { result1 ->
+            TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
+                this.who_account = a
+
+                this.who_featured_tags = null
+                client.request("/api/v1/accounts/${profile_id}/featured_tags")
+                    ?.also { result2 ->
+
+                        this.who_featured_tags =
+                            TootTag.parseListOrNull(parser, result2.jsonArray)
+                    }
+
+                client.publishApiProgress("") // カラムヘッダの再表示
+            }
+        }
+    }
+
+fun Column.loadSearchDesc(raw_en: Int, raw_ja: Int): String {
+    val res_id = if ("ja" == context.getString(R.string.language_code)) raw_ja else raw_en
+    return context.loadRawResource(res_id).decodeUTF8()
+}
+
 suspend fun Column.updateRelation(
     client: TootApiClient,
     list: ArrayList<TimelineItem>?,
@@ -732,189 +682,6 @@ fun Column.startGap(gap: TimelineItem?, isHead: Boolean) {
     fireShowColumnStatus()
 }
 
-// ストリーミング経由でキューに溜まったデータをUIに反映する
-fun Column.mergeStreamingMessage() {
-    val handler = app_state.handler
-
-    // 未初期化や初期ロード中ならキューをクリアして何もしない
-    if (!canHandleStreamingMessage()) {
-        stream_data_queue.clear()
-        handler.removeCallbacks(procMergeStreamingMessage)
-        return
-    }
-
-    // 前回マージしてから暫くは待機してリトライ
-    // カラムがビジー状態なら待機してリトライ
-    val now = SystemClock.elapsedRealtime()
-    var remain = last_show_stream_data.get() + 333L - now
-    if (bRefreshLoading) remain = max(333L, remain)
-    if (remain > 0) {
-        handler.removeCallbacks(procMergeStreamingMessage)
-        handler.postDelayed(procMergeStreamingMessage, remain)
-        return
-    }
-
-    last_show_stream_data.set(now)
-
-    val tmpList = ArrayList<TimelineItem>()
-    while (true) tmpList.add(stream_data_queue.poll() ?: break)
-    if (tmpList.isEmpty()) return
-
-    // キューから読めた件数が0の場合を除き、少し後に再処理させることでマージ漏れを防ぐ
-    handler.postDelayed(procMergeStreamingMessage, 333L)
-
-    // ストリーミングされるデータは全てID順に並んでいるはず
-    tmpList.sortByDescending { it.getOrderId() }
-
-    val list_new = duplicate_map.filterDuplicate(tmpList)
-    if (list_new.isEmpty()) return
-
-    for (item in list_new) {
-        if (enable_speech && item is TootStatus) {
-            app_state.addSpeech(item.reblog ?: item)
-        }
-    }
-
-    // 通知カラムならストリーミング経由で届いたデータを通知ワーカーに伝達する
-    if (isNotificationColumn) {
-        val list = ArrayList<TootNotification>()
-        for (o in list_new) {
-            if (o is TootNotification) {
-                list.add(o)
-            }
-        }
-        if (list.isNotEmpty()) {
-            PollingWorker.injectData(context, access_info, list)
-        }
-    }
-
-    // 最新のIDをsince_idとして覚える(ソートはしない)
-    var new_id_max: EntityId? = null
-    var new_id_min: EntityId? = null
-    for (o in list_new) {
-        try {
-            val id = o.getOrderId()
-            if (id.toString().isEmpty()) continue
-            if (new_id_max == null || id > new_id_max) new_id_max = id
-            if (new_id_min == null || id < new_id_min) new_id_min = id
-        } catch (ex: Throwable) {
-            // IDを取得できないタイプのオブジェクトだった
-            // ストリームに来るのは通知かステータスだから、多分ここは通らない
-            Column.log.trace(ex)
-        }
-    }
-
-    val tmpRecent = idRecent
-    val tmpNewMax = new_id_max
-
-    if (tmpNewMax != null && (tmpRecent?.compareTo(tmpNewMax) ?: -1) == -1) {
-        idRecent = tmpNewMax
-        // XXX: コレはリフレッシュ時に取得漏れを引き起こすのでは…？
-        // しかしコレなしだとリフレッシュ時に大量に読むことになる…
-    }
-
-    val holder = viewHolder
-
-    // 事前にスクロール位置を覚えておく
-    val holder_sp: ScrollPosition? = holder?.scrollPosition
-
-    // idx番目の要素がListViewの上端から何ピクセル下にあるか
-    var restore_idx = -2
-    var restore_y = 0
-    if (holder != null) {
-        if (list_data.size > 0) {
-            try {
-                restore_idx = holder.findFirstVisibleListItem()
-                restore_y = holder.getListItemOffset(restore_idx)
-            } catch (ex: IndexOutOfBoundsException) {
-                restore_idx = -2
-                restore_y = 0
-            }
-        }
-    }
-
-    // 画面復帰時の自動リフレッシュではギャップが残る可能性がある
-    if (bPutGap) {
-        bPutGap = false
-        try {
-            if (list_data.size > 0 && new_id_min != null) {
-                val since = list_data[0].getOrderId()
-                if (new_id_min > since) {
-                    val gap = TootGap(new_id_min, since)
-                    list_new.add(gap)
-                }
-            }
-        } catch (ex: Throwable) {
-            Column.log.e(ex, "can't put gap.")
-        }
-
-    }
-
-    val changeList = ArrayList<AdapterChange>()
-
-    replaceConversationSummary(changeList, list_new, list_data)
-
-    val added = list_new.size  // may 0
-
-    var doneSound = false
-    for (o in list_new) {
-        if (o is TootStatus) {
-            o.highlightSound?.let {
-                if (!doneSound) {
-                    doneSound = true
-                    App1.sound(it)
-                }
-            }
-            o.highlightSpeech?.let {
-                app_state.addSpeech(it.name, dedupMode = DedupMode.RecentExpire)
-            }
-        }
-    }
-
-    changeList.add(AdapterChange(AdapterChangeType.RangeInsert, 0, added))
-    list_data.addAll(0, list_new)
-
-    fireShowContent(reason = "mergeStreamingMessage", changeList = changeList)
-
-    if (holder != null) {
-        when {
-            holder_sp == null -> {
-                // スクロール位置が先頭なら先頭にする
-                Column.log.d("mergeStreamingMessage: has VH. missing scroll position.")
-                viewHolder?.scrollToTop()
-            }
-
-            holder_sp.isHead -> {
-                // スクロール位置が先頭なら先頭にする
-                Column.log.d("mergeStreamingMessage: has VH. keep head. $holder_sp")
-                holder.setScrollPosition(ScrollPosition())
-            }
-
-            restore_idx < -1 -> {
-                // 可視範囲の検出に失敗
-                Column.log.d("mergeStreamingMessage: has VH. can't get visible range.")
-            }
-
-            else -> {
-                // 現在の要素が表示され続けるようにしたい
-                Column.log.d("mergeStreamingMessage: has VH. added=$added")
-                holder.setListItemTop(restore_idx + added, restore_y)
-            }
-        }
-    } else {
-        val scroll_save = this.scroll_save
-        when {
-            // スクロール位置が先頭なら先頭のまま
-            scroll_save == null || scroll_save.isHead -> {
-            }
-
-            // 現在の要素が表示され続けるようにしたい
-            else -> scroll_save.adapterIndex += added
-        }
-    }
-
-    updateMisskeyCapture()
-}
 
 // misskeyのキャプチャの対象となる投稿IDのリストを作る
 // カラム内データの上(最新)から40件をキャプチャ対象とする

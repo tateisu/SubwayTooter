@@ -639,22 +639,22 @@ private const val DIR_BACKGROUND_IMAGE = "columnBackground"
 fun getBackgroundImageDir(context: Context): File {
     val externalDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
     if (externalDir == null) {
-        Column.log.e("getExternalFilesDir is null.")
+        log.e("getExternalFilesDir is null.")
     } else {
         val state = Environment.getExternalStorageState()
         if (state != Environment.MEDIA_MOUNTED) {
-            Column.log.e("getExternalStorageState: ${state}")
+            log.e("getExternalStorageState: ${state}")
         } else {
-            Column.log.i("externalDir: ${externalDir}")
+            log.i("externalDir: ${externalDir}")
             externalDir.mkdir()
             val backgroundDir = File(externalDir, DIR_BACKGROUND_IMAGE)
             backgroundDir.mkdir()
-            Column.log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
+            log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
             return backgroundDir
         }
     }
     val backgroundDir = context.getDir(DIR_BACKGROUND_IMAGE, Context.MODE_PRIVATE)
-    Column.log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
+    log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
     return backgroundDir
 }
 

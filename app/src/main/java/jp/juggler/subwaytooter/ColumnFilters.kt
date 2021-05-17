@@ -10,6 +10,22 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.WordTrieTree
 import java.util.regex.Pattern
 
+val Column.isFilterEnabled: Boolean
+    get() = (with_attachment
+        || with_highlight
+        || regex_text.isNotEmpty()
+        || dont_show_normal_toot
+        || dont_show_non_public_toot
+        || quick_filter != Column.QUICK_FILTER_ALL
+        || dont_show_boost
+        || dont_show_favourite
+        || dont_show_follow
+        || dont_show_reply
+        || dont_show_reaction
+        || dont_show_vote
+        || (language_filter?.isNotEmpty() == true)
+        )
+
 // マストドン2.4.3rcのキーワードフィルタのコンテキスト
 fun Column.getFilterContext() = when (type) {
 
@@ -27,7 +43,6 @@ fun Column.getFilterContext() = when (type) {
     // ColumnType.MISSKEY_HYBRID や ColumnType.MISSKEY_ANTENNA_TL はHOMEでもPUBLICでもある…
     // Misskeyだし関係ないが、NONEにするとアプリ内で完結するフィルタも働かなくなる
 }
-
 
 // カラム設定に正規表現フィルタを含めるなら真
 fun Column.canStatusFilter(): Boolean {
@@ -109,10 +124,10 @@ fun Column.onFilterDeleted(filter: TootFilter, filterList: ArrayList<TootFilter>
     }
 }
 
+@Suppress("unused")
 fun Column.onLanguageFilterChanged() {
     // TODO
 }
-
 
 fun Column.initFilter() {
     column_regex_filter = Column.COLUMN_REGEX_FILTER_DEFAULT
@@ -355,7 +370,6 @@ fun Column.encodeFilterTree(filterList: ArrayList<TootFilter>?): FilterTrees? {
 
 fun Column.checkFiltersForListData(trees: FilterTrees?) {
     trees ?: return
-
     val changeList = ArrayList<AdapterChange>()
     list_data.forEachIndexed { idx, item ->
         when (item) {
@@ -379,14 +393,11 @@ fun Column.checkFiltersForListData(trees: FilterTrees?) {
             }
         }
     }
-
     fireShowContent(reason = "filter updated", changeList = changeList)
-
 }
 
 
 fun reloadFilter(context: Context, access_info: SavedAccount) {
-
     TootTaskRunner(context, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
         object : TootTask {
 

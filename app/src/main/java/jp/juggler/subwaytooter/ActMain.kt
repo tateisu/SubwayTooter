@@ -624,7 +624,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         ts = SystemClock.elapsedRealtime()
 
         // 画面復帰時に再取得などを行う
-        app_state.columnList.forEach { it.onStart() }
+        app_state.columnList.forEach { it.onActivityStart() }
 
         te = SystemClock.elapsedRealtime()
         if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :column.onStart")
@@ -1869,7 +1869,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                     ti ?: return r2
 
                     this.apiHost = instance
-                    this.apDomain = ti.uri?.let{ Host.parse(it)}
+                    this.apDomain = ti.uri?.let { Host.parse(it) }
 
                     val parser = TootParser(
                         this@ActMain,
@@ -1941,7 +1941,6 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                     this.apiHost = instance
 
 
-
                     val parser = TootParser(
                         this@ActMain,
                         linkHelper = LinkHelper.create(instance)
@@ -1954,10 +1953,10 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                         outAccessToken = refToken
                     )?.also {
                         this.ta = parser.account(it.jsonObject)
-                        if( ta != null){
+                        if (ta != null) {
                             val (ti, ri) = TootInstance.getEx(client, forceAccessToken = refToken.get())
                             ti ?: return ri
-                            this.apDomain = ti.uri?.let{ it2->  Host.parse(it2)}
+                            this.apDomain = ti.uri?.let { it2 -> Host.parse(it2) }
                         }
                     }
                 }
@@ -1970,7 +1969,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                 var sa = this.sa
 
                 if (ta != null && apiHost?.isValid == true && sa == null) {
-                    val acct = Acct.parse(ta.username, apDomain ?: apiHost )
+                    val acct = Acct.parse(ta.username, apDomain ?: apiHost)
                     // アカウント追加時に、アプリ内に既にあるアカウントと同じものを登録していたかもしれない
                     sa = SavedAccount.loadAccountByAcct(this@ActMain, acct.ascii)
                 }
@@ -2117,11 +2116,11 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         TootTaskRunner(this@ActMain).run(apiHost, object : TootTask {
 
             var ta: TootAccount? = null
-            var apDomain : Host? = null
+            var apDomain: Host? = null
 
             override suspend fun background(client: TootApiClient): TootApiResult? {
 
-                val (ti,ri) = TootInstance.getEx(client,forceAccessToken = access_token)
+                val (ti, ri) = TootInstance.getEx(client, forceAccessToken = access_token)
                 ti ?: return ri
 
                 val apDomain = ti.uri?.let { Host.parse(it) }
@@ -2307,7 +2306,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         if (!allowColumnDuplication) {
             // 既に同じカラムがあればそこに移動する
             app_state.columnList.forEachIndexed { i, column ->
-                if (column.isSameSpec(ai, type, params)) {
+                if (ColumnSpec.isSameSpec(column, ai, type, params)) {
                     scrollToColumn(i)
                     return column
                 }

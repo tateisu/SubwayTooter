@@ -33,8 +33,8 @@ class Column(
         internal const val LOOP_READ_ENOUGH = 30 // フィルタ後のデータ数がコレ以上ならループを諦めます
         internal const val RELATIONSHIP_LOAD_STEP = 40
         internal const val ACCT_DB_STEP = 100
-
         internal const val MISSKEY_HASHTAG_LIMIT = 30
+        internal const val HASHTAG_ELLIPSIZE = 26
 
         val typeMap: SparseArray<ColumnType> = SparseArray()
 
@@ -48,39 +48,6 @@ class Column(
         internal const val QUICK_FILTER_REACTION = 5
         internal const val QUICK_FILTER_VOTE = 6
         internal const val QUICK_FILTER_POST = 7
-
-        internal const val HASHTAG_ELLIPSIZE = 26
-
-
-        @Suppress("UNCHECKED_CAST")
-        private inline fun <reified T> getParamAt(params: Array<out Any>, idx: Int): T {
-            return params[idx] as T
-        }
-
-        private fun getParamEntityId(
-            params: Array<out Any>,
-            @Suppress("SameParameterValue") idx: Int
-        ): EntityId =
-            when (val o = params[idx]) {
-                is EntityId -> o
-                is String -> EntityId(o)
-                else -> error("getParamEntityId [$idx] bad type. $o")
-            }
-
-        private fun getParamString(params: Array<out Any>, idx: Int): String =
-            when (val o = params[idx]) {
-                is String -> o
-                is EntityId -> o.toString()
-                is Host -> o.ascii
-                is Acct -> o.ascii
-                else -> error("getParamString [$idx] bad type. $o")
-            }
-
-        @Suppress("UNCHECKED_CAST")
-        private inline fun <reified T> getParamAtNullable(params: Array<out Any>, idx: Int): T? {
-            if (idx >= params.size) return null
-            return params[idx] as T
-        }
 
         fun loadAccount(context: Context, src: JsonObject): SavedAccount {
             val account_db_id = src.long(ColumnEncoder.KEY_ACCOUNT_ROW_ID) ?: -1L
@@ -102,7 +69,6 @@ class Column(
         val reMinId = """[&?](min_id|since_id)=([^&?;\s]+)""".asciiPattern()
 
         val COLUMN_REGEX_FILTER_DEFAULT: (CharSequence?) -> Boolean = { false }
-
 
 
         var defaultColorHeaderBg = 0
@@ -276,21 +242,7 @@ class Column(
     internal val list_data = BucketList<TimelineItem>()
     internal val duplicate_map = DuplicateMap()
 
-    internal val isFilterEnabled: Boolean
-        get() = (with_attachment
-            || with_highlight
-            || regex_text.isNotEmpty()
-            || dont_show_normal_toot
-            || dont_show_non_public_toot
-            || quick_filter != QUICK_FILTER_ALL
-            || dont_show_boost
-            || dont_show_favourite
-            || dont_show_follow
-            || dont_show_reply
-            || dont_show_reaction
-            || dont_show_vote
-            || (language_filter?.isNotEmpty() == true)
-            )
+
 
     @Volatile
     var column_regex_filter = COLUMN_REGEX_FILTER_DEFAULT
@@ -436,67 +388,20 @@ class Column(
 
     //////////////////////////////////////////////////////////////////////////////////////
 
+    // create from column spec
     internal constructor(
         app_state: AppState,
         access_info: SavedAccount,
         type: Int,
         vararg params: Any
     ) : this(
-        app_state,
-        app_state.context,
-        access_info,
-        type,
-        ColumnEncoder.generateColumnId()
+        app_state = app_state,
+        context = app_state.context,
+        access_info = access_info,
+        typeId = type,
+        column_id = ColumnEncoder.generateColumnId()
     ) {
-        when (typeMap[type]) {
-
-            ColumnType.CONVERSATION,
-            ColumnType.BOOSTED_BY,
-            ColumnType.FAVOURITED_BY,
-            ColumnType.LOCAL_AROUND,
-            ColumnType.FEDERATED_AROUND,
-            ColumnType.ACCOUNT_AROUND ->
-                status_id = getParamEntityId(params, 0)
-
-            ColumnType.PROFILE, ColumnType.LIST_TL, ColumnType.LIST_MEMBER,
-            ColumnType.MISSKEY_ANTENNA_TL ->
-                profile_id = getParamEntityId(params, 0)
-
-            ColumnType.HASHTAG ->
-                hashtag = getParamString(params, 0)
-
-            ColumnType.HASHTAG_FROM_ACCT -> {
-                hashtag = getParamString(params, 0)
-                hashtag_acct = getParamString(params, 1)
-            }
-
-            ColumnType.NOTIFICATION_FROM_ACCT -> {
-                hashtag_acct = getParamString(params, 0)
-            }
-
-            ColumnType.SEARCH -> {
-                search_query = getParamString(params, 0)
-                search_resolve = getParamAt(params, 1)
-            }
-
-            ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS, ColumnType.SEARCH_NOTESTOCK ->
-                search_query = getParamString(params, 0)
-
-            ColumnType.INSTANCE_INFORMATION ->
-                instance_uri = getParamString(params, 0)
-
-            ColumnType.PROFILE_DIRECTORY -> {
-                instance_uri = getParamString(params, 0)
-                search_resolve = true
-            }
-
-            ColumnType.DOMAIN_TIMELINE -> {
-                instance_uri = getParamString(params, 0)
-            }
-
-            else -> {
-            }
-        }
+        ColumnSpec.decode( this, params)
     }
 
     internal constructor(app_state: AppState, src: JsonObject)
@@ -507,81 +412,12 @@ class Column(
         src.optInt(ColumnEncoder.KEY_TYPE),
         ColumnEncoder.decodeColumnId(src)
     ) {
-        ColumnEncoder.decode(this,src)
+        ColumnEncoder.decode(this, src)
     }
 
     override fun hashCode(): Int = internalId
 
     override fun equals(other: Any?): Boolean = this === other
-
-
-    internal fun isSameSpec(
-        ai: SavedAccount,
-        type: ColumnType,
-        params: Array<out Any>
-    ): Boolean {
-        if (type != this.type || ai != access_info) return false
-
-        return try {
-            when (type) {
-
-                ColumnType.PROFILE,
-                ColumnType.LIST_TL,
-                ColumnType.LIST_MEMBER,
-                ColumnType.MISSKEY_ANTENNA_TL ->
-                    profile_id == getParamEntityId(params, 0)
-
-                ColumnType.CONVERSATION,
-                ColumnType.BOOSTED_BY,
-                ColumnType.FAVOURITED_BY,
-                ColumnType.LOCAL_AROUND,
-                ColumnType.FEDERATED_AROUND,
-                ColumnType.ACCOUNT_AROUND ->
-                    status_id == getParamEntityId(params, 0)
-
-                ColumnType.HASHTAG -> {
-                    (getParamString(params, 0) == hashtag)
-                        && ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_any)
-                        && ((getParamAtNullable<String>(params, 2) ?: "") == hashtag_all)
-                        && ((getParamAtNullable<String>(params, 3) ?: "") == hashtag_none)
-                }
-
-                ColumnType.HASHTAG_FROM_ACCT -> {
-                    (getParamString(params, 0) == hashtag)
-                        && ((getParamAtNullable<String>(params, 1) ?: "") == hashtag_acct)
-                }
-
-                ColumnType.NOTIFICATION_FROM_ACCT -> {
-                    ((getParamAtNullable<String>(params, 0) ?: "") == hashtag_acct)
-                }
-
-                ColumnType.SEARCH ->
-                    getParamString(params, 0) == search_query &&
-                        getParamAtNullable<Boolean>(params, 1) == search_resolve
-
-                ColumnType.SEARCH_MSP,
-                ColumnType.SEARCH_TS,
-                ColumnType.SEARCH_NOTESTOCK ->
-                    getParamString(params, 0) == search_query
-
-                ColumnType.INSTANCE_INFORMATION ->
-                    getParamString(params, 0) == instance_uri
-
-                ColumnType.PROFILE_DIRECTORY ->
-                    getParamString(params, 0) == instance_uri &&
-                        getParamAtNullable<String>(params, 1) == search_query &&
-                        getParamAtNullable<Boolean>(params, 2) == search_resolve
-
-                ColumnType.DOMAIN_TIMELINE ->
-                    getParamString(params, 0) == instance_uri
-
-                else -> true
-            }
-        } catch (ex: Throwable) {
-            log.trace(ex)
-            false
-        }
-    }
 
     internal fun dispose() {
         is_dispose.set(true)

@@ -1,11 +1,14 @@
 package jp.juggler.subwaytooter
 
+import android.content.Context
+import android.os.Environment
 import android.util.LruCache
 import jp.juggler.subwaytooter.api.ApiPath.READ_LIMIT
 import jp.juggler.subwaytooter.Column.Companion.log
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.util.*
+import java.io.File
 import java.util.*
 
 val Column.isMastodon: Boolean
@@ -628,3 +631,52 @@ val defaultReportListParser: (parser: TootParser, jsonArray: JsonArray) -> List<
 
 val defaultConversationSummaryListParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootConversationSummary> =
     { parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
+
+///////////////////////////////////////////////////////////////////////
+
+private const val DIR_BACKGROUND_IMAGE = "columnBackground"
+
+fun getBackgroundImageDir(context: Context): File {
+    val externalDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+    if (externalDir == null) {
+        Column.log.e("getExternalFilesDir is null.")
+    } else {
+        val state = Environment.getExternalStorageState()
+        if (state != Environment.MEDIA_MOUNTED) {
+            Column.log.e("getExternalStorageState: ${state}")
+        } else {
+            Column.log.i("externalDir: ${externalDir}")
+            externalDir.mkdir()
+            val backgroundDir = File(externalDir, DIR_BACKGROUND_IMAGE)
+            backgroundDir.mkdir()
+            Column.log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
+            return backgroundDir
+        }
+    }
+    val backgroundDir = context.getDir(DIR_BACKGROUND_IMAGE, Context.MODE_PRIVATE)
+    Column.log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
+    return backgroundDir
+}
+
+fun StringBuilder.appendHashtagExtra(column: Column): StringBuilder {
+    val limit = (Column.HASHTAG_ELLIPSIZE * 2 - kotlin.math.min(length, Column.HASHTAG_ELLIPSIZE)) / 3
+    if (column.hashtag_any.isNotBlank()) append(' ').append(
+        column.context.getString(
+            R.string.hashtag_title_any,
+            column.hashtag_any.ellipsizeDot3(limit)
+        )
+    )
+    if (column.hashtag_all.isNotBlank()) append(' ').append(
+        column.context.getString(
+            R.string.hashtag_title_all,
+            column.hashtag_all.ellipsizeDot3(limit)
+        )
+    )
+    if (column.hashtag_none.isNotBlank()) append(' ').append(
+        column.context.getString(
+            R.string.hashtag_title_none,
+            column.hashtag_none.ellipsizeDot3(limit)
+        )
+    )
+    return this
+}

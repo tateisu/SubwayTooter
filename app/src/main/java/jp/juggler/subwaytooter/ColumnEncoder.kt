@@ -11,10 +11,13 @@ import java.util.HashMap
 
 object ColumnEncoder {
 
+    // いくつかのキーはカラム一覧画面でも使うのでprivateではない
+
     const val KEY_ACCOUNT_ROW_ID = "account_id"
     const val KEY_TYPE = "type"
-    const val KEY_COLUMN_ID = "column_id"
     const val KEY_DONT_CLOSE = "dont_close"
+
+    private const val KEY_COLUMN_ID = "column_id"
     private const val KEY_WITH_ATTACHMENT = "with_attachment"
     private const val KEY_WITH_HIGHLIGHT = "with_highlight"
     private const val KEY_DONT_SHOW_BOOST = "dont_show_boost"
@@ -70,7 +73,7 @@ object ColumnEncoder {
     const val KEY_COLUMN_NAME = "column_name"
     const val KEY_OLD_INDEX = "old_index"
 
-    const val KEY_ANNOUNCEMENT_HIDE_TIME = "announcementHideTime"
+    private const val KEY_ANNOUNCEMENT_HIDE_TIME = "announcementHideTime"
 
 
     private val columnIdMap = HashMap<String, WeakReference<Column>?>()
@@ -97,7 +100,7 @@ object ColumnEncoder {
     }
 
     fun decodeColumnId(src: JsonObject): String {
-        return src.string(ColumnEncoder.KEY_COLUMN_ID) ?: generateColumnId()
+        return src.string(KEY_COLUMN_ID) ?: generateColumnId()
     }
 
     fun findColumnById(id: String): Column? {
@@ -107,8 +110,8 @@ object ColumnEncoder {
     }
 
     @Throws(JsonException::class)
-    fun encode(column:Column,dst: JsonObject, old_index: Int) {
-        column.run{
+    fun encode(column: Column, dst: JsonObject, old_index: Int) {
+        column.run {
             dst[KEY_ACCOUNT_ROW_ID] = access_info.db_id
             dst[KEY_TYPE] = type.id
             dst[KEY_COLUMN_ID] = column_id
@@ -342,9 +345,6 @@ object ColumnEncoder {
 
                 }
             }
-
         }
     }
-
-
 }

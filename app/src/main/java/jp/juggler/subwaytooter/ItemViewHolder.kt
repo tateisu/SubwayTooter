@@ -908,6 +908,7 @@ internal class ItemViewHolder(
 				}
 			}
 
+            TootNotification.TYPE_EMOJI_REACTION,
 			TootNotification.TYPE_REACTION -> {
 				val colorBg = Pref.ipEventBgColorReaction(activity.pref)
 				if (n_account != null) showBoost(
@@ -915,7 +916,7 @@ internal class ItemViewHolder(
 					n.time_created_at,
 					R.drawable.ic_face,
 					R.string.display_name_reaction_by,
-					misskeyReaction = n.reaction ?: "?",
+					reaction = n.reaction ?: TootReaction.UNKNOWN,
                     boost_status = n_status
 				)
 				if (n_status != null) {
@@ -1168,7 +1169,7 @@ internal class ItemViewHolder(
 		time: Long,
 		iconId: Int,
 		string_id: Int,
-		misskeyReaction: String? = null,
+		reaction: TootReaction? = null,
 		boost_status: TootStatus? = null
 	) {
         boost_account = whoRef
@@ -1184,7 +1185,7 @@ internal class ItemViewHolder(
         val who = whoRef.get()
 
         // フォローの場合 decoded_display_name が2箇所で表示に使われるのを避ける必要がある
-        val text: Spannable = if (misskeyReaction != null) {
+        val text: Spannable = if (reaction != null) {
             val options = DecodeOptions(
 				activity,
 				access_info,
@@ -1192,7 +1193,7 @@ internal class ItemViewHolder(
 				enlargeEmoji = 1.5f,
 				enlargeCustomEmoji = 1.5f
 			)
-            val ssb = MisskeyReaction.toSpannableStringBuilder(misskeyReaction, options, boost_status)
+            val ssb = reaction.toSpannableStringBuilder( options, boost_status)
             ssb.append(" ")
             ssb.append(who.decodeDisplayName(activity)
 				.intoStringResource(activity, string_id))
@@ -2462,9 +2463,15 @@ internal class ItemViewHolder(
 
     }
 
-    private fun makeReactionsView(status: TootStatus) {
-        if (!access_info.isMisskey) return
+    private fun canReaction() = when{
+        access_info.isPseudo -> false
+        access_info.isMisskey -> true
+        TootInstance.getCached(access_info.apiHost)?.fedibird_capabilities?.contains("emoji_reaction") == true -> true
+        else->false
+    }
 
+    private fun makeReactionsView(status: TootStatus) {
+        if( !canReaction() && status.reactionSet == null ) return
 
         val density = activity.density
 
@@ -2501,13 +2508,19 @@ internal class ItemViewHolder(
                 R.drawable.btn_bg_transparent_round6dp
             )
 
-            val hasMyReaction = status.myReaction?.isNotEmpty() == true
+            val hasMyReaction = status.reactionSet?.myReaction?.isNotEmpty() ?: false
             b.contentDescription =
                 activity.getString(if (hasMyReaction) R.string.reaction_remove else R.string.reaction_add)
             b.scaleType = ImageView.ScaleType.FIT_CENTER
             b.padding = paddingV
             b.setOnClickListener {
-                if (hasMyReaction) {
+                if(!canReaction()){
+                    Action_Toot.reactionFromAnotherAccount(
+                        activity,
+                        access_info,
+                        status_showing
+                    )
+                }else if (hasMyReaction) {
                     removeReaction(status, false)
                 } else {
                     addReaction(status, null)
@@ -2532,8 +2545,8 @@ internal class ItemViewHolder(
             )
         })
 
-        val reactionCounts = status.reactionCounts
-        if (reactionCounts != null) {
+        val reactionSet = status.reactionSet
+        if (reactionSet != null) {
 
             var lastButton: View? = null
 
@@ -2545,12 +2558,12 @@ internal class ItemViewHolder(
 				enlargeCustomEmoji = 1.5f
 			)
 
-            for (entry in reactionCounts.entries) {
-                val key = entry.key
-                val count = entry.value
-                if (count <= 0) continue
-                val ssb = MisskeyReaction.toSpannableStringBuilder(key, options, status)
-                    .also { it.append(" $count") }
+            for (entry in reactionSet.entries) {
+                val code = entry.key
+                val reaction = entry.value
+                if (reaction.count <= 0L) continue
+                val ssb = reaction.toSpannableStringBuilder( options, status)
+                    .also { it.append(" ${reaction.count}") }
 
                 val b = Button(act).apply {
                     layoutParams = FlexboxLayout.LayoutParams(
@@ -2561,7 +2574,7 @@ internal class ItemViewHolder(
                     }
                     minWidthCompat = buttonHeight
 
-                    background = if (MisskeyReaction.equals(status.myReaction, key)) {
+                    background = if (TootReaction.equals(reactionSet.myReaction, code)) {
                         // 自分がリアクションしたやつは背景を変える
                         getAdaptiveRippleDrawableRound(
 							act,
@@ -2582,13 +2595,13 @@ internal class ItemViewHolder(
                     text = ssb
 
                     allCaps = false
-                    tag = key
+                    tag = code
                     setOnClickListener {
-                        val code =  it.tag as? String
-                        if( MisskeyReaction.equals(status.myReaction, code)){
+                        val tagStr =  it.tag as? String
+                        if( TootReaction.equals(status.reactionSet?.myReaction, tagStr)){
                             removeReaction(status, false)
                         }else{
-                            addReaction(status,code)
+                            addReaction(status,tagStr)
                         }
                     }
 
@@ -2619,20 +2632,24 @@ internal class ItemViewHolder(
         llExtra.addView(box)
     }
 
-    private fun addReaction(status: TootStatus, code: String?) {
-
-        if (status.myReaction?.isNotEmpty() == true) {
+    // code は code@dmain のような形式かもしれない
+    private fun addReaction(status: TootStatus, code: String? ) {
+        if (status.reactionSet?.myReaction?.notEmpty() != null ) {
             activity.showToast(false, R.string.already_reactioned)
             return
         }
 
-        if (access_info.isPseudo || !access_info.isMisskey) return
+        if(!canReaction()) return
 
         if (code == null) {
             EmojiPicker(activity, access_info, closeOnSelected = true) { result ->
                 addReaction(status, when(val emoji = result.emoji){
                     is UnicodeEmoji -> emoji.unifiedCode
-                    is CustomEmoji -> ":${emoji.shortcode}:"
+                    is CustomEmoji -> if(access_info.isMisskey) {
+                        ":${emoji.shortcode}:"
+                    }else{
+                        emoji.shortcode
+                    }
                     else->error("unknown emoji type")
                 })
             }.show()
@@ -2642,15 +2659,23 @@ internal class ItemViewHolder(
         TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
 			object : TootTask {
 
+                var newStatus : TootStatus? = null
+
 				override suspend fun background(client: TootApiClient): TootApiResult? {
-
-					val params = access_info.putMisskeyApiToken().apply {
-						put("noteId", status.id.toString())
-						put("reaction", code)
-					}
-
-					// 成功すると204 no content
-					return client.request("/api/notes/reactions/create", params.toPostRequestBuilder())
+                    return if(access_info.isMisskey){
+                        client.request("/api/notes/reactions/create", access_info.putMisskeyApiToken().apply {
+                            put("noteId", status.id.toString())
+                            put("reaction", code)
+                        }.toPostRequestBuilder())
+                        // 成功すると204 no content
+                    }else{
+                        client.request("/api/v1/statuses/${status.id}/emoji_reactions/${code.encodePercent("@")}",
+                            "".toFormRequestBody().toPut())
+                        // 成功すると新しいステータス
+                            ?.also{ result->
+                                newStatus = TootParser(activity,access_info).status(result.jsonObject)
+                            }
+                    }
 				}
 
 				override suspend fun handleResult(result: TootApiResult?) {
@@ -2663,32 +2688,38 @@ internal class ItemViewHolder(
 					}
 					when (val resCode = result.response?.code) {
 						in 200 until 300 -> {
-							if (status.increaseReaction(code, true, caller="addReaction")) {
-								// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
-								list_adapter.notifyChange(reason = "addReaction complete", reset = true)
-							}
+                            if(newStatus != null){
+                                activity.app_state.columnList.forEach { column->
+                                    if( column.access_info.acct == access_info.acct)
+                                        column.updateEmojiReaction( newStatus)
+                                }
+                            }else{
+                                if (status.increaseReaction(access_info.isMisskey,code, true, caller="addReaction")) {
+                                    // 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
+                                    list_adapter.notifyChange(reason = "addReaction complete", reset = true)
+                                }
+                            }
 						}
 						else -> activity.showToast(false, "HTTP error $resCode")
 					}
 				}
-
 			})
     }
 
     private fun removeReaction(status: TootStatus, confirmed: Boolean = false) {
 
-        val reaction = status.myReaction
+        val code = status.reactionSet?.myReaction?.notEmpty()
 
-        if (reaction?.isNotEmpty() != true) {
+        if ( code ==null ) {
             activity.showToast(false, R.string.not_reactioned)
             return
         }
 
-        if (access_info.isPseudo || !access_info.isMisskey) return
+        if(!canReaction()) return
 
         if (!confirmed) {
             AlertDialog.Builder(activity)
-                .setMessage(activity.getString(R.string.reaction_remove_confirm, reaction))
+                .setMessage(activity.getString(R.string.reaction_remove_confirm, code))
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok) { _, _ ->
                     removeReaction(status, confirmed = true)
@@ -2699,15 +2730,27 @@ internal class ItemViewHolder(
 
         TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
 			object : TootTask {
+
+                var newStatus: TootStatus? = null
+
 				override suspend fun background(client: TootApiClient): TootApiResult? =
-					// 成功すると204 no content
-					client.request(
-						"/api/notes/reactions/delete",
-						access_info.putMisskeyApiToken().apply {
-							put("noteId", status.id.toString())
-						}
-							.toPostRequestBuilder()
-					)
+				    if(access_info.isMisskey) {
+                        client.request(
+                            "/api/notes/reactions/delete",
+                            access_info.putMisskeyApiToken().apply {
+                                put("noteId", status.id.toString())
+                            }
+                                .toPostRequestBuilder()
+                        )
+                        // 成功すると204 no content
+                    }else{
+                        client.request("/api/v1/statuses/${status.id}/emoji_unreaction",
+                            "".toFormRequestBody().toPost())
+                            // 成功すると新しいステータス
+                            ?.also{ result->
+                                newStatus = TootParser(activity,access_info).status(result.jsonObject)
+                            }
+                    }
 
 				override suspend fun handleResult(result: TootApiResult?) {
 					result ?: return
@@ -2719,13 +2762,20 @@ internal class ItemViewHolder(
 					}
 
 					if ((result.response?.code ?: -1) in 200 until 300) {
-						if (status.decreaseReaction(reaction, true, "removeReaction")) {
-							// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
-							list_adapter.notifyChange(
-								reason = "removeReaction complete",
-								reset = true
-							)
-						}
+                        if(newStatus != null){
+                            activity.app_state.columnList.forEach { column->
+                                if( column.access_info.acct == access_info.acct)
+                                    column.updateEmojiReaction( newStatus)
+                            }
+                        }else{
+                            if (status.decreaseReaction(access_info.isMisskey,code, true,"removeReaction")) {
+                                // 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
+                                list_adapter.notifyChange(
+                                    reason = "removeReaction complete",
+                                    reset = true
+                                )
+                            }
+                        }
 					}
 				}
 			})

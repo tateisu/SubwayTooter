@@ -578,20 +578,26 @@ class Column(
     val streamCallback = object : StreamCallback {
 
         override fun onStreamStatusChanged(status: StreamStatus) {
-            log.d("onStreamStatusChanged status=${status}, bFirstInitialized=$bFirstInitialized, bInitialLoading=$bInitialLoading, column=${access_info.acct}/${getColumnName(true)}")
+            log.d(
+                "onStreamStatusChanged status=${status}, bFirstInitialized=$bFirstInitialized, bInitialLoading=$bInitialLoading, column=${access_info.acct}/${
+                    getColumnName(
+                        true
+                    )
+                }"
+            )
 
             if (status == StreamStatus.Subscribed) {
                 updateMisskeyCapture()
             }
 
             runOnMainLooperForStreamingEvent {
-                if(is_dispose.get()) return@runOnMainLooperForStreamingEvent
+                if (is_dispose.get()) return@runOnMainLooperForStreamingEvent
                 fireShowColumnStatus()
             }
         }
 
         override fun onTimelineItem(item: TimelineItem, channelId: String?, stream: JsonArray?) {
-            if(StreamManager.traceDelivery) log.v("${access_info.acct} onTimelineItem")
+            if (StreamManager.traceDelivery) log.v("${access_info.acct} onTimelineItem")
             if (!canHandleStreamingMessage()) return
 
             when (item) {
@@ -626,6 +632,14 @@ class Column(
 
             stream_data_queue.add(item)
             app_state.handler.post(mergeStreamingMessage)
+        }
+
+        override fun onEmojiReaction(item: TootNotification) {
+            // 自分によるリアクションは通知されない
+            // リアクション削除は通知されない
+            runOnMainLooperForStreamingEvent {
+                updateEmojiReaction(item.status)
+            }
         }
 
         override fun onNoteUpdated(ev: MisskeyNoteUpdate, channelId: String?) {
@@ -668,13 +682,24 @@ class Column(
                 when (ev.type) {
                     MisskeyNoteUpdate.Type.REACTION -> {
                         scanStatusAll { s ->
-                            s.increaseReaction(ev.reaction, byMe, ev.emoji, "onNoteUpdated ${ev.userId}")
+                            s.increaseReaction(
+                                true,
+                                ev.reaction,
+                                byMe,
+                                ev.emoji,
+                                "onNoteUpdated ${ev.userId}"
+                            )
                         }
                     }
 
                     MisskeyNoteUpdate.Type.UNREACTION -> {
                         scanStatusAll { s ->
-                            s.decreaseReaction(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
+                            s.decreaseReaction(
+                                true,
+                                ev.reaction,
+                                byMe,
+                                "onNoteUpdated ${ev.userId}"
+                            )
                         }
                     }
 
@@ -736,7 +761,7 @@ class Column(
             }
         }
 
-        override fun onAnnouncementReaction(reaction: TootAnnouncement.Reaction) {
+        override fun onAnnouncementReaction(reaction: TootReaction) {
             runOnMainLooperForStreamingEvent {
                 // find announcement
                 val announcement_id = reaction.announcement_id
@@ -752,7 +777,7 @@ class Column(
                     }
 
                     index == null -> {
-                        announcement.reactions = ArrayList<TootAnnouncement.Reaction>().apply {
+                        announcement.reactions = ArrayList<TootReaction>().apply {
                             add(reaction)
                         }
                     }
@@ -775,7 +800,7 @@ class Column(
             val handler = app_state.handler
 
             // 未初期化や初期ロード中ならキューをクリアして何もしない
-            if (!canHandleStreamingMessage() ) {
+            if (!canHandleStreamingMessage()) {
                 stream_data_queue.clear()
                 handler.removeCallbacks(this)
                 return
@@ -1923,6 +1948,7 @@ class Column(
                     TootNotification.TYPE_MENTION,
                     TootNotification.TYPE_REPLY -> dont_show_reply
 
+                    TootNotification.TYPE_EMOJI_REACTION,
                     TootNotification.TYPE_REACTION -> dont_show_reaction
 
                     TootNotification.TYPE_VOTE,
@@ -1947,6 +1973,8 @@ class Column(
 
                     TootNotification.TYPE_MENTION,
                     TootNotification.TYPE_REPLY -> quick_filter != QUICK_FILTER_MENTION
+
+                    TootNotification.TYPE_EMOJI_REACTION,
                     TootNotification.TYPE_REACTION -> quick_filter != QUICK_FILTER_REACTION
 
                     TootNotification.TYPE_VOTE,
@@ -1956,7 +1984,8 @@ class Column(
                     TootNotification.TYPE_STATUS -> quick_filter != QUICK_FILTER_POST
                     else -> true
                 }
-            }) {
+            }
+        ) {
             log.d("isFiltered: ${item.type} notification filtered.")
             return true
         }
@@ -1985,6 +2014,7 @@ class Column(
             TootNotification.TYPE_RENOTE,
             TootNotification.TYPE_QUOTE,
             TootNotification.TYPE_FAVOURITE,
+            TootNotification.TYPE_EMOJI_REACTION,
             TootNotification.TYPE_REACTION,
             TootNotification.TYPE_FOLLOW,
             TootNotification.TYPE_FOLLOW_REQUEST,
@@ -2042,10 +2072,12 @@ class Column(
                     this.who_account = a
 
                     this.who_featured_tags = null
-                    client.request("/api/v1/accounts/${profile_id}/featured_tags")?.also { result2 ->
+                    client.request("/api/v1/accounts/${profile_id}/featured_tags")
+                        ?.also { result2 ->
 
-                        this.who_featured_tags = TootTag.parseListOrNull(parser, result2.jsonArray)
-                    }
+                            this.who_featured_tags =
+                                TootTag.parseListOrNull(parser, result2.jsonArray)
+                        }
 
                     client.publishApiProgress("") // カラムヘッダの再表示
                 }
@@ -2782,13 +2814,13 @@ class Column(
     fun canStartStreaming() = when {
         // 未初期化なら何もしない
         !bFirstInitialized -> {
-            if(StreamManager.traceDelivery) log.v("canStartStreaming: column is not initialized.")
+            if (StreamManager.traceDelivery) log.v("canStartStreaming: column is not initialized.")
             false
         }
 
         // 初期ロード中なら何もしない
         bInitialLoading -> {
-            if(StreamManager.traceDelivery) log.v("canStartStreaming: is in initial loading.")
+            if (StreamManager.traceDelivery) log.v("canStartStreaming: is in initial loading.")
             false
         }
 
@@ -3030,6 +3062,46 @@ class Column(
         )
     }
 
+    // Fedibird 絵文字リアクション機能
+    // APIの戻り値や通知データに新しいステータス情報が含まれるので、カラム中の該当する投稿のリアクション情報を更新する
+    fun updateEmojiReaction(newStatus: TootStatus?) {
+        newStatus ?: return
+        val statusId = newStatus.id
+        val newReactionSet = newStatus.reactionSet ?: TootReactionSet(isMisskey = false)
+
+        val changeList = ArrayList<AdapterChange>()
+
+        fun scanStatus1(s: TootStatus?, idx: Int, block: (s: TootStatus) -> Boolean) {
+            s ?: return
+            if (s.id == statusId) {
+                if (block(s)) {
+                    changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx, 1))
+                }
+            }
+            scanStatus1(s.reblog, idx, block)
+            scanStatus1(s.reply, idx, block)
+        }
+
+        fun scanStatusAll(block: (s: TootStatus) -> Boolean) {
+            for (i in 0 until list_data.size) {
+                val o = list_data[i]
+                if (o is TootStatus) {
+                    scanStatus1(o, i, block)
+                } else if (o is TootNotification) {
+                    scanStatus1(o.status, i, block)
+                }
+            }
+        }
+
+        scanStatusAll { s ->
+            s.updateReactionMastodon(newReactionSet)
+            true
+        }
+
+        if (changeList.isNotEmpty()) {
+            fireShowContent(reason = "onEmojiReaction", changeList = changeList)
+        }
+    }
 
     //	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
     //		list_data.forEachIndexed { i, v ->
@@ -3041,4 +3113,6 @@ class Column(
     init {
         registerColumnId(column_id, this)
     }
+
+
 }

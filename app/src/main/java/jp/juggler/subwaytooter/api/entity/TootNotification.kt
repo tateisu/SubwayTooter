@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory
+import jp.juggler.util.notEmpty
 
 class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 	
@@ -24,8 +25,9 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 		const val TYPE_UNFOLLOW = "unfollow" // Mastodon,Misskey
 		
 		const val TYPE_FAVOURITE = "favourite"
-		const val TYPE_REACTION = "reaction"
-		
+		const val TYPE_REACTION = "reaction" // misskey
+		const val TYPE_EMOJI_REACTION = "emoji_reaction" // fedibird
+
 		const val TYPE_FOLLOW_REQUEST = "follow_request"
 		const val TYPE_FOLLOW_REQUEST_MISSKEY = "receiveFollowRequest"
 		
@@ -46,7 +48,7 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 	val type : String    //	One of: "mention", "reblog", "favourite", "follow"
 	val accountRef : TootAccountRef?    //	The Account sending the notification to the user
 	val status : TootStatus?    //	The Status associated with the notification, if applicable
-	var reaction : String? = null
+	var reaction : TootReaction? = null
 	
 	private val created_at : String?    //	The time the notification was created
 	val time_created_at : Long
@@ -78,6 +80,8 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 			)
 			
 			reaction = src.string("reaction")
+				?.notEmpty()
+				?.let{ TootReaction.parseMisskey(it)}
 			
 			// Misskeyの通知APIはページネーションをIDでしか行えない
 			// これは改善される予定 https://github.com/syuilo/misskey/issues/2275
@@ -92,8 +96,10 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 			accountRef =
 				TootAccountRef.mayNull(parser, parser.account(src.jsonObject("account")))
 			status = parser.status(src.jsonObject("status"))
-			
+
+			reaction = src.jsonObject("emoji_reaction")
+				?.notEmpty()
+				?.let{ TootReaction.parseFedibird(it)}
 		}
 	}
-	
 }

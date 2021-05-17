@@ -22,7 +22,7 @@ import jp.juggler.util.vg
 
 class DlgCreateAccount(
 	val activity : AppCompatActivity,
-	val instance : Host,
+	val apiHost : Host,
 	val onClickOk : (
 		dialog : Dialog,
 		username : String,
@@ -52,7 +52,7 @@ class DlgCreateAccount(
 	private val dialog = Dialog(activity)
 	
 	init {
-		viewRoot.findViewById<TextView>(R.id.tvInstance).text = instance.pretty
+		viewRoot.findViewById<TextView>(R.id.tvInstance).text = apiHost.pretty
 		
 		arrayOf(
 			R.id.btnRules,
@@ -63,13 +63,13 @@ class DlgCreateAccount(
 			viewRoot.findViewById<Button>(it)?.setOnClickListener(this)
 		}
 		
-		val instanceInfo = TootInstance.getCached(instance.ascii)
+		val instanceInfo = TootInstance.getCached(apiHost)
 		
 		tvDescription.text =
 			DecodeOptions(
 				activity,
 				linkHelper = LinkHelper.create(
-					instance,
+					apiHost,
 					misskeyVersion = instanceInfo?.misskeyVersion ?: 0
 				)
 			).decodeHTML(
@@ -97,10 +97,10 @@ class DlgCreateAccount(
 	override fun onClick(v : View?) {
 		when(v?.id) {
 			R.id.btnRules ->
-				activity.openCustomTab("https://$instance/about/more")
+				activity.openCustomTab("https://$apiHost/about/more")
 			
 			R.id.btnTerms ->
-				activity.openCustomTab("https://$instance/terms")
+				activity.openCustomTab("https://$apiHost/terms")
 			
 			R.id.btnCancel ->
 				dialog.cancel()

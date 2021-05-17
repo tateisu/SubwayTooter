@@ -606,7 +606,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         cbConfirmUnfavourite.isEnabled = enabled
         cbConfirmToot.isEnabled = enabled
 
-        val ti = TootInstance.getCached(a.apiHost.ascii)
+        val ti = TootInstance.getCached(a.apiHost)
         if (ti == null) {
             etMediaSizeMax.setText(a.image_max_megabytes ?: "")
             etMovieSizeMax.setText(a.movie_max_megabytes ?: "")

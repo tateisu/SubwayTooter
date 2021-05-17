@@ -24,10 +24,10 @@ class StreamConnection(
     private val manager: StreamManager,
     private val acctGroup: StreamGroupAcct,
     val spec: StreamSpec? = null, // null if merged connection
-    val name :String
-) : WebSocketListener() ,TootApiCallback {
+    val name: String
+) : WebSocketListener(), TootApiCallback {
 
-    companion object{
+    companion object {
         private val log = LogCategory("StreamConnection")
 
         private const val misskeyAliveInterval = 60000L
@@ -65,26 +65,36 @@ class StreamConnection(
     // methods
 
     private fun eachCallbackForSpec(
-        spec:StreamSpec,
+        spec: StreamSpec,
         channelId: String? = null,
-        stream:JsonArray? = null,
-        item:TimelineItem?=null,
+        stream: JsonArray? = null,
+        item: TimelineItem? = null,
         block: (callback: StreamCallback) -> Unit
     ) {
         if (isDisposed.get()) return
-        acctGroup.keyGroups[spec]?.eachCallback(channelId,stream,item,block)
+        acctGroup.keyGroups[spec]?.eachCallback(channelId, stream, item, block)
+    }
+
+    private fun eachCallbackForAcct(
+        item: TimelineItem? = null,
+        block: (callback: StreamCallback) -> Unit
+    ) {
+        if (isDisposed.get()) return
+        acctGroup.keyGroups.values.forEach {
+            it.eachCallback(null, null, item, block)
+        }
     }
 
     private fun eachCallback(
         channelId: String? = null,
-        stream:JsonArray? = null,
-        item:TimelineItem?=null,
+        stream: JsonArray? = null,
+        item: TimelineItem? = null,
         block: (callback: StreamCallback) -> Unit
     ) {
-        if(StreamManager.traceDelivery) log.v("$name eachCallback spec=${spec?.name}")
+        if (StreamManager.traceDelivery) log.v("$name eachCallback spec=${spec?.name}")
         if (spec != null) {
-            eachCallbackForSpec(spec,channelId,stream,item,block)
-        }else {
+            eachCallbackForSpec(spec, channelId, stream, item, block)
+        } else {
             if (isDisposed.get()) return
             acctGroup.keyGroups.values.forEach { it.eachCallback(channelId, stream, item, block) }
         }
@@ -97,15 +107,26 @@ class StreamConnection(
         socket.set(null)
     }
 
-    fun getStreamStatus(streamSpec: StreamSpec) :StreamStatus = when {
+    fun getStreamStatus(streamSpec: StreamSpec): StreamStatus = when {
         subscriptions[streamSpec] != null -> StreamStatus.Subscribed
         else -> status
     }
 
-    private fun fireTimelineItem(item: TimelineItem?, channelId: String? = null,stream:JsonArray?=null) {
-        item?:return
-        if(StreamManager.traceDelivery) log.v("$name fireTimelineItem")
-        eachCallback(channelId,stream,item=item) { it.onTimelineItem(item, channelId,stream) }
+    private fun fireTimelineItem(
+        item: TimelineItem?,
+        channelId: String? = null,
+        stream: JsonArray? = null
+    ) {
+        item ?: return
+        if (StreamManager.traceDelivery) log.v("$name fireTimelineItem")
+        eachCallback(channelId, stream, item = item) { it.onTimelineItem(item, channelId, stream) }
+    }
+
+    // fedibird emoji reaction noti
+    private fun fireEmojiReaction(item: TootNotification) {
+        item ?: return
+        if (StreamManager.traceDelivery) log.v("$name fireTimelineItem")
+        eachCallbackForAcct(){ it.onEmojiReaction(item)}
     }
 
     private fun fireNoteUpdated(ev: MisskeyNoteUpdate, channelId: String? = null) {
@@ -118,8 +139,8 @@ class StreamConnection(
         manager.appState.columnList.forEach {
             runOnMainLooper {
                 try {
-                    if(!it.is_dispose.get()) it.onStatusRemoved(tl_host, id)
-                }catch(ex:Throwable) {
+                    if (!it.is_dispose.get()) it.onStatusRemoved(tl_host, id)
+                } catch (ex: Throwable) {
                     log.trace(ex)
                 }
             }
@@ -173,7 +194,7 @@ class StreamConnection(
                     log.e("$name handleMisskeyMessage: noteUpdated body is null")
                     return
                 }
-                fireNoteUpdated(MisskeyNoteUpdate(acctGroup.account.apDomain,body), channelId)
+                fireNoteUpdated(MisskeyNoteUpdate(acctGroup.account.apDomain, body), channelId)
             }
 
             "notification" -> {
@@ -229,13 +250,20 @@ class StreamConnection(
 
                     // {"event":"announcement.reaction","payload":"{\"name\":\"hourglass_gif\",\"count\":1,\"url\":\"https://m2j.zzz.ac/...\",\"static_url\":\"https://m2j.zzz.ac/...\",\"announcement_id\":\"9\"}"}
                     "announcement.reaction" -> {
-                        if (payload is TootAnnouncement.Reaction) {
+                        if (payload is TootReaction) {
                             eachCallback { it.onAnnouncementReaction(payload) }
                         }
                     }
 
                     else -> when (payload) {
-                        is TimelineItem -> fireTimelineItem(payload,stream=stream)
+                        is TimelineItem -> {
+
+                            if (payload is TootNotification && payload.type == TootNotification.TYPE_EMOJI_REACTION) {
+                                fireEmojiReaction(payload)
+                            }
+
+                            fireTimelineItem(payload, stream = stream)
+                        }
                         else -> log.d("$name unsupported payload type. $payload")
                     }
                 }
@@ -256,7 +284,7 @@ class StreamConnection(
 
     override fun onMessage(webSocket: WebSocket, text: String) {
         manager.enqueue {
-            if(StreamManager.traceDelivery) log.v("$name WebSocket onMessage.")
+            if (StreamManager.traceDelivery) log.v("$name WebSocket onMessage.")
             try {
                 val obj = text.decodeJsonObject()
                 when {
@@ -287,7 +315,7 @@ class StreamConnection(
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         manager.enqueue {
-            if (t is SocketException && t.message?.contains("closed") ==true) {
+            if (t is SocketException && t.message?.contains("closed") == true) {
                 log.w("$name socket closed.")
             } else {
                 log.e(t, "$name WebSocket onFailure.")
@@ -319,10 +347,10 @@ class StreamConnection(
         }
     }
 
-    private fun unsubscribe(spec:StreamSpec) {
+    private fun unsubscribe(spec: StreamSpec) {
         try {
             subscriptions.remove(spec)
-            eachCallbackForSpec(spec) { it.onStreamStatusChanged(getStreamStatus(spec) ) }
+            eachCallbackForSpec(spec) { it.onStreamStatusChanged(getStreamStatus(spec)) }
 
             val jsonObject = if (acctGroup.account.isMastodon) {
                 /*
@@ -330,7 +358,7 @@ class StreamConnection(
                      {  "stream": "hashtag:local", "tag": "foo" }
                 等に後から "type": "unsubscribe" を足す
                  */
-                spec.paramsClone().apply { put("type","unsubscribe") }
+                spec.paramsClone().apply { put("type", "unsubscribe") }
             } else {
                 /*
                 Misskeyの場合
@@ -357,7 +385,7 @@ class StreamConnection(
                      {  "stream": "hashtag:local", "tag": "foo" }
                      等に後から "type": "subscribe" を足す
                  */
-                spec.paramsClone().apply { put("type","subscribe") }
+                spec.paramsClone().apply { put("type", "subscribe") }
             } else {
                 /*
                    Misskeyの場合
@@ -367,7 +395,7 @@ class StreamConnection(
                    */
                 jsonObjectOf(
                     "type" to "connect",
-                    "body" to spec.paramsClone().apply{ put("id",spec.channelId) }
+                    "body" to spec.paramsClone().apply { put("id", spec.channelId) }
                 )
             }
             socket.get()?.send(jsonObject.toString())
@@ -411,7 +439,7 @@ class StreamConnection(
             return
         }
 
-        val group = spec?.let{ acctGroup.keyGroups[it] }
+        val group = spec?.let { acctGroup.keyGroups[it] }
         if (group != null) {
             // 準備できたカラムがまったくないなら接続開始しない
             if (!group.destinations.values.any { it.canStartStreaming() }) return
@@ -475,7 +503,7 @@ class StreamConnection(
         val socket = socket.get()
         if (isDisposed.get() || socket == null) return
 
-        val type  = when{
+        val type = when {
             acctGroup.ti.versionGE(TootInstance.MISSKEY_VERSION_12_75_0) -> "sr"
             else -> "subNote"
         }

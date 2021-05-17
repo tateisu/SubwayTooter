@@ -192,7 +192,7 @@ internal class StatusButtons(
 			)
 		}
 		
-		val ti = TootInstance.getCached(access_info.apiHost.ascii)
+		val ti = TootInstance.getCached(access_info.apiHost)
 		btnQuote.vg(ti?.feature_quote == true)?.let{
 			setButton(
 				btnQuote,

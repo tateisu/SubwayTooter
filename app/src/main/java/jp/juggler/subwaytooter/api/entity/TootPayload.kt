@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.TootAnnouncement.Reaction
+import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.util.*
 
 object TootPayload {
@@ -62,7 +62,7 @@ object TootPayload {
 						
 						"announcement" -> parseItem(::TootAnnouncement, parser, src)
 						
-						"announcement.reaction" -> parseItem(::Reaction, src)
+						"announcement.reaction" -> parseItem(TootReaction::parseFedibird, src)
 						
 						else -> {
 							log.e("unknown payload(2). message=%s", parent_text)

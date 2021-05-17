@@ -1323,7 +1323,7 @@ class ActPost : AsyncActivity(),
 
             else -> {
                 // インスタンス情報を確認する
-                val info = TootInstance.getCached(account.apiHost.ascii)
+                val info = TootInstance.getCached(account.apiHost)
                 if (info == null || info.isExpire) {
                     // 情報がないか古いなら再取得
 
@@ -2222,7 +2222,7 @@ class ActPost : AsyncActivity(),
             return
         }
 
-        val instance = TootInstance.getCached(account.apiHost.ascii)
+        val instance = TootInstance.getCached(account.apiHost)
         if (instance?.instanceType == InstanceType.Pixelfed) {
             if (in_reply_to_id != null) {
                 showToast(true, R.string.pixelfed_does_not_allow_reply_with_media)
@@ -2660,7 +2660,7 @@ class ActPost : AsyncActivity(),
     }
 
     private fun performVisibility() {
-        val ti = account?.let { TootInstance.getCached(it.apiHost.ascii) }
+        val ti = account?.let { TootInstance.getCached(it.apiHost) }
 
         val list = when {
             account?.isMisskey == true ->

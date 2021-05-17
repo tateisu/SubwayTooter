@@ -35,6 +35,7 @@ import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
+import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.EmojiPicker
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
@@ -284,10 +285,10 @@ class ColumnViewHolder(
                 log.d("fling? not vertical view. $vx $vy")
             } else {
 
-                val vydp = vy / density
+                val vyDp = vy / density
                 val limit = 1024f
-                log.d("fling? $vydp/$limit")
-                if (vydp >= limit) {
+                log.d("fling? $vyDp/$limit")
+                if (vyDp >= limit) {
 
                     val column = column
                     if (column != null && column.lastTask == null) {
@@ -2714,7 +2715,7 @@ class ColumnViewHolder(
                     btn.allCaps = false
                     btn.tag = reaction
 
-                    btn.background = if (reaction.me == true) {
+                    btn.background = if (reaction.me) {
                         getAdaptiveRippleDrawableRound(
                             actMain,
                             actMain.attrColor(R.attr.colorButtonBgCw),
@@ -2747,10 +2748,10 @@ class ColumnViewHolder(
                     }
 
                     btn.setOnClickListener {
-                        if (reaction.me == true) {
+                        if (reaction.me) {
                             removeReaction(item, reaction.name)
                         } else {
-                            addReaction(item, TootAnnouncement.Reaction(jsonObject {
+                            addReaction(item, TootReaction.parseFedibird(jsonObject {
                                 put("name", reaction.name)
                                 put("count", 1)
                                 put("me", true)
@@ -2774,7 +2775,7 @@ class ColumnViewHolder(
         llAnnouncementExtra.addView(box)
     }
 
-    private fun addReaction(item: TootAnnouncement, sample: TootAnnouncement.Reaction?) {
+    private fun addReaction(item: TootAnnouncement, sample: TootReaction?) {
         val column = column ?: return
         if (sample == null) {
             EmojiPicker(activity, column.access_info, closeOnSelected = true) { result ->
@@ -2785,7 +2786,7 @@ class ColumnViewHolder(
                     else -> error("unknown emoji type")
                 }
                 log.d("addReaction: $code ${result.emoji.javaClass.simpleName}")
-                addReaction(item, TootAnnouncement.Reaction(jsonObject {
+                addReaction(item, TootReaction.parseFedibird(jsonObject {
                     put("name", code)
                     put("count", 1)
                     put("me", true)

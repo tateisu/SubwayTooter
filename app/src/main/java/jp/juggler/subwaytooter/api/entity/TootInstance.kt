@@ -398,7 +398,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
 
         // get from cache
         // no request, no expiration check
-        fun getCached(host: String) = Host.parse(host).getCacheEntry().cacheData
+        fun getCached(apiHost: String) = Host.parse(apiHost).getCacheEntry().cacheData
+        fun getCached(apiHost: Host) = apiHost.getCacheEntry().cacheData
 
         suspend fun get(client: TootApiClient): Pair<TootInstance?, TootApiResult?> = getEx(client)
 

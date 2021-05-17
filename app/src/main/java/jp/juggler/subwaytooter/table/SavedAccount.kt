@@ -1105,7 +1105,8 @@ class SavedAccount(
 		TootNotification.TYPE_FOLLOW_REQUEST,
 		TootNotification.TYPE_FOLLOW_REQUEST_MISSKEY,
 		TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> notification_follow_request
-		
+
+		TootNotification.TYPE_EMOJI_REACTION,
 		TootNotification.TYPE_REACTION -> notification_reaction
 		
 		TootNotification.TYPE_VOTE,

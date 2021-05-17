@@ -10,18 +10,7 @@ import java.util.*
 
 class TootAnnouncement(parser : TootParser, src : JsonObject) {
 	
-	class Reaction(val src : JsonObject) {
-		val name = src.string("name") ?: "?"
-		var count = src.long("count") ?: 0
-		var me = src.boolean("me") // ストリーミングイベントではmeは定義されない
-		// 以下はカスタム絵文字のみ
-		val url = src.string("url")
-		val static_url = src.string("static_url")
-		
-		// ストリーミングイベントでは告知IDが含まれる
-		val announcement_id = EntityId.mayNull(src.string("announcement_id"))
-	}
-	
+
 	//	{"id":"1",
 	//	"content":"\u003cp\u003e日本語\u003cbr /\u003eURL \u003ca href=\"https://www.youtube.com/watch?v=2n1fM2ItdL8\" rel=\"nofollow noopener noreferrer\" target=\"_blank\"\u003e\u003cspan class=\"invisible\"\u003ehttps://www.\u003c/span\u003e\u003cspan class=\"ellipsis\"\u003eyoutube.com/watch?v=2n1fM2ItdL\u003c/span\u003e\u003cspan class=\"invisible\"\u003e8\u003c/span\u003e\u003c/a\u003e\u003cbr /\u003eカスタム絵文字 :ct013: \u003cbr /\u003e普通の絵文字 🤹 \u003c/p\u003e\u003cp\u003e改行2つ\u003c/p\u003e",
 	//	"starts_at":"2020-01-23T00:00:00.000Z",
@@ -51,7 +40,7 @@ class TootAnnouncement(parser : TootParser, src : JsonObject) {
 	//	An array of Mentions
 	val mentions : ArrayList<TootMention>?
 	
-	var reactions : MutableList<Reaction>? = null
+	var reactions : MutableList<TootReaction>? = null
 	
 	init {
 		// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
@@ -79,7 +68,7 @@ class TootAnnouncement(parser : TootParser, src : JsonObject) {
 		this.content = src.string("content") ?: ""
 		this.decoded_content = options.decodeHTML(content)
 		
-		this.reactions = parseListOrNull(::Reaction, src.jsonArray("reactions"))
+		this.reactions = parseListOrNull(TootReaction::parseFedibird, src.jsonArray("reactions"))
 	}
 	
 	companion object {
@@ -132,7 +121,7 @@ class TootAnnouncement(parser : TootParser, src : JsonObject) {
 			if(dstReactions == null) {
 				dst.reactions = oldReactions
 			} else if(oldReactions != null) {
-				val reactions = mutableListOf<Reaction>()
+				val reactions = mutableListOf<TootReaction>()
 				reactions.addAll(oldReactions)
 				for(newItem in dstReactions) {
 					val oldItem = reactions.find { it.name == newItem.name }

@@ -100,7 +100,7 @@ class ColumnTask_Gap(
 
             val changeList = ArrayList<AdapterChange>()
 
-            column.replaceConversationSummary(changeList, list_new, column.list_data)
+            replaceConversationSummary(changeList, list_new, column.list_data)
 
             val added = list_new.size // may 0
 

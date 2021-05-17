@@ -48,9 +48,8 @@ fun SharedPreferences.Editor.remove(item : BasePref<*>) : SharedPreferences.Edit
 
 class BooleanPref(key : String, defVal : Boolean) : BasePref<Boolean>(key, defVal) {
 	
-	override operator fun invoke(pref : SharedPreferences) : Boolean {
-		return pref.getBoolean(key, defVal)
-	}
+	override operator fun invoke(pref : SharedPreferences) :Boolean =
+		pref.getBoolean(key, defVal)
 	
 	// put if value is not default, remove if value is same to default
 	override fun put(editor : SharedPreferences.Editor, v : Boolean) {
@@ -60,9 +59,8 @@ class BooleanPref(key : String, defVal : Boolean) : BasePref<Boolean>(key, defVa
 
 class IntPref(key : String, defVal : Int) : BasePref<Int>(key, defVal) {
 	
-	override operator fun invoke(pref : SharedPreferences) : Int {
-		return pref.getInt(key, defVal)
-	}
+	override operator fun invoke(pref : SharedPreferences) : Int =
+		pref.getInt(key, defVal)
 	
 	override fun put(editor : SharedPreferences.Editor, v : Int) {
 		if(v == defVal) editor.remove(key) else editor.putInt(key, v)
@@ -71,9 +69,8 @@ class IntPref(key : String, defVal : Int) : BasePref<Int>(key, defVal) {
 
 class LongPref(key : String, defVal : Long) : BasePref<Long>(key, defVal) {
 	
-	override operator fun invoke(pref : SharedPreferences) : Long {
-		return pref.getLong(key, defVal)
-	}
+	override operator fun invoke(pref : SharedPreferences) : Long =
+		pref.getLong(key, defVal)
 	
 	override fun put(editor : SharedPreferences.Editor, v : Long) {
 		if(v == defVal) editor.remove(key) else editor.putLong(key, v)
@@ -82,9 +79,8 @@ class LongPref(key : String, defVal : Long) : BasePref<Long>(key, defVal) {
 
 class FloatPref(key : String, defVal : Float) : BasePref<Float>(key, defVal) {
 	
-	override operator fun invoke(pref : SharedPreferences) : Float {
-		return pref.getFloat(key, defVal)
-	}
+	override operator fun invoke(pref : SharedPreferences) : Float =
+		pref.getFloat(key, defVal)
 	
 	override fun put(editor : SharedPreferences.Editor, v : Float) {
 		if(v == defVal) editor.remove(key) else editor.putFloat(key, v)
@@ -97,9 +93,8 @@ class StringPref(
 	val skipImport : Boolean = false
 ) : BasePref<String>(key, defVal) {
 	
-	override operator fun invoke(pref : SharedPreferences) : String {
-		return pref.getString(key, defVal) ?: defVal
-	}
+	override operator fun invoke(pref : SharedPreferences) : String =
+		pref.getString(key, defVal) ?: defVal
 	
 	override fun put(editor : SharedPreferences.Editor, v : String) {
 		if(v == defVal) editor.remove(key) else editor.putString(key, v)
@@ -618,10 +613,9 @@ object Pref {
 	val fpAcctFontSize = FloatPref("acct_font_size", Float.NaN)
 	val fpNotificationTlFontSize = FloatPref("notification_tl_font_size", Float.NaN)
 	val fpHeaderTextSize = FloatPref("HeaderTextSize", Float.NaN)
+
 	internal const val default_timeline_font_size = 14f
 	internal const val default_acct_font_size = 12f
 	internal const val default_notification_tl_font_size = 14f
 	internal const val default_header_font_size = 14f
-	
 }
-

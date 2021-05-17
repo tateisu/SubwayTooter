@@ -843,7 +843,7 @@ fun Column.onStatusRemoved(tl_host: Host, status_id: EntityId) {
 // 既存データ中の会話サマリ項目と追加データの中にIDが同じものがあれば
 // 既存データを入れ替えて追加データから削除するか
 // 既存データを削除するかする
-fun Column.replaceConversationSummary(
+fun replaceConversationSummary(
     changeList: ArrayList<AdapterChange>,
     list_new: ArrayList<TimelineItem>,
     list_data: BucketList<TimelineItem>
@@ -1152,3 +1152,4 @@ fun Column.checkFiltersForListData(trees: FilterTrees?) {
     fireShowContent(reason = "filter updated", changeList = changeList)
 
 }
+

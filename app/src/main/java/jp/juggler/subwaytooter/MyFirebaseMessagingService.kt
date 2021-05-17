@@ -39,15 +39,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 			context.startService(intent)
 		}
 	}
-	
-	
+
 	override fun onNewToken(token : String) {
 		try {
 			log.d("onTokenRefresh: token=%s", token)
 			PrefDevice.prefDevice(this).edit().putString(PrefDevice.KEY_DEVICE_TOKEN, token).apply()
 
-			
-			
 			PollingWorker.queueFCMTokenUpdated(this)
 			
 		} catch(ex : Throwable) {

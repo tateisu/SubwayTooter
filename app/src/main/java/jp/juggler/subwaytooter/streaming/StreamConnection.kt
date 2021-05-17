@@ -124,7 +124,6 @@ class StreamConnection(
 
     // fedibird emoji reaction noti
     private fun fireEmojiReaction(item: TootNotification) {
-        item ?: return
         if (StreamManager.traceDelivery) log.v("$name fireTimelineItem")
         eachCallbackForAcct(){ it.onEmojiReaction(item)}
     }

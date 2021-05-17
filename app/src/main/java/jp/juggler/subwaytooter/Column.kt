@@ -558,7 +558,7 @@ class Column(
     private var cacheHeaderDesc: String? = null
 
     // DMカラム更新時に新APIの利用に成功したなら真
-    internal var useConversationSummarys = false
+    internal var useConversationSummaries = false
 
     // DMカラムのストリーミングイベントで新形式のイベントを利用できたなら真
     internal var useConversationSummaryStreaming = false
@@ -682,8 +682,7 @@ class Column(
                 when (ev.type) {
                     MisskeyNoteUpdate.Type.REACTION -> {
                         scanStatusAll { s ->
-                            s.increaseReaction(
-                                true,
+                            s.increaseReactionMisskey(
                                 ev.reaction,
                                 byMe,
                                 ev.emoji,
@@ -694,8 +693,7 @@ class Column(
 
                     MisskeyNoteUpdate.Type.UNREACTION -> {
                         scanStatusAll { s ->
-                            s.decreaseReaction(
-                                true,
+                            s.decreaseReactionMisskey(
                                 ev.reaction,
                                 byMe,
                                 "onNoteUpdated ${ev.userId}"

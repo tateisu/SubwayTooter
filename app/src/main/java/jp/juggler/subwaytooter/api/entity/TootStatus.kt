@@ -604,7 +604,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
                 this.reactionSet = TootReactionSet.parseFedibird(
                     src.jsonArray("emoji_reactions"),
-                    src.boolean("emoji_reactioned")
+                    // not used src.boolean("emoji_reactioned")
                 )
 
                 when (parser.serviceType) {
@@ -951,7 +951,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     }
 
     fun updateReactionMastodon(
-        newReactionSet:TootReactionSet,
+        newReactionSet: TootReactionSet,
     ) {
         synchronized(this) {
             this.reactionSet = newReactionSet
@@ -959,8 +959,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
     }
 
     // return true if updated
-    fun increaseReaction(
-        isMisskey: Boolean,
+    fun increaseReactionMisskey(
         code: String?,
         byMe: Boolean,
         emoji: CustomEmoji? = null,
@@ -976,7 +975,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
             var reactionSet = this.reactionSet
             if (reactionSet == null) {
-                reactionSet = TootReactionSet(isMisskey)
+                reactionSet = TootReactionSet(isMisskey = true)
                 this.reactionSet = reactionSet
             }
 
@@ -985,40 +984,19 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     // 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
                     return false
                 }
-                reactionSet.myReaction = code
             }
             log.d("increaseReaction noteId=$id byMe=$byMe caller=$caller")
 
             // カウントを増やす
-            if (isMisskey) {
-				when (val tr = reactionSet[code]
-                    ?: TootReaction.getAnotherExpression(code)
-                        ?.notEmpty()?.let{ reactionSet[it] }
-                ) {
-					null ->
-						reactionSet[code] = TootReaction( name=code,count=  1L)
+            reactionSet.myReaction =
+                reactionSet[code]?.also { it.count = max(0, it.count + 1L) }
+                    ?: TootReaction(name = code, count = 1L).also { reactionSet.add(it) }
 
-					else -> tr.count =  max(0, tr.count + 1L)
-				}
-            }else{
-                when (val tr = reactionSet[code]) {
-					null ->
-						reactionSet[code] = TootReaction(
-							name =  code,
-							count = 1L,
-							url = emoji?.url,
-							static_url = emoji?.static_url,
-							me = byMe
-						)
-					else ->  tr.count = max(0, tr.count + 1L)
-				}
-			}
             return true
         }
     }
 
-    fun decreaseReaction(
-        isMisskey:Boolean,
+    fun decreaseReactionMisskey(
         code: String?,
         byMe: Boolean,
         caller: String
@@ -1027,36 +1005,18 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
         synchronized(this) {
 
-			var reactionSet = this.reactionSet
-			if (reactionSet == null) {
-				reactionSet = TootReactionSet(isMisskey)
-				this.reactionSet = reactionSet
-			}
+            val reactionSet = this.reactionSet ?: return false
 
-			if (byMe) {
-				if (reactionSet.myReaction != null) {
-                    // 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
-                    return false
-                }
-				reactionSet.myReaction = null
+            if (byMe) {
+                // 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
+                reactionSet.myReaction ?: return false
+                reactionSet.myReaction = null
             }
 
             log.d("decreaseReaction noteId=$id byMe=$byMe caller=$caller")
 
             // カウントを減らす
-			if( isMisskey){
-				val tr = reactionSet[code]
-					?: TootReaction.getAnotherExpression(code)
-						?.notEmpty()?.let{ reactionSet[it] }
-				if( tr !=null) {
-					tr.count =  max(0, tr.count - 1L)
-				}
-			}else{
-				val tr = reactionSet[code]
-				if(tr!=null) {
-					tr.count =  max(0, tr.count - 1L)
-				}
-			}
+            reactionSet[code]?.let { it.count = max(0L, it.count - 1L) }
 
             return true
         }

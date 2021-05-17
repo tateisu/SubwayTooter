@@ -1369,7 +1369,7 @@ enum class ColumnType(
 		name1 = { it.getString(R.string.direct_messages) },
 
 		loading = { client ->
-			column.useConversationSummarys = false
+			column.useConversationSummaries = false
 			if (column.use_old_api) {
 				getStatusList(client, Column.PATH_DIRECT_MESSAGES)
 			} else {
@@ -1381,7 +1381,7 @@ enum class ColumnType(
 
 					//  not error
 					result.error.isNullOrBlank() -> {
-						column.useConversationSummarys = true
+						column.useConversationSummaries = true
 						result
 					}
 
@@ -1392,7 +1392,7 @@ enum class ColumnType(
 		},
 
 		refresh = { client ->
-			if (column.useConversationSummarys) {
+			if (column.useConversationSummaries) {
 				// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
 				getConversationSummaryList(client, Column.PATH_DIRECT_MESSAGES2)
 			} else {
@@ -1402,7 +1402,7 @@ enum class ColumnType(
 		},
 
 		gap = { client ->
-			if (column.useConversationSummarys) {
+			if (column.useConversationSummaries) {
 				// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
 				getConversationSummaryList(
 					client,

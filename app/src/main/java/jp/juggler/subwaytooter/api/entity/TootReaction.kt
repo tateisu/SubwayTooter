@@ -12,6 +12,7 @@ import jp.juggler.util.JsonArray
 import jp.juggler.util.JsonObject
 import jp.juggler.util.notEmpty
 import jp.juggler.util.notZero
+import java.util.*
 
 class TootReaction(
     // (fedibird絵文字リアクション)  unicode絵文字はunicodeそのまま、 カスタム絵文字はコロンなしのshortcode
@@ -84,7 +85,7 @@ class TootReaction(
             return if (domain == null) ":$name@.:" else if (domain == ".") ":$name:" else null
         }
 
-        fun equals(a: String?, b: String?) = when {
+        fun equalsName(a: String?, b: String?) = when {
             a == null -> b == null
             b == null -> false
             else -> a == b || getAnotherExpression(a) == b || a == getAnotherExpression(b)
@@ -92,6 +93,13 @@ class TootReaction(
 
         val UNKNOWN = TootReaction(name = "?")
     }
+
+    override fun equals(other: Any?): Boolean =
+        when (other) {
+            is TootReaction -> equalsName(this.name, other.name)
+            is String -> equalsName(this.name, other)
+            else -> false
+        }
 
     fun toSpannableStringBuilder(
         options: DecodeOptions,
@@ -160,45 +168,46 @@ class TootReaction(
     }
 }
 
-class TootReactionSet(val isMisskey: Boolean) : LinkedHashMap<String, TootReaction>() {
+class TootReactionSet(val isMisskey: Boolean) : LinkedList<TootReaction>() {
 
-    var myReaction: String? = null
+    var myReaction: TootReaction? = null
+
+    private fun getRaw(name: String?): TootReaction? =
+        find { it.name == name }
+
+    operator fun get(name: String?): TootReaction? =
+        if (name == null || name.isEmpty())
+            null
+        else
+            getRaw(name) ?: getRaw(TootReaction.getAnotherExpression(name))
 
     companion object {
-        fun parseMisskey(
-            src: JsonObject?,
-            myReaction: String? = null
-        ): TootReactionSet? {
-            src ?: return null
-            val dst = TootReactionSet(isMisskey = true)
-            for (entry in src.entries) {
-                val key = entry.key.notEmpty() ?: continue
-                val v = src.long(key)?.notZero() ?: continue
-                dst[key] = TootReaction(name = key, count = v)
-            }
-            if (myReaction != null) {
-                dst[myReaction]?.let {
-                    it.me = true
-                    dst.myReaction = myReaction
+        fun parseMisskey(src: JsonObject?, myReactionCode: String? = null) =
+            if (src == null) {
+                null
+            } else TootReactionSet(isMisskey = true).apply {
+                for (entry in src.entries) {
+                    val key = entry.key.notEmpty() ?: continue
+                    val v = src.long(key)?.notZero() ?: continue
+                    add(TootReaction(name = key, count = v))
                 }
-            }
-            return dst.notEmpty()
-        }
+                if (myReactionCode != null) {
+                    find { it.name == myReactionCode }?.let {
+                        it.me = true
+                        myReaction = it
+                    }
+                }
+            }.notEmpty()
 
-        fun parseFedibird(
-            src: JsonArray? = null,
-            emoji_reactioned: Boolean? = null
-        ): TootReactionSet? {
-            src ?: return null
-            val dst = TootReactionSet(isMisskey = false)
-            src.objectList().forEach {
-                val tr = TootReaction.parseFedibird(it)
-                if (tr.count > 0) dst[tr.name] = tr
-            }
-            dst.values.find { it.me }?.let {
-                dst.myReaction = it.name
-            }
-            return dst.notEmpty()
-        }
+        fun parseFedibird(src: JsonArray? = null) =
+            if (src == null) {
+                null
+            } else TootReactionSet(isMisskey = false).apply {
+                src.objectList().forEach {
+                    val tr = TootReaction.parseFedibird(it)
+                    if (tr.count > 0) add(tr)
+                }
+                myReaction = find { it.me }
+            }.notEmpty()
     }
 }

@@ -2508,11 +2508,17 @@ internal class ItemViewHolder(
                 R.drawable.btn_bg_transparent_round6dp
             )
 
-            val hasMyReaction = status.reactionSet?.myReaction?.isNotEmpty() ?: false
-            b.contentDescription =
-                activity.getString(if (hasMyReaction) R.string.reaction_remove else R.string.reaction_add)
+            val myReaction = status.reactionSet?.myReaction
+
+            b.contentDescription = activity.getString(
+                if (myReaction!=null)
+                    R.string.reaction_remove
+                else
+                    R.string.reaction_add
+            )
             b.scaleType = ImageView.ScaleType.FIT_CENTER
             b.padding = paddingV
+
             b.setOnClickListener {
                 if(!canReaction()){
                     Action_Toot.reactionFromAnotherAccount(
@@ -2520,7 +2526,7 @@ internal class ItemViewHolder(
                         access_info,
                         status_showing
                     )
-                }else if (hasMyReaction) {
+                }else if (myReaction!=null) {
                     removeReaction(status, false)
                 } else {
                     addReaction(status, null)
@@ -2539,7 +2545,10 @@ internal class ItemViewHolder(
             setIconDrawableId(
                 act,
                 b,
-                if (hasMyReaction) R.drawable.ic_remove else R.drawable.ic_add,
+                if (myReaction!=null)
+                    R.drawable.ic_remove
+                else
+                    R.drawable.ic_add,
                 color = content_color,
                 alphaMultiplier = Styler.boost_alpha
             )
@@ -2558,10 +2567,9 @@ internal class ItemViewHolder(
 				enlargeCustomEmoji = 1.5f
 			)
 
-            for (entry in reactionSet.entries) {
-                val code = entry.key
-                val reaction = entry.value
+            for (reaction in reactionSet) {
                 if (reaction.count <= 0L) continue
+
                 val ssb = reaction.toSpannableStringBuilder( options, status)
                     .also { it.append(" ${reaction.count}") }
 
@@ -2574,7 +2582,7 @@ internal class ItemViewHolder(
                     }
                     minWidthCompat = buttonHeight
 
-                    background = if (TootReaction.equals(reactionSet.myReaction, code)) {
+                    background = if ( reaction == reactionSet.myReaction ) {
                         // 自分がリアクションしたやつは背景を変える
                         getAdaptiveRippleDrawableRound(
 							act,
@@ -2595,13 +2603,13 @@ internal class ItemViewHolder(
                     text = ssb
 
                     allCaps = false
-                    tag = code
+                    tag = reaction
                     setOnClickListener {
-                        val tagStr =  it.tag as? String
-                        if( TootReaction.equals(status.reactionSet?.myReaction, tagStr)){
+                        val taggedReaction =  it.tag as? TootReaction
+                        if( taggedReaction == status.reactionSet?.myReaction ){
                             removeReaction(status, false)
                         }else{
-                            addReaction(status,tagStr)
+                            addReaction(status,taggedReaction?.name)
                         }
                     }
 
@@ -2633,8 +2641,8 @@ internal class ItemViewHolder(
     }
 
     // code は code@dmain のような形式かもしれない
-    private fun addReaction(status: TootStatus, code: String? ) {
-        if (status.reactionSet?.myReaction?.notEmpty() != null ) {
+    private fun addReaction(status: TootStatus, code:String?) {
+        if (status.reactionSet?.myReaction != null ) {
             activity.showToast(false, R.string.already_reactioned)
             return
         }
@@ -2694,7 +2702,7 @@ internal class ItemViewHolder(
                                         column.updateEmojiReaction( newStatus)
                                 }
                             }else{
-                                if (status.increaseReaction(access_info.isMisskey,code, true, caller="addReaction")) {
+                                if (status.increaseReactionMisskey(code, true, caller="addReaction")) {
                                     // 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
                                     list_adapter.notifyChange(reason = "addReaction complete", reset = true)
                                 }
@@ -2708,9 +2716,9 @@ internal class ItemViewHolder(
 
     private fun removeReaction(status: TootStatus, confirmed: Boolean = false) {
 
-        val code = status.reactionSet?.myReaction?.notEmpty()
+        val myReaction =status.reactionSet?.myReaction
 
-        if ( code ==null ) {
+        if ( myReaction ==null ) {
             activity.showToast(false, R.string.not_reactioned)
             return
         }
@@ -2719,7 +2727,7 @@ internal class ItemViewHolder(
 
         if (!confirmed) {
             AlertDialog.Builder(activity)
-                .setMessage(activity.getString(R.string.reaction_remove_confirm, code))
+                .setMessage(activity.getString(R.string.reaction_remove_confirm, myReaction.name))
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok) { _, _ ->
                     removeReaction(status, confirmed = true)
@@ -2768,7 +2776,11 @@ internal class ItemViewHolder(
                                     column.updateEmojiReaction( newStatus)
                             }
                         }else{
-                            if (status.decreaseReaction(access_info.isMisskey,code, true,"removeReaction")) {
+                            if (status.decreaseReactionMisskey(
+                                    myReaction.name,
+                                    true,
+                                    "removeReaction"
+                                )) {
                                 // 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
                                 list_adapter.notifyChange(
                                     reason = "removeReaction complete",

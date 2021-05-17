@@ -943,7 +943,7 @@ class ColumnTask_Loading(
     }
 
     suspend fun getScheduledStatuses(client: TootApiClient): TootApiResult? {
-        val result = client.request(Column.PATH_SCHEDULED_STATUSES)
+        val result = client.request(ApiPath.PATH_SCHEDULED_STATUSES)
         val src = parseList(::TootScheduled, parser, result?.jsonArray)
         list_tmp = addAll(list_tmp, src)
 
@@ -1013,7 +1013,7 @@ class ColumnTask_Loading(
         // ステータスIDに該当するトゥート
         // タンスをまたいだりすると存在しないかもしれないが、エラーは出さない
         var result: TootApiResult? =
-            client.request(String.format(Locale.JAPAN, Column.PATH_STATUSES, column.status_id))
+            client.request(String.format(Locale.JAPAN, ApiPath.PATH_STATUSES, column.status_id))
         val target_status = parser.status(result?.jsonObject)
         if (target_status != null) {
             list_tmp = addOne(list_tmp, target_status)
@@ -1056,7 +1056,7 @@ class ColumnTask_Loading(
         // ステータスIDに該当するトゥート
         // タンスをまたいだりすると存在しないかもしれない
         var result: TootApiResult? =
-            client.request(String.format(Locale.JAPAN, Column.PATH_STATUSES, column.status_id))
+            client.request(String.format(Locale.JAPAN, ApiPath.PATH_STATUSES, column.status_id))
         val target_status = parser.status(result?.jsonObject) ?: return result
         list_tmp = addOne(list_tmp, target_status)
 
@@ -1173,7 +1173,7 @@ class ColumnTask_Loading(
         } else {
             // 指定された発言そのもの
             var result = client.request(
-				String.format(Locale.JAPAN, Column.PATH_STATUSES, column.status_id)
+				String.format(Locale.JAPAN, ApiPath.PATH_STATUSES, column.status_id)
 			)
             var jsonObject = result?.jsonObject ?: return result
             val target_status = parser.status(jsonObject)
@@ -1183,7 +1183,7 @@ class ColumnTask_Loading(
             result = client.request(
 				String.format(
 					Locale.JAPAN,
-					Column.PATH_STATUSES_CONTEXT, column.status_id
+                    ApiPath.PATH_STATUSES_CONTEXT, column.status_id
 				)
 			)
             jsonObject = result?.jsonObject ?: return result

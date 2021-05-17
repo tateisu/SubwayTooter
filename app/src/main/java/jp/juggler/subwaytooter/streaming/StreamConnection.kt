@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.onStatusRemoved
+import jp.juggler.subwaytooter.reloadFilter
 import jp.juggler.util.*
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -221,7 +222,7 @@ class StreamConnection(
                 log.d("$name handleMastodonMessage: missing event parameter")
 
             "filters_changed" ->
-                Column.onFiltersChanged(manager.context, acctGroup.account)
+                reloadFilter(manager.context, acctGroup.account)
 
             else -> {
                 val payload = TootPayload.parsePayload(acctGroup.parser, event, obj, text)

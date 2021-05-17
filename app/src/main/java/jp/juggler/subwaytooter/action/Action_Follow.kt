@@ -1,14 +1,11 @@
 package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AlertDialog
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.ColumnType
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.DlgConfirm
-import jp.juggler.subwaytooter.removeUser
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation

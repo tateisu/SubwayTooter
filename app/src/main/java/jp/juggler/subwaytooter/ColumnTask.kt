@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.SystemClock
+import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
@@ -73,7 +74,7 @@ abstract class ColumnTask(
 				else -> "active"
 			}
 			val local = ! column.search_resolve
-			return "${Column.PATH_PROFILE_DIRECTORY}&order=$order&local=$local"
+			return "${ApiPath.PATH_PROFILE_DIRECTORY}&order=$order&local=$local"
 		}
 	
 	internal suspend fun getAnnouncements(

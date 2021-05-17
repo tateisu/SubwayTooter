@@ -1,13 +1,10 @@
 package jp.juggler.subwaytooter
 
 import android.util.LruCache
-import jp.juggler.subwaytooter.Column.Companion.READ_LIMIT
+import jp.juggler.subwaytooter.api.ApiPath.READ_LIMIT
 import jp.juggler.subwaytooter.Column.Companion.log
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.api.syncAccountByAcct
 import jp.juggler.util.*
 import java.util.*
 
@@ -406,7 +403,7 @@ internal suspend fun Column.makeNotificationUrl(
         access_info.isMisskey -> "/api/i/notifications"
 
         else -> {
-            val sb = StringBuilder(Column.PATH_NOTIFICATIONS) // always contain "?limit=XX"
+            val sb = StringBuilder(ApiPath.PATH_NOTIFICATIONS) // always contain "?limit=XX"
             when (val quick_filter = quick_filter) {
                 Column.QUICK_FILTER_ALL -> {
                     if (dont_show_favourite) sb.append("&exclude_types[]=favourite")

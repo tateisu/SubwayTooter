@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.view.Gravity
+import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.*
@@ -134,21 +135,21 @@ enum class ColumnType(
             // 通常トゥートの取得
             getStatusList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_STATUSES,
+                ApiPath.PATH_MISSKEY_PROFILE_STATUSES,
                 misskeyParams = column.makeMisskeyParamsProfileStatuses(parser)
             )
         },
         refresh = { client ->
             getStatusList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_STATUSES,
+                ApiPath.PATH_MISSKEY_PROFILE_STATUSES,
                 misskeyParams = column.makeMisskeyParamsProfileStatuses(parser)
             )
         },
         gap = { client ->
             getStatusList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_STATUSES,
+                ApiPath.PATH_MISSKEY_PROFILE_STATUSES,
                 mastodonFilterByIdRange = true,
                 misskeyParams = column.makeMisskeyParamsProfileStatuses(parser)
             )
@@ -161,20 +162,20 @@ enum class ColumnType(
         loading = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWING, column.profile_id),
                 emptyMessage = context.getString(R.string.none_or_hidden_following)
             )
         },
         refresh = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWING, column.profile_id)
             )
         },
         gap = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWING, column.profile_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWING, column.profile_id),
                 mastodonFilterByIdRange = false,
             )
         },
@@ -200,7 +201,7 @@ enum class ColumnType(
             column.pagingType = ColumnPagingType.Cursor
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWING,
                 emptyMessage = context.getString(R.string.none_or_hidden_following),
                 misskeyParams = column.makeMisskeyParamsUserId(parser),
                 arrayFinder = misskeyArrayFinderUsers
@@ -209,7 +210,7 @@ enum class ColumnType(
         refresh = { client ->
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWING,
                 misskeyParams = column.makeMisskeyParamsUserId(parser),
                 arrayFinder = misskeyArrayFinderUsers
             )
@@ -217,7 +218,7 @@ enum class ColumnType(
         gap = { client ->
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWING,
                 mastodonFilterByIdRange = false,
                 misskeyParams = column.makeMisskeyParamsUserId(parser),
                 arrayFinder = misskeyArrayFinderUsers
@@ -232,7 +233,7 @@ enum class ColumnType(
             column.pagingType = ColumnPagingType.Default
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWING,
                 emptyMessage = context.getString(R.string.none_or_hidden_following),
                 misskeyParams = column.makeMisskeyParamsUserId(parser),
                 listParser = misskey11FollowingParser
@@ -241,7 +242,7 @@ enum class ColumnType(
         refresh = { client ->
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWING,
                 misskeyParams = column.makeMisskeyParamsUserId(parser),
                 listParser = misskey11FollowingParser
             )
@@ -249,7 +250,7 @@ enum class ColumnType(
         gap = { client ->
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWING,
                 mastodonFilterByIdRange = false,
                 misskeyParams = column.makeMisskeyParamsUserId(parser),
                 listParser = misskey11FollowingParser
@@ -264,7 +265,7 @@ enum class ColumnType(
             column.pagingType = ColumnPagingType.Default
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWERS,
                 emptyMessage = context.getString(R.string.none_or_hidden_followers),
                 misskeyParams = column.makeMisskeyParamsUserId(parser),
                 listParser = misskey11FollowersParser
@@ -274,7 +275,7 @@ enum class ColumnType(
         refresh = { client ->
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWERS,
                 misskeyParams = column.makeMisskeyParamsUserId(parser),
                 listParser = misskey11FollowersParser
             )
@@ -282,7 +283,7 @@ enum class ColumnType(
         gap = { client ->
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWING,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWING,
                 mastodonFilterByIdRange = false,
                 misskeyParams = column.makeMisskeyParamsUserId(parser),
                 listParser = misskey11FollowersParser
@@ -297,7 +298,7 @@ enum class ColumnType(
             column.pagingType = ColumnPagingType.Cursor
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWERS,
                 emptyMessage = context.getString(R.string.none_or_hidden_followers),
                 misskeyParams = column.makeMisskeyParamsUserId(parser),
                 arrayFinder = misskeyArrayFinderUsers
@@ -307,7 +308,7 @@ enum class ColumnType(
         refresh = { client ->
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWERS,
                 misskeyParams = column.makeMisskeyParamsUserId(parser),
                 arrayFinder = misskeyArrayFinderUsers
             )
@@ -315,7 +316,7 @@ enum class ColumnType(
         gap = { client ->
             getAccountList(
                 client,
-                Column.PATH_MISSKEY_PROFILE_FOLLOWERS,
+                ApiPath.PATH_MISSKEY_PROFILE_FOLLOWERS,
                 mastodonFilterByIdRange = false,
                 misskeyParams = column.makeMisskeyParamsUserId(parser)
             )
@@ -341,7 +342,7 @@ enum class ColumnType(
         loading = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWERS, column.profile_id),
                 emptyMessage = context.getString(R.string.none_or_hidden_followers)
             )
         },
@@ -349,13 +350,13 @@ enum class ColumnType(
         refresh = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWERS, column.profile_id)
             )
         },
         gap = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_ACCOUNT_FOLLOWERS, column.profile_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_ACCOUNT_FOLLOWERS, column.profile_id),
                 mastodonFilterByIdRange = false
             )
         },
@@ -645,12 +646,12 @@ enum class ColumnType(
             if (isMisskey) {
                 getStatusList(
                     client,
-                    Column.PATH_MISSKEY_FAVORITES,
+                    ApiPath.PATH_MISSKEY_FAVORITES,
                     misskeyParams = column.makeMisskeyTimelineParameter(parser),
                     listParser = misskeyCustomParserFavorites
                 )
             } else {
-                getStatusList(client, Column.PATH_FAVOURITES)
+                getStatusList(client, ApiPath.PATH_FAVOURITES)
             }
         },
 
@@ -658,12 +659,12 @@ enum class ColumnType(
             if (isMisskey) {
                 getStatusList(
                     client,
-                    Column.PATH_MISSKEY_FAVORITES,
+                    ApiPath.PATH_MISSKEY_FAVORITES,
                     misskeyParams = column.makeMisskeyTimelineParameter(parser),
                     listParser = misskeyCustomParserFavorites
                 )
             } else {
-                getStatusList(client, Column.PATH_FAVOURITES)
+                getStatusList(client, ApiPath.PATH_FAVOURITES)
             }
         },
 
@@ -671,7 +672,7 @@ enum class ColumnType(
             if (isMisskey) {
                 getStatusList(
                     client,
-                    Column.PATH_MISSKEY_FAVORITES,
+                    ApiPath.PATH_MISSKEY_FAVORITES,
                     mastodonFilterByIdRange = false,
                     misskeyParams = column.makeMisskeyTimelineParameter(parser),
                     listParser = misskeyCustomParserFavorites
@@ -679,7 +680,7 @@ enum class ColumnType(
             } else {
                 getStatusList(
                     client,
-                    Column.PATH_FAVOURITES,
+                    ApiPath.PATH_FAVOURITES,
                     mastodonFilterByIdRange = false
                 )
             }
@@ -697,7 +698,7 @@ enum class ColumnType(
             if (isMisskey) {
                 TootApiResult("Misskey has no bookmarks feature.")
             } else {
-                getStatusList(client, Column.PATH_BOOKMARKS)
+                getStatusList(client, ApiPath.PATH_BOOKMARKS)
             }
         },
 
@@ -705,7 +706,7 @@ enum class ColumnType(
             if (isMisskey) {
                 TootApiResult("Misskey has no bookmarks feature.")
             } else {
-                getStatusList(client, Column.PATH_BOOKMARKS)
+                getStatusList(client, ApiPath.PATH_BOOKMARKS)
             }
         },
 
@@ -713,7 +714,7 @@ enum class ColumnType(
             if (isMisskey) {
                 TootApiResult("Misskey has no bookmarks feature.")
             } else {
-                getStatusList(client, Column.PATH_BOOKMARKS, mastodonFilterByIdRange = false)
+                getStatusList(client, ApiPath.PATH_BOOKMARKS, mastodonFilterByIdRange = false)
             }
         },
         gapDirection = gapDirectionMastodonWorkaround,
@@ -941,14 +942,14 @@ enum class ColumnType(
                     column.pagingType = ColumnPagingType.Default
                     getAccountList(
                         client,
-                        Column.PATH_MISSKEY_MUTES,
+                        ApiPath.PATH_MISSKEY_MUTES,
                         misskeyParams = access_info.putMisskeyApiToken(),
                         listParser = misskeyCustomParserMutes
                     )
 
                 }
 
-                else -> getAccountList(client, Column.PATH_MUTES)
+                else -> getAccountList(client, ApiPath.PATH_MUTES)
             }
         },
 
@@ -956,12 +957,12 @@ enum class ColumnType(
             when {
                 isMisskey -> getAccountList(
                     client,
-                    Column.PATH_MISSKEY_MUTES,
+                    ApiPath.PATH_MISSKEY_MUTES,
                     misskeyParams = access_info.putMisskeyApiToken(),
                     arrayFinder = misskeyArrayFinderUsers,
                     listParser = misskeyCustomParserMutes
                 )
-                else -> getAccountList(client, Column.PATH_MUTES)
+                else -> getAccountList(client, ApiPath.PATH_MUTES)
             }
         },
 
@@ -969,7 +970,7 @@ enum class ColumnType(
             when {
                 isMisskey -> getAccountList(
                     client,
-                    Column.PATH_MISSKEY_MUTES,
+                    ApiPath.PATH_MISSKEY_MUTES,
                     mastodonFilterByIdRange = false,
                     misskeyParams = access_info.putMisskeyApiToken(),
                     arrayFinder = misskeyArrayFinderUsers,
@@ -977,7 +978,7 @@ enum class ColumnType(
                 )
                 else -> getAccountList(
                     client,
-                    Column.PATH_MUTES,
+                    ApiPath.PATH_MUTES,
                     mastodonFilterByIdRange = false
                 )
             }
@@ -997,13 +998,13 @@ enum class ColumnType(
                     column.pagingType = ColumnPagingType.Default
                     getAccountList(
                         client,
-                        Column.PATH_MISSKEY_BLOCKS,
+                        ApiPath.PATH_MISSKEY_BLOCKS,
                         misskeyParams = access_info.putMisskeyApiToken(),
                         listParser = misskeyCustomParserBlocks
                     )
                 }
 
-                else -> getAccountList(client, Column.PATH_BLOCKS)
+                else -> getAccountList(client, ApiPath.PATH_BLOCKS)
             }
         },
 
@@ -1012,13 +1013,13 @@ enum class ColumnType(
                 isMisskey -> {
                     getAccountList(
                         client,
-                        Column.PATH_MISSKEY_BLOCKS,
+                        ApiPath.PATH_MISSKEY_BLOCKS,
                         misskeyParams = access_info.putMisskeyApiToken(),
                         listParser = misskeyCustomParserBlocks
                     )
                 }
 
-                else -> getAccountList(client, Column.PATH_BLOCKS)
+                else -> getAccountList(client, ApiPath.PATH_BLOCKS)
             }
         },
 
@@ -1027,14 +1028,14 @@ enum class ColumnType(
                 isMisskey -> {
                     getAccountList(
                         client,
-                        Column.PATH_MISSKEY_BLOCKS,
+                        ApiPath.PATH_MISSKEY_BLOCKS,
                         mastodonFilterByIdRange = false,
                         misskeyParams = access_info.putMisskeyApiToken(),
                         listParser = misskeyCustomParserBlocks
                     )
                 }
 
-                else -> getAccountList(client, Column.PATH_BLOCKS, mastodonFilterByIdRange = false)
+                else -> getAccountList(client, ApiPath.PATH_BLOCKS, mastodonFilterByIdRange = false)
             }
         },
         gapDirection = gapDirectionMastodonWorkaround,
@@ -1051,31 +1052,31 @@ enum class ColumnType(
                 column.pagingType = ColumnPagingType.None
                 getAccountList(
                     client,
-                    Column.PATH_MISSKEY_FOLLOW_REQUESTS,
+                    ApiPath.PATH_MISSKEY_FOLLOW_REQUESTS,
                     misskeyParams = access_info.putMisskeyApiToken(),
                     listParser = misskeyCustomParserFollowRequest
                 )
             } else {
-                getAccountList(client, Column.PATH_FOLLOW_REQUESTS)
+                getAccountList(client, ApiPath.PATH_FOLLOW_REQUESTS)
             }
         },
         refresh = { client ->
             if (isMisskey) {
                 getAccountList(
                     client,
-                    Column.PATH_MISSKEY_FOLLOW_REQUESTS,
+                    ApiPath.PATH_MISSKEY_FOLLOW_REQUESTS,
                     misskeyParams = access_info.putMisskeyApiToken(),
                     listParser = misskeyCustomParserFollowRequest
                 )
             } else {
-                getAccountList(client, Column.PATH_FOLLOW_REQUESTS)
+                getAccountList(client, ApiPath.PATH_FOLLOW_REQUESTS)
             }
         },
         gap = { client ->
             if (isMisskey) {
                 getAccountList(
                     client,
-                    Column.PATH_MISSKEY_FOLLOW_REQUESTS,
+                    ApiPath.PATH_MISSKEY_FOLLOW_REQUESTS,
                     mastodonFilterByIdRange = false,
                     misskeyParams = access_info.putMisskeyApiToken(),
                     listParser = misskeyCustomParserFollowRequest
@@ -1083,7 +1084,7 @@ enum class ColumnType(
             } else {
                 getAccountList(
                     client,
-                    Column.PATH_FOLLOW_REQUESTS,
+                    ApiPath.PATH_FOLLOW_REQUESTS,
                     mastodonFilterByIdRange = false
                 )
             }
@@ -1099,19 +1100,19 @@ enum class ColumnType(
         loading = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_BOOSTED_BY, column.status_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_BOOSTED_BY, column.status_id)
             )
         },
         refresh = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_BOOSTED_BY, posted_status_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_BOOSTED_BY, posted_status_id)
             )
         },
         gap = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_BOOSTED_BY, column.status_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_BOOSTED_BY, column.status_id),
                 mastodonFilterByIdRange = false,
             )
         },
@@ -1126,19 +1127,19 @@ enum class ColumnType(
         loading = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_FAVOURITED_BY, column.status_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_FAVOURITED_BY, column.status_id)
             )
         },
         refresh = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_FAVOURITED_BY, posted_status_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_FAVOURITED_BY, posted_status_id)
             )
         },
         gap = { client ->
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_FAVOURITED_BY, column.status_id),
+                String.format(Locale.JAPAN, ApiPath.PATH_FAVOURITED_BY, column.status_id),
                 mastodonFilterByIdRange = false,
             )
         },
@@ -1151,8 +1152,8 @@ enum class ColumnType(
         bAllowPseudo = false,
         bAllowMisskey = false,
 
-        loading = { client -> getDomainBlockList(client, Column.PATH_DOMAIN_BLOCK) },
-        refresh = { client -> getDomainList(client, Column.PATH_DOMAIN_BLOCK) }
+        loading = { client -> getDomainBlockList(client, ApiPath.PATH_DOMAIN_BLOCK) },
+        refresh = { client -> getDomainList(client, ApiPath.PATH_DOMAIN_BLOCK) }
     ),
 
     SEARCH_MSP(
@@ -1242,7 +1243,7 @@ enum class ColumnType(
                     misskeyParams = column.makeMisskeyBaseParameter(parser)
                 )
             } else {
-                getListList(client, Column.PATH_LIST_LIST)
+                getListList(client, ApiPath.PATH_LIST_LIST)
             }
         }
     ),
@@ -1349,7 +1350,7 @@ enum class ColumnType(
             } else {
                 getAccountList(
                     client,
-                    String.format(Locale.JAPAN, Column.PATH_LIST_MEMBER, column.profile_id)
+                    String.format(Locale.JAPAN, ApiPath.PATH_LIST_MEMBER, column.profile_id)
                 )
             }
         },
@@ -1358,7 +1359,7 @@ enum class ColumnType(
             column.loadListInfo(client, false)
             getAccountList(
                 client,
-                String.format(Locale.JAPAN, Column.PATH_LIST_MEMBER, column.profile_id)
+                String.format(Locale.JAPAN, ApiPath.PATH_LIST_MEMBER, column.profile_id)
             )
         }
     ),
@@ -1371,10 +1372,10 @@ enum class ColumnType(
         loading = { client ->
             column.useConversationSummaries = false
             if (column.use_old_api) {
-                getStatusList(client, Column.PATH_DIRECT_MESSAGES)
+                getStatusList(client, ApiPath.PATH_DIRECT_MESSAGES)
             } else {
                 // try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
-                val result = getConversationSummary(client, Column.PATH_DIRECT_MESSAGES2)
+                val result = getConversationSummary(client, ApiPath.PATH_DIRECT_MESSAGES2)
                 when {
                     // cancelled
                     result == null -> null
@@ -1386,7 +1387,7 @@ enum class ColumnType(
                     }
 
                     // fallback to old api
-                    else -> getStatusList(client, Column.PATH_DIRECT_MESSAGES)
+                    else -> getStatusList(client, ApiPath.PATH_DIRECT_MESSAGES)
                 }
             }
         },
@@ -1394,10 +1395,10 @@ enum class ColumnType(
         refresh = { client ->
             if (column.useConversationSummaries) {
                 // try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
-                getConversationSummaryList(client, Column.PATH_DIRECT_MESSAGES2)
+                getConversationSummaryList(client, ApiPath.PATH_DIRECT_MESSAGES2)
             } else {
                 // fallback to old api
-                getStatusList(client, Column.PATH_DIRECT_MESSAGES)
+                getStatusList(client, ApiPath.PATH_DIRECT_MESSAGES)
             }
         },
 
@@ -1406,12 +1407,12 @@ enum class ColumnType(
                 // try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
                 getConversationSummaryList(
                     client,
-                    Column.PATH_DIRECT_MESSAGES2,
+                    ApiPath.PATH_DIRECT_MESSAGES2,
                     mastodonFilterByIdRange = false
                 )
             } else {
                 // fallback to old api
-                getStatusList(client, Column.PATH_DIRECT_MESSAGES, mastodonFilterByIdRange = false)
+                getStatusList(client, ApiPath.PATH_DIRECT_MESSAGES, mastodonFilterByIdRange = false)
             }
         },
         gapDirection = gapDirectionMastodonWorkaround,
@@ -1466,7 +1467,7 @@ enum class ColumnType(
                 column.pagingType = ColumnPagingType.Offset
                 getAccountList(
                     client,
-                    Column.PATH_MISSKEY_FOLLOW_SUGGESTION,
+                    ApiPath.PATH_MISSKEY_FOLLOW_SUGGESTION,
                     misskeyParams = access_info.putMisskeyApiToken()
                 )
             } else {
@@ -1474,9 +1475,9 @@ enum class ColumnType(
                 when {
                     ti == null -> ri
                     ti.versionGE(TootInstance.VERSION_3_4_0_rc1) ->
-                        getAccountList(client, Column.PATH_FOLLOW_SUGGESTION2)
+                        getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION2)
                     else ->
-                        getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
+                        getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION)
                 }
             }
         },
@@ -1485,7 +1486,7 @@ enum class ColumnType(
             if (isMisskey) {
                 getAccountList(
                     client,
-                    Column.PATH_MISSKEY_FOLLOW_SUGGESTION,
+                    ApiPath.PATH_MISSKEY_FOLLOW_SUGGESTION,
                     misskeyParams = access_info.putMisskeyApiToken()
                 )
             } else {
@@ -1493,9 +1494,9 @@ enum class ColumnType(
                 when {
                     ti == null -> ri
                     ti.versionGE(TootInstance.VERSION_3_4_0_rc1) ->
-                        getAccountList(client, Column.PATH_FOLLOW_SUGGESTION2)
+                        getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION2)
                     else ->
-                        getAccountList(client, Column.PATH_FOLLOW_SUGGESTION)
+                        getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION)
                 }
             }
         },
@@ -1504,7 +1505,7 @@ enum class ColumnType(
             if (isMisskey) {
                 getAccountList(
                     client,
-                    Column.PATH_MISSKEY_FOLLOW_SUGGESTION,
+                    ApiPath.PATH_MISSKEY_FOLLOW_SUGGESTION,
                     mastodonFilterByIdRange = false,
                     misskeyParams = access_info.putMisskeyApiToken()
                 )
@@ -1515,13 +1516,13 @@ enum class ColumnType(
                     ti.versionGE(TootInstance.VERSION_3_4_0_rc1) ->
                         getAccountList(
                             client,
-                            Column.PATH_FOLLOW_SUGGESTION2,
+                            ApiPath.PATH_FOLLOW_SUGGESTION2,
                             mastodonFilterByIdRange = false
                         )
                     else ->
                         getAccountList(
                             client,
-                            Column.PATH_FOLLOW_SUGGESTION,
+                            ApiPath.PATH_FOLLOW_SUGGESTION,
                             mastodonFilterByIdRange = false
                         )
                 }
@@ -1537,12 +1538,12 @@ enum class ColumnType(
         bAllowPseudo = false,
         bAllowMisskey = false,
 
-        loading = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
-        refresh = { client -> getAccountList(client, Column.PATH_ENDORSEMENT) },
+        loading = { client -> getAccountList(client, ApiPath.PATH_ENDORSEMENT) },
+        refresh = { client -> getAccountList(client, ApiPath.PATH_ENDORSEMENT) },
         gap = { client ->
             getAccountList(
                 client,
-                Column.PATH_ENDORSEMENT,
+                ApiPath.PATH_ENDORSEMENT,
                 mastodonFilterByIdRange = false
             )
         },
@@ -1585,12 +1586,12 @@ enum class ColumnType(
         iconId = { R.drawable.ic_info },
         name1 = { it.getString(R.string.reports) },
 
-        loading = { client -> getReportList(client, Column.PATH_REPORTS) },
-        refresh = { client -> getReportList(client, Column.PATH_REPORTS) },
+        loading = { client -> getReportList(client, ApiPath.PATH_REPORTS) },
+        refresh = { client -> getReportList(client, ApiPath.PATH_REPORTS) },
         gap = { client ->
             getReportList(
                 client,
-                Column.PATH_REPORTS,
+                ApiPath.PATH_REPORTS,
                 mastodonFilterByIdRange = false
             )
         },
@@ -1604,7 +1605,7 @@ enum class ColumnType(
         bAllowMisskey = false,
         headerType = HeaderType.Filter,
 
-        loading = { client -> getFilterList(client, Column.PATH_FILTERS) }
+        loading = { client -> getFilterList(client, ApiPath.PATH_FILTERS) }
     ),
 
     SCHEDULED_STATUS(33,

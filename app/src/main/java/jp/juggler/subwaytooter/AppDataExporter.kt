@@ -303,7 +303,7 @@ object AppDataExporter {
 		writer.name(KEY_COLUMN)
 		writer.beginArray()
 		for(column in app_state.columnList) {
-			writer.writeJsonValue(jsonObject { column.encodeJSON(this, 0) })
+			writer.writeJsonValue(jsonObject { ColumnEncoder.encode(column,this, 0) })
 		}
 		writer.endArray()
 	}
@@ -319,13 +319,13 @@ object AppDataExporter {
 			val item :JsonObject = reader.readJsonValue().cast() !!
 			
 			// DB上のアカウントIDが変化したので置き換える
-			when(val old_id = item.long(Column.KEY_ACCOUNT_ROW_ID) ?: - 1L) {
+			when(val old_id = item.long(ColumnEncoder.KEY_ACCOUNT_ROW_ID) ?: - 1L) {
 				
 				// 検索カラムのアカウントIDはNAアカウントと紐ついている。変換の必要はない
 				- 1L -> {
 				}
 				
-				else -> item[Column.KEY_ACCOUNT_ROW_ID] = id_map[old_id]
+				else -> item[ColumnEncoder.KEY_ACCOUNT_ROW_ID] = id_map[old_id]
 					?: error("readColumn: can't convert account id")
 			}
 			
@@ -452,7 +452,7 @@ object AppDataExporter {
 			if(column == null) {
 				log.e("missing column for id $id")
 			} else {
-				val backgroundDir = Column.getBackgroundImageDir(context)
+				val backgroundDir = getBackgroundImageDir(context)
 				val file =
 					File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
 				FileOutputStream(file).use { outStream ->

@@ -6,10 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.*
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootFilter
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -163,7 +160,7 @@ class ActKeywordFilter
 		TootTaskRunner(this).run(account, object : TootTask {
 			var filter : TootFilter? = null
 			override suspend fun background(client : TootApiClient) : TootApiResult? {
-				val result = client.request("${Column.PATH_FILTERS}/${filter_id}")
+				val result = client.request("${ApiPath.PATH_FILTERS}/${filter_id}")
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
 					filter = TootFilter(jsonObject)
@@ -273,12 +270,12 @@ class ActKeywordFilter
 			
 			override suspend fun background(client : TootApiClient) = if(filter_id == null) {
 				client.request(
-					Column.PATH_FILTERS,
+					ApiPath.PATH_FILTERS,
 					params.toPostRequestBuilder()
 				)
 			} else {
 				client.request(
-					"${Column.PATH_FILTERS}/$filter_id",
+					"${ApiPath.PATH_FILTERS}/$filter_id",
 					params.toRequestBody().toPut()
 				)
 			}

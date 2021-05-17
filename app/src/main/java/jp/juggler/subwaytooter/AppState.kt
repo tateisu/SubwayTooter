@@ -278,7 +278,7 @@ class AppState(
         columnList.mapIndexedNotNull { index, column ->
             try {
                 val dst = JsonObject()
-                column.encodeJSON(dst, index)
+                ColumnEncoder.encode(column,dst, index)
                 dst
             } catch (ex: JsonException) {
                 log.trace(ex)
@@ -311,13 +311,13 @@ class AppState(
 
         // 背景フォルダの掃除
         try {
-            val backgroundImageDir = Column.getBackgroundImageDir(context)
+            val backgroundImageDir = getBackgroundImageDir(context)
             backgroundImageDir.list()?.forEach { name ->
                 val file = File(backgroundImageDir, name)
                 if (file.isFile) {
                     val delm = name.indexOf(':')
                     val id = if (delm != -1) name.substring(0, delm) else name
-                    val column = Column.findColumnById(id)
+                    val column = ColumnEncoder.findColumnById(id)
                     if (column == null) file.delete()
                 }
             }

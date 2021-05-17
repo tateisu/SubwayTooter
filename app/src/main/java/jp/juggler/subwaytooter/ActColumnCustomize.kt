@@ -244,7 +244,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			@Suppress("BlockingMethodInNonBlockingContext")
 			override suspend fun background(client: TootApiClient): TootApiResult {
 				try {
-					val backgroundDir = Column.getBackgroundImageDir(this@ActColumnCustomize)
+					val backgroundDir = getBackgroundImageDir(this@ActColumnCustomize)
 					val file =
 						File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
 					val fileUri = Uri.fromFile(file)

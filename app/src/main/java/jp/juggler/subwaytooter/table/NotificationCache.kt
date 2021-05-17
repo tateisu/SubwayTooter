@@ -4,7 +4,7 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Column
+import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.EntityId
@@ -115,7 +115,7 @@ class NotificationCache(private val account_db_id: Long) {
             accessInfo.isMisskey -> "/api/i/notifications"
 
             else -> {
-                val sb = StringBuilder(Column.PATH_NOTIFICATIONS) // always contain "?limit=XX"
+                val sb = StringBuilder(ApiPath.PATH_NOTIFICATIONS) // always contain "?limit=XX"
 
                 if (since_id != null) sb.append("&since_id=$since_id")
 

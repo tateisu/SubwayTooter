@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.streaming
 
 import jp.juggler.subwaytooter.Column
+import jp.juggler.subwaytooter.canStartStreaming
 import jp.juggler.util.LogCategory
 import java.lang.ref.WeakReference
 

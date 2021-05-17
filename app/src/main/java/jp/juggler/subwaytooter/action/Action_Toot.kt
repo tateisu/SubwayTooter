@@ -1,10 +1,7 @@
 package jp.juggler.subwaytooter.action
 
 import jp.juggler.emoji.UnicodeEmoji
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.ActPost
-import jp.juggler.subwaytooter.ColumnType
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker

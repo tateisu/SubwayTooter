@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootFilter
 import jp.juggler.subwaytooter.dialog.DlgConfirm
+import jp.juggler.subwaytooter.onFilterDeleted
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.showToast
 import okhttp3.Request

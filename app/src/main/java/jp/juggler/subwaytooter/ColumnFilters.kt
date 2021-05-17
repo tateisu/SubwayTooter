@@ -396,7 +396,6 @@ fun Column.checkFiltersForListData(trees: FilterTrees?) {
     fireShowContent(reason = "filter updated", changeList = changeList)
 }
 
-
 fun reloadFilter(context: Context, access_info: SavedAccount) {
     TootTaskRunner(context, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
         object : TootTask {

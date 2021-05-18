@@ -968,11 +968,15 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     this.reactionSet = reactionSet
                 }
 
-                val old = reactionSet[newReaction.name]
-                if( old != null){
-                    old.count = newReaction.count
-                }else{
-                    reactionSet.add(newReaction)
+                when(val old = reactionSet[newReaction.name]) {
+                    null -> reactionSet.add(newReaction)
+
+                    // 同一オブジェクトならマージは不要
+                    newReaction -> {
+                    }
+
+                    // 異なるオブジェクトの場合はmeを壊さないようにカウントだけ更新する
+                    else -> old.count = newReaction.count
                 }
             }
             reactionSet?.myReaction = reactionSet?.find { it.me }

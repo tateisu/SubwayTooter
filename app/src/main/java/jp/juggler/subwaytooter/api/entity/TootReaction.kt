@@ -34,8 +34,8 @@ class TootReaction(
     val announcement_id: EntityId? = null,
 
     // (fedibird絵文字リアクション) userストリームのemoji_reactionイベントで設定される。
-    val status_id : EntityId? = null,
-    ) {
+    val status_id: EntityId? = null,
+) {
     companion object {
 
         fun appendDomain(name: String, domain: String?) =
@@ -181,11 +181,11 @@ class TootReactionSet(val isMisskey: Boolean) : LinkedList<TootReaction>() {
     private fun getRaw(name: String?): TootReaction? =
         find { it.name == name }
 
-    operator fun get(name: String?): TootReaction? =
-        if (name == null || name.isEmpty())
-            null
-        else
-            getRaw(name) ?: getRaw(TootReaction.getAnotherExpression(name))
+    operator fun get(name: String?): TootReaction? = when {
+        name == null || name.isEmpty() -> null
+        isMisskey -> getRaw(name) ?: getRaw(TootReaction.getAnotherExpression(name))
+        else -> getRaw(name)
+    }
 
     companion object {
         fun parseMisskey(src: JsonObject?, myReactionCode: String? = null) =

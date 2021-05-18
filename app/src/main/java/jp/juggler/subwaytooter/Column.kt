@@ -304,8 +304,11 @@ class Column(
         override fun onTimelineItem(item: TimelineItem, channelId: String?, stream: JsonArray?) =
             this@Column.onStreamingTimelineItem(item)
 
-        override fun onEmojiReaction(item: TootNotification) =
-            runOnMainLooperForStreamingEvent { this@Column.updateEmojiReaction(item.status) }
+        override fun onEmojiReactionNotification(notification: TootNotification) =
+            runOnMainLooperForStreamingEvent { this@Column.updateEmojiReactionByApiResponse(notification.status) }
+
+        override fun onEmojiReactionEvent(reaction: TootReaction) =
+            runOnMainLooperForStreamingEvent { this@Column.updateEmojiReactionByEvent(reaction) }
 
         override fun onNoteUpdated(ev: MisskeyNoteUpdate, channelId: String?) =
             runOnMainLooperForStreamingEvent { this@Column.onMisskeyNoteUpdated(ev) }

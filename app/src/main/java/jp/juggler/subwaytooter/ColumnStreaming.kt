@@ -287,7 +287,7 @@ fun Column.onStreamingTimelineItem(item: TimelineItem) {
 // リアクション削除は通知されない
 // 絵文字リアクションを手動で追加/削除した後に呼ばれる
 // ストリーミングイベント受信時、該当アカウントのカラム全て対して呼ばれる
-fun Column.updateEmojiReaction(newStatus: TootStatus?) {
+fun Column.updateEmojiReactionByApiResponse(newStatus: TootStatus?) {
     newStatus ?: return
     val statusId = newStatus.id
     val newReactionSet = newStatus.reactionSet ?: TootReactionSet(isMisskey = false)
@@ -322,10 +322,50 @@ fun Column.updateEmojiReaction(newStatus: TootStatus?) {
     }
 
     if (changeList.isNotEmpty()) {
-        fireShowContent(reason = "onEmojiReaction", changeList = changeList)
+        fireShowContent(reason = "updateEmojiReactionByApiResponse", changeList = changeList)
     }
 }
 
+// Fedibird絵文字リアクションの第三者への通知
+// status_id がある
+// me はない
+// サーバ上で処理されたリアクションが無差別に送られる
+fun Column.updateEmojiReactionByEvent(reaction:TootReaction){
+    val statusId = reaction.status_id ?: return
+
+    val changeList = ArrayList<AdapterChange>()
+
+    fun scanStatus1(s: TootStatus?, idx: Int, block: (s: TootStatus) -> Boolean) {
+        s ?: return
+        if (s.id == statusId) {
+            if (block(s)) {
+                changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx, 1))
+            }
+        }
+        scanStatus1(s.reblog, idx, block)
+        scanStatus1(s.reply, idx, block)
+    }
+
+    fun scanStatusAll(block: (s: TootStatus) -> Boolean) {
+        for (i in 0 until list_data.size) {
+            val o = list_data[i]
+            if (o is TootStatus) {
+                scanStatus1(o, i, block)
+            } else if (o is TootNotification) {
+                scanStatus1(o.status, i, block)
+            }
+        }
+    }
+
+    scanStatusAll { s ->
+        s.updateReactionMastodonByEvent(reaction)
+        true
+    }
+
+    if (changeList.isNotEmpty()) {
+        fireShowContent(reason = "updateEmojiReactionByEvent", changeList = changeList)
+    }
+}
 
 
 fun Column.onMisskeyNoteUpdated(ev: MisskeyNoteUpdate) {

@@ -1,15 +1,12 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.util.*
 
 object TootPayload {
 	
 	val log = LogCategory("TootPayload")
-	
-	private const val PAYLOAD = "payload"
-	
+
 	private val reNumber = "([-]?\\d+)".asciiPattern()
 	
 	// ストリーミングAPIのペイロード部分をTootStatus,TootNotification,整数IDのどれかに解釈する
@@ -20,7 +17,7 @@ object TootPayload {
 		parent_text : String
 	) : Any? {
 		try {
-			val payload = parent[PAYLOAD] ?: return null
+			val payload = parent["payload"] ?: return null
 			
 			if(payload is JsonObject) {
 				return when(event) {
@@ -61,9 +58,10 @@ object TootPayload {
 						"conversation" -> parseItem(::TootConversationSummary, parser, src)
 						
 						"announcement" -> parseItem(::TootAnnouncement, parser, src)
-						
+
+						"emoji_reaction",
 						"announcement.reaction" -> parseItem(TootReaction::parseFedibird, src)
-						
+
 						else -> {
 							log.e("unknown payload(2). message=%s", parent_text)
 							// ここを通るケースはまだ確認できていない

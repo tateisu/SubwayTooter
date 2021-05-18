@@ -950,11 +950,32 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         return list
     }
 
-    fun updateReactionMastodon(
-        newReactionSet: TootReactionSet,
-    ) {
+    fun updateReactionMastodon( newReactionSet: TootReactionSet ) {
         synchronized(this) {
             this.reactionSet = newReactionSet
+        }
+    }
+
+    fun updateReactionMastodonByEvent( newReaction: TootReaction ) {
+        synchronized(this) {
+
+            var reactionSet = this.reactionSet
+            if( newReaction.count <= 0 ){
+                reactionSet?.get(newReaction.name)?.let{ reactionSet?.remove(it) }
+            }else{
+                if (reactionSet == null) {
+                    reactionSet = TootReactionSet(isMisskey = false)
+                    this.reactionSet = reactionSet
+                }
+
+                val old = reactionSet[newReaction.name]
+                if( old != null){
+                    old.count = newReaction.count
+                }else{
+                    reactionSet.add(newReaction)
+                }
+            }
+            reactionSet?.myReaction = reactionSet?.find { it.me }
         }
     }
 

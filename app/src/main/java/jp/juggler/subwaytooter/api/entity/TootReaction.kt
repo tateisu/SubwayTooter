@@ -33,6 +33,8 @@ class TootReaction(
     // 告知のストリーミングイベントでは告知IDが定義される
     val announcement_id: EntityId? = null,
 
+    // (fedibird絵文字リアクション) userストリームのemoji_reactionイベントで設定される。
+    val status_id : EntityId? = null,
     ) {
     companion object {
 
@@ -52,6 +54,7 @@ class TootReaction(
             count = src.long("count") ?: 0,
             me = src.boolean("me") ?: false,
             announcement_id = EntityId.mayNull(src.string("announcement_id")),
+            status_id = EntityId.mayNull(src.string("status_id")),
         )
 
         // Misskeyの通知にあるreaction文字列
@@ -100,6 +103,9 @@ class TootReaction(
             is String -> equalsName(this.name, other)
             else -> false
         }
+
+    override fun hashCode(): Int =
+        name.hashCode()
 
     fun toSpannableStringBuilder(
         options: DecodeOptions,

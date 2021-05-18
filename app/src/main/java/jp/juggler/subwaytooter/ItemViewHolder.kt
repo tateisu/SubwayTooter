@@ -2699,7 +2699,7 @@ internal class ItemViewHolder(
                             if(newStatus != null){
                                 activity.app_state.columnList.forEach { column->
                                     if( column.access_info.acct == access_info.acct)
-                                        column.updateEmojiReaction( newStatus)
+                                        column.updateEmojiReactionByApiResponse( newStatus)
                                 }
                             }else{
                                 if (status.increaseReactionMisskey(code, true, caller="addReaction")) {
@@ -2773,7 +2773,7 @@ internal class ItemViewHolder(
                         if(newStatus != null){
                             activity.app_state.columnList.forEach { column->
                                 if( column.access_info.acct == access_info.acct)
-                                    column.updateEmojiReaction( newStatus)
+                                    column.updateEmojiReactionByApiResponse( newStatus)
                             }
                         }else{
                             if (status.decreaseReactionMisskey(

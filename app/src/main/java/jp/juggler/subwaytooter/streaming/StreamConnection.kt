@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.streaming
 
 import android.os.SystemClock
-import jp.juggler.subwaytooter.Column
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -125,10 +124,15 @@ class StreamConnection(
     }
 
     // fedibird emoji reaction noti
-    private fun fireEmojiReaction(item: TootNotification) {
+    private fun fireEmojiReactionNotification(item: TootNotification) {
         if (StreamManager.traceDelivery) log.v("$name fireTimelineItem")
-        eachCallbackForAcct(){ it.onEmojiReaction(item)}
+        eachCallbackForAcct() { it.onEmojiReactionNotification(item) }
     }
+    private fun fireEmojiReactionEvent(item: TootReaction) {
+        if (StreamManager.traceDelivery) log.v("$name fireTimelineItem")
+        eachCallbackForAcct() { it.onEmojiReactionEvent(item) }
+    }
+
 
     private fun fireNoteUpdated(ev: MisskeyNoteUpdate, channelId: String? = null) {
         eachCallback(channelId) { it.onNoteUpdated(ev, channelId) }
@@ -224,6 +228,7 @@ class StreamConnection(
             "filters_changed" ->
                 reloadFilter(manager.context, acctGroup.account)
 
+
             else -> {
                 val payload = TootPayload.parsePayload(acctGroup.parser, event, obj, text)
 
@@ -256,11 +261,20 @@ class StreamConnection(
                         }
                     }
 
+                    "emoji_reaction" -> {
+                        if (payload is TootReaction && payload.status_id != null) {
+                            log.d("emoji_reaction ${payload.status_id} ${payload.name} ${payload.count}")
+                            fireEmojiReactionEvent(payload)
+                        }
+                    }
+
+
                     else -> when (payload) {
                         is TimelineItem -> {
 
                             if (payload is TootNotification && payload.type == TootNotification.TYPE_EMOJI_REACTION) {
-                                fireEmojiReaction(payload)
+                                log.d("emoji_reaction (notification) ${payload.status?.id}")
+                                fireEmojiReactionNotification(payload)
                             }
 
                             fireTimelineItem(payload, stream = stream)

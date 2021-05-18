@@ -281,6 +281,36 @@ fun Column.onStreamingTimelineItem(item: TimelineItem) {
     app_state.handler.post(procMergeStreamingMessage)
 }
 
+private fun Column.scanStatusById(
+    caption: String,
+    statusId: EntityId,
+    block: (s: TootStatus) -> Boolean // データを変更したら真
+) {
+    val changeList = ArrayList<AdapterChange>()
+
+    fun scanStatus1(s: TootStatus?, idx: Int) {
+        s ?: return
+        if (s.id == statusId) {
+            if (block(s)) {
+                changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx, 1))
+            }
+        }
+        scanStatus1(s.reblog, idx)
+        scanStatus1(s.reply, idx)
+    }
+
+    list_data.forEachIndexed { i,v ->
+        when (v) {
+            is TootStatus -> scanStatus1(v, i)
+            is TootNotification -> scanStatus1(v.status, i)
+        }
+    }
+
+    if (changeList.isNotEmpty()) {
+        fireShowContent(reason = caption, changeList = changeList)
+    }
+}
+
 // Fedibird 絵文字リアクション機能
 // APIの戻り値や通知データに新しいステータス情報が含まれるので、カラム中の該当する投稿のリアクション情報を更新する
 // 自分によるリアクションは通知されない
@@ -289,84 +319,24 @@ fun Column.onStreamingTimelineItem(item: TimelineItem) {
 // ストリーミングイベント受信時、該当アカウントのカラム全て対して呼ばれる
 fun Column.updateEmojiReactionByApiResponse(newStatus: TootStatus?) {
     newStatus ?: return
-    val statusId = newStatus.id
     val newReactionSet = newStatus.reactionSet ?: TootReactionSet(isMisskey = false)
-
-    val changeList = ArrayList<AdapterChange>()
-
-    fun scanStatus1(s: TootStatus?, idx: Int, block: (s: TootStatus) -> Boolean) {
-        s ?: return
-        if (s.id == statusId) {
-            if (block(s)) {
-                changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx, 1))
-            }
-        }
-        scanStatus1(s.reblog, idx, block)
-        scanStatus1(s.reply, idx, block)
-    }
-
-    fun scanStatusAll(block: (s: TootStatus) -> Boolean) {
-        for (i in 0 until list_data.size) {
-            val o = list_data[i]
-            if (o is TootStatus) {
-                scanStatus1(o, i, block)
-            } else if (o is TootNotification) {
-                scanStatus1(o.status, i, block)
-            }
-        }
-    }
-
-    scanStatusAll { s ->
+    scanStatusById("updateEmojiReactionByApiResponse", newStatus.id) { s ->
         s.updateReactionMastodon(newReactionSet)
         true
     }
-
-    if (changeList.isNotEmpty()) {
-        fireShowContent(reason = "updateEmojiReactionByApiResponse", changeList = changeList)
-    }
 }
 
-// Fedibird絵文字リアクションの第三者への通知
+// Fedibird 絵文字リアクション機能
+// サーバ上で処理されたリアクション全てがuserストリームに送られる
 // status_id がある
 // me はない
-// サーバ上で処理されたリアクションが無差別に送られる
-fun Column.updateEmojiReactionByEvent(reaction:TootReaction){
+fun Column.updateEmojiReactionByEvent(reaction: TootReaction) {
     val statusId = reaction.status_id ?: return
-
-    val changeList = ArrayList<AdapterChange>()
-
-    fun scanStatus1(s: TootStatus?, idx: Int, block: (s: TootStatus) -> Boolean) {
-        s ?: return
-        if (s.id == statusId) {
-            if (block(s)) {
-                changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx, 1))
-            }
-        }
-        scanStatus1(s.reblog, idx, block)
-        scanStatus1(s.reply, idx, block)
-    }
-
-    fun scanStatusAll(block: (s: TootStatus) -> Boolean) {
-        for (i in 0 until list_data.size) {
-            val o = list_data[i]
-            if (o is TootStatus) {
-                scanStatus1(o, i, block)
-            } else if (o is TootNotification) {
-                scanStatus1(o.status, i, block)
-            }
-        }
-    }
-
-    scanStatusAll { s ->
+    scanStatusById("updateEmojiReactionByEvent", statusId) { s ->
         s.updateReactionMastodonByEvent(reaction)
         true
     }
-
-    if (changeList.isNotEmpty()) {
-        fireShowContent(reason = "updateEmojiReactionByEvent", changeList = changeList)
-    }
 }
-
 
 fun Column.onMisskeyNoteUpdated(ev: MisskeyNoteUpdate) {
     // userId が自分かどうか調べる
@@ -379,50 +349,28 @@ fun Column.onMisskeyNoteUpdated(ev: MisskeyNoteUpdate) {
 
     val byMe = myId == ev.userId
 
-    val changeList = ArrayList<AdapterChange>()
-
-    fun scanStatus1(s: TootStatus?, idx: Int, block: (s: TootStatus) -> Boolean) {
-        s ?: return
-        if (s.id == ev.noteId) {
-            if (block(s)) {
-                changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx, 1))
-            }
-        }
-        scanStatus1(s.reblog, idx, block)
-        scanStatus1(s.reply, idx, block)
-    }
-
-    fun scanStatusAll(block: (s: TootStatus) -> Boolean) {
-        for (i in 0 until list_data.size) {
-            val o = list_data[i]
-            if (o is TootStatus) {
-                scanStatus1(o, i, block)
-            } else if (o is TootNotification) {
-                scanStatus1(o.status, i, block)
-            }
-        }
-    }
-
+    val caption = "onNoteUpdated ${ev.type}"
+    val statusId = ev.noteId
     when (ev.type) {
-        MisskeyNoteUpdate.Type.REACTION -> scanStatusAll { s ->
-            s.increaseReactionMisskey(ev.reaction, byMe, ev.emoji, "onNoteUpdated ${ev.userId}")
-        }
+        MisskeyNoteUpdate.Type.REACTION ->
+            scanStatusById(caption, statusId) { s ->
+                s.increaseReactionMisskey(ev.reaction, byMe, ev.emoji, "onNoteUpdated ${ev.userId}")
+            }
 
-        MisskeyNoteUpdate.Type.UNREACTION -> scanStatusAll { s ->
-            s.decreaseReactionMisskey(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
-        }
+        MisskeyNoteUpdate.Type.UNREACTION ->
+            scanStatusById(caption, statusId) { s ->
+                s.decreaseReactionMisskey(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
+            }
 
-        MisskeyNoteUpdate.Type.VOTED -> scanStatusAll { s ->
-            s.enquete?.increaseVote(context, ev.choice, byMe) ?: false
-        }
+        MisskeyNoteUpdate.Type.VOTED ->
+            scanStatusById(caption, statusId) { s ->
+                s.enquete?.increaseVote(context, ev.choice, byMe) ?: false
+            }
 
-        MisskeyNoteUpdate.Type.DELETED -> scanStatusAll { s ->
-            s.markDeleted(context, ev.deletedAt)
-        }
-    }
-
-    if (changeList.isNotEmpty()) {
-        fireShowContent(reason = "onNoteUpdated", changeList = changeList)
+        MisskeyNoteUpdate.Type.DELETED ->
+            scanStatusById(caption, statusId) { s ->
+                s.markDeleted(context, ev.deletedAt)
+            }
     }
 }
 

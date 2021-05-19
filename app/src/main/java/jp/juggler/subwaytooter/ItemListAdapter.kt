@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.util.LogCategory
 
-internal class ItemListAdapter(
+class ItemListAdapter(
 	private val activity : ActMain,
 	private val column : Column,
 	internal val columnVh : ColumnViewHolder,

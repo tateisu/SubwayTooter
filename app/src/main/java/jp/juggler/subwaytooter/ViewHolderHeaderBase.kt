@@ -9,7 +9,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.LogCategory
 import jp.juggler.util.scan
 
-internal abstract class ViewHolderHeaderBase(val activity : ActMain, val viewRoot : View) :
+abstract class ViewHolderHeaderBase(val activity : ActMain, val viewRoot : View) :
 	RecyclerView.ViewHolder(viewRoot) {
 	
 	companion object {

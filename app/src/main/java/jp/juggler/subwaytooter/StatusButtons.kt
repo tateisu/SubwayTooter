@@ -26,7 +26,7 @@ import jp.juggler.util.*
 import org.jetbrains.anko.*
 import org.jetbrains.anko.custom.customView
 
-internal class StatusButtons(
+class StatusButtons(
     private val activity: ActMain,
     private val column: Column,
     private val bSimpleList: Boolean,

@@ -1093,4 +1093,6 @@
     <string name="confirm_mail_description">After requesting resending confirm E-mail,\n- please check the mail on your mailer.\n- open confirm link in the mail.\n- close this dialog and reload column.</string>
     <string name="push_notification_filter">Push notification filter (Mastodon 3.4.0+, requires update push subscription)</string>
     <string name="no_one">No one</string>
+    <string name="fedibird_reactions">Reactions (Fedibird)</string>
+    <string name="reactions">Reactions</string>
 </resources>

@@ -41,7 +41,7 @@ class PushSubscriptionHelper(
         account.notification_favourite.booleanToInt(2) +
         account.notification_follow.booleanToInt(4) +
         account.notification_mention.booleanToInt(8) +
-        (account.isMisskey && account.notification_reaction).booleanToInt(16) +
+        account.notification_reaction.booleanToInt(16) +
         account.notification_vote.booleanToInt(32) +
         account.notification_follow_request.booleanToInt(64) +
         account.notification_post.booleanToInt(128)
@@ -480,7 +480,7 @@ class PushSubscriptionHelper(
                 })
                 put("data", JsonObject().apply {
                     put("alerts", newAlerts)
-                    account.push_policy?.let{ put("policy",it )}
+                    account.push_policy?.let { put("policy", it) }
                 })
             }
 

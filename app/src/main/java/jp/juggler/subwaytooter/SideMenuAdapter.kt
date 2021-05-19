@@ -22,14 +22,15 @@ import androidx.drawerlayout.widget.DrawerLayout
 import jp.juggler.subwaytooter.action.Action_Account
 import jp.juggler.subwaytooter.action.Action_App
 import jp.juggler.subwaytooter.action.Action_Instance
+import jp.juggler.subwaytooter.api.TootApiCallback
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.jetbrains.anko.backgroundColor
 import java.lang.ref.WeakReference
 
@@ -265,7 +266,27 @@ class SideMenuAdapter(
 		Item(icon = R.drawable.ic_bookmark, title = R.string.bookmarks) {
 			Action_Account.timeline(this, defaultInsertPosition, ColumnType.BOOKMARKS)
 		},
-		
+		Item(icon = R.drawable.ic_face, title = R.string.fedibird_reactions) {
+			Action_Account.timelineWithFilter(this, defaultInsertPosition, ColumnType.REACTIONS){
+				var cancelled = false
+				try {
+					val client = TootApiClient(context = this, callback = object:TootApiCallback{
+						override val isApiCancelled: Boolean
+							get() = cancelled
+					})
+					withTimeout(5) {
+						client.account = it
+						val (ti, _) = TootInstance.get(client)
+						ti?.fedibird_capabilities?.contains("emoji_reaction") == true
+					}
+				}catch(ex:Throwable){
+					cancelled = true
+					ActMain.log.e("${it.apiHost}")
+					false
+				}
+			}
+		},
+
 		Item(icon = R.drawable.ic_account_box, title = R.string.profile) {
 			Action_Account.timeline(this, defaultInsertPosition, ColumnType.PROFILE)
 		},

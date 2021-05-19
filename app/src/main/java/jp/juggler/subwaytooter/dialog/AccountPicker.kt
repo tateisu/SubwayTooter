@@ -33,7 +33,7 @@ object AccountPicker {
         bAllowMastodon: Boolean = true,
         bAuto: Boolean = false,
         message: String? = null,
-        accountListArg: ArrayList<SavedAccount>? = null,
+        accountListArg: MutableList<SavedAccount>? = null,
         dismiss_callback: DialogInterfaceCallback? = null,
         extra_callback: (LinearLayout, Int, Int) -> Unit = { _, _, _ -> },
         callback: SavedAccountCallback

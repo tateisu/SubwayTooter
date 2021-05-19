@@ -688,6 +688,36 @@ enum class ColumnType(
         gapDirection = gapDirectionMastodonWorkaround,
     ),
 
+
+    REACTIONS(
+        42,
+        iconId = { R.drawable.ic_face },
+        name1 = { it.getString(R.string.reactions) },
+        bAllowPseudo = false,
+        bAllowMisskey = false,
+
+        loading = { client ->
+            if (isMisskey) {
+                TootApiResult("misskey has no api to list your reactions")
+            } else {
+                getStatusList(client, ApiPath.PATH_REACTIONS)
+            }
+        },
+
+        refresh = { client ->
+            getStatusList(client, ApiPath.PATH_REACTIONS)
+        },
+
+        gap = { client ->
+            getStatusList(
+                client,
+                ApiPath.PATH_REACTIONS,
+                mastodonFilterByIdRange = false
+            )
+        },
+        gapDirection = gapDirectionMastodonWorkaround,
+    ),
+
     BOOKMARKS(
         37,
         iconId = { R.drawable.ic_bookmark },

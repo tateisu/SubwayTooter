@@ -8,6 +8,7 @@ object ApiPath {
 
      const val PATH_FAVOURITES = "/api/v1/favourites?limit=$READ_LIMIT"
      const val PATH_BOOKMARKS = "/api/v1/bookmarks?limit=$READ_LIMIT"
+     const val PATH_REACTIONS = "/api/v1/emoji_reactions?limit=$READ_LIMIT"
 
     // アカウントのリストを返すAPI
      const val PATH_ACCOUNT_FOLLOWING =

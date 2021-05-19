@@ -13,6 +13,9 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object Action_Account {
 
@@ -213,6 +216,49 @@ object Action_Account {
             bAuto = true,
             message = activity.getString(R.string.account_picker_open_setting)
         ) { ai -> ActAccountSetting.open(activity, ai, ActMain.REQUEST_CODE_ACCOUNT_SETTING) }
+    }
+
+    // アカウントを選んでタイムラインカラムを追加
+    fun timelineWithFilter(
+        activity: ActMain,
+        pos: Int,
+        type: ColumnType,
+        args: Array<out Any> = emptyArray(),
+        filter: suspend(SavedAccount)->Boolean
+    ) {
+        activity.launch{
+            val accountList = withContext(Dispatchers.IO){
+                SavedAccount.loadAccountList(activity)
+                    .filter{
+                        if( it.isPseudo && !type.bAllowPseudo) false
+                        else if( it.isMisskey && !type.bAllowMisskey) false
+                        else if( it.isMastodon && !type.bAllowMastodon) false
+                        else filter(it)
+                    }
+            }.toMutableList()
+            AccountPicker.pick(
+                activity,
+                accountListArg = accountList,
+                bAuto = true,
+                message = activity.getString(
+                    R.string.account_picker_add_timeline_of,
+                    type.name1(activity)
+                )
+            ) { ai ->
+                when (type) {
+
+                    ColumnType.PROFILE -> {
+                        val id = ai.loginAccount?.id
+                        if (id != null) activity.addColumn(pos, ai, type, id)
+                    }
+
+                    ColumnType.PROFILE_DIRECTORY ->
+                        activity.addColumn(pos, ai, type, ai.apiHost)
+
+                    else -> activity.addColumn(pos, ai, type, *args)
+                }
+            }
+        }
     }
 
     // アカウントを選んでタイムラインカラムを追加

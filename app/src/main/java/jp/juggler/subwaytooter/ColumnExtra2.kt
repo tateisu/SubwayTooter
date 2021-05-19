@@ -134,7 +134,7 @@ suspend fun Column.loadProfileAccount(client: TootApiClient, parser: TootParser,
         }
 
         else -> client.request(
-            "/api/v1/accounts/%{profile_id}"
+            "/api/v1/accounts/${profile_id}"
         )?.also { result1 ->
             TootAccountRef.mayNull(parser, parser.account(result1.jsonObject))?.also { a ->
                 this.who_account = a

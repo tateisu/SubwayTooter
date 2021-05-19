@@ -5,6 +5,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ReplacementSpan
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.WordTrieTree
 import org.jetbrains.anko.collections.forEachReversedByIndex
@@ -12,7 +13,7 @@ import java.util.*
 
 class DecodeOptions(
 	val context : Context? = null,
-	var linkHelper : LinkHelper? = null ,
+	var linkHelper : LinkHelper? = null,
 	var short : Boolean = false,
 	var decodeEmoji : Boolean = false,
 	var attachmentList : ArrayList<TootAttachmentLike>? = null,

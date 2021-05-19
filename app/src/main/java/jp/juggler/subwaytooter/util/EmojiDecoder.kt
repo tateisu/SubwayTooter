@@ -6,12 +6,12 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.util.SparseBooleanArray
 import androidx.annotation.DrawableRes
-import jp.juggler.emoji.UnicodeEmoji
-import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.entity.CustomEmoji
+import jp.juggler.subwaytooter.emoji.CustomEmoji
+import jp.juggler.subwaytooter.emoji.EmojiMap
+import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.pref
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan

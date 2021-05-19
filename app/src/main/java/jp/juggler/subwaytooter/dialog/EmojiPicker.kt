@@ -11,12 +11,8 @@ import android.widget.*
 import androidx.viewpager.widget.ViewPager
 import com.astuetz.PagerSlidingTabStrip
 import com.bumptech.glide.Glide
-import jp.juggler.emoji.UnicodeEmoji
-import jp.juggler.emoji.EmojiBase
-import jp.juggler.emoji.EmojiCategory
-import jp.juggler.emoji.EmojiMap
 import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.api.entity.CustomEmoji
+import jp.juggler.subwaytooter.emoji.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.view.HeaderGridView
 import jp.juggler.subwaytooter.view.MyViewPager
@@ -371,9 +367,9 @@ class EmojiPicker(
     }
 
     internal inner class EmojiPickerPage(
-		val hasSkinTone: Boolean,
-		val category: EmojiCategory,
-		title_id: Int
+        val hasSkinTone: Boolean,
+        val category: EmojiCategory,
+        title_id: Int
 	) {
 
         val title: String = activity.getString(title_id)
@@ -529,7 +525,7 @@ class EmojiPicker(
     }
 
     // name はスキントーン適用済みであること
-    internal fun selected( emoji:EmojiBase ) {
+    internal fun selected( emoji: EmojiBase) {
 
         val pref = App1.pref
 
@@ -557,7 +553,6 @@ class EmojiPicker(
                 name = emoji.shortcode
                 instance = emoji.apDomain.ascii
             }
-            else -> error("unknown emoji type")
         }
 
         run {

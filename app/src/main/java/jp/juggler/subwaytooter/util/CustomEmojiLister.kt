@@ -4,8 +4,8 @@ import android.content.Context
 import android.os.Handler
 import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.parseList
+import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import java.util.*

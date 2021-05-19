@@ -8,7 +8,7 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.*
-import jp.juggler.emoji.EmojiMap
+import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.action.Action_Follow
 import jp.juggler.subwaytooter.action.Action_User
 import jp.juggler.subwaytooter.api.*

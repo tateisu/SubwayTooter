@@ -11,14 +11,14 @@ import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
-import jp.juggler.emoji.UnicodeEmoji
+import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.action.Action_Toot
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.EmojiPicker
+import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.endMargin
@@ -178,11 +178,12 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
                 }
 
                 setOnLongClickListener {
+                    val taggedReaction = it.tag as? TootReaction
                     Action_Toot.reactionFromAnotherAccount(
                         this@makeReactionsView.activity,
                         access_info,
                         status_showing,
-                        it.tag as? String
+                        taggedReaction
                     )
                     true
                 }
@@ -205,7 +206,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
 }
 
 // code は code@dmain のような形式かもしれない
-fun ItemViewHolder.addReaction(status: TootStatus, code: String?) {
+private fun ItemViewHolder.addReaction(status: TootStatus, code: String?) {
     if (status.reactionSet?.myReaction != null) {
         activity.showToast(false, R.string.already_reactioned)
         return
@@ -227,6 +228,18 @@ fun ItemViewHolder.addReaction(status: TootStatus, code: String?) {
                 }
             )
         }.show()
+        return
+    }else if( access_info.isMisskey && code.contains("@")){
+        val cols = code.replace(":","").split("@")
+        when( /* val domain = */ cols.elementAtOrNull(1)){
+            null,"",".",access_info.apDomain.ascii -> {}
+            else -> {
+                activity.showToast(true,R.string.cant_reaction_remote_custom_emoji)
+                return
+            }
+        }
+        val name = cols.elementAtOrNull(0)
+        addReaction(status,":$name:")
         return
     }
 
@@ -282,7 +295,7 @@ fun ItemViewHolder.addReaction(status: TootStatus, code: String?) {
         })
 }
 
-fun ItemViewHolder.removeReaction(status: TootStatus, confirmed: Boolean = false) {
+private fun ItemViewHolder.removeReaction(status: TootStatus, confirmed: Boolean = false) {
 
     val myReaction = status.reactionSet?.myReaction
 

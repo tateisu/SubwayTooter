@@ -18,7 +18,7 @@ import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
 import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
 import com.bumptech.glide.load.engine.executor.GlideExecutor
 import com.bumptech.glide.load.model.GlideUrl
-import jp.juggler.emoji.EmojiMap
+import jp.juggler.subwaytooter.emoji.EmojiMap
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.CustomEmojiCache

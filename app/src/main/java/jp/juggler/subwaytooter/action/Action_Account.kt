@@ -218,48 +218,6 @@ object Action_Account {
         ) { ai -> ActAccountSetting.open(activity, ai, ActMain.REQUEST_CODE_ACCOUNT_SETTING) }
     }
 
-    // アカウントを選んでタイムラインカラムを追加
-    fun timelineWithFilter(
-        activity: ActMain,
-        pos: Int,
-        type: ColumnType,
-        args: Array<out Any> = emptyArray(),
-        filter: suspend(SavedAccount)->Boolean
-    ) {
-        activity.launch{
-            val accountList = withContext(Dispatchers.IO){
-                SavedAccount.loadAccountList(activity)
-                    .filter{
-                        if( it.isPseudo && !type.bAllowPseudo) false
-                        else if( it.isMisskey && !type.bAllowMisskey) false
-                        else if( it.isMastodon && !type.bAllowMastodon) false
-                        else filter(it)
-                    }
-            }.toMutableList()
-            AccountPicker.pick(
-                activity,
-                accountListArg = accountList,
-                bAuto = true,
-                message = activity.getString(
-                    R.string.account_picker_add_timeline_of,
-                    type.name1(activity)
-                )
-            ) { ai ->
-                when (type) {
-
-                    ColumnType.PROFILE -> {
-                        val id = ai.loginAccount?.id
-                        if (id != null) activity.addColumn(pos, ai, type, id)
-                    }
-
-                    ColumnType.PROFILE_DIRECTORY ->
-                        activity.addColumn(pos, ai, type, ai.apiHost)
-
-                    else -> activity.addColumn(pos, ai, type, *args)
-                }
-            }
-        }
-    }
 
     // アカウントを選んでタイムラインカラムを追加
     fun timeline(
@@ -414,4 +372,77 @@ object Action_Account {
             })
         }.show()
     }
+
+    fun getReactionableAccounts(activity:ActMain,block:(ArrayList<SavedAccount>)->Unit){
+        TootTaskRunner(activity).run(object : TootTask {
+            var list : List<SavedAccount>? = null
+            override suspend fun background(client: TootApiClient): TootApiResult? {
+                list = SavedAccount.loadAccountList(activity).filter { a->
+                    when {
+                        client.isApiCancelled -> false
+                        a.isPseudo -> false
+                        a.isMisskey -> true
+                        else -> {
+                            val(ti,ri)=TootInstance.getEx(client,account=a)
+                            if(ti==null) {
+                                ri?.error?.let { log.w(it) }
+                                false
+                            }else
+                                ti.fedibird_capabilities?.contains("emoji_reaction") == true
+                        }
+                    }
+                }
+                return if(client.isApiCancelled) null else TootApiResult()
+            }
+
+            override suspend fun handleResult(result: TootApiResult?) {
+                result ?: return
+                if(list != null) block(ArrayList(list))
+            }
+        })
+    }
+
+    // アカウントを選んでタイムラインカラムを追加
+    fun timelineWithFilter(
+        activity: ActMain,
+        pos: Int,
+        type: ColumnType,
+        args: Array<out Any> = emptyArray(),
+        filter: suspend(SavedAccount)->Boolean
+    ) {
+        activity.launch{
+            val accountList = withContext(Dispatchers.IO){
+                SavedAccount.loadAccountList(activity)
+                    .filter{
+                        if( it.isPseudo && !type.bAllowPseudo) false
+                        else if( it.isMisskey && !type.bAllowMisskey) false
+                        else if( it.isMastodon && !type.bAllowMastodon) false
+                        else filter(it)
+                    }
+            }.toMutableList()
+            AccountPicker.pick(
+                activity,
+                accountListArg = accountList,
+                bAuto = true,
+                message = activity.getString(
+                    R.string.account_picker_add_timeline_of,
+                    type.name1(activity)
+                )
+            ) { ai ->
+                when (type) {
+
+                    ColumnType.PROFILE -> {
+                        val id = ai.loginAccount?.id
+                        if (id != null) activity.addColumn(pos, ai, type, id)
+                    }
+
+                    ColumnType.PROFILE_DIRECTORY ->
+                        activity.addColumn(pos, ai, type, ai.apiHost)
+
+                    else -> activity.addColumn(pos, ai, type, *args)
+                }
+            }
+        }
+    }
+
 }

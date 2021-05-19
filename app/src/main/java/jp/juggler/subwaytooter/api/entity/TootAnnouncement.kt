@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.text.Spannable
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory

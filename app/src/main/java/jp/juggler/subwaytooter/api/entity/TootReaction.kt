@@ -4,14 +4,12 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.EmojiDecoder
-import jp.juggler.util.JsonArray
-import jp.juggler.util.JsonObject
-import jp.juggler.util.notEmpty
-import jp.juggler.util.notZero
+import jp.juggler.util.*
 import java.util.*
 
 class TootReaction(
@@ -95,6 +93,20 @@ class TootReaction(
         }
 
         val UNKNOWN = TootReaction(name = "?")
+
+    }
+
+    val isCustomEmoji: Boolean
+        get()= when{
+            name.all{ it.code < 0x80 } -> true
+            else -> false
+        }
+
+    fun splitEmojiDomain():Pair<String,String?>?{
+        if(!isCustomEmoji) return null
+        val a = name.replace(":","")
+        val idx = a.indexOf("@")
+        return if(idx==-1) Pair(a,null) else Pair(a.substring(0,idx),a.substring(idx+1))
     }
 
     override fun equals(other: Any?): Boolean =
@@ -150,14 +162,16 @@ class TootReaction(
                 val cols = customCode.split("@", limit = 2)
                 val key = cols.elementAtOrNull(0)
                 val domain = cols.elementAtOrNull(1)
-                if (domain == null || domain == "" || domain == "." || domain == accessInfo?.apiHost?.ascii) {
-                    if (accessInfo != null) {
-                        App1.custom_emoji_lister
-                            .getMap(accessInfo)
-                            ?.get(key)
-                            ?.chooseUrl()
-                            ?.notEmpty()
-                            ?.let { return urlToSpan(options, code, it) }
+                if( key != null) {
+                    if (domain == null || domain == "" || domain == "." || domain == accessInfo?.apiHost?.ascii) {
+                        if (accessInfo != null) {
+                            App1.custom_emoji_lister
+                                .getMap(accessInfo)
+                                ?.get(key)
+                                ?.chooseUrl()
+                                ?.notEmpty()
+                                ?.let { return urlToSpan(options, code, it) }
+                        }
                     }
                 }
             }

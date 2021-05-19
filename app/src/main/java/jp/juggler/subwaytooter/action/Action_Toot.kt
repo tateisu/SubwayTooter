@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.action
 
-import jp.juggler.emoji.UnicodeEmoji
+import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.EmojiPicker
+import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.SavedAccountCallback
@@ -1302,7 +1303,7 @@ object Action_Toot {
         })
     }
 
-    fun reaction(
+    private fun reaction(
         activity: ActMain,
         access_info: SavedAccount,
         arg_status: TootStatus,
@@ -1310,62 +1311,30 @@ object Action_Toot {
         nCrossAccountMode: Int,
         callback: () -> Unit,
         bSet: Boolean = true,
-        code: String? = null
+        reactionCode: String? = null
     ) {
-        when {
-            access_info.isPseudo -> return
-            access_info.isMisskey -> {
-                // 自分の投稿にはリアクション出来ない
-                if (access_info.acct == status_owner_acct) {
-                    activity.showToast(false, R.string.it_is_you)
-                    return
+        if( reactionCode == null){
+            EmojiPicker(activity, access_info, closeOnSelected = true) { result ->
+                val code = when(val emoji = result.emoji){
+                    is UnicodeEmoji -> emoji.unifiedCode
+                    is CustomEmoji -> if( access_info.isMisskey){
+                        ":${emoji.shortcode}:"
+                    }else{
+                        emoji.shortcode
+                    }
                 }
-                if (code == null) {
-                    if (!bSet) error("will not happen")
-                    EmojiPicker(activity, access_info, closeOnSelected = true) { result ->
-                        reaction(
-                            activity,
-                            access_info,
-                            arg_status,
-                            status_owner_acct,
-                            nCrossAccountMode,
-                            callback,
-                            bSet,
-                            when (val emoji = result.emoji) {
-                                is UnicodeEmoji -> emoji.unifiedCode
-                                is CustomEmoji -> ":${emoji.shortcode}:"
-                                else -> error("unknown emoji type")
-                            }
-                        )
-                    }.show()
-                    return
-                }
-            }
-            else -> {
-                val ti = TootInstance.getCached(access_info.apiHost)
-                if (ti?.fedibird_capabilities?.any { "emoji_reaction" == it } != true) return
-
-                if (code == null) {
-                    if (!bSet) error("will not happen")
-                    EmojiPicker(activity, access_info, closeOnSelected = true) { result ->
-                        reaction(
-                            activity,
-                            access_info,
-                            arg_status,
-                            status_owner_acct,
-                            nCrossAccountMode,
-                            callback,
-                            bSet,
-                            when (val emoji = result.emoji) {
-                                is UnicodeEmoji -> emoji.unifiedCode
-                                is CustomEmoji -> emoji.shortcode
-                                else -> error("unknown emoji type")
-                            }
-                        )
-                    }.show()
-                    return
-                }
-            }
+                reaction(
+                    activity,
+                    access_info,
+                    arg_status,
+                    status_owner_acct,
+                    nCrossAccountMode,
+                    callback,
+                    bSet,
+                    reactionCode = code,
+                )
+            }.show()
+            return
         }
 
         TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info,
@@ -1402,7 +1371,7 @@ object Action_Toot {
                                 "/api/notes/reactions/create",
                                 access_info.putMisskeyApiToken().apply {
                                     put("noteId", target_status.id.toString())
-                                    put("reaction", code)
+                                    put("reaction", reactionCode)
 
                                 }
                                     .toPostRequestBuilder()
@@ -1419,7 +1388,7 @@ object Action_Toot {
                             // 成功すると新しいステータス
                         } else {
                             client.request(
-                                "/api/v1/statuses/${target_status.id}/emoji_reactions/${code.encodePercent()}",
+                                "/api/v1/statuses/${target_status.id}/emoji_reactions/${reactionCode.encodePercent()}",
                                 "".toFormRequestBody().toPut()
                             )
                             // 成功すると新しいステータス
@@ -1448,29 +1417,49 @@ object Action_Toot {
         activity: ActMain,
         timeline_account: SavedAccount,
         status: TootStatus?,
-        code: String? = null
+        reaction: TootReaction? = null
     ) {
         status ?: return
 
         val status_owner = timeline_account.getFullAcct(status.account)
 
-        AccountPicker.pick(
-            activity,
-            bAllowPseudo = false,
-            bAllowMisskey = true,
-            bAllowMastodon = false,
-            bAuto = false,
-            message = activity.getString(R.string.account_picker_reaction)
-        ) { action_account ->
-            reaction(
+        Action_Account.getReactionableAccounts(activity){ list->
+            AccountPicker.pick(
                 activity,
-                action_account,
-                status,
-                status_owner,
-                calcCrossAccountMode(timeline_account, action_account),
-                activity.reaction_complete_callback,
-                code = code
-            )
+                accountListArg = list,
+                bAuto = false,
+                message = activity.getString(R.string.account_picker_reaction)
+            ) { action_account ->
+
+                val pair = reaction?.splitEmojiDomain()
+                val code = if( pair == null) {
+                    // null または Unicode絵文字
+                    reaction?.name
+                }else {
+                    val srcDomain = when (val d = pair.second) {
+                        null, ".", "" -> timeline_account.apDomain
+                        else -> d
+                    }
+                    when {
+                        srcDomain != action_account.apDomain -> {
+                            activity.showToast(true, R.string.cant_reaction_remote_custom_emoji)
+                            return@pick
+                        }
+                        action_account.isMisskey -> ":${pair.first}:"
+                        else -> pair.first
+                    }
+                }
+
+                reaction(
+                    activity,
+                    action_account,
+                    status,
+                    status_owner,
+                    calcCrossAccountMode(timeline_account, action_account),
+                    activity.reaction_complete_callback,
+                    reactionCode = code
+                )
+            }
         }
     }
 

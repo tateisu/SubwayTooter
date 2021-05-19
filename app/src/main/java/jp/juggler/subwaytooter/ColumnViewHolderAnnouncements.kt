@@ -13,16 +13,16 @@ import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
-import jp.juggler.emoji.UnicodeEmoji
+import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
-import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.EmojiPicker
+import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
@@ -367,7 +367,6 @@ fun ColumnViewHolder.addReaction(item: TootAnnouncement, sample: TootReaction?) 
             val code = when (emoji) {
                 is UnicodeEmoji -> emoji.unifiedCode
                 is CustomEmoji -> emoji.shortcode
-                else -> error("unknown emoji type")
             }
             ColumnViewHolder.log.d("addReaction: $code ${result.emoji.javaClass.simpleName}")
             addReaction(item, TootReaction.parseFedibird(jsonObject {

@@ -26,6 +26,7 @@ import jp.juggler.subwaytooter.api.TootApiCallback
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.subwaytooter.util.openBrowser
@@ -267,22 +268,18 @@ class SideMenuAdapter(
 			Action_Account.timeline(this, defaultInsertPosition, ColumnType.BOOKMARKS)
 		},
 		Item(icon = R.drawable.ic_face, title = R.string.fedibird_reactions) {
-			Action_Account.timelineWithFilter(this, defaultInsertPosition, ColumnType.REACTIONS){
-				var cancelled = false
-				try {
-					val client = TootApiClient(context = this, callback = object:TootApiCallback{
-						override val isApiCancelled: Boolean
-							get() = cancelled
-					})
-					withTimeout(5) {
-						client.account = it
-						val (ti, _) = TootInstance.get(client)
-						ti?.fedibird_capabilities?.contains("emoji_reaction") == true
-					}
-				}catch(ex:Throwable){
-					cancelled = true
-					ActMain.log.e("${it.apiHost}")
-					false
+			Action_Account.getReactionableAccounts(this){ list->
+				val columnType = ColumnType.REACTIONS
+				AccountPicker.pick(
+					this,
+					accountListArg = list,
+					bAuto = true,
+					message = getString(
+						R.string.account_picker_add_timeline_of,
+						columnType.name1(this)
+					)
+				) { ai ->
+					addColumn(defaultInsertPosition, ai, columnType )
 				}
 			}
 		},

@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.util.JsonArray
 import jp.juggler.util.JsonObject
 import jp.juggler.util.LogCategory

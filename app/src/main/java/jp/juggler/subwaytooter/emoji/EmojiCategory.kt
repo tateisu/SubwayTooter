@@ -1,4 +1,4 @@
-package jp.juggler.emoji
+package jp.juggler.subwaytooter.emoji
 
 import java.util.ArrayList
 

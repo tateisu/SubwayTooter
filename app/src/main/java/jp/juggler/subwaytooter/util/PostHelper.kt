@@ -8,8 +8,8 @@ import android.text.style.ForegroundColorSpan
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.emoji.EmojiBase
-import jp.juggler.emoji.UnicodeEmoji
+import jp.juggler.subwaytooter.emoji.EmojiBase
+import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
@@ -20,6 +20,7 @@ import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.EmojiPicker
 import jp.juggler.subwaytooter.dialog.EmojiPickerResult
+import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.AcctColor
@@ -1051,7 +1052,6 @@ class PostHelper(
 					this.append(DecodeOptions(activity).decodeEmoji(emoji.unifiedCode))
 				}
 			}
-            else -> error("unknown emoji type")
         }
         return this
     }

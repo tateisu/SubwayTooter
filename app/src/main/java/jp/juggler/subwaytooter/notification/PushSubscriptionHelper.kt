@@ -1,7 +1,6 @@
-package jp.juggler.subwaytooter.util
+package jp.juggler.subwaytooter.notification
 
 import android.content.Context
-import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
@@ -329,6 +328,7 @@ class PushSubscriptionHelper(
             put("poll", account.notification_vote)
             put("follow_request", account.notification_follow_request)
             put("status", account.notification_post)
+            put("emoji_reaction", account.notification_reaction) // fedibird拡張
         }
 
         suspend fun canSkipSubscription(): TootApiResult? {

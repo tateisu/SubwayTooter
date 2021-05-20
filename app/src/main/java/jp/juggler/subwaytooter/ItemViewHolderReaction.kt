@@ -232,15 +232,24 @@ private fun ItemViewHolder.addReaction(status: TootStatus, code: String?) {
     }else if( access_info.isMisskey && code.contains("@")){
         val cols = code.replace(":","").split("@")
         when( /* val domain = */ cols.elementAtOrNull(1)){
-            null,"",".",access_info.apDomain.ascii -> {}
+            null,"",".",access_info.apDomain.ascii -> {
+                val name = cols.elementAtOrNull(0)
+                addReaction(status,":$name:")
+                return
+            }
+            /*
+            #misskey のリアクションAPIはリモートのカスタム絵文字のコードをフォールバック絵文字に変更して、
+            何の追加情報もなしに204 no contentを返す。
+            よってクライアントはAPI応答からフォールバックが発生したことを認識できず、
+            後から投稿をリロードするまで気が付かない。
+            この挙動はこの挙動は多くのユーザにとって受け入れられないと判断するので、
+            クライアント側で事前にエラー扱いにする方が良い。
+            */
             else -> {
-                activity.showToast(true,R.string.cant_reaction_remote_custom_emoji)
+                activity.showToast(true,R.string.cant_reaction_remote_custom_emoji,code)
                 return
             }
         }
-        val name = cols.elementAtOrNull(0)
-        addReaction(status,":$name:")
-        return
     }
 
     TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,

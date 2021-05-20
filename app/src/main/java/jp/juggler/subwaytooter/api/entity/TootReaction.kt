@@ -96,7 +96,7 @@ class TootReaction(
 
     }
 
-    val isCustomEmoji: Boolean
+    private val isCustomEmoji: Boolean
         get()= when{
             name.all{ it.code < 0x80 } -> true
             else -> false
@@ -153,17 +153,22 @@ class TootReaction(
             // カスタム絵文字
             val customCode = reCustomEmoji.find(code)?.groupValues?.elementAtOrNull(1)
             if (customCode != null) {
+                // 投稿中に絵文字の情報があればそれを使う
                 status?.custom_emojis?.get(customCode)
                     ?.chooseUrl()
                     ?.notEmpty()
                     ?.let { return urlToSpan(options, code, it) }
 
+                // ストリーミングからきた絵文字などの場合は情報がない
                 val accessInfo = options.linkHelper as? SavedAccount
                 val cols = customCode.split("@", limit = 2)
                 val key = cols.elementAtOrNull(0)
                 val domain = cols.elementAtOrNull(1)
                 if( key != null) {
-                    if (domain == null || domain == "" || domain == "." || domain == accessInfo?.apiHost?.ascii) {
+                    if (domain == null || domain == "" || domain == "." || domain == accessInfo?.apDomain?.ascii) {
+                        // デコードオプションのアカウント情報と同じドメインの絵文字なら、
+                        // そのドメインの絵文字一覧を取得済みなら
+                        // それを使う
                         if (accessInfo != null) {
                             App1.custom_emoji_lister
                                 .getMap(accessInfo)
@@ -173,6 +178,7 @@ class TootReaction(
                                 ?.let { return urlToSpan(options, code, it) }
                         }
                     }
+                    // 見つからない場合もある
                 }
             }
         } else {
@@ -182,7 +188,9 @@ class TootReaction(
                 url
             }
             url?.notEmpty()?.let { return urlToSpan(options, code, url) }
+            // 見つからない場合はあるのだろうか…？
         }
+        // フォールバック
         // unicode絵文字、もしくは :xxx: などのshortcode表現
         return EmojiDecoder.decodeEmoji(options, code)
     }

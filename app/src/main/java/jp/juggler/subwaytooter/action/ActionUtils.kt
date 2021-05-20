@@ -147,15 +147,26 @@ internal fun saveUserRelationMisskey(
 //}
 
 // 別アカ操作と別タンスの関係
-const val NOT_CROSS_ACCOUNT = 1
-const val CROSS_ACCOUNT_SAME_INSTANCE = 2
-const val CROSS_ACCOUNT_REMOTE_INSTANCE = 3
+enum class CrossAccountMode{
+	SameAccount,    // same account, id and relation can be reused. NOT_CROSS_ACCOUNT
+	SameInstance,   // same instance. id can be reused, but relation is not. CROSS_ACCOUNT_SAME_INSTANCE = 2
+	RemoteInstance, // remote instance. it and relation can't be reused. CROSS_ACCOUNT_REMOTE_INSTANCE = 3
+	;
+
+	val isRemote :Boolean
+		get()= this == RemoteInstance
+
+	val isNotRemote: Boolean
+		get() = this != RemoteInstance
+}
+
+
 
 internal fun calcCrossAccountMode(
 	timeline_account : SavedAccount,
 	action_account : SavedAccount
-) : Int = when {
-	timeline_account == action_account -> NOT_CROSS_ACCOUNT
-	timeline_account.matchHost(action_account) -> CROSS_ACCOUNT_SAME_INSTANCE
-	else -> CROSS_ACCOUNT_REMOTE_INSTANCE
+) : CrossAccountMode = when {
+	timeline_account == action_account -> CrossAccountMode.SameAccount
+	timeline_account.matchHost(action_account) -> CrossAccountMode.SameInstance
+	else -> CrossAccountMode.RemoteInstance
 }

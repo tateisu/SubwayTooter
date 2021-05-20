@@ -1081,6 +1081,6 @@
     <string name="no_one">誰もいない</string>
     <string name="fedibird_reactions">リアクション (Fedibird)</string>
     <string name="reactions">リアクション</string>
-    <string name="cant_reaction_remote_custom_emoji">リモートのカスタム絵文字でリアクションできません</string>
+    <string name="cant_reaction_remote_custom_emoji">リモートのカスタム絵文字でリアクションできません %1$s</string>
 
 </resources>

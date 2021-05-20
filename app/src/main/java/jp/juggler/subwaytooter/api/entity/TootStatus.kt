@@ -1014,9 +1014,11 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             log.d("increaseReaction noteId=$id byMe=$byMe caller=$caller")
 
             // カウントを増やす
-            reactionSet.myReaction =
+            val reaction =
                 reactionSet[code]?.also { it.count = max(0, it.count + 1L) }
                     ?: TootReaction(name = code, count = 1L).also { reactionSet.add(it) }
+
+            if(byMe) reactionSet.myReaction = reaction
 
             return true
         }

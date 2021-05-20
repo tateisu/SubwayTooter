@@ -928,7 +928,7 @@ internal class DlgContextMenu(
 									access_info,
 									status,
 									access_info.getFullAcct(status.account),
-									NOT_CROSS_ACCOUNT,
+									CrossAccountMode.SameAccount,
 									visibility = list[which],
 									callback =activity.boost_complete_callback,
 								)

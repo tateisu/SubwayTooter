@@ -57,7 +57,7 @@ object Action_Toot {
         activity: ActMain,
         access_info: SavedAccount,
         arg_status: TootStatus,
-        nCrossAccountMode: Int,
+        crossAccountMode: CrossAccountMode,
         callback: () -> Unit,
         bSet: Boolean = true,
         bConfirmed: Boolean = false
@@ -85,7 +85,7 @@ object Action_Toot {
                             activity,
                             access_info,
                             arg_status,
-                            nCrossAccountMode,
+                            crossAccountMode,
                             callback,
                             bSet = bSet,
                             bConfirmed = true
@@ -120,7 +120,7 @@ object Action_Toot {
             var new_status: TootStatus? = null
             override suspend fun background(client: TootApiClient): TootApiResult? {
 
-                val target_status = if (nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
+                val target_status = if (crossAccountMode.isRemote) {
 
                     val (result, status) = client.syncStatus(access_info, arg_status)
                     status ?: return result
@@ -256,7 +256,7 @@ object Action_Toot {
         activity: ActMain,
         access_info: SavedAccount,
         arg_status: TootStatus,
-        nCrossAccountMode: Int,
+        crossAccountMode: CrossAccountMode,
         callback: () -> Unit,
         bSet: Boolean = true,
         bConfirmed: Boolean = false
@@ -284,7 +284,7 @@ object Action_Toot {
                     activity,
                     access_info,
                     arg_status,
-                    nCrossAccountMode,
+                    crossAccountMode,
                     callback,
                     bSet = bSet,
                     bConfirmed = true
@@ -302,7 +302,7 @@ object Action_Toot {
             var new_status: TootStatus? = null
             override suspend fun background(client: TootApiClient): TootApiResult? {
 
-                val target_status = if (nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
+                val target_status = if (crossAccountMode.isRemote) {
                     val (result, status) = client.syncStatus(access_info, arg_status)
                     status ?: return result
                     if (status.bookmarked) {
@@ -422,7 +422,7 @@ object Action_Toot {
         access_info: SavedAccount,
         arg_status: TootStatus,
         status_owner: Acct,
-        nCrossAccountMode: Int,
+        crossAccountMode: CrossAccountMode,
         bSet: Boolean = true,
         bConfirmed: Boolean = false,
         visibility: TootVisibility? = null,
@@ -465,7 +465,7 @@ object Action_Toot {
                             access_info,
                             arg_status,
                             status_owner,
-                            nCrossAccountMode,
+                            crossAccountMode,
                             bSet = bSet,
                             bConfirmed = true,
                             visibility = visibility,
@@ -500,7 +500,7 @@ object Action_Toot {
 
                 val parser = TootParser(activity, access_info)
 
-                val target_status = if (nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
+                val target_status = if (crossAccountMode.isRemote) {
                     val (result, status) = client.syncStatus(access_info, arg_status)
                     if (status == null) return result
                     if (status.reblogged) {
@@ -1306,32 +1306,26 @@ object Action_Toot {
     private fun reaction(
         activity: ActMain,
         access_info: SavedAccount,
-        arg_status: TootStatus,
-        status_owner_acct: Acct,
-        nCrossAccountMode: Int,
+        resolvedStatus: TootStatus,
+        reactionCode: String? = null,
         callback: () -> Unit,
-        bSet: Boolean = true,
-        reactionCode: String? = null
     ) {
-        if( reactionCode == null){
+        if (reactionCode == null) {
             EmojiPicker(activity, access_info, closeOnSelected = true) { result ->
-                val code = when(val emoji = result.emoji){
+                val code = when (val emoji = result.emoji) {
                     is UnicodeEmoji -> emoji.unifiedCode
-                    is CustomEmoji -> if( access_info.isMisskey){
+                    is CustomEmoji -> if (access_info.isMisskey) {
                         ":${emoji.shortcode}:"
-                    }else{
+                    } else {
                         emoji.shortcode
                     }
                 }
                 reaction(
-                    activity,
-                    access_info,
-                    arg_status,
-                    status_owner_acct,
-                    nCrossAccountMode,
-                    callback,
-                    bSet,
+                    activity = activity,
+                    access_info = access_info,
+                    resolvedStatus = resolvedStatus,
                     reactionCode = code,
+                    callback = callback
                 )
             }.show()
             return
@@ -1343,122 +1337,151 @@ object Action_Toot {
                 var newStatus: TootStatus? = null
 
                 override suspend fun background(client: TootApiClient): TootApiResult? {
-
-                    val target_status = if (nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
-                        val (result, status) = client.syncStatus(access_info, arg_status)
-                        status ?: return result
-                        if (status.reactionSet?.myReaction != null) {
-                            return TootApiResult(activity.getString(R.string.already_reactioned))
-                        }
-                        status
-                    } else {
-                        // 既に自タンスのステータスがある
-                        arg_status
-                    }
-
                     return if (access_info.isMisskey) {
-                        if (!bSet) {
-                            client.request(
-                                "/api/notes/reactions/delete",
-                                access_info.putMisskeyApiToken().apply {
-                                    put("noteId", target_status.id.toString())
-                                }
-                                    .toPostRequestBuilder()
-                            )
-                            // 成功すると204 no content
-                        } else {
-                            client.request(
-                                "/api/notes/reactions/create",
-                                access_info.putMisskeyApiToken().apply {
-                                    put("noteId", target_status.id.toString())
-                                    put("reaction", reactionCode)
+                        client.request(
+                            "/api/notes/reactions/create",
+                            access_info.putMisskeyApiToken().apply {
+                                put("noteId", resolvedStatus.id.toString())
+                                put("reaction", reactionCode)
 
-                                }
-                                    .toPostRequestBuilder()
-                            )
-                            // 成功すると204 no content
-                        }
-
+                            }
+                                .toPostRequestBuilder()
+                        )
+                        // 成功すると204 no content
                     } else {
-                        if (!bSet) {
-                            client.request(
-                                "/api/v1/statuses/${target_status.id}/emoji_unreaction",
-                                "".toFormRequestBody().toPost()
-                            )
-                            // 成功すると新しいステータス
-                        } else {
-                            client.request(
-                                "/api/v1/statuses/${target_status.id}/emoji_reactions/${reactionCode.encodePercent()}",
-                                "".toFormRequestBody().toPut()
-                            )
-                            // 成功すると新しいステータス
-                        }?.also { result ->
+                        client.request(
+                            "/api/v1/statuses/${resolvedStatus.id}/emoji_reactions/${reactionCode.encodePercent()}",
+                            "".toFormRequestBody().toPut()
+                        )?.also { result ->
+                            // 成功すると更新された投稿
                             newStatus = TootParser(activity, access_info).status(result.jsonObject)
                         }
                     }
                 }
 
                 override suspend fun handleResult(result: TootApiResult?) {
-
                     result ?: return
-
-                    val error = result.error
-                    if (error != null) {
-                        activity.showToast(false, error)
+                    result.error?.let {
+                        activity.showToast(true, it)
                         return
                     }
-
                     callback()
                 }
             })
     }
 
+    private fun fixReactionCode(
+        activity: ActMain,
+        timelineAccount: SavedAccount,
+        actionAccount: SavedAccount,
+        resolvedStatus: TootStatus,
+        reaction: TootReaction,
+    ): String? {
+        val pair = reaction.splitEmojiDomain()
+            ?: return reaction.name // null または Unicode絵文字
+
+        val srcDomain = when (val d = pair.second) {
+            null, ".", "" -> timelineAccount.apDomain
+            else -> Host.parse(d)
+        }
+        // リアクション者から見てローカルな絵文字
+        if (srcDomain == actionAccount.apDomain) {
+            return when {
+                actionAccount.isMisskey -> ":${pair.first}:"
+                else -> pair.first
+            }
+        }
+        // リアクション者からみてリモートの絵文字
+        val newName = "${pair.first}@${srcDomain}"
+
+        if (actionAccount.isMisskey) {
+            /*
+            Misskey のリアクションAPIはリモートのカスタム絵文字のコードをフォールバック絵文字に変更して、
+            何の追加情報もなしに204 no contentを返す。
+            よってクライアントはAPI応答からフォールバックが発生したことを認識できず、
+            後から投稿をリロードするまで気が付かない。
+            この挙動はこの挙動は多くのユーザにとって受け入れられないと判断するので、
+            クライアント側で事前にエラー扱いにする方が良い。
+            */
+        } else {
+            // Fedibirdの場合、ステータスを同期した時点で絵文字も同期されてると期待できるのだろうか？
+
+            // 実際に試してみると。
+            // nightly.fedibird.comの投稿にローカルな絵文字を付けた後、
+            // その投稿のURLをfedibird.comの検索欄にいれてローカルに同期すると、
+            // すでにインポート済みの投稿だとリアクション集合は古いままなのだった。
+            //
+            // if (resolvedStatus.reactionSet?.any { it.name == newName } == true)
+
+            return newName
+        }
+
+        // エラー
+        activity.showToast(true, R.string.cant_reaction_remote_custom_emoji, newName)
+        return null
+    }
+
     fun reactionFromAnotherAccount(
         activity: ActMain,
         timeline_account: SavedAccount,
-        status: TootStatus?,
-        reaction: TootReaction? = null
+        statusArg: TootStatus?,
+        reaction: TootReaction? = null,
     ) {
-        status ?: return
+        statusArg ?: return
 
-        val status_owner = timeline_account.getFullAcct(status.account)
+        fun afterResolveStatus(actionAccount: SavedAccount, resolvedStatus: TootStatus) {
+            val code = if (reaction == null) {
+                null // あとで選択する
+            } else {
+                fixReactionCode(
+                    activity = activity,
+                    timelineAccount = timeline_account,
+                    actionAccount = actionAccount,
+                    resolvedStatus = resolvedStatus,
+                    reaction = reaction,
+                ) ?: return // エラー終了の場合がある
+            }
 
-        Action_Account.getReactionableAccounts(activity){ list->
+            reaction(
+                activity = activity,
+                access_info = actionAccount,
+                resolvedStatus = resolvedStatus,
+                reactionCode = code,
+                callback = activity.reaction_complete_callback,
+            )
+        }
+
+        Action_Account.getReactionableAccounts(activity) { list ->
             AccountPicker.pick(
                 activity,
                 accountListArg = list,
                 bAuto = false,
                 message = activity.getString(R.string.account_picker_reaction)
             ) { action_account ->
+                if (calcCrossAccountMode(timeline_account, action_account).isNotRemote) {
+                    afterResolveStatus(action_account, statusArg)
+                } else {
+                    TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(action_account,
+                        object : TootTask {
+                            var newStatus: TootStatus? = null
+                            override suspend fun background(client: TootApiClient): TootApiResult? {
+                                val (result, status) = client.syncStatus(action_account, statusArg)
+                                if (status?.reactionSet?.myReaction != null) {
+                                    return TootApiResult(activity.getString(R.string.already_reactioned))
+                                }
+                                newStatus = status
+                                return result
+                            }
 
-                val pair = reaction?.splitEmojiDomain()
-                val code = if( pair == null) {
-                    // null または Unicode絵文字
-                    reaction?.name
-                }else {
-                    val srcDomain = when (val d = pair.second) {
-                        null, ".", "" -> timeline_account.apDomain
-                        else -> d
-                    }
-                    when {
-                        srcDomain != action_account.apDomain -> {
-                            activity.showToast(true, R.string.cant_reaction_remote_custom_emoji)
-                            return@pick
-                        }
-                        action_account.isMisskey -> ":${pair.first}:"
-                        else -> pair.first
-                    }
+                            override suspend fun handleResult(result: TootApiResult?) {
+                                result?.error?.let {
+                                    activity.showToast(true, it)
+                                    return
+                                }
+                                newStatus?.let { afterResolveStatus(action_account, it) }
+                            }
+                        })
                 }
-
-                reaction(
-                    activity,
-                    action_account,
-                    status,
-                    status_owner,
-                    calcCrossAccountMode(timeline_account, action_account),
-                    activity.reaction_complete_callback,
-                    reactionCode = code
-                )
             }
         }
     }

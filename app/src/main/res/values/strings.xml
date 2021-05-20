@@ -1095,5 +1095,5 @@
     <string name="no_one">No one</string>
     <string name="fedibird_reactions">Reactions (Fedibird)</string>
     <string name="reactions">Reactions</string>
-    <string name="cant_reaction_remote_custom_emoji">can\'t reaction with remote custom emoji</string>
+    <string name="cant_reaction_remote_custom_emoji">can\'t reaction with remote custom emoji %1$s</string>
 </resources>

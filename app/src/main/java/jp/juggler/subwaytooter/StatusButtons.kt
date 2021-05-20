@@ -486,7 +486,7 @@ class StatusButtons(
                         access_info,
                         status,
                         access_info.getFullAcct(status.account),
-                        NOT_CROSS_ACCOUNT,
+                        CrossAccountMode.SameAccount,
                         bSet = bSet,
                         callback = when {
                             !bSimpleList -> emptyCallback
@@ -510,7 +510,7 @@ class StatusButtons(
                         activity,
                         access_info,
                         status,
-                        NOT_CROSS_ACCOUNT,
+                        CrossAccountMode.SameAccount,
                         bSet = bSet,
                         callback = when {
                             !bSimpleList -> emptyCallback
@@ -534,7 +534,7 @@ class StatusButtons(
                         activity,
                         access_info,
                         status,
-                        NOT_CROSS_ACCOUNT,
+                        CrossAccountMode.SameAccount,
                         bSet = bSet,
                         callback = when {
                             !bSimpleList -> emptyCallback

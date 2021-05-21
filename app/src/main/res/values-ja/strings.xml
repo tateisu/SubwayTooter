@@ -1084,5 +1084,6 @@
     <string name="cant_reaction_remote_custom_emoji">リモートのカスタム絵文字でリアクションできません %1$s</string>
     <string name="keep_reaction_space">リアクション表示用の空間を確保する</string>
     <string name="long_tap_to_delete">長押しで削除</string>
+    <string name="suggestion_source">推奨する理由</string>
 
 </resources>

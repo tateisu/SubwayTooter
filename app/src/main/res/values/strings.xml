@@ -1098,4 +1098,5 @@
     <string name="cant_reaction_remote_custom_emoji">can\'t reaction with remote custom emoji %1$s</string>
     <string name="keep_reaction_space">Keep Spacing for Reactions</string>
     <string name="long_tap_to_delete">long tap to delete</string>
+    <string name="suggestion_source">Suggestion source</string>
 </resources>

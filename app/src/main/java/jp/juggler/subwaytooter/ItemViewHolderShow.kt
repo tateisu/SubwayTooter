@@ -278,7 +278,16 @@ fun ItemViewHolder.showAccount(whoRef: TootAccountRef) {
 
     setAcct(tvFollowerAcct, access_info, who)
 
-    who.setAccountExtra(access_info, tvLastStatusAt, lastActive_invalidator)
+    who.setAccountExtra(
+        access_info,
+        tvLastStatusAt,
+        lastActive_invalidator,
+        suggestionSource = if (column.type == ColumnType.FOLLOW_SUGGESTION) {
+            SuggestionSource.get(access_info.db_id, who.acct)
+        } else {
+            null
+        }
+    )
 
     val relation = UserRelation.load(access_info.db_id, who.id)
     Styler.setFollowIcon(

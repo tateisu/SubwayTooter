@@ -42,7 +42,7 @@ class TootAccountRef(parser: TootParser, account:TootAccount) : TimelineItem() {
 		}
 		fun notNull(parser: TootParser, account:TootAccount) =TootAccountRef(parser,account)
 		
-		fun wrapList(parser: TootParser,  src : ArrayList<TootAccount>) : ArrayList<TootAccountRef> {
+		fun wrapList(parser: TootParser,  src : Iterable<TootAccount>) : ArrayList<TootAccountRef> {
 			val dst = ArrayList<TootAccountRef>()
 			for( a in src){
 				dst.add( TootAccountRef(parser,a))

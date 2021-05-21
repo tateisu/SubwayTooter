@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.api.ApiPath.READ_LIMIT
 import jp.juggler.subwaytooter.Column.Companion.log
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
 import java.io.File
 import java.util.*
@@ -892,6 +893,23 @@ val defaultReportListParser: (parser: TootParser, jsonArray: JsonArray) -> List<
 
 val defaultConversationSummaryListParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootConversationSummary> =
     { parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
+
+///////////////////////////////////////////////////////////////////////
+
+val mastodonFollowSuggestion2ListParser : (parser: TootParser, jsonArray: JsonArray) -> List<TootAccountRef> =
+    { parser, jsonArray ->
+        TootAccountRef.wrapList(parser,
+            jsonArray.objectList().mapNotNull{
+                parser.account(it.jsonObject("account"))?.also{ a->
+                    SuggestionSource.set(
+                        (parser.linkHelper as? SavedAccount) ?.db_id ,
+                        a.acct,
+                        it.string("source")
+                    )
+                }
+            }
+        )
+    }
 
 ///////////////////////////////////////////////////////////////////////
 

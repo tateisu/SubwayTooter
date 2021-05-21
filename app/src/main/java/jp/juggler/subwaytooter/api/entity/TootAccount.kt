@@ -487,7 +487,8 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
         accessInfo: SavedAccount,
         tv: TextView,
         invalidator: NetworkEmojiInvalidator?,
-        fromProfileHeader: Boolean = false
+        fromProfileHeader: Boolean = false,
+        suggestionSource: String? =null,
     ): SpannableStringBuilder? {
         val pref = App1.pref
         val context = tv.context
@@ -495,6 +496,14 @@ open class TootAccount(parser: TootParser, src: JsonObject) : HostAndDomain {
         var sb: SpannableStringBuilder? = null
         fun prepareSb() = sb?.apply { append('\n') } ?: SpannableStringBuilder().also { sb = it }
         val delm = ": "
+
+        if( suggestionSource?.isNotEmpty() == true){
+            prepareSb()
+                .append(context.getString(R.string.suggestion_source))
+                .append(delm)
+                .append(suggestionSource)
+
+        }
 
         if (Pref.bpDirectoryLastActive(pref) && last_status_at > 0L)
             prepareSb()

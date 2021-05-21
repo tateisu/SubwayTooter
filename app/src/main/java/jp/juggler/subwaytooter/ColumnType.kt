@@ -1505,7 +1505,11 @@ enum class ColumnType(
                 when {
                     ti == null -> ri
                     ti.versionGE(TootInstance.VERSION_3_4_0_rc1) ->
-                        getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION2)
+                        getAccountList(
+                            client,
+                            ApiPath.PATH_FOLLOW_SUGGESTION2,
+                            listParser= jp.juggler.subwaytooter.mastodonFollowSuggestion2ListParser,
+                        )
                     else ->
                         getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION)
                 }
@@ -1524,7 +1528,11 @@ enum class ColumnType(
                 when {
                     ti == null -> ri
                     ti.versionGE(TootInstance.VERSION_3_4_0_rc1) ->
-                        getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION2)
+                        getAccountList(
+                            client,
+                            ApiPath.PATH_FOLLOW_SUGGESTION2,
+                            listParser= jp.juggler.subwaytooter.mastodonFollowSuggestion2ListParser,
+                        )
                     else ->
                         getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION)
                 }
@@ -1547,6 +1555,7 @@ enum class ColumnType(
                         getAccountList(
                             client,
                             ApiPath.PATH_FOLLOW_SUGGESTION2,
+                            listParser= jp.juggler.subwaytooter.mastodonFollowSuggestion2ListParser,
                             mastodonFilterByIdRange = false
                         )
                     else ->

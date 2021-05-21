@@ -55,7 +55,7 @@ fun ColumnViewHolder.loadBackgroundImage(iv: ImageView, url: String?) {
         val screen_h = iv.resources.displayMetrics.heightPixels
 
         // 非同期処理を開始
-        last_image_task = GlobalScope.launch(Dispatchers.Main) {
+        last_image_task = EndlessScope.launch(Dispatchers.Main) {
             val bitmap = try {
                 withContext(Dispatchers.IO) {
                     try {

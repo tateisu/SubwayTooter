@@ -35,8 +35,9 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.*
+import kotlinx.serialization.json.*
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -57,13 +58,6 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
         internal const val KEY_ACCOUNT_DB_ID = "account_db_id"
 
-        internal const val REQUEST_CODE_ACCT_CUSTOMIZE = 1
-        internal const val REQUEST_CODE_NOTIFICATION_SOUND = 2
-        private const val REQUEST_CODE_AVATAR_ATTACHMENT = 3
-        private const val REQUEST_CODE_HEADER_ATTACHMENT = 4
-        private const val REQUEST_CODE_AVATAR_CAMERA = 5
-        private const val REQUEST_CODE_HEADER_CAMERA = 6
-
         internal const val RESULT_INPUT_ACCESS_TOKEN = Activity.RESULT_FIRST_USER + 10
         internal const val EXTRA_DB_ID = "db_id"
 
@@ -77,13 +71,20 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         internal const val MIME_TYPE_JPEG = "image/jpeg"
         internal const val MIME_TYPE_PNG = "image/png"
 
-        fun open(activity: Activity, ai: SavedAccount, requestCode: Int) {
-            val intent = Intent(activity, ActAccountSetting::class.java)
-            intent.putExtra(KEY_ACCOUNT_DB_ID, ai.db_id)
-            activity.startActivityForResult(intent, requestCode)
-        }
+        private const val ACTIVITY_STATE = "MyActivityState"
 
+        fun createIntent(activity: Activity, ai: SavedAccount) =
+            Intent(activity, ActAccountSetting::class.java).apply {
+                putExtra(KEY_ACCOUNT_DB_ID, ai.db_id)
+            }
     }
+
+    @kotlinx.serialization.Serializable
+    data class State(
+        var propName: String = "",
+    )
+
+    var state = State()
 
     internal lateinit var account: SavedAccount
     internal lateinit var pref: SharedPreferences
@@ -178,15 +179,84 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
     private lateinit var pushPolicyItems: List<PushPolicyItem>
 
-    ///////////////////////////////////////////////////
-
     internal var visibility = TootVisibility.Public
 
     private var uriCameraImage: Uri? = null
 
 
+    ///////////////////////////////////////////////////////////////////
+
+    private val arShowAcctColor = activityResultHandler { ar ->
+        if (ar?.resultCode == Activity.RESULT_OK) {
+            showAcctColor()
+        }
+    }
+
+    private val arNotificationSound = activityResultHandler { ar ->
+        if (ar?.resultCode == Activity.RESULT_OK) {
+            // RINGTONE_PICKERからの選択されたデータを取得する
+            val uri = ar.data?.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            if (uri is Uri) {
+                notification_sound_uri = uri.toString()
+                saveUIToData()
+                //			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
+                //			TextView ringView = (TextView) findViewById(R.id.ringtone);
+                //			ringView.setText(ringtone.getTitle(getApplicationContext()));
+                //			ringtone.setStreamType(AudioManager.STREAM_ALARM);
+                //			ringtone.play();
+                //			SystemClock.sleep(1000);
+                //			ringtone.stop();
+            }
+        }
+    }
+
+
+    private val arAddAttachment = activityResultHandler { ar ->
+        val data = ar?.data
+        if (data != null && ar.resultCode == Activity.RESULT_OK) {
+            data.handleGetContentResult(contentResolver).firstOrNull()?.let {
+                addAttachment(
+                    state.propName,
+                    it.uri,
+                    it.mimeType?.notEmpty() ?: contentResolver.getType(it.uri)
+                )
+            }
+        }
+    }
+
+    private val arCameraImage = activityResultHandler { ar ->
+        if (ar?.resultCode == Activity.RESULT_OK) {
+            // 画像のURL
+            val uri = ar.data?.data ?: uriCameraImage
+            if (uri != null) {
+                val type = contentResolver.getType(uri)
+                addAttachment(state.propName, uri, type)
+            }
+        } else {
+            // 失敗したら DBからデータを削除
+            val uriCameraImage = this.uriCameraImage
+            if (uriCameraImage != null) {
+                contentResolver.delete(uriCameraImage, null, null)
+                this.uriCameraImage = null
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        arShowAcctColor.register(this, log)
+        arNotificationSound.register(this, log)
+        arAddAttachment.register(this, log)
+        arCameraImage.register(this, log)
+
+        if (savedInstanceState != null) {
+            savedInstanceState.getString(ACTIVITY_STATE)
+                ?.let { state = Json.decodeFromString(it) }
+        }
 
         App1.setActivityTheme(this)
         this.pref = App1.pref
@@ -207,71 +277,14 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         btnOpenBrowser.text = getString(R.string.open_instance_website, account.apiHost.pretty)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(ACTIVITY_STATE, Json.encodeToString(state))
+    }
+
     override fun onStop() {
         PollingWorker.queueUpdateNotification(this)
         super.onStop()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            REQUEST_CODE_ACCT_CUSTOMIZE -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    showAcctColor()
-                }
-            }
-
-            REQUEST_CODE_NOTIFICATION_SOUND -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    // RINGTONE_PICKERからの選択されたデータを取得する
-                    val uri = data?.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
-                    if (uri is Uri) {
-                        notification_sound_uri = uri.toString()
-                        saveUIToData()
-                        //			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
-                        //			TextView ringView = (TextView) findViewById(R.id.ringtone);
-                        //			ringView.setText(ringtone.getTitle(getApplicationContext()));
-                        //			ringtone.setStreamType(AudioManager.STREAM_ALARM);
-                        //			ringtone.play();
-                        //			SystemClock.sleep(1000);
-                        //			ringtone.stop();
-                    }
-                }
-            }
-
-            REQUEST_CODE_AVATAR_ATTACHMENT, REQUEST_CODE_HEADER_ATTACHMENT -> {
-
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    data.handleGetContentResult(contentResolver).firstOrNull()?.let {
-                        addAttachment(
-                            requestCode,
-                            it.uri,
-                            it.mimeType?.notEmpty() ?: contentResolver.getType(it.uri)
-                        )
-                    }
-                }
-            }
-
-            REQUEST_CODE_AVATAR_CAMERA, REQUEST_CODE_HEADER_CAMERA -> {
-
-                if (resultCode != Activity.RESULT_OK) {
-                    // 失敗したら DBからデータを削除
-                    val uriCameraImage = this@ActAccountSetting.uriCameraImage
-                    if (uriCameraImage != null) {
-                        contentResolver.delete(uriCameraImage, null, null)
-                        this@ActAccountSetting.uriCameraImage = null
-                    }
-                } else {
-                    // 画像のURL
-                    val uri = data?.data ?: uriCameraImage
-                    if (uri != null) {
-                        val type = contentResolver.getType(uri)
-                        addAttachment(requestCode, uri, type)
-                    }
-                }
-            }
-
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
     }
 
     var density: Float = 1f
@@ -729,12 +742,10 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             R.id.btnResetNotificationTracking ->
                 PollingWorker.resetNotificationTracking(this, account)
 
-            R.id.btnUserCustom -> ActNickname.open(
-                this,
-                account.acct,
-                false,
-                REQUEST_CODE_ACCT_CUSTOMIZE
-            )
+            R.id.btnUserCustom -> arShowAcctColor.launch(
+                ActNickname.createIntent(this, account.acct, false),
+
+                )
 
             R.id.btnNotificationSoundEdit -> openNotificationSoundPicker()
 
@@ -885,7 +896,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
                 finish()
 
-                GlobalScope.launch(Dispatchers.IO) {
+                EndlessScope.launch(Dispatchers.IO) {
                     try {
                         val install_id = PrefDevice.prefDevice(this@ActAccountSetting)
                             .getString(PrefDevice.KEY_INSTALL_ID, null)
@@ -972,7 +983,9 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         }
 
         val chooser = Intent.createChooser(intent, getString(R.string.notification_sound))
-        startActivityForResult(chooser, REQUEST_CODE_NOTIFICATION_SOUND)
+
+        arNotificationSound.launch(chooser)
+
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -1333,9 +1346,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                                     key,
                                     fileName,
                                     object : RequestBody() {
-                                        override fun contentType(): MediaType? {
-                                            return value.mimeType.toMediaType()
-                                        }
+                                        override fun contentType(): MediaType =
+                                            value.mimeType.toMediaType()
 
                                         override fun writeTo(sink: BufferedSink) {
                                             value.open().use { inData ->
@@ -1505,22 +1517,17 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             return
         }
 
+        val propName = when (permission_request_code) {
+            PERMISSION_REQUEST_HEADER -> "header"
+            else -> "avatar"
+        }
+
         val a = ActionsDialog()
         a.addAction(getString(R.string.pick_image)) {
-            performAttachment(
-                if (permission_request_code == PERMISSION_REQUEST_AVATAR)
-                    REQUEST_CODE_AVATAR_ATTACHMENT
-                else
-                    REQUEST_CODE_HEADER_ATTACHMENT
-            )
+            performAttachment(propName)
         }
         a.addAction(getString(R.string.image_capture)) {
-            performCamera(
-                if (permission_request_code == PERMISSION_REQUEST_AVATAR)
-                    REQUEST_CODE_AVATAR_CAMERA
-                else
-                    REQUEST_CODE_HEADER_CAMERA
-            )
+            performCamera(propName)
         }
         a.show(this, null)
     }
@@ -1549,12 +1556,15 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                     showToast(true, R.string.missing_permission_to_access_media)
                 }
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    private fun performAttachment(request_code: Int) {
+    private fun performAttachment(propName: String) {
         try {
+            state.propName = propName
             val intent = intentGetContent(false, getString(R.string.pick_image), arrayOf("image/*"))
-            startActivityForResult(intent, request_code)
+            arAddAttachment.launch(intent)
+
         } catch (ex: Throwable) {
             log.trace(ex, "performAttachment failed.")
             showToast(ex, "performAttachment failed.")
@@ -1562,7 +1572,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
     }
 
-    private fun performCamera(request_code: Int) {
+    private fun performCamera(propName: String) {
 
         try {
             // カメラで撮影
@@ -1576,7 +1586,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uriCameraImage)
 
-            startActivityForResult(intent, request_code)
+            state.propName = propName
+            arCameraImage.launch(intent)
         } catch (ex: Throwable) {
             log.trace(ex, "opening camera app failed.")
             showToast(ex, "opening camera app failed.")
@@ -1679,7 +1690,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         }
     }
 
-    private fun addAttachment(request_code: Int, uri: Uri, mime_type: String?) {
+    private fun addAttachment(propName: String, uri: Uri, mime_type: String?) {
 
         if (mime_type == null) {
             showToast(false, "mime type is not provided.")
@@ -1694,15 +1705,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         runWithProgress(
             "preparing image",
             { createOpener(uri, mime_type) },
-            {
-                updateCredential(
-                    when (request_code) {
-                        REQUEST_CODE_HEADER_ATTACHMENT, REQUEST_CODE_HEADER_CAMERA -> "header"
-                        else -> "avatar"
-                    },
-                    it
-                )
-            }
+            { updateCredential(propName, it) }
         )
     }
 

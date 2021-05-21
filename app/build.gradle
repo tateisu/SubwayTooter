@@ -3,6 +3,7 @@ import java.text.SimpleDateFormat
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'org.jetbrains.kotlin.plugin.serialization'
 
 android {
 
@@ -26,6 +27,12 @@ android {
         applicationId "jp.juggler.subwaytooter"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
+//    kotlinOptions {
+//        freeCompilerArgs += [
+//                "-Xopt-in=kotlin.ExperimentalStdlibApi",
+//        ]
+//    }
 
     buildTypes {
         release {
@@ -129,6 +136,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$kotlinx_coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1"
     implementation("ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0")
 
     // Anko Layouts
@@ -177,7 +185,7 @@ dependencies {
 
     implementation 'com.astuetz:pagerslidingtabstrip:1.0.1'
 
-    implementation 'com.google.android.exoplayer:exoplayer:2.13.3'
+    implementation 'com.google.android.exoplayer:exoplayer:2.14.0'
     /*
     WARNING: [Processor] Library '…\exoplayer-ui-2.12.0.aar' contains references to both AndroidX and old support library. This seems like the library is partially migrated. Jetifier will try to rewrite the library anyway.
     Example of androidX reference: 'androidx/core/app/NotificationCompat$Builder'

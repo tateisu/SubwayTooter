@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageView
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.openBrowser
@@ -31,10 +32,10 @@ enum class SettingType(val id: Int) {
 }
 
 class AppSettingItem(
-	val parent: AppSettingItem?,
-	val type: SettingType,
-	@StringRes val caption: Int,
-	val pref: BasePref<*>? = null
+    val parent: AppSettingItem?,
+    val type: SettingType,
+    @StringRes val caption: Int,
+    val pref: BasePref<*>? = null
 ) {
 
     @StringRes
@@ -83,100 +84,100 @@ class AppSettingItem(
     val items = ArrayList<AppSettingItem>()
 
     fun section(
-		@StringRes caption: Int,
-		initializer: AppSettingItem.() -> Unit = {}
-	) {
+        @StringRes caption: Int,
+        initializer: AppSettingItem.() -> Unit = {}
+    ) {
         items.add(AppSettingItem(this, SettingType.Section, caption).apply { initializer() })
     }
 
     fun group(
-		@StringRes caption: Int,
-		initializer: AppSettingItem.() -> Unit = {}
-	) {
+        @StringRes caption: Int,
+        initializer: AppSettingItem.() -> Unit = {}
+    ) {
         items.add(AppSettingItem(this, SettingType.Group, caption).apply { initializer() })
     }
 
     fun item(
-		type: SettingType,
-		pref: BasePref<*>?,
-		@StringRes caption: Int,
-		initializer: AppSettingItem.() -> Unit = {}
-	): AppSettingItem {
+        type: SettingType,
+        pref: BasePref<*>?,
+        @StringRes caption: Int,
+        initializer: AppSettingItem.() -> Unit = {}
+    ): AppSettingItem {
         val item = AppSettingItem(this, type, caption, pref).apply { initializer() }
         items.add(item)
         return item
     }
 
     fun spinner(
-		pref: IntPref,
-		@StringRes caption: Int,
-		vararg args: Int
-	) = item(SettingType.Spinner, pref, caption) {
+        pref: IntPref,
+        @StringRes caption: Int,
+        vararg args: Int
+    ) = item(SettingType.Spinner, pref, caption) {
         spinnerArgs = args
     }
 
     fun spinner(
-		pref: IntPref,
-		@StringRes caption: Int,
-		argsProc: (ActAppSetting) -> List<String>
-	) = item(SettingType.Spinner, pref, caption) {
+        pref: IntPref,
+        @StringRes caption: Int,
+        argsProc: (ActAppSetting) -> List<String>
+    ) = item(SettingType.Spinner, pref, caption) {
         spinnerArgsProc = argsProc
     }
 
     fun sw(
-		pref: BooleanPref,
-		@StringRes caption: Int,
-		initializer: AppSettingItem.() -> Unit = {}
-	) = item(SettingType.Switch, pref, caption, initializer)
+        pref: BooleanPref,
+        @StringRes caption: Int,
+        initializer: AppSettingItem.() -> Unit = {}
+    ) = item(SettingType.Switch, pref, caption, initializer)
 
     fun checkbox(
-		pref: BooleanPref,
-		@StringRes caption: Int,
-		initializer: AppSettingItem.() -> Unit = {}
-	) = item(SettingType.CheckBox, pref, caption, initializer)
+        pref: BooleanPref,
+        @StringRes caption: Int,
+        initializer: AppSettingItem.() -> Unit = {}
+    ) = item(SettingType.CheckBox, pref, caption, initializer)
 
     fun action(
-		@StringRes caption: Int,
-		initializer: AppSettingItem.() -> Unit = {}
-	) = item(SettingType.Action, null, caption, initializer)
+        @StringRes caption: Int,
+        initializer: AppSettingItem.() -> Unit = {}
+    ) = item(SettingType.Action, null, caption, initializer)
 
     fun colorOpaque(
-		pref: IntPref,
-		@StringRes caption: Int,
-		initializer: AppSettingItem.() -> Unit = {}
-	) = item(SettingType.ColorOpaque, pref, caption, initializer)
+        pref: IntPref,
+        @StringRes caption: Int,
+        initializer: AppSettingItem.() -> Unit = {}
+    ) = item(SettingType.ColorOpaque, pref, caption, initializer)
 
     fun colorAlpha(
-		pref: IntPref,
-		@StringRes caption: Int,
-		initializer: AppSettingItem.() -> Unit = {}
-	) = item(SettingType.ColorAlpha, pref, caption, initializer)
+        pref: IntPref,
+        @StringRes caption: Int,
+        initializer: AppSettingItem.() -> Unit = {}
+    ) = item(SettingType.ColorAlpha, pref, caption, initializer)
 
     fun text(
-		pref: StringPref,
-		@StringRes caption: Int,
-		inputType: Int,
-		initializer: AppSettingItem.() -> Unit = {}
-	) = item(SettingType.EditText, pref, caption) {
+        pref: StringPref,
+        @StringRes caption: Int,
+        inputType: Int,
+        initializer: AppSettingItem.() -> Unit = {}
+    ) = item(SettingType.EditText, pref, caption) {
         this.inputType = inputType
         this.initializer()
     }
 
     fun textX(
-		pref: BasePref<*>,
-		@StringRes caption: Int,
-		inputType: Int,
-		initializer: AppSettingItem.() -> Unit = {}
-	) = item(SettingType.EditText, pref, caption) {
+        pref: BasePref<*>,
+        @StringRes caption: Int,
+        inputType: Int,
+        initializer: AppSettingItem.() -> Unit = {}
+    ) = item(SettingType.EditText, pref, caption) {
         this.inputType = inputType
         this.initializer()
     }
 
     fun sample(
-		sampleLayoutId: Int = 0,
-		sampleUpdate: (ActAppSetting, View) -> Unit = { _, _ -> }
-		// ,initializer : AppSettingItem.() -> Unit = {}
-	) = item(SettingType.Sample, pref, caption) {
+        sampleLayoutId: Int = 0,
+        sampleUpdate: (ActAppSetting, View) -> Unit = { _, _ -> }
+        // ,initializer : AppSettingItem.() -> Unit = {}
+    ) = item(SettingType.Sample, pref, caption) {
         this.sampleLayoutId = sampleLayoutId
         this.sampleUpdate = sampleUpdate
     }
@@ -222,10 +223,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         text(
-			Pref.spPullNotificationCheckInterval,
-			R.string.pull_notification_check_interval,
-			InputTypeEx.number
-		)
+            Pref.spPullNotificationCheckInterval,
+            R.string.pull_notification_check_interval,
+            InputTypeEx.number
+        )
 
         sw(Pref.bpShowAcctInSystemNotification, R.string.show_acct_in_system_notification)
 
@@ -241,13 +242,13 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(Pref.bpDontConfirmBeforeCloseColumn, R.string.dont_confirm_before_close_column)
 
         spinner(
-			Pref.ipBackButtonAction,
-			R.string.back_button_action,
-			R.string.ask_always,
-			R.string.close_column,
-			R.string.open_column_list,
-			R.string.app_exit
-		)
+            Pref.ipBackButtonAction,
+            R.string.back_button_action,
+            R.string.ask_always,
+            R.string.close_column,
+            R.string.open_column_list,
+            R.string.app_exit
+        )
 
         sw(Pref.bpExitAppWhenCloseProtectedColumn, R.string.exit_app_when_close_protected_column)
         sw(Pref.bpScrollTopFromColumnStrip, R.string.scroll_top_from_column_strip)
@@ -256,35 +257,35 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(Pref.bpPriorChrome, R.string.prior_chrome_custom_tabs)
 
         item(
-			SettingType.TextWithSelector,
-			Pref.spWebBrowser,
-			R.string.web_browser
-		) {
+            SettingType.TextWithSelector,
+            Pref.spWebBrowser,
+            R.string.web_browser
+        ) {
             onClickEdit = {
                 openWebBrowserChooser(
-					this@item,
-					intent = Intent(Intent.ACTION_VIEW, "https://joinmastodon.org/".toUri()).apply {
-						addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-						addCategory(Intent.CATEGORY_BROWSABLE)
-					},
-					filter = {
-						when {
-							it.activityInfo.packageName == packageName -> false
-							!it.activityInfo.exported -> false
+                    this@item,
+                    intent = Intent(Intent.ACTION_VIEW, "https://joinmastodon.org/".toUri()).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        addCategory(Intent.CATEGORY_BROWSABLE)
+                    },
+                    filter = {
+                        when {
+                            it.activityInfo.packageName == packageName -> false
+                            !it.activityInfo.exported -> false
 
-							// Huaweiの謎Activityのせいでうまく働かないことがある
-							-1 != it.activityInfo.packageName.indexOf("com.huawei.android.internal") -> false
+                            // Huaweiの謎Activityのせいでうまく働かないことがある
+                            -1 != it.activityInfo.packageName.indexOf("com.huawei.android.internal") -> false
 
-							// 標準アプリが設定されていない場合、アプリを選択するためのActivityが出てくる場合がある
-							it.activityInfo.packageName == "android" -> false
-							it.activityInfo.javaClass.name.startsWith("com.android.internal") -> false
-							it.activityInfo.javaClass.name.startsWith("com.android.systemui") -> false
+                            // 標準アプリが設定されていない場合、アプリを選択するためのActivityが出てくる場合がある
+                            it.activityInfo.packageName == "android" -> false
+                            it.activityInfo.javaClass.name.startsWith("com.android.internal") -> false
+                            it.activityInfo.javaClass.name.startsWith("com.android.systemui") -> false
 
-							// たぶんChromeとかfirefoxとか
-							else -> true
-						}
-					}
-				)
+                            // たぶんChromeとかfirefoxとか
+                            else -> true
+                        }
+                    }
+                )
             }
             onClickReset = { setWebBrowser(this@item, "") }
             showTextView = {
@@ -295,17 +296,17 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(Pref.bpAllowColumnDuplication, R.string.allow_column_duplication)
         sw(Pref.bpForceGap, R.string.force_gap_when_refresh)
         spinner(
-			Pref.ipGapHeadScrollPosition,
-			R.string.scroll_position_after_read_gap_from_head,
-			R.string.gap_head,
-			R.string.gap_tail,
-		)
+            Pref.ipGapHeadScrollPosition,
+            R.string.scroll_position_after_read_gap_from_head,
+            R.string.gap_head,
+            R.string.gap_tail,
+        )
         spinner(
-			Pref.ipGapTailScrollPosition,
-			R.string.scroll_position_after_read_gap_from_tail,
-			R.string.gap_head,
-			R.string.gap_tail,
-		)
+            Pref.ipGapTailScrollPosition,
+            R.string.scroll_position_after_read_gap_from_tail,
+            R.string.gap_head,
+            R.string.gap_tail,
+        )
         text(Pref.spClientName, R.string.client_name, InputTypeEx.text)
 
         text(Pref.spUserAgent, R.string.user_agent, InputTypeEx.textMultiLine) {
@@ -314,7 +315,7 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             getError = {
                 val m = App1.reNotAllowedInUserAgent.matcher(it)
                 when (m.find()) {
-					true -> getString(R.string.user_agent_error, m.group())
+                    true -> getString(R.string.user_agent_error, m.group())
                     else -> null
                 }
             }
@@ -325,10 +326,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(Pref.bpShowTranslateButton, R.string.show_translate_button)
 
         item(
-			SettingType.TextWithSelector,
-			Pref.spTranslateAppComponent,
-			R.string.translation_app
-		) {
+            SettingType.TextWithSelector,
+            Pref.spTranslateAppComponent,
+            R.string.translation_app
+        ) {
             val target = CustomShareTarget.Translate
             onClickEdit = { openCustomShareChooser(this@item, target) }
             onClickReset = { setCustomShare(this@item, target, "") }
@@ -336,10 +337,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         item(
-			SettingType.TextWithSelector,
-			Pref.spCustomShare1,
-			R.string.custom_share_button_1
-		) {
+            SettingType.TextWithSelector,
+            Pref.spCustomShare1,
+            R.string.custom_share_button_1
+        ) {
             val target = CustomShareTarget.CustomShare1
             onClickEdit = { openCustomShareChooser(this@item, target) }
             onClickReset = { setCustomShare(this@item, target, "") }
@@ -347,20 +348,20 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         item(
-			SettingType.TextWithSelector,
-			Pref.spCustomShare2,
-			R.string.custom_share_button_2
-		) {
+            SettingType.TextWithSelector,
+            Pref.spCustomShare2,
+            R.string.custom_share_button_2
+        ) {
             val target = CustomShareTarget.CustomShare2
             onClickEdit = { openCustomShareChooser(this@item, target) }
             onClickReset = { setCustomShare(this@item, target, "") }
             showTextView = { showCustomShareIcon(it, target) }
         }
         item(
-			SettingType.TextWithSelector,
-			Pref.spCustomShare3,
-			R.string.custom_share_button_3
-		) {
+            SettingType.TextWithSelector,
+            Pref.spCustomShare3,
+            R.string.custom_share_button_3
+        ) {
             val target = CustomShareTarget.CustomShare3
             onClickEdit = { openCustomShareChooser(this@item, target) }
             onClickReset = { setCustomShare(this@item, target, "") }
@@ -368,13 +369,13 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         spinner(
-			Pref.ipAdditionalButtonsPosition,
-			R.string.additional_buttons_position,
-			R.string.top,
-			R.string.bottom,
-			R.string.start,
-			R.string.end
-		)
+            Pref.ipAdditionalButtonsPosition,
+            R.string.additional_buttons_position,
+            R.string.top,
+            R.string.bottom,
+            R.string.start,
+            R.string.end
+        )
 
         sw(Pref.bpEnablePixelfed, R.string.enable_connect_to_pixelfed_server)
         sw(Pref.bpShowFilteredWord, R.string.show_filtered_word)
@@ -406,45 +407,45 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 //		)
 
         spinner(
-			Pref.ipRefreshAfterToot,
-			R.string.refresh_after_toot,
-			R.string.refresh_scroll_to_toot,
-			R.string.refresh_no_scroll,
-			R.string.dont_refresh
-		)
+            Pref.ipRefreshAfterToot,
+            R.string.refresh_after_toot,
+            R.string.refresh_scroll_to_toot,
+            R.string.refresh_no_scroll,
+            R.string.dont_refresh
+        )
 
         sw(Pref.bpPostButtonBarTop, R.string.show_post_button_bar_top)
 
         sw(
-			Pref.bpDontDuplicationCheck,
-			R.string.dont_add_duplication_check_header
-		)
+            Pref.bpDontDuplicationCheck,
+            R.string.dont_add_duplication_check_header
+        )
 
         sw(Pref.bpQuickTootBar, R.string.show_quick_toot_bar)
 
         sw(
-			Pref.bpDontUseActionButtonWithQuickTootBar,
-			R.string.dont_use_action_button_with_quick_toot_bar
-		)
+            Pref.bpDontUseActionButtonWithQuickTootBar,
+            R.string.dont_use_action_button_with_quick_toot_bar
+        )
 
         text(Pref.spQuoteNameFormat, R.string.format_of_quote_name, InputTypeEx.text) {
             filter = { it } // don't trim
         }
 
         sw(
-			Pref.bpAppendAttachmentUrlToContent,
-			R.string.append_attachment_url_to_content
-		)
+            Pref.bpAppendAttachmentUrlToContent,
+            R.string.append_attachment_url_to_content
+        )
 
         sw(
-			Pref.bpWarnHashtagAsciiAndNonAscii,
-			R.string.warn_hashtag_ascii_and_non_ascii
-		)
+            Pref.bpWarnHashtagAsciiAndNonAscii,
+            R.string.warn_hashtag_ascii_and_non_ascii
+        )
 
         sw(
-			Pref.bpEmojiPickerCloseOnSelected,
-			R.string.close_emoji_picker_when_selected
-		)
+            Pref.bpEmojiPickerCloseOnSelected,
+            R.string.close_emoji_picker_when_selected
+        )
 
         sw(Pref.bpIgnoreTextInSharedMedia, R.string.ignore_text_in_shared_media)
     }
@@ -456,10 +457,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         text(Pref.spColumnWidth, R.string.minimum_column_width, InputTypeEx.number)
 
         item(
-			SettingType.Spinner,
-			Pref.lpTabletTootDefaultAccount,
-			R.string.toot_button_default_account
-		) {
+            SettingType.Spinner,
+            Pref.lpTabletTootDefaultAccount,
+            R.string.toot_button_default_account
+        ) {
             val lp = pref.cast<LongPref>()!!
             spinnerInitializer = { spinner ->
                 val adapter = AccountAdapter()
@@ -474,17 +475,17 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         sw(
-			Pref.bpQuickTootOmitAccountSelection,
-			R.string.quick_toot_omit_account_selection
-		)
+            Pref.bpQuickTootOmitAccountSelection,
+            R.string.quick_toot_omit_account_selection
+        )
 
         spinner(
-			Pref.ipJustifyWindowContentPortrait,
-			R.string.justify_window_content_portrait,
-			R.string.default_,
-			R.string.start,
-			R.string.end
-		)
+            Pref.ipJustifyWindowContentPortrait,
+            R.string.justify_window_content_portrait,
+            R.string.default_,
+            R.string.start,
+            R.string.end
+        )
     }
 
     section(R.string.media_attachment) {
@@ -509,10 +510,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(Pref.bpRelativeTimestamp, R.string.relative_timestamp)
 
         item(
-			SettingType.Spinner,
-			Pref.spTimeZone,
-			R.string.timezone
-		) {
+            SettingType.Spinner,
+            Pref.spTimeZone,
+            R.string.timezone
+        ) {
             val sp: StringPref = pref.cast()!!
             spinnerInitializer = { spinner ->
                 val adapter = TimeZoneAdapter()
@@ -532,45 +533,48 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         text(Pref.spCardDescriptionLength, R.string.card_description_length, InputTypeEx.number)
 
         spinner(
-			Pref.ipRepliesCount,
-			R.string.display_replies_count,
-			R.string.replies_count_simple,
-			R.string.replies_count_actual,
-			R.string.replies_count_none
-		)
+            Pref.ipRepliesCount,
+            R.string.display_replies_count,
+            R.string.replies_count_simple,
+            R.string.replies_count_actual,
+            R.string.replies_count_none
+        )
         spinner(
-			Pref.ipBoostsCount,
-			R.string.display_boost_count,
-			R.string.replies_count_simple,
-			R.string.replies_count_actual,
-			R.string.replies_count_none
-		)
+            Pref.ipBoostsCount,
+            R.string.display_boost_count,
+            R.string.replies_count_simple,
+            R.string.replies_count_actual,
+            R.string.replies_count_none
+        )
         spinner(
-			Pref.ipFavouritesCount,
-			R.string.display_favourite_count,
-			R.string.replies_count_simple,
-			R.string.replies_count_actual,
-			R.string.replies_count_none
-		)
+            Pref.ipFavouritesCount,
+            R.string.display_favourite_count,
+            R.string.replies_count_simple,
+            R.string.replies_count_actual,
+            R.string.replies_count_none
+        )
 
         spinner(
-			Pref.ipVisibilityStyle,
-			R.string.visibility_style,
-			R.string.visibility_style_by_account,
-			R.string.mastodon,
-			R.string.misskey
-		)
+            Pref.ipVisibilityStyle,
+            R.string.visibility_style,
+            R.string.visibility_style_by_account,
+            R.string.mastodon,
+            R.string.misskey
+        )
 
         AppSettingItem.TIMELINE_FONT = item(
-			SettingType.TextWithSelector,
-			Pref.spTimelineFont,
-			R.string.timeline_font
-		) {
+            SettingType.TextWithSelector,
+            Pref.spTimelineFont,
+            R.string.timeline_font
+        ) {
             val item = this
             onClickEdit = {
                 try {
                     val intent = intentOpenDocument("*/*")
-                    startActivityForResult(intent, ActAppSetting.REQUEST_CODE_TIMELINE_FONT)
+
+
+
+                    arTimelineFont.launch(intent)
                 } catch (ex: Throwable) {
                     showToast(ex, "could not open picker for font")
                 }
@@ -584,15 +588,18 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
 
 
         AppSettingItem.TIMELINE_FONT_BOLD = item(
-			SettingType.TextWithSelector,
-			Pref.spTimelineFontBold,
-			R.string.timeline_font_bold
-		) {
+            SettingType.TextWithSelector,
+            Pref.spTimelineFontBold,
+            R.string.timeline_font_bold
+        ) {
             val item = this
             onClickEdit = {
                 try {
                     val intent = intentOpenDocument("*/*")
-                    startActivityForResult(intent, ActAppSetting.REQUEST_CODE_TIMELINE_FONT_BOLD)
+
+
+
+                    arTimelineFontBold.launch(intent)
                 } catch (ex: Throwable) {
                     showToast(ex, "could not open picker for font")
                 }
@@ -605,10 +612,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         AppSettingItem.FONT_SIZE_TIMELINE = textX(
-			Pref.fpTimelineFontSize,
-			R.string.timeline_font_size,
-			InputTypeEx.numberDecimal
-		) {
+            Pref.fpTimelineFontSize,
+            R.string.timeline_font_size,
+            InputTypeEx.numberDecimal
+        ) {
 
             val item = this
             val fp: FloatPref = item.pref.cast()!!
@@ -652,10 +659,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         AppSettingItem.FONT_SIZE_NOTIFICATION_TL = textX(
-			Pref.fpNotificationTlFontSize,
-			R.string.notification_tl_font_size,
-			InputTypeEx.numberDecimal
-		) {
+            Pref.fpNotificationTlFontSize,
+            R.string.notification_tl_font_size,
+            InputTypeEx.numberDecimal
+        ) {
             val item = this
             val fp: FloatPref = item.pref.cast()!!
 
@@ -679,10 +686,10 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         text(
-			Pref.spNotificationTlIconSize,
-			R.string.notification_tl_icon_size,
-			InputTypeEx.numberDecimal
-		)
+            Pref.spNotificationTlIconSize,
+            R.string.notification_tl_icon_size,
+            InputTypeEx.numberDecimal
+        )
 
         text(Pref.spTimelineSpacing, R.string.timeline_line_spacing, InputTypeEx.numberDecimal) {
             changed = {
@@ -694,12 +701,12 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         text(Pref.spBoostButtonSize, R.string.boost_button_size, InputTypeEx.numberDecimal)
 
         spinner(
-			Pref.ipBoostButtonJustify,
-			R.string.boost_button_alignment,
-			R.string.start,
-			R.string.center,
-			R.string.end
-		)
+            Pref.ipBoostButtonJustify,
+            R.string.boost_button_alignment,
+            R.string.start,
+            R.string.center,
+            R.string.end
+        )
 
         text(Pref.spAvatarIconSize, R.string.avatar_icon_size, InputTypeEx.numberDecimal)
         text(Pref.spRoundRatio, R.string.avatar_icon_round_ratio, InputTypeEx.numberDecimal)
@@ -741,14 +748,14 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         sw(Pref.bpLinksInContextMenu, R.string.show_links_in_context_menu)
         sw(Pref.bpShowLinkUnderline, R.string.show_link_underline)
         sw(
-			Pref.bpMoveNotificationsQuickFilter,
-			R.string.move_notifications_quick_filter_to_column_setting
-		)
+            Pref.bpMoveNotificationsQuickFilter,
+            R.string.move_notifications_quick_filter_to_column_setting
+        )
         sw(Pref.bpShowSearchClear, R.string.show_clear_button_in_search_bar)
         sw(
-			Pref.bpDontShowColumnBackgroundImage,
-			R.string.dont_show_column_background_image
-		)
+            Pref.bpDontShowColumnBackgroundImage,
+            R.string.dont_show_column_background_image
+        )
 
         group(R.string.show_in_directory) {
             checkbox(Pref.bpDirectoryLastActive, R.string.last_active)
@@ -758,9 +765,9 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
         }
 
         sw(
-			Pref.bpAlwaysExpandContextMenuItems,
-			R.string.always_expand_context_menu_sub_items
-		)
+            Pref.bpAlwaysExpandContextMenuItems,
+            R.string.always_expand_context_menu_sub_items
+        )
         sw(Pref.bpShowBookmarkButton, R.string.show_bookmark_button)
         sw(Pref.bpHideFollowCount, R.string.hide_followers_count)
         sw(Pref.bpEmojioneShortcode, R.string.emojione_shortcode_support) {
@@ -774,11 +781,11 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
     section(R.string.color) {
 
         spinner(
-			Pref.ipUiTheme,
-			R.string.ui_theme,
-			R.string.theme_light,
-			R.string.theme_dark
-		)
+            Pref.ipUiTheme,
+            R.string.ui_theme,
+            R.string.theme_light,
+            R.string.theme_dark
+        )
 
         colorAlpha(Pref.ipListDividerColor, R.string.list_divider_color)
         colorAlpha(Pref.ipLinkColor, R.string.link_color)
@@ -804,9 +811,9 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             colorAlpha(Pref.ipEventBgColorStatus, R.string.status)
 
             colorAlpha(
-				Pref.ipConversationMainTootBgColor,
-				R.string.conversation_main_toot_background_color
-			)
+                Pref.ipConversationMainTootBgColor,
+                R.string.conversation_main_toot_background_color
+            )
 
             colorAlpha(Pref.ipEventBgColorGap, R.string.gap)
         }
@@ -869,14 +876,14 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     flColumnBackground.setBackgroundColor(color_column_bg) // may 0
 
                     tvSampleAcct.setTextColor(
-						color_column_acct.notZero()
-							?: activity.attrColor(R.attr.colorTimeSmall)
-					)
+                        color_column_acct.notZero()
+                            ?: activity.attrColor(R.attr.colorTimeSmall)
+                    )
 
                     tvSampleContent.setTextColor(
-						color_column_text.notZero()
-							?: activity.attrColor(R.attr.colorContentText)
-					)
+                        color_column_text.notZero()
+                            ?: activity.attrColor(R.attr.colorContentText)
+                    )
                 }
 
             colorOpaque(Pref.ipCcdContentBg, R.string.content_background_color) {
@@ -926,9 +933,9 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                         getAdaptiveRippleDrawableRound(activity, colorButtonBg, colorButtonFg)
 
                     val csl = ColorStateList.valueOf(
-						footer_button_fg_color.notZero()
-							?: activity.attrColor(R.attr.colorVectorDrawable)
-					)
+                        footer_button_fg_color.notZero()
+                            ?: activity.attrColor(R.attr.colorVectorDrawable)
+                    )
                     ivFooterToot.imageTintList = csl
                     ivFooterMenu.imageTintList = csl
 
@@ -938,9 +945,9 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
                     vFooterDivider2.setBackgroundColor(c)
 
                     vIndicator.setBackgroundColor(
-						footer_tab_indicator_color.notZero()
-							?: activity.attrColor(R.attr.colorAccent)
-					)
+                        footer_tab_indicator_color.notZero()
+                            ?: activity.attrColor(R.attr.colorAccent)
+                    )
                 }
 
             colorOpaque(Pref.ipFooterButtonBgColor, R.string.button_background_color) {

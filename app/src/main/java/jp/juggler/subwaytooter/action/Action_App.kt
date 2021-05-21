@@ -9,32 +9,34 @@ import jp.juggler.subwaytooter.table.MutedApp
 import jp.juggler.util.showToast
 
 object Action_App {
-	
-	// カラム一覧を開く
-	fun columnList(activity : ActMain) {
-		ActColumnList.open(activity, activity.currentColumn, ActMain.REQUEST_CODE_COLUMN_LIST)
-	}
-	
-	// アプリをミュートする
-	fun muteApp(
-		activity : ActMain,
-		application : TootApplication,
-		confirmed : Boolean = false
-	) {
-		if(! confirmed) {
-			AlertDialog.Builder(activity)
-				.setMessage(activity.getString(R.string.mute_application_confirm, application.name))
-				.setPositiveButton(R.string.ok) { _, _ ->
-					muteApp(activity, application, confirmed = true)
-				}
-				.setNegativeButton(R.string.cancel, null)
-				.show()
-			return
-		}
-		
-		MutedApp.save(application.name)
-		activity.app_state.onMuteUpdated()
-		activity.showToast(false, R.string.app_was_muted)
-	}
-	
+
+    // カラム一覧を開く
+    fun columnList(activity: ActMain) {
+        activity.arColumnList.launch(
+            ActColumnList.createIntent(activity, activity.currentColumn)
+        )
+    }
+
+    // アプリをミュートする
+    fun muteApp(
+        activity: ActMain,
+        application: TootApplication,
+        confirmed: Boolean = false
+    ) {
+        if (!confirmed) {
+            AlertDialog.Builder(activity)
+                .setMessage(activity.getString(R.string.mute_application_confirm, application.name))
+                .setPositiveButton(R.string.ok) { _, _ ->
+                    muteApp(activity, application, confirmed = true)
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+            return
+        }
+
+        MutedApp.save(application.name)
+        activity.app_state.onMuteUpdated()
+        activity.showToast(false, R.string.app_was_muted)
+    }
+
 }

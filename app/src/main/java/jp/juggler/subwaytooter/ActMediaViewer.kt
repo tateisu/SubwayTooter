@@ -108,7 +108,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 
     internal var buffering_last_shown: Long = 0
 
-    private val player_listener = object : Player.EventListener {
+    private val player_listener = object : Player.Listener {
 
         override fun onTimelineChanged(
 				timeline: Timeline,

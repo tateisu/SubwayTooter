@@ -185,7 +185,7 @@ object OpenSticker {
 
 	init {
 		// リクエストを処理するコルーチン。プロセスが止まるまでキャンセルされない
-        GlobalScope.launch(Dispatchers.Default) {
+        EndlessScope.launch(Dispatchers.Default) {
             while (true) {
                 val item = requestQueue.receive()
 				runCatching{loadOne()}

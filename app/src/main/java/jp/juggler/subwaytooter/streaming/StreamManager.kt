@@ -129,7 +129,7 @@ class StreamManager(val appState: AppState) {
     //////////////////////////////////////////////////
     // methods
 
-    fun enqueue(block: suspend () -> Unit) = GlobalScope.launch(Dispatchers.Default) { queue.send(block) }
+    fun enqueue(block: suspend () -> Unit) = EndlessScope.launch(Dispatchers.Default) { queue.send(block) }
 
     // UIスレッドから呼ばれる
     fun updateStreamingColumns() {
@@ -162,7 +162,7 @@ class StreamManager(val appState: AppState) {
     ////////////////////////////////////////////////////////////////
 
     init {
-        GlobalScope.launch(Dispatchers.Default) {
+        EndlessScope.launch(Dispatchers.Default) {
             while (true) {
                 try {
                     queue.receive().invoke()

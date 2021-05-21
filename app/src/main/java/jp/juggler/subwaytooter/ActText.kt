@@ -8,17 +8,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-import jp.juggler.subwaytooter.util.CustomShare
-import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.util.CustomShare
+import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.TootTextEncoder
-import jp.juggler.util.LogCategory
-import jp.juggler.util.copyToClipboard
-import jp.juggler.util.hideKeyboard
-import jp.juggler.util.showToast
+import jp.juggler.util.*
 
 class ActText : AppCompatActivity(), View.OnClickListener {
 	
@@ -35,30 +32,24 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		internal const val EXTRA_CONTENT_END = "content_end"
 		internal const val EXTRA_ACCOUNT_DB_ID = "account_db_id"
 		
-		fun open(
+		fun createIntent(
 			activity : ActMain,
-			request_code : Int,
 			access_info : SavedAccount,
 			status : TootStatus
-		) {
-			val intent = Intent(activity, ActText::class.java)
-			intent.putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
-			TootTextEncoder.encodeStatus(intent, activity, access_info, status)
-			activity.startActivityForResult(intent, request_code)
+		) = Intent(activity, ActText::class.java).apply {
+			putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
+			TootTextEncoder.encodeStatus(this, activity, access_info, status)
 		}
-		
-		fun open(
+
+		fun createIntent(
 			activity : ActMain,
-			request_code : Int,
 			access_info : SavedAccount,
 			who : TootAccount
-		) {
-			val intent = Intent(activity, ActText::class.java)
-			intent.putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
-			TootTextEncoder.encodeAccount(intent, activity, access_info, who)
-			activity.startActivityForResult(intent, request_code)
+		) = Intent(activity, ActText::class.java).apply {
+			putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
+			TootTextEncoder.encodeAccount(this, activity, access_info, who)
 		}
-		
+
 	}
 	
 	private lateinit var etText : EditText

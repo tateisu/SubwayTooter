@@ -2,17 +2,16 @@ package jp.juggler.subwaytooter
 
 import android.app.Dialog
 import android.content.Context
-import android.content.Intent
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.woxthebox.draglistview.DragItem
 import com.woxthebox.draglistview.DragItemAdapter
 import com.woxthebox.draglistview.DragListView
@@ -30,14 +29,29 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		
 		private val log = LogCategory("ActHighlightWordList")
 		
-		private const val REQUEST_CODE_EDIT = 1
 	}
 	
 	private lateinit var listView : DragListView
 	private lateinit var listAdapter : MyListAdapter
 	
 	private var last_ringtone : WeakReference<Ringtone>? = null
-	
+
+	private val arEdit = activityResultHandler {ar->
+		val data = ar?.data
+		if(data != null && ar.resultCode == RESULT_OK){
+			try {
+				data.getStringExtra(ActHighlightWordEdit.EXTRA_ITEM)
+					?.decodeJsonObject()
+					?.let{
+						HighlightWord(it).save(this)
+						loadData()
+					}
+			} catch(ex : Throwable) {
+				throw RuntimeException("can't load data", ex)
+			}
+		}
+	}
+
 	//	@Override public void onBackPressed(){
 	//		setResult( RESULT_OK );
 	//		super.onBackPressed();
@@ -45,6 +59,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
+		arEdit .register(this,log)
 		App1.setActivityTheme(this)
 		initUI()
 		loadData()
@@ -271,25 +286,15 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 			})
 	}
 	
-	private fun edit(item : HighlightWord) {
-		ActHighlightWordEdit.open(this, REQUEST_CODE_EDIT, item)
-	}
-	
-	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
-		when {
-			requestCode == REQUEST_CODE_EDIT &&
-				resultCode == RESULT_OK &&
-				data != null ->
-				try {
-					val sv = data.getStringExtra(ActHighlightWordEdit.EXTRA_ITEM) ?: return
-					val item = HighlightWord(sv.decodeJsonObject())
-					item.save(this@ActHighlightWordList)
-					loadData()
-				} catch(ex : Throwable) {
-					throw RuntimeException("can't load data", ex)
-				}
-			
-			else -> super.onActivityResult(requestCode, resultCode, data)
+	private fun edit(oldItem : HighlightWord) {
+		try {
+
+
+			arEdit.launch(
+				ActHighlightWordEdit.createIntent(this,  oldItem)
+			)
+		} catch(ex : JsonException) {
+			throw RuntimeException(ex)
 		}
 	}
 	

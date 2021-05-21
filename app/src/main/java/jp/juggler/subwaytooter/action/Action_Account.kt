@@ -215,7 +215,12 @@ object Action_Account {
             bAllowPseudo = true,
             bAuto = true,
             message = activity.getString(R.string.account_picker_open_setting)
-        ) { ai -> ActAccountSetting.open(activity, ai, ActMain.REQUEST_CODE_ACCOUNT_SETTING) }
+        ) { ai ->
+
+            activity.arAccountSetting.launch(
+                ActAccountSetting.createIntent(activity, ai)
+            )
+        }
     }
 
 
@@ -262,7 +267,13 @@ object Action_Account {
 
         val db_id = activity.currentPostTarget?.db_id ?: -1L
         if (db_id != -1L) {
-            ActPost.open(activity, ActMain.REQUEST_CODE_POST, db_id, initial_text = initial_text)
+            activity.launchActPost(
+                ActPost.createIntent(
+                    activity,
+                    db_id,
+                    initial_text = initial_text
+                )
+            )
         } else {
             AccountPicker.pick(
                 activity,
@@ -270,11 +281,12 @@ object Action_Account {
                 bAuto = true,
                 message = activity.getString(R.string.account_picker_toot)
             ) { ai ->
-                ActPost.open(
-                    activity,
-                    ActMain.REQUEST_CODE_POST,
-                    ai.db_id,
-                    initial_text = initial_text
+                activity.launchActPost(
+                    ActPost.createIntent(
+                        activity,
+                        ai.db_id,
+                        initial_text = initial_text
+                    )
                 )
             }
         }
@@ -374,34 +386,34 @@ object Action_Account {
     }
 
     fun getReactionableAccounts(
-        activity:ActMain,
-        allowMisskey:Boolean = true,
-        block:(ArrayList<SavedAccount>)->Unit
-    ){
+        activity: ActMain,
+        allowMisskey: Boolean = true,
+        block: (ArrayList<SavedAccount>) -> Unit
+    ) {
         TootTaskRunner(activity).run(object : TootTask {
-            var list : List<SavedAccount>? = null
+            var list: List<SavedAccount>? = null
             override suspend fun background(client: TootApiClient): TootApiResult? {
-                list = SavedAccount.loadAccountList(activity).filter { a->
+                list = SavedAccount.loadAccountList(activity).filter { a ->
                     when {
                         client.isApiCancelled -> false
                         a.isPseudo -> false
                         a.isMisskey -> allowMisskey
                         else -> {
-                            val(ti,ri)=TootInstance.getEx(client,account=a)
-                            if(ti==null) {
+                            val (ti, ri) = TootInstance.getEx(client, account = a)
+                            if (ti == null) {
                                 ri?.error?.let { log.w(it) }
                                 false
-                            }else
+                            } else
                                 ti.fedibird_capabilities?.contains("emoji_reaction") == true
                         }
                     }
                 }
-                return if(client.isApiCancelled) null else TootApiResult()
+                return if (client.isApiCancelled) null else TootApiResult()
             }
 
             override suspend fun handleResult(result: TootApiResult?) {
                 result ?: return
-                if(list != null) block(ArrayList(list))
+                if (list != null) block(ArrayList(list))
             }
         })
     }
@@ -412,15 +424,15 @@ object Action_Account {
         pos: Int,
         type: ColumnType,
         args: Array<out Any> = emptyArray(),
-        filter: suspend(SavedAccount)->Boolean
+        filter: suspend (SavedAccount) -> Boolean
     ) {
-        activity.launch{
-            val accountList = withContext(Dispatchers.IO){
+        activity.launch {
+            val accountList = withContext(Dispatchers.IO) {
                 SavedAccount.loadAccountList(activity)
-                    .filter{
-                        if( it.isPseudo && !type.bAllowPseudo) false
-                        else if( it.isMisskey && !type.bAllowMisskey) false
-                        else if( it.isMastodon && !type.bAllowMastodon) false
+                    .filter {
+                        if (it.isPseudo && !type.bAllowPseudo) false
+                        else if (it.isMisskey && !type.bAllowMisskey) false
+                        else if (it.isMastodon && !type.bAllowMastodon) false
                         else filter(it)
                     }
             }.toMutableList()

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter
 
+import android.app.Activity
 import android.view.View
 import android.widget.CompoundButton
 import jp.juggler.subwaytooter.action.Action_Account
@@ -170,7 +171,7 @@ fun ColumnViewHolder.onCheckedChangedImpl(view: CompoundButton?, isChecked: Bool
 }
 
 fun ColumnViewHolder.onClickImpl(v: View?) {
-    v?: return
+    v ?: return
 
     val column = this.column
     val status_adapter = this.status_adapter
@@ -190,7 +191,7 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
                 etSearch.hideKeyboard()
                 etSearch.setText(column.search_query)
                 cbResolve.isCheckedNoAnime = column.search_resolve
-            }else if(column.type == ColumnType.REACTIONS){
+            } else if (column.type == ColumnType.REACTIONS) {
                 updateReactionQueryView()
             }
             refreshLayout.isRefreshing = false
@@ -198,7 +199,7 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
         }
 
         btnSearch -> {
-            if( column.isSearchColumn){
+            if (column.isSearchColumn) {
                 etSearch.hideKeyboard()
                 column.search_query = etSearch.text.toString().trim { it <= ' ' }
                 column.search_resolve = cbResolve.isChecked
@@ -231,13 +232,20 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
         )
 
         btnColor ->
-            activity.app_state.columnIndex(column)?.let {
-                ActColumnCustomize.open(activity, it, ActMain.REQUEST_CODE_COLUMN_COLOR)
+            activity.app_state.columnIndex(column)?.let { colIdx ->
+
+
+                activity.arColumnColor.launch(
+                    ActColumnCustomize.createIntent(activity, colIdx)
+                )
             }
 
         btnLanguageFilter ->
-            activity.app_state.columnIndex(column)?.let {
-                ActLanguageFilter.open(activity, it, ActMain.REQUEST_CODE_LANGUAGE_FILTER)
+            activity.app_state.columnIndex(column)?.let { colIdx ->
+
+                activity.arLanguageFilter.launch(
+                    ActLanguageFilter.createIntent(activity, colIdx)
+                )
             }
 
         btnListAdd -> {
@@ -283,14 +291,14 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
             Action_Account.resendConfirmMail(activity, column.access_info)
         }
 
-        btnEmojiAdd ->{
+        btnEmojiAdd -> {
             addEmojiQuery()
         }
     }
 }
 
 fun ColumnViewHolder.onLongClickImpl(v: View?): Boolean {
-    v?: return false
+    v ?: return false
     return when (v) {
         btnColumnClose ->
             activity.app_state.columnIndex(column)?.let {

@@ -76,7 +76,6 @@ class ActKeywordFilter
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
-		
 		App1.setActivityTheme(this)
 		
 		val intent = this.intent

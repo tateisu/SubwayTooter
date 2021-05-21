@@ -18,6 +18,7 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -82,12 +83,9 @@ class ActMain : AsyncActivity(), View.OnClickListener,
 
         // リクエスト
         const val REQUEST_CODE_COLUMN_LIST = 1
-        const val REQUEST_CODE_ACCOUNT_SETTING = 2
         const val REQUEST_APP_ABOUT = 3
         const val REQUEST_CODE_NICKNAME = 4
         const val REQUEST_CODE_POST = 5
-        const val REQUEST_CODE_COLUMN_COLOR = 6
-        const val REQUEST_CODE_APP_SETTING = 7
         const val REQUEST_CODE_TEXT = 8
         const val REQUEST_CODE_LANGUAGE_FILTER = 9
 
@@ -412,12 +410,107 @@ class ActMain : AsyncActivity(), View.OnClickListener,
     val quickTootText: String
         get() = etQuickToot.text.toString()
 
+    val arColumnColor = activityResultHandler { ar ->
+        val data = ar?.data
+        if (data != null && ar.resultCode == Activity.RESULT_OK) {
+            app_state.saveColumnList()
+            val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
+            app_state.column(idx)?.let {
+                it.fireColumnColor()
+                it.fireShowContent(
+                    reason = "ActMain column color changed",
+                    reset = true
+                )
+            }
+            updateColumnStrip()
+        }
+    }
+
+    val arLanguageFilter = activityResultHandler { ar ->
+        val data = ar?.data
+        if (data != null && ar.resultCode == Activity.RESULT_OK) {
+            app_state.saveColumnList()
+            val idx = data.getIntExtra(ActLanguageFilter.EXTRA_COLUMN_INDEX, 0)
+            app_state.column(idx)?.onLanguageFilterChanged()
+
+        }
+    }
+
+    val arNickname = activityResultHandler { ar ->
+        if (ar?.resultCode == Activity.RESULT_OK) {
+            updateColumnStrip()
+            app_state.columnList.forEach { it.fireShowColumnHeader() }
+        }
+    }
+
+    val arAppSetting = activityResultHandler { ar ->
+        Column.reloadDefaultColor(this, pref)
+        showFooterColor()
+        updateColumnStrip()
+        if (ar?.resultCode == RESULT_APP_DATA_IMPORT) {
+            ar.data?.data?.let { importAppData(it) }
+        }
+    }
+
+    val arAbout = activityResultHandler { ar ->
+        val data = ar?.data
+        if (data != null && ar.resultCode == Activity.RESULT_OK) {
+            data.getStringExtra(ActAbout.EXTRA_SEARCH)?.notEmpty()?.let { search ->
+                Action_Account.timeline(
+                    this,
+                    defaultInsertPosition,
+                    ColumnType.SEARCH,
+                    args = arrayOf(search, true)
+                )
+            }
+        }
+    }
+
+    val arAccountSetting = activityResultHandler { ar ->
+        updateColumnStrip()
+        app_state.columnList.forEach { it.fireShowColumnHeader() }
+        when (ar?.resultCode) {
+            RESULT_OK -> ar.data?.data?.let { openBrowser(it) }
+
+            ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN ->
+                ar.data?.getLongExtra(ActAccountSetting.EXTRA_DB_ID, -1L)
+                    ?.takeIf { it != -1L }
+                    ?.let { checkAccessToken2(it) }
+        }
+    }
+
+    val arColumnList = activityResultHandler { ar ->
+        val data = ar?.data
+        if (data != null && ar.resultCode == Activity.RESULT_OK) {
+            val order = data.getIntegerArrayListExtra(ActColumnList.EXTRA_ORDER)
+            if (order != null && isOrderChanged(order)) {
+                setOrder(order)
+            }
+
+            val select = data.getIntExtra(ActColumnList.EXTRA_SELECTION, -1)
+            if (select in 0 until app_state.columnCount) {
+                scrollToColumn(select)
+            }
+        }
+    }
+
     //////////////////////////////////////////////////////////////////
     // アクティビティイベント
 
     override fun onCreate(savedInstanceState: Bundle?) {
         log.d("onCreate")
         super.onCreate(savedInstanceState)
+
+        arColumnColor.register(this, log)
+        arLanguageFilter.register(this, log)
+        arNickname.register(this, log)
+        arAppSetting.register(this, log)
+        arAbout.register(this, log)
+        arAccountSetting.register(this, log)
+        arColumnList.register(this, log)
+        arActPost.register(this, log)
+        arActText.register(this, log)
+
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         App1.setActivityTheme(this, noActionBar = true)
 
@@ -907,7 +1000,13 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                 dismiss_callback = { sent_intent2 = null }
             ) { ai ->
                 sent_intent2 = null
-                ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id, sent_intent = intent)
+                launchActPost(
+                    ActPost.createIntent(
+                        this@ActMain,
+                        ai.db_id,
+                        sent_intent = intent
+                    )
+                )
             }
         }
     }
@@ -979,7 +1078,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         })
     }
 
-    private fun isOrderChanged(new_order: List<Int>): Boolean {
+    fun isOrderChanged(new_order: List<Int>): Boolean {
         if (new_order.size != app_state.columnCount) return true
         for (i in new_order.indices) {
             if (new_order[i] != i) return true
@@ -987,113 +1086,34 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         return false
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        log.d("onActivityResult req=$requestCode res=$resultCode data=$data")
-
-        if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                REQUEST_CODE_COLUMN_LIST -> if (data != null) {
-                    val order = data.getIntegerArrayListExtra(ActColumnList.EXTRA_ORDER)
-                    if (order != null && isOrderChanged(order)) {
-                        setOrder(order)
-                    }
-
-                    val select = data.getIntExtra(ActColumnList.EXTRA_SELECTION, -1)
-                    if (select in 0 until app_state.columnCount) {
-                        scrollToColumn(select)
-                    }
-                }
-
-                REQUEST_APP_ABOUT -> if (data != null) {
-                    val search = data.getStringExtra(ActAbout.EXTRA_SEARCH)
-                    if (search?.isNotEmpty() == true) {
-                        Action_Account.timeline(
-                            this@ActMain,
-                            defaultInsertPosition,
-                            ColumnType.SEARCH,
-                            args = arrayOf(search, true)
-                        )
-                    }
-                    return
-                }
-
-                REQUEST_CODE_NICKNAME -> {
-                    updateColumnStrip()
-                    app_state.columnList.forEach { it.fireShowColumnHeader() }
-                }
-
-                REQUEST_CODE_POST -> if (data != null) {
-                    etQuickToot.setText("")
-                    posted_acct =
-                        data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
-                    if (data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
-                        posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
-                        posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
-                        posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
-                    } else {
-                        posted_status_id = null
-                    }
-                }
-
-                REQUEST_CODE_COLUMN_COLOR -> if (data != null) {
-                    app_state.saveColumnList()
-                    val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
-                    app_state.column(idx)?.let {
-                        it.fireColumnColor()
-                        it.fireShowContent(
-                            reason = "ActMain column color changed",
-                            reset = true
-                        )
-                    }
-                    updateColumnStrip()
-                }
-
-                REQUEST_CODE_LANGUAGE_FILTER -> if (data != null) {
-                    app_state.saveColumnList()
-                    val idx = data.getIntExtra(ActLanguageFilter.EXTRA_COLUMN_INDEX, 0)
-                    app_state.column(idx)?.onLanguageFilterChanged()
-                }
+    private val arActPost = activityResultHandler { ar ->
+        val data = ar?.data
+        if (data != null && ar.resultCode == Activity.RESULT_OK) {
+            etQuickToot.setText("")
+            posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
+            if (data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
+                posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
+                posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
+                posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
+            } else {
+                posted_status_id = null
             }
         }
-
-        when (requestCode) {
-
-            REQUEST_CODE_ACCOUNT_SETTING -> {
-                updateColumnStrip()
-
-                app_state.columnList.forEach { it.fireShowColumnHeader() }
-
-                when (resultCode) {
-                    RESULT_OK -> data?.data?.let { openBrowser(it) }
-
-                    ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN ->
-                        data?.getLongExtra(ActAccountSetting.EXTRA_DB_ID, -1L)
-                            ?.takeIf { it != -1L }?.let { checkAccessToken2(it) }
-                }
-            }
-
-            REQUEST_CODE_APP_SETTING -> {
-                Column.reloadDefaultColor(this, pref)
-                showFooterColor()
-                updateColumnStrip()
-
-                if (resultCode == RESULT_APP_DATA_IMPORT) {
-                    data?.data?.let { importAppData(it) }
-                }
-            }
-
-            REQUEST_CODE_TEXT -> when (resultCode) {
-                ActText.RESULT_SEARCH_MSP -> searchFromActivityResult(data, ColumnType.SEARCH_MSP)
-                ActText.RESULT_SEARCH_TS -> searchFromActivityResult(data, ColumnType.SEARCH_TS)
-                ActText.RESULT_SEARCH_NOTESTOCK -> searchFromActivityResult(
-                    data,
-                    ColumnType.SEARCH_NOTESTOCK
-                )
-            }
-        }
-
-        super.onActivityResult(requestCode, resultCode, data)
     }
+
+    private val arActText = activityResultHandler { ar ->
+        when (ar?.resultCode) {
+            ActText.RESULT_SEARCH_MSP ->
+                searchFromActivityResult(ar.data, ColumnType.SEARCH_MSP)
+            ActText.RESULT_SEARCH_TS ->
+                searchFromActivityResult(ar.data, ColumnType.SEARCH_TS)
+            ActText.RESULT_SEARCH_NOTESTOCK ->
+                searchFromActivityResult(ar.data, ColumnType.SEARCH_NOTESTOCK)
+        }
+    }
+
+    fun launchActPost(intent: Intent) = arActPost.launch(intent)
+    fun launchActText(intent: Intent) = arActText.launch(intent)
 
     override fun onBackPressed() {
 
@@ -1522,7 +1542,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         }
     )
 
-    private fun updateColumnStrip() {
+    fun updateColumnStrip() {
         llEmpty.vg(app_state.columnCount == 0)
 
         val iconSize = stripIconSize
@@ -2155,7 +2175,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
     }
 
     // アクセストークンの手動入力(更新)
-    private fun checkAccessToken2(db_id: Long) {
+    fun checkAccessToken2(db_id: Long) {
 
         val sa = SavedAccount.loadAccount(this, db_id) ?: return
 
@@ -2329,7 +2349,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         }
     }
 
-    private fun showFooterColor() {
+    fun showFooterColor() {
 
         val footer_button_bg_color = Pref.ipFooterButtonBgColor(pref)
         val footer_button_fg_color = Pref.ipFooterButtonFgColor(pref)
@@ -2440,7 +2460,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         updateColumnStrip()
     }
 
-    private fun setOrder(new_order: List<Int>) {
+    fun setOrder(new_order: List<Int>) {
 
         phoneOnly { env -> env.pager.adapter = null }
 
@@ -2530,7 +2550,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         env.tablet_pager_adapter.notifyDataSetChanged()
     }
 
-    private fun scrollToColumn(index: Int, smoothScroll: Boolean = true) {
+    fun scrollToColumn(index: Int, smoothScroll: Boolean = true) {
         scrollColumnStrip(index)
         phoneTab(
 
@@ -2551,7 +2571,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
 //////////////////////////////////////////////////////////////////////////////////////////////
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    private fun importAppData(uri: Uri) {
+    fun importAppData(uri: Uri) {
 
         // remove all columns
         phoneOnly { env -> env.pager.adapter = null }

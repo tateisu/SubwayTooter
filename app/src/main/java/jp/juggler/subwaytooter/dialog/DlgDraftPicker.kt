@@ -14,11 +14,9 @@ import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.PostDraft
-import jp.juggler.util.JsonObject
-import jp.juggler.util.LogCategory
-import jp.juggler.util.dismissSafe
-import jp.juggler.util.showToast
+import jp.juggler.util.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.GlobalScope
 
 class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
     DialogInterface.OnDismissListener {
@@ -118,7 +116,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
         // cancel old task
         task?.cancel()
 
-        task = GlobalScope.launch(Dispatchers.Main) {
+        task = EndlessScope.launch(Dispatchers.Main) {
             val cursor = try {
                 withContext(Dispatchers.IO) {
                     PostDraft.createCursor()

@@ -7,12 +7,12 @@ import jp.juggler.subwaytooter.api.ApiPath
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.entity.TimelineItem
+import jp.juggler.subwaytooter.api.entity.TootAnnouncement
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.JsonObject
-import jp.juggler.util.WordTrieTree
-import jp.juggler.util.notEmpty
-import jp.juggler.util.withCaption
+import jp.juggler.util.*
 import kotlinx.coroutines.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -125,7 +125,7 @@ abstract class ColumnTask(
 	}
 
 	fun start() {
-		job = GlobalScope.launch(Dispatchers.Main) {
+		job = EndlessScope.launch(Dispatchers.Main) {
 			handleResult(
 				try {
 					withContext(Dispatchers.IO) { background() }

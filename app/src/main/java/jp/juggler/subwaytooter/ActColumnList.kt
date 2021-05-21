@@ -28,13 +28,12 @@ class ActColumnList : AppCompatActivity() {
 		const val EXTRA_ORDER = "order"
 		const val EXTRA_SELECTION = "selection"
 		
-		fun open(activity : ActMain, currentItem : Int, requestCode : Int) {
-			val array = activity.app_state.encodeColumnList()
-			AppState.saveColumnList(activity, TMP_FILE_COLUMN_LIST, array)
-			val intent = Intent(activity, ActColumnList::class.java)
-			intent.putExtra(EXTRA_SELECTION, currentItem)
-			activity.startActivityForResult(intent, requestCode)
-		}
+		fun createIntent(activity : ActMain, currentItem : Int) =
+			Intent(activity, ActColumnList::class.java).apply {
+				val array = activity.app_state.encodeColumnList()
+				AppState.saveColumnList(activity, TMP_FILE_COLUMN_LIST, array)
+				putExtra(EXTRA_SELECTION, currentItem)
+			}
 	}
 	
 	private lateinit var listView : DragListView

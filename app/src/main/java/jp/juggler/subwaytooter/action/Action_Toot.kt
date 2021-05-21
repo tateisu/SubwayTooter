@@ -1116,12 +1116,13 @@ object Action_Toot {
         status: TootStatus,
         quote: Boolean = false
     ) {
-        ActPost.open(
-            activity,
-            ActMain.REQUEST_CODE_POST,
-            access_info.db_id,
-            reply_status = status,
-            quote = quote
+        activity.launchActPost(
+            ActPost.createIntent(
+                activity,
+                access_info.db_id,
+                reply_status = status,
+                quote = quote
+            )
         )
     }
 
@@ -1208,22 +1209,24 @@ object Action_Toot {
         activity.post_helper.closeAcctPopup()
 
         if (accessInfo.isMisskey) {
-            ActPost.open(
-                activity,
-                ActMain.REQUEST_CODE_POST,
-                accessInfo.db_id,
-                redraft_status = status,
-                reply_status = status.reply
+            activity.launchActPost(
+                ActPost.createIntent(
+                    activity,
+                    accessInfo.db_id,
+                    redraft_status = status,
+                    reply_status = status.reply
+                )
             )
             return
         }
 
         if (status.in_reply_to_id == null) {
-            ActPost.open(
-                activity,
-                ActMain.REQUEST_CODE_POST,
-                accessInfo.db_id,
-                redraft_status = status
+            activity.launchActPost(
+                ActPost.createIntent(
+                    activity,
+                    accessInfo.db_id,
+                    redraft_status = status
+                )
             )
             return
         }
@@ -1242,12 +1245,13 @@ object Action_Toot {
 
                 val reply_status = this.reply_status
                 if (reply_status != null) {
-                    ActPost.open(
-                        activity,
-                        ActMain.REQUEST_CODE_POST,
-                        accessInfo.db_id,
-                        redraft_status = status,
-                        reply_status = reply_status
+                    activity.launchActPost(
+                        ActPost.createIntent(
+                            activity,
+                            accessInfo.db_id,
+                            redraft_status = status,
+                            reply_status = reply_status
+                        )
                     )
                     return
                 }
@@ -1755,12 +1759,13 @@ object Action_Toot {
                     return
                 }
 
-                ActPost.open(
-                    activity,
-                    ActMain.REQUEST_CODE_POST,
-                    access_info.db_id,
-                    scheduledStatus = item,
-                    reply_status = reply_status
+                activity.launchActPost(
+                    ActPost.createIntent(
+                        activity,
+                        access_info.db_id,
+                        scheduledStatus = item,
+                        reply_status = reply_status
+                    )
                 )
 
             }

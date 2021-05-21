@@ -375,7 +375,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             }
 
             init {
-                GlobalScope.launch(Dispatchers.IO) {
+                EndlessScope.launch(Dispatchers.IO) {
                     while (true) {
                         requestQueue.receive().let { it.result.send(handleRequest(it)) }
                     }

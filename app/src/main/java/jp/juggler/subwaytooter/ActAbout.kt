@@ -79,7 +79,6 @@ class ActAbout : AppCompatActivity() {
 
         Styler.fixHorizontalPadding(findViewById(R.id.svContent))
 
-
         try {
             val pInfo = packageManager.getPackageInfo(packageName, 0)
             val tv = findViewById<TextView>(R.id.tvVersion)

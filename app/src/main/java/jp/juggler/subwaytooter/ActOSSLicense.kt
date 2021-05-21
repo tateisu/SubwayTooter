@@ -1,9 +1,11 @@
 package jp.juggler.subwaytooter
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.widget.TextView
-import jp.juggler.util.*
+import androidx.appcompat.app.AppCompatActivity
+import jp.juggler.util.LogCategory
+import jp.juggler.util.decodeUTF8
+import jp.juggler.util.loadRawResource
 
 class ActOSSLicense : AppCompatActivity() {
 	

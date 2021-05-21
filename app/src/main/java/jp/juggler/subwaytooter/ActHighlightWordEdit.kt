@@ -18,229 +18,220 @@ import jp.juggler.util.*
 import org.jetbrains.anko.textColor
 
 class ActHighlightWordEdit
-	: AppCompatActivity(),
-	View.OnClickListener,
-	ColorPickerDialogListener,
-	CompoundButton.OnCheckedChangeListener {
-	
-	companion object {
-		
-		internal val log = LogCategory("ActHighlightWordEdit")
-		
-		const val EXTRA_ITEM = "item"
-		
-		internal const val REQUEST_CODE_NOTIFICATION_SOUND = 2
-		
-		private const val COLOR_DIALOG_ID_TEXT = 1
-		private const val COLOR_DIALOG_ID_BACKGROUND = 2
-		
-		fun open(activity : Activity, request_code : Int, item : HighlightWord) {
-			try {
-				val intent = Intent(activity, ActHighlightWordEdit::class.java)
-				intent.putExtra(EXTRA_ITEM, item.encodeJson().toString())
-				activity.startActivityForResult(intent, request_code)
-			} catch(ex : JsonException) {
-				throw RuntimeException(ex)
-			}
-		}
-	}
-	
-	internal lateinit var item : HighlightWord
-	
-	private lateinit var tvName : TextView
-	private lateinit var swSound : SwitchCompat
-	private lateinit var swSpeech : SwitchCompat
-	
-	private var bBusy = false
-	
-	private fun makeResult() {
-		try {
-			val data = Intent()
-			data.putExtra(EXTRA_ITEM, item.encodeJson().toString())
-			setResult(Activity.RESULT_OK, data)
-		} catch(ex : JsonException) {
-			throw RuntimeException(ex)
-		}
-	}
-	
-	override fun onBackPressed() {
-		makeResult()
-		super.onBackPressed()
-	}
-	
-	override fun onCreate(savedInstanceState : Bundle?) {
-		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this)
-		initUI()
-		
-		val src = (savedInstanceState?.getString(EXTRA_ITEM) ?: intent.getStringExtra(EXTRA_ITEM))
-			?.decodeJsonObject()
-		
-		if(src == null) {
-			log.d("missing source data")
-			finish()
-			return
-		}
-		
-		item = HighlightWord(src)
-		showSampleText()
-	}
-	
-	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
-		when(requestCode) {
-			
-			REQUEST_CODE_NOTIFICATION_SOUND -> {
-				if(resultCode == Activity.RESULT_OK) {
-					// RINGTONE_PICKERからの選択されたデータを取得する
-					val uri = data?.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
-					if(uri is Uri) {
-						item.sound_uri = uri.toString()
-						item.sound_type = HighlightWord.SOUND_TYPE_CUSTOM
-						swSound.isChecked = true
-					}
-				}
-			}
-			
-			else -> super.onActivityResult(requestCode, resultCode, data)
-		}
-	}
-	
-	private fun initUI() {
-		setContentView(R.layout.act_highlight_edit)
-		App1.initEdgeToEdge(this)
-		
-		tvName = findViewById(R.id.tvName)
-		swSound = findViewById(R.id.swSound)
-		swSound.setOnCheckedChangeListener(this)
-		
-		swSpeech = findViewById(R.id.swSpeech)
-		swSpeech.setOnCheckedChangeListener(this)
-		
-		setSwitchColor(App1.pref, swSound)
-		setSwitchColor(App1.pref, swSpeech)
-		
-		intArrayOf(
-			R.id.btnTextColorEdit,
-			R.id.btnTextColorReset,
-			R.id.btnBackgroundColorEdit,
-			R.id.btnBackgroundColorReset,
-			R.id.btnNotificationSoundEdit,
-			R.id.btnNotificationSoundReset
-		).forEach {
-			findViewById<View>(it)?.setOnClickListener(this)
-		}
-	}
-	
-	private fun showSampleText() {
-		bBusy = true
-		try {
-			
-			swSound.isChecked = item.sound_type != HighlightWord.SOUND_TYPE_NONE
-			
-			swSpeech.isChecked = item.speech != 0
-			
-			tvName.text = item.name
-			tvName.setBackgroundColor(item.color_bg) // may 0
-			tvName.textColor = item.color_fg.notZero()
-				?: attrColor(android.R.attr.textColorPrimary)
-			
-		} finally {
-			bBusy = false
-		}
-	}
-	
-	override fun onClick(v : View) {
-		
-		when(v.id) {
-			
-			R.id.btnTextColorEdit -> openColorPicker(COLOR_DIALOG_ID_TEXT, item.color_fg)
-			
-			R.id.btnTextColorReset -> {
-				item.color_fg = 0
-				showSampleText()
-			}
-			
-			R.id.btnBackgroundColorEdit -> openColorPicker(
-				COLOR_DIALOG_ID_BACKGROUND,
-				item.color_bg
-			)
-			
-			R.id.btnBackgroundColorReset -> {
-				item.color_bg = 0
-				showSampleText()
-			}
-			
-			R.id.btnNotificationSoundEdit -> openNotificationSoundPicker()
-			
-			R.id.btnNotificationSoundReset -> {
-				item.sound_uri = null
-				item.sound_type =
-					if(swSound.isChecked) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_NONE
-			}
-		}
-		
-	}
-	
-	override fun onCheckedChanged(buttonView : CompoundButton, isChecked : Boolean) {
-		if(bBusy) return
-		
-		when(buttonView.id) {
-			R.id.swSound -> {
-				if(! isChecked) {
-					item.sound_type = HighlightWord.SOUND_TYPE_NONE
-				} else {
-					item.sound_type =
-						if(item.sound_uri?.isEmpty() != false) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_CUSTOM
-				}
-			}
-			
-			R.id.swSpeech -> {
-				item.speech = when(isChecked) {
-					false -> 0
-					else -> 1
-				}
-			}
-		}
-	}
-	
-	private fun openColorPicker(id : Int, initial_color : Int) {
-		val builder = ColorPickerDialog.newBuilder()
-			.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-			.setAllowPresets(true)
-			.setShowAlphaSlider(id == COLOR_DIALOG_ID_BACKGROUND)
-			.setDialogId(id)
-		
-		if(initial_color != 0) builder.setColor(initial_color)
-		
-		builder.show(this)
-		
-	}
-	
-	override fun onDialogDismissed(dialogId : Int) {}
-	
-	override fun onColorSelected(dialogId : Int, color : Int) {
-		when(dialogId) {
-			COLOR_DIALOG_ID_TEXT -> item.color_fg = color or Color.BLACK
-			COLOR_DIALOG_ID_BACKGROUND -> item.color_bg = color.notZero() ?: 0x01000000
-		}
-		showSampleText()
-	}
-	
-	//////////////////////////////////////////////////////////////////
-	
-	private fun openNotificationSoundPicker() {
-		val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
-		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
-		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.notification_sound)
-		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
-		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
-		
-		item.sound_uri.mayUri()?.let { uri ->
-			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
-		}
-		
-		val chooser = Intent.createChooser(intent, getString(R.string.notification_sound))
-		startActivityForResult(chooser, REQUEST_CODE_NOTIFICATION_SOUND)
-	}
-	
+    : AppCompatActivity(),
+    View.OnClickListener,
+    ColorPickerDialogListener,
+    CompoundButton.OnCheckedChangeListener {
+
+    companion object {
+
+        internal val log = LogCategory("ActHighlightWordEdit")
+
+        const val EXTRA_ITEM = "item"
+
+        private const val COLOR_DIALOG_ID_TEXT = 1
+        private const val COLOR_DIALOG_ID_BACKGROUND = 2
+
+        fun createIntent(activity: Activity, item: HighlightWord) =
+            Intent(activity, ActHighlightWordEdit::class.java).apply {
+                putExtra(EXTRA_ITEM, item.encodeJson().toString())
+            }
+    }
+
+    internal lateinit var item: HighlightWord
+
+    private lateinit var tvName: TextView
+    private lateinit var swSound: SwitchCompat
+    private lateinit var swSpeech: SwitchCompat
+
+    private var bBusy = false
+
+    private val arNotificationSound = activityResultHandler { ar ->
+        val data = ar?.data
+        if (data != null && ar.resultCode == Activity.RESULT_OK) {
+            // RINGTONE_PICKERからの選択されたデータを取得する
+            val uri = data.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            if (uri is Uri) {
+                item.sound_uri = uri.toString()
+                item.sound_type = HighlightWord.SOUND_TYPE_CUSTOM
+                swSound.isChecked = true
+            }
+        }
+    }
+
+    private fun makeResult() {
+        try {
+            val data = Intent()
+            data.putExtra(EXTRA_ITEM, item.encodeJson().toString())
+            setResult(Activity.RESULT_OK, data)
+        } catch (ex: JsonException) {
+            throw RuntimeException(ex)
+        }
+    }
+
+    override fun onBackPressed() {
+        makeResult()
+        super.onBackPressed()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arNotificationSound.register(this, log)
+        App1.setActivityTheme(this)
+        initUI()
+
+        val src = (savedInstanceState?.getString(EXTRA_ITEM) ?: intent.getStringExtra(EXTRA_ITEM))
+            ?.decodeJsonObject()
+
+        if (src == null) {
+            log.d("missing source data")
+            finish()
+            return
+        }
+
+        item = HighlightWord(src)
+        showSampleText()
+    }
+
+
+    private fun initUI() {
+        setContentView(R.layout.act_highlight_edit)
+        App1.initEdgeToEdge(this)
+
+        tvName = findViewById(R.id.tvName)
+        swSound = findViewById(R.id.swSound)
+        swSound.setOnCheckedChangeListener(this)
+
+        swSpeech = findViewById(R.id.swSpeech)
+        swSpeech.setOnCheckedChangeListener(this)
+
+        setSwitchColor(App1.pref, swSound)
+        setSwitchColor(App1.pref, swSpeech)
+
+        intArrayOf(
+            R.id.btnTextColorEdit,
+            R.id.btnTextColorReset,
+            R.id.btnBackgroundColorEdit,
+            R.id.btnBackgroundColorReset,
+            R.id.btnNotificationSoundEdit,
+            R.id.btnNotificationSoundReset
+        ).forEach {
+            findViewById<View>(it)?.setOnClickListener(this)
+        }
+    }
+
+    private fun showSampleText() {
+        bBusy = true
+        try {
+
+            swSound.isChecked = item.sound_type != HighlightWord.SOUND_TYPE_NONE
+
+            swSpeech.isChecked = item.speech != 0
+
+            tvName.text = item.name
+            tvName.setBackgroundColor(item.color_bg) // may 0
+            tvName.textColor = item.color_fg.notZero()
+                ?: attrColor(android.R.attr.textColorPrimary)
+
+        } finally {
+            bBusy = false
+        }
+    }
+
+    override fun onClick(v: View) {
+
+        when (v.id) {
+
+            R.id.btnTextColorEdit -> openColorPicker(COLOR_DIALOG_ID_TEXT, item.color_fg)
+
+            R.id.btnTextColorReset -> {
+                item.color_fg = 0
+                showSampleText()
+            }
+
+            R.id.btnBackgroundColorEdit -> openColorPicker(
+                COLOR_DIALOG_ID_BACKGROUND,
+                item.color_bg
+            )
+
+            R.id.btnBackgroundColorReset -> {
+                item.color_bg = 0
+                showSampleText()
+            }
+
+            R.id.btnNotificationSoundEdit -> openNotificationSoundPicker()
+
+            R.id.btnNotificationSoundReset -> {
+                item.sound_uri = null
+                item.sound_type =
+                    if (swSound.isChecked) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_NONE
+            }
+        }
+
+    }
+
+    override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
+        if (bBusy) return
+
+        when (buttonView.id) {
+            R.id.swSound -> {
+                if (!isChecked) {
+                    item.sound_type = HighlightWord.SOUND_TYPE_NONE
+                } else {
+                    item.sound_type =
+                        if (item.sound_uri?.isEmpty() != false) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_CUSTOM
+                }
+            }
+
+            R.id.swSpeech -> {
+                item.speech = when (isChecked) {
+                    false -> 0
+                    else -> 1
+                }
+            }
+        }
+    }
+
+    private fun openColorPicker(id: Int, initial_color: Int) {
+        val builder = ColorPickerDialog.newBuilder()
+            .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
+            .setAllowPresets(true)
+            .setShowAlphaSlider(id == COLOR_DIALOG_ID_BACKGROUND)
+            .setDialogId(id)
+
+        if (initial_color != 0) builder.setColor(initial_color)
+
+        builder.show(this)
+
+    }
+
+    override fun onDialogDismissed(dialogId: Int) {}
+
+    override fun onColorSelected(dialogId: Int, color: Int) {
+        when (dialogId) {
+            COLOR_DIALOG_ID_TEXT -> item.color_fg = color or Color.BLACK
+            COLOR_DIALOG_ID_BACKGROUND -> item.color_bg = color.notZero() ?: 0x01000000
+        }
+        showSampleText()
+    }
+
+    //////////////////////////////////////////////////////////////////
+
+    private fun openNotificationSoundPicker() {
+        val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.notification_sound)
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
+
+        item.sound_uri.mayUri()?.let { uri ->
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
+        }
+
+        val chooser = Intent.createChooser(intent, getString(R.string.notification_sound))
+
+
+        arNotificationSound.launch(chooser)
+    }
+
 }

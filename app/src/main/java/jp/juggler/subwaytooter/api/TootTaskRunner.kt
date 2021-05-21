@@ -8,10 +8,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.LogCategory
-import jp.juggler.util.clip
-import jp.juggler.util.dismissSafe
-import jp.juggler.util.withCaption
+import jp.juggler.util.*
 import kotlinx.coroutines.*
 import java.lang.Runnable
 import java.lang.ref.WeakReference
@@ -79,7 +76,7 @@ class TootTaskRunner(
         get() = task?.isActive ?: true // nullはまだ開始してないのでアクティブということにする
 
     fun run(callback: TootTask) = this.also {
-        GlobalScope.launch(Dispatchers.Main) {
+        EndlessScope.launch(Dispatchers.Main) {
             callback.handleResult(
 				try {
 					openProgress()

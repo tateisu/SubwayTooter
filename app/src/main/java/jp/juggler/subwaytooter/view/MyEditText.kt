@@ -68,7 +68,7 @@ class MyEditText : AppCompatEditText {
 	var commitContentListener :InputConnectionCompat.OnCommitContentListener? = null
 	var contentMineTypeArray :Array<String>? = null
 	
-	override fun onCreateInputConnection(outAttrs : EditorInfo?) : InputConnection {
+	override fun onCreateInputConnection(outAttrs : EditorInfo?) : InputConnection? {
 		
 		log.d("onCreateInputConnection: listener=${commitContentListener}")
 		
@@ -80,7 +80,7 @@ class MyEditText : AppCompatEditText {
 			super_ic
 		}else{
 			EditorInfoCompat.setContentMimeTypes(outAttrs, mimeArray)
-			InputConnectionCompat.createWrapper(super_ic,outAttrs,listener)
+			super_ic?.let{ InputConnectionCompat.createWrapper(it ,outAttrs,listener)}
 		}
 	}
 	

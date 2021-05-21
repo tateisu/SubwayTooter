@@ -25,6 +25,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.activity.result.ActivityResult
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -87,14 +88,6 @@ class ActPost : AsyncActivity(),
         internal const val KEY_IN_REPLY_TO_TEXT = "in_reply_to_text"
         internal const val KEY_IN_REPLY_TO_IMAGE = "in_reply_to_image"
         internal const val KEY_IN_REPLY_TO_URL = "in_reply_to_url"
-
-        private const val REQUEST_CODE_ATTACHMENT = 1
-        private const val REQUEST_CODE_CAMERA = 2
-        private const val REQUEST_CODE_MUSHROOM = 3
-        private const val REQUEST_CODE_VIDEO = 4
-        private const val REQUEST_CODE_ATTACHMENT_OLD = 5
-        private const val REQUEST_CODE_SOUND = 6
-        private const val REQUEST_CODE_CUSTOM_THUMBNAIL = 7
 
         private const val PERMISSION_REQUEST_CODE = 1
 
@@ -314,9 +307,8 @@ class ActPost : AsyncActivity(),
         private const val STATE_TIME_SCHEDULE = "time_schedule"
         private const val STATE_SCHEDULED_STATUS = "scheduled_status"
 
-        fun open(
+        fun createIntent(
             activity: Activity,
-            request_code: Int,
             account_db_id: Long,
 
             // 再編集する投稿。アカウントと同一のタンスであること
@@ -337,30 +329,30 @@ class ActPost : AsyncActivity(),
             //(Mastodon) 予約投稿の編集
             scheduledStatus: TootScheduled? = null
 
-        ) {
-            val intent = Intent(activity, ActPost::class.java)
-            intent.putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
+        ) = Intent(activity, ActPost::class.java).apply {
+
+            putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
 
             if (redraft_status != null) {
-                intent.putExtra(KEY_REDRAFT_STATUS, redraft_status.json.toString())
+                putExtra(KEY_REDRAFT_STATUS, redraft_status.json.toString())
             }
 
             if (reply_status != null) {
-                intent.putExtra(KEY_REPLY_STATUS, reply_status.json.toString())
-                intent.putExtra(KEY_QUOTE, quote)
+                putExtra(KEY_REPLY_STATUS, reply_status.json.toString())
+                putExtra(KEY_QUOTE, quote)
             }
 
             if (initial_text != null) {
-                intent.putExtra(KEY_INITIAL_TEXT, initial_text)
+                putExtra(KEY_INITIAL_TEXT, initial_text)
             }
 
             if (sent_intent != null) {
-                intent.putExtra(KEY_SENT_INTENT, sent_intent)
+                putExtra(KEY_SENT_INTENT, sent_intent)
             }
+
             if (scheduledStatus != null) {
-                intent.putExtra(KEY_SCHEDULED_STATUS, scheduledStatus.src.toString())
+                putExtra(KEY_SCHEDULED_STATUS, scheduledStatus.src.toString())
             }
-            activity.startActivityForResult(intent, request_code)
         }
 
         internal suspend fun check_exist(url: String?): Boolean {
@@ -371,7 +363,7 @@ class ActPost : AsyncActivity(),
                 val response = call.await()
                 if (response.isSuccessful) return true
 
-                log.e(TootApiClient.formatResponse(response,"check_exist failed."))
+                log.e(TootApiClient.formatResponse(response, "check_exist failed."))
             } catch (ex: Throwable) {
                 log.trace(ex)
             }
@@ -477,6 +469,50 @@ class ActPost : AsyncActivity(),
         openBrowser(span.linkInfo.url)
     }
 
+    private val arAttachmentChooser = activityResultHandler { ar ->
+        if (ar?.resultCode == RESULT_OK)
+            ar.data
+                ?.handleGetContentResult(contentResolver)
+                ?.let { checkAttachments(it) }
+    }
+
+    private val arCustomThumbnail = activityResultHandler { ar ->
+        if (ar?.resultCode == RESULT_OK)
+            ar.data
+                ?.handleGetContentResult(contentResolver)
+                ?.let { uploadCustomThumbnail(it) }
+    }
+
+    private val arCamera = activityResultHandler { ar ->
+        if (ar?.resultCode == RESULT_OK) {
+            // 画像のURL
+            val uri = ar.data?.data ?: uriCameraImage
+            if (uri != null) {
+                addAttachment(uri)
+            } else {
+                showToast(false, "missing image uri")
+            }
+        } else {
+            // 失敗したら DBからデータを削除
+            val uriCameraImage = this.uriCameraImage
+            if (uriCameraImage != null) {
+                contentResolver.delete(uriCameraImage, null, null)
+                this.uriCameraImage = null
+            }
+        }
+    }
+
+    private val arCapture = activityResultHandler { ar ->
+        if (ar?.resultCode == RESULT_OK)
+            ar.data?.data?.let { addAttachment(it) }
+    }
+
+    private val arMushroom = activityResultHandler { ar ->
+        if (ar?.resultCode == RESULT_OK)
+            ar.data?.getStringExtra("replace_key")
+                ?.let { applyMushroomResult(it) }
+    }
+
     ////////////////////////////////////////////////////////////////
 
     override fun onClick(v: View) {
@@ -501,56 +537,10 @@ class ActPost : AsyncActivity(),
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode != RESULT_OK) {
-            when (requestCode) {
-                REQUEST_CODE_CAMERA -> {
-                    // 失敗したら DBからデータを削除
-                    val uriCameraImage = this.uriCameraImage
-                    if (uriCameraImage != null) {
-                        contentResolver.delete(uriCameraImage, null, null)
-                        this@ActPost.uriCameraImage = null
-                    }
-                }
-            }
-        } else {
-            when (requestCode) {
-                REQUEST_CODE_CUSTOM_THUMBNAIL -> uploadCustomThumbnail(
-                    data?.handleGetContentResult(
-                        contentResolver
-                    )
-                )
-
-                REQUEST_CODE_ATTACHMENT_OLD -> checkAttachments(
-                    data?.handleGetContentResult(
-                        contentResolver
-                    )
-                )
-                REQUEST_CODE_ATTACHMENT -> checkAttachments(
-                    data?.handleGetContentResult(
-                        contentResolver
-                    )
-                )
-
-                REQUEST_CODE_CAMERA -> {
-                    // 画像のURL
-                    val uri = data?.data ?: uriCameraImage
-                    if (uri != null) {
-                        addAttachment(uri)
-                    } else {
-                        showToast(false, "missing image uri")
-                    }
-                }
-
-                REQUEST_CODE_VIDEO, REQUEST_CODE_SOUND -> data?.data?.let { addAttachment(it) }
-
-                REQUEST_CODE_MUSHROOM -> {
-                    data?.getStringExtra("replace_key")?.let { applyMushroomResult(it) }
-                }
-            }
-        }
-
-        super.onActivityResult(requestCode, resultCode, data)
+    // unused? for REQUEST_CODE_ATTACHMENT
+    private fun handleAttachmentResult(ar: ActivityResult?) {
+        if (ar?.resultCode == RESULT_OK)
+            ar.data?.handleGetContentResult(contentResolver)?.let { checkAttachments(it) }
     }
 
     override fun onBackPressed() {
@@ -580,6 +570,13 @@ class ActPost : AsyncActivity(),
         var sv: String?
 
         super.onCreate(savedInstanceState)
+
+        arCustomThumbnail.register(this, log)
+        arAttachmentChooser.register(this, log)
+        arCamera.register(this, log)
+        arCapture.register(this, log)
+        arMushroom.register(this, log)
+
         App1.setActivityTheme(this, noActionBar = true)
 
         app_state = App1.getAppState(this)
@@ -841,7 +838,9 @@ class ActPost : AsyncActivity(),
                                 // 「Web設定に合わせる」だった場合は無条件にリプライ元の公開範囲に変更する
                                 this.visibility = sample
                             } else if (TootVisibility.isVisibilitySpoilRequired(
-                                    this.visibility, sample)) {
+                                    this.visibility, sample
+                                )
+                            ) {
                                 // デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
                                 this.visibility = sample
                             }
@@ -1765,6 +1764,7 @@ class ActPost : AsyncActivity(),
             .show()
     }
 
+
     private fun openCustomThumbnail(pa: PostAttachment) {
 
         lastPostAttachment = pa
@@ -1780,7 +1780,9 @@ class ActPost : AsyncActivity(),
         try {
             val intent =
                 intentGetContent(false, getString(R.string.pick_images), arrayOf("image/*"))
-            startActivityForResult(intent, REQUEST_CODE_CUSTOM_THUMBNAIL)
+
+            arCustomThumbnail.launch(intent)
+
         } catch (ex: Throwable) {
             log.trace(ex)
             showToast(ex, "ACTION_GET_CONTENT failed.")
@@ -2031,14 +2033,12 @@ class ActPost : AsyncActivity(),
         }
         a.addAction(getString(R.string.video_capture)) {
             performCapture(
-                REQUEST_CODE_VIDEO,
                 MediaStore.ACTION_VIDEO_CAPTURE,
                 "can't open video capture app."
             )
         }
         a.addAction(getString(R.string.voice_capture)) {
             performCapture(
-                REQUEST_CODE_SOUND,
                 MediaStore.Audio.Media.RECORD_SOUND_ACTION,
                 "can't open voice capture app."
             )
@@ -2048,11 +2048,12 @@ class ActPost : AsyncActivity(),
 
     }
 
+
     private fun openAttachmentChooser(titleId: Int, vararg mimeTypes: String) {
         // SAFのIntentで開く
         try {
             val intent = intentGetContent(true, getString(titleId), mimeTypes)
-            startActivityForResult(intent, REQUEST_CODE_ATTACHMENT_OLD)
+            arAttachmentChooser.launch(intent)
         } catch (ex: Throwable) {
             log.trace(ex)
             showToast(ex, "ACTION_GET_CONTENT failed.")
@@ -2587,6 +2588,7 @@ class ActPost : AsyncActivity(),
         }
     }
 
+
     private fun performCamera() {
         try {
             val filename = System.currentTimeMillis().toString() + ".jpg"
@@ -2599,7 +2601,9 @@ class ActPost : AsyncActivity(),
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uriCameraImage)
 
-            startActivityForResult(intent, REQUEST_CODE_CAMERA)
+
+
+            arCamera.launch(intent)
         } catch (ex: Throwable) {
             log.trace(ex)
             showToast(ex, "opening camera app failed.")
@@ -2607,9 +2611,10 @@ class ActPost : AsyncActivity(),
 
     }
 
-    private fun performCapture(requestCode: Int, action: String, errorCaption: String) {
+
+    private fun performCapture(action: String, errorCaption: String) {
         try {
-            startActivityForResult(Intent(action), requestCode)
+            arCapture.launch(Intent(action))
         } catch (ex: Throwable) {
             log.trace(ex)
             showToast(ex, errorCaption)
@@ -2649,6 +2654,7 @@ class ActPost : AsyncActivity(),
                 }
             }
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun showVisibility() {
@@ -3196,6 +3202,7 @@ class ActPost : AsyncActivity(),
         et.setSelection(new_sel_end, new_sel_end)
     }
 
+
     private fun openMushroom() {
         try {
             var text: String? = null
@@ -3234,8 +3241,8 @@ class ActPost : AsyncActivity(),
                 showRecommendedPlugin(getString(R.string.plugin_not_installed))
                 return
             }
-            startActivityForResult(chooser, REQUEST_CODE_MUSHROOM)
 
+            arMushroom.launch(chooser)
         } catch (ex: Throwable) {
             log.trace(ex)
             showRecommendedPlugin(getString(R.string.plugin_not_installed))

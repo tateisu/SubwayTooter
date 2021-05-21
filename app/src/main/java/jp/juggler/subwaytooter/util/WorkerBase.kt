@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.util
 
+import jp.juggler.util.EndlessScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 
@@ -18,12 +19,12 @@ abstract class WorkerBase(
 		null
 	}
 
-	fun notifyEx() = GlobalScope.launch { waiter.send(Unit) }
+	fun notifyEx() = EndlessScope.launch { waiter.send(Unit) }
 
 	val isAlive :Boolean
 		get() = suspendJob.isActive
 
 	init{
-		suspendJob = GlobalScope.launch(Dispatchers.Default) { run() }
+		suspendJob = EndlessScope.launch(Dispatchers.Default) { run() }
 	}
 }

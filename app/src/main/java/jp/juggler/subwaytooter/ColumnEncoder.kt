@@ -207,7 +207,10 @@ object ColumnEncoder {
                     dst[KEY_SEARCH_RESOLVE] = search_resolve
                 }
 
-                ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS, ColumnType.SEARCH_NOTESTOCK -> {
+                ColumnType.REACTIONS,
+                ColumnType.SEARCH_MSP,
+                ColumnType.SEARCH_TS,
+                ColumnType.SEARCH_NOTESTOCK -> {
                     dst[KEY_SEARCH_QUERY] = search_query
                 }
 
@@ -328,10 +331,14 @@ object ColumnEncoder {
                     search_resolve = src.optBoolean(KEY_SEARCH_RESOLVE, false)
                 }
 
-                ColumnType.SEARCH_MSP, ColumnType.SEARCH_TS, ColumnType.SEARCH_NOTESTOCK -> search_query =
-                    src.optString(KEY_SEARCH_QUERY)
+                ColumnType.REACTIONS,
+                ColumnType.SEARCH_MSP,
+                ColumnType.SEARCH_TS,
+                ColumnType.SEARCH_NOTESTOCK ->
+                    search_query = src.optString(KEY_SEARCH_QUERY)
 
-                ColumnType.INSTANCE_INFORMATION -> instance_uri = src.optString(KEY_INSTANCE_URI)
+                ColumnType.INSTANCE_INFORMATION ->
+                    instance_uri = src.optString(KEY_INSTANCE_URI)
 
                 ColumnType.PROFILE_DIRECTORY -> {
                     instance_uri = src.optString(KEY_INSTANCE_URI)

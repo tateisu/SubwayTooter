@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.ColumnViewHolder
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.emoji.CustomEmoji
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
@@ -33,7 +34,8 @@ class TootReaction(
 
     // (fedibird絵文字リアクション) userストリームのemoji_reactionイベントで設定される。
     val status_id: EntityId? = null,
-) {
+
+    ) {
     companion object {
 
         fun appendDomain(name: String, domain: String?) =
@@ -94,32 +96,51 @@ class TootReaction(
 
         val UNKNOWN = TootReaction(name = "?")
 
-        fun isUnicodeEmoji(code:String):Boolean =
-            code.any{ it.code >= 0x7f}
+        fun isUnicodeEmoji(code: String): Boolean =
+            code.any { it.code >= 0x7f }
 
-        fun splitEmojiDomain(code:String):Pair<String?,String?>{
+        fun splitEmojiDomain(code: String): Pair<String?, String?> {
             // unicode絵文字ならnull,nullを返す
-            if( isUnicodeEmoji(code)) return Pair(null,null)
+            if (isUnicodeEmoji(code)) return Pair(null, null)
             // Misskeyカスタム絵文字リアクションのコロンを除去
-            val a = code.replace(":","")
+            val a = code.replace(":", "")
             val idx = a.indexOf("@")
-            return if(idx==-1) Pair(a,null) else Pair(a.substring(0,idx),a.substring(idx+1))
+            return if (idx == -1) Pair(a, null) else Pair(a.substring(0, idx), a.substring(idx + 1))
         }
 
         fun canReaction(
-            access_info:SavedAccount,
-            ti:TootInstance? =TootInstance.getCached(access_info.apiHost)
+            access_info: SavedAccount,
+            ti: TootInstance? = TootInstance.getCached(access_info.apiHost)
         ) = when {
             access_info.isPseudo -> false
             access_info.isMisskey -> true
             else -> ti?.fedibird_capabilities?.contains("emoji_reaction") == true
         }
+
+        fun decodeEmojiQuery(jsonText: String?): List<TootReaction> =
+            jsonText.notEmpty()?.let { src ->
+                try {
+                    src.decodeJsonArray().objectList().map { parseFedibird(it) }
+                } catch (ex: Throwable) {
+                    ColumnViewHolder.log.e(ex, "updateReactionQueryView: decode failed.")
+                    null
+                }
+            } ?: emptyList()
+
+        fun encodeEmojiQuery(src: List<TootReaction>): String =
+            jsonArray {
+                for (reaction in src) {
+                    add(reaction.jsonFedibird())
+                }
+            }.toString()
+
+
     }
 
     private val isUnicodeEmoji: Boolean
-        get()= isUnicodeEmoji(name)
+        get() = isUnicodeEmoji(name)
 
-    fun splitEmojiDomain()=
+    fun splitEmojiDomain() =
         splitEmojiDomain(name)
 
     override fun equals(other: Any?): Boolean =
@@ -177,7 +198,7 @@ class TootReaction(
                 val cols = customCode.split("@", limit = 2)
                 val key = cols.elementAtOrNull(0)
                 val domain = cols.elementAtOrNull(1)
-                if( key != null) {
+                if (key != null) {
                     if (domain == null || domain == "" || domain == "." || domain == accessInfo?.apDomain?.ascii) {
                         // デコードオプションのアカウント情報と同じドメインの絵文字なら、
                         // そのドメインの絵文字一覧を取得済みなら
@@ -206,6 +227,15 @@ class TootReaction(
         // フォールバック
         // unicode絵文字、もしくは :xxx: などのshortcode表現
         return EmojiDecoder.decodeEmoji(options, code)
+    }
+
+    // リアクションカラムの絵文字絞り込み用
+    fun jsonFedibird() = jsonObject {
+        val (basename, domain) = splitEmojiDomain()
+        put("name", basename ?: name)
+        putNotNull("domain", domain)
+        putNotNull("url", url)
+        putNotNull("static_url", static_url)
     }
 }
 

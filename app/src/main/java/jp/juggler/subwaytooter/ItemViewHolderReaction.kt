@@ -124,8 +124,6 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
         enlargeCustomEmoji = 1.5f
     )
 
-    var lastButton: View? = null
-
     reactionSet?.forEachIndexed { index, reaction ->
         val ssb = reaction.toSpannableStringBuilder(options, status)
             .also { it.append(" ${reaction.count}") }
@@ -186,13 +184,8 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             extra_invalidator_list.add(invalidator)
         }
         box.addView(b)
-        lastButton = b
     }
 
-    lastButton
-        ?.layoutParams
-        ?.cast<ViewGroup.MarginLayoutParams>()
-        ?.endMargin = 0
 
     llExtra.addView(box)
 }

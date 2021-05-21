@@ -6,6 +6,7 @@ import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
 import jp.juggler.subwaytooter.view.*
 import org.jetbrains.anko.custom.ankoView
 import androidx.appcompat.view.ContextThemeWrapper
+import com.google.android.flexbox.FlexboxLayout
 import jp.juggler.subwaytooter.R
 
 // Anko Layout中にカスタムビューを指定する為に拡張関数を定義する
@@ -40,3 +41,6 @@ inline fun ViewManager.recyclerView(init : RecyclerView.() -> Unit) : RecyclerVi
 	}, theme = 0, init = init)
 }
 
+inline fun ViewManager.flexboxLayout(init : FlexboxLayout.() -> Unit) : FlexboxLayout {
+	return ankoView({ FlexboxLayout(it) }, theme = 0, init = init)
+}

@@ -705,6 +705,15 @@ fun Column.makeListTlUrl(): String {
     }
 }
 
+fun Column.makeReactionsUrl(): String {
+    if (isMisskey) error("misskey has no api to list your reactions.")
+    val basePath = ApiPath.PATH_REACTIONS
+    val list = TootReaction.decodeEmojiQuery(search_query)
+    if (list.isEmpty()) return basePath
+    val delm = if (basePath.contains("?")) "&" else "?"
+    return "$basePath$delm${list.joinToString("&") { "emojis[]=${it.name.encodePercent()}" }}"
+}
+
 fun Column.makeAntennaTlUrl(): String {
     return if (isMisskey) {
         "/api/antennas/notes"

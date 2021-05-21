@@ -6,10 +6,7 @@ import jp.juggler.subwaytooter.action.Action_Account
 import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_Notification
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
-import jp.juggler.util.hideKeyboard
-import jp.juggler.util.isCheckedNoAnime
-import jp.juggler.util.showToast
-import jp.juggler.util.withCaption
+import jp.juggler.util.*
 import java.util.regex.Pattern
 
 fun ColumnViewHolder.onListListUpdated() {
@@ -193,23 +190,28 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
                 etSearch.hideKeyboard()
                 etSearch.setText(column.search_query)
                 cbResolve.isCheckedNoAnime = column.search_resolve
+            }else if(column.type == ColumnType.REACTIONS){
+                updateReactionQueryView()
             }
             refreshLayout.isRefreshing = false
             column.startLoading()
         }
 
         btnSearch -> {
-            etSearch.hideKeyboard()
-            column.search_query = etSearch.text.toString().trim { it <= ' ' }
-            column.search_resolve = cbResolve.isChecked
+            if( column.isSearchColumn){
+                etSearch.hideKeyboard()
+                column.search_query = etSearch.text.toString().trim { it <= ' ' }
+                column.search_resolve = cbResolve.isChecked
+            }
             activity.app_state.saveColumnList()
             column.startLoading()
         }
 
         btnSearchClear -> {
-            etSearch.setText("")
             column.search_query = ""
             column.search_resolve = cbResolve.isChecked
+            etSearch.setText("")
+            flEmoji.removeAllViews()
             activity.app_state.saveColumnList()
             column.startLoading()
         }
@@ -279,7 +281,10 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
 
         btnConfirmMail -> {
             Action_Account.resendConfirmMail(activity, column.access_info)
+        }
 
+        btnEmojiAdd ->{
+            addEmojiQuery()
         }
     }
 }

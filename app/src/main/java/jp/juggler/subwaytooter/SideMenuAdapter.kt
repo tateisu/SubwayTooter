@@ -268,7 +268,7 @@ class SideMenuAdapter(
 			Action_Account.timeline(this, defaultInsertPosition, ColumnType.BOOKMARKS)
 		},
 		Item(icon = R.drawable.ic_face, title = R.string.fedibird_reactions) {
-			Action_Account.getReactionableAccounts(this){ list->
+			Action_Account.getReactionableAccounts(this,allowMisskey = false){ list->
 				val columnType = ColumnType.REACTIONS
 				AccountPicker.pick(
 					this,

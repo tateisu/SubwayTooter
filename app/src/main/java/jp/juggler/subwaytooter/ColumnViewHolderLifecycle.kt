@@ -139,6 +139,16 @@ fun ColumnViewHolder.onPageCreate(column: Column, page_idx: Int, page_count: Int
 
 
 
+        for (invalidator in emojiQueryInvalidatorList) {
+            invalidator.register(null)
+        }
+        emojiQueryInvalidatorList.clear()
+
+        for (invalidator in extra_invalidator_list) {
+            invalidator.register(null)
+        }
+        extra_invalidator_list.clear()
+
         cbDontCloseColumn.isCheckedNoAnime = column.dont_close
         cbRemoteOnly.isCheckedNoAnime = column.remote_only
         cbWithAttachment.isCheckedNoAnime = column.with_attachment
@@ -193,12 +203,34 @@ fun ColumnViewHolder.onPageCreate(column: Column, page_idx: Int, page_count: Int
 
         btnDeleteNotification.vg(column.isNotificationColumn)
 
-        llSearch.vg(column.isSearchColumn)?.let {
-            btnSearchClear.vg(Pref.bpShowSearchClear(activity.pref))
+        when {
+            column.isSearchColumn -> {
+                llSearch.vg(true)
+
+                flEmoji.vg(false)
+                tvEmojiDesc.vg(false)
+                btnEmojiAdd.vg(false)
+
+                etSearch.vg(true)
+                btnSearchClear.vg(Pref.bpShowSearchClear(activity.pref))
+                cbResolve.vg(column.type == ColumnType.SEARCH)
+            }
+            column.type == ColumnType.REACTIONS -> {
+                llSearch.vg(true)
+
+                flEmoji.vg(true)
+                tvEmojiDesc.vg(true)
+                btnEmojiAdd.vg(true)
+
+                etSearch.vg(false)
+                btnSearchClear.vg(false)
+                cbResolve.vg(false)
+            }
+
+            else -> llSearch.vg(false)
         }
 
         llListList.vg(column.type == ColumnType.LIST_LIST)
-        cbResolve.vg(column.type == ColumnType.SEARCH)
 
         llHashtagExtra.vg(column.hasHashtagExtra)
         etHashtagExtraAny.setText(column.hashtag_any)

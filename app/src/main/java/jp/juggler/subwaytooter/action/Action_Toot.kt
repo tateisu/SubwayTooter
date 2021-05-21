@@ -1328,7 +1328,6 @@ object Action_Toot {
                     } else {
                         emoji.shortcode
                     }
-                    else -> error("unknown emoji type")
                 }
                 addReaction(activity, column, status, newCode)
             }.show()

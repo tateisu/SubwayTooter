@@ -373,7 +373,11 @@ object Action_Account {
         }.show()
     }
 
-    fun getReactionableAccounts(activity:ActMain,block:(ArrayList<SavedAccount>)->Unit){
+    fun getReactionableAccounts(
+        activity:ActMain,
+        allowMisskey:Boolean = true,
+        block:(ArrayList<SavedAccount>)->Unit
+    ){
         TootTaskRunner(activity).run(object : TootTask {
             var list : List<SavedAccount>? = null
             override suspend fun background(client: TootApiClient): TootApiResult? {
@@ -381,7 +385,7 @@ object Action_Account {
                     when {
                         client.isApiCancelled -> false
                         a.isPseudo -> false
-                        a.isMisskey -> true
+                        a.isMisskey -> allowMisskey
                         else -> {
                             val(ti,ri)=TootInstance.getEx(client,account=a)
                             if(ti==null) {

@@ -700,18 +700,18 @@ enum class ColumnType(
             if (isMisskey) {
                 TootApiResult("misskey has no api to list your reactions")
             } else {
-                getStatusList(client, ApiPath.PATH_REACTIONS)
+                getStatusList(client,column.makeReactionsUrl())
             }
         },
 
         refresh = { client ->
-            getStatusList(client, ApiPath.PATH_REACTIONS)
+            getStatusList(client,column.makeReactionsUrl())
         },
 
         gap = { client ->
             getStatusList(
                 client,
-                ApiPath.PATH_REACTIONS,
+                column.makeReactionsUrl(),
                 mastodonFilterByIdRange = false
             )
         },

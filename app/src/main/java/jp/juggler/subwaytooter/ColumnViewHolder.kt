@@ -14,6 +14,9 @@ import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.flexbox.FlexWrap
+import com.google.android.flexbox.FlexboxLayout
+import com.google.android.flexbox.JustifyContent
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
 import jp.juggler.subwaytooter.streaming.*
@@ -84,7 +87,10 @@ class ColumnViewHolder(
 
     lateinit var btnSearch: ImageButton
     lateinit var btnSearchClear: ImageButton
+    lateinit var btnEmojiAdd: ImageButton
     lateinit var etSearch: EditText
+    lateinit var flEmoji: FlexboxLayout
+    lateinit var tvEmojiDesc: TextView
     lateinit var cbResolve: CheckBox
     lateinit var etRegexFilter: EditText
     lateinit var tvRegexFilterError: TextView
@@ -168,6 +174,7 @@ class ColumnViewHolder(
     var bRefreshErrorWillShown = false
 
     val extra_invalidator_list = ArrayList<NetworkEmojiInvalidator>()
+    val emojiQueryInvalidatorList = ArrayList<NetworkEmojiInvalidator>()
 
     val announcementContentInvalidator: NetworkEmojiInvalidator
 
@@ -372,7 +379,6 @@ class ColumnViewHolder(
         //			animator.supportsChangeAnimations = false
         //		}
 
-        btnListAdd.setOnClickListener(this)
 
         etListName.setOnEditorActionListener { _, actionId, _ ->
             var handled = false
@@ -383,54 +389,61 @@ class ColumnViewHolder(
             handled
         }
 
-        btnQuickFilterAll.setOnClickListener(this)
-        btnQuickFilterMention.setOnClickListener(this)
-        btnQuickFilterFavourite.setOnClickListener(this)
-        btnQuickFilterBoost.setOnClickListener(this)
-        btnQuickFilterFollow.setOnClickListener(this)
-        btnQuickFilterPost.setOnClickListener(this)
-        btnQuickFilterReaction.setOnClickListener(this)
-        btnQuickFilterVote.setOnClickListener(this)
-
-        llColumnHeader.setOnClickListener(this)
-        btnAnnouncements.setOnClickListener(this)
-        btnColumnSetting.setOnClickListener(this)
-        btnColumnReload.setOnClickListener(this)
-        btnColumnClose.setOnClickListener(this)
-        btnColumnClose.setOnLongClickListener(this)
-        btnDeleteNotification.setOnClickListener(this)
-        btnConfirmMail.setOnClickListener(this)
-
-        btnColor.setOnClickListener(this)
-        btnLanguageFilter.setOnClickListener(this)
-
         refreshLayout.setOnRefreshListener(this)
         refreshLayout.setDistanceToTriggerSync((0.5f + 20f * activity.density).toInt())
 
-        llRefreshError.setOnClickListener(this)
+        arrayOf(
+            btnAnnouncements,
+            btnAnnouncementsNext,
+            btnAnnouncementsPrev,
+            btnColor,
+            btnColumnClose,
+            btnColumnReload,
+            btnColumnSetting,
+            btnConfirmMail,
+            btnDeleteNotification,
+            btnEmojiAdd,
+            btnLanguageFilter,
+            btnListAdd,
+            btnQuickFilterAll,
+            btnQuickFilterBoost,
+            btnQuickFilterFavourite,
+            btnQuickFilterFollow,
+            btnQuickFilterMention,
+            btnQuickFilterPost,
+            btnQuickFilterReaction,
+            btnQuickFilterVote,
+            btnSearch,
+            btnSearchClear,
+            llColumnHeader,
+            llRefreshError,
 
-        btnAnnouncementsPrev.setOnClickListener(this)
-        btnAnnouncementsNext.setOnClickListener(this)
+        ).forEach { it.setOnClickListener(this) }
 
-        cbDontCloseColumn.setOnCheckedChangeListener(this)
-        cbRemoteOnly.setOnCheckedChangeListener(this)
-        cbWithAttachment.setOnCheckedChangeListener(this)
-        cbWithHighlight.setOnCheckedChangeListener(this)
-        cbDontShowBoost.setOnCheckedChangeListener(this)
-        cbDontShowFollow.setOnCheckedChangeListener(this)
-        cbDontShowFavourite.setOnCheckedChangeListener(this)
-        cbDontShowReply.setOnCheckedChangeListener(this)
-        cbDontShowReaction.setOnCheckedChangeListener(this)
-        cbDontShowVote.setOnCheckedChangeListener(this)
-        cbDontShowNormalToot.setOnCheckedChangeListener(this)
-        cbDontShowNonPublicToot.setOnCheckedChangeListener(this)
-        cbInstanceLocal.setOnCheckedChangeListener(this)
-        cbDontStreaming.setOnCheckedChangeListener(this)
-        cbDontAutoRefresh.setOnCheckedChangeListener(this)
-        cbHideMediaDefault.setOnCheckedChangeListener(this)
-        cbSystemNotificationNotRelated.setOnCheckedChangeListener(this)
-        cbEnableSpeech.setOnCheckedChangeListener(this)
-        cbOldApi.setOnCheckedChangeListener(this)
+
+        btnColumnClose.setOnLongClickListener(this)
+
+        arrayOf(
+            cbDontAutoRefresh,
+            cbDontCloseColumn,
+            cbDontShowBoost,
+            cbDontShowFavourite,
+            cbDontShowFollow,
+            cbDontShowNonPublicToot,
+            cbDontShowNormalToot,
+            cbDontShowReaction,
+            cbDontShowReply,
+            cbDontShowVote,
+            cbDontStreaming,
+            cbEnableSpeech,
+            cbHideMediaDefault,
+            cbInstanceLocal,
+            cbOldApi,
+            cbRemoteOnly,
+            cbSystemNotificationNotRelated,
+            cbWithAttachment,
+            cbWithHighlight,
+        ).forEach { it.setOnCheckedChangeListener(this) }
 
         if (Pref.bpMoveNotificationsQuickFilter(activity.pref)) {
             (svQuickFilter.parent as? ViewGroup)?.removeView(svQuickFilter)
@@ -455,6 +468,7 @@ class ColumnViewHolder(
             tvColumnContext.textSize = acctSize
             tvColumnStatus.textSize = acctSize
             tvColumnIndex.textSize = acctSize
+            tvEmojiDesc.textSize = acctSize
         }
 
         initLoadingTextView()
@@ -482,8 +496,6 @@ class ColumnViewHolder(
         btnColumnClose.layoutParams.height = wh
         btnColumnClose.setPaddingRelative(pad, pad, pad, pad)
 
-        btnSearch.setOnClickListener(this)
-        btnSearchClear.setOnClickListener(this)
         etSearch.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
             if (!binding_busy) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -1076,6 +1088,7 @@ class ColumnViewHolder(
                     isBaselineAligned = false
                     gravity = Gravity.CENTER
 
+
                     etSearch = editText {
                         id = View.generateViewId()
                         imeOptions = EditorInfo.IME_ACTION_SEARCH
@@ -1084,6 +1097,25 @@ class ColumnViewHolder(
 
                     }.lparams(0, wrapContent) {
                         weight = 1f
+                    }
+
+                    flEmoji = flexboxLayout {
+                        flexWrap = FlexWrap.WRAP
+                        justifyContent = JustifyContent.FLEX_START
+                    }.lparams(0, wrapContent) {
+                        weight = 1f
+                    }
+
+
+                    btnEmojiAdd = imageButton {
+                        backgroundResource = R.drawable.btn_bg_transparent_round6dp
+                        contentDescription = context.getString(R.string.add)
+                        imageResource = R.drawable.ic_add
+                        imageTintList = ColorStateList.valueOf(
+                            context.attrColor(R.attr.colorVectorDrawable)
+                        )
+                    }.lparams(dip(40), dip(40)) {
+                        startMargin = dip(4)
                     }
 
                     btnSearchClear = imageButton {
@@ -1112,6 +1144,12 @@ class ColumnViewHolder(
                 cbResolve = checkBox {
                     text = context.getString(R.string.resolve_non_local_account)
                 }.lparams(wrapContent, wrapContent) // チェックボックスの余白はタッチ判定外
+
+                tvEmojiDesc = textView {
+                    text = context.getString(R.string.long_tap_to_delete)
+                    textColor = context.attrColor(R.attr.colorColumnHeaderPageNumber)
+                    textSize = 12f
+                }.lparams(wrapContent, wrapContent)
 
             } // end of search bar
 

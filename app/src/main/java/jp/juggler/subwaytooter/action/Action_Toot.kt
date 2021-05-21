@@ -1305,12 +1305,11 @@ object Action_Toot {
     }
 
     // 長押しでない普通のリアクション操作
-
     fun addReaction(
         activity: ActMain,
         column: Column,
         status: TootStatus,
-        code: String? = null // Unicode絵文字、 :name: :name@.: :name@domain: name name@domain 等
+        codeArg: String? = null // Unicode絵文字、 :name: :name@.: :name@domain: name name@domain 等
     ) {
         if (status.reactionSet?.myReaction != null) {
             activity.showToast(false, R.string.already_reactioned)
@@ -1319,6 +1318,7 @@ object Action_Toot {
 
         val access_info = column.access_info
 
+        var code = codeArg
         if (code == null) {
             EmojiPicker(activity, access_info, closeOnSelected = true) { result ->
                 val newCode = when (val emoji = result.emoji) {
@@ -1339,8 +1339,7 @@ object Action_Toot {
             when (/* val domain = */ pair.second) {
                 null, "", ".", access_info.apDomain.ascii -> {
                     // normalize to local custom emoji
-                    addReaction(activity, column, status, ":${pair.first}:")
-                    return
+                    code = ":${pair.first}:"
                 }
                 else -> {
                     /*

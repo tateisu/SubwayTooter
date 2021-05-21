@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.action
 
+import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
@@ -1303,7 +1304,203 @@ object Action_Toot {
         })
     }
 
-    private fun reaction(
+    // 長押しでない普通のリアクション操作
+
+    fun addReaction(
+        activity: ActMain,
+        column: Column,
+        status: TootStatus,
+        code: String? = null // Unicode絵文字、 :name: :name@.: :name@domain: name name@domain 等
+    ) {
+        if (status.reactionSet?.myReaction != null) {
+            activity.showToast(false, R.string.already_reactioned)
+            return
+        }
+
+        val access_info = column.access_info
+
+        if (code == null) {
+            EmojiPicker(activity, access_info, closeOnSelected = true) { result ->
+                val newCode = when (val emoji = result.emoji) {
+                    is UnicodeEmoji -> emoji.unifiedCode
+                    is CustomEmoji -> if (access_info.isMisskey) {
+                        ":${emoji.shortcode}:"
+                    } else {
+                        emoji.shortcode
+                    }
+                    else -> error("unknown emoji type")
+                }
+                addReaction(activity, column, status, newCode)
+            }.show()
+            return
+        }
+
+        if (access_info.isMisskey) {
+            val pair = TootReaction.splitEmojiDomain(code)
+            when (/* val domain = */ pair.second) {
+                null, "", ".", access_info.apDomain.ascii -> {
+                    // normalize to local custom emoji
+                    addReaction(activity, column, status, ":${pair.first}:")
+                    return
+                }
+                else -> {
+                    /*
+                    #misskey のリアクションAPIはリモートのカスタム絵文字のコードをフォールバック絵文字に変更して、
+                    何の追加情報もなしに204 no contentを返す。
+                    よってクライアントはAPI応答からフォールバックが発生したことを認識できず、
+                    後から投稿をリロードするまで気が付かない。
+                    この挙動はこの挙動は多くのユーザにとって受け入れられないと判断するので、
+                    クライアント側で事前にエラー扱いにする方が良い。
+                    */
+                    activity.showToast(true, R.string.cant_reaction_remote_custom_emoji, code)
+                    return
+                }
+            }
+        }
+
+        TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
+            object : TootTask {
+
+                var newStatus: TootStatus? = null
+
+                override suspend fun background(client: TootApiClient): TootApiResult? {
+                    return if (access_info.isMisskey) {
+                        client.request("/api/notes/reactions/create", access_info.putMisskeyApiToken().apply {
+                            put("noteId", status.id.toString())
+                            put("reaction", code)
+                        }.toPostRequestBuilder())
+                        // 成功すると204 no content
+                    } else {
+                        client.request(
+                            "/api/v1/statuses/${status.id}/emoji_reactions/${code.encodePercent("@")}",
+                            "".toFormRequestBody().toPut()
+                        )
+                            // 成功すると新しいステータス
+                            ?.also { result ->
+                                newStatus = TootParser(activity, access_info).status(result.jsonObject)
+                            }
+                    }
+                }
+
+                override suspend fun handleResult(result: TootApiResult?) {
+                    result ?: return
+
+                    val error = result.error
+                    if (error != null) {
+                        activity.showToast(false, error)
+                        return
+                    }
+                    when (val resCode = result.response?.code) {
+                        in 200 until 300 -> {
+                            if (newStatus != null) {
+                                activity.app_state.columnList.forEach { column ->
+                                    if (column.access_info.acct == access_info.acct)
+                                        column.updateEmojiReactionByApiResponse(newStatus)
+                                }
+                            } else {
+                                if (status.increaseReactionMisskey(code, true, caller = "addReaction")) {
+                                    // 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
+                                    column.fireShowContent(
+                                        reason = "addReaction complete",
+                                        reset = true
+                                    )
+                                }
+                            }
+                        }
+                        else -> activity.showToast(false, "HTTP error $resCode")
+                    }
+                }
+            })
+    }
+
+    // 長押しでない普通のリアクション操作
+    fun removeReaction(
+        activity: ActMain,
+        column: Column,
+        status: TootStatus,
+        confirmed: Boolean = false
+    ) {
+        val access_info = column.access_info
+
+        val myReaction = status.reactionSet?.myReaction
+
+        if (myReaction == null) {
+            activity.showToast(false, R.string.not_reactioned)
+            return
+        }
+
+
+        if (!confirmed) {
+            AlertDialog.Builder(activity)
+                .setMessage(activity.getString(R.string.reaction_remove_confirm, myReaction.name))
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.ok) { _, _ ->
+                    removeReaction(activity, column, status, confirmed = true)
+                }
+                .show()
+            return
+        }
+
+        TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
+            object : TootTask {
+
+                var newStatus: TootStatus? = null
+
+                override suspend fun background(client: TootApiClient): TootApiResult? =
+                    if (access_info.isMisskey) {
+                        client.request(
+                            "/api/notes/reactions/delete",
+                            access_info.putMisskeyApiToken().apply {
+                                put("noteId", status.id.toString())
+                            }
+                                .toPostRequestBuilder()
+                        )
+                        // 成功すると204 no content
+                    } else {
+                        client.request(
+                            "/api/v1/statuses/${status.id}/emoji_unreaction",
+                            "".toFormRequestBody().toPost()
+                        )
+                            // 成功すると新しいステータス
+                            ?.also { result ->
+                                newStatus = TootParser(activity, access_info).status(result.jsonObject)
+                            }
+                    }
+
+                override suspend fun handleResult(result: TootApiResult?) {
+
+                    result ?: return
+
+                    result.error?.let {
+                        activity.showToast(false, it)
+                        return
+                    }
+
+                    val resCode = result.response?.code ?: -1
+                    if (resCode !in 200 until 300) {
+                        activity.showToast(false, "HTTP error $resCode")
+                        return
+                    }
+
+                    if (newStatus != null) {
+                        activity.app_state.columnList.forEach { column ->
+                            if (column.access_info.acct == access_info.acct)
+                                column.updateEmojiReactionByApiResponse(newStatus)
+                        }
+                    } else if (status.decreaseReactionMisskey(myReaction.name, true, "removeReaction")) {
+                        // 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
+                        column.fireShowContent(
+                            reason = "removeReaction complete",
+                            reset = true
+                        )
+                    }
+                }
+            })
+    }
+
+    // リアクションの別アカ操作で使う
+    // 選択済みのアカウントと同期済みのステータスにリアクションを行う
+    private fun reactionWithoutUi(
         activity: ActMain,
         access_info: SavedAccount,
         resolvedStatus: TootStatus,
@@ -1320,7 +1517,7 @@ object Action_Toot {
                         emoji.shortcode
                     }
                 }
-                reaction(
+                reactionWithoutUi(
                     activity = activity,
                     access_info = access_info,
                     resolvedStatus = resolvedStatus,
@@ -1370,15 +1567,17 @@ object Action_Toot {
             })
     }
 
+    // リアクションの別アカ操作で使う
+    // 選択済みのアカウントと同期済みのステータスと同期まえのリアクションから、同期後のリアクションコードを計算する
+    // 解決できなかった場合はnullを返す
     private fun fixReactionCode(
         activity: ActMain,
         timelineAccount: SavedAccount,
         actionAccount: SavedAccount,
-        resolvedStatus: TootStatus,
         reaction: TootReaction,
     ): String? {
         val pair = reaction.splitEmojiDomain()
-            ?: return reaction.name // null または Unicode絵文字
+        pair.first ?: return reaction.name // null または Unicode絵文字
 
         val srcDomain = when (val d = pair.second) {
             null, ".", "" -> timelineAccount.apDomain
@@ -1405,8 +1604,7 @@ object Action_Toot {
             */
         } else {
             // Fedibirdの場合、ステータスを同期した時点で絵文字も同期されてると期待できるのだろうか？
-
-            // 実際に試してみると。
+            // 実際に試してみると
             // nightly.fedibird.comの投稿にローカルな絵文字を付けた後、
             // その投稿のURLをfedibird.comの検索欄にいれてローカルに同期すると、
             // すでにインポート済みの投稿だとリアクション集合は古いままなのだった。
@@ -1437,12 +1635,11 @@ object Action_Toot {
                     activity = activity,
                     timelineAccount = timeline_account,
                     actionAccount = actionAccount,
-                    resolvedStatus = resolvedStatus,
                     reaction = reaction,
                 ) ?: return // エラー終了の場合がある
             }
 
-            reaction(
+            reactionWithoutUi(
                 activity = activity,
                 access_info = actionAccount,
                 resolvedStatus = resolvedStatus,
@@ -1485,6 +1682,7 @@ object Action_Toot {
             }
         }
     }
+
 
     fun deleteScheduledPost(
         activity: ActMain,

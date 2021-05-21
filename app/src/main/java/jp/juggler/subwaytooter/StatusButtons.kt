@@ -11,10 +11,7 @@ import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.action.*
-import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.CustomShare
@@ -54,6 +51,7 @@ class StatusButtons(
     private val btnFavourite = holder.btnFavourite
     private val btnBookmark = holder.btnBookmark
     private val btnQuote = holder.btnQuote
+    private val btnReaction = holder.btnReaction
     private val llFollow2 = holder.llFollow2
     private val btnFollow2 = holder.btnFollow2
     private val ivFollowedBy2 = holder.ivFollowedBy2
@@ -76,6 +74,7 @@ class StatusButtons(
             btnFavourite,
             btnBookmark,
             btnQuote,
+            btnReaction,
             btnFollow2,
             btnConversation,
             btnReply,
@@ -189,11 +188,30 @@ class StatusButtons(
         val ti = TootInstance.getCached(access_info.apiHost)
         btnQuote.vg(ti?.feature_quote == true)?.let {
             setButton(
-                btnQuote,
+                it,
                 true,
                 color_normal,
                 R.drawable.ic_quote,
                 activity.getString(R.string.quote)
+            )
+        }
+
+        btnReaction.vg(TootReaction.canReaction(access_info, ti))?.let {
+            val myReaction = status.reactionSet?.myReaction
+            setButton(
+                it,
+                true,
+                color_normal,
+                if (myReaction != null)
+                    R.drawable.ic_remove
+                else
+                    R.drawable.ic_add,
+                activity.getString(
+                    if (myReaction != null)
+                        R.string.reaction_remove
+                    else
+                        R.string.reaction_add
+                )
             )
         }
 
@@ -546,6 +564,20 @@ class StatusButtons(
                 }
             }
 
+            btnReaction -> {
+                if (!TootReaction.canReaction(access_info)) {
+                    Action_Toot.reactionFromAnotherAccount(
+                        activity,
+                        access_info,
+                        status
+                    )
+                } else if (status.reactionSet?.myReaction != null) {
+                    Action_Toot.removeReaction(activity, column, status)
+                } else {
+                    Action_Toot.addReaction(activity, column, status)
+                }
+            }
+
             btnFollow2 -> {
                 val accountRef = status.accountRef
                 val account = accountRef.get()
@@ -670,9 +702,9 @@ class StatusButtons(
                 activity, access_info, status
             )
 
-            btnQuote -> Action_Toot.replyFromAnotherAccount(
-                activity, access_info, status, quote = true
-            )
+            btnQuote -> Action_Toot.replyFromAnotherAccount(activity, access_info, status, quote = true)
+
+            btnReaction -> Action_Toot.reactionFromAnotherAccount(activity, access_info, status)
 
             btnFollow2 -> Action_Follow.followFromAnotherAccount(
                 activity, activity.nextPosition(column), access_info, status.account
@@ -749,6 +781,7 @@ class StatusButtonsViewHolder(
     lateinit var btnFavourite: CountImageButton
     lateinit var btnBookmark: ImageButton
     lateinit var btnQuote: ImageButton
+    lateinit var btnReaction: ImageButton
     lateinit var llFollow2: View
     lateinit var btnFollow2: ImageButton
     lateinit var ivFollowedBy2: ImageView
@@ -845,6 +878,18 @@ class StatusButtonsViewHolder(
                         scaleType = ImageView.ScaleType.FIT_CENTER
                         minimumWidth = buttonHeight
 
+                    }.lparams(wrapContent, buttonHeight) {
+                        startMargin = marginBetween
+                    }
+
+                    btnReaction = imageButton {
+                        background = ContextCompat.getDrawable(
+                            context,
+                            R.drawable.btn_bg_transparent_round6dp
+                        )
+                        setPadding(paddingH, paddingV, paddingH, paddingV)
+                        scaleType = ImageView.ScaleType.FIT_CENTER
+                        minimumWidth = buttonHeight
                     }.lparams(wrapContent, buttonHeight) {
                         startMargin = marginBetween
                     }

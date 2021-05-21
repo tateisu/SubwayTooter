@@ -1096,4 +1096,5 @@
     <string name="fedibird_reactions">Reactions (Fedibird)</string>
     <string name="reactions">Reactions</string>
     <string name="cant_reaction_remote_custom_emoji">can\'t reaction with remote custom emoji %1$s</string>
+    <string name="keep_reaction_space">Keep Spacing for Reactions</string>
 </resources>

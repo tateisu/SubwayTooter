@@ -1082,5 +1082,6 @@
     <string name="fedibird_reactions">リアクション (Fedibird)</string>
     <string name="reactions">リアクション</string>
     <string name="cant_reaction_remote_custom_emoji">リモートのカスタム絵文字でリアクションできません %1$s</string>
+    <string name="keep_reaction_space">リアクション表示用の空間を確保する</string>
 
 </resources>

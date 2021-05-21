@@ -94,20 +94,33 @@ class TootReaction(
 
         val UNKNOWN = TootReaction(name = "?")
 
-    }
+        fun isUnicodeEmoji(code:String):Boolean =
+            code.any{ it.code >= 0x7f}
 
-    private val isCustomEmoji: Boolean
-        get()= when{
-            name.all{ it.code < 0x80 } -> true
-            else -> false
+        fun splitEmojiDomain(code:String):Pair<String?,String?>{
+            // unicode絵文字ならnull,nullを返す
+            if( isUnicodeEmoji(code)) return Pair(null,null)
+            // Misskeyカスタム絵文字リアクションのコロンを除去
+            val a = code.replace(":","")
+            val idx = a.indexOf("@")
+            return if(idx==-1) Pair(a,null) else Pair(a.substring(0,idx),a.substring(idx+1))
         }
 
-    fun splitEmojiDomain():Pair<String,String?>?{
-        if(!isCustomEmoji) return null
-        val a = name.replace(":","")
-        val idx = a.indexOf("@")
-        return if(idx==-1) Pair(a,null) else Pair(a.substring(0,idx),a.substring(idx+1))
+        fun canReaction(
+            access_info:SavedAccount,
+            ti:TootInstance? =TootInstance.getCached(access_info.apiHost)
+        ) = when {
+            access_info.isPseudo -> false
+            access_info.isMisskey -> true
+            else -> ti?.fedibird_capabilities?.contains("emoji_reaction") == true
+        }
     }
+
+    private val isUnicodeEmoji: Boolean
+        get()= isUnicodeEmoji(name)
+
+    fun splitEmojiDomain()=
+        splitEmojiDomain(name)
 
     override fun equals(other: Any?): Boolean =
         when (other) {

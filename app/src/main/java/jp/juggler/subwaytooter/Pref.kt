@@ -445,6 +445,11 @@ object Pref {
 		true
 	)
 
+	val bpKeepReactionSpace = BooleanPref(
+		"KeepReactionSpace",
+		false
+	)
+
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

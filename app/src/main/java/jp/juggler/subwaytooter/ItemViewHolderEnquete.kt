@@ -16,6 +16,7 @@ import jp.juggler.subwaytooter.drawable.PollPlotDrawable
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.view.EnqueteTimerView
+import jp.juggler.util.isEnabledAlpha
 import jp.juggler.util.jsonObject
 import jp.juggler.util.showToast
 import jp.juggler.util.toPostRequestBuilder
@@ -173,7 +174,7 @@ fun ItemViewHolder.makeEnqueteChoiceView(
         extra_invalidator_list.add(invalidator)
         invalidator.register(text)
         if (!canVote) {
-            b.isEnabled = false
+            b.isEnabledAlpha = false
         } else {
             b.isChecked = item.checked
             b.setOnCheckedChangeListener { _, checked ->

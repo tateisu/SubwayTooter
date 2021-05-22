@@ -6,7 +6,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -18,18 +19,15 @@
         <!-- (自アプリ以外で)指定URLを開けるアプリの存在確認 -->
         <intent>
             <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.BROWSABLE" />
         </intent>
 
         <intent>
             <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="https" />
         </intent>
 
         <intent>
             <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="http" />
         </intent>
 
@@ -52,7 +50,6 @@
         <!-- Simejiマッシュルームプラグインの存在確認 -->
         <intent>
             <action android:name="com.adamrocker.android.simeji.ACTION_INTERCEPT" />
-            <category android:name="com.adamrocker.android.simeji.REPLACE"/>
         </intent>
 
         <!-- <intent>-->

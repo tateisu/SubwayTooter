@@ -170,14 +170,7 @@
         android:layout_height="wrap_content"
         android:measureWithLargestChild="true">
 
-        <Button
-            android:id="@+id/btnSave"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/save"
-            android:textAllCaps="false" />
+
 
         <Button
             android:id="@+id/btnDiscard"
@@ -186,6 +179,15 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/discard"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/btnSave"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/save"
             android:textAllCaps="false" />
     </LinearLayout>
 </LinearLayout>

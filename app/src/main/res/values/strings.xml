@@ -1099,4 +1099,8 @@
     <string name="keep_reaction_space">Keep Spacing for Reactions</string>
     <string name="long_tap_to_delete">long tap to delete</string>
     <string name="suggestion_source">Suggestion source</string>
+    <string name="cant_leave_empty_keyword">Can\'t leave empty keyword.</string>
+    <string name="cant_save_duplicated_keyword">Can\'t save duplicated keyword.</string>
+    <string name="discard_changes">Discard changes?</string>
+    <string name="saved">saved.</string>
 </resources>

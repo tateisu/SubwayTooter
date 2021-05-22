@@ -17,7 +17,6 @@ import android.view.Window
 import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -78,26 +77,20 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
     private val arNoop = activityResultHandler { }
 
     private val arImportAppData = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == RESULT_OK) {
-            data.handleGetContentResult(contentResolver).firstOrNull()?.uri?.let {
-                importAppData2(false, it)
-            }
-        }
+        if (ar?.resultCode == RESULT_OK)
+            ar.data?.handleGetContentResult(contentResolver)
+                ?.firstOrNull()
+                ?.uri?.let { importAppData2(false, it) }
     }
 
     val arTimelineFont = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == RESULT_OK) {
-            handleFontResult(AppSettingItem.TIMELINE_FONT, data, "TimelineFont")
-        }
+        if (ar?.resultCode == RESULT_OK)
+            ar.data?.let { handleFontResult(AppSettingItem.TIMELINE_FONT, it, "TimelineFont") }
     }
 
     val arTimelineFontBold = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == RESULT_OK) {
-            handleFontResult(AppSettingItem.TIMELINE_FONT_BOLD, data, "TimelineFontBold")
-        }
+        if (ar?.resultCode == RESULT_OK)
+            ar.data?.let { handleFontResult(AppSettingItem.TIMELINE_FONT_BOLD, it, "TimelineFontBold") }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -513,7 +506,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
                     SettingType.Section -> {
                         btnAction.vg(true)
                         btnAction.text = name
-                        btnAction.isEnabled = item.enabled
+                        btnAction.isEnabledAlpha = item.enabled
                         btnAction.setOnClickListener {
                             load(item.cast()!!, null)
                         }
@@ -522,7 +515,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
                     SettingType.Action -> {
                         btnAction.vg(true)
                         btnAction.text = name
-                        btnAction.isEnabled = item.enabled
+                        btnAction.isEnabledAlpha = item.enabled
                         btnAction.setOnClickListener {
                             item.action(activity)
                         }
@@ -533,7 +526,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
                             item.pref.cast() ?: error("$name has no boolean pref")
                         checkBox.vg(false) // skip animation
                         checkBox.text = name
-                        checkBox.isEnabled = item.enabled
+                        checkBox.isEnabledAlpha = item.enabled
                         checkBox.isChecked = bp(pref)
                         checkBox.vg(true)
                     }
@@ -544,7 +537,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
                         showCaption(name)
                         swSwitch.vg(false) // skip animation
                         setSwitchColor(pref, swSwitch)
-                        swSwitch.isEnabled = item.enabled
+                        swSwitch.isEnabledAlpha = item.enabled
                         swSwitch.isChecked = bp(pref)
                         swSwitch.vg(true)
                     }
@@ -566,8 +559,8 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
                         llButtonBar.vg(true)
                         vColor.vg(true)
                         vColor.setBackgroundColor(ip(pref))
-                        btnEdit.isEnabled = item.enabled
-                        btnReset.isEnabled = item.enabled
+                        btnEdit.isEnabledAlpha = item.enabled
+                        btnReset.isEnabledAlpha = item.enabled
                         btnEdit.setOnClickListener {
                             colorTarget = item
                             val color = ip(pref)
@@ -591,7 +584,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
                         showCaption(name)
 
                         spSpinner.vg(true)
-                        spSpinner.isEnabled = item.enabled
+                        spSpinner.isEnabledAlpha = item.enabled
 
                         val pi = item.pref
                         if (pi is IntPref) {
@@ -842,8 +835,6 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
     fun importAppData1() {
         try {
             val intent = intentOpenDocument("*/*")
-
-
             arImportAppData.launch(intent)
         } catch (ex: Throwable) {
             showToast(ex, "importAppData(1) failed.")

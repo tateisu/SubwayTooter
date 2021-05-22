@@ -630,7 +630,7 @@
     <string name="search_is_not_available_on_pseudo_account">疑似アカウントでは検索APIを利用できなくなりました</string>
     <string name="search_of">検索：%1$s</string>
     <string name="search_web">Web検索</string>
-    <string name="select_and_copy">選択してコピー…</string>
+    <string name="select_and_copy">選択してコピー</string>
     <string name="select_draft">どの下書きから復元しますか？</string>
     <string name="select_plugin">プラグインの選択</string>
     <string name="send">共有</string>
@@ -1085,5 +1085,10 @@
     <string name="keep_reaction_space">リアクション表示用の空間を確保する</string>
     <string name="long_tap_to_delete">長押しで削除</string>
     <string name="suggestion_source">推奨する理由</string>
+
+    <string name="cant_leave_empty_keyword">キーワードを指定してください</string>
+    <string name="cant_save_duplicated_keyword">既に存在するキーワードを重複保存できません</string>
+    <string name="discard_changes">変更を破棄しますか?</string>
+    <string name="saved">保存しました</string>
 
 </resources>

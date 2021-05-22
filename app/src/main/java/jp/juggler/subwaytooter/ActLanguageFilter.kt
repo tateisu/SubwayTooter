@@ -378,8 +378,7 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
 
             })
             if (item != null) {
-                etLanguage.isEnabled = false
-                btnPresets.isEnabled = false
+                etLanguage.isEnabledAlpha = false
                 btnPresets.setEnabledColor(
                     activity,
                     R.drawable.ic_edit,

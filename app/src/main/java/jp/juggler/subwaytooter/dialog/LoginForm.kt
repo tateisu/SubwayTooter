@@ -12,6 +12,7 @@ import android.widget.*
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.Host
 import jp.juggler.util.LogCategory
+import jp.juggler.util.isEnabledAlpha
 import jp.juggler.util.showToast
 import java.io.BufferedReader
 import java.io.InputStreamReader

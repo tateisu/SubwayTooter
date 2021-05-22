@@ -4,8 +4,8 @@ import android.app.SearchManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.entity.TootAccount
@@ -17,201 +17,210 @@ import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.TootTextEncoder
 import jp.juggler.util.*
 
-class ActText : AppCompatActivity(), View.OnClickListener {
-	
-	companion object {
-		
-		internal val log = LogCategory("ActText")
-		
-		internal const val RESULT_SEARCH_MSP = RESULT_FIRST_USER + 1
-		internal const val RESULT_SEARCH_TS = RESULT_FIRST_USER + 2
-		internal const val RESULT_SEARCH_NOTESTOCK = RESULT_FIRST_USER + 3
 
-		internal const val EXTRA_TEXT = "text"
-		internal const val EXTRA_CONTENT_START = "content_start"
-		internal const val EXTRA_CONTENT_END = "content_end"
-		internal const val EXTRA_ACCOUNT_DB_ID = "account_db_id"
-		
-		fun createIntent(
-			activity : ActMain,
-			access_info : SavedAccount,
-			status : TootStatus
-		) = Intent(activity, ActText::class.java).apply {
-			putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
-			TootTextEncoder.encodeStatus(this, activity, access_info, status)
-		}
+class ActText : AppCompatActivity() {
 
-		fun createIntent(
-			activity : ActMain,
-			access_info : SavedAccount,
-			who : TootAccount
-		) = Intent(activity, ActText::class.java).apply {
-			putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
-			TootTextEncoder.encodeAccount(this, activity, access_info, who)
-		}
+    companion object {
 
-	}
-	
-	private lateinit var etText : EditText
-	private lateinit var btnTranslate : Button
-	
-	private val selection : String
-		get() {
-			val s = etText.selectionStart
-			val e = etText.selectionEnd
-			val text = etText.text.toString()
-			return if(s == e) {
-				text
-			} else {
-				text.substring(s, e)
-			}
-		}
-	
-	private var account : SavedAccount? = null
-	
-	override fun onCreate(savedInstanceState : Bundle?) {
-		super.onCreate(savedInstanceState)
-		App1.setActivityTheme(this)
-		
-		val intent = intent
-		
-		account = SavedAccount.loadAccount(this, intent.getLongExtra(EXTRA_ACCOUNT_DB_ID, - 1L))
-		
-		initUI()
-		
-		if(savedInstanceState == null) {
-			val sv = intent.getStringExtra(EXTRA_TEXT) ?: ""
-			val content_start = intent.getIntExtra(EXTRA_CONTENT_START, 0)
-			val content_end = intent.getIntExtra(EXTRA_CONTENT_END, sv.length)
-			etText.setText(sv)
-			
-			// Android 9 以降ではフォーカスがないとsetSelectionできない
-			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-				etText.requestFocus()
-				etText.hideKeyboard()
-			}
-			
-			etText.setSelection(content_start, content_end)
-		}
-		
-	}
-	
-	internal fun initUI() {
-		setContentView(R.layout.act_text)
-		App1.initEdgeToEdge(this)
-		
-		Styler.fixHorizontalMargin(findViewById(R.id.svFooterBar))
-		Styler.fixHorizontalMargin(findViewById(R.id.svContent))
-		
-		etText = findViewById(R.id.etText)
-		btnTranslate = findViewById(R.id.btnTranslate)
-		
-		btnTranslate.setOnClickListener(this)
-		findViewById<View>(R.id.btnCopy).setOnClickListener(this)
-		findViewById<View>(R.id.btnSearch).setOnClickListener(this)
-		findViewById<View>(R.id.btnSend).setOnClickListener(this)
-		findViewById<View>(R.id.btnMuteWord).setOnClickListener(this)
-		findViewById<View>(R.id.btnSearchTS).setOnClickListener(this)
-		
-		val btnKeywordFilter : View = findViewById(R.id.btnKeywordFilter)
-		btnKeywordFilter.setOnClickListener(this)
-		btnKeywordFilter.isEnabled = account?.isPseudo == false
-		
-	}
-	
-	override fun onClick(v : View) {
-		when(v.id) {
-			
-			R.id.btnCopy -> selection.copyToClipboard(this)
-			
-			R.id.btnSearch -> search()
-			
-			R.id.btnSend -> send()
-			
-			R.id.btnMuteWord -> muteWord()
-			
-			R.id.btnTranslate -> CustomShare.invoke(
-				this,
-				selection,
-				CustomShareTarget.Translate
-			)
-			
-			R.id.btnSearchTS -> searchToot(RESULT_SEARCH_TS)
+        internal val log = LogCategory("ActText")
 
-			R.id.btnSearchNotestock -> searchToot(RESULT_SEARCH_NOTESTOCK)
+        internal const val RESULT_SEARCH_MSP = RESULT_FIRST_USER + 1
+        internal const val RESULT_SEARCH_TS = RESULT_FIRST_USER + 2
+        internal const val RESULT_SEARCH_NOTESTOCK = RESULT_FIRST_USER + 3
 
-			R.id.btnKeywordFilter -> keywordFilter()
-		}
-	}
-	
-	private fun send() {
-		try {
-			
-			val intent = Intent()
-			intent.action = Intent.ACTION_SEND
-			intent.type = "text/plain"
-			intent.putExtra(Intent.EXTRA_TEXT, selection)
-			startActivity(intent)
-			
-		} catch(ex : Throwable) {
-			log.trace(ex)
-			showToast(ex, "send failed.")
-		}
-		
-	}
-	
-	private fun search() {
-		val sv = selection
-		if(sv.isEmpty()) {
-			showToast(false, "please select search keyword")
-			return
-		}
-		try {
-			val intent = Intent(Intent.ACTION_WEB_SEARCH)
-			intent.putExtra(SearchManager.QUERY, sv)
-			if(intent.resolveActivity(packageManager) != null) {
-				startActivity(intent)
-			}
-		} catch(ex : Throwable) {
-			log.trace(ex)
-			showToast(ex, "search failed.")
-		}
-		
-	}
-	
-	private fun searchToot(@Suppress("SameParameterValue") resultCode : Int) {
-		val sv = selection
-		if(sv.isEmpty()) {
-			showToast(false, "please select search keyword")
-			return
-		}
-		try {
-			val data = Intent()
-			data.putExtra(Intent.EXTRA_TEXT, sv)
-			setResult(resultCode, data)
-			finish()
-		} catch(ex : Throwable) {
-			log.trace(ex)
-		}
-		
-	}
-	
-	private fun muteWord() {
-		try {
-			MutedWord.save(selection)
-			App1.getAppState(this).onMuteUpdated()
-			showToast(false, R.string.word_was_muted)
-		} catch(ex : Throwable) {
-			log.trace(ex)
-			showToast(ex, "muteWord failed.")
-		}
-		
-	}
-	
-	private fun keywordFilter() {
-		val account = this.account
-		if(account?.isPseudo != false) return
-		ActKeywordFilter.open(this, account, initial_phrase = selection)
-	}
-	
+        internal const val EXTRA_TEXT = "text"
+        internal const val EXTRA_CONTENT_START = "content_start"
+        internal const val EXTRA_CONTENT_END = "content_end"
+        internal const val EXTRA_ACCOUNT_DB_ID = "account_db_id"
+
+        fun createIntent(
+            activity: ActMain,
+            access_info: SavedAccount,
+            status: TootStatus
+        ) = Intent(activity, ActText::class.java).apply {
+            putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
+            TootTextEncoder.encodeStatus(this, activity, access_info, status)
+        }
+
+        fun createIntent(
+            activity: ActMain,
+            access_info: SavedAccount,
+            who: TootAccount
+        ) = Intent(activity, ActText::class.java).apply {
+            putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
+            TootTextEncoder.encodeAccount(this, activity, access_info, who)
+        }
+
+    }
+
+    private var account: SavedAccount? = null
+    private lateinit var etText: EditText
+
+    private val selection: String
+        get() {
+            val s = etText.selectionStart
+            val e = etText.selectionEnd
+            val text = etText.text.toString()
+            return if (s == e) {
+                text
+            } else {
+                text.substring(s, e)
+            }
+        }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.btnCopy -> selection.copyToClipboard(this)
+
+            R.id.btnSearch -> search()
+
+            R.id.btnSend -> send()
+
+            R.id.btnMuteWord -> muteWord()
+
+            R.id.btnTranslate -> CustomShare.invoke(
+                this,
+                selection,
+                CustomShareTarget.Translate
+            )
+
+            R.id.btnSearchTS -> searchToot(RESULT_SEARCH_TS)
+
+            R.id.btnSearchNotestock -> searchToot(RESULT_SEARCH_NOTESTOCK)
+
+            R.id.btnKeywordFilter -> keywordFilter()
+
+            R.id.btnHighlight -> highlight()
+
+            // If we got here, the user's action was not recognized.
+            // Invoke the superclass to handle it.
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.act_text, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.btnKeywordFilter)?.apply {
+            isEnabled = account?.isPseudo == false
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        App1.setActivityTheme(this, noActionBar = true)
+
+        val intent = intent
+
+        account = SavedAccount.loadAccount(this, intent.getLongExtra(EXTRA_ACCOUNT_DB_ID, -1L))
+
+        initUI()
+
+        if (savedInstanceState == null) {
+            val sv = intent.getStringExtra(EXTRA_TEXT) ?: ""
+            val content_start = intent.getIntExtra(EXTRA_CONTENT_START, 0)
+            val content_end = intent.getIntExtra(EXTRA_CONTENT_END, sv.length)
+            etText.setText(sv)
+
+            // Android 9 以降ではフォーカスがないとsetSelectionできない
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                etText.requestFocus()
+                etText.hideKeyboard()
+            }
+
+            etText.setSelection(content_start, content_end)
+        }
+
+    }
+
+    internal fun initUI() {
+        setContentView(R.layout.act_text)
+        etText = findViewById(R.id.etText)
+        App1.initEdgeToEdge(this)
+        Styler.fixHorizontalMargin(etText)
+
+        setSupportActionBar(findViewById(R.id.toolbar))
+        supportActionBar?.apply{
+            setDisplayHomeAsUpEnabled(false)
+            setHomeButtonEnabled(false)
+        }
+    }
+
+    private fun send() {
+        selection.trim().notEmpty()?.let {
+            try {
+
+                val intent = Intent()
+                intent.action = Intent.ACTION_SEND
+                intent.type = "text/plain"
+                intent.putExtra(Intent.EXTRA_TEXT, it)
+                startActivity(intent)
+
+            } catch (ex: Throwable) {
+                log.trace(ex)
+                showToast(ex, "send failed.")
+            }
+        }
+    }
+
+    private fun search() {
+        selection.trim().notEmpty()?.let {
+            try {
+                val intent = Intent(Intent.ACTION_WEB_SEARCH)
+                intent.putExtra(SearchManager.QUERY, it)
+                if (intent.resolveActivity(packageManager) != null) {
+                    startActivity(intent)
+                }
+            } catch (ex: Throwable) {
+                log.trace(ex)
+                showToast(ex, "search failed.")
+            }
+        }
+    }
+
+    private fun searchToot(@Suppress("SameParameterValue") resultCode: Int) {
+        selection.trim().notEmpty()?.let {
+            try {
+                val data = Intent()
+                data.putExtra(Intent.EXTRA_TEXT, it)
+                setResult(resultCode, data)
+                finish()
+            } catch (ex: Throwable) {
+                log.trace(ex)
+            }
+        }
+    }
+
+    private fun muteWord() {
+        selection.trim().notEmpty()?.let {
+            try {
+                MutedWord.save(it)
+                App1.getAppState(this).onMuteUpdated()
+                showToast(false, R.string.word_was_muted)
+            } catch (ex: Throwable) {
+                log.trace(ex)
+                showToast(ex, "muteWord failed.")
+            }
+        }
+
+    }
+
+    private fun keywordFilter() {
+        selection.trim().notEmpty()?.let {
+            val account = this.account
+            if (account?.isPseudo != false) return
+            ActKeywordFilter.open(this, account, initial_phrase = it)
+        }
+    }
+
+    private fun highlight() {
+        selection.trim().notEmpty()?.let {
+            startActivity(ActHighlightWordEdit.createIntent(this, it))
+        }
+    }
 }

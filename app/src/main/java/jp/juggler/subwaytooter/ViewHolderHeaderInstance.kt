@@ -14,10 +14,7 @@ import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
-import jp.juggler.util.LogCategory
-import jp.juggler.util.neatSpaces
-import jp.juggler.util.notEmpty
-import jp.juggler.util.showToast
+import jp.juggler.util.*
 import org.conscrypt.OpenSSLX509Certificate
 
 internal class ViewHolderHeaderInstance(
@@ -90,17 +87,17 @@ internal class ViewHolderHeaderInstance(
 			tvVersion.text = "?"
 			tvTitle.text = "?"
 			btnEmail.text = "?"
-			btnEmail.isEnabled = false
+			btnEmail.isEnabledAlpha = false
 			tvDescription.text = "?"
 			tvShortDescription.text = "?"
 			ivThumbnail.setImageUrl(App1.pref, 0f, null)
 			tvLanguages.text = "?"
 			tvInvitesEnabled.text = "?"
 			btnContact.text = "?"
-			btnContact.isEnabled = false
-			btnAbout.isEnabled = false
-			btnAboutMore.isEnabled = false
-			btnExplore.isEnabled = false
+			btnContact.isEnabledAlpha = false
+			btnAbout.isEnabledAlpha = false
+			btnAboutMore.isEnabledAlpha = false
+			btnExplore.isEnabledAlpha = false
 		} else {
 			val uri = instance.uri ?: ""
 			val hasUri = uri.isNotEmpty()
@@ -112,23 +109,23 @@ internal class ViewHolderHeaderInstance(
 				"${host.pretty}\n${host.ascii}"
 			}
 			
-			btnInstance.isEnabled = hasUri
-			btnAbout.isEnabled = hasUri
-			btnAboutMore.isEnabled = hasUri
-			btnExplore.isEnabled = hasUri
+			btnInstance.isEnabledAlpha = hasUri
+			btnAbout.isEnabledAlpha = hasUri
+			btnAboutMore.isEnabledAlpha = hasUri
+			btnExplore.isEnabledAlpha = hasUri
 			
 			tvVersion.text = instance.version ?: ""
 			tvTitle.text = instance.title ?: ""
 			
 			val email = instance.email ?: ""
 			btnEmail.text = email
-			btnEmail.isEnabled = email.isNotEmpty()
+			btnEmail.isEnabledAlpha = email.isNotEmpty()
 			
 			val contact_acct =
 				instance.contact_account?.let { who -> "@${who.username}@${who.apDomain.pretty}" }
 					?: ""
 			btnContact.text = contact_acct
-			btnContact.isEnabled = contact_acct.isNotEmpty()
+			btnContact.isEnabledAlpha = contact_acct.isNotEmpty()
 			
 			tvLanguages.text = instance.languages?.joinToString(", ") ?: ""
 			tvInvitesEnabled.text = when(instance.invites_enabled) {

@@ -5,6 +5,7 @@ import android.text.TextUtils
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
+import jp.juggler.util.isEnabledAlpha
 import jp.juggler.util.notZero
 import jp.juggler.util.vg
 import org.jetbrains.anko.textColor
@@ -76,9 +77,7 @@ fun ColumnViewHolder.showError(message: String) {
 }
 
 fun ColumnViewHolder.showColumnCloseButton() {
-    val dont_close = column?.dont_close ?: return
-    btnColumnClose.isEnabled = !dont_close
-    btnColumnClose.alpha = if (dont_close) 0.3f else 1f
+    column?.dont_close?.let{ btnColumnClose.isEnabledAlpha = !it }
 }
 
 internal fun ColumnViewHolder.showContent(

@@ -16,6 +16,7 @@ import android.os.SystemClock
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.SparseArray
+import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.activity.ComponentActivity
@@ -25,9 +26,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.R
 import java.util.*
-import kotlin.reflect.full.isSubtypeOf
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.typeOf
 
 object UiUtils {
 
@@ -345,6 +343,16 @@ fun ImageButton.setEnabledColor(context: Context, iconId: Int, color: Int, enabl
     )
 }
 
+var View.isEnabledAlpha :Boolean
+    get() = isEnabled
+    set(enabled){
+        this.isEnabled = enabled
+        this.alpha = when (enabled) {
+            true -> 1f
+            else -> 0.3f
+        }
+    }
+
 
 /////////////////////////////////////////////////
 
@@ -369,9 +377,7 @@ class ActivityResultHandler<A : ComponentActivity>(
         this.context = a.applicationContext
         this.launcher = a.registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
-        ) {
-            callback(a, it)
-        }
+        ) { callback(a, it) }
     }
 }
 

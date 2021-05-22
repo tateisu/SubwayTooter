@@ -81,7 +81,22 @@ class HighlightWord {
 			
 			return null
 		}
-		
+
+		fun load(id:Long) : HighlightWord? {
+			try {
+				App1.database.query(table, null, selection_id, arrayOf(id.toString()), null, null, null)
+					.use { cursor ->
+						if(cursor.moveToNext()) {
+							return HighlightWord(cursor)
+						}
+					}
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+
+			return null
+		}
+
 		fun createCursor() : Cursor {
 			return App1.database.query(table, null, null, null, null, null, "$COL_NAME asc")
 		}
@@ -154,7 +169,7 @@ class HighlightWord {
 		dst[COL_COLOR_FG] = color_fg
 		dst[COL_SOUND_TYPE] = sound_type
 		dst[COL_SPEECH] = speech
-		if(sound_uri != null) dst[COL_SOUND_URI] = sound_uri
+		sound_uri?.let{ dst[COL_SOUND_URI] = it}
 		return dst
 	}
 	

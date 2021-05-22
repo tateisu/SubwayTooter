@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.media.RingtoneManager
@@ -8,7 +9,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
-import android.widget.TextView
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
@@ -27,20 +28,27 @@ class ActHighlightWordEdit
 
         internal val log = LogCategory("ActHighlightWordEdit")
 
-        const val EXTRA_ITEM = "item"
-
         private const val COLOR_DIALOG_ID_TEXT = 1
         private const val COLOR_DIALOG_ID_BACKGROUND = 2
 
-        fun createIntent(activity: Activity, item: HighlightWord) =
+        private const val STATE_ITEM = "item"
+        private const val EXTRA_ITEM_ID = "itemId"
+        private const val EXTRA_INITIAL_TEXT = "initialText"
+
+        fun createIntent(activity: Activity, itemId:Long) =
             Intent(activity, ActHighlightWordEdit::class.java).apply {
-                putExtra(EXTRA_ITEM, item.encodeJson().toString())
+                putExtra(EXTRA_ITEM_ID,itemId)
+            }
+
+        fun createIntent(activity: Activity, initialText:String) =
+            Intent(activity, ActHighlightWordEdit::class.java).apply {
+                putExtra(EXTRA_INITIAL_TEXT, initialText)
             }
     }
 
     internal lateinit var item: HighlightWord
 
-    private lateinit var tvName: TextView
+    private lateinit var etName: EditText
     private lateinit var swSound: SwitchCompat
     private lateinit var swSpeech: SwitchCompat
 
@@ -54,24 +62,19 @@ class ActHighlightWordEdit
             if (uri is Uri) {
                 item.sound_uri = uri.toString()
                 item.sound_type = HighlightWord.SOUND_TYPE_CUSTOM
-                swSound.isChecked = true
+                showSound()
             }
         }
     }
 
-    private fun makeResult() {
-        try {
-            val data = Intent()
-            data.putExtra(EXTRA_ITEM, item.encodeJson().toString())
-            setResult(Activity.RESULT_OK, data)
-        } catch (ex: JsonException) {
-            throw RuntimeException(ex)
-        }
-    }
 
     override fun onBackPressed() {
-        makeResult()
-        super.onBackPressed()
+        AlertDialog.Builder(this)
+            .setCancelable(true)
+            .setMessage(R.string.discard_changes)
+            .setPositiveButton(R.string.no, null)
+            .setNegativeButton(R.string.yes) { _,_ -> finish() }
+            .show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,17 +83,49 @@ class ActHighlightWordEdit
         App1.setActivityTheme(this)
         initUI()
 
-        val src = (savedInstanceState?.getString(EXTRA_ITEM) ?: intent.getStringExtra(EXTRA_ITEM))
-            ?.decodeJsonObject()
+        setResult(RESULT_CANCELED)
 
-        if (src == null) {
+        fun loadData():HighlightWord? {
+            savedInstanceState
+                ?.getString(STATE_ITEM)
+                ?.decodeJsonObject()
+                ?.let { return HighlightWord(it) }
+
+            intent
+                ?.getStringExtra(EXTRA_INITIAL_TEXT)
+                ?.let { return HighlightWord(it) }
+
+            intent
+                ?.getLongExtra(EXTRA_ITEM_ID, -1L)
+                ?.takeIf { it > 0L }
+                ?.let { return HighlightWord.load(it) }
+
+            return null
+        }
+
+        val item = loadData()
+        if(item==null) {
             log.d("missing source data")
             finish()
             return
         }
 
-        item = HighlightWord(src)
-        showSampleText()
+        this.item = item
+
+        etName.setText( item.name )
+        showSound()
+        showColor()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        try {
+            // ui may not initialized yet.
+            uiToData()
+        }catch(ex:Throwable) {
+            log.e(ex,"uiToData failed.")
+        }
+        item.encodeJson().toString().let{ outState.putString(STATE_ITEM,it) }
     }
 
 
@@ -98,7 +133,7 @@ class ActHighlightWordEdit
         setContentView(R.layout.act_highlight_edit)
         App1.initEdgeToEdge(this)
 
-        tvName = findViewById(R.id.tvName)
+        etName = findViewById(R.id.etName)
         swSound = findViewById(R.id.swSound)
         swSound.setOnCheckedChangeListener(this)
 
@@ -114,57 +149,48 @@ class ActHighlightWordEdit
             R.id.btnBackgroundColorEdit,
             R.id.btnBackgroundColorReset,
             R.id.btnNotificationSoundEdit,
-            R.id.btnNotificationSoundReset
+            R.id.btnNotificationSoundReset,
+            R.id.btnDiscard,
+            R.id.btnSave,
         ).forEach {
             findViewById<View>(it)?.setOnClickListener(this)
         }
     }
 
-    private fun showSampleText() {
-        bBusy = true
-        try {
-
-            swSound.isChecked = item.sound_type != HighlightWord.SOUND_TYPE_NONE
-
-            swSpeech.isChecked = item.speech != 0
-
-            tvName.text = item.name
-            tvName.setBackgroundColor(item.color_bg) // may 0
-            tvName.textColor = item.color_fg.notZero()
-                ?: attrColor(android.R.attr.textColorPrimary)
-
-        } finally {
-            bBusy = false
-        }
-    }
-
     override fun onClick(v: View) {
-
         when (v.id) {
+            R.id.btnDiscard ->
+                finish()
 
-            R.id.btnTextColorEdit -> openColorPicker(COLOR_DIALOG_ID_TEXT, item.color_fg)
+            R.id.btnSave ->
+                save()
+
+            R.id.btnTextColorEdit ->
+                openColorPicker(COLOR_DIALOG_ID_TEXT, item.color_fg)
 
             R.id.btnTextColorReset -> {
                 item.color_fg = 0
-                showSampleText()
+                showColor()
             }
 
-            R.id.btnBackgroundColorEdit -> openColorPicker(
-                COLOR_DIALOG_ID_BACKGROUND,
-                item.color_bg
-            )
+            R.id.btnBackgroundColorEdit ->
+                openColorPicker(COLOR_DIALOG_ID_BACKGROUND,item.color_bg)
 
             R.id.btnBackgroundColorReset -> {
                 item.color_bg = 0
-                showSampleText()
+                showColor()
             }
 
-            R.id.btnNotificationSoundEdit -> openNotificationSoundPicker()
+            R.id.btnNotificationSoundEdit ->
+                openNotificationSoundPicker()
 
             R.id.btnNotificationSoundReset -> {
                 item.sound_uri = null
-                item.sound_type =
-                    if (swSound.isChecked) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_NONE
+                item.sound_type = if (swSound.isChecked)
+                    HighlightWord.SOUND_TYPE_DEFAULT
+                else
+                    HighlightWord.SOUND_TYPE_NONE
+                showSound()
             }
         }
 
@@ -172,24 +198,7 @@ class ActHighlightWordEdit
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         if (bBusy) return
-
-        when (buttonView.id) {
-            R.id.swSound -> {
-                if (!isChecked) {
-                    item.sound_type = HighlightWord.SOUND_TYPE_NONE
-                } else {
-                    item.sound_type =
-                        if (item.sound_uri?.isEmpty() != false) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_CUSTOM
-                }
-            }
-
-            R.id.swSpeech -> {
-                item.speech = when (isChecked) {
-                    false -> 0
-                    else -> 1
-                }
-            }
-        }
+        uiToData()
     }
 
     private fun openColorPicker(id: Int, initial_color: Int) {
@@ -212,10 +221,30 @@ class ActHighlightWordEdit
             COLOR_DIALOG_ID_TEXT -> item.color_fg = color or Color.BLACK
             COLOR_DIALOG_ID_BACKGROUND -> item.color_bg = color.notZero() ?: 0x01000000
         }
-        showSampleText()
+        showColor()
     }
 
     //////////////////////////////////////////////////////////////////
+
+    private fun showSound(){
+        bBusy = true
+        try {
+            swSound.isChecked = item.sound_type != HighlightWord.SOUND_TYPE_NONE
+            swSpeech.isChecked = item.speech != 0
+        } finally {
+            bBusy = false
+        }
+    }
+
+    private fun showColor(){
+        bBusy = true
+        try {
+            etName.setBackgroundColor(item.color_bg) // may 0
+            etName.textColor = item.color_fg.notZero() ?: attrColor(android.R.attr.textColorPrimary)
+        } finally {
+            bBusy = false
+        }
+    }
 
     private fun openNotificationSoundPicker() {
         val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
@@ -229,9 +258,41 @@ class ActHighlightWordEdit
         }
 
         val chooser = Intent.createChooser(intent, getString(R.string.notification_sound))
-
-
         arNotificationSound.launch(chooser)
     }
 
+    private fun uiToData(){
+        item.name = etName.text.toString().trim{ it <= ' ' || it == '　'}
+
+        item.sound_type = when {
+            !swSound.isChecked -> HighlightWord.SOUND_TYPE_NONE
+            item.sound_uri?.notEmpty() == null -> HighlightWord.SOUND_TYPE_DEFAULT
+            else -> HighlightWord.SOUND_TYPE_CUSTOM
+        }
+
+        item.speech = when (swSpeech.isChecked) {
+            false -> 0
+            else -> 1
+        }
+    }
+
+    private fun save(){
+        uiToData()
+
+        if( item.name.isEmpty() ) {
+            showToast(true, R.string.cant_leave_empty_keyword)
+            return
+        }
+
+        val other = HighlightWord.load(item.name)
+        if( other != null && other.id != item.id) {
+            showToast(true, R.string.cant_save_duplicated_keyword)
+            return
+        }
+
+        item.save(this)
+        showToast(false,R.string.saved)
+        setResult(RESULT_OK)
+        finish()
+    }
 }

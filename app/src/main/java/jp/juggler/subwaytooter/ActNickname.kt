@@ -132,8 +132,8 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
         btnNotificationSoundReset.setOnClickListener(this)
 
         val bBefore8 = Build.VERSION.SDK_INT < 26
-        btnNotificationSoundEdit.isEnabled = bBefore8
-        btnNotificationSoundReset.isEnabled = bBefore8
+        btnNotificationSoundEdit.isEnabledAlpha = bBefore8
+        btnNotificationSoundReset.isEnabledAlpha = bBefore8
 
         etNickname.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(

@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.isEnabledAlpha
 
 class DlgConfirmMail(
     val activity: AppCompatActivity,
@@ -38,7 +39,7 @@ class DlgConfirmMail(
             }
 
         cbUpdateMailAddress.setOnCheckedChangeListener { _, isChecked ->
-            etEmail.isEnabled = isChecked
+            etEmail.isEnabledAlpha = isChecked
         }
 
         arrayOf(

@@ -73,7 +73,7 @@
                         android:contentDescription="@string/delete"
                         android:gravity="center_vertical"
                         android:src="@drawable/ic_close"
-                        android:tint="?attr/colorVectorDrawable" />
+                        app:tint="?attr/colorVectorDrawable" />
                 </LinearLayout>
 
                 <CheckBox
@@ -206,7 +206,7 @@
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:contentDescription="@string/open_picker_emoji"
                     android:src="@drawable/ic_hashtag"
-                    android:tint="?attr/colorVectorDrawable"
+                    app:tint="?attr/colorVectorDrawable"
 
                     />
 
@@ -218,7 +218,7 @@
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:contentDescription="@string/open_picker_emoji"
                     android:src="@drawable/ic_face"
-                    android:tint="?attr/colorVectorDrawable"
+                    app:tint="?attr/colorVectorDrawable"
 
                     />
             </LinearLayout>
@@ -267,7 +267,7 @@
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:contentDescription="@string/edit"
                     android:src="@drawable/ic_edit"
-                    android:tint="?attr/colorVectorDrawable"
+                    app:tint="?attr/colorVectorDrawable"
 
                     />
 
@@ -278,7 +278,7 @@
                     android:background="@drawable/btn_bg_transparent_round6dp"
                     android:contentDescription="@string/reset"
                     android:src="@drawable/ic_close"
-                    android:tint="?attr/colorVectorDrawable"
+                    app:tint="?attr/colorVectorDrawable"
 
                     />
 
@@ -485,7 +485,7 @@
             android:background="@drawable/btn_bg_transparent_round6dp"
             android:contentDescription="@string/media_attachment"
             android:src="@drawable/ic_clip"
-            android:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorVectorDrawable" />
 
         <ImageButton
             android:id="@+id/btnVisibility"
@@ -496,7 +496,7 @@
             android:contentDescription="@string/visibility"
             android:minWidth="48dp"
             android:minHeight="48dp"
-            android:tint="?attr/colorVectorDrawable"
+            app:tint="?attr/colorVectorDrawable"
             tools:src="@drawable/ic_public" />
 
         <ImageButton
@@ -507,7 +507,7 @@
             android:background="@drawable/btn_bg_transparent_round6dp"
             android:contentDescription="@string/plugin"
             android:src="@drawable/ic_extension"
-            android:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorVectorDrawable" />
 
         <ImageButton
             android:id="@+id/btnMore"
@@ -517,7 +517,7 @@
             android:background="@drawable/btn_bg_transparent_round6dp"
             android:contentDescription="@string/more"
             android:src="@drawable/ic_more"
-            android:tint="?attr/colorVectorDrawable"
+            app:tint="?attr/colorVectorDrawable"
 
             />
 
@@ -544,7 +544,7 @@
             android:background="@drawable/btn_bg_transparent_round6dp"
             android:contentDescription="@string/toot"
             android:src="@drawable/ic_send"
-            android:tint="?attr/colorVectorDrawable"
+            app:tint="?attr/colorVectorDrawable"
 
             />
     </LinearLayout>

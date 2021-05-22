@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/btnCopy"
+        android:title="@string/copy_st"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/btnSend"
+        android:title="@string/send"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/btnSearch"
+        android:title="@string/search_web"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/btnSearchTS"
+        android:title="@string/toot_search_ts"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/btnSearchNotestock"
+        android:title="@string/toot_search_notestock"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/btnTranslate"
+        android:title="@string/translate"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/btnMuteWord"
+        android:title="@string/mute_word"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/btnKeywordFilter"
+        android:title="@string/keyword_filter"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/btnHighlight"
+        android:title="@string/highlight_word"
+        app:showAsAction="never" />
+
+</menu>

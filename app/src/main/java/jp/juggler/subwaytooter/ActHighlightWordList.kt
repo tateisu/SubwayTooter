@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter
 
-import android.app.Dialog
 import android.content.Context
 import android.media.Ringtone
 import android.media.RingtoneManager
@@ -17,7 +16,6 @@ import com.woxthebox.draglistview.DragItemAdapter
 import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
-import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.util.*
 import java.lang.ref.WeakReference
@@ -36,19 +34,12 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	
 	private var last_ringtone : WeakReference<Ringtone>? = null
 
-	private val arEdit = activityResultHandler {ar->
-		val data = ar?.data
-		if(data != null && ar.resultCode == RESULT_OK){
-			try {
-				data.getStringExtra(ActHighlightWordEdit.EXTRA_ITEM)
-					?.decodeJsonObject()
-					?.let{
-						HighlightWord(it).save(this)
-						loadData()
-					}
-			} catch(ex : Throwable) {
-				throw RuntimeException("can't load data", ex)
-			}
+	private val arEdit = activityResultHandler { ar->
+		try {
+			if( ar?.resultCode == RESULT_OK )
+				loadData()
+		} catch(ex : Throwable) {
+			throw RuntimeException("can't load data", ex)
 		}
 	}
 
@@ -263,39 +254,15 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	private fun create() {
-		DlgTextInput.show(
-			this,
-			getString(R.string.new_item),
-			"",
-			callback = object : DlgTextInput.Callback {
-				override fun onEmptyError() {
-					showToast(true, R.string.word_empty)
-				}
-				
-				override fun onOK(dialog : Dialog, text : String) {
-					var item = HighlightWord.load(text)
-					if(item == null) {
-						item = HighlightWord(text)
-						item.save(this@ActHighlightWordList)
-						loadData()
-					}
-					edit(item)
-					
-					dialog.dismissSafe()
-				}
-			})
+		arEdit.launch(
+			ActHighlightWordEdit.createIntent(this, "")
+		)
 	}
 	
 	private fun edit(oldItem : HighlightWord) {
-		try {
-
-
-			arEdit.launch(
-				ActHighlightWordEdit.createIntent(this,  oldItem)
-			)
-		} catch(ex : JsonException) {
-			throw RuntimeException(ex)
-		}
+		arEdit.launch(
+			ActHighlightWordEdit.createIntent(this,  oldItem.id)
+		)
 	}
 	
 	private fun stopLastRingtone() {

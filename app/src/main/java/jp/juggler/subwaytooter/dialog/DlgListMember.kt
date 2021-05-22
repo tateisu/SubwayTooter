@@ -250,7 +250,7 @@ class DlgListMember(
 	}
 	
 	private fun showList(_list : ArrayList<TootList>?) {
-		btnCreateList.isEnabled = _list != null
+		btnCreateList.isEnabledAlpha = _list != null
 		adapter.item_list.clear()
 		when {
 			_list == null -> adapter.item_list.add(ErrorItem(activity.getString(R.string.cant_access_list)))

@@ -82,6 +82,9 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
     @kotlinx.serialization.Serializable
     data class State(
         var propName: String = "",
+
+        @kotlinx.serialization.Serializable(with = UriOrNullSerializer::class)
+        var uriCameraImage: Uri? = null,
     )
 
     var state = State()
@@ -181,8 +184,6 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
     internal var visibility = TootVisibility.Public
 
-    private var uriCameraImage: Uri? = null
-
 
     ///////////////////////////////////////////////////////////////////
 
@@ -212,33 +213,33 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
 
     private val arAddAttachment = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == Activity.RESULT_OK) {
-            data.handleGetContentResult(contentResolver).firstOrNull()?.let {
-                addAttachment(
-                    state.propName,
-                    it.uri,
-                    it.mimeType?.notEmpty() ?: contentResolver.getType(it.uri)
-                )
-            }
-        }
+        if (ar?.resultCode == Activity.RESULT_OK)
+            ar.data
+                ?.handleGetContentResult(contentResolver)
+                ?.firstOrNull()
+                ?.let {
+                    addAttachment(
+                        state.propName,
+                        it.uri,
+                        it.mimeType?.notEmpty() ?: contentResolver.getType(it.uri)
+                    )
+                }
     }
 
     private val arCameraImage = activityResultHandler { ar ->
         if (ar?.resultCode == Activity.RESULT_OK) {
             // 画像のURL
-            val uri = ar.data?.data ?: uriCameraImage
+            val uri = ar.data?.data ?: state.uriCameraImage
             if (uri != null) {
                 val type = contentResolver.getType(uri)
                 addAttachment(state.propName, uri, type)
             }
         } else {
             // 失敗したら DBからデータを削除
-            val uriCameraImage = this.uriCameraImage
-            if (uriCameraImage != null) {
-                contentResolver.delete(uriCameraImage, null, null)
-                this.uriCameraImage = null
+            state.uriCameraImage?.let{
+                contentResolver.delete(it, null, null)
             }
+            state.uriCameraImage = null
         }
     }
 
@@ -279,7 +280,12 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(ACTIVITY_STATE, Json.encodeToString(state))
+
+        val encodedState = Json.encodeToString(state)
+        log.d("encodedState=$encodedState")
+        val decodedState :State = Json.decodeFromString(encodedState)
+        log.d("encodedState.uriCameraImage=${decodedState.uriCameraImage}")
+        outState.putString(ACTIVITY_STATE,encodedState )
     }
 
     override fun onStop() {
@@ -591,34 +597,34 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         loading = false
 
         val enabled = !a.isPseudo
-        btnAccessToken.isEnabled = enabled
-        btnInputAccessToken.isEnabled = enabled
-        btnVisibility.isEnabled = enabled
-        btnPushSubscription.isEnabled = enabled
-        btnPushSubscriptionNotForce.isEnabled = enabled
-        btnResetNotificationTracking.isEnabled = enabled
-        btnNotificationSoundEdit.isEnabled = Build.VERSION.SDK_INT < 26 && enabled
-        btnNotificationSoundReset.isEnabled = Build.VERSION.SDK_INT < 26 && enabled
-        btnNotificationStyleEdit.isEnabled = Build.VERSION.SDK_INT >= 26 && enabled
-        btnNotificationStyleEditReply.isEnabled = Build.VERSION.SDK_INT >= 26 && enabled
+        btnAccessToken.isEnabledAlpha = enabled
+        btnInputAccessToken.isEnabledAlpha = enabled
+        btnVisibility.isEnabledAlpha = enabled
+        btnPushSubscription.isEnabledAlpha = enabled
+        btnPushSubscriptionNotForce.isEnabledAlpha = enabled
+        btnResetNotificationTracking.isEnabledAlpha = enabled
+        btnNotificationSoundEdit.isEnabledAlpha = Build.VERSION.SDK_INT < 26 && enabled
+        btnNotificationSoundReset.isEnabledAlpha = Build.VERSION.SDK_INT < 26 && enabled
+        btnNotificationStyleEdit.isEnabledAlpha = Build.VERSION.SDK_INT >= 26 && enabled
+        btnNotificationStyleEditReply.isEnabledAlpha = Build.VERSION.SDK_INT >= 26 && enabled
 
-        cbNotificationMention.isEnabled = enabled
-        cbNotificationBoost.isEnabled = enabled
-        cbNotificationFavourite.isEnabled = enabled
-        cbNotificationFollow.isEnabled = enabled
-        cbNotificationFollowRequest.isEnabled = enabled
-        cbNotificationReaction.isEnabled = enabled
-        cbNotificationVote.isEnabled = enabled
-        cbNotificationPost.isEnabled = enabled
+        cbNotificationMention.isEnabledAlpha = enabled
+        cbNotificationBoost.isEnabledAlpha = enabled
+        cbNotificationFavourite.isEnabledAlpha = enabled
+        cbNotificationFollow.isEnabledAlpha = enabled
+        cbNotificationFollowRequest.isEnabledAlpha = enabled
+        cbNotificationReaction.isEnabledAlpha = enabled
+        cbNotificationVote.isEnabledAlpha = enabled
+        cbNotificationPost.isEnabledAlpha = enabled
 
-        cbConfirmFollow.isEnabled = enabled
-        cbConfirmFollowLockedUser.isEnabled = enabled
-        cbConfirmUnfollow.isEnabled = enabled
-        cbConfirmBoost.isEnabled = enabled
-        cbConfirmFavourite.isEnabled = enabled
-        cbConfirmUnboost.isEnabled = enabled
-        cbConfirmUnfavourite.isEnabled = enabled
-        cbConfirmToot.isEnabled = enabled
+        cbConfirmFollow.isEnabledAlpha = enabled
+        cbConfirmFollowLockedUser.isEnabledAlpha = enabled
+        cbConfirmUnfollow.isEnabledAlpha = enabled
+        cbConfirmBoost.isEnabledAlpha = enabled
+        cbConfirmFavourite.isEnabledAlpha = enabled
+        cbConfirmUnboost.isEnabledAlpha = enabled
+        cbConfirmUnfavourite.isEnabledAlpha = enabled
+        cbConfirmToot.isEnabledAlpha = enabled
 
         val ti = TootInstance.getCached(a.apiHost)
         if (ti == null) {
@@ -1004,21 +1010,21 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         etNote.setText(loadingText)
 
         // 初期状態では編集不可能
-        btnProfileAvatar.isEnabled = false
-        btnProfileHeader.isEnabled = false
-        etDisplayName.isEnabled = false
-        btnDisplayName.isEnabled = false
-        etNote.isEnabled = false
-        btnNote.isEnabled = false
-        cbLocked.isEnabled = false
+        btnProfileAvatar.isEnabledAlpha = false
+        btnProfileHeader.isEnabledAlpha = false
+        etDisplayName.isEnabledAlpha = false
+        btnDisplayName.isEnabledAlpha = false
+        etNote.isEnabledAlpha = false
+        btnNote.isEnabledAlpha = false
+        cbLocked.isEnabledAlpha = false
 
         for (et in listEtFieldName) {
             et.setText(loadingText)
-            et.isEnabled = false
+            et.isEnabledAlpha = false
         }
         for (et in listEtFieldValue) {
             et.setText(loadingText)
-            et.isEnabled = false
+            et.isEnabledAlpha = false
         }
 
         // 疑似アカウントなら編集不可のまま
@@ -1126,13 +1132,13 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             cbLocked.isChecked = src.locked
 
             // 編集可能にする
-            btnProfileAvatar.isEnabled = true
-            btnProfileHeader.isEnabled = true
-            etDisplayName.isEnabled = true
-            btnDisplayName.isEnabled = true
-            etNote.isEnabled = true
-            btnNote.isEnabled = true
-            cbLocked.isEnabled = true
+            btnProfileAvatar.isEnabledAlpha = true
+            btnProfileHeader.isEnabledAlpha = true
+            etDisplayName.isEnabledAlpha = true
+            btnDisplayName.isEnabledAlpha = true
+            etNote.isEnabledAlpha = true
+            btnNote.isEnabledAlpha = true
+            cbLocked.isEnabledAlpha = true
 
             if (src.source?.fields != null) {
                 val fields = src.source.fields
@@ -1149,7 +1155,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                             }
                         )
                         et.setText(text)
-                        et.isEnabled = true
+                        et.isEnabledAlpha = true
                         val invalidator = NetworkEmojiInvalidator(handler, et)
                         invalidator.register(text)
                     }
@@ -1165,7 +1171,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                             }
                         )
                         et.setText(text)
-                        et.isEnabled = true
+                        et.isEnabledAlpha = true
                         val invalidator = NetworkEmojiInvalidator(handler, et)
                         invalidator.register(text)
                     }
@@ -1186,7 +1192,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                             }
                         )
                         et.setText(text)
-                        et.isEnabled = true
+                        et.isEnabledAlpha = true
                         val invalidator = NetworkEmojiInvalidator(handler, et)
                         invalidator.register(text)
                     }
@@ -1203,7 +1209,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                             }
                         )
                         et.text = text
-                        et.isEnabled = true
+                        et.isEnabledAlpha = true
                         val invalidator = NetworkEmojiInvalidator(handler, et)
                         invalidator.register(text)
                     }
@@ -1580,11 +1586,11 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             val values = ContentValues()
             values.put(MediaStore.Images.Media.TITLE, filename)
             values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            uriCameraImage =
-                contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+            val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+            state.uriCameraImage = uri
 
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, uriCameraImage)
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
 
             state.propName = propName
             arCameraImage.launch(intent)

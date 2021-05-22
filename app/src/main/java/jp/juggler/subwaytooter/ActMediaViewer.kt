@@ -223,10 +223,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         cbMute = findViewById(R.id.cbMute)
 
         val enablePaging = media_list.size > 1
-        btnPrevious.isEnabled = enablePaging
-        btnNext.isEnabled = enablePaging
-        btnPrevious.alpha = if (enablePaging) 1f else 0.3f
-        btnNext.alpha = if (enablePaging) 1f else 0.3f
+        btnPrevious.isEnabledAlpha = enablePaging
+        btnNext.isEnabledAlpha = enablePaging
 
         btnPrevious.setOnClickListener(this)
         btnNext.setOnClickListener(this)

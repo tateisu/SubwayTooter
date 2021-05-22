@@ -125,11 +125,11 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
     )
 
 
-    btnAnnouncementsPrev.vg(expand)?.run {
-        isEnabled = enablePaging
+    btnAnnouncementsPrev.vg(expand)?.apply {
+        isEnabledAlpha = enablePaging
     }
-    btnAnnouncementsNext.vg(expand)?.run {
-        isEnabled = enablePaging
+    btnAnnouncementsNext.vg(expand)?.apply {
+        isEnabledAlpha = enablePaging
     }
 
     tvAnnouncementsCaption.textColor = content_color

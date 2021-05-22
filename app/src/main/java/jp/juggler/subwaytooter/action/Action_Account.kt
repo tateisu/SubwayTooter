@@ -13,9 +13,7 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.openBrowser
 import jp.juggler.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 object Action_Account {
 
@@ -385,28 +383,32 @@ object Action_Account {
         }.show()
     }
 
-    fun getReactionableAccounts(
+    fun listAccountsReactionable(
         activity: ActMain,
-        allowMisskey: Boolean = true,
         block: (ArrayList<SavedAccount>) -> Unit
     ) {
         TootTaskRunner(activity).run(object : TootTask {
             var list: List<SavedAccount>? = null
+
+            suspend fun check(client:TootApiClient,a:SavedAccount)=when {
+                client.isApiCancelled -> false
+                a.isPseudo -> false
+                a.isMisskey -> true
+                else -> {
+                    val (ti, ri) = TootInstance.getEx(client.copy(), account = a)
+                    if (ti == null) {
+                        ri?.error?.let { log.w(it) }
+                        false
+                    } else InstanceCapability.emojiReaction(a,ti)
+                }
+            }
+
             override suspend fun background(client: TootApiClient): TootApiResult? {
-                list = SavedAccount.loadAccountList(activity).filter { a ->
-                    when {
-                        client.isApiCancelled -> false
-                        a.isPseudo -> false
-                        a.isMisskey -> allowMisskey
-                        else -> {
-                            val (ti, ri) = TootInstance.getEx(client, account = a)
-                            if (ti == null) {
-                                ri?.error?.let { log.w(it) }
-                                false
-                            } else
-                                ti.fedibird_capabilities?.contains("emoji_reaction") == true
-                        }
-                    }
+                coroutineScope {
+                    list = SavedAccount.loadAccountList(activity)
+                        .map { async { if(check(client,it)) it else null } }
+                        .awaitAll()
+                        .filterNotNull()
                 }
                 return if (client.isApiCancelled) null else TootApiResult()
             }
@@ -417,7 +419,41 @@ object Action_Account {
             }
         })
     }
+    fun listAccountsCanSeeMyReactions(
+        activity: ActMain,
+        block: (ArrayList<SavedAccount>) -> Unit
+    ) {
+        TootTaskRunner(activity).run(object : TootTask {
+            var list: List<SavedAccount>? = null
 
+            suspend fun check(client:TootApiClient,a:SavedAccount)=when {
+                client.isApiCancelled -> false
+                a.isPseudo -> false
+                else -> {
+                    val (ti, ri) = TootInstance.getEx(client.copy(), account = a)
+                    if (ti == null) {
+                        ri?.error?.let { log.w(it) }
+                        false
+                    } else  InstanceCapability.listMyReactions(a,ti)
+                }
+            }
+
+            override suspend fun background(client: TootApiClient): TootApiResult? {
+                coroutineScope {
+                    list = SavedAccount.loadAccountList(activity)
+                        .map { async { if(check(client,it)) it else null } }
+                        .awaitAll()
+                        .filterNotNull()
+                }
+                return if (client.isApiCancelled) null else TootApiResult()
+            }
+
+            override suspend fun handleResult(result: TootApiResult?) {
+                result ?: return
+                if (list != null) block(ArrayList(list))
+            }
+        })
+    }
     // アカウントを選んでタイムラインカラムを追加
     fun timelineWithFilter(
         activity: ActMain,

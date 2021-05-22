@@ -1093,7 +1093,7 @@
     <string name="confirm_mail_description">After requesting resending confirm E-mail,\n- please check the mail on your mailer.\n- open confirm link in the mail.\n- close this dialog and reload column.</string>
     <string name="push_notification_filter">Push notification filter (Mastodon 3.4.0+, requires update push subscription)</string>
     <string name="no_one">No one</string>
-    <string name="fedibird_reactions">Reactions (Fedibird)</string>
+    <string name="reactioned_posts">Reactioned posts</string>
     <string name="reactions">Reactions</string>
     <string name="cant_reaction_remote_custom_emoji">can\'t reaction with remote custom emoji %1$s</string>
     <string name="keep_reaction_space">Keep Spacing for Reactions</string>
@@ -1103,4 +1103,6 @@
     <string name="cant_save_duplicated_keyword">Can\'t save duplicated keyword.</string>
     <string name="discard_changes">Discard changes?</string>
     <string name="saved">saved.</string>
+    <string name="not_available_for_current_accounts">Unavailable for current accounts</string>
+
 </resources>

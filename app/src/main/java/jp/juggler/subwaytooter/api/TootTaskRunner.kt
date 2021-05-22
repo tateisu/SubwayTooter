@@ -104,7 +104,6 @@ class TootTaskRunner(
     fun run(instance: Host, callback: TootTask): TootTaskRunner {
         client.apiHost = instance
         return run(callback)
-
     }
 
     fun progressPrefix(s: String): TootTaskRunner {

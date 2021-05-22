@@ -692,28 +692,52 @@ enum class ColumnType(
     REACTIONS(
         42,
         iconId = { R.drawable.ic_face },
-        name1 = { it.getString(R.string.reactions) },
+        name1 = { it.getString(R.string.reactioned_posts) },
         bAllowPseudo = false,
         bAllowMisskey = false,
 
         loading = { client ->
             if (isMisskey) {
-                TootApiResult("misskey has no api to list your reactions")
+                getStatusList(
+                    client,
+                    ApiPath.PATH_M544_REACTIONS,
+                    misskeyParams = column.makeMisskeyTimelineParameter(parser),
+                    listParser = misskeyCustomParserFavorites
+                )
             } else {
                 getStatusList(client,column.makeReactionsUrl())
             }
         },
 
         refresh = { client ->
-            getStatusList(client,column.makeReactionsUrl())
+            if (isMisskey) {
+                getStatusList(
+                    client,
+                    ApiPath.PATH_M544_REACTIONS,
+                    misskeyParams = column.makeMisskeyTimelineParameter(parser),
+                    listParser = misskeyCustomParserFavorites
+                )
+            } else {
+                getStatusList(client, column.makeReactionsUrl())
+            }
         },
 
         gap = { client ->
-            getStatusList(
-                client,
-                column.makeReactionsUrl(),
-                mastodonFilterByIdRange = false
-            )
+            if (isMisskey) {
+                getStatusList(
+                    client,
+                    ApiPath.PATH_M544_REACTIONS,
+                    mastodonFilterByIdRange = false,
+                    misskeyParams = column.makeMisskeyTimelineParameter(parser),
+                    listParser = misskeyCustomParserFavorites
+                )
+            } else {
+                getStatusList(
+                    client,
+                    column.makeReactionsUrl(),
+                    mastodonFilterByIdRange = false
+                )
+            }
         },
         gapDirection = gapDirectionMastodonWorkaround,
     ),

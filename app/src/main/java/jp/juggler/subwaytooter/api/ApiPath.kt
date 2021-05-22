@@ -53,4 +53,6 @@ object ApiPath {
     const val PATH_MISSKEY_FOLLOW_REQUESTS = "/api/following/requests/list"
     const val PATH_MISSKEY_FOLLOW_SUGGESTION = "/api/users/recommendation"
     const val PATH_MISSKEY_FAVORITES = "/api/i/favorites"
+
+    const val PATH_M544_REACTIONS ="/api/i/reactions"
 }

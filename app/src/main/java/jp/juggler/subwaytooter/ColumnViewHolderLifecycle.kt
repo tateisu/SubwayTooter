@@ -215,7 +215,8 @@ fun ColumnViewHolder.onPageCreate(column: Column, page_idx: Int, page_count: Int
                 btnSearchClear.vg(Pref.bpShowSearchClear(activity.pref))
                 cbResolve.vg(column.type == ColumnType.SEARCH)
             }
-            column.type == ColumnType.REACTIONS -> {
+
+            column.type == ColumnType.REACTIONS && column.access_info.isMastodon -> {
                 llSearch.vg(true)
 
                 flEmoji.vg(true)

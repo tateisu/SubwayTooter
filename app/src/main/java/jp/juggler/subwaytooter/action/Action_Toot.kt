@@ -1650,7 +1650,13 @@ object Action_Toot {
             )
         }
 
-        Action_Account.getReactionableAccounts(activity) { list ->
+        Action_Account.listAccountsReactionable(activity) { list ->
+
+            if (list.isEmpty()) {
+                activity.showToast(false, R.string.not_available_for_current_accounts)
+                return@listAccountsReactionable
+            }
+
             AccountPicker.pick(
                 activity,
                 accountListArg = list,

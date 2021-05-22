@@ -2682,7 +2682,7 @@ class ActPost : AsyncActivity(),
                     TootVisibility.DirectPrivate
                 )
 
-            true == ti?.hasCapability(InstanceCapability.VisibilityMutual) ->
+            InstanceCapability.visibilityMutual(ti) ->
                 arrayOf(
                     TootVisibility.WebSetting,
                     TootVisibility.Public,
@@ -2693,7 +2693,7 @@ class ActPost : AsyncActivity(),
                     TootVisibility.DirectSpecified
                 )
 
-            true == ti?.hasCapability(InstanceCapability.VisibilityLimited) ->
+            InstanceCapability.visibilityLimited(ti)->
                 arrayOf(
                     TootVisibility.WebSetting,
                     TootVisibility.Public,

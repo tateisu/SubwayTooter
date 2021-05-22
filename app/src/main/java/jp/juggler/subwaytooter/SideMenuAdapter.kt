@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -23,9 +22,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import jp.juggler.subwaytooter.action.Action_Account
 import jp.juggler.subwaytooter.action.Action_App
 import jp.juggler.subwaytooter.action.Action_Instance
-import jp.juggler.subwaytooter.api.TootApiCallback
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -269,8 +265,13 @@ class SideMenuAdapter(
         Item(icon = R.drawable.ic_bookmark, title = R.string.bookmarks) {
             Action_Account.timeline(this, defaultInsertPosition, ColumnType.BOOKMARKS)
         },
-        Item(icon = R.drawable.ic_face, title = R.string.fedibird_reactions) {
-            Action_Account.getReactionableAccounts(this, allowMisskey = false) { list ->
+        Item(icon = R.drawable.ic_face, title = R.string.reactioned_posts) {
+            Action_Account.listAccountsCanSeeMyReactions(this) { list ->
+                if (list.isEmpty()) {
+                    showToast(false, R.string.not_available_for_current_accounts)
+                    return@listAccountsCanSeeMyReactions
+                }
+
                 val columnType = ColumnType.REACTIONS
                 AccountPicker.pick(
                     this,

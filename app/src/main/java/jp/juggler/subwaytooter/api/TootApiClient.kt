@@ -1269,6 +1269,14 @@ class TootApiClient(
 
     }
 
+    fun copy() =TootApiClient(
+        context,
+        httpClient,
+        callback
+    ).also{dst->
+        dst.account = account
+        dst.apiHost = apiHost
+    }
 }
 
 // query: query_string after ? ( ? itself is excluded )

@@ -96,7 +96,7 @@ class TootReaction(
 
         val UNKNOWN = TootReaction(name = "?")
 
-        fun isUnicodeEmoji(code: String): Boolean =
+        private fun isUnicodeEmoji(code: String): Boolean =
             code.any { it.code >= 0x7f }
 
         fun splitEmojiDomain(code: String): Pair<String?, String?> {
@@ -111,11 +111,7 @@ class TootReaction(
         fun canReaction(
             access_info: SavedAccount,
             ti: TootInstance? = TootInstance.getCached(access_info.apiHost)
-        ) = when {
-            access_info.isPseudo -> false
-            access_info.isMisskey -> true
-            else -> ti?.fedibird_capabilities?.contains("emoji_reaction") == true
-        }
+        ) = InstanceCapability.emojiReaction(access_info,ti)
 
         fun decodeEmojiQuery(jsonText: String?): List<TootReaction> =
             jsonText.notEmpty()?.let { src ->
@@ -136,9 +132,6 @@ class TootReaction(
 
 
     }
-
-    private val isUnicodeEmoji: Boolean
-        get() = isUnicodeEmoji(name)
 
     fun splitEmojiDomain() =
         splitEmojiDomain(name)

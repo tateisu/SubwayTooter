@@ -704,7 +704,7 @@
     <string name="link_color">链接颜色(应用需要重启)</string>
     <string name="timeout_for_embed_media_viewer">嵌入式媒体查看器超时(单位: 秒，应用重启(从应用历史记录删除))</string>
     <string name="vote_polls">投票或结果</string>
-    <string name="reaction">动作 (Misskey)</string>
+    <string name="reaction">动作</string>
     <string name="confirm_cancel_follow_request_who_from">从%2$s到%1$s取消请求吗？</string>
     <string name="follow_request_cancelled">请求取消.</string>
     <string name="remove_endorse_succeeded">未签署.</string>

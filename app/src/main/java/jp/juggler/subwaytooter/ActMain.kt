@@ -18,7 +18,6 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -1542,7 +1541,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         }
     )
 
-    fun updateColumnStrip() {
+    private fun updateColumnStrip() {
         llEmpty.vg(app_state.columnCount == 0)
 
         val iconSize = stripIconSize
@@ -1695,7 +1694,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         val statusInfo = url.findStatusIdFromUrl()
         if (statusInfo != null) {
             // ステータスをアプリ内で開く
-            Action_Toot.conversationOtherInstance(
+            Action_Conversation.conversationOtherInstance(
                 this@ActMain,
                 defaultInsertPosition,
                 statusInfo.url,
@@ -2175,7 +2174,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
     }
 
     // アクセストークンの手動入力(更新)
-    fun checkAccessToken2(db_id: Long) {
+    private fun checkAccessToken2(db_id: Long) {
 
         val sa = SavedAccount.loadAccount(this, db_id) ?: return
 

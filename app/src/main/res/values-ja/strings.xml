@@ -569,7 +569,7 @@
     <string name="quote_name">名前を引用…</string>
     <string name="quote_url">URLを引用…</string>
     <string name="rate_on_store">ストアで評価</string>
-    <string name="reaction">リアクション (Misskey)</string>
+    <string name="reaction">リアクション</string>
     <string name="reaction_add">リアクションの追加</string>
     <string name="reaction_remove">リアクションの削除</string>
     <string name="read_gap">ギャップを読む</string>
@@ -1091,4 +1091,5 @@
     <string name="discard_changes">変更を破棄しますか?</string>
     <string name="saved">保存しました</string>
     <string name="not_available_for_current_accounts">この機能を利用できるアカウントがありません</string>
+    <string name="confirm_reaction">%2$s から %1$s でリアクションしますか?</string>
 </resources>

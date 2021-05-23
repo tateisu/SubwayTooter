@@ -129,6 +129,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
     private lateinit var cbConfirmUnboost: CheckBox
     private lateinit var cbConfirmUnfavourite: CheckBox
     private lateinit var cbConfirmToot: CheckBox
+    private lateinit var cbConfirmReaction: CheckBox
 
     private lateinit var tvUserCustom: TextView
     private lateinit var btnUserCustom: View
@@ -236,7 +237,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             }
         } else {
             // 失敗したら DBからデータを削除
-            state.uriCameraImage?.let{
+            state.uriCameraImage?.let {
                 contentResolver.delete(it, null, null)
             }
             state.uriCameraImage = null
@@ -283,9 +284,9 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
         val encodedState = Json.encodeToString(state)
         log.d("encodedState=$encodedState")
-        val decodedState :State = Json.decodeFromString(encodedState)
+        val decodedState: State = Json.decodeFromString(encodedState)
         log.d("encodedState.uriCameraImage=${decodedState.uriCameraImage}")
-        outState.putString(ACTIVITY_STATE,encodedState )
+        outState.putString(ACTIVITY_STATE, encodedState)
     }
 
     override fun onStop() {
@@ -342,6 +343,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         cbConfirmUnboost = findViewById(R.id.cbConfirmUnboost)
         cbConfirmUnfavourite = findViewById(R.id.cbConfirmUnfavourite)
         cbConfirmToot = findViewById(R.id.cbConfirmToot)
+        cbConfirmReaction = findViewById(R.id.cbConfirmReaction)
 
         tvUserCustom = findViewById(R.id.tvUserCustom)
         btnUserCustom = findViewById(R.id.btnUserCustom)
@@ -423,66 +425,10 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         ).map { findViewById(it) }
 
         btnFields = findViewById(R.id.btnFields)
-
-
-
-
-        btnOpenBrowser.setOnClickListener(this)
-        btnPushSubscription.setOnClickListener(this)
-        btnPushSubscriptionNotForce.setOnClickListener(this)
-        btnResetNotificationTracking.setOnClickListener(this)
-        btnAccessToken.setOnClickListener(this)
-        btnInputAccessToken.setOnClickListener(this)
-        btnAccountRemove.setOnClickListener(this)
-        btnLoadPreference.setOnClickListener(this)
-        btnVisibility.setOnClickListener(this)
-        btnUserCustom.setOnClickListener(this)
-        btnProfileAvatar.setOnClickListener(this)
-        btnProfileHeader.setOnClickListener(this)
-        btnDisplayName.setOnClickListener(this)
-        btnNote.setOnClickListener(this)
-        btnFields.setOnClickListener(this)
-
-        swNSFWOpen.setOnCheckedChangeListener(this)
-        swDontShowTimeout.setOnCheckedChangeListener(this)
-        swExpandCW.setOnCheckedChangeListener(this)
-        swMarkSensitive.setOnCheckedChangeListener(this)
-        cbNotificationMention.setOnCheckedChangeListener(this)
-        cbNotificationBoost.setOnCheckedChangeListener(this)
-        cbNotificationFavourite.setOnCheckedChangeListener(this)
-        cbNotificationFollow.setOnCheckedChangeListener(this)
-        cbNotificationFollowRequest.setOnCheckedChangeListener(this)
-        cbNotificationReaction.setOnCheckedChangeListener(this)
-        cbNotificationVote.setOnCheckedChangeListener(this)
-        cbNotificationPost.setOnCheckedChangeListener(this)
-
-        cbLocked.setOnCheckedChangeListener(this)
-
-
-        cbConfirmFollow.setOnCheckedChangeListener(this)
-        cbConfirmFollowLockedUser.setOnCheckedChangeListener(this)
-        cbConfirmUnfollow.setOnCheckedChangeListener(this)
-        cbConfirmBoost.setOnCheckedChangeListener(this)
-        cbConfirmFavourite.setOnCheckedChangeListener(this)
-        cbConfirmUnboost.setOnCheckedChangeListener(this)
-        cbConfirmUnfavourite.setOnCheckedChangeListener(this)
-        cbConfirmToot.setOnCheckedChangeListener(this)
-
         btnNotificationSoundEdit = findViewById(R.id.btnNotificationSoundEdit)
         btnNotificationSoundReset = findViewById(R.id.btnNotificationSoundReset)
-        btnNotificationSoundEdit.setOnClickListener(this)
-        btnNotificationSoundReset.setOnClickListener(this)
-
         btnNotificationStyleEdit = findViewById(R.id.btnNotificationStyleEdit)
         btnNotificationStyleEditReply = findViewById(R.id.btnNotificationStyleEditReply)
-        btnNotificationStyleEdit.setOnClickListener(this)
-        btnNotificationStyleEditReply.setOnClickListener(this)
-
-
-        spResizeImage.onItemSelectedListener = this
-
-        spPushPolicy.onItemSelectedListener = this
-
         btnNotificationStyleEditReply.vg(Pref.bpSeparateReplyNotificationGroup(pref))
 
         name_invalidator = NetworkEmojiInvalidator(handler, etDisplayName)
@@ -544,6 +490,57 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             }
         })
 
+        arrayOf(
+            btnOpenBrowser,
+            btnPushSubscription,
+            btnPushSubscriptionNotForce,
+            btnResetNotificationTracking,
+            btnAccessToken,
+            btnInputAccessToken,
+            btnAccountRemove,
+            btnLoadPreference,
+            btnVisibility,
+            btnUserCustom,
+            btnProfileAvatar,
+            btnProfileHeader,
+            btnDisplayName,
+            btnNote,
+            btnFields,
+            btnNotificationSoundEdit,
+            btnNotificationSoundReset,
+            btnNotificationStyleEdit,
+            btnNotificationStyleEditReply,
+        ).forEach { it.setOnClickListener(this) }
+
+        arrayOf(
+            swNSFWOpen,
+            swDontShowTimeout,
+            swExpandCW,
+            swMarkSensitive,
+            cbNotificationMention,
+            cbNotificationBoost,
+            cbNotificationFavourite,
+            cbNotificationFollow,
+            cbNotificationFollowRequest,
+            cbNotificationReaction,
+            cbNotificationVote,
+            cbNotificationPost,
+            cbLocked,
+            cbConfirmFollow,
+            cbConfirmFollowLockedUser,
+            cbConfirmUnfollow,
+            cbConfirmBoost,
+            cbConfirmFavourite,
+            cbConfirmUnboost,
+            cbConfirmUnfavourite,
+            cbConfirmToot,
+            cbConfirmReaction,
+        ).forEach { it.setOnCheckedChangeListener(this) }
+
+        arrayOf(
+            spResizeImage,
+            spPushPolicy,
+        ).forEach { it.onItemSelectedListener = this }
     }
 
     private fun EditText.parseInt(): Int? {
@@ -588,6 +585,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
 
         cbConfirmToot.isChecked = a.confirm_post
+        cbConfirmReaction.isChecked = a.confirm_reaction
 
         notification_sound_uri = a.sound_uri
 
@@ -597,34 +595,44 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         loading = false
 
         val enabled = !a.isPseudo
-        btnAccessToken.isEnabledAlpha = enabled
-        btnInputAccessToken.isEnabledAlpha = enabled
-        btnVisibility.isEnabledAlpha = enabled
-        btnPushSubscription.isEnabledAlpha = enabled
-        btnPushSubscriptionNotForce.isEnabledAlpha = enabled
-        btnResetNotificationTracking.isEnabledAlpha = enabled
-        btnNotificationSoundEdit.isEnabledAlpha = Build.VERSION.SDK_INT < 26 && enabled
-        btnNotificationSoundReset.isEnabledAlpha = Build.VERSION.SDK_INT < 26 && enabled
-        btnNotificationStyleEdit.isEnabledAlpha = Build.VERSION.SDK_INT >= 26 && enabled
-        btnNotificationStyleEditReply.isEnabledAlpha = Build.VERSION.SDK_INT >= 26 && enabled
 
-        cbNotificationMention.isEnabledAlpha = enabled
-        cbNotificationBoost.isEnabledAlpha = enabled
-        cbNotificationFavourite.isEnabledAlpha = enabled
-        cbNotificationFollow.isEnabledAlpha = enabled
-        cbNotificationFollowRequest.isEnabledAlpha = enabled
-        cbNotificationReaction.isEnabledAlpha = enabled
-        cbNotificationVote.isEnabledAlpha = enabled
-        cbNotificationPost.isEnabledAlpha = enabled
+        arrayOf(
+            btnAccessToken,
+            btnInputAccessToken,
+            btnVisibility,
+            btnPushSubscription,
+            btnPushSubscriptionNotForce,
+            btnResetNotificationTracking,
+            cbNotificationMention,
+            cbNotificationBoost,
+            cbNotificationFavourite,
+            cbNotificationFollow,
+            cbNotificationFollowRequest,
+            cbNotificationReaction,
+            cbNotificationVote,
+            cbNotificationPost,
+            cbConfirmFollow,
+            cbConfirmFollowLockedUser,
+            cbConfirmUnfollow,
+            cbConfirmBoost,
+            cbConfirmFavourite,
+            cbConfirmUnboost,
+            cbConfirmUnfavourite,
+            cbConfirmToot,
+            cbConfirmReaction,
+        ).forEach { it.isEnabledAlpha = enabled }
 
-        cbConfirmFollow.isEnabledAlpha = enabled
-        cbConfirmFollowLockedUser.isEnabledAlpha = enabled
-        cbConfirmUnfollow.isEnabledAlpha = enabled
-        cbConfirmBoost.isEnabledAlpha = enabled
-        cbConfirmFavourite.isEnabledAlpha = enabled
-        cbConfirmUnboost.isEnabledAlpha = enabled
-        cbConfirmUnfavourite.isEnabledAlpha = enabled
-        cbConfirmToot.isEnabledAlpha = enabled
+        val enabledOldNotification = enabled && Build.VERSION.SDK_INT < 26
+        arrayOf(
+            btnNotificationSoundEdit,
+            btnNotificationSoundReset,
+        ).forEach { it.isEnabledAlpha = enabledOldNotification }
+
+        val enabledNewNotification = enabled && Build.VERSION.SDK_INT >= 26
+        arrayOf(
+            btnNotificationStyleEdit,
+            btnNotificationStyleEditReply,
+        ).forEach { it.isEnabledAlpha = enabledNewNotification }
 
         val ti = TootInstance.getCached(a.apiHost)
         if (ti == null) {
@@ -695,6 +703,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         account.confirm_unboost = cbConfirmUnboost.isChecked
         account.confirm_unfavourite = cbConfirmUnfavourite.isChecked
         account.confirm_post = cbConfirmToot.isChecked
+        account.confirm_reaction = cbConfirmReaction.isChecked
         account.default_text = etDefaultText.text.toString()
 
         val num = etMaxTootChars.parseInt()
@@ -1010,13 +1019,15 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         etNote.setText(loadingText)
 
         // 初期状態では編集不可能
-        btnProfileAvatar.isEnabledAlpha = false
-        btnProfileHeader.isEnabledAlpha = false
-        etDisplayName.isEnabledAlpha = false
-        btnDisplayName.isEnabledAlpha = false
-        etNote.isEnabledAlpha = false
-        btnNote.isEnabledAlpha = false
-        cbLocked.isEnabledAlpha = false
+        arrayOf(
+            btnProfileAvatar,
+            btnProfileHeader,
+            etDisplayName,
+            btnDisplayName,
+            etNote,
+            btnNote,
+            cbLocked,
+        ).forEach { it.isEnabledAlpha = false }
 
         for (et in listEtFieldName) {
             et.setText(loadingText)
@@ -1132,13 +1143,15 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             cbLocked.isChecked = src.locked
 
             // 編集可能にする
-            btnProfileAvatar.isEnabledAlpha = true
-            btnProfileHeader.isEnabledAlpha = true
-            etDisplayName.isEnabledAlpha = true
-            btnDisplayName.isEnabledAlpha = true
-            etNote.isEnabledAlpha = true
-            btnNote.isEnabledAlpha = true
-            cbLocked.isEnabledAlpha = true
+            arrayOf(
+                btnProfileAvatar,
+                btnProfileHeader,
+                etDisplayName,
+                btnDisplayName,
+                etNote,
+                btnNote,
+                cbLocked,
+            ).forEach { it.isEnabledAlpha = true }
 
             if (src.source?.fields != null) {
                 val fields = src.source.fields

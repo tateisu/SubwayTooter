@@ -560,7 +560,7 @@
     <string name="link_color">Linkfarbe (App-Neustart erforderlich)</string>
     <string name="timeout_for_embed_media_viewer">Timeout für den integrierten Medienbetrachter (Einheit: Sekunden, App-Neustart erforderlich)</string>
     <string name="vote_polls">Abstimmung oder Ergebnis</string>
-    <string name="reaction">Reaktion (Misskey)</string>
+    <string name="reaction">Reaktion</string>
     <string name="confirm_cancel_follow_request_who_from">Followanfrage von %2$s bis %1$s abbrechen\?</string>
     <string name="follow_request_cancelled">Follow-Anfrage abgebrochen.</string>
     <string name="remove_endorse_succeeded">Promotion entfernt.</string>

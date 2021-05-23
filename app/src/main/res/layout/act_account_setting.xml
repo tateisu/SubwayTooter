@@ -498,6 +498,11 @@
             style="@style/setting_row_form"
             android:text="@string/act_post" />
 
+        <CheckBox
+            android:id="@+id/cbConfirmReaction"
+            style="@style/setting_row_form"
+            android:text="@string/reaction" />
+
         <View style="@style/setting_divider" />
 
         <TextView

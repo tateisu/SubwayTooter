@@ -788,7 +788,7 @@
     <string name="remove_endorse_succeeded">Unendorsemed.</string>
     <string name="follow_request_cancelled">Follow request cancelled.</string>
     <string name="confirm_cancel_follow_request_who_from">Cancel follow request from %2$s to %1$s?</string>
-    <string name="reaction">Reaction (Misskey)</string>
+    <string name="reaction">Reaction</string>
     <string name="vote_polls">voting or its result</string>
     <string name="timeout_for_embed_media_viewer">Timeout for embedded media viewer (Unit:seconds, app restart(delete from app history) required)</string>
     <string name="link_color">Link color (app restart required)</string>
@@ -1104,5 +1104,5 @@
     <string name="discard_changes">Discard changes?</string>
     <string name="saved">saved.</string>
     <string name="not_available_for_current_accounts">Unavailable for current accounts</string>
-
+    <string name="confirm_reaction">Reaction %1$s from %2$s?</string>
 </resources>

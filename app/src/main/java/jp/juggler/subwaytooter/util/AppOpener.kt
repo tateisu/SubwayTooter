@@ -14,6 +14,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.action.Action_Conversation
 import jp.juggler.subwaytooter.action.Action_HashTag
 import jp.juggler.subwaytooter.action.Action_Toot
 import jp.juggler.subwaytooter.action.Action_User
@@ -235,7 +236,7 @@ fun openCustomTab(
                     statusInfo.statusId == null ||
                     !accessInfo.matchHost(statusInfo.host)
                 ) {
-                    Action_Toot.conversationOtherInstance(
+                    Action_Conversation.conversationOtherInstance(
                         activity,
                         pos,
                         statusInfo.url,
@@ -244,7 +245,7 @@ fun openCustomTab(
                         statusInfo.statusId
                     )
                 } else {
-                    Action_Toot.conversationLocal(
+                    Action_Conversation.conversationLocal(
                         activity,
                         pos,
                         accessInfo,

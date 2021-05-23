@@ -753,7 +753,7 @@
     <string name="remove_endorse_succeeded">N’est plus recommandé.</string>
     <string name="follow_request_cancelled">Demande d’abonnement annulée.</string>
     <string name="confirm_cancel_follow_request_who_from">Annuler la demande d’abonnement de %2$s à %1$s \?</string>
-    <string name="reaction">Réaction (Misskey)</string>
+    <string name="reaction">Réaction</string>
     <string name="timeout_for_embed_media_viewer">Délai d’expiration du visualiseur multimédia intégré (unité: secondes, redémarrage de l’application (suppression de l’historique de application) requis)</string>
     <string name="media_attachment_max_byte_size_movie">Taille limite des octets de la pièce jointe (vidéo) (Unité : MB. La valeur par défaut est 40)</string>
     <string name="link_color">Couleur des liens (redémarrage requis)</string>

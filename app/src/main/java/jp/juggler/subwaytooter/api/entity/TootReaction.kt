@@ -111,7 +111,7 @@ class TootReaction(
         fun canReaction(
             access_info: SavedAccount,
             ti: TootInstance? = TootInstance.getCached(access_info.apiHost)
-        ) = InstanceCapability.emojiReaction(access_info,ti)
+        ) = InstanceCapability.emojiReaction(access_info, ti)
 
         fun decodeEmojiQuery(jsonText: String?): List<TootReaction> =
             jsonText.notEmpty()?.let { src ->
@@ -130,7 +130,33 @@ class TootReaction(
                 }
             }.toString()
 
+        fun urlToSpan(options: DecodeOptions, code: String, url: String) =
+            SpannableStringBuilder(code).apply {
+                setSpan(
+                    NetworkEmojiSpan(url, scale = options.enlargeCustomEmoji),
+                    0,
+                    length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
 
+        fun toSpannableStringBuilder(
+            options: DecodeOptions,
+            code: String,
+            url: String?
+        ): SpannableStringBuilder {
+
+            url?.let { return urlToSpan(options, code, url) }
+
+            if (options.linkHelper?.isMisskey == true) {
+                // 古い形式の絵文字はUnicode絵文字にする
+                misskeyOldReactions[code]?.let {
+                    return EmojiDecoder.decodeEmoji(options, it)
+                }
+            }
+
+            return EmojiDecoder.decodeEmoji(options, code)
+        }
     }
 
     fun splitEmojiDomain() =
@@ -160,15 +186,7 @@ class TootReaction(
                 url
             }
 
-        fun urlToSpan(options: DecodeOptions, code: String, url: String) =
-            SpannableStringBuilder(code).apply {
-                setSpan(
-                    NetworkEmojiSpan(url, scale = options.enlargeCustomEmoji),
-                    0,
-                    length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
+
 
         if (options.linkHelper?.isMisskey == true) {
 

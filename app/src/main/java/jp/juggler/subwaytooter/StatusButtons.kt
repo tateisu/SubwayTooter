@@ -466,11 +466,11 @@ class StatusButtons(
                             reset = true
                         )
                         // 未読フラグのクリアをサーバに送る
-                        Action_Toot.clearConversationUnread(activity, access_info, cs)
+                        Action_Conversation.clearConversationUnread(activity, access_info, cs)
                     }
                 }
 
-                Action_Toot.conversation(
+                Action_Conversation.conversation(
                     activity,
                     activity.nextPosition(column),
                     access_info,
@@ -480,15 +480,15 @@ class StatusButtons(
             }
 
             btnReply -> if (!access_info.isPseudo) {
-                Action_Toot.reply(activity, access_info, status)
+                Action_Reply.reply(activity, access_info, status)
             } else {
-                Action_Toot.replyFromAnotherAccount(activity, access_info, status)
+                Action_Reply.replyFromAnotherAccount(activity, access_info, status)
             }
 
             btnQuote -> if (!access_info.isPseudo) {
-                Action_Toot.reply(activity, access_info, status, quote = true)
+                Action_Reply.reply(activity, access_info, status, quote = true)
             } else {
-                Action_Toot.replyFromAnotherAccount(activity, access_info, status, quote = true)
+                Action_Reply.replyFromAnotherAccount(activity, access_info, status, quote = true)
             }
 
             btnBoost -> {
@@ -564,19 +564,19 @@ class StatusButtons(
                 }
             }
 
-            btnReaction -> {
-                if (!TootReaction.canReaction(access_info)) {
-                    Action_Toot.reactionFromAnotherAccount(
+            btnReaction -> when {
+                !TootReaction.canReaction(access_info) ->
+                    Action_Reaction.reactionFromAnotherAccount(
                         activity,
                         access_info,
                         status
                     )
-                } else if (status.reactionSet?.myReaction != null) {
-                    Action_Toot.removeReaction(activity, column, status)
-                } else {
-                    Action_Toot.addReaction(activity, column, status)
-                }
+                status.reactionSet?.myReaction != null ->
+                    Action_Reaction.removeReaction(activity, column, status)
+                else ->
+                    Action_Reaction.addReaction(activity, column, status)
             }
+
 
             btnFollow2 -> {
                 val accountRef = status.accountRef
@@ -682,54 +682,26 @@ class StatusButtons(
         val status = this.status ?: return true
 
         when (v) {
-            btnConversation -> Action_Toot.conversationOtherInstance(
-                activity, activity.nextPosition(column), status
-            )
+            btnBoost -> Action_Toot.boostFromAnotherAccount(activity, access_info, status)
+            btnFavourite -> Action_Toot.favouriteFromAnotherAccount(activity, access_info, status)
+            btnBookmark -> Action_Toot.bookmarkFromAnotherAccount(activity, access_info, status)
 
-            btnBoost -> Action_Toot.boostFromAnotherAccount(
-                activity, access_info, status
-            )
+            btnReply -> Action_Reply.replyFromAnotherAccount(activity, access_info, status)
+            btnQuote -> Action_Reply.replyFromAnotherAccount(activity, access_info, status, quote = true)
 
-            btnFavourite -> Action_Toot.favouriteFromAnotherAccount(
-                activity, access_info, status
-            )
+            btnReaction -> Action_Reaction.reactionFromAnotherAccount(activity, access_info, status)
 
-            btnBookmark -> Action_Toot.bookmarkFromAnotherAccount(
-                activity, access_info, status
-            )
+            btnConversation -> Action_Conversation.conversationOtherInstance(activity, activity.nextPosition(column), status)
 
-            btnReply -> Action_Toot.replyFromAnotherAccount(
-                activity, access_info, status
-            )
+            btnFollow2 ->
+                Action_Follow.followFromAnotherAccount(
+                    activity, activity.nextPosition(column), access_info, status.account
+                )
 
-            btnQuote -> Action_Toot.replyFromAnotherAccount(activity, access_info, status, quote = true)
-
-            btnReaction -> Action_Toot.reactionFromAnotherAccount(activity, access_info, status)
-
-            btnFollow2 -> Action_Follow.followFromAnotherAccount(
-                activity, activity.nextPosition(column), access_info, status.account
-            )
-
-            btnTranslate -> shareUrl(
-                status,
-                CustomShareTarget.Translate
-            )
-
-            btnCustomShare1 -> shareUrl(
-                status,
-                CustomShareTarget.CustomShare1
-            )
-
-            btnCustomShare2 -> shareUrl(
-                status,
-                CustomShareTarget.CustomShare2
-            )
-
-            btnCustomShare3 -> shareUrl(
-                status,
-                CustomShareTarget.CustomShare3
-            )
-
+            btnTranslate -> shareUrl(status, CustomShareTarget.Translate)
+            btnCustomShare1 -> shareUrl(status, CustomShareTarget.CustomShare1)
+            btnCustomShare2 -> shareUrl(status, CustomShareTarget.CustomShare2)
+            btnCustomShare3 -> shareUrl(status, CustomShareTarget.CustomShare3)
         }
         return true
     }

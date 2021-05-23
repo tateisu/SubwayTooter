@@ -791,7 +791,7 @@
     <string name="remove_endorse_succeeded">Recomanació eliminada.</string>
     <string name="follow_request_cancelled">Sol·licitud de seguiment cancel·lada.</string>
     <string name="confirm_cancel_follow_request_who_from">Cancel·lar la sol·licitud de seguiment de %2$s a %1$s\?</string>
-    <string name="reaction">Reacció (Misskey)</string>
+    <string name="reaction">Reacció</string>
     <string name="vote_polls">votació o el seu resultat</string>
     <string name="timeout_for_embed_media_viewer">Temps d\'espera per al visor de mèdia incorporat (Unitat:segons, cal reiniciar(eliminar de l\'historial) l\'aplicació)</string>
     <string name="link_color">Color dels enllaços (cal reiniciar aplicació)</string>

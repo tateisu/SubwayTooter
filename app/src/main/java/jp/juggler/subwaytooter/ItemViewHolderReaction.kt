@@ -1,14 +1,13 @@
 package jp.juggler.subwaytooter
 
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
-import jp.juggler.subwaytooter.action.Action_Toot
+import jp.juggler.subwaytooter.action.Action_Reaction
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -20,8 +19,8 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
     val myReaction = status.reactionSet?.myReaction
     val reactionSet = status.reactionSet?.filter { it.count > 0 }
 
-    if (reactionSet?.isEmpty() != false){
-        if( !TootReaction.canReaction(access_info) || !Pref.bpKeepReactionSpace(activity.pref) ) return
+    if (reactionSet?.isEmpty() != false) {
+        if (!TootReaction.canReaction(access_info) || !Pref.bpKeepReactionSpace(activity.pref)) return
     }
 
     val density = activity.density
@@ -45,67 +44,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
         }
     }
 
-//    // +/- ボタン
-//    box.addView(ImageButton(act).also { b ->
-//        b.layoutParams = FlexboxLayout.LayoutParams(
-//            buttonHeight,
-//            buttonHeight
-//        ).apply {
-//            endMargin = marginBetween
-//        }
-//
-//        b.background = ContextCompat.getDrawable(
-//            activity,
-//            R.drawable.btn_bg_transparent_round6dp
-//        )
-//
-//        val myReaction = status.reactionSet?.myReaction
-//
-//        b.contentDescription = activity.getString(
-//            if (myReaction != null)
-//                R.string.reaction_remove
-//            else
-//                R.string.reaction_add
-//        )
-//        b.scaleType = ImageView.ScaleType.FIT_CENTER
-//        b.padding = paddingV
-//
-//        b.setOnClickListener {
-//            if (!TootReaction.canReaction(access_info)) {
-//                Action_Toot.reactionFromAnotherAccount(
-//                    activity,
-//                    access_info,
-//                    status_showing
-//                )
-//            } else if (myReaction != null) {
-//                Action_Toot.removeReaction(activity, column, status)
-//            } else {
-//                Action_Toot.addReaction(activity, column, status)
-//            }
-//        }
-//
-//        b.setOnLongClickListener {
-//            Action_Toot.reactionFromAnotherAccount(
-//                activity,
-//                access_info,
-//                status_showing
-//            )
-//            true
-//        }
-//
-//        setIconDrawableId(
-//            act,
-//            b,
-//            if (myReaction != null)
-//                R.drawable.ic_remove
-//            else
-//                R.drawable.ic_add,
-//            color = content_color,
-//            alphaMultiplier = Styler.boost_alpha
-//        )
-//    })
-
-    if( reactionSet?.isEmpty() != false){
+    if (reactionSet?.isEmpty() != false) {
         val v = View(act).apply {
             layoutParams = FlexboxLayout.LayoutParams(
                 buttonHeight,
@@ -133,7 +72,7 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
                 FlexboxLayout.LayoutParams.WRAP_CONTENT,
                 buttonHeight
             ).apply {
-                if(index >0 ) startMargin = marginBetween
+                if (index > 0) startMargin = marginBetween
             }
             minWidthCompat = buttonHeight
 
@@ -162,15 +101,15 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             setOnClickListener {
                 val taggedReaction = it.tag as? TootReaction
                 if (taggedReaction == status.reactionSet?.myReaction) {
-                    Action_Toot. removeReaction(act, column, status)
+                    Action_Reaction.removeReaction(act, column, status)
                 } else {
-                    Action_Toot. addReaction(act, column, status, taggedReaction?.name)
+                    Action_Reaction.addReaction(act, column, status, taggedReaction?.name, taggedReaction?.static_url)
                 }
             }
 
             setOnLongClickListener {
                 val taggedReaction = it.tag as? TootReaction
-                Action_Toot.reactionFromAnotherAccount(
+                Action_Reaction.reactionFromAnotherAccount(
                     this@makeReactionsView.activity,
                     access_info,
                     status_showing,

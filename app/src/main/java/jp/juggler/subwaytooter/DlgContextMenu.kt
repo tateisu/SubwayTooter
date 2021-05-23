@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Dialog
 import android.content.res.ColorStateList
 import android.view.Gravity
@@ -993,24 +992,24 @@ internal class DlgContextMenu(
                 status
             )
 
-            R.id.btnReactionAnotherAccount -> Action_Toot.reactionFromAnotherAccount(
+            R.id.btnReactionAnotherAccount -> Action_Reaction.reactionFromAnotherAccount(
                 activity,
                 access_info,
                 status
             )
 
-            R.id.btnReplyAnotherAccount -> Action_Toot.replyFromAnotherAccount(
+            R.id.btnReplyAnotherAccount -> Action_Reply.replyFromAnotherAccount(
                 activity,
                 access_info,
                 status
             )
-            R.id.btnQuoteToot -> Action_Toot.replyFromAnotherAccount(
+            R.id.btnQuoteToot -> Action_Reply.replyFromAnotherAccount(
                 activity,
                 access_info,
                 status,
                 quote = true
             )
-            R.id.btnQuoteTootBT -> Action_Toot.replyFromAnotherAccount(
+            R.id.btnQuoteTootBT -> Action_Reply.replyFromAnotherAccount(
                 activity,
                 access_info,
                 status?.reblogParent,
@@ -1018,7 +1017,7 @@ internal class DlgContextMenu(
             )
 
             R.id.btnConversationAnotherAccount -> status?.let { status ->
-                Action_Toot.conversationOtherInstance(activity, pos, status)
+                Action_Conversation.conversationOtherInstance(activity, pos, status)
             }
 
             R.id.btnDelete -> status?.let { status ->
@@ -1078,7 +1077,7 @@ internal class DlgContextMenu(
             }
 
             R.id.btnConversationMute -> status?.let { status ->
-                Action_Toot.muteConversation(activity, access_info, status)
+                Action_Conversation.muteConversation(activity, access_info, status)
             }
 
             R.id.btnProfilePin -> status?.let { status ->

@@ -37,10 +37,10 @@ fun ItemViewHolder.openConversationSummary() {
             reset = true
         )
         // 未読フラグのクリアをサーバに送る
-        Action_Toot.clearConversationUnread(activity, access_info, cs)
+        Action_Conversation.clearConversationUnread(activity, access_info, cs)
     }
 
-    Action_Toot.conversation(
+    Action_Conversation.conversation(
         activity,
         activity.nextPosition(column),
         access_info,
@@ -152,17 +152,17 @@ fun ItemViewHolder.onClickImpl(v: View?) {
             val s = status_reply
 
             when {
-                s != null -> Action_Toot.conversation(activity, pos, access_info, s)
+                s != null -> Action_Conversation.conversation(activity, pos, access_info, s)
 
                 // tootsearchは返信元のIDを取得するのにひと手間必要
                 column.type == ColumnType.SEARCH_TS ||
                     column.type == ColumnType.SEARCH_NOTESTOCK ->
-                    Action_Toot.showReplyTootsearch(activity, pos, status_showing)
+                    Action_Reply.showReplyTootsearch(activity, pos, status_showing)
 
                 else -> {
                     val id = status_showing?.in_reply_to_id
                     if (id != null) {
-                        Action_Toot.conversationLocal(activity, pos, access_info, id)
+                        Action_Conversation.conversationLocal(activity, pos, access_info, id)
                     }
                 }
             }
@@ -318,7 +318,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
         ivCardImage -> status_showing?.card?.let { card ->
             val originalStatus = card.originalStatus
             if (originalStatus != null) {
-                Action_Toot.conversation(
+                Action_Conversation.conversation(
                     activity,
                     activity.nextPosition(column),
                     access_info,
@@ -395,7 +395,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
                 // tootsearchは返信元のIDを取得するのにひと手間必要
                 column.type == ColumnType.SEARCH_TS ||
                     column.type == ColumnType.SEARCH_NOTESTOCK ->
-                    Action_Toot.showReplyTootsearch(
+                    Action_Reply.showReplyTootsearch(
                         activity,
                         activity.nextPosition(column),
                         status_showing
@@ -404,7 +404,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
                 else -> {
                     val id = status_showing?.in_reply_to_id
                     if (id != null) {
-                        Action_Toot.conversationLocal(
+                        Action_Conversation.conversationLocal(
                             activity,
                             activity.nextPosition(column),
                             access_info,
@@ -440,7 +440,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
             return true
         }
 
-        ivCardImage -> Action_Toot.conversationOtherInstance(
+        ivCardImage -> Action_Conversation.conversationOtherInstance(
             activity,
             activity.nextPosition(column),
             status_showing?.card?.originalStatus
@@ -490,7 +490,7 @@ fun ItemViewHolder.clickMedia(i: Int) {
             is TootAttachmentMSP -> {
                 // マストドン検索ポータルのデータではmedia_attachmentsが簡略化されている
                 // 会話の流れを表示する
-                Action_Toot.conversationOtherInstance(
+                Action_Conversation.conversationOtherInstance(
                     activity,
                     activity.nextPosition(column),
                     status_showing

@@ -21,7 +21,6 @@ import jp.juggler.subwaytooter.util.NetworkStateTracker
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.io.IOUtils
 import java.io.ByteArrayOutputStream

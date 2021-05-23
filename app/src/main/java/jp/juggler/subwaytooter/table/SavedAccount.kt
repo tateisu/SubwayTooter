@@ -61,6 +61,7 @@ class SavedAccount(
 	var confirm_follow_locked : Boolean = false
 	var confirm_unfollow : Boolean = false
 	var confirm_post : Boolean = false
+	var confirm_reaction : Boolean = true
 	
 	var notification_tag : String? = null
 	private var register_key : String? = null
@@ -131,6 +132,7 @@ class SavedAccount(
 		confirm_follow_locked = cursor.getBoolean(COL_CONFIRM_FOLLOW_LOCKED)
 		confirm_unfollow = cursor.getBoolean(COL_CONFIRM_UNFOLLOW)
 		confirm_post = cursor.getBoolean(COL_CONFIRM_POST)
+		confirm_reaction = cursor.getBoolean(COL_CONFIRM_REACTION)
 		
 		notification_mention = cursor.getBoolean(COL_NOTIFICATION_MENTION)
 		notification_boost = cursor.getBoolean(COL_NOTIFICATION_BOOST)
@@ -224,7 +226,8 @@ class SavedAccount(
 		cv.put(COL_CONFIRM_FOLLOW_LOCKED, confirm_follow_locked.b2i())
 		cv.put(COL_CONFIRM_UNFOLLOW, confirm_unfollow.b2i())
 		cv.put(COL_CONFIRM_POST, confirm_post.b2i())
-		
+		cv.put(COL_CONFIRM_REACTION, confirm_reaction.b2i())
+
 		cv.put(COL_SOUND_URI, sound_uri)
 		cv.put(COL_DEFAULT_TEXT, default_text)
 		
@@ -279,6 +282,8 @@ class SavedAccount(
 		this.confirm_favourite = b.confirm_favourite
 		this.confirm_unboost = b.confirm_unboost
 		this.confirm_unfavourite = b.confirm_unfavourite
+		this.confirm_post = b.confirm_post
+		this.confirm_reaction = b.confirm_reaction
 		
 		this.dont_hide_nsfw = b.dont_hide_nsfw
 		this.dont_show_timeout = b.dont_show_timeout
@@ -370,7 +375,8 @@ class SavedAccount(
 		private const val COL_CONFIRM_FAVOURITE = "confirm_favourite" // スキーマ23
 		private const val COL_CONFIRM_UNBOOST = "confirm_unboost" // スキーマ24
 		private const val COL_CONFIRM_UNFAVOURITE = "confirm_unfavourite" // スキーマ24
-		
+		private const val COL_CONFIRM_REACTION = "confirm_reaction" // スキーマ61
+
 		// スキーマ13から
 		const val COL_NOTIFICATION_TAG = "notification_server"
 		
@@ -506,6 +512,9 @@ class SavedAccount(
 
 					// スキーマ60から
 					+ ",$COL_PUSH_POLICY text default null"
+
+					// スキーマ61から
+					+ ",$COL_CONFIRM_REACTION integer default 1"
 
 					+ ")"
 			)
@@ -745,6 +754,13 @@ class SavedAccount(
 			isUpgraded( 60) {
 				try {
 					db.execSQL("alter table $table add column $COL_PUSH_POLICY text default null")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+			}
+			isUpgraded(61){
+				try {
+					db.execSQL("alter table $table add column $COL_CONFIRM_REACTION integer default 1")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}

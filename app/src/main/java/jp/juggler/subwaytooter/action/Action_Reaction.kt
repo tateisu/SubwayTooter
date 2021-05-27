@@ -43,8 +43,8 @@ fun ActMain.reactionAdd(
         return
     }
 
-    var code = codeArg
-    if (code == null) {
+
+    if (codeArg == null) {
         EmojiPicker(activity, access_info, closeOnSelected = true) { result ->
             var newUrl: String? = null
             val newCode: String = when (val emoji = result.emoji) {
@@ -62,14 +62,18 @@ fun ActMain.reactionAdd(
         }.show()
         return
     }
+    var code = codeArg
 
     if (access_info.isMisskey) {
-        val pair = TootReaction.splitEmojiDomain(code)
-        when (/* val domain = */ pair.second) {
+        val (name, domain) = TootReaction.splitEmojiDomain(code)
+        if (name == null) {
+            // unicode emoji
+        } else when (domain) {
             null, "", ".", access_info.apDomain.ascii -> {
                 // normalize to local custom emoji
-                code = ":${pair.first}:"
+                code = name
             }
+
             else -> {
                 /*
                 #misskey のリアクションAPIはリモートのカスタム絵文字のコードをフォールバック絵文字に変更して、

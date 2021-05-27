@@ -604,8 +604,8 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 this.replies_count = src.long("replies_count")
 
                 this.reactionSet = TootReactionSet.parseFedibird(
-                    src.jsonArray("emoji_reactions"),
-                    // not used src.boolean("emoji_reactioned")
+                    src.jsonArray("emoji_reactions")
+                        ?: src.jsonObject("pleroma")?.jsonArray("emoji_reactions")
                 )
 
                 when (parser.serviceType) {
@@ -959,7 +959,6 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
     fun updateReactionMastodonByEvent( newReaction: TootReaction ) {
         synchronized(this) {
-
             var reactionSet = this.reactionSet
             if( newReaction.count <= 0 ){
                 reactionSet?.get(newReaction.name)?.let{ reactionSet?.remove(it) }
@@ -980,7 +979,6 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     else -> old.count = newReaction.count
                 }
             }
-            reactionSet?.myReaction = reactionSet?.find { it.me }
         }
     }
 
@@ -994,6 +992,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         code ?: return false
 
         synchronized(this) {
+
             if (emoji != null) {
                 if (custom_emojis == null) custom_emojis = HashMap()
                 custom_emojis?.put(emoji.mapKey, emoji)
@@ -1006,11 +1005,11 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             }
 
             if (byMe) {
-                if (reactionSet.myReaction != null) {
-                    // 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
-                    return false
-                }
+                // 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
+                // その場合はカウントを変更しない
+                if(reactionSet.any{ it.me && it.name == code}) return false
             }
+
             log.d("increaseReaction noteId=$id byMe=$byMe caller=$caller")
 
             // カウントを増やす
@@ -1018,7 +1017,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 reactionSet[code]?.also { it.count = max(0, it.count + 1L) }
                     ?: TootReaction(name = code, count = 1L).also { reactionSet.add(it) }
 
-            if(byMe) reactionSet.myReaction = reaction
+            if(byMe) reaction.me = true
 
             return true
         }
@@ -1037,14 +1036,17 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
 
             if (byMe) {
                 // 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
-                reactionSet.myReaction ?: return false
-                reactionSet.myReaction = null
+                // その場合はカウントを変更しない
+                if(reactionSet.any{ !it.me && it.name == code}) return false
             }
 
             log.d("decreaseReaction noteId=$id byMe=$byMe caller=$caller")
 
             // カウントを減らす
-            reactionSet[code]?.let { it.count = max(0L, it.count - 1L) }
+            val reaction = reactionSet[code]
+                ?.also { it.count = max(0L, it.count - 1L) }
+
+            if(byMe) reaction?.me = false
 
             return true
         }
@@ -1288,8 +1290,6 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             if (bAllowRelative && Pref.bpRelativeTimestamp(App1.pref)) {
 
                 delta = abs(delta)
-
-
 
                 when {
                     delta < 1000L -> return context.getString(R.string.time_within_second)

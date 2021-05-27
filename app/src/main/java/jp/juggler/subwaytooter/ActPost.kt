@@ -1318,7 +1318,7 @@ class ActPost : AppCompatActivity(),
         val account = account
         if (account != null && !account.isPseudo) {
             // インスタンス情報を確認する
-            val info = TootInstance.getCached(account.apiHost)
+            val info = TootInstance.getCached(account)
             if (info == null || info.isExpired) {
                 // 情報がないか古いなら再取得
 
@@ -2137,7 +2137,7 @@ class ActPost : AppCompatActivity(),
             return
         }
 
-        val instance = TootInstance.getCached(account.apiHost)
+        val instance = TootInstance.getCached(account)
         if (instance?.instanceType == InstanceType.Pixelfed) {
             if (in_reply_to_id != null) {
                 showToast(true, R.string.pixelfed_does_not_allow_reply_with_media)
@@ -2580,7 +2580,7 @@ class ActPost : AppCompatActivity(),
     }
 
     private fun performVisibility() {
-        val ti = account?.let { TootInstance.getCached(it.apiHost) }
+        val ti = TootInstance.getCached(account)
 
         val list = when {
             account?.isMisskey == true ->

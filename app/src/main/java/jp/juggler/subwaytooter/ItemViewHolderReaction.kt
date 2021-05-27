@@ -16,13 +16,12 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
 import org.jetbrains.anko.allCaps
+import org.jetbrains.anko.dip
 
 fun ItemViewHolder.makeReactionsView(status: TootStatus) {
-    val myReaction = status.reactionSet?.myReaction
-    val reactionSet = status.reactionSet?.filter { it.count > 0 }
-
-    if (reactionSet?.isEmpty() != false) {
-        if (!TootReaction.canReaction(access_info) || !Pref.bpKeepReactionSpace(activity.pref)) return
+    val reactionSet = status.reactionSet
+    if ( reactionSet?.hasReaction() != true ){
+        if(!TootReaction.canReaction(access_info) || !Pref.bpKeepReactionSpace(activity.pref))  return
     }
 
     val density = activity.density
@@ -66,6 +65,9 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
     )
 
     reactionSet?.forEachIndexed { index, reaction ->
+
+        if( reaction.count <= 0 ) return@forEachIndexed
+
         val ssb = reaction.toSpannableStringBuilder(options, status)
             .also { it.append(" ${reaction.count}") }
 
@@ -75,10 +77,11 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
                 buttonHeight
             ).apply {
                 if (index > 0) startMargin = marginBetween
+                bottomMargin = dip(3)
             }
             minWidthCompat = buttonHeight
 
-            background = if (reaction == myReaction) {
+            background = if (reactionSet.isMyReaction(reaction) ) {
                 // 自分がリアクションしたやつは背景を変える
                 getAdaptiveRippleDrawableRound(
                     act,
@@ -102,8 +105,8 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             tag = reaction
             setOnClickListener {
                 val taggedReaction = it.tag as? TootReaction
-                if (taggedReaction == status.reactionSet?.myReaction) {
-                    act.reactionRemove( column, status)
+                if ( status.reactionSet?.isMyReaction(taggedReaction) == true ) {
+                    act.reactionRemove( column, status,taggedReaction)
                 } else {
                     act.reactionAdd( column, status, taggedReaction?.name, taggedReaction?.static_url)
                 }
@@ -125,7 +128,6 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
         }
         box.addView(b)
     }
-
 
     llExtra.addView(box)
 }

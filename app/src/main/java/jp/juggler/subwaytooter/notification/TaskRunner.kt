@@ -880,6 +880,7 @@ class TaskRunner(
             TootNotification.TYPE_FAVOURITE ->
                 context.getString(R.string.display_name_favourited_by, name)
 
+            TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
             TootNotification.TYPE_EMOJI_REACTION,
             TootNotification.TYPE_REACTION ->
                 context.getString(R.string.display_name_reaction_by, name)

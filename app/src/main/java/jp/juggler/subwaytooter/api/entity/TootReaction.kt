@@ -34,8 +34,7 @@ class TootReaction(
 
     // (fedibird絵文字リアクション) userストリームのemoji_reactionイベントで設定される。
     val status_id: EntityId? = null,
-
-    ) {
+) {
     companion object {
 
         fun appendDomain(name: String, domain: String?) =
@@ -99,6 +98,8 @@ class TootReaction(
         private fun isUnicodeEmoji(code: String): Boolean =
             code.any { it.code >= 0x7f }
 
+        fun isCustomEmoji(code: String): Boolean = !isUnicodeEmoji(code)
+
         fun splitEmojiDomain(code: String): Pair<String?, String?> {
             // unicode絵文字ならnull,nullを返す
             if (isUnicodeEmoji(code)) return Pair(null, null)
@@ -110,7 +111,7 @@ class TootReaction(
 
         fun canReaction(
             access_info: SavedAccount,
-            ti: TootInstance? = TootInstance.getCached(access_info.apiHost)
+            ti: TootInstance? = TootInstance.getCached(access_info)
         ) = InstanceCapability.emojiReaction(access_info, ti)
 
         fun decodeEmojiQuery(jsonText: String?): List<TootReaction> =
@@ -157,6 +158,8 @@ class TootReaction(
 
             return EmojiDecoder.decodeEmoji(options, code)
         }
+
+
     }
 
     fun splitEmojiDomain() =
@@ -252,7 +255,13 @@ class TootReaction(
 
 class TootReactionSet(val isMisskey: Boolean) : LinkedList<TootReaction>() {
 
-    var myReaction: TootReaction? = null
+    fun isMyReaction(reaction: TootReaction?): Boolean {
+        return reaction?.me == true
+    }
+
+    fun hasReaction() = any { it.count > 0 }
+
+    fun hasMyReaction() = any { it.count > 0 && isMyReaction(it) }
 
     private fun getRaw(name: String?): TootReaction? =
         find { it.name == name }
@@ -274,10 +283,7 @@ class TootReactionSet(val isMisskey: Boolean) : LinkedList<TootReaction>() {
                     add(TootReaction(name = key, count = v))
                 }
                 if (myReactionCode != null) {
-                    find { it.name == myReactionCode }?.let {
-                        it.me = true
-                        myReaction = it
-                    }
+                    forEach { it.me = (it.name == myReactionCode) }
                 }
             }.notEmpty()
 
@@ -289,7 +295,6 @@ class TootReactionSet(val isMisskey: Boolean) : LinkedList<TootReaction>() {
                     val tr = TootReaction.parseFedibird(it)
                     if (tr.count > 0) add(tr)
                 }
-                myReaction = find { it.me }
             }.notEmpty()
     }
 }

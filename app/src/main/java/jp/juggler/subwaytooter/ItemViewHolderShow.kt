@@ -513,6 +513,7 @@ fun ItemViewHolder.showNotification(n: TootNotification) {
             }
         }
 
+        TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
         TootNotification.TYPE_EMOJI_REACTION,
         TootNotification.TYPE_REACTION -> {
             val colorBg = Pref.ipEventBgColorReaction(activity.pref)

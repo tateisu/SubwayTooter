@@ -636,7 +636,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
             btnNotificationStyleEditReply,
         ).forEach { it.isEnabledAlpha = enabledNewNotification }
 
-        val ti = TootInstance.getCached(a.apiHost)
+        val ti = TootInstance.getCached(a)
         if (ti == null) {
             etMediaSizeMax.setText(a.image_max_megabytes ?: "")
             etMovieSizeMax.setText(a.movie_max_megabytes ?: "")

@@ -185,7 +185,7 @@ class StatusButtons(
             )
         }
 
-        val ti = TootInstance.getCached(access_info.apiHost)
+        val ti = TootInstance.getCached(access_info)
         btnQuote.vg(ti?.feature_quote == true)?.let {
             setButton(
                 it,
@@ -197,17 +197,19 @@ class StatusButtons(
         }
 
         btnReaction.vg(TootReaction.canReaction(access_info, ti))?.let {
-            val myReaction = status.reactionSet?.myReaction
+            val canMultipleReaction = InstanceCapability.canMultipleReaction(access_info,ti)
+            val hasMyReaction = status.reactionSet?.hasMyReaction() == true
+            val bRemoveButton = hasMyReaction &&!canMultipleReaction
             setButton(
                 it,
                 true,
                 color_normal,
-                if (myReaction != null)
+                if (bRemoveButton)
                     R.drawable.ic_remove
                 else
                     R.drawable.ic_add,
                 activity.getString(
-                    if (myReaction != null)
+                    if (bRemoveButton)
                         R.string.reaction_remove
                     else
                         R.string.reaction_add
@@ -555,17 +557,21 @@ class StatusButtons(
                 }
             }
 
-            btnReaction -> when {
-                !TootReaction.canReaction(access_info) ->
-                    activity.reactionFromAnotherAccount(
-
-                        access_info,
-                        status
-                    )
-                status.reactionSet?.myReaction != null ->
-                    activity.reactionRemove(column, status)
-                else ->
-                    activity.reactionAdd(column, status)
+            btnReaction ->{
+                val canMultipleReaction = InstanceCapability.canMultipleReaction(access_info)
+                val hasMyReaction = status.reactionSet?.hasMyReaction() == true
+                val bRemoveButton = hasMyReaction &&!canMultipleReaction
+                when {
+                    !TootReaction.canReaction(access_info) ->
+                        activity.reactionFromAnotherAccount(
+                            access_info,
+                            status
+                        )
+                    bRemoveButton ->
+                        activity.reactionRemove(column, status)
+                    else ->
+                        activity.reactionAdd(column, status)
+                }
             }
 
 

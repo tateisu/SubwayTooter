@@ -128,6 +128,7 @@ class StreamConnection(
         if (StreamManager.traceDelivery) log.v("$name fireTimelineItem")
         eachCallbackForAcct { it.onEmojiReactionNotification(item) }
     }
+
     private fun fireEmojiReactionEvent(item: TootReaction) {
         if (StreamManager.traceDelivery) log.v("$name fireTimelineItem")
         eachCallbackForAcct { it.onEmojiReactionEvent(item) }
@@ -272,7 +273,11 @@ class StreamConnection(
                     else -> when (payload) {
                         is TimelineItem -> {
 
-                            if (payload is TootNotification && payload.type == TootNotification.TYPE_EMOJI_REACTION) {
+                            if (payload is TootNotification &&
+                                (payload.type == TootNotification.TYPE_EMOJI_REACTION ||
+                                    payload.type == TootNotification.TYPE_EMOJI_REACTION_PLEROMA)
+
+                            ) {
                                 log.d("emoji_reaction (notification) ${payload.status?.id}")
                                 fireEmojiReactionNotification(payload)
                             }

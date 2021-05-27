@@ -54,7 +54,16 @@ object InstanceCapability {
         when {
             ai.isPseudo -> false
             ai.isMisskey -> true
-            else -> ti?.fedibird_capabilities?.contains("emoji_reaction") == true
+            else ->
+                ti?.fedibird_capabilities?.contains("emoji_reaction") == true ||
+                    ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true
+        }
+
+    fun canMultipleReaction(ai: SavedAccount, ti: TootInstance?=TootInstance.getCached(ai)) =
+        when {
+            ai.isPseudo -> false
+            ai.isMisskey -> false
+            else -> ti?.pleromaFeatures?.contains("pleroma_emoji_reactions") == true
         }
 
     fun listMyReactions(ai: SavedAccount, ti: TootInstance?) =
@@ -67,6 +76,7 @@ object InstanceCapability {
                 // fedibird extension
                 ti?.fedibird_capabilities?.contains("emoji_reaction") == true
         }
+
 }
 
 class TootInstance(parser: TootParser, src: JsonObject) {
@@ -130,6 +140,8 @@ class TootInstance(parser: TootParser, src: JsonObject) {
     var fedibird_capabilities: Set<String>? = null
 
     var misskeyEndpoints: Set<String>? = null
+
+    var pleromaFeatures: Set<String>? = null
 
     // XXX: urls をパースしてない。使ってないから…
 
@@ -203,6 +215,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             this.invites_enabled = src.boolean("invites_enabled")
 
             this.fedibird_capabilities = src.jsonArray("fedibird_capabilities")?.stringList()?.toSet()
+            this.pleromaFeatures = src.jsonObject("pleroma")?.jsonObject("metadata")?.jsonArray("features")?.stringList()?.toSet()
         }
     }
 
@@ -433,6 +446,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
         // no request, no expiration check
         fun getCached(apiHost: String) = Host.parse(apiHost).getCacheEntry().cacheData
         fun getCached(apiHost: Host) = apiHost.getCacheEntry().cacheData
+        fun getCached(a:SavedAccount?) = a?.apiHost?.getCacheEntry()?.cacheData
 
         suspend fun get(client: TootApiClient): Pair<TootInstance?, TootApiResult?> = getEx(client)
 

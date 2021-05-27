@@ -252,6 +252,7 @@ fun Column.isFiltered(item: TootNotification): Boolean {
                 TootNotification.TYPE_MENTION,
                 TootNotification.TYPE_REPLY -> dont_show_reply
 
+                TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
                 TootNotification.TYPE_EMOJI_REACTION,
                 TootNotification.TYPE_REACTION -> dont_show_reaction
 
@@ -278,6 +279,7 @@ fun Column.isFiltered(item: TootNotification): Boolean {
                 TootNotification.TYPE_MENTION,
                 TootNotification.TYPE_REPLY -> quick_filter != Column.QUICK_FILTER_MENTION
 
+                TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
                 TootNotification.TYPE_EMOJI_REACTION,
                 TootNotification.TYPE_REACTION -> quick_filter != Column.QUICK_FILTER_REACTION
 
@@ -318,6 +320,7 @@ fun Column.isFiltered(item: TootNotification): Boolean {
         TootNotification.TYPE_RENOTE,
         TootNotification.TYPE_QUOTE,
         TootNotification.TYPE_FAVOURITE,
+        TootNotification.TYPE_EMOJI_REACTION_PLEROMA,
         TootNotification.TYPE_EMOJI_REACTION,
         TootNotification.TYPE_REACTION,
         TootNotification.TYPE_FOLLOW,

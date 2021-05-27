@@ -27,6 +27,7 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 		const val TYPE_FAVOURITE = "favourite"
 		const val TYPE_REACTION = "reaction" // misskey
 		const val TYPE_EMOJI_REACTION = "emoji_reaction" // fedibird
+		const val TYPE_EMOJI_REACTION_PLEROMA = "pleroma:emoji_reaction" // pleroma
 
 		const val TYPE_FOLLOW_REQUEST = "follow_request"
 		const val TYPE_FOLLOW_REQUEST_MISSKEY = "receiveFollowRequest"
@@ -100,6 +101,8 @@ class TootNotification(parser : TootParser, src : JsonObject) : TimelineItem() {
 			reaction = src.jsonObject("emoji_reaction")
 				?.notEmpty()
 				?.let{ TootReaction.parseFedibird(it)}
+				// pleroma unicode emoji
+				?: src.string("emoji")?.let{ TootReaction(name=it)}
 		}
 	}
 }

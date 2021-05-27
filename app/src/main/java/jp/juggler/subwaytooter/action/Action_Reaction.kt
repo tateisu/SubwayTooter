@@ -71,7 +71,7 @@ fun ActMain.reactionAdd(
         } else when (domain) {
             null, "", ".", access_info.apDomain.ascii -> {
                 // normalize to local custom emoji
-                code = name
+                code = ":$name:"
             }
 
             else -> {

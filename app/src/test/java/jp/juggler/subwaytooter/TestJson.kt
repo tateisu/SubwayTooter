@@ -13,11 +13,12 @@ class TestJson {
 		fun Any?.encodeSimpleJsonValue(indentFactor : Int):String{
 			val sw = StringWriter()
 			synchronized(sw.buffer) {
-				return sw.writeJsonValue(indentFactor, 0, this).toString()
+				return sw.writeJsonValue(indentFactor, 0, this,sort=true).toString()
 			}
 		}
 	}
 	
+	@Suppress("unused")
 	enum class En{
 		Aa,
 		Bb,

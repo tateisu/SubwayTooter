@@ -18,6 +18,7 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,10 +29,7 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromUrl
 import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
-import jp.juggler.subwaytooter.dialog.AccountPicker
-import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.dialog.DlgQuickTootMenu
-import jp.juggler.subwaytooter.dialog.DlgTextInput
+import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.notification.PushSubscriptionHelper
 import jp.juggler.subwaytooter.span.MyClickableSpan
@@ -56,7 +54,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class ActMain : AsyncActivity(), View.OnClickListener,
+class ActMain : AppCompatActivity(), View.OnClickListener,
     ViewPager.OnPageChangeListener, DrawerLayout.DrawerListener {
 
     class PhoneEnv {
@@ -455,8 +453,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         val data = ar?.data
         if (data != null && ar.resultCode == Activity.RESULT_OK) {
             data.getStringExtra(ActAbout.EXTRA_SEARCH)?.notEmpty()?.let { search ->
-                Action_Account.timeline(
-                    this,
+                timeline(
                     defaultInsertPosition,
                     ColumnType.SEARCH,
                     args = arrayOf(search, true)
@@ -887,7 +884,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                 drawer.openDrawer(GravityCompat.START)
             }
 
-            R.id.btnToot -> Action_Account.openPost(this)
+            R.id.btnToot -> openPost()
             R.id.btnQuickToot -> performQuickPost(null)
             R.id.btnQuickTootMenu -> performQuickTootMenu()
         }
@@ -990,23 +987,14 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         sent_intent2 = intent
 
         // Galaxy S8+ で STのSSを取った後に出るポップアップからそのまま共有でSTを選ぶと何も起きない問題への対策
-        handler.post {
-            AccountPicker.pick(
-                this,
+        launchMain {
+            val ai = pickAccount(
                 bAllowPseudo = false,
                 bAuto = true,
                 message = getString(R.string.account_picker_toot),
-                dismiss_callback = { sent_intent2 = null }
-            ) { ai ->
-                sent_intent2 = null
-                launchActPost(
-                    ActPost.createIntent(
-                        this@ActMain,
-                        ai.db_id,
-                        sent_intent = intent
-                    )
-                )
-            }
+            )
+            sent_intent2 = null
+            ai?.let { openActPostImpl(it.db_id, sent_intent = intent) }
         }
     }
 
@@ -1032,12 +1020,13 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                 performQuickPost(a)
             } else {
                 // アカウントを選択してやり直し
-                AccountPicker.pick(
-                    this,
-                    bAllowPseudo = false,
-                    bAuto = true,
-                    message = getString(R.string.account_picker_toot)
-                ) { ai -> performQuickPost(ai) }
+                launchMain {
+                    pickAccount(
+                        bAllowPseudo = false,
+                        bAuto = true,
+                        message = getString(R.string.account_picker_toot)
+                    )?.let { performQuickPost(it) }
+                }
             }
             return
         }
@@ -1085,7 +1074,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         return false
     }
 
-    private val arActPost = activityResultHandler { ar ->
+    val arActPost = activityResultHandler { ar ->
         val data = ar?.data
         if (data != null && ar.resultCode == Activity.RESULT_OK) {
             etQuickToot.setText("")
@@ -1111,8 +1100,8 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         }
     }
 
-    fun launchActPost(intent: Intent) = arActPost.launch(intent)
     fun launchActText(intent: Intent) = arActText.launch(intent)
+
 
     override fun onBackPressed() {
 
@@ -1153,7 +1142,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
 
             Pref.BACK_EXIT_APP -> this@ActMain.finish()
 
-            Pref.BACK_OPEN_COLUMN_LIST -> Action_App.columnList(this@ActMain)
+            Pref.BACK_OPEN_COLUMN_LIST -> openColumnList()
 
             Pref.BACK_CLOSE_COLUMN -> {
 
@@ -1197,7 +1186,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                     }
                 }
 
-                dialog.addAction(getString(R.string.open_column_list)) { Action_App.columnList(this@ActMain) }
+                dialog.addAction(getString(R.string.open_column_list)) { openColumnList() }
                 dialog.addAction(getString(R.string.app_exit)) { this@ActMain.finish() }
                 dialog.show(this, null)
             }
@@ -1694,8 +1683,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         val statusInfo = url.findStatusIdFromUrl()
         if (statusInfo != null) {
             // ステータスをアプリ内で開く
-            Action_Conversation.conversationOtherInstance(
-                this@ActMain,
+            conversationOtherInstance(
                 defaultInsertPosition,
                 statusInfo.url,
                 statusInfo.statusId,
@@ -1713,23 +1701,19 @@ class ActMain : AsyncActivity(), View.OnClickListener,
             val instance = m.groupEx(3)?.decodePercent()
 
             if (instance?.isNotEmpty() == true) {
-                Action_User.profile(
-                    this@ActMain,
+                userProfile(
                     defaultInsertPosition,
                     null,
-                    "https://$instance/@$user",
-                    Host.parse(instance),
-                    user,
+                    Acct.parse(user,instance),
+                    userUrl = "https://$instance/@$user",
                     original_url = url
                 )
             } else {
-                Action_User.profile(
-                    this@ActMain,
+                userProfile(
                     defaultInsertPosition,
                     null,
-                    url,
-                    Host.parse(host),
-                    user
+                    acct = Acct.parse(user,host),
+                    userUrl = url,
                 )
             }
             return
@@ -1741,13 +1725,11 @@ class ActMain : AsyncActivity(), View.OnClickListener,
             val host = m.groupEx(1)!!
             val user = m.groupEx(2)!!.decodePercent()
 
-            Action_User.profile(
-                this@ActMain,
+            userProfile(
                 defaultInsertPosition,
                 null,
-                url,
-                Host.parse(host),
-                user
+                acct = Acct.parse(user,host),
+                userUrl = url,
             )
             return
         }
@@ -1842,14 +1824,12 @@ class ActMain : AsyncActivity(), View.OnClickListener,
     }
 
     private fun handleOAuth2Callback(uri: Uri) {
-        TootTaskRunner(this@ActMain).run(object : TootTask {
-
-            var ta: TootAccount? = null
-            var sa: SavedAccount? = null
-            var apiHost: Host? = null
-            var apDomain: Host? = null
-
-            override suspend fun background(client: TootApiClient): TootApiResult? {
+        launchMain {
+            var resultTootAccount: TootAccount? = null
+            var resultSavedAccount: SavedAccount? = null
+            var resultApiHost: Host? = null
+            var resultApDomain: Host? = null
+            runApiTask { client ->
 
                 val uriStr = uri.toString()
                 if (uriStr.startsWith("subwaytooter://misskey/auth_callback")
@@ -1857,16 +1837,15 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                 ) {
 
                     // Misskey 認証コールバック
-                    val token = uri.getQueryParameter("token")
-                    if (token.isNullOrBlank())
-                        return TootApiResult("missing token in callback URL")
+                    val token = uri.getQueryParameter("token")?.notBlank()
+                        ?: return@runApiTask TootApiResult("missing token in callback URL")
 
-                    val prefDevice = PrefDevice.prefDevice(this@ActMain)
+                    val prefDevice = PrefDevice.prefDevice(this)
 
-                    val instance = Host.parse(
-                        prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE, null)
-                            ?: return TootApiResult("missing instance name.")
-                    )
+                    val hostStr = prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE, null)?.notBlank()
+                        ?: return@runApiTask TootApiResult("missing instance name.")
+
+                    val instance = Host.parse(hostStr)
 
                     when (val db_id = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID, -1L)) {
 
@@ -1876,20 +1855,20 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                         // update access token
                         else -> try {
                             val sa = SavedAccount.loadAccount(this@ActMain, db_id)
-                                ?: return TootApiResult("missing account db_id=$db_id")
-                            this.sa = sa
+                                ?: return@runApiTask TootApiResult("missing account db_id=$db_id")
+                            resultSavedAccount = sa
                             client.account = sa
                         } catch (ex: Throwable) {
                             log.trace(ex)
-                            return TootApiResult(ex.withCaption("invalid state"))
+                            return@runApiTask TootApiResult(ex.withCaption("invalid state"))
                         }
                     }
 
                     val (ti, r2) = TootInstance.get(client)
-                    ti ?: return r2
+                    ti ?: return@runApiTask r2
 
-                    this.apiHost = instance
-                    this.apDomain = ti.uri?.let { Host.parse(it) }
+                    resultApiHost = instance
+                    resultApDomain = ti.uri?.let { Host.parse(it) }
 
                     val parser = TootParser(
                         this@ActMain,
@@ -1899,11 +1878,13 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                         )
                     )
 
-                    return client.authentication2Misskey(
-                        Pref.spClientName(this@ActMain),
+                    client.authentication2Misskey(
+                        Pref.spClientName(pref),
                         token,
                         ti.misskeyVersion
-                    )?.also { this.ta = parser.account(it.jsonObject) }
+                    )?.also {
+                        resultTootAccount = parser.account(it.jsonObject)
+                    }
 
                 } else {
                     // Mastodon 認証コールバック
@@ -1916,7 +1897,7 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                     val error = uri.getQueryParameter("error")
                     val error_description = uri.getQueryParameter("error_description")
                     if (error != null || error_description != null)
-                        return TootApiResult(
+                        return@runApiTask TootApiResult(
                             error_description.notBlank() ?: error.notBlank()
                             ?: "?"
                         )
@@ -1925,26 +1906,23 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                     //    ?code=113cc036e078ac500d3d0d3ad345cd8181456ab087abc67270d40f40a4e9e3c2
                     //    &state=host%3Amastodon.juggler.jp
 
-                    val code = uri.getQueryParameter("code")
-                    val sv = uri.getQueryParameter("state")
+                    val code = uri.getQueryParameter("code")?.notBlank()
+                        ?: return@runApiTask TootApiResult("missing code in callback url.")
 
-                    if (code.isNullOrBlank())
-                        return TootApiResult("missing code in callback url.")
-
-                    if (sv.isNullOrBlank())
-                        return TootApiResult("missing state in callback url.")
+                    val sv = uri.getQueryParameter("state")?.notBlank()
+                        ?: return@runApiTask TootApiResult("missing state in callback url.")
 
                     for (param in sv.split(",")) {
                         when {
                             param.startsWith("db:") -> try {
                                 val dataId = param.substring(3).toLong(10)
                                 val sa = SavedAccount.loadAccount(this@ActMain, dataId)
-                                    ?: return TootApiResult("missing account db_id=$dataId")
-                                this.sa = sa
+                                    ?: return@runApiTask TootApiResult("missing account db_id=$dataId")
+                                resultSavedAccount = sa
                                 client.account = sa
                             } catch (ex: Throwable) {
                                 log.trace(ex)
-                                return TootApiResult(ex.withCaption("invalid state"))
+                                return@runApiTask TootApiResult(ex.withCaption("invalid state"))
                             }
 
                             param.startsWith("host:") -> {
@@ -1956,48 +1934,44 @@ class ActMain : AsyncActivity(), View.OnClickListener,
                         }
                     }
 
-                    val instance = client.apiHost
-                        ?: return TootApiResult("missing instance in callback url.")
-                    this.apiHost = instance
+                    val apiHost = client.apiHost
+                        ?: return@runApiTask TootApiResult("missing instance in callback url.")
+                    resultApiHost = apiHost
 
 
                     val parser = TootParser(
                         this@ActMain,
-                        linkHelper = LinkHelper.create(instance)
+                        linkHelper = LinkHelper.create(apiHost)
                     )
 
                     val refToken = AtomicReference<String>(null)
-                    return client.authentication2Mastodon(
-                        Pref.spClientName(this@ActMain),
+                    client.authentication2Mastodon(
+                        Pref.spClientName(pref),
                         code,
                         outAccessToken = refToken
-                    )?.also {
-                        this.ta = parser.account(it.jsonObject)
+                    )?.also { result ->
+                        val ta = parser.account(result.jsonObject)
                         if (ta != null) {
                             val (ti, ri) = TootInstance.getEx(client, forceAccessToken = refToken.get())
-                            ti ?: return ri
-                            this.apDomain = ti.uri?.let { it2 -> Host.parse(it2) }
+                            ti ?: return@runApiTask ri
+                            resultTootAccount = ta
+                            resultApDomain = ti.uri?.let { Host.parse(it) }
                         }
                     }
                 }
-            }
-
-            override suspend fun handleResult(result: TootApiResult?) {
-                val apiHost = this.apiHost
-                val apDomain = this.apDomain
-                val ta = this.ta
-                var sa = this.sa
-
+            }?.let { result ->
+                val apiHost = resultApiHost
+                val apDomain = resultApDomain
+                val ta = resultTootAccount
+                var sa = resultSavedAccount
                 if (ta != null && apiHost?.isValid == true && sa == null) {
                     val acct = Acct.parse(ta.username, apDomain ?: apiHost)
                     // アカウント追加時に、アプリ内に既にあるアカウントと同じものを登録していたかもしれない
                     sa = SavedAccount.loadAccountByAcct(this@ActMain, acct.ascii)
                 }
-
                 afterAccountVerify(result, ta, sa, apiHost, apDomain)
             }
-
-        })
+        }
     }
 
     private fun handleCustomSchemaUri(uri: Uri) {
@@ -2124,74 +2098,6 @@ class ActMain : AsyncActivity(), View.OnClickListener,
         return false
     }
 
-    // アクセストークンを手動で入力した場合
-    fun checkAccessToken(
-        dialog_host: Dialog?,
-        dialog_token: Dialog?,
-        apiHost: Host,
-        access_token: String,
-        sa: SavedAccount?
-    ) {
-
-        TootTaskRunner(this@ActMain).run(apiHost, object : TootTask {
-
-            var ta: TootAccount? = null
-            var apDomain: Host? = null
-
-            override suspend fun background(client: TootApiClient): TootApiResult? {
-
-                val (ti, ri) = TootInstance.getEx(client, forceAccessToken = access_token)
-                ti ?: return ri
-
-                val apDomain = ti.uri?.let { Host.parse(it) }
-                    ?: return TootApiResult("missing uri in Instance Information")
-
-                this.apDomain = apDomain
-
-                val misskeyVersion = ti.misskeyVersion
-
-                val result = client.getUserCredential(access_token, misskeyVersion = misskeyVersion)
-
-                this.ta = TootParser(
-                    this@ActMain,
-                    LinkHelper.create(
-                        apiHostArg = apiHost,
-                        apDomainArg = apDomain,
-                        misskeyVersion = misskeyVersion
-                    )
-                ).account(result?.jsonObject)
-
-                return result
-            }
-
-            override suspend fun handleResult(result: TootApiResult?) {
-                if (afterAccountVerify(result, ta, sa, apiHost, apDomain)) {
-                    dialog_host?.dismissSafe()
-                    dialog_token?.dismissSafe()
-                }
-            }
-        })
-    }
-
-    // アクセストークンの手動入力(更新)
-    private fun checkAccessToken2(db_id: Long) {
-
-        val sa = SavedAccount.loadAccount(this, db_id) ?: return
-
-        DlgTextInput.show(
-            this,
-            getString(R.string.access_token_or_api_token),
-            null,
-            callback = object : DlgTextInput.Callback {
-                override fun onOK(dialog: Dialog, text: String) {
-                    checkAccessToken(null, dialog, sa.apiHost, text, sa)
-                }
-
-                override fun onEmptyError() {
-                    showToast(true, R.string.token_not_specified)
-                }
-            })
-    }
 
     private fun reloadAccountSetting() {
         val done_list = ArrayList<SavedAccount>()
@@ -2571,143 +2477,144 @@ class ActMain : AsyncActivity(), View.OnClickListener,
 
     @Suppress("BlockingMethodInNonBlockingContext")
     fun importAppData(uri: Uri) {
+        launchMain {
 
-        // remove all columns
-        phoneOnly { env -> env.pager.adapter = null }
+            // remove all columns
+            phoneOnly { env -> env.pager.adapter = null }
 
-        app_state.editColumnList(save = false) { list ->
-            list.forEach { it.dispose() }
-            list.clear()
-        }
+            app_state.editColumnList(save = false) { list ->
+                list.forEach { it.dispose() }
+                list.clear()
+            }
 
-        phoneTab(
-            { env -> env.pager.adapter = env.pager_adapter },
-            { env -> resizeColumnWidth(env) }
-        )
+            phoneTab(
+                { env -> env.pager.adapter = env.pager_adapter },
+                { env -> resizeColumnWidth(env) }
+            )
 
-        updateColumnStrip()
+            updateColumnStrip()
 
+            runWithProgress(
+                "importing app data",
 
-        runWithProgress(
-            "importing app data",
+                doInBackground = { progress ->
+                    fun setProgressMessage(sv: String) =
+                        runOnMainLooper { progress.setMessageEx(sv) }
 
-            doInBackground = { progress ->
-                fun setProgressMessage(sv: String) =
-                    runOnMainLooper { progress.setMessageEx(sv) }
+                    var newColumnList: ArrayList<Column>? = null
 
-                var newColumnList: ArrayList<Column>? = null
+                    setProgressMessage("import data to local storage...")
 
-                setProgressMessage("import data to local storage...")
-
-                // アプリ内領域に一時ファイルを作ってコピーする
-                val cacheDir = cacheDir
-                cacheDir.mkdir()
-                val file = File(
-                    cacheDir,
-                    "SubwayTooter.${Process.myPid()}.${Process.myTid()}.tmp"
-                )
-                val source = contentResolver.openInputStream(uri)
-                if (source == null) {
-                    showToast(true, "openInputStream failed.")
-                    return@runWithProgress null
-                }
-                source.use { inStream ->
-                    FileOutputStream(file).use { outStream ->
-                        IOUtils.copy(inStream, outStream)
+                    // アプリ内領域に一時ファイルを作ってコピーする
+                    val cacheDir = cacheDir
+                    cacheDir.mkdir()
+                    val file = File(
+                        cacheDir,
+                        "SubwayTooter.${Process.myPid()}.${Process.myTid()}.tmp"
+                    )
+                    val source = contentResolver.openInputStream(uri)
+                    if (source == null) {
+                        showToast(true, "openInputStream failed.")
+                        return@runWithProgress null
                     }
-                }
-
-                // 通知サービスを止める
-                setProgressMessage("syncing notification poller…")
-                PollingWorker.queueAppDataImportBefore(this@ActMain)
-                while (PollingWorker.mBusyAppDataImportBefore.get()) {
-                    delay(1000L)
-                    log.d("syncing polling task...")
-                }
-
-                // データを読み込む
-                setProgressMessage("reading app data...")
-                var zipEntryCount = 0
-                try {
-                    ZipInputStream(FileInputStream(file)).use { zipStream ->
-                        while (true) {
-                            val entry = zipStream.nextEntry ?: break
-                            ++zipEntryCount
-                            try {
-                                //
-                                val entryName = entry.name
-                                if (entryName.endsWith(".json")) {
-                                    newColumnList = AppDataExporter.decodeAppData(
-                                        this@ActMain,
-                                        JsonReader(InputStreamReader(zipStream, "UTF-8"))
-                                    )
-                                    continue
-                                }
-
-                                if (AppDataExporter.restoreBackgroundImage(
-                                        this@ActMain,
-                                        newColumnList,
-                                        zipStream,
-                                        entryName
-                                    )
-                                ) {
-                                    continue
-                                }
-                            } finally {
-                                zipStream.closeEntry()
-                            }
+                    source.use { inStream ->
+                        FileOutputStream(file).use { outStream ->
+                            IOUtils.copy(inStream, outStream)
                         }
                     }
-                } catch (ex: Throwable) {
-                    log.trace(ex)
-                    if (zipEntryCount != 0) {
-                        showToast(ex, "importAppData failed.")
+
+                    // 通知サービスを止める
+                    setProgressMessage("syncing notification poller…")
+                    PollingWorker.queueAppDataImportBefore(this@ActMain)
+                    while (PollingWorker.mBusyAppDataImportBefore.get()) {
+                        delay(1000L)
+                        log.d("syncing polling task...")
                     }
-                }
-                // zipではなかった場合、zipEntryがない状態になる。例外はPH-1では出なかったが、出ても問題ないようにする。
-                if (zipEntryCount == 0) {
-                    InputStreamReader(FileInputStream(file), "UTF-8").use { inStream ->
-                        newColumnList = AppDataExporter.decodeAppData(
-                            this@ActMain,
-                            JsonReader(inStream)
+
+                    // データを読み込む
+                    setProgressMessage("reading app data...")
+                    var zipEntryCount = 0
+                    try {
+                        ZipInputStream(FileInputStream(file)).use { zipStream ->
+                            while (true) {
+                                val entry = zipStream.nextEntry ?: break
+                                ++zipEntryCount
+                                try {
+                                    //
+                                    val entryName = entry.name
+                                    if (entryName.endsWith(".json")) {
+                                        newColumnList = AppDataExporter.decodeAppData(
+                                            this@ActMain,
+                                            JsonReader(InputStreamReader(zipStream, "UTF-8"))
+                                        )
+                                        continue
+                                    }
+
+                                    if (AppDataExporter.restoreBackgroundImage(
+                                            this@ActMain,
+                                            newColumnList,
+                                            zipStream,
+                                            entryName
+                                        )
+                                    ) {
+                                        continue
+                                    }
+                                } finally {
+                                    zipStream.closeEntry()
+                                }
+                            }
+                        }
+                    } catch (ex: Throwable) {
+                        log.trace(ex)
+                        if (zipEntryCount != 0) {
+                            showToast(ex, "importAppData failed.")
+                        }
+                    }
+                    // zipではなかった場合、zipEntryがない状態になる。例外はPH-1では出なかったが、出ても問題ないようにする。
+                    if (zipEntryCount == 0) {
+                        InputStreamReader(FileInputStream(file), "UTF-8").use { inStream ->
+                            newColumnList = AppDataExporter.decodeAppData(
+                                this@ActMain,
+                                JsonReader(inStream)
+                            )
+                        }
+                    }
+
+                    newColumnList
+                },
+                afterProc = {
+                    // cancelled.
+                    if (it == null) return@runWithProgress
+
+                    try {
+                        phoneOnly { env -> env.pager.adapter = null }
+
+                        app_state.editColumnList { list ->
+                            list.clear()
+                            list.addAll(it)
+                        }
+
+                        phoneTab(
+                            { env -> env.pager.adapter = env.pager_adapter },
+                            { env -> resizeColumnWidth(env) }
                         )
-                    }
-                }
-
-                newColumnList
-            },
-            afterProc = {
-                // cancelled.
-                if (it == null) return@runWithProgress
-
-                try {
-                    phoneOnly { env -> env.pager.adapter = null }
-
-                    app_state.editColumnList { list ->
-                        list.clear()
-                        list.addAll(it)
+                        updateColumnStrip()
+                    } finally {
+                        // 通知サービスをリスタート
+                        PollingWorker.queueAppDataImportAfter(this@ActMain)
                     }
 
-                    phoneTab(
-                        { env -> env.pager.adapter = env.pager_adapter },
-                        { env -> resizeColumnWidth(env) }
-                    )
-                    updateColumnStrip()
-                } finally {
-                    // 通知サービスをリスタート
-                    PollingWorker.queueAppDataImportAfter(this@ActMain)
+                    showToast(true, R.string.import_completed_please_restart_app)
+                    finish()
+                },
+                preProc = {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                },
+                postProc = {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 }
-
-                showToast(true, R.string.import_completed_please_restart_app)
-                finish()
-            },
-            preProc = {
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            },
-            postProc = {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            }
-        )
+            )
+        }
     }
 
     override fun onDrawerSlide(drawerView: View, slideOffset: Float) {

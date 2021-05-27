@@ -1,14 +1,13 @@
 package jp.juggler.subwaytooter
 
-import android.os.SystemClock
-import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.util.matchHost
-import java.util.HashMap
-import java.util.HashSet
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.set
 
 /*
     なんらかアクションを行った後にカラムデータを更新する処理など

@@ -1,8 +1,10 @@
 package jp.juggler.subwaytooter.action
 
 import android.content.Context
-import jp.juggler.subwaytooter.api.*
+import androidx.appcompat.app.AppCompatActivity
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.matchHost
@@ -15,43 +17,32 @@ import java.util.*
 // 疑似アカウントを作成する
 // 既に存在する場合は再利用する
 // 実アカウントを返すことはない
-internal fun addPseudoAccount(
-	context : Context,
+internal suspend fun AppCompatActivity.addPseudoAccount(
 	host : Host,
-	instanceInfo : TootInstance? = null,
-	callback : (SavedAccount) -> Unit
-) {
+	instanceInfoArg : TootInstance? = null
+):SavedAccount? {
+
+	suspend fun AppCompatActivity.getInstanceInfo():TootInstance? {
+		var resultTi : TootInstance? = null
+		val result = runApiTask(host) { client->
+			val (instance, instanceResult) = TootInstance.get(client)
+			resultTi = instance
+			instanceResult
+		}
+		result?.error?.let{ showToast(true, it )}
+		return resultTi
+	}
+
 	try {
 		val acct = Acct.parse("?", host)
 		
-		var account = SavedAccount.loadAccountByAcct(context, acct.ascii)
-		if(account != null) {
-			callback(account)
-			return
-		}
-		
-		if(instanceInfo == null) {
-			TootTaskRunner(context).run(host, object : TootTask {
-				
-				var targetInstance : TootInstance? = null
-				
-				override suspend fun background(client : TootApiClient) : TootApiResult? {
-					val (instance, instanceResult) = TootInstance.get(client)
-					targetInstance = instance
-					return instanceResult
-				}
-				
-				override suspend fun handleResult(result : TootApiResult?) = when {
-					result == null -> {
-					}
-					
-					targetInstance == null -> context.showToast(false, result.error)
-					else -> addPseudoAccount(context, host, targetInstance, callback)
-				}
-			})
-			return
-		}
-		
+		var account = SavedAccount.loadAccountByAcct(this, acct.ascii)
+		if(account != null) return account
+
+		val instanceInfo = instanceInfoArg
+			?: getInstanceInfo()
+			?: return null
+
 		val account_info = jsonObject {
 			put("username", acct.username)
 			put("acct", acct.username) // ローカルから参照した場合なのでshort acct
@@ -66,7 +57,7 @@ internal fun addPseudoAccount(
 			misskeyVersion = instanceInfo.misskeyVersion
 		)
 		
-		account = SavedAccount.loadAccount(context, row_id)
+		account = SavedAccount.loadAccount(applicationContext, row_id)
 		if(account == null) {
 			throw RuntimeException("loadAccount returns null.")
 		}
@@ -79,51 +70,31 @@ internal fun addPseudoAccount(
 		account.notification_vote = false
 		account.notification_post = false
 		account.saveSetting()
-		callback(account)
-		return
+		return account
 	} catch(ex : Throwable) {
 		val log = LogCategory("addPseudoAccount")
 		log.trace(ex)
 		log.e(ex, "failed.")
-		context.showToast(ex, "addPseudoAccount failed.")
+		showToast(ex, "addPseudoAccount failed.")
 	}
-	return
+	return null
 }
 
-// 疑似アカ以外のアカウントのリスト
-fun makeAccountListNonPseudo(
-	context : Context, pickup_host : Host?
-) : ArrayList<SavedAccount> {
-	
-	val list_same_host = ArrayList<SavedAccount>()
-	val list_other_host = ArrayList<SavedAccount>()
-	for(a in SavedAccount.loadAccountList(context)) {
-		if(a.isPseudo) continue
-		when(pickup_host) {
-			null, a.apDomain, a.apiHost -> list_same_host
-			else -> list_other_host
-		}.add(a)
-	}
-	SavedAccount.sort(list_same_host)
-	SavedAccount.sort(list_other_host)
-	list_same_host.addAll(list_other_host)
-	return list_same_host
-}
 
-internal fun saveUserRelation(access_info : SavedAccount, src : TootRelationShip?) : UserRelation? {
+
+internal fun SavedAccount.saveUserRelation( src : TootRelationShip?) : UserRelation? {
 	src ?: return null
 	val now = System.currentTimeMillis()
-	return UserRelation.save1Mastodon(now, access_info.db_id, src)
+	return UserRelation.save1Mastodon(now, db_id, src)
 }
 
-internal fun saveUserRelationMisskey(
-	access_info : SavedAccount,
+internal fun SavedAccount.saveUserRelationMisskey(
 	whoId : EntityId,
 	parser : TootParser
 ) : UserRelation? {
 	val now = System.currentTimeMillis()
 	val relation = parser.getMisskeyUserRelation(whoId)
-	UserRelation.save1Misskey(now, access_info.db_id, whoId.toString(), relation)
+	UserRelation.save1Misskey(now, db_id, whoId.toString(), relation)
 	return relation
 }
 

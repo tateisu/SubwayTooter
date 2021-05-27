@@ -383,7 +383,7 @@ class MyGifDrawable internal constructor(
 		}
 	}
 	
-	override fun getConstantState() : ConstantState? {
+	override fun getConstantState() : ConstantState {
 		return state
 	}
 	

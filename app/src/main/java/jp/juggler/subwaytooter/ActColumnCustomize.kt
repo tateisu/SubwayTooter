@@ -18,10 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.textColor
@@ -236,15 +233,12 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 
 
     private fun updateBackground(uriArg: Uri) {
-        TootTaskRunner(this).run(object : TootTask {
-            var bgUri: String? = null
-
-            @Suppress("BlockingMethodInNonBlockingContext")
-            override suspend fun background(client: TootApiClient): TootApiResult {
+        launchMain {
+            var resultUri: String? = null
+            runApiTask { client ->
                 try {
                     val backgroundDir = getBackgroundImageDir(this@ActColumnCustomize)
-                    val file =
-                        File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
+                    val file = File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
                     val fileUri = Uri.fromFile(file)
 
                     client.publishApiProgress("loading image from ${uriArg}")
@@ -263,7 +257,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                     ) * 1.5f).toInt()
 
                     val bitmap = createResizedBitmap(
-                        this@ActColumnCustomize,
+                        this,
                         fileUri,
                         size,
                         skipIfNoNeedToResizeAndRotate = true
@@ -279,28 +273,22 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
                         }
                     }
 
-                    bgUri = fileUri.toString()
-                    return TootApiResult()
+                    resultUri = fileUri.toString()
+                    TootApiResult()
                 } catch (ex: Throwable) {
                     log.trace(ex)
-                    return TootApiResult(ex.withCaption("can't update background image."))
+                    TootApiResult(ex.withCaption("can't update background image."))
                 }
-            }
-
-            override suspend fun handleResult(result: TootApiResult?) {
-                val bgUri = this.bgUri
-                when {
-                    result == null -> return
-
-                    bgUri != null -> {
+            }?.let { result ->
+                when (val bgUri = resultUri) {
+                    null -> showToast(true, result.error ?: "?")
+                    else -> {
                         column.column_bg_image = bgUri
                         show()
                     }
-
-                    else -> showToast(true, result.error ?: "?")
                 }
             }
-        })
+        }
     }
 
     private fun initUI() {

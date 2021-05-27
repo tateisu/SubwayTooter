@@ -185,7 +185,6 @@ class SavedAccount(
 			log.trace(ex)
 			throw RuntimeException("SavedAccount.delete failed.", ex)
 		}
-		
 	}
 	
 	fun updateTokenInfo(tokenInfoArg : JsonObject?) {

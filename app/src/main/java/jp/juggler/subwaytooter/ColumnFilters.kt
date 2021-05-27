@@ -1,13 +1,17 @@
 package jp.juggler.subwaytooter
 
 import android.content.Context
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.ApiPath
+import jp.juggler.subwaytooter.api.ApiTask
+import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.runApiTask
 import jp.juggler.subwaytooter.table.FavMute
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.util.WordTrieTree
+import jp.juggler.util.launchMain
 import java.util.regex.Pattern
 
 val Column.isFilterEnabled: Boolean
@@ -397,30 +401,27 @@ fun Column.checkFiltersForListData(trees: FilterTrees?) {
 }
 
 fun reloadFilter(context: Context, access_info: SavedAccount) {
-    TootTaskRunner(context, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
-        object : TootTask {
+    launchMain{
+        var resultList: ArrayList<TootFilter>? = null
 
-            var filter_list: java.util.ArrayList<TootFilter>? = null
-
-            override suspend fun background(client: TootApiClient): TootApiResult? {
-                val result = client.request(ApiPath.PATH_FILTERS)
-                val jsonArray = result?.jsonArray
-                if (jsonArray != null) {
-                    filter_list = TootFilter.parseList(jsonArray)
-                }
-                return result
-            }
-
-            override suspend fun handleResult(result: TootApiResult?) {
-                val filter_list = this.filter_list
-                if (filter_list != null) {
-                    Column.log.d("update filters for ${access_info.acct.pretty}")
-                    for (column in App1.getAppState(context).columnList) {
-                        if (column.access_info == access_info) {
-                            column.onFiltersChanged2(filter_list)
-                        }
-                    }
+        context.runApiTask(
+            access_info,
+            progressStyle = ApiTask.PROGRESS_NONE
+        ){client->
+            client.request(ApiPath.PATH_FILTERS)?.also{ result->
+                result.jsonArray?.let{
+                    resultList = TootFilter.parseList(it)
                 }
             }
-        })
+        }
+
+        resultList?.let{
+            Column.log.d("update filters for ${access_info.acct.pretty}")
+            for (column in App1.getAppState(context).columnList) {
+                if (column.access_info == access_info) {
+                    column.onFiltersChanged2(it)
+                }
+            }
+        }
+    }
 }

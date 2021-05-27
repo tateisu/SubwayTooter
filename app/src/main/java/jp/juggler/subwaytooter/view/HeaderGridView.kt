@@ -285,7 +285,7 @@ class HeaderGridView : GridView {
 			} else null
 		}
 		
-		override fun getWrappedAdapter() : ListAdapter? {
+		override fun getWrappedAdapter() : ListAdapter {
 			return mAdapter
 		}
 		

@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.notEmpty
 import java.util.*
 
 object TootTextEncoder {
@@ -58,8 +59,8 @@ object TootTextEncoder {
 			access_info.getFullAcct(status.account)
 		)
 		
-		val sv : String? = status.spoiler_text
-		if(sv != null && sv.isNotEmpty()) {
+		val sv : String = status.spoiler_text
+		if(sv.isNotEmpty()) {
 			addHeader(context, sb, R.string.send_header_content_warning, sv)
 		}
 		
@@ -92,12 +93,11 @@ object TootTextEncoder {
 		status : TootStatus
 	) : String {
 		val sb = StringBuilder()
-		
-		val sv : String? = status.spoiler_text
-		if(sv != null && sv.isNotEmpty()) {
-			sb.append(sv).append("\n\n")
+
+		status.spoiler_text.notEmpty()?.let{
+			sb.append(it).append("\n\n")
 		}
-		
+
 		sb.append(
 			DecodeOptions(
 				context,

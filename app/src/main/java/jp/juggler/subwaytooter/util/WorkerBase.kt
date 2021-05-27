@@ -1,30 +1,33 @@
 package jp.juggler.subwaytooter.util
 
-import jp.juggler.util.EndlessScope
-import kotlinx.coroutines.*
+import jp.juggler.util.launchDefault
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.withTimeout
 
 abstract class WorkerBase(
-	private val waiter : Channel<Unit> = Channel(capacity = Channel.CONFLATED)
+    private val waiter: Channel<Unit> = Channel(capacity = Channel.CONFLATED)
 ) {
 
-	private val suspendJob : Job
+    private val suspendJob: Job
 
-	abstract fun cancel()
-	abstract suspend fun run()
+    abstract fun cancel()
 
-	suspend fun waitEx(ms : Long) = try {
-		withTimeout(ms) { waiter.receive() }
-	}catch( ex:TimeoutCancellationException){
-		null
-	}
+    abstract suspend fun run()
 
-	fun notifyEx() = EndlessScope.launch { waiter.send(Unit) }
+    suspend fun waitEx(ms: Long) = try {
+        withTimeout(ms) { waiter.receive() }
+    } catch (ex: TimeoutCancellationException) {
+        null
+    }
 
-	val isAlive :Boolean
-		get() = suspendJob.isActive
+    fun notifyEx() = waiter.trySend(Unit)
 
-	init{
-		suspendJob = EndlessScope.launch(Dispatchers.Default) { run() }
-	}
+    val isAlive: Boolean
+        get() = suspendJob.isActive
+
+    init {
+        suspendJob = launchDefault { run() }
+    }
 }

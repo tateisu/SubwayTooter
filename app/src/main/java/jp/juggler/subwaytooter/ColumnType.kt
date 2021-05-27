@@ -67,6 +67,9 @@ private val gapDirectionMastodonWorkaround: Column.(head: Boolean) -> Boolean =
         }
     }
 
+private val streamingTypeYes: Column.() -> Boolean = { true }
+private val streamingTypeNo: Column.() -> Boolean = { false }
+
 enum class ColumnType(
     val id: Int = 0,
     val iconId: (Acct) -> Int = unusedIconId,
@@ -81,8 +84,13 @@ enum class ColumnType(
     val headerType: HeaderType? = null,
     val gapDirection: Column.(head: Boolean) -> Boolean = gapDirectionNone,
     val canAutoRefresh: Boolean = false,
+
+    val canStreamingMastodon: Column.() -> Boolean,
+    val canStreamingMisskey: Column.() -> Boolean,
+
     val streamKeyMastodon: Column.() -> JsonObject? = { null },
     val streamFilterMastodon: Column.(JsonArray, TimelineItem) -> Boolean = { _, _ -> true },
+
     val streamNameMisskey: String? = null,
     val streamParamMisskey: Column.() -> JsonObject? = { null },
     val streamPathMisskey9: Column.() -> String? = { null },
@@ -121,6 +129,9 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionBoth,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     ProfileStatusMisskey(
@@ -155,7 +166,11 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionMastodonWorkaround,
-    ),
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
 
     FollowingMastodon(
 
@@ -180,6 +195,9 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     FollowingMastodonPseudo(
@@ -192,7 +210,10 @@ enum class ColumnType(
                 TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
             )
             TootApiResult()
-        }
+        },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     FollowingMisskey10(
@@ -225,6 +246,9 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     FollowingMisskey11(
@@ -257,6 +281,9 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     FollowersMisskey11(
@@ -290,6 +317,9 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     FollowersMisskey10(
@@ -322,6 +352,9 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     FollowersMastodonPseudo(
@@ -334,7 +367,10 @@ enum class ColumnType(
                 TootMessageHolder(context.getString(R.string.pseudo_account_cant_get_follow_list))
             )
             TootApiResult()
-        }
+        },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     FollowersMastodon(
@@ -361,6 +397,9 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     TabStatus(
@@ -368,6 +407,9 @@ enum class ColumnType(
         refresh = { dispatchProfileTabStatus().refresh(this, it) },
         gap = { dispatchProfileTabStatus().gap(this, it) },
         gapDirection = { dispatchProfileTabStatus().gapDirection(this, it) },
+
+        canStreamingMastodon = { dispatchProfileTabStatus().canStreamingMastodon(this) },
+        canStreamingMisskey = { dispatchProfileTabStatus().canStreamingMisskey(this) },
     ),
 
     TabFollowing(
@@ -375,6 +417,9 @@ enum class ColumnType(
         refresh = { dispatchProfileTabFollowing().refresh(this, it) },
         gap = { dispatchProfileTabFollowing().gap(this, it) },
         gapDirection = { dispatchProfileTabFollowing().gapDirection(this, it) },
+
+        canStreamingMastodon = { dispatchProfileTabFollowing().canStreamingMastodon(this) },
+        canStreamingMisskey = { dispatchProfileTabFollowing().canStreamingMisskey(this) },
     ),
 
     TabFollowers(
@@ -382,7 +427,11 @@ enum class ColumnType(
         refresh = { dispatchProfileTabFollowers().refresh(this, it) },
         gap = { dispatchProfileTabFollowers().gap(this, it) },
         gapDirection = { dispatchProfileTabFollowers().gapDirection(this, it) },
-    ),
+
+        canStreamingMastodon = { dispatchProfileTabFollowers().canStreamingMastodon(this) },
+        canStreamingMisskey = { dispatchProfileTabFollowers().canStreamingMisskey(this) },
+
+        ),
 
     HOME(
         id = 1,
@@ -419,6 +468,9 @@ enum class ColumnType(
 
         canAutoRefresh = true,
 
+        canStreamingMastodon = streamingTypeYes,
+        canStreamingMisskey = streamingTypeYes,
+
         streamKeyMastodon = {
             jsonObjectOf(StreamSpec.STREAM to "user")
         },
@@ -454,6 +506,9 @@ enum class ColumnType(
 
         canAutoRefresh = true,
 
+        canStreamingMastodon = streamingTypeYes,
+        canStreamingMisskey = streamingTypeYes,
+
         streamKeyMastodon = { jsonObjectOf(StreamSpec.STREAM to streamKeyLtl()) },
         streamFilterMastodon = { stream, item ->
             when {
@@ -487,6 +542,8 @@ enum class ColumnType(
 
         canAutoRefresh = true,
 
+        canStreamingMastodon = streamingTypeYes,
+        canStreamingMisskey = streamingTypeYes,
         streamKeyMastodon = {
             jsonObjectOf(StreamSpec.STREAM to streamKeyFtl())
         },
@@ -526,6 +583,9 @@ enum class ColumnType(
 
         canAutoRefresh = true,
 
+        canStreamingMastodon = streamingTypeYes,
+        canStreamingMisskey = streamingTypeYes,
+
         streamNameMisskey = "hybridTimeline",
         streamParamMisskey = { null },
         streamPathMisskey9 = { "/hybrid-timeline" },
@@ -555,6 +615,8 @@ enum class ColumnType(
 
         canAutoRefresh = true,
 
+        canStreamingMastodon = streamingTypeYes,
+        canStreamingMisskey = streamingTypeYes,
 
         streamKeyMastodon = {
             jsonObjectOf(StreamSpec.STREAM to streamKeyDomainTl(), "domain" to instance_uri)
@@ -570,7 +632,8 @@ enum class ColumnType(
         }
     ),
 
-    LOCAL_AROUND(29,
+    LOCAL_AROUND(
+        29,
         iconId = { R.drawable.ic_run },
         name1 = { it.getString(R.string.ltl_around) },
         name2 = {
@@ -581,10 +644,14 @@ enum class ColumnType(
         },
 
         loading = { client -> getPublicTlAroundTime(client, column.makePublicLocalUrl()) },
-        refresh = { client -> getStatusList(client, column.makePublicLocalUrl(), useMinId = true) }
+        refresh = { client -> getStatusList(client, column.makePublicLocalUrl(), useMinId = true) },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
-    FEDERATED_AROUND(30,
+    FEDERATED_AROUND(
+        30,
         iconId = { R.drawable.ic_bike },
         name1 = { it.getString(R.string.ftl_around) },
         name2 = {
@@ -595,10 +662,10 @@ enum class ColumnType(
         },
 
         loading = { client -> getPublicTlAroundTime(client, column.makePublicFederateUrl()) },
-        refresh = { client ->
-            getStatusList(client, column.makePublicFederateUrl(), useMinId = true)
-        }
+        refresh = { client -> getStatusList(client, column.makePublicFederateUrl(), useMinId = true) },
 
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     PROFILE(
@@ -634,6 +701,9 @@ enum class ColumnType(
 
         gap = { column.profile_tab.ct.gap(this, it) },
         gapDirection = { profile_tab.ct.gapDirection(this, it) },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     FAVOURITES(
@@ -686,6 +756,9 @@ enum class ColumnType(
             }
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
 
@@ -705,7 +778,7 @@ enum class ColumnType(
                     listParser = misskeyCustomParserFavorites
                 )
             } else {
-                getStatusList(client,column.makeReactionsUrl())
+                getStatusList(client, column.makeReactionsUrl())
             }
         },
 
@@ -740,6 +813,9 @@ enum class ColumnType(
             }
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     BOOKMARKS(
@@ -772,6 +848,9 @@ enum class ColumnType(
             }
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     NOTIFICATIONS(
@@ -791,6 +870,9 @@ enum class ColumnType(
 
         canAutoRefresh = true,
 
+        canStreamingMastodon = streamingTypeYes,
+        canStreamingMisskey = streamingTypeYes,
+
         streamKeyMastodon = {
             jsonObjectOf(StreamSpec.STREAM to "user")
         },
@@ -801,7 +883,6 @@ enum class ColumnType(
                 else -> true
             }
         },
-
         streamNameMisskey = "main",
         streamParamMisskey = { null },
         streamPathMisskey9 = { "/" },
@@ -824,9 +905,13 @@ enum class ColumnType(
             getNotificationList(client, column.hashtag_acct, mastodonFilterByIdRange = true)
         },
         gapDirection = gapDirectionBoth,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
-    CONVERSATION(8,
+    CONVERSATION(
+        8,
         iconId = { R.drawable.ic_forum },
         name1 = { it.getString(R.string.conversation) },
         name2 = {
@@ -835,8 +920,12 @@ enum class ColumnType(
                 status_id?.toString() ?: "null"
             )
         },
-        loading = { client -> getConversation(client) }
-    ),
+        loading = { client -> getConversation(client) },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
 
     HASHTAG(
         9,
@@ -894,6 +983,8 @@ enum class ColumnType(
 
         canAutoRefresh = true,
 
+        canStreamingMastodon = streamingTypeYes,
+        canStreamingMisskey = streamingTypeYes,
 
         streamKeyMastodon = {
             jsonObjectOf(
@@ -960,6 +1051,9 @@ enum class ColumnType(
         },
         gapDirection = gapDirectionBoth,
         bAllowMisskey = false,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     SEARCH(
@@ -978,6 +1072,9 @@ enum class ColumnType(
         loading = { client -> getSearch(client) },
         gap = { client -> getSearchGap(client) },
         gapDirection = gapDirectionHead,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     // ミスキーのミュートとブロックののページングは misskey v10 の途中で変わった
@@ -1038,6 +1135,9 @@ enum class ColumnType(
             }
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     BLOCKS(
@@ -1093,6 +1193,9 @@ enum class ColumnType(
             }
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     FOLLOW_REQUESTS(
@@ -1144,6 +1247,9 @@ enum class ColumnType(
             }
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     BOOSTED_BY(
@@ -1171,6 +1277,8 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionMastodonWorkaround,
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     FAVOURITED_BY(
@@ -1198,16 +1306,23 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
-    DOMAIN_BLOCKS(16,
+    DOMAIN_BLOCKS(
+        16,
         iconId = { R.drawable.ic_cloud_off },
         name1 = { it.getString(R.string.blocked_domains) },
         bAllowPseudo = false,
         bAllowMisskey = false,
 
         loading = { client -> getDomainBlockList(client, ApiPath.PATH_DOMAIN_BLOCK) },
-        refresh = { client -> getDomainList(client, ApiPath.PATH_DOMAIN_BLOCK) }
+        refresh = { client -> getDomainList(client, ApiPath.PATH_DOMAIN_BLOCK) },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     SEARCH_MSP(
@@ -1224,6 +1339,9 @@ enum class ColumnType(
 
         loading = { loadingMSP(it) },
         refresh = { refreshMSP(it) },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     SEARCH_TS(
@@ -1240,6 +1358,9 @@ enum class ColumnType(
 
         loading = { loadingTootsearch(it) },
         refresh = { refreshTootsearch(it) },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     SEARCH_NOTESTOCK(
@@ -1256,9 +1377,13 @@ enum class ColumnType(
 
         loading = { loadingNotestock(it) },
         refresh = { refreshNotestock(it) },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
-    INSTANCE_INFORMATION(18,
+    INSTANCE_INFORMATION(
+        18,
         iconId = { R.drawable.ic_info },
         name1 = { it.getString(R.string.instance_information) },
         name2 = { long ->
@@ -1281,10 +1406,15 @@ enum class ColumnType(
                 column.handshake = ri?.response?.handshake
             }
             ri
-        }
-    ),
+        },
 
-    LIST_LIST(19,
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
+
+    LIST_LIST(
+        19,
         iconId = { R.drawable.ic_list_list },
         name1 = { it.getString(R.string.lists) },
         bAllowPseudo = false,
@@ -1299,8 +1429,12 @@ enum class ColumnType(
             } else {
                 getListList(client, ApiPath.PATH_LIST_LIST)
             }
-        }
-    ),
+        },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
 
     LIST_TL(
         20,
@@ -1361,6 +1495,9 @@ enum class ColumnType(
 
         canAutoRefresh = true,
 
+        canStreamingMastodon = streamingTypeYes,
+        canStreamingMisskey = streamingTypeYes,
+
         streamKeyMastodon = {
             jsonObjectOf(StreamSpec.STREAM to "list", "list" to profile_id.toString())
         },
@@ -1372,13 +1509,15 @@ enum class ColumnType(
                 else -> true
             }
         },
+
         streamNameMisskey = "userList",
         streamParamMisskey = { jsonObjectOf("listId" to profile_id.toString()) },
         streamPathMisskey9 = { "/user-list?listId=${profile_id.toString()}" },
 
         ),
 
-    LIST_MEMBER(21,
+    LIST_MEMBER(
+        21,
         iconId = { R.drawable.ic_list_member },
         name1 = { it.getString(R.string.list_member) },
         name2 = {
@@ -1415,7 +1554,10 @@ enum class ColumnType(
                 client,
                 String.format(Locale.JAPAN, ApiPath.PATH_LIST_MEMBER, column.profile_id)
             )
-        }
+        },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     DIRECT_MESSAGES(
@@ -1476,6 +1618,9 @@ enum class ColumnType(
 
         canAutoRefresh = true,
 
+        canStreamingMastodon = streamingTypeYes,
+        canStreamingMisskey = streamingTypeYes,
+
         streamKeyMastodon = {
             jsonObjectOf(StreamSpec.STREAM to "direct")
         },
@@ -1488,7 +1633,8 @@ enum class ColumnType(
         }
     ),
 
-    TREND_TAG(24,
+    TREND_TAG(
+        24,
         iconId = { R.drawable.ic_hashtag },
         name1 = { it.getString(R.string.trend_tag) },
         bAllowPseudo = true,
@@ -1507,8 +1653,12 @@ enum class ColumnType(
                 )
             )
             result
-        }
-    ),
+        },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
 
     FOLLOW_SUGGESTION(
         25,
@@ -1532,7 +1682,7 @@ enum class ColumnType(
                         getAccountList(
                             client,
                             ApiPath.PATH_FOLLOW_SUGGESTION2,
-                            listParser= jp.juggler.subwaytooter.mastodonFollowSuggestion2ListParser,
+                            listParser = mastodonFollowSuggestion2ListParser,
                         )
                     else ->
                         getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION)
@@ -1555,7 +1705,7 @@ enum class ColumnType(
                         getAccountList(
                             client,
                             ApiPath.PATH_FOLLOW_SUGGESTION2,
-                            listParser= jp.juggler.subwaytooter.mastodonFollowSuggestion2ListParser,
+                            listParser = mastodonFollowSuggestion2ListParser,
                         )
                     else ->
                         getAccountList(client, ApiPath.PATH_FOLLOW_SUGGESTION)
@@ -1579,7 +1729,7 @@ enum class ColumnType(
                         getAccountList(
                             client,
                             ApiPath.PATH_FOLLOW_SUGGESTION2,
-                            listParser= jp.juggler.subwaytooter.mastodonFollowSuggestion2ListParser,
+                            listParser = mastodonFollowSuggestion2ListParser,
                             mastodonFilterByIdRange = false
                         )
                     else ->
@@ -1592,6 +1742,9 @@ enum class ColumnType(
             }
         },
         gapDirection = gapDirectionMastodonWorkaround,
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
     ),
 
     ENDORSEMENT(
@@ -1611,9 +1764,14 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionMastodonWorkaround,
-    ),
 
-    PROFILE_DIRECTORY(36,
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
+
+    PROFILE_DIRECTORY(
+        36,
         iconId = { R.drawable.ic_follow_plus },
         name1 = { it.getString(R.string.profile_directory) },
         name2 = { context.getString(R.string.profile_directory_of, instance_uri) },
@@ -1625,10 +1783,15 @@ enum class ColumnType(
         },
         refresh = { client ->
             getAccountList(client, profileDirectoryPath)
-        }
-    ),
+        },
 
-    ACCOUNT_AROUND(31,
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
+
+    ACCOUNT_AROUND(
+        31,
         iconId = { R.drawable.ic_account_box },
         name1 = { it.getString(R.string.account_tl_around) },
         name2 = {
@@ -1640,8 +1803,12 @@ enum class ColumnType(
 
         refresh = { client ->
             getStatusList(client, column.makeProfileStatusesUrl(column.profile_id), useMinId = true)
-        }
-    ),
+        },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
 
     @Suppress("unused")
     REPORTS(
@@ -1659,19 +1826,29 @@ enum class ColumnType(
             )
         },
         gapDirection = gapDirectionMastodonWorkaround,
-    ),
 
-    KEYWORD_FILTER(26,
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
+
+    KEYWORD_FILTER(
+        26,
         iconId = { R.drawable.ic_volume_off },
         name1 = { it.getString(R.string.keyword_filters) },
         bAllowPseudo = false,
         bAllowMisskey = false,
         headerType = HeaderType.Filter,
 
-        loading = { client -> getFilterList(client, ApiPath.PATH_FILTERS) }
-    ),
+        loading = { client -> getFilterList(client, ApiPath.PATH_FILTERS) },
 
-    SCHEDULED_STATUS(33,
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
+
+    SCHEDULED_STATUS(
+        33,
         iconId = { R.drawable.ic_timer },
         name1 = { it.getString(R.string.scheduled_status) },
         bAllowPseudo = false,
@@ -1692,10 +1869,15 @@ enum class ColumnType(
             }
         },
 
-        refresh = { client -> getScheduledStatuses(client) }
-    ),
+        refresh = { client -> getScheduledStatuses(client) },
 
-    MISSKEY_ANTENNA_LIST(39,
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
+
+    MISSKEY_ANTENNA_LIST(
+        39,
         iconId = { R.drawable.ic_satellite },
         name1 = { it.getString(R.string.antenna_list) },
         bAllowPseudo = false,
@@ -1711,8 +1893,12 @@ enum class ColumnType(
             } else {
                 TootApiResult("antenna is not supported on Mastodon")
             }
-        }
-    ),
+        },
+
+        canStreamingMastodon = streamingTypeNo,
+        canStreamingMisskey = streamingTypeNo,
+
+        ),
 
     MISSKEY_ANTENNA_TL(
         40,
@@ -1773,6 +1959,10 @@ enum class ColumnType(
         gapDirection = gapDirectionBoth,
 
         canAutoRefresh = true,
+
+        canStreamingMastodon = streamingTypeYes,
+        canStreamingMisskey = streamingTypeYes,
+
         streamNameMisskey = "antenna",
         streamParamMisskey = { jsonObjectOf("antennaId" to profile_id.toString()) },
         // Misskey10 にアンテナはない
@@ -1804,6 +1994,7 @@ enum class ColumnType(
         fun parse(id: Int) = Column.typeMap[id] ?: HOME
     }
 }
+
 
 // public:local, public:local:media の2種類
 fun Column.streamKeyLtl() =

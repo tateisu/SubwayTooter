@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.dialog
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.RelativeSizeSpan
@@ -14,93 +15,90 @@ import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.DialogInterfaceCallback
-import jp.juggler.subwaytooter.util.SavedAccountCallback
 import jp.juggler.util.dismissSafe
 import jp.juggler.util.getAdaptiveRippleDrawableRound
 import jp.juggler.util.showToast
 import org.jetbrains.anko.textColor
-import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-object AccountPicker {
+@SuppressLint("InflateParams")
+suspend fun AppCompatActivity.pickAccount(
+    bAllowPseudo: Boolean = false,
+    bAllowMisskey: Boolean = true,
+    bAllowMastodon: Boolean = true,
+    bAuto: Boolean = false,
+    message: String? = null,
+    accountListArg: MutableList<SavedAccount>? = null,
+    dismiss_callback:  (dialog : DialogInterface) -> Unit ={},
+    extra_callback: (LinearLayout, Int, Int) -> Unit = { _, _, _ -> },
+):SavedAccount?{
+    val activity = this
+    var removeMastodon = 0
+    var removedMisskey = 0
+    var removedPseudo = 0
 
-    @SuppressLint("InflateParams")
-    fun pick(
-        activity: AppCompatActivity,
-        bAllowPseudo: Boolean = false,
-        bAllowMisskey: Boolean = true,
-        bAllowMastodon: Boolean = true,
-        bAuto: Boolean = false,
-        message: String? = null,
-        accountListArg: MutableList<SavedAccount>? = null,
-        dismiss_callback: DialogInterfaceCallback? = null,
-        extra_callback: (LinearLayout, Int, Int) -> Unit = { _, _, _ -> },
-        callback: SavedAccountCallback
-    ) {
-		var removeMastodon = 0
-        var removedMisskey = 0
-        var removedPseudo = 0
+    fun SavedAccount.checkMastodon() = when {
+        !bAllowMastodon && !isMisskey -> ++removeMastodon
+        else -> 0
+    }
 
-        fun SavedAccount.checkMastodon() = when {
-            !bAllowMastodon && !isMisskey -> ++removeMastodon
-            else -> 0
+    fun SavedAccount.checkMisskey() = when {
+        !bAllowMisskey && isMisskey -> ++removedMisskey
+        else -> 0
+    }
+
+    fun SavedAccount.checkPseudo() = when {
+        !bAllowPseudo && isPseudo -> ++removedPseudo
+        else -> 0
+    }
+
+    val account_list: MutableList<SavedAccount> = accountListArg
+        ?: SavedAccount.loadAccountList(activity)
+            .filter { 0 == it.checkMastodon() + it.checkMisskey() + it.checkPseudo() }
+            .toMutableList()
+            .also { SavedAccount.sort(it) }
+
+    if (account_list.isEmpty()) {
+
+        val sb = StringBuilder()
+
+        if (removedPseudo > 0) {
+            sb.append(activity.getString(R.string.not_available_for_pseudo_account))
         }
 
-        fun SavedAccount.checkMisskey() = when {
-            !bAllowMisskey && isMisskey -> ++removedMisskey
-            else -> 0
+        if (removedMisskey > 0) {
+            if (sb.isNotEmpty()) sb.append('\n')
+            sb.append(activity.getString(R.string.not_available_for_misskey_account))
+        }
+        if (removeMastodon > 0) {
+            if (sb.isNotEmpty()) sb.append('\n')
+            sb.append(activity.getString(R.string.not_available_for_mastodon_account))
         }
 
-        fun SavedAccount.checkPseudo() = when {
-            !bAllowPseudo && isPseudo -> ++removedPseudo
-            else -> 0
+        if (sb.isEmpty()) {
+            sb.append(activity.getString(R.string.account_empty))
         }
 
+        activity.showToast(false, sb.toString())
+        return null
+    }
 
-        val account_list: MutableList<SavedAccount> = accountListArg
-            ?: SavedAccount.loadAccountList(activity)
-                .filter { 0 == it.checkMastodon() + it.checkMisskey() + it.checkPseudo() }
-                .toMutableList()
-                .also { SavedAccount.sort(it) }
+    if (bAuto && account_list.size == 1) {
+        return account_list[0]
+    }
 
-        if (account_list.isEmpty()) {
-
-            val sb = StringBuilder()
-
-            if (removedPseudo > 0) {
-                sb.append(activity.getString(R.string.not_available_for_pseudo_account))
-            }
-
-            if (removedMisskey > 0) {
-                if (sb.isNotEmpty()) sb.append('\n')
-                sb.append(activity.getString(R.string.not_available_for_misskey_account))
-            }
-            if (removeMastodon > 0) {
-                if (sb.isNotEmpty()) sb.append('\n')
-                sb.append(activity.getString(R.string.not_available_for_mastodon_account))
-            }
-
-            if (sb.isEmpty()) {
-                sb.append(activity.getString(R.string.account_empty))
-            }
-
-            activity.showToast(false, sb.toString())
-            return
-        }
-
-        if (bAuto && account_list.size == 1) {
-            callback(account_list[0])
-            return
-        }
-
-        val viewRoot = activity.layoutInflater.inflate(R.layout.dlg_account_picker, null, false)
-
+    return suspendCoroutine { continuation ->
+        val viewRoot = layoutInflater.inflate(R.layout.dlg_account_picker, null, false)
         val dialog = Dialog(activity)
-        val isDialogClosed = AtomicBoolean(false)
+        val isResumed = AtomicBoolean(false)
 
         dialog.setOnDismissListener {
-            if (dismiss_callback != null) dismiss_callback(it)
+            dismiss_callback(it)
+            if(isResumed.compareAndSet(false,true)){
+                continuation.resume(null)
+            }
         }
 
         dialog.setContentView(viewRoot)
@@ -109,13 +107,13 @@ object AccountPicker {
             tv.visibility = View.VISIBLE
             tv.text = message
         }
+
         viewRoot.findViewById<View>(R.id.btnCancel).setOnClickListener {
-            isDialogClosed.set(true)
             dialog.cancel()
         }
+
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
-        dialog.setOnCancelListener { isDialogClosed.set(true) }
 
         val density = activity.resources.displayMetrics.density
 
@@ -165,8 +163,9 @@ object AccountPicker {
             b.text = sb
 
             b.setOnClickListener {
-                isDialogClosed.set(true)
-                callback(a)
+                if(isResumed.compareAndSet(false,true)){
+                    continuation.resume(a)
+                }
                 dialog.dismissSafe()
             }
             llAccounts.addView(b)

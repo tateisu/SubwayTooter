@@ -12,10 +12,6 @@ import jp.juggler.util.clipRange
 
 class FocusPointView : View {
 	
-	interface Callback {
-		fun onFocusPointUpdate(x : Float, y : Float)
-	}
-	
 	constructor(context : Context) : super(context) {
 		init(context)
 	}
@@ -40,7 +36,7 @@ class FocusPointView : View {
 	private var crossRadius : Float = 0f
 	private var attachment : TootAttachment? = null
 	private var bitmap : Bitmap? = null
-	var callback : Callback? = null
+	var callback : (x : Float, y : Float)->Unit = {_,_->}
 	
 	private var focusX : Float = 0f
 	private var focusY : Float = 0f
@@ -150,8 +146,7 @@ class FocusPointView : View {
 			
 			MotionEvent.ACTION_UP -> {
 				updateFocusPoint(event)
-				callback?.onFocusPointUpdate(focusX, focusY)
-				
+				callback(focusX, focusY)
 			}
 		}
 		return true

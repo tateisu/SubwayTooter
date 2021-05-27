@@ -49,7 +49,7 @@ constructor(gravity : Int) : androidx.recyclerview.widget.LinearSnapHelper() {
 	
 	override fun calculateDistanceToFinalSnap(
 		layoutManager : RecyclerView.LayoutManager, targetView : View
-	) : IntArray? {
+	) : IntArray {
 		val out = IntArray(2)
 		
 		if(! layoutManager.canScrollHorizontally()) {

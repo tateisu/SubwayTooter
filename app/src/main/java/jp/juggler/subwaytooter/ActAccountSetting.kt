@@ -19,10 +19,12 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
+import jp.juggler.subwaytooter.action.accountRemove
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
@@ -49,7 +51,7 @@ import ru.gildor.coroutines.okhttp.await
 import java.io.*
 import kotlin.math.max
 
-class ActAccountSetting : AsyncActivity(), View.OnClickListener,
+class ActAccountSetting : AppCompatActivity(), View.OnClickListener,
     CompoundButton.OnCheckedChangeListener, AdapterView.OnItemSelectedListener {
 
     companion object {
@@ -752,8 +754,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             R.id.btnLoadPreference -> performLoadPreference()
             R.id.btnVisibility -> performVisibility()
             R.id.btnOpenBrowser -> openBrowser("https://${account.apiHost.ascii}/")
-            R.id.btnPushSubscription -> startTest(force = true)
-            R.id.btnPushSubscriptionNotForce -> startTest(force = false)
+            R.id.btnPushSubscription -> updatePushSubscription(force = true)
+            R.id.btnPushSubscriptionNotForce -> updatePushSubscription(force = false)
             R.id.btnResetNotificationTracking ->
                 PollingWorker.resetNotificationTracking(this, account)
 
@@ -842,19 +844,14 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
     }
 
     private fun performLoadPreference() {
-
-        TootTaskRunner(this).run(account, object : TootTask {
-            override suspend fun background(client: TootApiClient): TootApiResult? {
-                return client.request("/api/v1/preferences")
-            }
-
-            override suspend fun handleResult(result: TootApiResult?) {
-                result ?: return
-
+        launchMain {
+            runApiTask(account) { client ->
+                client.request("/api/v1/preferences")
+            }?.let { result ->
                 val json = result.jsonObject
                 if (json == null) {
                     showToast(true, result.error)
-                    return
+                    return@let
                 }
 
                 var bChanged = false
@@ -892,72 +889,32 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                     if (bChanged) saveUIToData()
                 }
             }
-        })
+        }
     }
 
     ///////////////////////////////////////////////////
+
     private fun performAccountRemove() {
         AlertDialog.Builder(this)
             .setTitle(R.string.confirm)
             .setMessage(R.string.confirm_account_remove)
             .setNegativeButton(R.string.cancel, null)
             .setPositiveButton(R.string.ok) { _, _ ->
-                account.delete()
-
-                val pref = pref()
-                if (account.db_id == Pref.lpTabletTootDefaultAccount(pref)) {
-                    pref.edit().put(Pref.lpTabletTootDefaultAccount, -1L).apply()
-                }
-
+                accountRemove(account)
                 finish()
-
-                EndlessScope.launch(Dispatchers.IO) {
-                    try {
-                        val install_id = PrefDevice.prefDevice(this@ActAccountSetting)
-                            .getString(PrefDevice.KEY_INSTALL_ID, null)
-                        if (install_id?.isEmpty() != false)
-                            error("missing install_id")
-
-                        val tag = account.notification_tag
-                        if (tag?.isEmpty() != false)
-                            error("missing notification_tag")
-
-                        val call = App1.ok_http_client.newCall(
-                            ("instance_url=" + "https://${account.apiHost.ascii}".encodePercent()
-                                + "&app_id=" + packageName.encodePercent()
-                                + "&tag=" + tag
-                                )
-                                .toFormRequestBody()
-                                .toPost()
-                                .url(PollingWorker.APP_SERVER + "/unregister")
-                                .build()
-                        )
-
-                        val response = call.await()
-
-                        log.e("performAccountRemove: %s", response)
-                    } catch (ex: Throwable) {
-                        log.trace(ex, "performAccountRemove failed.")
-                    }
-                }
             }
             .show()
     }
 
     ///////////////////////////////////////////////////
     private fun performAccessToken() {
-
-        TootTaskRunner(this@ActAccountSetting).run(account, object : TootTask {
-            override suspend fun background(client: TootApiClient): TootApiResult? {
-                return client.authentication1(
+        launchMain {
+            runApiTask(account) { client ->
+                client.authentication1(
                     Pref.spClientName(this@ActAccountSetting),
                     forceUpdateClient = true
                 )
-            }
-
-            override suspend fun handleResult(result: TootApiResult?) {
-                result ?: return // cancelled.
-
+            }?.let { result ->
                 val uri = result.string.mayUri()
                 val error = result.error
                 when {
@@ -974,8 +931,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                     }
                 }
             }
-        })
-
+        }
     }
 
     private fun inputAccessToken() {
@@ -1042,53 +998,42 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         if (!account.isPseudo) loadProfile()
     }
 
+    // サーバから情報をロードする
     private fun loadProfile() {
-        // サーバから情報をロードする
-
-        TootTaskRunner(this).run(account, object : TootTask {
-
-            var data: TootAccount? = null
-            override suspend fun background(client: TootApiClient): TootApiResult? {
+        launchMain {
+            var resultAccount: TootAccount? = null
+            runApiTask(account) { client ->
                 if (account.isMisskey) {
-                    val result = client.request(
+                    client.request(
                         "/api/i",
                         account.putMisskeyApiToken().toPostRequestBuilder()
-                    )
-                    val jsonObject = result?.jsonObject
-                    if (jsonObject != null) {
-                        data = TootParser(this@ActAccountSetting, account).account(jsonObject)
-                        if (data == null) return TootApiResult("TootAccount parse failed.")
+                    )?.also { result ->
+                        val jsonObject = result.jsonObject
+                        if (jsonObject != null) {
+                            resultAccount = TootParser(this, account).account(jsonObject)
+                                ?: return@runApiTask TootApiResult("TootAccount parse failed.")
+                        }
                     }
-                    return result
-
                 } else {
+                    val r0 = account.checkConfirmed(this, client)
+                    if (r0 == null || r0.error != null) return@runApiTask r0
 
-                    var result = account.checkConfirmed(this@ActAccountSetting, client)
-                    if (result == null || result.error != null) return result
-
-                    result = client.request("/api/v1/accounts/verify_credentials")
-                    val jsonObject = result?.jsonObject
-                    if (jsonObject != null) {
-                        data = TootParser(this@ActAccountSetting, account).account(jsonObject)
-                        if (data == null) return TootApiResult("TootAccount parse failed.")
-                    }
-                    return result
-
+                    client.request("/api/v1/accounts/verify_credentials")
+                        ?.also { result ->
+                            val jsonObject = result.jsonObject
+                            if (jsonObject != null) {
+                                resultAccount = TootParser(this@ActAccountSetting, account).account(jsonObject)
+                                    ?: return@runApiTask TootApiResult("TootAccount parse failed.")
+                            }
+                        }
+                }
+            }?.let { result ->
+                when (val account = resultAccount) {
+                    null -> showToast(true, result.error)
+                    else -> showProfile(account)
                 }
             }
-
-            override suspend fun handleResult(result: TootApiResult?) {
-                if (result == null) return  // cancelled.
-
-                val data = this.data
-                if (data != null) {
-                    showProfile(data)
-                } else {
-                    showToast(true, result.error)
-                }
-
-            }
-        })
+        }
     }
 
     var profile_busy: Boolean = false
@@ -1238,69 +1183,68 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
         updateCredential(listOf(Pair(key, value)))
     }
 
-    private fun updateCredential(args: List<Pair<String, Any>>) {
 
-        TootTaskRunner(this).run(account, object : TootTask {
+    private suspend fun uploadImageMisskey(
+        client: TootApiClient,
+        opener: InputStreamOpener
+    ): Pair<TootApiResult?, TootAttachment?> {
 
-            private suspend fun uploadImageMisskey(
-                client: TootApiClient,
-                opener: InputStreamOpener
-            ): Pair<TootApiResult?, TootAttachment?> {
+        val size = getStreamSize(true, opener.open())
 
-                val size = getStreamSize(true, opener.open())
+        val multipart_builder = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
 
-                val multipart_builder = MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
+        val apiKey =
+            account.token_info?.string(TootApiClient.KEY_API_KEY_MISSKEY)
+        if (apiKey?.isNotEmpty() == true) {
+            multipart_builder.addFormDataPart("i", apiKey)
+        }
 
-                val apiKey =
-                    account.token_info?.string(TootApiClient.KEY_API_KEY_MISSKEY)
-                if (apiKey?.isNotEmpty() == true) {
-                    multipart_builder.addFormDataPart("i", apiKey)
+        multipart_builder.addFormDataPart(
+            "file",
+            getDocumentName(contentResolver, opener.uri),
+            object : RequestBody() {
+                override fun contentType(): MediaType {
+                    return opener.mimeType.toMediaType()
                 }
 
-                multipart_builder.addFormDataPart(
-                    "file",
-                    getDocumentName(contentResolver, opener.uri),
-                    object : RequestBody() {
-                        override fun contentType(): MediaType {
-                            return opener.mimeType.toMediaType()
-                        }
-
-                        override fun contentLength(): Long {
-                            return size
-                        }
-
-                        override fun writeTo(sink: BufferedSink) {
-                            opener.open().use { inData ->
-                                val tmp = ByteArray(4096)
-                                while (true) {
-                                    val r = inData.read(tmp, 0, tmp.size)
-                                    if (r <= 0) break
-                                    sink.write(tmp, 0, r)
-                                }
-                            }
-                        }
-                    }
-                )
-
-                var ta: TootAttachment? = null
-                val result = client.request(
-                    "/api/drive/files/create",
-                    multipart_builder.build().toPost()
-                )?.also { result ->
-                    val jsonObject = result.jsonObject
-                    if (jsonObject != null) {
-                        ta = parseItem(::TootAttachment, ServiceType.MISSKEY, jsonObject)
-                        if (ta == null) result.error = "TootAttachment.parse failed"
-                    }
+                override fun contentLength(): Long {
+                    return size
                 }
 
-                return Pair(result, ta)
+                override fun writeTo(sink: BufferedSink) {
+                    opener.open().use { inData ->
+                        val tmp = ByteArray(4096)
+                        while (true) {
+                            val r = inData.read(tmp, 0, tmp.size)
+                            if (r <= 0) break
+                            sink.write(tmp, 0, r)
+                        }
+                    }
+                }
             }
+        )
 
-            var data: TootAccount? = null
-            override suspend fun background(client: TootApiClient): TootApiResult? {
+        var ta: TootAttachment? = null
+        val result = client.request(
+            "/api/drive/files/create",
+            multipart_builder.build().toPost()
+        )?.also { result ->
+            val jsonObject = result.jsonObject
+            if (jsonObject != null) {
+                ta = parseItem(::TootAttachment, ServiceType.MISSKEY, jsonObject)
+                if (ta == null) result.error = "TootAttachment.parse failed"
+            }
+        }
 
+        return Pair(result, ta)
+    }
+
+    private fun updateCredential(args: List<Pair<String, Any>>) {
+        launchMain {
+            var resultAccount: TootAccount? = null
+
+            runApiTask(account) { client ->
                 try {
                     if (account.isMisskey) {
                         val params = account.putMisskeyApiToken()
@@ -1315,7 +1259,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                                 "display_name" -> "name"
                                 "note" -> "description"
                                 "locked" -> "isLocked"
-                                else -> return TootApiResult("Misskey does not support property '${key}'")
+                                else -> return@runApiTask TootApiResult("Misskey does not support property '${key}'")
                             }
 
                             when (value) {
@@ -1324,23 +1268,19 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
 
                                 is InputStreamOpener -> {
                                     val (result, ta) = uploadImageMisskey(client, value)
-                                    ta ?: return result
+                                    ta ?: return@runApiTask result
                                     params[misskeyKey] = ta.id
                                 }
                             }
                         }
 
-                        val result =
-                            client.request("/api/i/update", params.toPostRequestBuilder())
-                        val jsonObject = result?.jsonObject
-                        if (jsonObject != null) {
-                            val a = TootParser(this@ActAccountSetting, account).account(jsonObject)
-                                ?: return TootApiResult("TootAccount parse failed.")
-                            data = a
-                        }
-
-                        return result
-
+                        client.request("/api/i/update", params.toPostRequestBuilder())
+                            ?.also { result ->
+                                result.jsonObject?.let {
+                                    resultAccount = TootParser(this, account).account(it)
+                                        ?: return@runApiTask TootApiResult("TootAccount parse failed.")
+                                }
+                            }
                     } else {
                         val multipart_body_builder = MultipartBody.Builder()
                             .setType(MultipartBody.FORM)
@@ -1382,19 +1322,15 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                             }
                         }
 
-                        val result = client.request(
+                        client.request(
                             "/api/v1/accounts/update_credentials",
                             multipart_body_builder.build().toPatch()
-                        )
-                        val jsonObject = result?.jsonObject
-                        if (jsonObject != null) {
-                            val a = TootParser(this@ActAccountSetting, account).account(jsonObject)
-                                ?: return TootApiResult("TootAccount parse failed.")
-                            data = a
+                        )?.also { result ->
+                            result.jsonObject?.let {
+                                resultAccount = TootParser(this@ActAccountSetting, account).account(it)
+                                    ?: return@runApiTask TootApiResult("TootAccount parse failed.")
+                            }
                         }
-
-                        return result
-
                     }
 
                 } finally {
@@ -1403,12 +1339,8 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                         (value as? InputStreamOpener)?.deleteTempFile()
                     }
                 }
-            }
-
-            override suspend fun handleResult(result: TootApiResult?) {
-                if (result == null) return  // cancelled.
-
-                val data = this.data
+            }?.let { result ->
+                val data = resultAccount
                 if (data != null) {
                     showProfile(data)
                 } else {
@@ -1424,8 +1356,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                     }
                 }
             }
-        })
-
+        }
     }
 
     private fun sendDisplayName(bConfirmed: Boolean = false) {
@@ -1721,24 +1652,21 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
             return
         }
 
-        runWithProgress(
-            "preparing image",
-            { createOpener(uri, mime_type) },
-            { updateCredential(propName, it) }
-        )
+        launchMain {
+            runWithProgress(
+                "preparing image",
+                { createOpener(uri, mime_type) },
+                { updateCredential(propName, it) }
+            )
+        }
     }
 
-    private fun startTest(force: Boolean) {
+    private fun updatePushSubscription(force: Boolean) {
         val wps = PushSubscriptionHelper(applicationContext, account, verbose = true)
-
-        TootTaskRunner(this).run(account, object : TootTask {
-
-            override suspend fun background(client: TootApiClient): TootApiResult? {
-                return wps.updateSubscription(client, force = force)
-            }
-
-            override suspend fun handleResult(result: TootApiResult?) {
-                result ?: return
+        launchMain {
+            runApiTask(account) { client ->
+                wps.updateSubscription(client, force = force)
+            }?.let {
                 val log = wps.logString
                 if (log.isNotEmpty()) {
                     AlertDialog.Builder(this@ActAccountSetting)
@@ -1747,9 +1675,7 @@ class ActAccountSetting : AsyncActivity(), View.OnClickListener,
                         .show()
                 }
             }
-        })
+        }
     }
-
-
 }
 

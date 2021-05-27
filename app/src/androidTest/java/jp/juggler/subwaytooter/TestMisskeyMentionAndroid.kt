@@ -31,8 +31,8 @@ class TestMisskeyMentionAndroid {
 		
 		// 閉じ括弧が足りないのはエラーになる。
 		// val a="""[[ ]""".toRegex()
-		
-		//
+
+		// IDEで警告が出るが、Androidは正規表現エンジンが異なるので仕方ない
 		assertEquals(true, """[[ ]]][ ]""".toRegex().matches(" ] "))
 		
 	}

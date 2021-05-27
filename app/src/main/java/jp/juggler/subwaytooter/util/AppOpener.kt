@@ -1,27 +1,21 @@
 package jp.juggler.subwaytooter.util
 
+import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.app.Activity
-import android.content.SharedPreferences
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.action.Action_Conversation
-import jp.juggler.subwaytooter.action.Action_HashTag
-import jp.juggler.subwaytooter.action.Action_Toot
-import jp.juggler.subwaytooter.action.Action_User
-import jp.juggler.subwaytooter.api.entity.Host
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootAccountRef
-import jp.juggler.subwaytooter.api.entity.TootAttachment
+import jp.juggler.subwaytooter.action.*
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.api.entity.TootStatus.Companion.findStatusIdFromUrl
 import jp.juggler.subwaytooter.api.entity.TootTag.Companion.findHashtagFromUrl
 import jp.juggler.subwaytooter.dialog.DlgAppPicker
@@ -29,7 +23,7 @@ import jp.juggler.subwaytooter.pref
 import jp.juggler.subwaytooter.span.LinkInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.*
-import java.util.ArrayList
+import java.util.*
 
 // Subway Tooterの「アプリ設定/挙動/リンクを開く際にCustom Tabsを使わない」をONにして
 // 投稿のコンテキストメニューの「トゥートへのアクション/Webページを開く」「ユーザへのアクション/Webページを開く」を使うと
@@ -218,8 +212,7 @@ fun openCustomTab(
             // ハッシュタグはいきなり開くのではなくメニューがある
             val tagInfo = url.findHashtagFromUrl()
             if (tagInfo != null) {
-                Action_HashTag.dialog(
-                    activity,
+                activity.tagDialog(
                     pos,
                     url,
                     Host.parse(tagInfo.second),
@@ -236,8 +229,7 @@ fun openCustomTab(
                     statusInfo.statusId == null ||
                     !accessInfo.matchHost(statusInfo.host)
                 ) {
-                    Action_Conversation.conversationOtherInstance(
-                        activity,
+                    activity.conversationOtherInstance(
                         pos,
                         statusInfo.url,
                         statusInfo.statusId,
@@ -245,8 +237,7 @@ fun openCustomTab(
                         statusInfo.statusId
                     )
                 } else {
-                    Action_Conversation.conversationLocal(
-                        activity,
+                    activity.conversationLocal(
                         pos,
                         accessInfo,
                         statusInfo.statusId
@@ -269,14 +260,12 @@ fun openCustomTab(
                                 activity.openBrowser("mailto:${fullAcct.pretty}")
 
                             else ->
-                                Action_User.profile(
-                                    activity,
+                                activity.userProfile(
                                     pos,
                                     accessInfo, // FIXME nullが必要なケースがあったっけなかったっけ…
-                                    mention.url,
-                                    fullAcct.host,
-                                    fullAcct.username,
-                                    original_url = url
+                                    acct = fullAcct,
+                                    userUrl = mention.url,
+                                    original_url = url,
                                 )
                         }
                         return
@@ -305,25 +294,21 @@ fun openCustomTab(
                         }
 
                         else -> {
-                            Action_User.profile(
-                                activity,
+                            activity.userProfile(
                                 pos,
                                 null, // Misskeyだと疑似アカが必要なんだっけ…？
-                                "https://$instance/@$user",
-                                instanceHost,
-                                user,
-                                original_url = url
+                                acct = Acct.parse(user,instanceHost),
+                                userUrl = "https://$instance/@$user",
+                                original_url = url,
                             )
                         }
                     }
                 } else {
-                    Action_User.profile(
-                        activity,
+                    activity.userProfile(
                         pos,
                         accessInfo,
-                        url,
-                        Host.parse(host),
-                        user
+                        Acct.parse(user,host),
+                        url
                     )
                 }
                 return
@@ -334,13 +319,11 @@ fun openCustomTab(
                 val host = m.groupEx(1)!!
                 val user = m.groupEx(2)!!.decodePercent()
 
-                Action_User.profile(
-                    activity,
+                activity.userProfile(
                     pos,
                     accessInfo,
+                    Acct.parse(user,host),
                     url,
-                    Host.parse(host),
-                    user
                 )
                 return
             }

@@ -17,6 +17,7 @@ import android.view.Window
 import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -26,7 +27,6 @@ import jp.juggler.subwaytooter.dialog.DlgAppPicker
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.AsyncActivity
 import jp.juggler.subwaytooter.util.CustomShare
 import jp.juggler.subwaytooter.util.CustomShareTarget
 import jp.juggler.subwaytooter.util.cn
@@ -44,7 +44,7 @@ import java.util.zip.ZipOutputStream
 import kotlin.collections.ArrayList
 import kotlin.math.abs
 
-class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickListener {
+class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnClickListener {
 
     companion object {
 
@@ -777,58 +777,53 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
 
     @Suppress("BlockingMethodInNonBlockingContext")
     fun exportAppData() {
+        val activity = this
+        launchMain {
+            runWithProgress(
+                "export app data",
+                doInBackground = {
+                    val cache_dir = cacheDir
 
-        runWithProgress(
-            "export app data",
-            {
-                val cache_dir = cacheDir
-                cache_dir.mkdir()
+                    cache_dir.mkdir()
 
-                val file = File(
-                    cache_dir,
-                    "SubwayTooter.${android.os.Process.myPid()}.${android.os.Process.myTid()}.zip"
-                )
+                    val file = File(
+                        cache_dir,
+                        "SubwayTooter.${android.os.Process.myPid()}.${android.os.Process.myTid()}.zip"
+                    )
 
-                // ZipOutputStreamオブジェクトの作成
-                ZipOutputStream(FileOutputStream(file)).use { zipStream ->
+                    // ZipOutputStreamオブジェクトの作成
+                    ZipOutputStream(FileOutputStream(file)).use { zipStream ->
 
-                    // アプリデータjson
-                    zipStream.putNextEntry(ZipEntry("AppData.json"))
-                    try {
-                        val jw = JsonWriter(OutputStreamWriter(zipStream, "UTF-8"))
-                        AppDataExporter.encodeAppData(this@ActAppSetting, jw)
-                        jw.flush()
-                    } finally {
-                        zipStream.closeEntry()
+                        // アプリデータjson
+                        zipStream.putNextEntry(ZipEntry("AppData.json"))
+                        try {
+                            val jw = JsonWriter(OutputStreamWriter(zipStream, "UTF-8"))
+                            AppDataExporter.encodeAppData(activity, jw)
+                            jw.flush()
+                        } finally {
+                            zipStream.closeEntry()
+                        }
+
+                        // カラム背景画像
+                        val appState = App1.getAppState(activity)
+                        for (column in appState.columnList) {
+                            AppDataExporter.saveBackgroundImage(activity, zipStream, column)
+                        }
                     }
 
-                    // カラム背景画像
-                    val appState = App1.getAppState(this@ActAppSetting)
-                    for (column in appState.columnList) {
-                        AppDataExporter.saveBackgroundImage(
-                            this@ActAppSetting,
-                            zipStream,
-                            column
-                        )
-                    }
+                    file
+                },
+                afterProc = {
+                    val uri = FileProvider.getUriForFile(activity, App1.FILE_PROVIDER_AUTHORITY, it)
+                    val intent = Intent(Intent.ACTION_SEND)
+                    intent.type = contentResolver.getType(uri)
+                    intent.putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter app data")
+                    intent.putExtra(Intent.EXTRA_STREAM, uri)
+                    intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    arNoop.launch(intent)
                 }
-
-                file
-            },
-            {
-                val uri = FileProvider.getUriForFile(
-                    this@ActAppSetting,
-                    App1.FILE_PROVIDER_AUTHORITY,
-                    it
-                )
-                val intent = Intent(Intent.ACTION_SEND)
-                intent.type = contentResolver.getType(uri)
-                intent.putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter app data")
-                intent.putExtra(Intent.EXTRA_STREAM, uri)
-                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                arNoop.launch(intent)
-            }
-        )
+            )
+        }
     }
 
     // open data picker
@@ -913,7 +908,7 @@ class ActAppSetting : AsyncActivity(), ColorPickerDialogListener, View.OnClickLi
     private val defaultLineSpacingExtra = HashMap<String, Float>()
     private val defaultLineSpacingMultiplier = HashMap<String, Float>()
 
-    fun handleFontResult(item: AppSettingItem?, data: Intent, fileName: String) {
+    private fun handleFontResult(item: AppSettingItem?, data: Intent, fileName: String) {
         item ?: error("handleFontResult : setting item is null")
         data.handleGetContentResult(contentResolver).firstOrNull()?.uri?.let {
             val file = saveTimelineFont(it, fileName)

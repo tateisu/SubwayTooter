@@ -13,11 +13,8 @@ import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.emoji.UnicodeEmoji
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -248,7 +245,7 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
         b.scaleType = ImageView.ScaleType.FIT_CENTER
         b.padding = paddingV
         b.setOnClickListener {
-            addReaction(item, null)
+            reactionAdd(item, null)
         }
 
         setIconDrawableId(
@@ -332,9 +329,9 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
 
                 btn.setOnClickListener {
                     if (reaction.me) {
-                        removeReaction(item, reaction.name)
+                        reactionRemove(item, reaction.name)
                     } else {
-                        addReaction(item, TootReaction.parseFedibird(jsonObject {
+                        reactionAdd(item, TootReaction.parseFedibird(jsonObject {
                             put("name", reaction.name)
                             put("count", 1)
                             put("me", true)
@@ -359,7 +356,7 @@ fun ColumnViewHolder.showAnnouncements(force: Boolean = true) {
 }
 
 
-fun ColumnViewHolder.addReaction(item: TootAnnouncement, sample: TootReaction?) {
+fun ColumnViewHolder.reactionAdd(item: TootAnnouncement, sample: TootReaction?) {
     val column = column ?: return
     if (sample == null) {
         EmojiPicker(activity, column.access_info, closeOnSelected = true) { result ->
@@ -369,7 +366,7 @@ fun ColumnViewHolder.addReaction(item: TootAnnouncement, sample: TootReaction?) 
                 is CustomEmoji -> emoji.shortcode
             }
             ColumnViewHolder.log.d("addReaction: $code ${result.emoji.javaClass.simpleName}")
-            addReaction(item, TootReaction.parseFedibird(jsonObject {
+            reactionAdd(item, TootReaction.parseFedibird(jsonObject {
                 put("name", code)
                 put("count", 1)
                 put("me", true)
@@ -383,68 +380,67 @@ fun ColumnViewHolder.addReaction(item: TootAnnouncement, sample: TootReaction?) 
         return
     }
 
-    TootTaskRunner(activity).run(column.access_info, object : TootTask {
-        override suspend fun background(client: TootApiClient): TootApiResult? {
-            return client.request(
+    launchMain {
+        activity.runApiTask(column.access_info) { client ->
+            client.request(
                 "/api/v1/announcements/${item.id}/reactions/${sample.name.encodePercent()}",
                 JsonObject().toPutRequestBuilder()
             )
             // 200 {}
-        }
-
-        override suspend fun handleResult(result: TootApiResult?) {
-            result ?: return
-            if (result.jsonObject == null) {
-                activity.showToast(true, result.error)
-            } else {
-                sample.count = 0
-                val list = item.reactions
-                if (list == null) {
-                    item.reactions = mutableListOf(sample)
-                } else {
-                    val reaction = list.find { it.name == sample.name }
-                    if (reaction == null) {
-                        list.add(sample)
+        }?.let { result ->
+            when (result.jsonObject) {
+                null -> activity.showToast(true, result.error)
+                else -> {
+                    sample.count = 0
+                    val list = item.reactions
+                    if (list == null) {
+                        item.reactions = mutableListOf(sample)
                     } else {
-                        reaction.me = true
-                        ++reaction.count
+                        val reaction = list.find { it.name == sample.name }
+                        if (reaction == null) {
+                            list.add(sample)
+                        } else {
+                            reaction.me = true
+                            ++reaction.count
+                        }
                     }
+                    column.announcementUpdated = SystemClock.elapsedRealtime()
+                    showAnnouncements()
                 }
-                column.announcementUpdated = SystemClock.elapsedRealtime()
-                showAnnouncements()
             }
         }
-    })
+    }
 }
 
-fun ColumnViewHolder.removeReaction(item: TootAnnouncement, name: String) {
+fun ColumnViewHolder.reactionRemove(item: TootAnnouncement, name: String) {
     val column = column ?: return
-    TootTaskRunner(activity).run(column.access_info, object : TootTask {
-        override suspend fun background(client: TootApiClient): TootApiResult? {
-            return client.request(
+    launchMain {
+        activity.runApiTask(column.access_info) { client ->
+            client.request(
                 "/api/v1/announcements/${item.id}/reactions/${name.encodePercent()}",
                 JsonObject().toDeleteRequestBuilder()
             )
             // 200 {}
-        }
+        }?.let { result ->
+            when (result.jsonObject) {
+                null ->
+                    activity.showToast(true, result.error)
 
-        override suspend fun handleResult(result: TootApiResult?) {
-            result ?: return
-            if (result.jsonObject == null) {
-                activity.showToast(true, result.error)
-            } else {
-                val it = item.reactions?.iterator() ?: return
-                while (it.hasNext()) {
-                    val reaction = it.next()
-                    if (reaction.name == name) {
-                        reaction.me = false
-                        if (--reaction.count <= 0) it.remove()
-                        break
+                else ->
+                    item.reactions?.iterator()?.let {
+                        while (it.hasNext()) {
+                            val reaction = it.next()
+                            if (reaction.name == name) {
+                                reaction.me = false
+                                if (--reaction.count <= 0) it.remove()
+                                break
+                            }
+                        }
+                        column.announcementUpdated = SystemClock.elapsedRealtime()
+                        showAnnouncements()
                     }
-                }
-                column.announcementUpdated = SystemClock.elapsedRealtime()
-                showAnnouncements()
+
             }
         }
-    })
+    }
 }

@@ -12,10 +12,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.util.AsyncActivity
 import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.textColor
@@ -25,7 +25,7 @@ import java.io.FileOutputStream
 import java.util.*
 import kotlin.collections.ArrayList
 
-class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
+class ActLanguageFilter : AppCompatActivity(), View.OnClickListener {
 
     private class MyItem(
         val code: String,
@@ -406,76 +406,76 @@ class ActLanguageFilter : AsyncActivity(), View.OnClickListener {
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    private fun export() = runWithProgress(
-        "export language filter",
-        {
-            val data = JsonObject().apply {
-                for (item in languageList) {
-                    put(item.code, item.allow)
+    private fun export() {
+        launchMain {
+            runWithProgress(
+                "export language filter",
+                doInBackground = {
+                    val data = JsonObject().apply {
+                        for (item in languageList) {
+                            put(item.code, item.allow)
+                        }
+                    }
+                        .toString()
+                        .encodeUTF8()
+
+                    val cache_dir = cacheDir
+                    cache_dir.mkdir()
+
+                    val file = File(
+                        cache_dir,
+                        "SubwayTooter-language-filter.${Process.myPid()}.${Process.myTid()}.json"
+                    )
+                    FileOutputStream(file).use {
+                        it.write(data)
+                    }
+                    file
+                },
+                afterProc = {
+                    val uri = FileProvider.getUriForFile(
+                        this@ActLanguageFilter,
+                        App1.FILE_PROVIDER_AUTHORITY,
+                        it
+                    )
+                    val intent = Intent(Intent.ACTION_SEND)
+                    intent.type = contentResolver.getType(uri)
+                    intent.putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter language filter data")
+                    intent.putExtra(Intent.EXTRA_STREAM, uri)
+
+                    intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+                    arExport.launch(intent)
                 }
-            }
-                .toString()
-                .encodeUTF8()
-
-            val cache_dir = cacheDir
-            cache_dir.mkdir()
-
-            val file = File(
-                cache_dir,
-                "SubwayTooter-language-filter.${Process.myPid()}.${Process.myTid()}.json"
             )
-            FileOutputStream(file).use {
-                it.write(data)
-            }
-            file
-        },
-        {
-            val uri = FileProvider.getUriForFile(
-                this@ActLanguageFilter,
-                App1.FILE_PROVIDER_AUTHORITY,
-                it
-            )
-            val intent = Intent(Intent.ACTION_SEND)
-            intent.type = contentResolver.getType(uri)
-            intent.putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter language filter data")
-            intent.putExtra(Intent.EXTRA_STREAM, uri)
-
-            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-            arExport.launch(intent)
         }
-    )
+    }
 
     private fun import() {
-        try {
-            val intent = intentOpenDocument("*/*")
-
-
-
-            arImport.launch(intent)
-        } catch (ex: Throwable) {
-            showToast(ex, "import failed.")
-        }
+        arImport.launch(intentOpenDocument("*/*"))
     }
 
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    private fun import2(uri: Uri) = runWithProgress(
-        "import language filter",
-        {
-            log.d("import2 type=${contentResolver.getType(uri)}")
-            val source = contentResolver.openInputStream(uri)
-            if (source == null) {
-                showToast(true, "openInputStream failed.")
-                null
-            } else {
-                source.use { inStream ->
-                    val bao = ByteArrayOutputStream()
-                    IOUtils.copy(inStream, bao)
-                    bao.toByteArray().decodeUTF8().decodeJsonObject()
-                }
-            }
-        },
-        { if (it != null) load(it) }
-    )
+    private fun import2(uri: Uri) {
+        launchMain {
+            runWithProgress(
+                "import language filter",
+                doInBackground = {
+                    log.d("import2 type=${contentResolver.getType(uri)}")
+                    val source = contentResolver.openInputStream(uri)
+                    if (source == null) {
+                        showToast(true, "openInputStream failed.")
+                        null
+                    } else {
+                        source.use { inStream ->
+                            val bao = ByteArrayOutputStream()
+                            IOUtils.copy(inStream, bao)
+                            bao.toByteArray().decodeUTF8().decodeJsonObject()
+                        }
+                    }
+                },
+                afterProc = { if (it != null) load(it) }
+            )
+        }
+    }
 }

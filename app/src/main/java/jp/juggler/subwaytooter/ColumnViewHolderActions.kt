@@ -1,13 +1,15 @@
 package jp.juggler.subwaytooter
 
-import android.app.Activity
 import android.view.View
 import android.widget.CompoundButton
-import jp.juggler.subwaytooter.action.Action_Account
-import jp.juggler.subwaytooter.action.Action_List
-import jp.juggler.subwaytooter.action.Action_Notification
+import jp.juggler.subwaytooter.action.listCreate
+import jp.juggler.subwaytooter.action.notificationDeleteAll
+import jp.juggler.subwaytooter.action.accountResendConfirmMail
 import jp.juggler.subwaytooter.api.entity.TootAnnouncement
-import jp.juggler.util.*
+import jp.juggler.util.hideKeyboard
+import jp.juggler.util.isCheckedNoAnime
+import jp.juggler.util.showToast
+import jp.juggler.util.withCaption
 import java.util.regex.Pattern
 
 fun ColumnViewHolder.onListListUpdated() {
@@ -225,11 +227,8 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
             }
         }
 
-        btnDeleteNotification -> Action_Notification.deleteAll(
-            activity,
-            column.access_info,
-            false
-        )
+        btnDeleteNotification ->
+            activity.notificationDeleteAll(column.access_info)
 
         btnColor ->
             activity.app_state.columnIndex(column)?.let { colIdx ->
@@ -254,7 +253,7 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
                 activity.showToast(true, R.string.list_name_empty)
                 return
             }
-            Action_List.create(activity, column.access_info, tv, null)
+            activity.listCreate(column.access_info, tv, null)
         }
 
         llRefreshError -> {
@@ -288,7 +287,7 @@ fun ColumnViewHolder.onClickImpl(v: View?) {
         }
 
         btnConfirmMail -> {
-            Action_Account.resendConfirmMail(activity, column.access_info)
+            activity.accountResendConfirmMail(column.access_info)
         }
 
         btnEmojiAdd -> {

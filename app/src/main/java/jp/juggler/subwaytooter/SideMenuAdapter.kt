@@ -19,11 +19,9 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import jp.juggler.subwaytooter.action.Action_Account
-import jp.juggler.subwaytooter.action.Action_App
-import jp.juggler.subwaytooter.action.Action_Instance
+import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.dialog.AccountPicker
+import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.subwaytooter.util.openBrowser
@@ -61,6 +59,71 @@ class SideMenuAdapter(
                 }
             }
 
+        // 文字列を組み立ててhandler経由でViewに設定する
+        // メインスレッドでもそれ以外でも動作する
+        fun afterGet(appContext: Context, handler: Handler, currentVersion: String) {
+
+            versionRow = SpannableStringBuilder().apply {
+                append(
+                    appContext.getString(
+                        R.string.app_name_with_version,
+                        appContext.getString(R.string.app_name),
+                        currentVersion
+                    )
+                )
+                val newRelease = releaseInfo?.jsonObject(
+                    if (Pref.bpCheckBetaVersion(App1.pref)) "beta" else "stable"
+                )
+
+                val newVersion =
+                    (newRelease?.string("name")?.notEmpty() ?: newRelease?.string("tag_name"))
+                        ?.replace("""(v|version)\s*""".toRegex(RegexOption.IGNORE_CASE), "")
+                        ?.trim()
+
+                if (newVersion == null || newVersion.isEmpty() || VersionString(currentVersion) >= VersionString(
+                        newVersion
+                    )
+                ) {
+                    val url = "https://github.com/tateisu/SubwayTooter/releases"
+                    append("\n")
+                    val start = length
+                    append(appContext.getString(R.string.release_note))
+                    setSpan(
+                        clickableSpan(url),
+                        start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                } else {
+                    append("\n")
+                    var start = length
+                    append(
+                        appContext.getString(
+                            R.string.new_version_available,
+                            newVersion
+                        )
+                    )
+                    setSpan(
+                        ForegroundColorSpan(
+                            appContext.attrColor(R.attr.colorRegexFilterError)
+                        ),
+                        start, length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+
+                    newRelease?.string("html_url")?.let { url ->
+                        append("\n")
+                        start = length
+                        append(appContext.getString(R.string.release_note_with_assets))
+                        setSpan(
+                            clickableSpan(url),
+                            start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                }
+            }
+            handler.post { lastVersionView?.get()?.text = versionRow }
+        }
+
+        // メインスレッドから呼ばれる
         private fun checkVersion(appContext: Context, handler: Handler) {
             val currentVersion = try {
                 appContext.packageManager.getPackageInfo(appContext.packageName, 0).versionName
@@ -78,81 +141,17 @@ class SideMenuAdapter(
                 )
             }
 
-            fun afterGet() {
-
-                versionRow = SpannableStringBuilder().apply {
-
-                    append(
-                        appContext.getString(
-                            R.string.app_name_with_version,
-                            appContext.getString(R.string.app_name),
-                            currentVersion
-                        )
-                    )
-                    val newRelease = releaseInfo?.jsonObject(
-                        if (Pref.bpCheckBetaVersion(App1.pref)) "beta" else "stable"
-                    )
-
-                    val newVersion =
-                        (newRelease?.string("name")?.notEmpty() ?: newRelease?.string("tag_name"))
-                            ?.replace("""(v|version)\s*""".toRegex(RegexOption.IGNORE_CASE), "")
-                            ?.trim()
-
-                    if (newVersion == null || newVersion.isEmpty() || VersionString(currentVersion) >= VersionString(
-                            newVersion
-                        )
-                    ) {
-                        val url = "https://github.com/tateisu/SubwayTooter/releases"
-                        append("\n")
-                        val start = length
-                        append(appContext.getString(R.string.release_note))
-                        setSpan(
-                            clickableSpan(url),
-                            start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                    } else {
-
-                        append("\n")
-                        var start = length
-                        append(
-                            appContext.getString(
-                                R.string.new_version_available,
-                                newVersion
-                            )
-                        )
-                        setSpan(
-                            ForegroundColorSpan(
-                                appContext.attrColor(R.attr.colorRegexFilterError)
-                            ),
-                            start, length,
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-
-                        newRelease?.string("html_url")?.let { url ->
-                            append("\n")
-                            start = length
-                            append(appContext.getString(R.string.release_note_with_assets))
-                            setSpan(
-                                clickableSpan(url),
-                                start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                            )
-                        }
-                    }
-                }
-                handler.post { lastVersionView?.get()?.text = versionRow }
-            }
-
             val lastUpdated = releaseInfo?.string("updated_at")?.let { TootStatus.parseTime(it) }
             if (lastUpdated != null && System.currentTimeMillis() - lastUpdated < 86400000L) {
-                afterGet()
+                afterGet(appContext, handler, currentVersion)
             } else {
-                EndlessScope.launch(Dispatchers.IO) {
+                launchIO {
                     val json =
                         App1.getHttpCached("https://mastodon-msg.juggler.jp/appVersion/appVersion.json")
                             ?.decodeUTF8()?.decodeJsonObject()
                     if (json != null) {
                         releaseInfo = json
-                        afterGet()
+                        afterGet(appContext, handler, currentVersion)
                     }
                 }
             }
@@ -195,18 +194,18 @@ class SideMenuAdapter(
         Item(title = R.string.account),
 
         Item(title = R.string.account_add, icon = R.drawable.ic_account_add) {
-            Action_Account.add(this)
+            accountAdd()
         },
 
         Item(icon = R.drawable.ic_settings, title = R.string.account_setting) {
-            Action_Account.setting(this)
+            accountOpenSetting()
         },
 
         Item(),
         Item(title = R.string.column),
 
         Item(icon = R.drawable.ic_list_numbered, title = R.string.column_list) {
-            Action_App.columnList(this)
+            openColumnList()
         },
 
         Item(icon = R.drawable.ic_close, title = R.string.close_all_columns) {
@@ -214,117 +213,110 @@ class SideMenuAdapter(
         },
 
         Item(icon = R.drawable.ic_home, title = R.string.home) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.HOME)
+            timeline(defaultInsertPosition, ColumnType.HOME)
         },
 
         Item(icon = R.drawable.ic_announcement, title = R.string.notifications) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.NOTIFICATIONS)
+            timeline(defaultInsertPosition, ColumnType.NOTIFICATIONS)
         },
 
         Item(icon = R.drawable.ic_mail, title = R.string.direct_messages) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.DIRECT_MESSAGES)
+            timeline(defaultInsertPosition, ColumnType.DIRECT_MESSAGES)
         },
 
         Item(icon = R.drawable.ic_share, title = R.string.misskey_hybrid_timeline_long) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.MISSKEY_HYBRID)
+            timeline(defaultInsertPosition, ColumnType.MISSKEY_HYBRID)
         },
 
         Item(icon = R.drawable.ic_run, title = R.string.local_timeline) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.LOCAL)
+            timeline(defaultInsertPosition, ColumnType.LOCAL)
         },
 
         Item(icon = R.drawable.ic_bike, title = R.string.federate_timeline) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.FEDERATE)
+            timeline(defaultInsertPosition, ColumnType.FEDERATE)
         },
 
         Item(icon = R.drawable.ic_list_list, title = R.string.lists) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.LIST_LIST)
+            timeline(defaultInsertPosition, ColumnType.LIST_LIST)
         },
 
         Item(icon = R.drawable.ic_satellite, title = R.string.antenna_list_misskey) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.MISSKEY_ANTENNA_LIST)
+            timeline(defaultInsertPosition, ColumnType.MISSKEY_ANTENNA_LIST)
         },
 
         Item(icon = R.drawable.ic_search, title = R.string.search) {
-            Action_Account.timeline(
-                this,
-                defaultInsertPosition,
-                ColumnType.SEARCH,
-                args = arrayOf("", false)
-            )
+            timeline(defaultInsertPosition, ColumnType.SEARCH, args = arrayOf("", false))
         },
 
         Item(icon = R.drawable.ic_hashtag, title = R.string.trend_tag) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.TREND_TAG)
+            timeline(defaultInsertPosition, ColumnType.TREND_TAG)
         },
 
         Item(icon = R.drawable.ic_star, title = R.string.favourites) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.FAVOURITES)
+            timeline(defaultInsertPosition, ColumnType.FAVOURITES)
         },
 
         Item(icon = R.drawable.ic_bookmark, title = R.string.bookmarks) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.BOOKMARKS)
+            timeline(defaultInsertPosition, ColumnType.BOOKMARKS)
         },
         Item(icon = R.drawable.ic_face, title = R.string.reactioned_posts) {
-            Action_Account.listAccountsCanSeeMyReactions(this) { list ->
-                if (list.isEmpty()) {
-                    showToast(false, R.string.not_available_for_current_accounts)
-                    return@listAccountsCanSeeMyReactions
-                }
-
-                val columnType = ColumnType.REACTIONS
-                AccountPicker.pick(
-                    this,
-                    accountListArg = list,
-                    bAuto = true,
-                    message = getString(
-                        R.string.account_picker_add_timeline_of,
-                        columnType.name1(this)
-                    )
-                ) { ai ->
-                    addColumn(defaultInsertPosition, ai, columnType)
+            launchMain {
+                accountListCanSeeMyReactions()?.let { list ->
+                    if (list.isEmpty()) {
+                        showToast(false, R.string.not_available_for_current_accounts)
+                    } else {
+                        val columnType = ColumnType.REACTIONS
+                        pickAccount(
+                            accountListArg = list.toMutableList(),
+                            bAuto = true,
+                            message = getString(
+                                R.string.account_picker_add_timeline_of,
+                                columnType.name1(applicationContext)
+                            )
+                        )?.let { addColumn(defaultInsertPosition, it, columnType) }
+                    }
                 }
             }
         },
 
         Item(icon = R.drawable.ic_account_box, title = R.string.profile) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.PROFILE)
+            timeline(defaultInsertPosition, ColumnType.PROFILE)
         },
 
         Item(icon = R.drawable.ic_follow_wait, title = R.string.follow_requests) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.FOLLOW_REQUESTS)
+            timeline(defaultInsertPosition, ColumnType.FOLLOW_REQUESTS)
         },
 
         Item(icon = R.drawable.ic_follow_plus, title = R.string.follow_suggestion) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.FOLLOW_SUGGESTION)
+            timeline(defaultInsertPosition, ColumnType.FOLLOW_SUGGESTION)
         },
 
         Item(icon = R.drawable.ic_follow_plus, title = R.string.endorse_set) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.ENDORSEMENT)
+            timeline(defaultInsertPosition, ColumnType.ENDORSEMENT)
         },
 
         Item(icon = R.drawable.ic_follow_plus, title = R.string.profile_directory) {
-            Action_Instance.profileDirectoryFromSideMenu(this)
+            serverProfileDirectoryFromSideMenu()
         },
 
         Item(icon = R.drawable.ic_volume_off, title = R.string.muted_users) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.MUTES)
+            timeline(defaultInsertPosition, ColumnType.MUTES)
         },
 
         Item(icon = R.drawable.ic_block, title = R.string.blocked_users) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.BLOCKS)
+            timeline(defaultInsertPosition, ColumnType.BLOCKS)
         },
 
         Item(icon = R.drawable.ic_volume_off, title = R.string.keyword_filters) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.KEYWORD_FILTER)
+            timeline(defaultInsertPosition, ColumnType.KEYWORD_FILTER)
         },
 
         Item(icon = R.drawable.ic_cloud_off, title = R.string.blocked_domains) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.DOMAIN_BLOCKS)
+            timeline(defaultInsertPosition, ColumnType.DOMAIN_BLOCKS)
         },
 
         Item(icon = R.drawable.ic_timer, title = R.string.scheduled_status_list) {
-            Action_Account.timeline(this, defaultInsertPosition, ColumnType.SCHEDULED_STATUS)
+            timeline(defaultInsertPosition, ColumnType.SCHEDULED_STATUS)
         },
 
         Item(),

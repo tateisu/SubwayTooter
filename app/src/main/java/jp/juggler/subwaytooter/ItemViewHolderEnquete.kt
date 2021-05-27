@@ -16,10 +16,7 @@ import jp.juggler.subwaytooter.drawable.PollPlotDrawable
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.view.EnqueteTimerView
-import jp.juggler.util.isEnabledAlpha
-import jp.juggler.util.jsonObject
-import jp.juggler.util.showToast
-import jp.juggler.util.toPostRequestBuilder
+import jp.juggler.util.*
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.padding
 
@@ -315,37 +312,36 @@ fun ItemViewHolder.onClickEnqueteChoice(
         }
     }
 
-    TootTaskRunner(context).run(accessInfo, object : TootTask {
-        override suspend fun background(client: TootApiClient) = when (enquete.pollType) {
-            TootPollsType.Misskey -> client.request(
-                "/api/notes/polls/vote",
-                accessInfo.putMisskeyApiToken().apply {
-                    put("noteId", enquete.status_id.toString())
-                    put("choice", idx)
+    launchMain {
+        activity.runApiTask(accessInfo) { client ->
+            when (enquete.pollType) {
+                TootPollsType.Misskey -> client.request(
+                    "/api/notes/polls/vote",
+                    accessInfo.putMisskeyApiToken().apply {
+                        put("noteId", enquete.status_id.toString())
+                        put("choice", idx)
 
-                }.toPostRequestBuilder()
-            )
-            TootPollsType.Mastodon -> client.request(
-                "/api/v1/polls/${enquete.pollId}/votes",
-                jsonObject {
-                    put("choices", jp.juggler.util.jsonArray { add(idx) })
-                }.toPostRequestBuilder()
-            )
-            TootPollsType.FriendsNico -> client.request(
-                "/api/v1/votes/${enquete.status_id}",
-                jsonObject {
-                    put("item_index", idx.toString())
-                }.toPostRequestBuilder()
-            )
-            TootPollsType.Notestock -> TootApiResult("can't vote on pseudo account column.")
-        }
-
-        override suspend fun handleResult(result: TootApiResult?) {
-            result ?: return  // cancelled.
-
-            val data = result.jsonObject
-            if (data != null) {
-                when (enquete.pollType) {
+                    }.toPostRequestBuilder()
+                )
+                TootPollsType.Mastodon -> client.request(
+                    "/api/v1/polls/${enquete.pollId}/votes",
+                    jsonObject {
+                        put("choices", jp.juggler.util.jsonArray { add(idx) })
+                    }.toPostRequestBuilder()
+                )
+                TootPollsType.FriendsNico -> client.request(
+                    "/api/v1/votes/${enquete.status_id}",
+                    jsonObject {
+                        put("item_index", idx.toString())
+                    }.toPostRequestBuilder()
+                )
+                TootPollsType.Notestock ->
+                    TootApiResult("can't vote on pseudo account column.")
+            }
+        }?.let { result ->
+            when (val data = result.jsonObject) {
+                null -> activity.showToast(true, result.error)
+                else -> when (enquete.pollType) {
                     TootPollsType.Misskey -> if (enquete.increaseVote(activity, idx, true)) {
                         context.showToast(false, R.string.enquete_voted)
 
@@ -384,12 +380,9 @@ fun ItemViewHolder.onClickEnqueteChoice(
                     }
                     TootPollsType.Notestock -> error("will not happen")
                 }
-            } else {
-                context.showToast(true, result.error)
             }
-
         }
-    })
+    }
 }
 
 fun ItemViewHolder.sendMultiple(
@@ -409,12 +402,10 @@ fun ItemViewHolder.sendMultiple(
         return
     }
 
-    TootTaskRunner(context).run(accessInfo, object : TootTask {
-
+    launchMain {
         var newPoll: TootPolls? = null
-
-        override suspend fun background(client: TootApiClient): TootApiResult? {
-            return client.request(
+        activity.runApiTask (accessInfo){ client->
+            client.request(
                 "/api/v1/polls/${enquete.pollId}/votes",
                 jsonObject {
                     put("choices", jp.juggler.util.jsonArray {
@@ -436,19 +427,17 @@ fun ItemViewHolder.sendMultiple(
                     if (newPoll == null) result.setError("response parse error")
                 }
             }
-        }
+        }?.let{ result->
 
-        override suspend fun handleResult(result: TootApiResult?) {
-            result ?: return  // cancelled.
 
-            val newPoll = this.newPoll
-            if (newPoll != null) {
-                status.enquete = newPoll
-                // 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
-                list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
-            } else if (result.error != null) {
-                context.showToast(true, result.error)
+            when ( val data = newPoll) {
+                null -> result.error?.let{ context.showToast(true, it)}
+                else -> {
+                    status.enquete = data
+                    // 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
+                    list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
+                }
             }
         }
-    })
+    }
 }

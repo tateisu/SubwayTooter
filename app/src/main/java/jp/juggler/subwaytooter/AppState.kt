@@ -381,7 +381,7 @@ class AppState(
             context.showToast(false, R.string.text_to_speech_initializing)
             log.d("initializing TextToSpeech…")
 
-            EndlessScope.launch(Dispatchers.IO) {
+            launchIO{
 
                 var tmp_tts: TextToSpeech? = null
 

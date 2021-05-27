@@ -7,7 +7,6 @@ import android.os.SystemClock
 import jp.juggler.subwaytooter.App1
 import jp.juggler.util.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
@@ -32,17 +31,17 @@ object OpenSticker {
     private fun String.parseColor(): Int? {
         reColor6.matcher(this).findOrNull()?.let {
             return Color.rgb(
-				parseHex(it.groupEx(1)),
-				parseHex(it.groupEx(2)),
-				parseHex(it.groupEx(3))
-			)
+                parseHex(it.groupEx(1)),
+                parseHex(it.groupEx(2)),
+                parseHex(it.groupEx(3))
+            )
         }
         reColor3.matcher(this).findOrNull()?.let {
             return Color.rgb(
-				parseHex(it.groupEx(1)) * 0x11,
-				parseHex(it.groupEx(2)) * 0x11,
-				parseHex(it.groupEx(3)) * 0x11
-			)
+                parseHex(it.groupEx(1)) * 0x11,
+                parseHex(it.groupEx(2)) * 0x11,
+                parseHex(it.groupEx(3)) * 0x11
+            )
         }
         if (isNotEmpty()) log.e("parseColor: can't parse $this")
         return null
@@ -57,16 +56,16 @@ object OpenSticker {
         }
 
         constructor(src: List<Int>) : this(
-			IntArray(src.size + 1) {
-				if (it == 0) Color.TRANSPARENT else src[it - 1]
-			}
-		)
+            IntArray(src.size + 1) {
+                if (it == 0) Color.TRANSPARENT else src[it - 1]
+            }
+        )
 
         constructor(src: Int) : this(
-			IntArray(2) {
-				if (it == 0) Color.TRANSPARENT else src
-			}
-		)
+            IntArray(2) {
+                if (it == 0) Color.TRANSPARENT else src
+            }
+        )
 
         val key = array.joinToString(",") { it.toString() }
 
@@ -86,9 +85,9 @@ object OpenSticker {
     }
 
     class Default(
-		val fontColor: Int,
-		val bgColor: ColorBg
-	)
+        val fontColor: Int,
+        val bgColor: ColorBg
+    )
 
     private val colorBgDefault = ColorBg("#27c".toColor())
 
@@ -175,21 +174,21 @@ object OpenSticker {
         if (list.isNotEmpty()) lastList = list
     }
 
-	private val requestQueue = Channel<RequestItem>(capacity = Channel.UNLIMITED)
+    private val requestQueue = Channel<RequestItem>(capacity = Channel.UNLIMITED)
 
-	// キューにリクエストを送った後、それが消化されるまで待つ
-	suspend fun loadAndWait() =
-		RequestItem()
-			.also { requestQueue.send(it) }
-			.result.receive()
+    // キューにリクエストを送った後、それが消化されるまで待つ
+    suspend fun loadAndWait() =
+        RequestItem()
+            .also { requestQueue.send(it) }
+            .result.receive()
 
-	init {
-		// リクエストを処理するコルーチン。プロセスが止まるまでキャンセルされない
-        EndlessScope.launch(Dispatchers.Default) {
+    init {
+        // リクエストを処理するコルーチン。プロセスが止まるまでキャンセルされない
+        launchDefault {
             while (true) {
                 val item = requestQueue.receive()
-				runCatching{loadOne()}
-					.onFailure { log.e(it, "load failed.") }
+                runCatching { loadOne() }
+                    .onFailure { log.e(it, "load failed.") }
                 item.result.send(Unit)
             }
         }

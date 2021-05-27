@@ -3,19 +3,18 @@ package jp.juggler.subwaytooter.streaming
 import jp.juggler.subwaytooter.AppState
 import jp.juggler.subwaytooter.Column
 import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.api.TootApiCallback
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.entity.Acct
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import jp.juggler.util.LogCategory
+import jp.juggler.util.launchDefault
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.collections.HashMap
 import kotlin.collections.set
 
 
@@ -85,7 +84,7 @@ class StreamManager(val appState: AppState) {
             }
         }
 
-        if( newMap.size != acctGroups.size){
+        if (newMap.size != acctGroups.size) {
             log.d("updateConnection: acctGroups.size changed. ${acctGroups.size} => ${newMap.size}")
         }
 
@@ -101,7 +100,7 @@ class StreamManager(val appState: AppState) {
         // 追加.変更されたサーバをマージする
         newMap.entries.forEach {
             when (val current = acctGroups[it.key]) {
-                null -> acctGroups[it.key] = it.value.apply{ initialize() }
+                null -> acctGroups[it.key] = it.value.apply { initialize() }
                 else -> current.merge(it.value)
             }
         }
@@ -129,7 +128,7 @@ class StreamManager(val appState: AppState) {
     //////////////////////////////////////////////////
     // methods
 
-    fun enqueue(block: suspend () -> Unit) = EndlessScope.launch(Dispatchers.Default) { queue.send(block) }
+    fun enqueue(block: suspend () -> Unit) = launchDefault { queue.send(block) }
 
     // UIスレッドから呼ばれる
     fun updateStreamingColumns() {
@@ -151,18 +150,18 @@ class StreamManager(val appState: AppState) {
     // カラムヘッダの表示更新から、インジケータを取得するために呼ばれる
     // UIスレッドから呼ばれる
     // returns StreamStatus.Missing if account is NA or all columns are non-streaming.
-    fun getStreamStatus(column: Column) :StreamStatus=
+    fun getStreamStatus(column: Column): StreamStatus =
         acctGroups[column.access_info.acct]?.getStreamStatus(column.internalId)
             ?: StreamStatus.Missing
 
     // returns null if account is NA or all columns are non-streaming.
-    fun getConnection(column: Column) :StreamConnection? =
+    fun getConnection(column: Column): StreamConnection? =
         acctGroups[column.access_info.acct]?.getConnection(column.internalId)
 
     ////////////////////////////////////////////////////////////////
 
     init {
-        EndlessScope.launch(Dispatchers.Default) {
+        launchDefault {
             while (true) {
                 try {
                     queue.receive().invoke()

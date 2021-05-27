@@ -254,10 +254,12 @@ fun Column.onActivityStart() {
         // リフレッシュしてからストリーミング開始
         Column.log.d("onStart: start auto refresh.")
         startRefresh(bSilent = true, bBottom = false)
+
     } else if (isSearchColumn) {
         // 検索カラムはリフレッシュもストリーミングもないが、表示開始のタイミングでリストの再描画を行いたい
         fireShowContent(reason = "Column onStart isSearchColumn", reset = true)
-    } else if (canStartStreaming() && streamSpec != null) {
+
+    } else if (canStreamingState() && canStreamingType()) {
         // ギャップつきでストリーミング開始
         this.bPutGap = true
         fireShowColumnStatus()

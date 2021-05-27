@@ -6,12 +6,13 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.streaming.StreamManager
 import jp.juggler.subwaytooter.streaming.StreamStatus
+import jp.juggler.subwaytooter.streaming.streamSpec
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.runOnMainLooper
 import kotlin.math.max
 
 // 別スレッドから呼ばれるが大丈夫か
-fun Column.canStartStreaming() = when {
+fun Column.canStreamingState() = when {
     // 未初期化なら何もしない
     !bFirstInitialized -> {
         if (StreamManager.traceDelivery) Column.log.v("canStartStreaming: column is not initialized.")
@@ -27,7 +28,23 @@ fun Column.canStartStreaming() = when {
     else -> true
 }
 
-fun Column.canHandleStreamingMessage() = !is_dispose.get() && canStartStreaming()
+fun Column.canStreamingTypeSub():Boolean =
+    if(access_info.isMisskey)
+        type.canStreamingMisskey(this)
+    else
+        type.canStreamingMastodon(this)
+
+fun Column.canStreamingType() = when {
+    access_info.isNA -> false
+    access_info.isPseudo -> isPublicStream && canStreamingTypeSub()
+    else -> canStreamingTypeSub()
+}
+
+fun Column.canSpeech() =
+    canStreamingType() && !isNotificationColumn
+
+fun Column.canHandleStreamingMessage() =
+    !is_dispose.get() && canStreamingState()
 
 
 //

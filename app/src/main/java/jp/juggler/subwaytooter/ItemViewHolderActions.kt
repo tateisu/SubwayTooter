@@ -21,7 +21,7 @@ val defaultBoostedAction: ItemViewHolder.() -> Unit = {
         if (access_info.isPseudo) {
             DlgContextMenu(activity, column, whoRef, null, notification, tvContent).show()
         } else {
-            Action_User.profileLocal(activity, pos, access_info, whoRef.get())
+            activity.userProfileLocal(pos, access_info, whoRef.get())
         }
     }
 }
@@ -29,19 +29,13 @@ val defaultBoostedAction: ItemViewHolder.() -> Unit = {
 fun ItemViewHolder.openConversationSummary() {
     val cs = item as? TootConversationSummary ?: return
 
-    if (cs.unread) {
-        cs.unread = false
-        // 表示の更新
+    if( activity.conversationUnreadClear(access_info, cs) ){
         list_adapter.notifyChange(
             reason = "ConversationSummary reset unread",
             reset = true
         )
-        // 未読フラグのクリアをサーバに送る
-        Action_Conversation.clearConversationUnread(activity, access_info, cs)
     }
-
-    Action_Conversation.conversation(
-        activity,
+    activity.conversation(
         activity.nextPosition(column),
         access_info,
         cs.last_status
@@ -54,7 +48,7 @@ fun ItemViewHolder.openFilterMenu(item: TootFilter) {
         ActKeywordFilter.open(activity, access_info, item.id)
     }
     ad.addAction(activity.getString(R.string.delete)) {
-        Action_Filter.delete(activity, access_info, item)
+        activity.filterDelete( access_info, item)
     }
     ad.show(activity, activity.getString(R.string.filter_of, item.phrase))
 }
@@ -137,8 +131,8 @@ fun ItemViewHolder.onClickImpl(v: View?) {
 
                 // 2018/12/26 疑似アカウントでもプロフカラムを表示する https://github.com/tootsuite/mastodon/commit/108b2139cd87321f6c0aec63ef93db85ce30bfec
 
-                else -> Action_User.profileLocal(
-                    activity,
+                else -> activity.userProfileLocal(
+
                     pos,
                     access_info,
                     whoRef.get()
@@ -152,17 +146,17 @@ fun ItemViewHolder.onClickImpl(v: View?) {
             val s = status_reply
 
             when {
-                s != null -> Action_Conversation.conversation(activity, pos, access_info, s)
+                s != null -> activity.conversation(pos, access_info, s)
 
                 // tootsearchは返信元のIDを取得するのにひと手間必要
                 column.type == ColumnType.SEARCH_TS ||
                     column.type == ColumnType.SEARCH_NOTESTOCK ->
-                    Action_Reply.showReplyTootsearch(activity, pos, status_showing)
+                    activity.conversationFromTootsearch(pos, status_showing)
 
                 else -> {
                     val id = status_showing?.in_reply_to_id
                     if (id != null) {
-                        Action_Conversation.conversationLocal(activity, pos, access_info, id)
+                        activity.conversationLocal(pos, access_info, id)
                     }
                 }
             }
@@ -172,7 +166,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
             if (access_info.isPseudo) {
                 DlgContextMenu(activity, column, whoRef, null, notification, tvContent).show()
             } else {
-                Action_User.profileLocal(activity, pos, access_info, whoRef.get())
+                activity.userProfileLocal(pos, access_info, whoRef.get())
             }
         }
 
@@ -215,8 +209,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                     )
                     .setNegativeButton(R.string.cancel, null)
                     .setPositiveButton(R.string.ok) { _, _ ->
-                        Action_Instance.blockDomain(
-                            activity,
+                        activity.domainBlock(
                             access_info,
                             item.domain,
                             bBlock = false
@@ -226,8 +219,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
             }
 
             is TootTag -> {
-                Action_HashTag.timeline(
-                    activity,
+                activity.tagTimeline(
                     activity.nextPosition(column),
                     access_info,
                     item.name // #を含まない
@@ -237,10 +229,10 @@ fun ItemViewHolder.onClickImpl(v: View?) {
             is TootScheduled -> {
                 ActionsDialog()
                     .addAction(activity.getString(R.string.edit)) {
-                        Action_Toot.editScheduledPost(activity, access_info, item)
+                        activity.scheduledPostEdit(access_info, item)
                     }
                     .addAction(activity.getString(R.string.delete)) {
-                        Action_Toot.deleteScheduledPost(activity, access_info, item) {
+                        activity.scheduledPostDelete(access_info, item) {
                             column.onScheduleDeleted(item)
                             activity.showToast(false, R.string.scheduled_post_deleted)
                         }
@@ -272,10 +264,10 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                         )
                     }
                     .addAction(activity.getString(R.string.rename)) {
-                        Action_List.rename(activity, access_info, item)
+                        activity.listRename( access_info, item)
                     }
                     .addAction(activity.getString(R.string.delete)) {
-                        Action_List.delete(activity, access_info, item)
+                        activity.listDelete( access_info, item)
                     }
                     .show(activity, item.title)
             }
@@ -294,7 +286,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                     AcctColor.getNickname(access_info, who)
                 )
             ) {
-                Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, true)
+                activity.followRequestAuthorize(access_info, whoRef, true)
             }
         }
 
@@ -307,7 +299,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
                     AcctColor.getNickname(access_info, who)
                 )
             ) {
-                Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, false)
+                activity.followRequestAuthorize(access_info, whoRef, false)
             }
         }
 
@@ -318,8 +310,7 @@ fun ItemViewHolder.onClickImpl(v: View?) {
         ivCardImage -> status_showing?.card?.let { card ->
             val originalStatus = card.originalStatus
             if (originalStatus != null) {
-                Action_Conversation.conversation(
-                    activity,
+                activity.conversation(
                     activity.nextPosition(column),
                     access_info,
                     originalStatus
@@ -395,8 +386,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
                 // tootsearchは返信元のIDを取得するのにひと手間必要
                 column.type == ColumnType.SEARCH_TS ||
                     column.type == ColumnType.SEARCH_NOTESTOCK ->
-                    Action_Reply.showReplyTootsearch(
-                        activity,
+                    activity.conversationFromTootsearch(
                         activity.nextPosition(column),
                         status_showing
                     )
@@ -404,8 +394,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
                 else -> {
                     val id = status_showing?.in_reply_to_id
                     if (id != null) {
-                        Action_Conversation.conversationLocal(
-                            activity,
+                        activity.conversationLocal(
                             activity.nextPosition(column),
                             access_info,
                             id
@@ -430,8 +419,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
 
         btnFollow -> {
             follow_account?.let { whoRef ->
-                Action_Follow.followFromAnotherAccount(
-                    activity,
+                activity.followFromAnotherAccount(
                     activity.nextPosition(column),
                     access_info,
                     whoRef.get()
@@ -440,8 +428,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
             return true
         }
 
-        ivCardImage -> Action_Conversation.conversationOtherInstance(
-            activity,
+        ivCardImage -> activity.conversationOtherInstance(
             activity.nextPosition(column),
             status_showing?.card?.originalStatus
         )
@@ -463,8 +450,7 @@ fun ItemViewHolder.onLongClickImpl(v: View?): Boolean {
                     // search_tag は#を含まない
                     val tagEncoded = item.name.encodePercent()
                     val url = "https://${access_info.apiHost.ascii}/tags/$tagEncoded"
-                    Action_HashTag.timelineOtherInstance(
-                        activity = activity,
+                    activity.tagTimelineFromAccount(
                         pos = activity.nextPosition(column),
                         url = url,
                         host = access_info.apiHost,
@@ -490,8 +476,7 @@ fun ItemViewHolder.clickMedia(i: Int) {
             is TootAttachmentMSP -> {
                 // マストドン検索ポータルのデータではmedia_attachmentsが簡略化されている
                 // 会話の流れを表示する
-                Action_Conversation.conversationOtherInstance(
-                    activity,
+                activity.conversationOtherInstance(
                     activity.nextPosition(column),
                     status_showing
                 )

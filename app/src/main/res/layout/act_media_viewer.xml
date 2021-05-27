@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <ScrollView
@@ -83,7 +84,7 @@
 
             android:minWidth="48dp"
             android:src="@drawable/ic_arrow_start"
-            android:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorVectorDrawable" />
 
         <ImageButton
             android:id="@+id/btnNext"
@@ -92,7 +93,7 @@
             android:contentDescription="@string/next"
             android:minWidth="48dp"
             android:src="@drawable/ic_arrow_end"
-            android:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorVectorDrawable" />
 
         <ImageButton
             android:id="@+id/btnDownload"
@@ -101,7 +102,7 @@
             android:contentDescription="@string/download"
             android:minWidth="48dp"
             android:src="@drawable/ic_download"
-            android:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorVectorDrawable" />
 
         <ImageButton
             android:id="@+id/btnMore"
@@ -110,7 +111,7 @@
             android:contentDescription="@string/more"
             android:minWidth="48dp"
             android:src="@drawable/ic_more"
-            android:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorVectorDrawable" />
 
 
     </LinearLayout>

@@ -28,11 +28,12 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-//    kotlinOptions {
-//        freeCompilerArgs += [
-//                "-Xopt-in=kotlin.ExperimentalStdlibApi",
-//        ]
-//    }
+    kotlinOptions {
+        freeCompilerArgs += [
+                "-Xopt-in=kotlin.ExperimentalStdlibApi",
+                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+        ]
+    }
 
     buildTypes {
         release {

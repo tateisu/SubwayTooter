@@ -108,7 +108,7 @@ internal class DlgContextMenu(
         val btnBoostAnotherAccount: View = viewRoot.findViewById(R.id.btnBoostAnotherAccount)
         val btnReactionAnotherAccount: View = viewRoot.findViewById(R.id.btnReactionAnotherAccount)
         val btnReplyAnotherAccount: View = viewRoot.findViewById(R.id.btnReplyAnotherAccount)
-        val btnQuoteToot: View = viewRoot.findViewById(R.id.btnQuoteToot)
+        val btnQuoteAnotherAccount: View = viewRoot.findViewById(R.id.btnQuoteAnotherAccount)
         val btnQuoteTootBT: View = viewRoot.findViewById(R.id.btnQuoteTootBT)
         val btnDelete: View = viewRoot.findViewById(R.id.btnDelete)
         val btnRedraft: View = viewRoot.findViewById(R.id.btnRedraft)
@@ -185,7 +185,7 @@ internal class DlgContextMenu(
             btnBoostAnotherAccount,
             btnReactionAnotherAccount,
             btnReplyAnotherAccount,
-            btnQuoteToot,
+            btnQuoteAnotherAccount,
             btnQuoteTootBT,
             btnReportStatus,
             btnReportUser,
@@ -245,7 +245,9 @@ internal class DlgContextMenu(
             btnProfile,
             btnMute,
             btnBlock,
-            btnSendMessage
+            btnSendMessage,
+            btnQuoteAnotherAccount,
+            btnQuoteTootBT,
         ).forEach {
             it.setOnLongClickListener(this)
         }
@@ -644,33 +646,36 @@ internal class DlgContextMenu(
             when (v.id) {
 
                 R.id.btnReportStatus -> if (status is TootStatus) {
-                    Action_User.reportForm(activity, access_info, who, status)
+                    activity.userReportForm(access_info, who, status)
                 }
 
                 R.id.btnReportUser ->
-                    Action_User.reportForm(activity, access_info, who)
+                    activity.userReportForm(access_info, who)
 
                 R.id.btnFollow ->
                     when {
 
-                        access_info.isPseudo -> Action_Follow.followFromAnotherAccount(
-                            activity,
+                        access_info.isPseudo -> activity.followFromAnotherAccount(
+
                             pos,
                             access_info,
                             who
                         )
 
-                        access_info.isMisskey && relation.getRequested(who) && !relation.getFollowing(
-                            who
-                        ) -> Action_Follow.deleteFollowRequest(
-                            activity, pos, access_info, whoRef,
-                            callback = activity.cancel_follow_request_complete_callback
-                        )
+                        access_info.isMisskey &&
+                            relation.getRequested(who) &&
+                            !relation.getFollowing(who) ->
+                            activity.followRequestDelete(
+                                pos, access_info, whoRef,
+                                callback = activity.cancel_follow_request_complete_callback
+                            )
 
                         else -> {
                             val bSet = !(relation.getRequested(who) || relation.getFollowing(who))
-                            Action_Follow.follow(
-                                activity, pos, access_info, whoRef,
+                            activity.follow(
+                                pos,
+                                access_info,
+                                whoRef,
                                 bFollow = bSet,
                                 callback = when (bSet) {
                                     true -> activity.follow_complete_callback
@@ -685,14 +690,12 @@ internal class DlgContextMenu(
                 }
 
                 R.id.btnMute -> when {
-                    relation.muting -> Action_User.unmute(
-                        activity,
+                    relation.muting -> activity.userUnmute(
                         access_info,
                         who,
                         access_info
                     )
-                    else -> Action_User.muteConfirm(
-                        activity,
+                    else -> activity.userMuteConfirm(
                         access_info,
                         who,
                         access_info
@@ -700,43 +703,42 @@ internal class DlgContextMenu(
                 }
 
                 R.id.btnBlock -> when {
-                    relation.blocking -> Action_User.block(
-                        activity,
+                    relation.blocking -> activity.userBlock(
                         access_info,
                         who,
                         access_info,
                         false
                     )
-                    else -> Action_User.blockConfirm(activity, access_info, who, access_info)
+                    else -> activity.userBlockConfirm( access_info, who, access_info)
                 }
 
                 R.id.btnProfile ->
-                    Action_User.profileLocal(activity, pos, access_info, who)
+                    activity.userProfileLocal( pos, access_info, who)
 
                 R.id.btnSendMessage ->
-                    Action_User.mention(activity, access_info, who)
+                    activity.mention( access_info, who)
 
                 R.id.btnAccountWebPage -> who.url?.let { url ->
                     activity.openCustomTab(url)
                 }
 
                 R.id.btnFollowRequestOK ->
-                    Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, true)
+                    activity.followRequestAuthorize( access_info, whoRef, true)
 
                 R.id.btnDeleteSuggestion ->
-                    Action_User.deleteSuggestion(activity, access_info, who)
+                    activity.userSuggestionDelete( access_info, who)
 
                 R.id.btnFollowRequestNG ->
-                    Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, false)
+                    activity.followRequestAuthorize( access_info, whoRef, false)
 
                 R.id.btnFollowFromAnotherAccount ->
-                    Action_Follow.followFromAnotherAccount(activity, pos, access_info, who)
+                    activity.followFromAnotherAccount( pos, access_info, who)
 
                 R.id.btnSendMessageFromAnotherAccount ->
-                    Action_User.mentionFromAnotherAccount(activity, access_info, who)
+                    activity.mentionFromAnotherAccount( access_info, who)
 
                 R.id.btnOpenProfileFromAnotherAccount ->
-                    Action_User.profileFromAnotherAccount(activity, pos, access_info, who)
+                    activity.userProfileFromAnotherAccount( pos, access_info, who)
 
                 R.id.btnNickname -> {
                     activity.arNickname.launch(
@@ -776,8 +778,7 @@ internal class DlgContextMenu(
                             )
                             .setNegativeButton(R.string.cancel, null)
                             .setPositiveButton(R.string.ok) { _, _ ->
-                                Action_Instance.blockDomain(
-                                    activity,
+                                activity.domainBlock(
                                     access_info,
                                     whoApDomain,
                                     true
@@ -788,13 +789,13 @@ internal class DlgContextMenu(
 
                 R.id.btnOpenTimeline -> {
                     who.apiHost.valid()?.let {
-                        Action_Instance.timelineLocal(activity, pos, it)
+                        activity.timelineLocal( pos, it)
                     }
                 }
 
                 R.id.btnDomainTimeline -> {
                     who.apiHost.valid()?.let {
-                        Action_Instance.timelineDomain(activity, pos, access_info, it)
+                        activity.timelineDomain( pos, access_info, it)
                     }
                 }
 
@@ -815,14 +816,14 @@ internal class DlgContextMenu(
                         log.trace(ex)
                     }
 
-                    Action_Account.openPost(activity, sv)
+                    activity.openPost(sv)
                 }
 
                 R.id.btnHideBoost ->
-                    Action_User.showBoosts(activity, access_info, who, false)
+                    activity.userSetShowBoosts( access_info, who, false)
 
                 R.id.btnShowBoost ->
-                    Action_User.showBoosts(activity, access_info, who, true)
+                    activity.userSetShowBoosts( access_info, who, true)
 
                 R.id.btnHideFavourite -> {
                     val acct = access_info.getFullAcct(who)
@@ -842,26 +843,25 @@ internal class DlgContextMenu(
                     DlgListMember(activity, who, access_info).show()
 
                 R.id.btnInstanceInformation -> {
-                    Action_Instance.information(activity, pos, getUserApiHost())
+                    activity.serverInformation( pos, getUserApiHost())
                 }
 
                 R.id.btnProfileDirectory -> {
-                    Action_Instance.profileDirectoryFromInstanceInformation(
-                        activity,
+                    activity.serverProfileDirectoryFromInstanceInformation(
+
                         column,
                         getUserApiHost()
                     )
                 }
 
-                R.id.btnEndorse -> Action_Account.endorse(
-                    activity,
+                R.id.btnEndorse -> activity.userEndorsement(
                     access_info,
                     who,
                     !relation.endorsed
                 )
 
-                R.id.btnAroundAccountTL -> Action_Instance.timelinePublicAround(
-                    activity,
+                R.id.btnAroundAccountTL -> activity.timelineAroundByStatusAnotherAccount(
+
                     access_info,
                     pos,
                     who.apiHost,
@@ -869,8 +869,8 @@ internal class DlgContextMenu(
                     ColumnType.ACCOUNT_AROUND, allowPseudo = false
                 )
 
-                R.id.btnAroundLTL -> Action_Instance.timelinePublicAround(
-                    activity,
+                R.id.btnAroundLTL -> activity.timelineAroundByStatusAnotherAccount(
+
                     access_info,
                     pos,
                     who.apiHost,
@@ -878,8 +878,8 @@ internal class DlgContextMenu(
                     ColumnType.LOCAL_AROUND
                 )
 
-                R.id.btnAroundFTL -> Action_Instance.timelinePublicAround(
-                    activity,
+                R.id.btnAroundFTL -> activity.timelineAroundByStatusAnotherAccount(
+
                     access_info,
                     pos,
                     who.apiHost,
@@ -927,8 +927,7 @@ internal class DlgContextMenu(
                         .setTitle(R.string.choose_visibility)
                         .setItems(caption_list) { _, which ->
                             if (which in list.indices) {
-                                Action_Toot.boost(
-                                    activity,
+                                activity.boost(
                                     access_info,
                                     status,
                                     access_info.getFullAcct(status.account),
@@ -958,9 +957,11 @@ internal class DlgContextMenu(
                 }
 
                 R.id.btnPostNotification ->
-                    if (!access_info.isPseudo && access_info.isMastodon && relation.following) {
-                        val toggle = !relation.notifying
-                        Action_User.statusNotification(activity, access_info, who.id, toggle)
+                    if (!access_info.isPseudo &&
+                        access_info.isMastodon &&
+                        relation.following
+                    ) {
+                        activity.userSetStatusNotification( access_info, who.id, enabled=!relation.notifying)
                     }
             }
         }
@@ -974,50 +975,44 @@ internal class DlgContextMenu(
                 activity.launchActText(ActText.createIntent(activity, access_info, status))
             }
 
-            R.id.btnFavouriteAnotherAccount -> Action_Toot.favouriteFromAnotherAccount(
-                activity,
+            R.id.btnFavouriteAnotherAccount -> activity.favouriteFromAnotherAccount(
                 access_info,
                 status
             )
 
-            R.id.btnBookmarkAnotherAccount -> Action_Toot.bookmarkFromAnotherAccount(
-                activity,
+            R.id.btnBookmarkAnotherAccount -> activity.bookmarkFromAnotherAccount(
                 access_info,
                 status
             )
 
-            R.id.btnBoostAnotherAccount -> Action_Toot.boostFromAnotherAccount(
-                activity,
+            R.id.btnBoostAnotherAccount -> activity.boostFromAnotherAccount(
                 access_info,
                 status
             )
 
-            R.id.btnReactionAnotherAccount -> Action_Reaction.reactionFromAnotherAccount(
-                activity,
+            R.id.btnReactionAnotherAccount -> activity.reactionFromAnotherAccount(
+
                 access_info,
                 status
             )
 
-            R.id.btnReplyAnotherAccount -> Action_Reply.replyFromAnotherAccount(
-                activity,
+            R.id.btnReplyAnotherAccount -> activity.replyFromAnotherAccount(
                 access_info,
                 status
             )
-            R.id.btnQuoteToot -> Action_Reply.replyFromAnotherAccount(
-                activity,
+
+            R.id.btnQuoteAnotherAccount -> activity.quoteFromAnotherAccount(
                 access_info,
-                status,
-                quote = true
+                status
             )
-            R.id.btnQuoteTootBT -> Action_Reply.replyFromAnotherAccount(
-                activity,
+
+            R.id.btnQuoteTootBT -> activity.quoteFromAnotherAccount(
                 access_info,
-                status?.reblogParent,
-                quote = true
+                status?.reblogParent
             )
 
             R.id.btnConversationAnotherAccount -> status?.let { status ->
-                Action_Conversation.conversationOtherInstance(activity, pos, status)
+                activity.conversationOtherInstance(pos, status)
             }
 
             R.id.btnDelete -> status?.let { status ->
@@ -1025,8 +1020,8 @@ internal class DlgContextMenu(
                     .setMessage(activity.getString(R.string.confirm_delete_status))
                     .setNegativeButton(R.string.cancel, null)
                     .setPositiveButton(R.string.ok) { _, _ ->
-                        Action_Toot.delete(
-                            activity,
+                        activity.statusDelete(
+
                             access_info,
                             status.id
                         )
@@ -1034,11 +1029,11 @@ internal class DlgContextMenu(
                     .show()
             }
             R.id.btnRedraft -> status?.let { status ->
-                Action_Toot.redraft(activity, access_info, status)
+                activity.statusRedraft(access_info, status)
             }
 
             R.id.btnMuteApp -> status?.application?.let {
-                Action_App.muteApp(activity, it)
+                activity.appMute(it)
             }
 
             R.id.btnBoostedBy -> status?.let {
@@ -1059,11 +1054,11 @@ internal class DlgContextMenu(
             )
 
             R.id.btnQuoteUrlStatus -> status?.url?.let { url ->
-                if (url.isNotEmpty()) Action_Account.openPost(activity, url)
+                if (url.isNotEmpty()) activity.openPost(url)
             }
 
             R.id.btnQuoteUrlAccount -> who?.url?.let { url ->
-                if (url.isNotEmpty()) Action_Account.openPost(activity, url)
+                if (url.isNotEmpty()) activity.openPost(url)
             }
             R.id.btnShareUrlStatus -> status?.url?.let { url ->
                 if (url.isNotEmpty()) shareText(activity, url)
@@ -1073,19 +1068,19 @@ internal class DlgContextMenu(
                 if (url.isNotEmpty()) shareText(activity, url)
             }
             R.id.btnNotificationDelete -> notification?.let { notification ->
-                Action_Notification.deleteOne(activity, access_info, notification)
+                activity.notificationDeleteOne( access_info, notification)
             }
 
             R.id.btnConversationMute -> status?.let { status ->
-                Action_Conversation.muteConversation(activity, access_info, status)
+                activity.conversationMute(access_info, status)
             }
 
             R.id.btnProfilePin -> status?.let { status ->
-                Action_Toot.pin(activity, access_info, status, true)
+                activity.statusPin(access_info, status, true)
             }
 
             R.id.btnProfileUnpin -> status?.let { status ->
-                Action_Toot.pin(activity, access_info, status, false)
+                activity.statusPin(access_info, status, false)
             }
 
         }
@@ -1107,43 +1102,36 @@ internal class DlgContextMenu(
         when (v.id) {
             R.id.btnFollow -> {
                 dialog.dismissSafe()
-                Action_Follow.followFromAnotherAccount(
-                    activity,
+                activity.followFromAnotherAccount(
                     activity.nextPosition(column),
                     access_info,
                     who
                 )
-                return true
             }
 
             R.id.btnProfile -> {
                 dialog.dismissSafe()
-                Action_User.profileFromAnotherAccount(
-                    activity,
+                activity.userProfileFromAnotherAccount(
                     activity.nextPosition(column),
                     access_info,
                     who
                 )
-                return true
             }
 
             R.id.btnSendMessage -> {
                 dialog.dismissSafe()
-                Action_User.mentionFromAnotherAccount(activity, access_info, who)
-                return true
+                activity.mentionFromAnotherAccount( access_info, who)
             }
 
-            R.id.btnMute -> if (who != null) {
-                Action_User.muteFromAnotherAccount(activity, who, access_info)
-                return true
-            }
-            R.id.btnBlock -> if (who != null) {
-                Action_User.blockFromAnotherAccount(activity, who, access_info)
-                return true
-            }
+            R.id.btnMute ->  who?.let{ activity.userMuteFromAnotherAccount( it, access_info) }
+            R.id.btnBlock -> who?.let{ activity.userBlockFromAnotherAccount( it, access_info) }
+
+            R.id.btnQuoteAnotherAccount -> activity.quoteFromAnotherAccount(access_info,status)
+            R.id.btnQuoteTootBT -> activity.quoteFromAnotherAccount(access_info,status?.reblogParent)
+
+            else -> return false
         }
-
-        return false
+        return true
     }
 
 }

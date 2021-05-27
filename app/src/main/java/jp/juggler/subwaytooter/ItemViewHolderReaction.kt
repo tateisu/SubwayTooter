@@ -7,7 +7,9 @@ import androidx.core.content.ContextCompat
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
-import jp.juggler.subwaytooter.action.Action_Reaction
+import jp.juggler.subwaytooter.action.reactionAdd
+import jp.juggler.subwaytooter.action.reactionFromAnotherAccount
+import jp.juggler.subwaytooter.action.reactionRemove
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootReaction
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -101,16 +103,15 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             setOnClickListener {
                 val taggedReaction = it.tag as? TootReaction
                 if (taggedReaction == status.reactionSet?.myReaction) {
-                    Action_Reaction.removeReaction(act, column, status)
+                    act.reactionRemove( column, status)
                 } else {
-                    Action_Reaction.addReaction(act, column, status, taggedReaction?.name, taggedReaction?.static_url)
+                    act.reactionAdd( column, status, taggedReaction?.name, taggedReaction?.static_url)
                 }
             }
 
             setOnLongClickListener {
                 val taggedReaction = it.tag as? TootReaction
-                Action_Reaction.reactionFromAnotherAccount(
-                    this@makeReactionsView.activity,
+                act.reactionFromAnotherAccount(
                     access_info,
                     status_showing,
                     taggedReaction

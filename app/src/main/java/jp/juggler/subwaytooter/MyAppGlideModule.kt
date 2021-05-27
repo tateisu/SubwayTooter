@@ -58,7 +58,7 @@ class MyAppGlideModule : AppGlideModule() {
 		@Throws(IOException::class)
 		override fun decode(
 			source : InputStream, width : Int, height : Int, options : Options
-		) : Resource<SVG>? {
+		) : Resource<SVG> {
 			try {
 				val svg = SVG.getFromInputStream(source)
 				return SimpleResource(svg)

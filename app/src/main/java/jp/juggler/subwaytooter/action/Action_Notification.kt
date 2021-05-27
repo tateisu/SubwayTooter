@@ -2,101 +2,89 @@ package jp.juggler.subwaytooter.action
 
 import androidx.appcompat.app.AlertDialog
 import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.launchMain
 import jp.juggler.util.showToast
 import jp.juggler.util.toFormRequestBody
 import jp.juggler.util.toPost
 
-object Action_Notification {
+fun ActMain.notificationDeleteOne(
+    access_info: SavedAccount,
+    notification: TootNotification
+) {
+    launchMain {
+        runApiTask(access_info) { client ->
+            // https://github.com/tootsuite/mastodon/commit/30f5bcf3e749be9651ed39a07b893f70605f8a39
+            // 2種類のAPIがあり、片方は除去された
 
-    fun deleteAll(
-        activity: ActMain, target_account: SavedAccount, bConfirmed: Boolean
-    ) {
-        if (!bConfirmed) {
-            AlertDialog.Builder(activity)
-                .setMessage(R.string.confirm_delete_notification)
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok) { _, _ ->
-                    deleteAll(activity, target_account, true)
-                }
-                .show()
-            return
-        }
-        TootTaskRunner(activity).run(target_account, object : TootTask {
-            override suspend fun background(client: TootApiClient): TootApiResult? {
-                // 空データを送る
-                return client.request(
-                    "/api/v1/notifications/clear",
-                    "".toFormRequestBody().toPost()
+            // まず新しいAPIを試す
+            val result = client.request(
+                "/api/v1/notifications/${notification.id}/dismiss",
+                "".toFormRequestBody().toPost()
+            )
+
+            when (result?.response?.code) {
+
+                // 新しいAPIがない場合、古いAPIを試す
+                422 -> client.request(
+                    "/api/v1/notifications/dismiss",
+                    "id=${notification.id}".toFormRequestBody().toPost()
                 )
+
+                else -> result
             }
+        }?.let { result ->
+            when (result.jsonObject) {
+                null -> showToast(true, result.error)
+                else -> {
+                    // 成功したら空オブジェクトが返される
+                    for (column in app_state.columnList) {
+                        column.removeNotificationOne(access_info, notification)
+                    }
+                    showToast(true, R.string.delete_succeeded)
+                }
+            }
+        }
+    }
+}
 
-            override suspend fun handleResult(result: TootApiResult?) {
-                if (result == null) return  // cancelled.
+fun ActMain.notificationDeleteAll(
+    target_account: SavedAccount,
+    bConfirmed: Boolean = false
+) {
+    if (!bConfirmed) {
+        AlertDialog.Builder(this)
+            .setMessage(R.string.confirm_delete_notification)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.ok) { _, _ ->
+                notificationDeleteAll(target_account, true)
+            }
+            .show()
+        return
+    }
 
-                if (result.jsonObject != null) {
+    launchMain {
+        runApiTask(target_account) { client ->
+            client.request(
+                "/api/v1/notifications/clear",
+                "".toFormRequestBody().toPost()
+            )
+        }?.let { result ->
+            when (result.jsonObject) {
+                null -> showToast(false, result.error)
+
+                else -> {
                     // ok. api have return empty object.
-                    for (column in activity.app_state.columnList) {
+                    for (column in app_state.columnList) {
                         if (column.isNotificationColumn && column.access_info == target_account) {
                             column.removeNotifications()
                         }
                     }
-                    activity.showToast(false, R.string.delete_succeeded)
-                } else {
-                    activity.showToast(false, result.error)
+                    showToast(false, R.string.delete_succeeded)
                 }
-
             }
-        })
+        }
     }
-
-    fun deleteOne(
-        activity: ActMain, access_info: SavedAccount, notification: TootNotification
-    ) {
-        TootTaskRunner(activity).run(access_info, object : TootTask {
-            override suspend fun background(client: TootApiClient): TootApiResult? {
-
-                // https://github.com/tootsuite/mastodon/commit/30f5bcf3e749be9651ed39a07b893f70605f8a39
-                // 2種類のAPIがあり、片方は除去された
-
-                // まず新しいAPIを試す
-                val result = client.request(
-                    "/api/v1/notifications/${notification.id}/dismiss",
-                    "".toFormRequestBody().toPost()
-                )
-
-                return when (result?.response?.code) {
-
-                    // 新しいAPIがない場合、古いAPIを試す
-                    422 -> client.request(
-                        "/api/v1/notifications/dismiss",
-                        "id=${notification.id}".toFormRequestBody().toPost()
-                    )
-
-                    else -> result
-                }
-            }
-
-            override suspend fun handleResult(result: TootApiResult?) {
-                if (result == null) return // cancelled.
-
-                if (result.jsonObject != null) {
-                    // 成功したら空オブジェクトが返される
-                    for (column in activity.app_state.columnList) {
-                        column.removeNotificationOne(access_info, notification)
-                    }
-                    activity.showToast(true, R.string.delete_succeeded)
-                } else {
-                    activity.showToast(true, result.error)
-                }
-
-            }
-        })
-    }
-
 }

@@ -126,11 +126,11 @@ class StreamConnection(
     // fedibird emoji reaction noti
     private fun fireEmojiReactionNotification(item: TootNotification) {
         if (StreamManager.traceDelivery) log.v("$name fireTimelineItem")
-        eachCallbackForAcct() { it.onEmojiReactionNotification(item) }
+        eachCallbackForAcct { it.onEmojiReactionNotification(item) }
     }
     private fun fireEmojiReactionEvent(item: TootReaction) {
         if (StreamManager.traceDelivery) log.v("$name fireTimelineItem")
-        eachCallbackForAcct() { it.onEmojiReactionEvent(item) }
+        eachCallbackForAcct { it.onEmojiReactionEvent(item) }
     }
 
 
@@ -323,7 +323,7 @@ class StreamConnection(
 
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         manager.enqueue {
-            log.w("$name WebSocket onClosed code=$code, reason=$reason")
+            log.i("$name WebSocket onClosed code=$code, reason=$reason")
             status = StreamStatus.Closed
         }
     }
@@ -331,9 +331,9 @@ class StreamConnection(
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         manager.enqueue {
             if (t is SocketException && t.message?.contains("closed") == true) {
-                log.w("$name socket closed.")
+                log.i("$name socket closed.")
             } else {
-                log.e(t, "$name WebSocket onFailure.")
+                log.w(t, "$name WebSocket onFailure.")
             }
             status = StreamStatus.Closed
 
@@ -500,13 +500,13 @@ class StreamConnection(
 
         when {
             result == null -> {
-                log.d("$name updateConnection: cancelled.")
+                log.w("$name updateConnection: cancelled.")
                 status = StreamStatus.Closed
             }
 
             ws == null -> {
                 val error = result.error
-                log.d("$name updateConnection: $error")
+                log.w("$name updateConnection: $error")
                 status = StreamStatus.Closed
             }
 

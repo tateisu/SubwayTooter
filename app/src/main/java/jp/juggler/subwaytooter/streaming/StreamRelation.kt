@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.streaming
 
 import jp.juggler.subwaytooter.Column
-import jp.juggler.subwaytooter.canStartStreaming
+import jp.juggler.subwaytooter.canStreamingState
 import jp.juggler.util.LogCategory
 import java.lang.ref.WeakReference
 
@@ -24,7 +24,7 @@ class StreamRelation(
                 log.w("${spec.name} canStartStreaming: missing column.")
                 false
             }
-            else -> column.canStartStreaming()
+            else -> column.canStreamingState()
         }
     }
 }

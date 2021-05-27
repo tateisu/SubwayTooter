@@ -125,17 +125,16 @@ abstract class ColumnTask(
 	}
 
 	fun start() {
-		job = EndlessScope.launch(Dispatchers.Main) {
-			handleResult(
-				try {
-					withContext(Dispatchers.IO) { background() }
-				} catch(ex : CancellationException) {
-					null // キャンセルされたらresult==nullとする
-				} catch(ex : Throwable) {
-					// その他のエラー
-					TootApiResult(ex.withCaption("error"))
-				}
-			)
+		job = launchMain {
+			val result = try {
+				withContext(Dispatchers.IO) { background() }
+			} catch(ex : CancellationException) {
+				null // キャンセルされたらresult==nullとする
+			} catch(ex : Throwable) {
+				// その他のエラー
+				TootApiResult(ex.withCaption("error"))
+			}
+			handleResult( result )
 		}
 	}
 }

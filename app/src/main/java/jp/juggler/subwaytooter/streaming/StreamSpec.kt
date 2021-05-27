@@ -149,13 +149,3 @@ val Column.streamSpec: StreamSpec?
         access_info.isMisskey -> streamSpecMisskey()
         else -> null
     }
-
-
-fun Column.canStreaming() = when {
-    access_info.isNA -> false
-    access_info.isPseudo -> isPublicStream && streamSpec != null
-    else -> streamSpec != null
-}
-
-fun Column.canSpeech() =
-    canStreaming() && !isNotificationColumn

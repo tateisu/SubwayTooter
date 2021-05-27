@@ -28,10 +28,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.util.ProgressResponseBody
@@ -438,6 +435,143 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    private fun decodeBitmap(
+        options:BitmapFactory.Options,
+        data: ByteArray,
+        @Suppress("SameParameterValue") pixel_max: Int
+    ): Pair<Bitmap?, String?> {
+
+        val orientation: Int? = ByteArrayInputStream(data).imageOrientation()
+
+        // detects image size
+        options.inJustDecodeBounds = true
+        options.inScaled = false
+        options.outWidth = 0
+        options.outHeight = 0
+        BitmapFactory.decodeByteArray(data, 0, data.size, options)
+        var w = options.outWidth
+        var h = options.outHeight
+        if (w <= 0 || h <= 0) {
+            return Pair(null, "can't decode image bounds.")
+        }
+
+        // calc bits to reduce size
+        var bits = 0
+        while (w > pixel_max || h > pixel_max) {
+            ++bits
+            w = w shr 1
+            h = h shr 1
+        }
+        options.inJustDecodeBounds = false
+        options.inSampleSize = 1 shl bits
+
+        // decode image
+        val bitmap1 = BitmapFactory.decodeByteArray(data, 0, data.size, options)
+            ?: return Pair(null, "BitmapFactory.decodeByteArray returns null.")
+
+        val srcWidth = bitmap1.width.toFloat()
+        val srcHeight = bitmap1.height.toFloat()
+        if (srcWidth <= 0f || srcHeight <= 0f) {
+            bitmap1.recycle()
+            return Pair(null, "image size <= 0")
+        }
+
+        val dstSize = rotateSize(orientation, srcWidth, srcHeight)
+        val dstSizeInt = Point(
+            max(1, (dstSize.x + 0.5f).toInt()),
+            max(1, (dstSize.y + 0.5f).toInt())
+        )
+
+        // 回転行列を作る
+        val matrix = Matrix()
+        matrix.reset()
+
+        // 画像の中心が原点に来るようにして
+        matrix.postTranslate(srcWidth * -0.5f, srcHeight * -0.5f)
+
+        // orientationに合わせた回転指定
+        matrix.resolveOrientation(orientation)
+
+        // 表示領域に埋まるように平行移動
+        matrix.postTranslate(dstSize.x * 0.5f, dstSize.y * 0.5f)
+
+        // 回転後の画像
+        val bitmap2 = try {
+            Bitmap.createBitmap(dstSizeInt.x, dstSizeInt.y, Bitmap.Config.ARGB_8888)
+                ?: return Pair(bitmap1, "createBitmap returns null")
+        } catch (ex: Throwable) {
+            log.trace(ex)
+            return Pair(bitmap1, ex.withCaption("createBitmap failed."))
+        }
+
+        try {
+            Canvas(bitmap2).drawBitmap(
+                bitmap1,
+                matrix,
+                Paint().apply { isFilterBitmap = true }
+            )
+        } catch (ex: Throwable) {
+            log.trace(ex)
+            bitmap2.recycle()
+            return Pair(bitmap1, ex.withCaption("drawBitmap failed."))
+        }
+
+        try {
+            bitmap1.recycle()
+        } catch (ex: Throwable) {
+        }
+        return Pair(bitmap2, null)
+    }
+
+    private suspend fun getHttpCached(
+        client: TootApiClient,
+        url: String
+    ): Pair<TootApiResult?, ByteArray?> {
+        val result = TootApiResult.makeWithCaption(url)
+
+        val request = try {
+            Request.Builder()
+                .url(url)
+                .cacheControl(App1.CACHE_CONTROL)
+                .addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
+                .build()
+        } catch (ex: Throwable) {
+            result.setError(ex.withCaption("incorrect URL."))
+            return Pair(result, null)
+        }
+
+        if (!client.sendRequest(
+                result,
+                tmpOkhttpClient = App1.ok_http_client_media_viewer
+            ) {
+                request
+            }
+        ) return Pair(result, null)
+
+        if (client.isApiCancelled) return Pair(null, null)
+
+        val response = result.response!!
+        if (!response.isSuccessful) {
+            result.parseErrorResponse()
+            return Pair(result, null)
+        }
+
+        try {
+            val ba = ProgressResponseBody.bytes(response) { bytesRead, bytesTotal ->
+                // 50MB以上のデータはキャンセルする
+                if (max(bytesRead, bytesTotal) >= 50000000) {
+                    throw RuntimeException("media attachment is larger than 50000000")
+                }
+                client.publishApiProgressRatio(bytesRead.toInt(), bytesTotal.toInt())
+            }
+            if (client.isApiCancelled) return Pair(null, null)
+            return Pair(result, ba)
+        } catch (ex: Throwable) {
+            result.parseErrorResponse(  "?")
+            return Pair(result, null)
+        }
+    }
+
     @SuppressLint("StaticFieldLeak")
     private fun loadBitmap(ta: TootAttachment) {
 
@@ -455,178 +589,36 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         pbvImage.visibility = View.VISIBLE
         pbvImage.setBitmap(null)
 
-        TootTaskRunner(this, TootTaskRunner.PROGRESS_HORIZONTAL).run(object : TootTask {
+        launchMain {
+            val options = BitmapFactory.Options()
 
-			private val options = BitmapFactory.Options()
+            var resultBitmap: Bitmap? = null
 
-			var bitmap: Bitmap? = null
+            runApiTask (progressStyle = ApiTask.PROGRESS_HORIZONTAL ){ client->
+                if (urlList.isEmpty()) return@runApiTask TootApiResult("missing url")
+                var lastResult: TootApiResult? = null
+                for (url in urlList) {
+                    val (result, ba) = getHttpCached(client, url)
+                    lastResult = result
+                    if (ba != null) {
+                        client.publishApiProgress("decoding image…")
 
-			private fun decodeBitmap(
-					data: ByteArray,
-					@Suppress("SameParameterValue") pixel_max: Int
-			): Pair<Bitmap?, String?> {
-
-				val orientation: Int? = ByteArrayInputStream(data).imageOrientation()
-
-				// detects image size
-				options.inJustDecodeBounds = true
-				options.inScaled = false
-				options.outWidth = 0
-				options.outHeight = 0
-				BitmapFactory.decodeByteArray(data, 0, data.size, options)
-				var w = options.outWidth
-				var h = options.outHeight
-				if (w <= 0 || h <= 0) {
-					return Pair(null, "can't decode image bounds.")
-				}
-
-				// calc bits to reduce size
-				var bits = 0
-				while (w > pixel_max || h > pixel_max) {
-					++bits
-					w = w shr 1
-					h = h shr 1
-				}
-				options.inJustDecodeBounds = false
-				options.inSampleSize = 1 shl bits
-
-				// decode image
-				val bitmap1 = BitmapFactory.decodeByteArray(data, 0, data.size, options)
-						?: return Pair(null, "BitmapFactory.decodeByteArray returns null.")
-
-				val srcWidth = bitmap1.width.toFloat()
-				val srcHeight = bitmap1.height.toFloat()
-				if (srcWidth <= 0f || srcHeight <= 0f) {
-					bitmap1.recycle()
-					return Pair(null, "image size <= 0")
-				}
-
-				val dstSize = rotateSize(orientation, srcWidth, srcHeight)
-				val dstSizeInt = Point(
-						max(1, (dstSize.x + 0.5f).toInt()),
-						max(1, (dstSize.y + 0.5f).toInt())
-				)
-
-				// 回転行列を作る
-				val matrix = Matrix()
-				matrix.reset()
-
-				// 画像の中心が原点に来るようにして
-				matrix.postTranslate(srcWidth * -0.5f, srcHeight * -0.5f)
-
-				// orientationに合わせた回転指定
-				matrix.resolveOrientation(orientation)
-
-				// 表示領域に埋まるように平行移動
-				matrix.postTranslate(dstSize.x * 0.5f, dstSize.y * 0.5f)
-
-				// 回転後の画像
-				val bitmap2 = try {
-					Bitmap.createBitmap(dstSizeInt.x, dstSizeInt.y, Bitmap.Config.ARGB_8888)
-							?: return Pair(bitmap1, "createBitmap returns null")
-				} catch (ex: Throwable) {
-					log.trace(ex)
-					return Pair(bitmap1, ex.withCaption("createBitmap failed."))
-				}
-
-				try {
-					Canvas(bitmap2).drawBitmap(
-							bitmap1,
-							matrix,
-							Paint().apply { isFilterBitmap = true }
-					)
-				} catch (ex: Throwable) {
-					log.trace(ex)
-					bitmap2.recycle()
-					return Pair(bitmap1, ex.withCaption("drawBitmap failed."))
-				}
-
-				try {
-					bitmap1.recycle()
-				} catch (ex: Throwable) {
-				}
-				return Pair(bitmap2, null)
-			}
-
-			suspend fun getHttpCached(
-					client: TootApiClient,
-					url: String
-			): Pair<TootApiResult?, ByteArray?> {
-				val result = TootApiResult.makeWithCaption(url)
-
-				val request = try {
-					Request.Builder()
-							.url(url)
-							.cacheControl(App1.CACHE_CONTROL)
-							.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
-							.build()
-				} catch (ex: Throwable) {
-					result.setError(ex.withCaption("incorrect URL."))
-					return Pair(result, null)
-				}
-
-				if (!client.sendRequest(
-								result,
-								tmpOkhttpClient = App1.ok_http_client_media_viewer
-						) {
-							request
-						}
-				) return Pair(result, null)
-
-				if (client.isApiCancelled) return Pair(null, null)
-
-				val response = result.response!!
-				if (!response.isSuccessful) {
-					result.parseErrorResponse()
-					return Pair(result, null)
-				}
-
-				try {
-					val ba = ProgressResponseBody.bytes(response) { bytesRead, bytesTotal ->
-						// 50MB以上のデータはキャンセルする
-						if (max(bytesRead, bytesTotal) >= 50000000) {
-							throw RuntimeException("media attachment is larger than 50000000")
-						}
-						client.publishApiProgressRatio(bytesRead.toInt(), bytesTotal.toInt())
-					}
-					if (client.isApiCancelled) return Pair(null, null)
-					return Pair(result, ba)
-				} catch (ex: Throwable) {
-					result.parseErrorResponse(  "?")
-					return Pair(result, null)
-				}
-			}
-
-			override suspend fun background(client: TootApiClient): TootApiResult? {
-				if (urlList.isEmpty()) return TootApiResult("missing url")
-				var lastResult: TootApiResult? = null
-				for (url in urlList) {
-					val (result, ba) = getHttpCached(client, url)
-					lastResult = result
-					if (ba != null) {
-						client.publishApiProgress("decoding image…")
-
-						val (bitmap, error) = decodeBitmap(ba, 2048)
-						if (bitmap != null) {
-							this.bitmap = bitmap
-							break
-						}
-						if (error != null) lastResult = TootApiResult(error)
-					}
-				}
-				return lastResult
-			}
-
-			override suspend fun handleResult(result: TootApiResult?) {
-				val bitmap = this.bitmap
-				if (bitmap != null) {
-					pbvImage.setBitmap(bitmap)
-				} else if (result != null) {
-					showToast(true, result.error)
-				}
-			}
-		})
-
+                        val (bitmap, error) = decodeBitmap(options,ba, 2048)
+                        if (bitmap != null) {
+                            resultBitmap = bitmap
+                            break
+                        }
+                        if (error != null) lastResult = TootApiResult(error)
+                    }
+                }
+                lastResult
+            }.let{ result-> // may null
+                when (val bitmap = resultBitmap) {
+                    null -> if (result != null) showToast(true, result.error)
+                    else -> pbvImage.setBitmap(bitmap)
+                }
+            }
+        }
     }
 
     override fun onClick(v: View) {
@@ -853,6 +845,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				}
 			}
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
-
 }

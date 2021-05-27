@@ -27,18 +27,24 @@
 
             <TextView
                 style="@style/setting_row_label"
+                android:text="@string/account" />
+
+            <TextView
+                android:id="@+id/tvAccount"
+                style="@style/setting_row_form" />
+
+            <View style="@style/setting_divider" />
+
+            <TextView
+                style="@style/setting_row_label"
                 android:labelFor="@+id/etPhrase"
                 android:text="@string/filter_phrase" />
 
-            <LinearLayout style="@style/setting_row_form">
-
-                <EditText
-                    android:id="@+id/etPhrase"
-                    style="@style/setting_horizontal_stretch"
-                    android:importantForAutofill="no"
-                    android:inputType="text" />
-
-            </LinearLayout>
+            <EditText
+                android:id="@+id/etPhrase"
+                style="@style/setting_row_form"
+                android:importantForAutofill="no"
+                android:inputType="text" />
 
             <View style="@style/setting_divider" />
 
@@ -46,55 +52,35 @@
                 style="@style/setting_row_label"
                 android:text="@string/filter_context" />
 
-            <LinearLayout style="@style/setting_row_form">
+            <CheckBox
+                android:id="@+id/cbContextHome"
+                style="@style/setting_row_form"
+                android:checked="true"
+                android:text="@string/filter_home" />
 
-                <CheckBox
-                    android:id="@+id/cbContextHome"
-                    style="@style/setting_horizontal_stretch"
-                    android:checked="true"
-                    android:text="@string/filter_home" />
+            <CheckBox
+                android:id="@+id/cbContextNotification"
+                style="@style/setting_row_form"
+                android:checked="true"
+                android:text="@string/filter_notification" />
 
-            </LinearLayout>
+            <CheckBox
+                android:id="@+id/cbContextPublic"
+                style="@style/setting_row_form"
+                android:checked="true"
+                android:text="@string/filter_public" />
 
-            <LinearLayout style="@style/setting_row_form">
+            <CheckBox
+                android:id="@+id/cbContextThread"
+                style="@style/setting_row_form"
+                android:checked="true"
+                android:text="@string/filter_thread" />
 
-                <CheckBox
-                    android:id="@+id/cbContextNotification"
-                    style="@style/setting_horizontal_stretch"
-                    android:checked="true"
-                    android:text="@string/filter_notification" />
-
-            </LinearLayout>
-
-            <LinearLayout style="@style/setting_row_form">
-
-                <CheckBox
-                    android:id="@+id/cbContextPublic"
-                    style="@style/setting_horizontal_stretch"
-                    android:checked="true"
-                    android:text="@string/filter_public" />
-
-            </LinearLayout>
-
-            <LinearLayout style="@style/setting_row_form">
-
-                <CheckBox
-                    android:id="@+id/cbContextThread"
-                    style="@style/setting_horizontal_stretch"
-                    android:checked="true"
-                    android:text="@string/filter_thread" />
-
-            </LinearLayout>
-
-            <LinearLayout style="@style/setting_row_form">
-
-                <CheckBox
-                    android:id="@+id/cbContextProfile"
-                    style="@style/setting_horizontal_stretch"
-                    android:checked="true"
-                    android:text="@string/filter_profile" />
-
-            </LinearLayout>
+            <CheckBox
+                android:id="@+id/cbContextProfile"
+                style="@style/setting_row_form"
+                android:checked="true"
+                android:text="@string/filter_profile" />
 
             <View style="@style/setting_divider" />
 
@@ -102,23 +88,17 @@
                 style="@style/setting_row_label"
                 android:text="@string/filter_options" />
 
-            <LinearLayout style="@style/setting_row_form">
+            <CheckBox
+                android:id="@+id/cbFilterIrreversible"
+                style="@style/setting_row_form"
+                android:text="@string/filter_irreversible_long" />
 
-                <CheckBox
-                    android:id="@+id/cbFilterIrreversible"
-                    style="@style/setting_horizontal_stretch"
-                    android:text="@string/filter_irreversible_long" />
 
-            </LinearLayout>
-
-            <LinearLayout style="@style/setting_row_form">
-
-                <CheckBox
-                    android:id="@+id/cbFilterWordMatch"
-                    style="@style/setting_horizontal_stretch"
-                    android:text="@string/filter_word_match_long" />
-
-            </LinearLayout>
+            <CheckBox
+                android:id="@+id/cbFilterWordMatch"
+                style="@style/setting_row_form"
+                android:layout_marginTop="8dp"
+                android:text="@string/filter_word_match_long" />
 
             <View style="@style/setting_divider" />
 
@@ -126,27 +106,19 @@
                 style="@style/setting_row_label"
                 android:text="@string/filter_expires_at" />
 
-            <LinearLayout style="@style/setting_row_form">
+            <TextView
+                android:id="@+id/tvExpire"
+                style="@style/setting_row_form" />
 
-                <TextView
-                    android:id="@+id/tvExpire"
-                    style="@style/setting_horizontal_stretch" />
-            </LinearLayout>
-
-            <LinearLayout style="@style/setting_row_form">
-
-                <Spinner
-                    android:id="@+id/spExpire"
-                    style="@style/setting_horizontal_stretch" />
-            </LinearLayout>
+            <Spinner
+                android:id="@+id/spExpire"
+                style="@style/setting_row_form"
+                android:minHeight="40dp" />
 
             <View style="@style/setting_divider" />
 
-            <LinearLayout style="@style/setting_row_form">
-
-            </LinearLayout>
-
         </LinearLayout>
+
     </ScrollView>
 
     <Button
@@ -154,4 +126,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/save" />
+
 </LinearLayout>

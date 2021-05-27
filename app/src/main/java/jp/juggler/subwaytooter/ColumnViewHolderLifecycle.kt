@@ -3,8 +3,6 @@ package jp.juggler.subwaytooter
 import android.view.View
 import android.widget.ImageView
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
-import jp.juggler.subwaytooter.streaming.canSpeech
-import jp.juggler.subwaytooter.streaming.canStreaming
 import jp.juggler.subwaytooter.util.endPadding
 import jp.juggler.subwaytooter.util.startPadding
 import jp.juggler.subwaytooter.view.ListDivider
@@ -55,7 +53,7 @@ fun ColumnViewHolder.loadBackgroundImage(iv: ImageView, url: String?) {
         val screen_h = iv.resources.displayMetrics.heightPixels
 
         // 非同期処理を開始
-        last_image_task = EndlessScope.launch(Dispatchers.Main) {
+        last_image_task = launchMain{
             val bitmap = try {
                 withContext(Dispatchers.IO) {
                     try {
@@ -193,7 +191,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, page_idx: Int, page_count: Int
         cbInstanceLocal.vg(column.type == ColumnType.HASHTAG)
 
 
-        cbDontStreaming.vg(column.canStreaming())
+        cbDontStreaming.vg(column.canStreamingType())
         cbDontAutoRefresh.vg(column.canAutoRefresh())
         cbHideMediaDefault.vg(column.canNSFWDefault())
         cbSystemNotificationNotRelated.vg(column.isNotificationColumn)

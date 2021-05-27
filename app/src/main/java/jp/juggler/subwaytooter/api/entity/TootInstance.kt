@@ -10,9 +10,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.util.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import okhttp3.Request
 import java.util.*
 import java.util.regex.Pattern
@@ -40,6 +38,9 @@ object InstanceCapability {
 //    TimelineDomain(CapabilitySource.Fedibird, "timeline_domain"),
 //    TimelineGroup(CapabilitySource.Fedibird, "timeline_group"),
 //    TimelineGroupDirectory(CapabilitySource.Fedibird, "timeline_group_directory"),
+
+    fun quote(ti:TootInstance?) =
+        ti?.feature_quote == true
 
     fun visibilityMutual(ti: TootInstance?) =
         ti?.fedibird_capabilities?.contains("visibility_mutual") == true
@@ -73,7 +74,7 @@ class TootInstance(parser: TootParser, src: JsonObject) {
     // いつ取得したか(内部利用)
     private var time_parse: Long = SystemClock.elapsedRealtime()
 
-    val isExpire: Boolean
+    val isExpired: Boolean
         get() = SystemClock.elapsedRealtime() - time_parse >= EXPIRE
 
     //	URI of the current instance
@@ -387,7 +388,6 @@ class TootInstance(parser: TootParser, src: JsonObject) {
                 pair.first?.let { cacheData = it }
 
                 when {
-
                     pair.first?.instanceType == InstanceType.Pixelfed &&
                         !Pref.bpEnablePixelfed(App1.pref) &&
                         !req.allowPixelfed ->
@@ -406,9 +406,11 @@ class TootInstance(parser: TootParser, src: JsonObject) {
             }
 
             init {
-                EndlessScope.launch(Dispatchers.IO) {
+                launchDefault{
                     while (true) {
-                        requestQueue.receive().let { it.result.send(handleRequest(it)) }
+                        for( req in requestQueue){
+                            req.result.send(handleRequest(req))
+                        }
                     }
                 }
             }

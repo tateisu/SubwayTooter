@@ -16,7 +16,7 @@ class TootAttachmentMSP(
 	
 	override fun urlForThumbnail(pref : SharedPreferences) = preview_url
 	
-	override val urlForDescription : String?
+	override val urlForDescription : String
 		get() = preview_url
 	
 	override val focusX : Float

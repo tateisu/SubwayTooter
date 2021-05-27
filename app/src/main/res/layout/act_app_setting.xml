@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
 
     android:id="@+id/llContent"
     android:layout_width="match_parent"
@@ -34,7 +35,7 @@
             android:contentDescription="@string/reset"
             android:padding="8dp"
             android:src="@drawable/ic_close"
-            android:tint="?attr/colorVectorDrawable" />
+            app:tint="?attr/colorVectorDrawable" />
 
     </LinearLayout>
 

@@ -141,7 +141,7 @@ class ActExitReasons : AppCompatActivity() {
 		var list : List<ApplicationExitInfo> = emptyList()
 		
 		override fun getCount() : Int = list.size
-		override fun getItem(position : Int) : Any? = list[position]
+		override fun getItem(position : Int) : Any = list[position]
 		override fun getItemId(position : Int) : Long = 0
 		override fun getView(
 			position : Int,

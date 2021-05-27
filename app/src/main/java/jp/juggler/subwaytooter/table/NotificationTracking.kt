@@ -237,7 +237,7 @@ class NotificationTracking {
 								val r2 = minComparable(show,read)
 								dst.nid_read = r2
 								if(r2 != read){
-									log.e("${acct}/${notificationType} read>show! clip to $show")
+									log.i("${acct}/${notificationType} read>show! clip to $show")
 									val cv = ContentValues()
 									show.putTo(cv, COL_NID_READ) //変数名とキー名が異なるのに注意
 									val where_args = arrayOf(account_db_id.toString(),notificationType)
@@ -288,7 +288,7 @@ class NotificationTracking {
 									log.e("updateRead[$account_db_id,$notificationType]: nid_read already updated.")
 								
 								else -> {
-									log.e("updateRead[$account_db_id,$notificationType]: update nid_read as $nid_show...")
+									log.i("updateRead[$account_db_id,$notificationType]: update nid_read as $nid_show...")
 									val cv = ContentValues()
 									nid_show.putTo(cv, COL_NID_READ) //変数名とキー名が異なるのに注意
 									App1.database.update(table, cv, WHERE_AID, where_args)

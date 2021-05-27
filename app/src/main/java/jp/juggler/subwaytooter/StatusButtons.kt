@@ -456,22 +456,15 @@ class StatusButtons(
             btnConversation -> {
 
                 val cs = status.conversationSummary
-                if (cs != null) {
-
-                    if (cs.unread) {
-                        cs.unread = false
-                        // 表示の更新
-                        itemViewHolder.list_adapter.notifyChange(
-                            reason = "ConversationSummary reset unread",
-                            reset = true
-                        )
-                        // 未読フラグのクリアをサーバに送る
-                        Action_Conversation.clearConversationUnread(activity, access_info, cs)
-                    }
+                if( activity.conversationUnreadClear(access_info, cs) ){
+                    // 表示の更新
+                    itemViewHolder.list_adapter.notifyChange(
+                        reason = "ConversationSummary reset unread",
+                        reset = true
+                    )
                 }
 
-                Action_Conversation.conversation(
-                    activity,
+                activity.conversation(
                     activity.nextPosition(column),
                     access_info,
                     status
@@ -480,27 +473,27 @@ class StatusButtons(
             }
 
             btnReply -> if (!access_info.isPseudo) {
-                Action_Reply.reply(activity, access_info, status)
+                activity.reply(access_info, status)
             } else {
-                Action_Reply.replyFromAnotherAccount(activity, access_info, status)
+                activity.replyFromAnotherAccount(access_info, status)
             }
 
             btnQuote -> if (!access_info.isPseudo) {
-                Action_Reply.reply(activity, access_info, status, quote = true)
+                activity.reply(access_info, status,quote = true)
             } else {
-                Action_Reply.replyFromAnotherAccount(activity, access_info, status, quote = true)
+                activity.quoteFromAnotherAccount(access_info, status)
             }
 
             btnBoost -> {
                 if (access_info.isPseudo) {
-                    Action_Toot.boostFromAnotherAccount(activity, access_info, status)
+                    activity.boostFromAnotherAccount(access_info, status)
                 } else {
 
                     // トグル動作
                     val bSet = !status.reblogged
 
-                    Action_Toot.boost(
-                        activity,
+                    activity.boost(
+
                         access_info,
                         status,
                         access_info.getFullAcct(status.account),
@@ -518,14 +511,13 @@ class StatusButtons(
 
             btnFavourite -> {
                 if (access_info.isPseudo) {
-                    Action_Toot.favouriteFromAnotherAccount(activity, access_info, status)
+                    activity.favouriteFromAnotherAccount(access_info, status)
                 } else {
 
                     // トグル動作
                     val bSet = !status.favourited
 
-                    Action_Toot.favourite(
-                        activity,
+                    activity.favourite(
                         access_info,
                         status,
                         CrossAccountMode.SameAccount,
@@ -542,14 +534,13 @@ class StatusButtons(
 
             btnBookmark -> {
                 if (access_info.isPseudo) {
-                    Action_Toot.bookmarkFromAnotherAccount(activity, access_info, status)
+                    activity.bookmarkFromAnotherAccount(access_info, status)
                 } else {
 
                     // トグル動作
                     val bSet = !status.bookmarked
 
-                    Action_Toot.bookmark(
-                        activity,
+                    activity.bookmark(
                         access_info,
                         status,
                         CrossAccountMode.SameAccount,
@@ -566,15 +557,15 @@ class StatusButtons(
 
             btnReaction -> when {
                 !TootReaction.canReaction(access_info) ->
-                    Action_Reaction.reactionFromAnotherAccount(
-                        activity,
+                    activity.reactionFromAnotherAccount(
+
                         access_info,
                         status
                     )
                 status.reactionSet?.myReaction != null ->
-                    Action_Reaction.removeReaction(activity, column, status)
+                    activity.reactionRemove(column, status)
                 else ->
-                    Action_Reaction.addReaction(activity, column, status)
+                    activity.reactionAdd(column, status)
             }
 
 
@@ -586,8 +577,8 @@ class StatusButtons(
                 when {
                     access_info.isPseudo -> {
                         // 別アカでフォロー
-                        Action_Follow.followFromAnotherAccount(
-                            activity,
+                        activity.followFromAnotherAccount(
+
                             activity.nextPosition(column),
                             access_info,
                             account
@@ -601,8 +592,8 @@ class StatusButtons(
                     access_info.isMisskey && relation.getRequested(account) && !relation.getFollowing(
                         account
                     ) ->
-                        Action_Follow.deleteFollowRequest(
-                            activity,
+                        activity.followRequestDelete(
+
                             activity.nextPosition(column),
                             access_info,
                             accountRef,
@@ -611,8 +602,8 @@ class StatusButtons(
 
                     relation.getFollowing(account) || relation.getRequested(account) -> {
                         // フォロー解除
-                        Action_Follow.follow(
-                            activity,
+                        activity.follow(
+
                             activity.nextPosition(column),
                             access_info,
                             accountRef,
@@ -623,8 +614,8 @@ class StatusButtons(
 
                     else -> {
                         // フォロー
-                        Action_Follow.follow(
-                            activity,
+                        activity.follow(
+
                             activity.nextPosition(column),
                             access_info,
                             accountRef,
@@ -682,21 +673,19 @@ class StatusButtons(
         val status = this.status ?: return true
 
         when (v) {
-            btnBoost -> Action_Toot.boostFromAnotherAccount(activity, access_info, status)
-            btnFavourite -> Action_Toot.favouriteFromAnotherAccount(activity, access_info, status)
-            btnBookmark -> Action_Toot.bookmarkFromAnotherAccount(activity, access_info, status)
+            btnBoost -> activity.boostFromAnotherAccount(access_info, status)
+            btnFavourite -> activity.favouriteFromAnotherAccount(access_info, status)
+            btnBookmark -> activity.bookmarkFromAnotherAccount(access_info, status)
 
-            btnReply -> Action_Reply.replyFromAnotherAccount(activity, access_info, status)
-            btnQuote -> Action_Reply.replyFromAnotherAccount(activity, access_info, status, quote = true)
+            btnReply -> activity.replyFromAnotherAccount(access_info, status)
+            btnQuote -> activity.quoteFromAnotherAccount(access_info, status)
 
-            btnReaction -> Action_Reaction.reactionFromAnotherAccount(activity, access_info, status)
+            btnReaction -> activity.reactionFromAnotherAccount(access_info, status)
 
-            btnConversation -> Action_Conversation.conversationOtherInstance(activity, activity.nextPosition(column), status)
+            btnConversation -> activity.conversationOtherInstance(activity.nextPosition(column), status)
 
             btnFollow2 ->
-                Action_Follow.followFromAnotherAccount(
-                    activity, activity.nextPosition(column), access_info, status.account
-                )
+                activity.followFromAnotherAccount(activity.nextPosition(column), access_info, status.account)
 
             btnTranslate -> shareUrl(status, CustomShareTarget.Translate)
             btnCustomShare1 -> shareUrl(status, CustomShareTarget.CustomShare1)

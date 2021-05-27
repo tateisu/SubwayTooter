@@ -10,6 +10,7 @@ import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.CustomShare
@@ -104,13 +105,6 @@ class ActText : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.btnKeywordFilter)?.apply {
-            isEnabled = account?.isPseudo == false
-        }
-        return super.onPrepareOptionsMenu(menu)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App1.setActivityTheme(this, noActionBar = true)
@@ -145,7 +139,7 @@ class ActText : AppCompatActivity() {
         Styler.fixHorizontalMargin(etText)
 
         setSupportActionBar(findViewById(R.id.toolbar))
-        supportActionBar?.apply{
+        supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(false)
             setHomeButtonEnabled(false)
         }
@@ -211,10 +205,22 @@ class ActText : AppCompatActivity() {
     }
 
     private fun keywordFilter() {
-        selection.trim().notEmpty()?.let {
+        selection.trim().notEmpty()?.let { text ->
             val account = this.account
-            if (account?.isPseudo != false) return
-            ActKeywordFilter.open(this, account, initial_phrase = it)
+            if (account?.isPseudo == false && account.isMastodon) {
+                ActKeywordFilter.open(this, account, initial_phrase = text)
+            } else {
+                launchMain {
+                    pickAccount(
+                        bAllowPseudo = false,
+                        bAllowMisskey = false,
+                        bAllowMastodon = true,
+                        bAuto = false,
+                    )?.let {
+                        ActKeywordFilter.open(this@ActText, it, initial_phrase = text)
+                    }
+                }
+            }
         }
     }
 

@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter
 
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
@@ -26,11 +28,13 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
 
     val density = activity.density
 
-    val buttonHeight = ActMain.boostButtonSize
-    val marginBetween = (buttonHeight.toFloat() * 0.05f + 0.5f).toInt()
+    fun Float.round() = (this+0.5f).toInt()
 
-    val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
-    val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
+    val imageScale = 1.5f
+    val buttonHeight = ActMain.boostButtonSize // px
+    val marginBetween = (buttonHeight * 0.05f ).round()
+    val paddingH = (buttonHeight *0.1f).round()
+    val textHeight = (buttonHeight * 0.7f)/imageScale
 
     val act = this@makeReactionsView.activity // not Button(View).getActivity()
 
@@ -47,11 +51,8 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
 
     if (reactionSet?.isEmpty() != false) {
         val v = View(act).apply {
-            layoutParams = FlexboxLayout.LayoutParams(
-                buttonHeight,
-                buttonHeight
-            )
-            setPadding(paddingH, paddingV, paddingH, paddingV)
+            layoutParams = FlexboxLayout.LayoutParams(0,buttonHeight)
+            setPadding(paddingH,0,paddingH,0)
         }
         box.addView(v)
     }
@@ -60,8 +61,8 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
         act,
         access_info,
         decodeEmoji = true,
-        enlargeEmoji = 1.5f,
-        enlargeCustomEmoji = 1.5f
+        enlargeEmoji = imageScale,
+        enlargeCustomEmoji = imageScale,
     )
 
     reactionSet?.forEachIndexed { index, reaction ->
@@ -74,11 +75,12 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
         val b = Button(act).apply {
             layoutParams = FlexboxLayout.LayoutParams(
                 FlexboxLayout.LayoutParams.WRAP_CONTENT,
-                buttonHeight
+                buttonHeight,
             ).apply {
                 if (index > 0) startMargin = marginBetween
                 bottomMargin = dip(3)
             }
+            gravity = Gravity.CENTER
             minWidthCompat = buttonHeight
 
             background = if (reactionSet.isMyReaction(reaction) ) {
@@ -97,9 +99,10 @@ fun ItemViewHolder.makeReactionsView(status: TootStatus) {
             }
 
             setTextColor(content_color)
-            setPadding(paddingH, paddingV, paddingH, paddingV)
+            setPadding(paddingH,0,paddingH,0)
 
             text = ssb
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, textHeight)
 
             allCaps = false
             tag = reaction

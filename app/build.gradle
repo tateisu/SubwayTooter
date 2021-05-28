@@ -22,8 +22,8 @@ android {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
 
-        versionCode 461
-        versionName "4.6.1"
+        versionCode 462
+        versionName "4.6.2"
         applicationId "jp.juggler.subwaytooter"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

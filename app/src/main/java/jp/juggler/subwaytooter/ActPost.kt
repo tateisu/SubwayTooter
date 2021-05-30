@@ -580,6 +580,8 @@ class ActPost : AppCompatActivity(),
 
         super.onCreate(savedInstanceState)
 
+        if(isMultiWindowPost) ActMain.refActMain?.get()?.closeList?.add(WeakReference(this))
+
         arCustomThumbnail.register(this, log)
         arAttachmentChooser.register(this, log)
         arCamera.register(this, log)
@@ -729,8 +731,10 @@ class ActPost : AppCompatActivity(),
             parent.addView(bar, 0)
         }
 
-        Styler.fixHorizontalMargin(findViewById(R.id.scrollView))
-        Styler.fixHorizontalMargin(findViewById(R.id.llFooterBar))
+        if(!isMultiWindowPost){
+            Styler.fixHorizontalMargin(findViewById(R.id.scrollView))
+            Styler.fixHorizontalMargin(findViewById(R.id.llFooterBar))
+        }
 
         formRoot = findViewById(R.id.viewRoot)
         scrollView = findViewById(R.id.scrollView)

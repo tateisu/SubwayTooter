@@ -1106,4 +1106,6 @@
     <string name="not_available_for_current_accounts">Unavailable for current accounts</string>
     <string name="confirm_reaction">Reaction %1$s from %2$s?</string>
     <string name="confirm_reaction_to_pleroma">Reaction custom emoji %1$s from %2$s to server %3$s that may not support custom emoji reaction. Continue?</string>
+    <string name="multi_window_post">Multi window for post activity</string>
+    <string name="many_window_post">Many window for post activity</string>
 </resources>

@@ -450,6 +450,15 @@ object Pref {
 		false
 	)
 
+	val bpMultiWindowPost = BooleanPref(
+		"MultiWindowPost",
+		false
+	)
+	val bpManyWindowPost = BooleanPref(
+		"ManyWindowPost",
+		false
+	)
+
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

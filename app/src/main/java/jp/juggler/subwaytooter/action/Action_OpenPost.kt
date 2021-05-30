@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.action
 import android.content.Intent
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.ActPost
+import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootScheduled
@@ -12,6 +13,7 @@ import jp.juggler.subwaytooter.api.syncStatus
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
+import jp.juggler.util.isLiveActivity
 import jp.juggler.util.launchMain
 import jp.juggler.util.showToast
 
@@ -35,8 +37,12 @@ fun ActMain.openActPostImpl(
 
     //(Mastodon) 予約投稿の編集
     scheduledStatus: TootScheduled? = null
-) = arActPost.launch(
-    ActPost.createIntent(
+) {
+
+    val useManyWindow = Pref.bpManyWindowPost(pref)
+    val useMultiWindow = useManyWindow || Pref.bpMultiWindowPost(pref)
+
+    val intent = ActPost.createIntent(
         activity = this,
         account_db_id = account_db_id,
         redraft_status = redraft_status,
@@ -45,8 +51,27 @@ fun ActMain.openActPostImpl(
         sent_intent = sent_intent,
         quote = quote,
         scheduledStatus = scheduledStatus,
+        multiWindowMode = useMultiWindow
     )
-)
+
+    if (!useMultiWindow) {
+        arActPost.launch(intent)
+    } else {
+
+        if (!useManyWindow)
+            ActPost.refActPost?.get()
+                ?.takeIf { it.isLiveActivity }
+                ?.let {
+                    it.updateText(intent)
+                    return
+                }
+
+        // fall thru
+        arActPost.launch(intent.apply{
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK )
+        })
+    }
+}
 
 // 投稿画面を開く。初期テキストを指定する
 fun ActMain.openPost(

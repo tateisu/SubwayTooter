@@ -33,6 +33,7 @@ import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.notification.PollingWorker
 import jp.juggler.subwaytooter.notification.PushSubscriptionHelper
 import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.span.MyClickableSpanHandler
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
@@ -54,8 +55,11 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class ActMain : AppCompatActivity(), View.OnClickListener,
-    ViewPager.OnPageChangeListener, DrawerLayout.DrawerListener {
+class ActMain : AppCompatActivity(),
+    View.OnClickListener,
+    ViewPager.OnPageChangeListener,
+    DrawerLayout.DrawerListener,
+    MyClickableSpanHandler {
 
     class PhoneEnv {
 
@@ -79,16 +83,19 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
         const val RESULT_APP_DATA_IMPORT = Activity.RESULT_FIRST_USER
 
         // リクエスト
-        const val REQUEST_CODE_COLUMN_LIST = 1
-        const val REQUEST_APP_ABOUT = 3
-        const val REQUEST_CODE_NICKNAME = 4
-        const val REQUEST_CODE_POST = 5
-        const val REQUEST_CODE_TEXT = 8
-        const val REQUEST_CODE_LANGUAGE_FILTER = 9
+//        const val REQUEST_CODE_COLUMN_LIST = 1
+//        const val REQUEST_APP_ABOUT = 3
+//        const val REQUEST_CODE_NICKNAME = 4
+//        const val REQUEST_CODE_POST = 5
+//        const val REQUEST_CODE_TEXT = 8
+//        const val REQUEST_CODE_LANGUAGE_FILTER = 9
 
         const val COLUMN_WIDTH_MIN_DP = 300
 
         const val STATE_CURRENT_PAGE = "current_page"
+
+        // ActPostから参照される
+        var refActMain: WeakReference<ActMain>? = null
 
         // 外部からインテントを受信した後、アカウント選択中に画面回転したらアカウント選択からやり直す
         internal var sent_intent2: Intent? = null
@@ -116,6 +123,9 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
     var timeline_spacing: Float? = null
     var avatarIconSize: Int = 0
     var notificationTlIconSize: Int = 0
+
+    // マルチウィンドウモードで子ウィンドウを閉じるのに使う
+    val closeList = LinkedList<WeakReference<AppCompatActivity>>()
 
     // onResume() .. onPause() の間なら真
     private var isResumed = false
@@ -223,7 +233,7 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
         }
     }
 
-    private val link_click_listener: (View, MyClickableSpan) -> Unit = { viewClicked, span ->
+    override fun onMyClickableSpanClicked(viewClicked: View, span: MyClickableSpan) {
 
         // ビュー階層を下から辿って文脈を取得する
         var column: Column? = null
@@ -496,6 +506,7 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
     override fun onCreate(savedInstanceState: Bundle?) {
         log.d("onCreate")
         super.onCreate(savedInstanceState)
+        refActMain = WeakReference(this)
 
         arColumnColor.register(this, log)
         arLanguageFilter.register(this, log)
@@ -560,7 +571,18 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
     override fun onDestroy() {
         log.d("onDestroy")
         super.onDestroy()
+        refActMain = null
         post_helper.onDestroy()
+
+        // 子画面を全て閉じる
+        closeList.forEach {
+            try {
+                it.get()?.finish()
+            } catch (ex: Throwable) {
+                log.e(ex, "close failed?")
+            }
+        }
+        closeList.clear()
 
         // このアクティビティに関連する ColumnViewHolder への参照を全カラムから除去する
         app_state.columnList.forEach {
@@ -807,7 +829,7 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
         at android.os.Binder.execTransact (Binder.java:739)
         */
 
-        MyClickableSpan.link_callback = WeakReference(link_click_listener)
+        // TODO MyClickableSpan.link_callback = WeakReference(link_click_listener)
 
         if (Pref.bpDontScreenOff(pref)) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -826,7 +848,6 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
         if (intent != null) {
             handleSentIntent(intent)
         }
-
     }
 
     override fun onPause() {
@@ -937,6 +958,31 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
         dlgQuickTootMenu.toggle()
     }
 
+    private fun updatePostedStatus(data: Intent) {
+        posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
+        if (data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
+            posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
+            posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
+            posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
+        } else {
+            posted_status_id = null
+        }
+    }
+
+    val arActPost = activityResultHandler { ar ->
+        val data = ar?.data
+        if (data != null && ar.resultCode == Activity.RESULT_OK) {
+            etQuickToot.setText("")
+            updatePostedStatus(data)
+        }
+    }
+
+    fun onMultiWindowPostComplete(data: Intent) {
+        if (!isLiveActivity) return
+        updatePostedStatus(data)
+        if (isStart_) refreshAfterPost()
+    }
+
     private fun refreshAfterPost() {
         val posted_acct = this.posted_acct
         val posted_status_id = this.posted_status_id
@@ -949,11 +995,8 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
                 ) {
                     column.startLoading()
                 }
-
             }
-
         } else if (posted_acct != null && posted_status_id != null) {
-
             val posted_redraft_id = this.posted_redraft_id
             if (posted_redraft_id != null) {
                 val host = posted_acct.host
@@ -1074,20 +1117,6 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
         return false
     }
 
-    val arActPost = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == Activity.RESULT_OK) {
-            etQuickToot.setText("")
-            posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
-            if (data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
-                posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
-                posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
-                posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
-            } else {
-                posted_status_id = null
-            }
-        }
-    }
 
     private val arActText = activityResultHandler { ar ->
         when (ar?.resultCode) {
@@ -1704,7 +1733,7 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
                 userProfile(
                     defaultInsertPosition,
                     null,
-                    Acct.parse(user,instance),
+                    Acct.parse(user, instance),
                     userUrl = "https://$instance/@$user",
                     original_url = url
                 )
@@ -1712,7 +1741,7 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
                 userProfile(
                     defaultInsertPosition,
                     null,
-                    acct = Acct.parse(user,host),
+                    acct = Acct.parse(user, host),
                     userUrl = url,
                 )
             }
@@ -1728,7 +1757,7 @@ class ActMain : AppCompatActivity(), View.OnClickListener,
             userProfile(
                 defaultInsertPosition,
                 null,
-                acct = Acct.parse(user,host),
+                acct = Acct.parse(user, host),
                 userUrl = url,
             )
             return

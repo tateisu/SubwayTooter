@@ -1093,4 +1093,8 @@
     <string name="not_available_for_current_accounts">この機能を利用できるアカウントがありません</string>
     <string name="confirm_reaction">%2$s から %1$s でリアクションしますか?</string>
     <string name="confirm_reaction_to_pleroma">%2$s からカスタム絵文字 %1$s でリアクションしようとしていますが、送り先 %3$s はカスタム絵文字のリアクションに対応してないかもしれません。続けますか?</string>
+
+    <string name="multi_window_post">投稿画面を別ウィンドウで表示する</string>
+    <string name="many_window_post">投稿画面を多くのウィンドウで表示する</string>
+
 </resources>

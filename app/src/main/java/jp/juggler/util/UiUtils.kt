@@ -23,6 +23,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.R
 import java.util.*
@@ -384,3 +385,6 @@ class ActivityResultHandler<A : ComponentActivity>(
 @Suppress("unused")
 fun <A : ComponentActivity> A.activityResultHandler(callback: A.(ActivityResult?) -> Unit) =
     ActivityResultHandler(callback)
+
+val AppCompatActivity.isLiveActivity: Boolean
+    get() = !(isFinishing || isDestroyed)

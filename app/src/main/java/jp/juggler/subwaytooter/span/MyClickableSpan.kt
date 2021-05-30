@@ -5,9 +5,13 @@ import android.text.style.ClickableSpan
 import android.view.View
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.util.activity
+import jp.juggler.util.cast
 import jp.juggler.util.notZero
-import java.lang.ref.WeakReference
 
+interface MyClickableSpanHandler{
+	fun onMyClickableSpanClicked(viewClicked:View,span:MyClickableSpan)
+}
 
 class LinkInfo(
 	var url : String,
@@ -23,11 +27,10 @@ class LinkInfo(
 class MyClickableSpan(val linkInfo : LinkInfo) : ClickableSpan() {
 	
 	companion object {
-		var link_callback : WeakReference<(View, MyClickableSpan) -> Unit>? = null
 		var defaultLinkColor : Int = 0
 		var showLinkUnderline = true
 	}
-	
+
 	val color_fg : Int
 	val color_bg : Int
 	
@@ -43,7 +46,9 @@ class MyClickableSpan(val linkInfo : LinkInfo) : ClickableSpan() {
 	}
 	
 	override fun onClick(view : View) {
-		link_callback?.get()?.invoke(view, this)
+		view.activity
+			?.cast<MyClickableSpanHandler>()
+			?.onMyClickableSpanClicked(view,this)
 	}
 	
 	override fun updateDrawState(ds : TextPaint) {

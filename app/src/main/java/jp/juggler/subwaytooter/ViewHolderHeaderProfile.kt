@@ -275,7 +275,9 @@ internal class ViewHolderHeaderProfile(
                         append(tagWithSharp)
                         val end = length
                         tag.url?.notEmpty()?.let { url ->
-                            val span = MyClickableSpan(LinkInfo(url = url, tag = tag.name, caption = tagWithSharp))
+                            val span = MyClickableSpan(
+                                LinkInfo(url = url, tag = tag.name, caption = tagWithSharp)
+                            )
                             setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                         }
                     }

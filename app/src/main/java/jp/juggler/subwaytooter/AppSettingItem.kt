@@ -485,6 +485,15 @@ val appSettingRoot = AppSettingItem(null, SettingType.Section, R.string.app_sett
             R.string.start,
             R.string.end
         )
+
+        sw(
+            Pref.bpMultiWindowPost,
+            R.string.multi_window_post
+        )
+        sw(
+            Pref.bpManyWindowPost,
+            R.string.many_window_post
+        )
     }
 
     section(R.string.media_attachment) {

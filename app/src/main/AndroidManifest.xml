@@ -197,7 +197,18 @@
             android:name=".ActPost"
             android:label="@string/act_post"
 
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustResize" >
+
+            <!--suppress AndroidElementNotAllowed -->
+            <layout
+                android:defaultWidth="320dp"
+                android:defaultHeight="480dp"
+                android:gravity="center"
+                android:minWidth="64dp"
+                android:minHeight="64dp"
+                tools:ignore="UnusedAttribute" />
+
+        </activity>
 
         <activity
             android:name=".ActAccountSetting"

@@ -24,6 +24,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
 import jp.juggler.subwaytooter.R
 import java.util.*
@@ -365,8 +366,8 @@ class ActivityResultHandler<A : ComponentActivity>(
     private lateinit var launcher: ActivityResultLauncher<Intent>
 
     // startForActivityResultの代わりに呼び出す
-    fun launch(intent: Intent) = try {
-        launcher.launch(intent)
+    fun launch(intent: Intent,options: ActivityOptionsCompat?=null) = try {
+        launcher.launch(intent,options)
     } catch (ex: Throwable) {
         log.e(ex, "launch failed")
         context.showToast(ex, "activity launch failed.")

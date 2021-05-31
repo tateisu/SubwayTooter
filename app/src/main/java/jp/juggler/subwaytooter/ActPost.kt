@@ -20,9 +20,8 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewTreeObserver
+import android.util.DisplayMetrics
+import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.activity.result.ActivityResult
@@ -33,6 +32,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.inputmethod.InputConnectionCompat
 import androidx.core.view.inputmethod.InputContentInfoCompat
 import jp.juggler.subwaytooter.Styler.defaultColorIcon
+import jp.juggler.subwaytooter.action.saveWindowSize
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.*
@@ -42,6 +42,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.view.ActPostRootLinearLayout
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.util.*
@@ -62,6 +63,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
+
 
 class ActPost : AppCompatActivity(),
     View.OnClickListener,
@@ -409,7 +411,7 @@ class ActPost : AppCompatActivity(),
 
     private lateinit var tvCharCount: TextView
     internal lateinit var handler: Handler
-    private lateinit var formRoot: View
+    private lateinit var formRoot: ActPostRootLinearLayout
 
     private lateinit var llReply: View
     private lateinit var tvReplyTo: TextView
@@ -743,11 +745,16 @@ class ActPost : AppCompatActivity(),
         btnAttachment = findViewById(R.id.btnAttachment)
         btnPost = findViewById(R.id.btnPost)
         llAttachment = findViewById(R.id.llAttachment)
-
         cbNSFW = findViewById(R.id.cbNSFW)
         cbContentWarning = findViewById(R.id.cbContentWarning)
         etContentWarning = findViewById(R.id.etContentWarning)
         etContent = findViewById(R.id.etContent)
+
+        formRoot.callbackOnSizeChanged = {_,_,_,_ ->
+            if(Build.VERSION.SDK_INT >= 24 && isMultiWindowPost) saveWindowSize()
+            // ビューのw,hはシステムバーその他を含まないので使わない
+        }
+
         // https://github.com/tateisu/SubwayTooter/issues/123
         // 早い段階で指定する必要がある
         etContent.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE

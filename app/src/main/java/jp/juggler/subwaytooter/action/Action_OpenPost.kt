@@ -1,10 +1,11 @@
 package jp.juggler.subwaytooter.action
 
+import android.annotation.TargetApi
 import android.content.Intent
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.ActPost
-import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.R
+import android.os.Build
+import android.util.DisplayMetrics
+import androidx.core.app.ActivityOptionsCompat
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootScheduled
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -13,9 +14,35 @@ import jp.juggler.subwaytooter.api.syncStatus
 import jp.juggler.subwaytooter.dialog.pickAccount
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.matchHost
+import jp.juggler.util.LogCategory
 import jp.juggler.util.isLiveActivity
 import jp.juggler.util.launchMain
 import jp.juggler.util.showToast
+
+private val log = LogCategory("Action_OpenPost")
+
+@TargetApi(24)
+fun ActPost.saveWindowSize() {
+
+    // 最大化状態で起動することはできないので、最大化状態のサイズは覚えない
+    if (!isInMultiWindowMode) return
+
+    if (Build.VERSION.SDK_INT >= 30) {
+        // WindowMetrics#getBounds() the window size including all system bar areas
+        windowManager?.currentWindowMetrics?.bounds?.let { bounds ->
+            ActPost.log.d("API=${Build.VERSION.SDK_INT}, WindowMetrics#getBounds() $bounds")
+            PrefDevice.savePostWindowBound(this, bounds.width(), bounds.height())
+        }
+    } else {
+        @Suppress("DEPRECATION")
+        windowManager.defaultDisplay?.let { display ->
+            val dm = DisplayMetrics()
+            display.getMetrics(dm)
+            ActPost.log.d("API=${Build.VERSION.SDK_INT}, displayMetrics=${dm.widthPixels},${dm.heightPixels}")
+            PrefDevice.savePostWindowBound(this, dm.widthPixels, dm.heightPixels)
+        }
+    }
+}
 
 fun ActMain.openActPostImpl(
     account_db_id: Long,
@@ -65,11 +92,18 @@ fun ActMain.openActPostImpl(
                     it.updateText(intent)
                     return
                 }
-
         // fall thru
-        arActPost.launch(intent.apply{
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK )
-        })
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+
+        var options = ActivityOptionsCompat.makeBasic()
+        PrefDevice.loadPostWindowBound(this)
+            ?.let {
+                log.d("ActPost launchBounds ${it}")
+                options = options.setLaunchBounds(it)
+            }
+
+        arActPost.launch(intent, options)
     }
 }
 
@@ -108,7 +142,7 @@ fun ActMain.mention(
 fun ActMain.mentionFromAnotherAccount(
     access_info: SavedAccount,
     who: TootAccount?
-){
+) {
     launchMain {
         who ?: return@launchMain
 
@@ -117,7 +151,7 @@ fun ActMain.mentionFromAnotherAccount(
             bAllowPseudo = false,
             bAuto = false,
             message = getString(R.string.account_picker_toot),
-            accountListArg = accountListNonPseudo( who.apDomain)
+            accountListArg = accountListNonPseudo(who.apDomain)
         )?.let { mention(it, initial_text) }
     }
 }
@@ -167,7 +201,7 @@ fun ActMain.replyFromAnotherAccount(
             bAllowPseudo = false,
             bAuto = false,
             message = getString(R.string.account_picker_reply),
-            accountListArg = accountListNonPseudo( timeline_account.apDomain),
+            accountListArg = accountListNonPseudo(timeline_account.apDomain),
         )?.let { ai ->
             if (ai.matchHost(status.readerApDomain)) {
                 // アクセス元ホストが同じならステータスIDを使って返信できる

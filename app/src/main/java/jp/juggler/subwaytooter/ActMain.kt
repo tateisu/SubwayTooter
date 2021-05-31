@@ -2795,4 +2795,25 @@ class ActMain : AppCompatActivity(),
             )
         }
 
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if(super.onKeyDown(keyCode, event)) return true
+        if(event!=null) {
+            if (event.isCtrlPressed) return true
+        }
+        return false
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        val rv = super.onKeyUp(keyCode, event)
+        if( event != null){
+            if( event.isCtrlPressed ){
+                log.d("onKeyUp code=$keyCode rv=$rv")
+                when(keyCode){
+                    KeyEvent.KEYCODE_N -> btnToot.performClick()
+                }
+                return true
+            }
+        }
+        return rv
+    }
 }

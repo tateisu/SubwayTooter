@@ -20,7 +20,6 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
-import android.util.DisplayMetrics
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
@@ -525,6 +524,28 @@ class ActPost : AppCompatActivity(),
     }
 
     ////////////////////////////////////////////////////////////////
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if(super.onKeyDown(keyCode, event)) return true
+        if(event!=null) {
+            if (event.isCtrlPressed) return true
+        }
+        return false
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        val rv = super.onKeyUp(keyCode, event)
+        if( event != null){
+            if( event.isCtrlPressed ){
+                ActMain.log.d("onKeyUp code=$keyCode rv=$rv")
+                when(keyCode){
+                    KeyEvent.KEYCODE_P -> btnPost.performClick()
+                }
+                return true
+            }
+        }
+        return rv
+    }
 
     override fun onClick(v: View) {
         refActPost = WeakReference(this)

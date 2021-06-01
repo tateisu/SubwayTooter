@@ -539,7 +539,7 @@ class ActPost : AppCompatActivity(),
             if( event.isCtrlPressed ){
                 ActMain.log.d("onKeyUp code=$keyCode rv=$rv")
                 when(keyCode){
-                    KeyEvent.KEYCODE_P -> btnPost.performClick()
+                    KeyEvent.KEYCODE_T -> btnPost.performClick()
                 }
                 return true
             }

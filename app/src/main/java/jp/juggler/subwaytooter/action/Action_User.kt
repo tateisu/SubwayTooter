@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.util.openCustomTab
 import jp.juggler.util.*
 import kotlinx.coroutines.*
 import okhttp3.Request
+import java.lang.StringBuilder
 
 
 // ユーザをミュート/ミュート解除する
@@ -655,19 +656,38 @@ private fun ActMain.userReport(
     }
     launchMain {
         runApiTask(access_info) { client ->
-            client.request(
-                "/api/v1/reports",
-                JsonObject().apply {
-                    put("account_id", who.id.toString())
-                    put("comment", comment)
-                    put("forward", forward)
-                    if (status != null) {
-                        put("status_ids", jsonArray {
-                            add(status.id.toString())
-                        })
-                    }
-                }.toPostRequestBuilder()
-            )
+            if (access_info.isMisskey) {
+                client.request(
+                    "/api/users/report-abuse",
+                    access_info.putMisskeyApiToken().apply {
+                        put("userId", who.id.toString())
+                        put(
+                            "comment",
+                            StringBuilder().apply {
+                                status?.let {
+                                    append(it.url)
+                                    append("\n")
+                                }
+                                append(comment)
+                            }.toString()
+                        )
+                    }.toPostRequestBuilder()
+                )
+            } else {
+                client.request(
+                    "/api/v1/reports",
+                    JsonObject().apply {
+                        put("account_id", who.id.toString())
+                        put("comment", comment)
+                        put("forward", forward)
+                        if (status != null) {
+                            put("status_ids", jsonArray {
+                                add(status.id.toString())
+                            })
+                        }
+                    }.toPostRequestBuilder()
+                )
+            }
         }?.let { result ->
             when (result.jsonObject) {
                 null -> showToast(true, result.error)

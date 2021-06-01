@@ -34,7 +34,8 @@ object ReportForm {
 		
 		val cbForward : CheckBox = view.findViewById(R.id.cbForward)
 		val tvForwardDesc : TextView = view.findViewById(R.id.tvForwardDesc)
-		val canForward = ! access_info.matchHost(who)
+
+		val canForward = ! access_info.matchHost(who) && !access_info.isMisskey
 		
 		cbForward.isChecked = false
 		if(! canForward) {

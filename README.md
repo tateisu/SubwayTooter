@@ -7,7 +7,7 @@ Mastodon client app for Android phone/tablet.
 
 ## Supported SNS service 
 - Mastodon https://joinmastodon.org/
-- Misskey https://joinmisskey.github.io/  (experimental support)
+- Misskey https://join.misskey.page/ (experimental support)
 
 ## Features
 - **Multiple account**

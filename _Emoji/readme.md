@@ -1,63 +1,72 @@
+------------------------------------------------
+# 概要
+
 絵文字データをアプリから使いやすい形式に変換します。
 
-#################################
-*依存データ
+------------------------------------------------
+# 依存データ
 
-# emojione v2.2.7 (古いMastodonとの互換性のため)
+## emojione v2.2.7 (古いMastodonとの互換性のため)
 rm -fr emojione
 git clone -b v2.2.7 git@github.com:emojione/emojione.git emojione
 
-# 2021/02 不要になった
 ## Gargron's fork of emoji-mart (master branch)
-#rm -fr emoji-mart
-#git clone git@github.com:Gargron/emoji-mart.git emoji-mart
+//2021/02 不要になった
+//rm -fr emoji-mart
+//git clone git@github.com:Gargron/emoji-mart.git emoji-mart
 
 rm -fr emoji-data
 git clone git@github.com:iamcal/emoji-data.git emoji-data
 
-# マストドン公式
+## マストドン公式
 rm -fr mastodon
 git clone git@github.com:tootsuite/mastodon.git mastodon
 
-# twemoji
+## twemoji
 rm -fr twemoji
 git clone git@github.com:twitter/twemoji.git twemoji
 
-# noto-emoji
+## noto-emoji
 rm -fr noto-emoji
 git clone git@github.com:googlefonts/noto-emoji.git noto-emoji
 
-# emoji4unicode
+## emoji4unicode
 rm -fr emoji4unicode
 git clone git@github.com:google/emoji4unicode.git emoji4unicode
 
-# override/ フォルダに優先的に使いたいsvgやpngを入れておく
+## override/ フォルダ
+
+優先的に使いたいsvgやpngを入れておく
 
 1f923.svg      傾いた笑う顔。演出的な理由でMastodonで使われている
 265f-fe0f.svg  Black Chess Pawn. Emoji 11.0 で追加されたがtwemojiに入ってない。
 267e-fe0f.svg  Permanent Paper Sign. Emoji 11.0 で追加されたがtwemojiに入ってない。
 
-########################################
+----------------------------------------------------
+# 作業手順
 
-* 前準備
-mkdir assets drawable-nodpi
-rm -f assets/* drawable-nodpi/* category-pretty.json
 
-* ビルド
-IntelliJ IDEA で _Emoji のプロジェクトを開く
+## 前準備
+
+
+mkdir -p assets drawable-nodpi
+rm -fr assets/* drawable-nodpi/* category-pretty.json
+
+echo '*/'
+
+## ビルド
+IntelliJ IDEA で emojiConverter のプロジェクトを開く
 Gradle sync
-Main.Ktを実行
+Main.Ktを実行。CWD は _Emoji にする。
 
-2021/02 からkotlinのコードに変えた
-
-* 出力
+## 出力
 
 drawable-nodpi の中身を C:\mastodon-related\SubwayTooter\emoji\src\main\res\drawable-nodpi にコピー。 (現時点ではカラ)
 assets の中身を C:\mastodon-related\TestEmojiSvg\app/src/main/assets にコピー。 TestEmojiSvg をビルドしてエラーが出ないか試す
 assets の中身を C:\mastodon-related\SubwayTooter\emoji\src\main\assets にコピー。
 emoji_map.txt を C:\mastodon-related\SubwayTooter\emoji\src\main\assets にコピー。
 
-#################################
+---------------------------------------------------------------------
 # 2018/9/23 メンテナンス
 
 今のマストドンが利用している絵文字データの再確認。
@@ -104,13 +113,13 @@ https://github.com/tootsuite/mastodon/tree/master/public/emoji
 ---------------------------------------------------------------------
 # emoji_map.txt のフォーマット
 
-### 基本的な構造
+## 基本的な構造
 - 行区切りは\x0a。
 - 行ごとに始端と終端をtrim{ it<= 0x20} する。
 - 行ごとに//以降を読み飛ばす。
 - 各行の^(\w+): 部分がヘッダ。
 
-### ヘッダとその処理
+## ヘッダとその処理
 
 svg または drawable
 : 絵文字の画像リソースを表す。
@@ -128,7 +137,7 @@ c: 直前に指定されたカテゴリ名に対して絵文字を追加する�
 
 t: トーン指定。カンマ区切りでトーン適用前の絵文字、トーンコード、トーン適用後の絵文字を表す。
 
-### トーンコード
+## トーンコード
 絵文字中の skin tone modifiersだけを抽出したもの。
 u1F3FB, u1F3FC, u1F3FD, u1F3FE, u1F3FF のコードポイントが1文字以上並ぶ。
 絵文字ピッカーでは1文字のトーンコードを持つ絵文字に対してトーンを選択できる。

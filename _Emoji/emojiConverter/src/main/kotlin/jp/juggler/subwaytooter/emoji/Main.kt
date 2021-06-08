@@ -2,12 +2,14 @@ package jp.juggler.subwaytooter.emoji
 
 import io.ktor.client.*
 import io.ktor.client.features.*
-import io.ktor.http.*
 import jp.juggler.subwaytooter.emoji.model.*
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.text.StringEscapeUtils
 import org.intellij.lang.annotations.Language
-import java.io.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
 
 
 //pngフォルダにある画像ファイルを参照する
@@ -69,11 +71,14 @@ class App {
 
 		private val ignoreImagePath = arrayOf(
 			"LICENSE",
+
 			// fe82b (フリーダイアル) はnoto-emoji では ?旗 になっていて使えない
 			"noto-emoji/png/128/emoji_ufe82b.png",
 			"noto-emoji/svg/emoji_ufe82b.svg",
+
 			// mastodonのフォルダにある余計なファイル
-			"mastodon/public/emoji/sheet_10.png"
+			"mastodon/public/emoji/sheet_10.png",
+			"mastodon/public/emoji/sheet_13.png",
 		)
 
 		// emojipediaにあるデータのうち、次のショートネームを持つ絵文字は無視する
@@ -223,7 +228,7 @@ class App {
 			val spanText = cols[0] as String
 			var href = cols[1] as String
 
-			var code = spanText.listCodePoints().toCodepointList(cameFrom)
+			val code = spanText.listCodePoints().toCodepointList(cameFrom)
 				?: error("can't get code from $spanText $href")
 
 
@@ -313,7 +318,8 @@ class App {
 		var countFound = 0
 		var countCreate = 0
 		var countError = 0
-		for( imageFile in dir.listFiles()!!){
+		val files = dir.listFiles() ?:error("listFiles returns null. $dir")
+		for( imageFile in files){
 			if (!imageFile.isFile) continue
 			val unixPath = imageFile.path.replace("\\", "/")
 			if (ignoreImagePath.any { unixPath.endsWith(it) }) continue
@@ -335,7 +341,7 @@ class App {
 				val unified2 = fixUnified[key] ?: unifiedQualifier(code)
 				if( unified2.list.size==1 && unified2.list.first()<256){
 					++countError
-					log.e("bad unified code: $unified2")
+					log.e("bad unified code: $unified2 $unixPath")
 				}
 				emoji = Emoji(key, unified2)
 
@@ -530,7 +536,7 @@ class App {
 				?: error("fixCategory: missing emoji for $strShortName")
 
 			category.addEmoji(emoji, addingName = shortName.toString())
-			log.d("fixCategory $category ${emoji.resName} ${shortName}")
+			log.d("fixCategory $category ${emoji.resName} $shortName")
 		}
 	}
 
@@ -1000,7 +1006,7 @@ class App {
 					nameChars.add(c)
 			}
 		}
-		log.w("nameChars: [${nameChars.sorted().joinToString("")}]")
+		log.i("nameChars: [${nameChars.sorted().joinToString("")}]")
 
 		writeData()
 

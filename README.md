@@ -40,7 +40,7 @@ by adding IzzyOnDroid repo, you can find Subway Tooter on F-droid app.
 <li><a href="https://mastodon.juggler.jp/@tateisu" rel="me">tateisu@mastodon.juggler.jp</a></li>
 </ul>
 
-## resources
+## Resources
 - Official blog (JP) http://subwaytooter.hatenadiary.jp/
 - Matrix room https://matrix.juggler.jp/#/#subwayTooter:matrix.juggler.jp
 

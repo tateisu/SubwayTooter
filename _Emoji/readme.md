@@ -7,64 +7,80 @@
 # 依存データ
 
 ## emojione v2.2.7 (古いMastodonとの互換性のため)
+```
 rm -fr emojione
 git clone -b v2.2.7 git@github.com:emojione/emojione.git emojione
+```
 
 ## Gargron's fork of emoji-mart (master branch)
-//2021/02 不要になった
-//rm -fr emoji-mart
-//git clone git@github.com:Gargron/emoji-mart.git emoji-mart
+2021/02 不要になった
+```
+# rm -fr emoji-mart
+# git clone git@github.com:Gargron/emoji-mart.git emoji-mart
+```
 
+## emoji-data
+```
 rm -fr emoji-data
 git clone git@github.com:iamcal/emoji-data.git emoji-data
+```
 
 ## マストドン公式
+```
 rm -fr mastodon
 git clone git@github.com:tootsuite/mastodon.git mastodon
+```
 
 ## twemoji
+```
 rm -fr twemoji
 git clone git@github.com:twitter/twemoji.git twemoji
+```
 
 ## noto-emoji
+```
 rm -fr noto-emoji
 git clone git@github.com:googlefonts/noto-emoji.git noto-emoji
+```
 
 ## emoji4unicode
+```
 rm -fr emoji4unicode
 git clone git@github.com:google/emoji4unicode.git emoji4unicode
+```
 
 ## override/ フォルダ
 
 優先的に使いたいsvgやpngを入れておく
 
+```
 1f923.svg      傾いた笑う顔。演出的な理由でMastodonで使われている
 265f-fe0f.svg  Black Chess Pawn. Emoji 11.0 で追加されたがtwemojiに入ってない。
 267e-fe0f.svg  Permanent Paper Sign. Emoji 11.0 で追加されたがtwemojiに入ってない。
+```
 
 ----------------------------------------------------
 # 作業手順
 
 
 ## 前準備
-
-
+```
 mkdir -p assets drawable-nodpi
 rm -fr assets/* drawable-nodpi/* category-pretty.json
+```
 
-echo '*/'
 
 ## ビルド
-IntelliJ IDEA で emojiConverter のプロジェクトを開く
-Gradle sync
-Main.Ktを実行。CWD は _Emoji にする。
+- IntelliJ IDEA で emojiConverter のプロジェクトを開く
+- Gradle sync
+- Main.Ktを実行。CWD は _Emoji にする。
 
 ## 出力
 
-drawable-nodpi の中身を C:\mastodon-related\SubwayTooter\emoji\src\main\res\drawable-nodpi にコピー。 (現時点ではカラ)
-assets の中身を C:\mastodon-related\TestEmojiSvg\app/src/main/assets にコピー。 TestEmojiSvg をビルドしてエラーが出ないか試す
-assets の中身を C:\mastodon-related\SubwayTooter\emoji\src\main\assets にコピー。
-emoji_map.txt を C:\mastodon-related\SubwayTooter\emoji\src\main\assets にコピー。
+- drawable-nodpi の中身を C:\mastodon-related\SubwayTooter\emoji\src\main\res\drawable-nodpi にコピー。 (現時点ではカラ)
+- assets の中身を C:\mastodon-related\TestEmojiSvg\app/src/main/assets にコピー。 TestEmojiSvg をビルドしてエラーが出ないか試す
+- assets の中身を C:\mastodon-related\SubwayTooter\emoji\src\main\assets にコピー。
+- emoji_map.txt を C:\mastodon-related\SubwayTooter\emoji\src\main\assets にコピー。
 
 ---------------------------------------------------------------------
 # 2018/9/23 メンテナンス

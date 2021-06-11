@@ -649,20 +649,23 @@ class ColumnTask_Refresh(
             var src = listParser(parser, array)
             adder(src, addToHead)
 
-            while (repeatReading) {
-
-                // returns false if no more result
-                fun saveResultRange(src: List<T>) = when (column.pagingType) {
-					ColumnPagingType.Offset -> {
-						column.offsetNext += src.size
-						true
-					}
-
-                    else -> // ColumnPagingType.Default
-                        column.saveRangeBottom(result, src)
+            // returns false if no more result
+            fun saveBottomRange(src: List<T>) = when (column.pagingType) {
+                ColumnPagingType.Offset -> {
+                    column.offsetNext += src.size
+                    true
                 }
 
-                if (!saveResultRange(src)) {
+                // ColumnPagingType.Default
+                else -> column.saveRangeBottom(result, src)
+            }
+
+            if(!repeatReading){
+                // 繰り返しなしでも範囲の保存は行う
+                saveBottomRange(src)
+
+            }else while(true){
+                if (!saveBottomRange(src)) {
                     log.d("$logCaption: saveRangeBottom returns false. no more items.")
                     break
                 }
@@ -726,8 +729,7 @@ class ColumnTask_Refresh(
 		path_base: String,
 		params: JsonObject,
 		first: Boolean
-	) =
-        client.request(
+	) = client.request(
 			path_base,
 			params.apply {
 				if (!bBottom) {

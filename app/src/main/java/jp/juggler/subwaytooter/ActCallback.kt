@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import jp.juggler.util.LogCategory
 import jp.juggler.util.digestSHA256Hex
+import okhttp3.internal.toHexString
 import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.FileOutputStream
@@ -32,7 +33,7 @@ class ActCallback : AppCompatActivity() {
 	}
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
-		log.d("onCreate flags=%x", intent.flags)
+		log.d("onCreate flags=0x${intent.flags.toHexString()}")
 		super.onCreate(savedInstanceState)
 
 		var intent : Intent? = intent

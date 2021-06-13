@@ -350,7 +350,7 @@ class PostHelper(
                     if (visibility == checkVisibility && !checkFun(instance)) {
                         val strVisibility = Styler.getVisibilityString(activity, account.isMisskey, checkVisibility)
                         return@runApiTask TootApiResult(
-                            getString(R.string.server_has_no_support_of_visibility,strVisibility)
+                            getString(R.string.server_has_no_support_of_visibility, strVisibility)
                         )
                     }
                 }
@@ -783,7 +783,7 @@ class PostHelper(
             val limit = 100
             val s = src.substring(start, end)
             val acct_list = AcctSet.searchPrefix(s, limit)
-            log.d("search for %s, result=%d", s, acct_list.size)
+            log.d("search for ${s}, result=${acct_list.size}")
             if (acct_list.isEmpty()) {
                 closeAcctPopup()
             } else {
@@ -811,7 +811,7 @@ class PostHelper(
             val limit = 100
             val s = src.substring(last_sharp + 1, end)
             val tag_list = TagSet.searchPrefix(s, limit)
-            log.d("search for %s, result=%d", s, tag_list.size)
+            log.d("search for ${s}, result=${tag_list.size}")
             if (tag_list.isEmpty()) {
                 closeAcctPopup()
             } else {
@@ -863,7 +863,7 @@ class PostHelper(
                 val s =
                     src.substring(last_colon + 1, end).lowercase().replace('-', '_')
                 val matches = EmojiDecoder.searchShortCode(activity, s, remain)
-                log.d("checkEmoji: search for %s, result=%d", s, matches.size)
+                log.d("checkEmoji: search for ${s}, result=${matches.size}")
                 code_list.addAll(matches)
             }
 

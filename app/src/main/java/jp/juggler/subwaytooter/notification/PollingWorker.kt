@@ -357,10 +357,7 @@ class PollingWorker private constructor(contextArg: Context) {
                 // ジョブが完了した？
                 val now = SystemClock.elapsedRealtime()
                 if (!pw.hasJob(JobId.Push)) {
-                    log.d(
-                        "handleFCMMessage: JOB_FCM completed. time=%.2f",
-                        (now - time_start) / 1000f
-                    )
+                    log.d("handleFCMMessage: JOB_FCM completed. time=${String.format("%.2f", (now - time_start) / 1000f)}")
                     break
                 }
 
@@ -398,7 +395,7 @@ class PollingWorker private constructor(contextArg: Context) {
     private val workerNotifier = Channel<Unit>(capacity = Channel.CONFLATED)
 
     fun notifyWorker() =
-         workerNotifier.trySend(Unit)
+        workerNotifier.trySend(Unit)
 
     init {
         log.d("init")

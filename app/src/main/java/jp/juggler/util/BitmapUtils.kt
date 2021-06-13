@@ -248,11 +248,7 @@ fun createResizedBitmap(
 					val paint = Paint()
 					paint.isFilterBitmap = true
 					canvas.drawBitmap(sourceBitmap, matrix, paint)
-					log.d(
-						"createResizedBitmap: resized to %sx%s",
-						dstSizeInt.x,
-						dstSizeInt.y
-					)
+					log.d("createResizedBitmap: resized to ${dstSizeInt.x}x${dstSizeInt.y}")
 					val tmp = dst
 					dst = null
 					tmp

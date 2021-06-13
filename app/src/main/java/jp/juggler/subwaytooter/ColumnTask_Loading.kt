@@ -258,6 +258,7 @@ class ColumnTask_Loading(
                 column.saveRange(bBottom = true, bTop = true, result = result, list = src)
             } else {
                 column.saveRangeTop(result, src)
+                true
             }
 
             return when {
@@ -416,6 +417,7 @@ class ColumnTask_Loading(
                 column.saveRange(bBottom = true, bTop = true, result = result, list = src)
             } else {
                 column.saveRangeTop(result, src)
+                true
             }
 
             return when {
@@ -998,7 +1000,7 @@ class ColumnTask_Loading(
             target_status.conversation_main = true
 
             // 祖先
-            val list_asc = java.util.ArrayList<TootStatus>()
+            val list_asc = ArrayList<TootStatus>()
             while (true) {
                 if (client.isApiCancelled) return null
                 queryParams["offset"] = list_asc.size
@@ -1012,7 +1014,7 @@ class ColumnTask_Loading(
             }
 
             // 直接の子リプライ。(子孫をたどることまではしない)
-            val list_desc = java.util.ArrayList<TootStatus>()
+            val list_desc = ArrayList<TootStatus>()
             val idSet = HashSet<EntityId>()
             var untilId: EntityId? = null
 
@@ -1048,7 +1050,7 @@ class ColumnTask_Loading(
             }
 
             // 一つのリストにまとめる
-            this.list_tmp = java.util.ArrayList<TimelineItem>(
+            this.list_tmp = ArrayList<TimelineItem>(
                 list_asc.size + list_desc.size + 2
             ).apply {
                 addAll(list_asc.sortedBy { it.time_created_at })
@@ -1084,7 +1086,7 @@ class ColumnTask_Loading(
             target_status.conversation_main = true
             if (conversation_context != null) {
 
-                this.list_tmp = java.util.ArrayList(
+                this.list_tmp = ArrayList(
                     1
                         + (conversation_context.ancestors?.size ?: 0)
                         + (conversation_context.descendants?.size ?: 0)

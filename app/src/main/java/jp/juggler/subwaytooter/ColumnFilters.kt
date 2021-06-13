@@ -329,7 +329,7 @@ fun Column.isFiltered(item: TootNotification): Boolean {
         TootNotification.TYPE_FOLLOW_REQUEST_ACCEPTED_MISSKEY -> {
             val who = item.account
             if (who != null && favMuteSet?.contains(access_info.getFullAcct(who)) == true) {
-                Column.log.d("%s is in favMuteSet.", access_info.getFullAcct(who))
+                Column.log.d("${access_info.getFullAcct(who)} is in favMuteSet.")
                 return true
             }
         }
@@ -404,21 +404,21 @@ fun Column.checkFiltersForListData(trees: FilterTrees?) {
 }
 
 fun reloadFilter(context: Context, access_info: SavedAccount) {
-    launchMain{
+    launchMain {
         var resultList: ArrayList<TootFilter>? = null
 
         context.runApiTask(
             access_info,
             progressStyle = ApiTask.PROGRESS_NONE
-        ){client->
-            client.request(ApiPath.PATH_FILTERS)?.also{ result->
-                result.jsonArray?.let{
+        ) { client ->
+            client.request(ApiPath.PATH_FILTERS)?.also { result ->
+                result.jsonArray?.let {
                     resultList = TootFilter.parseList(it)
                 }
             }
         }
 
-        resultList?.let{
+        resultList?.let {
             Column.log.d("update filters for ${access_info.acct.pretty}")
             for (column in App1.getAppState(context).columnList) {
                 if (column.access_info == access_info) {

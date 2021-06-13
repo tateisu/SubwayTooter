@@ -63,7 +63,7 @@ class UpdateRelationEnv(val column: Column) {
                     UserRelation.saveListMisskey(now, column.access_info.db_id, who_list, start, step)
                     start += step
                 }
-                Column.log.d("updateRelation: update %d relations.", end)
+                Column.log.d("updateRelation: update ${end} relations.")
             }
 
             // 2018/11/1 Misskeyにもリレーション取得APIができた
@@ -108,7 +108,7 @@ class UpdateRelationEnv(val column: Column) {
                         UserRelation.saveList2(now, column.access_info.db_id, list)
                     }
                 }
-                Column.log.d("updateRelation: update %d relations.", n)
+                Column.log.d("updateRelation: update ${n} relations.")
 
             }
 
@@ -139,7 +139,7 @@ class UpdateRelationEnv(val column: Column) {
                         list
                     )
                 }
-                Column.log.d("updateRelation: update %d relations.", n)
+                Column.log.d("updateRelation: update ${n} relations.")
             }
         }
 
@@ -158,7 +158,7 @@ class UpdateRelationEnv(val column: Column) {
                 AcctSet.saveList(now, acct_list, n, length)
                 n += length
             }
-            Column.log.d("updateRelation: update %d acct.", n)
+            Column.log.d("updateRelation: update ${n} acct.")
 
         }
 
@@ -177,7 +177,7 @@ class UpdateRelationEnv(val column: Column) {
                 TagSet.saveList(now, tag_list, n, length)
                 n += length
             }
-            Column.log.d("updateRelation: update %d tag.", n)
+            Column.log.d("updateRelation: update ${n} tag.")
         }
     }
 }

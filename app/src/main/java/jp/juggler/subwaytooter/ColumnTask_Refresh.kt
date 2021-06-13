@@ -103,8 +103,6 @@ class ColumnTask_Refresh(
                 sp = holder.scrollPosition
             }
 
-
-
             if (bBottom) {
                 val changeList = listOf(
                     AdapterChange(

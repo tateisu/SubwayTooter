@@ -164,12 +164,7 @@ class AcctColor {
                 log.e(ex, "load failed.")
             }
 
-            log.d(
-                "lruCache size=%s,hit=%s,miss=%s",
-                mMemoryCache.size(),
-                mMemoryCache.hitCount(),
-                mMemoryCache.missCount()
-            )
+            log.d("lruCache size=${mMemoryCache.size()},hit=${mMemoryCache.hitCount()},miss=${mMemoryCache.missCount()}")
             val ac = AcctColor(key, acctPretty)
             mMemoryCache.put(key, ac)
             return ac

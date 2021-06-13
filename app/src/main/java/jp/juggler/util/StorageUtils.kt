@@ -167,66 +167,66 @@ import java.util.*
 
 private const val MIME_TYPE_APPLICATION_OCTET_STREAM = "application/octet-stream"
 
-private val mimeTypeExMap : HashMap<String, String> by lazy {
-	val map = HashMap<String, String>()
-	map["BDM"] = "application/vnd.syncml.dm+wbxml"
-	map["DAT"] = ""
-	map["TID"] = ""
-	map["js"] = "text/javascript"
-	map["sh"] = "application/x-sh"
-	map["lua"] = "text/x-lua"
-	map
+private val mimeTypeExMap: HashMap<String, String> by lazy {
+    val map = HashMap<String, String>()
+    map["BDM"] = "application/vnd.syncml.dm+wbxml"
+    map["DAT"] = ""
+    map["TID"] = ""
+    map["js"] = "text/javascript"
+    map["sh"] = "application/x-sh"
+    map["lua"] = "text/x-lua"
+    map
 }
 
 @Suppress("unused")
-fun getMimeType(log : LogCategory?, src : String) : String {
-	var ext = MimeTypeMap.getFileExtensionFromUrl(src)
-	if(ext != null && ext.isNotEmpty()) {
-		ext = ext.lowercase()
-		
-		//
-		var mime_type : String? = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
-		if(mime_type?.isNotEmpty() == true) return mime_type
-		
-		//
-		mime_type = mimeTypeExMap[ext]
-		if(mime_type?.isNotEmpty() == true) return mime_type
-		
-		// 戻り値が空文字列の場合とnullの場合があり、空文字列の場合は既知なのでログ出力しない
-		
-		if(mime_type == null && log != null) {
-			log.w("getMimeType(): unknown file extension '%s'", ext)
-		}
-	}
-	return MIME_TYPE_APPLICATION_OCTET_STREAM
+fun getMimeType(log: LogCategory?, src: String): String {
+    var ext = MimeTypeMap.getFileExtensionFromUrl(src)
+    if (ext != null && ext.isNotEmpty()) {
+        ext = ext.lowercase()
+
+        //
+        var mime_type: String? = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
+        if (mime_type?.isNotEmpty() == true) return mime_type
+
+        //
+        mime_type = mimeTypeExMap[ext]
+        if (mime_type?.isNotEmpty() == true) return mime_type
+
+        // 戻り値が空文字列の場合とnullの場合があり、空文字列の場合は既知なのでログ出力しない
+
+        if (mime_type == null && log != null) {
+            log.w("getMimeType(): unknown file extension '${ext}'")
+        }
+    }
+    return MIME_TYPE_APPLICATION_OCTET_STREAM
 }
 
-fun getDocumentName(contentResolver : ContentResolver, uri : Uri) : String {
-	val errorName = "no_name"
-	return contentResolver.query(uri, null, null, null, null, null)
-		?.use { cursor ->
-			return if(! cursor.moveToFirst()) {
-				errorName
-			} else {
-				cursor.getStringOrNull(OpenableColumns.DISPLAY_NAME) ?: errorName
-			}
-		}
-		?: errorName
+fun getDocumentName(contentResolver: ContentResolver, uri: Uri): String {
+    val errorName = "no_name"
+    return contentResolver.query(uri, null, null, null, null, null)
+        ?.use { cursor ->
+            return if (!cursor.moveToFirst()) {
+                errorName
+            } else {
+                cursor.getStringOrNull(OpenableColumns.DISPLAY_NAME) ?: errorName
+            }
+        }
+        ?: errorName
 }
 
-fun getStreamSize(bClose : Boolean, inStream : InputStream) : Long {
-	try {
-		var size = 0L
-		while(true) {
-			val r = IOUtils.skip(inStream, 16384)
-			if(r <= 0) break
-			size += r
-		}
-		return size
-	} finally {
-		@Suppress("DEPRECATION")
-		if(bClose) IOUtils.closeQuietly(inStream)
-	}
+fun getStreamSize(bClose: Boolean, inStream: InputStream): Long {
+    try {
+        var size = 0L
+        while (true) {
+            val r = IOUtils.skip(inStream, 16384)
+            if (r <= 0) break
+            size += r
+        }
+        return size
+    } finally {
+        @Suppress("DEPRECATION")
+        if (bClose) IOUtils.closeQuietly(inStream)
+    }
 }
 
 //fun File.loadByteArray() : ByteArray {
@@ -242,84 +242,84 @@ fun getStreamSize(bClose : Boolean, inStream : InputStream) : Long {
 //	}
 //}
 
-fun Context.loadRawResource(resId : Int) : ByteArray {
-	resources.openRawResource(resId).use { inStream ->
-		val bao = ByteArrayOutputStream(inStream.available())
-		IOUtils.copy(inStream, bao)
-		return bao.toByteArray()
-	}
+fun Context.loadRawResource(resId: Int): ByteArray {
+    resources.openRawResource(resId).use { inStream ->
+        val bao = ByteArrayOutputStream(inStream.available())
+        IOUtils.copy(inStream, bao)
+        return bao.toByteArray()
+    }
 }
 
-fun intentOpenDocument(mimeType : String) : Intent {
-	val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-	intent.addCategory(Intent.CATEGORY_OPENABLE)
-	intent.type = mimeType // "image/*"
-	return intent
+fun intentOpenDocument(mimeType: String): Intent {
+    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+    intent.addCategory(Intent.CATEGORY_OPENABLE)
+    intent.type = mimeType // "image/*"
+    return intent
 }
 
 fun intentGetContent(
-	allowMultiple : Boolean,
-	caption : String,
-	mimeTypes : Array<out String>
-) : Intent {
-	val intent = Intent(Intent.ACTION_GET_CONTENT)
-	intent.addCategory(Intent.CATEGORY_OPENABLE)
-	
-	if(allowMultiple) {
-		// EXTRA_ALLOW_MULTIPLE は API 18 (4.3)以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
-		intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-	}
-	
-	// EXTRA_MIME_TYPES は API 19以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
-	intent.putExtra("android.intent.extra.MIME_TYPES", mimeTypes)
-	
-	intent.type = when {
-		mimeTypes.size == 1 -> mimeTypes[0]
-		
-		// On Android 6.0 and above using "video/* image/" or "image/ video/*" type doesn't work
-		// it only recognizes the first filter you specify.
-		Build.VERSION.SDK_INT >= 23 -> "*/*"
-		
-		else -> mimeTypes.joinToString(" ")
-	}
-	
-	return Intent.createChooser(intent, caption)
+    allowMultiple: Boolean,
+    caption: String,
+    mimeTypes: Array<out String>
+): Intent {
+    val intent = Intent(Intent.ACTION_GET_CONTENT)
+    intent.addCategory(Intent.CATEGORY_OPENABLE)
+
+    if (allowMultiple) {
+        // EXTRA_ALLOW_MULTIPLE は API 18 (4.3)以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+    }
+
+    // EXTRA_MIME_TYPES は API 19以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
+    intent.putExtra("android.intent.extra.MIME_TYPES", mimeTypes)
+
+    intent.type = when {
+        mimeTypes.size == 1 -> mimeTypes[0]
+
+        // On Android 6.0 and above using "video/* image/" or "image/ video/*" type doesn't work
+        // it only recognizes the first filter you specify.
+        Build.VERSION.SDK_INT >= 23 -> "*/*"
+
+        else -> mimeTypes.joinToString(" ")
+    }
+
+    return Intent.createChooser(intent, caption)
 }
 
 data class GetContentResultEntry(
-	val uri : Uri,
-	val mimeType : String? = null,
-	var time : Long? = null
+    val uri: Uri,
+    val mimeType: String? = null,
+    var time: Long? = null
 )
 
 // returns list of pair of uri and mime-type.
-fun Intent.handleGetContentResult(contentResolver : ContentResolver) : ArrayList<GetContentResultEntry> {
-	val urlList = ArrayList<GetContentResultEntry>()
-	// 単一選択
-	this.data?.let {
-		urlList.add(GetContentResultEntry(it, this.type))
-	}
-	// 複数選択
-	val cd = this.clipData
-	if(cd != null) {
-		for(i in 0 until cd.itemCount) {
-			cd.getItemAt(i)?.uri?.let { uri ->
-				if(null == urlList.find { it.uri == uri }) {
-					urlList.add(GetContentResultEntry(uri))
-				}
-			}
-		}
-	}
-	urlList.forEach {
-		try {
-			contentResolver.takePersistableUriPermission(
-				it.uri,
-				Intent.FLAG_GRANT_READ_URI_PERMISSION
-			)
-		} catch(_ : Throwable) {
-		}
-	}
-	return urlList
+fun Intent.handleGetContentResult(contentResolver: ContentResolver): ArrayList<GetContentResultEntry> {
+    val urlList = ArrayList<GetContentResultEntry>()
+    // 単一選択
+    this.data?.let {
+        urlList.add(GetContentResultEntry(it, this.type))
+    }
+    // 複数選択
+    val cd = this.clipData
+    if (cd != null) {
+        for (i in 0 until cd.itemCount) {
+            cd.getItemAt(i)?.uri?.let { uri ->
+                if (null == urlList.find { it.uri == uri }) {
+                    urlList.add(GetContentResultEntry(uri))
+                }
+            }
+        }
+    }
+    urlList.forEach {
+        try {
+            contentResolver.takePersistableUriPermission(
+                it.uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        } catch (_: Throwable) {
+        }
+    }
+    return urlList
 }
 
 

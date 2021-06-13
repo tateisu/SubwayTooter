@@ -69,14 +69,7 @@ class NotificationTracking {
 				post_id.putTo(cv, COL_POST_ID)
 				cv.put(COL_POST_TIME, post_time)
 				val rows = App1.database.update(table, cv, WHERE_AID, arrayOf(account_db_id.toString(),notificationType))
-				log.d(
-					"updatePost account_db_id=%s, nt=%s, post=%s,%s update_rows=%s"
-					, account_db_id
-					, notificationType
-					, post_id
-					, post_time
-					, rows
-				)
+				log.d("updatePost account_db_id=${account_db_id}, nt=${notificationType}, post=${post_id},${post_time} update_rows=${rows}")
 				dirty=false
 				clearCache(account_db_id,notificationType)
 			} catch(ex : Throwable) {

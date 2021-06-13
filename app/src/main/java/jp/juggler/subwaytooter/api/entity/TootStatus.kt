@@ -951,24 +951,24 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
         return list
     }
 
-    fun updateReactionMastodon( newReactionSet: TootReactionSet ) {
+    fun updateReactionMastodon(newReactionSet: TootReactionSet) {
         synchronized(this) {
             this.reactionSet = newReactionSet
         }
     }
 
-    fun updateReactionMastodonByEvent( newReaction: TootReaction ) {
+    fun updateReactionMastodonByEvent(newReaction: TootReaction) {
         synchronized(this) {
             var reactionSet = this.reactionSet
-            if( newReaction.count <= 0 ){
-                reactionSet?.get(newReaction.name)?.let{ reactionSet?.remove(it) }
-            }else{
+            if (newReaction.count <= 0) {
+                reactionSet?.get(newReaction.name)?.let { reactionSet?.remove(it) }
+            } else {
                 if (reactionSet == null) {
                     reactionSet = TootReactionSet(isMisskey = false)
                     this.reactionSet = reactionSet
                 }
 
-                when(val old = reactionSet[newReaction.name]) {
+                when (val old = reactionSet[newReaction.name]) {
                     null -> reactionSet.add(newReaction)
 
                     // 同一オブジェクトならマージは不要
@@ -1007,7 +1007,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             if (byMe) {
                 // 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
                 // その場合はカウントを変更しない
-                if(reactionSet.any{ it.me && it.name == code}) return false
+                if (reactionSet.any { it.me && it.name == code }) return false
             }
 
             log.d("increaseReaction noteId=$id byMe=$byMe caller=$caller")
@@ -1017,7 +1017,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 reactionSet[code]?.also { it.count = max(0, it.count + 1L) }
                     ?: TootReaction(name = code, count = 1L).also { reactionSet.add(it) }
 
-            if(byMe) reaction.me = true
+            if (byMe) reaction.me = true
 
             return true
         }
@@ -1037,7 +1037,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             if (byMe) {
                 // 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
                 // その場合はカウントを変更しない
-                if(reactionSet.any{ !it.me && it.name == code}) return false
+                if (reactionSet.any { !it.me && it.name == code }) return false
             }
 
             log.d("decreaseReaction noteId=$id byMe=$byMe caller=$caller")
@@ -1046,7 +1046,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
             val reaction = reactionSet[code]
                 ?.also { it.count = max(0L, it.count - 1L) }
 
-            if(byMe) reaction?.me = false
+            if (byMe) reaction?.me = false
 
             return true
         }
@@ -1210,10 +1210,10 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     m = reDate.matcher(strTime)
                     if (m.find()) return parseTime("${strTime}T00:00:00.000Z")
 
-                    log.w("invalid time format: %s", strTime)
+                    log.w("invalid time format: ${strTime}")
                 } catch (ex: Throwable) { // ParseException,  ArrayIndexOutOfBoundsException
                     log.trace(ex)
-                    log.e(ex, "TootStatus.parseTime failed. src=%s", strTime)
+                    log.e(ex, "TootStatus.parseTime failed. src=$strTime")
                 }
             }
             return 0L
@@ -1224,7 +1224,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                 try {
                     val m = reMSPTime.matcher(strTime)
                     if (!m.find()) {
-                        log.d("invalid time format: %s", strTime)
+                        log.d("invalid time format: $strTime")
                     } else {
                         val g = GregorianCalendar(tz_utc)
                         g.set(
@@ -1240,7 +1240,7 @@ class TootStatus(parser: TootParser, src: JsonObject) : TimelineItem() {
                     }
                 } catch (ex: Throwable) { // ParseException,  ArrayIndexOutOfBoundsException
                     log.trace(ex)
-                    log.e(ex, "parseTimeMSP failed. src=%s", strTime)
+                    log.e(ex, "parseTimeMSP failed. src=${strTime}" )
                 }
 
             }

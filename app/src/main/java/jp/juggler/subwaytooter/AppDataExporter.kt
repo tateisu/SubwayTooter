@@ -135,14 +135,14 @@ object AppDataExporter {
 						Cursor.FIELD_TYPE_FLOAT -> {
 							val d = cursor.getDouble(i)
 							if(d.isNaN() || d.isInfinite()) {
-								log.w("column %s is nan or infinite value.", names[i])
+								log.w("column ${names[i]} is nan or infinite value.")
 							} else {
 								writer.name(names[i])
 								writer.value(d)
 							}
 						}
 						
-						Cursor.FIELD_TYPE_BLOB -> log.w("column %s is blob.", names[i])
+						Cursor.FIELD_TYPE_BLOB -> log.w("column ${names[i]} is blob." )
 					}
 				}
 				

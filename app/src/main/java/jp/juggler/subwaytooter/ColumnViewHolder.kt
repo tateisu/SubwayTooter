@@ -237,21 +237,17 @@ class ColumnViewHolder(
 
             val column = this@ColumnViewHolder.column
             if (column == null) {
-                log.d("restoreScrollPosition [%d], column==null", page_idx)
+                log.d("restoreScrollPosition [${page_idx}], column==null")
                 return
             }
 
             if (column.is_dispose.get()) {
-                log.d("restoreScrollPosition [%d], column is disposed", page_idx)
+                log.d("restoreScrollPosition [${page_idx}], column is disposed")
                 return
             }
 
             if (column.hasMultipleViewHolder()) {
-                log.d(
-                    "restoreScrollPosition [%d] %s , column has multiple view holder. retry later.",
-                    page_idx,
-                    column.getColumnName(true)
-                )
+                log.d("restoreScrollPosition [${page_idx}] ${column.getColumnName(true)}, column has multiple view holder. retry later.")
 
                 // タブレットモードでカラムを追加/削除した際に発生する。
                 // このタイミングでスクロール位置を復元してもうまくいかないので延期する
@@ -277,30 +273,16 @@ class ColumnViewHolder(
                 //					}
                 //				}
 
-                log.d(
-                    "restoreScrollPosition [$page_idx] %s , column has no saved scroll position.",
-                    column.getColumnName(true)
-                )
+                log.d("restoreScrollPosition [$page_idx] ${column.getColumnName(true)} , column has no saved scroll position.")
                 return
             }
 
             column.scroll_save = null
 
             if (listView.visibility != View.VISIBLE) {
-                log.d(
-                    "restoreScrollPosition [$page_idx] %s , listView is not visible. saved position %s,%s is dropped.",
-                    column.getColumnName(true),
-                    sp.adapterIndex,
-                    sp.offset
-                )
+                log.d("restoreScrollPosition [$page_idx] ${column.getColumnName(true)} , listView is not visible. saved position ${sp.adapterIndex},${sp.offset} is dropped.")
             } else {
-                log.d(
-                    "restoreScrollPosition [%d] %s , listView is visible. resume %s,%s",
-                    page_idx,
-                    column.getColumnName(true),
-                    sp.adapterIndex,
-                    sp.offset
-                )
+                log.d("restoreScrollPosition [${page_idx}] ${column.getColumnName(true)} , listView is visible. resume ${sp.adapterIndex},${sp.offset}")
                 sp.restore(this@ColumnViewHolder)
             }
 
@@ -418,7 +400,7 @@ class ColumnViewHolder(
             llColumnHeader,
             llRefreshError,
 
-        ).forEach { it.setOnClickListener(this) }
+            ).forEach { it.setOnClickListener(this) }
 
 
         btnColumnClose.setOnLongClickListener(this)

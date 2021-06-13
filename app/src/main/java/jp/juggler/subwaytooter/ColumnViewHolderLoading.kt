@@ -209,22 +209,17 @@ fun ColumnViewHolder.scrollToTop2() {
 fun ColumnViewHolder.saveScrollPosition(): Boolean {
     val column = this.column
     when {
-        column == null -> ColumnViewHolder.log.d("saveScrollPosition [%d] , column==null", page_idx)
+        column == null ->
+            ColumnViewHolder.log.d("saveScrollPosition [${page_idx}] , column==null")
 
-        column.is_dispose.get() -> ColumnViewHolder.log.d(
-            "saveScrollPosition [%d] , column is disposed",
-            page_idx
-        )
+        column.is_dispose.get() ->
+            ColumnViewHolder.log.d("saveScrollPosition [${page_idx}] , column is disposed")
 
         listView.visibility != View.VISIBLE -> {
             val scroll_save = ScrollPosition()
             column.scroll_save = scroll_save
             ColumnViewHolder.log.d(
-                "saveScrollPosition [%d] %s , listView is not visible, save %s,%s",
-                page_idx,
-                column.getColumnName(true),
-                scroll_save.adapterIndex,
-                scroll_save.offset
+                "saveScrollPosition [${page_idx}] ${column.getColumnName(true)} , listView is not visible, save ${scroll_save.adapterIndex},${scroll_save.offset}"
             )
             return true
         }
@@ -233,11 +228,7 @@ fun ColumnViewHolder.saveScrollPosition(): Boolean {
             val scroll_save = ScrollPosition(this)
             column.scroll_save = scroll_save
             ColumnViewHolder.log.d(
-                "saveScrollPosition [%d] %s , listView is visible, save %s,%s",
-                page_idx,
-                column.getColumnName(true),
-                scroll_save.adapterIndex,
-                scroll_save.offset
+                "saveScrollPosition [${page_idx}] ${column.getColumnName(true)} , listView is visible, save ${scroll_save.adapterIndex},${scroll_save.offset}"
             )
             return true
         }
@@ -262,7 +253,7 @@ fun ColumnViewHolder.setScrollPosition(sp: ScrollPosition, deltaDp: Float = 0f) 
             listLayoutManager.scrollVerticallyBy(dy, recycler, state)
         } catch (ex: Throwable) {
             ColumnViewHolder.log.trace(ex)
-            ColumnViewHolder.log.e("can't access field in class %s", RecyclerView::class.java.simpleName)
+            ColumnViewHolder.log.e("can't access field in class ${RecyclerView::class.java.simpleName}")
         }
     }, 20L)
 }

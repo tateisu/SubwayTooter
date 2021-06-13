@@ -840,7 +840,7 @@ class ActAppSetting : AppCompatActivity(), ColorPickerDialogListener, View.OnCli
     private fun importAppData2(bConfirm: Boolean, uri: Uri) {
 
         val type = contentResolver.getType(uri)
-        log.d("importAppData type=%s", type)
+        log.d("importAppData type=$type")
 
         if (!bConfirm) {
             AlertDialog.Builder(this)

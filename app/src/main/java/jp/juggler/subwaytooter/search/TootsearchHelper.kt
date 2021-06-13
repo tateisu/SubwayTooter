@@ -72,7 +72,7 @@ object TootsearchHelper {
                         parseList(parser, root)
                             .also {
                                 if (it.isEmpty())
-                                    log.d("search result is empty. %s", result.bodyString)
+                                    log.d("search result is empty. ${result.bodyString}")
                             }
                     )
                 }

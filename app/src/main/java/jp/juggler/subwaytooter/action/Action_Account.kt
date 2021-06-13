@@ -231,7 +231,7 @@ private fun appServerUnregister(context: Context, account: SavedAccount) {
 
             val response = call.await()
 
-            log.e("appServerUnregister: %s", response)
+            log.e("appServerUnregister: ${response}")
         } catch (ex: Throwable) {
             log.trace(ex, "appServerUnregister failed.")
         }

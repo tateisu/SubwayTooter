@@ -53,7 +53,7 @@ fun ColumnViewHolder.loadBackgroundImage(iv: ImageView, url: String?) {
         val screen_h = iv.resources.displayMetrics.heightPixels
 
         // 非同期処理を開始
-        last_image_task = launchMain{
+        last_image_task = launchMain {
             val bitmap = try {
                 withContext(Dispatchers.IO) {
                     try {
@@ -93,7 +93,7 @@ fun ColumnViewHolder.onPageDestroy(page_idx: Int) {
     // タブレットモードの場合、onPageCreateより前に呼ばれる
     val column = this.column
     if (column != null) {
-        ColumnViewHolder.log.d("onPageDestroy [%d] %s", page_idx, tvColumnName.text)
+        ColumnViewHolder.log.d("onPageDestroy [${page_idx}] ${tvColumnName.text}")
         saveScrollPosition()
         listView.adapter = null
         column.removeColumnViewHolder(this)
@@ -111,7 +111,7 @@ fun ColumnViewHolder.onPageCreate(column: Column, page_idx: Int, page_count: Int
         this.column = column
         this.page_idx = page_idx
 
-        ColumnViewHolder.log.d("onPageCreate [%d] %s", page_idx, column.getColumnName(true))
+        ColumnViewHolder.log.d("onPageCreate [${page_idx}] ${column.getColumnName(true)}")
 
         val bSimpleList =
             column.type != ColumnType.CONVERSATION && Pref.bpSimpleList(activity.pref)

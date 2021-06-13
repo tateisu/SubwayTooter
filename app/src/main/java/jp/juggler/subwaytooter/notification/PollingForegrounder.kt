@@ -103,7 +103,7 @@ class PollingForegrounder : IntentService("PollingForegrounder") {
                 if (sv.isEmpty() || sv == last_status) return@handleFCMMessage
                 // 状況が変化したらログと通知領域に出力する
                 last_status = sv
-                log.d("onStatus %s", sv)
+                log.d("onStatus $sv")
                 startForeground(NOTIFICATION_ID_FOREGROUNDER, createNotification(context, sv))
             }
         }

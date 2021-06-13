@@ -20,8 +20,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkStateTracker
 import jp.juggler.subwaytooter.util.PostAttachment
 import jp.juggler.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.apache.commons.io.IOUtils
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -37,14 +35,14 @@ enum class DedupMode {
 }
 
 class DedupItem(
-	val text: String,
-	var time: Long = SystemClock.elapsedRealtime()
+    val text: String,
+    var time: Long = SystemClock.elapsedRealtime()
 )
 
 class AppState(
-	internal val context: Context,
-	internal val handler: Handler,
-	internal val pref: SharedPreferences
+    internal val context: Context,
+    internal val handler: Handler,
+    internal val pref: SharedPreferences
 ) {
 
     companion object {
@@ -129,9 +127,9 @@ class AppState(
 
     private val _columnList = ArrayList<Column>()
 
-	// make shallow copy
-	val columnList: List<Column>
-		get() = synchronized(_columnList) { ArrayList(_columnList) }
+    // make shallow copy
+    val columnList: List<Column>
+        get() = synchronized(_columnList) { ArrayList(_columnList) }
 
     val columnCount: Int
         get() = synchronized(_columnList) { _columnList.size }
@@ -140,7 +138,7 @@ class AppState(
         synchronized(_columnList) { _columnList.elementAtOrNull(i) }
 
     fun columnIndex(column: Column?) =
-        synchronized(_columnList) { _columnList.indexOf(column).takeIf{ it != -1 } }
+        synchronized(_columnList) { _columnList.indexOf(column).takeIf { it != -1 } }
 
     fun editColumnList(save: Boolean = true, block: (ArrayList<Column>) -> Unit) {
         synchronized(_columnList) {
@@ -230,10 +228,10 @@ class AppState(
                         restartTTS()
                     } else {
                         log.d(
-							"proc_flushSpeechQueue: tts is speaking. queue_count=%d, expire_remain=%.3f",
-							queue_count,
-							expire_remain / 1000f
-						)
+                            "proc_flushSpeechQueue: tts is speaking. queue_count=${queue_count}, expire_remain=${
+                                String.format("%.3f",expire_remain / 1000f)
+                            }"
+                        )
                         handler.postDelayed(this, expire_remain)
                         return
                     }
@@ -241,7 +239,7 @@ class AppState(
                 }
 
                 val sv = tts_queue.removeFirst()
-                log.d("proc_flushSpeechQueue: speak %s", sv)
+                log.d("proc_flushSpeechQueue: speak ${sv}")
 
                 val voice_count = voice_list.size
                 if (voice_count > 0) {
@@ -251,11 +249,11 @@ class AppState(
 
                 tts_speak_start = now
                 tts.speak(
-					sv,
-					TextToSpeech.QUEUE_ADD,
-					null, // Bundle params
-					(++utteranceIdSeed).toString() // String utteranceId
-				)
+                    sv,
+                    TextToSpeech.QUEUE_ADD,
+                    null, // Bundle params
+                    (++utteranceIdSeed).toString() // String utteranceId
+                )
             } catch (ex: Throwable) {
                 log.trace(ex)
                 log.e(ex, "proc_flushSpeechQueue catch exception.")
@@ -277,7 +275,7 @@ class AppState(
         columnList.mapIndexedNotNull { index, column ->
             try {
                 val dst = JsonObject()
-                ColumnEncoder.encode(column,dst, index)
+                ColumnEncoder.encode(column, dst, index)
                 dst
             } catch (ex: JsonException) {
                 log.trace(ex)
@@ -381,7 +379,7 @@ class AppState(
             context.showToast(false, R.string.text_to_speech_initializing)
             log.d("initializing TextToSpeech…")
 
-            launchIO{
+            launchIO {
 
                 var tmp_tts: TextToSpeech? = null
 
@@ -391,11 +389,11 @@ class AppState(
                         val tts = tmp_tts
                         if (tts == null || TextToSpeech.SUCCESS != status) {
                             context.showToast(
-								false,
-								R.string.text_to_speech_initialize_failed,
-								status
-							)
-                            log.d("speech initialize failed. status=%s", status)
+                                false,
+                                R.string.text_to_speech_initialize_failed,
+                                status
+                            )
+                            log.d("speech initialize failed. status=${status}" )
                             return@OnInitListener
                         }
 
@@ -423,15 +421,8 @@ class AppState(
                                     } else {
                                         val lang = defaultLocale(context).toLanguageTag()
                                         for (v in voice_set) {
-                                            log.d(
-												"Voice %s %s %s",
-												v.name,
-												v.locale.toLanguageTag(),
-												lang
-											)
-                                            if (lang != v.locale.toLanguageTag()) {
-                                                continue
-                                            }
+                                            log.d( "Voice ${ v.name} ${  v.locale.toLanguageTag()} ${lang}" )
+                                            if (lang != v.locale.toLanguageTag()) continue
                                             voice_list.add(v)
                                         }
                                     }
@@ -443,9 +434,9 @@ class AppState(
                                 handler.post(proc_flushSpeechQueue)
 
                                 context.registerReceiver(
-									tts_receiver,
-									IntentFilter(TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED)
-								)
+                                    tts_receiver,
+                                    IntentFilter(TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED)
+                                )
 
                                 //									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {
                                 //										@Override public void onStart( String utteranceId ){
@@ -603,7 +594,8 @@ class AppState(
         }
 
         if (item.sound_type == HighlightWord.SOUND_TYPE_CUSTOM && item.sound_uri.mayUri()
-                .tryRingtone()) return
+                .tryRingtone()
+        ) return
 
         RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION).tryRingtone()
     }

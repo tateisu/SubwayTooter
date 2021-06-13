@@ -26,8 +26,8 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.ceil
 
 class CustomEmojiCache(
-	val context: Context,
-	private val handler: Handler
+    val context: Context,
+    private val handler: Handler
 ) {
 
     companion object {
@@ -48,10 +48,10 @@ class CustomEmojiCache(
     }
 
     private class DbCache(
-		val id: Long,
-		val timeUsed: Long,
-		val data: ByteArray
-	) {
+        val id: Long,
+        val timeUsed: Long,
+        val data: ByteArray
+    ) {
 
         companion object : TableCompanion {
 
@@ -65,48 +65,48 @@ class CustomEmojiCache(
 
             override fun onDBCreate(db: SQLiteDatabase) {
                 db.execSQL(
-					"""create table if not exists $table
+                    """create table if not exists $table
 						($COL_ID INTEGER PRIMARY KEY
 						,$COL_TIME_SAVE integer not null
 						,$COL_TIME_USED integer not null
 						,$COL_URL text not null
 						,$COL_DATA blob not null
 						)""".trimIndent()
-				)
+                )
                 db.execSQL("create unique index if not exists ${table}_url on ${table}($COL_URL)")
                 db.execSQL("create index if not exists ${table}_old on ${table}($COL_TIME_USED)")
             }
 
             override fun onDBUpgrade(
-				db: SQLiteDatabase,
-				oldVersion: Int,
-				newVersion: Int
-			) {
+                db: SQLiteDatabase,
+                oldVersion: Int,
+                newVersion: Int
+            ) {
             }
 
             fun load(db: SQLiteDatabase, url: String, now: Long) =
                 db.rawQuery(
-					"select $COL_ID,$COL_TIME_USED,$COL_DATA from $table where $COL_URL=?",
-					arrayOf(url)
-				)?.use { cursor ->
+                    "select $COL_ID,$COL_TIME_USED,$COL_DATA from $table where $COL_URL=?",
+                    arrayOf(url)
+                )?.use { cursor ->
                     if (cursor.count == 0)
                         null
                     else {
                         cursor.moveToNext()
                         DbCache(
-							id = cursor.getLong(cursor.getColumnIndex(COL_ID)),
-							timeUsed = cursor.getLong(cursor.getColumnIndex(COL_TIME_USED)),
-							data = cursor.getBlob(cursor.getColumnIndex(COL_DATA))
-						).apply {
+                            id = cursor.getLong(cursor.getColumnIndex(COL_ID)),
+                            timeUsed = cursor.getLong(cursor.getColumnIndex(COL_TIME_USED)),
+                            data = cursor.getBlob(cursor.getColumnIndex(COL_DATA))
+                        ).apply {
                             if (now - timeUsed >= 5 * 3600000L) {
                                 db.update(
-									table,
-									ContentValues().apply {
-										put(COL_TIME_USED, now)
-									},
-									"$COL_ID=?",
-									arrayOf(id.toString())
-								)
+                                    table,
+                                    ContentValues().apply {
+                                        put(COL_TIME_USED, now)
+                                    },
+                                    "$COL_ID=?",
+                                    arrayOf(id.toString())
+                                )
                             }
                         }
                     }
@@ -115,23 +115,23 @@ class CustomEmojiCache(
             fun sweep(db: SQLiteDatabase, now: Long) {
                 val expire = now - TimeUnit.DAYS.toMillis(30)
                 db.delete(
-					table,
-					"$COL_TIME_USED < ?",
-					arrayOf(expire.toString())
-				)
+                    table,
+                    "$COL_TIME_USED < ?",
+                    arrayOf(expire.toString())
+                )
             }
 
             fun update(db: SQLiteDatabase, url: String, data: ByteArray) {
                 val now = System.currentTimeMillis()
                 db.replace(table,
-					null,
-					ContentValues().apply {
-						put(COL_URL, url)
-						put(COL_DATA, data)
-						put(COL_TIME_USED, now)
-						put(COL_TIME_SAVE, now)
-					}
-				)
+                    null,
+                    ContentValues().apply {
+                        put(COL_URL, url)
+                        put(COL_DATA, data)
+                        put(COL_TIME_USED, now)
+                        put(COL_TIME_SAVE, now)
+                    }
+                )
             }
         }
     }
@@ -166,10 +166,10 @@ class CustomEmojiCache(
     }
 
     private class Request(
-		val refTarget: WeakReference<Any>,
-		val url: String,
-		val onLoadComplete: () -> Unit
-	)
+        val refTarget: WeakReference<Any>,
+        val url: String,
+        val onLoadComplete: () -> Unit
+    )
 
     // APNGデコード済のキャッシュデータ
     private val cache = ConcurrentHashMap<String, CacheItem>()
@@ -253,10 +253,10 @@ class CustomEmojiCache(
     }
 
     fun getFrames(
-		refDrawTarget: WeakReference<Any>?,
-		url: String,
-		onLoadComplete: () -> Unit
-	): ApngFrames? {
+        refDrawTarget: WeakReference<Any>?,
+        url: String,
+        onLoadComplete: () -> Unit
+    ): ApngFrames? {
         try {
             if (refDrawTarget?.get() == null) {
                 log.e("draw: DrawTarget is null ")
@@ -353,13 +353,7 @@ class CustomEmojiCache(
 
                     if (cache_used) continue
 
-                    if (DEBUG)
-                        log.d(
-							"start get image. queue_size=%d, cache_size=%d url=%s",
-							queue_size,
-							cache_size,
-							request.url
-						)
+                    if (DEBUG) log.d("start get image. queue_size=${queue_size}, cache_size=${cache_size} url=${request.url}")
 
                     val now = System.currentTimeMillis()
 
@@ -377,8 +371,7 @@ class CustomEmojiCache(
                         data = try {
                             App1.getHttpCached(request.url)
                         } catch (ex: Throwable) {
-                            log.e("get failed. url=%s", request.url)
-                            log.trace(ex)
+                            log.trace(ex, "get failed. url=${request.url}")
                             null
                         }
                         te = elapsedTime
@@ -473,7 +466,7 @@ class CustomEmojiCache(
                 // fall thru
             } catch (ex: Throwable) {
                 if (DEBUG) log.trace(ex)
-                log.e(ex, "PNG decode failed. %s ", url)
+                log.e(ex, "PNG decode failed. $url ")
             }
 
             // 通常のビットマップでのロードを試みる
@@ -483,12 +476,12 @@ class CustomEmojiCache(
                     if (DEBUG) log.d("bitmap decoded.")
                     return ApngFrames(b)
                 } else {
-                    log.e("Bitmap decode returns null. %s", url)
+                    log.e("Bitmap decode returns null. $url")
                 }
 
                 // fall thru
             } catch (ex: Throwable) {
-                log.e(ex, "Bitmap decode failed. %s", url)
+                log.e(ex, "Bitmap decode failed. $url")
             }
 
             // SVGのロードを試みる
@@ -501,7 +494,7 @@ class CustomEmojiCache(
 
                 // fall thru
             } catch (ex: Throwable) {
-                log.e(ex, "SVG decode failed. %s", url)
+                log.e(ex, "SVG decode failed. $url")
             }
 
             return null
@@ -510,9 +503,9 @@ class CustomEmojiCache(
         private val options = BitmapFactory.Options()
 
         private fun decodeBitmap(
-			data: ByteArray,
-			@Suppress("SameParameterValue") pixel_max: Int
-		): Bitmap? {
+            data: ByteArray,
+            @Suppress("SameParameterValue") pixel_max: Int
+        ): Bitmap? {
             options.inJustDecodeBounds = true
             options.inScaled = false
             options.outWidth = 0
@@ -536,10 +529,10 @@ class CustomEmojiCache(
         }
 
         private fun decodeSVG(
-			url: String,
-			data: ByteArray,
-			@Suppress("SameParameterValue") pixelMax: Float
-		): Bitmap? {
+            url: String,
+            data: ByteArray,
+            @Suppress("SameParameterValue") pixelMax: Float
+        ): Bitmap? {
             try {
                 val svg = SVG.getFromInputStream(ByteArrayInputStream(data))
 
@@ -572,13 +565,13 @@ class CustomEmojiCache(
                 val canvas = Canvas(b)
 
                 svg.renderToCanvas(
-					canvas,
-					if (aspect >= 1f) {
-						RectF(0f, h_ceil - dst_h, dst_w, dst_h) // 後半はw,hを指定する
-					} else {
-						RectF(w_ceil - dst_w, 0f, dst_w, dst_h) // 後半はw,hを指定する
-					}
-				)
+                    canvas,
+                    if (aspect >= 1f) {
+                        RectF(0f, h_ceil - dst_h, dst_w, dst_h) // 後半はw,hを指定する
+                    } else {
+                        RectF(w_ceil - dst_w, 0f, dst_w, dst_h) // 後半はw,hを指定する
+                    }
+                )
                 return b
             } catch (ex: Throwable) {
                 log.e(ex, "decodeSVG failed. $url")

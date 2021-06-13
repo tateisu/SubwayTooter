@@ -26,7 +26,7 @@ class EventReceiver : BroadcastReceiver() {
 			ACTION_NOTIFICATION_DELETE ->
 				PollingWorker.queueNotificationDeleted( context,intent.data)
 			
-			else -> log.e("onReceive: unsupported action %s", action)
+			else -> log.e("onReceive: unsupported action ${action}")
 		}
 	}
 }

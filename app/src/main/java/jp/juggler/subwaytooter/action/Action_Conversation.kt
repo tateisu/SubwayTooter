@@ -132,7 +132,7 @@ private fun ActMain.conversationRemote(
                 val (result, status) = client.syncStatus(access_info, remote_status_url)
                 if (status != null) {
                     local_status_id = status.id
-                    log.d("status id conversion %s => %s", remote_status_url, status.id)
+                    log.d("status id conversion ${remote_status_url}=>${status.id}")
                 }
                 result
             }

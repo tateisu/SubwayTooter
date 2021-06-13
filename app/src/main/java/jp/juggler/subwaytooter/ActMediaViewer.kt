@@ -141,7 +141,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
         }
 
         override fun onRepeatModeChanged(repeatMode: Int) {
-            log.d("exoPlayer onRepeatModeChanged %d", repeatMode)
+            log.d("exoPlayer onRepeatModeChanged $repeatMode", )
         }
 
         override fun onPlayerError(error: ExoPlaybackException) {

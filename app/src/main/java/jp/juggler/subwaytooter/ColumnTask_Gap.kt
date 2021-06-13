@@ -8,9 +8,9 @@ import jp.juggler.util.*
 import java.lang.StringBuilder
 
 class ColumnTask_Gap(
-	columnArg: Column,
-	private val gap: TimelineItem,
-	private val isHead: Boolean
+    columnArg: Column,
+    private val gap: TimelineItem,
+    private val isHead: Boolean
 ) : ColumnTask(columnArg, ColumnTaskType.GAP) {
 
     companion object {
@@ -30,17 +30,17 @@ class ColumnTask_Gap(
         ctStarted.set(true)
 
         val client = TootApiClient(context, callback = object : TootApiCallback {
-			override val isApiCancelled: Boolean
-				get() = isCancelled || column.is_dispose.get()
+            override val isApiCancelled: Boolean
+                get() = isCancelled || column.is_dispose.get()
 
-			override suspend fun publishApiProgress(s: String) {
-				runOnMainLooper {
-					if (isCancelled) return@runOnMainLooper
-					column.task_progress = s
-					column.fireShowContent(reason = "gap progress", changeList = ArrayList())
-				}
-			}
-		})
+            override suspend fun publishApiProgress(s: String) {
+                runOnMainLooper {
+                    if (isCancelled) return@runOnMainLooper
+                    column.task_progress = s
+                    column.fireShowContent(reason = "gap progress", changeList = ArrayList())
+                }
+            }
+        })
 
         client.account = access_info
 
@@ -90,7 +90,7 @@ class ColumnTask_Gap(
             val list_new = when (column.type) {
 
                 // 検索カラムはIDによる重複排除が不可能
-				ColumnType.SEARCH -> list_tmp
+                ColumnType.SEARCH -> list_tmp
 
                 // 他のカラムは重複排除してから追加
                 else -> column.duplicate_map.filterDuplicate(list_tmp)
@@ -127,12 +127,12 @@ class ColumnTask_Gap(
                 changeList.add(AdapterChange(AdapterChangeType.RangeRemove, position))
                 if (added > 0) {
                     changeList.add(
-						AdapterChange(
-							AdapterChangeType.RangeInsert,
-							position,
-							added
-						)
-					)
+                        AdapterChange(
+                            AdapterChangeType.RangeInsert,
+                            position,
+                            added
+                        )
+                    )
                 }
                 column.fireShowContent(reason = "gap updated", changeList = changeList)
 
@@ -162,12 +162,12 @@ class ColumnTask_Gap(
                 changeList.add(AdapterChange(AdapterChangeType.RangeRemove, position))
                 if (added > 0) {
                     changeList.add(
-						AdapterChange(
-							AdapterChangeType.RangeInsert,
-							position,
-							added
-						)
-					)
+                        AdapterChange(
+                            AdapterChangeType.RangeInsert,
+                            position,
+                            added
+                        )
+                    )
                 }
                 column.fireShowContent(reason = "gap updated", changeList = changeList)
 
@@ -209,14 +209,14 @@ class ColumnTask_Gap(
 
     // max_id を指定してギャップの上から読む
     private suspend fun <T : TimelineItem> readGapHeadMisskey(
-		logCaption: String,
-		client: TootApiClient,
-		path_base: String,
-		paramsCreator: (EntityId?) -> JsonObject,
-		arrayFinder: (JsonObject) -> JsonArray? = { null },
-		listParser: (TootParser, JsonArray) -> List<T>,
-		adder: (List<T>) -> Unit
-	): TootApiResult? {
+        logCaption: String,
+        client: TootApiClient,
+        path_base: String,
+        paramsCreator: (EntityId?) -> JsonObject,
+        arrayFinder: (JsonObject) -> JsonArray? = { null },
+        listParser: (TootParser, JsonArray) -> List<T>,
+        adder: (List<T>) -> Unit
+    ): TootApiResult? {
         list_tmp = ArrayList()
         val time_start = SystemClock.elapsedRealtime()
         var result: TootApiResult? = null
@@ -243,12 +243,12 @@ class ColumnTask_Gap(
             log.d("$logCaption: $path_base ${params.toString().removeIToken()}")
 
             val r2 = client.request(
-				path_base,
-				params.toPostRequestBuilder()
-			)
+                path_base,
+                params.toPostRequestBuilder()
+            )
 
-            val jsonObject = r2?.jsonObject
-            if (jsonObject != null) r2.data = arrayFinder(jsonObject)
+
+            r2?.jsonObject?.let { r2.data = arrayFinder(it) }
 
             val jsonArray = r2?.jsonArray
             if (jsonArray == null) {
@@ -265,11 +265,10 @@ class ColumnTask_Gap(
             // 成功した場合はそれを返したい
             result = r2
 
-            var src: List<T> = listParser(parser, jsonArray)
+            var src = listParser(parser, jsonArray)
 
             if (olderLimit != null)
                 src = src.filter { it.isInjected() || it.getOrderId() > olderLimit }
-
 
             if (src.none { !it.isInjected() }) {
                 // 直前の取得でカラのデータが帰ってきたら終了
@@ -293,14 +292,14 @@ class ColumnTask_Gap(
 
     // since_idを指定してギャップの下から読む
     private suspend fun <T : TimelineItem> readGapTailMisskey(
-		logCaption: String,
-		client: TootApiClient,
-		path_base: String,
-		paramsCreator: (EntityId?) -> JsonObject,
-		arrayFinder: (JsonObject) -> JsonArray? = { null },
-		listParser: (TootParser, JsonArray) -> List<T>,
-		adder: (List<T>) -> Unit
-	): TootApiResult? {
+        logCaption: String,
+        client: TootApiClient,
+        path_base: String,
+        paramsCreator: (EntityId?) -> JsonObject,
+        arrayFinder: (JsonObject) -> JsonArray? = { null },
+        listParser: (TootParser, JsonArray) -> List<T>,
+        adder: (List<T>) -> Unit
+    ): TootApiResult? {
         list_tmp = ArrayList()
         val time_start = SystemClock.elapsedRealtime()
         var result: TootApiResult? = null
@@ -325,12 +324,11 @@ class ColumnTask_Gap(
             log.d("$logCaption: $path_base ${params.toString().removeIToken()}")
 
             val r2 = client.request(
-				path_base,
-				params.toPostRequestBuilder()
-			)
+                path_base,
+                params.toPostRequestBuilder()
+            )
 
-            val jsonObject = r2?.jsonObject
-            if (jsonObject != null) r2.data = arrayFinder(jsonObject)
+            r2?.jsonObject?.let { r2.data = arrayFinder(it) }
 
             val jsonArray = r2?.jsonArray
             if (jsonArray == null) {
@@ -347,7 +345,7 @@ class ColumnTask_Gap(
             // 成功した場合はそれを返したい
             result = r2
 
-            var src: List<T> = listParser(parser, jsonArray)
+            var src = listParser(parser, jsonArray)
 
             if (newerLimit != null)
                 src = src.filter { it.isInjected() || it.getOrderId() < newerLimit }
@@ -374,13 +372,13 @@ class ColumnTask_Gap(
 
     // max_id を指定してギャップの上から読む
     private suspend fun <T : TimelineItem> readGapHeadMastodon(
-		logCaption: String,
-		client: TootApiClient,
-		path_base: String,
-		filterByIdRange: Boolean,
-		listParser: (TootParser, JsonArray) -> List<T>,
-		adder: (List<T>) -> Unit,
-	): TootApiResult? {
+        logCaption: String,
+        client: TootApiClient,
+        path_base: String,
+        filterByIdRange: Boolean,
+        listParser: (TootParser, JsonArray) -> List<T>,
+        adder: (List<T>) -> Unit,
+    ): TootApiResult? {
         list_tmp = ArrayList()
         val delimiter = if (-1 != path_base.indexOf('?')) '&' else '?'
         val requester: suspend (EntityId?) -> TootApiResult? = {
@@ -440,7 +438,7 @@ class ColumnTask_Gap(
             // 成功した場合はそれを返したい
             result = r2
 
-            var src: List<T> = listParser(parser, jsonArray)
+            var src = listParser(parser, jsonArray)
 
             if (olderLimit != null)
                 src = src.filter { it.getOrderId() > olderLimit }
@@ -467,13 +465,13 @@ class ColumnTask_Gap(
 
     // since_idを指定してギャップの下から読む
     private suspend fun <T : TimelineItem> readGapTailMastodon(
-		logCaption: String,
-		client: TootApiClient,
-		path_base: String,
-		filterByIdRange: Boolean,
-		listParser: (TootParser, JsonArray) -> List<T>,
-		adder: (List<T>) -> Unit
-	): TootApiResult? {
+        logCaption: String,
+        client: TootApiClient,
+        path_base: String,
+        filterByIdRange: Boolean,
+        listParser: (TootParser, JsonArray) -> List<T>,
+        adder: (List<T>) -> Unit
+    ): TootApiResult? {
         list_tmp = ArrayList()
         val delimiter = if (-1 != path_base.indexOf('?')) '&' else '?'
         val requester: suspend (EntityId?) -> TootApiResult? = {
@@ -526,7 +524,7 @@ class ColumnTask_Gap(
             // 成功した場合はそれを返したい
             result = r2
 
-            var src: List<T> = listParser(parser, jsonArray)
+            var src = listParser(parser, jsonArray)
 
             if (newerLimit != null)
                 src = src.filter { it.getOrderId() < newerLimit }
@@ -554,15 +552,15 @@ class ColumnTask_Gap(
     //////////////////////////////////////////////////////////////////////
 
     suspend fun getAccountList(
-		client: TootApiClient,
-		path_base: String,
-		mastodonFilterByIdRange: Boolean,
-		misskeyParams: JsonObject? = null,
-		arrayFinder: (jsonObject: JsonObject) -> JsonArray? =
-			nullArrayFinder,
-		listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootAccountRef> =
-			defaultAccountListParser
-	): TootApiResult? {
+        client: TootApiClient,
+        path_base: String,
+        mastodonFilterByIdRange: Boolean,
+        misskeyParams: JsonObject? = null,
+        arrayFinder: (jsonObject: JsonObject) -> JsonArray? =
+            nullArrayFinder,
+        listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootAccountRef> =
+            defaultAccountListParser
+    ): TootApiResult? {
 
         if (column.pagingType != ColumnPagingType.Default) {
             return TootApiResult("can't support gap")
@@ -576,56 +574,56 @@ class ColumnTask_Gap(
             val params = misskeyParams ?: column.makeMisskeyBaseParameter(parser)
             if (isHead) {
                 readGapHeadMisskey(
-					logCaption,
-					client,
-					path_base,
-					paramsCreator = { params.putMisskeyUntil(it) },
-					arrayFinder = arrayFinder,
-					listParser = listParser,
-					adder = adder,
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    paramsCreator = { params.putMisskeyUntil(it) },
+                    arrayFinder = arrayFinder,
+                    listParser = listParser,
+                    adder = adder,
+                )
             } else {
                 readGapTailMisskey(
-					logCaption,
-					client,
-					path_base,
-					paramsCreator = { params.putMisskeySince(it) },
-					arrayFinder = arrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    paramsCreator = { params.putMisskeySince(it) },
+                    arrayFinder = arrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         } else {
             val logCaption = "getAccountList.Mastodon"
             if (isHead) {
                 readGapHeadMastodon(
-					logCaption,
-					client,
-					path_base,
-					filterByIdRange = mastodonFilterByIdRange,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    filterByIdRange = mastodonFilterByIdRange,
+                    listParser = listParser,
+                    adder = adder
+                )
             } else {
                 readGapTailMastodon(
-					logCaption,
-					client,
-					path_base,
-					filterByIdRange = mastodonFilterByIdRange,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    filterByIdRange = mastodonFilterByIdRange,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         }
     }
 
     suspend fun getReportList(
-		client: TootApiClient,
-		path_base: String,
-		mastodonFilterByIdRange: Boolean,
-		listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootReport> =
-			defaultReportListParser
-	): TootApiResult? {
+        client: TootApiClient,
+        path_base: String,
+        mastodonFilterByIdRange: Boolean,
+        listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootReport> =
+            defaultReportListParser
+    ): TootApiResult? {
 
         val adder: (List<TootReport>) -> Unit =
             { addAll(list_tmp, it, head = !isHead) }
@@ -635,52 +633,52 @@ class ColumnTask_Gap(
             val params = column.makeMisskeyBaseParameter(parser)
             if (isHead) {
                 readGapHeadMisskey(
-					logCaption,
-					client,
-					path_base,
-					paramsCreator = { params.putMisskeyUntil(it) },
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    paramsCreator = { params.putMisskeyUntil(it) },
+                    listParser = listParser,
+                    adder = adder
+                )
             } else {
                 readGapTailMisskey(
-					logCaption,
-					client,
-					path_base,
-					paramsCreator = { params.putMisskeySince(it) },
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    paramsCreator = { params.putMisskeySince(it) },
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         } else {
             val logCaption = "getReportList.Mastodon"
             if (isHead) {
                 readGapHeadMastodon(
-					logCaption,
-					client,
-					path_base,
-					filterByIdRange = mastodonFilterByIdRange,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    filterByIdRange = mastodonFilterByIdRange,
+                    listParser = listParser,
+                    adder = adder
+                )
             } else {
                 readGapTailMastodon(
-					logCaption,
-					client,
-					path_base,
-					filterByIdRange = mastodonFilterByIdRange,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    filterByIdRange = mastodonFilterByIdRange,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         }
     }
 
     suspend fun getNotificationList(
-		client: TootApiClient,
-		fromAcct: String? = null,
-		mastodonFilterByIdRange: Boolean,
-	): TootApiResult? {
+        client: TootApiClient,
+        fromAcct: String? = null,
+        mastodonFilterByIdRange: Boolean,
+    ): TootApiResult? {
 
         val path_base: String = column.makeNotificationUrl(client, fromAcct)
 
@@ -696,44 +694,44 @@ class ColumnTask_Gap(
                 .addMisskeyNotificationFilter(column)
             if (isHead) {
                 readGapHeadMisskey(
-					logCaption,
-					client,
-					path_base,
-					paramsCreator = { params.putMisskeyUntil(it) },
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    paramsCreator = { params.putMisskeyUntil(it) },
+                    listParser = listParser,
+                    adder = adder
+                )
             } else {
                 readGapTailMisskey(
-					logCaption,
-					client,
-					path_base,
-					paramsCreator = { params.putMisskeySince(it) },
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    paramsCreator = { params.putMisskeySince(it) },
+                    listParser = listParser,
+                    adder = adder
+                )
             }
 
         } else {
             val logCaption = "getNotificationList.Mastodon"
             if (isHead) {
                 readGapHeadMastodon(
-					logCaption,
-					client,
-					path_base,
-					filterByIdRange = mastodonFilterByIdRange,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    filterByIdRange = mastodonFilterByIdRange,
+                    listParser = listParser,
+                    adder = adder
+                )
             } else {
                 readGapTailMastodon(
-					logCaption,
-					client,
-					path_base,
-					filterByIdRange = mastodonFilterByIdRange,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    filterByIdRange = mastodonFilterByIdRange,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
 
         }.also {
@@ -744,13 +742,13 @@ class ColumnTask_Gap(
     }
 
     suspend fun getStatusList(
-		client: TootApiClient,
-		path_base: String?,
-		mastodonFilterByIdRange: Boolean,
-		misskeyParams: JsonObject? = null,
-		listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootStatus> =
-			defaultStatusListParser
-	): TootApiResult? {
+        client: TootApiClient,
+        path_base: String?,
+        mastodonFilterByIdRange: Boolean,
+        misskeyParams: JsonObject? = null,
+        listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootStatus> =
+            defaultStatusListParser
+    ): TootApiResult? {
 
         path_base ?: return null // cancelled.
 
@@ -763,55 +761,55 @@ class ColumnTask_Gap(
 
             if (isHead) {
                 readGapHeadMisskey(
-					logCaption,
-					client,
-					path_base,
-					paramsCreator = { params.putMisskeyUntil(it) },
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    paramsCreator = { params.putMisskeyUntil(it) },
+                    listParser = listParser,
+                    adder = adder
+                )
             } else {
                 readGapTailMisskey(
-					logCaption,
-					client,
-					path_base,
-					paramsCreator = { params.putMisskeySince(it) },
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    paramsCreator = { params.putMisskeySince(it) },
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         } else {
             val logCaption = "getStatusList.Mastodon"
             if (isHead) {
                 readGapHeadMastodon(
-					logCaption,
-					client,
-					path_base,
-					filterByIdRange = mastodonFilterByIdRange,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    filterByIdRange = mastodonFilterByIdRange,
+                    listParser = listParser,
+                    adder = adder
+                )
             } else {
                 readGapTailMastodon(
-					logCaption,
-					client,
-					path_base,
-					filterByIdRange = mastodonFilterByIdRange,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    filterByIdRange = mastodonFilterByIdRange,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         }
     }
 
     suspend fun getConversationSummaryList(
-		client: TootApiClient,
-		path_base: String,
-		mastodonFilterByIdRange: Boolean,
-		misskeyParams: JsonObject? = null,
-		listParser: (TootParser, JsonArray) -> List<TootConversationSummary> =
-			defaultConversationSummaryListParser
-	): TootApiResult? {
+        client: TootApiClient,
+        path_base: String,
+        mastodonFilterByIdRange: Boolean,
+        misskeyParams: JsonObject? = null,
+        listParser: (TootParser, JsonArray) -> List<TootConversationSummary> =
+            defaultConversationSummaryListParser
+    ): TootApiResult? {
 
         val adder: (List<TootConversationSummary>) -> Unit =
             { addWithFilterConversationSummary(list_tmp, it, head = !isHead) }
@@ -821,43 +819,43 @@ class ColumnTask_Gap(
             val params = misskeyParams ?: column.makeMisskeyTimelineParameter(parser)
             if (isHead) {
                 readGapHeadMisskey(
-					logCaption,
-					client,
-					path_base,
-					paramsCreator = { params.putMisskeyUntil(it) },
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    paramsCreator = { params.putMisskeyUntil(it) },
+                    listParser = listParser,
+                    adder = adder
+                )
             } else {
                 readGapTailMisskey(
-					logCaption,
-					client,
-					path_base,
-					paramsCreator = { params.putMisskeySince(it) },
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    paramsCreator = { params.putMisskeySince(it) },
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         } else {
             val logCaption = "getConversationSummaryList.Mastodon"
             if (isHead) {
                 readGapHeadMastodon(
-					logCaption,
-					client,
-					path_base,
-					filterByIdRange = mastodonFilterByIdRange,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    filterByIdRange = mastodonFilterByIdRange,
+                    listParser = listParser,
+                    adder = adder
+                )
             } else {
                 readGapTailMastodon(
-					logCaption,
-					client,
-					path_base,
-					filterByIdRange = mastodonFilterByIdRange,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    client,
+                    path_base,
+                    filterByIdRange = mastodonFilterByIdRange,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         }
     }
@@ -871,26 +869,26 @@ class ColumnTask_Gap(
                 if (it is TootStatus && (minId == null || it.id < minId)) it.id else minId
             }
 
-			val (_, counter) = when (gap.type) {
-				TootSearchGap.SearchType.Status -> Pair("statuses", countStatuses)
+            val (_, counter) = when (gap.type) {
+                TootSearchGap.SearchType.Status -> Pair("statuses", countStatuses)
 
-				//TootSearchGap.SearchType.Hashtag -> Pair("hashtags", countTag)
-				//TootSearchGap.SearchType.Account -> Pair("accounts", countAccount)
-				else -> return TootApiResult("paging for ${gap.type} is not yet supported")
-			}
+                //TootSearchGap.SearchType.Hashtag -> Pair("hashtags", countTag)
+                //TootSearchGap.SearchType.Account -> Pair("accounts", countAccount)
+                else -> return TootApiResult("paging for ${gap.type} is not yet supported")
+            }
             var minId: EntityId? = null
             for (it in column.list_data) minId = counter(it, minId)
 
             minId ?: return TootApiResult("can't detect paging parameter.")
 
             val result = client.request(
-				"/api/notes/search",
-				access_info.putMisskeyApiToken().apply {
-					put("query", column.search_query)
-					put("untilId", minId.toString())
-				}
-					.toPostRequestBuilder()
-			)
+                "/api/notes/search",
+                access_info.putMisskeyApiToken().apply {
+                    put("query", column.search_query)
+                    put("untilId", minId.toString())
+                }
+                    .toPostRequestBuilder()
+            )
 
             val jsonArray = result?.jsonArray
             if (jsonArray != null) {
@@ -912,18 +910,18 @@ class ColumnTask_Gap(
             val countStatuses: (TimelineItem) -> Unit =
                 { if (it is TootStatus) ++offset }
 
-			val (type, counter) = when (gap.type) {
-				TootSearchGap.SearchType.Account -> Pair("accounts", countAccounts)
-				TootSearchGap.SearchType.Hashtag -> Pair("hashtags", countTags)
-				TootSearchGap.SearchType.Status -> Pair("statuses", countStatuses)
-			}
+            val (type, counter) = when (gap.type) {
+                TootSearchGap.SearchType.Account -> Pair("accounts", countAccounts)
+                TootSearchGap.SearchType.Hashtag -> Pair("hashtags", countTags)
+                TootSearchGap.SearchType.Status -> Pair("statuses", countStatuses)
+            }
             column.list_data.forEach { counter(it) }
 
             // https://mastodon2.juggler.jp/api/v2/search?q=gargron&type=accounts&offset=5
             var query = "q=${column.search_query.encodePercent()}&type=$type&offset=$offset"
             if (column.search_resolve) query += "&resolve=1"
 
-			val (apiResult, searchResult) = client.requestMastodonSearch(parser, query)
+            val (apiResult, searchResult) = client.requestMastodonSearch(parser, query)
             if (searchResult != null) {
                 list_tmp = ArrayList()
                 addAll(list_tmp, searchResult.hashtags)

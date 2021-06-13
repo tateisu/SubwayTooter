@@ -7,14 +7,14 @@ import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.util.*
 
 class ColumnTask_Refresh(
-	columnArg: Column,
-	private val bSilent: Boolean,
-	val bBottom: Boolean,
-	internal val posted_status_id: EntityId? = null,
-	internal val refresh_after_toot: Int = -1
+    columnArg: Column,
+    private val bSilent: Boolean,
+    val bBottom: Boolean,
+    internal val posted_status_id: EntityId? = null,
+    internal val refresh_after_toot: Int = -1
 ) : ColumnTask(
-	columnArg,
-	if (bBottom) ColumnTaskType.REFRESH_BOTTOM else ColumnTaskType.REFRESH_TOP
+    columnArg,
+    if (bBottom) ColumnTaskType.REFRESH_BOTTOM else ColumnTaskType.REFRESH_TOP
 ) {
 
     companion object {
@@ -27,17 +27,17 @@ class ColumnTask_Refresh(
         ctStarted.set(true)
 
         val client = TootApiClient(context, callback = object : TootApiCallback {
-			override val isApiCancelled: Boolean
-				get() = isCancelled || column.is_dispose.get()
+            override val isApiCancelled: Boolean
+                get() = isCancelled || column.is_dispose.get()
 
-			override suspend fun publishApiProgress(s: String) {
-				runOnMainLooper {
-					if (isCancelled) return@runOnMainLooper
-					column.task_progress = s
-					column.fireShowContent(reason = "refresh progress", changeList = ArrayList())
-				}
-			}
-		})
+            override suspend fun publishApiProgress(s: String) {
+                runOnMainLooper {
+                    if (isCancelled) return@runOnMainLooper
+                    column.task_progress = s
+                    column.fireShowContent(reason = "refresh progress", changeList = ArrayList())
+                }
+            }
+        })
         client.account = access_info
         try {
 
@@ -90,9 +90,9 @@ class ColumnTask_Refresh(
             val list_new = column.duplicate_map.filterDuplicate(list_tmp)
             if (list_new.isEmpty()) {
                 column.fireShowContent(
-					reason = "refresh list_new is empty",
-					changeList = ArrayList()
-				)
+                    reason = "refresh list_new is empty",
+                    changeList = ArrayList()
+                )
                 return
             }
 
@@ -107,12 +107,12 @@ class ColumnTask_Refresh(
 
             if (bBottom) {
                 val changeList = listOf(
-					AdapterChange(
-						AdapterChangeType.RangeInsert,
-						column.list_data.size,
-						list_new.size
-					)
-				)
+                    AdapterChange(
+                        AdapterChangeType.RangeInsert,
+                        column.list_data.size,
+                        list_new.size
+                    )
+                )
                 column.list_data.addAll(list_new)
                 column.fireShowContent(reason = "refresh updated bottom", changeList = changeList)
 
@@ -166,9 +166,9 @@ class ColumnTask_Refresh(
                     // 投稿後にその投稿にスクロールする
                     if (holder != null) {
                         holder.setScrollPosition(
-							ScrollPosition(column.toAdapterIndex(status_index)),
-							0f
-						)
+                            ScrollPosition(column.toAdapterIndex(status_index)),
+                            0f
+                        )
                     } else {
                         column.scroll_save = ScrollPosition(column.toAdapterIndex(status_index))
                     }
@@ -207,12 +207,12 @@ class ColumnTask_Refresh(
     }
 
     private suspend fun <T : TimelineItem> refreshTopMisskey(
-		logCaption: String,
-		requester: suspend (first: Boolean) -> TootApiResult?,
-		arrayFinder: (JsonObject) -> JsonArray?,
-		listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
-		adder: (List<T>, Boolean) -> Unit
-	): TootApiResult? {
+        logCaption: String,
+        requester: suspend (first: Boolean) -> TootApiResult?,
+        arrayFinder: (JsonObject) -> JsonArray?,
+        listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
+        adder: (List<T>, Boolean) -> Unit
+    ): TootApiResult? {
 
         // ColumnPagingType.Defaultだけが始端を更新できる
         if (column.pagingType != ColumnPagingType.Default)
@@ -220,437 +220,121 @@ class ColumnTask_Refresh(
 
         val addToHead = true
 
-        val time_start = SystemClock.elapsedRealtime()
+        // misskeyの場合、sinceIdを指定したら未読範囲の古い方から読んでしまう
+        // 最新まで読めるとは限らない
+        // 先頭にギャップを置くかもしれない
+        var willAddGap = false
 
-        var result = requester(true)
+        fun parseResult(result: TootApiResult?): Boolean {
+            val first = list_tmp?.isEmpty() != false
 
-        val firstResult = result
-
-        var jsonObject = result?.jsonObject
-        if (jsonObject != null)
-            result?.data = arrayFinder(jsonObject)
-
-        var array = result?.jsonArray
-        if (array != null) {
-            list_tmp = ArrayList()
-
-            var src = listParser(parser, array)
-            adder(src, addToHead)
-            column.saveRangeTop(result, src)
-
-            // misskeyの場合、sinceIdを指定したら未読範囲の古い方から読んでしまう
-            // 最新まで読めるとは限らない
-            // 先頭にギャップを置くかもしれない
-            var willAddGap = false
-            while (true) {
-                // 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
-
-                if (isCancelled) {
-                    log.d("$logCaption: cancelled.")
-                    break
-                }
-
-                if (src.isEmpty()) {
-                    // 直前のデータが0個なら終了とみなす
-                    log.d("$logCaption: previous size == 0.")
-                    break
-                }
-
-                if ((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
-                    // 既に十分読んだなら止める
-                    log.d("$logCaption: read enough. make gap.")
-                    willAddGap = true
-                    break
-                }
-
-                if (SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
-                    log.d("$logCaption: timeout.")
-                    willAddGap = true
-                    break
-                }
-
-                result = requester(false)
-
-                jsonObject = result?.jsonObject
-                if (jsonObject != null)
-                    result?.data = arrayFinder(jsonObject)
-
-                array = result?.jsonArray
-                if (array == null) {
-                    log.d("$logCaption: error or cancelled.")
-                    willAddGap = true
-                    break
-                }
-
-                src = listParser(parser, array)
-                adder(src, addToHead)
-                column.saveRangeTop(result = result, list = src)
+            if (result == null) {
+                if (!first) willAddGap = true
+                return log.d("$logCaption:cancelled.")
             }
 
-            // MisskeyはsinceIdを指定するとID昇順のデータが得られるので、ID降順に並べ直す
-            list_tmp?.sortByDescending { it.getOrderId() }
+            result.jsonObject?.let { result.data = arrayFinder(it) }
 
-            if (!isCancelled
-                && list_tmp?.isNotEmpty() == true
-                && (willAddGap || Pref.bpForceGap(context))
-            ) {
-                addOne(list_tmp, TootGap.mayNull(null, column.idRecent), head = addToHead)
+            val array = result.jsonArray
+            if (array == null) {
+                if (!first) willAddGap = true
+                return log.w("$logCaption: missing item list")
+            }
+
+            val src = listParser(parser, array)
+            if (list_tmp == null) list_tmp = ArrayList(src.size)
+            adder(src, addToHead)
+
+            column.saveRangeTop(result = result, list = src)
+
+            return when {
+                // より新しいデータがあるかどうかはわからない。
+                // カラのデータを読めたら終端とする
+                src.isEmpty() -> log.d("$logCaption: empty item list")
+                else -> true
             }
         }
+
+        val time_start = SystemClock.elapsedRealtime()
+
+        // 初回のリクエスト
+        val firstResult = requester(true)
+        var more = parseResult(firstResult)
+
+        // 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
+        while (more) more = when {
+            isCancelled ->
+                log.d("$logCaption: cancelled.")
+
+            (list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH -> {
+                // 既に十分読んだなら止める
+                willAddGap = true
+                log.d("$logCaption: read enough. make gap.")
+            }
+
+            SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT -> {
+                willAddGap = true
+                log.d("$logCaption: timeout.")
+            }
+
+            else -> parseResult(requester(false))
+        }
+
+        // MisskeyはsinceIdを指定するとID昇順のデータが得られるので、ID降順に並べ直す
+        list_tmp?.sortByDescending { it.getOrderId() }
+
+        if (!isCancelled
+            && list_tmp?.isNotEmpty() == true
+            && (willAddGap || Pref.bpForceGap(context))
+        ) {
+            addOne(list_tmp, TootGap.mayNull(null, column.idRecent), head = addToHead)
+        }
+
         return firstResult
     }
 
     private suspend fun <T : TimelineItem> refreshBottomMisskey(
-		logCaption: String,
-		requester: suspend (first: Boolean) -> TootApiResult?,
-		arrayFinder: (JsonObject) -> JsonArray?,
-		listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
-		adder: (List<T>, Boolean) -> Unit,
-		repeatReading: Boolean = false,
-	): TootApiResult? {
+        logCaption: String,
+        requester: suspend (first: Boolean) -> TootApiResult?,
+        arrayFinder: (JsonObject) -> JsonArray?,
+        listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
+        adder: (List<T>, Boolean) -> Unit,
+        repeatReading: Boolean = false,
+    ): TootApiResult? {
 
         when (column.pagingType) {
-			ColumnPagingType.None ->
-				return TootApiResult(context.getString(R.string.end_of_list))
+            ColumnPagingType.None ->
+                return TootApiResult(context.getString(R.string.end_of_list))
 
-			ColumnPagingType.Cursor ->
-				if (column.idOld == null)
-					return TootApiResult(context.getString(R.string.end_of_list))
+            ColumnPagingType.Cursor ->
+                if (column.idOld == null)
+                    return TootApiResult(context.getString(R.string.end_of_list))
 
             else -> {
             }
         }
 
-        val time_start = SystemClock.elapsedRealtime()
         val addToHead = false
 
-        var result = requester(true)
-        val firstResult = result
+        fun parseResult(result: TootApiResult?): Boolean {
 
-        fun saveRange(src: List<T>): Boolean = when (column.pagingType) {
-			ColumnPagingType.Offset -> {
-				column.offsetNext += src.size
-				true
-			}
+            result ?: return log.d("$logCaption: cancelled.")
 
-            else -> // ColumnPagingType.Default
-                column.saveRangeBottom(result, src)
-                    .also {
-                        if (!it) log.d("$logCaption: saveRangeBottom returns false. no more unread contents.")
-                    }
-        }
-
-        var jsonObject = result?.jsonObject
-        if (jsonObject != null) {
-            if (column.pagingType == ColumnPagingType.Cursor) {
-                column.idOld = EntityId.mayNull(jsonObject.string("next"))
-            }
-            result?.data = arrayFinder(jsonObject)
-        }
-
-        var array = result?.jsonArray
-        if (array != null) {
-            list_tmp = ArrayList()
-
-            var src = listParser(parser, array)
-            adder(src, addToHead)
-            var hasMoreRange = saveRange(src)
-
-            while (hasMoreRange && repeatReading) {
-                if (isCancelled) {
-                    log.d("$logCaption: cancelled.")
-                    break
+            result.jsonObject?.let { jsonObject ->
+                if (column.pagingType == ColumnPagingType.Cursor) {
+                    column.idOld = EntityId.mayNull(jsonObject.string("next"))
                 }
-
-                // bottomの場合、フィルタなしなら繰り返さない
-                if (!column.isFilterEnabled) {
-                    log.d("$logCaption: isFilterEnabled is false.")
-                    break
-                }
-
-                // max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
-                // 直前のデータが0個なら終了とみなすしかなさそう
-                if (src.isEmpty()) {
-                    log.d("$logCaption: previous size == 0.")
-                    break
-                }
-
-                if (column.idOld == null) {
-                    log.d("$logCaption: idOld is null.")
-                    break
-                }
-
-                // 十分読んだらそれで終了
-                if ((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
-                    log.d("$logCaption: read enough data.")
-                    break
-                }
-
-                if (SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
-                    // タイムアウト
-                    log.d("$logCaption: loop timeout.")
-                    break
-                }
-
-                result = requester(false)
-
-                jsonObject = result?.jsonObject
-                if (jsonObject != null) {
-                    if (column.pagingType == ColumnPagingType.Cursor) {
-                        column.idOld = EntityId.mayNull(jsonObject.string("next"))
-                    }
-                    result?.data = arrayFinder(jsonObject)
-                }
-
-                array = result?.jsonArray
-                if (array == null) {
-                    log.d("$logCaption:  error or cancelled.")
-                    break
-                }
-
-                src = listParser(parser, array)
-                adder(src, addToHead)
-                hasMoreRange = saveRange(src)
-            }
-        }
-        return firstResult
-    }
-
-    private suspend fun <T : TimelineItem> refreshTopMastodon(
-		logCaption: String,
-		requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult?,
-		arrayFinder: (JsonObject) -> JsonArray?,
-		listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
-		adder: (List<T>, Boolean) -> Unit
-	): TootApiResult? {
-
-        // 上端の差分更新に対応できるのは ColumnPagingType.Default だけ
-        if (column.pagingType != ColumnPagingType.Default)
-            return TootApiResult("can't refresh top.")
-
-        val time_start = SystemClock.elapsedRealtime()
-        val addToHead = false
-
-        var result = requester(true, null, null)
-        val firstResult = result
-
-        var jsonObject = result?.jsonObject
-        if (jsonObject != null) result?.data = arrayFinder(jsonObject)
-
-        var array = result?.jsonArray
-        if (array != null) {
-            val last_since_id = column.idRecent
-            list_tmp = ArrayList()
-
-            var src = listParser(parser, array)
-            adder(src, addToHead)
-            column.saveRangeTop(result, src)
-            // TLは (新しいデータ)(ギャップ)(古いデータ) となるので、レンジを保存するのはここだけで良い
-            // 続く読み込みはギャップを埋めるものなのでレンジを保存してはいけない
-
-            // 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
-            var willAddGap = false
-            var max_id: EntityId? = null
-            while (true) {
-                if (isCancelled) {
-                    log.d("$logCaption: cancelled.")
-                    break
-                }
-
-                if (src.isEmpty()) {
-                    // max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
-                    // 直前のデータが0個なら終了とみなすしかなさそう
-                    log.d("$logCaption: previous size == 0.")
-                    break
-                }
-
-                // 直前に読んだ範囲のmaxIdを調べる
-                max_id = column.parseRange(result, src).first
-                if (max_id == null) {
-                    log.d("$logCaption: max_id is null.")
-                    break
-                }
-
-                if ((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
-                    log.d("$logCaption: read enough. make gap.")
-                    willAddGap = true
-                    break
-                }
-
-                if (SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
-                    // タイムアウト
-                    log.d("$logCaption: timeout. make gap.")
-                    willAddGap = true
-                    break
-                }
-
-                result = requester(false, max_id, last_since_id)
-
-                jsonObject = result?.jsonObject
-                if (jsonObject != null) result?.data = arrayFinder(jsonObject)
-
-                array = result?.jsonArray
-
-                if (array == null) {
-                    // エラー
-                    log.d("$logCaption: error or cancelled. make gap.")
-                    willAddGap = true
-                    break
-                }
-
-                src = listParser(parser, array)
-                adder(src, addToHead)
-
-                // 今読んだのはギャップなので範囲を保存してはいけない
+                result.data = arrayFinder(jsonObject)
             }
 
-            if (!isCancelled
-                && list_tmp?.isNotEmpty() == true
-                && (willAddGap || Pref.bpForceGap(context))
-            ) {
-                addOne(list_tmp, TootGap.mayNull(max_id, last_since_id), head = addToHead)
-            }
-        }
-        return firstResult
-    }
+            val array = result.jsonArray
+                ?: return log.w("$logCaption: missing item list.")
 
-    private suspend fun <T : TimelineItem> refreshTopMastodonMinId(
-		logCaption: String,
-		requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult?,
-		arrayFinder: (JsonObject) -> JsonArray?,
-		listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
-		adder: (List<T>, Boolean) -> Unit
-	): TootApiResult? {
-        list_tmp = ArrayList()
-
-        // 上端の差分更新に対応できるのは ColumnPagingType.Default だけ
-        if (column.pagingType != ColumnPagingType.Default)
-            return TootApiResult("can't refresh top.")
-
-        val last_since_id = column.idRecent
-        val addToHead = true
-
-        val time_start = SystemClock.elapsedRealtime()
-
-        var result = requester(true, null, null)
-
-        val firstResult = result
-
-        var jsonObject = result?.jsonObject
-        if (jsonObject != null) {
-            result?.data = arrayFinder(jsonObject)
-        }
-
-        var array = result?.jsonArray
-        if (array != null) {
-
-            var src = listParser(parser, array)
+            val src = listParser(parser, array)
+            if (list_tmp == null) list_tmp = ArrayList(src.size)
             adder(src, addToHead)
 
-            var willAddGap = false
-            var max_id: EntityId? = null
-            while (true) {
-                column.saveRangeTop(result, src)
-
-                if (isCancelled) {
-                    log.d("$logCaption: cancelled.")
-                    break
-                }
-
-                // max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
-                // 直前のデータが0個なら終了とみなすしかなさそう
-                if (src.isEmpty()) {
-                    log.d("$logCaption: previous size == 0.")
-                    break
-                }
-
-                // 直前に読んだ範囲のmaxIdを調べる
-                max_id = column.parseRange(result, src).first
-                if (max_id == null) {
-                    log.d("$logCaption: max_id is null.")
-                    break
-                }
-
-                if (SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
-                    log.d("$logCaption: timeout. make gap.")
-                    // タイムアウト
-                    // 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-                    willAddGap = true
-                    break
-                }
-
-                result = requester(false, null, null)
-
-                jsonObject = result?.jsonObject
-                if (jsonObject != null)
-                    result?.data = arrayFinder(jsonObject)
-
-                array = result?.jsonArray
-
-                if (array == null) {
-                    log.d("$logCaption: error or cancelled. make gap.")
-                    // エラー
-                    // 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-                    willAddGap = true
-                    break
-                }
-
-                src = listParser(parser, array)
-                adder(src, addToHead)
-
-            }
-
-            if (!isCancelled
-                && list_tmp?.isNotEmpty() == true
-                && (willAddGap || Pref.bpForceGap(context))
-            ) {
-                addOne(list_tmp, TootGap.mayNull(max_id, last_since_id), head = addToHead)
-            }
-        }
-        return firstResult
-    }
-
-    private suspend fun <T : TimelineItem> refreshBottomMastodon(
-		logCaption: String,
-		requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult?,
-		arrayFinder: (JsonObject) -> JsonArray?,
-		listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
-		adder: (List<T>, Boolean) -> Unit,
-		repeatReading: Boolean = false
-	): TootApiResult? {
-
-        @Suppress("NON_EXHAUSTIVE_WHEN")
-        when (column.pagingType) {
-			ColumnPagingType.None ->
-				return TootApiResult(context.getString(R.string.end_of_list))
-
-			ColumnPagingType.Cursor ->
-				if (column.idOld == null)
-					return TootApiResult(context.getString(R.string.end_of_list))
-        }
-
-        val time_start = SystemClock.elapsedRealtime()
-        val addToHead = false
-
-        var result = requester(true, null, null)
-        val firstResult = result
-
-        var jsonObject = result?.jsonObject
-        if (jsonObject != null) {
-            if (column.pagingType == ColumnPagingType.Cursor) {
-                column.idOld = EntityId.mayNull(jsonObject.string("next"))
-            }
-            result?.data = arrayFinder(jsonObject)
-        }
-
-        var array = result?.jsonArray
-        if (array != null) {
-            list_tmp = ArrayList()
-            var src = listParser(parser, array)
-            adder(src, addToHead)
-
-            // returns false if no more result
-            fun saveBottomRange(src: List<T>) = when (column.pagingType) {
+            val more = when (column.pagingType) {
                 ColumnPagingType.Offset -> {
                     column.offsetNext += src.size
                     true
@@ -660,144 +344,391 @@ class ColumnTask_Refresh(
                 else -> column.saveRangeBottom(result, src)
             }
 
-            if(!repeatReading){
-                // 繰り返しなしでも範囲の保存は行う
-                saveBottomRange(src)
-
-            }else while(true){
-                if (!saveBottomRange(src)) {
-                    log.d("$logCaption: saveRangeBottom returns false. no more items.")
-                    break
-                }
-
-                if (isCancelled) {
-                    log.d("$logCaption: cancelled.")
-                    break
-                }
-
-                if (!column.isFilterEnabled) {
-                    // bottomの場合、フィルタなしなら繰り返さない
-                    log.d("$logCaption: isFiltered is false.")
-                    break
-                }
-
-                if (src.isEmpty()) {
-                    // max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
-                    // 直前のデータが0個なら終了とみなすしかなさそう
-                    log.d("$logCaption: previous size == 0.")
-                    break
-                }
-
-                if (column.idOld == null) {
-                    log.d("$logCaption: idOld is null.")
-                    break
-                }
-
-                if ((list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH) {
-                    // 十分読んだらそれで終了
-                    log.d("$logCaption: read enough data.")
-                    break
-                }
-
-                if (SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT) {
-                    // タイムアウト
-                    log.d("$logCaption: loop timeout.")
-                    break
-                }
-
-                result = requester(false, null, null)
-
-                jsonObject = result?.jsonObject
-                if (jsonObject != null)
-                    result?.data = arrayFinder(jsonObject)
-
-                array = result?.jsonArray
-                if (array == null) {
-                    log.d("$logCaption: error or cancelled.")
-                    break
-                }
-
-                src = listParser(parser, array)
-                adder(src, addToHead)
+            return when {
+                !more -> log.d("$logCaption: no more items.")
+                // max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+                // 直前のデータが0個なら終了とみなすしかなさそう
+                src.isEmpty() -> log.d("$logCaption: empty item list.")
+                else -> true
             }
+        }
+
+
+        val time_start = SystemClock.elapsedRealtime()
+        val firstResult = requester(true)
+        var more = parseResult(firstResult) && repeatReading
+        while (more) more = when {
+            isCancelled ->
+                log.d("$logCaption: cancelled.")
+
+            // bottomの場合、フィルタなしなら繰り返さない
+            !column.isFilterEnabled ->
+                log.d("$logCaption: isFilterEnabled is false.")
+
+            column.idOld == null ->
+                log.d("$logCaption: idOld is null.")
+
+            // 十分読んだらそれで終了
+            (list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH ->
+                log.d("$logCaption: read enough data.")
+
+            SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT ->
+                log.d("$logCaption: loop timeout.")
+
+            else -> parseResult(requester(false))
+        }
+
+        return firstResult
+    }
+
+    private suspend fun <T : TimelineItem> refreshTopMastodon(
+        logCaption: String,
+        requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult?,
+        arrayFinder: (JsonObject) -> JsonArray?,
+        listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
+        adder: (List<T>, Boolean) -> Unit
+    ): TootApiResult? {
+
+        // 上端の差分更新に対応できるのは ColumnPagingType.Default だけ
+        if (column.pagingType != ColumnPagingType.Default)
+            return TootApiResult("can't refresh top.")
+
+        val addToHead = false
+
+        // 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
+        var willAddGap = false
+
+        // 2回目以降のリクエスト範囲はギャップを意識したものになる
+        val last_since_id = column.idRecent
+        var max_id: EntityId? = null
+
+        fun parseResult(result: TootApiResult?): Boolean {
+            val first = list_tmp?.isEmpty() != false
+
+            if (result == null) {
+                if (!first) willAddGap = true
+                return log.d("$logCaption: cancelled.")
+            }
+
+            result.jsonObject?.let { result.data = arrayFinder(it) }
+
+            val array = result.jsonArray
+            if (array == null) {
+                if (!first) willAddGap = true
+                return log.w("$logCaption: missing item list")
+            }
+
+            val src = listParser(parser, array)
+            if (list_tmp == null) list_tmp = ArrayList(src.size)
+            adder(src, addToHead)
+
+            when {
+                first -> {
+                    // TLは (新しいデータ)(ギャップ)(古いデータ) となるので、レンジを保存するのはここだけで良い
+                    // 続く読み込みはギャップを埋めるものなのでレンジを保存してはいけない
+                    column.saveRangeTop(result, src)
+                }
+                else -> {
+                    // 今読んだのはギャップなので範囲を保存してはいけない
+                }
+            }
+
+            return when {
+                // max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+                // 直前のデータが0個なら終了とみなすしかなさそう
+                src.isEmpty() -> log.d("$logCaption: empty list.")
+                else -> {
+                    // 直前に読んだ範囲のmaxIdを調べる
+                    max_id = column.parseRange(result, src).first
+                    true
+                }
+            }
+        }
+
+
+        val time_start = SystemClock.elapsedRealtime()
+        // 初回リクエスト
+        val firstResult = requester(true, null, null)
+        var more = parseResult(firstResult)
+        // 2回目以降
+        while (more) more = when {
+            isCancelled ->
+                log.d("$logCaption: cancelled.")
+
+            max_id == null ->
+                log.d("$logCaption: max_id is null.")
+
+            (list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH -> {
+                willAddGap = true
+                log.d("$logCaption: read enough. make gap.")
+            }
+
+            SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT -> {
+                willAddGap = true
+                log.d("$logCaption: timeout. make gap.")
+            }
+
+            else -> parseResult(requester(false, max_id, last_since_id))
+        }
+
+        if (!isCancelled
+            && list_tmp?.isNotEmpty() == true
+            && (willAddGap || Pref.bpForceGap(context))
+        ) {
+            addOne(list_tmp, TootGap.mayNull(max_id, last_since_id), head = addToHead)
         }
         return firstResult
     }
 
+    private suspend fun <T : TimelineItem> refreshTopMastodonMinId(
+        logCaption: String,
+        requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult?,
+        arrayFinder: (JsonObject) -> JsonArray?,
+        listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
+        adder: (List<T>, Boolean) -> Unit
+    ): TootApiResult? {
+
+        // 上端の差分更新に対応できるのは ColumnPagingType.Default だけ
+        if (column.pagingType != ColumnPagingType.Default)
+            return TootApiResult("can't refresh top.")
+
+        val addToHead = true
+
+        var willAddGap = false
+
+        // 2回目以降のリクエスト範囲
+        val last_since_id = column.idRecent
+        var max_id: EntityId? = null
+
+        fun parseResult(result: TootApiResult?): Boolean {
+            val first = list_tmp?.isEmpty() != false
+
+            if (result == null) {
+                if (!first) willAddGap = true
+                return log.d("$logCaption:cancelled.")
+            }
+
+            result.jsonObject?.let { result.data = arrayFinder(it) }
+
+            val array = result.jsonArray
+            if (array == null) {
+                if (!first) willAddGap = true
+                return log.w("$logCaption: missing item list")
+            }
+
+            val src = listParser(parser, array)
+            if (list_tmp == null) list_tmp = ArrayList(src.size)
+            adder(src, addToHead)
+
+            column.saveRangeTop(result, src)
+            // Linkヘッダからはより新しいデータがあるかどうかはわからない
+
+            return when {
+                // max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+                // 直前のデータが0個なら終了とみなすしかなさそう
+                src.isEmpty() -> log.d("$logCaption: empty list.")
+
+                else -> {
+                    // 直前に読んだ範囲のmaxIdを調べる
+                    max_id = column.parseRange(result, src).first
+                    true
+                }
+            }
+        }
+
+        val time_start = SystemClock.elapsedRealtime()
+
+        val firstResult = requester(true, null, null)
+        var more = parseResult(firstResult)
+        while (more) more = when {
+            isCancelled ->
+                log.d("$logCaption: cancelled.")
+
+            max_id == null ->
+                log.d("$logCaption: max_id is null.")
+
+            SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT -> {
+                // タイムアウト
+                // 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+                willAddGap = true
+                log.d("$logCaption: timeout. make gap.")
+            }
+
+            else -> parseResult(requester(false, null, null))
+        }
+
+        if (!isCancelled
+            && list_tmp?.isNotEmpty() == true
+            && (willAddGap || Pref.bpForceGap(context))
+        ) {
+            addOne(list_tmp, TootGap.mayNull(max_id, last_since_id), head = addToHead)
+        }
+
+        return firstResult
+    }
+
+    private suspend fun <T : TimelineItem> refreshBottomMastodon(
+        logCaption: String,
+        requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult?,
+        arrayFinder: (JsonObject) -> JsonArray?,
+        listParser: (parser: TootParser, jsonArray: JsonArray) -> List<T>,
+        adder: (List<T>, Boolean) -> Unit,
+        repeatReading: Boolean = false
+    ): TootApiResult? {
+
+        @Suppress("NON_EXHAUSTIVE_WHEN")
+        when (column.pagingType) {
+            ColumnPagingType.None ->
+                return TootApiResult(context.getString(R.string.end_of_list))
+
+            ColumnPagingType.Cursor ->
+                if (column.idOld == null)
+                    return TootApiResult(context.getString(R.string.end_of_list))
+        }
+
+        val addToHead = false
+
+        // parse result and add to list_tmp
+        // returns false if no more result
+        fun parseResult(result: TootApiResult?): Boolean {
+            result ?: return log.d("$logCaption: cancelled.")
+
+            result.jsonObject?.let { it ->
+                if (column.pagingType == ColumnPagingType.Cursor) {
+                    column.idOld = EntityId.mayNull(it.string("next"))
+                }
+                result.data = arrayFinder(it)
+            }
+            val array = result.jsonArray
+                ?: return log.d("$logCaption: missing item list.")
+
+            val src = listParser(parser, array)
+            if (list_tmp == null) list_tmp = ArrayList(src.size)
+            adder(src, addToHead)
+
+            // save range to column
+            // false if no more result
+            val more = when (column.pagingType) {
+                ColumnPagingType.Offset -> {
+                    column.offsetNext += src.size
+                    true
+                }
+
+                // ColumnPagingType.Default
+                else -> column.saveRangeBottom(result, src)
+            }
+
+            return when {
+                !more -> log.d("$logCaption: no more items.")
+
+                // max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+                // 直前のデータが0個なら終了とみなすしかなさそう
+                src.isEmpty() -> log.d("$logCaption: empty item list.")
+
+                else -> true
+            }
+        }
+
+        val time_start = SystemClock.elapsedRealtime()
+        val firstResult = requester(true, null, null)
+        var more = parseResult(firstResult) && repeatReading
+        while (more) more = when {
+            isCancelled ->
+                log.d("$logCaption: cancelled.")
+
+            // bottomの場合、フィルタなしなら繰り返さない
+            !column.isFilterEnabled ->
+                log.d("$logCaption: isFiltered is false.")
+
+            column.idOld == null ->
+                log.d("$logCaption: idOld is null.")
+
+            (list_tmp?.size ?: 0) >= Column.LOOP_READ_ENOUGH ->
+                log.d("$logCaption: read enough data.")
+
+            SystemClock.elapsedRealtime() - time_start > Column.LOOP_TIMEOUT ->
+                log.d("$logCaption: loop timeout.")
+
+            else -> parseResult(requester(false, null, null))
+        }
+
+        return firstResult
+    }
+
     private suspend fun defaultRequesterMisskey(
-		client: TootApiClient,
-		path_base: String,
-		params: JsonObject,
-		first: Boolean
-	) = client.request(
-			path_base,
-			params.apply {
-				if (!bBottom) {
-					if (first) {
+        client: TootApiClient,
+        path_base: String,
+        params: JsonObject,
+        first: Boolean
+    ) = client.request(
+        path_base,
+        params.apply {
+            if (!bBottom) {
+                if (first) {
 
-						addRangeMisskey(bBottom)
-					} else {
-						putMisskeySince(column.idRecent)
-					}
-				} else {
-					if (first) {
+                    addRangeMisskey(bBottom)
+                } else {
+                    putMisskeySince(column.idRecent)
+                }
+            } else {
+                if (first) {
 
-						when (column.pagingType) {
-							ColumnPagingType.Default -> addRangeMisskey(bBottom)
-							ColumnPagingType.Offset -> put("offset", column.offsetNext)
-							ColumnPagingType.Cursor -> put("cursor", column.idOld)
+                    when (column.pagingType) {
+                        ColumnPagingType.Default -> addRangeMisskey(bBottom)
+                        ColumnPagingType.Offset -> put("offset", column.offsetNext)
+                        ColumnPagingType.Cursor -> put("cursor", column.idOld)
 
-							ColumnPagingType.None -> {
-							}
-						}
-					} else {
-						when (column.pagingType) {
-							ColumnPagingType.Default -> putMisskeyUntil(column.idOld)
-							ColumnPagingType.Offset -> put("offset", column.offsetNext)
-							ColumnPagingType.Cursor -> put("cursor", column.idOld)
+                        ColumnPagingType.None -> {
+                        }
+                    }
+                } else {
+                    when (column.pagingType) {
+                        ColumnPagingType.Default -> putMisskeyUntil(column.idOld)
+                        ColumnPagingType.Offset -> put("offset", column.offsetNext)
+                        ColumnPagingType.Cursor -> put("cursor", column.idOld)
 
-							ColumnPagingType.None -> {
-							}
-						}
-					}
-				}
-			}.toPostRequestBuilder()
-		)
+                        ColumnPagingType.None -> {
+                        }
+                    }
+                }
+            }
+        }.toPostRequestBuilder()
+    )
 
     private suspend fun defaultRequesterMastodon(
-		client: TootApiClient,
-		path_base: String,
-		delimiter: Char,
-		@Suppress("UNUSED_PARAMETER") first: Boolean,
-		useMinId: Boolean,
-		gapIdNewer: EntityId?,
-		gapIdOlder: EntityId?
-	) =
+        client: TootApiClient,
+        path_base: String,
+        delimiter: Char,
+        @Suppress("UNUSED_PARAMETER") first: Boolean,
+        useMinId: Boolean,
+        gapIdNewer: EntityId?,
+        gapIdOlder: EntityId?
+    ) =
         client.request(
-			when {
-				// profile directory 用
-				column.pagingType == ColumnPagingType.Offset ->
-					"$path_base${delimiter}offset=${column.offsetNext}"
+            when {
+                // profile directory 用
+                column.pagingType == ColumnPagingType.Offset ->
+                    "$path_base${delimiter}offset=${column.offsetNext}"
 
-				useMinId ->
-					column.addRangeMin(path_base)
+                useMinId ->
+                    column.addRangeMin(path_base)
 
-				gapIdNewer != null ->
-					"$path_base${delimiter}max_id=$gapIdNewer&since_id=$gapIdOlder"
+                gapIdNewer != null ->
+                    "$path_base${delimiter}max_id=$gapIdNewer&since_id=$gapIdOlder"
 
-				else ->
-					column.addRange(bBottom = bBottom, path_base, delimiter = delimiter)
-			}
-		)
+                else ->
+                    column.addRange(bBottom = bBottom, path_base, delimiter = delimiter)
+            }
+        )
 
     suspend fun getStatusList(
-		client: TootApiClient,
-		path_base: String?,
-		useMinId: Boolean = false,
-		misskeyParams: JsonObject? = null,
-		listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootStatus> =
-			defaultStatusListParser
-	): TootApiResult? {
+        client: TootApiClient,
+        path_base: String?,
+        useMinId: Boolean = false,
+        misskeyParams: JsonObject? = null,
+        listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootStatus> =
+            defaultStatusListParser
+    ): TootApiResult? {
 
         path_base ?: return null // cancelled.
 
@@ -814,20 +745,20 @@ class ColumnTask_Refresh(
 
             when {
                 bBottom -> refreshBottomMisskey(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder,
-					repeatReading = true
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder,
+                    repeatReading = true
+                )
                 else -> refreshTopMisskey(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
 
         } else {
@@ -837,48 +768,48 @@ class ColumnTask_Refresh(
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
-						client,
-						path_base,
-						delimiter,
-						first,
-						useMinId = useMinId,
-						gapIdNewer,
-						gapIdOlder,
-					)
+                        client,
+                        path_base,
+                        delimiter,
+                        first,
+                        useMinId = useMinId,
+                        gapIdNewer,
+                        gapIdOlder,
+                    )
                 }
 
             when {
                 bBottom -> refreshBottomMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder,
-					repeatReading = true
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder,
+                    repeatReading = true
+                )
                 useMinId -> refreshTopMastodonMinId(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder
+                )
                 else -> refreshTopMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder
+                )
             }
         }
     }
 
     suspend fun getNotificationList(
-		client: TootApiClient,
-		fromAcct: String? = null,
-		useMinId: Boolean = false
-	): TootApiResult? {
+        client: TootApiClient,
+        fromAcct: String? = null,
+        useMinId: Boolean = false
+    ): TootApiResult? {
 
         val logCaption = "getNotificationList"
 
@@ -901,20 +832,20 @@ class ColumnTask_Refresh(
 
             when {
                 bBottom -> refreshBottomMisskey(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder,
-					repeatReading = true
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder,
+                    repeatReading = true
+                )
                 else -> refreshTopMisskey(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         } else {
 
@@ -923,52 +854,52 @@ class ColumnTask_Refresh(
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
-						client,
-						path_base,
-						delimiter,
-						first,
-						useMinId = useMinId,
-						gapIdNewer,
-						gapIdOlder,
-					)
+                        client,
+                        path_base,
+                        delimiter,
+                        first,
+                        useMinId = useMinId,
+                        gapIdNewer,
+                        gapIdOlder,
+                    )
                 }
 
             when {
                 bBottom -> refreshBottomMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder,
-					repeatReading = true
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder,
+                    repeatReading = true
+                )
                 useMinId -> refreshTopMastodonMinId(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
                 else -> refreshTopMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         }
     }
 
     suspend fun getAccountList(
-		client: TootApiClient,
-		path_base: String,
-		misskeyParams: JsonObject? = null,
-		arrayFinder: (JsonObject) -> JsonArray? =
-			nullArrayFinder,
-		listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootAccountRef> =
-			defaultAccountListParser
-	): TootApiResult? {
+        client: TootApiClient,
+        path_base: String,
+        misskeyParams: JsonObject? = null,
+        arrayFinder: (JsonObject) -> JsonArray? =
+            nullArrayFinder,
+        listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootAccountRef> =
+            defaultAccountListParser
+    ): TootApiResult? {
 
         val logCaption = "getAccountList"
         val adder: (List<TootAccountRef>, Boolean) -> Unit =
@@ -980,58 +911,58 @@ class ColumnTask_Refresh(
                 { defaultRequesterMisskey(client, path_base, params, it) }
             when {
                 bBottom -> refreshBottomMisskey(
-					logCaption,
-					requester = requester,
-					arrayFinder = arrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = arrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
                 else -> refreshTopMisskey(
-					logCaption,
-					requester = requester,
-					arrayFinder = arrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = arrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         } else {
             val delimiter = if (-1 != path_base.indexOf('?')) '&' else '?'
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
-						client,
-						path_base,
-						delimiter,
-						first,
-						useMinId = false,
-						gapIdNewer,
-						gapIdOlder,
-					)
+                        client,
+                        path_base,
+                        delimiter,
+                        first,
+                        useMinId = false,
+                        gapIdNewer,
+                        gapIdOlder,
+                    )
                 }
 
             when {
                 bBottom -> refreshBottomMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = arrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = arrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
                 else -> refreshTopMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = arrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = arrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         }
     }
 
     suspend fun getDomainList(
-		client: TootApiClient,
-		path_base: String
-	): TootApiResult? {
+        client: TootApiClient,
+        path_base: String
+    ): TootApiResult? {
 
         val logCaption = "getDomainList"
 
@@ -1048,47 +979,47 @@ class ColumnTask_Refresh(
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
-						client,
-						path_base,
-						delimiter,
-						first,
-						useMinId = false,
-						gapIdNewer,
-						gapIdOlder,
-					)
+                        client,
+                        path_base,
+                        delimiter,
+                        first,
+                        useMinId = false,
+                        gapIdNewer,
+                        gapIdOlder,
+                    )
                 }
 
             when {
                 bBottom -> refreshBottomMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
                 else -> refreshTopMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         }
     }
 
-    // リスト一覧にはページネーションがない
-    //			fun getListList(client : TootApiClient, path_base : String) : TootApiResult? {
-    //
-    //				if(isMisskey) return TootApiResult("misskey support is not yet implemented.")
-    //
-    //				return TootApiResult("Mastodon's /api/v1/lists has no pagination.")
-    //			}
+// リスト一覧にはページネーションがない
+//			fun getListList(client : TootApiClient, path_base : String) : TootApiResult? {
+//
+//				if(isMisskey) return TootApiResult("misskey support is not yet implemented.")
+//
+//				return TootApiResult("Mastodon's /api/v1/lists has no pagination.")
+//			}
 
     suspend fun getReportList(
-		client: TootApiClient,
-		path_base: String
-	): TootApiResult? {
+        client: TootApiClient,
+        path_base: String
+    ): TootApiResult? {
 
         val logCaption = "getReportList"
         val adder: (List<TootReport>, Boolean) -> Unit =
@@ -1105,41 +1036,41 @@ class ColumnTask_Refresh(
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
-						client,
-						path_base,
-						delimiter,
-						first,
-						useMinId = false,
-						gapIdNewer,
-						gapIdOlder,
-					)
+                        client,
+                        path_base,
+                        delimiter,
+                        first,
+                        useMinId = false,
+                        gapIdNewer,
+                        gapIdOlder,
+                    )
                 }
 
             when {
                 bBottom -> refreshBottomMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
                 else -> refreshTopMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         }
     }
 
     suspend fun getConversationSummaryList(
-		client: TootApiClient,
-		path_base: String,
-		//	aroundMin : Boolean = false,
-		misskeyParams: JsonObject? = null,
-	): TootApiResult? {
+        client: TootApiClient,
+        path_base: String,
+        //	aroundMin : Boolean = false,
+        misskeyParams: JsonObject? = null,
+    ): TootApiResult? {
         val logCaption = "getConversationSummaryList"
 
         val listParser: (parser: TootParser, jsonArray: JsonArray) -> List<TootConversationSummary> =
@@ -1157,52 +1088,52 @@ class ColumnTask_Refresh(
 
             when {
                 bBottom -> refreshBottomMisskey(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder,
-					repeatReading = true
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder,
+                    repeatReading = true
+                )
                 else -> refreshTopMisskey(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder
+                )
             }
         } else {
             val delimiter = if (-1 != path_base.indexOf('?')) '&' else '?'
             val requester: suspend (first: Boolean, gapIdNewer: EntityId?, gapIdOlder: EntityId?) -> TootApiResult? =
                 { first, gapIdNewer, gapIdOlder ->
                     defaultRequesterMastodon(
-						client,
-						path_base,
-						delimiter,
-						first,
-						useMinId = false,
-						gapIdNewer,
-						gapIdOlder,
-					)
+                        client,
+                        path_base,
+                        delimiter,
+                        first,
+                        useMinId = false,
+                        gapIdNewer,
+                        gapIdOlder,
+                    )
                 }
 
             when {
                 bBottom -> refreshBottomMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder = adder,
-					repeatReading = true
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder = adder,
+                    repeatReading = true
+                )
                 else -> refreshTopMastodon(
-					logCaption,
-					requester = requester,
-					arrayFinder = nullArrayFinder,
-					listParser = listParser,
-					adder
-				)
+                    logCaption,
+                    requester = requester,
+                    arrayFinder = nullArrayFinder,
+                    listParser = listParser,
+                    adder
+                )
             }
         }
     }

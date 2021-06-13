@@ -220,6 +220,7 @@ fun Column.parseRange(
 // int scroll_hack;
 
 // return true if list bottom may have unread remain
+// カラムが既に範囲を持ってる場合、その範囲を拡張する。
 fun Column.saveRange(
     bBottom: Boolean,
     bTop: Boolean,
@@ -261,9 +262,12 @@ fun Column.saveRange(
 fun Column.saveRangeBottom(result: TootApiResult?, list: List<TimelineItem>?) =
     saveRange(true, bTop = false, result = result, list = list)
 
-// return true if list bottom may have unread remain
-fun Column.saveRangeTop(result: TootApiResult?, list: List<TimelineItem>?) =
+// no return value: can't find there may be more items.
+fun Column.saveRangeTop(result: TootApiResult?, list: List<TimelineItem>?){
     saveRange(false, bTop = true, result = result, list = list)
+
+}
+
 
 fun Column.addRange(
     bBottom: Boolean,

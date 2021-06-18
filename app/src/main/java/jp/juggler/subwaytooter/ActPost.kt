@@ -2373,13 +2373,14 @@ class ActPost : AppCompatActivity(),
                 status.id.putTo(data, EXTRA_POSTED_STATUS_ID)
                 redraft_status_id?.putTo(data, EXTRA_POSTED_REDRAFT_ID)
                 status.in_reply_to_id?.putTo(data, EXTRA_POSTED_REPLY_ID)
+                ActMain.refActMain?.get()?.onCompleteActPost(data)
 
                 if (isMultiWindowPost) {
                     resetText()
                     updateText(Intent(), confirmed = true, saveDraft = false, resetAccount = false)
                     afterUpdateText()
-                    ActMain.refActMain?.get()?.onMultiWindowPostComplete(data)
                 } else {
+                    // ActMainの復元が必要な場合に備えてintentのdataでも渡す
                     setResult(RESULT_OK, data)
                     isPostComplete = true
                     this@ActPost.finish()
@@ -2395,7 +2396,7 @@ class ActPost : AppCompatActivity(),
                     resetText()
                     updateText(Intent(), confirmed = true, saveDraft = false, resetAccount = false)
                     afterUpdateText()
-                    ActMain.refActMain?.get()?.onMultiWindowPostComplete(data)
+                    ActMain.refActMain?.get()?.onCompleteActPost(data)
                 } else {
                     setResult(RESULT_OK, data)
                     isPostComplete = true

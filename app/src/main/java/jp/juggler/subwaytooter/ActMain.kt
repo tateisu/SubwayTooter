@@ -636,152 +636,133 @@ class ActMain : AppCompatActivity(),
         }
     }
 
+    private fun benchmark(caption: String, limit: Long = 0L, block: () -> Unit) {
+        val start = SystemClock.elapsedRealtime()
+        block()
+        val duration = SystemClock.elapsedRealtime() - start
+        if (duration >= limit) log.w("benchmark: ${duration}ms : $caption")
+    }
+
     override fun onStart() {
-        val tsTotal = SystemClock.elapsedRealtime()
-        super.onStart()
-
-        isStart_ = true
         log.d("onStart")
+        isStart_ = true
+        super.onStart()
+        benchmark("onStart total") {
+            benchmark("reload color") {
+                // カラーカスタマイズを読み直す
+                ListDivider.color = Pref.ipListDividerColor(pref)
+                TabletColumnDivider.color = Pref.ipListDividerColor(pref)
+                ItemViewHolder.toot_color_unlisted = Pref.ipTootColorUnlisted(pref)
+                ItemViewHolder.toot_color_follower = Pref.ipTootColorFollower(pref)
+                ItemViewHolder.toot_color_direct_user = Pref.ipTootColorDirectUser(pref)
+                ItemViewHolder.toot_color_direct_me = Pref.ipTootColorDirectMe(pref)
+                MyClickableSpan.showLinkUnderline = Pref.bpShowLinkUnderline(pref)
+                MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
+                    ?: attrColor(R.attr.colorLink)
 
-        var ts = SystemClock.elapsedRealtime()
-        var te: Long
-
-        // カラーカスタマイズを読み直す
-        ListDivider.color = Pref.ipListDividerColor(pref)
-        TabletColumnDivider.color = Pref.ipListDividerColor(pref)
-        ItemViewHolder.toot_color_unlisted = Pref.ipTootColorUnlisted(pref)
-        ItemViewHolder.toot_color_follower = Pref.ipTootColorFollower(pref)
-        ItemViewHolder.toot_color_direct_user = Pref.ipTootColorDirectUser(pref)
-        ItemViewHolder.toot_color_direct_me = Pref.ipTootColorDirectMe(pref)
-        MyClickableSpan.showLinkUnderline = Pref.bpShowLinkUnderline(pref)
-        MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref).notZero()
-            ?: attrColor(R.attr.colorLink)
-
-        CustomShare.reloadCache(this, pref)
-
-        te = SystemClock.elapsedRealtime()
-        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms : reload color")
-        ts = SystemClock.elapsedRealtime()
-
-        var tz = TimeZone.getDefault()
-        try {
-            val tz_id = Pref.spTimeZone(pref)
-            if (tz_id.isNotEmpty()) {
-                tz = TimeZone.getTimeZone(tz_id)
+                CustomShare.reloadCache(this, pref)
             }
-        } catch (ex: Throwable) {
-            log.e(ex, "getTimeZone failed.")
-        }
-        TootStatus.date_format.timeZone = tz
+            benchmark("reload timezone") {
+                try {
+                    var tz = TimeZone.getDefault()
+                    val tz_id = Pref.spTimeZone(pref)
+                    if (tz_id.isNotEmpty()) {
+                        tz = TimeZone.getTimeZone(tz_id)
+                    }
+                    TootStatus.date_format.timeZone = tz
+                } catch (ex: Throwable) {
+                    log.e(ex, "getTimeZone failed.")
+                }
+            }
+            benchmark("sweepBuggieData") {
+                // バグいアカウントデータを消す
+                try {
+                    SavedAccount.sweepBuggieData()
+                } catch (ex: Throwable) {
+                    log.trace(ex)
+                }
+            }
+            benchmark("column order") {
+                // アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
+                val new_order = app_state.columnList
+                    .mapIndexedNotNull { index, column ->
+                        if (!column.access_info.isNA && null == SavedAccount.loadAccount(
+                                this@ActMain,
+                                column.access_info.db_id
+                            )
+                        ) {
+                            null
+                        } else {
+                            index
+                        }
+                    }
 
-        te = SystemClock.elapsedRealtime()
-        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms : reload timezone")
-        ts = SystemClock.elapsedRealtime()
-
-        // バグいアカウントデータを消す
-        try {
-            SavedAccount.sweepBuggieData()
-        } catch (ex: Throwable) {
-            log.trace(ex)
-        }
-
-        te = SystemClock.elapsedRealtime()
-        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms : sweepBuggieData")
-        ts = SystemClock.elapsedRealtime()
-
-        // アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
-        val new_order = app_state.columnList
-            .mapIndexedNotNull { index, column ->
-                if (!column.access_info.isNA && null == SavedAccount.loadAccount(
-                        this@ActMain,
-                        column.access_info.db_id
-                    )
-                ) {
-                    null
-                } else {
-                    index
+                if (new_order.size != app_state.columnCount) {
+                    setOrder(new_order)
                 }
             }
 
-        if (new_order.size != app_state.columnCount) {
-            setOrder(new_order)
+            benchmark("fireColumnColor") {
+                // 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
+                app_state.columnList.forEach { column ->
+                    column.viewHolder?.lastAnnouncementShown = 0L
+                    column.fireColumnColor()
+                }
+            }
+
+            benchmark("reloadAccountSetting") {
+                // 各カラムのアカウント設定を読み直す
+                reloadAccountSetting()
+            }
+
+            // 残りの処理はActivityResultの処理より後回しにしたい
+            handler.postDelayed(onStartAfter, 10L)
         }
+    }
 
-        te = SystemClock.elapsedRealtime()
-        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms : column order")
-        ts = SystemClock.elapsedRealtime()
+    private val onStartAfter = Runnable {
+        benchmark("onStartAfter total") {
 
-        // 背景画像を表示しない設定が変更された時にカラムの背景を設定しなおす
-        app_state.columnList.forEach { column ->
-            column.viewHolder?.lastAnnouncementShown = 0L
-            column.fireColumnColor()
+            benchmark("refreshAfterPost") {
+                // 投稿直後ならカラムの再取得を行う
+                refreshAfterPost()
+            }
+            benchmark("column.onActivityStart") {
+                // 画面復帰時に再取得などを行う
+                app_state.columnList.forEach { it.onActivityStart() }
+            }
+            benchmark("streamManager.onScreenStart") {
+                // 画面復帰時にストリーミング接続を開始する
+                app_state.streamManager.onScreenStart()
+            }
+            benchmark("updateColumnStripSelection") {
+                // カラムの表示範囲インジケータを更新
+                updateColumnStripSelection(-1, -1f)
+            }
+            benchmark("fireShowContent") {
+                app_state.columnList.forEach {
+                    it.fireShowContent(
+                        reason = "ActMain onStart",
+                        reset = true
+                    )
+                }
+            }
+
+            benchmark("proc_updateRelativeTime") {
+                // 相対時刻表示の更新
+                proc_updateRelativeTime.run()
+            }
+            benchmark("enableSpeech") {
+                // スピーチの開始
+                app_state.enableSpeech()
+            }
         }
-
-        te = SystemClock.elapsedRealtime()
-        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :fireColumnColor")
-        ts = SystemClock.elapsedRealtime()
-
-        // 各カラムのアカウント設定を読み直す
-        reloadAccountSetting()
-
-        te = SystemClock.elapsedRealtime()
-        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :reloadAccountSetting")
-        ts = SystemClock.elapsedRealtime()
-
-        // 投稿直後ならカラムの再取得を行う
-        refreshAfterPost()
-
-        te = SystemClock.elapsedRealtime()
-        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :refreshAfterPost")
-        ts = SystemClock.elapsedRealtime()
-
-        // 画面復帰時に再取得などを行う
-        app_state.columnList.forEach { it.onActivityStart() }
-
-        te = SystemClock.elapsedRealtime()
-        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :column.onStart")
-        ts = SystemClock.elapsedRealtime()
-
-        // 画面復帰時にストリーミング接続を開始する
-        app_state.streamManager.onScreenStart()
-
-        te = SystemClock.elapsedRealtime()
-        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :multi_stream_reader.onScreenStart")
-        ts = SystemClock.elapsedRealtime()
-
-        // カラムの表示範囲インジケータを更新
-        updateColumnStripSelection(-1, -1f)
-
-        te = SystemClock.elapsedRealtime()
-        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :updateColumnStripSelection")
-        ts = SystemClock.elapsedRealtime()
-
-        app_state.columnList.forEach {
-            it.fireShowContent(
-                reason = "ActMain onStart",
-                reset = true
-            )
-        }
-
-        te = SystemClock.elapsedRealtime()
-        if (te - ts >= 100L) log.w("onStart: ${te - ts}ms :fireShowContent")
-
-        // 相対時刻表示
-        proc_updateRelativeTime.run()
-
-
-        te = SystemClock.elapsedRealtime()
-        if (te - tsTotal >= 100L) log.w("onStart: ${te - tsTotal}ms : total")
-
-        app_state.enableSpeech()
     }
 
     override fun onStop() {
-
         log.d("onStop")
-
         isStart_ = false
-
+        handler.removeCallbacks(onStartAfter)
         handler.removeCallbacks(proc_updateRelativeTime)
 
         post_helper.closeAcctPopup()
@@ -958,7 +939,20 @@ class ActMain : AppCompatActivity(),
         dlgQuickTootMenu.toggle()
     }
 
-    private fun updatePostedStatus(data: Intent) {
+
+    val arActPost = activityResultHandler { ar ->
+        ar?.data?.let { data ->
+            if (ar.resultCode == Activity.RESULT_OK) {
+                etQuickToot.setText("")
+                onCompleteActPost(data)
+            }
+        }
+    }
+
+    // マルチウィンドウモードでは投稿画面から直接呼ばれる
+    // 通常モードでは activityResultHandler 経由で呼ばれる
+    fun onCompleteActPost(data: Intent) {
+        if (!isLiveActivity) return
         posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)?.let { Acct.parse(it) }
         if (data.extras?.containsKey(ActPost.EXTRA_POSTED_STATUS_ID) == true) {
             posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
@@ -967,22 +961,11 @@ class ActMain : AppCompatActivity(),
         } else {
             posted_status_id = null
         }
-    }
-
-    val arActPost = activityResultHandler { ar ->
-        val data = ar?.data
-        if (data != null && ar.resultCode == Activity.RESULT_OK) {
-            etQuickToot.setText("")
-            updatePostedStatus(data)
-        }
-    }
-
-    fun onMultiWindowPostComplete(data: Intent) {
-        if (!isLiveActivity) return
-        updatePostedStatus(data)
         if (isStart_) refreshAfterPost()
     }
 
+    // 簡易投稿なら直接呼ばれる
+    // ActPost経由なら画面復帰タイミングや onCompleteActPost から呼ばれる
     private fun refreshAfterPost() {
         val posted_acct = this.posted_acct
         val posted_status_id = this.posted_status_id
@@ -1105,6 +1088,7 @@ class ActMain : AppCompatActivity(),
             }
 
             override fun onScheduledPostComplete(target_account: SavedAccount) {
+                // will not happen
             }
         })
     }
@@ -2796,8 +2780,8 @@ class ActMain : AppCompatActivity(),
         }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if(super.onKeyDown(keyCode, event)) return true
-        if(event!=null) {
+        if (super.onKeyDown(keyCode, event)) return true
+        if (event != null) {
             if (event.isCtrlPressed) return true
         }
         return false
@@ -2805,10 +2789,10 @@ class ActMain : AppCompatActivity(),
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         val rv = super.onKeyUp(keyCode, event)
-        if( event != null){
-            if( event.isCtrlPressed ){
+        if (event != null) {
+            if (event.isCtrlPressed) {
                 log.d("onKeyUp code=$keyCode rv=$rv")
-                when(keyCode){
+                when (keyCode) {
                     KeyEvent.KEYCODE_N -> btnToot.performClick()
                 }
                 return true

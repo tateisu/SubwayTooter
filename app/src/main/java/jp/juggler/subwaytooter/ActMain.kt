@@ -636,7 +636,7 @@ class ActMain : AppCompatActivity(),
         }
     }
 
-    private fun benchmark(caption: String, limit: Long = 0L, block: () -> Unit) {
+    private fun benchmark(caption: String, limit: Long = 100L, block: () -> Unit) {
         val start = SystemClock.elapsedRealtime()
         block()
         val duration = SystemClock.elapsedRealtime() - start

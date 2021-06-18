@@ -55,6 +55,19 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
+val benchmarkLimitDefault = if (BuildConfig.DEBUG) 10L else 100L
+private fun <T:Any?> benchmark(
+    caption: String,
+    limit: Long = benchmarkLimitDefault,
+    block: () -> T
+) :T {
+    val start = SystemClock.elapsedRealtime()
+    val rv = block()
+    val duration = SystemClock.elapsedRealtime() - start
+    if (duration >= limit) ActMain.log.w("benchmark: ${duration}ms : $caption")
+    return rv
+}
+
 class ActMain : AppCompatActivity(),
     View.OnClickListener,
     ViewPager.OnPageChangeListener,
@@ -636,18 +649,14 @@ class ActMain : AppCompatActivity(),
         }
     }
 
-    private fun benchmark(caption: String, limit: Long = 100L, block: () -> Unit) {
-        val start = SystemClock.elapsedRealtime()
-        block()
-        val duration = SystemClock.elapsedRealtime() - start
-        if (duration >= limit) log.w("benchmark: ${duration}ms : $caption")
-    }
 
     override fun onStart() {
         log.d("onStart")
         isStart_ = true
         super.onStart()
+
         benchmark("onStart total") {
+
             benchmark("reload color") {
                 // カラーカスタマイズを読み直す
                 ListDivider.color = Pref.ipListDividerColor(pref)
@@ -662,6 +671,7 @@ class ActMain : AppCompatActivity(),
 
                 CustomShare.reloadCache(this, pref)
             }
+
             benchmark("reload timezone") {
                 try {
                     var tz = TimeZone.getDefault()
@@ -674,6 +684,15 @@ class ActMain : AppCompatActivity(),
                     log.e(ex, "getTimeZone failed.")
                 }
             }
+
+            // 残りの処理はActivityResultの処理より後回しにしたい
+            handler.postDelayed(onStartAfter, 1L)
+        }
+    }
+
+    private val onStartAfter = Runnable {
+        benchmark("onStartAfter total") {
+
             benchmark("sweepBuggieData") {
                 // バグいアカウントデータを消す
                 try {
@@ -682,24 +701,25 @@ class ActMain : AppCompatActivity(),
                     log.trace(ex)
                 }
             }
-            benchmark("column order") {
-                // アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
-                val new_order = app_state.columnList
-                    .mapIndexedNotNull { index, column ->
-                        if (!column.access_info.isNA && null == SavedAccount.loadAccount(
-                                this@ActMain,
-                                column.access_info.db_id
-                            )
-                        ) {
-                            null
-                        } else {
-                            index
-                        }
-                    }
 
-                if (new_order.size != app_state.columnCount) {
-                    setOrder(new_order)
-                }
+            val newAccounts = benchmark("loadAccountList"){
+                SavedAccount.loadAccountList(this)
+            }
+
+            benchmark("removeColumnByAccount") {
+
+                val setDbId = newAccounts.map { it.db_id }.toSet()
+
+                // アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
+                app_state.columnList
+                    .mapIndexedNotNull { index, column ->
+                        when{
+                            column.access_info.isNA -> index
+                            setDbId.contains(column.access_info.db_id) -> index
+                            else -> null
+                        }
+                    }.takeIf { it.size != app_state.columnCount }
+                    ?.let { setOrder(it) }
             }
 
             benchmark("fireColumnColor") {
@@ -712,16 +732,8 @@ class ActMain : AppCompatActivity(),
 
             benchmark("reloadAccountSetting") {
                 // 各カラムのアカウント設定を読み直す
-                reloadAccountSetting()
+                reloadAccountSetting(newAccounts)
             }
-
-            // 残りの処理はActivityResultの処理より後回しにしたい
-            handler.postDelayed(onStartAfter, 10L)
-        }
-    }
-
-    private val onStartAfter = Runnable {
-        benchmark("onStartAfter total") {
 
             benchmark("refreshAfterPost") {
                 // 投稿直後ならカラムの再取得を行う
@@ -2112,25 +2124,23 @@ class ActMain : AppCompatActivity(),
     }
 
 
-    private fun reloadAccountSetting() {
-        val done_list = ArrayList<SavedAccount>()
+    private fun reloadAccountSetting(
+        newAccounts:ArrayList<SavedAccount> = SavedAccount.loadAccountList(this)
+    ) {
         for (column in app_state.columnList) {
             val a = column.access_info
-            if (done_list.contains(a)) continue
-            done_list.add(a)
-            if (!a.isNA) a.reloadSetting(this)
+            if (!a.isNA) a.reloadSetting(this,newAccounts.find{ it.acct == a.acct })
             column.fireShowColumnHeader()
         }
     }
 
     fun reloadAccountSetting(account: SavedAccount) {
-        val done_list = ArrayList<SavedAccount>()
+        val newData = SavedAccount.loadAccount(this,account.db_id)
+            ?: return
         for (column in app_state.columnList) {
             val a = column.access_info
-            if (a != account) continue
-            if (done_list.contains(a)) continue
-            done_list.add(a)
-            if (!a.isNA) a.reloadSetting(this@ActMain)
+            if (a.acct != newData.acct) continue
+            if (!a.isNA) a.reloadSetting(this,newData)
             column.fireShowColumnHeader()
         }
     }
